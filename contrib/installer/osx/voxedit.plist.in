@@ -48,6 +48,25 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>aseprite</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-aseprite</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>aseprite</string>
+          <string>ase</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Qubicle Binary</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -58,6 +77,25 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>qb</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>BenVoxel</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-benvoxel</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>ben.json</string>
+          <string>ben</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -166,6 +204,42 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vxm</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Sandbox VoxEdit Block</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-sandbox-voxedit-block</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>vxb</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Blockbench</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-blockbench</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>bbmodel</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -313,6 +387,25 @@
           <string>schematic</string>
           <string>schem</string>
           <string>nbt</string>
+          <string>litematic</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Quake Map</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quake-map</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>map</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -357,6 +450,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Quake 1 Model</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quake-1-model</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>mdl</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Quake 2 Model</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -385,6 +496,24 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>fbx</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Autodesk 3D Studio</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-autodesk-3d-studio</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>3ds</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -429,18 +558,36 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
-        <string>StarMade</string>
+        <string>StarMade Blueprint</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-starmade</string>
+          <string>application/x-starmade-blueprint</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>sment</string>
           <string>smd2</string>
           <string>smd3</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>StarMade Template</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-starmade-template</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>smtpl</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -642,6 +789,25 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>v3a</string>
+          <string>v3b</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Rooms.xyz Thing</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-rooms-xyz-thing</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>thing</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -787,6 +953,24 @@
         <array>
           <string>vmax.zip</string>
           <string>vmaxb</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Portable Network Graphics</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-portable-network-graphics</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>png</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>

@@ -211,7 +211,9 @@ contrib/installer/osx/%.plist.in: formatprinter
 contrib/installer/linux/%.man.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --manpage $* > $@
 
-formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md contrib/installer/windows/wixpatch.xml contrib/installer/linux/voxconvert.man.in contrib/installer/linux/thumbnailer.man.in
+manpages: contrib/installer/linux/voxconvert.man.in contrib/installer/linux/thumbnailer.man.in contrib/installer/linux/application.man.in
+plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit.plist.in
+formats: manpages plists tools/html/data.js contrib/installer/linux/x-voxel.xml docs/Formats.md contrib/installer/windows/wixpatch.xml
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)
