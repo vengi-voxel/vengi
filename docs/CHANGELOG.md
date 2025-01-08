@@ -22,11 +22,16 @@ General:
    - Fixed case-sensitivity in pattern matching. We couldn't find files that had upper-case extensions
    - Implemented symlink handling on windows
    - Added public domain Ace Of Spades map generator code
+   - Added new cvar `palformat_maxsize` to control the max image size for palette quantization
+   - Added new cvar `voxformat_imageheightmapminheight` to control the minimum size during a heightmap import
+   - Fixed handling of `gltf` embedded images
+   - Fixed `png` import palette handling
 
 VoxConvert:
 
    - Removed the file type selection for source and target files in the ui
    - Added script support to the ui
+   - `--usage` shows lua script details now
 
 VoxEdit:
 
