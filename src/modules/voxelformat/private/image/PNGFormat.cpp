@@ -119,12 +119,13 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 	voxel::RawVolumeWrapper wrapper(volume);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const uint8_t minHeight = core::Var::getSafe(cfg::VoxformatImageHeightmapMinHeight)->intVal();;
 	if (coloredHeightmap) {
 		palette::PaletteLookup palLookup(palette);
-		voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
+		voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel, minHeight, false);
 	} else {
 		const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
-		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
+		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel, minHeight, false);
 	}
 	node.setPalette(palette);
 	node.setVolume(volume, true);

@@ -182,6 +182,8 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 				ImGui::TooltipTextUnformatted(depthMapName.c_str());
 			}
 		}
+	} else if (currentImportType == voxelformat::PNGFormat::ImportType::Volume) {
+		ImGui::InputVarInt(_("Min height"), cfg::VoxformatImageHeightmapMinHeight);
 	}
 }
 

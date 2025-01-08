@@ -100,7 +100,8 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight) {
 }
 
 void importColoredHeightmap(voxel::RawVolumeWrapper &volume, palette::PaletteLookup &palLookup,
-							const image::ImagePtr &image, const voxel::Voxel &underground) {
+							const image::ImagePtr &image, const voxel::Voxel &underground, uint8_t minHeight,
+							bool adoptHeight) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	const voxel::Region &region = volume.region();
@@ -110,13 +111,16 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, palette::PaletteLoo
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
-	const float scaleHeight = (float)volumeHeight / (float)255.0f;
+	const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)255.0f : 1.0f;
 	float imageY = 0.0f;
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
 			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-			const uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.a) * scaleHeight));
+			uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.a) * scaleHeight));
+			if (heightValue < minHeight) {
+				heightValue = minHeight;
+			}
 
 			if (voxel::isAir(underground.getMaterial())) {
 				const glm::ivec3 pos(x, heightValue - 1, z);
@@ -151,7 +155,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, palette::PaletteLoo
 }
 
 void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &underground,
-					 const voxel::Voxel &surface) {
+					 const voxel::Voxel &surface, uint8_t minHeight, bool adoptHeight) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	const voxel::Region &region = volume.region();
@@ -163,14 +167,17 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
 	Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
 	const int maxImageHeight = importHeightMaxHeight(image, true);
-	const float scaleHeight = (float)volumeHeight / (float)maxImageHeight;
+	const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)maxImageHeight : 1.0f;
 	float imageY = 0.0f;
 	// TODO: use a volume sampler
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
 			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-			const uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
+			uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
+			if (heightValue < minHeight) {
+				heightValue = minHeight;
+			}
 
 			if (voxel::isAir(underground.getMaterial())) {
 				const glm::ivec3 pos(x, heightValue - 1, z);

@@ -109,6 +109,9 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatImageVolumeMaxDepth, "1", core::CV_NOPERSIST,
 				   _("The maximum depth of the volume when importing an image as volume"),
 				   core::Var::minMaxValidator<1, 255>);
+	core::Var::get(cfg::VoxformatImageHeightmapMinHeight, "0", core::CV_NOPERSIST,
+				   _("The minimum height of the heightmap when importing an image as heightmap"),
+				   core::Var::minMaxValidator<0, 255>);
 	core::Var::get(cfg::VoxformatImageVolumeBothSides, "true", core::CV_NOPERSIST,
 				   _("Import the image as volume for both sides"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatTexturePath, "", core::CV_NOPERSIST,
