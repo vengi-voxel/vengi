@@ -63,6 +63,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
+	node.setPalette(palette);
 
 	for (const auto &entity : entities) {
 		const core::String &layetFilename = entity.fullPath;
@@ -119,13 +120,13 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	if (coloredHeightmap) {
-		palette::PaletteLookup palLookup;
+		palette::PaletteLookup palLookup(palette);
 		voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
-		node.setPalette(palLookup.palette());
 	} else {
 		const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 	}
+	node.setPalette(palette);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
@@ -154,6 +155,7 @@ bool PNGFormat::importAsVolume(scenegraph::SceneGraph &sceneGraph, const palette
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(filename));
+	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
@@ -168,6 +170,7 @@ bool PNGFormat::importAsPlane(scenegraph::SceneGraph &sceneGraph, const palette:
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(filename));
+	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
@@ -207,7 +210,16 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	const image::ImagePtr &image = image::loadImage(filename);
-	palette.createPalette(image, palette);
+	const int type = core::Var::getSafe(cfg::VoxformatImageImportType)->intVal();
+	if (type == ImportType::Heightmap) {
+		image->makeOpaque();
+	}
+
+	if (!palette.createPalette(image, palette)) {
+		Log::error("Failed to create palette from image %s", filename.c_str());
+		return 0;
+	}
+	Log::debug("Created palette with %i colors from image %s", palette.colorCount(), filename.c_str());
 	return palette.colorCount();
 }
 
