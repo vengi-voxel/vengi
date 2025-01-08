@@ -203,6 +203,7 @@ def update_dearimgui():
         "imgui",
         "https://github.com/ocornut/imgui.git",
         [
+            (f"imgui_demo.cpp", "src/tests/testimgui/Demo.cpp"),
             (f"im*.h", "src/modules/ui/dearimgui"),
             (f"im*.cpp", "src/modules/ui/dearimgui"),
             (f"misc/cpp/*", "src/modules/ui/dearimgui"),
