@@ -36,8 +36,8 @@ msgstr "Die Version anzeigen und beenden"
 msgid "Print this help and quit"
 msgstr "Diese Hilfe anzeigen und beenden"
 
-msgid "Generate completion for bash"
-msgstr "Vervollständigung für Bash generieren"
+msgid "Generate completion for bash and zsh"
+msgstr "Vervollständigung für Bash und ZSH generieren"
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
 msgstr "Protokollniveau von 1 (Trace) auf 6 (nur kritisch) ändern"
@@ -175,6 +175,12 @@ msgstr "Versteckte Dateisystem-Entitäten anzeigen"
 msgid "The last selected file type filter in the file dialog"
 msgstr "Der zuletzt ausgewählte Dateitypfilter im Dateidialog"
 
+msgid "Not writeable"
+msgstr ""
+
+msgid "The selected file or directory is not writeable"
+msgstr ""
+
 msgid "Create folder"
 msgstr "Ordner erstellen"
 
@@ -186,6 +192,9 @@ msgstr "Erstellen"
 
 msgid "Folder name can't be empty"
 msgstr "Der Ordnername darf nicht leer sein"
+
+msgid "Folder creation failed"
+msgstr ""
 
 msgid "Options"
 msgstr "Optionen"
@@ -400,6 +409,15 @@ msgstr ""
 "Im Browser öffnen\n"
 "%s"
 
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
 msgid "Enable sending anonymous metrics"
 msgstr "Senden anonymer Metriken aktivieren"
 
@@ -569,6 +587,9 @@ msgid "Merge all objects into one"
 msgstr ""
 
 msgid "The index of the empty color in the palette"
+msgstr ""
+
+msgid "The normal palette to use for voxelization"
 msgstr ""
 
 msgid "Toggle between left and right handed"
@@ -749,6 +770,9 @@ msgstr "Hohlraum füllen"
 msgid "Point cloud size"
 msgstr "Punktwolkengröße"
 
+msgid "Normal palette"
+msgstr ""
+
 msgid "faster and less memory"
 msgstr "schneller und weniger Speicher"
 
@@ -836,6 +860,9 @@ msgstr "Quelloptionen"
 
 msgid "Target options"
 msgstr "Zieloptionen"
+
+msgid "Script options"
+msgstr "Skriptoptionen"
 
 msgid "Convert"
 msgstr "Konvertieren"
@@ -1055,15 +1082,6 @@ msgstr "Form"
 
 msgid "Disable mirror"
 msgstr "Spiegelung deaktivieren"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
 
 msgid "Use selection"
 msgstr "Auswahl verwenden"
@@ -1455,8 +1473,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
@@ -1730,7 +1748,7 @@ msgstr "Willkommensbildschirm"
 msgid "Region"
 msgstr "Region"
 
-msgid "pos"
+msgid "Pos"
 msgstr "Pos"
 
 msgid "To transform"
@@ -1830,6 +1848,9 @@ msgstr "Normalen Modus"
 
 msgid "Recalculate all normals"
 msgstr "All Normalen neu berechnen"
+
+msgid "If the model already has normals and you want to replace them"
+msgstr ""
 
 msgid "Model is hollow"
 msgstr "Modell ist hohl"
@@ -2861,6 +2882,9 @@ msgstr ""
 
 msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
+
+#~ msgid "pos"
+#~ msgstr "Pos"
 
 #~ msgid "Twitter"
 #~ msgstr "Twitter"

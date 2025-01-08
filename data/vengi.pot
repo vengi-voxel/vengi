@@ -15,7 +15,7 @@ msgstr ""
 msgid "Print this help and quit"
 msgstr ""
 
-msgid "Generate completion for bash"
+msgid "Generate completion for bash and zsh"
 msgstr ""
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
@@ -153,6 +153,12 @@ msgstr ""
 msgid "The last selected file type filter in the file dialog"
 msgstr ""
 
+msgid "Not writeable"
+msgstr ""
+
+msgid "The selected file or directory is not writeable"
+msgstr ""
+
 msgid "Create folder"
 msgstr ""
 
@@ -163,6 +169,9 @@ msgid "Create"
 msgstr ""
 
 msgid "Folder name can't be empty"
+msgstr ""
+
+msgid "Folder creation failed"
 msgstr ""
 
 msgid "Options"
@@ -370,6 +379,15 @@ msgid ""
 "%s"
 msgstr ""
 
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Z"
+msgstr ""
+
 msgid "Enable sending anonymous metrics"
 msgstr ""
 
@@ -539,6 +557,9 @@ msgid "Merge all objects into one"
 msgstr ""
 
 msgid "The index of the empty color in the palette"
+msgstr ""
+
+msgid "The normal palette to use for voxelization"
 msgstr ""
 
 msgid "Toggle between left and right handed"
@@ -719,6 +740,9 @@ msgstr ""
 msgid "Point cloud size"
 msgstr ""
 
+msgid "Normal palette"
+msgstr ""
+
 msgid "faster and less memory"
 msgstr ""
 
@@ -804,6 +828,9 @@ msgid "Source options"
 msgstr ""
 
 msgid "Target options"
+msgstr ""
+
+msgid "Script options"
 msgstr ""
 
 msgid "Convert"
@@ -1016,15 +1043,6 @@ msgid "Shape"
 msgstr ""
 
 msgid "Disable mirror"
-msgstr ""
-
-msgid "X"
-msgstr ""
-
-msgid "Y"
-msgstr ""
-
-msgid "Z"
 msgstr ""
 
 msgid "Use selection"
@@ -1383,8 +1401,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Tip of the day"
@@ -1643,7 +1661,7 @@ msgstr ""
 msgid "Region"
 msgstr ""
 
-msgid "pos"
+msgid "Pos"
 msgstr ""
 
 msgid "To transform"
@@ -1741,6 +1759,9 @@ msgid "Normal mode"
 msgstr ""
 
 msgid "Recalculate all normals"
+msgstr ""
+
+msgid "If the model already has normals and you want to replace them"
 msgstr ""
 
 msgid "Model is hollow"
