@@ -922,7 +922,7 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 		Log::error("Failed to convert image to palette - scale it down to max %i:%i", maxSize, maxSize);
 		return false;
 	}
-	core::Set<core::RGBA> colorSet(imageWidth * imageHeight);
+	core::Set<core::RGBA, 521> colorSet(imageWidth * imageHeight);
 	Log::debug("Create palette for image: %s (%i:%i)", image->name().c_str(), imageWidth, imageHeight);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
