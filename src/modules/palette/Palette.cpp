@@ -931,7 +931,7 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 		}
 	}
 
-	core::Buffer<core::RGBA, 1024> colors;
+	core::Buffer<core::RGBA> colors;
 	colors.reserve(colorSet.size());
 	for (const auto &e : colorSet) {
 		colors.push_back(e->first);
