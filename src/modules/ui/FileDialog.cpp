@@ -563,7 +563,7 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 	ImGui::TextUnformatted(">");
 	core::Path path("/");
 #ifdef _WIN32
-	path = "";
+	path = core::Path("");
 #endif
 	int i = 0;
 	for (const core::String &c : components) {
