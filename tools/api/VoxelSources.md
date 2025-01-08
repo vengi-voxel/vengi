@@ -14,4 +14,13 @@ Find other download links (often with unknown or unsure licenses) for tests here
 * https://www.moddb.com/mods/powerslave-voxel-pack/downloads/powerslave-voxel-pack-v01 (Unknown)
 * https://www.moddb.com/mods/nashgore-next/downloads/nashgore-next-official-voxel-pack (Unknown)
 * http://rdw.xp3.biz/ (Unknown)
-* https://github.com/s-macke/VoxelSpace/tree/master/maps (heightmaps, Proprietary)
+* https://www.planetminecraft.com/projects/environment-landscaping/ (Unknown)
+
+# Heightmaps
+
+> `magick C10W.png \( D10.png -resize 1024x1024 \) -alpha off -compose CopyOpacity -composite vengi10.png`
+> `vengi-voxconvert --input vengi10.png -set voxformat_imageimporttype 1 --output c10w.vengi -f -set palformat_maxsize 1024 -set voxformat_imageheightmapminheight 1`
+
+* https://github.com/s-macke/VoxelSpace/tree/master/maps (Proprietary)
+* https://manticorp.github.io/unrealheightmap/index.html (Proprietary)
+* https://polyhaven.com/textures/terrain (CC0)
