@@ -316,6 +316,19 @@ bool Image::loadRGBA(io::ReadStream &stream, int w, int h) {
 	return true;
 }
 
+void Image::makeOpaque() {
+	if (_depthOfColor != 4) {
+		return;
+	}
+	for (int x = 0; x < _width; ++x) {
+		for (int y = 0; y < _height; ++y) {
+			core::RGBA rgba = colorAt(x, y);
+			rgba.a = 255;
+			setColor(rgba, x, y);
+		}
+	}
+}
+
 void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	uint32_t *srcPtr = reinterpret_cast<uint32_t *>(pixels);
 	uint32_t *dstPtr = srcPtr + (((intptr_t)h - (intptr_t)1) * (intptr_t)w);

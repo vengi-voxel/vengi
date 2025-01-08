@@ -70,6 +70,8 @@ public:
 	bool loadRGBA(io::ReadStream& stream, int w, int h);
 	bool loadBGRA(io::ReadStream& stream, int w, int h);
 
+	void makeOpaque();
+
 	static glm::ivec2 pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false);
 	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 	/**
