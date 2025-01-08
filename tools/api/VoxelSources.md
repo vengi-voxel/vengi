@@ -14,3 +14,4 @@ Find other download links (often with unknown or unsure licenses) for tests here
 * https://www.moddb.com/mods/powerslave-voxel-pack/downloads/powerslave-voxel-pack-v01 (Unknown)
 * https://www.moddb.com/mods/nashgore-next/downloads/nashgore-next-official-voxel-pack (Unknown)
 * http://rdw.xp3.biz/ (Unknown)
+* https://github.com/s-macke/VoxelSpace/tree/master/maps (heightmaps, Proprietary)
