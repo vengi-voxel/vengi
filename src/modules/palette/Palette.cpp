@@ -917,8 +917,9 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 	}
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	if (imageWidth * imageHeight > 512 * 512) {
-		Log::error("Failed to convert image to palette - scale it down to max 512:512");
+	const int maxSize = core::Var::getSafe(cfg::PalformatMaxSize)->intVal();
+	if (imageWidth * imageHeight > maxSize * maxSize) {
+		Log::error("Failed to convert image to palette - scale it down to max %i:%i", maxSize, maxSize);
 		return false;
 	}
 	core::Set<core::RGBA> colorSet(imageWidth * imageHeight);

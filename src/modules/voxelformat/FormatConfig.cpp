@@ -122,6 +122,8 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,
 				   _("Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"),
 				   core::Var::boolValidator);
+	core::Var::get(cfg::PalformatMaxSize, "512", core::CV_NOPERSIST,
+				   _("The maximum size of an image in x and y direction to quantize to a palette"));
 
 	return true;
 }

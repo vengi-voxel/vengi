@@ -248,6 +248,7 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 	}
 	if (*desc == palette::RGBPalette::format()) {
 		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
+		ImGui::InputVarInt(_("Max image size"), cfg::PalformatMaxSize);
 	}
 }
 
