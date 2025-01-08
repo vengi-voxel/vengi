@@ -4,8 +4,8 @@ function jsonToTable(data, category, id) {
 	const header = table.createTHead();
 	const row = header.insertRow(0);
 
-	// Create table headers
-	const headers = Object.keys(data[0]);
+	// Create table headers, excluding 'magics'
+	const headers = Object.keys(data[0]).filter(key => key !== 'magics');
 	headers.forEach(headerText => {
 		const th = document.createElement('th');
 		th.textContent = headerText;
