@@ -177,7 +177,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 	}
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
 	io::ArchivePtr archive = _archive;
-	if (_archive->exists(targetImageFile)) {
+	if (archive->exists(targetImageFile)) {
 		_futures.emplace_back(app::async([this, voxelFile, targetImageFile, archive]() {
 			if (_shouldQuit) {
 				return;
@@ -196,7 +196,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			if (_shouldQuit) {
 				return;
 			}
-			http::HttpCacheStream stream(_archive, targetImageFile, voxelFile.thumbnailUrl);
+			http::HttpCacheStream stream(archive, targetImageFile, voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		}));
 	} else {
