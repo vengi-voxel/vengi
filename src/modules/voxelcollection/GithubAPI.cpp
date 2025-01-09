@@ -24,7 +24,7 @@ core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repo
 						 const core::String &path, int size) {
 	// the git lfs stuff is usually not larger than 150 bytes because it's just a reference
 	if (size < 150) {
-		core_assert(!path.empty());
+		core_assert_msg(!path.empty(), "Path must not be empty (repository: %s, branch: %s)", repository.c_str(), branch.c_str());
 		const core::String &branchEnc = core::string::urlPathEncode(branch);
 		const core::String &pathEnc = core::string::urlPathEncode(path);
 		const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + pathEnc + "?ref=" + branchEnc;

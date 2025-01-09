@@ -261,7 +261,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 														 const VoxelSource &source, const io::ArchivePtr &archive,
 														 core::AtomicBool &shouldQuit) const {
 	core::DynamicArray<VoxelFile> files;
-	const core::String &licenseDownloadUrl =
+	const core::String &licenseDownloadUrl = source.github.license.empty() ? "" :
 		github::downloadUrl(archive, source.github.repo, source.github.commit, source.github.license, 0);
 	const core::String cleanSource = core::string::cleanPath(source.name);
 	for (const auto &entry : entries) {
@@ -272,9 +272,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 		file.source = source.name;
 		file.name = core::string::extractFilenameWithExtension(entry.path);
 		file.license = source.license;
-		if (!source.github.license.empty()) {
-			file.licenseUrl = licenseDownloadUrl;
-		}
+		file.licenseUrl = licenseDownloadUrl;
 		file.thumbnailUrl = findThumbnailUrl(archive, entries, entry, source, shouldQuit);
 		file.url = entry.url;
 		file.fullPath = entry.path;
