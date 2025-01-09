@@ -24,7 +24,6 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	PaletteLookup pal;
 	core::RGBA rgba{0xffffffff};
 	EXPECT_EQ(0, pal.findClosestIndex(rgba));
-	EXPECT_EQ(0, pal.findClosestIndex(rgba));
 }
 
 TEST_F(PaletteTest, testGimpPalette) {
