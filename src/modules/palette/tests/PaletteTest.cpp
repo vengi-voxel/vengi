@@ -15,6 +15,7 @@ class PaletteTest : public app::AbstractTest {
 protected:
 	bool onInitApp() override {
 		core::Var::get(cfg::CoreColorReduction, core::Color::toColorReductionTypeString(core::Color::ColorReductionType::Octree));
+		core::Var::get(cfg::PalformatMaxSize, 512);
 		return true;
 	}
 };

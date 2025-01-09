@@ -184,6 +184,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 						   archiveFile.fullPath.c_str());
 				continue;
 			}
+			// TODO: remove this as we might have clashes here with existing files
 			if (archive->write(subFile.targetFile(), *rs)) {
 				files.push_back(subFile);
 			} else {
@@ -198,6 +199,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 						   archiveFile.fullPath.c_str());
 				continue;
 			}
+			// TODO: remove this as we might have clashes here with existing files
 			if (archive->write(subFile.targetFile(), *rs)) {
 				handleArchive(archive, subFile, files, shouldQuit);
 			} else {
