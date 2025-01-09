@@ -338,7 +338,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 
 void CollectionManager::downloadAll() {
 	const io::ArchivePtr archive = _archive;
-	app::async([this, voxelFilesMap = _voxelFilesMap, archive]() {
+	_futures.emplace_back(app::async([this, voxelFilesMap = _voxelFilesMap, archive]() {
 		int all = 0;
 		for (const auto &e : voxelFilesMap) {
 			all += (int)e->value.files.size();
@@ -360,7 +360,7 @@ void CollectionManager::downloadAll() {
 			}
 		}
 		_downloadProgress = 0;
-	});
+	}));
 }
 
 bool CollectionManager::download(const io::ArchivePtr &archive, VoxelFile &voxelFile) {
