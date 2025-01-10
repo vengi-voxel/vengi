@@ -48,6 +48,14 @@ TEST_F(FilesystemTest, testListDirectory) {
 	fs.shutdown();
 }
 
+#ifndef _WIN32
+TEST_F(FilesystemTest, testSysIsHidden) {
+	EXPECT_TRUE(io::Filesystem::sysIsHidden("/foo/.bar"));
+	EXPECT_TRUE(io::Filesystem::sysIsHidden("foo/.bar"));
+	EXPECT_TRUE(io::Filesystem::sysIsHidden(".bar"));
+}
+#endif
+
 TEST_F(FilesystemTest, testDirectoryExists) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";

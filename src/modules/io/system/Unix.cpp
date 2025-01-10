@@ -332,8 +332,10 @@ bool fs_hidden(const char *path) {
 	const char *p = strrchr(path, '/');
 	if (p == nullptr) {
 		p = path;
+	} else {
+		++p;
 	}
-	return path[0] == '.';
+	return p[0] == '.';
 }
 
 } // namespace io
