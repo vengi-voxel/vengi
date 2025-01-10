@@ -254,6 +254,10 @@ const glm::vec3 &SceneGraphTransform::worldScale() const {
 	return _worldScale;
 }
 
+const glm::mat4x4 SceneGraphTransform::calculateLocalMatrix() const {
+	return glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+}
+
 void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx,
 								 bool updateChildren) {
 	if (_dirty == 0u) {

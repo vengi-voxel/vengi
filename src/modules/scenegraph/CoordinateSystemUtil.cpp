@@ -5,7 +5,8 @@
 #include "CoordinateSystemUtil.h"
 #include "core/GLMConst.h"
 #include "scenegraph/CoordinateSystem.h"
-#include "SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphTransform.h"
 
 namespace scenegraph {
 
@@ -146,6 +147,12 @@ bool convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, scenegr
 	sceneGraph.updateTransforms();
 
 	return true;
+}
+
+SceneGraphTransform convertCoordinateSystem(CoordinateSystem from, const SceneGraphTransform &fromTransform) {
+	SceneGraphTransform transform;
+	transform.setLocalMatrix(convertCoordinateSystem(from, fromTransform.calculateLocalMatrix()));
+	return transform;
 }
 
 } // namespace scenegraph
