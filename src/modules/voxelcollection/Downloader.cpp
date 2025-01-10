@@ -169,7 +169,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 		subFile.license = archiveFile.license;
 		subFile.licenseUrl = archiveFile.licenseUrl;
 		subFile.thumbnailUrl = archiveFile.thumbnailUrl;
-		subFile.fullPath = core::string::path(core::string::extractDir(archiveFile.fullPath), f.fullPath);
+		subFile.fullPath = core::string::path(core::string::extractDir(archiveFile.fullPath), core::string::extractFilename(archiveFile.fullPath), f.fullPath);
 		subFile.downloaded = true;
 
 		if (supportedFileExtension(subFile.name)) {
@@ -184,7 +184,6 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 						   archiveFile.fullPath.c_str());
 				continue;
 			}
-			// TODO: remove this as we might have clashes here with existing files
 			if (archive->write(subFile.targetFile(), *rs)) {
 				files.push_back(subFile);
 			} else {
@@ -199,7 +198,6 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 						   archiveFile.fullPath.c_str());
 				continue;
 			}
-			// TODO: remove this as we might have clashes here with existing files
 			if (archive->write(subFile.targetFile(), *rs)) {
 				handleArchive(archive, subFile, files, shouldQuit);
 			} else {
