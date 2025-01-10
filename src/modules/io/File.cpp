@@ -32,9 +32,16 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 		return;
 	}
 	const bool alreadyOpened = _openedFiles.hasKey(absPath);
-	core_assert_msg(!alreadyOpened, "File %s is already opened in mode %i - this will produce problems on windows", path.c_str(), (int)mode);
 	if (alreadyOpened) {
-		Log::error("File %s is already opened in mode %i", path.c_str(), (int)mode);
+		FileMode openedMode;
+		core_assert_always(_openedFiles.get(absPath, openedMode));
+		core_assert_msg(
+			!alreadyOpened,
+			"File %s is already opened (opened mode %s, new mode %s) - this will produce problems on windows",
+			path.c_str(), FileModeStr[(int)openedMode], FileModeStr[(int)mode]);
+
+		Log::error("File %s is already opened (opened mode %s, new mode %s)", path.c_str(),
+				   FileModeStr[(int)openedMode], FileModeStr[(int)mode]);
 		return;
 	}
 	Log::debug("open file: %s", absPath.c_str());

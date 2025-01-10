@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "IOResource.h"
@@ -22,8 +23,19 @@ enum class FileMode {
 	Append,		/**< appending to an existing file or create a new one */
 	SysRead,	/**< reading from the given path - using virtual paths as fallback */
 	SysWrite,	/**< writing into the given path */
-	ReadNoHome	/**< reading from the virtual file system but skip user setting files in the home directories */
+	ReadNoHome,	/**< reading from the virtual file system but skip user setting files in the home directories */
+	Max
 };
+
+static const char * FileModeStr[] = {
+	"Read",
+	"Write",
+	"Append",
+	"SysRead",
+	"SysWrite",
+	"ReadNoHome",
+};
+static_assert(lengthof(FileModeStr) == (size_t)FileMode::Max, "FileModeStr is incomplete");
 
 /**
  * @sa core::string::sanitizeDirPath()
