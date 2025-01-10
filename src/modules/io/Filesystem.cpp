@@ -440,11 +440,11 @@ bool Filesystem::exists(const core::String& filename) const {
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
 	core_assert_msg(!_homePath.empty(), "Filesystem is not yet initialized");
 	if (sysIsReadableDir(filename)) {
-		Log::debug("%s is a directory - skip this", filename.c_str());
+		Log::trace("%s is a directory - skip this", filename.c_str());
 		return core::make_shared<io::File>("", mode);
 	}
 	if (mode == FileMode::SysWrite) {
-		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
+		Log::trace("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
 	} else if (mode == FileMode::SysRead && fs_exists(filename.c_str())) {
 		return core::make_shared<io::File>(filename, mode);
@@ -462,12 +462,12 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 	}
 	for (const core::String &p : _paths) {
 		if (mode == FileMode::ReadNoHome && p == _homePath) {
-			Log::debug("Skip reading home path");
+			Log::trace("Skip reading home path");
 			continue;
 		}
 		core::String fullpath = core::string::path(p, filename);
 		if (fs_exists(fullpath.c_str())) {
-			Log::debug("loading file %s from %s for mode %i", filename.c_str(), p.c_str(), (int)openmode);
+			Log::trace("loading file %s from %s for mode %i", filename.c_str(), p.c_str(), (int)openmode);
 			return core::make_shared<io::File>(core::move(fullpath), openmode);
 		}
 		if (sysIsRelativePath(p)) {
@@ -477,21 +477,21 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 				}
 				core::String fullrelpath = core::string::path(s, p, filename);
 				if (fs_exists(fullrelpath.c_str())) {
-					Log::debug("loading file %s from %s%s for mode %i", filename.c_str(), s.c_str(), p.c_str(), (int)openmode);
+					Log::trace("loading file %s from %s%s for mode %i", filename.c_str(), s.c_str(), p.c_str(), (int)openmode);
 					return core::make_shared<io::File>(core::move(fullrelpath), openmode);
 				}
 			}
 		}
 	}
 	if (fs_exists(filename.c_str())) {
-		Log::debug("loading file '%s'", filename.c_str());
+		Log::trace("loading file '%s'", filename.c_str());
 		return core::make_shared<io::File>(filename, openmode);
 	}
 	if (!sysIsRelativePath(filename)) {
-		Log::debug("'%s' not found for mode %i", filename.c_str(), (int)openmode);
+		Log::trace("'%s' not found for mode %i", filename.c_str(), (int)openmode);
 		return core::make_shared<io::File>("", openmode);
 	}
-	Log::debug("Use %s from %s for mode %i", filename.c_str(), _basePath.c_str(), (int)openmode);
+	Log::trace("Use %s from %s for mode %i", filename.c_str(), _basePath.c_str(), (int)openmode);
 	return core::make_shared<io::File>(core::string::path(_basePath, filename), openmode);
 }
 

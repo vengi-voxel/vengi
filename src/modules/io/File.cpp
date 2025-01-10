@@ -44,7 +44,7 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 				   FileModeStr[(int)openedMode], FileModeStr[(int)mode]);
 		return;
 	}
-	Log::debug("open file: %s", absPath.c_str());
+	Log::debug("open file: %s (mode %s)", absPath.c_str(), FileModeStr[(int)mode]);
 	_openedFiles.put(absPath, mode);
 }
 
@@ -60,7 +60,7 @@ void untrackOpenedFile(const core::String &path, FileMode mode) {
 		Log::debug("File %s is not tracked as being opened", path.c_str());
 		return;
 	}
-	Log::debug("close file: %s", absPath.c_str());
+	Log::debug("close file: %s (mode %s)", absPath.c_str(), FileModeStr[(int)mode]);
 	_openedFiles.remove(absPath);
 }
 
