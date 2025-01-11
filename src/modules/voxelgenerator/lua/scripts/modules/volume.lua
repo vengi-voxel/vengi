@@ -148,22 +148,42 @@ function module.visitXZ(volume, region, visitor)
 	module.conditionXZ(volume, region, visitor, condition)
 end
 
---- visit 6 directions
+--- visit directions
 local offset = {
 	{ 0,  0, -1},
 	{ 0,  0,  1},
 	{ 0, -1,  0},
 	{ 0,  1,  0},
 	{-1,  0,  0},
-	{ 1,  0,  0}
+	{ 1,  0,  0}, -- faces
+	{ 0, -1, -1},
+	{ 0, -1,  1},
+	{ 0,  1, -1},
+	{ 0,  1,  1},
+	{-1,  0, -1},
+	{-1,  0,  1},
+	{ 1,  0, -1},
+	{ 1,  0,  1},
+	{-1, -1,  0},
+	{-1,  1,  0},
+	{ 1, -1,  0},
+	{ 1,  1,  0}, -- edges
+	{-1, -1, -1},
+	{-1, -1,  1},
+	{-1,  1, -1},
+	{-1,  1,  1},
+	{ 1, -1, -1},
+	{ 1, -1,  1},
+	{ 1,  1, -1},
+	{ 1,  1,  1} -- corners
 }
 
-local function visitConnected6Internal(volume, x, y, z, visitor, visited)
+local function visitConnectedInternal(volume, x, y, z, visitor, visited, directions)
 	if volume:voxel(x, y, z) == -1 then
 		return
 	end
 
-	for i = 1, 6 do
+	for i = 1, directions do
 		local x2 = x + offset[i][1]
 		local y2 = y + offset[i][2]
 		local z2 = z + offset[i][3]
@@ -172,7 +192,7 @@ local function visitConnected6Internal(volume, x, y, z, visitor, visited)
 			if visited[x2 .. ":" .. y2 .. ":" .. z2] == nil then
 				visited[x2 .. ":" .. y2 .. ":" .. z2] = 1
 				-- recurse into the connected voxels of this voxel, too
-				visitConnected6Internal(volume, x2, y2, z2, visitor, visited)
+				visitConnectedInternal(volume, x2, y2, z2, visitor, visited, directions)
 				-- call the user given visitor
 				visitor(volume, x2, y2, z2)
 			end
@@ -181,12 +201,30 @@ local function visitConnected6Internal(volume, x, y, z, visitor, visited)
 end
 
 ---
---- Visit non-empty connected voxels in 6 directions
+--- Visit non-empty connected voxels in 6 directions - all those that are sharing a face
 ---
 function module.visitConnected6(volume, x, y, z, visitor)
 	-- remember visited voxels in this table
 	local visited = {}
-	visitConnected6Internal(volume, x, y, z, visitor, visited)
+	visitConnectedInternal(volume, x, y, z, visitor, visited, 6)
+end
+
+---
+--- Visit non-empty connected voxels in 18 directions - all those that are sharing a face and an edge
+---
+function module.visitConnected18(volume, x, y, z, visitor)
+	-- remember visited voxels in this table
+	local visited = {}
+	visitConnectedInternal(volume, x, y, z, visitor, visited, 18)
+end
+
+---
+--- Visit non-empty connected voxels in 26 directions - all those that are sharing a face, edge, or corner
+---
+function module.visitConnected26(volume, x, y, z, visitor)
+	-- remember visited voxels in this table
+	local visited = {}
+	visitConnectedInternal(volume, x, y, z, visitor, visited, 26)
 end
 
 function module.replaceColor(node, region, oldColor, newColor)

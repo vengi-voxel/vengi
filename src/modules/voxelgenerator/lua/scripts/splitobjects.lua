@@ -26,7 +26,7 @@ function main(node, region, _)
 		if loopVolume:voxel(x, y, z) ~= -1 then
 			needNewModel = true
 			splitVolume = nil
-			vol.visitConnected6(loopVolume, x, y, z, connectedVisitor)
+			vol.visitConnected26(loopVolume, x, y, z, connectedVisitor)
 			if splitVolume ~= nil then
 				splitVolume:crop()
 			end
