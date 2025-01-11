@@ -622,7 +622,7 @@ void Viewport::resetCamera() {
 	voxel::Region region;
 
 	const int activeNode = sceneGraph.activeNode();
-	if (isSceneMode()) {
+	if (_renderContext.applyTransforms()) {
 		if (_hideInactive->boolVal()) {
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
 				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
