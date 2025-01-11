@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
 #include "core/collection/Vector.h"
+#include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/VolumeSamplerUtil.h"
@@ -17,7 +18,7 @@ namespace voxelutil {
 class VolumeSplitterTest : public app::AbstractTest {
 protected:
 	template<typename Volume>
-	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) {
+	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) const {
 		int cnt = 0;
 		voxelutil::visitVolume(
 			volume,
@@ -28,6 +29,59 @@ protected:
 			},
 			voxelutil::VisitAll());
 		return cnt;
+	}
+
+	void prepareSplitterVolume(voxel::RawVolume &volume) const {
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
+		volume.setVoxel(16, 16, 16, voxel);
+		volume.setVoxel(15, 16, 16, voxel);
+		volume.setVoxel(14, 16, 16, voxel);
+		volume.setVoxel(16, 15, 16, voxel);
+		volume.setVoxel(15, 15, 16, voxel);
+		volume.setVoxel(14, 15, 16, voxel);
+
+		volume.setVoxel(13, 14, 15, voxel);
+
+		volume.setVoxel(10, 10, 10, voxel);
+
+		volume.setVoxel(11, 11, 11, voxel);
+
+		volume.setVoxel(0, 0, 0, voxel);
+		volume.setVoxel(0, 0, 1, voxel);
+		volume.setVoxel(0, 1, 1, voxel);
+
+		for (int x = 0; x < 3; ++x) {
+			for (int y = 0; y < 3; ++y) {
+				for (int z = 0; z < 3; ++z) {
+					if (x == 1 && y == 1 && z == 1) {
+						continue;
+					}
+					volume.setVoxel(x + 20, y + 20, z + 20, voxel);
+				}
+			}
+		}
+
+		volume.setVoxel(25, 24, 25, voxel);
+		volume.setVoxel(25, 26, 25, voxel);
+		volume.setVoxel(24, 25, 25, voxel);
+		volume.setVoxel(26, 25, 25, voxel);
+		volume.setVoxel(25, 25, 24, voxel);
+		volume.setVoxel(25, 25, 26, voxel);
+	}
+
+	void validateSplit(const core::Buffer<voxel::RawVolume *> &volumes) const {
+		ASSERT_EQ(7u, volumes.size());
+		EXPECT_EQ(3, countVoxels(*volumes[0], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(1, countVoxels(*volumes[1], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(1, countVoxels(*volumes[2], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(1, countVoxels(*volumes[3], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(6, countVoxels(*volumes[4], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(26, countVoxels(*volumes[5], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(6, countVoxels(*volumes[6], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		for (voxel::RawVolume *v : volumes) {
+			delete v;
+		}
 	}
 };
 
@@ -97,31 +151,9 @@ TEST_F(VolumeSplitterTest, testSplitEmpty) {
 
 TEST_F(VolumeSplitterTest, testSplitObjects) {
 	const voxel::Region region(0, 31);
-	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
-
-	volume.setVoxel(16, 16, 16, voxel);
-	volume.setVoxel(15, 16, 16, voxel);
-	volume.setVoxel(14, 16, 16, voxel);
-	volume.setVoxel(16, 15, 16, voxel);
-	volume.setVoxel(15, 15, 16, voxel);
-	volume.setVoxel(14, 15, 16, voxel);
-
-	volume.setVoxel(13, 14, 15, voxel);
-
-	volume.setVoxel(10, 10, 10, voxel);
-
-	volume.setVoxel(11, 11, 11, voxel);
-
-	volume.setVoxel(0, 0, 0, voxel);
-	volume.setVoxel(0, 0, 1, voxel);
-	volume.setVoxel(0, 1, 1, voxel);
-
-	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitObjects(&volume);
-	EXPECT_EQ(5u, rawVolumes.size());
-	for (voxel::RawVolume *v : rawVolumes) {
-		delete v;
-	}
+	prepareSplitterVolume(volume);
+	validateSplit(voxelutil::splitObjects(&volume, VisitorOrder::ZYX, voxel::Connectivity::EighteenConnected));
 }
 
 } // namespace voxelutil

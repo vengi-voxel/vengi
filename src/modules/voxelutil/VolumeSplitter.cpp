@@ -5,6 +5,8 @@
 #include "VolumeSplitter.h"
 #include "app/Async.h"
 #include "core/Log.h"
+#include "core/collection/Array3DView.h"
+#include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
@@ -20,7 +22,7 @@ const voxel::Voxel visited(voxel::VoxelType::Air, 1, visitedFlag);
 
 } // namespace priv
 
-static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object, const glm::ivec3 position) {
+static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object, const glm::ivec3 &position, voxel::Connectivity connectivity) {
 	if (!volume.region().containsPoint(position)) {
 		return;
 	}
@@ -36,14 +38,33 @@ static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object
 	object.setVoxel(position, voxel);
 	volume.setVoxelUnsafe(position, priv::visited);
 
-	for (int i = 0; i < lengthof(voxel::arrayPathfinderFaces); ++i) {
-		const glm::ivec3 p = position + voxel::arrayPathfinderFaces[i];
-		processNeighbours(volume, object, p);
+	switch (connectivity) {
+	case voxel::Connectivity::TwentySixConnected:
+		for (int i = 0; i < lengthof(voxel::arrayPathfinderCorners); ++i) {
+			const glm::ivec3 p = position + voxel::arrayPathfinderCorners[i];
+			processNeighbours(volume, object, p, connectivity);
+		}
+		/* fallthrough */
+
+	case voxel::Connectivity::EighteenConnected:
+		for (int i = 0; i < lengthof(voxel::arrayPathfinderEdges); ++i) {
+			const glm::ivec3 p = position + voxel::arrayPathfinderEdges[i];
+			processNeighbours(volume, object, p, connectivity);
+		}
+		/* fallthrough */
+
+	case voxel::Connectivity::SixConnected:
+		for (int i = 0; i < lengthof(voxel::arrayPathfinderFaces); ++i) {
+			const glm::ivec3 p = position + voxel::arrayPathfinderFaces[i];
+			processNeighbours(volume, object, p, connectivity);
+		}
+		break;
 	}
 }
 
-core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, VisitorOrder order) {
-	voxel::RawVolume copy(*v);
+core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *volume, VisitorOrder order,
+											  voxel::Connectivity connectivity) {
+	voxel::RawVolume copy(*volume);
 	copy.setBorderValue(priv::visited);
 
 	core::Buffer<voxel::RawVolume *> rawVolumes;
@@ -59,7 +80,7 @@ core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, Visitor
 		}
 
 		voxel::RawVolume object(copy.region());
-		processNeighbours(copy, object, position);
+		processNeighbours(copy, object, position, connectivity);
 		if (voxel::RawVolume *v = voxelutil::cropVolume(&object)) {
 			rawVolumes.push_back(v);
 		} else {
@@ -70,7 +91,8 @@ core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, Visitor
 	return rawVolumes;
 }
 
-core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize, bool createEmpty) {
+core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
+											 bool createEmpty) {
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
