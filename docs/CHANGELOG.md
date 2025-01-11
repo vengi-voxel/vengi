@@ -19,11 +19,13 @@ General:
    - Reduced memory usage
    - Optimized palette color mappings
    - Added `meshoptimizer` simplification support for mesh imports (cvar `voxformat_mesh_simplify`)
+   - Improved split-by-objects for hollowed objects
 
 VoxEdit:
 
    - Allow to animate point and camera nodes, too
    - Allow to follow an animated camera to fly through a scene
+   - Fixed `resetcamera` when transforms are applied in edit mode
 
 VoxConvert:
 
