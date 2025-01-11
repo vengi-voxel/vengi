@@ -18,6 +18,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
+#include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
@@ -316,7 +317,8 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	}
 
 	// TODO: VOXELFORMAT: the order here matters for the references in the kfa structs
-	core::Buffer<voxel::RawVolume *> volumes = voxelutil::splitObjects(volume, voxelutil::VisitorOrder::XYZ);
+	core::Buffer<voxel::RawVolume *> volumes =
+		voxelutil::splitObjects(volume, voxelutil::VisitorOrder::XYZ, voxel::Connectivity::EighteenConnected);
 	if (volumes.empty()) {
 		Log::error("Could not split volume into single objects");
 		return false;
