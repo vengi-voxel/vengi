@@ -325,13 +325,20 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	}
 
 	Log::debug("Split into %i objects", (int)volumes.size());
-	for (const voxel::RawVolume *v : volumes) {
-		const voxel::Region &region = v->region();
-		Log::debug("region: %s", region.toString().c_str());
+
+	// In slab6, numspr can be <= numhin, but we can now create transform-only nodes for extra hinges
+	if (kfa.hinge.size() > volumes.size()) {
+		Log::debug("More hinges (%d) than volumes (%d) - creating transform-only nodes for extra hinges",
+				  (int)kfa.hinge.size(), (int)volumes.size());
 	}
-	if (kfa.hinge.size() > volumes.size() + 1) {
-		Log::error("kfa hinge count doesn't match kv6 objects");
-		return false;
+
+	// Create sorting array to ensure proper parent-child ordering
+	// Simple topological sort: process nodes with no unprocessed dependencies first
+	core::Buffer<int32_t> hingeSort;
+	core::Buffer<bool> processed;
+	processed.resize(kfa.hinge.size());
+	for (size_t i = 0; i < processed.size(); ++i) {
+		processed[i] = false;
 	}
 
 	core::sort(kfa.hinge.begin(), kfa.hinge.end(),

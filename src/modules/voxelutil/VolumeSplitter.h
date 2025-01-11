@@ -25,6 +25,6 @@ namespace voxelutil {
  * @param order This defines the order in which the splitted objects are returned.
  */
 [[nodiscard]] core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, VisitorOrder order = VisitorOrder::ZYX,
-			 voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
+			 voxel::Connectivity connectivity = voxel::Connectivity::EighteenConnected);
 
 } // namespace voxelutil
