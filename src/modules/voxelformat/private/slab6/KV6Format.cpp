@@ -335,60 +335,163 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	// Create sorting array to ensure proper parent-child ordering
 	// Simple topological sort: process nodes with no unprocessed dependencies first
 	core::Buffer<int32_t> hingeSort;
-	core::Buffer<bool> processed;
-	processed.resize(kfa.hinge.size());
-	for (size_t i = 0; i < processed.size(); ++i) {
-		processed[i] = false;
-	}
+	hingeSort.reserve(kfa.hinge.size());
+	core::Buffer<bool> processed(kfa.hinge.size(), 0);
 
-	core::sort(kfa.hinge.begin(), kfa.hinge.end(),
-			   [](const priv::KFAHinge &a, const priv::KFAHinge &b) { return a.parent < b.parent; });
-
-	for (const priv::KFAHinge &hinge : kfa.hinge) {
-		Log::debug("id: %i, parent: %i", hinge.id, hinge.parent);
-	}
-
-	int n = 0;
-	for (voxel::RawVolume *v : volumes) {
-		const priv::KFAHinge &hinge = kfa.hinge[n];
-		const glm::vec3 pivot(hinge.p[0].x, hinge.p[0].y, hinge.p[0].z);
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setPivot(pivot);
-
-		const uint32_t fps = 20; // TODO VOXELFORMAT: fps unknown?
-		const uint32_t div = 1000 / fps;
-		for (const priv::KFASeqTyp &seq : kfa.seq) {
-			scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(seq.time / div);
-			if (keyFrameIdx == InvalidKeyFrame) {
-				Log::error("Failed to load keyframe %i", seq.time);
-				return false;
-			}
-			scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
-			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-			// TODO: VOXELFORMAT: implement keyframe loading
-			(void)transform;
-#if 0
-			// rotation
-			if (kfa.hinge[n].type == 0) {
-				const glm::vec3 axis(hinge.v[0].x, hinge.v[0].y, hinge.v[0].z);
-				const float angle = hinge.vmin * glm::two_pi<float>() / 65536.0f;
-				const glm::quat rotation = glm::angleAxis(angle, axis);
-				transform.setLocalOrientation(rotation);
-			}
-#endif
+	// First, add all root hinges (parent=-1)
+	for (uint32_t i = 0; i < kfa.hinge.size(); ++i) {
+		if (kfa.hinge[i].parent < 0) {
+			hingeSort.push_back(i);
+			processed[i] = true;
 		}
-		node.setVolume(v, true);
-		node.setName(core::string::extractFilename(filename));
-		node.setPalette(palette);
-		// TODO: VOXELFORMAT: proper parenting
-		int parent = 0;
-		if (sceneGraph.emplace(core::move(node), parent) == InvalidNodeId) {
-			Log::error("Failed to add node to scene graph");
+	}
+
+	// Then iteratively add hinges whose parents have been processed
+	bool addedAny = true;
+	while (addedAny) {
+		addedAny = false;
+		for (uint32_t i = 0; i < kfa.hinge.size(); ++i) {
+			if (processed[i]) {
+				continue;
+			}
+			const int32_t parentIdx = kfa.hinge[i].parent;
+			if (parentIdx >= 0 && parentIdx < (int32_t)kfa.hinge.size() && processed[parentIdx]) {
+				// Parent has been processed, so we can process this hinge
+				hingeSort.push_back(i);
+				processed[i] = true;
+				addedAny = true;
+			}
+		}
+	}
+
+	// Add any remaining hinges that couldn't be sorted (broken parent references)
+	for (uint32_t i = 0; i < kfa.hinge.size(); ++i) {
+		if (!processed[i]) {
+			Log::warn("Hinge %d has invalid parent reference, adding to end", i);
+			hingeSort.push_back(i);
+		}
+	}
+
+	// Map to track node IDs for parent-child relationships
+	// This maps hinge ID (not index) to node ID
+	core::Buffer<int> nodeIdsByHingeId(kfa.hinge.size(), InvalidNodeId);
+
+	// Process ALL hinges in sorted order to ensure parents are created before children
+	// Create nodes directly in the scene graph, handling parent relationships properly
+	// In slab6, some hinges may not have corresponding volumes - create transform-only nodes for those
+	uint32_t volumeIdx = 0;
+	for (size_t sortIdx = 0; sortIdx < hingeSort.size(); ++sortIdx) {
+		const uint32_t hingeIdx = hingeSort[sortIdx];
+		const priv::KFAHinge &hinge = kfa.hinge[hingeIdx];
+
+		// Use available volume if we have one, otherwise create a transform-only node
+		voxel::RawVolume *v = nullptr;
+		if (volumeIdx < volumes.size()) {
+			v = volumes[volumeIdx];
+			volumeIdx++; // Only increment when we actually use a volume
+		}
+
+		// Create pivot from hinge data - for root nodes, p[0] contains the position
+		glm::vec3 pivot;
+		if (hinge.parent < 0) {
+			// For root nodes, slab6 stores the negative position in p[0]
+			pivot.x = -hinge.p[0].x;
+			pivot.y = -hinge.p[0].z; // swap y and z here
+			pivot.z = -hinge.p[0].y;
+		} else {
+			pivot.x = hinge.p[0].x;
+			pivot.y = hinge.p[0].z; // swap y and z here
+			pivot.z = hinge.p[0].y;
+		}
+
+		scenegraph::SceneGraphNode node(v != nullptr ? scenegraph::SceneGraphNodeType::Model
+													 : scenegraph::SceneGraphNodeType::Group);
+		node.setPivot(pivot);
+		core::String name;
+		const core::String &basename = core::string::extractFilename(filename);
+		if (v != nullptr) {
+			node.setVolume(v, true);
+			node.setPalette(palette);
+			name = core::String::format("%s_hinge_%d", basename.c_str(), hinge.id);
+		} else {
+			name = core::String::format("%s_hinge_%d_transform", basename.c_str(), hinge.id);
+		}
+		node.setName(name);
+
+		// Add keyframes based on sequence data
+		// TODO: fix key frame idx
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		scenegraph::SceneGraphTransform transform;
+
+#if 0
+		if (v != nullptr) {
+			// Get the volume's region and calculate offset from original volume
+			const voxel::Region &volumeRegion = v->region();
+			const voxel::Region &originalRegion = volume->region();
+
+			// Calculate translation offset like slab6 does in spr[].p
+			// In slab6: spr[numspr].p.x = x0-kv->xpiv; (where x0 is the min bound of the split volume)
+			// Calculate the offset of this volume from the original volume's origin
+			// Volume regions are already in vengi coordinate system, so no axis swap needed
+			const glm::vec3 translation = volumeRegion.getLowerCornerf() - originalRegion.getLowerCornerf();
+
+			// Apply the translation offset
+			transform.setLocalTranslation(translation);
+			v->region().shift(-translation);
+		}
+#endif
+		// Set default rotation based on sequence data
+		if (!kfa.seq.empty() && !kfa.frmval.empty()) {
+			if (hinge.type == 0) { // rotation
+				// Try to use the first valid frame for default pose
+				for (const priv::KFASeqTyp &seq : kfa.seq) {
+					int32_t actualFrame = seq.frame;
+					if (actualFrame < 0) {
+						actualFrame = ~actualFrame;
+					}
+					if (actualFrame >= 0 && actualFrame < (int32_t)kfa.frmval.size() &&
+						hingeIdx < kfa.frmval[actualFrame].size()) {
+						const glm::vec3 axis(hinge.v[0].x, hinge.v[0].z, hinge.v[0].y); // Convert slab6 coord to vengi
+						const float frameValue = kfa.frmval[actualFrame][hingeIdx];
+						const float angle = frameValue * glm::two_pi<float>();
+						if (glm::length(axis) > 0.001f) {
+							const glm::quat rotation = glm::angleAxis(angle, glm::normalize(axis));
+							transform.setLocalOrientation(rotation);
+						}
+						break; // Use first valid frame as default pose
+					}
+				}
+			} else {
+				Log::warn("Unhandled hinge type: %i", hinge.type);
+			}
+		}
+
+		// Set the transform on the node
+		node.setTransform(keyFrameIdx, transform);
+
+		// Determine parent node ID
+		int parentNodeId = 0; // Default to root
+		if (hinge.parent >= 0 && hinge.parent < (int32_t)nodeIdsByHingeId.size()) {
+			parentNodeId = nodeIdsByHingeId[hinge.parent];
+			if (parentNodeId == InvalidNodeId) {
+				// Parent hasn't been created yet (shouldn't happen with proper sorting), use root
+				Log::warn("Parent node not found for hinge %d (parent %d), using root", hinge.id, hinge.parent);
+				parentNodeId = 0;
+			}
+		}
+
+		// Add node to scene graph directly
+		int nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
+		if (nodeId == InvalidNodeId) {
+			Log::error("Failed to add node for hinge %d to scene graph", hinge.id);
 			return false;
 		}
-		++n;
-	}
 
+		// Store node ID by hinge ID for parent-child relationships
+		if (hinge.id >= 0 && hinge.id < (int32_t)nodeIdsByHingeId.size()) {
+			nodeIdsByHingeId[hinge.id] = nodeId;
+		}
+	}
 	return true;
 }
 
