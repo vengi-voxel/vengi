@@ -6,6 +6,7 @@
 #pragma once
 
 #include "scenegraph/SceneGraph.h"
+#include <functional>
 
 namespace scenegraph {
 
@@ -19,9 +20,9 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 /**
  * @brief this doesn't copy but transfer the volume ownership
  */
-int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent);
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const std::function<void(int)> &onNodeAdded = {});
 
-int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent);
+int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const std::function<void(int)> &onNodeAdded = {});
 
 core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
 

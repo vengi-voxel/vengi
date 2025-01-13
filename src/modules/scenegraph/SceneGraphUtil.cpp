@@ -119,7 +119,7 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 	return nodeId;
 }
 
-int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent) {
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, const std::function<void(int)> &onNodeAdded) {
 	SceneGraphNode newNode(node.type(), node.uuid());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -127,10 +127,14 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 		newNode.setVolume(node.volume(), true);
 		node.releaseOwnership();
 	}
-	return addToGraph(sceneGraph, core::move(newNode), parent);
+	int newNodeId = addToGraph(sceneGraph, core::move(newNode), parent);
+	if (onNodeAdded && newNodeId != InvalidNodeId) {
+		onNodeAdded(newNodeId);
+	}
+	return newNodeId;
 }
 
-static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent) {
+static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent, const std::function<void(int)> &onNodeAdded) {
 	const int newNodeId = moveNodeToSceneGraph(target, sourceNode, parent);
 	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
@@ -141,18 +145,18 @@ static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, Sce
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId);
+		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId, onNodeAdded);
 	}
 
 	return nodesAdded;
 }
 
-int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent) {
+int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const std::function<void(int)> &onNodeAdded) {
 	const SceneGraphNode &sourceRoot = source.root();
 	int nodesAdded = 0;
 	target.node(parent).addProperties(sourceRoot.properties());
 	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent);
+		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent, onNodeAdded);
 	}
 	return nodesAdded;
 }

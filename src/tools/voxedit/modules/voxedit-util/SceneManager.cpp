@@ -408,14 +408,10 @@ bool SceneManager::import(const core::String& file) {
 
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
-	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
-	bool state = false;
-	for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
-		scenegraph::SceneGraphNode &node = *iter;
-		state |= moveNodeToSceneGraph(node, newNodeId) != InvalidNodeId;
-	}
-
-	return state;
+	int importGroupNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
+	return scenegraph::addSceneGraphNodes(_sceneGraph, newSceneGraph, importGroupNodeId, [this] (int nodeId) {
+		onNewNodeAdded(nodeId, false);
+	}) > 0;
 }
 
 bool SceneManager::importDirectory(const core::String& directory, const io::FormatDescription *format, int depth) {
@@ -449,10 +445,9 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
 			mergeIfNeeded(newSceneGraph);
-			for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
-				scenegraph::SceneGraphNode &node = *iter;
-				state |= moveNodeToSceneGraph(node, importGroupNodeId) != InvalidNodeId;
-			}
+			state |= scenegraph::addSceneGraphNodes(_sceneGraph, newSceneGraph, importGroupNodeId, [this] (int nodeId) {
+				onNewNodeAdded(nodeId, false);
+			}) > 0;
 		}
 	}
 	return state;
