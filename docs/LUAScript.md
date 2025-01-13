@@ -348,6 +348,8 @@ They are available as e.g. `g_shape.line([...])`, `g_shape.ellipse([...])` and s
 
 * `setMaxs(maxs)`: The upper boundary of the region - given as `ivec3` (atm only available for palettes created with `new`).
 
+* `isOnBorder(pos)`: Checks whether the given `ivec3` is located on the border of the region.
+
 * `x()`: The lower x boundary of the region.
 
 * `y()`: The lower y boundary of the region.
