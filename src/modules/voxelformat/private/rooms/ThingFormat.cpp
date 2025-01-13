@@ -78,7 +78,7 @@ bool ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &n
 	if (mediaPlane) {
 		scenegraph::SceneGraphNode mediaNode(scenegraph::SceneGraphNodeType::Model);
 		mediaNode.setVolume(mediaPlane, true);
-		mediaNode.setPivot(glm::vec3{0.5f});
+		mediaNode.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
 		mediaNode.setPalette(palette);
 		mediaNode.setProperty("mediaName", nodeSpec.mediaName);
 		mediaNode.setColor(nodeSpec.color);
@@ -117,7 +117,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		scenegraph::SceneGraphTransform transform =
 			toTransform(node.region(), nodeSpec.localPos, nodeSpec.localRot, nodeSpec.localSize, nodeSpec.scale);
 		node.setTransform(keyFrameIdx, transform);
-		node.setPivot(glm::vec3{0.5f});
+		node.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
 		node.setColor(nodeSpec.color);
 		node.setName(nodeSpec.name);
 		if (!nodeSpec.thingLibraryId.empty()) {
