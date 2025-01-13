@@ -49,7 +49,7 @@ static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, 
 }
 
 bool ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &nodeSpec,
-							scenegraph::SceneGraph &sceneGraph) {
+							scenegraph::SceneGraph &sceneGraph, int parent) {
 	if (nodeSpec.mediaName.empty()) {
 		Log::debug("No media name found");
 		return false;
@@ -87,8 +87,8 @@ bool ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &n
 		const scenegraph::SceneGraphTransform &transform =
 			toTransform(mediaNode.region(), mediaCanvas.localPos, mediaCanvas.localRot, mediaCanvas.localScale, 1.0f);
 		mediaNode.setTransform(keyFrameIdx, transform);
-		Log::debug("ThingFormat: Import media plane: %s", nodeSpec.mediaName.c_str());
-		return sceneGraph.emplace(core::move(mediaNode)) != InvalidNodeId;
+		Log::debug("ThingFormat: Import media plane: %s with parent %i", nodeSpec.mediaName.c_str(), parent);
+		return sceneGraph.emplace(core::move(mediaNode), parent) != InvalidNodeId;
 	}
 	Log::error("ThingFormat: Failed to import media plane: %s", nodeSpec.mediaName.c_str());
 	return false;
@@ -131,12 +131,13 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			palette.setColor(i, rgba);
 		}
 	}
-	addMediaImage(archive, nodeSpec, voxSceneGraph);
+	addMediaImage(archive, nodeSpec, voxSceneGraph, parent);
 	const core::DynamicArray<int> &nodes = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
 	if (nodes.empty()) {
 		Log::error("ThingFormat: Failed to copy the scene graph from node %s", nodeSpec.modelName.c_str());
 		return false;
 	}
+	Log::debug("Load %i children for %s", (int)nodeSpec.children.size(), nodeSpec.modelName.c_str());
 	for (const NodeSpec &child : nodeSpec.children) {
 		if (!loadNode(archive, child, sceneGraph, ctx, nodes[0])) {
 			return false;
