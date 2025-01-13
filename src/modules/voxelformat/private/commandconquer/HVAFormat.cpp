@@ -53,6 +53,7 @@ bool HVAFormat::readHVAFrames(io::SeekableReadStream &stream, const vxl::VXLMode
 			for (uint32_t j = 0; j < mdl.header.layerCount; ++j) {
 				Log::debug(" - found: %s", mdl.layerHeaders[j].name);
 			}
+			file.header.layerIds[i] = i;
 		}
 	}
 
@@ -90,8 +91,12 @@ bool HVAFormat::loadHVA(const core::String &filename, const io::ArchivePtr &arch
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < file.header.numFrames; ++keyFrameIdx) {
 		const vxl::HVAFrames &sectionMatrices = file.frames[keyFrameIdx];
 		for (uint32_t vxlNodeId = 0; vxlNodeId < file.header.numLayers; ++vxlNodeId) {
-			const core::String &name = file.header.nodeNames[vxlNodeId];
+			core::String name = file.header.nodeNames[vxlNodeId];
 			scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(name);
+			if (node == nullptr) {
+				name = mdl.layerHeaders[vxlNodeId].name;
+				node = sceneGraph.findNodeByName(name);
+			}
 			if (node == nullptr) {
 				Log::warn("Can't find node with name '%s' for vxl node %u", name.c_str(), vxlNodeId);
 				continue;
