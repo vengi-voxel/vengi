@@ -5,6 +5,7 @@
 #include "VXLShared.h"
 #include "core/Log.h"
 #include "scenegraph/CoordinateSystemUtil.h"
+#include <glm/ext/matrix_transform.hpp>
 
 namespace voxelformat {
 
@@ -61,6 +62,7 @@ glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &foote
 	glm::vec4 &translation = vengiMatrix[3];
 	// the hva matrices have to be scaled
 	const glm::vec3 sectionScale = footer.calcScale();
+	vengiMatrix = glm::scale(vengiMatrix, sectionScale);
 	translation.x *= footer.scale * sectionScale.x;
 	translation.y *= footer.scale * sectionScale.z;
 	translation.z *= footer.scale * sectionScale.y;
