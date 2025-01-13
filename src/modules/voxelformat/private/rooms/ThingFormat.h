@@ -37,7 +37,7 @@ namespace voxelformat {
 class ThingFormat : public Format {
 private:
 	bool loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpec) const;
-	void addMediaImage(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &voxSceneGraph);
+	bool addMediaImage(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &sceneGraph);
 	bool loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &sceneGraph,
 				  const LoadContext &ctx, int parent = 0);
 
