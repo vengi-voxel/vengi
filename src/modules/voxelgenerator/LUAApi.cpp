@@ -1860,6 +1860,7 @@ ScriptState LUAApi::update(double nowSeconds) {
 void LUAApi::shutdown() {
 	lua_gc(_lua, LUA_GCCOLLECT, 0);
 	_noise.shutdown();
+	_lua.resetState();
 }
 
 bool LUAApi::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
