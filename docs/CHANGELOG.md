@@ -26,6 +26,7 @@ General:
    - Added new cvar `voxformat_imageheightmapminheight` to control the minimum size during a heightmap import
    - Fixed handling of `gltf` embedded images
    - Fixed `png` import palette handling
+   - Fixed issues with `thing` format
 
 VoxConvert:
 

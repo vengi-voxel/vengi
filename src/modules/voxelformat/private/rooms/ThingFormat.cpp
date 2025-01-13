@@ -39,7 +39,7 @@ static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, 
 	// TODO: VOXELFORMAT: positioning is wrong
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalOrientation(glm::quat(glm::radians(localRot)));
-	transform.setLocalTranslation(localPos);
+	transform.setLocalTranslation({-localPos.x, localPos.y, localPos.z});
 	if (!glm::epsilonEqual(scale, 1.0f, 0.00001f) ) {
 		transform.setLocalScale({scale, scale, scale});
 	} else if (localSize.x != 0.0f && localSize.y != 0.0f && localSize.z != 0.0f) {
