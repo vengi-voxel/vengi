@@ -66,7 +66,9 @@ end
 function module.countEmptyAround(volume, x, y, z, size)
 	local adjacent = 0
 	for sx = -size, size, 1 do
-		coroutine.yield()
+		if (size > 2) then
+			coroutine.yield()
+		end
 		for sy = -size, size, 1 do
 			for sz = -size, size, 1 do
 				if (sx ~= 0 or sy ~= 0 or sz ~= 0) then
@@ -85,7 +87,9 @@ end
 function module.countEmptyAroundOnY(volume, x, y, z, size)
 	local adjacent = 0
 	for sx = -size, size, 1 do
-		coroutine.yield()
+		if (size > 2) then
+			coroutine.yield()
+		end
 		for sz = -size, size, 1 do
 			if (sx ~= 0 or sz ~= 0) then
 				local color = volume:voxel(x + sx, y, z + sz)
