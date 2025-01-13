@@ -207,8 +207,9 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const glm::vec3 mins = node.pivot() * glm::vec3(-size);
 	const vxl::VXLMatrix &vxlMatrix = vxl::convertVXLWrite(transform.localMatrix());
 
-	// TODO: VOXELFORMAT: always 0.0833333358f?
-	wrapBool(stream.writeFloat(vxl::Scale /*transform.localScale()*/))
+	// this is always the same and NOT the transform scale
+	// the transform scale is calculated by the bounding box when loading the model
+	wrapBool(stream.writeFloat(vxl::Scale))
 
 	for (int j = 0; j < 12; ++j) {
 		const int col = j % 4;
@@ -217,6 +218,10 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(stream.writeFloat(val))
 	}
 
+	// TODO: VOXELFORMAT: apply the section scale to get the correct bounds here
+	//                    get the first frame and extract the local scale from the transform
+	//                    and apply it to the bounds given by the region to get the correct values
+	//                    maybe also the translation must be taken into account here
 	// swap y and z here
 	wrapBool(stream.writeFloat(mins.x))
 	wrapBool(stream.writeFloat(mins.z))
