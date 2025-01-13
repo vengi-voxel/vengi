@@ -22,6 +22,16 @@ namespace voxelformat {
  *
  * @todo some thing files contain a icon.png (128x128) thumbnail, which could be used for the thumbnailer
  *
+ * https://medium.com/@btco_code/programming-in-rooms-xyz-part-1-cb498b2b4301
+ *
+ * +Z points to the left wall, +X points to the right wall.
+ * north is towards +Z
+ * east is towards +X
+ * south is towards -Z
+ * west is towards -X
+ * up is towards +Y
+ * down is towards -Y
+ *
  * @ingroup Formats
  */
 class ThingFormat : public Format {

@@ -34,12 +34,14 @@ bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpe
 }
 
 static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, const glm::vec3 &localPos,
-												   const glm::vec3 &localRot, const glm::vec3 &localSize) {
+												   const glm::vec3 &localRot, const glm::vec3 &localSize, float scale) {
 	// TODO: VOXELFORMAT: positioning is wrong
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalOrientation(glm::quat(glm::radians(localRot)));
 	transform.setLocalTranslation(localPos);
-	if (localSize.x != 0.0f && localSize.y != 0.0f && localSize.z != 0.0f) {
+	if (!glm::epsilonEqual(scale, 1.0f, 0.00001f) ) {
+		transform.setLocalScale({scale, scale, scale});
+	} else if (localSize.x != 0.0f && localSize.y != 0.0f && localSize.z != 0.0f) {
 		const glm::vec3 fullSize(region.getDimensionsInVoxels());
 		transform.setLocalScale(localSize / fullSize);
 	}
@@ -82,7 +84,7 @@ void ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &n
 		mediaNode.setName(nodeSpec.mediaName);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		const scenegraph::SceneGraphTransform &transform =
-			toTransform(mediaNode.region(), mediaCanvas.localPos, mediaCanvas.localRot, mediaCanvas.localScale);
+			toTransform(mediaNode.region(), mediaCanvas.localPos, mediaCanvas.localRot, mediaCanvas.localScale, 1.0f);
 		mediaNode.setTransform(keyFrameIdx, transform);
 		voxSceneGraph.emplace(core::move(mediaNode));
 	} else {
@@ -109,7 +111,8 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		}
 		scenegraph::SceneGraphNode &node = voxSceneGraph.node(e->first);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		scenegraph::SceneGraphTransform transform = toTransform(node.region(), nodeSpec.localPos, nodeSpec.localRot, nodeSpec.localSize);
+		scenegraph::SceneGraphTransform transform =
+			toTransform(node.region(), nodeSpec.localPos, nodeSpec.localRot, nodeSpec.localSize, nodeSpec.scale);
 		node.setTransform(keyFrameIdx, transform);
 		node.setPivot(glm::vec3{0.5f});
 		node.setColor(nodeSpec.color);

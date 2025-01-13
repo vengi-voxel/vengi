@@ -46,6 +46,7 @@ struct NodeSpec {
 	glm::vec3 localPos{0.0f};
 	glm::vec3 localRot{0.0f};
 	glm::vec3 localSize{0.0f};
+	float scale = 1.0f;
 	core::RGBA color{0, 0, 0, 255};
 	core::DynamicArray<NodeSpec> children;
 	AnimSpec animSpec;

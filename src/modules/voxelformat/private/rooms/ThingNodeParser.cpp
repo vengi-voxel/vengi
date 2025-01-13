@@ -202,6 +202,8 @@ bool ThingNodeParser::parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const 
 			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localRot), " ,\t");
 		} else if (token == "localSize") {
 			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localSize), " ,\t");
+		} else if (token == "scale") {
+			nodeSpec.scale = core::string::toFloat(tok.next());
 		} else {
 			Log::debug("ThingFormat: Ignoring token: '%s'", token.c_str());
 		}
