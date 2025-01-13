@@ -58,6 +58,7 @@ private:
 	// used when e.g. changing the directory
 	bool _needsSorting = false;
 	bool _scrollToSelection = false;
+	bool _acceptInput = false;
 	TimedString _scrollToText;
 
 	io::FilesystemEntry _newFolderName;
@@ -114,9 +115,10 @@ public:
 	* @param entityPath Output buffer for the full path of the selected entity
 	* @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
 	* @return @c false if no user input was made yet and the dialog should still run
+	* @note If you want to close the dialog, set @c showFileDialog to @c false
 	*/
 	bool showFileDialog(video::FileDialogOptions &fileDialogOptions, core::String &entityPath, video::OpenFileMode type,
-						const io::FormatDescription **formatDesc = nullptr);
+						const io::FormatDescription **formatDesc, bool &showFileDialog);
 };
 
 }

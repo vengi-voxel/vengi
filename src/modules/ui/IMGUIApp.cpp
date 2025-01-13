@@ -722,7 +722,7 @@ app::AppState IMGUIApp::onRunning() {
 
 		core::String buf;
 		const io::FormatDescription *formatDesc = nullptr;
-		if (_showFileDialog && _fileDialog.showFileDialog(_fileDialogOptions, buf, _fileDialogMode, &formatDesc)) {
+		if (_fileDialog.showFileDialog(_fileDialogOptions, buf, _fileDialogMode, &formatDesc, _showFileDialog)) {
 			if (buf[0] != '\0') {
 				_fileDialogCallback(buf, formatDesc);
 			}

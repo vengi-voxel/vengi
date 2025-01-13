@@ -761,7 +761,9 @@ void FileDialog::onTextInput(void *windowHandle, const core::String &text) {
 	if (text.empty()) {
 		return;
 	}
-	int idx = 0;
+	if (!_acceptInput) {
+		return;
+	}
 
 	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 	if (!_scrollToText.isValid(timeProvider->tickNow())) {
@@ -770,6 +772,8 @@ void FileDialog::onTextInput(void *windowHandle, const core::String &text) {
 	} else {
 		_scrollToText.value().append(text);
 	}
+
+	int idx = 0;
 	for (const auto &entry : _filteredEntities) {
 		if (core::string::startsWith(entry->name, _scrollToText.value())) {
 			_selectedEntry = *entry;
@@ -782,18 +786,27 @@ void FileDialog::onTextInput(void *windowHandle, const core::String &text) {
 }
 
 bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type,
-								const io::FormatDescription **formatDesc) {
+								const io::FormatDescription **formatDesc, bool &showFileDialog) {
+	_acceptInput = false;
+	if (!showFileDialog) {
+		return false;
+	}
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	const float itemHeight = (ImGui::GetFontSize() + ImGui::GetStyle().ItemSpacing.y);
 	ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
 		ImGui::OpenPopup(title);
+		Log::error("Opened popup %s", title);
 	}
 
 	if (ImGui::BeginPopupModal(title)) {
+		_acceptInput = ImGui::GetTopMostPopupModal() == ImGui::GetCurrentWindow();
 		if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			showFileDialog = false;
+			return false;
 		}
 		currentPathPanel(type);
 		quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
