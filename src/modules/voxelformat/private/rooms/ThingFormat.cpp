@@ -20,6 +20,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelutil/ImageUtils.h"
+#include <glm/gtc/epsilon.hpp>
 
 namespace voxelformat {
 
