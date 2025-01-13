@@ -132,15 +132,17 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			palette.setColor(i, rgba);
 		}
 	}
-	addMediaImage(archive, nodeSpec, voxSceneGraph, parent);
-	const core::DynamicArray<int> &nodes = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
-	if (nodes.empty()) {
+	const core::DynamicArray<int> &nodeIds = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
+	voxSceneGraph.clear();
+	if (nodeIds.empty()) {
 		Log::error("ThingFormat: Failed to copy the scene graph from node %s", nodeSpec.modelName.c_str());
 		return false;
 	}
+	const int newParent = nodeIds.front();
+	addMediaImage(archive, nodeSpec, sceneGraph, newParent);
 	Log::debug("Load %i children for %s", (int)nodeSpec.children.size(), nodeSpec.modelName.c_str());
 	for (const NodeSpec &child : nodeSpec.children) {
-		if (!loadNode(archive, child, sceneGraph, ctx, nodes[0])) {
+		if (!loadNode(archive, child, sceneGraph, ctx, newParent)) {
 			return false;
 		}
 	}
