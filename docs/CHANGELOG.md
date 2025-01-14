@@ -8,7 +8,7 @@ See [the documentation](https://vengi-voxel.github.io/vengi/) for further detail
 
 Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
-## 0.0.35 (2024-XX-XX)
+## 0.0.35 (2025-XX-XX)
 
 General:
 
@@ -28,6 +28,7 @@ General:
    - Fixed `png` import palette handling
    - Fixed issues with `thing` format
    - Fixed issues with `vxl` format
+   - Added support for loading quake `map` files (but this is still work-in-progress)
    - Added new blocks to `sment` StarMade palette
    - Added new lua script `flatten`
    - Fixed issue with auto selecting files in the file dialog if the options popup is visible
