@@ -793,7 +793,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		return false;
 	}
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
-	const float itemHeight = (ImGui::GetFontSize() + ImGui::GetStyle().ItemSpacing.y);
+	const float itemHeight = ImGui::GetTextLineHeightWithSpacing();
 	ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {

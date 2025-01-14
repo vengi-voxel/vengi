@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "PopupAbout.h"
 #include "engine-config.h"
+#include "engine-git.h"
 
 namespace ui {
 
@@ -24,16 +25,21 @@ void metricOption() {
 }
 
 void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvailable) {
-	const int popupWidth = 600;
-	const int popupHeight = 400;
+	int popupWidth = 600;
+	int popupHeight = 400;
 	ImGui::SetNextWindowSize(ImVec2(popupWidth, popupHeight), ImGuiCond_Appearing);
 	if (ImGui::BeginPopupModal(POPUP_TITLE_ABOUT)) {
-		if (ImGui::BeginChild("##scrollwindow", ImVec2(popupWidth, popupHeight - 80))) {
+		popupWidth = ImGui::GetWindowWidth();
+		popupHeight = ImGui::GetWindowHeight();
+		const float footerHeight = ImGui::GetStyle().ItemSpacing.y * 3 + ImGui::GetFrameHeightWithSpacing() * 2;
+		if (ImGui::BeginChild("##scrollwindow", ImVec2(popupWidth, popupHeight - footerHeight))) {
 			if (ImGui::BeginTabBar("##abouttabbar")) {
 				const float urlIconWidth = ImGui::GetContentRegionAvail().x;
 
 				if (ImGui::BeginTabItem(app::App::getInstance()->fullAppname().c_str())) {
 					ImGui::Text("%s " PROJECT_VERSION, app::App::getInstance()->appname().c_str());
+					ImGui::BulletText(GIT_COMMIT " - " GIT_COMMIT_DATE);
+
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::TextUnformatted(_("This is a beta release!"));
 					if (isNewVersionAvailable) {
@@ -94,6 +100,8 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 							continue;
 						}
 						core::String fileurl = "file://" + abspath;
+						ImGui::Bullet();
+						ImGui::SameLine();
 						ImGui::URLItem(abspath.c_str(), fileurl.c_str(), urlIconWidth);
 					}
 					ImGui::EndTabItem();
@@ -106,7 +114,6 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 			}
 		}
 		ImGui::EndChild();
-		ImGui::Separator();
 		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
