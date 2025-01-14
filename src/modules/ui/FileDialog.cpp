@@ -17,6 +17,7 @@
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "dearimgui/imgui_internal.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemEntry.h"
 #include "io/FormatDescription.h"
