@@ -195,7 +195,7 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 
 void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
 								   scenegraph::FrameIndex frameIdx) {
-	if (!sceneMode|| !_showAABB->boolVal()) {
+	if (!sceneMode || !_showAABB->boolVal()) {
 		return;
 	}
 	core_trace_scoped(UpdateAABBMesh);

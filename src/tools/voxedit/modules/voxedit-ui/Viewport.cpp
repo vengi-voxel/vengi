@@ -6,6 +6,7 @@
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
 #include "ViewMode.h"
+#include "math/Axis.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "ui/IconsLucide.h"
@@ -189,7 +190,12 @@ void Viewport::renderCursorDetails() const {
 		return;
 	}
 
+	const bool sliceActive = _sceneMgr->isSliceModeActive();
 	const glm::ivec3 &cursorPos = modifier.cursorPosition();
+	if (sliceActive) {
+		ImGui::TooltipText(_("Slice at %s: %i"), math::getCharForAxis(_sliceAxis),
+							cursorPos[math::getIndexForAxis(_sliceAxis)]);
+	}
 	if (cursorDetailsLevel == 1) {
 		ImGui::TooltipText("%i:%i:%i", cursorPos.x, cursorPos.y, cursorPos.z);
 		return;
@@ -236,10 +242,11 @@ void Viewport::renderCursor() {
 bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
+	const int axis = math::getIndexForAxis(_sliceAxis);
 	bool changed = false;
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
 		bool sliceActive = _sceneMgr->isSliceModeActive();
-		const ImVec2 start = ImGui::GetCursorScreenPos();
+		const ImVec2 cursorStart = ImGui::GetCursorScreenPos();
 		if (ImGui::Checkbox("##sliceactive", &sliceActive)) {
 			if (!sliceActive) {
 				_sceneMgr->setSliceRegion(voxel::Region::InvalidRegion);
@@ -247,7 +254,7 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 				const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
 				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
 				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
-				nodeMaxs.y = nodeMins.y;
+				nodeMaxs[axis] = nodeMins[axis];
 				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 			}
 			changed = true;
@@ -257,17 +264,17 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			_viewportUIElementHovered = true;
 		}
 		if (sliceActive) {
-			const ImVec2 end = ImGui::GetCursorScreenPos();
-			const float height = end.y - start.y;
+			const ImVec2 cursorEnd = ImGui::GetCursorScreenPos();
+			const float usedHeight = cursorEnd.y - cursorStart.y;
 			const voxel::Region &sliceRegion = _sceneMgr->sliceRegion();
 			glm::ivec3 mins = sliceRegion.getLowerCorner();
 			const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
-			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y - height}, &mins.y,
+			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y - usedHeight}, &mins[axis],
 								  nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
 				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
 				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
-				nodeMaxs.y = mins.y;
-				nodeMins.y = mins.y;
+				nodeMaxs[axis] = mins[axis];
+				nodeMins[axis] = mins[axis];
 				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 				changed = true;
 			}

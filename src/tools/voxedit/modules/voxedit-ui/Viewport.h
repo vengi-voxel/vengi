@@ -45,6 +45,8 @@ private:
 	bool _transformMementoLocked = false;
 	glm::mat4x4 _transformLocalMatrix{1.0f};
 
+	math::Axis _sliceAxis = math::Axis::Y;
+
 	voxelrender::SceneCameraMode _camMode = voxelrender::SceneCameraMode::Free;
 	image::CaptureTool _captureTool;
 	SceneManagerPtr _sceneMgr;
