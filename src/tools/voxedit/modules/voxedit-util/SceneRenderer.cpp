@@ -187,9 +187,16 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 		}
 		return;
 	}
-	const glm::vec4 colors[] = {core::Color::LightRed(), core::Color::LightGreen(), core::Color::LightBlue()};
+	glm::vec4 color{0.0f};
+	if (axis == math::Axis::X) {
+		color = style::color(style::ColorAxisX);
+	} else if (axis == math::Axis::Y) {
+		color = style::color(style::ColorAxisY);
+	} else if (axis == math::Axis::Z) {
+		color = style::color(style::ColorAxisZ);
+	}
 	updateShapeBuilderForPlane(_shapeBuilder, node.region(), false, cursorPosition, axis,
-							   core::Color::alpha(colors[index], 0.4f));
+							   core::Color::alpha(color, 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 

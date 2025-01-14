@@ -404,6 +404,12 @@ void IMGUIApp::setColorTheme() {
 const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	const int style = _uistyle->intVal();
 	switch (color) {
+	case style::ColorAxisX:
+		return core::Color::LightRed();
+	case style::ColorAxisY:
+		return core::Color::LightGreen();
+	case style::ColorAxisZ:
+		return core::Color::LightBlue();
 	case style::ColorLockedNode:
 		return core::Color::Red();
 	case style::ColorInactiveNode:
