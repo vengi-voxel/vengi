@@ -234,11 +234,12 @@ void Viewport::renderCursor() {
 }
 
 bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
-	auto &sceneGraph = _sceneMgr->sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	bool changed = false;
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
 		bool sliceActive = _sceneMgr->isSliceModeActive();
+		const ImVec2 start = ImGui::GetCursorScreenPos();
 		if (ImGui::Checkbox("##sliceactive", &sliceActive)) {
 			if (!sliceActive) {
 				_sceneMgr->setSliceRegion(voxel::Region::InvalidRegion);
@@ -256,10 +257,12 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			_viewportUIElementHovered = true;
 		}
 		if (sliceActive) {
+			const ImVec2 end = ImGui::GetCursorScreenPos();
+			const float height = end.y - start.y;
 			const voxel::Region &sliceRegion = _sceneMgr->sliceRegion();
 			glm::ivec3 mins = sliceRegion.getLowerCorner();
 			const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
-			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y}, &mins.y,
+			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y - height}, &mins.y,
 								  nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
 				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
 				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
@@ -268,9 +271,9 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 				changed = true;
 			}
-		}
-		if (ImGui::IsItemHovered()) {
-			_viewportUIElementHovered = true;
+			if (ImGui::IsItemHovered()) {
+				_viewportUIElementHovered = true;
+			}
 		}
 	}
 	return changed;
