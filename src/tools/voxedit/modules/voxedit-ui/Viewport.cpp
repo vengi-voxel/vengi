@@ -271,16 +271,16 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
 			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y - usedHeight}, &mins[axis],
 								  nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
-				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
-				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
-				nodeMaxs[axis] = mins[axis];
-				nodeMins[axis] = mins[axis];
-				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 				changed = true;
 			}
 			if (ImGui::IsItemHovered()) {
 				_viewportUIElementHovered = true;
 			}
+			glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
+			glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
+			nodeMaxs[axis] = mins[axis];
+			nodeMins[axis] = mins[axis];
+			_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 		}
 	}
 	return changed;
