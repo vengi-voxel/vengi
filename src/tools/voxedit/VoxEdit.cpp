@@ -508,9 +508,9 @@ app::AppState VoxEdit::onRunning() {
 	}
 
 	_collectionMgr->update(_nowSeconds);
-	const voxedit::Viewport *scene = _mainWindow->hoveredScene();
-	if (scene) {
-		if (scene->isSceneMode()) {
+	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
+	if (viewport) {
+		if (viewport->isSceneMode()) {
 			core::setBindingContext(core::BindingContext::Context1);
 		} else {
 			core::setBindingContext(core::BindingContext::Context2);

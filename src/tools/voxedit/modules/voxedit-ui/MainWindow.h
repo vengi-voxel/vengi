@@ -56,8 +56,8 @@ private:
 	core::VarPtr _popupAbout;
 	core::VarPtr _popupRenameNode;
 
-	core::DynamicArray<Viewport*> _scenes;
-	Viewport* _lastHoveredScene = nullptr;
+	core::DynamicArray<Viewport*> _viewports;
+	Viewport* _lastHoveredViewport = nullptr;
 
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
@@ -104,8 +104,8 @@ private:
 	void addLastOpenedFile(const core::String &file);
 	bool isSceneMode() const;
 
-	void shutdownScenes();
-	bool initScenes();
+	void shutdownViewports();
+	bool initViewports();
 
 	void leftWidget();
 	void mainWidget();
@@ -172,7 +172,7 @@ public:
 	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
 	void update();
 	QuitDisallowReason allowToQuit();
-	Viewport* hoveredScene();
+	Viewport* hoveredViewport();
 	/**
 	 * @brief Checks if any of the viewports is in edit mode
 	 */

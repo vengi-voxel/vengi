@@ -145,7 +145,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 }
 
 MainWindow::~MainWindow() {
-	shutdownScenes();
+	shutdownViewports();
 }
 
 const char *MainWindow::getTip() const {
@@ -182,42 +182,42 @@ void MainWindow::addLastOpenedFile(const core::String &file) {
 	_lastOpenedFiles->setVal(str);
 }
 
-void MainWindow::shutdownScenes() {
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		delete _scenes[i];
+void MainWindow::shutdownViewports() {
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		delete _viewports[i];
 	}
 	_sceneMgr->setActiveCamera(nullptr);
-	_scenes.clear();
-	_lastHoveredScene = nullptr;
+	_viewports.clear();
+	_lastHoveredViewport = nullptr;
 }
 
-bool MainWindow::initScenes() {
-	shutdownScenes();
+bool MainWindow::initViewports() {
+	shutdownViewports();
 
 	if (_viewMode->intVal() == (int)ViewMode::Simple) {
-		_scenes.resize(2);
-		_scenes[0] = new Viewport(_app, _sceneMgr, 0, voxelrender::RenderMode::Scene, false);
-		_scenes[1] = new Viewport(_app, _sceneMgr, 1, voxelrender::RenderMode::Edit, false);
+		_viewports.resize(2);
+		_viewports[0] = new Viewport(_app, _sceneMgr, 0, voxelrender::RenderMode::Scene, false);
+		_viewports[1] = new Viewport(_app, _sceneMgr, 1, voxelrender::RenderMode::Edit, false);
 	} else {
-		_scenes.resize(_numViewports->intVal());
+		_viewports.resize(_numViewports->intVal());
 		bool sceneMode = true;
 		for (int i = 0; i < _numViewports->intVal(); ++i) {
-			_scenes[i] = new Viewport(_app, _sceneMgr, i, sceneMode ? voxelrender::RenderMode::Scene : voxelrender::RenderMode::Edit, true);
+			_viewports[i] = new Viewport(_app, _sceneMgr, i, sceneMode ? voxelrender::RenderMode::Scene : voxelrender::RenderMode::Edit, true);
 			sceneMode = false;
 		}
 	}
 	bool success = true;
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		if (!_scenes[i]->init()) {
-			Log::error("Failed to initialize scene %i", (int)i);
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		if (!_viewports[i]->init()) {
+			Log::error("Failed to initialize viewport %i", (int)i);
 			success = false;
 		}
 	}
-	_lastHoveredScene = _scenes[0];
+	_lastHoveredViewport = _viewports[0];
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	for (int i = 0; i < _scenes.size(); i++) {
-		_scenes[i]->registerUITests(_app->imguiTestEngine(), nullptr);
+	for (int i = 0; i < _viewports.size(); i++) {
+		_viewports[i]->registerUITests(_app->imguiTestEngine(), nullptr);
 	}
 #endif
 
@@ -237,7 +237,7 @@ bool MainWindow::init() {
 	_popupRenameNode = core::Var::getSafe(cfg::VoxEditPopupRenameNode);
 
 	_isNewVersionAvailable = util::isNewVersionAvailable();
-	if (!initScenes()) {
+	if (!initViewports()) {
 		return false;
 	}
 
@@ -287,8 +287,8 @@ bool MainWindow::init() {
 }
 
 void MainWindow::shutdown() {
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		_scenes[i]->shutdown();
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		_viewports[i]->shutdown();
 	}
 #if ENABLE_RENDER_PANEL
 	_renderPanel.shutdown();
@@ -426,14 +426,14 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::mainWidget() {
 	// main
-	Viewport *scene = hoveredScene();
-	if (scene != nullptr) {
-		_lastHoveredScene = scene;
+	Viewport *viewport = hoveredViewport();
+	if (viewport != nullptr) {
+		_lastHoveredViewport = viewport;
 	}
 	command::CommandExecutionListener &listener = _app->commandListener();
 	ImGuizmo::BeginFrame();
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		_scenes[i]->update(&listener);
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		_viewports[i]->update(&listener);
 	}
 #if ENABLE_RENDER_PANEL
 	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
@@ -447,8 +447,8 @@ void MainWindow::mainWidget() {
 }
 
 bool MainWindow::isSceneMode() const {
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		if (_scenes[i]->isSceneMode()) {
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		if (_viewports[i]->isSceneMode()) {
 			return true;
 		}
 	}
@@ -478,7 +478,7 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::rightWidget() {
-	if (const Viewport *viewport = hoveredScene()) {
+	if (const Viewport *viewport = hoveredViewport()) {
 		_lastSceneMode = viewport->isSceneMode();
 	}
 	command::CommandExecutionListener &listener = _app->commandListener();
@@ -488,13 +488,13 @@ void MainWindow::rightWidget() {
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	if (_viewMode->intVal() != (int)ViewMode::Simple) {
 		_mementoPanel.update(TITLE_MEMENTO, listener);
-		if (_lastHoveredScene != nullptr) {
-			_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera(), listener);
+		if (_lastHoveredViewport != nullptr) {
+			_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 		}
 	}
 
 	// bottom
-	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
+	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
 #if ENABLE_RENDER_PANEL
 	_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
 #endif
@@ -971,7 +971,7 @@ void MainWindow::updateViewMode() {
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	if (_viewMode->isDirty() || _numViewports->isDirty()) {
-		if (!initScenes()) {
+		if (!initViewports()) {
 			Log::error("Failed to update scenes");
 		}
 		updateViewMode();
@@ -1068,11 +1068,11 @@ void MainWindow::update() {
 }
 
 bool MainWindow::isAnyEditMode() const {
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		if (!_scenes[i]->isVisible()) {
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		if (!_viewports[i]->isVisible()) {
 			continue;
 		}
-		if (_scenes[i]->isSceneMode()) {
+		if (_viewports[i]->isSceneMode()) {
 			continue;
 		}
 		return true;
@@ -1080,10 +1080,10 @@ bool MainWindow::isAnyEditMode() const {
 	return false;
 }
 
-Viewport *MainWindow::hoveredScene() {
-	for (size_t i = 0; i < _scenes.size(); ++i) {
-		if (_scenes[i]->isHovered()) {
-			return _scenes[i];
+Viewport *MainWindow::hoveredViewport() {
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		if (_viewports[i]->isHovered()) {
+			return _viewports[i];
 		}
 	}
 	return nullptr;
@@ -1091,8 +1091,8 @@ Viewport *MainWindow::hoveredScene() {
 
 bool MainWindow::saveScreenshot(const core::String &file, const core::String &viewportId) {
 	if (viewportId.empty()) {
-		if (_lastHoveredScene != nullptr) {
-			if (!_lastHoveredScene->saveImage(file.c_str())) {
+		if (_lastHoveredViewport != nullptr) {
+			if (!_lastHoveredViewport->saveImage(file.c_str())) {
 				Log::warn("Failed to save screenshot to file '%s'", file.c_str());
 				return false;
 			}
@@ -1101,11 +1101,11 @@ bool MainWindow::saveScreenshot(const core::String &file, const core::String &vi
 		}
 		return false;
 	}
-	for (Viewport *vp : _scenes) {
-		if (vp->id() != viewportId.toInt()) {
+	for (Viewport *viewport : _viewports) {
+		if (viewport->id() != viewportId.toInt()) {
 			continue;
 		}
-		if (!vp->saveImage(file.c_str())) {
+		if (!viewport->saveImage(file.c_str())) {
 			Log::warn("Failed to save screenshot to file '%s'", file.c_str());
 			return false;
 		}
@@ -1116,21 +1116,21 @@ bool MainWindow::saveScreenshot(const core::String &file, const core::String &vi
 }
 
 void MainWindow::resetCamera() {
-	if (Viewport *scene = hoveredScene()) {
-		scene->resetCamera();
+	if (Viewport *viewport = hoveredViewport()) {
+		viewport->resetCamera();
 	} else {
-		for (size_t i = 0; i < _scenes.size(); ++i) {
-			_scenes[i]->resetCamera();
+		for (size_t i = 0; i < _viewports.size(); ++i) {
+			_viewports[i]->resetCamera();
 		}
 	}
 }
 
 void MainWindow::toggleScene() {
-	if (Viewport *scene = hoveredScene()) {
-		scene->toggleScene();
+	if (Viewport *viewport = hoveredViewport()) {
+		viewport->toggleScene();
 	} else {
-		for (size_t i = 0; i < _scenes.size(); ++i) {
-			_scenes[i]->toggleScene();
+		for (size_t i = 0; i < _viewports.size(); ++i) {
+			_viewports[i]->toggleScene();
 		}
 	}
 }
