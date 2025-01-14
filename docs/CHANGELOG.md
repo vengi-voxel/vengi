@@ -27,6 +27,7 @@ General:
    - Fixed handling of `gltf` embedded images
    - Fixed `png` import palette handling
    - Fixed issues with `thing` format
+   - Added new blocks to `sment` StarMade palette
 
 VoxConvert:
 

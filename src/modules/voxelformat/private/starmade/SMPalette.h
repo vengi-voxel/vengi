@@ -14,666 +14,1688 @@ struct BlockColor {
 	core::RGBA color;
 };
 static const BlockColor BLOCKCOLOR[]{
-	{ 6, core::RGBA(49, 50, 49, 255) }, // WEAPON_CONTROLLER_ID
-	{ 16, core::RGBA(53, 56, 56, 255) }, // WEAPON_ID
-	{ 1, core::RGBA(66, 80, 81, 255) }, // CORE_ID
-	{ 65, core::RGBA(62, 62, 61, 255) }, // DEATHSTAR_CORE_ID
-	{ 63, core::RGBA(99, 171, 219, 56) }, // GLASS_ID
-	{ 8, core::RGBA(62, 62, 62, 255) }, // THRUSTER_ID
-	{ 7, core::RGBA(63, 61, 61, 255) }, // DOCK_ID
-	{ 2, core::RGBA(58, 69, 69, 255) }, // POWER_ID
-	{ 3, core::RGBA(92, 84, 73, 255) }, // SHIELD_ID
-	{ 14, core::RGBA(89, 65, 60, 255) }, // EXPLOSIVE_ID
-	{ 15, core::RGBA(133, 79, 73, 255) }, // RADAR_JAMMING_ID
-	{ 22, core::RGBA(77, 107, 137, 255) }, // CLOAKING_ID
-	{ 24, core::RGBA(53, 56, 52, 255) }, // SALVAGE_ID
-	{ 38, core::RGBA(49, 49, 49, 255) }, // MISSILE_DUMB_CONTROLLER_ID
-	{ 32, core::RGBA(63, 60, 59, 255) }, // MISSILE_DUMB_ID
-	{ 46, core::RGBA(49, 50, 50, 255) }, // MISSILE_HEAT_CONTROLLER_ID
-	{ 40, core::RGBA(56, 59, 61, 255) }, // MISSILE_HEAT_ID
-	{ 54, core::RGBA(50, 49, 49, 255) }, // MISSILE_FAFO_CONTROLLER_ID
-	{ 48, core::RGBA(60, 58, 55, 255) }, // MISSILE_FAFO_ID
-	{ 4, core::RGBA(49, 50, 49, 255) }, // SALVAGE_CONTROLLER_ID
-	{ 56, core::RGBA(57, 56, 53, 255) }, // GRAVITY_ID
-	{ 30, core::RGBA(61, 58, 58, 255) }, // REPAIR_ID
-	{ 39, core::RGBA(49, 49, 49, 255) }, // REPAIR_CONTROLLER_ID
-	{ 47, core::RGBA(61, 66, 63, 255) }, // COCKPIT_ID
-	{ 55, core::RGBA(147, 147, 148, 255) }, // LIGHT_ID
-	{ 62, core::RGBA(149, 150, 150, 255) }, // LIGHT_BEACON_ID
-	{ 64, core::RGBA(155, 199, 223, 208) }, // TERRAIN_ICE_ID
-	{ 112, core::RGBA(65, 52, 26, 255) }, // LANDING_ELEMENT
-	{ 113, core::RGBA(45, 46, 46, 255) }, // LIFT_ELEMENT
-	{ 114, core::RGBA(135, 86, 117, 255) }, // RECYCLER_ELEMENT
-	{ 120, core::RGBA(69, 80, 78, 255) }, // STASH_ELEMENT
-	{ 121, core::RGBA(69, 54, 48, 255) }, // AI_ELEMENT
-	{ 122, core::RGBA(28, 27, 27, 255) }, // DOOR_ELEMENT
-	{ 123, core::RGBA(83, 77, 64, 255) }, // BUILD_BLOCK_ID
-	{ 80, core::RGBA(239, 111, 3, 255) }, // TERRAIN_LAVA_ID
-	{ 128, core::RGBA(95, 58, 33, 255) }, // TERRAIN_EXOGEN_ID
-	{ 129, core::RGBA(187, 133, 62, 255) }, // TERRAIN_OCTOGEN_ID
-	{ 130, core::RGBA(95, 58, 33, 255) }, // TERRAIN_QUANTAGEN_ID
-	{ 131, core::RGBA(95, 58, 33, 255) }, // TERRAIN_QUANTANIUM_ID
-	{ 132, core::RGBA(95, 58, 33, 255) }, // TERRAIN_PLEXTANIUM_ID
-	{ 133, core::RGBA(95, 58, 33, 255) }, // TERRAIN_ORANGUTANIUM_ID
-	{ 134, core::RGBA(187, 133, 62, 255) }, // TERRAIN_SUCCUMITE_ID
-	{ 135, core::RGBA(95, 58, 33, 255) }, // TERRAIN_CENOMITE_ID
-	{ 136, core::RGBA(187, 133, 62, 255) }, // TERRAIN_AWESOMITE_ID
-	{ 137, core::RGBA(95, 58, 33, 255) }, // TERRAIN_VAPPECIDE_ID
-	{ 138, core::RGBA(56, 23, 18, 255) }, // TERRAIN_MARS_TOP
-	{ 139, core::RGBA(17, 23, 28, 255) }, // TERRAIN_MARS_ROCK
-	{ 140, core::RGBA(56, 23, 18, 255) }, // TERRAIN_MARS_DIRT
-	{ 141, core::RGBA(17, 23, 28, 255) }, // TERRAIN_MARS_TOP_ROCK
-	{ 72, core::RGBA(95, 58, 33, 255) }, // TERRAIN_EXTRANIUM_ID
-	{ 73, core::RGBA(115, 105, 102, 255) }, // TERRAIN_ROCK_ID
-	{ 74, core::RGBA(187, 133, 62, 255) }, // TERRAIN_SAND_ID
-	{ 82, core::RGBA(95, 58, 33, 255) }, // TERRAIN_EARTH_TOP_DIRT
-	{ 83, core::RGBA(115, 105, 102, 255) }, // TERRAIN_EARTH_TOP_ROCK
-	{ 84, core::RGBA(51, 39, 26, 255) }, // TERRAIN_TREE_TRUNK_ID
-	{ 85, core::RGBA(31, 47, 19, 255) }, // TERRAIN_TREE_LEAF_ID
-	{ 86, core::RGBA(70, 164, 186, 51) }, // TERRAIN_WATER
-	{ 87, core::RGBA(95, 58, 33, 255) }, // TERRAIN_DIRT_ID
-	{ 88, core::RGBA(66, 60, 60, 255) }, // DOCKING_ENHANCER_ID
-	{ 89, core::RGBA(85, 82, 61, 255) }, // TERRAIN_CACTUS_ID
-	{ 90, core::RGBA(33, 26, 48, 255) }, // TERRAIN_PURPLE_ALIEN_TOP
-	{ 91, core::RGBA(33, 26, 48, 255) }, // TERRAIN_PURPLE_ALIEN_ROCK
-	{ 92, core::RGBA(53, 32, 64, 255) }, // TERRAIN_PURPLE_ALIEN_VINE
-	{ 93, core::RGBA(84, 112, 114, 255) }, // TERRAIN_GRASS_SPRITE
-	{ 94, core::RGBA(135, 69, 57, 255) }, // PLAYER_SPAWN_MODULE
-	{ 95, core::RGBA(73, 74, 15, 255) }, // TERRAIN_BROWNWEED_SPRITE
-	{ 96, core::RGBA(186, 90, 56, 255) }, // TERRAIN_MARSTENTACLES_SPRITE
-	{ 97, core::RGBA(54, 65, 95, 255) }, // TERRAIN_ALIENVINE_SPRITE
-	{ 98, core::RGBA(59, 76, 9, 255) }, // TERRAIN_GRASSFLOWERS_SPRITE
-	{ 99, core::RGBA(121, 100, 44, 255) }, // TERRAIN_LONGWEED_SPRITE
-	{ 100, core::RGBA(178, 91, 55, 255) }, // TERRAIN_TALLSHROOM_SPRITE
-	{ 101, core::RGBA(28, 47, 63, 255) }, // TERRAIN_PURSPIRE_SPRITE
-	{ 102, core::RGBA(82, 94, 21, 255) }, // TERRAIN_TALLGRASSFLOWERS_SPRITE
-	{ 103, core::RGBA(118, 96, 36, 255) }, // TERRAIN_MINICACTUS_SPRITE
-	{ 104, core::RGBA(137, 78, 52, 255) }, // TERRAIN_REDSHROOM_SPRITE
-	{ 105, core::RGBA(57, 53, 78, 255) }, // TERRAIN_PURPTACLES_SPRITE
-	{ 106, core::RGBA(130, 117, 19, 255) }, // TERRAIN_TALLFLOWERS_SPRITE
-	{ 107, core::RGBA(107, 95, 79, 255) }, // TERRAIN_ROCK_SPRITE
-	{ 108, core::RGBA(141, 62, 37, 255) }, // TERRAIN_ALIENFLOWERS_SPRITE
-	{ 109, core::RGBA(47, 40, 58, 255) }, // TERRAIN_YHOLE_SPRITE
-	{ 142, core::RGBA(92, 106, 126, 255) }, // TERRAIN_M1L2_ID
-	{ 143, core::RGBA(6, 73, 113, 255) }, // TERRAIN_M1L3_ID
-	{ 144, core::RGBA(119, 127, 130, 255) }, // TERRAIN_M1L4_ID
-	{ 145, core::RGBA(28, 93, 130, 255) }, // TERRAIN_M1L5_ID
-	{ 146, core::RGBA(162, 138, 89, 255) }, // TERRAIN_M2L2_ID
-	{ 147, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M2L3_ID
-	{ 148, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M2L4_ID
-	{ 149, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M2L5_ID
-	{ 150, core::RGBA(147, 104, 74, 255) }, // TERRAIN_M3L2_ID
-	{ 151, core::RGBA(131, 62, 30, 255) }, // TERRAIN_M3L3_ID
-	{ 152, core::RGBA(142, 120, 107, 255) }, // TERRAIN_M3L4_ID
-	{ 153, core::RGBA(135, 73, 45, 255) }, // TERRAIN_M3L5_ID
-	{ 154, core::RGBA(143, 125, 77, 255) }, // TERRAIN_M4L2_ID
-	{ 155, core::RGBA(117, 89, 43, 255) }, // TERRAIN_M4L3_ID
-	{ 156, core::RGBA(140, 133, 106, 255) }, // TERRAIN_M4L4_ID
-	{ 157, core::RGBA(156, 120, 71, 255) }, // TERRAIN_M4L5_ID
-	{ 158, core::RGBA(167, 163, 158, 255) }, // TERRAIN_M5L2_ID
-	{ 159, core::RGBA(102, 102, 102, 255) }, // TERRAIN_M5L3_ID
-	{ 160, core::RGBA(148, 143, 139, 255) }, // TERRAIN_M5L4_ID
-	{ 161, core::RGBA(167, 167, 167, 255) }, // TERRAIN_M5L5_ID
-	{ 162, core::RGBA(106, 97, 119, 255) }, // TERRAIN_M6L2_ID
-	{ 163, core::RGBA(58, 39, 82, 255) }, // TERRAIN_M6L3_ID
-	{ 164, core::RGBA(127, 117, 123, 255) }, // TERRAIN_M6L4_ID
-	{ 165, core::RGBA(54, 39, 79, 255) }, // TERRAIN_M6L5_ID
-	{ 166, core::RGBA(159, 154, 149, 255) }, // TERRAIN_M7L2_ID
-	{ 167, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M7L3_ID
-	{ 168, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M7L4_ID
-	{ 169, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M7L5_ID
-	{ 170, core::RGBA(131, 90, 89, 255) }, // TERRAIN_M8L2_ID
-	{ 171, core::RGBA(98, 36, 30, 255) }, // TERRAIN_M8L3_ID
-	{ 172, core::RGBA(136, 114, 108, 255) }, // TERRAIN_M8L4_ID
-	{ 173, core::RGBA(104, 43, 36, 255) }, // TERRAIN_M8L5_ID
-	{ 174, core::RGBA(145, 113, 154, 255) }, // TERRAIN_M9L2_ID
-	{ 175, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M9L3_ID
-	{ 176, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M9L4_ID
-	{ 177, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M9L5_ID
-	{ 178, core::RGBA(98, 123, 100, 255) }, // TERRAIN_M10L2_ID
-	{ 179, core::RGBA(42, 110, 63, 255) }, // TERRAIN_M10L3_ID
-	{ 180, core::RGBA(122, 131, 117, 255) }, // TERRAIN_M10L4_ID
-	{ 181, core::RGBA(55, 120, 77, 255) }, // TERRAIN_M10L5_ID
-	{ 182, core::RGBA(150, 140, 86, 255) }, // TERRAIN_M11L2_ID
-	{ 183, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M11L3_ID
-	{ 184, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M11L4_ID
-	{ 185, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M11L5_ID
-	{ 186, core::RGBA(115, 148, 119, 255) }, // TERRAIN_M12L2_ID
-	{ 187, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M12L3_ID
-	{ 188, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M12L4_ID
-	{ 189, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M12L5_ID
-	{ 190, core::RGBA(116, 144, 154, 255) }, // TERRAIN_M13L2_ID
-	{ 191, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M13L3_ID
-	{ 192, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M13L4_ID
-	{ 193, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M13L5_ID
-	{ 194, core::RGBA(153, 106, 92, 255) }, // TERRAIN_M14L2_ID
-	{ 195, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M14L3_ID
-	{ 196, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M14L4_ID
-	{ 197, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M14L5_ID
-	{ 198, core::RGBA(125, 112, 120, 255) }, // TERRAIN_M15L2_ID
-	{ 199, core::RGBA(239, 111, 3, 255) }, // TERRAIN_M15L3_ID
-	{ 200, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M15L4_ID
-	{ 201, core::RGBA(70, 164, 186, 51) }, // TERRAIN_M15L5_ID
-	{ 202, core::RGBA(96, 95, 99, 255) }, // TERRAIN_M16L2_ID
-	{ 203, core::RGBA(41, 41, 41, 255) }, // TERRAIN_M16L3_ID
-	{ 204, core::RGBA(118, 112, 108, 255) }, // TERRAIN_M16L4_ID
-	{ 205, core::RGBA(27, 27, 27, 255) }, // TERRAIN_M16L5_ID
-	{ 206, core::RGBA(187, 133, 62, 255) }, // TERRAIN_NEGACIDE_ID
-	{ 207, core::RGBA(95, 58, 33, 255) }, // TERRAIN_QUANTACIDE_ID
-	{ 208, core::RGBA(187, 133, 62, 255) }, // TERRAIN_NEGAGATE_ID
-	{ 209, core::RGBA(187, 133, 62, 255) }, // TERRAIN_METATE_ID
-	{ 210, core::RGBA(187, 133, 62, 255) }, // TERRAIN_INSANIUM_ID
-	{ 211, core::RGBA(60, 59, 54, 255) }, // FACTORY_INPUT_ID
-	{ 212, core::RGBA(52, 51, 46, 255) }, // FACTORY_INPUT_ENH_ID
-	{ 213, core::RGBA(54, 58, 59, 255) }, // FACTORY_POWER_CELL_ID
-	{ 214, core::RGBA(52, 51, 46, 255) }, // FACTORY_POWER_CELL_ENH_ID
-	{ 215, core::RGBA(54, 58, 59, 255) }, // FACTORY_POWER_COIL_ID
-	{ 216, core::RGBA(52, 51, 46, 255) }, // FACTORY_POWER_COIL_ENH_ID
-	{ 217, core::RGBA(60, 57, 53, 255) }, // FACTORY_POWER_BLOCK_ID
-	{ 218, core::RGBA(52, 51, 46, 255) }, // FACTORY_POWER_BLOCK_ENH_ID
-	{ 219, core::RGBA(35, 35, 34, 166) }, // POWER_CELL_ID
-	{ 220, core::RGBA(35, 35, 34, 166) }, // POWER_COIL_ID
-	{ 222, core::RGBA(54, 58, 59, 255) }, // FACTORY_PARTICLE_PRESS
-	{ 223, core::RGBA(49, 77, 54, 255) }, // MAN_SD1000_CAP
-	{ 224, core::RGBA(8, 63, 28, 154) }, // MAN_SD2000_CAP
-	{ 225, core::RGBA(6, 50, 16, 165) }, // MAN_SD3000_CAP
-	{ 226, core::RGBA(74, 50, 50, 255) }, // MAN_SD1000_FLUX
-	{ 227, core::RGBA(66, 11, 9, 154) }, // MAN_SD2000_FLUX
-	{ 228, core::RGBA(50, 17, 7, 165) }, // MAN_SD3000_FLUX
-	{ 229, core::RGBA(50, 69, 77, 255) }, // MAN_SD1000_MICRO
-	{ 230, core::RGBA(6, 49, 66, 154) }, // MAN_SD2000_MICRO
-	{ 231, core::RGBA(6, 38, 50, 165) }, // MAN_SD3000_MICRO
-	{ 232, core::RGBA(73, 73, 73, 255) }, // MAN_SD1000_DELTA
-	{ 233, core::RGBA(60, 60, 60, 154) }, // MAN_SD2000_DELTA
-	{ 234, core::RGBA(220, 210, 205, 155) }, // MAN_SD3000_DELTA
-	{ 235, core::RGBA(77, 75, 49, 255) }, // MAN_SD1000_MEM
-	{ 236, core::RGBA(50, 57, 3, 154) }, // MAN_SD2000_MEM
-	{ 237, core::RGBA(63, 63, 7, 128) }, // MAN_SD3000_MEM
-	{ 238, core::RGBA(144, 91, 37, 255) }, // MAN_SDPROTON
-	{ 239, core::RGBA(126, 63, 55, 255) }, // MAN_RED
-	{ 240, core::RGBA(110, 87, 128, 255) }, // MAN_PURP
-	{ 241, core::RGBA(97, 72, 47, 255) }, // MAN_BROWN
-	{ 242, core::RGBA(90, 112, 69, 255) }, // MAN_GREEN
-	{ 243, core::RGBA(126, 115, 55, 255) }, // MAN_YELLOW
-	{ 244, core::RGBA(80, 82, 83, 255) }, // MAN_BLACK
-	{ 245, core::RGBA(156, 158, 159, 255) }, // MAN_WHITE
-	{ 246, core::RGBA(66, 100, 114, 255) }, // MAN_BLUE
-	{ 247, core::RGBA(77, 66, 49, 255) }, // MAN_P1000B
-	{ 248, core::RGBA(58, 40, 6, 154) }, // MAN_P2000B
-	{ 249, core::RGBA(54, 37, 3, 165) }, // MAN_P3000B
-	{ 250, core::RGBA(65, 54, 70, 255) }, // MAN_P10000A
-	{ 251, core::RGBA(49, 19, 53, 154) }, // MAN_P20000A
-	{ 252, core::RGBA(35, 12, 62, 165) }, // MAN_P30000A
-	{ 253, core::RGBA(220, 210, 205, 155) }, // MAN_P40000A
-	{ 254, core::RGBA(50, 50, 50, 255) }, // MAN_YHOLE_NUC
-	{ 255, core::RGBA(54, 58, 59, 255) }, // FACTORY_SD10000
-	{ 256, core::RGBA(54, 58, 59, 255) }, // FACTORY_SD20000
-	{ 257, core::RGBA(54, 58, 59, 255) }, // FACTORY_SD30000
-	{ 258, core::RGBA(54, 58, 59, 255) }, // FACTORY_SDADV
-	{ 259, core::RGBA(60, 56, 53, 255) }, // FACTORY_SD1000
-	{ 260, core::RGBA(54, 58, 59, 255) }, // FACTORY_SD2000
-	{ 261, core::RGBA(54, 58, 59, 255) }, // FACTORY_SD3000
-	{ 262, core::RGBA(54, 58, 59, 255) }, // FACTORY_MINERAL
-	{ 272, core::RGBA(17, 17, 17, 154) }, // MAN_GLASS_BOTTLE
-	{ 273, core::RGBA(28, 28, 28, 165) }, // MAN_SCIENCE_BOTTLE
-	{ 274, core::RGBA(79, 119, 137, 255) }, // TERRAIN_ICEPLANET_SURFACE
-	{ 275, core::RGBA(79, 119, 137, 255) }, // TERRAIN_ICEPLANET_ROCK
-	{ 276, core::RGBA(51, 39, 26, 255) }, // TERRAIN_ICEPLANET_WOOD
-	{ 277, core::RGBA(31, 47, 19, 255) }, // TERRAIN_ICEPLANET_LEAVES
-	{ 278, core::RGBA(58, 122, 135, 255) }, // TERRAIN_ICEPLANET_SPIKE_SPRITE
-	{ 279, core::RGBA(92, 158, 167, 255) }, // TERRAIN_ICEPLANET_ICECRAG_SPRITE
-	{ 280, core::RGBA(48, 95, 103, 255) }, // TERRAIN_ICEPLANET_ICECORAL_SPRITE
-	{ 281, core::RGBA(29, 83, 93, 255) }, // TERRAIN_ICEPLANET_ICEGRASS_SPRITE
-	{ 282, core::RGBA(135, 69, 57, 255) }, // LIGHT_RED
-	{ 283, core::RGBA(52, 113, 139, 255) }, // LIGHT_BLUE
-	{ 284, core::RGBA(79, 139, 53, 255) }, // LIGHT_GREEN
-	{ 285, core::RGBA(122, 128, 63, 255) }, // LIGHT_YELLOW
-	{ 286, core::RGBA(70, 180, 210, 255) }, // TERRAIN_ICEPLANET_CRYSTAL
-	{ 287, core::RGBA(51, 39, 26, 255) }, // TERRAIN_REDWOOD
-	{ 288, core::RGBA(31, 47, 19, 255) }, // TERRAIN_REDWOOD_LEAVES
-	{ 289, core::RGBA(62, 62, 61, 255) }, // FIXED_DOCK_ID
-	{ 290, core::RGBA(62, 66, 61, 255) }, // FIXED_DOCK_ID_ENHANCER
-	{ 291, core::RGBA(90, 134, 80, 255) }, // FACTION_BLOCK
-	{ 292, core::RGBA(90, 134, 80, 255) }, // FACTION_HUB_BLOCK
-	{ 331, core::RGBA(66, 92, 80, 255) }, // POWER_HOLDER_ID
-	{ 332, core::RGBA(135, 86, 117, 255) }, // POWER_DRAIN_BEAM_COMPUTER
-	{ 333, core::RGBA(78, 59, 73, 255) }, // POWER_DRAIN_BEAM_MODULE
-	{ 334, core::RGBA(74, 136, 125, 255) }, // POWER_SUPPLY_BEAM_COMPUTER
-	{ 335, core::RGBA(59, 78, 70, 255) }, // POWER_SUPPLY_BEAM_MODULE
-	{ 336, core::RGBA(65, 67, 68, 255) }, // DECORATIVE_PANEL_1
-	{ 337, core::RGBA(65, 68, 69, 255) }, // DECORATIVE_PANEL_2
-	{ 338, core::RGBA(71, 84, 78, 255) }, // DECORATIVE_PANEL_3
-	{ 339, core::RGBA(69, 87, 97, 255) }, // DECORATIVE_PANEL_4
-	{ 340, core::RGBA(143, 132, 55, 255) }, // LIGHT_BULB_YELLOW
-	{ 341, core::RGBA(224, 110, 4, 255) }, // SPRITE_BRONZE
-	{ 342, core::RGBA(173, 191, 194, 255) }, // SPRITE_SILVER
-	{ 343, core::RGBA(253, 181, 3, 255) }, // SPRITE_GOLD
-	{ 344, core::RGBA(50, 49, 49, 255) }, // PULSE_CONTROLLER_ID
-	{ 345, core::RGBA(59, 57, 54, 255) }, // PULSE_ID
-	{ 346, core::RGBA(61, 62, 62, 255) }, // FRACTION_EXCEPTION_ID
-	{ 347, core::RGBA(61, 103, 142, 255) }, // SHOP_BLOCK_ID
-	{ 329, core::RGBA(99, 171, 219, 56) }, // GLASS_WEDGE_ID
-	{ 330, core::RGBA(99, 171, 219, 56) }, // GLASS_CORNER_ID
-	{ 367, core::RGBA(99, 171, 219, 56) }, // GLASS_PENTA_ID
-	{ 368, core::RGBA(99, 171, 219, 56) }, // GLASS_TETRA_ID
-	{ 5, core::RGBA(60, 60, 60, 255) }, // HULL_COLOR_GREY_ID
-	{ 69, core::RGBA(54, 35, 71, 255) }, // HULL_COLOR_PURPLE_ID
-	{ 70, core::RGBA(70, 50, 28, 255) }, // HULL_COLOR_BROWN_ID
-	{ 75, core::RGBA(13, 13, 13, 255) }, // HULL_COLOR_BLACK_ID
-	{ 76, core::RGBA(76, 24, 14, 255) }, // HULL_COLOR_RED_ID
-	{ 77, core::RGBA(24, 51, 75, 255) }, // HULL_COLOR_BLUE_ID
-	{ 78, core::RGBA(28, 62, 36, 255) }, // HULL_COLOR_GREEN_ID
-	{ 79, core::RGBA(123, 106, 7, 255) }, // HULL_COLOR_YELLOW_ID
-	{ 81, core::RGBA(141, 141, 141, 255) }, // HULL_COLOR_WHITE_ID
-	{ 426, core::RGBA(114, 68, 14, 255) }, // HULL_COLOR_ORANGE_ID
-	{ 293, core::RGBA(60, 60, 60, 255) }, // HULL_COLOR_WEDGE_GREY_ID
-	{ 294, core::RGBA(54, 35, 71, 255) }, // HULL_COLOR_WEDGE_PURPLE_ID
-	{ 295, core::RGBA(70, 50, 28, 255) }, // HULL_COLOR_WEDGE_BROWN_ID
-	{ 296, core::RGBA(13, 13, 13, 255) }, // HULL_COLOR_WEDGE_BLACK_ID
-	{ 297, core::RGBA(76, 24, 14, 255) }, // HULL_COLOR_WEDGE_RED_ID
-	{ 298, core::RGBA(24, 51, 75, 255) }, // HULL_COLOR_WEDGE_BLUE_ID
-	{ 299, core::RGBA(28, 62, 36, 255) }, // HULL_COLOR_WEDGE_GREEN_ID
-	{ 300, core::RGBA(123, 106, 7, 255) }, // HULL_COLOR_WEDGE_YELLOW_ID
-	{ 301, core::RGBA(141, 141, 141, 255) }, // HULL_COLOR_WEDGE_WHITE_ID
-	{ 427, core::RGBA(114, 68, 14, 255) }, // HULL_COLOR_WEDGE_ORANGE_ID
-	{ 302, core::RGBA(60, 60, 60, 255) }, // HULL_COLOR_CORNER_GREY_ID
-	{ 303, core::RGBA(54, 35, 71, 255) }, // HULL_COLOR_CORNER_PURPLE_ID
-	{ 304, core::RGBA(70, 50, 28, 255) }, // HULL_COLOR_CORNER_BROWN_ID
-	{ 305, core::RGBA(13, 13, 13, 255) }, // HULL_COLOR_CORNER_BLACK_ID
-	{ 306, core::RGBA(76, 24, 14, 255) }, // HULL_COLOR_CORNER_RED_ID
-	{ 307, core::RGBA(24, 51, 75, 255) }, // HULL_COLOR_CORNER_BLUE_ID
-	{ 308, core::RGBA(28, 62, 36, 255) }, // HULL_COLOR_CORNER_GREEN_ID
-	{ 309, core::RGBA(123, 106, 7, 255) }, // HULL_COLOR_CORNER_YELLOW_ID
-	{ 310, core::RGBA(141, 141, 141, 255) }, // HULL_COLOR_CORNER_WHITE_ID
-	{ 428, core::RGBA(114, 68, 14, 255) }, // HULL_COLOR_CORNER_ORANGE_ID
-	{ 357, core::RGBA(60, 60, 60, 255) }, // HULL_COLOR_PENTA_GREY_ID
-	{ 385, core::RGBA(13, 13, 13, 255) }, // HULL_COLOR_PENTA_BLACK_ID
-	{ 386, core::RGBA(76, 24, 14, 255) }, // HULL_COLOR_PENTA_RED_ID
-	{ 387, core::RGBA(54, 35, 71, 255) }, // HULL_COLOR_PENTA_PURPLE_ID
-	{ 388, core::RGBA(24, 51, 75, 255) }, // HULL_COLOR_PENTA_BLUE_ID
-	{ 389, core::RGBA(28, 62, 36, 255) }, // HULL_COLOR_PENTA_GREEN_ID
-	{ 403, core::RGBA(70, 50, 28, 255) }, // HULL_COLOR_PENTA_BROWN_ID
-	{ 391, core::RGBA(123, 106, 7, 255) }, // HULL_COLOR_PENTA_YELLOW_ID
-	{ 392, core::RGBA(141, 141, 141, 255) }, // HULL_COLOR_PENTA_WHITE_ID
-	{ 429, core::RGBA(114, 68, 14, 255) }, // HULL_COLOR_PENTA_ORANGE_ID
-	{ 348, core::RGBA(60, 60, 60, 255) }, // HULL_COLOR_TETRA_GREY_ID
-	{ 393, core::RGBA(13, 13, 13, 255) }, // HULL_COLOR_TETRA_BLACK_ID
-	{ 394, core::RGBA(76, 24, 14, 255) }, // HULL_COLOR_TETRA_RED_ID
-	{ 395, core::RGBA(54, 35, 71, 255) }, // HULL_COLOR_TETRA_PURPLE_ID
-	{ 396, core::RGBA(24, 51, 75, 255) }, // HULL_COLOR_TETRA_BLUE_ID
-	{ 397, core::RGBA(28, 62, 36, 255) }, // HULL_COLOR_TETRA_GREEN_ID
-	{ 398, core::RGBA(123, 106, 7, 255) }, // HULL_COLOR_TETRA_YELLOW_ID
-	{ 400, core::RGBA(141, 141, 141, 255) }, // HULL_COLOR_TETRA_WHITE_ID
-	{ 404, core::RGBA(70, 50, 28, 255) }, // HULL_COLOR_TETRA_BROWN_ID
-	{ 430, core::RGBA(114, 68, 14, 255) }, // HULL_COLOR_TETRA_ORANGE_ID
-	{ 263, core::RGBA(61, 61, 61, 255) }, // POWERHULL_COLOR_GREY
-	{ 264, core::RGBA(18, 18, 18, 255) }, // POWERHULL_COLOR_BLACK
-	{ 265, core::RGBA(77, 26, 16, 255) }, // POWERHULL_COLOR_RED
-	{ 266, core::RGBA(50, 33, 65, 255) }, // POWERHULL_COLOR_PURPLE
-	{ 267, core::RGBA(21, 48, 71, 255) }, // POWERHULL_COLOR_BLUE
-	{ 268, core::RGBA(33, 64, 37, 255) }, // POWERHULL_COLOR_GREEN
-	{ 269, core::RGBA(68, 47, 26, 255) }, // POWERHULL_COLOR_BROWN
-	{ 270, core::RGBA(121, 102, 0, 255) }, // POWERHULL_COLOR_YELLOW
-	{ 271, core::RGBA(139, 139, 139, 255) }, // POWERHULL_COLOR_WHITE
-	{ 431, core::RGBA(113, 66, 5, 255) }, // POWERHULL_COLOR_ORANGE
-	{ 311, core::RGBA(61, 61, 61, 255) }, // POWERHULL_COLOR_WEDGE_GREY
-	{ 312, core::RGBA(18, 18, 18, 255) }, // POWERHULL_COLOR_WEDGE_BLACK
-	{ 313, core::RGBA(77, 26, 16, 255) }, // POWERHULL_COLOR_WEDGE_RED
-	{ 314, core::RGBA(50, 33, 65, 255) }, // POWERHULL_COLOR_WEDGE_PURPLE
-	{ 315, core::RGBA(21, 48, 71, 255) }, // POWERHULL_COLOR_WEDGE_BLUE
-	{ 316, core::RGBA(33, 64, 37, 255) }, // POWERHULL_COLOR_WEDGE_GREEN
-	{ 317, core::RGBA(68, 47, 26, 255) }, // POWERHULL_COLOR_WEDGE_BROWN
-	{ 318, core::RGBA(121, 102, 0, 255) }, // POWERHULL_COLOR_WEDGE_YELLOW
-	{ 319, core::RGBA(139, 139, 139, 255) }, // POWERHULL_COLOR_WEDGE_WHITE
-	{ 432, core::RGBA(113, 66, 5, 255) }, // POWERHULL_COLOR_WEDGE_ORANGE
-	{ 320, core::RGBA(61, 61, 61, 255) }, // POWERHULL_COLOR_CORNER_GREY
-	{ 321, core::RGBA(18, 18, 18, 255) }, // POWERHULL_COLOR_CORNER_BLACK
-	{ 322, core::RGBA(77, 26, 16, 255) }, // POWERHULL_COLOR_CORNER_RED
-	{ 323, core::RGBA(50, 33, 65, 255) }, // POWERHULL_COLOR_CORNER_PURPLE
-	{ 324, core::RGBA(21, 48, 71, 255) }, // POWERHULL_COLOR_CORNER_BLUE
-	{ 325, core::RGBA(33, 64, 37, 255) }, // POWERHULL_COLOR_CORNER_GREEN
-	{ 326, core::RGBA(68, 47, 26, 255) }, // POWERHULL_COLOR_CORNER_BROWN
-	{ 327, core::RGBA(121, 102, 0, 255) }, // POWERHULL_COLOR_CORNER_YELLOW
-	{ 328, core::RGBA(139, 139, 139, 255) }, // POWERHULL_COLOR_CORNER_WHITE
-	{ 433, core::RGBA(113, 66, 5, 255) }, // POWERHULL_COLOR_CORNER_ORANGE
-	{ 369, core::RGBA(18, 18, 18, 255) }, // POWERHULL_COLOR_PENTA_BLACK
-	{ 370, core::RGBA(77, 26, 16, 255) }, // POWERHULL_COLOR_PENTA_RED
-	{ 371, core::RGBA(50, 33, 65, 255) }, // POWERHULL_COLOR_PENTA_PURPLE
-	{ 372, core::RGBA(21, 48, 71, 255) }, // POWERHULL_COLOR_PENTA_BLUE
-	{ 373, core::RGBA(33, 64, 37, 255) }, // POWERHULL_COLOR_PENTA_GREEN
-	{ 374, core::RGBA(68, 47, 26, 255) }, // POWERHULL_COLOR_PENTA_BROWN
-	{ 375, core::RGBA(121, 102, 0, 255) }, // POWERHULL_COLOR_PENTA_YELLOW
-	{ 376, core::RGBA(139, 139, 139, 255) }, // POWERHULL_COLOR_PENTA_WHITE
-	{ 401, core::RGBA(61, 61, 61, 255) }, // POWERHULL_COLOR_PENTA_GREY
-	{ 434, core::RGBA(113, 66, 5, 255) }, // POWERHULL_COLOR_PENTA_ORANGE
-	{ 377, core::RGBA(18, 18, 18, 255) }, // POWERHULL_COLOR_TETRA_BLACK
-	{ 378, core::RGBA(77, 26, 16, 255) }, // POWERHULL_COLOR_TETRA_RED
-	{ 379, core::RGBA(50, 33, 65, 255) }, // POWERHULL_COLOR_TETRA_PURPLE
-	{ 380, core::RGBA(21, 48, 71, 255) }, // POWERHULL_COLOR_TETRA_BLUE
-	{ 381, core::RGBA(33, 64, 37, 255) }, // POWERHULL_COLOR_TETRA_GREEN
-	{ 382, core::RGBA(68, 47, 26, 255) }, // POWERHULL_COLOR_TETRA_BROWN
-	{ 383, core::RGBA(121, 102, 0, 255) }, // POWERHULL_COLOR_TETRA_YELLOW
-	{ 384, core::RGBA(139, 139, 139, 255) }, // POWERHULL_COLOR_TETRA_WHITE
-	{ 402, core::RGBA(61, 61, 61, 255) }, // POWERHULL_COLOR_TETRA_GREY
-	{ 435, core::RGBA(113, 66, 5, 255) }, // POWERHULL_COLOR_TETRA_ORANGE
-	{ 405, core::RGBA(43, 53, 63, 255) }, // ACTIVAION_BLOCK_ID
-	{ 406, core::RGBA(53, 95, 134, 255) }, // SIGNAL_DELAY_FORWARD_ID
-	{ 407, core::RGBA(53, 95, 134, 255) }, // SIGNAL_DELAY_BLOCK_ID
-	{ 408, core::RGBA(55, 96, 134, 255) }, // SIGNAL_AND_BLOCK_ID
-	{ 409, core::RGBA(56, 96, 135, 255) }, // SIGNAL_OR_BLOCK_ID
-	{ 410, core::RGBA(55, 96, 135, 255) }, // SIGNAL_NOT_BLOCK_ID
-	{ 411, core::RGBA(72, 71, 61, 50) }, // SIGNAL_TRIGGER_AREA
-	{ 412, core::RGBA(52, 78, 103, 255) }, // SIGNAL_TRIGGER_STEPON
-	{ 413, core::RGBA(46, 69, 94, 255) }, // SIGNAL_TRIGGER_AREA_CONTROLLER
-	{ 414, core::RGBA(49, 50, 49, 255) }, // DAMAGE_BEAM_COMPUTER
-	{ 415, core::RGBA(58, 126, 132, 255) }, // DAMAGE_BEAM_MODULE
-	{ 416, core::RGBA(49, 50, 49, 255) }, // DAMAGE_PULSE_COMPUTER
-	{ 417, core::RGBA(63, 62, 58, 255) }, // DAMAGE_PULSE_MODULE
-	{ 418, core::RGBA(49, 50, 49, 255) }, // EFFECT_PIERCING_COMPUTER
-	{ 419, core::RGBA(68, 93, 64, 255) }, // EFFECT_PIERCING_MODULE
-	{ 420, core::RGBA(49, 50, 49, 255) }, // EFFECT_EXPLOSIVE_COMPUTER
-	{ 421, core::RGBA(97, 82, 59, 255) }, // EFFECT_EXPLOSIVE_MODULE
-	{ 422, core::RGBA(49, 49, 49, 255) }, // EFFECT_PUNCHTHROUGH_COMPUTER
-	{ 423, core::RGBA(68, 60, 98, 255) }, // EFFECT_PUNCHTHROUGH_MODULE
-	{ 424, core::RGBA(49, 49, 50, 255) }, // EFFECT_EMP_COMPUTER
-	{ 425, core::RGBA(59, 94, 95, 255) }, // EFFECT_EMP_MODULE
-	{ 436, core::RGBA(59, 52, 11, 255) }, // HULL_HAZARD_YELLOW
-	{ 437, core::RGBA(59, 52, 11, 255) }, // HULL_HAZARD_WEDGE_YELLOW
-	{ 438, core::RGBA(91, 106, 94, 255) }, // HULL_HAZARD_GREEN
-	{ 439, core::RGBA(91, 106, 94, 255) }, // HULL_HAZARD_WEDGE_GREEN
-	{ 440, core::RGBA(87, 87, 87, 255) }, // METAL_MESH
-	{ 441, core::RGBA(87, 87, 87, 255) }, // METAL_MESH_WEDGE
-	{ 442, core::RGBA(66, 66, 66, 255) }, // METAL_GRID
-	{ 443, core::RGBA(66, 66, 66, 255) }, // METAL_GRD_WEDGE
-	{ 444, core::RGBA(70, 180, 210, 255) }, // ICEPLANET_CRYSTAL_WEDGE
-	{ 445, core::RGBA(127, 133, 131, 255) }, // MEDICAL_SUPPLIES
-	{ 446, core::RGBA(144, 146, 146, 255) }, // MEDICAL_CABINET
-	{ 447, core::RGBA(106, 64, 58, 255) }, // DECO_SCREEN_RED
-	{ 448, core::RGBA(61, 103, 142, 255) }, // DECO_SCREEN_BLUE
-	{ 449, core::RGBA(86, 133, 76, 255) }, // DECO_COMPUTER_GREEN
-	{ 450, core::RGBA(137, 106, 67, 255) }, // DECO_COMPUTER_ORANGE
-	{ 451, core::RGBA(49, 50, 49, 255) }, // DECO_PC_BLUE
-	{ 452, core::RGBA(101, 49, 185, 255) }, // TERRAIN_CRYSTAL_PURPLE
-	{ 453, core::RGBA(43, 31, 49, 255) }, // TERRAIN_CRYSTAL_BLACK
-	{ 454, core::RGBA(151, 154, 159, 255) }, // TERRAIN_CRYSTAL_WHITE
-	{ 455, core::RGBA(165, 144, 33, 255) }, // TERRAIN_CRYSTAL_YELLOW
-	{ 456, core::RGBA(124, 35, 13, 255) }, // TERRAIN_CRYSTAL_RED
-	{ 457, core::RGBA(169, 99, 14, 255) }, // TERRAIN_CRYSTAL_ORANGE
-	{ 458, core::RGBA(18, 129, 49, 255) }, // TERRAIN_CRYSTAL_GREEN
-	{ 459, core::RGBA(32, 119, 184, 255) }, // TERRAIN_CRYSTAL_BLUE
-	{ 460, core::RGBA(50, 49, 49, 255) }, // EFFECT_STOP_COMPUTER
-	{ 461, core::RGBA(99, 67, 62, 255) }, // EFFECT_STOP_MODULE
-	{ 462, core::RGBA(49, 49, 49, 255) }, // EFFECT_PUSH_COMPUTER
-	{ 463, core::RGBA(98, 61, 94, 255) }, // EFFECT_PUSH_MODULE
-	{ 464, core::RGBA(50, 49, 49, 255) }, // EFFECT_PULL_COMPUTER
-	{ 465, core::RGBA(97, 96, 61, 255) }, // EFFECT_PULL_MODULE
-	{ 466, core::RGBA(49, 49, 50, 255) }, // EFFECT_ION_COMPUTER
-	{ 467, core::RGBA(61, 85, 99, 255) }, // EFFECT_ION_MODULE
-	{ 468, core::RGBA(95, 71, 124, 255) }, // INGOT_PURPLE
-	{ 469, core::RGBA(18, 18, 18, 255) }, // INGOT_BLACK
-	{ 470, core::RGBA(85, 85, 84, 255) }, // INGOT_WHITE
-	{ 471, core::RGBA(159, 99, 8, 255) }, // INGOT_YELLOW
-	{ 472, core::RGBA(148, 45, 20, 255) }, // INGOT_RED
-	{ 473, core::RGBA(187, 81, 20, 255) }, // INGOT_ORANGE
-	{ 474, core::RGBA(43, 83, 41, 255) }, // INGOT_GREEN
-	{ 475, core::RGBA(32, 80, 146, 255) }, // INGOT_BLUE
-	{ 476, core::RGBA(49, 50, 49, 255) }, // EFFECT_OVERDRIVE_COMPUTER
-	{ 477, core::RGBA(61, 99, 77, 255) }, // EFFECT_OVERDRIVE_MODULE
-	{ 478, core::RGBA(80, 74, 69, 255) }, // SHIELD_CAPACITY
-	{ 479, core::RGBA(51, 51, 51, 255) }, // TEXT_BOX
-	{ 480, core::RGBA(171, 154, 1, 255) }, // RESS_CRYS_HATTEL
-	{ 481, core::RGBA(216, 139, 10, 255) }, // RESS_CRYS_SINTYR
-	{ 482, core::RGBA(181, 54, 22, 255) }, // RESS_CRYS_MATTISE
-	{ 483, core::RGBA(163, 80, 210, 255) }, // RESS_CRYS_RAMMET
-	{ 484, core::RGBA(74, 172, 208, 255) }, // RESS_CRYS_VARAT
-	{ 485, core::RGBA(76, 187, 114, 255) }, // RESS_CRYS_BASTYN
-	{ 486, core::RGBA(204, 204, 199, 255) }, // RESS_CRYS_PARSEN
-	{ 487, core::RGBA(78, 56, 89, 255) }, // RESS_CRYS_NOCX
-	{ 488, core::RGBA(123, 113, 54, 255) }, // RESS_ORE_THRENS
-	{ 489, core::RGBA(104, 60, 27, 255) }, // RESS_ORE_JISPER
-	{ 490, core::RGBA(97, 34, 29, 255) }, // RESS_ORE_ZERCANER
-	{ 491, core::RGBA(75, 55, 101, 255) }, // RESS_ORE_SERTISE
-	{ 492, core::RGBA(39, 71, 98, 255) }, // RESS_ORE_HITAL
-	{ 493, core::RGBA(63, 109, 48, 255) }, // RESS_ORE_FERTIKEEN
-	{ 494, core::RGBA(151, 165, 155, 255) }, // RESS_ORE_PARSTUN
-	{ 495, core::RGBA(51, 44, 49, 255) }, // RESS_ORE_NACHT
-	{ 496, core::RGBA(98, 61, 130, 255) }, // PURPLE_LIGHT
-	{ 497, core::RGBA(135, 93, 57, 255) }, // ORANGE_LIGHT
-	{ 498, core::RGBA(57, 64, 70, 255) }, // BLACK_LIGHT
-	{ 499, core::RGBA(114, 114, 114, 255) }, // WHITE_POLE_LIGHT
-	{ 500, core::RGBA(38, 33, 43, 255) }, // BLACK_POLE_LIGHT
-	{ 501, core::RGBA(144, 60, 55, 255) }, // RED_POLE_LIGHT
-	{ 502, core::RGBA(143, 96, 55, 255) }, // ORANGE_POLE_LIGHT
-	{ 503, core::RGBA(114, 114, 114, 255) }, // YELLOW_POLE_LIGHT
-	{ 504, core::RGBA(70, 140, 60, 255) }, // GREEN_POLE_LIGHT
-	{ 505, core::RGBA(55, 116, 143, 255) }, // BLUE_POLE_LIGHT
-	{ 506, core::RGBA(77, 54, 144, 255) }, // PURPLE_POLE_LIGHT
-	{ 507, core::RGBA(158, 158, 158, 55) }, // GLASS_BLOCK_WHITE
-	{ 508, core::RGBA(158, 158, 158, 55) }, // GLASS_WEDGE_WHITE
-	{ 509, core::RGBA(158, 158, 158, 55) }, // GLASS_CORNER_WHITE
-	{ 510, core::RGBA(158, 158, 158, 55) }, // GLASS_PENTA_WHITE
-	{ 511, core::RGBA(158, 158, 158, 55) }, // GLASS_TETRA_WHITE
-	{ 512, core::RGBA(207, 111, 111, 99) }, // GLASS_BLOCK_RED
-	{ 513, core::RGBA(207, 111, 111, 99) }, // GLASS_WEDGE_RED
-	{ 514, core::RGBA(207, 111, 111, 99) }, // GLASS_CORNER_RED
-	{ 515, core::RGBA(207, 111, 111, 99) }, // GLASS_PENTA_RED
-	{ 516, core::RGBA(207, 111, 111, 99) }, // GLASS_TETRA_RED
-	{ 517, core::RGBA(207, 150, 111, 99) }, // GLASS_BLOCK_ORANGE
-	{ 518, core::RGBA(207, 150, 111, 99) }, // GLASS_WEDGE_ORANGE
-	{ 519, core::RGBA(207, 150, 111, 99) }, // GLASS_CORNER_ORANGE
-	{ 520, core::RGBA(207, 150, 111, 99) }, // GLASS_PENTA_ORANGE
-	{ 521, core::RGBA(207, 150, 111, 99) }, // GLASS_TETRA_ORANGE
-	{ 522, core::RGBA(207, 198, 111, 99) }, // GLASS_BLOCK_YELLOW
-	{ 523, core::RGBA(207, 198, 111, 99) }, // GLASS_WEDGE_YELLOW
-	{ 524, core::RGBA(207, 198, 111, 99) }, // GLASS_CORNER_YELLOW
-	{ 525, core::RGBA(207, 198, 111, 99) }, // GLASS_PENTA_YELLOW
-	{ 526, core::RGBA(207, 198, 111, 99) }, // GLASS_TETRA_YELLOW
-	{ 527, core::RGBA(111, 207, 111, 99) }, // GLASS_BLOCK_GREEN
-	{ 528, core::RGBA(111, 207, 111, 99) }, // GLASS_WEDGE_GREEN
-	{ 529, core::RGBA(111, 207, 111, 99) }, // GLASS_CORNER_GREEN
-	{ 530, core::RGBA(111, 207, 111, 99) }, // GLASS_PENTA_GREEN
-	{ 531, core::RGBA(111, 207, 111, 99) }, // GLASS_TETRA_GREEN
-	{ 532, core::RGBA(99, 172, 219, 99) }, // GLASS_BLOCK_BLUE
-	{ 533, core::RGBA(99, 172, 219, 99) }, // GLASS_WEDGE_BLUE
-	{ 534, core::RGBA(99, 172, 219, 99) }, // GLASS_CORNER_BLUE
-	{ 535, core::RGBA(99, 172, 219, 99) }, // GLASS_PENTA_BLUE
-	{ 536, core::RGBA(99, 172, 219, 99) }, // GLASS_TETRA_BLUE
-	{ 537, core::RGBA(126, 111, 207, 99) }, // GLASS_BLOCK_PURPLE
-	{ 538, core::RGBA(126, 111, 207, 99) }, // GLASS_WEDGE_PURPLE
-	{ 539, core::RGBA(126, 111, 207, 99) }, // GLASS_CORNER_PURPLE
-	{ 540, core::RGBA(126, 111, 207, 99) }, // GLASS_PENTA_PURPLE
-	{ 541, core::RGBA(126, 111, 207, 99) }, // GLASS_TETRA_PURPLE
-	{ 542, core::RGBA(58, 67, 68, 255) }, // WARP_GATE_CONTROLLER
-	{ 543, core::RGBA(39, 39, 38, 255) }, // WARP_GATE_MODULE
-	{ 544, core::RGBA(60, 65, 66, 255) }, // JUMP_DRIVE_CONTROLLER
-	{ 545, core::RGBA(62, 62, 62, 255) }, // JUMP_DRIVE_MODULE
-	{ 546, core::RGBA(87, 87, 87, 255) }, // Scrap_Alloy
-	{ 547, core::RGBA(35, 35, 34, 166) }, // Scrap_Composite
-	{ 548, core::RGBA(43, 31, 49, 255) }, // Nocx_Crystal_Wedge
-	{ 549, core::RGBA(151, 154, 159, 255) }, // Parsen_Crystal_Wedge
-	{ 550, core::RGBA(101, 49, 185, 255) }, // Rammet_Crystal_Wedge
-	{ 551, core::RGBA(32, 119, 184, 255) }, // Varat_Crystal_Wedge
-	{ 552, core::RGBA(18, 129, 49, 255) }, // Bastyn_Crystal_Wedge
-	{ 553, core::RGBA(165, 144, 33, 255) }, // Hattel_Crystal_Wedge
-	{ 554, core::RGBA(169, 99, 14, 255) }, // Sintyr_Crystal_Wedge
-	{ 555, core::RGBA(124, 35, 13, 255) }, // Mattise_Crystal_Wedge
-	{ 556, core::RGBA(18, 18, 18, 255) }, // Nacht_Ingot_Wedge
-	{ 557, core::RGBA(85, 85, 84, 255) }, // Parstun_Ingot_Wedge
-	{ 558, core::RGBA(95, 71, 124, 255) }, // Sertise_Ingot_Wedge
-	{ 559, core::RGBA(32, 80, 146, 255) }, // Hittal_Ingot_Wedge
-	{ 560, core::RGBA(43, 83, 41, 255) }, // Fertikeen_Ingot_Wedge
-	{ 561, core::RGBA(159, 99, 8, 255) }, // Threns_Ingot_Wedge
-	{ 562, core::RGBA(187, 81, 20, 255) }, // Jisper_Ingot_Wedge
-	{ 563, core::RGBA(148, 45, 20, 255) }, // Zercaner_Ingot_Wedge
-	{ 564, core::RGBA(17, 17, 17, 154) }, // Nocx_Circuit_Wedge
-	{ 565, core::RGBA(60, 60, 60, 154) }, // Parsen_Circuit_Wedge
-	{ 566, core::RGBA(49, 19, 53, 154) }, // Rammet_Circuit_Wedge
-	{ 567, core::RGBA(6, 49, 66, 154) }, // Varat_Circuit_Wedge
-	{ 568, core::RGBA(8, 63, 28, 154) }, // Bastyn_Circuit_Wedge
-	{ 569, core::RGBA(50, 57, 3, 154) }, // Hattel_Circuit_Wedge
-	{ 570, core::RGBA(58, 40, 6, 154) }, // Sintyr_Circuit_Wedge
-	{ 571, core::RGBA(66, 11, 9, 154) }, // Mattise_Circuit_Wedge
-	{ 572, core::RGBA(50, 50, 50, 255) }, // Nacht_Motherboard_Wedge
-	{ 573, core::RGBA(73, 73, 73, 255) }, // Parstun_Motherboard_Wedge
-	{ 574, core::RGBA(65, 54, 70, 255) }, // Sertise_Motherboard_Wedge
-	{ 575, core::RGBA(50, 69, 77, 255) }, // Hittal_Motherboard_Wedge
-	{ 576, core::RGBA(49, 77, 54, 255) }, // Fertikeen_Motherboard_Wedge
-	{ 577, core::RGBA(77, 75, 49, 255) }, // Threns_Motherboard_Wedge
-	{ 578, core::RGBA(77, 66, 49, 255) }, // Jisper_Motherboard_Wedge
-	{ 579, core::RGBA(74, 50, 50, 255) }, // Zercaner_Motherboard_Wedge
-	{ 580, core::RGBA(28, 28, 28, 165) }, // Nocx_Charged_Circuit_Wedge
-	{ 581, core::RGBA(220, 210, 205, 155) }, // Parsen_Charged_Circuit_Wedge
-	{ 582, core::RGBA(35, 12, 62, 165) }, // Rammet_Charged_Circuit_Wedge
-	{ 583, core::RGBA(6, 38, 50, 165) }, // Varat_Charged_Circuit_Wedge
-	{ 584, core::RGBA(6, 50, 16, 165) }, // Bastyn_Charged_Circuit_Wedge
-	{ 585, core::RGBA(63, 63, 7, 128) }, // Hattel_Charged_Circuit_Wedge
-	{ 586, core::RGBA(54, 37, 3, 165) }, // Sintyr_Charged_Circuit_Wedge
-	{ 587, core::RGBA(50, 17, 7, 165) }, // Mattise_Charged_Circuit_Wedge
-	{ 588, core::RGBA(28, 27, 27, 255) }, // Plex_Door_Wedge
-	{ 589, core::RGBA(99, 171, 219, 56) }, // Glass_Door
-	{ 590, core::RGBA(99, 171, 219, 56) }, // Glass_Door_Wedge
-	{ 591, core::RGBA(66, 66, 66, 255) }, // Blast_Door
-	{ 592, core::RGBA(66, 66, 66, 255) }, // Blast_Door_Wedge
-	{ 593, core::RGBA(95, 95, 95, 133) }, // Black_Crystal_Armor
-	{ 594, core::RGBA(95, 95, 95, 133) }, // Black_Crystal_Armor_Wedge
-	{ 595, core::RGBA(95, 95, 95, 133) }, // Black_Crystal_Armor_Corner
-	{ 596, core::RGBA(95, 95, 95, 133) }, // Black_Crystal_Armor_Penta
-	{ 597, core::RGBA(95, 95, 95, 133) }, // Black_Crystal_Armor_Tetra
-	{ 598, core::RGBA(83, 83, 83, 255) }, // Grey_Hull
-	{ 599, core::RGBA(83, 83, 83, 255) }, // Grey_Hull_Wedge
-	{ 600, core::RGBA(83, 83, 83, 255) }, // Grey_Hull_Corner
-	{ 601, core::RGBA(83, 83, 83, 255) }, // Grey_Hull_Penta
-	{ 602, core::RGBA(83, 83, 83, 255) }, // Grey_Hull_Tetra
-	{ 603, core::RGBA(18, 18, 18, 255) }, // Black_Hull
-	{ 604, core::RGBA(18, 18, 18, 255) }, // Black_Hull_Wedge
-	{ 605, core::RGBA(18, 18, 18, 255) }, // Black_Hull_Corner
-	{ 606, core::RGBA(18, 18, 18, 255) }, // Black_Hull_Penta
-	{ 607, core::RGBA(18, 18, 18, 255) }, // Black_Hull_Tetra
-	{ 608, core::RGBA(172, 172, 172, 255) }, // White_Hull
-	{ 609, core::RGBA(172, 172, 172, 255) }, // White_Hull_Wedge
-	{ 610, core::RGBA(172, 172, 172, 255) }, // White_Hull_Corner
-	{ 611, core::RGBA(172, 172, 172, 255) }, // White_Hull_Penta
-	{ 612, core::RGBA(172, 172, 172, 255) }, // White_Hull_Tetra
-	{ 613, core::RGBA(74, 43, 92, 255) }, // Purple_Hull
-	{ 614, core::RGBA(74, 43, 92, 255) }, // Purple_Hull_Wedge
-	{ 615, core::RGBA(74, 43, 92, 255) }, // Purple_Hull_Corner
-	{ 616, core::RGBA(74, 43, 92, 255) }, // Purple_Hull_Penta
-	{ 617, core::RGBA(74, 43, 92, 255) }, // Purple_Hull_Tetra
-	{ 618, core::RGBA(25, 79, 97, 255) }, // Blue_Hull
-	{ 619, core::RGBA(25, 79, 97, 255) }, // Blue_Hull_Wedge
-	{ 620, core::RGBA(25, 79, 97, 255) }, // Blue_Hull_Corner
-	{ 621, core::RGBA(25, 79, 97, 255) }, // Blue_Hull_Penta
-	{ 622, core::RGBA(25, 79, 97, 255) }, // Blue_Hull_Tetra
-	{ 623, core::RGBA(31, 96, 55, 255) }, // Green_Hull
-	{ 624, core::RGBA(31, 96, 55, 255) }, // Green_Hull_Wedge
-	{ 625, core::RGBA(31, 96, 55, 255) }, // Green_Hull_Corner
-	{ 626, core::RGBA(31, 96, 55, 255) }, // Green_Hull_Penta
-	{ 627, core::RGBA(31, 96, 55, 255) }, // Green_Hull_Tetra
-	{ 628, core::RGBA(147, 124, 19, 255) }, // Yellow_Hull
-	{ 629, core::RGBA(147, 124, 19, 255) }, // Yellow_Hull_Wedge
-	{ 630, core::RGBA(147, 124, 19, 255) }, // Yellow_Hull_Corner
-	{ 631, core::RGBA(147, 124, 19, 255) }, // Yellow_Hull_Penta
-	{ 632, core::RGBA(147, 124, 19, 255) }, // Yellow_Hull_Tetra
-	{ 633, core::RGBA(157, 83, 6, 255) }, // Orange_Hull
-	{ 634, core::RGBA(157, 83, 6, 255) }, // Orange_Hull_Wedge
-	{ 635, core::RGBA(157, 83, 6, 255) }, // Orange_Hull_Corner
-	{ 636, core::RGBA(157, 83, 6, 255) }, // Orange_Hull_Penta
-	{ 637, core::RGBA(157, 83, 6, 255) }, // Orange_Hull_Tetra
-	{ 638, core::RGBA(118, 36, 29, 255) }, // Red_Hull
-	{ 639, core::RGBA(118, 36, 29, 255) }, // Red_Hull_Wedge
-	{ 640, core::RGBA(118, 36, 29, 255) }, // Red_Hull_Corner
-	{ 641, core::RGBA(118, 36, 29, 255) }, // Red_Hull_Penta
-	{ 642, core::RGBA(118, 36, 29, 255) }, // Red_Hull_Tetra
-	{ 643, core::RGBA(69, 51, 37, 255) }, // Brown_Hull
-	{ 644, core::RGBA(69, 51, 37, 255) }, // Brown_Hull_Wedge
-	{ 645, core::RGBA(69, 51, 37, 255) }, // Brown_Hull_Corner
-	{ 646, core::RGBA(69, 51, 37, 255) }, // Brown_Hull_Penta
-	{ 647, core::RGBA(69, 51, 37, 255) }, // Brown_Hull_Tetra
-	{ 648, core::RGBA(59, 52, 11, 255) }, // Yellow_Hazard_Armor_Corner
-	{ 649, core::RGBA(59, 52, 11, 255) }, // Yellow_Hazard_Armor_Penta
-	{ 650, core::RGBA(59, 52, 11, 255) }, // Yellow_Hazard_Armor_Tetra
-	{ 651, core::RGBA(91, 106, 94, 255) }, // Green_Hazard_Armor_Corner
-	{ 652, core::RGBA(91, 106, 94, 255) }, // Green_Hazard_Armor_Penta
-	{ 653, core::RGBA(91, 106, 94, 255) }, // Green_Hazard_Armor_Tetra
-	{ 654, core::RGBA(50, 50, 49, 255) }, // SCANNER_COMPUTER
-	{ 655, core::RGBA(61, 61, 61, 255) }, // SCANNER_MODULE
+	{ 1, core::RGBA(66, 81, 82, 255) }, // SHIP_CORE
+	{ 2, core::RGBA(59, 74, 75, 255) }, // POWER_REACTOR
+	{ 3, core::RGBA(88, 79, 68, 255) }, // SHIELD_CAPACITOR
+	{ 4, core::RGBA(38, 39, 38, 255) }, // SALVAGE_COMPUTER
+	{ 5, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR
+	{ 6, core::RGBA(37, 39, 39, 255) }, // CANNON_COMPUTER
+	{ 7, core::RGBA(99, 98, 97, 255) }, // TURRET_DOCKING_UNIT
+	{ 8, core::RGBA(60, 60, 60, 255) }, // THRUSTER_MODULE
+	{ 9, core::RGBA(0, 0, 0, 255) }, // RECON_CHARGE_TIME_1
+	{ 10, core::RGBA(0, 0, 0, 255) }, // RECON_CHARGE_TIME_2
+	{ 11, core::RGBA(0, 0, 0, 255) }, // RECON_CHARGE_TIME_3
+	{ 12, core::RGBA(0, 0, 0, 255) }, // JUMP_CHARGE_TIME_3
+	{ 13, core::RGBA(0, 0, 0, 255) }, // JUMP_MULTICHARGE_1
+	{ 14, core::RGBA(65, 52, 39, 255) }, // WARHEAD
+	{ 15, core::RGBA(113, 54, 41, 255) }, // RADARJAMMER
+	{ 16, core::RGBA(55, 58, 58, 255) }, // CANNON_BARREL
+	{ 17, core::RGBA(0, 0, 0, 255) }, // JUMP_MULTICHARGE_2
+	{ 18, core::RGBA(0, 0, 0, 255) }, // RECON_POWER_EFFICIENCY_2
+	{ 19, core::RGBA(0, 0, 0, 255) }, // RECON_POWER_EFFICIENCY_1
+	{ 20, core::RGBA(0, 0, 0, 255) }, // RECON_POWER_EFFICIENCY_3
+	{ 21, core::RGBA(0, 0, 0, 255) }, // STEALTH_POWER_EFFICIENCY_1
+	{ 22, core::RGBA(28, 98, 120, 255) }, // CLOAKER
+	{ 23, core::RGBA(0, 0, 0, 255) }, // STEALTH_POWER_EFFICIENCY_2
+	{ 24, core::RGBA(55, 58, 56, 255) }, // SALVAGE_MODULE
+	{ 25, core::RGBA(0, 0, 0, 255) }, // STEALTH_RECHARGE_RATE_1
+	{ 26, core::RGBA(0, 0, 0, 255) }, // STEALTH_RECHARGE_RATE_2
+	{ 27, core::RGBA(0, 0, 0, 255) }, // ANTI_GRAVITY_2
+	{ 28, core::RGBA(0, 0, 0, 255) }, // STEALTH_POWER_EFFICIENCY_3
+	{ 29, core::RGBA(0, 0, 0, 255) }, // STEALTH_RECHARGE_RATE_3
+	{ 30, core::RGBA(62, 58, 58, 255) }, // ASTROTECH_MODULE
+	{ 31, core::RGBA(0, 0, 0, 255) }, // SHIELD_CAPACITY_2
+	{ 32, core::RGBA(52, 51, 49, 255) }, // MISSILE_TUBE
+	{ 33, core::RGBA(0, 0, 0, 255) }, // ARMOR_TYPE_POWERED_2
+	{ 34, core::RGBA(0, 0, 0, 255) }, // SHIELD_TYPE_ALPHA_2
+	{ 35, core::RGBA(0, 0, 0, 255) }, // SHIELD_TYPE_DPS_2
+	{ 36, core::RGBA(0, 0, 0, 255) }, // SHIELD_TYPE_HEAT_2
+	{ 37, core::RGBA(0, 0, 0, 255) }, // MINE_CORE
+	{ 38, core::RGBA(39, 38, 37, 255) }, // MISSILE_COMPUTER
+	{ 39, core::RGBA(37, 39, 39, 255) }, // ASTROTECH_COMPUTER
+	{ 40, core::RGBA(56, 59, 61, 255) }, // SHIELD_DRAIN_MODULE
+	{ 41, core::RGBA(0, 0, 0, 255) }, // MINE_LAYER
+	{ 42, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_STRENGTH_1
+	{ 43, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_STRENGTH_2
+	{ 44, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_CHARGE_SPEED_1
+	{ 45, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_CHARGE_SPEED_2
+	{ 46, core::RGBA(37, 39, 39, 255) }, // SHIELD_DRAIN_COMPUTER
+	{ 47, core::RGBA(35, 42, 45, 255) }, // CAMERA
+	{ 48, core::RGBA(62, 58, 55, 255) }, // SHIELD_SUPPLY_MODULE
+	{ 49, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_3
+	{ 50, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_5
+	{ 51, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_4
+	{ 52, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_6
+	{ 53, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_7
+	{ 54, core::RGBA(39, 38, 37, 255) }, // SHIELD_SUPPLY_COMPUTER
+	{ 55, core::RGBA(108, 108, 108, 255) }, // WHITE_LIGHT
+	{ 56, core::RGBA(68, 66, 61, 255) }, // GRAVITY_UNIT
+	{ 57, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_8
+	{ 58, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_9
+	{ 59, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_10
+	{ 60, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_DISTANCE_1
+	{ 61, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_DISTANCE_2
+	{ 62, core::RGBA(108, 108, 108, 255) }, // BEACON
+	{ 63, core::RGBA(92, 111, 123, 76) }, // GLASS
+	{ 64, core::RGBA(168, 204, 228, 210) }, // ICE
+	{ 65, core::RGBA(83, 62, 58, 255) }, // DEATH_STAR_CORE
+	{ 66, core::RGBA(51, 41, 36, 255) }, // REACTOR_STABILIZER_STREAM_NODE
+	{ 67, core::RGBA(0, 0, 0, 255) }, // JUMP_DRIVE_ROOT
+	{ 68, core::RGBA(0, 0, 0, 255) }, // WARP_POWER_EFFICIENCY_1
+	{ 69, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR
+	{ 70, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR
+	{ 71, core::RGBA(0, 0, 0, 255) }, // WARP_POWER_EFFICIENCY_2
+	{ 72, core::RGBA(83, 64, 46, 95) }, // BLACK_DIRT
+	{ 73, core::RGBA(104, 104, 104, 255) }, // ROCK
+	{ 74, core::RGBA(189, 136, 63, 255) }, // SAND
+	{ 75, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR
+	{ 76, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR
+	{ 77, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR
+	{ 78, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR
+	{ 79, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR
+	{ 80, core::RGBA(255, 140, 0, 255) }, // LAVA
+	{ 81, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR
+	{ 82, core::RGBA(69, 50, 25, 255) }, // GRASS
+	{ 83, core::RGBA(83, 88, 77, 255) }, // GRASSY_ROCK
+	{ 84, core::RGBA(55, 42, 28, 255) }, // WOOD
+	{ 85, core::RGBA(24, 50, 26, 255) }, // FOLIAGE
+	{ 86, core::RGBA(54, 152, 177, 95) }, // WATER
+	{ 87, core::RGBA(81, 50, 29, 255) }, // SOIL
+	{ 88, core::RGBA(58, 58, 58, 255) }, // TURRET_DOCKING_ENHANCER_UNIT
+	{ 89, core::RGBA(99, 92, 69, 255) }, // CACTUS
+	{ 90, core::RGBA(64, 30, 72, 255) }, // PURPLE_TOP_STUFF
+	{ 91, core::RGBA(30, 25, 65, 255) }, // PURPLE_ROCK_STUFF
+	{ 92, core::RGBA(66, 37, 80, 255) }, // PURPLE_VINE_STUFF
+	{ 93, core::RGBA(80, 107, 108, 255) }, // BLUE_FLOWERS
+	{ 94, core::RGBA(117, 50, 36, 255) }, // UNDEATHINATOR
+	{ 95, core::RGBA(72, 73, 9, 255) }, // SMALL_CACTUS
+	{ 96, core::RGBA(183, 83, 47, 255) }, // CORAL
+	{ 97, core::RGBA(41, 61, 93, 255) }, // FAN_FLOWER
+	{ 98, core::RGBA(51, 72, 5, 255) }, // LONG_GRASS
+	{ 99, core::RGBA(136, 118, 45, 255) }, // DESERT_FLOWERS
+	{ 100, core::RGBA(178, 85, 46, 255) }, // FUNGAL_GROWTH
+	{ 101, core::RGBA(13, 37, 53, 255) }, // GLOW_TRAP
+	{ 102, core::RGBA(72, 83, 7, 255) }, // SMALL_BERRY_BUSH
+	{ 103, core::RGBA(122, 93, 24, 255) }, // ARCHED_CACTUS
+	{ 104, core::RGBA(135, 68, 40, 255) }, // MUSHROOM
+	{ 105, core::RGBA(42, 37, 64, 255) }, // PURPLE_WEEDS
+	{ 106, core::RGBA(122, 113, 8, 255) }, // YELLOW_FLOWERS
+	{ 107, core::RGBA(103, 89, 68, 255) }, // STONE_FRAGMENT
+	{ 108, core::RGBA(148, 59, 28, 255) }, // FUNAL_TRAP
+	{ 109, core::RGBA(34, 27, 46, 255) }, // YHOLE
+	{ 110, core::RGBA(0, 0, 0, 255) }, // ANTI_GRAVITY_1
+	{ 111, core::RGBA(0, 0, 0, 255) }, // WARP_POWER_EFFICIENCY_3
+	{ 112, core::RGBA(29, 29, 29, 255) }, // PLEXLANDER
+	{ 113, core::RGBA(46, 49, 48, 255) }, // PLEX_LIFT
+	{ 114, core::RGBA(120, 84, 30, 255) }, // RECYCLER
+	{ 115, core::RGBA(0, 0, 0, 255) }, // WARPGATE_DISTANCE_2
+	{ 116, core::RGBA(0, 0, 0, 255) }, // WARPGATE_DISTANCE_1
+	{ 117, core::RGBA(0, 0, 0, 255) }, // JUMP_DISTANCE_3
+	{ 118, core::RGBA(0, 0, 0, 255) }, // JUMP_DISTANCE_2
+	{ 119, core::RGBA(0, 0, 0, 255) }, // JUMP_DISTANCE_1
+	{ 120, core::RGBA(40, 65, 65, 255) }, // STORAGE
+	{ 121, core::RGBA(57, 39, 32, 255) }, // BOBBY_AI_MODULE
+	{ 122, core::RGBA(29, 29, 29, 255) }, // PLEX_DOOR
+	{ 123, core::RGBA(65, 60, 50, 255) }, // BUILD_BLOCK
+	{ 124, core::RGBA(0, 0, 0, 255) }, // WARP_ROOT
+	{ 125, core::RGBA(0, 0, 0, 255) }, // SR_SCANNER_ROOT
+	{ 126, core::RGBA(0, 0, 0, 255) }, // JUMP_CHARGE_TIME_2
+	{ 127, core::RGBA(0, 0, 0, 255) }, // JUMP_CHARGE_TIME_1
+	{ 128, core::RGBA(83, 64, 46, 95) }, // BLUE_DIRT
+	{ 129, core::RGBA(83, 64, 46, 95) }, // BURNT_ORANGE_DIRT
+	{ 130, core::RGBA(83, 64, 46, 95) }, // ORANGE_DIRT
+	{ 131, core::RGBA(83, 64, 46, 95) }, // PLACEHOLDER
+	{ 132, core::RGBA(83, 64, 46, 95) }, // WHITE_DIRT
+	{ 133, core::RGBA(83, 64, 46, 95) }, // PURPLE_DIRT
+	{ 134, core::RGBA(83, 64, 46, 95) }, // BURNT_WHITE_DIRT
+	{ 135, core::RGBA(83, 64, 46, 95) }, // RED_DIRT_1
+	{ 136, core::RGBA(83, 64, 46, 95) }, // BURNT_PURPLE_DIRT
+	{ 137, core::RGBA(83, 64, 46, 95) }, // GREEN_DIRT
+	{ 138, core::RGBA(68, 31, 28, 255) }, // RED_PLANET_TERRAIN
+	{ 139, core::RGBA(21, 28, 37, 255) }, // BLUE_ROCK
+	{ 140, core::RGBA(63, 29, 25, 255) }, // RED_DIRT
+	{ 141, core::RGBA(38, 31, 37, 255) }, // ROCK_RED_PLANET_TERRAIN
+	{ 142, core::RGBA(75, 105, 121, 255) }, // HYLAT_CAPSULE
+	{ 143, core::RGBA(32, 75, 97, 255) }, // LARIMAR
+	{ 144, core::RGBA(99, 109, 113, 255) }, // LARIMAR_CAPSULE
+	{ 145, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR
+	{ 146, core::RGBA(144, 121, 99, 255) }, // SINTYR_CAPSULE
+	{ 147, core::RGBA(83, 64, 46, 95) }, // ORANGE_LAVA
+	{ 148, core::RGBA(83, 64, 46, 95) }, // ORANGE_WATER
+	{ 149, core::RGBA(83, 64, 46, 95) }, // ORANGE_POISON
+	{ 150, core::RGBA(125, 99, 72, 255) }, // JISPER_CAPSULE
+	{ 151, core::RGBA(115, 66, 14, 255) }, // CHABAZ
+	{ 152, core::RGBA(119, 106, 93, 255) }, // CHABAZ_CAPSULE
+	{ 153, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ
+	{ 154, core::RGBA(134, 117, 63, 255) }, // THRENS_CAPSULE
+	{ 155, core::RGBA(109, 95, 32, 255) }, // LUKRAH
+	{ 156, core::RGBA(120, 115, 94, 255) }, // LUKRAH_CAPSULE
+	{ 157, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH
+	{ 158, core::RGBA(136, 136, 136, 255) }, // SAPSUN_CAPSULE
+	{ 159, core::RGBA(104, 104, 104, 255) }, // DOLOM
+	{ 160, core::RGBA(132, 132, 132, 255) }, // DOLOM_CAPSULE
+	{ 161, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM
+	{ 162, core::RGBA(101, 87, 110, 255) }, // SERTISE_CAPSULE
+	{ 163, core::RGBA(60, 42, 86, 255) }, // SUGIL
+	{ 164, core::RGBA(105, 101, 111, 255) }, // SUGIL_CAPSULE
+	{ 165, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL
+	{ 166, core::RGBA(131, 131, 131, 255) }, // PARSEEN_CAPSULE
+	{ 167, core::RGBA(83, 64, 46, 95) }, // WHITE_LAVA
+	{ 168, core::RGBA(83, 64, 46, 95) }, // WHITE_WATER
+	{ 169, core::RGBA(83, 64, 46, 95) }, // WHITE_POISON
+	{ 170, core::RGBA(117, 87, 80, 255) }, // ZERCANER_CAPSULE
+	{ 171, core::RGBA(87, 39, 25, 255) }, // CINNABAR
+	{ 172, core::RGBA(113, 99, 95, 255) }, // CINNABAR_CAPSULE
+	{ 173, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR
+	{ 174, core::RGBA(96, 96, 102, 255) }, // RAMMET_CAPSULE
+	{ 175, core::RGBA(83, 64, 46, 95) }, // PURPLE_LAVA
+	{ 176, core::RGBA(83, 64, 46, 95) }, // PURPLE_WATER
+	{ 177, core::RGBA(83, 64, 46, 95) }, // PURPLE_POISON
+	{ 178, core::RGBA(83, 114, 86, 255) }, // FERTIKEEN_CAPSULE
+	{ 179, core::RGBA(32, 97, 60, 255) }, // VARIS
+	{ 180, core::RGBA(99, 113, 105, 255) }, // VARIS_CAPSULE
+	{ 181, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS
+	{ 182, core::RGBA(144, 133, 99, 255) }, // HATTEL_CAPSULE
+	{ 183, core::RGBA(83, 64, 46, 95) }, // YELLOW_LAVA
+	{ 184, core::RGBA(83, 64, 46, 95) }, // YELLOW_WATER
+	{ 185, core::RGBA(83, 64, 46, 95) }, // YELLOW_POISON
+	{ 186, core::RGBA(99, 131, 84, 255) }, // BASTYN_CAPSULE
+	{ 187, core::RGBA(83, 64, 46, 95) }, // GREEN_LAVA
+	{ 188, core::RGBA(83, 64, 46, 95) }, // GREEN_WATER
+	{ 189, core::RGBA(83, 64, 46, 95) }, // GREEN_POISON
+	{ 190, core::RGBA(84, 123, 131, 255) }, // VARAT_CAPSULE
+	{ 191, core::RGBA(83, 64, 46, 95) }, // BLUE_LAVA
+	{ 192, core::RGBA(83, 64, 46, 95) }, // BLUE_WATER
+	{ 193, core::RGBA(83, 64, 46, 95) }, // BLUE_POISON
+	{ 194, core::RGBA(144, 104, 99, 255) }, // MATTISE_CAPSULE
+	{ 195, core::RGBA(83, 64, 46, 95) }, // RED_LAVA
+	{ 196, core::RGBA(83, 64, 46, 95) }, // RED_WATER
+	{ 197, core::RGBA(83, 64, 46, 95) }, // RED_POISON
+	{ 198, core::RGBA(96, 96, 102, 255) }, // NOCX_CAPSULE
+	{ 199, core::RGBA(83, 64, 46, 95) }, // BLACK_LAVA
+	{ 200, core::RGBA(83, 64, 46, 95) }, // BLACK_WATER
+	{ 201, core::RGBA(83, 64, 46, 95) }, // BLACK_POSION
+	{ 202, core::RGBA(79, 79, 79, 255) }, // MACET_CAPSULE
+	{ 203, core::RGBA(29, 29, 29, 255) }, // TEKT
+	{ 204, core::RGBA(99, 99, 99, 255) }, // TEKT_CAPSULE
+	{ 205, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT
+	{ 206, core::RGBA(83, 64, 46, 95) }, // BURNT_YELLOW_DIRT
+	{ 207, core::RGBA(83, 64, 46, 95) }, // BURNT_GREEN_DIRT
+	{ 208, core::RGBA(83, 64, 46, 95) }, // BURNT_BLUE_DIRT
+	{ 209, core::RGBA(83, 64, 46, 95) }, // BURNT_RED_DIRT
+	{ 210, core::RGBA(83, 64, 46, 95) }, // BURNT_BLACK_DIRT
+	{ 211, core::RGBA(59, 56, 39, 255) }, // BASIC_FACTORY
+	{ 212, core::RGBA(45, 43, 37, 255) }, // FACTORY_ENHANCER
+	{ 213, core::RGBA(36, 49, 50, 255) }, // CAPSULE_REFINERY
+	{ 214, core::RGBA(60, 63, 63, 255) }, // CAPSULE_REFINERY_ENHANCER
+	{ 215, core::RGBA(38, 55, 56, 255) }, // MICRO_ASSEMBLER
+	{ 216, core::RGBA(60, 63, 63, 255) }, // MICRO_ASSEMBLER_ENHANCER
+	{ 217, core::RGBA(71, 57, 37, 255) }, // STANDARD_FACTORY
+	{ 218, core::RGBA(60, 63, 63, 255) }, // POWERBLOCKFACTORYENHANCER
+	{ 219, core::RGBA(15, 15, 15, 123) }, // CRYSTAL_COMPOSITE_WEDGE
+	{ 220, core::RGBA(15, 15, 15, 123) }, // CRYSTAL_COMPOSITE
+	{ 222, core::RGBA(60, 63, 63, 255) }, // PARTICLE_PRESS
+	{ 223, core::RGBA(47, 75, 47, 255) }, // FERTIKEEN_MOTHERBOARD
+	{ 224, core::RGBA(23, 55, 30, 123) }, // BASTYN_CIRCUIT
+	{ 225, core::RGBA(23, 55, 30, 123) }, // BASTYN_CHARGED_CIRCUIT
+	{ 226, core::RGBA(85, 38, 38, 255) }, // ZERCANER_MOTHERBOARD
+	{ 227, core::RGBA(111, 35, 26, 123) }, // MATTISE_CIRCUIT
+	{ 228, core::RGBA(111, 35, 26, 123) }, // MATTISE_CHARGED_CIRCUIT
+	{ 229, core::RGBA(37, 69, 85, 255) }, // HYLAT_MOTHERBOARD
+	{ 230, core::RGBA(22, 49, 72, 123) }, // VARAT_CIRCUIT
+	{ 231, core::RGBA(22, 49, 72, 123) }, // VARAT_CHARGED_CIRCUIT
+	{ 232, core::RGBA(80, 80, 80, 255) }, // SAPSUN_MOTHERBOARD
+	{ 233, core::RGBA(166, 166, 167, 123) }, // PARSEEN_CIRCUIT
+	{ 234, core::RGBA(166, 166, 167, 123) }, // PARSEEN_CHARGED_CIRCUIT
+	{ 235, core::RGBA(85, 75, 38, 255) }, // THRENS_MOTHERBOARD
+	{ 236, core::RGBA(158, 135, 13, 123) }, // HATTEL_CIRCUIT
+	{ 237, core::RGBA(158, 135, 13, 123) }, // HATTEL_CHARGED_CIRCUIT
+	{ 238, core::RGBA(126, 98, 63, 255) }, // ORANGE_PAINT
+	{ 239, core::RGBA(117, 77, 72, 255) }, // RED_PAINT
+	{ 240, core::RGBA(96, 82, 107, 255) }, // PURPLE_PAINT
+	{ 241, core::RGBA(117, 77, 72, 255) }, // BROWN_PAINT
+	{ 242, core::RGBA(75, 113, 78, 255) }, // GREEN_PAINT
+	{ 243, core::RGBA(143, 134, 55, 255) }, // YELLOW_PAINT
+	{ 244, core::RGBA(76, 77, 78, 255) }, // BLACK_PAINT
+	{ 245, core::RGBA(139, 140, 142, 255) }, // WHITE_PAINT
+	{ 246, core::RGBA(76, 100, 113, 255) }, // BLUE_PAINT
+	{ 247, core::RGBA(85, 60, 38, 255) }, // JISPER_MOTHERBOARD
+	{ 248, core::RGBA(133, 75, 0, 123) }, // SINTYR_CIRCUIT
+	{ 249, core::RGBA(133, 75, 0, 123) }, // SINTYR_CHARGED_CIRCUIT
+	{ 250, core::RGBA(63, 49, 73, 255) }, // SERTISE_MOTHERBOARD
+	{ 251, core::RGBA(52, 34, 69, 123) }, // RAMMET_CIRCUIT
+	{ 252, core::RGBA(52, 34, 69, 123) }, // RAMMET_CHARGED_CIRCUIT
+	{ 253, core::RGBA(166, 166, 167, 123) }, // BEACON_CHARGED_CIRCUIT
+	{ 254, core::RGBA(34, 34, 34, 255) }, // MACET_MOTHERBOARD
+	{ 255, core::RGBA(60, 63, 63, 255) }, // SCHEMADYNE_10000
+	{ 256, core::RGBA(60, 63, 63, 255) }, // SCHEMADYNE_20000
+	{ 257, core::RGBA(60, 63, 63, 255) }, // SCHEMADYNE_30000
+	{ 258, core::RGBA(60, 63, 63, 255) }, // SCHEMADYNE_ADVANCED
+	{ 259, core::RGBA(68, 45, 38, 255) }, // ADVANCED_FACTORY
+	{ 260, core::RGBA(60, 63, 63, 255) }, // SCHEMADYNE_2000
+	{ 261, core::RGBA(60, 63, 63, 255) }, // SCHEMADYNE_3000
+	{ 262, core::RGBA(60, 63, 63, 255) }, // MINERAL_SEPERATOR
+	{ 263, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR
+	{ 264, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR
+	{ 265, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR
+	{ 266, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR
+	{ 267, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR
+	{ 268, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR
+	{ 269, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR
+	{ 270, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR
+	{ 271, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR
+	{ 272, core::RGBA(15, 15, 15, 123) }, // NOCX_CIRCUIT
+	{ 273, core::RGBA(15, 15, 15, 123) }, // NOCX_CHARGED_CIRCUIT
+	{ 274, core::RGBA(105, 138, 158, 255) }, // SNOWY_ROCK_SURFACE
+	{ 275, core::RGBA(78, 117, 140, 255) }, // FROZEN_ROCK
+	{ 276, core::RGBA(55, 42, 28, 255) }, // FROZEN_WOOD
+	{ 277, core::RGBA(24, 50, 26, 255) }, // FROZEN_LEAVES
+	{ 278, core::RGBA(46, 122, 138, 255) }, // ICE_FAN_FLOWER
+	{ 279, core::RGBA(85, 158, 168, 255) }, // ICE_CRAG
+	{ 280, core::RGBA(52, 104, 112, 255) }, // ICE_CORAL
+	{ 281, core::RGBA(31, 86, 96, 255) }, // SNOWBUDS
+	{ 282, core::RGBA(117, 50, 36, 255) }, // RED_LIGHT
+	{ 283, core::RGBA(36, 94, 117, 255) }, // BLUE_LIGHT
+	{ 284, core::RGBA(36, 117, 40, 255) }, // GREEN_LIGHT
+	{ 285, core::RGBA(128, 125, 24, 255) }, // YELLOW_LIGHT
+	{ 286, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL
+	{ 287, core::RGBA(55, 42, 28, 255) }, // RED_WOOD
+	{ 288, core::RGBA(24, 50, 26, 255) }, // RED_WOOD_LEAVES
+	{ 289, core::RGBA(99, 98, 97, 255) }, // DOCKING_MODULE
+	{ 290, core::RGBA(58, 58, 58, 255) }, // DOCKING_ENHANCER
+	{ 291, core::RGBA(120, 84, 30, 255) }, // FACTION_MODULE
+	{ 292, core::RGBA(76, 112, 49, 255) }, // FACTION_HUB
+	{ 293, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_WEDGE
+	{ 294, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_WEDGE
+	{ 295, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_WEDGE
+	{ 296, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_WEDGE
+	{ 297, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_WEDGE
+	{ 298, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_WEDGE
+	{ 299, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_WEDGE
+	{ 300, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_WEDGE
+	{ 301, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_WEDGE
+	{ 302, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_CORNER
+	{ 303, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_CORNER
+	{ 304, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_CORNER
+	{ 305, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_CORNER
+	{ 306, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_CORNER
+	{ 307, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_CORNER
+	{ 308, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_CORNER
+	{ 309, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_CORNER
+	{ 310, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_CORNER
+	{ 311, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_WEDGE
+	{ 312, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_WEDGE
+	{ 313, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_WEDGE
+	{ 314, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_WEDGE
+	{ 315, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_WEDGE
+	{ 316, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_WEDGE
+	{ 317, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_WEDGE
+	{ 318, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_WEDGE
+	{ 319, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_WEDGE
+	{ 320, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_CORNER
+	{ 321, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_CORNER
+	{ 322, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_CORNER
+	{ 323, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_CORNER
+	{ 324, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_CORNER
+	{ 325, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_CORNER
+	{ 326, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_CORNER
+	{ 327, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_CORNER
+	{ 328, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_CORNER
+	{ 329, core::RGBA(92, 111, 123, 76) }, // GLASS_WEDGE
+	{ 330, core::RGBA(92, 111, 123, 76) }, // GLASS_CORNER
+	{ 331, core::RGBA(58, 83, 71, 255) }, // POWER_CAPACITOR
+	{ 332, core::RGBA(84, 65, 80, 255) }, // POWER_DRAIN_COMPUTER
+	{ 333, core::RGBA(69, 59, 67, 255) }, // POWER_DRAIN_MODULE
+	{ 334, core::RGBA(58, 85, 82, 255) }, // POWER_SUPPLY_COMPUTER
+	{ 335, core::RGBA(61, 70, 65, 255) }, // POWER_SUPPLY_MODULE
+	{ 336, core::RGBA(60, 63, 63, 255) }, // DECORATIVE_SWITCHBOARD
+	{ 337, core::RGBA(61, 65, 65, 255) }, // DECORATIVE_SERVER
+	{ 338, core::RGBA(72, 84, 72, 255) }, // DECORATIVE_PIPES
+	{ 339, core::RGBA(65, 86, 93, 255) }, // DECORATIVE_PANEL
+	{ 340, core::RGBA(148, 141, 57, 255) }, // YELLOW_ROD_LIGHT
+	{ 341, core::RGBA(192, 105, 21, 255) }, // BRONZE_BAR
+	{ 342, core::RGBA(156, 178, 179, 255) }, // SILVER_BAR
+	{ 343, core::RGBA(213, 160, 0, 255) }, // GOLD_BAR
+	{ 344, core::RGBA(37, 39, 39, 255) }, // PUSH_PULSE_COMPUTER
+	{ 345, core::RGBA(56, 56, 58, 255) }, // PUSH_PULSE_MODULE
+	{ 346, core::RGBA(36, 50, 51, 255) }, // PUBLIC_PERMISSION_MODULE
+	{ 347, core::RGBA(36, 69, 79, 255) }, // SHOP_MODULE
+	{ 348, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_TETRA
+	{ 349, core::RGBA(0, 0, 0, 255) }, // EFFECT_EM_COMPUTER
+	{ 350, core::RGBA(0, 0, 0, 255) }, // EFFECT_EM
+	{ 351, core::RGBA(0, 0, 0, 255) }, // EFFECT_HEAT_COMPUTER
+	{ 352, core::RGBA(0, 0, 0, 255) }, // EFFECT_HEAT
+	{ 353, core::RGBA(0, 0, 0, 255) }, // EFFECT_KINETIC_COMPUTER
+	{ 354, core::RGBA(0, 0, 0, 255) }, // EFFECT_KINETIC
+	{ 355, core::RGBA(0, 0, 0, 255) }, // MINE_TYPE_A
+	{ 356, core::RGBA(0, 0, 0, 255) }, // MINE_TYPE_B
+	{ 357, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_HEPTA
+	{ 358, core::RGBA(0, 0, 0, 255) }, // MINE_TYPE_C
+	{ 360, core::RGBA(38, 39, 38, 255) }, // TRACTOR_BEAM_COMPUTER
+	{ 361, core::RGBA(0, 0, 0, 255) }, // TRACTOR_BEAM
+	{ 362, core::RGBA(0, 0, 0, 255) }, // MISSILE_CAPACITY_MODULE
+	{ 363, core::RGBA(0, 0, 0, 255) }, // MINE_MOD_STRENGTH
+	{ 364, core::RGBA(0, 0, 0, 255) }, // MINE_MOD_PERSONAL
+	{ 365, core::RGBA(0, 0, 0, 255) }, // MINE_MOD_FRIENDS
+	{ 366, core::RGBA(0, 0, 0, 255) }, // MINE_MOD_STEALTH
+	{ 367, core::RGBA(92, 111, 123, 76) }, // GLASS_HEPTA
+	{ 368, core::RGBA(92, 111, 123, 76) }, // GLASS_TETRA
+	{ 369, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_HEPTA
+	{ 370, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_HEPTA
+	{ 371, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_HEPTA
+	{ 372, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_HEPTA
+	{ 373, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_HEPTA
+	{ 374, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_HEPTA
+	{ 375, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_HEPTA
+	{ 376, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_HEPTA
+	{ 377, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_TETRA
+	{ 378, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_TETRA
+	{ 379, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_TETRA
+	{ 380, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_TETRA
+	{ 381, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_TETRA
+	{ 382, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_TETRA
+	{ 383, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_TETRA
+	{ 384, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_TETRA
+	{ 385, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_HEPTA
+	{ 386, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_HEPTA
+	{ 387, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_HEPTA
+	{ 388, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_HEPTA
+	{ 389, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_HEPTA
+	{ 390, core::RGBA(0, 0, 0, 255) }, // CARGO_BUILDMODE
+	{ 391, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_HEPTA
+	{ 392, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_HEPTA
+	{ 393, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_TETRA
+	{ 394, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_TETRA
+	{ 395, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_TETRA
+	{ 396, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_TETRA
+	{ 397, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_TETRA
+	{ 398, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_TETRA
+	{ 399, core::RGBA(74, 60, 45, 255) }, // LOD_BUTTON_0
+	{ 400, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_TETRA
+	{ 401, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_HEPTA
+	{ 402, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_TETRA
+	{ 403, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_HEPTA
+	{ 404, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_TETRA
+	{ 405, core::RGBA(49, 60, 73, 255) }, // ACTIVATION_MODULE
+	{ 406, core::RGBA(52, 96, 149, 255) }, // SIGNAL_(DELAY-NON-REPEATING)
+	{ 407, core::RGBA(52, 96, 149, 255) }, // DELAY-SIGNAL
+	{ 408, core::RGBA(58, 99, 150, 255) }, // AND-SIGNAL
+	{ 409, core::RGBA(59, 100, 150, 255) }, // OR-SIGNAL
+	{ 410, core::RGBA(57, 99, 150, 255) }, // NOT-SIGNAL
+	{ 411, core::RGBA(173, 133, 17, 87) }, // TRIGGER_(AREA)
+	{ 412, core::RGBA(55, 79, 111, 255) }, // TRIGGER_(STEP_ON)
+	{ 413, core::RGBA(113, 83, 54, 255) }, // TRIGGER_(AREA)_CONTROLLER
+	{ 414, core::RGBA(38, 39, 38, 255) }, // DAMAGE_BEAM_COMPUTER_0
+	{ 415, core::RGBA(59, 62, 60, 255) }, // DAMAGE_BEAM_MODULE_0
+	{ 416, core::RGBA(39, 38, 37, 255) }, // DAMAGE_PULSE_COMPUTER_0
+	{ 417, core::RGBA(58, 56, 56, 255) }, // DAMAGE_PULSE_MODULE_0
+	{ 418, core::RGBA(41, 86, 64, 255) }, // PIERCING_EFFECT_COMPUTER
+	{ 419, core::RGBA(51, 80, 50, 255) }, // PIERCING_EFFECT_MODULE
+	{ 420, core::RGBA(85, 68, 43, 255) }, // EXPLOSIVE_EFFECT_COMPUTER
+	{ 421, core::RGBA(80, 69, 48, 255) }, // EXPLOSIVE_EFFECT_MODULE
+	{ 422, core::RGBA(66, 52, 91, 255) }, // PUNCH-THROUGH_EFFECT_COMPUTER
+	{ 423, core::RGBA(59, 50, 80, 255) }, // PUNCH-THROUGH_EFFECT_MODULE
+	{ 424, core::RGBA(42, 85, 86, 255) }, // EMP_EFFECT_COMPUTER
+	{ 425, core::RGBA(46, 82, 77, 255) }, // EMP_EFFECT_MODULE
+	{ 426, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR
+	{ 427, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_WEDGE
+	{ 428, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_CORNER
+	{ 429, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_HEPTA
+	{ 430, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_TETRA
+	{ 431, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR
+	{ 432, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_WEDGE
+	{ 433, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_CORNER
+	{ 434, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_HEPTA
+	{ 435, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_TETRA
+	{ 436, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR
+	{ 437, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_WEDGE
+	{ 438, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR
+	{ 439, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_WEDGE
+	{ 440, core::RGBA(47, 47, 47, 255) }, // ALLOYED_METAL_MESH
+	{ 441, core::RGBA(47, 47, 47, 255) }, // ALLOYED_METAL_MESH_WEDGE
+	{ 442, core::RGBA(49, 49, 49, 255) }, // METAL_GRILL
+	{ 443, core::RGBA(49, 49, 49, 255) }, // METAL_GRILL_WEDGE
+	{ 444, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_WEDGE
+	{ 445, core::RGBA(154, 165, 162, 255) }, // MEDICAL_SUPPLIES_0
+	{ 446, core::RGBA(190, 191, 191, 255) }, // MEDICAL_CABINET_0
+	{ 447, core::RGBA(92, 48, 41, 255) }, // DECORATIVE_SCREEN_(RED)
+	{ 448, core::RGBA(32, 101, 123, 255) }, // DECORATIVE_SCREEN_(BLUE)
+	{ 449, core::RGBA(69, 112, 44, 255) }, // DECORATIVE_COMPUTER_(GREEN)
+	{ 450, core::RGBA(120, 84, 30, 255) }, // DECORATIVE_COMPUTER_(ORANGE)
+	{ 451, core::RGBA(33, 89, 108, 255) }, // PERSONAL_COMPUTER_(BLUE)
+	{ 452, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL
+	{ 453, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL
+	{ 454, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL
+	{ 455, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL
+	{ 456, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL
+	{ 457, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL
+	{ 458, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL
+	{ 459, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL
+	{ 460, core::RGBA(88, 51, 43, 255) }, // STOP_EFFECT_COMPUTER
+	{ 461, core::RGBA(81, 56, 50, 255) }, // STOP_EFFECT_MODULE
+	{ 462, core::RGBA(81, 53, 78, 255) }, // PUSH_EFFECT_COMPUTER
+	{ 463, core::RGBA(77, 53, 72, 255) }, // PUSH_EFFECT_MODULE
+	{ 464, core::RGBA(79, 82, 45, 255) }, // PULL_EFFECT_COMPUTER
+	{ 465, core::RGBA(79, 78, 43, 255) }, // PULL_EFFECT_MODULE
+	{ 466, core::RGBA(39, 71, 90, 255) }, // ION_EFFECT_COMPUTER
+	{ 467, core::RGBA(49, 70, 80, 255) }, // ION_EFFECT_MODULE
+	{ 468, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT
+	{ 469, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT
+	{ 470, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT
+	{ 471, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT
+	{ 472, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT
+	{ 473, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT
+	{ 474, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT
+	{ 475, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT
+	{ 476, core::RGBA(46, 84, 46, 255) }, // OVERDRIVE_EFFECT_COMPUTER
+	{ 477, core::RGBA(48, 80, 62, 255) }, // OVERDRIVE_EFFECT_MODULE
+	{ 478, core::RGBA(70, 65, 61, 255) }, // SHIELD-RECHARGER
+	{ 479, core::RGBA(41, 41, 41, 255) }, // DISPLAY_MODULE
+	{ 480, core::RGBA(212, 180, 14, 255) }, // HATTEL_SHARD_RAW
+	{ 481, core::RGBA(230, 132, 18, 255) }, // SINTYR_SHARD_RAW
+	{ 482, core::RGBA(192, 66, 46, 255) }, // MATTISE_SHARD_RAW
+	{ 483, core::RGBA(96, 93, 119, 255) }, // RAMMET_SHARD_RAW
+	{ 484, core::RGBA(15, 169, 227, 255) }, // VARAT_SHARD_RAW
+	{ 485, core::RGBA(74, 186, 20, 255) }, // BASTYN_SHARD_RAW
+	{ 486, core::RGBA(189, 182, 181, 255) }, // PARSEEN_SHARD_RAW
+	{ 487, core::RGBA(96, 93, 119, 255) }, // NOCX_SHARD_RAW
+	{ 488, core::RGBA(121, 113, 39, 255) }, // THRENS_ORE_RAW
+	{ 489, core::RGBA(120, 82, 32, 255) }, // JISPER_ORE_RAW
+	{ 490, core::RGBA(114, 48, 48, 255) }, // ZERCANER_ORE_RAW
+	{ 491, core::RGBA(77, 59, 95, 255) }, // SERTISE_ORE_RAW
+	{ 492, core::RGBA(62, 96, 109, 255) }, // HYLAT_ORE_RAW
+	{ 493, core::RGBA(46, 104, 61, 255) }, // FERTIKEEN_ORE_RAW
+	{ 494, core::RGBA(175, 175, 175, 255) }, // SAPSUN_ORE_RAW
+	{ 495, core::RGBA(61, 61, 61, 255) }, // MACET_ORE_RAW
+	{ 496, core::RGBA(85, 47, 105, 255) }, // PURPLE_LIGHT_0
+	{ 497, core::RGBA(128, 94, 25, 255) }, // ORANGE_LIGHT_0
+	{ 498, core::RGBA(37, 42, 49, 255) }, // BLACK_LIGHT_0
+	{ 499, core::RGBA(159, 159, 159, 255) }, // WHITE_ROD_LIGHT
+	{ 500, core::RGBA(54, 29, 49, 255) }, // BLACK_ROD_LIGHT
+	{ 501, core::RGBA(148, 61, 57, 255) }, // RED_ROD_LIGHT
+	{ 502, core::RGBA(148, 108, 57, 255) }, // ORANGE_ROD_LIGHT
+	{ 503, core::RGBA(159, 159, 159, 255) }, // BEACON_ROD
+	{ 504, core::RGBA(57, 148, 63, 255) }, // GREEN_ROD_LIGHT
+	{ 505, core::RGBA(57, 113, 148, 255) }, // BLUE_ROD_LIGHT
+	{ 506, core::RGBA(111, 57, 148, 255) }, // PURPLE_ROD_LIGHT
+	{ 507, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR
+	{ 508, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_WEDGE
+	{ 509, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_CORNER
+	{ 510, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_HEPTA
+	{ 511, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_TETRA
+	{ 512, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR
+	{ 513, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_WEDGE
+	{ 514, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_CORNER
+	{ 515, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_HEPTA
+	{ 516, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_TETRA
+	{ 517, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR
+	{ 518, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_WEDGE
+	{ 519, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_CORNER
+	{ 520, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_HEPTA
+	{ 521, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_TETRA
+	{ 522, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR
+	{ 523, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_WEDGE
+	{ 524, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_CORNER
+	{ 525, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_HEPTA
+	{ 526, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_TETRA
+	{ 527, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR
+	{ 528, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_WEDGE
+	{ 529, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_CORNER
+	{ 530, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_HEPTA
+	{ 531, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_TETRA
+	{ 532, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR
+	{ 533, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_WEDGE
+	{ 534, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_CORNER
+	{ 535, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_HEPTA
+	{ 536, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_TETRA
+	{ 537, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR
+	{ 538, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_WEDGE
+	{ 539, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_CORNER
+	{ 540, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_HEPTA
+	{ 541, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_TETRA
+	{ 542, core::RGBA(52, 85, 100, 255) }, // WARP_GATE_COMPUTER
+	{ 543, core::RGBA(33, 33, 32, 255) }, // WARP_GATE_MODULE_0
+	{ 544, core::RGBA(46, 93, 92, 255) }, // JUMP_DRIVE_COMPUTER
+	{ 545, core::RGBA(46, 46, 46, 255) }, // JUMP_DRIVE_MODULE_0
+	{ 546, core::RGBA(47, 47, 47, 255) }, // SCRAP_ALLOY
+	{ 547, core::RGBA(166, 166, 167, 123) }, // SCRAP_COMPOSITE
+	{ 548, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_WEDGE
+	{ 549, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_WEDGE
+	{ 550, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_WEDGE
+	{ 551, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_WEDGE
+	{ 552, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_WEDGE
+	{ 553, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_WEDGE
+	{ 554, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_WEDGE
+	{ 555, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_WEDGE
+	{ 556, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_WEDGE
+	{ 557, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_WEDGE
+	{ 558, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_WEDGE
+	{ 559, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_WEDGE
+	{ 560, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_WEDGE
+	{ 561, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_WEDGE
+	{ 562, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_WEDGE
+	{ 563, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_WEDGE
+	{ 564, core::RGBA(15, 15, 15, 123) }, // NOCX_CIRCUIT_WEDGE
+	{ 565, core::RGBA(166, 166, 167, 123) }, // PARSEEN_CIRCUIT_WEDGE
+	{ 566, core::RGBA(52, 34, 69, 123) }, // RAMMET_CIRCUIT_WEDGE
+	{ 567, core::RGBA(22, 49, 72, 123) }, // VARAT_CIRCUIT_WEDGE
+	{ 568, core::RGBA(23, 55, 30, 123) }, // BASTYN_CIRCUIT_WEDGE
+	{ 569, core::RGBA(158, 135, 13, 123) }, // HATTEL_CIRCUIT_WEDGE
+	{ 570, core::RGBA(133, 75, 0, 123) }, // SINTYR_CIRCUIT_WEDGE
+	{ 571, core::RGBA(111, 35, 26, 123) }, // MATTISE_CIRCUIT_WEDGE
+	{ 572, core::RGBA(34, 34, 34, 255) }, // MACET_MOTHERBOARD_WEDGE
+	{ 573, core::RGBA(80, 80, 80, 255) }, // SAPSUN_MOTHERBOARD_WEDGE
+	{ 574, core::RGBA(63, 49, 73, 255) }, // SERTISE_MOTHERBOARD_WEDGE
+	{ 575, core::RGBA(37, 69, 85, 255) }, // HYLAT_MOTHERBOARD_WEDGE
+	{ 576, core::RGBA(47, 75, 47, 255) }, // FERTIKEEN_MOTHERBOARD_WEDGE
+	{ 577, core::RGBA(85, 75, 38, 255) }, // THRENS_MOTHERBOARD_WEDGE
+	{ 578, core::RGBA(85, 60, 38, 255) }, // JISPER_MOTHERBOARD_WEDGE
+	{ 579, core::RGBA(85, 38, 38, 255) }, // ZERCANER_MOTHERBOARD_WEDGE
+	{ 580, core::RGBA(15, 15, 15, 123) }, // NOCX_CHARGED_CIRCUIT_WEDGE
+	{ 581, core::RGBA(166, 166, 167, 123) }, // PARSEEN_CHARGED_CIRCUIT_WEDGE
+	{ 582, core::RGBA(52, 34, 69, 123) }, // RAMMET_CHARGED_CIRCUIT_WEDGE
+	{ 583, core::RGBA(22, 49, 72, 123) }, // VARAT_CHARGED_CIRCUIT_WEDGE
+	{ 584, core::RGBA(23, 55, 30, 123) }, // BASTYN_CHARGED_CIRCUIT_WEDGE
+	{ 585, core::RGBA(158, 135, 13, 123) }, // HATTEL_CHARGED_CIRCUIT_WEDGE
+	{ 586, core::RGBA(133, 75, 0, 123) }, // SINTYR_CHARGED_CIRCUIT_WEDGE
+	{ 587, core::RGBA(111, 35, 26, 123) }, // MATTISE_CHARGED_CIRCUIT_WEDGE
+	{ 588, core::RGBA(29, 29, 29, 255) }, // PLEX_DOOR_WEDGE
+	{ 589, core::RGBA(92, 111, 123, 76) }, // GLASS_DOOR
+	{ 590, core::RGBA(92, 111, 123, 76) }, // GLASS_DOOR_WEDGE
+	{ 591, core::RGBA(59, 59, 59, 255) }, // BLAST_DOOR
+	{ 592, core::RGBA(59, 59, 59, 255) }, // BLAST_DOOR_WEDGE
+	{ 593, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR
+	{ 594, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_WEDGE
+	{ 595, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_CORNER
+	{ 596, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_HEPTA
+	{ 597, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_TETRA
+	{ 598, core::RGBA(77, 77, 78, 255) }, // GREY_HULL
+	{ 599, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_WEDGE
+	{ 600, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_CORNER
+	{ 601, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_HEPTA
+	{ 602, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_TETRA
+	{ 603, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL
+	{ 604, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_WEDGE
+	{ 605, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_CORNER
+	{ 606, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_HEPTA
+	{ 607, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_TETRA
+	{ 608, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL
+	{ 609, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_WEDGE
+	{ 610, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_CORNER
+	{ 611, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_HEPTA
+	{ 612, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_TETRA
+	{ 613, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL
+	{ 614, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_WEDGE
+	{ 615, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_CORNER
+	{ 616, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_HEPTA
+	{ 617, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_TETRA
+	{ 618, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL
+	{ 619, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_WEDGE
+	{ 620, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_CORNER
+	{ 621, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_HEPTA
+	{ 622, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_TETRA
+	{ 623, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL
+	{ 624, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_WEDGE
+	{ 625, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_CORNER
+	{ 626, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_HEPTA
+	{ 627, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_TETRA
+	{ 628, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL
+	{ 629, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_WEDGE
+	{ 630, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_CORNER
+	{ 631, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_HEPTA
+	{ 632, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_TETRA
+	{ 633, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL
+	{ 634, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_WEDGE
+	{ 635, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_CORNER
+	{ 636, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_HEPTA
+	{ 637, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_TETRA
+	{ 638, core::RGBA(103, 32, 23, 255) }, // RED_HULL
+	{ 639, core::RGBA(103, 32, 23, 255) }, // RED_HULL_WEDGE
+	{ 640, core::RGBA(103, 32, 23, 255) }, // RED_HULL_CORNER
+	{ 641, core::RGBA(103, 32, 23, 255) }, // RED_HULL_HEPTA
+	{ 642, core::RGBA(103, 32, 23, 255) }, // RED_HULL_TETRA
+	{ 643, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL
+	{ 644, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_WEDGE
+	{ 645, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_CORNER
+	{ 646, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_HEPTA
+	{ 647, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_TETRA
+	{ 648, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_CORNER
+	{ 649, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_HEPTA
+	{ 650, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_TETRA
+	{ 651, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_CORNER
+	{ 652, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_HEPTA
+	{ 653, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_TETRA
+	{ 654, core::RGBA(99, 74, 39, 255) }, // SCANNER_COMPUTER_0
+	{ 655, core::RGBA(56, 39, 30, 255) }, // SCANNER_ANTENNA
+	{ 656, core::RGBA(54, 54, 54, 255) }, // SCAFFOLD_0_0
+	{ 657, core::RGBA(65, 86, 95, 255) }, // DECORATIVE_CHARTS
+	{ 658, core::RGBA(63, 106, 113, 255) }, // CONDUIT_(BLUE)
+	{ 659, core::RGBA(244, 16, 21, 50) }, // FORCEFIELD_(RED)
+	{ 660, core::RGBA(61, 173, 214, 50) }, // FORCEFIELD_(BLUE)
+	{ 661, core::RGBA(254, 157, 0, 50) }, // FORCEFIELD_(YELLOW)
+	{ 662, core::RGBA(68, 67, 67, 255) }, // RAIL_BASIC
+	{ 663, core::RGBA(100, 97, 95, 255) }, // RAIL_DOCKER
+	{ 664, core::RGBA(73, 72, 71, 255) }, // RAIL_ROTATOR_CLOCK_WISE
+	{ 665, core::RGBA(95, 92, 92, 255) }, // RAIL_TURRET_AXIS
+	{ 666, core::RGBA(49, 60, 73, 255) }, // BUTTON
+	{ 667, core::RGBA(52, 96, 149, 255) }, // FLIP_FLOP
+	{ 668, core::RGBA(47, 58, 73, 255) }, // WIRELESS_LOGIC_MODULE
+	{ 669, core::RGBA(74, 73, 71, 255) }, // RAIL_ROTATOR_COUNTER_CLOCK_WISE
+	{ 670, core::RGBA(49, 59, 73, 255) }, // INNER_SHIP_REMOTE
+	{ 671, core::RGBA(58, 58, 58, 255) }, // RAIL_MASS_ENHANCER
+	{ 672, core::RGBA(90, 80, 36, 255) }, // RAIL_SPEED_CONTROLLER_0
+	{ 673, core::RGBA(244, 16, 21, 50) }, // FORCEFIELD_WEDGE_(RED)
+	{ 674, core::RGBA(61, 173, 214, 50) }, // FORCEFIELD_WEDGE_(BLUE)
+	{ 675, core::RGBA(254, 157, 0, 50) }, // FORCEFIELD_WEDGE_(YELLOW)
+	{ 676, core::RGBA(54, 54, 54, 255) }, // SCAFFOLD_WEDGE
+	{ 677, core::RGBA(35, 70, 78, 255) }, // SHIPYARD_COMPUTER_0
+	{ 678, core::RGBA(67, 61, 52, 255) }, // SHIPYARD_MODULE_0
+	{ 679, core::RGBA(72, 64, 51, 255) }, // SHIPYARD_CORE_ANCHOR
+	{ 680, core::RGBA(38, 37, 37, 255) }, // DECORATIVE_FAN
+	{ 681, core::RGBA(100, 44, 39, 255) }, // JUMP_INHIBITOR_COMPUTER
+	{ 682, core::RGBA(46, 46, 46, 255) }, // JUMP_INHIBITOR_MODULE
+	{ 683, core::RGBA(42, 79, 54, 255) }, // RACE_GATE_CONTROLLER_0
+	{ 684, core::RGBA(33, 33, 32, 255) }, // RACE_GATE_MODULE_0
+	{ 685, core::RGBA(86, 63, 40, 255) }, // ACTIVATION_GATE_CONTROLLER_0
+	{ 686, core::RGBA(33, 33, 32, 255) }, // ACTIVATION_GATE_MODULE_0
+	{ 687, core::RGBA(39, 95, 100, 255) }, // TRANSPORTER_CONTROLLER_0
+	{ 688, core::RGBA(68, 109, 110, 255) }, // TRANSPORTER_MODULE_0
+	{ 689, core::RGBA(52, 48, 49, 255) }, // CARGO_SPACE_0
+	{ 690, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR
+	{ 691, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_WEDGE
+	{ 692, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_CORNER
+	{ 693, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_HEPTA
+	{ 694, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_TETRA
+	{ 695, core::RGBA(49, 49, 49, 255) }, // METAL_GRILL_QUARTER_SLAB
+	{ 696, core::RGBA(49, 49, 49, 255) }, // METAL_GRILL_HALF_SLAB
+	{ 697, core::RGBA(49, 49, 49, 255) }, // METAL_GRILL_THREE_QUARTER_SLAB
+	{ 698, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_1/4
+	{ 699, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_1/2
+	{ 700, core::RGBA(77, 77, 78, 255) }, // GREY_HULL_3/4
+	{ 701, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_1/4
+	{ 702, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_1/2
+	{ 703, core::RGBA(63, 63, 63, 255) }, // GREY_STANDARD_ARMOR_3/4
+	{ 704, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_1/4
+	{ 705, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_1/2
+	{ 706, core::RGBA(61, 61, 61, 255) }, // GREY_ADVANCED_ARMOR_3/4
+	{ 707, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_1/4
+	{ 708, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_1/2
+	{ 709, core::RGBA(159, 159, 160, 255) }, // WHITE_HULL_3/4
+	{ 710, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_1/4
+	{ 711, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_1/2
+	{ 712, core::RGBA(139, 139, 139, 255) }, // WHITE_STANDARD_ARMOR_3/4
+	{ 713, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_1/4
+	{ 714, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_1/2
+	{ 715, core::RGBA(138, 138, 138, 255) }, // WHITE_ADVANCED_ARMOR_3/4
+	{ 716, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_1/4
+	{ 717, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_1/2
+	{ 718, core::RGBA(255, 255, 255, 54) }, // WHITE_CRYSTAL_ARMOR_3/4
+	{ 719, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_1/4
+	{ 720, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_1/2
+	{ 721, core::RGBA(6, 6, 6, 255) }, // BLACK_HULL_3/4
+	{ 722, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_1/4
+	{ 723, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_1/2
+	{ 724, core::RGBA(8, 8, 8, 255) }, // BLACK_STANDARD_ARMOR_3/4
+	{ 725, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_1/4
+	{ 726, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_1/2
+	{ 727, core::RGBA(8, 8, 8, 255) }, // BLACK_ADVANCED_ARMOR_3/4
+	{ 728, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_1/4
+	{ 729, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_1/2
+	{ 730, core::RGBA(0, 0, 0, 94) }, // BLACK_CRYSTAL_ARMOR_3/4
+	{ 731, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_1/4
+	{ 732, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_1/2
+	{ 733, core::RGBA(150, 128, 11, 255) }, // YELLOW_HULL_3/4
+	{ 734, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_1/4
+	{ 735, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_1/2
+	{ 736, core::RGBA(134, 113, 0, 255) }, // YELLOW_STANDARD_ARMOR_3/4
+	{ 737, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_1/4
+	{ 738, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_1/2
+	{ 739, core::RGBA(131, 110, 2, 255) }, // YELLOW_ADVANCED_ARMOR_3/4
+	{ 740, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_1/4
+	{ 741, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_1/2
+	{ 742, core::RGBA(166, 149, 1, 95) }, // YELLOW_CRYSTAL_ARMOR_3/4
+	{ 743, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_1/4
+	{ 744, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_1/2
+	{ 745, core::RGBA(151, 85, 0, 255) }, // ORANGE_HULL_3/4
+	{ 746, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_1/4
+	{ 747, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_1/2
+	{ 748, core::RGBA(132, 74, 0, 255) }, // ORANGE_STANDARD_ARMOR_3/4
+	{ 749, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_1/4
+	{ 750, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_1/2
+	{ 751, core::RGBA(129, 73, 1, 255) }, // ORANGE_ADVANCED_ARMOR_3/4
+	{ 752, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_1/4
+	{ 753, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_1/2
+	{ 754, core::RGBA(170, 97, 26, 95) }, // ORANGE_CRYSTAL_ARMOR_3/4
+	{ 755, core::RGBA(103, 32, 23, 255) }, // RED_HULL_1/4
+	{ 756, core::RGBA(103, 32, 23, 255) }, // RED_HULL_1/2
+	{ 757, core::RGBA(103, 32, 23, 255) }, // RED_HULL_3/4
+	{ 758, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_1/4
+	{ 759, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_1/2
+	{ 760, core::RGBA(80, 27, 16, 255) }, // RED_STANDARD_ARMOR_3/4
+	{ 761, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_1/4
+	{ 762, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_1/2
+	{ 763, core::RGBA(77, 27, 16, 255) }, // RED_ADVANCED_ARMOR_3/4
+	{ 764, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_1/4
+	{ 765, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_1/2
+	{ 766, core::RGBA(108, 38, 24, 124) }, // RED_CRYSTAL_ARMOR_3/4
+	{ 767, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_1/4
+	{ 768, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_1/2
+	{ 769, core::RGBA(44, 46, 86, 255) }, // PURPLE_HULL_3/4
+	{ 770, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_1/4
+	{ 771, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_1/2
+	{ 772, core::RGBA(51, 33, 68, 255) }, // PURPLE_STANDARD_ARMOR_3/4
+	{ 773, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_1/4
+	{ 774, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_1/2
+	{ 775, core::RGBA(50, 32, 67, 255) }, // PURPLE_ADVANCED_ARMOR_3/4
+	{ 776, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_1/4
+	{ 777, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_1/2
+	{ 778, core::RGBA(90, 44, 66, 167) }, // PURPLE_CRYSTAL_ARMOR_3/4
+	{ 779, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_1/4
+	{ 780, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_1/2
+	{ 781, core::RGBA(36, 73, 82, 255) }, // BLUE_HULL_3/4
+	{ 782, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_1/4
+	{ 783, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_1/2
+	{ 784, core::RGBA(21, 48, 71, 255) }, // BLUE_STANDARD_ARMOR_3/4
+	{ 785, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_1/4
+	{ 786, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_1/2
+	{ 787, core::RGBA(20, 47, 70, 255) }, // BLUE_ADVANCED_ARMOR_3/4
+	{ 788, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_1/4
+	{ 789, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_1/2
+	{ 790, core::RGBA(45, 121, 171, 95) }, // BLUE_CRYSTAL_ARMOR_3/4
+	{ 791, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_1/4
+	{ 792, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_1/2
+	{ 793, core::RGBA(72, 92, 46, 255) }, // GREEN_HULL_3/4
+	{ 794, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_1/4
+	{ 795, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_1/2
+	{ 796, core::RGBA(22, 54, 29, 255) }, // GREEN_STANDARD_ARMOR_3/4
+	{ 797, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_1/4
+	{ 798, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_1/2
+	{ 799, core::RGBA(21, 53, 28, 255) }, // GREEN_ADVANCED_ARMOR_3/4
+	{ 800, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_1/4
+	{ 801, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_1/2
+	{ 802, core::RGBA(56, 118, 62, 95) }, // GREEN_CRYSTAL_ARMOR_3/4
+	{ 803, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_1/4
+	{ 804, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_1/2
+	{ 805, core::RGBA(62, 51, 44, 255) }, // BROWN_HULL_3/4
+	{ 806, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_1/4
+	{ 807, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_1/2
+	{ 808, core::RGBA(71, 50, 34, 255) }, // BROWN_STANDARD_ARMOR_3/4
+	{ 809, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_1/4
+	{ 810, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_1/2
+	{ 811, core::RGBA(70, 49, 33, 255) }, // BROWN_ADVANCED_ARMOR_3/4
+	{ 812, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_1/4
+	{ 813, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_1/2
+	{ 814, core::RGBA(83, 64, 46, 95) }, // BROWN_CRYSTAL_ARMOR_3/4
+	{ 815, core::RGBA(92, 111, 123, 76) }, // GLASS_1/4
+	{ 816, core::RGBA(92, 111, 123, 76) }, // GLASS_1/2
+	{ 817, core::RGBA(92, 111, 123, 76) }, // GLASS_3/4
+	{ 818, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR
+	{ 819, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_WEDGE
+	{ 820, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_CORNER
+	{ 821, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_HEPTA
+	{ 822, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_TETRA
+	{ 823, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR
+	{ 824, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_WEDGE
+	{ 825, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_CORNER
+	{ 826, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_HEPTA
+	{ 827, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_TETRA
+	{ 828, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL
+	{ 829, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_WEDGE
+	{ 830, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_CORNER
+	{ 831, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_HEPTA
+	{ 832, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_TETRA
+	{ 833, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_1/4
+	{ 834, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_1/2
+	{ 835, core::RGBA(36, 36, 36, 255) }, // DARK_GREY_HULL_3/4
+	{ 836, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_1/4
+	{ 837, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_1/2
+	{ 838, core::RGBA(25, 25, 25, 255) }, // DARK_GREY_STANDARD_ARMOR_3/4
+	{ 839, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_1/4
+	{ 840, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_1/2
+	{ 841, core::RGBA(24, 24, 24, 255) }, // DARK_GREY_ADVANCED_ARMOR_3/4
+	{ 842, core::RGBA(29, 29, 29, 255) }, // PLEX_DOOR_1/4
+	{ 843, core::RGBA(29, 29, 29, 255) }, // PLEX_DOOR_1/2
+	{ 844, core::RGBA(29, 29, 29, 255) }, // PLEX_DOOR_3/4
+	{ 845, core::RGBA(92, 111, 123, 76) }, // GLASS_DOOR_1/4
+	{ 846, core::RGBA(92, 111, 123, 76) }, // GLASS_DOOR_1/2
+	{ 847, core::RGBA(92, 111, 123, 76) }, // GLASS_DOOR_3/4
+	{ 848, core::RGBA(59, 59, 59, 255) }, // BLAST_DOOR_1/4
+	{ 849, core::RGBA(59, 59, 59, 255) }, // BLAST_DOOR_1/2
+	{ 850, core::RGBA(59, 59, 59, 255) }, // BLAST_DOOR_3/4
+	{ 851, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_1/4
+	{ 852, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_1/2
+	{ 853, core::RGBA(85, 100, 88, 255) }, // GREEN_HAZARD_ARMOR_3/4
+	{ 854, core::RGBA(244, 16, 21, 50) }, // FORCEFIELD_(RED)_1/4
+	{ 855, core::RGBA(244, 16, 21, 50) }, // FORCEFIELD_(RED)_1/2
+	{ 856, core::RGBA(244, 16, 21, 50) }, // FORCEFIELD_(RED)_3/4
+	{ 857, core::RGBA(61, 173, 214, 50) }, // FORCEFIELD_(BLUE)_1/4
+	{ 858, core::RGBA(61, 173, 214, 50) }, // FORCEFIELD_(BLUE)_1/2
+	{ 859, core::RGBA(61, 173, 214, 50) }, // FORCEFIELD_(BLUE)_3/4
+	{ 860, core::RGBA(254, 157, 0, 50) }, // FORCEFIELD_(YELLOW)_1/4
+	{ 861, core::RGBA(254, 157, 0, 50) }, // FORCEFIELD_(YELLOW)_1/2
+	{ 862, core::RGBA(254, 157, 0, 50) }, // FORCEFIELD_(YELLOW)_3/4
+	{ 863, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_1/4
+	{ 864, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_1/2
+	{ 865, core::RGBA(63, 53, 0, 255) }, // YELLOW_HAZARD_ARMOR_3/4
+	{ 866, core::RGBA(107, 98, 82, 255) }, // STANDARD_HARDENER
+	{ 867, core::RGBA(107, 98, 82, 255) }, // ADVANCED_HARDENER
+	{ 868, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR
+	{ 869, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_WEDGE
+	{ 870, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_CORNER
+	{ 871, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_HEPTA
+	{ 872, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_TETRA
+	{ 873, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR
+	{ 874, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_WEDGE
+	{ 875, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_CORNER
+	{ 876, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_HEPTA
+	{ 877, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_TETRA
+	{ 878, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL
+	{ 879, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_WEDGE
+	{ 880, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_CORNER
+	{ 881, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_HEPTA
+	{ 882, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_TETRA
+	{ 883, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR
+	{ 884, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_WEDGE
+	{ 885, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_CORNER
+	{ 886, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_HEPTA
+	{ 887, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_TETRA
+	{ 888, core::RGBA(36, 117, 112, 255) }, // TEAL_LIGHT
+	{ 889, core::RGBA(57, 148, 132, 255) }, // TEAL_LIGHT_ROD
+	{ 890, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_1/4
+	{ 891, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_1/2
+	{ 892, core::RGBA(20, 97, 87, 255) }, // TEAL_HULL_3/4
+	{ 893, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_1/4
+	{ 894, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_1/2
+	{ 895, core::RGBA(15, 77, 74, 255) }, // TEAL_STANDARD_ARMOR_3/4
+	{ 896, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_1/4
+	{ 897, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_1/2
+	{ 898, core::RGBA(14, 76, 73, 255) }, // TEAL_ADVANCED_ARMOR_3/4
+	{ 899, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_1/4
+	{ 900, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_1/2
+	{ 901, core::RGBA(45, 171, 168, 95) }, // TEAL_CRYSTAL_ARMOR_3/4
+	{ 902, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR
+	{ 903, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_WEDGE
+	{ 904, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_CORNER
+	{ 905, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_HEPTA
+	{ 906, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_TETRA
+	{ 907, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR
+	{ 908, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_WEDGE
+	{ 909, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_CORNER
+	{ 910, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_HEPTA
+	{ 911, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_TETRA
+	{ 912, core::RGBA(151, 46, 146, 255) }, // PINK_HULL
+	{ 913, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_WEDGE
+	{ 914, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_CORNER
+	{ 915, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_HEPTA
+	{ 916, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_TETRA
+	{ 917, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR
+	{ 918, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_WEDGE
+	{ 919, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_CORNER
+	{ 920, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_HEPTA
+	{ 921, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_TETRA
+	{ 922, core::RGBA(114, 39, 106, 255) }, // PINK_LIGHT
+	{ 923, core::RGBA(147, 57, 147, 255) }, // PINK_LIGHT_ROD
+	{ 924, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_1/4
+	{ 925, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_1/2
+	{ 926, core::RGBA(171, 45, 152, 96) }, // PINK_CRYSTAL_ARMOR_3/4
+	{ 927, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_1/4
+	{ 928, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_1/2
+	{ 929, core::RGBA(117, 34, 107, 255) }, // PINK_ADVANCED_ARMOR_3/4
+	{ 930, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_1/4
+	{ 931, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_1/2
+	{ 932, core::RGBA(120, 36, 109, 255) }, // PINK_STANDARD_ARMOR_3/4
+	{ 933, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_1/4
+	{ 934, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_1/2
+	{ 935, core::RGBA(151, 46, 146, 255) }, // PINK_HULL_3/4
+	{ 936, core::RGBA(37, 52, 39, 255) }, // FACTION_PERMISSION_MODULE
+	{ 937, core::RGBA(5, 176, 185, 91) }, // PICKUP_POINT
+	{ 938, core::RGBA(17, 174, 35, 90) }, // PICKUP_RAIL_0
+	{ 939, core::RGBA(174, 35, 17, 90) }, // SHOOTOUT_RAIL
+	{ 940, core::RGBA(168, 204, 228, 210) }, // ICE_WEDGE_0
+	{ 941, core::RGBA(37, 37, 37, 255) }, // GIRDER_0
+	{ 942, core::RGBA(108, 108, 108, 255) }, // WHITE_LIGHT_1/4
+	{ 943, core::RGBA(108, 108, 108, 255) }, // WHITE_LIGHT_1/2
+	{ 944, core::RGBA(108, 108, 108, 255) }, // WHITE_LIGHT_3/4
+	{ 945, core::RGBA(108, 108, 108, 255) }, // BEACON_1/4
+	{ 946, core::RGBA(108, 108, 108, 255) }, // BEACON_1/2
+	{ 947, core::RGBA(108, 108, 108, 255) }, // BEACON_3/4
+	{ 948, core::RGBA(128, 125, 24, 255) }, // YELLOW_LIGHT_1/4
+	{ 949, core::RGBA(128, 125, 24, 255) }, // YELLOW_LIGHT_1/2
+	{ 950, core::RGBA(128, 125, 24, 255) }, // YELLOW_LIGHT_3/4
+	{ 951, core::RGBA(128, 94, 25, 255) }, // ORANGE_LIGHT_1/4
+	{ 952, core::RGBA(128, 94, 25, 255) }, // ORANGE_LIGHT_1/2
+	{ 953, core::RGBA(128, 94, 25, 255) }, // ORANGE_LIGHT_3/4
+	{ 954, core::RGBA(117, 50, 36, 255) }, // RED_LIGHT_1/4
+	{ 955, core::RGBA(117, 50, 36, 255) }, // RED_LIGHT_1/2
+	{ 956, core::RGBA(117, 50, 36, 255) }, // RED_LIGHT_3/4
+	{ 957, core::RGBA(114, 39, 106, 255) }, // PINK_LIGHT_1/4
+	{ 958, core::RGBA(114, 39, 106, 255) }, // PINK_LIGHT_1/2
+	{ 959, core::RGBA(114, 39, 106, 255) }, // PINK_LIGHT_3/4
+	{ 960, core::RGBA(85, 47, 105, 255) }, // PURPLE_LIGHT_1/4
+	{ 961, core::RGBA(85, 47, 105, 255) }, // PURPLE_LIGHT_1/2
+	{ 962, core::RGBA(85, 47, 105, 255) }, // PURPLE_LIGHT_3/4
+	{ 963, core::RGBA(36, 94, 117, 255) }, // BLUE_LIGHT_1/4
+	{ 964, core::RGBA(36, 94, 117, 255) }, // BLUE_LIGHT_1/2
+	{ 965, core::RGBA(36, 94, 117, 255) }, // BLUE_LIGHT_3/4
+	{ 966, core::RGBA(36, 117, 112, 255) }, // TEAL_LIGHT_1/4
+	{ 967, core::RGBA(36, 117, 112, 255) }, // TEAL_LIGHT_1/2
+	{ 968, core::RGBA(36, 117, 112, 255) }, // TEAL_LIGHT_3/4
+	{ 969, core::RGBA(36, 117, 40, 255) }, // GREEN_LIGHT_1/4
+	{ 970, core::RGBA(36, 117, 40, 255) }, // GREEN_LIGHT_1/2
+	{ 971, core::RGBA(36, 117, 40, 255) }, // GREEN_LIGHT_3/4
+	{ 972, core::RGBA(37, 42, 49, 255) }, // BLACK_LIGHT_1/4
+	{ 973, core::RGBA(37, 42, 49, 255) }, // BLACK_LIGHT_1/2
+	{ 974, core::RGBA(37, 42, 49, 255) }, // BLACK_LIGHT_3/4
+	{ 975, core::RGBA(65, 86, 93, 255) }, // BLUE_CONSOLE
+	{ 976, core::RGBA(76, 77, 78, 255) }, // PIPE
+	{ 977, core::RGBA(139, 140, 142, 255) }, // WHITE_LIGHT_BAR
+	{ 978, core::RGBA(83, 62, 58, 255) }, // POWER_AUXILIARY
+	{ 979, core::RGBA(52, 96, 149, 255) }, // RANDOMIZER
+	{ 980, core::RGBA(49, 74, 109, 255) }, // SENSOR
+	{ 981, core::RGBA(0, 0, 0, 255) }, // FORCEFIELD_GREEN_QUARTER_SLAB
+	{ 982, core::RGBA(0, 0, 0, 255) }, // FORCEFIELD_GREEN_HALF_SLAB
+	{ 983, core::RGBA(0, 0, 0, 255) }, // FORCEFIELD_GREEN_THREE_QUARTER_SLAB
+	{ 984, core::RGBA(139, 140, 142, 255) }, // BEACON_LIGHT_BAR
+	{ 985, core::RGBA(0, 0, 0, 255) }, // RECON_USAGE_TIME_PERMANENT
+	{ 986, core::RGBA(0, 0, 0, 255) }, // CARGO_SCANNER
+	{ 987, core::RGBA(0, 0, 0, 255) }, // RECON_USAGE_TIME_2
+	{ 988, core::RGBA(0, 0, 0, 255) }, // RECON_USAGE_TIME_1
+	{ 989, core::RGBA(0, 0, 0, 255) }, // ORE_SCANNER
+	{ 990, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_2
+	{ 991, core::RGBA(0, 0, 0, 255) }, // MASS_CHAMBER
+	{ 992, core::RGBA(49, 49, 49, 255) }, // GRATE_WEDGE
+	{ 993, core::RGBA(74, 62, 48, 255) }, // SMALL_ACTIVATOR
+	{ 994, core::RGBA(139, 140, 142, 255) }, // BEACON_LIGHT_CORNER
+	{ 995, core::RGBA(0, 0, 0, 255) }, // TRANSPORT_SHIELD_OUTAGE_REDUCTION_1
+	{ 996, core::RGBA(0, 0, 0, 255) }, // STEALTH_STRENGTH_6
+	{ 997, core::RGBA(0, 0, 0, 255) }, // STEALTH_STRENGTH_5
+	{ 998, core::RGBA(0, 0, 0, 255) }, // STEALTH_STRENGTH_4
+	{ 999, core::RGBA(15, 169, 227, 255) }, // BLUEPRINT_EMPTY_0
+	{ 1000, core::RGBA(76, 77, 78, 255) }, // PIPE_TEE
+	{ 1001, core::RGBA(76, 77, 78, 255) }, // PIPE_ELBOW
+	{ 1002, core::RGBA(0, 0, 0, 255) }, // EXTENDED_TEXTURE_TEST
+	{ 1003, core::RGBA(49, 49, 49, 255) }, // GRATE_0
+	{ 1004, core::RGBA(49, 49, 49, 255) }, // GRATE_CORNER
+	{ 1005, core::RGBA(49, 49, 49, 255) }, // GRATE_SLOPE
+	{ 1006, core::RGBA(76, 77, 78, 255) }, // PIPE_CROSS
+	{ 1007, core::RGBA(139, 140, 142, 255) }, // WHITE_LIGHT_CORNER
+	{ 1008, core::RGBA(0, 0, 0, 255) }, // REACTOR_POWER
+	{ 1009, core::RGBA(0, 0, 0, 255) }, // REACTOR_STABILIZER
+	{ 1010, core::RGBA(0, 0, 0, 255) }, // REACTOR_CONDUIT
+	{ 1011, core::RGBA(0, 0, 0, 255) }, // MOBILITY_CHAMBER
+	{ 1012, core::RGBA(0, 0, 0, 255) }, // RECON_CHAMBER
+	{ 1013, core::RGBA(0, 0, 0, 255) }, // FTL_CHAMBER
+	{ 1014, core::RGBA(0, 0, 0, 255) }, // STEALTH_CHAMBER
+	{ 1015, core::RGBA(0, 0, 0, 255) }, // LOGISTICS_CHAMBER
+	{ 1016, core::RGBA(0, 0, 0, 255) }, // STEALTH_STRENGTH_3
+	{ 1017, core::RGBA(0, 0, 0, 255) }, // STEALTH_STRENGTH_2
+	{ 1018, core::RGBA(0, 0, 0, 255) }, // STEALTH_STRENGTH_1
+	{ 1019, core::RGBA(0, 0, 0, 255) }, // REACTOR_BOOSTER_2
+	{ 1020, core::RGBA(0, 0, 0, 255) }, // REACTOR_BOOSTER_1
+	{ 1021, core::RGBA(0, 0, 0, 255) }, // STEALTH_ANTI_LOCKON
+	{ 1022, core::RGBA(0, 0, 0, 255) }, // REACTOR_BASE_ENHANCEMENT
+	{ 1023, core::RGBA(0, 0, 0, 255) }, // REACTOR_FAILSAFE
+	{ 1024, core::RGBA(179, 179, 179, 255) }, // REACTOR_SHIELD_POWER_EFFICIENCY_1
+	{ 1025, core::RGBA(179, 179, 179, 255) }, // REACTOR_SHIELD_STRENGTH_2
+	{ 1026, core::RGBA(179, 179, 179, 255) }, // REACTOR_SHIELD_STRENGTH_1
+	{ 1027, core::RGBA(179, 179, 179, 255) }, // REACTOR_SHIELD
+	{ 1028, core::RGBA(65, 86, 93, 255) }, // BLUE_CONSOLE_INNER_CORNER
+	{ 1029, core::RGBA(65, 86, 93, 255) }, // BLUE_CONSOLE_OUTER_CORNER
+	{ 1030, core::RGBA(92, 48, 41, 255) }, // RED_CONSOLE
+	{ 1031, core::RGBA(0, 0, 0, 255) }, // USAGE_TIME_PERMANENT
+	{ 1032, core::RGBA(0, 0, 0, 255) }, // USAGE_TIME_3
+	{ 1033, core::RGBA(0, 0, 0, 255) }, // USAGE_TIME_2
+	{ 1034, core::RGBA(0, 0, 0, 255) }, // USAGE_TIME_1
+	{ 1035, core::RGBA(0, 0, 0, 255) }, // SHIELD_TYPE_ALPHA_1
+	{ 1036, core::RGBA(0, 0, 0, 255) }, // SHIELD_TYPE_HEAT_1
+	{ 1037, core::RGBA(0, 0, 0, 255) }, // MASS_STRUCTURE_GRAVITY_FIELD_Y_MINUS_0_0
+	{ 1038, core::RGBA(92, 48, 41, 255) }, // RED_CONSOLE_INNER_CORNER
+	{ 1039, core::RGBA(92, 48, 41, 255) }, // RED_CONSOLE_OUTER_CORNER
+	{ 1040, core::RGBA(120, 84, 30, 255) }, // ORANGE_CONSOLE
+	{ 1041, core::RGBA(120, 84, 30, 255) }, // ORANGE_CONSOLE_INNER_CORNER
+	{ 1042, core::RGBA(179, 179, 179, 255) }, // REACTOR_SUPERCHARGER_3
+	{ 1043, core::RGBA(179, 179, 179, 255) }, // REACTOR_SUPERCHARGER_2
+	{ 1044, core::RGBA(179, 179, 179, 255) }, // REACTOR_SUPERCHARGER_1
+	{ 1045, core::RGBA(0, 0, 0, 255) }, // REACTOR_BOOSTER_3
+	{ 1046, core::RGBA(0, 0, 0, 255) }, // DEFENCE_CHAMBER
+	{ 1047, core::RGBA(0, 0, 0, 255) }, // STEALTH_JAMMER
+	{ 1048, core::RGBA(0, 0, 0, 255) }, // OFFENCE_CHAMBER
+	{ 1049, core::RGBA(0, 0, 0, 255) }, // SHIELD_CAPACITY_1
+	{ 1050, core::RGBA(0, 0, 0, 255) }, // BASE_SHIELD_ENHANCEMENT
+	{ 1051, core::RGBA(120, 84, 30, 255) }, // ORANGE_CONSOLE_OUTER_CORNER
+	{ 1052, core::RGBA(42, 79, 54, 255) }, // GREEN_CONSOLE
+	{ 1053, core::RGBA(42, 79, 54, 255) }, // GREEN_CONSOLE_INNER_CORNER
+	{ 1054, core::RGBA(42, 79, 54, 255) }, // GREEN_CONSOLE_OUTER_CORNER
+	{ 1055, core::RGBA(179, 179, 179, 255) }, // MASS_STRUCTURE_GRAVITY_FIELD_CENTER_0_0
+	{ 1056, core::RGBA(179, 179, 179, 255) }, // RECON_LONG_RANGE_SCANNERS
+	{ 1057, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_1
+	{ 1058, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_MULTI_CHARGE_2
+	{ 1059, core::RGBA(0, 0, 0, 255) }, // THRUST_BLAST_MULTI_CHARGE_1
+	{ 1060, core::RGBA(0, 0, 0, 255) }, // MINING_BONUS_2
+	{ 1061, core::RGBA(0, 0, 0, 255) }, // MINING_BONUS_1
+	{ 1062, core::RGBA(0, 0, 0, 255) }, // ARMOR_HEAT_DAMAGE_2
+	{ 1063, core::RGBA(0, 0, 0, 255) }, // ARMOR_HEAT_DAMAGE_1
+	{ 1064, core::RGBA(0, 0, 0, 255) }, // ARMOR_HP_EFFICIENCY_2
+	{ 1065, core::RGBA(143, 134, 55, 255) }, // YELLOW_LIGHT_BAR
+	{ 1066, core::RGBA(0, 0, 0, 255) }, // TRANSPORT_SHIELD_OUTAGE_REDUCTION_2
+	{ 1067, core::RGBA(179, 179, 179, 255) }, // RECON_LONG_RANGE_DISTANCE_2
+	{ 1068, core::RGBA(179, 179, 179, 255) }, // RECON_LONG_RANGE_DISTANCE_1
+	{ 1069, core::RGBA(0, 0, 0, 255) }, // SHIELD_OUTAGE_REDUX_2
+	{ 1070, core::RGBA(0, 0, 0, 255) }, // SHIELD_OUTAGE_REDUX_1
+	{ 1071, core::RGBA(179, 179, 179, 255) }, // MINERAL_TO_RESOURCE_3
+	{ 1072, core::RGBA(179, 179, 179, 255) }, // MINERAL_TO_RESOURCE_2
+	{ 1073, core::RGBA(179, 179, 179, 255) }, // MINERAL_TO_RESOURCE_1
+	{ 1074, core::RGBA(179, 179, 179, 255) }, // MOBILE_FACTORY
+	{ 1075, core::RGBA(179, 179, 179, 255) }, // CHAMBER_SHIELD
+	{ 1076, core::RGBA(179, 179, 179, 255) }, // REACTOR_SHIELD_POWER_EFFICIENCY_2
+	{ 1077, core::RGBA(0, 0, 0, 255) }, // CARGO_VOLUME_REDUX_2
+	{ 1078, core::RGBA(0, 0, 0, 255) }, // CARGO_VOLUME_REDUX_1
+	{ 1079, core::RGBA(0, 0, 0, 255) }, // FACTORY_BAKE_TIME_2
+	{ 1080, core::RGBA(0, 0, 0, 255) }, // FACTORY_BAKE_TIME_1
+	{ 1081, core::RGBA(143, 134, 55, 255) }, // YELLOW_LIGHT_CORNER
+	{ 1082, core::RGBA(126, 98, 63, 255) }, // ORANGE_LIGHT_BAR
+	{ 1083, core::RGBA(126, 98, 63, 255) }, // ORANGE_LIGHT_CORNER
+	{ 1084, core::RGBA(0, 0, 0, 255) }, // TOP_SPEED_3
+	{ 1085, core::RGBA(0, 0, 0, 255) }, // TOP_SPEED_2
+	{ 1086, core::RGBA(0, 0, 0, 255) }, // TOP_SPEED_1
+	{ 1087, core::RGBA(117, 77, 72, 255) }, // RED_LIGHT_BAR
+	{ 1088, core::RGBA(0, 0, 0, 255) }, // JUMP_POWEREFFICIENCY_3
+	{ 1089, core::RGBA(0, 0, 0, 255) }, // JUMP_POWEREFFICIENCY_2
+	{ 1090, core::RGBA(0, 0, 0, 255) }, // JUMP_POWEREFFICIENCY_1
+	{ 1091, core::RGBA(0, 0, 0, 255) }, // ARMOR_HP_EFFICIENCY_1
+	{ 1092, core::RGBA(0, 0, 0, 255) }, // ARMOR_HP_ABSORPTION_2
+	{ 1093, core::RGBA(0, 0, 0, 255) }, // WARP_INTERDICTION_1
+	{ 1094, core::RGBA(179, 179, 179, 255) }, // RECON_STRENGTH_6
+	{ 1095, core::RGBA(0, 0, 0, 255) }, // RECON_STRENGTH_5
+	{ 1096, core::RGBA(0, 0, 0, 255) }, // RECON_STRENGTH_4
+	{ 1097, core::RGBA(0, 0, 0, 255) }, // RECON_STRENGTH_3
+	{ 1098, core::RGBA(0, 0, 0, 255) }, // RECON_STRENGTH_2
+	{ 1099, core::RGBA(0, 0, 0, 255) }, // RECON_STRENGTH_1
+	{ 1100, core::RGBA(0, 0, 0, 255) }, // STEALTH_CLOAKER
+	{ 1101, core::RGBA(0, 0, 0, 255) }, // MASS_PERSONAL_GRAVITY_FIELD_Y_MINUS_0_0
+	{ 1102, core::RGBA(0, 0, 0, 255) }, // WARPGATE_FREE_TARGET
+	{ 1103, core::RGBA(117, 77, 72, 255) }, // RED_LIGHT_CORNER
+	{ 1104, core::RGBA(29, 93, 95, 255) }, // RAIL_LOAD_0
+	{ 1105, core::RGBA(29, 92, 94, 255) }, // RAIL_UNLOAD_0
+	{ 1106, core::RGBA(96, 82, 107, 255) }, // PINK_LIGHT_BAR
+	{ 1107, core::RGBA(96, 82, 107, 255) }, // PINK_LIGHT_CORNER
+	{ 1108, core::RGBA(96, 82, 107, 255) }, // PURPLE_LIGHT_BAR
+	{ 1109, core::RGBA(96, 82, 107, 255) }, // PURPLE_LIGHT_CORNER
+	{ 1110, core::RGBA(0, 0, 0, 255) }, // FACTORY_POWEREFFICIENCY_2
+	{ 1111, core::RGBA(0, 0, 0, 255) }, // FACTORY_POWEREFFICIENCY_1
+	{ 1112, core::RGBA(0, 0, 0, 255) }, // JUMP_MULTICHARGE_3
+	{ 1113, core::RGBA(0, 0, 0, 255) }, // THRUST_CONFIG_APPLY_SPEED_2
+	{ 1114, core::RGBA(0, 0, 0, 255) }, // THRUST_CONFIG_APPLY_SPEED_1
+	{ 1115, core::RGBA(0, 0, 0, 255) }, // ARMOR_HP_ABSORPTION_1
+	{ 1116, core::RGBA(0, 0, 0, 255) }, // ARMOR_TYPE_POWERED_1
+	{ 1117, core::RGBA(0, 0, 0, 255) }, // JUMP_AUTOCHARGE
+	{ 1118, core::RGBA(0, 0, 0, 255) }, // BASE_ARMOR_ENHANCEMENT
+	{ 1119, core::RGBA(0, 0, 0, 255) }, // SHIELD_TYPE_DPS_1
+	{ 1120, core::RGBA(76, 100, 113, 255) }, // BLUE_LIGHT_BAR
+	{ 1121, core::RGBA(76, 100, 113, 255) }, // BLUE_LIGHT_CORNER
+	{ 1122, core::RGBA(76, 100, 113, 255) }, // TEAL_LIGHT_BAR
+	{ 1123, core::RGBA(0, 0, 0, 255) }, // TURN_RATE_3
+	{ 1124, core::RGBA(0, 0, 0, 255) }, // TURN_RATE_2
+	{ 1125, core::RGBA(0, 0, 0, 255) }, // TURN_RATE_1
+	{ 1126, core::RGBA(49, 51, 36, 255) }, // REPULSE_MODULE_0
+	{ 1127, core::RGBA(46, 46, 46, 255) }, // DECORATIVE_CASCADE_BLUE
+	{ 1128, core::RGBA(46, 46, 46, 255) }, // DECORATIVE_CASCADE_RED
+	{ 1129, core::RGBA(0, 0, 0, 255) }, // FORCEFIELD_GREEN
+	{ 1130, core::RGBA(0, 0, 0, 255) }, // FORCEFIELD_GREEN_WEDGE
+	{ 1131, core::RGBA(46, 46, 46, 255) }, // DECORATIVE_CASCADE_GREEN
+	{ 1132, core::RGBA(76, 100, 113, 255) }, // TEAL_LIGHT_CORNER
+	{ 1133, core::RGBA(75, 113, 78, 255) }, // GREEN_LIGHT_BAR
+	{ 1134, core::RGBA(75, 113, 78, 255) }, // GREEN_LIGHT_CORNER
+	{ 1135, core::RGBA(76, 77, 78, 255) }, // BLACK_LIGHT_BAR
+	{ 1136, core::RGBA(76, 77, 78, 255) }, // BLACK_LIGHT_CORNER
+	{ 1137, core::RGBA(76, 77, 78, 255) }, // METAL_BAR
+	{ 1138, core::RGBA(76, 77, 78, 255) }, // METAL_CORNER
+	{ 1580, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_THREE_QUARTER_SLAB
+	{ 1581, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_HALF_SLAB
+	{ 1582, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_QUARTER_SLAB
+	{ 1583, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_TETRA
+	{ 1584, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_HEPTA
+	{ 1585, core::RGBA(42, 103, 152, 255) }, // HYLAT_INGOT_CORNER
+	{ 1586, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_THREE_QUARTER_SLAB
+	{ 1587, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_HALF_SLAB
+	{ 1588, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_QUARTER_SLAB
+	{ 1589, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_TETRA
+	{ 1590, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_HEPTA
+	{ 1591, core::RGBA(58, 109, 39, 255) }, // FERTIKEEN_INGOT_CORNER
+	{ 1592, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_THREE_QUARTER_SLAB
+	{ 1593, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_HALF_SLAB
+	{ 1594, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_QUARTER_SLAB
+	{ 1595, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_TETRA
+	{ 1596, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_HEPTA
+	{ 1597, core::RGBA(167, 83, 21, 255) }, // JISPER_INGOT_CORNER
+	{ 1598, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_THREE_QUARTER_SLAB
+	{ 1599, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_HALF_SLAB
+	{ 1600, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_QUARTER_SLAB
+	{ 1601, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_TETRA
+	{ 1602, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_HEPTA
+	{ 1603, core::RGBA(137, 33, 28, 255) }, // ZERCANER_INGOT_CORNER
+	{ 1604, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_THREE_QUARTER_SLAB
+	{ 1605, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_HALF_SLAB
+	{ 1606, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_QUARTER_SLAB
+	{ 1607, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_TETRA
+	{ 1608, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_HEPTA
+	{ 1609, core::RGBA(189, 137, 12, 255) }, // THRENS_INGOT_CORNER
+	{ 1610, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_THREE_QUARTER_SLAB
+	{ 1611, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_HALF_SLAB
+	{ 1612, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_QUARTER_SLAB
+	{ 1613, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_TETRA
+	{ 1614, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_HEPTA
+	{ 1615, core::RGBA(119, 119, 119, 255) }, // SAPSUN_INGOT_CORNER
+	{ 1616, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_THREE_QUARTER_SLAB
+	{ 1617, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_HALF_SLAB
+	{ 1618, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_QUARTER_SLAB
+	{ 1619, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_TETRA
+	{ 1620, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_HEPTA
+	{ 1621, core::RGBA(34, 34, 34, 255) }, // MACET_INGOT_CORNER
+	{ 1622, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_THREE_QUARTER_SLAB
+	{ 1623, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_HALF_SLAB
+	{ 1624, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_QUARTER_SLAB
+	{ 1625, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_TETRA
+	{ 1626, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_HEPTA
+	{ 1627, core::RGBA(115, 69, 133, 255) }, // SERTISE_INGOT_CORNER
+	{ 1628, core::RGBA(168, 204, 228, 210) }, // ICE_THREE_QUARTER_SLAB
+	{ 1629, core::RGBA(168, 204, 228, 210) }, // ICE_HALF_SLAB
+	{ 1630, core::RGBA(168, 204, 228, 210) }, // ICE_QUARTER_SLAB
+	{ 1631, core::RGBA(168, 204, 228, 210) }, // ICE_TETRA
+	{ 1632, core::RGBA(168, 204, 228, 210) }, // ICE_HEPTA
+	{ 1633, core::RGBA(168, 204, 228, 210) }, // ICE_CORNER
+	{ 1634, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1635, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_HALF_SLAB
+	{ 1636, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_QUARTER_SLAB
+	{ 1637, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_TETRA
+	{ 1638, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_HEPTA
+	{ 1639, core::RGBA(93, 189, 226, 255) }, // ICE_CRYSTAL_CORNER
+	{ 1640, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1641, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_HALF_SLAB
+	{ 1642, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_QUARTER_SLAB
+	{ 1643, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_TETRA
+	{ 1644, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_HEPTA
+	{ 1645, core::RGBA(0, 102, 194, 255) }, // VARAT_CRYSTAL_CORNER
+	{ 1646, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1647, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_HALF_SLAB
+	{ 1648, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_QUARTER_SLAB
+	{ 1649, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_TETRA
+	{ 1650, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_HEPTA
+	{ 1651, core::RGBA(1, 139, 4, 255) }, // BASTYN_CRYSTAL_CORNER
+	{ 1652, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1653, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_HALF_SLAB
+	{ 1654, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_QUARTER_SLAB
+	{ 1655, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_TETRA
+	{ 1656, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_HEPTA
+	{ 1657, core::RGBA(151, 67, 1, 255) }, // SINTYR_CRYSTAL_CORNER
+	{ 1658, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1659, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_HALF_SLAB
+	{ 1660, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_QUARTER_SLAB
+	{ 1661, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_TETRA
+	{ 1662, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_HEPTA
+	{ 1663, core::RGBA(136, 30, 5, 255) }, // MATTISE_CRYSTAL_CORNER
+	{ 1664, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1665, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_HALF_SLAB
+	{ 1666, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_QUARTER_SLAB
+	{ 1667, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_TETRA
+	{ 1668, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_HEPTA
+	{ 1669, core::RGBA(154, 120, 5, 255) }, // HATTEL_CRYSTAL_CORNER
+	{ 1670, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1671, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_HALF_SLAB
+	{ 1672, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_QUARTER_SLAB
+	{ 1673, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_TETRA
+	{ 1674, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_HEPTA
+	{ 1675, core::RGBA(158, 158, 158, 255) }, // PARSEEN_CRYSTAL_CORNER
+	{ 1676, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1677, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_HALF_SLAB
+	{ 1678, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_QUARTER_SLAB
+	{ 1679, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_TETRA
+	{ 1680, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_HEPTA
+	{ 1681, core::RGBA(43, 22, 35, 255) }, // NOCX_CRYSTAL_CORNER
+	{ 1682, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1683, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_HALF_SLAB
+	{ 1684, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_QUARTER_SLAB
+	{ 1685, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_TETRA
+	{ 1686, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_HEPTA
+	{ 1687, core::RGBA(89, 37, 128, 255) }, // RAMMET_CRYSTAL_CORNER
+	{ 1688, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_THREE_QUARTER_SLAB
+	{ 1689, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_THREE_QUARTER_SLAB
+	{ 1690, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_THREE_QUARTER_SLAB
+	{ 1691, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_THREE_QUARTER_SLAB
+	{ 1692, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_THREE_QUARTER_SLAB
+	{ 1693, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_THREE_QUARTER_SLAB
+	{ 1694, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_THREE_QUARTER_SLAB
+	{ 1695, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_THREE_QUARTER_SLAB
+	{ 1696, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_HALF_SLAB
+	{ 1697, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_HALF_SLAB
+	{ 1698, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_HALF_SLAB
+	{ 1699, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_HALF_SLAB
+	{ 1700, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_HEPTA
+	{ 1701, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_HEPTA
+	{ 1702, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_QUARTER_SLAB
+	{ 1703, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_QUARTER_SLAB
+	{ 1704, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_QUARTER_SLAB
+	{ 1705, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_QUARTER_SLAB
+	{ 1706, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_QUARTER_SLAB
+	{ 1707, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_QUARTER_SLAB
+	{ 1708, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_QUARTER_SLAB
+	{ 1709, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_QUARTER_SLAB
+	{ 1710, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_HALF_SLAB
+	{ 1711, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_HALF_SLAB
+	{ 1712, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_HALF_SLAB
+	{ 1713, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_HALF_SLAB
+	{ 1714, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL
+	{ 1715, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR
+	{ 1716, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR
+	{ 1717, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_WEDGE
+	{ 1718, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_WEDGE
+	{ 1719, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_WEDGE
+	{ 1720, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_CORNER
+	{ 1721, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_CORNER
+	{ 1722, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_CORNER
+	{ 1723, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_HEPTA
+	{ 1724, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_HEPTA
+	{ 1725, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_HEPTA
+	{ 1726, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_TETRA
+	{ 1727, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_TETRA
+	{ 1728, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_TETRA
+	{ 1729, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_QUARTER_SLAB
+	{ 1730, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_QUARTER_SLAB
+	{ 1731, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_QUARTER_SLAB
+	{ 1732, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_HALF_SLAB
+	{ 1733, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_HALF_SLAB
+	{ 1734, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_HALF_SLAB
+	{ 1735, core::RGBA(0, 0, 0, 255) }, // BEIGE_HULL_THREE_QUARTER_SLAB
+	{ 1736, core::RGBA(0, 0, 0, 255) }, // BEIGE_STANDARD_ARMOR_THREE_QUARTER_SLAB
+	{ 1737, core::RGBA(0, 0, 0, 255) }, // BEIGE_ADVANCED_ARMOR_THREE_QUARTER_SLAB
+	{ 1738, core::RGBA(165, 147, 139, 255) }, // GRAVITY_EXIT_UNIT
+	{ 1739, core::RGBA(179, 179, 179, 255) }, // ENERGY_CELL_RED
+	{ 1740, core::RGBA(53, 77, 89, 255) }, // ENERGY_CELL_BLUE
+	{ 1741, core::RGBA(60, 60, 60, 255) }, // ENERGY_CELL_GREEN
+	{ 1742, core::RGBA(92, 73, 50, 255) }, // ENERGY_CELL_ORANGE
+	{ 1743, core::RGBA(54, 78, 110, 255) }, // ENERGY_PYLON_RED
+	{ 1744, core::RGBA(58, 85, 82, 255) }, // ENERGY_PYLON_BLUE
+	{ 1745, core::RGBA(0, 0, 0, 255) }, // ENERGY_PYLON_GREEN
+	{ 1746, core::RGBA(83, 64, 79, 255) }, // ENERGY_PYLON_ORANGE
+	{ 1747, core::RGBA(52, 52, 53, 255) }, // COPPER_COIL
+	{ 1748, core::RGBA(52, 52, 53, 255) }, // STEEL_COIL
+	{ 1749, core::RGBA(0, 0, 0, 255) }, // STORAGE_CAPSULE
+	{ 1750, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS
+	{ 1751, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_WEDGE
+	{ 1752, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_WEDGE
+	{ 1753, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_WEDGE
+	{ 1754, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_WEDGE
+	{ 1755, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_WEDGE
+	{ 1756, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_WEDGE
+	{ 1757, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_WEDGE
+	{ 1758, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_WEDGE
+	{ 1759, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_WEDGE
+	{ 1760, core::RGBA(0, 0, 0, 255) }, // POWER_CORE_RED
+	{ 1761, core::RGBA(0, 0, 0, 255) }, // POWER_CORE_BLUE
+	{ 1762, core::RGBA(0, 0, 0, 255) }, // POWER_CORE_GREEN
+	{ 1763, core::RGBA(83, 62, 58, 255) }, // POWER_CORE_ORANGE
+	{ 1764, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_CORNER
+	{ 1765, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_HEPTA
+	{ 1766, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_TETRA
+	{ 1767, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_QUARTER_SLAB
+	{ 1768, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_HALF_SLAB
+	{ 1769, core::RGBA(0, 0, 0, 255) }, // WOODEN_PLANKS_THREE_QUARTER_SLAB
+	{ 1770, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_CORNER
+	{ 1771, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_CORNER
+	{ 1772, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_CORNER
+	{ 1773, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_CORNER
+	{ 1774, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_CORNER
+	{ 1775, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_CORNER
+	{ 1776, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_CORNER
+	{ 1777, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_CORNER
+	{ 1778, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_TETRA
+	{ 1779, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_TETRA
+	{ 1780, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_TETRA
+	{ 1781, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_TETRA
+	{ 1782, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_TETRA
+	{ 1783, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_TETRA
+	{ 1784, core::RGBA(100, 43, 28, 255) }, // CARVED_CINNABAR_TETRA
+	{ 1785, core::RGBA(36, 111, 66, 255) }, // CARVED_VARIS_TETRA
+	{ 1786, core::RGBA(140, 140, 140, 255) }, // CARVED_DOLOM_HEPTA
+	{ 1787, core::RGBA(31, 31, 31, 255) }, // CARVED_TEKT_HEPTA
+	{ 1788, core::RGBA(36, 88, 111, 255) }, // CARVED_LARIMAR_HEPTA
+	{ 1789, core::RGBA(132, 73, 15, 255) }, // CARVED_CHABAZ_HEPTA
+	{ 1790, core::RGBA(126, 107, 36, 255) }, // CARVED_LUKRAH_HEPTA
+	{ 1791, core::RGBA(67, 48, 99, 255) }, // CARVED_SUGIL_HEPTA
+	{ 1579, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES
+	{ 1578, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_WEDGE
+	{ 1577, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_CORNER
+	{ 1576, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_HEPTA
+	{ 1575, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_TETRA
+	{ 1574, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_QUARTER_SLAB
+	{ 1573, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_HALF_SLAB
+	{ 1572, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_TILES_THREE_QUARTER_SLAB
+	{ 1571, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS
+	{ 1570, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_WEDGE
+	{ 1569, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_CORNER
+	{ 1568, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_HEPTA
+	{ 1567, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_TETRA
+	{ 1566, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_QUARTER_SLAB
+	{ 1565, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_HALF_SLAB
+	{ 1564, core::RGBA(0, 0, 0, 255) }, // CARVED_DOLOM_BRICKS_THREE_QUARTER_SLAB
+	{ 1563, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES
+	{ 1562, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_WEDGE
+	{ 1561, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_CORNER
+	{ 1560, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_HEPTA
+	{ 1559, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_TETRA
+	{ 1558, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_QUARTER_SLAB
+	{ 1557, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_HALF_SLAB
+	{ 1556, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_TILES_THREE_QUARTER_SLAB
+	{ 1555, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS
+	{ 1554, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_WEDGE
+	{ 1553, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_CORNER
+	{ 1552, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_HEPTA
+	{ 1551, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_TETRA
+	{ 1550, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_QUARTER_SLAB
+	{ 1549, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_HALF_SLAB
+	{ 1548, core::RGBA(0, 0, 0, 255) }, // CARVED_TEKT_BRICKS_THREE_QUARTER_SLAB
+	{ 1547, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES
+	{ 1546, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_WEDGE
+	{ 1545, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_CORNER
+	{ 1544, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_HEPTA
+	{ 1543, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_TETRA
+	{ 1542, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_QUARTER_SLAB
+	{ 1541, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_HALF_SLAB
+	{ 1540, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_TILES_THREE_QUARTER_SLAB
+	{ 1539, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS
+	{ 1538, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_WEDGE
+	{ 1537, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_CORNER
+	{ 1536, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_HEPTA
+	{ 1535, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_TETRA
+	{ 1534, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_QUARTER_SLAB
+	{ 1533, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_HALF_SLAB
+	{ 1532, core::RGBA(0, 0, 0, 255) }, // CARVED_LARIMAR_BRICKS_THREE_QUARTER_SLAB
+	{ 1531, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES
+	{ 1530, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_WEDGE
+	{ 1529, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_CORNER
+	{ 1528, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_HEPTA
+	{ 1527, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_TETRA
+	{ 1526, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_QUARTER_SLAB
+	{ 1525, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_HALF_SLAB
+	{ 1524, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_TILES_THREE_QUARTER_SLAB
+	{ 1523, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS
+	{ 1522, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_WEDGE
+	{ 1521, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_CORNER
+	{ 1520, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_HEPTA
+	{ 1519, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_TETRA
+	{ 1518, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_QUARTER_SLAB
+	{ 1517, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_HALF_SLAB
+	{ 1516, core::RGBA(0, 0, 0, 255) }, // CARVED_CHABAZ_BRICKS_THREE_QUARTER_SLAB
+	{ 1515, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES
+	{ 1514, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_WEDGE
+	{ 1513, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_CORNER
+	{ 1512, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_HEPTA
+	{ 1511, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_TETRA
+	{ 1510, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_QUARTER_SLAB
+	{ 1509, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_HALF_SLAB
+	{ 1508, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_TILES_THREE_QUARTER_SLAB
+	{ 1507, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS
+	{ 1506, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_WEDGE
+	{ 1505, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_CORNER
+	{ 1504, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_HEPTA
+	{ 1503, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_TETRA
+	{ 1502, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_QUARTER_SLAB
+	{ 1501, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_HALF_SLAB
+	{ 1500, core::RGBA(0, 0, 0, 255) }, // CARVED_LUKRAH_BRICKS_THREE_QUARTER_SLAB
+	{ 1499, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES
+	{ 1498, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_WEDGE
+	{ 1497, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_CORNER
+	{ 1496, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_HEPTA
+	{ 1495, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_TETRA
+	{ 1494, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_QUARTER_SLAB
+	{ 1493, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_HALF_SLAB
+	{ 1492, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_TILES_THREE_QUARTER_SLAB
+	{ 1491, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS
+	{ 1490, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_WEDGE
+	{ 1489, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_CORNER
+	{ 1488, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_HEPTA
+	{ 1487, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_TETRA
+	{ 1486, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_QUARTER_SLAB
+	{ 1485, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_HALF_SLAB
+	{ 1484, core::RGBA(0, 0, 0, 255) }, // CARVED_SUGIL_BRICKS_THREE_QUARTER_SLAB
+	{ 1483, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES
+	{ 1482, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_WEDGE
+	{ 1481, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_CORNER
+	{ 1480, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_HEPTA
+	{ 1479, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_TETRA
+	{ 1478, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_QUARTER_SLAB
+	{ 1477, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_HALF_SLAB
+	{ 1476, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_TILES_THREE_QUARTER_SLAB
+	{ 1475, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS
+	{ 1474, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_WEDGE
+	{ 1473, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_CORNER
+	{ 1472, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_HEPTA
+	{ 1471, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_TETRA
+	{ 1470, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_QUARTER_SLAB
+	{ 1469, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_HALF_SLAB
+	{ 1468, core::RGBA(0, 0, 0, 255) }, // CARVED_CINNABAR_BRICKS_THREE_QUARTER_SLAB
+	{ 1467, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES
+	{ 1466, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_WEDGE
+	{ 1465, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_CORNER
+	{ 1464, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_HEPTA
+	{ 1463, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_TETRA
+	{ 1462, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_QUARTER_SLAB
+	{ 1461, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_HALF_SLAB
+	{ 1460, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_TILES_THREE_QUARTER_SLAB
+	{ 1459, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS
+	{ 1458, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_WEDGE
+	{ 1457, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_CORNER
+	{ 1456, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_HEPTA
+	{ 1455, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_TETRA
+	{ 1454, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_QUARTER_SLAB
+	{ 1453, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_HALF_SLAB
+	{ 1452, core::RGBA(0, 0, 0, 255) }, // CARVED_VARIS_BRICKS_THREE_QUARTER_SLAB
 };
 static const BlockColor BLOCKEMITCOLOR[]{
-	{ 55, core::RGBA(255, 255, 255, 255) }, // emit for LIGHT_ID
-	{ 62, core::RGBA(255, 255, 255, 255) }, // emit for LIGHT_BEACON_ID
-	{ 80, core::RGBA(255, 51, 51, 255) }, // emit for TERRAIN_LAVA_ID
-	{ 129, core::RGBA(255, 102, 0, 13) }, // emit for TERRAIN_OCTOGEN_ID
-	{ 134, core::RGBA(225, 225, 225, 13) }, // emit for TERRAIN_SUCCUMITE_ID
-	{ 136, core::RGBA(83, 0, 218, 13) }, // emit for TERRAIN_AWESOMITE_ID
-	{ 146, core::RGBA(255, 127, 0, 62) }, // emit for TERRAIN_M2L2_ID
-	{ 166, core::RGBA(255, 255, 255, 62) }, // emit for TERRAIN_M7L2_ID
-	{ 174, core::RGBA(255, 0, 255, 62) }, // emit for TERRAIN_M9L2_ID
-	{ 182, core::RGBA(255, 255, 0, 62) }, // emit for TERRAIN_M11L2_ID
-	{ 186, core::RGBA(0, 255, 0, 62) }, // emit for TERRAIN_M12L2_ID
-	{ 190, core::RGBA(0, 127, 255, 62) }, // emit for TERRAIN_M13L2_ID
-	{ 194, core::RGBA(255, 0, 0, 62) }, // emit for TERRAIN_M14L2_ID
-	{ 198, core::RGBA(127, 0, 255, 62) }, // emit for TERRAIN_M15L2_ID
-	{ 206, core::RGBA(255, 255, 110, 13) }, // emit for TERRAIN_NEGACIDE_ID
-	{ 207, core::RGBA(0, 204, 51, 13) }, // emit for TERRAIN_QUANTACIDE_ID
-	{ 208, core::RGBA(0, 91, 255, 13) }, // emit for TERRAIN_NEGAGATE_ID
-	{ 209, core::RGBA(204, 0, 0, 13) }, // emit for TERRAIN_METATE_ID
-	{ 210, core::RGBA(11, 0, 20, 13) }, // emit for TERRAIN_INSANIUM_ID
-	{ 225, core::RGBA(0, 255, 0, 62) }, // emit for MAN_SD3000_CAP
-	{ 228, core::RGBA(255, 0, 0, 62) }, // emit for MAN_SD3000_FLUX
-	{ 231, core::RGBA(0, 127, 255, 62) }, // emit for MAN_SD3000_MICRO
-	{ 234, core::RGBA(255, 255, 255, 62) }, // emit for MAN_SD3000_DELTA
-	{ 237, core::RGBA(255, 255, 127, 62) }, // emit for MAN_SD3000_MEM
-	{ 249, core::RGBA(255, 127, 0, 62) }, // emit for MAN_P3000B
-	{ 252, core::RGBA(255, 0, 255, 62) }, // emit for MAN_P30000A
-	{ 253, core::RGBA(255, 255, 255, 64) }, // emit for MAN_P40000A
-	{ 273, core::RGBA(127, 0, 255, 62) }, // emit for MAN_SCIENCE_BOTTLE
-	{ 282, core::RGBA(255, 0, 0, 255) }, // emit for LIGHT_RED
-	{ 283, core::RGBA(0, 127, 255, 255) }, // emit for LIGHT_BLUE
-	{ 284, core::RGBA(0, 255, 0, 255) }, // emit for LIGHT_GREEN
-	{ 285, core::RGBA(255, 255, 0, 255) }, // emit for LIGHT_YELLOW
-	{ 286, core::RGBA(0, 255, 255, 127) }, // emit for TERRAIN_ICEPLANET_CRYSTAL
-	{ 331, core::RGBA(0, 5, 0, 255) }, // emit for POWER_HOLDER_ID
-	{ 340, core::RGBA(255, 255, 0, 127) }, // emit for LIGHT_BULB_YELLOW
-	{ 405, core::RGBA(76, 76, 204, 25) }, // emit for ACTIVAION_BLOCK_ID
-	{ 408, core::RGBA(76, 76, 204, 25) }, // emit for SIGNAL_AND_BLOCK_ID
-	{ 409, core::RGBA(76, 76, 204, 25) }, // emit for SIGNAL_OR_BLOCK_ID
-	{ 410, core::RGBA(76, 76, 204, 25) }, // emit for SIGNAL_NOT_BLOCK_ID
-	{ 444, core::RGBA(0, 202, 255, 255) }, // emit for ICEPLANET_CRYSTAL_WEDGE
-	{ 452, core::RGBA(255, 0, 255, 127) }, // emit for TERRAIN_CRYSTAL_PURPLE
-	{ 453, core::RGBA(127, 0, 255, 127) }, // emit for TERRAIN_CRYSTAL_BLACK
-	{ 454, core::RGBA(255, 255, 255, 127) }, // emit for TERRAIN_CRYSTAL_WHITE
-	{ 455, core::RGBA(255, 255, 0, 127) }, // emit for TERRAIN_CRYSTAL_YELLOW
-	{ 456, core::RGBA(255, 0, 0, 127) }, // emit for TERRAIN_CRYSTAL_RED
-	{ 457, core::RGBA(255, 127, 0, 127) }, // emit for TERRAIN_CRYSTAL_ORANGE
-	{ 458, core::RGBA(0, 255, 0, 127) }, // emit for TERRAIN_CRYSTAL_GREEN
-	{ 459, core::RGBA(0, 127, 255, 127) }, // emit for TERRAIN_CRYSTAL_BLUE
-	{ 496, core::RGBA(255, 0, 255, 255) }, // emit for PURPLE_LIGHT
-	{ 497, core::RGBA(255, 127, 0, 255) }, // emit for ORANGE_LIGHT
-	{ 498, core::RGBA(127, 0, 255, 255) }, // emit for BLACK_LIGHT
-	{ 499, core::RGBA(255, 255, 255, 127) }, // emit for WHITE_POLE_LIGHT
-	{ 500, core::RGBA(127, 0, 255, 127) }, // emit for BLACK_POLE_LIGHT
-	{ 501, core::RGBA(255, 0, 0, 127) }, // emit for RED_POLE_LIGHT
-	{ 502, core::RGBA(255, 127, 0, 127) }, // emit for ORANGE_POLE_LIGHT
-	{ 503, core::RGBA(255, 255, 255, 127) }, // emit for YELLOW_POLE_LIGHT
-	{ 504, core::RGBA(0, 255, 0, 127) }, // emit for GREEN_POLE_LIGHT
-	{ 505, core::RGBA(0, 127, 255, 127) }, // emit for BLUE_POLE_LIGHT
-	{ 506, core::RGBA(255, 0, 255, 127) }, // emit for PURPLE_POLE_LIGHT
-	{ 548, core::RGBA(127, 0, 255, 255) }, // emit for Nocx_Crystal_Wedge
-	{ 549, core::RGBA(255, 255, 255, 127) }, // emit for Parsen_Crystal_Wedge
-	{ 550, core::RGBA(255, 0, 255, 127) }, // emit for Rammet_Crystal_Wedge
-	{ 551, core::RGBA(0, 127, 255, 127) }, // emit for Varat_Crystal_Wedge
-	{ 552, core::RGBA(0, 255, 0, 127) }, // emit for Bastyn_Crystal_Wedge
-	{ 553, core::RGBA(255, 255, 0, 127) }, // emit for Hattel_Crystal_Wedge
-	{ 554, core::RGBA(255, 127, 0, 127) }, // emit for Sintyr_Crystal_Wedge
-	{ 555, core::RGBA(255, 0, 0, 127) }, // emit for Mattise_Crystal_Wedge
-	{ 580, core::RGBA(127, 0, 255, 62) }, // emit for Nocx_Charged_Circuit_Wedge
-	{ 581, core::RGBA(255, 255, 255, 62) }, // emit for Parsen_Charged_Circuit_Wedge
-	{ 582, core::RGBA(255, 0, 255, 62) }, // emit for Rammet_Charged_Circuit_Wedge
-	{ 583, core::RGBA(0, 127, 255, 62) }, // emit for Varat_Charged_Circuit_Wedge
-	{ 584, core::RGBA(0, 255, 0, 62) }, // emit for Bastyn_Charged_Circuit_Wedge
-	{ 585, core::RGBA(255, 255, 0, 62) }, // emit for Hattel_Charged_Circuit_Wedge
-	{ 586, core::RGBA(255, 127, 0, 62) }, // emit for Sintyr_Charged_Circuit_Wedge
-	{ 587, core::RGBA(255, 0, 0, 62) }, // emit for Mattise_Charged_Circuit_Wedge
+	{ 14, core::RGBA(204, 0, 0, 2) }, // emit for WARHEAD
+	{ 55, core::RGBA(255, 255, 255, 255) }, // emit for WHITE_LIGHT
+	{ 62, core::RGBA(255, 255, 255, 255) }, // emit for BEACON
+	{ 80, core::RGBA(255, 51, 51, 127) }, // emit for LAVA
+	{ 129, core::RGBA(255, 102, 0, 13) }, // emit for BURNT_ORANGE_DIRT
+	{ 134, core::RGBA(225, 225, 225, 13) }, // emit for BURNT_WHITE_DIRT
+	{ 136, core::RGBA(83, 0, 218, 13) }, // emit for BURNT_PURPLE_DIRT
+	{ 146, core::RGBA(255, 127, 0, 1) }, // emit for SINTYR_CAPSULE
+	{ 166, core::RGBA(255, 255, 255, 1) }, // emit for PARSEEN_CAPSULE
+	{ 174, core::RGBA(255, 0, 255, 1) }, // emit for RAMMET_CAPSULE
+	{ 182, core::RGBA(255, 255, 0, 1) }, // emit for HATTEL_CAPSULE
+	{ 186, core::RGBA(0, 255, 0, 1) }, // emit for BASTYN_CAPSULE
+	{ 190, core::RGBA(0, 127, 255, 1) }, // emit for VARAT_CAPSULE
+	{ 194, core::RGBA(255, 0, 0, 1) }, // emit for MATTISE_CAPSULE
+	{ 198, core::RGBA(127, 0, 255, 1) }, // emit for NOCX_CAPSULE
+	{ 206, core::RGBA(255, 255, 110, 13) }, // emit for BURNT_YELLOW_DIRT
+	{ 207, core::RGBA(0, 204, 51, 13) }, // emit for BURNT_GREEN_DIRT
+	{ 208, core::RGBA(0, 91, 255, 13) }, // emit for BURNT_BLUE_DIRT
+	{ 209, core::RGBA(204, 0, 0, 13) }, // emit for BURNT_RED_DIRT
+	{ 210, core::RGBA(11, 0, 20, 13) }, // emit for BURNT_BLACK_DIRT
+	{ 225, core::RGBA(0, 255, 0, 62) }, // emit for BASTYN_CHARGED_CIRCUIT
+	{ 228, core::RGBA(255, 0, 0, 62) }, // emit for MATTISE_CHARGED_CIRCUIT
+	{ 231, core::RGBA(0, 127, 255, 62) }, // emit for VARAT_CHARGED_CIRCUIT
+	{ 234, core::RGBA(255, 255, 255, 62) }, // emit for PARSEEN_CHARGED_CIRCUIT
+	{ 237, core::RGBA(255, 225, 20, 62) }, // emit for HATTEL_CHARGED_CIRCUIT
+	{ 249, core::RGBA(255, 127, 0, 62) }, // emit for SINTYR_CHARGED_CIRCUIT
+	{ 252, core::RGBA(255, 0, 255, 62) }, // emit for RAMMET_CHARGED_CIRCUIT
+	{ 253, core::RGBA(255, 255, 255, 64) }, // emit for BEACON_CHARGED_CIRCUIT
+	{ 273, core::RGBA(127, 0, 255, 62) }, // emit for NOCX_CHARGED_CIRCUIT
+	{ 282, core::RGBA(255, 0, 0, 255) }, // emit for RED_LIGHT
+	{ 283, core::RGBA(0, 85, 255, 255) }, // emit for BLUE_LIGHT
+	{ 284, core::RGBA(0, 255, 0, 255) }, // emit for GREEN_LIGHT
+	{ 285, core::RGBA(255, 255, 0, 255) }, // emit for YELLOW_LIGHT
+	{ 286, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL
+	{ 340, core::RGBA(255, 255, 0, 127) }, // emit for YELLOW_ROD_LIGHT
+	{ 444, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_WEDGE
+	{ 452, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL
+	{ 453, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL
+	{ 454, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL
+	{ 455, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL
+	{ 456, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL
+	{ 457, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL
+	{ 458, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL
+	{ 459, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL
+	{ 496, core::RGBA(102, 0, 153, 255) }, // emit for PURPLE_LIGHT_0
+	{ 497, core::RGBA(228, 95, 0, 255) }, // emit for ORANGE_LIGHT_0
+	{ 498, core::RGBA(102, 0, 204, 204) }, // emit for BLACK_LIGHT_0
+	{ 499, core::RGBA(255, 255, 255, 127) }, // emit for WHITE_ROD_LIGHT
+	{ 500, core::RGBA(102, 0, 204, 127) }, // emit for BLACK_ROD_LIGHT
+	{ 501, core::RGBA(255, 0, 0, 127) }, // emit for RED_ROD_LIGHT
+	{ 502, core::RGBA(255, 127, 0, 127) }, // emit for ORANGE_ROD_LIGHT
+	{ 503, core::RGBA(255, 255, 255, 255) }, // emit for BEACON_ROD
+	{ 504, core::RGBA(0, 255, 0, 127) }, // emit for GREEN_ROD_LIGHT
+	{ 505, core::RGBA(0, 127, 255, 127) }, // emit for BLUE_ROD_LIGHT
+	{ 506, core::RGBA(153, 0, 204, 127) }, // emit for PURPLE_ROD_LIGHT
+	{ 548, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_WEDGE
+	{ 549, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_WEDGE
+	{ 550, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_WEDGE
+	{ 551, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_WEDGE
+	{ 552, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_WEDGE
+	{ 553, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_WEDGE
+	{ 554, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_WEDGE
+	{ 555, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_WEDGE
+	{ 580, core::RGBA(127, 0, 255, 62) }, // emit for NOCX_CHARGED_CIRCUIT_WEDGE
+	{ 581, core::RGBA(255, 255, 255, 62) }, // emit for PARSEEN_CHARGED_CIRCUIT_WEDGE
+	{ 582, core::RGBA(255, 0, 255, 62) }, // emit for RAMMET_CHARGED_CIRCUIT_WEDGE
+	{ 583, core::RGBA(0, 127, 255, 62) }, // emit for VARAT_CHARGED_CIRCUIT_WEDGE
+	{ 584, core::RGBA(0, 255, 0, 62) }, // emit for BASTYN_CHARGED_CIRCUIT_WEDGE
+	{ 585, core::RGBA(255, 255, 0, 62) }, // emit for HATTEL_CHARGED_CIRCUIT_WEDGE
+	{ 586, core::RGBA(255, 127, 0, 62) }, // emit for SINTYR_CHARGED_CIRCUIT_WEDGE
+	{ 587, core::RGBA(255, 0, 0, 62) }, // emit for MATTISE_CHARGED_CIRCUIT_WEDGE
+	{ 659, core::RGBA(255, 0, 0, 15) }, // emit for FORCEFIELD_(RED)
+	{ 660, core::RGBA(0, 75, 212, 15) }, // emit for FORCEFIELD_(BLUE)
+	{ 661, core::RGBA(255, 72, 0, 15) }, // emit for FORCEFIELD_(YELLOW)
+	{ 673, core::RGBA(255, 0, 0, 15) }, // emit for FORCEFIELD_WEDGE_(RED)
+	{ 674, core::RGBA(0, 75, 212, 15) }, // emit for FORCEFIELD_WEDGE_(BLUE)
+	{ 675, core::RGBA(255, 72, 0, 15) }, // emit for FORCEFIELD_WEDGE_(YELLOW)
+	{ 854, core::RGBA(255, 0, 0, 15) }, // emit for FORCEFIELD_(RED)_1/4
+	{ 855, core::RGBA(255, 0, 0, 15) }, // emit for FORCEFIELD_(RED)_1/2
+	{ 856, core::RGBA(255, 0, 0, 15) }, // emit for FORCEFIELD_(RED)_3/4
+	{ 857, core::RGBA(0, 75, 212, 15) }, // emit for FORCEFIELD_(BLUE)_1/4
+	{ 858, core::RGBA(0, 75, 212, 15) }, // emit for FORCEFIELD_(BLUE)_1/2
+	{ 859, core::RGBA(0, 75, 212, 15) }, // emit for FORCEFIELD_(BLUE)_3/4
+	{ 860, core::RGBA(255, 72, 0, 15) }, // emit for FORCEFIELD_(YELLOW)_1/4
+	{ 861, core::RGBA(255, 72, 0, 15) }, // emit for FORCEFIELD_(YELLOW)_1/2
+	{ 862, core::RGBA(255, 72, 0, 15) }, // emit for FORCEFIELD_(YELLOW)_3/4
+	{ 888, core::RGBA(0, 204, 204, 255) }, // emit for TEAL_LIGHT
+	{ 889, core::RGBA(0, 204, 204, 124) }, // emit for TEAL_LIGHT_ROD
+	{ 922, core::RGBA(255, 0, 204, 255) }, // emit for PINK_LIGHT
+	{ 923, core::RGBA(255, 0, 204, 125) }, // emit for PINK_LIGHT_ROD
+	{ 942, core::RGBA(255, 255, 255, 255) }, // emit for WHITE_LIGHT_1/4
+	{ 943, core::RGBA(255, 255, 255, 255) }, // emit for WHITE_LIGHT_1/2
+	{ 944, core::RGBA(255, 255, 255, 255) }, // emit for WHITE_LIGHT_3/4
+	{ 945, core::RGBA(255, 255, 255, 255) }, // emit for BEACON_1/4
+	{ 946, core::RGBA(255, 255, 255, 255) }, // emit for BEACON_1/2
+	{ 947, core::RGBA(255, 255, 255, 255) }, // emit for BEACON_3/4
+	{ 948, core::RGBA(255, 255, 0, 255) }, // emit for YELLOW_LIGHT_1/4
+	{ 949, core::RGBA(255, 255, 0, 255) }, // emit for YELLOW_LIGHT_1/2
+	{ 950, core::RGBA(255, 255, 0, 255) }, // emit for YELLOW_LIGHT_3/4
+	{ 951, core::RGBA(228, 95, 0, 255) }, // emit for ORANGE_LIGHT_1/4
+	{ 952, core::RGBA(228, 95, 0, 255) }, // emit for ORANGE_LIGHT_1/2
+	{ 953, core::RGBA(228, 95, 0, 255) }, // emit for ORANGE_LIGHT_3/4
+	{ 954, core::RGBA(255, 0, 0, 255) }, // emit for RED_LIGHT_1/4
+	{ 955, core::RGBA(255, 0, 0, 255) }, // emit for RED_LIGHT_1/2
+	{ 956, core::RGBA(255, 0, 0, 255) }, // emit for RED_LIGHT_3/4
+	{ 957, core::RGBA(255, 0, 204, 255) }, // emit for PINK_LIGHT_1/4
+	{ 958, core::RGBA(255, 0, 204, 255) }, // emit for PINK_LIGHT_1/2
+	{ 959, core::RGBA(255, 0, 204, 255) }, // emit for PINK_LIGHT_3/4
+	{ 960, core::RGBA(102, 0, 153, 255) }, // emit for PURPLE_LIGHT_1/4
+	{ 961, core::RGBA(102, 0, 153, 255) }, // emit for PURPLE_LIGHT_1/2
+	{ 962, core::RGBA(102, 0, 153, 255) }, // emit for PURPLE_LIGHT_3/4
+	{ 963, core::RGBA(0, 85, 255, 255) }, // emit for BLUE_LIGHT_1/4
+	{ 964, core::RGBA(0, 85, 255, 255) }, // emit for BLUE_LIGHT_1/2
+	{ 965, core::RGBA(0, 85, 255, 255) }, // emit for BLUE_LIGHT_3/4
+	{ 966, core::RGBA(0, 204, 204, 255) }, // emit for TEAL_LIGHT_1/4
+	{ 967, core::RGBA(0, 204, 204, 255) }, // emit for TEAL_LIGHT_1/2
+	{ 968, core::RGBA(0, 204, 204, 255) }, // emit for TEAL_LIGHT_3/4
+	{ 969, core::RGBA(0, 255, 0, 255) }, // emit for GREEN_LIGHT_1/4
+	{ 970, core::RGBA(0, 255, 0, 255) }, // emit for GREEN_LIGHT_1/2
+	{ 971, core::RGBA(0, 255, 0, 255) }, // emit for GREEN_LIGHT_3/4
+	{ 972, core::RGBA(102, 0, 204, 255) }, // emit for BLACK_LIGHT_1/4
+	{ 973, core::RGBA(102, 0, 204, 255) }, // emit for BLACK_LIGHT_1/2
+	{ 974, core::RGBA(102, 0, 204, 255) }, // emit for BLACK_LIGHT_3/4
+	{ 977, core::RGBA(255, 255, 255, 140) }, // emit for WHITE_LIGHT_BAR
+	{ 981, core::RGBA(0, 255, 0, 15) }, // emit for FORCEFIELD_GREEN_QUARTER_SLAB
+	{ 982, core::RGBA(0, 255, 0, 15) }, // emit for FORCEFIELD_GREEN_HALF_SLAB
+	{ 983, core::RGBA(0, 255, 0, 15) }, // emit for FORCEFIELD_GREEN_THREE_QUARTER_SLAB
+	{ 984, core::RGBA(255, 255, 255, 255) }, // emit for BEACON_LIGHT_BAR
+	{ 994, core::RGBA(255, 255, 255, 255) }, // emit for BEACON_LIGHT_CORNER
+	{ 1007, core::RGBA(255, 255, 255, 140) }, // emit for WHITE_LIGHT_CORNER
+	{ 1065, core::RGBA(255, 255, 0, 140) }, // emit for YELLOW_LIGHT_BAR
+	{ 1081, core::RGBA(255, 255, 0, 140) }, // emit for YELLOW_LIGHT_CORNER
+	{ 1082, core::RGBA(255, 127, 0, 140) }, // emit for ORANGE_LIGHT_BAR
+	{ 1083, core::RGBA(255, 127, 0, 140) }, // emit for ORANGE_LIGHT_CORNER
+	{ 1087, core::RGBA(255, 0, 0, 140) }, // emit for RED_LIGHT_BAR
+	{ 1103, core::RGBA(255, 0, 0, 140) }, // emit for RED_LIGHT_CORNER
+	{ 1106, core::RGBA(255, 0, 204, 140) }, // emit for PINK_LIGHT_BAR
+	{ 1107, core::RGBA(255, 0, 204, 140) }, // emit for PINK_LIGHT_CORNER
+	{ 1108, core::RGBA(153, 0, 204, 140) }, // emit for PURPLE_LIGHT_BAR
+	{ 1109, core::RGBA(153, 0, 204, 140) }, // emit for PURPLE_LIGHT_CORNER
+	{ 1120, core::RGBA(0, 127, 255, 140) }, // emit for BLUE_LIGHT_BAR
+	{ 1121, core::RGBA(0, 127, 255, 140) }, // emit for BLUE_LIGHT_CORNER
+	{ 1122, core::RGBA(0, 204, 204, 140) }, // emit for TEAL_LIGHT_BAR
+	{ 1129, core::RGBA(0, 255, 0, 15) }, // emit for FORCEFIELD_GREEN
+	{ 1130, core::RGBA(0, 255, 0, 15) }, // emit for FORCEFIELD_GREEN_WEDGE
+	{ 1132, core::RGBA(0, 204, 204, 140) }, // emit for TEAL_LIGHT_CORNER
+	{ 1133, core::RGBA(0, 255, 0, 140) }, // emit for GREEN_LIGHT_BAR
+	{ 1134, core::RGBA(0, 255, 0, 140) }, // emit for GREEN_LIGHT_CORNER
+	{ 1135, core::RGBA(102, 0, 204, 140) }, // emit for BLACK_LIGHT_BAR
+	{ 1136, core::RGBA(102, 0, 204, 140) }, // emit for BLACK_LIGHT_CORNER
+	{ 1634, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1635, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_HALF_SLAB
+	{ 1636, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_QUARTER_SLAB
+	{ 1637, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_TETRA
+	{ 1638, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_HEPTA
+	{ 1639, core::RGBA(0, 255, 255, 63) }, // emit for ICE_CRYSTAL_CORNER
+	{ 1640, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1641, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_HALF_SLAB
+	{ 1642, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_QUARTER_SLAB
+	{ 1643, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_TETRA
+	{ 1644, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_HEPTA
+	{ 1645, core::RGBA(0, 127, 255, 127) }, // emit for VARAT_CRYSTAL_CORNER
+	{ 1646, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1647, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_HALF_SLAB
+	{ 1648, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_QUARTER_SLAB
+	{ 1649, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_TETRA
+	{ 1650, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_HEPTA
+	{ 1651, core::RGBA(0, 255, 0, 127) }, // emit for BASTYN_CRYSTAL_CORNER
+	{ 1652, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1653, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_HALF_SLAB
+	{ 1654, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_QUARTER_SLAB
+	{ 1655, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_TETRA
+	{ 1656, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_HEPTA
+	{ 1657, core::RGBA(255, 127, 0, 127) }, // emit for SINTYR_CRYSTAL_CORNER
+	{ 1658, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1659, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_HALF_SLAB
+	{ 1660, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_QUARTER_SLAB
+	{ 1661, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_TETRA
+	{ 1662, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_HEPTA
+	{ 1663, core::RGBA(255, 0, 0, 127) }, // emit for MATTISE_CRYSTAL_CORNER
+	{ 1664, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1665, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_HALF_SLAB
+	{ 1666, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_QUARTER_SLAB
+	{ 1667, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_TETRA
+	{ 1668, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_HEPTA
+	{ 1669, core::RGBA(255, 255, 0, 127) }, // emit for HATTEL_CRYSTAL_CORNER
+	{ 1670, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1671, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_HALF_SLAB
+	{ 1672, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_QUARTER_SLAB
+	{ 1673, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_TETRA
+	{ 1674, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_HEPTA
+	{ 1675, core::RGBA(255, 255, 255, 127) }, // emit for PARSEEN_CRYSTAL_CORNER
+	{ 1676, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1677, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_HALF_SLAB
+	{ 1678, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_QUARTER_SLAB
+	{ 1679, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_TETRA
+	{ 1680, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_HEPTA
+	{ 1681, core::RGBA(127, 0, 255, 127) }, // emit for NOCX_CRYSTAL_CORNER
+	{ 1682, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_THREE_QUARTER_SLAB
+	{ 1683, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_HALF_SLAB
+	{ 1684, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_QUARTER_SLAB
+	{ 1685, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_TETRA
+	{ 1686, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_HEPTA
+	{ 1687, core::RGBA(255, 0, 255, 127) }, // emit for RAMMET_CRYSTAL_CORNER
 };
 
 static const uint16_t BLOCKS_FOR_INTERNAL_PAL[palette::PaletteMaxColors] = {

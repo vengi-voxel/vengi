@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # This palette is generated from the BlockConfig.xml file and the BlockTypes.properties file as well
-# as the textures t00[0-2].png from starmadetools
+# as the textures t00[0-2].png from starmade
 #
 # BlockConfig.xml
 # BlockTypes.properties
@@ -84,6 +84,9 @@ def texture_color_lookup(texture_id):
             total_a = 255
             total_colors = total_opaque
 
+        if total_colors == 0:
+            return (0, 0, 0, 255)
+
         # TODO: don't use the average color but the most significant color - if there are alpha values included and fully opaque,
         # the alpha values should be ignored
         avg_r = total_r // total_colors
@@ -115,7 +118,7 @@ def print_colors(root, block_properties, emit):
             if block_node.attrib.get('type') != block_type:
                 continue
             print(f"block_type {block_type}", file=sys.stderr)
-            texture_id = block_node.attrib.get('textureId')
+            texture_ids = block_node.attrib.get('textureId')
             light_source = block_node.find('LightSource')
             if emit:
                 if light_source.text == "false":
@@ -123,7 +126,10 @@ def print_colors(root, block_properties, emit):
                 light_source_color = block_node.find('LightSourceColor')
                 print(f"	{{ {block_id}, {float_color_out(light_source_color.text)} }}, // emit for {block_type}")
             else:
-                rgba = texture_color_lookup(texture_id)
+                # if texture_ids is an array, pick the first one
+                if ',' in texture_ids:
+                    texture_ids = texture_ids.split(',')[0]
+                rgba = texture_color_lookup(texture_ids)
                 if rgba is None:
                     raise SystemError(f"Error: Texture file for block type '{block_type}' not found.")
                 print(f"	{{ {block_id}, {rgba_out(rgba)} }}, // {block_type}")
@@ -141,6 +147,7 @@ if __name__ == "__main__":
     print("#pragma once")
     print("")
     print("#include \"core/RGBA.h\"")
+    print("#include \"palette/Palette.h\"")
     print("")
     print("namespace voxelformat {")
     print("")
