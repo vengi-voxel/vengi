@@ -327,6 +327,11 @@ TEST_F(LUAApiTest, testScriptReplaceColor) {
 	runFile(sceneGraph, "replacecolor.lua");
 }
 
+TEST_F(LUAApiTest, testScriptFlatten) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "flatten.lua");
+}
+
 TEST_F(LUAApiTest, testScriptReplacePalette) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacepalette.lua", {"built-in:minecraft"});
