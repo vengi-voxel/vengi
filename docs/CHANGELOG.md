@@ -27,7 +27,10 @@ General:
    - Fixed handling of `gltf` embedded images
    - Fixed `png` import palette handling
    - Fixed issues with `thing` format
+   - Fixed issues with `vxl` format
    - Added new blocks to `sment` StarMade palette
+   - Added new lua script `flatten`
+   - Fixed issue with auto selecting files in the file dialog if the options popup is visible
 
 VoxConvert:
 
