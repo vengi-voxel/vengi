@@ -33,6 +33,7 @@ VoxConvert:
    - Removed the file type selection for source and target files in the ui
    - Added script support to the ui
    - `--usage` shows lua script details now
+   - Removed `--slice` (see `png` format)
 
 VoxEdit:
 
