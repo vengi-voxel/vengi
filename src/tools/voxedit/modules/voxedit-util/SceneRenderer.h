@@ -42,6 +42,7 @@ private:
 	int32_t _highlightMeshIndex = -1;
 	int32_t _aabbMeshIndex = -1;
 	int32_t _boneMeshIndex = -1;
+	int32_t _sliceRegionMeshIndex = -1;
 
 	struct DirtyRegion {
 		voxel::Region region;
@@ -58,7 +59,7 @@ private:
 	bool extractVolume(const scenegraph::SceneGraph &sceneGraph);
 	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
 						   const glm::ivec3 &cursorPosition);
-
+	void updateSliceRegionMesh();
 public:
 	SceneRenderer();
 	virtual ~SceneRenderer() = default;

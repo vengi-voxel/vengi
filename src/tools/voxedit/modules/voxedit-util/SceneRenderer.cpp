@@ -89,6 +89,7 @@ void SceneRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 
+	_sliceRegionMeshIndex = -1;
 	_aabbMeshIndex = -1;
 	_boneMeshIndex = -1;
 	_highlightMeshIndex = -1;
@@ -337,6 +338,19 @@ void SceneRenderer::update() {
 	_sceneGraphRenderer.update(_meshState);
 }
 
+void SceneRenderer::updateSliceRegionMesh() {
+	if (!isSliceModeActive()) {
+		return;
+	}
+	core_trace_scoped(UpdateSliceRegionMesh);
+	_shapeBuilder.clear();
+
+	const math::AABB<float> &aabb = scenegraph::toAABB(sliceRegion());
+	_shapeBuilder.setColor(style::color(style::ColorSliceRegion));
+	_shapeBuilder.aabb(aabb);
+	_shapeRenderer.createOrUpdate(_sliceRegionMeshIndex, _shapeBuilder);
+}
+
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
 	if (renderContext.sceneGraph == nullptr) {
@@ -348,6 +362,7 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 	renderContext.grayInactive = _grayInactive->boolVal();
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
+	updateSliceRegionMesh();
 	updateAABBMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
 	updateBoneMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
 	_sceneGraphRenderer.render(_meshState, renderContext, camera, _renderShadow->boolVal(), false);
@@ -385,6 +400,10 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 				_shapeRenderer.render(_planeMeshIndex[i], camera);
 			}
 		}
+	}
+
+	if (isSliceModeActive()) {
+		_shapeRenderer.render(_sliceRegionMeshIndex, camera);
 	}
 
 	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();

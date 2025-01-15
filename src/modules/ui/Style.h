@@ -20,7 +20,8 @@ enum StyleColor {
 	ColorUVEditor,
 	ColorAxisX,
 	ColorAxisY,
-	ColorAxisZ
+	ColorAxisZ,
+	ColorSliceRegion
 };
 
 const glm::vec4 &color(StyleColor color);

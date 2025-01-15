@@ -414,6 +414,7 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		return core::Color::Red();
 	case style::ColorInactiveNode:
 		return core::Color::Gray();
+	case style::ColorSliceRegion:
 	case style::ColorGridBorder:
 		if (style == ImGui::StyleLight) {
 			return core::Color::DarkGray();
