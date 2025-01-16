@@ -95,7 +95,16 @@ union TagData {
 };
 
 struct NamedBinaryTagContext {
-	io::ReadStream *stream;
+	io::ReadStream *stream = nullptr;
+	bool bedrock = false;
+
+	bool readString(core::String &out);
+	bool readUInt32(uint32_t &val);
+	bool readInt32(int32_t &val);
+	bool readUInt64(uint64_t &val);
+	bool readInt64(int64_t &val);
+	bool readInt16(int16_t &val);
+	bool readFloat(float &val);
 };
 
 /**

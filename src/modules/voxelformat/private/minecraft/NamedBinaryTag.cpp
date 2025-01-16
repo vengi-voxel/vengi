@@ -11,6 +11,55 @@ namespace voxelformat {
 
 namespace priv {
 
+bool NamedBinaryTagContext::readString(core::String &str) {
+	if (bedrock) {
+		return stream->readPascalStringUInt16LE(str);
+	}
+	return stream->readPascalStringUInt16BE(str);
+}
+
+bool NamedBinaryTagContext::readUInt32(uint32_t &val) {
+	if (bedrock) {
+		return stream->readUInt32(val);
+	}
+	return stream->readUInt32BE(val);
+}
+
+bool NamedBinaryTagContext::readInt32(int32_t &val) {
+	if (bedrock) {
+		return stream->readInt32(val);
+	}
+	return stream->readInt32BE(val);
+}
+
+bool NamedBinaryTagContext::readInt16(int16_t &val) {
+	if (bedrock) {
+		return stream->readInt16(val);
+	}
+	return stream->readInt16BE(val);
+}
+
+bool NamedBinaryTagContext::readFloat(float &val) {
+	if (bedrock) {
+		return stream->readFloat(val);
+	}
+	return stream->readFloatBE(val);
+}
+
+bool NamedBinaryTagContext::readUInt64(uint64_t &val) {
+	if (bedrock) {
+		return stream->readUInt64(val);
+	}
+	return stream->readUInt64BE(val);
+}
+
+bool NamedBinaryTagContext::readInt64(int64_t &val) {
+	if (bedrock) {
+		return stream->readInt64(val);
+	}
+	return stream->readInt64BE(val);
+}
+
 NamedBinaryTag::NamedBinaryTag(core::String &&val) : _tagType(TagType::STRING) {
 	_tagData._string = new core::String(core::move(val));
 }
@@ -302,12 +351,17 @@ bool NamedBinaryTag::writeType(io::WriteStream &stream, const NamedBinaryTag &ta
 
 NamedBinaryTag NamedBinaryTag::parse(NamedBinaryTagContext &ctx) {
 	TagType type = TagType::MAX;
-	if (!readType(*ctx.stream, type) || type != TagType::COMPOUND) {
+	if (!readType(*ctx.stream, type)) {
 		Log::debug("Failed to read type: %i", (int)type);
 		return NamedBinaryTag{};
 	}
+	if (type != TagType::COMPOUND) {
+		// TODO: in bedrock this is sometimes a LIST
+		Log::debug("Root tag is not a compound");
+		return NamedBinaryTag{};
+	}
 	core::String rootName;
-	if (!ctx.stream->readPascalStringUInt16BE(rootName)) {
+	if (!ctx.readString(rootName)) {
 		Log::debug("Failed to read root name");
 		return NamedBinaryTag{};
 	}
@@ -321,7 +375,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		TagType subType;
 		while (readType(*ctx.stream, subType) && subType != TagType::END) {
 			core::String name;
-			if (!ctx.stream->readPascalStringUInt16BE(name)) {
+			if (!ctx.readString(name)) {
 				Log::debug("Failed to read compound name");
 				return NamedBinaryTag{};
 			}
@@ -340,7 +394,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::SHORT: {
 		int16_t val;
-		if (ctx.stream->readInt16BE(val) != 0) {
+		if (ctx.readInt16(val) != 0) {
 			Log::debug("Failed to read short");
 			return NamedBinaryTag{};
 		}
@@ -348,7 +402,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::FLOAT: {
 		float val;
-		if (ctx.stream->readFloatBE(val) != 0) {
+		if (ctx.readFloat(val) != 0) {
 			Log::debug("Failed to read float");
 			return NamedBinaryTag{};
 		}
@@ -359,7 +413,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 			double d;
 			uint64_t l;
 		} u;
-		if (ctx.stream->readUInt64BE(u.l) != 0) {
+		if (ctx.readUInt64(u.l) != 0) {
 			Log::debug("Failed to read double");
 			return NamedBinaryTag{};
 		}
@@ -367,21 +421,21 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::INT: {
 		int32_t val;
-		if (ctx.stream->readInt32BE(val) != 0) {
+		if (ctx.readInt32(val) != 0) {
 			return NamedBinaryTag{};
 		}
 		return NamedBinaryTag{val};
 	}
 	case TagType::LONG: {
 		int64_t val;
-		if (ctx.stream->readInt64BE(val) != 0) {
+		if (ctx.readInt64(val) != 0) {
 			return NamedBinaryTag{};
 		}
 		return NamedBinaryTag{val};
 	}
 	case TagType::BYTE_ARRAY: {
 		uint32_t length;
-		if (ctx.stream->readUInt32BE(length) != 0) {
+		if (ctx.readUInt32(length) != 0) {
 			return NamedBinaryTag{};
 		}
 		core::DynamicArray<int8_t> array;
@@ -401,7 +455,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::INT_ARRAY: {
 		uint32_t length;
-		if (ctx.stream->readUInt32BE(length) != 0) {
+		if (ctx.readUInt32(length) != 0) {
 			Log::debug("Failed to read int array length");
 			return NamedBinaryTag{};
 		}
@@ -410,7 +464,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {
 			int32_t val;
-			if (ctx.stream->readInt32BE(val) != 0) {
+			if (ctx.readInt32(val) != 0) {
 				error = true;
 			}
 			return val;
@@ -419,7 +473,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::LONG_ARRAY: {
 		uint32_t length;
-		if (ctx.stream->readUInt32BE(length) != 0) {
+		if (ctx.readUInt32(length) != 0) {
 			Log::debug("Failed to read long array length");
 			return NamedBinaryTag{};
 		}
@@ -428,7 +482,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {
 			int64_t val;
-			if (ctx.stream->readInt64BE(val) != 0) {
+			if (ctx.readInt64(val) != 0) {
 				error = true;
 			}
 			return val;
@@ -442,7 +496,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 			return NamedBinaryTag{};
 		}
 		uint32_t length;
-		if (ctx.stream->readUInt32BE(length) != 0) {
+		if (ctx.readUInt32(length) != 0) {
 			Log::debug("Failed to read list length");
 			return NamedBinaryTag{};
 		}
@@ -458,7 +512,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::STRING: {
 		core::String str;
-		if (!ctx.stream->readPascalStringUInt16BE(str)) {
+		if (!ctx.readString(str)) {
 			Log::debug("Failed to read string");
 			return NamedBinaryTag{};
 		}

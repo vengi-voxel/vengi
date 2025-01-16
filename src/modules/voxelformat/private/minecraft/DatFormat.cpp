@@ -32,10 +32,25 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 	palette.minecraft();
-	io::ZipReadStream zipStream(*stream);
 	priv::NamedBinaryTagContext ctx;
-	ctx.stream = &zipStream;
-	const priv::NamedBinaryTag &root = priv::NamedBinaryTag::parse(ctx);
+	io::ZipReadStream zipStream(*stream);
+	if (zipStream.err()) {
+		Log::debug("Loading from uncompressed stream (bedrock)");
+		// bedrock is uncompressed and little endian
+		ctx.stream = stream;
+		ctx.bedrock = true;
+		uint32_t fileType;
+		stream->readUInt32(fileType);
+		Log::debug("File type: %u", fileType);
+		uint32_t fileLengthWithoutHeader;
+		stream->readUInt32(fileLengthWithoutHeader);
+		Log::debug("File length without header: %u", fileLengthWithoutHeader);
+	} else {
+		Log::debug("Loading from zip stream");
+		ctx.stream = &zipStream;
+		ctx.bedrock = false;
+	}
+	priv::NamedBinaryTag root = priv::NamedBinaryTag::parse(ctx);
 	if (!root.valid()) {
 		Log::error("Could not find 'root' tag");
 		return false;
