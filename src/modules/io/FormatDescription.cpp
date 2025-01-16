@@ -15,6 +15,31 @@ namespace io {
 
 namespace format {
 
+void printJson(const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags) {
+	const io::FormatDescription *first = desc;
+	for (; desc->valid(); ++desc) {
+		if (desc != first) {
+			Log::printf(",");
+		}
+		Log::printf("{");
+		Log::printf("\"name\":\"%s\",", desc->name.c_str());
+		Log::printf("\"extensions\":[");
+		for (size_t i = 0; i < desc->exts.size(); ++i) {
+			if (i > 0) {
+				Log::printf(",");
+			}
+			Log::printf("\"%s\"", desc->exts[i].c_str());
+		}
+		Log::printf("]");
+		for (const auto &entry : flags) {
+			if (desc->flags & entry->second) {
+				Log::printf(",\"%s\":true", entry->first.c_str());
+			}
+		}
+		Log::printf("}");
+	}
+}
+
 FormatDescription png() {
 	return {"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE};
 }

@@ -182,31 +182,6 @@ void VoxConvert::usage() const {
 	}
 }
 
-static void printFormatDetails(const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags = {}) {
-	const io::FormatDescription *first = desc;
-	for (; desc->valid(); ++desc) {
-		if (desc != first) {
-			Log::printf(",");
-		}
-		Log::printf("{");
-		Log::printf("\"name\":\"%s\",", desc->name.c_str());
-		Log::printf("\"extensions\":[");
-		for (size_t i = 0; i < desc->exts.size(); ++i) {
-			if (i > 0) {
-				Log::printf(",");
-			}
-			Log::printf("\"%s\"", desc->exts[i].c_str());
-		}
-		Log::printf("]");
-		for (const auto &entry : flags) {
-			if (desc->flags & entry->second) {
-				Log::printf(",\"%s\":true", entry->first.c_str());
-			}
-		}
-		Log::printf("}");
-	}
-}
-
 bool VoxConvert::slice(const scenegraph::SceneGraph &sceneGraph, const core::String &outfile) {
 	const core::String &ext = core::string::extractExtension(outfile);
 	const core::String &basePath = core::string::stripExtension(outfile);
@@ -264,15 +239,15 @@ app::AppState VoxConvert::onInit() {
 
 	if (hasArg("--print-formats")) {
 		Log::printf("{\"voxels\":[");
-		printFormatDetails(voxelformat::voxelLoad(), {{"thumbnail_embedded", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		io::format::printJson(voxelformat::voxelLoad(), {{"thumbnail_embedded", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 													  {"palette_embedded", VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 													  {"mesh", VOX_FORMAT_FLAG_MESH},
 													  {"animation", VOX_FORMAT_FLAG_ANIMATION},
 													  {"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"images\":[");
-		printFormatDetails(io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
+		io::format::printJson(io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"palettes\":[");
-		printFormatDetails(palette::palettes(), {{"save", FORMAT_FLAG_SAVE}});
+		io::format::printJson(palette::palettes(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("]}\n");
 		return state;
 	}
@@ -718,7 +693,7 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGrap
 	core::ScopedPtr<voxel::RawVolume> volume(merged.volume());
 	core::DynamicArray<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(volume, size);
 	for (voxel::RawVolume *v : rawVolumes) {
-		scenegraph::SceneGraphNode node;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, true);
 		node.setPalette(merged.palette);
 		node.setNormalPalette(merged.normalPalette);

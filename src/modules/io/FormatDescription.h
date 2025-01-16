@@ -6,6 +6,7 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringMap.h"
 #include "core/collection/Vector.h"
 #include "io/Stream.h"
 #include <stdint.h>
@@ -122,6 +123,8 @@ const FormatDescription* fonts();
 const FormatDescription *lua();
 
 FormatDescription png();
+
+void printJson(const FormatDescription *desc, const core::StringMap<uint32_t> &flags = {});
 
 } // namespace format
 
