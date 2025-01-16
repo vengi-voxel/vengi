@@ -256,7 +256,7 @@ Config vars to control the meshing:
 .PP
 \fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
 
-Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:
+Basic voxelization is supported, too (3ds, bbmodel, bsp, fbx, gltf, map, md2, mdl, obj, ply, stl). The following cvars can be modified here:
 
 .PP
 \fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.

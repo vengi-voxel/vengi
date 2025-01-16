@@ -355,7 +355,25 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf(".PP\n");
 		Log::printf("\\fBvoxel_meshmode\\fP: Set to 1 to use the marching cubes algorithm to produce the mesh\n");
 		Log::printf("\n");
-		Log::printf("Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:\n");
+		core::DynamicArray<core::String> meshExts;
+		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+			if (voxelformat::isMeshFormat(*desc)) {
+				const core::String &ext = desc->exts[0];
+				if (core::find(meshExts.begin(), meshExts.end(), ext) != meshExts.end()) {
+					continue;
+				}
+				meshExts.push_back(desc->exts[0]);
+			}
+		}
+		meshExts.sort(core::Greater<core::String>());
+		core::String meshExtsStr;
+		for (const core::String &e : meshExts) {
+			if (!meshExtsStr.empty()) {
+				meshExtsStr += ", ";
+			}
+			meshExtsStr += e;
+		}
+		Log::printf("Voxelization is supported, too (%s). The following cvars can be modified here:\n", meshExtsStr.c_str()	);
 		Log::printf("\n");
 		Log::printf(".PP\n");
 		Log::printf("\\fBvoxformat_fillhollow\\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.\n");
