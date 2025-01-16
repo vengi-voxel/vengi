@@ -229,7 +229,9 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf(".TP\n");
 		Log::printf("merge\n");
 		Log::printf(".TP\n");
-		Log::printf("scale\n");
+		Log::printf("lod 50%% downsampling\n");
+		Log::printf(".TP\n");
+		Log::printf("resize\n");
 		Log::printf(".TP\n");
 		Log::printf("mirror\n");
 		Log::printf(".TP\n");
@@ -239,9 +241,9 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf(".TP\n");
 		Log::printf("script\n");
 		Log::printf(".TP\n");
-		Log::printf("pivot\n");
-		Log::printf(".TP\n");
 		Log::printf("crop\n");
+		Log::printf(".TP\n");
+		Log::printf("surface-only\n");
 		Log::printf(".TP\n");
 		Log::printf("split\n");
 		Log::printf("\n");

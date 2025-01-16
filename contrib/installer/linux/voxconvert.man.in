@@ -131,7 +131,9 @@ filter
 .TP
 merge
 .TP
-scale
+lod 50% downsampling
+.TP
+resize
 .TP
 mirror
 .TP
@@ -141,9 +143,9 @@ translate
 .TP
 script
 .TP
-pivot
-.TP
 crop
+.TP
+surface-only
 .TP
 split
 

@@ -426,6 +426,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	// STEP 1: apply the filter
 	const bool applyFilter = hasArg("--filter");
 	if (applyFilter) {
 		if (infiles.size() == 1u) {
@@ -467,6 +468,7 @@ app::AppState VoxConvert::onInit() {
 		return state;
 	}
 
+	// STEP 2: merge all models
 	if (_mergeModels) {
 		Log::info("Merge models");
 		const scenegraph::SceneGraph::MergeResult &merged = sceneGraph.merge();
@@ -483,39 +485,48 @@ app::AppState VoxConvert::onInit() {
 		sceneGraph.emplace(core::move(node));
 	}
 
+	// STEP 3: lod 50% downsampling
 	if (_scaleModels) {
 		scale(sceneGraph);
 	}
 
+	// STEP 4: resize to the given size
 	if (_resizeModels) {
 		resize(getArgIvec3("--resize"), sceneGraph);
 	}
 
+	// STEP 5: apply mirror
 	if (_mirrorModels) {
 		mirror(getArgVal("--mirror"), sceneGraph);
 	}
 
+	// STEP 6: apply rotation
 	if (_rotateModels) {
 		rotate(getArgVal("--rotate"), sceneGraph);
 	}
 
+	// STEP 7: apply translation
 	if (_translateModels) {
 		translate(getArgIvec3("--translate"), sceneGraph);
 	}
 
+	// STEP 8: apply script
 	if (!scriptParameters.empty()) {
 		const core::String &color = getArgVal("--scriptcolor");
 		script(scriptParameters, sceneGraph, color.toInt());
 	}
 
+	// STEP 9: crop the models
 	if (_cropModels) {
 		crop(sceneGraph);
 	}
 
+	// STEP 10: remove non surface voxels
 	if (_surfaceOnly) {
 		removeNonSurfaceVoxels(sceneGraph);
 	}
 
+	// STEP 11: split the models
 	if (_splitModels) {
 		split(getArgIvec3("--split"), sceneGraph);
 	}
