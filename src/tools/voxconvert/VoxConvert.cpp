@@ -15,7 +15,6 @@
 #include "core/collection/StringSet.h"
 #include "core/concurrent/Concurrency.h"
 #include "engine-git.h"
-#include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -29,11 +28,9 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
-#include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
@@ -180,48 +177,6 @@ void VoxConvert::usage() const {
 			"Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
 	}
-}
-
-bool VoxConvert::slice(const scenegraph::SceneGraph &sceneGraph, const core::String &outfile) {
-	const core::String &ext = core::string::extractExtension(outfile);
-	const core::String &basePath = core::string::stripExtension(outfile);
-	for (const auto &e : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &node = e->value;
-		if (!node.isModelNode()) {
-			continue;
-		}
-		Log::info("Slice model %s", node.name().c_str());
-		const voxel::RawVolume *volume = node.volume();
-		core_assert(volume != nullptr);
-		const voxel::Region &region = volume->region();
-		const palette::Palette &palette = node.palette();
-		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-			const core::String &filename = core::string::format("%s-%i.%s", basePath.c_str(), z, ext.c_str());
-			image::Image image(filename);
-			core::Buffer<core::RGBA> rgba(region.getWidthInVoxels() * region.getHeightInVoxels());
-			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
-				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-					const voxel::Voxel &v = volume->voxel(x, y, z);
-					if (voxel::isAir(v.getMaterial())) {
-						continue;
-					}
-					const core::RGBA color = palette.color(v.getColor());
-					const int idx = (region.getUpperY() - y) * region.getWidthInVoxels() + (x - region.getLowerX());
-					rgba[idx] = color;
-				}
-			}
-			if (!image.loadRGBA((const uint8_t *)rgba.data(), region.getWidthInVoxels(), region.getHeightInVoxels())) {
-				Log::error("Failed to load slice image %s", filename.c_str());
-				return false;
-			}
-			if (!image::writeImage(image, filename)) {
-				Log::error("Failed to write slice image %s", filename.c_str());
-				return false;
-			}
-		}
-	}
-	Log::info("Sliced models into %s", outfile.c_str());
-	return true;
 }
 
 app::AppState VoxConvert::onInit() {

@@ -52,7 +52,6 @@ protected:
 	void mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
 	void rotate(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
 	void scale(scenegraph::SceneGraph& sceneGraph);
-	bool slice(const scenegraph::SceneGraph& sceneGraph, const core::String &outfile);
 	void resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
 	void script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color);
 	void translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph);
