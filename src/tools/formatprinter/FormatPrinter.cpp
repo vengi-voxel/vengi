@@ -273,14 +273,14 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf(".SS Generate from heightmap\n");
 		Log::printf("Just specify the heightmap as input file like this:\n");
 		Log::printf("\n");
-		Log::printf("\\fB@NAME@ --input heightmap.png --output outfile.vengi\\fP\n");
+		Log::printf("\\fB@NAME@ --input heightmap.png --output outfile.vengi -set voxformat_imageimporttype 1\\fP\n");
 		Log::printf("\n");
 		Log::printf(".SS Translate the voxels\n");
 		Log::printf("You can translate the voxels in the world like this:\n");
 		Log::printf("\n");
 		Log::printf("\\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vengi\\fP\n");
 		Log::printf("\n");
-		Log::printf("This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.\n");
+		Log::printf("This would move the voxels 10 units upwards. But keep in mind that not every format supports a translation offset.\n");
 		Log::printf("\n");
 		Log::printf(".SS Execute lua script\n");
 		Log::printf("Use the \\fB--script\\fP parameter:\n");

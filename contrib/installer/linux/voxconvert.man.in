@@ -174,14 +174,14 @@ Merge several models into one:
 .SS Generate from heightmap
 Just specify the heightmap as input file like this:
 
-\fB@NAME@ --input heightmap.png --output outfile.vengi\fP
+\fB@NAME@ --input heightmap.png --output outfile.vengi -set voxformat_imageimporttype 1\fP
 
 .SS Translate the voxels
 You can translate the voxels in the world like this:
 
 \fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vengi\fP
 
-This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.
+This would move the voxels 10 units upwards. But keep in mind that not every format supports a translation offset.
 
 .SS Execute lua script
 Use the \fB--script\fP parameter:
@@ -256,7 +256,7 @@ Config vars to control the meshing:
 .PP
 \fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
 
-Basic voxelization is supported, too (3ds, bbmodel, bsp, fbx, gltf, map, md2, mdl, obj, ply, stl). The following cvars can be modified here:
+Voxelization is supported, too (3ds, bbmodel, bsp, fbx, gltf, map, md2, mdl, obj, ply, stl). The following cvars can be modified here:
 
 .PP
 \fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.
