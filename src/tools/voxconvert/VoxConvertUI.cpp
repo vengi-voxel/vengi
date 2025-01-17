@@ -147,6 +147,10 @@ void VoxConvertUI::onRenderUI() {
 			_targetFileExists = io::Filesystem::sysExists(_targetFile);
 		}
 
+		if (_voxconvertBinary.empty()) {
+			ImGui::IconDialog(ICON_LC_CIRCLE_ALERT, _("vengi-voxconvert not found in current dir or PATH"));
+		}
+
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			if (_targetFileExists) {
 				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
