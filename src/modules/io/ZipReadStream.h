@@ -29,6 +29,8 @@ public:
 	ZipReadStream(io::SeekableReadStream &readStream, int size = -1);
 	virtual ~ZipReadStream();
 
+	static bool isZipStream(io::SeekableReadStream &stream);
+
 	/**
 	 * @brief Read an arbitrary sized amount of bytes from the input stream
 	 *

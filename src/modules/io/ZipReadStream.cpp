@@ -19,12 +19,90 @@
 
 namespace io {
 
+bool ZipReadStream::isZipStream(io::SeekableReadStream &stream) {
+	const int64_t length = stream.remaining();
+	if (length < 2) {
+		Log::debug("There is not enough data in the stream to determine if it is a zip stream");
+		return false;
+	}
+
+	uint8_t buffer[64];
+	const int bytesRead = stream.read(buffer, sizeof(buffer));
+	if (bytesRead == -1) {
+		Log::debug("Failed to read from the input stream");
+		return false;
+	}
+	if (stream.seek(-bytesRead, SEEK_CUR) == -1) {
+		Log::error("Failed to seek back in the input stream");
+	}
+
+	uint8_t out[64];
+
+	{
+		z_stream zstream;
+		core_memset(&zstream, 0, sizeof(zstream));
+		zstream.zalloc = Z_NULL;
+		zstream.zfree = Z_NULL;
+		zstream.next_in = (unsigned char *)buffer;
+		zstream.avail_in = bytesRead;
+		zstream.next_out = out;
+		zstream.avail_out = sizeof(out);
+		// Check for GZIP
+		if (inflateInit2(&zstream, -Z_DEFAULT_WINDOW_BITS) == Z_OK) {
+			int ret = inflate(&zstream, Z_NO_FLUSH);
+			inflateEnd(&zstream);
+			if (ret == Z_OK || ret == Z_STREAM_END) {
+				return true;
+			}
+			Log::debug("No gzip stream found with error %s", zError(ret));
+		}
+	}
+
+	{
+		z_stream zstream;
+		memset(&zstream, 0, sizeof(zstream));
+		zstream.next_in = (unsigned char *)buffer;
+		zstream.avail_in = bytesRead;
+		zstream.next_out = out;
+		zstream.avail_out = sizeof(out);
+		// Check for ZLIB
+		if (inflateInit(&zstream) == Z_OK) {
+			int ret = inflate(&zstream, Z_NO_FLUSH);
+			inflateEnd(&zstream);
+			if (ret == Z_OK || ret == Z_STREAM_END) {
+				return true;
+			}
+			Log::debug("No zlib stream found with error %s", zError(ret));
+		}
+	}
+
+	{
+		z_stream zstream;
+		memset(&zstream, 0, sizeof(zstream));
+		zstream.next_in = (unsigned char *)buffer;
+		zstream.avail_in = bytesRead;
+		zstream.next_out = out;
+		zstream.avail_out = sizeof(out);
+		// Check for raw DEFLATE
+		if (inflateInit2(&zstream, -Z_DEFAULT_WINDOW_BITS) == Z_OK) {
+			int ret = inflate(&zstream, Z_NO_FLUSH);
+			inflateEnd(&zstream);
+			if (ret == Z_OK || ret == Z_STREAM_END) {
+				return true;
+			}
+			Log::debug("No raw deflate stream found with error %s", zError(ret));
+		}
+	}
+
+	return false;
+}
+
 ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	: _readStream(readStream), _size(size), _remaining(size) {
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
-	core_memset(((z_stream*)_stream), 0, sizeof(z_stream));
-	((z_stream*)_stream)->zalloc = Z_NULL;
-	((z_stream*)_stream)->zfree = Z_NULL;
+	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
+	((z_stream *)_stream)->zalloc = Z_NULL;
+	((z_stream *)_stream)->zfree = Z_NULL;
 	uint8_t gzipHeader[2];
 	if (readStream.readUInt8(gzipHeader[0]) == -1) {
 		_err = true;
@@ -39,7 +117,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		windowBits = -Z_DEFAULT_WINDOW_BITS;
 		// gzip header is 10 bytes long
 		readStream.skip(8);
-	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED &&							// Compression method is DEFLATE
+	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED &&						// Compression method is DEFLATE
 			   ((gzipHeader[0] >> 4) >= 7 && (gzipHeader[0] >> 4) <= 15) && // Valid window size
 			   ((gzipHeader[0] << 8 | gzipHeader[1]) % 31 == 0)) {
 		// zlib
@@ -52,15 +130,15 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		windowBits = -Z_DEFAULT_WINDOW_BITS;
 		readStream.seek(-2, SEEK_CUR);
 	}
-	if (inflateInit2(((z_stream*)_stream), windowBits) != Z_OK) {
+	if (inflateInit2(((z_stream *)_stream), windowBits) != Z_OK) {
 		Log::error("Failed to initialize zip stream");
 		_err = true;
 	}
 }
 
 ZipReadStream::~ZipReadStream() {
-	inflateEnd(((z_stream*)_stream));
-	core_free(((z_stream*)_stream));
+	inflateEnd(((z_stream *)_stream));
+	core_free(((z_stream *)_stream));
 }
 
 bool ZipReadStream::eos() const {
@@ -69,7 +147,8 @@ bool ZipReadStream::eos() const {
 
 int64_t ZipReadStream::remaining() const {
 	if (_size >= 0) {
-		core_assert_msg(_remaining >= 0, "if size is given (%i), remaining should be >= 0 - but is %i", _size, _remaining);
+		core_assert_msg(_remaining >= 0, "if size is given (%i), remaining should be >= 0 - but is %i", _size,
+						_remaining);
 		return core_min(_remaining, _readStream.remaining());
 	}
 	return _readStream.remaining();
@@ -97,7 +176,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 		return 0;
 	}
 	uint8_t *targetPtr = (uint8_t *)buf;
-	z_stream* stream = (z_stream*)_stream;
+	z_stream *stream = (z_stream *)_stream;
 	size_t readCnt = 0;
 	while (size > 0) {
 		if (stream->avail_in == 0) {

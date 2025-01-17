@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "app/tests/AbstractTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
@@ -9,7 +10,7 @@
 
 namespace io {
 
-class ZipStreamTest : public testing::Test {};
+class ZipStreamTest : public app::AbstractTest {};
 
 TEST_F(ZipStreamTest, testZipStreamWrite) {
 	BufferedReadWriteStream stream(1024);
@@ -151,12 +152,14 @@ TEST_F(ZipStreamTest, testZipStreamNoSize) {
 }
 
 TEST_F(ZipStreamTest, testZipStreamBufSize) {
-	const int n = 64;
-	const int size = n * 4 * sizeof(uint32_t);
+	const int n = 1;
+	const int size = n * sizeof(uint32_t);
 	BufferedReadWriteStream stream(size);
 	{
 		ZipWriteStream w(stream);
-		ASSERT_TRUE(w.writeInt32(0));
+		for (int i = 0; i < n; ++i) {
+			ASSERT_TRUE(w.writeUInt32(i));
+		}
 	}
 	stream.seek(0);
 	ZipReadStream r(stream);
@@ -166,18 +169,62 @@ TEST_F(ZipStreamTest, testZipStreamBufSize) {
 }
 
 TEST_F(ZipStreamTest, testZipStreamParentFailure) {
-	const int n = 64;
-	const int size = n * 4 * sizeof(uint32_t);
+	const int n = 1;
+	const int size = n * sizeof(uint32_t);
 	BufferedReadWriteStream stream(size);
 	{
 		ZipWriteStream w(stream);
-		ASSERT_TRUE(w.writeInt32(0));
+		for (int i = 0; i < n; ++i) {
+			ASSERT_TRUE(w.writeUInt32(i));
+		}
 	}
 	stream.seek(0);
 	ZipReadStream r(stream);
 	stream.seek(0, SEEK_END);
 	uint8_t buf[16];
 	EXPECT_EQ(-1, r.read(buf, sizeof(buf)));
+}
+
+TEST_F(ZipStreamTest, testIsZipStreamZlib) {
+	const int n = 64;
+	const int size = n * sizeof(uint32_t);
+	BufferedReadWriteStream stream(size);
+	{
+		ZipWriteStream w(stream);
+		for (int i = 0; i < n; ++i) {
+			ASSERT_TRUE(w.writeUInt32(i));
+		}
+	}
+	stream.seek(0);
+	EXPECT_TRUE(ZipReadStream::isZipStream(stream));
+	EXPECT_EQ(0u, stream.pos());
+}
+
+TEST_F(ZipStreamTest, testMaybeZipStreamDeflate) {
+	const int n = 64;
+	const int size = n * sizeof(uint32_t);
+	BufferedReadWriteStream stream(size);
+	{
+		ZipWriteStream w(stream, 6, true);
+		for (int i = 0; i < n; ++i) {
+			ASSERT_TRUE(w.writeUInt32(i));
+		}
+	}
+	stream.seek(0);
+	EXPECT_TRUE(ZipReadStream::isZipStream(stream));
+	EXPECT_EQ(0u, stream.pos());
+}
+
+TEST_F(ZipStreamTest, testMaybeZipStreamFalse) {
+	const int n = 64;
+	const int size = n * sizeof(uint32_t);
+	BufferedReadWriteStream stream(size);
+	for (int i = 0; i < n; ++i) {
+		ASSERT_TRUE(stream.writeUInt32(i));
+	}
+	stream.seek(0);
+	EXPECT_FALSE(ZipReadStream::isZipStream(stream));
+	EXPECT_EQ(0u, stream.pos());
 }
 
 } // namespace io
