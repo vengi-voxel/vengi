@@ -3,6 +3,8 @@
  */
 
 #include "DatFormat.h"
+#include "MCRFormat.h"
+#include "NamedBinaryTag.h"
 #include "app/Async.h"
 #include "core/Color.h"
 #include "core/Common.h"
@@ -12,44 +14,18 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/ZipReadStream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
-#include "palette/Palette.h"
 #include "voxel/Voxel.h"
-#include "MCRFormat.h"
-#include "NamedBinaryTag.h"
 
 #include <glm/common.hpp>
 
 namespace voxelformat {
+namespace priv {
 
-bool DatFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
-								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-								  const LoadContext &loadctx) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::error("Could not load file %s", filename.c_str());
-		return false;
-	}
-	palette.minecraft();
-	priv::NamedBinaryTagContext ctx;
-	io::ZipReadStream zipStream(*stream);
-	if (zipStream.err()) {
-		Log::debug("Loading from uncompressed stream (bedrock)");
-		// bedrock is uncompressed and little endian
-		ctx.stream = stream;
-		ctx.bedrock = true;
-		uint32_t fileType;
-		stream->readUInt32(fileType);
-		Log::debug("File type: %u", fileType);
-		uint32_t fileLengthWithoutHeader;
-		stream->readUInt32(fileLengthWithoutHeader);
-		Log::debug("File length without header: %u", fileLengthWithoutHeader);
-	} else {
-		Log::debug("Loading from zip stream");
-		ctx.stream = &zipStream;
-		ctx.bedrock = false;
-	}
+static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx, scenegraph::SceneGraph &sceneGraph,
+				 const io::ArchivePtr &archive, const LoadContext &loadctx) {
 	priv::NamedBinaryTag root = priv::NamedBinaryTag::parse(ctx);
 	if (!root.valid()) {
 		Log::error("Could not find 'root' tag");
@@ -134,6 +110,40 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	return nodesAdded > 0;
+}
+
+} // namespace priv
+
+bool DatFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+								  const LoadContext &loadctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	palette.minecraft();
+	priv::NamedBinaryTagContext ctx;
+	const bool bedrock = !io::ZipReadStream::isZipStream(*stream);
+	if (bedrock) {
+		// bedrock is uncompressed and little endian
+		Log::debug("Loading from uncompressed stream (bedrock)");
+		ctx.stream = stream;
+		ctx.bedrock = true;
+		uint32_t fileType;
+		stream->readUInt32(fileType);
+		Log::debug("File type: %u", fileType);
+		uint32_t fileLengthWithoutHeader;
+		stream->readUInt32(fileLengthWithoutHeader);
+		Log::debug("File length without header: %u", fileLengthWithoutHeader);
+		return priv::load(filename, ctx, sceneGraph, archive, loadctx);
+	}
+
+	Log::debug("Loading from zip stream");
+	io::ZipReadStream zipStream(*stream);
+	ctx.stream = &zipStream;
+	ctx.bedrock = false;
+	return priv::load(filename, ctx, sceneGraph, archive, loadctx);
 }
 
 } // namespace voxelformat
