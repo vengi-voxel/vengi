@@ -63,6 +63,7 @@ using NBTList = core::DynamicArray<NamedBinaryTag>;
  * @note https://minecraft.wiki/w/Region_file_format
  * @note https://minecraft.wiki/w/Chunk_format
  * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
+ * @note https://github.com/mstefarov/fCraft/tree/master/fCraft/MapConversion
  *
  * @ingroup Formats
  */
