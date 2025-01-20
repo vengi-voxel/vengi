@@ -89,8 +89,9 @@ bool AsepriteFormat::loadGroupsRGBA(const core::String &filename, const io::Arch
 	if (ase == nullptr) {
 		return false;
 	}
+	const core::String filenameNoPath = core::string::extractFilename(filename);
 	for (int i = 0; i < ase->frame_count; ++i) {
-		if (!addFrame(sceneGraph, filename, palette, ctx, ase, i)) {
+		if (!addFrame(sceneGraph, filenameNoPath, palette, ctx, ase, i)) {
 			Log::error("Failed to add frame %d from Aseprite file '%s'", i, filename.c_str());
 			cute_aseprite_free(ase);
 			return false;
