@@ -10,7 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
-#include "engine-config.h" // PKGDATADIR
+#include "engine-config.h" // PKGDATADIR, PKGDATABASEDIR
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/FilesystemEntry.h"
@@ -87,17 +87,22 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		return false;
 	}
 
+	const core::String appDir = _organisation + "-" + _appname;
+
 	core_assert_always(registerPath(_homePath));
 	// this is a build system option that packagers could use to install
 	// the application data into the proper system wide paths
 #ifdef PKGDATADIR
 	core_assert_always(registerPath(PKGDATADIR));
 #endif
+#ifdef PKGDATABASEDIR
+	const core::String pkgDataBaseDir = core::string::sanitizeDirPath(core::string::path(PKGDATABASEDIR, appDir));
+	core_assert_always(registerPath(pkgDataBaseDir));
+#endif
 
 	// https://docs.appimage.org/packaging-guide/environment-variables.html
 	const char *appImageDirectory = SDL_getenv("APPDIR");
 	if (appImageDirectory != nullptr) {
-		const core::String appDir = _organisation + "-" + _appname;
 		const core::String appImagePath = core::string::sanitizeDirPath(core::string::path(appImageDirectory, "usr", "share", appDir));
 		if (exists(appImagePath)) {
 			core_assert_always(registerPath(appImagePath));

@@ -17,6 +17,7 @@
 #cmakedefine HAVE_SYS_TIME_H 1
 
 #cmakedefine PKGDATADIR "@PKGDATADIR@"
+#cmakedefine PKGDATABASEDIR "@PKGDATABASEDIR@"
 
 #cmakedefine USE_OPENGLES 1
 #cmakedefine USE_ZLIB 1

@@ -33,7 +33,7 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 	}
 	const bool alreadyOpened = _openedFiles.hasKey(absPath);
 	if (alreadyOpened) {
-		FileMode openedMode;
+		FileMode openedMode = FileMode::Max;
 		core_assert_always(_openedFiles.get(absPath, openedMode));
 		core_assert_msg(
 			!alreadyOpened,

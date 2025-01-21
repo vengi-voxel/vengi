@@ -38,6 +38,7 @@ set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "Root dir")
 set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
 set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(GENERATE_DIR ${CMAKE_BINARY_DIR}/generated CACHE STRING "Generated code dir")
+set(PKGDATABASEDIR "" CACHE STRING "System directory to search for data files (must end on /)")
 set(PKGDATADIR "" CACHE STRING "System directory to search for data files (must end on /)")
 add_custom_target(codegen)
 
