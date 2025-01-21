@@ -8,6 +8,9 @@
 
 namespace voxelformat {
 
+/**
+ * @ingroup Formats
+ */
 class PNGFormat : public RGBAFormat {
 private:
 	bool importSlices(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
