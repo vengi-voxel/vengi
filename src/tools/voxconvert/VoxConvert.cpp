@@ -79,7 +79,6 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size");
 	registerArg("--script")
-		.setDefaultValue("script.lua")
 		.setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor")
 		.setDefaultValue("1")
@@ -305,14 +304,21 @@ app::AppState VoxConvert::onInit() {
 	if (!outfilesstr.empty()) {
 		Log::info("* output files:      - %s", outfilesstr.c_str());
 	}
-	core::String scriptParameters;
 	if (hasScript) {
-		scriptParameters = getArgVal("--script");
-		if (scriptParameters.empty()) {
-			Log::error("Missing script parameters");
+		int argn = 0;
+		for (;;) {
+			core::String val = getArgVal("--script", "", &argn);
+			if (val.empty()) {
+				break;
+			}
+			if (val.empty()) {
+				Log::error("* script:            - Missing script parameters");
+			} else {
+				Log::info("* script:            - %s", val.c_str());
+			}
 		}
-		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
+
 	Log::info("* show scene graph:  - %s", (_printSceneGraph ? "true" : "false"));
 	Log::info("* merge models:      - %s", (_mergeModels ? "true" : "false"));
 	Log::info("* scale models:      - %s", (_scaleModels ? "true" : "false"));
@@ -410,7 +416,7 @@ app::AppState VoxConvert::onInit() {
 			}
 		}
 	}
-	if (!scriptParameters.empty() && sceneGraph.empty()) {
+	if (hasArg("--script") && sceneGraph.empty()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		const voxel::Region region(0, 63);
 		node.setVolume(new voxel::RawVolume(region), true);
@@ -510,10 +516,19 @@ app::AppState VoxConvert::onInit() {
 		translate(getArgIvec3("--translate"), sceneGraph);
 	}
 
-	// STEP 8: apply script
-	if (!scriptParameters.empty()) {
-		const core::String &color = getArgVal("--scriptcolor");
-		script(scriptParameters, sceneGraph, color.toInt());
+	// STEP 8: apply scripts
+	{
+		int argn = 0;
+		for (;;) {
+			core::String val = getArgVal("--script", "", &argn);
+			if (val.empty()) {
+				break;
+			}
+			if (!val.empty()) {
+				const core::String &color = getArgVal("--scriptcolor");
+				script(val, sceneGraph, color.toInt());
+			}
+		}
 	}
 
 	// STEP 9: crop the models

@@ -39,6 +39,7 @@ VoxConvert:
    - Added script support to the ui
    - `--usage` shows lua script details now
    - Removed `--slice` (see `png` format)
+   - Allow to specify multiple `--script` parameters
 
 VoxEdit:
 
