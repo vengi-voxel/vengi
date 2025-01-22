@@ -27,6 +27,7 @@ extra:
 
 nav:
   - README.md
+  - FAQ.md
   - CHANGELOG.md
   - Basics:
       - Configuration.md
