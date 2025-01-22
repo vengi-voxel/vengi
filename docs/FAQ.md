@@ -26,15 +26,15 @@ Sort of - vengi doesn't use shaders for this - but [lua](LUAScript.md) scripts. 
 
 Your model doesn't have the colors you want? This usually happens if your input model doesn't have properly set up the texture paths. Vengi is trying to perform some lookups automatically. But the texture names have to match. What does this mean? A file that specifies a material texture with the name `albedo.png` but only comes with a texture named `texture-albedo.png` won't get proper colors.
 
-## My model is very small/big after voxelization
-
-Vengi uses 1 unit in your mesh for one voxel. So if your model is scaled down or up to fit the needs for your own workflow, you can scale the model up with the [cvar](Configuration.md) `voxformat_scale`. If your model is only shown very small/big in [vengi-voxedit](voxedit/Index.md) scene mode, this means that the node got a scaling applied. Switch to the node inspector and reset the scale value for the node. This is not related to the previously mentioned cvar - the cvar scales the geometry - not the transformation matrices in the scene.
-
 **Textures are stored in a subfolder:**
 
 Sometimes the textures were moved into subfolders, e.g. a `textures` subfolder - but the `fbx`, `glb` (you name it) files were not adopted and only refer to `texture1.png` where they should have been pointed to `textures/texture1.png`. In this case you can specify the [cvar](Configuration.md) `voxformat_texturepath` to point to the path where the texture files are (but keep in mind, that the names still have to match).
 
 Sometimes it's also just the case-sensitivity of your filesystem. This is true for both the path and the filename (including the extension).
+
+## My model is very small/big after voxelization
+
+Vengi uses 1 unit in your mesh for one voxel. So if your model is scaled down or up to fit the needs for your own workflow, you can scale the model up with the [cvar](Configuration.md) `voxformat_scale`. If your model is only shown very small/big in [vengi-voxedit](voxedit/Index.md) scene mode, this means that the node got a scaling applied. Switch to the node inspector and reset the scale value for the node. This is not related to the previously mentioned cvar - the cvar scales the geometry - not the transformation matrices in the scene.
 
 ## Some parts of a model are not available after vengi saved them
 
@@ -43,3 +43,7 @@ There are features that are not supported for all formats that vengi supports. E
 ## Is vengi available in my language?
 
 Probably not - but vengi offers [translation](Translation.md) support. So if nobody was faster in translating vengi into your language, feel free to do so. And please also consider to send the translation.
+
+## Which platforms are supported?
+
+Windows, Linux, MacOS and web
