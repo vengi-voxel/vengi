@@ -72,10 +72,12 @@ if (PYTHON3_EXECUTABLE)
 	add_custom_command(TARGET update-videobindings
 		COMMAND ${PYTHON3_EXECUTABLE} flextGLgen.py -T sdl -D ${CMAKE_CURRENT_SOURCE_DIR}/gl profiles/gl33.txt
 		WORKING_DIRECTORY ${ROOT_DIR}/tools/flextGL
+		POST_BUILD
 	)
 	add_custom_command(TARGET update-videobindings
 		COMMAND ${PYTHON3_EXECUTABLE} flextGLgen.py -T vulkan-dynamic -D ${CMAKE_CURRENT_SOURCE_DIR}/vk profiles/vulkan.txt
 		WORKING_DIRECTORY ${ROOT_DIR}/tools/flextGL
+		POST_BUILD
 	)
 endif()
 
