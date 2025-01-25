@@ -138,12 +138,9 @@ const int kEncodeDefaultLevel = 2;
 
 static size_t getVertexBlockSize(size_t vertex_size)
 {
-	// make sure the entire block fits into the scratch buffer
-	size_t result = kVertexBlockSizeBytes / vertex_size;
-
-	// align to byte group size; we encode each byte as a byte group
-	// if vertex block is misaligned, it results in wasted bytes, so just truncate the block size
-	result &= ~(kByteGroupSize - 1);
+	// make sure the entire block fits into the scratch buffer and is aligned to byte group size
+	// note: the block size is implicitly part of the format, so we can't change it without breaking compatibility
+	size_t result = (kVertexBlockSizeBytes / vertex_size) & ~(kByteGroupSize - 1);
 
 	return (result < kVertexBlockMaxSize) ? result : kVertexBlockMaxSize;
 }
@@ -179,13 +176,14 @@ static Stats* bytestats = NULL;
 static Stats vertexstats[256];
 #endif
 
-static bool canEncodeZero(const unsigned char* buffer, size_t buffer_size)
+static bool encodeBytesGroupZero(const unsigned char* buffer)
 {
-	for (size_t i = 0; i < buffer_size; ++i)
-		if (buffer[i])
-			return false;
+	assert(kByteGroupSize == sizeof(unsigned long long) * 2);
 
-	return true;
+	unsigned long long v[2];
+	memcpy(v, buffer, sizeof(v));
+
+	return (v[0] | v[1]) == 0;
 }
 
 static size_t encodeBytesGroupMeasure(const unsigned char* buffer, int bits)
@@ -193,7 +191,7 @@ static size_t encodeBytesGroupMeasure(const unsigned char* buffer, int bits)
 	assert(bits >= 0 && bits <= 8);
 
 	if (bits == 0)
-		return canEncodeZero(buffer, kByteGroupSize) ? 0 : size_t(-1);
+		return encodeBytesGroupZero(buffer) ? 0 : size_t(-1);
 
 	if (bits == 8)
 		return kByteGroupSize;
@@ -389,6 +387,11 @@ static int estimateRotate(const unsigned char* vertex_data, size_t vertex_count,
 			vertex += vertex_size;
 		}
 
+#if TRACE
+		for (int j = 0; j < 32; ++j)
+			vertexstats[k + (j / 8)].bitc[j % 8] += (i + group_size < vertex_count ? group_size : vertex_count - i) * (1 - ((bitg >> j) & 1));
+#endif
+
 		for (int j = 0; j < 8; ++j)
 		{
 			unsigned int bitr = rotate(bitg, j);
@@ -455,9 +458,18 @@ static int estimateChannel(const unsigned char* vertex_data, size_t vertex_count
 	return best_channel == 2 ? best_channel | (xor_rot << 4) : best_channel;
 }
 
+static bool estimateControlZero(const unsigned char* buffer, size_t vertex_count_aligned)
+{
+	for (size_t i = 0; i < vertex_count_aligned; i += kByteGroupSize)
+		if (!encodeBytesGroupZero(buffer + i))
+			return false;
+
+	return true;
+}
+
 static int estimateControl(const unsigned char* buffer, size_t vertex_count, size_t vertex_count_aligned, int level)
 {
-	if (canEncodeZero(buffer, vertex_count))
+	if (estimateControlZero(buffer, vertex_count_aligned))
 		return 2; // zero encoding
 
 	if (level == 0)
@@ -522,18 +534,6 @@ static unsigned char* encodeVertexBlock(unsigned char* data, unsigned char* data
 #if TRACE
 		const unsigned char* olddata = data;
 		bytestats = &vertexstats[k];
-
-		for (size_t ig = 0; ig < vertex_count; ig += kByteGroupSize)
-		{
-			unsigned char last = (ig == 0) ? last_vertex[k] : vertex_data[vertex_size * (ig - 1) + k];
-			unsigned char delta = 0xff;
-
-			for (size_t i = ig; i < ig + kByteGroupSize && i < vertex_count; ++i)
-				delta &= ~(vertex_data[vertex_size * i + k] ^ last);
-
-			for (int j = 0; j < 8; ++j)
-				bytestats->bitc[j] += (vertex_count - ig < kByteGroupSize ? vertex_count - ig : kByteGroupSize) * ((delta >> j) & 1);
-		}
 #endif
 
 		int ctrl = 0;
@@ -1365,7 +1365,7 @@ SIMD_TARGET inline uint8x8_t rebase(uint8x8_t npi, uint8x16_t r0, uint8x16_t r1,
 	{
 		uint16x8_t rsum = vaddq_u16(vaddq_u16(vreinterpretq_u16_u8(r0), vreinterpretq_u16_u8(r1)), vaddq_u16(vreinterpretq_u16_u8(r2), vreinterpretq_u16_u8(r3)));
 		uint16x4_t rsumx = vadd_u16(vget_low_u16(rsum), vget_high_u16(rsum));
-		return vreinterpret_u8_u16(vadd_u16(vadd_u16(npi, rsumx), vext_u16(rsumx, rsumx, 2)));
+		return vreinterpret_u8_u16(vadd_u16(vadd_u16(vreinterpret_u16_u8(npi), rsumx), vext_u16(rsumx, rsumx, 2)));
 	}
 	case 2:
 	{
@@ -1760,13 +1760,12 @@ size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size
 			    double(vsk.ctrl[2]) / double(total_ctrl) * 100, double(vsk.ctrl[3]) / double(total_ctrl) * 100);
 		}
 
-#if TRACE > 1
-		printf(" | bitc [%3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%%]",
-		    double(vsk.bitc[0]) / double(vertex_count) * 100, double(vsk.bitc[1]) / double(vertex_count) * 100,
-		    double(vsk.bitc[2]) / double(vertex_count) * 100, double(vsk.bitc[3]) / double(vertex_count) * 100,
-		    double(vsk.bitc[4]) / double(vertex_count) * 100, double(vsk.bitc[5]) / double(vertex_count) * 100,
-		    double(vsk.bitc[6]) / double(vertex_count) * 100, double(vsk.bitc[7]) / double(vertex_count) * 100);
-#endif
+		if (level >= 3)
+			printf(" | bitc [%3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%%]",
+			    double(vsk.bitc[0]) / double(vertex_count) * 100, double(vsk.bitc[1]) / double(vertex_count) * 100,
+			    double(vsk.bitc[2]) / double(vertex_count) * 100, double(vsk.bitc[3]) / double(vertex_count) * 100,
+			    double(vsk.bitc[4]) / double(vertex_count) * 100, double(vsk.bitc[5]) / double(vertex_count) * 100,
+			    double(vsk.bitc[6]) / double(vertex_count) * 100, double(vsk.bitc[7]) / double(vertex_count) * 100);
 
 		printf("\n");
 	}
