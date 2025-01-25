@@ -1,5 +1,5 @@
 Dear ImGui Test Engine License (v1.04)
-Copyright (c) 2018-2024 Omar Cornut
+Copyright (c) 2018-2025 Omar Cornut
 
 This document is a legal agreement ("License") between you ("Licensee") and
 DISCO HELLO ("Licensor") that governs your use of Dear ImGui Test Engine ("Software").

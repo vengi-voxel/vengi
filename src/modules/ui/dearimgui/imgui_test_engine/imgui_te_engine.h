@@ -188,12 +188,13 @@ IMGUI_API ImGuiTestEngineIO&  ImGuiTestEngine_GetIO(ImGuiTestEngine* engine);
 
 // Macros: Register Test
 #define IM_REGISTER_TEST(_ENGINE, _CATEGORY, _NAME)  ImGuiTestEngine_RegisterTest(_ENGINE, _CATEGORY, _NAME, __FILE__, __LINE__)
-IMGUI_API ImGuiTest*          ImGuiTestEngine_RegisterTest(ImGuiTestEngine* engine, const char* category, const char* name, const char* src_file = NULL, int src_line = 0); // Prefer calling IM_REGISTER_TEST()
+IMGUI_API ImGuiTest*          ImGuiTestEngine_RegisterTest(ImGuiTestEngine* engine, const char* category, const char* name, const char* src_file = nullptr, int src_line = 0); // Prefer calling IM_REGISTER_TEST()
 IMGUI_API void                ImGuiTestEngine_UnregisterTest(ImGuiTestEngine* engine, ImGuiTest* test);
+IMGUI_API void                ImGuiTestEngine_UnregisterAllTests(ImGuiTestEngine* engine);
 
 // Functions: Main
 IMGUI_API void                ImGuiTestEngine_QueueTest(ImGuiTestEngine* engine, ImGuiTest* test, ImGuiTestRunFlags run_flags = 0);
-IMGUI_API void                ImGuiTestEngine_QueueTests(ImGuiTestEngine* engine, ImGuiTestGroup group, const char* filter = NULL, ImGuiTestRunFlags run_flags = 0);
+IMGUI_API void                ImGuiTestEngine_QueueTests(ImGuiTestEngine* engine, ImGuiTestGroup group, const char* filter = nullptr, ImGuiTestRunFlags run_flags = 0);
 IMGUI_API bool                ImGuiTestEngine_TryAbortEngine(ImGuiTestEngine* engine);
 IMGUI_API void                ImGuiTestEngine_AbortCurrentTest(ImGuiTestEngine* engine);
 IMGUI_API ImGuiTest*          ImGuiTestEngine_FindTestByName(ImGuiTestEngine* engine, const char* category, const char* name);
@@ -227,11 +228,11 @@ struct IMGUI_API ImGuiTestEngineIO
     //-------------------------------------------------------------------------
 
     // Options: Functions
-    ImGuiTestCoroutineInterface*                CoroutineFuncs = NULL;          // (Required) Coroutine functions (see imgui_te_coroutines.h)
-    ImFuncPtr(ImGuiTestEngineSrcFileOpenFunc)   SrcFileOpenFunc = NULL;         // (Optional) To open source files from test engine UI (otherwise default to open file in shell)
-    ImFuncPtr(ImGuiScreenCaptureFunc)           ScreenCaptureFunc = NULL;       // (Optional) To capture graphics output (application _MUST_ call ImGuiTestEngine_PostSwap() function after swapping is framebuffer)
-    void*                                       SrcFileOpenUserData = NULL;     // (Optional) User data for SrcFileOpenFunc
-    void*                                       ScreenCaptureUserData = NULL;   // (Optional) User data for ScreenCaptureFunc
+    ImGuiTestCoroutineInterface*                CoroutineFuncs = nullptr;          // (Required) Coroutine functions (see imgui_te_coroutines.h)
+    ImFuncPtr(ImGuiTestEngineSrcFileOpenFunc)   SrcFileOpenFunc = nullptr;         // (Optional) To open source files from test engine UI (otherwise default to open file in shell)
+    ImFuncPtr(ImGuiScreenCaptureFunc)           ScreenCaptureFunc = nullptr;       // (Optional) To capture graphics output (application _MUST_ call ImGuiTestEngine_PostSwap() function after swapping is framebuffer)
+    void*                                       SrcFileOpenUserData = nullptr;     // (Optional) User data for SrcFileOpenFunc
+    void*                                       ScreenCaptureUserData = nullptr;   // (Optional) User data for ScreenCaptureFunc
 
     // Options: Main
     bool                        ConfigSavedSettings = true;                     // Load/Save settings in main context .ini file.
@@ -274,7 +275,7 @@ struct IMGUI_API ImGuiTestEngineIO
 
     // Options: Export
     // While you can manually call ImGuiTestEngine_Export(), registering filename/format here ensure the crash handler will always export if application crash.
-    const char*                 ExportResultsFilename = NULL;
+    const char*                 ExportResultsFilename = nullptr;
     ImGuiTestEngineExportFormat ExportResultsFormat = (ImGuiTestEngineExportFormat)0;
 
     // Options: Sanity Checks
@@ -299,7 +300,7 @@ struct ImGuiTestItemInfo
 {
     ImGuiID                     ID = 0;                     // Item ID
     char                        DebugLabel[32] = {};        // Shortened/truncated label for debugging and convenience purpose
-    ImGuiWindow*                Window = NULL;              // Item Window
+    ImGuiWindow*                Window = nullptr;           // Item Window
     unsigned int                NavLayer : 1;               // Nav layer of the item (ImGuiNavLayer)
     int                         Depth : 16;                 // Depth from requested parent id. 0 == ID is immediate child of requested parent id.
     int                         TimestampMain;              // Timestamp of main result (all fields)
@@ -355,9 +356,9 @@ struct IMGUI_API ImGuiTestLog
 
     // Extract log contents filtered per log-level.
     // Output:
-    // - If 'buffer != NULL': all extracted lines are appended to 'buffer'. Use 'buffer->c_str()' on your side to obtain the text.
+    // - If 'buffer != nullptr': all extracted lines are appended to 'buffer'. Use 'buffer->c_str()' on your side to obtain the text.
     // - Return value: number of lines extracted (should be equivalent to number of '\n' inside buffer->c_str()).
-    // - You may call the function with buffer == NULL to only obtain a count without getting the data.
+    // - You may call the function with buffer == nullptr to only obtain a count without getting the data.
     // Verbose levels are inclusive:
     // - To get ONLY Error:                     Use level_min == ImGuiTestVerboseLevel_Error, level_max = ImGuiTestVerboseLevel_Error
     // - To get ONLY Error and Warnings:        Use level_min == ImGuiTestVerboseLevel_Error, level_max = ImGuiTestVerboseLevel_Warning
@@ -393,19 +394,21 @@ struct IMGUI_API ImGuiTestOutput
 struct IMGUI_API ImGuiTest
 {
     // Test Definition
-    const char*                     Category = NULL;                // Literal, not owned
-    const char*                     Name = NULL;                    // Literal, generally not owned unless NameOwned=true
+    const char*                     Category = nullptr;             // Literal, not owned
+    const char*                     Name = nullptr;                 // Literal, generally not owned unless NameOwned=true
     ImGuiTestGroup                  Group = ImGuiTestGroup_Unknown; // Coarse groups: 'Tests' or 'Perf'
     bool                            NameOwned = false;              //
-    const char*                     SourceFile = NULL;              // __FILE__
-    int                             SourceLine = 0;                 // __LINE__
-    int                             SourceLineEnd = 0;              // Calculated by ImGuiTestEngine_StartCalcSourceLineEnds()
     int                             ArgVariant = 0;                 // User parameter. Generally we use it to run variations of a same test by sharing GuiFunc/TestFunc
     ImGuiTestFlags                  Flags = ImGuiTestFlags_None;    // See ImGuiTestFlags_
-    ImFuncPtr(ImGuiTestGuiFunc)     GuiFunc = NULL;                 // GUI function (optional if your test are running over an existing GUI application)
-    ImFuncPtr(ImGuiTestTestFunc)    TestFunc = NULL;                // Test function
-    void*                           UserData = NULL;                // General purpose user data (if assigning capturing lambdas on GuiFunc/TestFunc you may not need to use this)
+    ImFuncPtr(ImGuiTestGuiFunc)     GuiFunc = nullptr;              // GUI function (optional if your test are running over an existing GUI application)
+    ImFuncPtr(ImGuiTestTestFunc)    TestFunc = nullptr;             // Test function
+    void*                           UserData = nullptr;             // General purpose user data (if assigning capturing lambdas on GuiFunc/TestFunc you may not need to use this)
     //ImVector<ImGuiTestRunTask>    Dependencies;                   // Registered via AddDependencyTest(), ran automatically before our test. This is a simpler wrapper to calling ctx->RunChildTest()
+
+    // Sources information (exposed in UI)
+    const char*                     SourceFile = nullptr;           // __FILE__
+    int                             SourceLine = 0;                 // __LINE__
+    int                             SourceLineEnd = 0;              // end of line (when calculated by ImGuiTestEngine_StartCalcSourceLineEnds())
 
     // Last Test Output/Status
     // (this is the only part that may change after registration)
@@ -415,10 +418,10 @@ struct IMGUI_API ImGuiTest
     // Setup after test registration with SetVarsDataType<>(), access instance during test with GetVars<>().
     // This is mostly useful to communicate between GuiFunc and TestFunc. If you don't use both you may not want to use it!
     size_t                          VarsSize = 0;
-    ImGuiTestVarsConstructor*       VarsConstructor = NULL;
-    ImGuiTestVarsPostConstructor*   VarsPostConstructor = NULL;     // To override constructor default (in case the default are problematic on the first GuiFunc frame)
-    void*                           VarsPostConstructorUserFn = NULL;
-    ImGuiTestVarsDestructor*        VarsDestructor = NULL;
+    ImGuiTestVarsConstructor*       VarsConstructor = nullptr;
+    ImGuiTestVarsPostConstructor*   VarsPostConstructor = nullptr;  // To override constructor default (in case the default are problematic on the first GuiFunc frame)
+    void*                           VarsPostConstructorUserFn = nullptr;
+    ImGuiTestVarsDestructor*        VarsDestructor = nullptr;
 
     // Functions
     ImGuiTest() {}
@@ -427,12 +430,12 @@ struct IMGUI_API ImGuiTest
     void SetOwnedName(const char* name);
 
     template <typename T>
-    void SetVarsDataType(void(*post_initialize)(ImGuiTestContext* ctx, T& vars) = NULL)
+    void SetVarsDataType(void(*post_initialize)(ImGuiTestContext* ctx, T& vars) = nullptr)
     {
         VarsSize = sizeof(T);
         VarsConstructor = [](void* ptr) { IM_PLACEMENT_NEW(ptr) T; };
         VarsDestructor = [](void* ptr) { IM_UNUSED(ptr); reinterpret_cast<T*>(ptr)->~T(); };
-        if (post_initialize != NULL)
+        if (post_initialize != nullptr)
         {
             VarsPostConstructorUserFn = (void*)post_initialize;
             VarsPostConstructor = [](ImGuiTestContext* ctx, void* ptr, void* fn) { ((void (*)(ImGuiTestContext*, T&))(fn))(ctx, *(T*)ptr); };
@@ -443,7 +446,7 @@ struct IMGUI_API ImGuiTest
 // Stored in test queue
 struct IMGUI_API ImGuiTestRunTask
 {
-    ImGuiTest*          Test = NULL;
+    ImGuiTest*          Test = nullptr;
     ImGuiTestRunFlags   RunFlags = ImGuiTestRunFlags_None;
 };
 

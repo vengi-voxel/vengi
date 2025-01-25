@@ -18,7 +18,7 @@
 // The coroutine code itself should call CoroutineYieldFunc() whenever it wants to yield control back to the main thread.
 //------------------------------------------------------------------------
 
-// An arbitrary handle used internally to represent coroutines (NULL indicates no handle)
+// An arbitrary handle used internally to represent coroutines (nullptr indicates no handle)
 typedef void* ImGuiTestCoroutineHandle;
 
 // A coroutine main function

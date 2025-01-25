@@ -216,6 +216,15 @@ def update_dearimgui():
         branch="docking"
     )
 
+def update_dearimgui_testengine():
+    update_target(
+        "imgui_test_engine",
+        "https://github.com/ocornut/imgui_test_engine.git",
+        [
+            (f"imgui_test_engine", "src/modules/ui/dearimgui/imgui_test_engine"),
+        ]
+    )
+
 def update_glm():
     update_target(
         "glm",
@@ -377,6 +386,7 @@ def main():
         update_backward,
         update_im_neo_sequencer,
         update_dearimgui,
+        update_dearimgui_testengine,
         update_glm,
         update_sdl2,
         update_tinygltf,

@@ -33,7 +33,7 @@ struct Coroutine_ImplStdThreadData
 };
 
 // The coroutine executing on the current thread (if it is a coroutine thread)
-static thread_local Coroutine_ImplStdThreadData* GThreadCoroutine = NULL;
+static thread_local Coroutine_ImplStdThreadData* GThreadCoroutine = nullptr;
 
 // The main function for a coroutine thread
 static void CoroutineThreadMain(Coroutine_ImplStdThreadData* data, ImGuiTestCoroutineMainFunc func, void* ctx)
@@ -89,11 +89,11 @@ static void Coroutine_ImplStdThread_Destroy(ImGuiTestCoroutineHandle handle)
         data->Thread->join();
 
         delete data->Thread;
-        data->Thread = NULL;
+        data->Thread = nullptr;
     }
 
     delete data;
-    data = NULL;
+    data = nullptr;
 }
 
 // Run the coroutine until the next call to Yield(). Returns TRUE if the coroutine yielded, FALSE if it terminated (or had previously terminated)

@@ -17,8 +17,8 @@ class Str;          // Str<> from thirdparty/Str/Str.h
 // Hashing Helpers
 //-----------------------------------------------------------------------------
 
-ImGuiID     ImHashDecoratedPath(const char* str, const char* str_end = NULL, ImGuiID seed = 0);
-const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end = NULL);
+ImGuiID     ImHashDecoratedPath(const char* str, const char* str_end = nullptr, ImGuiID seed = 0);
+const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end = nullptr);
 
 //-----------------------------------------------------------------------------
 // File/Directory Helpers
@@ -26,7 +26,7 @@ const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end =
 
 bool        ImFileExist(const char* filename);
 bool        ImFileDelete(const char* filename);
-bool        ImFileCreateDirectoryChain(const char* path, const char* path_end = NULL);
+bool        ImFileCreateDirectoryChain(const char* path, const char* path_end = nullptr);
 bool        ImFileFindInParents(const char* sub_path, int max_parent_count, Str* output);
 bool        ImFileLoadSourceBlurb(const char* filename, int line_no_start, int line_no_end, ImGuiTextBuffer* out_buf);
 
@@ -35,8 +35,8 @@ bool        ImFileLoadSourceBlurb(const char* filename, int line_no_start, int l
 //-----------------------------------------------------------------------------
 
 // Those are strictly string manipulation functions
-const char* ImPathFindFilename(const char* path, const char* path_end = NULL);      // Return value always between path and path_end
-const char* ImPathFindExtension(const char* path, const char* path_end = NULL);     // Return value always between path and path_end
+const char* ImPathFindFilename(const char* path, const char* path_end = nullptr);      // Return value always between path and path_end
+const char* ImPathFindExtension(const char* path, const char* path_end = nullptr);     // Return value always between path and path_end
 void        ImPathFixSeparatorsForCurrentOS(char* buf);
 
 //-----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ struct ImGuiCsvParser
     int             Rows = 0;                       // Number of rows in CSV file.
 
     // Internal fields
-    char*           _Data = NULL;                   // CSV file data.
+    char*           _Data = nullptr;                   // CSV file data.
     ImVector<char*> _Index;                         // CSV table: _Index[row * _Columns + col].
 
     // Functions
@@ -192,9 +192,9 @@ ImGuiID             TableGetInstanceID(ImGuiTable* table, int instance_no = 0);
 #endif
 
 // Str support for InputText()
-IMGUI_API bool      InputText(const char* label, Str* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool      InputTextWithHint(const char* label, const char* hint, Str* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool      InputTextMultiline(const char* label, Str* str, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool      InputText(const char* label, Str* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);
+IMGUI_API bool      InputTextWithHint(const char* label, const char* hint, Str* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);
+IMGUI_API bool      InputTextMultiline(const char* label, Str* str, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr);
 
 // Splitter
 IMGUI_API bool      Splitter(const char* id, float* value_1, float* value_2, int axis, int anchor = 0, float min_size_0 = -1.0f, float min_size_1 = -1.0f);

@@ -119,9 +119,9 @@ static ImGuiID ImHashDecoratedPathParseLiteral(ImGuiID crc, const unsigned char*
 //   IM_ASSERT(ImHashDecoratedPath("Hello\\/world") == ImHashStr("Hello/world", 0));
 //   IM_ASSERT(ImHashDecoratedPath("$$1")           == (n = 1, ImHashData(&n, sizeof(int))));
 // Adapted from ImHash(). Not particularly fast!
-static const ImU32 GCrc32LookupTable[256] =
+static const ImU32 GImGuiTestEngineCrc32LookupTable[256] =
 {
-#if IMGUI_VERSION_NUM < 19152
+#if (IMGUI_VERSION_NUM < 19152) || defined(IMGUI_USE_LEGACY_CRC32_ADLER)
     0x00000000,0x77073096,0xEE0E612C,0x990951BA,0x076DC419,0x706AF48F,0xE963A535,0x9E6495A3,0x0EDB8832,0x79DCB8A4,0xE0D5E91E,0x97D2D988,0x09B64C2B,0x7EB17CBD,0xE7B82D07,0x90BF1D91,
     0x1DB71064,0x6AB020F2,0xF3B97148,0x84BE41DE,0x1ADAD47D,0x6DDDE4EB,0xF4D4B551,0x83D385C7,0x136C9856,0x646BA8C0,0xFD62F97A,0x8A65C9EC,0x14015C4F,0x63066CD9,0xFA0F3D63,0x8D080DF5,
     0x3B6E20C8,0x4C69105E,0xD56041E4,0xA2677172,0x3C03E4D1,0x4B04D447,0xD20D85FD,0xA50AB56B,0x35B5A8FA,0x42B2986C,0xDBBBC9D6,0xACBCF940,0x32D86CE3,0x45DF5C75,0xDCD60DCF,0xABD13D59,
@@ -160,7 +160,7 @@ static const ImU32 GCrc32LookupTable[256] =
 
 ImGuiID ImHashDecoratedPath(const char* str, const char* str_end, ImGuiID seed)
 {
-    const ImU32* crc32_lut = GCrc32LookupTable;
+    const ImU32* crc32_lut = GImGuiTestEngineCrc32LookupTable;
 
     // Prefixing the string with / ignore the seed
     if (str != str_end && str[0] == '/')
@@ -170,7 +170,7 @@ ImGuiID ImHashDecoratedPath(const char* str, const char* str_end, ImGuiID seed)
     ImU32 crc = seed;
 
     // Focus for non-zero terminated string for consistency
-    if (str_end == NULL)
+    if (str_end == nullptr)
         str_end = str + strlen(str);
 
     bool inhibit_one = false;
@@ -231,7 +231,7 @@ const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end)
     bool inhibit_one = false;
     while (true)
     {
-        if (str_end != NULL && current == (const unsigned char*)str_end)
+        if (str_end != nullptr && current == (const unsigned char*)str_end)
             break;
 
         const unsigned char c = *current++;
@@ -249,7 +249,7 @@ const char* ImFindNextDecoratedPartInPath(const char* str, const char* str_end)
 
         inhibit_one = false;
     }
-    return NULL;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -266,7 +266,7 @@ static const char IM_DIR_SEPARATOR = '\\';
 
 static void ImUtf8ToWideChar(const char* multi_byte, ImVector<wchar_t>* buf)
 {
-    const int wsize = ::MultiByteToWideChar(CP_UTF8, 0, multi_byte, -1, NULL, 0);
+    const int wsize = ::MultiByteToWideChar(CP_UTF8, 0, multi_byte, -1, nullptr, 0);
     buf->resize(wsize);
     ::MultiByteToWideChar(CP_UTF8, 0, multi_byte, -1, (wchar_t*)buf->Data, wsize);
 }
@@ -298,10 +298,10 @@ bool ImFileDelete(const char* filename)
 // will try to create "aaaa/" then "aaaa/bbbb/".
 bool ImFileCreateDirectoryChain(const char* path, const char* path_end)
 {
-    IM_ASSERT(path != NULL);
+    IM_ASSERT(path != nullptr);
     IM_ASSERT(path[0] != 0);
 
-    if (path_end == NULL)
+    if (path_end == nullptr)
         path_end = path + strlen(path);
 
     // Copy in a local, zero-terminated buffer
@@ -315,7 +315,7 @@ bool ImFileCreateDirectoryChain(const char* path, const char* path_end)
 #endif
     // Modification of passed file_name allows us to avoid extra temporary memory allocation.
     // strtok() pokes \0 into places where slashes are, we create a directory using directory_name and restore slash.
-    for (char* token = strtok(path_local, "\\/"); token != NULL; token = strtok(NULL, "\\/"))
+    for (char* token = strtok(path_local, "\\/"); token != nullptr; token = strtok(nullptr, "\\/"))
     {
         // strtok() replaces slashes with NULLs. Overwrite removed slashes here with the type of slashes the OS needs (win32 functions need backslashes).
         if (token != path_local)
@@ -324,10 +324,10 @@ bool ImFileCreateDirectoryChain(const char* path, const char* path_end)
 #if defined(_WIN32)
         // Use ::CreateDirectoryW() because ::CreateDirectoryA() treat filenames in the local code-page instead of UTF-8
         // We cannot use ImWchar, which can be 32bits if IMGUI_USE_WCHAR32 (and CreateDirectoryW require 16bits wchar)
-        int filename_wsize = MultiByteToWideChar(CP_UTF8, 0, path_local, -1, NULL, 0);
+        int filename_wsize = MultiByteToWideChar(CP_UTF8, 0, path_local, -1, nullptr, 0);
         buf.resize(filename_wsize);
         MultiByteToWideChar(CP_UTF8, 0, path_local, -1, &buf[0], filename_wsize);
-        if (!::CreateDirectoryW((wchar_t*)&buf[0], NULL) && GetLastError() != ERROR_ALREADY_EXISTS)
+        if (!::CreateDirectoryW((wchar_t*)&buf[0], nullptr) && GetLastError() != ERROR_ALREADY_EXISTS)
 #else
         if (mkdir(path_local, S_IRWXU) != 0 && errno != EEXIST)
 #endif
@@ -342,8 +342,8 @@ bool ImFileCreateDirectoryChain(const char* path, const char* path_end)
 
 bool ImFileFindInParents(const char* sub_path, int max_parent_count, Str* output)
 {
-    IM_ASSERT(sub_path != NULL);
-    IM_ASSERT(output != NULL);
+    IM_ASSERT(sub_path != nullptr);
+    IM_ASSERT(output != nullptr);
     for (int parent_level = 0; parent_level < max_parent_count; parent_level++)
     {
         output->clear();
@@ -361,30 +361,30 @@ bool ImFileLoadSourceBlurb(const char* file_name, int line_no_start, int line_no
 {
     size_t file_size = 0;
     char* file_begin = (char*)ImFileLoadToMemory(file_name, "rb", &file_size, 1);
-    if (file_begin == NULL)
+    if (file_begin == nullptr)
         return false;
 
     char* file_end = file_begin + file_size;
     int line_no = 0;
-    const char* test_src_begin = NULL;
-    const char* test_src_end = NULL;
+    const char* test_src_begin = nullptr;
+    const char* test_src_end = nullptr;
     for (const char* p = file_begin; p < file_end; )
     {
         line_no++;
         const char* line_begin = p;
         const char* line_end = ImStrchrRange(line_begin + 1, file_end, '\n');
-        if (line_end == NULL)
+        if (line_end == nullptr)
             line_end = file_end;
         if (line_no >= line_no_start && line_no <= line_no_end)
         {
-            if (test_src_begin == NULL)
+            if (test_src_begin == nullptr)
                 test_src_begin = line_begin;
             test_src_end = ImMax(test_src_end, line_end);
         }
         p = line_end + 1;
     }
 
-    if (test_src_begin != NULL)
+    if (test_src_begin != nullptr)
         out_buf->append(test_src_begin, test_src_end);
     else
         out_buf->clear();
@@ -403,7 +403,7 @@ bool ImFileLoadSourceBlurb(const char* file_name, int line_no_start, int line_no
 
 const char* ImPathFindFilename(const char* path, const char* path_end)
 {
-    IM_ASSERT(path != NULL);
+    IM_ASSERT(path != nullptr);
     if (!path_end)
         path_end = path + strlen(path);
     const char* p = path_end;
@@ -455,21 +455,21 @@ static const char* ImStrStr(const char* haystack, size_t hlen, const char* needl
 {
     const char* end = haystack + hlen;
     const char* p = haystack;
-    while ((p = (const char*)memchr(p, *needle, end - p)) != NULL)
+    while ((p = (const char*)memchr(p, *needle, end - p)) != nullptr)
     {
         if (end - p < nlen)
-            return NULL;
+            return nullptr;
         if (memcmp(p, needle, nlen) == 0)
             return p;
         p++;
     }
-    return NULL;
+    return nullptr;
 }
 
 void ImStrReplace(Str* s, const char* find, const char* repl)
 {
-    IM_ASSERT(find != NULL && *find);
-    IM_ASSERT(repl != NULL);
+    IM_ASSERT(find != nullptr && *find);
+    IM_ASSERT(repl != nullptr);
     int find_len = (int)strlen(find);
     int repl_len = (int)strlen(repl);
     int repl_diff = repl_len - find_len;
@@ -481,7 +481,7 @@ void ImStrReplace(Str* s, const char* find, const char* repl)
     {
         num_matches = 0;
         need_capacity = s->length();
-        for (char* p = s->c_str(), *end = s->c_str() + s->length(); p != NULL && p < end;)
+        for (char* p = s->c_str(), *end = s->c_str() + s->length(); p != nullptr && p < end;)
         {
             p = (char*)ImStrStr(p, end - p, find, find_len);
             if (p)
@@ -496,14 +496,14 @@ void ImStrReplace(Str* s, const char* find, const char* repl)
     if (num_matches == 0)
         return;
 
-    const char* not_owned_data = s->owned() ? NULL : s->c_str();
+    const char* not_owned_data = s->owned() ? nullptr : s->c_str();
     if (!s->owned() || need_capacity > s->capacity())
         s->reserve(need_capacity);
-    if (not_owned_data != NULL)
+    if (not_owned_data != nullptr)
         s->set(not_owned_data);
 
     // Replace data.
-    for (char* p = s->c_str(), *end = s->c_str() + s->length(); p != NULL && p < end && num_matches--;)
+    for (char* p = s->c_str(), *end = s->c_str() + s->length(); p != nullptr && p < end && num_matches--;)
     {
         p = (char*)ImStrStr(p, end - p, find, find_len);
         if (p)
@@ -530,7 +530,7 @@ const char* ImStrchrRangeWithEscaping(const char* str, const char* str_end, char
             return str;
         str++;
     }
-    return NULL;
+    return nullptr;
 }
 
 // Suboptimal but ok for the data size we are dealing with (see commit on 2022/08/22 for a faster and more complicated version)
@@ -604,7 +604,7 @@ void    ImParseExtractArgcArgvFromCommandLine(int* out_argc, char const*** out_a
             while (*arg == ' ')
                 arg++;
             const char* arg_end = strchr(arg, ' ');
-            if (arg_end == NULL)
+            if (arg_end == nullptr)
                 p = arg_end = cmd_line + cmd_line_len;
             else
                 p = arg_end + 1;
@@ -614,20 +614,20 @@ void    ImParseExtractArgcArgvFromCommandLine(int* out_argc, char const*** out_a
 
     int argc = n;
     char const** argv = (char const**)malloc(sizeof(char*) * ((size_t)argc + 1) + (cmd_line_len + 1));
-    IM_ASSERT(argv != NULL);
+    IM_ASSERT(argv != nullptr);
     char* cmd_line_dup = (char*)argv + sizeof(char*) * ((size_t)argc + 1);
     strcpy(cmd_line_dup, cmd_line);
 
     {
         argv[0] = "main.exe";
-        argv[argc] = NULL;
+        argv[argc] = nullptr;
 
         char* p = cmd_line_dup;
         for (n = 1; n < argc; n++)
         {
             char* arg = p;
             char* arg_end = strchr(arg, ' ');
-            if (arg_end == NULL)
+            if (arg_end == nullptr)
                 p = arg_end = cmd_line_dup + cmd_line_len;
             else
                 p = arg_end + 1;
@@ -642,9 +642,9 @@ void    ImParseExtractArgcArgvFromCommandLine(int* out_argc, char const*** out_a
 
 bool    ImParseFindIniSection(const char* ini_config, const char* header, ImVector<char>* result)
 {
-    IM_ASSERT(ini_config != NULL);
-    IM_ASSERT(header != NULL);
-    IM_ASSERT(result != NULL);
+    IM_ASSERT(ini_config != nullptr);
+    IM_ASSERT(header != nullptr);
+    IM_ASSERT(result != nullptr);
 
     size_t ini_len = strlen(ini_config);
     size_t header_len = strlen(header);
@@ -655,11 +655,11 @@ bool    ImParseFindIniSection(const char* ini_config, const char* header, ImVect
         return false;
 
     const char* section_start = strstr(ini_config, header);
-    if (section_start == NULL)
+    if (section_start == nullptr)
         return false;
 
     const char* section_end = strstr(section_start + header_len, "\n[");
-    if (section_end == NULL)
+    if (section_end == nullptr)
         section_end = section_start + ini_len;
 
     // "\n[" matches next header start on all platforms, but it cuts new line marker in half on windows.
@@ -766,9 +766,9 @@ void ImThreadSetCurrentThreadDescription(const char* description)
     if (set_thread_description)
     {
         ImVector<ImWchar> buf;
-        const int description_wsize = ImTextCountCharsFromUtf8(description, NULL) + 1;
+        const int description_wsize = ImTextCountCharsFromUtf8(description, nullptr) + 1;
         buf.resize(description_wsize);
-        ImTextStrFromUtf8(&buf[0], description_wsize, description, NULL);
+        ImTextStrFromUtf8(&buf[0], description_wsize, description, nullptr);
         set_thread_description(::GetCurrentThread(), (wchar_t*)&buf[0]);
     }
 
@@ -864,8 +864,8 @@ const ImBuildInfo* ImBuildGetCompilationInfo()
 
 bool ImBuildFindGitBranchName(const char* git_repo_path, Str* branch_name)
 {
-    IM_ASSERT(git_repo_path != NULL);
-    IM_ASSERT(branch_name != NULL);
+    IM_ASSERT(git_repo_path != nullptr);
+    IM_ASSERT(branch_name != nullptr);
     Str256f head_path("%s/.git/HEAD", git_repo_path);
     size_t head_size = 0;
     bool result = false;
@@ -908,7 +908,7 @@ bool    ImOsCreateProcess(const char* cmd_line)
     PROCESS_INFORMATION piProcInfo;
     ZeroMemory(&siStartInfo, sizeof(STARTUPINFOA));
     char* cmd_line_copy = ImStrdup(cmd_line);
-    BOOL ret = ::CreateProcessA(NULL, cmd_line_copy, NULL, NULL, FALSE, 0, NULL, NULL, &siStartInfo, &piProcInfo);
+    BOOL ret = ::CreateProcessA(nullptr, cmd_line_copy, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &siStartInfo, &piProcInfo);
     free(cmd_line_copy);
     ::CloseHandle(siStartInfo.hStdInput);
     ::CloseHandle(siStartInfo.hStdOutput);
@@ -924,8 +924,8 @@ bool    ImOsCreateProcess(const char* cmd_line)
 
 FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
 {
-    IM_ASSERT(cmd_line != NULL && *cmd_line);
-    IM_ASSERT(mode != NULL && *mode);
+    IM_ASSERT(cmd_line != nullptr && *cmd_line);
+    IM_ASSERT(mode != nullptr && *mode);
 #if _WIN32
     ImVector<wchar_t> w_cmd_line;
     ImVector<wchar_t> w_mode;
@@ -941,7 +941,7 @@ FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
 
 void        ImOsPClose(FILE* fp)
 {
-    IM_ASSERT(fp != NULL);
+    IM_ASSERT(fp != nullptr);
 #if _WIN32
     _pclose(fp);
 #else
@@ -954,7 +954,7 @@ void    ImOsOpenInShell(const char* path)
     Str256 command(path);
 #ifdef _WIN32
     ImPathFixSeparatorsForCurrentOS(command.c_str());
-    ::ShellExecuteA(NULL, "open", command.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+    ::ShellExecuteA(nullptr, "open", command.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
 #else
 #if __APPLE__
     const char* open_executable = "open";
@@ -1023,7 +1023,7 @@ bool    ImOsIsDebuggerPresent()
     int debugger_pid = 0;
     char buf[2048];                                 // TracerPid is located near the start of the file. If end of the buffer gets cut off thats fine.
     FILE* fp = fopen("/proc/self/status", "rb");    // Can not use ImFileLoadToMemory because size detection of /proc/self/status would fail.
-    if (fp == NULL)
+    if (fp == nullptr)
         return false;
     fread(buf, 1, IM_ARRAYSIZE(buf), fp);
     fclose(fp);
@@ -1052,7 +1052,7 @@ bool    ImOsIsDebuggerPresent()
     mib[3] = getpid();
 
     size = sizeof(info);
-    junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+    junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, nullptr, 0);
     IM_ASSERT(junk == 0);
 
     // We're being debugged if the P_TRACED flag is set.
@@ -1208,7 +1208,7 @@ ImFont* ImGui::FindFontByPrefix(const char* prefix)
     for (ImFont* font : g.IO.Fonts->Fonts)
         if (strncmp(font->ConfigData->Name, prefix, strlen(prefix)) == 0)
             return font;
-    return NULL;
+    return nullptr;
 }
 
 // Legacy version support
@@ -1229,7 +1229,7 @@ ImGuiID ImGui::TableGetInstanceID(ImGuiTable* table, int instance_no)
 
 ImGuiID TableGetHeaderID(ImGuiTable* table, const char* column, int instance_no)
 {
-    IM_ASSERT(table != NULL);
+    IM_ASSERT(table != nullptr);
     int column_n = -1;
     for (int n = 0; n < table->Columns.size() && column_n < 0; n++)
         if (strcmp(ImGui::TableGetColumnName(table, n), column) == 0)
@@ -1256,7 +1256,7 @@ ImGuiID TableGetHeaderID(ImGuiTable* table, int column_n, int instance_no)
 void TableDiscardInstanceAndSettings(ImGuiID table_id)
 {
     ImGuiContext& g = *GImGui;
-    IM_ASSERT(g.CurrentTable == NULL);
+    IM_ASSERT(g.CurrentTable == nullptr);
     if (ImGuiTableSettings* settings = ImGui::TableSettingsFindByID(table_id))
         settings->ID = 0;
 
@@ -1293,9 +1293,9 @@ void DrawDataVerifyMatchingBufferCount(ImDrawData* draw_data)
 void ImGuiCsvParser::Clear()
 {
     Rows = Columns = 0;
-    if (_Data != NULL)
+    if (_Data != nullptr)
         IM_FREE(_Data);
-    _Data = NULL;
+    _Data = nullptr;
     _Index.clear();
 }
 
@@ -1303,7 +1303,7 @@ bool ImGuiCsvParser::Load(const char* filename)
 {
     size_t len = 0;
     _Data = (char*)ImFileLoadToMemory(filename, "rb", &len, 1);
-    if (_Data == NULL)
+    if (_Data == nullptr)
         return false;
 
     int columns = 1;

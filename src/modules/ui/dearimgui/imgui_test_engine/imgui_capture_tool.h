@@ -34,7 +34,7 @@ struct IMGUI_API ImGuiCaptureImageBuf
     int             Height;
     unsigned int*   Data;       // RGBA8
 
-    ImGuiCaptureImageBuf()      { Width = Height = 0; Data = NULL; }
+    ImGuiCaptureImageBuf()      { Width = Height = 0; Data = nullptr; }
     ~ImGuiCaptureImageBuf()     { Clear(); }
 
     void Clear();                                           // Free allocated memory buffer if such exists.
@@ -63,8 +63,8 @@ struct ImGuiCaptureArgs
     ImVector<ImGuiWindow*>  InCaptureWindows;               // Windows to capture. All other windows will be hidden. May be used with InCaptureRect to capture only some windows in specified rect.
     ImRect                  InCaptureRect;                  // Screen rect to capture. Does not include padding.
     float                   InPadding = 16.0f;              // Extra padding at the edges of the screenshot. Ensure that there is available space around capture rect horizontally, also vertically if ImGuiCaptureFlags_StitchFullContents is not used.
-    char                    InOutputFile[256] = "";         // Output will be saved to a file if InOutputImageBuf is NULL.
-    ImGuiCaptureImageBuf*   InOutputImageBuf = NULL;        // _OR_ Output will be saved to image buffer if specified.
+    char                    InOutputFile[256] = "";         // Output will be saved to a file if InOutputImageBuf is nullptr.
+    ImGuiCaptureImageBuf*   InOutputImageBuf = nullptr;     // _OR_ Output will be saved to image buffer if specified.
     int                     InRecordFPSTarget = 30;         // FPS target for recording videos.
     int                     InSizeAlign = 0;                // Resolution alignment (0 = auto, 1 = no alignment, >= 2 = align width/height to be multiple of given value)
 
@@ -90,14 +90,14 @@ struct ImGuiCaptureWindowData
 struct IMGUI_API ImGuiCaptureContext
 {
     // IO
-    ImFuncPtr(ImGuiScreenCaptureFunc) ScreenCaptureFunc = NULL; // Graphics backend specific function that captures specified portion of framebuffer and writes RGBA data to `pixels` buffer.
-    void*                   ScreenCaptureUserData = NULL;       // Custom user pointer which is passed to ScreenCaptureFunc. (Optional)
-    char*                   VideoCaptureEncoderPath = NULL;     // Video encoder path (not owned, stored externally).
-    int                     VideoCaptureEncoderPathSize = 0;    // Optional. Set in order to edit this parameter from UI.
-    char*                   VideoCaptureEncoderParams = NULL;   // Video encoder params (not owned, stored externally).
-    int                     VideoCaptureEncoderParamsSize = 0;  // Optional. Set in order to edit this parameter from UI.
-    char*                   GifCaptureEncoderParams = NULL;     // Video encoder params for GIF output (not owned, stored externally).
-    int                     GifCaptureEncoderParamsSize = 0;    // Optional. Set in order to edit this parameter from UI.
+    ImFuncPtr(ImGuiScreenCaptureFunc) ScreenCaptureFunc = nullptr;  // Graphics backend specific function that captures specified portion of framebuffer and writes RGBA data to `pixels` buffer.
+    void*                   ScreenCaptureUserData = nullptr;        // Custom user pointer which is passed to ScreenCaptureFunc. (Optional)
+    char*                   VideoCaptureEncoderPath = nullptr;      // Video encoder path (not owned, stored externally).
+    int                     VideoCaptureEncoderPathSize = 0;        // Optional. Set in order to edit this parameter from UI.
+    char*                   VideoCaptureEncoderParams = nullptr;    // Video encoder params (not owned, stored externally).
+    int                     VideoCaptureEncoderParamsSize = 0;      // Optional. Set in order to edit this parameter from UI.
+    char*                   GifCaptureEncoderParams = nullptr;      // Video encoder params for GIF output (not owned, stored externally).
+    int                     GifCaptureEncoderParamsSize = 0;        // Optional. Set in order to edit this parameter from UI.
 
     // [Internal]
     ImRect                  _CaptureRect;                   // Viewport rect that is being captured.
@@ -105,15 +105,15 @@ struct IMGUI_API ImGuiCaptureContext
     int                     _ChunkNo = 0;                   // Number of chunk that is being captured when capture spans multiple frames.
     int                     _FrameNo = 0;                   // Frame number during capture process that spans multiple frames.
     ImVec2                  _MouseRelativeToWindowPos;      // Mouse cursor position relative to captured window (when _StitchAll is in use).
-    ImGuiWindow*            _HoveredWindow = NULL;          // Window which was hovered at capture start.
+    ImGuiWindow*            _HoveredWindow = nullptr;       // Window which was hovered at capture start.
     ImGuiCaptureImageBuf    _CaptureBuf;                    // Output image buffer.
-    const ImGuiCaptureArgs* _CaptureArgs = NULL;            // Current capture args. Set only if capture is in progress.
+    const ImGuiCaptureArgs* _CaptureArgs = nullptr;         // Current capture args. Set only if capture is in progress.
     ImVector<ImGuiCaptureWindowData> _WindowsData;          // Backup windows that will have their rect modified and restored. args->InCaptureWindows can not be used because popups may get closed during capture and no longer appear in that list.
 
     // [Internal] Video recording
     bool                    _VideoRecording = false;        // Flag indicating that video recording is in progress.
     double                  _VideoLastFrameTime = 0;        // Time when last video frame was recorded.
-    FILE*                   _VideoEncoderPipe = NULL;       // File writing to stdin of video encoder process.
+    FILE*                   _VideoEncoderPipe = nullptr;    // File writing to stdin of video encoder process.
 
     // [Internal] Backups
     bool                    _BackupMouseDrawCursor = false; // Initial value of g.IO.MouseDrawCursor
@@ -124,7 +124,7 @@ struct IMGUI_API ImGuiCaptureContext
     // Functions
     //-------------------------------------------------------------------------
 
-    ImGuiCaptureContext(ImGuiScreenCaptureFunc capture_func = NULL) { ScreenCaptureFunc = capture_func; _MouseRelativeToWindowPos = ImVec2(-FLT_MAX, -FLT_MAX); }
+    ImGuiCaptureContext(ImGuiScreenCaptureFunc capture_func = nullptr) { ScreenCaptureFunc = capture_func; _MouseRelativeToWindowPos = ImVec2(-FLT_MAX, -FLT_MAX); }
 
     // These functions should be called from appropriate context hooks. See ImGui::AddContextHook() for more info.
     // (ImGuiTestEngine automatically calls that for you, so this only apply to independently created instance)
@@ -152,21 +152,21 @@ struct IMGUI_API ImGuiCaptureContext
 // (when using ImGuiTestEngine scripting API you may not need to use this at all)
 struct IMGUI_API ImGuiCaptureToolUI
 {
-    float                   SnapGridSize = 32.0f;               // Size of the grid cell for "snap to grid" functionality.
-    char                    OutputLastFilename[256] = "";       // File name of last captured file.
-    char*                   VideoCaptureExtension = NULL;       // Video file extension (e.g. ".gif" or ".mp4")
-    int                     VideoCaptureExtensionSize = 0;      // Optional. Set in order to edit this parameter from UI.
+    float               SnapGridSize = 32.0f;               // Size of the grid cell for "snap to grid" functionality.
+    char                OutputLastFilename[256] = "";       // File name of last captured file.
+    char*               VideoCaptureExtension = nullptr;    // Video file extension (e.g. ".gif" or ".mp4")
+    int                 VideoCaptureExtensionSize = 0;      // Optional. Set in order to edit this parameter from UI.
 
-    ImGuiCaptureArgs        _CaptureArgs;                       // Capture args
-    bool                    _StateIsPickingWindow = false;
-    bool                    _StateIsCapturing = false;
-    ImVector<ImGuiID>       _SelectedWindows;
-    char                    _OutputFileTemplate[256] = "";      //
-    int                     _FileCounter = 0;                   // Counter which may be appended to file name when saving. By default, counting starts from 1. When done this field holds number of saved files.
+    ImGuiCaptureArgs    _CaptureArgs;                       // Capture args
+    bool                _StateIsPickingWindow = false;
+    bool                _StateIsCapturing = false;
+    ImVector<ImGuiID>   _SelectedWindows;
+    char                _OutputFileTemplate[256] = "";      //
+    int                 _FileCounter = 0;                   // Counter which may be appended to file name when saving. By default, counting starts from 1. When done this field holds number of saved files.
 
     // Public
     ImGuiCaptureToolUI();
-    void    ShowCaptureToolWindow(ImGuiCaptureContext* context, bool* p_open = NULL);   // Render a capture tool window with various options and utilities.
+    void    ShowCaptureToolWindow(ImGuiCaptureContext* context, bool* p_open = nullptr);   // Render a capture tool window with various options and utilities.
 
     // [Internal]
     void    _CaptureWindowPicker(ImGuiCaptureArgs* args);       // Render a window picker that captures picked window to file specified in file_name.

@@ -115,7 +115,7 @@ static const char* PerfToolReportDefaultOutputPath = "./output/capture_perf_repo
 // This is declared as a standalone function in order to run without a PerfTool instance
 void ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfTool* perf_log, ImGuiPerfToolEntry* entry, const char* filename)
 {
-    if (filename == NULL)
+    if (filename == nullptr)
         filename = IMGUI_PERFLOG_DEFAULT_FILENAME;
 
     if (!ImFileCreateDirectoryChain(filename, ImPathFindFilename(filename)))
@@ -126,7 +126,7 @@ void ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfTool* perf_log, ImGuiPerfToolE
 
     // Appends to .csv
     FILE* f = fopen(filename, "a+b");
-    if (f == NULL)
+    if (f == nullptr)
     {
         fprintf(stderr, "Unable to open '%s', perftool entry was not saved.\n", filename);
         return;
@@ -138,7 +138,7 @@ void ImGuiTestEngine_PerfToolAppendToCSV(ImGuiPerfTool* perf_log, ImGuiPerfToolE
     fclose(f);
 
     // Register to runtime perf tool if any
-    if (perf_log != NULL)
+    if (perf_log != nullptr)
         perf_log->AddEntry(entry);
 }
 
@@ -152,7 +152,7 @@ static bool Button3(const char* label, int* value)
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+    const ImVec2 label_size = ImGui::CalcTextSize(label, nullptr, true);
     float dot_radius2 = g.FontSize;
     ImVec2 btn_size(dot_radius2 * 2, dot_radius2);
 
@@ -189,7 +189,7 @@ static bool Button3(const char* label, int* value)
     ImRect text_bb;
     text_bb.Min = bb.Min + style.FramePadding + ImVec2(btn_size.x + style.ItemInnerSpacing.x, 0);
     text_bb.Max = text_bb.Min + label_size;
-    ImGui::RenderTextClipped(text_bb.Min, text_bb.Max, label, NULL, &label_size, style.ButtonTextAlign, &bb);
+    ImGui::RenderTextClipped(text_bb.Min, text_bb.Max, label, nullptr, &label_size, style.ButtonTextAlign, &bb);
 
     *value = (*value + pressed) % 3;
     return pressed;
@@ -197,7 +197,7 @@ static bool Button3(const char* label, int* value)
 
 static ImGuiID GetBuildID(const ImGuiPerfToolEntry* entry)
 {
-    IM_ASSERT(entry != NULL);
+    IM_ASSERT(entry != nullptr);
     ImGuiID build_id = ImHashStr(entry->BuildType);
     build_id = ImHashStr(entry->OS, 0, build_id);
     build_id = ImHashStr(entry->Cpu, 0, build_id);
@@ -208,7 +208,7 @@ static ImGuiID GetBuildID(const ImGuiPerfToolEntry* entry)
 
 static ImGuiID GetBuildID(const ImGuiPerfToolBatch* batch)
 {
-    IM_ASSERT(batch != NULL);
+    IM_ASSERT(batch != nullptr);
     IM_ASSERT(!batch->Entries.empty());
     return GetBuildID(&batch->Entries.Data[0]);
 }
@@ -216,8 +216,8 @@ static ImGuiID GetBuildID(const ImGuiPerfToolBatch* batch)
 // Batch ID depends on display type. It is either a build ID (when combinding by build type) or batch timestamp otherwise.
 static ImGuiID GetBatchID(const ImGuiPerfTool* perftool, const ImGuiPerfToolEntry* entry)
 {
-    IM_ASSERT(perftool != NULL);
-    IM_ASSERT(entry != NULL);
+    IM_ASSERT(perftool != nullptr);
+    IM_ASSERT(entry != nullptr);
     if (perftool->_DisplayType == ImGuiPerfToolDisplayType_CombineByBuildInfo)
         return GetBuildID(entry);
     else
@@ -253,10 +253,10 @@ static int IMGUI_CDECL PerfToolComparerByEntryInfo(const void* lhs, const void* 
     return result;
 }
 
-static ImGuiPerfTool* PerfToolInstance = NULL;
+static ImGuiPerfTool* PerfToolInstance = nullptr;
 static int IMGUI_CDECL CompareWithSortSpecs(const void* lhs, const void* rhs)
 {
-    IM_ASSERT(PerfToolInstance != NULL);
+    IM_ASSERT(PerfToolInstance != nullptr);
     ImGuiPerfTool* tool = PerfToolInstance;
     const ImGuiTableSortSpecs* sort_specs = PerfToolInstance->_InfoTableSortSpecs;
     int batch_index_a, entry_index_a, mono_index_a, batch_index_b, entry_index_b, mono_index_b;
@@ -317,7 +317,7 @@ static bool IsDateValid(const char* date)
 
 static float FormatVsBaseline(ImGuiPerfToolEntry* entry, ImGuiPerfToolEntry* baseline_entry, Str& out_label)
 {
-    if (baseline_entry == NULL)
+    if (baseline_entry == nullptr)
     {
         out_label.appendf("--");
         return FLT_MAX;
@@ -343,9 +343,9 @@ static float FormatVsBaseline(ImGuiPerfToolEntry* entry, ImGuiPerfToolEntry* bas
 #if IMGUI_TEST_ENGINE_ENABLE_IMPLOT
 static void PerfToolFormatBuildInfo(ImGuiPerfTool* perftool, Str* result, ImGuiPerfToolBatch* batch)
 {
-    IM_ASSERT(perftool != NULL);
-    IM_ASSERT(result != NULL);
-    IM_ASSERT(batch != NULL);
+    IM_ASSERT(perftool != nullptr);
+    IM_ASSERT(result != nullptr);
+    IM_ASSERT(batch != nullptr);
     IM_ASSERT(batch->Entries.Size > 0);
     ImGuiPerfToolEntry* entry = &batch->Entries.Data[0];
     Str64f legend_format("x%%-%dd %%-%ds %%-%ds %%-%ds %%-%ds %%-%ds %%s%%s%%s%%s(%%-%dd sample%%s)%%s",
@@ -450,7 +450,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
     if (ImGui::MenuItem("Show All"))
     {
         for (const char* label : *labels)
-            if (strstr(label, perf->_Filter) != NULL)
+            if (strstr(label, perf->_Filter) != nullptr)
                 visibility.SetBool(ImHashStr(label), true);
         modified = true;
     }
@@ -458,7 +458,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
     if (ImGui::MenuItem("Hide All"))
     {
         for (const char* label : *labels)
-            if (strstr(label, perf->_Filter) != NULL)
+            if (strstr(label, perf->_Filter) != nullptr)
                 visibility.SetBool(ImHashStr(label), false);
         modified = true;
     }
@@ -469,7 +469,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
     for (int i = labels->Size - 1; i >= 0; i--)
     {
         const char* label = (*labels)[i];
-        if (strstr(label, perf->_Filter) == NULL)   // Filter out entries not matching a filter query
+        if (strstr(label, perf->_Filter) == nullptr)   // Filter out entries not matching a filter query
             continue;
 
         if (filtered_entries == 0)
@@ -477,7 +477,7 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
 
         ImGuiID build_id = ImHashStr(label);
         bool visible = visibility.GetBool(build_id, true);
-        if (ImGui::MenuItem(label, NULL, &visible))
+        if (ImGui::MenuItem(label, nullptr, &visible))
         {
             modified = true;
             if (io.KeyCtrl)
@@ -813,7 +813,7 @@ void ImGuiPerfTool::Clear()
 
 bool ImGuiPerfTool::LoadCSV(const char* filename)
 {
-    if (filename == NULL)
+    if (filename == nullptr)
         filename = IMGUI_PERFLOG_DEFAULT_FILENAME;
 
     Clear();
@@ -863,26 +863,26 @@ void ImGuiPerfTool::ViewOnly(const char** perf_names)
 
 void ImGuiPerfTool::ViewOnly(const char* perf_name)
 {
-    const char* names[] = { perf_name, NULL };
+    const char* names[] = { perf_name, nullptr };
     ViewOnly(names);
 }
 
 ImGuiPerfToolEntry* ImGuiPerfTool::GetEntryByBatchIdx(int idx, const char* perf_name)
 {
     if (idx < 0)
-        return NULL;
+        return nullptr;
     IM_ASSERT(idx < _Batches.Size);
     ImGuiPerfToolBatch& batch = _Batches.Data[idx];
     for (int i = 0; i < batch.Entries.Size; i++)
         if (ImGuiPerfToolEntry* entry = &batch.Entries.Data[i])
             if (strcmp(entry->TestName, perf_name) == 0)
                 return entry;
-    return NULL;
+    return nullptr;
 }
 
 bool ImGuiPerfTool::_IsVisibleBuild(ImGuiPerfToolBatch* batch)
 {
-    IM_ASSERT(batch != NULL);
+    IM_ASSERT(batch != nullptr);
     if (batch->Entries.empty())
         return false;   // All entries are hidden.
     return _IsVisibleBuild(&batch->Entries.Data[0]);
@@ -930,7 +930,7 @@ bool ImGuiPerfTool::SaveHtmlReport(const char* file_name, const char* image_file
         return false;
 
     FILE* fp = fopen(file_name, "w+");
-    if (fp == NULL)
+    if (fp == nullptr)
         return false;
 
     fprintf(fp, "<!doctype html>\n"
@@ -945,10 +945,10 @@ bool ImGuiPerfTool::SaveHtmlReport(const char* file_name, const char* image_file
     // Embed performance chart.
     fprintf(fp, "## Dear ImGui perf report\n\n");
 
-    if (image_file != NULL)
+    if (image_file != nullptr)
     {
         FILE* fp_img = fopen(image_file, "rb");
-        if (fp_img != NULL)
+        if (fp_img != nullptr)
         {
             ImVector<char> image_buffer;
             ImVector<char> base64_buffer;
@@ -1114,7 +1114,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
             }
             if (ImGui::MenuItem("Set Today"))
             {
-                time_t now = time(NULL);
+                time_t now = time(nullptr);
                 FormatDate((ImU64)now * 1000000, date, date_size);
                 dirty = true;
             }
@@ -1321,7 +1321,7 @@ void ImGuiPerfTool::_ShowEntriesPlot()
     if (!ImPlot::BeginPlot("PerfTool", ImVec2(-1, -1), ImPlotFlags_NoTitle))
         return;
 
-    ImPlot::SetupAxis(ImAxis_X1, NULL, ImPlotAxisFlags_NoTickLabels);
+    ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
     if (_LabelsVisible.Size > 1)
     {
         ImPlot::SetupAxisTicks(ImAxis_Y1, 0, _LabelsVisible.Size, _LabelsVisible.Size, _LabelsVisible.Data);
@@ -1551,8 +1551,8 @@ void ImGuiPerfTool::_ShowEntriesTable()
                 _InfoTableSortSpecs = sorts_specs;
                 PerfToolInstance = this;
                 ImQsort(_InfoTableSort.Data, (size_t)_InfoTableSort.Size, sizeof(_InfoTableSort.Data[0]), CompareWithSortSpecs);
-                _InfoTableSortSpecs = NULL;
-                PerfToolInstance = NULL;
+                _InfoTableSortSpecs = nullptr;
+                PerfToolInstance = nullptr;
             }
         }
 
@@ -1779,8 +1779,8 @@ void ImGuiPerfTool::_AddSettingsHandler()
 
 void ImGuiPerfTool::_UnpackSortedKey(ImU64 key, int* batch_index, int* entry_index, int* monotonic_index)
 {
-    IM_ASSERT(batch_index != NULL);
-    IM_ASSERT(entry_index != NULL);
+    IM_ASSERT(batch_index != nullptr);
+    IM_ASSERT(entry_index != nullptr);
     const int num_visible_labels = _LabelsVisible.Size;
     *batch_index = (int)((key >> 24) / num_visible_labels);
     *entry_index = (int)((key >> 24) % num_visible_labels);
@@ -1802,14 +1802,14 @@ static bool SetPerfToolWindowOpen(ImGuiTestContext* ctx, bool is_open)
 
 void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
 {
-    ImGuiTest* t = NULL;
+    ImGuiTest* t = nullptr;
 
     // ## Flex perf tool code.
     t = IM_REGISTER_TEST(e, "testengine", "testengine_cov_perftool");
     t->GuiFunc = [](ImGuiTestContext* ctx)
     {
         IM_UNUSED(ctx);
-        ImGui::Begin("Test Func", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Test Func", nullptr, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
         int loop_count = 1000;
         bool v1 = false, v2 = true;
         for (int n = 0; n < loop_count / 2; n++)
@@ -1841,7 +1841,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->Yield();
 
         ImGuiWindow* window = ctx->GetWindowByRef("Dear ImGui Perf Tool");
-        IM_CHECK(window != NULL);
+        IM_CHECK(window != nullptr);
         ImVec2 pos_bkp = window->Pos;
         ImVec2 size_bkp = window->Size;
         ctx->SetRef(window);
@@ -1849,7 +1849,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->WindowResize("", ImVec2(1400, 900));
 #if IMGUI_TEST_ENGINE_ENABLE_IMPLOT
         ImGuiWindow* plot_child = ctx->WindowInfo("plot").Window;  // "plot/PerfTool" prior to implot 2023/08/21
-        IM_CHECK(plot_child != NULL);
+        IM_CHECK(plot_child != nullptr);
 
         // Move legend to right side.
         ctx->MouseMoveToPos(plot_child->Rect().GetCenter());
@@ -1892,7 +1892,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
     t->TestFunc = [](ImGuiTestContext* ctx)
     {
         ImGuiPerfTool* perftool = ImGuiTestEngine_GetPerfTool(ctx->Engine);
-        const char* perf_report_image = NULL;
+        const char* perf_report_image = nullptr;
         if (!ImFileExist(IMGUI_PERFLOG_DEFAULT_FILENAME))
         {
             ctx->LogWarning("Perf tool has no data. Perf report generation was aborted.");
@@ -1906,7 +1906,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->Yield();
 
         ImGuiWindow* window = ctx->GetWindowByRef("Dear ImGui Perf Tool");
-        IM_CHECK_SILENT(window != NULL);
+        IM_CHECK_SILENT(window != nullptr);
         ImVec2 pos_bkp = window->Pos;
         ImVec2 size_bkp = window->Size;
         ctx->SetRef(window);
@@ -1916,7 +1916,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->ItemDoubleClick("splitter");   // Hide info table
 
         ImGuiWindow* plot_child = ctx->WindowInfo("plot").Window;  // "plot/PerfTool" prior to implot 2023/08/21
-        IM_CHECK(plot_child != NULL);
+        IM_CHECK(plot_child != nullptr);
 
         // Move legend to right side.
         ctx->MouseMoveToPos(plot_child->Rect().GetCenter());
@@ -1945,7 +1945,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         SetPerfToolWindowOpen(ctx, perf_was_open);                   // Restore window visibility
 
         const char* perf_report_output = getenv("CAPTURE_PERF_REPORT_OUTPUT");
-        if (perf_report_output == NULL)
+        if (perf_report_output == nullptr)
             perf_report_output = PerfToolReportDefaultOutputPath;
         perftool->SaveHtmlReport(perf_report_output, perf_report_image);
     };

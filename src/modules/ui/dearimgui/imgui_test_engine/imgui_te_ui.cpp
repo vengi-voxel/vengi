@@ -22,14 +22,14 @@
 // - DrawTestLog() [internal]
 // - GetVerboseLevelName() [internal]
 // - ShowTestGroup() [internal]
-// - ImGuiTestEngine_ShowTestWindows()
+// - ImGuiTestEngine_ShowTestEngineWindows()
 //-------------------------------------------------------------------------
 
 // Look for " filename:number " in the string and add menu option to open source.
 static bool ParseLineAndDrawFileOpenItemForSourceFile(ImGuiTestEngine* e, ImGuiTest* test, const char* line_start, const char* line_end)
 {
     const char* separator = ImStrchrRange(line_start, line_end, ':');
-    if (separator == NULL)
+    if (separator == nullptr)
         return false;
 
     const char* path_end = separator;
@@ -64,8 +64,8 @@ static bool ParseLineAndDrawFileOpenItemForImageFile(ImGuiTestEngine* e, ImGuiTe
     IM_UNUSED(e);
     IM_UNUSED(test);
 
-    const char* extension = ImStristr(line_start, line_end, file_ext, NULL);
-    if (extension == NULL)
+    const char* extension = ImStristr(line_start, line_end, file_ext, nullptr);
+    if (extension == nullptr)
         return false;
 
     const char* path_end = extension + strlen(file_ext);
@@ -137,7 +137,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6.0f, 2.0f) * dpi_scale);
     ImGuiListClipper clipper;
     ImGuiTestVerboseLevel max_log_level = test_output->Status == ImGuiTestStatus_Error ? e->IO.ConfigVerboseLevelOnError : e->IO.ConfigVerboseLevel;
-    int line_count = log->ExtractLinesForVerboseLevels(ImGuiTestVerboseLevel_Silent, max_log_level, NULL);
+    int line_count = log->ExtractLinesForVerboseLevels(ImGuiTestVerboseLevel_Silent, max_log_level, nullptr);
     int current_index_clipped = -1;
     int current_index_abs = 0;
     clipper.Begin(line_count);
@@ -146,7 +146,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
         for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++)
         {
             // Advance index_by_log_level to find log entry indicated by line_no.
-            ImGuiTestLogLineInfo* line_info = NULL;
+            ImGuiTestLogLineInfo* line_info = nullptr;
             while (current_index_clipped < line_no)
             {
                 line_info = &log->LineInfo[current_index_abs];
@@ -157,7 +157,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
 
             const char* line_start = text + line_info->LineOffset;
             const char* line_end = strchr(line_start, '\n');
-            if (line_end == NULL)
+            if (line_end == nullptr)
                 line_end = text_end;
 
             switch (line_info->Level)
@@ -187,7 +187,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
             if (ImGui::BeginPopupContextItem("Context", 1))
             {
                 if (!ParseLineAndDrawFileOpenItem(e, test, line_start, line_end))
-                    ImGui::MenuItem("No options", NULL, false, false);
+                    ImGui::MenuItem("No options", nullptr, false, false);
                 ImGui::EndPopup();
             }
             ImGui::PopID();
@@ -225,7 +225,7 @@ static bool ShowTestGroupFilterTest(ImGuiTestEngine* e, ImGuiTestGroup group, co
 
 static void GetFailingTestsAsString(ImGuiTestEngine* e, ImGuiTestGroup group, char separator, Str* out_string)
 {
-    IM_ASSERT(out_string != NULL);
+    IM_ASSERT(out_string != nullptr);
     bool first = true;
     for (int i = 0; i < e->TestsAll.Size; i++)
     {
@@ -258,7 +258,7 @@ static void TestStatusButton(const char* id, const ImVec4& color, bool running, 
         float t = (float)(ImGui::GetTime() * 20.0f);
         ImVec2 off(ImCos(t) * radius, ImSin(t) * radius);
         ImGui::GetWindowDrawList()->AddLine(center - off, center + off, ImGui::GetColorU32(ImGuiCol_Text), 1.5f);
-        //ImGui::RenderText(r.Min + style.FramePadding + ImVec2(0, 0), &"|\0/\0-\0\\"[(((ImGui::GetFrameCount() / 5) & 3) << 1)], NULL);
+        //ImGui::RenderText(r.Min + style.FramePadding + ImVec2(0, 0), &"|\0/\0-\0\\"[(((ImGui::GetFrameCount() / 5) & 3) << 1)], nullptr);
     }
     else if (display_counter >= 0)
     {
@@ -382,7 +382,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                 continue;
 
             ImGuiTestOutput* test_output = &test->Output;
-            ImGuiTestContext* test_context = (e->TestContext && e->TestContext->Test == test) ? e->TestContext : NULL; // Running context, if any
+            ImGuiTestContext* test_context = (e->TestContext && e->TestContext->Test == test) ? e->TestContext : nullptr; // Running context, if any
 
             ImGui::TableNextRow();
             ImGui::PushID(test_n);
@@ -439,12 +439,12 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
             }
 
             ImGui::TableNextColumn();
-            if (ImGui::Selectable(test->Category, test == e->UiSelectedTest, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_SelectOnNav))
+            if (ImGui::Selectable(test->Category, test == e->UiSelectedTest, ImGuiSelectableFlags_SpanAllColumns | (ImGuiSelectableFlags)ImGuiSelectableFlags_SelectOnNav))
                 select_test = true;
 
             // Double-click to run test, CTRL+Double-click to run GUI function
             const bool is_running_gui_func = (test_context && (test_context->RunFlags & ImGuiTestRunFlags_GuiFuncOnly));
-            const bool has_gui_func = (test->GuiFunc != NULL);
+            const bool has_gui_func = (test->GuiFunc != nullptr);
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
                 if (ImGui::GetIO().KeyCtrl)
@@ -475,16 +475,16 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
 
                 ImGui::Separator();
 
-                const bool open_source_available = (test->SourceFile != NULL) && (e->IO.SrcFileOpenFunc != NULL);
+                const bool open_source_available = (test->SourceFile != nullptr) && (e->IO.SrcFileOpenFunc != nullptr);
 
                 Str128 buf;
-                if (test->SourceFile != NULL) // This is normally set by IM_REGISTER_TEST() but custom registration may omit it.
+                if (test->SourceFile != nullptr) // This is normally set by IM_REGISTER_TEST() but custom registration may omit it.
                     buf.setf("Open source (%s:%d)", ImPathFindFilename(test->SourceFile), test->SourceLine);
                 else
                     buf.set("Open source");
-                if (ImGui::MenuItem(buf.c_str(), NULL, false, open_source_available))
+                if (ImGui::MenuItem(buf.c_str(), nullptr, false, open_source_available))
                     ImGuiTestEngine_OpenSourceFile(e, test->SourceFile, test->SourceLine);
-                if (ImGui::MenuItem("View source...", NULL, false, test->SourceFile != NULL))
+                if (ImGui::MenuItem("View source...", nullptr, false, test->SourceFile != nullptr))
                     view_source = true;
 
                 if (group == ImGuiTestGroup_Perfs && ImGui::MenuItem("View perflog"))
@@ -494,7 +494,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                 }
 
                 ImGui::Separator();
-                if (ImGui::MenuItem("Copy name", NULL, false))
+                if (ImGui::MenuItem("Copy name", nullptr, false))
                     ImGui::SetClipboardText(test->Name);
 
                 if (test_output->Status == ImGuiTestStatus_Error)
@@ -511,8 +511,8 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                     for (int level_n = ImGuiTestVerboseLevel_Error; level_n < ImGuiTestVerboseLevel_COUNT; level_n++)
                     {
                         ImGuiTestVerboseLevel level = (ImGuiTestVerboseLevel)level_n;
-                        int count = test_log->ExtractLinesForVerboseLevels((ImGuiTestVerboseLevel)0, level, NULL);
-                        if (ImGui::MenuItem(Str64f("%s (%d lines)", ImGuiTestEngine_GetVerboseLevelName(level), count).c_str(), NULL, false, count > 0))
+                        int count = test_log->ExtractLinesForVerboseLevels((ImGuiTestVerboseLevel)0, level, nullptr);
+                        if (ImGui::MenuItem(Str64f("%s (%d lines)", ImGuiTestEngine_GetVerboseLevelName(level), count).c_str(), nullptr, false, count > 0))
                         {
                             ImGuiTextBuffer buffer;
                             test_log->ExtractLinesForVerboseLevels((ImGuiTestVerboseLevel)0, level, &buffer);
@@ -522,7 +522,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::MenuItem("Clear log", NULL, false, !test_log->IsEmpty()))
+                if (ImGui::MenuItem("Clear log", nullptr, false, !test_log->IsEmpty()))
                     test_log->Clear();
 
                 // [DEBUG] Simple way to exercise ImGuiTestEngine_UnregisterTest()
@@ -545,20 +545,19 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                     source_blurb.append(file_data, file_data + file_size);
                 else
                     source_blurb.append("<Error loading sources>");
-                goto_line = (test->SourceLine + test->SourceLineEnd) / 2;
+                goto_line = test->SourceLine;
                 ImGui::OpenPopup("Source");
             }
             if (ImGui::BeginPopup("Source"))
             {
-                // FIXME: Local vs screen pos too messy :(
-                const ImVec2 start_pos = ImGui::GetCursorStartPos();
+                const ImVec2 start_pos = ImGui::GetCursorScreenPos();
                 const float line_height = ImGui::GetTextLineHeight();
                 if (goto_line != -1)
-                    ImGui::SetScrollFromPosY(start_pos.y + (goto_line - 1) * line_height, 0.5f);
+                    ImGui::SetScrollY(ImMax((goto_line - 5) * line_height, 0.0f));
                 goto_line = -1;
 
-                ImRect r(0.0f, test->SourceLine * line_height, ImGui::GetWindowWidth(), (test->SourceLine + 1) * line_height); // SourceLineEnd is too flaky
-                ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetWindowPos() + start_pos + r.Min, ImGui::GetWindowPos() + start_pos + r.Max, IM_COL32(80, 80, 150, 150));
+                ImRect r(0.0f, (test->SourceLine - 1) * line_height, ImGui::GetWindowWidth(), (test->SourceLineEnd - 1) * line_height);
+                ImGui::GetWindowDrawList()->AddRectFilled(start_pos + r.Min, start_pos + r.Max, IM_COL32(80, 80, 150, 100));
 
                 ImGui::TextUnformatted(source_blurb.c_str(), source_blurb.end());
                 ImGui::EndPopup();
@@ -621,7 +620,7 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
     {
         ImGuiTest* selected_test = engine->UiSelectedTest;
 
-        if (selected_test != NULL)
+        if (selected_test != nullptr)
             ImGui::Text("Log for '%s' '%s'", selected_test->Category, selected_test->Name);
         else
             ImGui::Text("N/A");
@@ -657,7 +656,7 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
             engine->ToolDebugRebootUiContext = true;
 
         const ImGuiInputTextCallback filter_callback = [](ImGuiInputTextCallbackData* data) { return (data->EventChar == ',' || data->EventChar == ';') ? 1 : 0; };
-        ImGui::InputText("Branch/Annotation", engine->IO.GitBranchName, IM_ARRAYSIZE(engine->IO.GitBranchName), ImGuiInputTextFlags_CallbackCharFilter, filter_callback, NULL);
+        ImGui::InputText("Branch/Annotation", engine->IO.GitBranchName, IM_ARRAYSIZE(engine->IO.GitBranchName), ImGuiInputTextFlags_CallbackCharFilter, filter_callback, nullptr);
         ImGui::SetItemTooltip("This will be stored in the CSV file for performance tools.");
 
         ImGui::Separator();
@@ -701,12 +700,12 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
             ImGui::Text("[last 100] %6.3f ms (%.1f FPS) ++ %6.3f ms ~ converging in %.1f secs", dt_100 * 1000.0, 1.0 / dt_100, (dt_1 - dt_ref) * 1000, 100.0 / fps_now);
             ImGui::Text("[last 500] %6.3f ms (%.1f FPS) ++ %6.3f ms ~ converging in %.1f secs", dt_500 * 1000.0, 1.0 / dt_500, (dt_1 - dt_ref) * 1000, 500.0 / fps_now);
 
-            //ImGui::PlotLines("Last 100", &engine->PerfDeltaTime100.Samples.Data, engine->PerfDeltaTime100.Samples.Size, engine->PerfDeltaTime100.Idx, NULL, 0.0f, dt_1000 * 1.10f, ImVec2(0.0f, ImGui::GetFontSize()));
+            //ImGui::PlotLines("Last 100", &engine->PerfDeltaTime100.Samples.Data, engine->PerfDeltaTime100.Samples.Size, engine->PerfDeltaTime100.Idx, nullptr, 0.0f, dt_1000 * 1.10f, ImVec2(0.0f, ImGui::GetFontSize()));
             ImVec2 plot_size(0.0f, ImGui::GetFrameHeight() * 3);
             ImMovingAverage<double>* ma = &engine->PerfDeltaTime500;
             ImGui::PlotLines("Last 500",
                 [](void* data, int n) { ImMovingAverage<double>* ma = (ImMovingAverage<double>*)data; return (float)(ma->Samples[n] * 1000); },
-                ma, ma->Samples.Size, 0 * ma->Idx, NULL, 0.0f, (float)(ImMax(dt_100, dt_500) * 1000.0 * 1.2f), plot_size);
+                ma, ma->Samples.Size, 0 * ma->Idx, nullptr, 0.0f, (float)(ImMax(dt_100, dt_500) * 1000.0 * 1.2f), plot_size);
 
             ImGui::TreePop();
         }
@@ -820,12 +819,12 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
     ImGui::BeginChild("List", ImVec2(0, list_height), false, ImGuiWindowFlags_NoScrollbar);
     if (ImGui::BeginTabBar("##Tests", ImGuiTabBarFlags_NoTooltip))  // Add _NoPushId flag in TabBar?
     {
-        if (ImGui::BeginTabItem("TESTS", NULL, ImGuiTabItemFlags_NoPushId))
+        if (ImGui::BeginTabItem("TESTS", nullptr, ImGuiTabItemFlags_NoPushId))
         {
             ShowTestGroup(engine, ImGuiTestGroup_Tests, engine->UiFilterTests);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("PERFS", NULL, ImGuiTabItemFlags_NoPushId))
+        if (ImGui::BeginTabItem("PERFS", nullptr, ImGuiTabItemFlags_NoPushId))
         {
             ShowTestGroup(engine, ImGuiTestGroup_Perfs, engine->UiFilterPerfs);
             ImGui::EndTabItem();
@@ -833,7 +832,7 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
         ImGui::EndTabBar();
     }
     ImGui::EndChild();
-    engine->UiSelectAndScrollToTest = NULL;
+    engine->UiSelectAndScrollToTest = nullptr;
 
     // LOG & TOOLS
     ImGui::BeginChild("Log", ImVec2(0, log_height));
@@ -845,6 +844,9 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
 
 void    ImGuiTestEngine_ShowTestEngineWindows(ImGuiTestEngine* e, bool* p_open)
 {
+    if (e->TestsSourceLinesDirty)
+        ImGuiTestEngine_UpdateTestsSourceLines(e);
+
     // Test Tool
     ImGuiTestEngine_ShowTestTool(e, p_open);
 
@@ -876,7 +878,7 @@ void    ImGuiTestEngine_ShowTestEngineWindows(ImGuiTestEngine* e, bool* p_open)
 void    ImGuiTestEngine_OpenSourceFile(ImGuiTestEngine* e, const char* source_filename, int source_line_no)
 {
     ImGuiTestEngineIO& e_io = ImGuiTestEngine_GetIO(e);
-    if (e_io.SrcFileOpenFunc == NULL)
+    if (e_io.SrcFileOpenFunc == nullptr)
         ImOsOpenInShell(source_filename); // This is never used by imgui_test_suite but we provide it as a second layer of convenience for test engine users.
     else
         e_io.SrcFileOpenFunc(source_filename, source_line_no, e_io.SrcFileOpenUserData);

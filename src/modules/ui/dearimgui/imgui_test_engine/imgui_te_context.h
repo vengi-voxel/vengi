@@ -77,10 +77,10 @@ struct IMGUI_API ImGuiTestRef
     ImGuiID         ID;             // Pre-hashed ID
     const char*     Path;           // Relative or absolute path (string pointed to, not owned, as our lifetime is very short)
 
-    ImGuiTestRef()                  { ID = 0; Path = NULL; }
-    ImGuiTestRef(ImGuiID id)        { ID = id; Path = NULL; }
+    ImGuiTestRef()                  { ID = 0; Path = nullptr; }
+    ImGuiTestRef(ImGuiID id)        { ID = id; Path = nullptr; }
     ImGuiTestRef(const char* path)  { ID = 0; Path = path; }
-    bool IsEmpty() const            { return ID == 0 && (Path == NULL || Path[0] == 0); }
+    bool IsEmpty() const            { return ID == 0 && (Path == nullptr || Path[0] == 0); }
 };
 
 // Debug helper to output a string showing the Path, ID or Debug Label based on what is available (some items only have ID as we couldn't find/store a Path)
@@ -141,7 +141,7 @@ struct IMGUI_API ImGuiTestActionFilter
     ImGuiItemStatusFlags    RequireAllStatusFlags;
     ImGuiItemStatusFlags    RequireAnyStatusFlags;
 
-    ImGuiTestActionFilter() { MaxDepth = -1; MaxPasses = -1; MaxItemCountPerDepth = NULL; RequireAllStatusFlags = RequireAnyStatusFlags = 0; }
+    ImGuiTestActionFilter() { MaxDepth = -1; MaxPasses = -1; MaxItemCountPerDepth = nullptr; RequireAllStatusFlags = RequireAnyStatusFlags = 0; }
 };
 
 //-------------------------------------------------------------------------
@@ -214,27 +214,27 @@ struct IMGUI_API ImGuiTestContext
 {
     // User variables
     ImGuiTestGenericVars    GenericVars;                            // Generic variables holder for convenience.
-    void*                   UserVars = NULL;                        // Access using ctx->GetVars<Type>(). Setup with test->SetVarsDataType<>().
+    void*                   UserVars = nullptr;                     // Access using ctx->GetVars<Type>(). Setup with test->SetVarsDataType<>().
 
     // Public fields
-    ImGuiContext*           UiContext = NULL;                       // UI context
-    ImGuiTestEngineIO*      EngineIO = NULL;                        // Test Engine IO/settings
-    ImGuiTest*              Test = NULL;                            // Test currently running
-    ImGuiTestOutput*        TestOutput = NULL;                      // Test output (generally == &Test->Output)
+    ImGuiContext*           UiContext = nullptr;                    // UI context
+    ImGuiTestEngineIO*      EngineIO = nullptr;                     // Test Engine IO/settings
+    ImGuiTest*              Test = nullptr;                         // Test currently running
+    ImGuiTestOutput*        TestOutput = nullptr;                   // Test output (generally == &Test->Output)
     ImGuiTestOpFlags        OpFlags = ImGuiTestOpFlags_None;        // Flags affecting all operation (supported: ImGuiTestOpFlags_NoAutoUncollapse)
     int                     PerfStressAmount = 0;                   // Convenience copy of engine->IO.PerfStressAmount
     int                     FrameCount = 0;                         // Test frame count (restarts from zero every time)
     int                     FirstTestFrameCount = 0;                // First frame where TestFunc is running (after warm-up frame). This is generally -1 or 0 depending on whether we have warm up enabled
     bool                    FirstGuiFrame = false;
     bool                    HasDock = false;                        // #ifdef IMGUI_HAS_DOCK expressed in an easier to test value
-    ImGuiCaptureArgs*       CaptureArgs = NULL;                     // Capture settings used by ctx->Capture*() functions
+    ImGuiCaptureArgs*       CaptureArgs = nullptr;                  // Capture settings used by ctx->Capture*() functions
 
     //-------------------------------------------------------------------------
     // [Internal Fields]
     //-------------------------------------------------------------------------
 
-    ImGuiTestEngine*        Engine = NULL;
-    ImGuiTestInputs*        Inputs = NULL;
+    ImGuiTestEngine*        Engine = nullptr;
+    ImGuiTestInputs*        Inputs = nullptr;
     ImGuiTestRunFlags       RunFlags = ImGuiTestRunFlags_None;
     ImGuiTestActiveFunc     ActiveFunc = ImGuiTestActiveFunc_None;  // None/GuiFunc/TestFunc
     double                  RunningTime = 0.0;                      // Amount of wall clock time the Test has been running. Used by safety watchdog.
@@ -248,6 +248,7 @@ struct IMGUI_API ImGuiTestContext
     ImGuiID                 RefID = 0;                              // Reference ID over which all named references are based
     ImGuiID                 RefWindowID = 0;                        // ID of a window that contains RefID item
     ImGuiInputSource        InputMode = ImGuiInputSource_Mouse;     // Prefer interacting with mouse/keyboard/gamepad
+    ImVector<char>          TempString;
     ImVector<char>          Clipboard;                              // Private clipboard for the test instance
     ImVector<ImGuiWindow*>  ForeignWindowsToHide;
     ImGuiTestItemInfo       DummyItemInfoNull;                      // Storage for ItemInfoNull()
@@ -260,7 +261,7 @@ struct IMGUI_API ImGuiTestContext
     // Main control
     void            Finish(ImGuiTestStatus status = ImGuiTestStatus_Success);                       // Set test status and stop running. Usually called when running test logic from GuiFunc() only.
     ImGuiTestStatus RunChildTest(const char* test_name, ImGuiTestRunFlags flags = 0);               // [Experimental] Run another test from the current test.
-    template <typename T> T& GetVars()      { IM_ASSERT(UserVars != NULL); return *(T*)(UserVars); }// Campanion to using t->SetVarsDataType<>(). FIXME: Assert to compare sizes
+    template <typename T> T& GetVars()      { IM_ASSERT(UserVars != nullptr); return *(T*)(UserVars); }// Campanion to using t->SetVarsDataType<>(). FIXME: Assert to compare sizes
 
     // Main status queries
     bool        IsError() const             { return TestOutput->Status == ImGuiTestStatus_Error || Abort; }
@@ -270,12 +271,12 @@ struct IMGUI_API ImGuiTestContext
     bool        IsGuiFuncOnly() const       { return (RunFlags & ImGuiTestRunFlags_GuiFuncOnly) != 0; }
 
     // Debugging
-    bool        SuspendTestFunc(const char* file = NULL, int line = 0);             // [DEBUG] Generally called via IM_SUSPEND_TESTFUNC
+    bool        SuspendTestFunc(const char* file = nullptr, int line = 0);             // [DEBUG] Generally called via IM_SUSPEND_TESTFUNC
 
     // Logging
     void        LogEx(ImGuiTestVerboseLevel level, ImGuiTestLogFlags flags, const char* fmt, ...) IM_FMTARGS(4);
     void        LogExV(ImGuiTestVerboseLevel level, ImGuiTestLogFlags flags, const char* fmt, va_list args) IM_FMTLIST(4);
-    void        LogToTTY(ImGuiTestVerboseLevel level, const char* message, const char* message_end = NULL);
+    void        LogToTTY(ImGuiTestVerboseLevel level, const char* message, const char* message_end = nullptr);
     void        LogToDebugger(ImGuiTestVerboseLevel level, const char* message);
     void        LogDebug(const char* fmt, ...)      IM_FMTARGS(2);  // ImGuiTestVerboseLevel_Debug or ImGuiTestVerboseLevel_Trace depending on context depth
     void        LogInfo(const char* fmt, ...)       IM_FMTARGS(2);  // ImGuiTestVerboseLevel_Info
@@ -356,8 +357,8 @@ struct IMGUI_API ImGuiTestContext
     void        MouseWheel(ImVec2 delta);
     void        MouseWheelX(float dx) { MouseWheel(ImVec2(dx, 0.0f)); }
     void        MouseWheelY(float dy) { MouseWheel(ImVec2(0.0f, dy)); }
-    void        MouseMoveToVoid(ImGuiViewport* viewport = NULL);
-    void        MouseClickOnVoid(ImGuiMouseButton button = 0, ImGuiViewport* viewport = NULL);
+    void        MouseMoveToVoid(ImGuiViewport* viewport = nullptr);
+    void        MouseClickOnVoid(ImGuiMouseButton button = 0, ImGuiViewport* viewport = nullptr);
     ImGuiWindow*FindHoveredWindowAtPos(const ImVec2& pos);
     bool        FindExistingVoidPosOnViewport(ImGuiViewport* viewport, ImVec2* out);
 
@@ -403,7 +404,7 @@ struct IMGUI_API ImGuiTestContext
     void        ScrollVerifyScrollMax(ImGuiTestRef ref);
 
     // Low-level queries
-    // - ItemInfo queries never returns a NULL pointer, instead they return an empty instance (info->IsEmpty(), info->ID == 0) and set contexted as errored.
+    // - ItemInfo queries never returns nullptr! Instead they return an empty instance (info->IsEmpty(), info->ID == 0) and set contexted as errored.
     // - You can use ImGuiTestOpFlags_NoError to do a query without marking context as errored. This is what ItemExists() does.
     ImGuiTestItemInfo   ItemInfo(ImGuiTestRef ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
     ImGuiTestItemInfo   ItemInfoOpenFullPath(ImGuiTestRef ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
@@ -412,7 +413,7 @@ struct IMGUI_API ImGuiTestContext
     void                GatherItems(ImGuiTestItemList* out_list, ImGuiTestRef parent, int depth = -1);
 
     // Item/Widgets manipulation
-    void        ItemAction(ImGuiTestAction action, ImGuiTestRef ref, ImGuiTestOpFlags flags = 0, void* action_arg = NULL);
+    void        ItemAction(ImGuiTestAction action, ImGuiTestRef ref, ImGuiTestOpFlags flags = 0, void* action_arg = nullptr);
     void        ItemClick(ImGuiTestRef ref, ImGuiMouseButton button = 0, ImGuiTestOpFlags flags = 0) { ItemAction(ImGuiTestAction_Click, ref, flags, (void*)(size_t)button); }
     void        ItemDoubleClick(ImGuiTestRef ref, ImGuiTestOpFlags flags = 0)           { ItemAction(ImGuiTestAction_DoubleClick, ref, flags); }
     void        ItemCheck(ImGuiTestRef ref, ImGuiTestOpFlags flags = 0)                 { ItemAction(ImGuiTestAction_Check, ref, flags); }
@@ -424,7 +425,7 @@ struct IMGUI_API ImGuiTestContext
     bool        ItemOpenFullPath(ImGuiTestRef);
 
     // Item/Widgets: Batch actions over an entire scope
-    void        ItemActionAll(ImGuiTestAction action, ImGuiTestRef ref_parent, const ImGuiTestActionFilter* filter = NULL);
+    void        ItemActionAll(ImGuiTestAction action, ImGuiTestRef ref_parent, const ImGuiTestActionFilter* filter = nullptr);
     void        ItemOpenAll(ImGuiTestRef ref_parent, int depth = -1, int passes = -1);
     void        ItemCloseAll(ImGuiTestRef ref_parent, int depth = -1, int passes = -1);
 
@@ -433,12 +434,15 @@ struct IMGUI_API ImGuiTestContext
     void        ItemInputValue(ImGuiTestRef ref, float f);
     void        ItemInputValue(ImGuiTestRef ref, const char* str);
 
-    // Item/Widgets: Helpers to easily read a value by selecting Slider/Drag/Input text, copying into clipboard and parsing it.
+    // Item/Widgets: Helpers to easily read a value by selecting Slider/Drag/Input text, copying it and parsing it.
     // - This requires the item to be selectable (we will later provide helpers that works in more general manner)
-    // - Original clipboard value is restored afterward.
-    bool        ItemSelectAndReadValue(ImGuiTestRef ref, ImGuiDataType data_type, void* out_data, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
-    void        ItemSelectAndReadValue(ImGuiTestRef ref, int* out_v);
-    void        ItemSelectAndReadValue(ImGuiTestRef ref, float* out_v);
+    // - (this temporarily use the internal test clipboard, but original clipboard value is restored afterwards)
+    // See https://github.com/ocornut/imgui_test_engine/wiki/Automation-API#accessing-your-data
+    int         ItemReadAsInt(ImGuiTestRef ref);
+    float       ItemReadAsFloat(ImGuiTestRef ref);
+    bool        ItemReadAsScalar(ImGuiTestRef ref, ImGuiDataType data_type, void* out_data, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
+    const char* ItemReadAsString(ImGuiTestRef ref);
+    size_t      ItemReadAsString(ImGuiTestRef ref, char* out_buf, size_t out_buf_size);
 
     // Item/Widgets: Status query
     bool        ItemExists(ImGuiTestRef ref);
@@ -501,10 +505,14 @@ struct IMGUI_API ImGuiTestContext
 
     // Performances Measurement (use along with Dear ImGui Perf Tool)
     void        PerfCalcRef();
-    void        PerfCapture(const char* category = NULL, const char* test_name = NULL, const char* csv_file = NULL);
+    void        PerfCapture(const char* category = nullptr, const char* test_name = nullptr, const char* csv_file = nullptr);
 
     // Obsolete functions
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+    // Obsoleted 2025/01/20
+    bool        ItemSelectAndReadValue(ImGuiTestRef ref, ImGuiDataType data_type, void* out_data, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None) { return ItemReadAsScalar(ref, data_type, out_data, flags); }
+    void        ItemSelectAndReadValue(ImGuiTestRef ref, int* out_v) { int v = ItemReadAsInt(ref); *out_v = v; }
+    void        ItemSelectAndReadValue(ImGuiTestRef ref, float* out_v) { float v = ItemReadAsFloat(ref); *out_v = v; }
     // Obsoleted 2024/05/21
     void        YieldUntil(int frame_count)     { while (FrameCount < frame_count) { Yield(); } }
     // Obsoleted 2022/10/11
@@ -552,7 +560,7 @@ template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, fl
 template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, double v)      { buf->appendf("%f", v); }
 template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, ImVec2 v)      { buf->appendf("(%.3f, %.3f)", v.x, v.y); }
 template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, const void* v) { buf->appendf("%p", v); }
-template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, ImGuiWindow* v){ if (v) buf->appendf("\"%s\"", v->Name); else buf->append("NULL"); }
+template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, ImGuiWindow* v){ if (v) buf->appendf("\"%s\"", v->Name); else buf->append("nullptr"); }
 
 // We embed every macro in a do {} while(0) statement as a trick to allow using them as regular single statement, e.g. if (XXX) IM_CHECK(A); else IM_CHECK(B)
 // We leave the IM_DEBUG_BREAK() outside of the check function to step out faster when using a debugger. It also has the benefit of being lighter than an IM_ASSERT().
@@ -562,7 +570,7 @@ template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, Im
 #define IM_CHECK_RETV(_EXPR,_RETV)          do { bool res = (bool)(_EXPR); if (ImGuiTestEngine_Check(__FILE__, __func__, __LINE__, ImGuiTestCheckFlags_None, res, #_EXPR))          { IM_DEBUG_BREAK(); } if (!res) return _RETV; } while (0)
 #define IM_CHECK_SILENT_RETV(_EXPR,_RETV)   do { bool res = (bool)(_EXPR); if (ImGuiTestEngine_Check(__FILE__, __func__, __LINE__, ImGuiTestCheckFlags_SilentSuccess, res, #_EXPR)) { IM_DEBUG_BREAK(); } if (!res) return _RETV; } while (0)
 #define IM_ERRORF(_FMT,...)                 do { if (ImGuiTestEngine_Error(__FILE__, __func__, __LINE__, ImGuiTestCheckFlags_None, _FMT, __VA_ARGS__))                              { IM_DEBUG_BREAK(); } } while (0)
-#define IM_ERRORF_NOHDR(_FMT,...)           do { if (ImGuiTestEngine_Error(NULL, NULL, 0, ImGuiTestCheckFlags_None, _FMT, __VA_ARGS__))                                             { IM_DEBUG_BREAK(); } } while (0)
+#define IM_ERRORF_NOHDR(_FMT,...)           do { if (ImGuiTestEngine_Error(nullptr, nullptr, 0, ImGuiTestCheckFlags_None, _FMT, __VA_ARGS__))                                             { IM_DEBUG_BREAK(); } } while (0)
 
 // Those macros allow us to print out the values of both LHS and RHS expressions involved in a check.
 #define IM_CHECK_OP(_LHS, _RHS, _OP, _RETURN)                   \
