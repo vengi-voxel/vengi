@@ -9,7 +9,6 @@
 #include "core/Assert.h"
 #include "TextureConfig.h"
 #include "core/Var.h"
-#include <SDL_video.h>
 
 namespace video {
 

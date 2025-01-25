@@ -3,13 +3,13 @@
  */
 
 #include "MetricFacade.h"
-#include "UDPMetricSender.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
+#include "engine-config.h" // PROJECT_VERSION
 #include "metric/HTTPMetricSender.h"
-#include "engine-config.h"
+#include "metric/UDPMetricSender.h"
 
 namespace metric {
 
@@ -67,9 +67,7 @@ void MetricState::shutdown() {
 
 bool count(const core::String &key, int delta, const TagMap &tags) {
 	MetricState &s = MetricState::getInstance();
-	s._threadPool.enqueue([=, &s]() {
-		s._metric.count(key.c_str(), delta, tags);
-	});
+	s._threadPool.enqueue([=, &s]() { s._metric.count(key.c_str(), delta, tags); });
 	return true;
 }
 
