@@ -44,3 +44,27 @@ There are several built-in palettes available that can also be used as an identi
 * `built-in:tiberiansun`
 
 You can also specify a filename to a support palette format to load it.
+
+## core_colorreduction
+
+> Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`
+
+This [cvar](Configuration.md) controls how the input colors are quantized in the palette colors.
+
+Different input images lead to different results for those options. If you are not pleased with the result on one algorithm, it's often worth the try with another one.
+
+## voxformat_rgbweightedaverage
+
+If you are importing from a mesh format and multiple triangles with different colors would contribute to the same voxel, vengi will try to find the best color by doing an average weighting between all color contributions based on their size. This might lead to new colors - colors there are not part of the input file. If you don't want this, you can disable this feature by setting this [cvar](Configuration.md) to `false`.
+
+## voxformat_rgbflattenfactor
+
+This will reduce the colors for input files with more than 256 colors. It basically does this:
+
+```c
+color = color / voxformat_rgbflattenfactor * voxformat_rgbflattenfactor
+```
+
+on a per color component base.
+
+This will reduce very similar looking colors and might help to improve the variance in your palette.
