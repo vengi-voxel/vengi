@@ -6,7 +6,6 @@
 
 #include "core/SharedPtr.h"
 #include "io/Stream.h"
-#include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
 

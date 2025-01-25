@@ -10,7 +10,7 @@
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
-#include <SDL_stdinc.h>
+#include <ctype.h>
 
 FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -51,7 +51,7 @@ static void printJsonMagicArray(const T &array) {
 			Log::printf(",");
 		}
 		Log::printf("{");
-		if (SDL_isprint(e.first())) {
+		if (isprint(e.first())) {
 			Log::printf("\"type\": \"string\", \"value\": \"%s\"", e.c_str());
 		} else {
 			Log::printf("\"type\": \"bytes\", \"value\": \"");
@@ -462,7 +462,7 @@ void FormatPrinter::printMagic() {
 		Log::printf("# %s\n", desc.name.c_str());
 		const core::String &m = uniqueMimetype(desc);
 		for (const core::String &magic : desc.magics) {
-			if (SDL_isprint(magic.first())) {
+			if (isprint(magic.first())) {
 				Log::printf("50 string 0 \"%s\"", magic.c_str());
 			} else {
 				Log::printf("50 byte 0 ");
@@ -701,7 +701,7 @@ void FormatPrinter::printMimeInfo() {
 		}
 		for (const core::String &e : desc->magics) {
 			Log::printf("\t\t<magic priority=\"50\">\n");
-			if (SDL_isprint(e.first())) {
+			if (isprint(e.first())) {
 				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n", e.c_str());
 			} else {
 				for (size_t i = 0; i < e.size(); ++i) {

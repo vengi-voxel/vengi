@@ -5,10 +5,7 @@
 #include "FileStream.h"
 #include "core/Log.h"
 #include "io/File.h"
-#include <SDL_endian.h>
 #include <SDL_rwops.h>
-#include <stdio.h>
-#include <stdarg.h>
 
 namespace io {
 
