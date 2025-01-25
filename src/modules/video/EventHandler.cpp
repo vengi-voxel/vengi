@@ -11,8 +11,7 @@
 
 namespace video {
 
-EventHandler::EventHandler() :
-		_multiGesture(false) {
+EventHandler::EventHandler() {
 	//SDL_JoystickEventState(SDL_DISABLE);
 	SDL_EventState(SDL_JOYAXISMOTION, SDL_ENABLE);
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
@@ -342,16 +341,12 @@ void EventHandler::fingerPress(void *windowHandle, int64_t finger, float x, floa
 }
 
 void EventHandler::fingerRelease(void *windowHandle, int64_t finger, float x, float y) {
-	_multiGesture = false;
 	for (IEventObserver* observer : _observers) {
 		observer->onFingerRelease(windowHandle, finger, x, y);
 	}
 }
 
 void EventHandler::fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) {
-	if (_multiGesture) {
-		return;
-	}
 	for (IEventObserver* observer : _observers) {
 		observer->onFingerMotion(windowHandle, finger, x, y, dx, dy);
 	}

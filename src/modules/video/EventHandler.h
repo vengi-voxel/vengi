@@ -19,8 +19,6 @@ class IEventObserver;
  */
 class EventHandler {
 private:
-	bool _multiGesture;
-
 	typedef core::DynamicArray<IEventObserver*> EventObservers;
 	EventObservers _observers;
 	struct Event {
