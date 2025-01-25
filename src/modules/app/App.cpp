@@ -4,7 +4,6 @@
 
 #include "App.h"
 #include "app/AppCommand.h"
-#include "app/i18n/findlocale.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Assert.h"
@@ -456,17 +455,24 @@ AppState App::onConstruct() {
 		_dictManager.addDirectory(core::string::path(path, "po"));
 	}
 
-	FL_Locale *locale = nullptr;
-	if (FL_FindLocale(&locale, FL_MESSAGES) != FL_FAILED) {
-		core::String lang = locale->lang ? locale->lang : "";
-		core::String country = locale->country ? locale->country : "";
-		core::String variant = locale->variant ? locale->variant : "";
-		_systemLanguage = Language::fromSpec(lang, country, variant);
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	SDL_Locale *locales = SDL_GetPreferredLocales();
+	if (locales) {
+		SDL_Locale *locale = locales;
+		while (locale->language) {
+			Log::debug("Preferred locale: %s", locale->language);
+			_systemLanguage = Language::fromSpec(locale->language, locale->country);
+			if (_systemLanguage) {
+				break;
+			}
+			locale++;
+		}
+		SDL_free(locales);
 	}
+#endif
 	if (!_systemLanguage) {
 		_systemLanguage = Language::fromSpec("en", "GB");
 	}
-	FL_FreeLocale(&locale);
 
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, (int)_initialLogLevel);
 	core::VarPtr syslogVar = core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
