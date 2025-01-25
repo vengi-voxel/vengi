@@ -33,6 +33,8 @@ set(SRCS
 
 	external/strnatcmp.c external/strnatcmp.h
 
+	sdl/SDLSystem.h
+
 	Algorithm.h
 	Alphanumeric.cpp Alphanumeric.h
 	ArrayLength.h

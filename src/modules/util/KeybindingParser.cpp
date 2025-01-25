@@ -12,7 +12,7 @@
 #include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Log.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 
 namespace util {
 

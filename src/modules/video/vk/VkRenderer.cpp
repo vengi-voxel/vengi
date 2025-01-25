@@ -12,7 +12,7 @@
 #include "video/Renderer.h"
 #include "video/Types.h"
 #include "video/gl/GLTypes.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #include <SDL_vulkan.h>
 
 namespace video {

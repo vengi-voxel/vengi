@@ -26,7 +26,7 @@
 #include "video/Trace.h"
 #include "video/Types.h"
 #include "video/gl/flextGL.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #include <glm/common.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/constants.hpp>

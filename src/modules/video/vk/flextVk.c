@@ -2,7 +2,7 @@
 /* Do not edit. */
 
 #include "flextVk.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 
 #ifdef __cplusplus
 extern "C" {

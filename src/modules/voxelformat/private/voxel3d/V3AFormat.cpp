@@ -12,8 +12,6 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 
-#include <SDL_stdinc.h>
-
 namespace voxelformat {
 
 #define wrap(read)                                                                                                     \
@@ -77,7 +75,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 		}
 		if (core::string::startsWith(line, "SIZE")) {
 			line = line.substr(5);
-			if (SDL_sscanf(line.c_str(), "%i %i %i", &width, &depth, &height) != 3) {
+			if (sscanf(line.c_str(), "%i %i %i", &width, &depth, &height) != 3) {
 				Log::error("Failed to parse SIZE line: %s", line.c_str());
 				return false;
 			}

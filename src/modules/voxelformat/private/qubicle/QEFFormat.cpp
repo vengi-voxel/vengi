@@ -12,7 +12,6 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
 #include "palette/Palette.h"
-#include <SDL_stdinc.h>
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -41,24 +40,24 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	char buf[64];
 
 	wrapBool(stream->readLine(sizeof(buf), buf))
-	if (SDL_strcmp(buf, "Qubicle Exchange Format") != 0) {
+	if (strcmp(buf, "Qubicle Exchange Format") != 0) {
 		Log::error("Unexpected magic line: '%s'", buf);
 		return false;
 	}
 	wrapBool(stream->readLine(sizeof(buf), buf))
-	if (SDL_strcmp(buf, "Version 0.2") != 0) {
+	if (strcmp(buf, "Version 0.2") != 0) {
 		Log::error("Unexpected version line: '%s'", buf);
 		return false;
 	}
 	wrapBool(stream->readLine(sizeof(buf), buf))
-	if (SDL_strcmp(buf, "www.minddesk.com") != 0) {
+	if (strcmp(buf, "www.minddesk.com") != 0) {
 		Log::error("Unexpected url line: '%s'", buf);
 		return false;
 	}
 
 	int width, height, depth;
 	wrapBool(stream->readLine(sizeof(buf), buf))
-	if (SDL_sscanf(buf, "%i %i %i", &width, &depth, &height) != 3) {
+	if (sscanf(buf, "%i %i %i", &width, &depth, &height) != 3) {
 		Log::error("Failed to parse dimensions");
 		return false;
 	}
@@ -81,7 +80,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	int paletteSize;
 	wrapBool(stream->readLine(sizeof(buf), buf))
-	if (SDL_sscanf(buf, "%i", &paletteSize) != 1) {
+	if (sscanf(buf, "%i", &paletteSize) != 1) {
 		Log::error("Failed to parse palette size");
 		return false;
 	}
@@ -96,7 +95,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
 		wrapBool(stream->readLine(sizeof(buf), buf))
-		if (SDL_sscanf(buf, "%f %f %f", &r, &g, &b) != 3) {
+		if (sscanf(buf, "%f %f %f", &r, &g, &b) != 3) {
 			Log::error("Failed to parse palette color");
 			return false;
 		}
@@ -113,7 +112,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	while (stream->remaining() > 0) {
 		wrapBool(stream->readLine(64, buf))
 		int x, y, z, color, vismask;
-		if (SDL_sscanf(buf, "%i %i %i %i %i", &x, &z, &y, &color, &vismask) != 5) {
+		if (sscanf(buf, "%i %i %i %i %i", &x, &z, &y, &color, &vismask) != 5) {
 			Log::error("Failed to parse voxel data line");
 			return false;
 		}

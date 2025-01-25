@@ -45,7 +45,7 @@
 
 #include "FontLucide.h"
 
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #include <SDL_events.h>
 #include <SDL_syswm.h>
 #include <glm/mat4x4.hpp>

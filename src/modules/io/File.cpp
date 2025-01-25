@@ -9,7 +9,7 @@
 #include "core/concurrent/Lock.h"
 #include "io/FormatDescription.h"
 #include "io/system/System.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #ifdef __EMSCRIPTEN__
 #include "system/emscripten_browser_file.h"
 #endif

@@ -7,7 +7,6 @@
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
 #include "engine-config.h"
-#include <SDL_stdinc.h>
 #include "json/JSON.h"
 
 namespace util {
@@ -22,12 +21,12 @@ bool isNewerVersion(const core::String &versionLatest, const core::String &vengi
 		int patch = 0;
 	};
 	VersionData latest;
-	if (SDL_sscanf(versionLatest.c_str(), "%d.%d.%d.%d", &latest.major, &latest.minor, &latest.micro, &latest.patch) == 0) {
+	if (sscanf(versionLatest.c_str(), "%d.%d.%d.%d", &latest.major, &latest.minor, &latest.micro, &latest.patch) == 0) {
 		Log::debug("Failed to parse latest version %s", versionLatest.c_str());
 		return false;
 	}
 	VersionData current;
-	if (SDL_sscanf(vengiVersion.c_str(), "%d.%d.%d.%d", &current.major, &current.minor, &current.micro, &current.patch) == 0) {
+	if (sscanf(vengiVersion.c_str(), "%d.%d.%d.%d", &current.major, &current.minor, &current.micro, &current.patch) == 0) {
 		Log::debug("Failed to parse vengi version %s", vengiVersion.c_str());
 		return false;
 	}

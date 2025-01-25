@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/collection/List.h"
 #include "core/Log.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 
 namespace video {
 

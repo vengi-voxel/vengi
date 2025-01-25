@@ -12,7 +12,7 @@
 #include "video/Renderer.h"
 #include "video/ShaderManager.h"
 #include "voxel/SurfaceExtractor.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 
 namespace video {
 

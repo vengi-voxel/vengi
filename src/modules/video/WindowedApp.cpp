@@ -21,8 +21,8 @@
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
+#include "core/sdl/SDLSystem.h"
 #include <glm/common.hpp>
-#include <SDL.h>
 
 #ifdef __WINDOWS__
 #include <windows.h>

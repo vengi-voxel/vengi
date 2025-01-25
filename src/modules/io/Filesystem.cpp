@@ -15,7 +15,7 @@
 #include "io/FileStream.h"
 #include "io/FilesystemEntry.h"
 #include "system/System.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #ifdef __WINDOWS__
 #include <locale>
 #else

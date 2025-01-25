@@ -13,7 +13,7 @@
 #include <string.h>
 
 #if defined(__WINDOWS__)
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
 #define NOMINMAX

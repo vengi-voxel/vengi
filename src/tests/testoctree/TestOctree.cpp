@@ -8,7 +8,7 @@
 #include "core/StringUtil.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #include <glm/gtc/type_ptr.hpp>
 
 TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :

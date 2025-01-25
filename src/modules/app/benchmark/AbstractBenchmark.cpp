@@ -7,8 +7,7 @@
 #include "core/Var.h"
 #include "command/Command.h"
 #include "io/Filesystem.h"
-
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 
 namespace app {
 

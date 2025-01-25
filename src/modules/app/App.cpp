@@ -22,7 +22,7 @@
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
-#include <SDL.h>
+#include "core/sdl/SDLSystem.h"
 #include <SDL_messagebox.h>
 #include <SDL_cpuinfo.h>
 #ifdef HAVE_SYS_RESOURCE_H

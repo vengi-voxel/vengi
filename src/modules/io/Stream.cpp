@@ -10,7 +10,6 @@
 #include "core/collection/DynamicArray.h"
 #include "core/Endian.h"
 #include <SDL_stdinc.h>
-#include <fcntl.h>
 #include <stdio.h>
 
 namespace io {
