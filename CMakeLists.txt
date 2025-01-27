@@ -164,6 +164,8 @@ configure_file(src/engine-git.h.in engine-git.h @ONLY)
 configure_file(src/engine-config.h.in engine-config.h @ONLY)
 message(STATUS "Generate engine-config.h in ${CMAKE_CURRENT_BINARY_DIR}")
 
+configure_file(${ROOT_DIR}/contrib/installer/linux/vengi.spec.in ${PROJECT_BINARY_DIR}/vengi.spec)
+
 find_package(Doxygen)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile-mcss.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile-mcss @ONLY)

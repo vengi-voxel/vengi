@@ -1,0 +1,99 @@
+Name: @ROOT_PROJECT_NAME@
+Summary: Voxel tools for artists and developers
+Version: @CMAKE_PROJECT_VERSION@
+Release: 1
+URL: https://vengi-voxel.de/
+License: MIT
+Group: Applications/Multimedia
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix: %{_prefix}
+Vendor: Martin Gerhardy
+BuildRequires: SDL2-devel
+BuildRequires: freetype-devel
+BuildRequires: libjpeg-devel
+BuildRequires: binutils-devel
+BuildRequires: libasan
+BuildRequires: libubsan
+BuildRequires: libcurl-devel
+
+%define debug_package %{nil}
+%define __defattr %defattr(-,root,root)
+
+%description
+Free and open source voxel tools for artists and developers
+
+%package voxedit
+Summary: Voxel editor
+Group: Applications/Multimedia
+Requires: %{name} = %{version}
+
+%description voxedit
+Voxel editor
+
+%package thumbnailer
+Summary: Thumbnailer for voxel models
+Group: Applications/Multimedia
+Requires: %{name} = %{version}
+
+%description thumbnailer
+Thumbnailer for voxel models
+
+%package voxconvert
+Summary: Convert, export or modify voxel volumes
+Group: Applications/Multimedia
+Requires: %{name} = %{version}
+
+%description voxconvert
+Convert, export or modify voxel volumes
+
+%prep
+echo "Using source tree at %{_builddir}"
+
+%build
+cmake . -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON -DPKGDATABASEDIR:STRING=/usr/share/
+cmake --build . --target voxedit
+cmake --build . --target voxconvert
+cmake --build . --target voxconvertui
+cmake --build . --target thumbnailer
+
+%install
+rm -rf $RPM_BUILD_ROOT
+cmake --install . --component voxedit --prefix $RPM_BUILD_ROOT%{prefix}
+cmake --install . --component voxconvert --prefix $RPM_BUILD_ROOT%{prefix}
+cmake --install . --component voxconvertui --prefix $RPM_BUILD_ROOT%{prefix}
+cmake --install . --component thumbnailer --prefix $RPM_BUILD_ROOT%{prefix}
+install -D contrib/installer/linux/x-voxel.xml $RPM_BUILD_ROOT%{prefix}/share/mime/packages/x-voxel.xml
+install -D contrib/installer/linux/application-x-voxel.svgz $RPM_BUILD_ROOT%{prefix}/share/icons/hicolor/scalable/mimetypes/application-x-voxel.svgz
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%{__defattr}
+/usr/share/icons/hicolor/scalable/mimetypes/*
+/usr/share/mime/packages/*
+
+%files voxedit
+/usr/bin/vengi-voxedit
+/usr/share/man/man1/vengi-voxedit.*
+/usr/share/applications/vengi-voxedit.desktop
+/usr/share/vengi-voxedit/*
+/usr/share/icons/hicolor/128x128/apps/voxedit-icon.png
+/usr/share/metainfo/io.github.vengi_voxel.vengi.voxedit.metainfo.xml
+
+%files voxconvert
+/usr/bin/vengi-voxconvert
+/usr/bin/vengi-voxconvertui
+/usr/share/man/man1/vengi-voxconvert.*
+/usr/share/man/man1/vengi-voxconvertui.*
+/usr/share/applications/vengi-voxconvertui.desktop
+/usr/share/vengi-voxconvert/*
+
+%files thumbnailer
+/usr/bin/vengi-thumbnailer
+/usr/share/thumbnailers/vengi-thumbnailer.thumbnailer
+/usr/share/man/man1/vengi-thumbnailer.*
+
+%changelog
+* Mon Jan 27 2025 Martin Gerhardy <martin.gerhardy@gmail.com>
+- First spec file version.

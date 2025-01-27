@@ -32,6 +32,14 @@ dnf config-manager --set-enabled crb
 dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel
 ```
 
+To also build the rpm files:
+
+```bash
+dnf install rpm-devel
+mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+rpmbuild -ba build/vengi.spec
+```
+
 ## Arch
 
 ```bash
