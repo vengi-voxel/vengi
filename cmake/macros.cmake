@@ -281,6 +281,10 @@ function(engine_add_executable)
 				endif()
 			endif()
 		endif()
+		# TODO: rpmlint
+		if (INSTALL_DATA)
+			configure_file(${ROOT_DIR}/contrib/installer/linux/application.spec.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.spec)
+		endif()
 		if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in)
 			# TODO systemd-analyze --user  verify build/Debug/src/server/vengi-server.service
 			configure_file(${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.service.in ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}-${_EXE_TARGET}.service)
