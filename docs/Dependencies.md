@@ -27,6 +27,7 @@ apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfr
 ## RockyLinux
 
 ```bash
+dnf install epel-release
 dnf config-manager --set-enabled crb
 dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel
 ```
