@@ -24,6 +24,13 @@ the higher priority. Usually you don't have to install anything of these.
 apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl2-dev wayland-protocols pkg-config libjpeg-dev
 ```
 
+## RockyLinux
+
+```bash
+dnf config-manager --set-enabled crb
+dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel
+```
+
 ## Arch
 
 ```bash
