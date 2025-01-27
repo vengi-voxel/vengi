@@ -22,7 +22,7 @@ Requires: SDL2 freetype libjpeg binutils libasan libubsan libcurl
 %build
 mkdir build
 cd build
-cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
+cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON -DPKGDATADIR:STRING=/usr/share/@COMMANDLINE@
 cmake --build . --target @NAME@
 
 %install
