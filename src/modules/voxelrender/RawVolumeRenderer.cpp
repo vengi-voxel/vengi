@@ -476,7 +476,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 				if (v->region().voxels() < 128 * 128 * 128) {
 					const int n = v->region().stride();
 					_shapeBuilder.reserve(2 * n, 2 * n);
-					voxelutil::visitVolume(
+					voxelutil::visitSurfaceVolume(
 						*v, [this, idx, &normalPalette, &meshState](int x, int y, int z, const voxel::Voxel &voxel) {
 							const glm::vec3 &center = meshState->centerPos(idx, x, y, z);
 							const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
