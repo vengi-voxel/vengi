@@ -491,7 +491,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 	}
 }
 
-void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera, bool normals) {
+void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RenderOpaque);
 	const video::PolygonMode mode = camera.polygonMode();
 	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
@@ -518,7 +518,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
 		core_assert(scopedBuf.success());
-		if (normals) {
+		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
 			if (_shadowMap->boolVal()) {
@@ -535,7 +535,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	}
 }
 
-void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool normals) {
+void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderTransparency);
 	const video::PolygonMode mode = camera.polygonMode();
 	core::DynamicArray<int> sorted;
@@ -579,7 +579,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
-		if (normals) {
+		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
 			if (_shadowMap->boolVal()) {
@@ -705,10 +705,10 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	_paletteHash = 0;
 
 	// --- opaque pass
-	renderOpaque(meshState, camera, normals);
+	renderOpaque(meshState, camera);
 
 	// --- transparency pass
-	renderTransparency(meshState, renderContext, camera, normals);
+	renderTransparency(meshState, renderContext, camera);
 
 	if (mode == video::PolygonMode::Points) {
 		video::disable(video::State::PolygonOffsetPoint);

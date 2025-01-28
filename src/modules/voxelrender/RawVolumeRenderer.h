@@ -120,8 +120,8 @@ protected:
 	 * @brief Updates the vertex buffers manually
 	 */
 	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx);
-	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera, bool normals);
-	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool normals);
+	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
+	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera);
 	void renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera);
 public:
 	RawVolumeRenderer();
