@@ -453,6 +453,11 @@ bool RawVolumeRenderer::isVisible(const voxel::MeshStatePtr &meshState, int idx,
 	return true;
 }
 
+static inline glm::vec3 centerPos(int x, int y, int z) {
+	// we want the center of the voxel
+	return {(float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f};
+}
+
 void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera) {
 	// TODO: NORMALS: allow to render the normals in scene mode - currently the transform
 	// is not correct - MeshState::centerPos()
@@ -477,8 +482,8 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 					const int n = v->region().stride();
 					_shapeBuilder.reserve(2 * n, 2 * n);
 					voxelutil::visitSurfaceVolume(
-						*v, [this, idx, &normalPalette, &meshState](int x, int y, int z, const voxel::Voxel &voxel) {
-							const glm::vec3 &center = meshState->centerPos(idx, x, y, z, false);
+						*v, [this, &normalPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+							const glm::vec3 &center = centerPos(x, y, z);
 							const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
 							_shapeBuilder.line(center, center + norm * 3.0f);
 						});

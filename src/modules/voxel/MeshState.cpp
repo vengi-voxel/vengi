@@ -31,13 +31,6 @@ glm::vec3 MeshState::VolumeData::centerPos(bool applyModel) const {
 	return pos;
 }
 
-glm::vec3 MeshState::VolumeData::centerPos(int x, int y, int z, bool applyModel) const {
-	// we want the center of the voxel
-	const glm::vec4 center((float)x + 0.5f - _pivot.x, (float)y + 0.5f - _pivot.y, (float)z + 0.5f - _pivot.z, 0.0f);
-	const glm::vec3 pos = applyModel ? _model * center : center;
-	return pos;
-}
-
 const glm::vec3 &MeshState::mins(int idx) const {
 	return _volumeData[idx]._mins;
 }
@@ -48,10 +41,6 @@ const glm::vec3 &MeshState::maxs(int idx) const {
 
 glm::vec3 MeshState::centerPos(int idx, bool applyModel) const {
 	return _volumeData[idx].centerPos(applyModel);
-}
-
-glm::vec3 MeshState::centerPos(int idx, int x, int y, int z, bool applyModel) const {
-	return _volumeData[idx].centerPos(x, y, z, applyModel);
 }
 
 const glm::mat4 &MeshState::model(int idx) const {
