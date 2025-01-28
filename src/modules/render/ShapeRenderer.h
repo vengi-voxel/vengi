@@ -43,7 +43,7 @@ private:
 
 	core::DynamicArray<Vertex> _vertices;
 
-	void activateShader(video::Primitive primitive, const video::Camera &camera, const glm::mat4 &model) const;
+	void activateShader(const video::Camera &camera, const glm::mat4 &model) const;
 	int renderAllColored(const video::Camera &camera, const glm::mat4 &model) const;
 
 public:

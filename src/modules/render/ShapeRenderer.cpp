@@ -181,18 +181,20 @@ int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model
 	return cnt;
 }
 
-void ShapeRenderer::activateShader(video::Primitive primitive, const video::Camera &camera, const glm::mat4 &model) const {
-	if (!_colorShader.isActive()) {
-		_colorShader.activate();
-		_uniformBlockData.model = model;
-		_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
-		// TODO: allow to configure lighting
-		// the fourth component is the light intensity - set it to something greater than 0 to active shading
-		_uniformBlockData.lightColor = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-		_uniformBlockData.lightPos = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-		core_assert_always(_uniformBlock.update(_uniformBlockData));
-		core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+void ShapeRenderer::activateShader(const video::Camera &camera, const glm::mat4 &model) const {
+	if (_colorShader.isActive()) {
+		// camera and model is only updated once for all meshes
+		return;
 	}
+	_colorShader.activate();
+	_uniformBlockData.model = model;
+	_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
+	// TODO: allow to configure lighting
+	// the fourth component is the light intensity - set it to something greater than 0 to active shading
+	_uniformBlockData.lightColor = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	_uniformBlockData.lightPos = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	core_assert_always(_uniformBlock.update(_uniformBlockData));
+	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 }
 
 int ShapeRenderer::renderAllColored(const video::Camera &camera, const glm::mat4 &model) const {
@@ -204,7 +206,7 @@ int ShapeRenderer::renderAllColored(const video::Camera &camera, const glm::mat4
 		if (_hidden[meshIndex]) {
 			continue;
 		}
-		activateShader(_primitives[meshIndex], camera, model);
+		activateShader(camera, model);
 		core_assert_always(_vbo[meshIndex].bind());
 		const uint32_t indices =
 			_vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
@@ -238,7 +240,7 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera &camera, cons
 	if (indices == 0) {
 		return false;
 	}
-	activateShader(_primitives[meshIndex], camera, model);
+	activateShader(camera, model);
 	core_assert_always(_vbo[meshIndex].bind());
 	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	_colorShader.deactivate();
