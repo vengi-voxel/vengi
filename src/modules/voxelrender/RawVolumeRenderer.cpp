@@ -478,7 +478,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 					_shapeBuilder.reserve(2 * n, 2 * n);
 					voxelutil::visitSurfaceVolume(
 						*v, [this, idx, &normalPalette, &meshState](int x, int y, int z, const voxel::Voxel &voxel) {
-							const glm::vec3 &center = meshState->centerPos(idx, x, y, z);
+							const glm::vec3 &center = meshState->centerPos(idx, x, y, z, false);
 							const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
 							_shapeBuilder.line(center, center + norm * 3.0f);
 						});
@@ -559,8 +559,8 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 
 		const glm::vec3 &camPos = camera.worldPosition();
 		core::sort(sorted.begin(), sorted.end(), [&camPos, &meshState](int a, int b) {
-			const glm::vec3 &posA = meshState->centerPos(a);
-			const glm::vec3 &posB = meshState->centerPos(b);
+			const glm::vec3 &posA = meshState->centerPos(a, true);
+			const glm::vec3 &posB = meshState->centerPos(b, true);
 			const float d1 = glm::distance2(camPos, posA);
 			const float d2 = glm::distance2(camPos, posB);
 			return d1 > d2;

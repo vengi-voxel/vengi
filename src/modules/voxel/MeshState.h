@@ -59,8 +59,8 @@ private:
 		 * @brief Applies the model matrix
 		 * @note Used for sorting (for transparency)
 		 */
-		glm::vec3 centerPos() const;
-		glm::vec3 centerPos(int x, int y, int z) const;
+		glm::vec3 centerPos(bool applyModel = true) const;
+		glm::vec3 centerPos(int x, int y, int z, bool applyModel = true) const;
 	};
 	typedef core::Array<VolumeData, MAX_VOLUMES> Volumes;
 
@@ -152,14 +152,13 @@ public:
 	 * @brief Applies the model matrix
 	 * @note Used for sorting (for transparency)
 	 */
-	glm::vec3 centerPos(int idx) const;
+	glm::vec3 centerPos(int idx, bool applyModel) const;
 	/**
 	 * @brief Center position of a voxel having the pivot and model matrix applied
 	 */
-	glm::vec3 centerPos(int idx, int x, int y, int z) const;
+	glm::vec3 centerPos(int idx, int x, int y, int z, bool applyModel) const;
 	const glm::vec3 &pivot(int idx) const;
 	const glm::mat4 &model(int idx) const;
-	void setModel(int idx, const glm::mat4 &model);
 	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
 						const glm::vec3 &maxs);
 

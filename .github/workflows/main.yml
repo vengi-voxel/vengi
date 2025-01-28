@@ -199,6 +199,37 @@ jobs:
             name: linux-appimage-voxedit
             path: "voxedit*.AppImage"
 
+    rockylinux:
+        runs-on: ubuntu-latest
+        container:
+            image: rockylinux/rockylinux:9
+        steps:
+        - uses: actions/checkout@v4
+
+        - name: Setup
+          run: |
+            sudo dnf config-manager --set-enabled crb
+            sudo dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ ninja-build
+
+        - name: ccache
+          uses: actions/cache@v4
+          with:
+            path: |
+              ~/.ccache
+            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
+
+        - name: Linux
+          env:
+            CC: gcc-12
+            CXX: g++-12
+          run: |
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+            cmake --build .
+            cmake --install . --component voxedit --prefix install-voxedit/usr
+
     emscripten:
         timeout-minutes: 60
         runs-on: ubuntu-latest
