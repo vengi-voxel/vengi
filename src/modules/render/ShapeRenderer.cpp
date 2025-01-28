@@ -175,12 +175,6 @@ bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
 	return _hidden[meshIndex];
 }
 
-int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model) const {
-	int cnt = 0;
-	cnt += renderAllColored(camera, model);
-	return cnt;
-}
-
 void ShapeRenderer::activateShader(const video::Camera &camera, const glm::mat4 &model) const {
 	if (_colorShader.isActive()) {
 		// camera and model is only updated once for all meshes
@@ -197,7 +191,7 @@ void ShapeRenderer::activateShader(const video::Camera &camera, const glm::mat4 
 	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 }
 
-int ShapeRenderer::renderAllColored(const video::Camera &camera, const glm::mat4 &model) const {
+int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model) const {
 	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
