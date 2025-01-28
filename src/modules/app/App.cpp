@@ -824,16 +824,20 @@ void App::bashCompletion() const {
 
 	Log::printf("\tcase $prev in\n");
 	for (const Argument & arg : arguments()) {
+		core::String args = arg.longArg();
+		if (!arg.shortArg().empty()) {
+			args += "|" + arg.shortArg();
+		}
 		if (arg.needsFile()) {
-			Log::printf("\t%s)\n", arg.longArg().c_str());
+			Log::printf("\t%s)\n", args.c_str());
 			Log::printf("\t\tCOMPREPLY=( $(compgen -f -- \"$cur\") )\n");
 			Log::printf("\t\t;;\n");
 		} else if (arg.needsDirectory()) {
-			Log::printf("\t%s)\n", arg.longArg().c_str());
+			Log::printf("\t%s)\n", args.c_str());
 			Log::printf("\t\tCOMPREPLY=( $(compgen -d -- \"$cur\") )\n");
 			Log::printf("\t\t;;\n");
 		} else if (!arg.validValues().empty()) {
-			Log::printf("\t%s)\n", arg.longArg().c_str());
+			Log::printf("\t%s)\n", args.c_str());
 			Log::printf("\t\tlocal valid_values=\"");
 			for (size_t n = 0; n < arg.validValues().size(); ++n) {
 				if (n > 0) {
