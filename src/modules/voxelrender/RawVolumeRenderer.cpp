@@ -775,8 +775,8 @@ void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
 	core_assert(vertexBuffer.size(state._indexBufferIndex[meshType]) == 0);
 
 	if (state._normalPreviewBufferIndex != -1) {
-		vertexBuffer.update(state._normalPreviewBufferIndex, nullptr, 0);
-		core_assert(vertexBuffer.size(state._normalPreviewBufferIndex) == 0);
+		_shapeRenderer.deleteMesh(state._normalPreviewBufferIndex);
+		state._normalPreviewBufferIndex = -1;
 	}
 }
 
