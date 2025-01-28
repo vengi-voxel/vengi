@@ -168,6 +168,26 @@ bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, int nod
 	return _volumeRenderer.isVisible(meshState, idx, hideEmpty);
 }
 
+void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &meshState,
+												   const scenegraph::SceneGraph &sceneGraph,
+												   const scenegraph::FrameIndex &frame,
+												   const scenegraph::SceneGraphNode &node, int idx,
+												   const voxel::Region &region) {
+	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
+	const glm::vec3 scale = transform.scale();
+	const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) + (int)std::signbit(scale.z);
+	if (negative == 1 || negative == 3) {
+		meshState->setCullFace(idx, video::Face::Front);
+	} else {
+		meshState->setCullFace(idx, video::Face::Back);
+	}
+	const glm::mat4 &worldMatrix = transform.worldMatrix();
+	const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
+	const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCornerf() - pivot, 1.0f);
+	const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCornerf() - pivot, 1.0f);
+	meshState->setModelMatrix(idx, worldMatrix, pivot, mins, maxs);
+}
+
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
@@ -251,20 +271,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			}
 		}
 		if (renderContext.renderMode == RenderMode::Scene) {
-			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-			const glm::vec3 scale = transform.scale();
-			const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) +
-								 (int)std::signbit(scale.z);
-			if (negative == 1 || negative == 3) {
-				meshState->setCullFace(idx, video::Face::Front);
-			} else {
-				meshState->setCullFace(idx, video::Face::Back);
-			}
-			const glm::mat4 &worldMatrix = transform.worldMatrix();
-			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCornerf() - pivot, 1.0f);
-			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCornerf() - pivot, 1.0f);
-			meshState->setModelMatrix(idx, worldMatrix, pivot, mins, maxs);
+			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, region);
 		} else {
 			meshState->setCullFace(idx, video::Face::Back);
 			meshState->setModelMatrix(idx, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
@@ -305,14 +312,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			}
 			const int referencedIdx = getVolumeIdx(node.reference());
 			meshState->setReference(idx, referencedIdx);
-			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-			const voxel::Region region = sceneGraph.resolveRegion(node);
-			const glm::mat4 worldMatrix = transform.worldMatrix();
-			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
-			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
-			const glm::vec3 scale = transform.scale();
-			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			meshState->setModelMatrix(idx, worldMatrix, pivot, mins, maxs);
+			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, sceneGraph.resolveRegion(node));
 
 			bool hideNode = false;
 			if (hideInactive) {

@@ -42,6 +42,9 @@ protected:
 	RawVolumeRenderer _volumeRenderer;
 	render::CameraFrustum _cameraRenderer;
 	core::DynamicArray<video::Camera> _cameras;
+	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
+								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx,
+								   const voxel::Region &region);
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
