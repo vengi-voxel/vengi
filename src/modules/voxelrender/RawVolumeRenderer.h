@@ -39,7 +39,7 @@ class Palette;
  */
 namespace voxelrender {
 
-enum class RenderMode {
+enum class RenderMode : uint8_t {
 	Edit, Scene, Max
 };
 
@@ -50,11 +50,10 @@ struct RenderContext : public core::NonCopyable {
 	scenegraph::FrameIndex frame = 0;
 	bool hideInactive = false;
 	bool grayInactive = false;
-	RenderMode renderMode = RenderMode::Edit;
-
 	bool onlyModels = false;
 	// render the built-in normals
 	bool renderNormals = false;
+	RenderMode renderMode = RenderMode::Edit;
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();
