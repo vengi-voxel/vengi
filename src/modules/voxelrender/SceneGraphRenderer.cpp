@@ -270,7 +270,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				_volumeRenderer.scheduleRegionExtraction(meshState, idx, region);
 			}
 		}
-		if (renderContext.renderMode == RenderMode::Scene) {
+		if (renderContext.isSceneMode()) {
 			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, region);
 		} else {
 			meshState->setCullFace(idx, video::Face::Back);
@@ -300,7 +300,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 	}
 
 	meshState->resetReferences();
-	if (renderContext.renderMode == RenderMode::Scene) {
+	if (renderContext.isSceneMode()) {
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isReferenceNode()) {
@@ -347,7 +347,7 @@ void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderCont
 	}
 
 	_volumeRenderer.render(meshState, renderContext, camera, shadow);
-	if (renderContext.renderMode == RenderMode::Scene) {
+	if (renderContext.showCameras()) {
 		for (video::Camera &sceneCamera : _cameras) {
 			sceneCamera.setSize(camera.size());
 			sceneCamera.update(0.0);

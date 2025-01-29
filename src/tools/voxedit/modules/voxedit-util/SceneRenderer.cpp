@@ -363,8 +363,8 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	updateSliceRegionMesh();
-	updateAABBMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
-	updateBoneMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
+	updateAABBMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
+	updateBoneMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
 	_sceneGraphRenderer.render(_meshState, renderContext, camera, _renderShadow->boolVal(), false);
 	extractVolume(*renderContext.sceneGraph);
 }
@@ -380,7 +380,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
 	_gridRenderer.renderForwardArrow(camera);
 	_gridRenderer.renderPlane(camera);
-	if (renderContext.renderMode == voxelrender::RenderMode::Scene) {
+	if (renderContext.isSceneMode()) {
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}

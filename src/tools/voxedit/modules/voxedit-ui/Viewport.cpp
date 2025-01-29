@@ -353,7 +353,7 @@ void Viewport::menuBarCameraMode() {
 }
 
 bool Viewport::isSceneMode() const {
-	return _renderContext.renderMode == voxelrender::RenderMode::Scene;
+	return _renderContext.isSceneMode();
 }
 
 void Viewport::toggleScene() {

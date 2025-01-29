@@ -55,6 +55,10 @@ struct RenderContext : public core::NonCopyable {
 	bool renderNormals = false;
 	RenderMode renderMode = RenderMode::Edit;
 
+	bool isEditMode() const;
+	bool isSceneMode() const;
+	bool showCameras() const;
+
 	bool init(const glm::ivec2 &size);
 	void shutdown();
 	bool resize(const glm::ivec2 &size);

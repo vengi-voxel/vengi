@@ -42,6 +42,18 @@
 
 namespace voxelrender {
 
+bool RenderContext::isEditMode() const {
+	return renderMode == RenderMode::Edit;
+}
+
+bool RenderContext::isSceneMode() const {
+	return renderMode == RenderMode::Scene;
+}
+
+bool RenderContext::showCameras() const {
+	return isSceneMode();
+}
+
 bool RenderContext::init(const glm::ivec2 &size) {
 	video::FrameBufferConfig cfg;
 	cfg.dimension(size);
@@ -493,7 +505,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 			_state[idx]._dirtyNormals = false;
 		}
 		glm::mat4 model(1.0f);
-		if (renderContext.renderMode == RenderMode::Scene) {
+		if (renderContext.isSceneMode()) {
 			model = glm::translate(meshState->model(idx), -meshState->pivot(idx));
 		}
 		_shapeRenderer.render(_state[idx]._normalPreviewBufferIndex, camera, model);
