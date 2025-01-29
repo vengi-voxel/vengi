@@ -1220,8 +1220,8 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 }
 
 void SceneManager::resetSceneState() {
-	// this also resets the cursor voxel - but nodeActive() will set it to the first usable index
-	// that's why this call must happen before the nodeActive() call.
+	// this also resets the cursor voxel - but nodeActivate() will set it to the first usable index
+	// that's why this call must happen before the nodeActivate() call.
 	_modifierFacade.reset();
 	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
 	nodeActivate(node.id());

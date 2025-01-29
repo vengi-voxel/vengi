@@ -190,7 +190,7 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 
 glm::mat4 SceneGraphRenderer::modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const {
 	glm::mat4 model(1.0f);
-	if (renderContext.applyTransforms()) {
+	if (node.isAnyModelNode() && renderContext.applyTransforms()) {
 		const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, renderContext.frame);
