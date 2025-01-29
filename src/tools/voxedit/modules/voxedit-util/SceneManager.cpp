@@ -2753,6 +2753,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	}
 	math::Ray ray = camera->mouseRay(_mouseCursor);
 	ray.origin = glm::vec3(invModel * glm::vec4(ray.origin, 1.0f));
+	ray.direction = glm::normalize(glm::vec3(invModel * glm::vec4(ray.direction, 0.0f)));
 	const float rayLength = camera->farPlane();
 
 	const glm::vec3& dirWithLength = ray.direction * rayLength;
