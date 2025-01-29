@@ -1224,6 +1224,9 @@ void SceneManager::resetSceneState() {
 	// that's why this call must happen before the nodeActivate() call.
 	_modifierFacade.reset();
 	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
+	// ensure that the first model node is active and re-select the first model node.
+	// therefore we first "select" the root node, then switch back to the first model node.
+	_sceneGraph.setActiveNode(_sceneGraph.root().id());
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
