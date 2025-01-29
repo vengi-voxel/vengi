@@ -138,7 +138,7 @@ void GridRenderer::clear() {
 	_dirty = false;
 }
 
-void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &aabb) {
+void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &aabb, const glm::mat4 &model) {
 	core_trace_scoped(GridRendererRender);
 
 	if (_dirty) {
@@ -182,10 +182,10 @@ void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &
 		_shapeRenderer.hide(_gridMeshIndexYZFar, true);
 		_shapeRenderer.hide(_gridMeshIndexYZNear, true);
 	}
-	_shapeRenderer.renderAll(camera);
+	_shapeRenderer.renderAll(camera, model);
 }
 
-void GridRenderer::renderPlane(const video::Camera &camera) {
+void GridRenderer::renderPlane(const video::Camera &camera, const glm::mat4 &model) {
 	if (!_renderPlane) {
 		return;
 	}
@@ -194,14 +194,14 @@ void GridRenderer::renderPlane(const video::Camera &camera) {
 		_dirtyPlane = false;
 	}
 	_shapeRenderer.hide(_plane, false);
-	_shapeRenderer.render(_plane, camera);
+	_shapeRenderer.render(_plane, camera, model);
 	_shapeRenderer.hide(_plane, true);
 }
 
-void GridRenderer::renderForwardArrow(const video::Camera &camera) {
+void GridRenderer::renderForwardArrow(const video::Camera &camera, const glm::mat4 &model) {
 	_shapeRenderer.hide(_arrow, false);
 	video::ScopedState cull(video::State::CullFace, false);
-	_shapeRenderer.render(_arrow, camera);
+	_shapeRenderer.render(_arrow, camera, model);
 	_shapeRenderer.hide(_arrow, true);
 }
 

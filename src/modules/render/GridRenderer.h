@@ -55,9 +55,9 @@ public:
 	/**
 	 * @param aabb The region to do the plane culling with
 	 */
-	void render(const video::Camera& camera, const math::AABB<float>& aabb);
-	void renderForwardArrow(const video::Camera& camera);
-	void renderPlane(const video::Camera &camera);
+	void render(const video::Camera& camera, const math::AABB<float>& aabb, const glm::mat4 &model = glm::mat4(1.0f));
+	void renderForwardArrow(const video::Camera& camera, const glm::mat4 &model = glm::mat4(1.0f));
+	void renderPlane(const video::Camera &camera, const glm::mat4 &model = glm::mat4(1.0f));
 
 	void setPlaneGridSize(int planeGridSize);
 	int planeGridSize() const;
