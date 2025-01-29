@@ -798,7 +798,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
 		ImGui::OpenPopup(title);
-		Log::error("Opened popup %s", title);
+		Log::debug("Opened popup %s", title);
 	}
 
 	if (ImGui::BeginPopupModal(title)) {
