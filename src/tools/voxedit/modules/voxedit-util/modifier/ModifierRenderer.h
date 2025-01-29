@@ -22,7 +22,7 @@ private:
 	int32_t _mirrorMeshIndex = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
-	glm::mat4 _referencePointModelMatrix{1.0f};
+	glm::vec3 _referencePoint{0.0f};
 
 public:
 	ModifierRenderer();
@@ -30,9 +30,9 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	void render(const video::Camera &camera, const glm::mat4 &model) override;
-	void renderBrushVolume(const video::Camera &camera) override;
-	void renderSelection(const video::Camera &camera) override;
+	void render(const video::Camera &camera, const glm::mat4 &cursor, const glm::mat4 &model) override;
+	void renderBrushVolume(const video::Camera &camera, const glm::mat4 &model) override;
+	void renderSelection(const video::Camera &camera, const glm::mat4 &model) override;
 	void clear() override;
 	/**
 	 * @note The given volume must still get freed by the caller - the renderer is not taking overship.

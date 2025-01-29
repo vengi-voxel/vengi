@@ -110,11 +110,11 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	}
 }
 
-void ModifierFacade::render(const video::Camera &camera, palette::Palette &activePalette) {
+void ModifierFacade::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
 	if (_locked) {
 		return;
 	}
-	const glm::mat4 &translate = glm::translate(glm::vec3(_brushContext.cursorPosition));
+	const glm::mat4 &translate = glm::translate(model, glm::vec3(_brushContext.cursorPosition));
 	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
 	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
 	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
@@ -128,7 +128,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		}
 	}
 	_modifierRenderer->updateReferencePosition(referencePosition());
-	_modifierRenderer->render(camera, scale);
+	_modifierRenderer->render(camera, scale, model);
 
 	// TODO: SELECTION: remove me - let the SelectionManager render the SparseVolume
 	if (_brushType == BrushType::Select && brush->active()) {
@@ -142,7 +142,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	} else {
 		_modifierRenderer->updateSelectionBuffers(selectionMgr().selections());
 	}
-	_modifierRenderer->renderSelection(camera);
+	_modifierRenderer->renderSelection(camera, model);
 
 	if (isMode(ModifierType::ColorPicker)) {
 		return;
@@ -154,7 +154,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 			brush->markClean();
 		}
 		video::polygonOffset(glm::vec3(-0.1f));
-		_modifierRenderer->renderBrushVolume(camera);
+		_modifierRenderer->renderBrushVolume(camera, model);
 		video::polygonOffset(glm::vec3(0.0f));
 	} else {
 		_modifierRenderer->clear();

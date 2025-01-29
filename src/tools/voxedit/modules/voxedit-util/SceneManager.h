@@ -145,7 +145,7 @@ protected:
 	void setReferencePosition(const glm::ivec3 &pos);
 	void updateDirtyRendererStates();
 	void zoom(video::Camera &camera, float level) const;
-	bool mouseRayTrace(bool force);
+	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
 	void updateCursor();
 	int traceScene();
 
@@ -393,7 +393,7 @@ public:
 	 *
 	 * @sa resetLastTrace()
 	 */
-	bool trace(bool sceneMode, bool force = false);
+	bool trace(bool sceneMode, bool force = false, const glm::mat4 &invModel = glm::mat4(1.0f));
 	void resetLastTrace();
 
 	bool setGridResolution(int resolution);

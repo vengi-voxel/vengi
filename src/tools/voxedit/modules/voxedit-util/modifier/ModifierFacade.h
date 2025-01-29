@@ -25,7 +25,7 @@ public:
 	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
 	bool init() override;
 	void shutdown() override;
-	void render(const video::Camera &camera, palette::Palette &activePalette);
+	void render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model = glm::mat4(1.0f));
 };
 
 } // namespace voxedit

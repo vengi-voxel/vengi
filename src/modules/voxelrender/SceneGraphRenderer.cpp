@@ -194,7 +194,8 @@ glm::mat4 SceneGraphRenderer::modelMatrix(const voxelrender::RenderContext &rend
 		const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, renderContext.frame);
-		model = glm::translate(transform.worldMatrix(), -(node.pivot() * glm::vec3(region.getDimensionsInVoxels())));
+		const glm::vec3 &scale = transform.scale();
+		model = glm::translate(transform.worldMatrix(), -(scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels())));
 	}
 	return model;
 }

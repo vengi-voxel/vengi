@@ -1563,7 +1563,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	if (renderUI) {
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
-			_modifierFacade.render(camera, activePalette());
+			_modifierFacade.render(camera, activePalette(), modelMatrix(renderContext));
 		}
 	}
 	renderContext.frameBuffer.unbind();
@@ -2651,7 +2651,7 @@ void SceneManager::updateDirtyRendererStates() {
 	}
 }
 
-bool SceneManager::trace(bool sceneMode, bool force) {
+bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) {
 	if (_modifierFacade.isLocked()) {
 		return false;
 	}
@@ -2659,7 +2659,7 @@ bool SceneManager::trace(bool sceneMode, bool force) {
 		return true;
 	}
 
-	return mouseRayTrace(force);
+	return mouseRayTrace(force, invModel);
 }
 
 int SceneManager::traceScene() {
@@ -2723,7 +2723,7 @@ void SceneManager::updateCursor() {
 	}
 }
 
-bool SceneManager::mouseRayTrace(bool force) {
+bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	// mouse tracing is disabled - e.g. because the voxel cursor was moved by keyboard
 	// shortcuts. In this case the execution of the modifier would result in a
 	// re-execution of the trace. And that would move the voxel cursor to the mouse pos
@@ -2748,7 +2748,8 @@ bool SceneManager::mouseRayTrace(bool force) {
 	if (v == nullptr) {
 		return false;
 	}
-	const math::Ray& ray = camera->mouseRay(_mouseCursor);
+	math::Ray ray = camera->mouseRay(_mouseCursor);
+	ray.origin = glm::vec3(invModel * glm::vec4(ray.origin, 1.0f));
 	const float rayLength = camera->farPlane();
 
 	const glm::vec3& dirWithLength = ray.direction * rayLength;

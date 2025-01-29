@@ -143,31 +143,37 @@ void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, pale
 	}
 }
 
-void ModifierRenderer::renderBrushVolume(const video::Camera &camera) {
+void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm::mat4 &model) {
 	if (_volumeRendererCtx.frameBuffer.dimension() != camera.size()) {
 		_volumeRendererCtx.shutdown();
 		_volumeRendererCtx.init(camera.size());
 	}
 	_meshState->extractAllPending();
+	if (_meshState->volume(0) != nullptr) {
+		_meshState->setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+	}
+	if (_meshState->volume(1) != nullptr) {
+		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+	}
 	_volumeRenderer.update(_meshState);
-	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false);
+	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false/*, model*/);
 }
 
-void ModifierRenderer::render(const video::Camera& camera, const glm::mat4& model) {
+void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &cursor, const glm::mat4& model) {
 	const video::ScopedState depthTest(video::State::DepthTest, false);
 	const video::ScopedState cullFace(video::State::CullFace, false);
-	_shapeRenderer.render(_voxelCursorMesh, camera, model);
-	_shapeRenderer.render(_mirrorMeshIndex, camera);
-	_shapeRenderer.render(_referencePointMesh, camera, _referencePointModelMatrix);
+	_shapeRenderer.render(_voxelCursorMesh, camera, cursor);
+	_shapeRenderer.render(_mirrorMeshIndex, camera, model);
+	_shapeRenderer.render(_referencePointMesh, camera, glm::translate(model, _referencePoint));
 }
 
 void ModifierRenderer::updateReferencePosition(const glm::ivec3 &pos) {
 	const glm::vec3 posAligned((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f);
-	_referencePointModelMatrix = glm::translate(posAligned);
+	_referencePoint = posAligned;
 }
 
-void ModifierRenderer::renderSelection(const video::Camera& camera) {
-	_shapeRenderer.render(_selectionIndex, camera);
+void ModifierRenderer::renderSelection(const video::Camera& camera, const glm::mat4 &model) {
+	_shapeRenderer.render(_selectionIndex, camera, model);
 }
 
 void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirrorPos, const voxel::Region &region) {

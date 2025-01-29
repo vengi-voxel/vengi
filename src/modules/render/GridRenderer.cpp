@@ -148,7 +148,7 @@ void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &
 	_shapeRenderer.hide(_aabbMeshIndex, !_renderAABB);
 	_shapeRenderer.hide(_plane, true);
 	if (_renderGrid && aabb.isValid()) {
-		const glm::vec3 &center = aabb.getCenter();
+		const glm::vec3 &center = model * glm::vec4(aabb.getCenter(), 1.0f);
 		const glm::vec3 &halfWidth = aabb.getWidth() / 2.0f;
 		const math::Plane planeLeft(glm::left(), center + glm::left() * halfWidth);
 		const math::Plane planeRight(glm::right(), center + glm::right() * halfWidth);

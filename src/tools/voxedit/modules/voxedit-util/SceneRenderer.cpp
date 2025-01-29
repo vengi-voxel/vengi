@@ -395,34 +395,39 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		}
 		// TODO: allow to render a grid in scene mode - makes shifting a lot easier
 		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
+
+		if (isSliceModeActive()) {
+			// TODO: model matrix for the slice region
+			_shapeRenderer.render(_sliceRegionMeshIndex, camera);
+		}
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
-		const glm::mat4 &model = region.isValid() ? _sceneGraphRenderer.modelMatrix(renderContext, *n) : glm::mat4(1.0f);
+		const glm::mat4 &model = region.isValid() ? modelMatrix(renderContext, *n) : glm::mat4(1.0f);
 		_gridRenderer.render(camera, scenegraph::toAABB(region), model);
 
 		if (_showLockedAxis->boolVal()) {
 			for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 				// TODO: fix z-fighting
-				_shapeRenderer.render(_planeMeshIndex[i], camera);
+				_shapeRenderer.render(_planeMeshIndex[i], camera, model);
 			}
 		}
-	}
 
-	if (isSliceModeActive()) {
-		_shapeRenderer.render(_sliceRegionMeshIndex, camera);
-	}
+		if (isSliceModeActive()) {
+			_shapeRenderer.render(_sliceRegionMeshIndex, camera, model);
+		}
 
-	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
-	const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
-	if (highlightMillis > 0) {
-		video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
-		_shapeBuilder.clear();
-		_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
-		_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
-						   _highlightRegion.value().getUpperCornerf() + 1.0f);
-		_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);
-		_shapeRenderer.render(_highlightMeshIndex, camera);
-		video::polygonOffset(glm::vec2(0.0f));
+		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+		const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
+		if (highlightMillis > 0) {
+			video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
+			_shapeBuilder.clear();
+			_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
+			_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
+							_highlightRegion.value().getUpperCornerf() + 1.0f);
+			_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);
+			_shapeRenderer.render(_highlightMeshIndex, camera, model);
+			video::polygonOffset(glm::vec2(0.0f));
+		}
 	}
 }
 

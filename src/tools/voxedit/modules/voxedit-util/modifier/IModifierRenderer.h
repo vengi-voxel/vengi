@@ -30,16 +30,16 @@ public:
 	void shutdown() override {
 	}
 
-	virtual void renderBrushVolume(const video::Camera &camera) {
+	virtual void renderBrushVolume(const video::Camera &camera, const glm::mat4 &model) {
 	}
 	virtual void clear() {
 	}
 	virtual void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
 	}
 
-	virtual void render(const video::Camera &camera, const glm::mat4 &model) {
+	virtual void render(const video::Camera &camera, const glm::mat4 &cursor, const glm::mat4 &model) {
 	}
-	virtual void renderSelection(const video::Camera &camera) {
+	virtual void renderSelection(const video::Camera &camera, const glm::mat4 &model) {
 	}
 
 	virtual void updateReferencePosition(const glm::ivec3 &pos) {
