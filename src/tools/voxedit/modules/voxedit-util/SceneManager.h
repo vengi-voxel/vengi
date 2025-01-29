@@ -232,6 +232,8 @@ public:
 	 */
 	bool supportsEditMode() const;
 
+	glm::mat4 modelMatrix(const voxelrender::RenderContext &renderContext) const;
+
 	const voxel::Region &sliceRegion() const;
 	void setSliceRegion(const voxel::Region &region);
 	bool isSliceModeActive() const;

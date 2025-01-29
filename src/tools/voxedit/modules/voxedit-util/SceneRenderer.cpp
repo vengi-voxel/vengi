@@ -352,6 +352,10 @@ void SceneRenderer::updateSliceRegionMesh() {
 	_shapeRenderer.createOrUpdate(_sliceRegionMeshIndex, _shapeBuilder);
 }
 
+glm::mat4 SceneRenderer::modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const {
+	return _sceneGraphRenderer.modelMatrix(renderContext, node);
+}
+
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
 	if (renderContext.sceneGraph == nullptr) {

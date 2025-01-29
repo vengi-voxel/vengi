@@ -504,6 +504,15 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
+glm::mat4 SceneManager::modelMatrix(const voxelrender::RenderContext &renderContext) const {
+	if (!renderContext.applyTransforms()) {
+		return glm::mat4(1.0f);
+	}
+	const int nodeId = _sceneGraph.activeNode();
+	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	return _sceneRenderer->modelMatrix(renderContext, node);
+}
+
 bool SceneManager::supportsEditMode() const {
 	const int nodeId = _sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
