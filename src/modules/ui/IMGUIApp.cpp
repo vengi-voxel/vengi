@@ -909,7 +909,7 @@ Panel* IMGUIApp::getPanel(const core::String &title) {
 			return panel;
 		}
 	}
-	Log::error("Panel not found - available are:");
+	Log::error("Panel '%s' not found - available are:", title.c_str());
 	for (Panel *panel : _panels) {
 		Log::error("- %s", panel->_title.c_str());
 	}
