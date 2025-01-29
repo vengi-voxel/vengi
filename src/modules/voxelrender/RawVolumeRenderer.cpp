@@ -50,6 +50,10 @@ bool RenderContext::isSceneMode() const {
 	return renderMode == RenderMode::Scene;
 }
 
+bool RenderContext::applyTransforms() const {
+	return isSceneMode() || applyTransformsInEditMode;
+}
+
 bool RenderContext::showCameras() const {
 	return isSceneMode();
 }
@@ -505,7 +509,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 			_state[idx]._dirtyNormals = false;
 		}
 		glm::mat4 model(1.0f);
-		if (renderContext.isSceneMode()) {
+		if (renderContext.applyTransforms()) {
 			model = glm::translate(meshState->model(idx), -meshState->pivot(idx));
 		}
 		_shapeRenderer.render(_state[idx]._normalPreviewBufferIndex, camera, model);

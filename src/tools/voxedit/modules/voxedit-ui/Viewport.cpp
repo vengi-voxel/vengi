@@ -481,6 +481,10 @@ void Viewport::menuBarRenderModeToggle() {
 			_renderContext.renderMode = voxelrender::RenderMode::Edit;
 		}
 	}
+	// if (!sceneMode) {
+	// 	ImGui::SameLine();
+	// 	ImGui::Checkbox(_("Apply transforms"), &_renderContext.applyTransformsInEditMode);
+	// }
 }
 
 void Viewport::menuBarMementoOptions(command::CommandExecutionListener *listener) {

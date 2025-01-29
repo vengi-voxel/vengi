@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
+#include "scenegraph/FrameTransform.h"
 #include "ui/Style.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneUtil.h"
@@ -392,7 +393,8 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
-		_gridRenderer.render(camera, scenegraph::toAABB(region));
+		const glm::mat4 &model = region.isValid() ? _sceneGraphRenderer.modelMatrix(renderContext, *n) : glm::mat4(1.0f);
+		_gridRenderer.render(camera, scenegraph::toAABB(region), model);
 
 		if (_showLockedAxis->boolVal()) {
 			for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {

@@ -281,7 +281,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				_volumeRenderer.scheduleRegionExtraction(meshState, idx, region);
 			}
 		}
-		if (renderContext.isSceneMode()) {
+		if (renderContext.applyTransforms()) {
 			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, region);
 		} else {
 			meshState->setCullFace(idx, video::Face::Back);
