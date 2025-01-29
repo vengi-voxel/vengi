@@ -44,6 +44,8 @@ VoxConvert:
 VoxEdit:
 
    - Added the possibility to render a plane to the viewport for easier orientation
+   - Show the normals in scene mode, too
+   - Allow to edit models in-place in edit mode
 
 ## 0.0.34 (2024-11-14)
 
