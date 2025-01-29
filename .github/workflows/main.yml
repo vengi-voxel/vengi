@@ -202,14 +202,16 @@ jobs:
     rockylinux:
         runs-on: ubuntu-latest
         container:
-            image: rockylinux/rockylinux:9
+          image: rockylinux/rockylinux:9
+
         steps:
         - uses: actions/checkout@v4
 
         - name: Setup
           run: |
-            sudo dnf config-manager --set-enabled crb
-            sudo dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ ninja-build
+            dnf install epel-release
+            dnf config-manager --set-enabled crb
+            dnf install SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel
 
         - name: ccache
           uses: actions/cache@v4
@@ -219,16 +221,20 @@ jobs:
             key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
             restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
 
-        - name: Linux
-          env:
-            CC: gcc-12
-            CXX: g++-12
+        - name: rpm
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
-            cmake --build .
-            cmake --install . --component voxedit --prefix install-voxedit/usr
+            cmake .. -DCMAKE_BUILD_TYPE=Release
+            mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+            cd ..
+            rpmbuild -ba build/vengi.spec
+
+        - name: Upload the rpm artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: linux-rpm
+            path: "vengi*.rpm"
 
     emscripten:
         timeout-minutes: 60
