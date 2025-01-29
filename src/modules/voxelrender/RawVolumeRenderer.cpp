@@ -459,9 +459,7 @@ static inline glm::vec3 centerPos(int x, int y, int z) {
 }
 
 void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera) {
-	// TODO: NORMALS: allow to render the normals in scene mode - currently the transform
-	// is not correct - MeshState::centerPos()
-	if (!renderContext.renderNormals || renderContext.renderMode == RenderMode::Scene) {
+	if (!renderContext.renderNormals) {
 		return;
 	}
 
@@ -494,7 +492,11 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 			_shapeRenderer.createOrUpdate(_state[idx]._normalPreviewBufferIndex, _shapeBuilder);
 			_state[idx]._dirtyNormals = false;
 		}
-		_shapeRenderer.render(_state[idx]._normalPreviewBufferIndex, camera);
+		glm::mat4 model(1.0f);
+		if (renderContext.renderMode == RenderMode::Scene) {
+			model = glm::translate(meshState->model(idx), -meshState->pivot(idx));
+		}
+		_shapeRenderer.render(_state[idx]._normalPreviewBufferIndex, camera, model);
 	}
 }
 
