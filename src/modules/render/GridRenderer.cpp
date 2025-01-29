@@ -98,6 +98,9 @@ void GridRenderer::update(const math::AABB<float> &aabb) {
 	if (!_dirty && _aabb == aabb) {
 		return;
 	}
+	if (_resolution <= 0) {
+		return;
+	}
 	const float thickness = 1.0f;
 	_aabb = aabb;
 	_shapeBuilder.clear();
