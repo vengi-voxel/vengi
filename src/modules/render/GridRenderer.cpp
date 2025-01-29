@@ -153,12 +153,14 @@ void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &
 	if (_renderGrid && aabb.isValid()) {
 		const glm::vec3 &center = model * glm::vec4(aabb.getCenter(), 1.0f);
 		const glm::vec3 &halfWidth = aabb.getWidth() / 2.0f;
-		const math::Plane planeLeft(glm::left(), center + glm::left() * halfWidth);
-		const math::Plane planeRight(glm::right(), center + glm::right() * halfWidth);
-		const math::Plane planeBottom(glm::down(), center + glm::down() * halfWidth);
-		const math::Plane planeTop(glm::up(), center + glm::up() * halfWidth);
-		const math::Plane planeNear(glm::forward(), center + glm::forward() * halfWidth);
-		const math::Plane planeFar(glm::backward(), center + glm::backward() * halfWidth);
+
+		const glm::mat3 rotationMatrix(model);
+		const math::Plane planeLeft(rotationMatrix * glm::left(), center + glm::left() * halfWidth);
+		const math::Plane planeRight(rotationMatrix * glm::right(), center + glm::right() * halfWidth);
+		const math::Plane planeBottom(rotationMatrix * glm::down(), center + glm::down() * halfWidth);
+		const math::Plane planeTop(rotationMatrix * glm::up(), center + glm::up() * halfWidth);
+		const math::Plane planeNear(rotationMatrix * glm::forward(), center + glm::forward() * halfWidth);
+		const math::Plane planeFar(rotationMatrix * glm::backward(), center + glm::backward() * halfWidth);
 
 		if (camera.mode() == video::CameraMode::Perspective) {
 			const glm::vec3 &eye = camera.eye();
