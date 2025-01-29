@@ -13,7 +13,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		for (int i = lengthof(palette::Palette::builtIn) - 1; i >= 0; --i) {
 			ctx->SetRef(id);
-			ctx->MenuClick("###File/###Switch");
+			ctx->MenuClick("File/Switch");
 			ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
 			ctx->ItemClick("##type");
 			core::String name = core::string::format("//$FOCUSED/%s", palette::Palette::builtIn[i]);
@@ -30,10 +30,10 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "lospec")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
-		ctx->MenuClick("###File/###Lospec/ID");
+		ctx->MenuClick("File/Lospec/ID");
 		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
 		ctx->ItemClick("//$FOCUSED/Ok");
-		ctx->MenuClick("###File/###Export");
+		ctx->MenuClick("File/Export");
 		saveFile(ctx, "palette-lospec.png");
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		IM_CHECK_EQ(activePalette.colorCount(), 16);
@@ -68,7 +68,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(activePalette.color(1), slot1);
 		IM_CHECK_EQ(activePalette.uiIndex(0), index1);
 		IM_CHECK_EQ(activePalette.uiIndex(1), index0);
-		ctx->MenuClick("###Sort/Original");
+		ctx->MenuClick("Sort/Original");
 	};
 }
 

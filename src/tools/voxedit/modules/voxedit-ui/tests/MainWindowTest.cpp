@@ -36,7 +36,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		_sceneMgr->markDirty();
 		ImGuiContext& g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("###File/###New");
+		ctx->MenuClick("File/New");
 		ctx->Yield();
 		IM_CHECK_EQ(g.OpenPopupStack.Size, 1);
 		IM_CHECK_EQ(g.OpenPopupStack[0].PopupId, ctx->GetID(POPUP_TITLE_UNSAVED));
@@ -50,7 +50,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("###File/###New");
+		ctx->MenuClick("File/New");
 		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
 		ctx->ItemInputValue("##newscenename", "Automated ui test");
@@ -60,7 +60,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "new scene template")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("###File/###New");
+		ctx->MenuClick("File/New");
 		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
 		ctx->ItemClick("##templates/##Knight");

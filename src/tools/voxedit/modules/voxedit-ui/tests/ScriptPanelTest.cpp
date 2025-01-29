@@ -15,12 +15,12 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 
 		IM_CHECK(focusWindow(ctx, TITLE_SCRIPT_EDITOR));
-		ctx->MouseMove("##menubar/###File");
+		ctx->MouseMove("##menubar/File");
 		ctx->MouseClick();
-		ctx->MenuClick("//$FOCUSED/###Apply and execute");
-		ctx->MouseMove("##menubar/###File");
+		ctx->MenuClick("//$FOCUSED/Apply and execute");
+		ctx->MouseMove("##menubar/File");
 		ctx->MouseClick();
-		ctx->MenuClick("//$FOCUSED/###Save as");
+		ctx->MenuClick("//$FOCUSED/Save as");
 		IM_CHECK(saveFile(ctx, "test.lua"));
 	};
 }

@@ -30,12 +30,12 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// duplicate the node
 		const int beforeDuplicate = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
-		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Duplicate");
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
 		const int afterDuplicate = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(afterDuplicate == beforeDuplicate + 1);
 
 		// rename the node
-		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Rename");
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Rename");
 		IM_CHECK(focusWindow(ctx, POPUP_TITLE_RENAME_NODE));
 		ctx->ItemInputValue("Name", "automated ui test rename");
 		ctx->Yield();
@@ -43,18 +43,18 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		// create reference
 		const int beforeReference = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
-		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Create reference");
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Create reference");
 		const int afterReference = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
 		IM_CHECK(afterReference == beforeReference + 1);
 
 		// delete the reference again
 		const int beforeDelete = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
-		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Delete");
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Delete");
 		const int afterDelete = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
 		IM_CHECK(afterDelete == beforeDelete - 1);
 
 		// merge all
-		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Merge all");
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Merge all");
 		const int afterMerge = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(afterMerge == 1);
 
