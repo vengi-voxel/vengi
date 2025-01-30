@@ -462,7 +462,8 @@ struct IMGUI_API ImGuiTestContext
     bool        TabBarCompareOrder(ImGuiTabBar* tab_bar, const char** tab_order);
 
     // Helpers for MenuBar and Menus widgets
-    // - e.g. MenuCheck("File/Options/Enable grid");
+    // - e.g. MenuCheck("File/Options/Enable grid"); // Access menu in current ref window.
+    // - e.g. MenuClick("//Window/File/Quit");       // Access menu in another window.
     void        MenuAction(ImGuiTestAction action, ImGuiTestRef ref);
     void        MenuActionAll(ImGuiTestAction action, ImGuiTestRef ref_parent);
     void        MenuClick(ImGuiTestRef ref)                 { MenuAction(ImGuiTestAction_Click, ref); }

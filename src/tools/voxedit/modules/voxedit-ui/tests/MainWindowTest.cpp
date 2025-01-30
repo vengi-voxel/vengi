@@ -26,7 +26,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_nodeInspectorPanel.registerUITests(engine, TITLE_NODE_INSPECTOR);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
 	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
-	_menuBar.registerUITests(engine, "##menubar");
+	_menuBar.registerUITests(engine, "##MenuBar");
 	_statusBar.registerUITests(engine, TITLE_STATUSBAR);
 	_scriptPanel.registerUITests(engine, TITLE_SCRIPT);
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);

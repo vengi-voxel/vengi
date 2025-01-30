@@ -270,6 +270,7 @@ void    ImGuiTestEngine_Start(ImGuiTestEngine* engine, ImGuiContext* ui_ctx)
         IM_ASSERT(engine->IO.CoroutineFuncs && "Missing CoroutineFuncs! Use '#define IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL 1' or define your own implementation!");
         engine->TestQueueCoroutine = engine->IO.CoroutineFuncs->CreateFunc(ImGuiTestEngine_TestQueueCoroutineMain, "Main Dear ImGui Test Thread", engine);
     }
+    engine->TestQueueCoroutineShouldExit = false;
     engine->Started = true;
 }
 
