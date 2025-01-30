@@ -128,8 +128,8 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 	if (save && !isNodePalette && !palette.isBuiltIn()) {
 		const core::String filename = core::string::extractFilename(palette.name());
 		const core::String &paletteFilename = core::string::format("palette-%s.png", filename.c_str());
-		const io::FilePtr &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write);
-		palette.save(pngFile->name().c_str());
+		const core::String &pngFile = _filesystem->homeWritePath(paletteFilename);
+		palette.save(pngFile.c_str());
 	}
 
 	return true;
