@@ -211,7 +211,7 @@ jobs:
           run: |
             dnf install -y epel-release
             dnf config-manager --set-enabled crb
-            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel
+            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build
 
         - name: ccache
           uses: actions/cache@v4
