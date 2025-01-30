@@ -229,12 +229,13 @@ jobs:
             mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
             cd ..
             rpmbuild -ba build/vengi.spec --build-in-place
+            mv ~/rpmbuild/RPMS/x86_64/*.rpm ./
 
         - name: Upload the rpm artifacts
           uses: actions/upload-artifact@v4
           with:
             name: linux-rpm
-            path: "vengi*.rpm"
+            path: vengi*.rpm
 
     emscripten:
         timeout-minutes: 60
