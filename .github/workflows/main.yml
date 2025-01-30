@@ -228,7 +228,7 @@ jobs:
             cmake .. -DCMAKE_BUILD_TYPE=Release
             mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
             cd ..
-            rpmbuild -ba build/vengi.spec
+            rpmbuild -ba build/vengi.spec --build-in-place
 
         - name: Upload the rpm artifacts
           uses: actions/upload-artifact@v4
