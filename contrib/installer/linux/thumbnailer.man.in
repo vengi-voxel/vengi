@@ -107,6 +107,8 @@ GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
 Goxel (*.gox)
 .TP
+KenShape (*.kenshape)
+.TP
 MagicaVoxel (*.vox)
 .TP
 Magicavoxel XRAW (*.xraw)

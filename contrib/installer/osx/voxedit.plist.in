@@ -504,6 +504,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>KenShape</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-kenshape</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>kenshape</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Autodesk 3D Studio</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

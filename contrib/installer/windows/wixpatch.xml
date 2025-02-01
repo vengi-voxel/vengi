@@ -106,6 +106,9 @@
 		<RegistryKey Root="HKCR" Key=".fbx">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".kenshape">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".3ds">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -495,6 +498,15 @@
 		<RegistryValue Root="HKCR" Key=".fbx\OpenWithProgids" Name="vengi-voxedit.fbx" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.fbx" Description="FBX" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="fbx" ContentType="application/x-fbx">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kenshape" Value="vengi-voxedit.kenshape" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".kenshape" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".kenshape\OpenWithProgids" Name="vengi-voxedit.kenshape" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.kenshape" Description="KenShape" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="kenshape" ContentType="application/x-kenshape">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

@@ -39,6 +39,7 @@ set(SRCS
 	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
 	private/image/AsepriteFormat.h           private/image/AsepriteFormat.cpp
 	private/image/PNGFormat.h                private/image/PNGFormat.cpp
+	private/kenshape/KenShapeFormat.h        private/kenshape/KenShapeFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
@@ -128,6 +129,7 @@ set(TEST_SRCS
 	tests/FBXFormatTest.cpp
 	tests/GLTFFormatTest.cpp
 	tests/GoxFormatTest.cpp
+	tests/KenShapeFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
 	tests/MapFormatTest.cpp
@@ -218,6 +220,7 @@ set(TEST_FILES
 	tests/sandbox-block2.vxb
 	tests/test.vxm
 	tests/test2.vxm
+	tests/test.kenshape
 	tests/8ontop.vox
 	tests/Isanth_Type-Zero_Bc.sment
 	tests/bat_anim.vengi

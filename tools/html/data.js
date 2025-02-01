@@ -603,6 +603,16 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "KenShape",
+      "extensions": [
+        "kenshape"
+      ],
+      "magics": [],
+      "mimetype": "application/x-kenshape",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Autodesk 3D Studio",
       "extensions": [
         "3ds"

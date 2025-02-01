@@ -33,6 +33,7 @@
 #include "voxelformat/private/cubzh/PCubesFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
+#include "voxelformat/private/kenshape/KenShapeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
 #include "voxelformat/private/mesh/Autodesk3DSFormat.h"
@@ -102,6 +103,7 @@ const io::FormatDescription *voxelLoad() {
 												 MDLFormat::format(),
 												 MD2Format::format(),
 												 FBXFormat::format(),
+												 KenShapeFormat::format(),
 												 Autodesk3DSFormat::format(),
 												 SproxelFormat::format(),
 												 XRawFormat::format(),
@@ -245,6 +247,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<ThingFormat>();
 		} else if (ext == io::format::png().mainExtension()) {
 			return core::make_shared<PNGFormat>();
+		} else if (ext == KenShapeFormat::format().mainExtension()) {
+			return core::make_shared<KenShapeFormat>();
 		} else if (GLTFFormat::format().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
 		} else if (BenVoxelFormat::format().matchesExtension(ext)) {

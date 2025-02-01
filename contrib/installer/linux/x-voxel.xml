@@ -206,6 +206,10 @@
 		<comment>FBX</comment>
 		<glob pattern="*.fbx"/>
 	</mime-type>
+	<mime-type type="application/x-kenshape">
+		<comment>KenShape</comment>
+		<glob pattern="*.kenshape"/>
+	</mime-type>
 	<mime-type type="application/x-autodesk-3d-studio">
 		<comment>Autodesk 3D Studio</comment>
 		<glob pattern="*.3ds"/>
