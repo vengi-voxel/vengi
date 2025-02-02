@@ -111,7 +111,7 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 			ImGui::EndMenuBar();
 		}
 		const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
+		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), ImGuiChildFlags_FrameStyle, ImGuiWindowFlags_HorizontalScrollbar);
 
 		ImGuiListClipper clipper;
 		clipper.Begin(_messages.size(), ImGui::GetTextLineHeightWithSpacing());
@@ -126,11 +126,9 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		}
 
 		ImGui::EndChild();
-		ImGui::TextUnformatted(_consolePrompt.c_str());
-		ImGui::SameLine();
-		if (ImGui::InputText("##console-input-text", &_commandLine,
-							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion |
-								 ImGuiInputTextFlags_CallbackHistory,
+		if (ImGui::InputText(_("Command"), &_commandLine,
+							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
+								 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
 							 _priv::ConsoleInputTextCallback, this)) {
 			executeCommandLine(&imguiApp()->commandListener());
 			ImGui::SetKeyboardFocusHere(-1);

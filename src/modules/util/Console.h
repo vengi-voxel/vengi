@@ -29,7 +29,6 @@ protected:
 
 	const char *_historyFilename = "history";
 	core::String _consolePrompt = "> ";
-	core::String _consoleCursor = "_";
 
 	void printHistory();
 
