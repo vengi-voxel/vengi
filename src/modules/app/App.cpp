@@ -175,6 +175,7 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
 	signal(SIGINT, app_graceful_shutdown);
+	signal(SIGTERM, app_graceful_shutdown);
 	// send the signal 42 to enable debug logging in a running application
 	signal(42, app_loop_debug_log);
 }
