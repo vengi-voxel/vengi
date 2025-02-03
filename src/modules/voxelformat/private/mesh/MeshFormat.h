@@ -58,6 +58,9 @@ protected:
 		glm::vec3 size{0.0f};
 		glm::vec3 pivot{0.0f};
 		int nodeId = -1;
+
+		void visitByMaterial(int materialIndex, const std::function<void(const voxel::Mesh &, voxel::IndexType,
+																		voxel::IndexType, voxel::IndexType)> &callback) const;
 	};
 	using Meshes = core::DynamicArray<MeshExt>;
 	virtual bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,

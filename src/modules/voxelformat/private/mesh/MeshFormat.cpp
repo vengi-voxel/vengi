@@ -6,8 +6,8 @@
 #include "app/App.h"
 #include "app/Async.h"
 #include "core/Color.h"
-#include "core/GLM.h"
 #include "core/ConfigVar.h"
+#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/StringUtil.h"
@@ -22,6 +22,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Mesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"
@@ -107,7 +108,8 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return {u, v};
 }
 
-void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos, const MeshMaterialPtr &material) {
+void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+							 const MeshMaterialPtr &material) {
 	if (rgba.a <= AlphaThreshold) {
 		return;
 	}
@@ -144,7 +146,8 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 	}
 }
 
-void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap, const palette::NormalPalette &normalPalette) {
+void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
+										  const palette::NormalPalette &normalPalette) {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
 	for (const voxelformat::MeshTri &meshTri : tris) {
 		if (stopExecution()) {
@@ -212,7 +215,7 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 	const glm::ivec3 size(glm::round(maxs - mins));
 	const glm::ivec3 imaxs = 2 + imins + size;
 
-	glm::vec3 center {};
+	glm::vec3 center{};
 	for (int x = imins.x; x < imaxs.x; x++) {
 		center.x = trisMins.x + x;
 		for (int y = imins.y; y < imaxs.y; y++) {
@@ -231,8 +234,8 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 	}
 }
 
-int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris,
-							 int parent, bool resetOrigin) const {
+int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
+							 const MeshTriCollection &tris, int parent, bool resetOrigin) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
 		return InvalidNodeId;
@@ -297,10 +300,12 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			Log::debug("create palette");
 			for (const voxelformat::MeshTri &meshTri : tris) {
 #if 1
-				voxelizeTriangle(trisMins, meshTri, [this, &colorMaterials] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
-					colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
-				});
+				voxelizeTriangle(
+					trisMins, meshTri,
+					[this, &colorMaterials](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+						const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
+						colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
+					});
 #else
 				const core::RGBA rgba = flattenRGB(triangle.centerColor());
 				colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
@@ -314,13 +319,15 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
 		for (const voxelformat::MeshTri &meshTri : tris) {
-			voxelizeTriangle(trisMins, meshTri, [&] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-				const core::RGBA color = flattenRGB(tri.colorAt(uv));
-				const glm::vec3 &normal = tri.normal();
-				const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
-				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIndex);
-				wrapper.setVoxel(x, y, z, voxel);
-			});
+			voxelizeTriangle(trisMins, meshTri,
+							 [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+								 const core::RGBA color = flattenRGB(tri.colorAt(uv));
+								 const glm::vec3 &normal = tri.normal();
+								 const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
+								 const voxel::Voxel voxel =
+									 voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIndex);
+								 wrapper.setVoxel(x, y, z, voxel);
+							 });
 		}
 
 		if (palette.colorCount() == 1) {
@@ -451,6 +458,32 @@ MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGra
 	  pivot(node.pivot()), nodeId(node.id()) {
 }
 
+void MeshFormat::MeshExt::visitByMaterial(
+	int materialIndex,
+	const std::function<void(const voxel::Mesh &, voxel::IndexType, voxel::IndexType, voxel::IndexType)> &callback)
+	const {
+	if (!mesh) {
+		return;
+	}
+	for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+		const voxel::Mesh &vmesh = mesh->mesh[i];
+		if (vmesh.isEmpty()) {
+			continue;
+		}
+		const int ni = vmesh.getNoOfIndices();
+		const voxel::IndexArray &indices = vmesh.getIndexVector();
+		for (int j = 0; j < ni; j += 3) {
+			const voxel::IndexType i0 = indices[j + 0];
+			if (vmesh.getVertex(i0).colorIndex != materialIndex) {
+				continue;
+			}
+			const voxel::IndexType i1 = indices[j + 1];
+			const voxel::IndexType i2 = indices[j + 2];
+			callback(vmesh, i0, i1, i2);
+		}
+	}
+}
+
 bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	const bool retVal = voxelizeGroups(filename, archive, sceneGraph, ctx);
@@ -458,7 +491,8 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 	return retVal;
 }
 
-bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::DynamicArray<PointCloudVertex> &vertices) const {
+bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+									const core::DynamicArray<PointCloudVertex> &vertices) const {
 	glm::vec3 mins{std::numeric_limits<float>::max()};
 	glm::vec3 maxs{std::numeric_limits<float>::min()};
 	const glm::vec3 scale = getInputScale();
@@ -509,13 +543,15 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 	const bool optimizeMesh = core::Var::getSafe(cfg::VoxformatOptimize)->boolVal();
 
-	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+	const voxel::SurfaceExtractionType type =
+		(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 
 	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
-	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference nodes)
+	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
+	// nodes)
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
@@ -523,9 +559,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			voxel::Region regionExt = region;
 			// we are increasing the region by one voxel to ensure the inclusion of the boundary voxels in this mesh
 			regionExt.shiftUpperCorner(1, 1, 1);
-			voxel::SurfaceExtractionContext ctx =
-				voxel::createContext(type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads,
-									 reuseVertices, ambientOcclusion);
+			voxel::SurfaceExtractionContext ctx = voxel::createContext(
+				type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion);
 			voxel::extractSurface(ctx);
 			if (withNormals) {
 				Log::debug("Calculate normals");

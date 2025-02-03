@@ -444,6 +444,21 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Godot Scene",
+      "extensions": [
+        "escn"
+      ],
+      "magics": [
+        {
+          "type": "string",
+          "value": "[gd_"
+        }
+      ],
+      "mimetype": "application/x-godot-scene",
+      "animation": false,
+      "save": true
+    },
+    {
       "name": "Goxel",
       "extensions": [
         "gox"

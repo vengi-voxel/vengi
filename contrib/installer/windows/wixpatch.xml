@@ -61,6 +61,9 @@
 		<RegistryKey Root="HKCR" Key=".binvox">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".escn">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".gox">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -363,6 +366,15 @@
 		<RegistryValue Root="HKCR" Key=".binvox\OpenWithProgids" Name="vengi-voxedit.binvox" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.binvox" Description="BinVox" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="binvox" ContentType="application/x-binvox">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".escn" Value="vengi-voxedit.escn" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".escn" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".escn\OpenWithProgids" Name="vengi-voxedit.escn" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.escn" Description="Godot Scene" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="escn" ContentType="application/x-godot-scene">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

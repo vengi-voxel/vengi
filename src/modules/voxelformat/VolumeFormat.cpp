@@ -23,7 +23,6 @@
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
 #include "voxelformat/private/benvoxel/BenVoxelFormat.h"
-#include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/chronovox/CSMFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
@@ -32,6 +31,7 @@
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include "voxelformat/private/cubzh/PCubesFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/kenshape/KenShapeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
@@ -40,6 +40,7 @@
 #include "voxelformat/private/mesh/BlockbenchFormat.h"
 #include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/mesh/GodotSceneFormat.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
@@ -91,6 +92,7 @@ const io::FormatDescription *voxelLoad() {
 												 BlockbenchFormat::format(),
 												 VXRFormat::format(),
 												 BinVoxFormat::format(),
+												 GodotSceneFormat::format(),
 												 GoxFormat::format(),
 												 CubFormat::format(),
 												 MTSFormat::format(),
@@ -247,6 +249,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<ThingFormat>();
 		} else if (ext == io::format::png().mainExtension()) {
 			return core::make_shared<PNGFormat>();
+		} else if (ext == GodotSceneFormat::format().mainExtension()) {
+			return core::make_shared<GodotSceneFormat>();
 		} else if (ext == KenShapeFormat::format().mainExtension()) {
 			return core::make_shared<KenShapeFormat>();
 		} else if (GLTFFormat::format().matchesExtension(ext)) {

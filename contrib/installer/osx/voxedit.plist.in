@@ -284,6 +284,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Godot Scene</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-godot-scene</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>escn</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Goxel</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

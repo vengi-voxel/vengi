@@ -32,6 +32,8 @@ General:
    - Added new blocks to `sment` StarMade palette
    - Added new lua script `flatten`
    - Fixed issue with auto selecting files in the file dialog if the options popup is visible
+   - Added support for KenneyShape `kenshape` format
+   - Added save support for Godot `escn` scene format
 
 VoxConvert:
 
