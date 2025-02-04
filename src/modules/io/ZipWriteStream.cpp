@@ -12,6 +12,7 @@
 #endif
 #include <zlib.h>
 #else
+#define MINIZ_NO_INFLATE_APIS
 #include "io/external/miniz.h"
 #endif
 #include "core/Assert.h"
