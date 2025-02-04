@@ -18,10 +18,7 @@ namespace voxelformat {
  */
 class GodotSceneFormat : public MeshFormat {
 protected:
-	enum class WriterStage : uint8_t {
-		SUB_RESOURCE,
-		NODES
-	};
+	enum class WriterStage : uint8_t { SUB_RESOURCE, NODES };
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override {
@@ -39,7 +36,10 @@ protected:
 
 public:
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Godot Scene", {"escn"}, {"[gd_"}, FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Godot Scene",
+									   {"escn"},
+									   {"[gd_"},
+									   VOX_FORMAT_FLAG_MESH | /* TODO: VOX_FORMAT_FLAG_ANIMATION | */ FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

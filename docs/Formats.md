@@ -17,7 +17,6 @@
 | CubeWorld                  | cub         | X       | X      |            | X       |            |
 | Cubzh                      | 3zh         | X       | X      | X          | X       |            |
 | Cubzh World                | b64         | X       |        |            |         |            |
-| Godot Scene                | escn        |         | X      |            |         |            |
 | Goxel                      | gox         | X       | X      | X          | X       |            |
 | KenShape                   | kenshape    | X       |        |            | X       |            |
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
@@ -57,6 +56,7 @@
 | Blockbench                 | bbmodel   | X       |           |            |
 | FBX                        | fbx       | X       | X         |            |
 | GL Transmission Format     | gltf      | X       | X         | X          |
+| Godot Scene                | escn      |         | X         |            |
 | Polygon File Format        | ply       | X       | X         |            |
 | Quake 1                    | bsp       | X       |           |            |
 | Quake 1 Model              | mdl       | X       |           |            |

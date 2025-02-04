@@ -455,6 +455,7 @@ const jsonData = {
         }
       ],
       "mimetype": "application/x-godot-scene",
+      "mesh": true,
       "animation": false,
       "save": true
     },

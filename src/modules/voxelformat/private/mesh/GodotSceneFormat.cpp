@@ -30,11 +30,10 @@ namespace voxelformat {
 static core::String createTransform(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 									int frameIdx) {
 	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
-	glm::mat4 rotation = transform.worldMatrix();
-	return core::String::format("Transform3D(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", rotation[0][0],
-								rotation[1][0], rotation[2][0], rotation[0][1], rotation[1][1], rotation[2][1],
-								rotation[0][2], rotation[1][2], rotation[2][2],
-								/* translation */ rotation[3][0], rotation[3][1], rotation[3][2]);
+	const glm::mat4 &m = transform.worldMatrix();
+	return core::String::format("Transform3D(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", m[0][0], m[1][0],
+								m[2][0], m[0][1], m[1][1], m[2][1], m[0][2], m[1][2], m[2][2],
+								/* translation */ m[3][0], m[3][1], m[3][2]);
 }
 
 static core::String resolveParent(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
