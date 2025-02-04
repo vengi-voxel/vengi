@@ -94,6 +94,9 @@ static bool saveMaterial(const scenegraph::SceneGraphNode &node, io::SeekableWri
 bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 								const scenegraph::SceneGraphNode &node, io::SeekableWriteStream &stream,
 								const Meshes &meshes, int &subResourceId, WriterStage stage) const {
+	if (stopExecution()) {
+		return false;
+	}
 	if (stage == WriterStage::SUB_RESOURCE) {
 		if (node.isAnyModelNode()) {
 			auto iter = meshIdxNodeMap.find(node.id());
@@ -119,6 +122,10 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 			for (size_t c = 0; c < palette.size(); ++c) {
 				glm::vec3 mins(0);
 				glm::vec3 maxs(1);
+
+				if (stopExecution()) {
+					break;
+				}
 
 				int vertexCount = 0;
 				io::BufferedReadWriteStream buffer;

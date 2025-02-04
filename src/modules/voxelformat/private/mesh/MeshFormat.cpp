@@ -575,11 +575,14 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		});
 	}
 	for (;;) {
+		if (stopExecution()) {
+			break;
+		}
 		lock.lock();
 		const size_t size = meshes.size();
 		lock.unlock();
 		if (size < models) {
-			app::App::getInstance()->wait(10);
+			app::App::getInstance()->wait(100);
 		} else {
 			break;
 		}
