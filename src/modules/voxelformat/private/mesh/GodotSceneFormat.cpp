@@ -30,11 +30,11 @@ namespace voxelformat {
 static core::String createTransform(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 									int frameIdx) {
 	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
-	return core::String::format("Transform3D(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", transform.matrix[0][0],
-								transform.matrix[0][1], transform.matrix[0][2], transform.matrix[0][3],
-								transform.matrix[1][0], transform.matrix[1][1], transform.matrix[1][2],
-								transform.matrix[1][3], transform.matrix[2][0], transform.matrix[2][1],
-								transform.matrix[2][2], transform.matrix[2][3]);
+	glm::mat4 rotation = transform.worldMatrix();
+	return core::String::format("Transform3D(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)", rotation[0][0],
+								rotation[1][0], rotation[2][0], rotation[0][1], rotation[1][1], rotation[2][1],
+								rotation[0][2], rotation[1][2], rotation[2][2],
+								/* translation */ rotation[3][0], rotation[3][1], rotation[3][2]);
 }
 
 static core::String resolveParent(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
@@ -112,7 +112,8 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 			}
 
 			const MeshExt &meshExt = meshes[iter->value];
-			Log::debug("Exporting model %s", meshExt.name.c_str());
+			Log::debug("Exporting model %s (%i) (%i meshes total)", meshExt.name.c_str(), node.id(),
+					   (int)meshIdxNodeMap.size());
 			wrapBool(stream.writeStringFormat(false, "[sub_resource type=\"ArrayMesh\" id=\"%i\"]\n", node.id()))
 			wrapBool(stream.writeStringFormat(false, "resource_name = \"%s\"\n", node.name().c_str()))
 
@@ -120,15 +121,15 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 			const palette::Palette &palette = node.palette();
 			wrapBool(stream.writeStringFormat(false, "_surfaces = ["))
 			for (size_t c = 0; c < palette.size(); ++c) {
-				glm::vec3 mins(0);
-				glm::vec3 maxs(1);
+				glm::vec3 mins(std::numeric_limits<float>::max());
+				glm::vec3 maxs(std::numeric_limits<float>::min());
 
 				if (stopExecution()) {
 					break;
 				}
 
 				int vertexCount = 0;
-				io::BufferedReadWriteStream buffer;
+				io::BufferedReadWriteStream buffer(1024 * 3 * sizeof(float));
 				meshExt.visitByMaterial(
 					c, [&buffer, &mins, &maxs, &vertexCount](const voxel::Mesh &mesh, voxel::IndexType index0,
 															 voxel::IndexType index1, voxel::IndexType index2) {
@@ -190,8 +191,7 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 		const core::String parent = resolveParent(sceneGraph, node);
 		const core::String transform = createTransform(sceneGraph, node, 0);
 		if (node.isRootNode()) {
-			wrapBool(stream.writeStringFormat(false, "[node name=\"%s\" type=\"Node3D\"]\n",
-											  node.name().c_str()))
+			wrapBool(stream.writeStringFormat(false, "[node name=\"%s\" type=\"Node3D\"]\n", node.name().c_str()))
 		} else if (node.isAnyModelNode()) {
 			wrapBool(stream.writeStringFormat(false, "[node name=\"%s\" type=\"MeshInstance3D\" parent=\"%s\"]\n",
 											  node.name().c_str(), parent.c_str()))
@@ -232,6 +232,7 @@ bool GodotSceneFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, con
 		return false;
 	}
 
+	Log::debug("Create godot scene file %s", filename.c_str());
 	const core::String &uuid = core::generateUUID();
 	const int steps = sceneGraph.size();
 	stream->writeStringFormat(false, "[gd_scene load_steps=%i format=3 uid=\"uid://%s\"]\n", steps, uuid.c_str());
