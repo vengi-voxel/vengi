@@ -163,7 +163,7 @@ General:
    - Extended lua bindings for http requests
    - Fixed face culling for negative scale values
    - Added command and cvar dialogs to the help menus
-   - Added cubzh version 5 (older version) support
+   - Added cubzh v5 (older version) support (`3zh`)
    - Added support for writing uncompressed qubicle `qb` files
    - Fixed qubicle `qb` version number
    - Added basic support for rooms.xyz `thing` file support
@@ -241,9 +241,9 @@ General:
    - Fixed `vxl/hva` loading and saving
    - Fixed missing `pcubes` write support
    - Support palette [materials](Material.md)
-   - Optimized qubicle QB color quantization
+   - Optimized qubicle `QB` color quantization
    - Import magicavoxel materials
-   - Improved GLTF material support
+   - Improved `GLTF` material support
    - Made the smooth normals for the cubic mesh extractor optional (`voxformat_withnormals`)
    - Improved texture coordinates for mesh exports
    - Improved bash completion script creation
@@ -362,7 +362,7 @@ General:
 
    - Added cvar `voxformat_pointcloudsize` for point cloud formats
    - Added Polygon File Format (`ply`) mesh and point cloud support (ascii and binary)
-   - Fixed regression with GLTF exports
+   - Fixed regression with `GLTF` exports
    - Added a new lua script to slice a node into smaller pieces
    - Expose shape generators to lua
    - Fixed color intensity handling for `kvx` files
@@ -380,10 +380,10 @@ VoxEdit:
 
 General:
 
-   - Fixed pivot handling in VXR format
-   - Allow one to export the GLTF vertex colors as byte values
+   - Fixed pivot handling in `VXR` format
+   - Allow one to export the `GLTF` vertex colors as byte values
    - Added NeuQuant color quantization algorithm
-   - Optimized GLTF and MD2 import
+   - Optimized `GLTF` and `MD2` import
    - Fixed Quake1 texture handling
    - General optimizations
    - Added a new voxelization algorithm and a cvar to use it (set `voxformat_voxelizemode` to 1)
@@ -402,13 +402,13 @@ VoxEdit:
 
 General:
 
-   - Fixed invalid x axis handling for Sandbox VXM format
-   - Fixed pivot handling in VXR/VXA format
+   - Fixed invalid x axis handling for Sandbox `VXM` format
+   - Fixed pivot handling in `VXR`/`VXA` format
    - Support model references to build a complex scene
-   - Extended GLTF support to animation import and export as well as normal export
-   - Fixed missing base color support for GLTF
+   - Extended `GLTF` support to animation import and export as well as normal export
+   - Fixed missing base color support for `GLTF`
    - Support for some parts of VoxelMax format
-   - Fixed Sandbox VXA version 3 support
+   - Fixed Sandbox `VXA` v3 support
    - Fixed volume rotation issues
    - Fixed volume merging issues
    - Added Quake2 Model (`md2`) support
@@ -419,10 +419,10 @@ General:
    - Added the ability to easily scale a volume up
    - Unified naming of commands and parameters (`layer` is `model` now, ...)
    - Added VoxelBuilder (`vbx`) support
-   - Fixed missing group transform handling for MagicaVoxel files
+   - Fixed missing group transform handling for MagicaVoxel `vox` files
    - Added support for MagicaVoxel `xraw` format
    - Added alpha support for MagicaVoxel materials
-   - Added support for loading Sandbox VXM format version 3
+   - Added support for loading Sandbox `VXM` v3
    - Added new lua script and extended lua api to replace palettes, resize volumes and move voxels
 
 VoxConvert:
@@ -457,24 +457,24 @@ Thumbnailer:
 General:
 
    - Support using `palette` cvar as a destination palette again by setting `voxformat_createpalette` to `false`
-   - Added new image formats from SOIL2 (DDS, PKM, PVR)
-   - Added FBX read support
+   - Added new image formats from SOIL2 (`DDS`, `PKM`, `PVR`)
+   - Added `FBX` read support
    - Improved texture lookup for mesh formats
    - Added multiple color reduction algorithms and expose them to the user by the cvar `core_colorreduction`
-   - Fixed several issues with AceOfSpades vxl format - switched to libvxl for loading and saving
+   - Fixed several issues with AceOfSpades `vxl` format - switched to libvxl for loading and saving
    - Fixed splitting volumes even if not needed (off-by-one error)
    - Fixed multi-monitor support
    - Fixed colors in the tree generator
    - Improved the key binding handling and made it more flexible
-   - Added support for loading minetest mts files
-   - Fixed Command&Conquer vxl format writing issue
+   - Added support for loading minetest `mts` files
+   - Fixed Command&Conquer `vxl` format writing issue
    - Added own format with the extension `vengi`
    - Added basic alpha support
    - Fixed saving the keybindings with multi click
    - Improved keybinding and ui setting saving (added a version)
    - Fixed invalid transform on re-parenting a node
    - Refactored the file dialog
-   - Fixed issue in saving MagicaVoxel vox files under some special conditions
+   - Fixed issue in saving MagicaVoxel `vox` files under some special conditions
    - Implemented basic transparency support for voxels
    - Fixed invalid clamping for uv based pixel lookup (mesh imports)
    - Update renderer to only use uniform buffers
@@ -510,7 +510,7 @@ VoxEdit:
    - New keybindings
    - Allow one to sort the palette colors by hue, saturation or brightness
    - Allow one to select and drag keyframes in the animation timeline
-   - Export animations as AVI
+   - Export animations as `AVI`
    - Allow one to import a whole directory into a scene
    - Allow one to select all node types in the scene graph panel
    - Allow one to edit node properties
@@ -522,15 +522,15 @@ VoxEdit:
 General:
 
    - Improved big endian support for voxel formats
-   - Improved VXL format default palette support
-   - Improved QBCL scene graph support
+   - Improved `VXL` format default palette support
+   - Improved `QBCL` scene graph support
    - Improved voxelization vertex color support
-   - Fixed VOX root node handling
-   - Fixed QBCL and GOX thumbnail handling
+   - Fixed `VOX` root node handling
+   - Fixed `QBCL` and `GOX` thumbnail handling
    - Removed unused code
-   - Added support for VXA version 3
+   - Added support for `VXA` v3
    - (Re-)added support for marching cubes
-   - Fixed a bug in Ace of Spades VXL loading
+   - Fixed a bug in Ace of Spades `VXL` loading
 
 VoxEdit:
 
@@ -551,20 +551,20 @@ Thumbnailer:
 
 General:
 
-   - Improved GLTF format support
-   - Improved VXL format support
-   - Improved Qubicle QB support
+   - Improved `GLTF` format support
+   - Improved `VXL` format support
+   - Improved Qubicle `QB` support
    - Fixed block id parsing for StarMade voxel models
    - Major improvements in scene graph transform handling
    - Improved voxelization of meshes with voxels
-   - Added kv6 write support
-   - Added slab6 vox write support
+   - Added `kv6` write support
+   - Added slab6 `vox` write support
    - Fixed saving black colors for cubeworld
    - Fixed saving palette index 0 for binvox
-   - Fixed Sandbox VXM palette issue
-   - Fixed QBCL saving
-   - Improved qbt scene graph support
-   - Improved vox saving with multiple palettes
+   - Fixed Sandbox `VXM` palette issue
+   - Fixed `QBCL` saving
+   - Improved `qbt` scene graph support
+   - Improved `vox` saving with multiple palettes
    - Improved the file dialog size and special dir handling
    - Improved dark mode support
    - Improved palette support for some formats
@@ -586,20 +586,20 @@ VoxEdit:
 General:
 
    - Added support for minecraft 1.13 region files
-   - Added support for loading minecraft level.dat (only with supported region files)
-   - Added support for WorldEdit schematics
-   - Added support for Minecraft nbt files
+   - Added support for loading minecraft `level.dat` (only with supported region files)
+   - Added support for WorldEdit `schematics`
+   - Added support for Minecraft `nbt` files
    - Added support for StarMade voxel models
    - Added support for Quake1 and UFO:Alien Invasion
    - Reduced memory footprint for voxelizing huge meshes
    - Support wrap mode texture settings for gltf voxelization
    - Improved sanity check for Qubicle Binary format support
-   - Fixed texture lookup error in gltf voxelization
+   - Fixed texture lookup error in `gltf` voxelization
    - Extended lua vector bindings and Allow one to import heightmaps
    - Improved the file dialog filters
    - Added new lua scripts and extended lua integration in voxconvert
    - Added support for RGB (`pal`) and Gimp (`gpl`) palette loading
-   - Improved the Command & Conquer VXL format support
+   - Improved the Command & Conquer `VXL` format support
 
 VoxEdit:
 
@@ -623,12 +623,12 @@ VoxEdit:
 
 General:
 
-   - Added support for minecraft schematic
+   - Added support for minecraft `schematic`
    - Refactored and extended the lua script integration
    - Implemented applying depth/height map to a 2d plane
    - Added support for new magicavoxel format (animations)
-   - Preserve node hierarchy when saving vxr
-   - GLTF voxelization
+   - Preserve node hierarchy when saving `vxr`
+   - `GLTF` voxelization
    - Allow one to enable certain renderer features
    - Expose more noise functions to the lua scripts
    - Expose more volume functions to the lua scripts
@@ -638,10 +638,10 @@ General:
    - Added more lua example scripts
    - Improved color sampling for voxelization
    - Started to support different palettes in one scene
-   - Fixed vxc support
+   - Fixed `vxc` support
    - Load the palette from the source file
-   - Fixed vxm file path when saving vxr
-   - Save vxmc (version 12) now
+   - Fixed `vxm` file path when saving `vxr`
+   - Save `vxmc` v12 now
    - Changed default ambient color and gamma values
    - Improved osx dmg file and app bundles
 
@@ -668,20 +668,20 @@ VoxConvert:
 General:
 
    - Replaced minecraft support with own implementation
-   - Added support for Sandbox VXA format (via VXR) and improved VXR
+   - Added support for Sandbox `VXA` format (via `VXR`) and improved `VXR`
    - Allow one to change the ui colors via cvar (`ui_style`)
    - Added bloom render support for vox and vxm
    - Added support for loading key frames if the format supports it
    - Improved apple support in file dialog
    - The palette handling was refactored
-   - Allow one to save the MATL chunk in magicavoxel vox files
+   - Allow one to save the MATL chunk in magicavoxel `vox` files
    - Ability to scale exported mesh with different values for each axis
    - Added stl voxelization support
    - Allow one to modify the camera zoom min/max values
-   - Allow one to load different sizes for AoS VXL files
+   - Allow one to load different sizes for AoS `VXL` files
    - Lerp the camera zooming
-   - Added support for GLTF export
-   - Added experimental export support for FBX ascii
+   - Added support for `GLTF` export
+   - Added experimental export support for `FBX` ascii
    - Increased the max scene graph model nodes from 256 to 1024
 
 VoxEdit:
@@ -716,10 +716,10 @@ General:
 
    - Extended qbcl format support
    - Fixed color conversion issue when importing palettes from voxel models
-   - Voxelization of obj meshes now also fills the inner parts of the mesh with voxels
+   - Voxelization of `obj` meshes now also fills the inner parts of the mesh with voxels
    - Fixed magicavoxel pivot issue (sometimes wrong positions)
-   - Added support for sandbox vxc format
-   - Added support for sandbox vxt format
+   - Added support for sandbox `vxc` format
+   - Added support for sandbox `vxt` format
    - Added new example lua scripts
 
 VoxConvert:
@@ -739,12 +739,12 @@ General:
    - Fixed relative path handling for registered paths
    - Stop event loop if window is minimized (reduce cpu usage)
    - Support scene graphs in the voxel formats
-   - Fixed a few issues with the magicavoxel vox format (switched to ogt_vox)
-   - Load properties from supported voxel formats (vxr, vox, gox)
+   - Fixed a few issues with the magicavoxel vox format (switched to `ogt_vox`)
+   - Load properties from supported voxel formats (`vxr`, `vox`, `gox`)
    - Added support for loading minecraft region files (used enkimi)
-   - Fixed vxm pivot and black color issue
-   - Added obj voxelization
-   - Improved obj export
+   - Fixed `vxm` pivot and black color issue
+   - Added `obj` voxelization
+   - Improved `obj` export
    - Improved file dialog
 
 VoxConvert:
@@ -767,9 +767,9 @@ General:
 
    - Fixed magicavoxel vox file saving
    - Added support for old magicavoxel (pre RIFF) format
-   - Fixed bugs in binvox support
-   - Fixed save dir for vxm files when saving vxr
-   - Save vxm version 5 (with included pivot)
+   - Fixed bugs in `binvox` support
+   - Fixed save dir for `vxm` files when saving `vxr`
+   - Save `vxm` v5 (with included pivot)
    - Support bigger volumes for magicavoxel files
 
 VoxConvert:
@@ -788,20 +788,20 @@ VoxEdit:
 
 General:
 
-   - Fixed missing vxm (version 4) saving support
-   - Fixed missing palette value for vxm saving
+   - Fixed missing `vxm` (v4) saving support
+   - Fixed missing palette value for `vxm` saving
    - Added support for loading only the palettes
-   - Added support for goxel gox file format
-   - Added support for sproxel csv file format
+   - Added support for goxel `gox` file format
+   - Added support for sproxel `csv` file format
    - Added support for a lot more image formats
    - Improved lod creation for thin surface voxels
-   - Fixed vxr9 load support
-   - Added support for writing vxr files
+   - Fixed `vxr` v9 load support
+   - Added support for writing `vxr` files
 
 VoxConvert:
 
    - Added option to keep the input file palette and don't perform quantization
-   - Allow one to export the palette to png
+   - Allow one to export the palette to `png`
    - Allow one to generate models from heightmap images
    - Allow one to run lua scripts to modify volumes
    - Allow one to export or convert only single layers (`--filter`)
@@ -830,7 +830,7 @@ General:
 
 Thumbnailer:
 
-   - Added qbcl thumbnail support
+   - Added `qbcl` thumbnail support
 
 VoxEdit:
 
@@ -866,7 +866,7 @@ General:
    - Reduced memory allocations per frame
    - Added key bindings dialog
    - Added notifications for warnings and errors in the ui
-   - Fixed Sandbox Voxedit VXM v12 loading and added saving support
+   - Fixed Sandbox Voxedit `VXM` v12 loading and added saving support
    - Fixed MagicaVoxel vox file rotation handling
 
 VoxEdit:
@@ -883,7 +883,7 @@ General:
    - Fixed texture coordinate indices for multi layer obj exports
    - Improved magicavoxel transform support for some models
    - Fixed magicavoxel x-axis handling
-   - Support newer versions of vxm and vxr
+   - Support newer versions of `vxm` and `vxr`
    - Fixed bug in file dialog which prevents you to delete characters #77
 
 VoxEdit:
@@ -929,9 +929,9 @@ General:
    - Added quaternion lua support
    - Updated external dependencies
    - Refactored lua bindings
-   - Support Chronovox-Studio files (csm)
-   - Support Nick's Voxel Model files (nvm)
-   - Support more versions of the vxm format
+   - Support Chronovox-Studio files (`csm`)
+   - Support Nick's Voxel Model files (`nvm`)
+   - Support more versions of the `vxm` format
 
 VoxEdit:
 
@@ -979,13 +979,13 @@ VoxConvert:
 
 General:
 
-   - Switched to qb as default volume format
-   - Improved scene graph support for Magicavoxel vox files
-   - Fixed invisible voxels for qb and qbt (Qubicle) volume format
+   - Switched to `qb` as default volume format
+   - Improved scene graph support for Magicavoxel `vox` files
+   - Fixed invisible voxels for `qb` and `qbt` (Qubicle) volume format
    - Support automatic loading different volume formats for assets
-   - Support Command&Conquer vxl files
-   - Support Ace of Spades map files (vxl)
-   - Support Qubicle exchange format (qef)
+   - Support Command&Conquer `vxl` files
+   - Support Ace of Spades map files (`vxl`)
+   - Support Qubicle exchange format (`qef`)
    - Perform mesh extraction in dedicated threads for simple volume rendering
    - Improved gizmo rendering and translation support
    - Fixed memory leaks on shutdown
@@ -995,8 +995,8 @@ General:
 
 General:
 
-   - Added support for writing binvox files
-   - Added support for reading kvx (Build-Engine) and kv6 (SLAB6) voxel volumes
+   - Added support for writing `binvox` files
+   - Added support for reading `kvx` (Build-Engine) and `kv6` (SLAB6) voxel volumes
    - Performed some AFL hardening on voxel format code
    - Don't execute keybindings if the console is active
    - Added basic shader storage buffer support
@@ -1070,7 +1070,7 @@ VoxEdit:
 
 General:
 
-   - Fixed binvox header parsing
+   - Fixed `binvox` header parsing
    - Improved compilation speed
    - Fixed compile errors with locally installed glm 0.9.9
    - Fixed setup-documentation errors
