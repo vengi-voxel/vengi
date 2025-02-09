@@ -28,7 +28,7 @@ There are several map generators available.
 
 `./vengi-voxconvert --script aos_forest_river --output aos_forest_river.vengi`
 
-They are generating for the Ace of Spades map size (based on the public domain code from (aoemap)[https://silverspaceship.com/aosmap/]) - so we can also directly create the `vxl` for Ace of Spades.
+They are generating for the Ace of Spades map size (based on the public domain code from [aoemap](https://silverspaceship.com/aosmap/) - so we can also directly create the `vxl` for Ace of Spades.
 
 `./vengi-voxconvert --script aos_forest_river --output aos_forest_river.vxl`
 
