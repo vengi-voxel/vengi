@@ -1622,7 +1622,13 @@ void ImGuiTestContext::_MakeAimingSpaceOverPos(ImGuiViewport* viewport, ImGuiWin
     LogDebug("_MakeAimingSpaceOverPos(over_window = '%s', over_pos = %.2f,%.2f)", over_window ? over_window->Name : "N/A", over_pos.x, over_pos.y);
 
     const int over_window_n = (over_window != nullptr) ? ImGui::FindWindowDisplayIndex(over_window) : -1;
-    const ImVec2 window_min_pos = over_pos + g.WindowsHoverPadding + ImVec2(1.0f, 1.0f);
+#if IMGUI_VERSION_NUM < 19183
+    const ImVec2 hover_padding = g.WindowsHoverPadding;
+#else
+    const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
+#endif
+
+    const ImVec2 window_min_pos = over_pos + hover_padding + ImVec2(1.0f, 1.0f);
     for (int window_n = g.Windows.Size - 1; window_n > over_window_n; window_n--)
     {
         ImGuiWindow* window = g.Windows[window_n];
@@ -1732,11 +1738,16 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 
     // Check visibility and scroll if necessary
     {
+#if IMGUI_VERSION_NUM < 19183
+        const ImVec2 hover_padding = g.WindowsHoverPadding;
+#else
+        const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
+#endif
         if (item.NavLayer == ImGuiNavLayer_Main)
         {
             float min_visible_size = 10.0f;
-            float min_window_size_x = window->DecoInnerSizeX1 + window->DecoOuterSizeX1 + window->DecoOuterSizeX2 + min_visible_size + g.WindowsHoverPadding.x * 2.0f;
-            float min_window_size_y = window->DecoInnerSizeY1 + window->DecoOuterSizeY1 + window->DecoOuterSizeY2 + min_visible_size + g.WindowsHoverPadding.y * 2.0f;
+            float min_window_size_x = window->DecoInnerSizeX1 + window->DecoOuterSizeX1 + window->DecoOuterSizeX2 + min_visible_size + hover_padding.x * 2.0f;
+            float min_window_size_y = window->DecoInnerSizeY1 + window->DecoOuterSizeY1 + window->DecoOuterSizeY2 + min_visible_size + hover_padding.y * 2.0f;
             if ((window->Size.x < min_window_size_x || window->Size.y < min_window_size_y) && (window->Flags & ImGuiWindowFlags_NoResize) == 0 && (window->Flags & ImGuiWindowFlags_AlwaysAutoResize) == 0)
             {
                 LogDebug("MouseMove: Will attempt to resize window to make item in main scrolling layer visible.");
@@ -1749,7 +1760,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
         }
 
         ImRect window_r = window->InnerClipRect;
-        window_r.Expand(ImVec2(-g.WindowsHoverPadding.x, -g.WindowsHoverPadding.y));
+        window_r.Expand(ImVec2(-hover_padding.x, -hover_padding.y));
 
         ImRect item_r_clipped;
         item_r_clipped.Min.x = ImClamp(item.RectFull.Min.x, window_r.Min.x, window_r.Max.x);
@@ -1985,6 +1996,11 @@ void ImGuiTestContext::_ForeignWindowsHideOverPos(const ImVec2& pos, ImGuiWindow
     for (int i = 0; ignore_list[i]; i++)
         min_window_index = ImMin(min_window_index, ImGui::FindWindowDisplayIndex(ignore_list[i]));
 
+#if IMGUI_VERSION_NUM < 19183
+    const ImVec2 hover_padding = g.WindowsHoverPadding;
+#else
+    const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
+#endif
     bool hidden_windows = false;
     for (int i = 0; i < g.Windows.Size; i++)
     {
@@ -1992,7 +2008,7 @@ void ImGuiTestContext::_ForeignWindowsHideOverPos(const ImVec2& pos, ImGuiWindow
         if (other_window->RootWindow == other_window && other_window->WasActive)
         {
             ImRect r = other_window->Rect();
-            r.Expand(g.WindowsHoverPadding);
+            r.Expand(hover_padding);
             if (r.Contains(pos))
             {
                 for (int j = 0; ignore_list[j]; j++)
@@ -2293,6 +2309,11 @@ ImGuiWindow* ImGuiTestContext::FindHoveredWindowAtPos(const ImVec2& pos)
 
 static bool IsPosOnVoid(ImGuiContext& g, const ImVec2& pos)
 {
+#if IMGUI_VERSION_NUM < 19183
+    const ImVec2 hover_padding = g.WindowsHoverPadding;
+#else
+    const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
+#endif
     for (ImGuiWindow* window : g.Windows)
 #ifdef IMGUI_HAS_DOCK
         if (window->RootWindowDockTree == window && window->WasActive)
@@ -2301,7 +2322,7 @@ static bool IsPosOnVoid(ImGuiContext& g, const ImVec2& pos)
 #endif
         {
             ImRect r = window->Rect();
-            r.Expand(g.WindowsHoverPadding);
+            r.Expand(hover_padding);
             if (r.Contains(pos))
                 return false;
         }

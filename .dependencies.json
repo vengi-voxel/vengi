@@ -8,7 +8,7 @@
     "implot": "47522f47054d33178e7defa780042bd2a06b09f9",
     "backward-cpp": "51f0700452cf71c57d43c2d028277b24cde32502",
     "im-neo-sequencer": "3b7930d4894408f655eefceb9f76e2ca15f1db24",
-    "imgui": "d80347613ab17bd6e96b508e8080c6fa60f2b1da",
+    "imgui": "8679cfa2d88ca8c11b96706272d73f3f567b1bb9",
     "glm": "69b130c162e6266e07392741bd04feacc55dcda2",
     "sdl2": "28472738857ff194b5b6b8778a1975cb605210a2",
     "tinygltf": "a5e653e46cca64bbc0ecee7ede007347a94c39b0",
@@ -22,5 +22,5 @@
     "ufbx": "6af38bda840a1741faa203a2f952e6877f2b4d6f",
     "natsort": "cdd8df9602e727482ae5e051cff74b7ec7ffa07a",
     "miniz": "0c30a001bc3c70770a8742ff00899e662f040c75",
-    "imgui_test_engine": "d9142f4a46b92966a92ad97b9a3757b7c423b046"
+    "imgui_test_engine": "3a280fa93e45e8277d6389bb62f52f0f3d0080a3"
 }
