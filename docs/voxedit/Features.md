@@ -2,7 +2,7 @@
 
 A few of the features are:
 
-* Layer and key frame animation support
+* Layer and key frame [animation](Animation.md) support
 * Viewport screenshots and AVI video recording
 * Customizable UI
 * Multiple viewports to view the model from all sides while editing it
