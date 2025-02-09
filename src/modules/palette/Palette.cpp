@@ -976,7 +976,7 @@ bool Palette::hasAlpha(uint8_t paletteColorIdx) const {
 }
 
 bool Palette::hasEmit(uint8_t paletteColorIdx) const {
-	return _materials[paletteColorIdx].mask & MaterialEmit;
+	return _materials[paletteColorIdx].mask & (1 << MaterialEmit);
 }
 
 void Palette::setMaterialValue(uint8_t paletteColorIdx, MaterialProperty property, float factor) {

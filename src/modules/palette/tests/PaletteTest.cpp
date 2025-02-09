@@ -268,4 +268,13 @@ TEST_F(PaletteTest, testPixeloramaPalette) {
 	EXPECT_EQ(56, pal.colorCount());
 }
 
+TEST_F(PaletteTest, testHasEmit) {
+	Palette pal;
+	pal.setColor(0, core::RGBA{255, 0, 0, 255});
+	EXPECT_EQ(pal.size(), 1u);
+	EXPECT_FALSE(pal.hasEmit(0));
+	pal.setMaterialValue(0, MaterialEmit, 0.5f);
+	EXPECT_TRUE(pal.hasEmit(0));
+}
+
 } // namespace palette

@@ -12,6 +12,8 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Fixed emit value handling for palettes
+
 ## 0.0.35 (2025-02-09)
 
 General:
