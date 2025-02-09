@@ -7,7 +7,6 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
-#define MINIZ_NO_ZLIB_APIS
 #include "io/external/miniz.h"
 #include "io/Stream.h"
 

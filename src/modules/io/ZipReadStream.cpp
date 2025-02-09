@@ -13,12 +13,7 @@
 #endif
 #include <zlib.h>
 #else
-// ignore the -Wunused-function warning
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#define MINIZ_NO_DEFLATE_APIS
 #include "io/external/miniz.h"
-#pragma GCC diagnostic pop
 #endif
 #include "core/Assert.h"
 
