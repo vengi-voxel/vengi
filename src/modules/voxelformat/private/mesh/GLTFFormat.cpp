@@ -620,6 +620,7 @@ int GLTFFormat::saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::P
 		gltfModel.images.emplace_back(core::move(gltfEmitImage));
 
 		tinygltf::Texture gltfEmitTexture;
+		gltfEmitTexture.name = palette.name().c_str();
 		gltfEmitTexture.source = emissiveImageIndex;
 		gltfModel.textures.emplace_back(core::move(gltfEmitTexture));
 	} else {
@@ -649,6 +650,7 @@ int GLTFFormat::saveTexture(tinygltf::Model &gltfModel, const palette::Palette &
 	gltfModel.images.emplace_back(core::move(gltfPaletteImage));
 
 	tinygltf::Texture gltfPaletteTexture;
+	gltfPaletteTexture.name = palette.name().c_str();
 	gltfPaletteTexture.source = imageIndex;
 	gltfModel.textures.emplace_back(core::move(gltfPaletteTexture));
 	return textureIndex;
