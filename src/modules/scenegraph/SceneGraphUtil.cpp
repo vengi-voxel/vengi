@@ -30,7 +30,7 @@ static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent)
 static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKeyFrames = true) {
 	target.setName(node.name());
 	if (copyKeyFrames) {
-		target.setKeyFrames(node.keyFrames());
+		target.setAllKeyFrames(node.allKeyFrames(), "Default");
 	}
 	target.setVisible(node.visible());
 	target.setLocked(node.locked());
@@ -188,6 +188,11 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent) {
 	const SceneGraphNode &sourceRoot = source.root();
 	core::DynamicArray<int> nodesAdded;
+
+	for (const core::String &animation : source.animations()) {
+		target.addAnimation(animation);
+	}
+
 	target.node(parent).addProperties(sourceRoot.properties());
 	for (int sourceNodeId : sourceRoot.children()) {
 		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent));
