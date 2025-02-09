@@ -30,7 +30,7 @@ static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent)
 static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKeyFrames = true) {
 	target.setName(node.name());
 	if (copyKeyFrames) {
-		target.setAllKeyFrames(node.allKeyFrames(), "Default");
+		target.setAllKeyFrames(node.allKeyFrames(), DEFAULT_ANIMATION);
 	}
 	target.setVisible(node.visible());
 	target.setLocked(node.locked());
@@ -155,6 +155,11 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const
 	const SceneGraphNode &sourceRoot = source.root();
 	int nodesAdded = 0;
 	target.node(parent).addProperties(sourceRoot.properties());
+
+	for (const core::String &animation : source.animations()) {
+		target.addAnimation(animation);
+	}
+
 	for (int sourceNodeId : sourceRoot.children()) {
 		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent, onNodeAdded);
 	}
