@@ -554,48 +554,52 @@ void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, 
 	addExtension(gltfModel, "KHR_materials_specular");
 }
 
-void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
+bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
 														  tinygltf::Material &gltfMaterial,
 														  tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialDensity) &&
-		!material.has(palette::MaterialProperty::MaterialSpecular) &&
-		!material.has(palette::MaterialProperty::MaterialRoughness)) {
-		return;
+		!material.has(palette::MaterialProperty::MaterialSpecular)) {
+		return false;
 	}
 	tinygltf::Value::Object sg;
 	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
-	{
+
+	// The reflected diffuse factor of the material
+	if (material.has(palette::MaterialProperty::MaterialDensity)) {
 		std::vector<tinygltf::Value> diffuseFactor(4);
 		const float diffusion = material.value(palette::MaterialProperty::MaterialDensity);
 		diffuseFactor[0] = tinygltf::Value(fcolor[0] * diffusion);
 		diffuseFactor[1] = tinygltf::Value(fcolor[1] * diffusion);
 		diffuseFactor[2] = tinygltf::Value(fcolor[2] * diffusion);
-		diffuseFactor[3] =
-			tinygltf::Value(fcolor[3]); // TODO: MATERIAL: maybe the magicavoxel transparent factor would fit here?
+		// TODO: MATERIAL: maybe the transparent factor would fit here?
+		diffuseFactor[3] = tinygltf::Value(fcolor[3]);
 		sg["diffuseFactor"] = tinygltf::Value(diffuseFactor);
 	}
-	{
+	// The specular RGB color of the material.
+	if (material.has(palette::MaterialProperty::MaterialSpecular)) {
 		std::vector<tinygltf::Value> specularFactor(3);
 		const float specular = material.value(palette::MaterialProperty::MaterialSpecular);
 		specularFactor[0] = tinygltf::Value(fcolor[0] * specular);
 		specularFactor[1] = tinygltf::Value(fcolor[1] * specular);
 		specularFactor[2] = tinygltf::Value(fcolor[2] * specular);
 		sg["specularFactor"] = tinygltf::Value(specularFactor);
-		if (material.has(palette::MaterialProperty::MaterialGlossiness)) {
-			const float glossiness = material.value(palette::MaterialProperty::MaterialGlossiness);
-			sg["glossinessFactor"] = tinygltf::Value(glossiness);
-		} else {
-			sg["glossinessFactor"] =
-				tinygltf::Value(1.0 - material.value(palette::MaterialProperty::MaterialRoughness));
-		}
+	}
+	// The glossiness or smoothness of the material. A value of 1.0 means the material has full glossiness or is
+	// perfectly smooth. A value of 0.0 means the material has no glossiness or is perfectly rough. This value is
+	// linear.
+	if (material.has(palette::MaterialProperty::MaterialGlossiness)) {
+		const float glossiness = material.value(palette::MaterialProperty::MaterialGlossiness);
+		sg["glossinessFactor"] = tinygltf::Value(glossiness);
+	} else if (material.has(palette::MaterialProperty::MaterialRoughness)) {
+		sg["glossinessFactor"] =
+			tinygltf::Value(1.0 - material.value(palette::MaterialProperty::MaterialRoughness));
 	}
 	gltfMaterial.extensions["KHR_materials_pbrSpecularGlossiness"] = tinygltf::Value(sg);
 	addExtension(gltfModel, "KHR_materials_pbrSpecularGlossiness");
+	return true;
 }
 
 int GLTFFormat::saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const {
-	int emissiveTextureIndex = (int)gltfModel.textures.size();
-
 	bool hasEmit = false;
 	core::RGBA colors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette::PaletteMaxColors; i++) {
@@ -605,6 +609,7 @@ int GLTFFormat::saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::P
 		colors[i] = palette.emitColor(i);
 	}
 	if (hasEmit) {
+		int emissiveTextureIndex = (int)gltfModel.textures.size();
 		const int emissiveImageIndex = (int)gltfModel.images.size();
 
 		tinygltf::Image gltfEmitImage;
@@ -623,10 +628,9 @@ int GLTFFormat::saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::P
 		gltfEmitTexture.name = palette.name().c_str();
 		gltfEmitTexture.source = emissiveImageIndex;
 		gltfModel.textures.emplace_back(core::move(gltfEmitTexture));
-	} else {
-		emissiveTextureIndex = -1;
+		return emissiveTextureIndex;
 	}
-	return emissiveTextureIndex;
+	return -1;
 }
 
 int GLTFFormat::saveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const {
@@ -663,8 +667,8 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 	if (paletteMaterialIter == paletteMaterialIndices.end()) {
 		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
 
-		const int textureIndex = saveTexture(gltfModel, palette);
-		const int emissiveTextureIndex = saveEmissiveTexture(gltfModel, palette);
+		const int textureIndex = withTexCoords ? saveTexture(gltfModel, palette) : -1;
+		const int emissiveTextureIndex = withTexCoords ? saveEmissiveTexture(gltfModel, palette) : -1;
 		const bool KHR_materials_pbrSpecularGlossiness =
 			core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
 		const bool withMaterials = core::Var::getSafe(cfg::VoxFormatWithMaterials)->boolVal();
@@ -705,9 +709,11 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 						material.value(palette::MaterialProperty::MaterialMetal);
 				}
 
+				bool pbrSpecularGlossiness = false;
 				if (KHR_materials_pbrSpecularGlossiness) {
-					save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
-				} else {
+					pbrSpecularGlossiness = save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
+				}
+				if (!pbrSpecularGlossiness) {
 					if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
 						save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
 					}
