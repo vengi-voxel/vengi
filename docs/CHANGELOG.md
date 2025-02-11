@@ -13,6 +13,9 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Fixed emit value handling for palettes
+   - Fixed `KHR_materials_pbrSpecularGlossiness` handling for `gltf` exports
+   - Added new lua script to create newel stairs
+   - Fixed missing animation transfer from one scenegraph into other one
 
 ## 0.0.35 (2025-02-09)
 
