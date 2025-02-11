@@ -985,23 +985,38 @@ void Palette::setMaterialValue(uint8_t paletteColorIdx, MaterialProperty propert
 }
 
 void Palette::setEmit(uint8_t paletteColorIdx, float factor) {
-	setMaterialValue(paletteColorIdx, MaterialEmit, factor);
+	if (factor < 0.0f || factor > 1.0f) {
+		Log::warn("Unexpected emit factor %f for palette color %i", factor, paletteColorIdx);
+	}
+	setMaterialValue(paletteColorIdx, MaterialEmit, glm::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setMetal(uint8_t paletteColorIdx, float factor) {
-	setMaterialValue(paletteColorIdx, MaterialMetal, factor);
+	if (factor < 0.0f || factor > 1.0f) {
+		Log::warn("Unexpected metal factor %f for palette color %i", factor, paletteColorIdx);
+	}
+	setMaterialValue(paletteColorIdx, MaterialMetal, glm::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setRoughness(uint8_t paletteColorIdx, float factor) {
-	setMaterialValue(paletteColorIdx, MaterialRoughness, factor);
+	if (factor < 0.0f || factor > 1.0f) {
+		Log::warn("Unexpected roughness factor %f for palette color %i", factor, paletteColorIdx);
+	}
+	setMaterialValue(paletteColorIdx, MaterialRoughness, glm::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setSpecular(uint8_t paletteColorIdx, float factor) {
-	setMaterialValue(paletteColorIdx, MaterialSpecular, factor);
+	if (factor < 0.0f || factor > 1.0f) {
+		Log::warn("Unexpected specular factor %f for palette color %i", factor, paletteColorIdx);
+	}
+	setMaterialValue(paletteColorIdx, MaterialSpecular, glm::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setIndexOfRefraction(uint8_t paletteColorIdx, float factor) {
-	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, factor);
+	if (factor < 1.0f || factor > 3.0f) {
+		Log::warn("Unexpected ior value %f for palette color %i", factor, paletteColorIdx);
+	}
+	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, glm::clamp(factor, 1.0f, 3.0f));
 }
 
 void Palette::setAttenuation(uint8_t paletteColorIdx, float factor) {
@@ -1013,7 +1028,10 @@ void Palette::setFlux(uint8_t paletteColorIdx, float factor) {
 }
 
 void Palette::setAlpha(uint8_t paletteColorIdx, float factor) {
-	_colors[paletteColorIdx].a = (float)_colors[paletteColorIdx].a * factor;
+	if (factor < 0.0f || factor > 1.0f) {
+		Log::warn("Unexpected alpha factor %f for palette color %i", factor, paletteColorIdx);
+	}
+	_colors[paletteColorIdx].a = (float)_colors[paletteColorIdx].a * glm::clamp(factor, 0.0f, 1.0f);
 	markDirty();
 }
 
@@ -1026,7 +1044,10 @@ void Palette::setSp(uint8_t paletteColorIdx, float factor) {
 }
 
 void Palette::setGlossiness(uint8_t paletteColorIdx, float factor) {
-	setMaterialValue(paletteColorIdx, MaterialGlossiness, factor);
+	if (factor < 0.0f || factor > 1.0f) {
+		Log::warn("Unexpected glossiness factor %f for palette color %i", factor, paletteColorIdx);
+	}
+	setMaterialValue(paletteColorIdx, MaterialGlossiness, glm::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setMedia(uint8_t paletteColorIdx, float factor) {
