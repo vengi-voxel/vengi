@@ -39,7 +39,7 @@ def update_git(name, repo_url, branch=None):
             clone_cmd += ["-b", branch]
         subprocess.run(clone_cmd, check=True)
     else:
-        pull_cmd = ["git", "-C", sync_dir, "pull", "--depth=10", "--rebase", "--allow-unrelated-histories"]
+        pull_cmd = ["git", "-C", sync_dir, "pull", "--rebase", "--allow-unrelated-histories"]
         subprocess.run(pull_cmd, check=True)
     return get_git_revision(sync_dir)
 
@@ -97,6 +97,19 @@ def copy_if_updated(src, dest):
         copy_directory(src, dest)
     else:
         copy_file(src, dest)
+
+def remove_files(file):
+    """
+    Removes files matching the file pattern.
+    """
+    matched_files = glob.glob(file)
+    if not matched_files:
+        print(f"No files matched the pattern: {file}")
+        return
+
+    for file in matched_files:
+        os.remove(file)
+        print(f"Removed file: {file}")
 
 def update_target(name, repo_url, src_dest_pairs, branch=None):
     hashes = load_hashes()
@@ -215,13 +228,14 @@ def update_dearimgui():
         ],
         branch="docking"
     )
+    remove_files("src/modules/ui/dearimgui/imgui_demo.cpp")
 
 def update_dearimgui_testengine():
     update_target(
         "imgui_test_engine",
         "https://github.com/ocornut/imgui_test_engine.git",
         [
-            (f"imgui_test_engine", "src/modules/ui/dearimgui/imgui_test_engine"),
+            (f"imgui_test_engine/*", "src/modules/ui/dearimgui/imgui_test_engine"),
         ]
     )
 
