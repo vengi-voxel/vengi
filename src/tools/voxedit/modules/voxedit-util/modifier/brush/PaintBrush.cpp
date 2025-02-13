@@ -45,7 +45,7 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 		}
 		_palette.markDirty();
 		_palette.markSave();
-		// TODO: no memento state handling here
+		// TODO: MEMENTO: no memento state handling for the palette here
 		return voxel::createVoxel(_palette, newColorIndex, old.getFlags());
 	}
 	return voxel::createVoxel(_palette, index, old.getFlags());
