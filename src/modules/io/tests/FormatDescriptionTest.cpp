@@ -6,6 +6,11 @@ namespace io {
 class FormatDescriptionTest: public testing::Test {
 };
 
+TEST_F(FormatDescriptionTest, testIsA) {
+	EXPECT_TRUE(isA("image.png", io::format::images()));
+	EXPECT_FALSE(isA("something.else", io::format::lua()));
+}
+
 TEST_F(FormatDescriptionTest, testIsImage) {
 	ASSERT_TRUE(isImage("foobar.PNG"));
 	ASSERT_TRUE(isImage("foobar.png"));

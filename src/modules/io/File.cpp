@@ -101,18 +101,6 @@ bool File::validHandle() const {
 	return _file != nullptr;
 }
 
-bool File::isAnyOf(const io::FormatDescription* desc) const {
-	const core::String& ext = extension();
-	while (desc->valid()) {
-		if (desc->matchesExtension(ext)) {
-			// TODO: isA check
-			return true;
-		}
-		++desc;
-	}
-	return false;
-}
-
 bool File::exists() const {
 	if (_mode == FileMode::Read || _mode == FileMode::SysRead) {
 		return _file != nullptr;

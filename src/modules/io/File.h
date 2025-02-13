@@ -80,8 +80,6 @@ public:
 	long tell() const;
 	long seek(long offset, int seekType) const;
 
-	bool isAnyOf(const io::FormatDescription* desc) const;
-
 	/**
 	 * @return The FileMode the file was opened with
 	 */
