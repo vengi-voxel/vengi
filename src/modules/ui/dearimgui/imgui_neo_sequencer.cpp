@@ -63,7 +63,6 @@ struct ImGuiNeoSequencerInternalData {
 	ImVector<ImGuiID> GroupStack;
 
 	FrameIndexType CurrentFrame = 0;
-	bool HoldingCurrentFrame = false; // Are we draging current frame?
 	ImVec4 CurrentFrameColor; // Color of current frame, we have to save it because we render on EndNeoSequencer, but
 							  // process at BeginneoSequencer
 
@@ -149,48 +148,35 @@ static void processCurrentFrame(FrameIndexType *frame, ImGuiNeoSequencerInternal
 
 	const auto &imStyle = GetStyle();
 
-	const auto timelineXmin = context.TopBarStartCursor.x + context.ValuesWidth + imStyle.FramePadding.x;
-
-	const ImVec2 timelineXRange = {timelineXmin, // min
-								   timelineXmin + context.Size.x - context.ValuesWidth};
-
-	const auto hovered = ItemHoverable(pointerRect, GetCurrentWindow()->GetID("##_top_selector_neo"), 0);
-
-	context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointer);
-
-	if (hovered) {
-		context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerHovered);
+	ImGuiID id = GetCurrentWindow()->GetID("currentframeselector");
+	ItemSize(pointerRect.GetSize(), imStyle.FramePadding.y);
+	if (!ItemAdd(pointerRect, id)) {
+		return;
 	}
 
-	if (context.HoldingCurrentFrame) {
-		if (IsMouseDragging(ImGuiMouseButton_Left, 0.0f)) {
-			const auto mousePosX = GetMousePos().x;
-			const auto v = mousePosX - timelineXRange.x; // Subtract min
+	bool hovered, held;
+	/* bool pressed = */ ButtonBehavior(pointerRect, id, &hovered, &held, 0);
 
-			const auto normalized = v / getWorkTimelineWidth(context); // Divide by width to remap to 0 - 1 range
+	if (held) {
+		const float timelineXmin = context.TopBarStartCursor.x + context.ValuesWidth + imStyle.FramePadding.x;
+		const ImVec2 timelineXRange = {timelineXmin, timelineXmin + context.Size.x - context.ValuesWidth};
+		const float mousePosX = GetMousePos().x;
+		// Subtract min
+		const float v = mousePosX - timelineXRange.x;
+		// Divide by width to remap to 0 - 1 range
+		const float normalized = v / getWorkTimelineWidth(context);
+		const float clamped = ImClamp(normalized, 0.0f, 1.0f);
+		const float viewSize = (float)(context.EndFrame - context.StartFrame) / context.Zoom;
+		const float frameViewVal = (float)context.StartFrame + (clamped * (float)viewSize);
+		const FrameIndexType finalFrame = (FrameIndexType)round(frameViewVal) + context.OffsetFrame;
 
-			const auto clamped = ImClamp(normalized, 0.0f, 1.0f);
-
-			const auto viewSize = (float)(context.EndFrame - context.StartFrame) / context.Zoom;
-
-			const auto frameViewVal = (float)context.StartFrame + (clamped * (float)viewSize);
-
-			const auto finalFrame = (FrameIndexType)round(frameViewVal) + context.OffsetFrame;
-
-			context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerPressed);
-
-			*frame = finalFrame;
-		}
-
-		if (!IsMouseDown(ImGuiMouseButton_Left)) {
-			context.HoldingCurrentFrame = false;
-			context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointer);
-		}
-	}
-
-	if (hovered && IsMouseDown(ImGuiMouseButton_Left) && !context.HoldingCurrentFrame) {
-		context.HoldingCurrentFrame = true;
 		context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerPressed);
+
+		*frame = finalFrame;
+	} else if (hovered) {
+		context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerHovered);
+	} else {
+		context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointer);
 	}
 
 	context.CurrentFrame = *frame;

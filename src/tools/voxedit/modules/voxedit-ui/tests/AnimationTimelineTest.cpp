@@ -11,18 +11,26 @@
 namespace voxedit {
 
 void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id) {
-#if 0
 	// https://github.com/ocornut/imgui_test_engine/issues/48
 	// https://gitlab.com/GroGy/im-neo-sequencer/-/issues/28
 	IM_REGISTER_TEST(engine, testCategory(), "create keyframe")->TestFunc = [=](ImGuiTestContext *ctx) {
+		const int nodeId = _sceneMgr->sceneGraph().activeNode();
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+		IM_CHECK(node != nullptr);
+
 		activateViewportSceneMode(ctx, _app);
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->SetRef(ctx->WindowInfo("##sequencer_child_wrapper").ID);
-		ctx->MouseMove("sequencer/##_top_selector_neo");
-		ctx->MouseDragWithDelta({10.0f, 0.0f});
+		const ImGuiID wrapperId = ctx->WindowInfo("##sequencer_child_wrapper").ID;
+		ctx->SetRef(wrapperId);
+		const ImGuiTestItemInfo frameSelector = ctx->ItemInfo("sequencer/currentframeselector");
+		ctx->MouseMove(frameSelector.ID);
+		ctx->MouseDragWithDelta({ImGui::Size(10.0f), 0.0f}, ImGuiMouseButton_Left);
+		IM_CHECK(focusWindow(ctx, id));
+		const size_t before = node->keyFrames().size();
 		ctx->ItemClick("###Add");
+		const size_t after = node->keyFrames().size();
+		IM_CHECK(after == before + 1);
 	};
-#endif
 }
 
 } // namespace voxedit
