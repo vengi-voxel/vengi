@@ -37,7 +37,7 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 	if (!drawList)
 		drawList = ImGui::GetWindowDrawList();
 
-	const auto &style = GetStyle();
+	const ImGuiStyle &style = GetStyle();
 
 	const ImRect barArea = {cursor + ImVec2{style.FramePadding.x + valuesWidth, style.FramePadding.y}, cursor + size};
 
@@ -45,7 +45,7 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 	const uint32_t viewStart = startFrame + offsetFrame;
 
 	if (drawFrameLines) {
-		const auto count = (int32_t)((float)((viewEnd + 1) - viewStart) / zoom);
+		const int32_t count = (int32_t)((float)((viewEnd + 1) - viewStart) / zoom);
 
 		int32_t counter = 0;
 		uint32_t primaryFrames = pow(10, counter++);
@@ -69,14 +69,13 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 		}
 
 		for (int32_t i = 0; i < count; i++) {
-
-			const auto primaryFrame = ((viewStart + i) % primaryFrames == 0);
-			const auto secondaryFrame = ((viewStart + i) % secondaryFrames == 0);
+			const bool primaryFrame = ((viewStart + i) % primaryFrames == 0);
+			const bool secondaryFrame = ((viewStart + i) % secondaryFrames == 0);
 
 			if (!primaryFrame && !secondaryFrame)
 				continue;
 
-			const auto lineHeight = secondaryFrame ? barArea.GetSize().y : barArea.GetSize().y / 2.0f;
+			const float lineHeight = secondaryFrame ? barArea.GetSize().y : barArea.GetSize().y / 2.0f;
 
 			const ImVec2 p1 = {barArea.Min.x + (float)i * (perFrameWidth / (float)primaryFrames), barArea.Max.y};
 			const ImVec2 p2 = {barArea.Min.x + (float)i * (perFrameWidth / (float)primaryFrames),
@@ -86,7 +85,7 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 
 			if (drawFrameText && secondaryFrame) {
 				char text[10];
-				const auto printRes = snprintf(text, sizeof(text), "%i", viewStart + i);
+				const int printRes = snprintf(text, sizeof(text), "%i", viewStart + i);
 				if (printRes > 0) {
 					drawList->AddText(NULL, 0, {p1.x + 2.0f, barArea.Min.y}, IM_COL32_WHITE, text);
 				}
@@ -97,12 +96,12 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 
 void RenderNeoTimelineLabel(const char *label, const ImVec2 &cursor, const ImVec2 &size, const ImVec4 &color,
 							bool isGroup, bool isOpen, ImDrawList *drawList) {
-	const auto &imStyle = GetStyle();
+	const ImGuiStyle &imStyle = GetStyle();
 
 	if (!drawList)
 		drawList = ImGui::GetWindowDrawList();
 
-	auto c = cursor;
+	ImVec2 c = cursor;
 
 	if (isGroup) {
 		RenderArrow(drawList, c, IM_COL32_WHITE, isOpen ? ImGuiDir_Down : ImGuiDir_Right);
@@ -132,11 +131,11 @@ void RenderNeoTimelane(bool selected, const ImVec2 &cursor, const ImVec2 &size, 
 }
 
 float GetPerFrameWidth(float totalSizeX, float valuesWidth, uint32_t endFrame, uint32_t startFrame, float zoom) {
-	const auto &imStyle = GetStyle();
+	const ImGuiStyle &imStyle = GetStyle();
 
-	const auto size = totalSizeX - valuesWidth - imStyle.FramePadding.x;
+	const float size = totalSizeX - valuesWidth - imStyle.FramePadding.x;
 
-	auto count = (endFrame + 1) - startFrame;
+	uint32_t count = (endFrame + 1) - startFrame;
 
 	return ((size / (float)count) * zoom);
 }
@@ -147,7 +146,7 @@ struct Vec2Pair {
 };
 
 static Vec2Pair getCurrentFrameLine(const ImRect &pointerBB, float timelineHeight) {
-	const auto center = ImVec2{pointerBB.Min.x, pointerBB.Max.y} + ImVec2{pointerBB.GetSize().x / 2.0f, 0};
+	const ImVec2 center = ImVec2{pointerBB.Min.x, pointerBB.Max.y} + ImVec2{pointerBB.GetSize().x / 2.0f, 0};
 
 	return Vec2Pair{center, center + ImVec2{0, timelineHeight}};
 }
@@ -157,14 +156,14 @@ void RenderNeoSequencerCurrentFrame(const ImVec4 &color, const ImVec4 &topColor,
 	if (!drawList)
 		drawList = ImGui::GetWindowDrawList();
 
-	const auto pair = getCurrentFrameLine(pointerBB, timelineHeight);
+	const Vec2Pair pair = getCurrentFrameLine(pointerBB, timelineHeight);
 
 	drawList->AddLine(pair.a, pair.b, ColorConvertFloat4ToU32(color), lineWidth);
 
 	drawList->PopClipRect();
 
 	{ // Top pointer has custom shape, we have to create it
-		const auto size = pointerBB.GetSize();
+		const ImVec2 size = pointerBB.GetSize();
 		ImVec2 pts[5];
 		pts[0] = pointerBB.Min;
 		pts[1] = pointerBB.Min + ImVec2{size.x, 0};

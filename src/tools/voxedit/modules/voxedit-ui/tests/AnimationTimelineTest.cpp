@@ -3,7 +3,6 @@
  */
 
 #include "../AnimationTimeline.h"
-#include "core/String.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
@@ -11,8 +10,6 @@
 namespace voxedit {
 
 void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id) {
-	// https://github.com/ocornut/imgui_test_engine/issues/48
-	// https://gitlab.com/GroGy/im-neo-sequencer/-/issues/28
 	IM_REGISTER_TEST(engine, testCategory(), "create keyframe")->TestFunc = [=](ImGuiTestContext *ctx) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
