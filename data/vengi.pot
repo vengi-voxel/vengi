@@ -589,6 +589,10 @@ msgstr ""
 msgid "The maximum depth of the volume when importing an image as volume"
 msgstr ""
 
+msgid ""
+"The minimum height of the heightmap when importing an image as heightmap"
+msgstr ""
+
 msgid "Import the image as volume for both sides"
 msgstr ""
 
@@ -600,6 +604,10 @@ msgstr ""
 
 msgid ""
 "Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
+msgstr ""
+
+msgid ""
+"The maximum size of an image in x and y direction to quantize to a palette"
 msgstr ""
 
 msgid "Back"
@@ -731,6 +739,9 @@ msgstr ""
 msgid "Depth map not found: %s"
 msgstr ""
 
+msgid "Min height"
+msgstr ""
+
 msgid "Texture search path"
 msgstr ""
 
@@ -765,6 +776,9 @@ msgid "Map colors to palette"
 msgstr ""
 
 msgid "6 bit colors"
+msgstr ""
+
+msgid "Max image size"
 msgstr ""
 
 msgid "LUA scripts for manipulating the voxel volumes"
@@ -819,6 +833,9 @@ msgid "Source"
 msgstr ""
 
 msgid "Target"
+msgstr ""
+
+msgid "vengi-voxconvert not found in current dir or PATH"
 msgstr ""
 
 msgid "Overwrite existing target file"
@@ -1780,7 +1797,7 @@ msgstr ""
 msgid "Calculate normals"
 msgstr ""
 
-msgid "Export the palette"
+msgid "Calculate normals for the model"
 msgstr ""
 
 msgid "Model from color"
@@ -1833,6 +1850,9 @@ msgid "Lospec"
 msgstr ""
 
 msgid "ID"
+msgstr ""
+
+msgid "Export the palette"
 msgstr ""
 
 msgid "Sort"
@@ -2290,6 +2310,10 @@ msgid "Leaves thickness"
 msgstr ""
 
 #, c-format
+msgid "Slice at %s: %i"
+msgstr ""
+
+#, c-format
 msgid ""
 "pos: %i:%i:%i\n"
 "size: %i:%i:%i\n"
@@ -2366,6 +2390,9 @@ msgid "View"
 msgstr ""
 
 msgid "Scene Mode"
+msgstr ""
+
+msgid "Apply transforms"
 msgstr ""
 
 msgid "Undo disabled for this volume. Max volume size exceeded"

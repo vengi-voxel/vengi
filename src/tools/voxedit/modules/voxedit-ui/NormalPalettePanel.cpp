@@ -126,7 +126,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 
 				ImGui::EndMenu();
 			}
-			ImGui::TooltipTextUnformatted(_("Export the palette"));
+			ImGui::TooltipTextUnformatted(_("Calculate normals for the model"));
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
