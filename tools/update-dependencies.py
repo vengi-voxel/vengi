@@ -58,6 +58,16 @@ def convert_to_unix_line_endings(src, dest):
         return
     print(f"Copied and converted line endings: {src} -> {dest}")
 
+def convert_to_unix_line_endings_inline(file):
+    """
+    Converts the line endings of the file to Unix (\n).
+    """
+    # create a temp file
+    temp_file = file + ".tmp"
+    convert_to_unix_line_endings(file, temp_file)
+    # replace the original file with the temp file
+    shutil.move(temp_file, file)
+
 def copy_file(src_pattern, destination):
     """
     Copies files matching the src_pattern to the destination directory.
@@ -75,6 +85,18 @@ def copy_file(src_pattern, destination):
             dest = destination
         convert_to_unix_line_endings(src, dest)
 
+def convert_to_unix_line_endings_dir(dir):
+    """
+    Converts all files in the directory to Unix line endings.
+    """
+    print(f"Converting line endings in directory: {dir}")
+    for root, dir, files in os.walk(dir):
+        for file in files:
+            convert_to_unix_line_endings_inline(os.path.join(root, file))
+        # now recursively convert all subdirectories
+        for d in dir:
+            convert_to_unix_line_endings_dir(os.path.join(root, d))
+
 def copy_directory(src_pattern, dest):
     """
     Copies directories matching the src_pattern to the destination path.
@@ -91,6 +113,7 @@ def copy_directory(src_pattern, dest):
             shutil.rmtree(target_dest)
         shutil.copytree(src, target_dest)
         print(f"Copied directory: {src} -> {target_dest}")
+        convert_to_unix_line_endings_dir(target_dest)
 
 def copy_if_updated(src, dest):
     if os.path.isdir(src):
@@ -143,7 +166,7 @@ def update_stb():
         [
             (f"stb_truetype.h", "src/modules/voxelfont/external/stb_truetype.h"),
             (f"stb_rect_pack.h", "src/modules/scenegraph/external/stb_rect_pack.h"),
-            (f"stb_image_resize2.h", "contrib/libs/stb_image")
+            (f"stb_image_resize2.h", "contrib/libs/stb_image/stb_image_resize2.h")
         ]
     )
 
