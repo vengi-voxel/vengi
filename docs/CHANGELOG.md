@@ -17,6 +17,10 @@ General:
    - Added new lua script to create newel stairs
    - Fixed missing animation transfer from one scenegraph into other one
 
+VoxEdit:
+
+   - Implemented selection invert
+
 ## 0.0.35 (2025-02-09)
 
 General:
