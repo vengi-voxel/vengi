@@ -241,8 +241,7 @@ voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volum
 	voxel::Region region = volume->region();
 	if (_selectionManager.hasSelection()) {
 		// TODO: SELECTION: this doesn't work anymore after the refactoring because
-		// the selection is no longer a region - and to be honest this doesn't even
-		// work now because if you have two regions selected... **BOOM**
+		// the selection is no longer a region
 		voxel::Region srcRegion = _selectionManager.region();
 		srcRegion.cropTo(region);
 		return voxel::RawVolumeWrapper(volume, srcRegion);
