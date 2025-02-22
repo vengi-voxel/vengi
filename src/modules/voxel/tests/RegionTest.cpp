@@ -230,4 +230,15 @@ TEST_F(RegionTest, testCenter) {
 	EXPECT_GLM_EQ(glm::vec3(0.5f), region4.calcCenterf());
 }
 
+TEST_F(RegionTest, testSubtract) {
+	voxel::Region a(0, 3);
+	voxel::Region b(1, 1);
+	const core::DynamicArray<voxel::Region> &remainingSelections = voxel::Region::subtract(a, b);
+	EXPECT_EQ(6u, remainingSelections.size());
+	for (const voxel::Region &region : remainingSelections) {
+		EXPECT_FALSE(intersects(b, region));
+		EXPECT_TRUE(a.containsRegion(region));
+	}
+}
+
 } // namespace voxel

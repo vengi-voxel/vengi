@@ -15,6 +15,74 @@ namespace voxel {
 
 const Region Region::InvalidRegion = Region(0, -1);
 
+static core::DynamicArray<Region> subtractRegion(const Region &box, const Region &sub) {
+	core::DynamicArray<Region> result;
+	result.reserve(6);
+
+	// Ensure the subtraction region is inside the box
+	if (sub.getLowerCorner().x > box.getUpperCorner().x || sub.getUpperCorner().x < box.getLowerCorner().x ||
+		sub.getLowerCorner().y > box.getUpperCorner().y || sub.getUpperCorner().y < box.getLowerCorner().y ||
+		sub.getLowerCorner().z > box.getUpperCorner().z || sub.getUpperCorner().z < box.getLowerCorner().z) {
+		// No overlap, box remains unchanged
+		result.push_back(box);
+		return result;
+	}
+
+	// Top part (above the selected region)
+	if (sub.getUpperCorner().z < box.getUpperCorner().z) {
+		result.emplace_back(glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, sub.getUpperCorner().z + 1),
+							glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, box.getUpperCorner().z));
+	}
+
+	// Bottom part (below the selected region)
+	if (sub.getLowerCorner().z > box.getLowerCorner().z) {
+		result.emplace_back(glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, box.getLowerCorner().z),
+							glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, sub.getLowerCorner().z - 1));
+	}
+
+	// Front part (in front of the selected region)
+	if (sub.getUpperCorner().y < box.getUpperCorner().y) {
+		result.emplace_back(glm::ivec3(box.getLowerCorner().x, sub.getUpperCorner().y + 1, sub.getLowerCorner().z),
+							glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, sub.getUpperCorner().z));
+	}
+
+	// Back part (behind the selected region)
+	if (sub.getLowerCorner().y > box.getLowerCorner().y) {
+		result.emplace_back(glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, sub.getLowerCorner().z),
+							glm::ivec3(box.getUpperCorner().x, sub.getLowerCorner().y - 1, sub.getUpperCorner().z));
+	}
+
+	// Left part (left of the selected region)
+	if (sub.getLowerCorner().x > box.getLowerCorner().x) {
+		result.emplace_back(glm::ivec3(box.getLowerCorner().x, sub.getLowerCorner().y, sub.getLowerCorner().z),
+							glm::ivec3(sub.getLowerCorner().x - 1, sub.getUpperCorner().y, sub.getUpperCorner().z));
+	}
+
+	// Right part (right of the selected region)
+	if (sub.getUpperCorner().x < box.getUpperCorner().x) {
+		result.emplace_back(glm::ivec3(sub.getUpperCorner().x + 1, sub.getLowerCorner().y, sub.getLowerCorner().z),
+							glm::ivec3(box.getUpperCorner().x, sub.getUpperCorner().y, sub.getUpperCorner().z));
+	}
+
+	return result;
+}
+
+core::DynamicArray<Region> Region::subtract(const Region& a, const core::DynamicArray<Region>& b) {
+	core::DynamicArray<Region> remainingSelections;
+	remainingSelections.reserve(b.size() * 6);
+	remainingSelections.push_back(a);
+
+	for (const Region &r : b) {
+		core::DynamicArray<Region> newSelections;
+		for (const Region &region : remainingSelections) {
+			const core::DynamicArray<Region> &subtracted = subtractRegion(region, r);
+			newSelections.insert(newSelections.end(), subtracted.begin(), subtracted.end());
+		}
+		remainingSelections = core::move(newSelections);
+	}
+	return remainingSelections;
+}
+
 void Region::update() {
 	_width = _maxs - _mins;
 	_center = _mins + _width / 2;

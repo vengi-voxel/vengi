@@ -9,6 +9,7 @@
 #include <glm/fwd.hpp>
 #include <glm/common.hpp>
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include <stdint.h>
 
 namespace voxel {
@@ -106,6 +107,13 @@ public:
 	void setLowerCorner(const glm::ivec3& mins);
 	/** Sets the position of the upper corner. */
 	void setUpperCorner(const glm::ivec3& maxs);
+
+	static core::DynamicArray<voxel::Region> subtract(const voxel::Region& a, const core::DynamicArray<voxel::Region>& b);
+	static core::DynamicArray<voxel::Region> subtract(const voxel::Region& a, const voxel::Region& b) {
+		core::DynamicArray<voxel::Region> result;
+		result.push_back(b);
+		return subtract(a, result);
+	}
 
 	/**
 	 * @return true if the given point is exactly on the region border
