@@ -15,6 +15,8 @@ namespace voxedit {
 class SelectionManager {
 private:
 	Selections _selections;
+	// when moving selected voxels, don't do it in a region larger than this
+	voxel::Region _maxRegion = voxel::Region::InvalidRegion;
 	// voxel::SparseVolume _selectionVolume;
 
 public:
@@ -28,6 +30,7 @@ public:
 		}
 	}
 
+	void setMaxRegionSize(const voxel::Region &maxRegion);
 	voxel::Region region() const;
 	bool hasSelection() const;
 

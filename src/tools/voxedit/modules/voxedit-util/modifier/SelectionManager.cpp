@@ -14,6 +14,10 @@ const Selections &SelectionManager::selections() const {
 	return _selections;
 }
 
+void SelectionManager::setMaxRegionSize(const voxel::Region &maxRegion) {
+	_maxRegion = maxRegion;
+}
+
 static core::DynamicArray<Selection> subtractBox(const Selection &box, const Selection &sub) {
 	core::DynamicArray<Selection> result;
 	result.reserve(6);

@@ -2355,6 +2355,7 @@ bool SceneManager::init() {
 
 	voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
 	_mementoHandler.setMaxUndoRegion(maxUndoRegion);
+	_modifierFacade.selectionMgr().setMaxRegionSize(maxUndoRegion);
 
 	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;
@@ -2457,6 +2458,7 @@ bool SceneManager::update(double nowSeconds) {
 	if (_maxSuggestedVolumeSize->isDirty()) {
 		voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
 		_mementoHandler.setMaxUndoRegion(maxUndoRegion);
+		_modifierFacade.selectionMgr().setMaxRegionSize(maxUndoRegion);
 		_maxSuggestedVolumeSize->markClean();
 	}
 

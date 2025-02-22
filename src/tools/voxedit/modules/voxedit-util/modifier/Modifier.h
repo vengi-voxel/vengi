@@ -120,6 +120,7 @@ public:
 	void invert(voxel::RawVolume &volume);
 
 	const SelectionManager &selectionMgr() const;
+	SelectionManager &selectionMgr();
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
@@ -313,6 +314,10 @@ inline const glm::ivec3 &Modifier::cursorPosition() const {
 }
 
 inline const SelectionManager &Modifier::selectionMgr() const {
+	return _selectionManager;
+}
+
+inline SelectionManager &Modifier::selectionMgr() {
 	return _selectionManager;
 }
 
