@@ -74,21 +74,21 @@ void SelectionManager::invert(voxel::RawVolume &volume) {
 	if (!hasSelection()) {
 		select(volume, volume.region().getLowerCorner(), volume.region().getUpperCorner());
 	} else {
-		core::DynamicArray<Selection> remainingRegions;
-		remainingRegions.reserve(_selections.size() * 6);
-		remainingRegions.push_back(volume.region());
+		core::DynamicArray<Selection> remainingSelections;
+		remainingSelections.reserve(_selections.size() * 6);
+		remainingSelections.push_back(volume.region());
 
 		for (const Selection &selection : _selections) {
-			core::DynamicArray<Selection> newRegions;
-			for (const Selection &region : remainingRegions) {
+			core::DynamicArray<Selection> newSelections;
+			for (const Selection &region : remainingSelections) {
 				const core::DynamicArray<Selection> &subtracted = subtractBox(region, selection);
-				newRegions.insert(newRegions.end(), subtracted.begin(), subtracted.end());
+				newSelections.insert(newSelections.end(), subtracted.begin(), subtracted.end());
 			}
-			remainingRegions = core::move(newRegions);
+			remainingSelections = core::move(newSelections);
 		}
 		reset();
-		for (const Selection &region : remainingRegions) {
-			select(volume, region.getLowerCorner(), region.getUpperCorner());
+		for (const Selection &selection : remainingSelections) {
+			select(volume, selection.getLowerCorner(), selection.getUpperCorner());
 		}
 	}
 }
