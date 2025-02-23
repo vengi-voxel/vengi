@@ -669,8 +669,10 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 		// we don't have to re-extract a mesh if only new empty voxels were added.
 		modified(nodeId, voxel::Region::InvalidRegion);
 	} else {
-		// TODO: assemble the 6 surroundings to optimize this for big volumes
-		modified(nodeId, newVolume->region());
+		const core::DynamicArray<voxel::Region> &regions = voxel::Region::subtract(oldRegion, region);
+		for (const voxel::Region &r : regions) {
+			modified(nodeId, r);
+		}
 	}
 
 	if (activeNode() == nodeId) {
