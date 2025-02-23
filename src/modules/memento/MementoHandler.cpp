@@ -122,7 +122,7 @@ MementoState::MementoState(MementoType _type, MementoData &&_data, core::String 
 }
 
 MementoState::MementoState(MementoType _type, const core::DynamicArray<core::String> &_stringList)
-	: type(_type), stringList(_stringList) {
+	: type(_type), nodeType(scenegraph::SceneGraphNodeType::Max), pivot(0.0f), stringList(_stringList) {
 }
 
 MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
