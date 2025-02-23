@@ -388,6 +388,9 @@ bool currentState(State state) {
 }
 
 bool cullFace(Face face) {
+	if (face == Face::Max) {
+		return false;
+	}
 	if (glstate().cullFace == face) {
 		return false;
 	}
