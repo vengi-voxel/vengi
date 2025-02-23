@@ -40,6 +40,10 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 			"File %s is already opened (opened mode %s, new mode %s) - this will produce problems on windows",
 			path.c_str(), FileModeStr[(int)openedMode], FileModeStr[(int)mode]);
 
+		if (openedMode == FileMode::Max) {
+			Log::error("File %s is already opened (new mode %s)", path.c_str(), FileModeStr[(int)mode]);
+			return;
+		}
 		Log::error("File %s is already opened (opened mode %s, new mode %s)", path.c_str(),
 				   FileModeStr[(int)openedMode], FileModeStr[(int)mode]);
 		return;

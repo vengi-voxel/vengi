@@ -33,7 +33,7 @@ static const char * FileModeStr[] = {
 	"Append",
 	"SysRead",
 	"SysWrite",
-	"ReadNoHome",
+	"ReadNoHome"
 };
 static_assert(lengthof(FileModeStr) == (size_t)FileMode::Max, "FileModeStr is incomplete");
 
