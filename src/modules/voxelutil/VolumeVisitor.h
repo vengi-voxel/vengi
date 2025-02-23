@@ -5,8 +5,11 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/GLM.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicSet.h"
 #include "math/Axis.h"
+#include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 
@@ -571,6 +574,10 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, Vi
 	return visitFace(volume, region, face, visitor, order, searchSurface);
 }
 
+/**
+ * @brief Visit all non-visible voxels - voxels that are surrounded by solid voxels on all sides
+ * @sa visibleFaces()
+ */
 template<class Volume, class Visitor>
 int visitUndergroundVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
 	int cnt = 0;
@@ -582,6 +589,41 @@ int visitUndergroundVolume(const Volume &volume, Visitor &&visitor, VisitorOrder
 	};
 	visitVolume(volume, hullVisitor, SkipEmpty(), order);
 	return cnt;
+}
+
+typedef core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> VisitedSet;
+
+template<class Volume, class Visitor>
+static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &voxel, const glm::ivec3 &position, Visitor &visitor, VisitedSet &visited) {
+	typename Volume::Sampler sampler(volume);
+	if (!sampler.setPosition(position)) {
+		return 0;
+	}
+	int n = 0;
+	// visit all connected voxels of the same color
+	for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+		const glm::ivec3 &volPos = position + offset;
+		if (!sampler.setPosition(volPos)) {
+			continue;
+		}
+		if (!sampler.voxel().isSame(voxel)) {
+			continue;
+		}
+		if (!visited.insert(volPos)) {
+			continue;
+		}
+		visitor(volPos.x, volPos.y, volPos.z, voxel);
+		++n;
+		n += visitConnectedByVoxel_r(volume, voxel, volPos, visitor, visited);
+	}
+	return n;
+}
+
+template<class Volume, class Visitor>
+int visitConnectedByVoxel(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor) {
+	const voxel::Voxel voxel = volume.voxel(position);
+	VisitedSet visited;
+	return visitConnectedByVoxel_r(volume, voxel, position, visitor, visited);
 }
 
 } // namespace voxelutil
