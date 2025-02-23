@@ -201,8 +201,12 @@ static const char *chunkToString(uint16_t chunkId) {
 
 Autodesk3DSFormat::ScopedChunk::ScopedChunk(io::SeekableReadStream *stream) : _stream(stream) {
 	_chunkPos = stream->pos();
-	stream->readUInt16(chunk.id);
-	stream->readUInt32(chunk.length);
+	if (stream->readUInt16(chunk.id) == -1) {
+		Log::error("Failed to read 3ds chunk id");
+	}
+	if (stream->readUInt32(chunk.length) == -1) {
+		Log::error("Failed to read 3ds chunk length");
+	}
 	Log::debug("Found chunk %s with size %d (id: 0X%04x)", priv::chunkToString(chunk.id), chunk.length, chunk.id);
 }
 
