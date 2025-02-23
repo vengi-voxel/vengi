@@ -25,13 +25,9 @@ const uint32_t CV_READONLY = 1 << 0;
 const uint32_t CV_NOPERSIST = 1 << 1;
 /** @brief will be put as define in every shader - a change will update the shaders at runtime */
 const uint32_t CV_SHADER = 1 << 2;
-/** @brief will be broadcasted to all connected clients */
-const uint32_t CV_REPLICATE = 1 << 3;
-/** @brief user information that will be sent out to all connected clients (e.g. user name) */
-const uint32_t CV_BROADCAST = 1 << 4;
 /** @brief don't show the value to users, but just ***secure*** it out */
 const uint32_t CV_SECRET = 1 << 5;
-const uint32_t CV_PRESERVE = (CV_READONLY | CV_NOPERSIST | CV_SHADER | CV_REPLICATE | CV_BROADCAST | CV_SECRET);
+const uint32_t CV_PRESERVE = (CV_READONLY | CV_NOPERSIST | CV_SHADER | CV_SECRET);
 
 const uint32_t CV_FROMFILE = 1 << 6;
 const uint32_t CV_FROMCOMMANDLINE = 1 << 7;
@@ -65,8 +61,6 @@ protected:
 	const core::String _name;
 	const char* _help = nullptr;
 	uint32_t _flags;
-	static constexpr int NEEDS_REPLICATE = 1 << 0;
-	static constexpr int NEEDS_BROADCAST = 1 << 1;
 	static constexpr int NEEDS_SHADERUPDATE = 1 << 2;
 	static constexpr int NEEDS_SAVING = 1 << 3;
 	uint8_t _updateFlags = 0u;
@@ -172,53 +166,6 @@ public:
 		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
 			func(i->second);
 		}
-	}
-
-	template<class Functor>
-	static void visitDirtyBroadcast(Functor&& func) {
-		if ((_visitFlags & NEEDS_BROADCAST) == 0) {
-			return;
-		}
-		_visitFlags &= ~NEEDS_BROADCAST;
-
-		visit([&] (const VarPtr& var) {
-			if (var->_updateFlags & NEEDS_BROADCAST) {
-				func(var);
-				var->_updateFlags &= ~NEEDS_BROADCAST;
-			}
-		});
-	}
-
-	template<class Functor>
-	static void visitBroadcast(Functor&& func) {
-		visit([&] (const VarPtr& var) {
-			if (var->_flags & CV_BROADCAST) {
-				func(var);
-			}
-		});
-	}
-
-	template<class Functor>
-	static void visitDirtyReplicate(Functor&& func) {
-		if ((_visitFlags & NEEDS_REPLICATE) == 0) {
-			return;
-		}
-		_visitFlags &= ~NEEDS_REPLICATE;
-		visit([&] (const VarPtr& var) {
-			if (var->_updateFlags & NEEDS_REPLICATE) {
-				func(var);
-				var->_updateFlags &= ~NEEDS_REPLICATE;
-			}
-		});
-	}
-
-	template<class Functor>
-	static void visitReplicate(Functor&& func) {
-		visit([&] (const VarPtr& var) {
-			if (var->_flags & CV_REPLICATE) {
-				func(var);
-			}
-		});
 	}
 
 	/**

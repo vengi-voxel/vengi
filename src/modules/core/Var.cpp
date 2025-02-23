@@ -234,14 +234,6 @@ bool Var::useHistory(uint32_t historyIndex) {
 	_currentHistoryPos = historyIndex;
 
 	if (_dirty) {
-		if ((_flags & CV_REPLICATE) != 0u) {
-			_updateFlags |= NEEDS_REPLICATE;
-			_visitFlags |= NEEDS_REPLICATE;
-		}
-		if ((_flags & CV_BROADCAST) != 0u) {
-			_updateFlags |= NEEDS_BROADCAST;
-			_visitFlags |= NEEDS_BROADCAST;
-		}
 		if ((_flags & CV_SHADER) != 0u) {
 			_visitFlags |= NEEDS_SHADERUPDATE;
 		}
@@ -268,14 +260,6 @@ bool Var::setVal(const core::String& value) {
 	if (_dirty) {
 		addValueToHistory(value);
 		++_currentHistoryPos;
-		if ((_flags & CV_REPLICATE) != 0u) {
-			_updateFlags |= NEEDS_REPLICATE;
-			_visitFlags |= NEEDS_REPLICATE;
-		}
-		if ((_flags & CV_BROADCAST) != 0u) {
-			_updateFlags |= NEEDS_BROADCAST;
-			_visitFlags |= NEEDS_BROADCAST;
-		}
 		if ((_flags & CV_SHADER) != 0u) {
 			_visitFlags |= NEEDS_SHADERUPDATE;
 		}
