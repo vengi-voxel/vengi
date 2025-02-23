@@ -1451,6 +1451,11 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 	} else {
 		newNode.setName(name);
 	}
+	palette::Palette palette;
+	if (!palette.load(core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str())) {
+		palette = voxel::getPalette();
+	}
+	newNode.setPalette(palette);
 	const int nodeId = scenegraph::moveNodeToSceneGraph(_sceneGraph, newNode, 0);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add empty volume to new scene graph");
@@ -2328,10 +2333,6 @@ bool SceneManager::init() {
 		return true;
 	}
 
-	palette::Palette palette;
-	if (!palette.load(core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str())) {
-		palette = voxel::getPalette();
-	}
 	if (!_mementoHandler.init()) {
 		Log::error("Failed to initialize the memento handler");
 		return false;
