@@ -2,12 +2,13 @@
  * @file
  */
 
-#include "IMGUIEx.h"
-#include "IconsLucide.h"
-#include "app/App.h"
 #include "PopupAbout.h"
+#include "app/App.h"
 #include "engine-config.h"
 #include "engine-git.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
+#include "ui/Panel.h"
 
 namespace ui {
 
@@ -28,7 +29,8 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 	int popupWidth = 600;
 	int popupHeight = 400;
 	ImGui::SetNextWindowSize(ImVec2(popupWidth, popupHeight), ImGuiCond_Appearing);
-	if (ImGui::BeginPopupModal(POPUP_TITLE_ABOUT)) {
+	const core::String title = Panel::makeTitle(_("About"), POPUP_TITLE_ABOUT);
+	if (ImGui::BeginPopupModal(title.c_str())) {
 		popupWidth = ImGui::GetWindowWidth();
 		popupHeight = ImGui::GetWindowHeight();
 		const float footerHeight = ImGui::GetStyle().ItemSpacing.y * 3 + ImGui::GetFrameHeightWithSpacing() * 2;
@@ -50,9 +52,12 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					metricOption();
 
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLIconItem(ICON_LC_GITHUB, _("Bug reports"), "https://github.com/vengi-voxel/vengi/issues", urlIconWidth);
-					ImGui::URLIconItem(ICON_LC_CIRCLE_HELP, _("Help"), "https://vengi-voxel.github.io/vengi/", urlIconWidth);
-					ImGui::URLIconItem(ICON_LC_SQUARE, _("Mastodon"), "https://mastodon.social/@mgerhardy", urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_GITHUB, _("Bug reports"), "https://github.com/vengi-voxel/vengi/issues",
+									   urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_CIRCLE_HELP, _("Help"), "https://vengi-voxel.github.io/vengi/",
+									   urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_SQUARE, _("Mastodon"), "https://mastodon.social/@mgerhardy",
+									   urlIconWidth);
 					ImGui::URLIconItem(ICON_LC_SQUARE, _("Discord"), "https://vengi-voxel.de/discord", urlIconWidth);
 					ImGui::EndTabItem();
 				}
@@ -65,7 +70,8 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					ImGui::URLItem("cute_aseprite", "https://github.com/RandyGaul/cute_headers", urlIconWidth);
 					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", urlIconWidth);
 					ImGui::URLItem("glm", "https://github.com/g-truc/glm", urlIconWidth);
-					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders", urlIconWidth);
+					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders",
+								   urlIconWidth);
 					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", urlIconWidth);
 					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", urlIconWidth);
 					ImGui::URLItem("implot", "https://github.com/epezent/implot", urlIconWidth);

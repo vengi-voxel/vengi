@@ -394,6 +394,9 @@ msgstr ""
 msgid "Send anonymous usage statistics"
 msgstr ""
 
+msgid "About"
+msgstr ""
+
 msgid "This is a beta release!"
 msgstr ""
 
@@ -824,9 +827,6 @@ msgid "Notifications"
 msgstr ""
 
 msgid "Show console"
-msgstr ""
-
-msgid "About"
 msgstr ""
 
 msgid "Source"
@@ -1500,9 +1500,6 @@ msgstr ""
 msgid "Ambient color"
 msgstr ""
 
-msgid "Done"
-msgstr ""
-
 msgid "Volume split"
 msgstr ""
 
@@ -1577,15 +1574,6 @@ msgid "Bloom"
 msgstr ""
 
 msgid "Tone mapping"
-msgstr ""
-
-msgid "All"
-msgstr ""
-
-msgid "Command & Conquer"
-msgstr ""
-
-msgid "Simple"
 msgstr ""
 
 msgid "View mode"
@@ -1670,6 +1658,9 @@ msgid "Select"
 msgstr ""
 
 msgid "Invert"
+msgstr ""
+
+msgid "All"
 msgstr ""
 
 msgid "Welcome screen"
@@ -2307,6 +2298,12 @@ msgid "Leaves max length"
 msgstr ""
 
 msgid "Leaves thickness"
+msgstr ""
+
+msgid "Simple"
+msgstr ""
+
+msgid "Command & Conquer"
 msgstr ""
 
 #, c-format

@@ -715,7 +715,7 @@ void MainWindow::popupSceneSettings() {
 		ImGui::ColorEdit3Var(_("Diffuse color"), cfg::VoxEditDiffuseColor);
 		ImGui::ColorEdit3Var(_("Ambient color"), cfg::VoxEditAmbientColor);
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Done"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();

@@ -3,9 +3,10 @@
  */
 
 #include "../MainWindow.h"
-#include "../WindowTitles.h"
 #include "../Viewport.h"
+#include "../WindowTitles.h"
 #include "TestUtil.h"
+#include "ui/PopupAbout.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 
@@ -34,7 +35,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
-		ImGuiContext& g = *ctx->UiContext;
+		ImGuiContext &g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
@@ -86,7 +87,22 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("###Close");
 	};
 
-	// TODO: POPUP_TITLE_SCENE_SETTINGS, POPUP_TITLE_ABOUT
+	IM_REGISTER_TEST(engine, testCategory(), "about screen")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Help/About");
+		ctx->Yield();
+		ctx->SetRef(POPUP_TITLE_ABOUT);
+		const ImGuiID wrapperId = ctx->WindowInfo("##scrollwindow").ID;
+		ctx->SetRef(wrapperId);
+		ctx->MouseMove("##abouttabbar/Credits");
+		ctx->MouseClick();
+		ctx->MouseMove("##abouttabbar/Paths");
+		ctx->MouseClick();
+		ctx->SetRef(POPUP_TITLE_ABOUT);
+		ctx->ItemClick("###Close");
+	};
+
+	// TODO: POPUP_TITLE_SCENE_SETTINGS
 
 	// TODO: file dialog load and save
 }

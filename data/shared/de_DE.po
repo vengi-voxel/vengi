@@ -424,6 +424,9 @@ msgstr "Senden anonymer Metriken aktivieren"
 msgid "Send anonymous usage statistics"
 msgstr "Anonyme Nutzungsstatistiken senden"
 
+msgid "About"
+msgstr "Über"
+
 msgid "This is a beta release!"
 msgstr "Dies ist eine Beta-Version!"
 
@@ -856,9 +859,6 @@ msgstr "Benachrichtigungen"
 
 msgid "Show console"
 msgstr "Konsole anzeigen"
-
-msgid "About"
-msgstr "Über"
 
 msgid "Source"
 msgstr "Quelle"
@@ -1584,9 +1584,6 @@ msgstr "Diffuse Farbe"
 msgid "Ambient color"
 msgstr "Umgebungslichtfarbe"
 
-msgid "Done"
-msgstr "Fertig"
-
 msgid "Volume split"
 msgstr "Volumen teilen"
 
@@ -1665,15 +1662,6 @@ msgstr "Bloom"
 
 msgid "Tone mapping"
 msgstr "Tonemapping"
-
-msgid "All"
-msgstr "Alle"
-
-msgid "Command & Conquer"
-msgstr "Command & Conquer"
-
-msgid "Simple"
-msgstr "Einfach"
 
 msgid "View mode"
 msgstr "Oberflächenmodus"
@@ -1758,6 +1746,9 @@ msgstr "Auswählen"
 
 msgid "Invert"
 msgstr "Invertieren"
+
+msgid "All"
+msgstr "Alles"
 
 msgid "Welcome screen"
 msgstr "Willkommensbildschirm"
@@ -2420,6 +2411,12 @@ msgstr "Maximale Blattlänge"
 msgid "Leaves thickness"
 msgstr "Blattdicke"
 
+msgid "Simple"
+msgstr "Einfach"
+
+msgid "Command & Conquer"
+msgstr "Command & Conquer"
+
 #, c-format
 msgid "Slice at %s: %i"
 msgstr ""
@@ -2909,15 +2906,3 @@ msgstr ""
 
 msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
-
-#~ msgid "pos"
-#~ msgstr "Pos"
-
-#~ msgid "Twitter"
-#~ msgstr "Twitter"
-
-#~ msgid "Source format"
-#~ msgstr "Quellformat"
-
-#~ msgid "Target format"
-#~ msgstr "Zielformat"

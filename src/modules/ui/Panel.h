@@ -26,18 +26,6 @@ protected:
 	core::String _title;
 	Panel(IMGUIApp *app, const char *title);
 
-	/**
-	 * @param[in] icon Can be null
-	 * @param[in] title Translated title
-	 * @param[in] id The imgui id @c ###someid
-	 */
-	static core::String makeTitle(const char *icon, const char *title, const char *id);
-	/**
-	 * @param[in] title Translated title
-	 * @param[in] id The imgui id @c ###someid
-	 */
-	static core::String makeTitle(const char *title, const char *id);
-
 public:
 	virtual ~Panel();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
@@ -49,6 +37,18 @@ public:
 	bool saveFile(ImGuiTestContext *ctx, const char *filename);
 	bool focusWindow(ImGuiTestContext *ctx, const char *title);
 #endif
+
+	/**
+	 * @param[in] icon Can be null
+	 * @param[in] title Translated title
+	 * @param[in] id The imgui id @c ###someid
+	 */
+	 static core::String makeTitle(const char *icon, const char *title, const char *id);
+	 /**
+	  * @param[in] title Translated title
+	  * @param[in] id The imgui id @c ###someid
+	  */
+	 static core::String makeTitle(const char *title, const char *id);
 };
 
 #define PANEL_CLASS(name)                                                                                         \

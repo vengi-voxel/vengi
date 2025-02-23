@@ -6,7 +6,7 @@
 
 #include <functional>
 
-#define POPUP_TITLE_ABOUT "About##popuptitle"
+#define POPUP_TITLE_ABOUT "###popuptitle"
 
 namespace ui {
 
