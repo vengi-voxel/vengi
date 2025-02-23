@@ -398,6 +398,9 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 // Based on NeuQuant algorithm from jo_gif_quantize
 static int quantizeNeuQuant(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	const int numColors = (int)maxTargetBufColors;
+	if (numColors == 0) {
+		return 0;
+	}
 	const int rgbaSize = (int)inputBufColors;
 	int sample = 1;
 
