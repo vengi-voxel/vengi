@@ -24,6 +24,7 @@ set(SRCS
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
 	Util.h Util.cpp
+	ViewMode.h ViewMode.cpp
 	Viewport.h Viewport.cpp
 	QuitDisallowReason.h
 	WindowTitles.h

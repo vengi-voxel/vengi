@@ -4,13 +4,32 @@
 
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
+#include "voxedit-ui/ViewMode.h"
 #include "voxedit-ui/Viewport.h"
+#include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
+
+bool changeViewMode(ImGuiTestContext *ctx, ViewMode viewMode) {
+	ImGuiWindow* window = ImGui::FindWindowByName("###app");
+	if (window == nullptr) {
+		ctx->LogError("Error: could not find ###app window");
+		IM_CHECK_SILENT_RETV(window != nullptr, false);
+	}
+	ctx->SetRef(window);
+	ctx->MenuClick("Help/Welcome screen");
+	ctx->Yield();
+	ctx->SetRef(POPUP_TITLE_WELCOME);
+	const char *viewModeStr = getViewModeString(viewMode);
+	const core::String &viewModeStrPath = core::string::format("View mode/%s", viewModeStr);
+	ctx->ComboClick(viewModeStrPath.c_str());
+	ctx->ItemClick("###Close");
+	return true;
+}
 
 bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, ImVec2 offset) {
 	IM_CHECK_RETV(viewportId != -1, false);

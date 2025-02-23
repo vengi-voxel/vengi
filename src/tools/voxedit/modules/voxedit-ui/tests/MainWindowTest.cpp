@@ -67,6 +67,27 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(_sceneMgr->sceneGraph().findNodeByName("K_Waist") != nullptr);
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "tip of the day")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Help/Tip of the day");
+		ctx->Yield();
+		ctx->SetRef(POPUP_TITLE_TIPOFTHEDAY);
+		ctx->ItemClick("###Next");
+		ctx->ItemClick("###Next");
+		ctx->ItemClick("###Next");
+		ctx->ItemClick("###Close");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "welcome screen")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Help/Welcome screen");
+		ctx->Yield();
+		ctx->SetRef(POPUP_TITLE_WELCOME);
+		ctx->ItemClick("###Close");
+	};
+
+	// TODO: POPUP_TITLE_SCENE_SETTINGS, POPUP_TITLE_ABOUT
+
 	// TODO: file dialog load and save
 }
 

@@ -6,6 +6,8 @@
 
 namespace voxedit {
 
-enum class ViewMode { Default, Simple, All, CommandAndConquer, Max };
+enum class ViewMode : uint8_t { Default, Simple, All, CommandAndConquer, Max };
 
-}
+const char *getViewModeString(ViewMode viewMode);
+
+} // namespace voxedit

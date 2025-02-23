@@ -45,8 +45,9 @@ void MenuBar::init() {
 }
 
 void MenuBar::viewModeOption() {
-	static const core::Array<core::String, (int)voxedit::ViewMode::Max> viewModes = {
-			_("Default"), _("Simple"), _("All"), _("Command & Conquer")};
+	const core::Array<core::String, (int)ViewMode::Max> viewModes = {
+		getViewModeString(ViewMode::Default), getViewModeString(ViewMode::Simple), getViewModeString(ViewMode::All),
+		getViewModeString(ViewMode::CommandAndConquer)};
 	ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
 }
 
