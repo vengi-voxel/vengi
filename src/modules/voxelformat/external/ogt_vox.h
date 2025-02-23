@@ -1871,7 +1871,7 @@
                     }
                     const char* fov_string = _vox_dict_get_value_as_string(&dict, "_fov", NULL);
                     if (fov_string) {
-                        _vox_str_scanf(angle_string, "%i", &camera.fov);
+                        _vox_str_scanf(fov_string, "%i", &camera.fov);
                     }
 
                     cameras.push_back(camera);
@@ -2013,8 +2013,12 @@
                 instances[i].layer_index = 0;
             // add a single layer
             ogt_vox_layer new_layer;
-            new_layer.hidden = false;
-            new_layer.name   = NULL;
+            new_layer.hidden  = false;
+            new_layer.name    = NULL;
+            new_layer.color.r = 0;
+            new_layer.color.g = 0;
+            new_layer.color.b = 0;
+            new_layer.color.a = 0;
             layers.push_back(new_layer);
         }
 
