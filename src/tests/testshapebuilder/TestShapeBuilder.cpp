@@ -193,7 +193,7 @@ void TestShapeBuilder::onRenderUI() {
 		}
 	}
 
-	if (buildMesh && _meshCount < lengthof(_meshes)) {
+	if (buildMesh && _meshCount < lengthof(_meshes) - 1) {
 		_meshes[_meshCount] = _shapeRenderer.create(_shapeBuilder);
 		if (_meshes[_meshCount] != -1) {
 			++_meshCount;
