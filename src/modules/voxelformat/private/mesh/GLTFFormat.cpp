@@ -251,7 +251,7 @@ void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model 
 		}
 	}
 
-	gltfModel.nodes.push_back(gltfNode);
+	gltfModel.nodes.emplace_back(core::move(gltfNode));
 	nodeMapping.put(node.id(), idx);
 
 	if (!stack.empty() && stack.back().second != -1) {
