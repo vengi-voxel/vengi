@@ -80,6 +80,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 
 	if (!libvxl_create(&map, mapSize, mapSize, mapHeight, data, size)) {
 		Log::error("Failed to create libvxl map");
+		libvxl_free(&map);
 		core_free(data);
 		return false;
 	}
@@ -142,6 +143,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 
 	if (!libvxl_create(&map, mapSize, mapSize, mapHeight, data, size)) {
 		Log::error("Failed to create libvxl map");
+		libvxl_free(&map);
 		core_free(data);
 		return 0;
 	}
