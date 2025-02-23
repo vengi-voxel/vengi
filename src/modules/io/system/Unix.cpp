@@ -272,7 +272,7 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 
 core::String fs_readlink(const char *path) {
 	char buf[4096];
-	ssize_t len = readlink(path, buf, lengthof(buf));
+	ssize_t len = readlink(path, buf, lengthof(buf) - 1);
 	if (len == -1) {
 		return "";
 	}
