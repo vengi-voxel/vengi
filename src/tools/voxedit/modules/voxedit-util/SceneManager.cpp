@@ -669,6 +669,7 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 		// we don't have to re-extract a mesh if only new empty voxels were added.
 		modified(nodeId, voxel::Region::InvalidRegion);
 	} else {
+		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "resize");
 		const core::DynamicArray<voxel::Region> &regions = voxel::Region::subtract(oldRegion, region);
 		for (const voxel::Region &r : regions) {
 			modified(nodeId, r);
