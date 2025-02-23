@@ -131,10 +131,16 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		ctx.stream = stream;
 		ctx.bedrock = true;
 		uint32_t fileType;
-		stream->readUInt32(fileType);
+		if (stream->readUInt32(fileType) == -1) {
+			Log::error("Failed to read file type");
+			return false;
+		}
 		Log::debug("File type: %u", fileType);
 		uint32_t fileLengthWithoutHeader;
-		stream->readUInt32(fileLengthWithoutHeader);
+		if (stream->readUInt32(fileLengthWithoutHeader) == -1) {
+			Log::error("Failed to read file length without header");
+			return false;
+		}
 		Log::debug("File length without header: %u", fileLengthWithoutHeader);
 		return priv::load(filename, ctx, sceneGraph, archive, loadctx);
 	}

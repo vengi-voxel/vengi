@@ -97,9 +97,9 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		if (palStream && palStream->size() == 768) {
 			for (int i = 0; i < 256; ++i) {
 				core::RGBA rgba(0, 0, 0, 255);
-				palStream->readUInt8(rgba.r);
-				palStream->readUInt8(rgba.g);
-				palStream->readUInt8(rgba.b);
+				wrap(palStream->readUInt8(rgba.r))
+				wrap(palStream->readUInt8(rgba.g))
+				wrap(palStream->readUInt8(rgba.b))
 				pal.setColor(i, rgba);
 			}
 		}
@@ -129,7 +129,9 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			const image::ImagePtr &image = image::createEmptyImage("skin_" + core::string::toString(j));
 			if (!image->load(hdr.skinWidth, hdr.skinHeight, [&](int x, int y, core::RGBA &rgba) -> void {
 					uint8_t index = 0;
-					stream->readUInt8(index);
+					if (stream->readUInt8(index) == -1) {
+						Log::error("Could not load mdl file: Failed to load skin");
+					}
 					rgba = pal.color(index);
 				})) {
 				Log::error("Could not load mdl file: Failed to load skin");
