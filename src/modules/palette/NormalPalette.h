@@ -18,8 +18,8 @@ class NormalPalette : public core::DirtyState {
 private:
 	bool _needsSave = false;
 	core::String _name;
-	uint32_t _hash;
-	uint8_t _size = 0;
+	uint32_t _hash = 0u;
+	uint8_t _size = 0u;
 	core::RGBA _normals[NormalPaletteMaxNormals]{};
 
 public:

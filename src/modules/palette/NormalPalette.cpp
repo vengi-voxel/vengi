@@ -118,20 +118,29 @@ uint8_t NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
 void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
 	_normals[index] = toRGBA(normal);
 	_size = core_max(index, _size);
+	markDirty();
 }
 
 void NormalPalette::loadNormalMap(const glm::vec3 *normals, uint8_t size) {
 	for (uint8_t i = 0; i < size; i++) {
 		_normals[i] = toRGBA(normals[i]);
 	}
+	for (uint8_t i = size; i < NormalPaletteMaxNormals; i++) {
+		_normals[i] = core::RGBA(0);
+	}
 	_size = size;
+	markDirty();
 }
 
 void NormalPalette::loadNormalMap(const core::RGBA *normals, uint8_t size) {
 	for (uint8_t i = 0; i < size; i++) {
 		_normals[i] = normals[i];
 	}
+	for (uint8_t i = size; i < NormalPaletteMaxNormals; i++) {
+		_normals[i] = core::RGBA(0);
+	}
 	_size = size;
+	markDirty();
 }
 
 void NormalPalette::tiberianSun() {
@@ -232,6 +241,10 @@ bool NormalPalette::load(const char *paletteName) {
 	for (uint8_t i = 0; i < _size; ++i) {
 		_normals[i] = paletteToLoad.color(i);
 	}
+	for (uint8_t i = _size; i < NormalPaletteMaxNormals; ++i) {
+		_normals[i] = core::RGBA(0);
+	}
+	markDirty();
 	return true;
 }
 
@@ -245,8 +258,8 @@ bool NormalPalette::load(const image::ImagePtr &img) {
 		return false;
 	}
 	int ncolors = img->width();
-	if (ncolors > PaletteMaxColors) {
-		ncolors = PaletteMaxColors;
+	if (ncolors > NormalPaletteMaxNormals) {
+		ncolors = NormalPaletteMaxNormals;
 		Log::warn("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
 	}
 	_size = ncolors;
