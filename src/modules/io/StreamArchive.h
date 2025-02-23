@@ -17,10 +17,10 @@ private:
 	int64_t _pos;
 
 public:
-	StreamArchive(io::SeekableReadStream *stream) : _readStream(stream) {
+	StreamArchive(io::SeekableReadStream *stream) : _readStream(stream), _writeStream(nullptr) {
 		_pos = stream->pos();
 	}
-	StreamArchive(io::SeekableWriteStream *stream) : _writeStream(stream) {
+	StreamArchive(io::SeekableWriteStream *stream) : _readStream(nullptr), _writeStream(stream) {
 		_pos = stream->pos();
 	}
 	~StreamArchive() override = default;
