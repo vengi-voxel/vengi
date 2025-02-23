@@ -336,7 +336,9 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 			}
 		}
 
-		elementMap.emplace(element.uuid, core::move(element));
+		// make a copy here, the element is moved into the map
+		const core::String uuidCopy = element.uuid;
+		elementMap.emplace(uuidCopy, core::move(element));
 	}
 	return true;
 }
