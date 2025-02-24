@@ -267,7 +267,7 @@ struct ufbx_converter { };
 // `ufbx_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbx_pack_version()`,
 // for example `#if UFBX_VERSION >= ufbx_pack_version(0, 12, 0)`.
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 16, 0)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 17, 0)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -3508,6 +3508,9 @@ typedef enum ufbx_warning_type UFBX_ENUM_REPR {
 	// Non-UTF8 encoded strings.
 	// HINT: You can use `ufbx_unicode_error_handling` to adjust behavior.
 	UFBX_WARNING_BAD_UNICODE,
+
+	// Invalid base64-encoded embedded content ignored.
+	UFBX_WARNING_BAD_BASE64_CONTENT,
 
 	// Non-node element connected to root.
 	UFBX_WARNING_BAD_ELEMENT_CONNECTED_TO_ROOT,
