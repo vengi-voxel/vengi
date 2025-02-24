@@ -11,6 +11,7 @@
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -35,10 +36,9 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
-	sceneGraph.emplace(core::move(node));
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;
@@ -67,7 +67,7 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 		}
 		index = endIndex;
 	}
-	return true;
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
 bool BinVoxFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
