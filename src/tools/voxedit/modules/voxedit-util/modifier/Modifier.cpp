@@ -443,7 +443,8 @@ void Modifier::stop() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return isMode(ModifierType::Paint) || isMode(ModifierType::Erase) || isMode(ModifierType::Override);
+	return isMode(ModifierType::Select) || isMode(ModifierType::Paint) || isMode(ModifierType::Erase) ||
+		   isMode(ModifierType::Override);
 }
 
 BrushType Modifier::setBrushType(BrushType type) {
