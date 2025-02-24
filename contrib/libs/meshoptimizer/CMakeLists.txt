@@ -6,6 +6,7 @@ add_library(meshoptimizer STATIC
 	indexgenerator.cpp
 	overdrawanalyzer.cpp
 	overdrawoptimizer.cpp
+	partition.cpp
 	quantization.cpp
 	simplifier.cpp
 	spatialorder.cpp

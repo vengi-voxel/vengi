@@ -244,6 +244,13 @@ MESHOPTIMIZER_API void meshopt_encodeIndexVersion(int version);
 MESHOPTIMIZER_API int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t index_size, const unsigned char* buffer, size_t buffer_size);
 
 /**
+ * Get encoded index format version
+ * Returns format version of the encoded index buffer/sequence, or -1 if the buffer header is invalid
+ * Note that a non-negative value doesn't guarantee that the buffer will be decoded correctly if the input is malformed.
+ */
+MESHOPTIMIZER_API int meshopt_decodeIndexVersion(const unsigned char* buffer, size_t buffer_size);
+
+/**
  * Index sequence encoder
  * Encodes index sequence into an array of bytes that is generally smaller and compresses better compared to original.
  * Input index sequence can represent arbitrary topology; for triangle lists meshopt_encodeIndexBuffer is likely to be better.
@@ -302,6 +309,13 @@ MESHOPTIMIZER_API void meshopt_encodeVertexVersion(int version);
  * destination must contain enough space for the resulting vertex buffer (vertex_count * vertex_size bytes)
  */
 MESHOPTIMIZER_API int meshopt_decodeVertexBuffer(void* destination, size_t vertex_count, size_t vertex_size, const unsigned char* buffer, size_t buffer_size);
+
+/**
+ * Get encoded vertex format version
+ * Returns format version of the encoded vertex buffer, or -1 if the buffer header is invalid
+ * Note that a non-negative value doesn't guarantee that the buffer will be decoded correctly if the input is malformed.
+ */
+MESHOPTIMIZER_API int meshopt_decodeVertexVersion(const unsigned char* buffer, size_t buffer_size);
 
 /**
  * Vertex buffer filters
@@ -590,6 +604,18 @@ MESHOPTIMIZER_API struct meshopt_Bounds meshopt_computeClusterBounds(const unsig
 MESHOPTIMIZER_API struct meshopt_Bounds meshopt_computeMeshletBounds(const unsigned int* meshlet_vertices, const unsigned char* meshlet_triangles, size_t triangle_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 
 /**
+ * Experimental: Cluster partitioner
+ * Partitions clusters into groups of similar size, prioritizing grouping clusters that share vertices.
+ *
+ * destination must contain enough space for the resulting partiotion data (cluster_count elements)
+ * destination[i] will contain the partition id for cluster i, with the total number of partitions returned by the function
+ * cluster_indices should have the vertex indices referenced by each cluster, stored sequentially
+ * cluster_index_counts should have the number of indices in each cluster; sum of all cluster_index_counts must be equal to total_index_count
+ * target_partition_size is a target size for each partition, in clusters; the resulting partitions may be smaller or larger
+ */
+MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* cluster_indices, size_t total_index_count, const unsigned int* cluster_index_counts, size_t cluster_count, size_t vertex_count, size_t target_partition_size);
+
+/**
  * Spatial sorter
  * Generates a remap table that can be used to reorder points for spatial locality.
  * Resulting remap table maps old vertices to new vertices and can be used in meshopt_remapVertexBuffer.
@@ -725,6 +751,8 @@ template <typename T>
 inline size_t meshopt_buildMeshletsScan(meshopt_Meshlet* meshlets, unsigned int* meshlet_vertices, unsigned char* meshlet_triangles, const T* indices, size_t index_count, size_t vertex_count, size_t max_vertices, size_t max_triangles);
 template <typename T>
 inline meshopt_Bounds meshopt_computeClusterBounds(const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
+template <typename T>
+inline size_t meshopt_partitionClusters(unsigned int* destination, const T* cluster_indices, size_t total_index_count, const unsigned int* cluster_index_counts, size_t cluster_count, size_t vertex_count, size_t target_partition_size);
 template <typename T>
 inline void meshopt_spatialSortTriangles(T* destination, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 #endif
@@ -1110,6 +1138,14 @@ inline meshopt_Bounds meshopt_computeClusterBounds(const T* indices, size_t inde
 	meshopt_IndexAdapter<T> in(NULL, indices, index_count);
 
 	return meshopt_computeClusterBounds(in.data, index_count, vertex_positions, vertex_count, vertex_positions_stride);
+}
+
+template <typename T>
+inline size_t meshopt_partitionClusters(unsigned int* destination, const T* cluster_indices, size_t total_index_count, const unsigned int* cluster_index_counts, size_t cluster_count, size_t vertex_count, size_t target_partition_size)
+{
+	meshopt_IndexAdapter<T> in(NULL, cluster_indices, total_index_count);
+
+	return meshopt_partitionClusters(destination, in.data, total_index_count, cluster_index_counts, cluster_count, vertex_count, target_partition_size);
 }
 
 template <typename T>
