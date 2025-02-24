@@ -42,8 +42,9 @@
 			"license": "custom",
 			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
 			"github": {
-				"repo": "vengi-voxel/voxelized",
+				"repo": "vengi-voxel/voxels",
 				"commit": "main",
+				"path": "voxelized",
 				"license": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Sponza/README.md"
 			}
 		},
@@ -52,8 +53,8 @@
 			"license": "CC0 1.0 Universal",
 			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
 			"github": {
-				"repo": "vengi-voxel/vengi",
-				"path": "data/voxel",
+				"repo": "vengi-voxel/voxels",
+				"path": "vengi",
 				"commit": "master"
 			}
 		},
