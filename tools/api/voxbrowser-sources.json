@@ -40,7 +40,7 @@
 		{
 			"name": "Vengi voxelized",
 			"license": "custom",
-			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
+			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxels/main/voxelized/sponza-scale-0.3.png",
 			"github": {
 				"repo": "vengi-voxel/voxels",
 				"commit": "main",
@@ -51,11 +51,11 @@
 		{
 			"name": "Vengi",
 			"license": "CC0 1.0 Universal",
-			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
+			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxels/main/voxelized/sponza-scale-0.3.png",
 			"github": {
 				"repo": "vengi-voxel/voxels",
 				"path": "vengi",
-				"commit": "master"
+				"commit": "main"
 			}
 		},
 		{
