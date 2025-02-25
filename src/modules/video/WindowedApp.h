@@ -141,16 +141,20 @@ public:
 	 */
 	void directoryDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options);
 
-	virtual app::AppState onRunning() override;
-	virtual void onAfterRunning() override;
-	virtual bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
-	virtual void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) override;
-	virtual void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) override;
-	virtual bool onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) override;
-	virtual bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) override;
-	virtual app::AppState onConstruct() override;
-	virtual app::AppState onInit() override;
-	virtual app::AppState onCleanup() override;
+	app::AppState onRunning() override;
+	void onAfterRunning() override;
+	bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
+	void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) override;
+	void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) override;
+	bool onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) override;
+	bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) override;
+	bool onFingerPress(void *windowHandle, int64_t finger, float x, float y) override;
+	bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y) override;
+	void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) override;
+
+	app::AppState onConstruct() override;
+	app::AppState onInit() override;
+	app::AppState onCleanup() override;
 	void onWindowClose(void *windowHandle) override;
 
 	/**
