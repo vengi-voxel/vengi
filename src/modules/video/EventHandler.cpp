@@ -108,13 +108,13 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		// ignore joystick events - use gamecontroller events
 		break;
 	case SDL_FINGERDOWN:
-		fingerPress((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
+		fingerPress((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.pressure, event.tfinger.timestamp);
 		break;
 	case SDL_FINGERUP:
-		fingerRelease((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
+		fingerRelease((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.timestamp);
 		break;
 	case SDL_FINGERMOTION:
-		fingerMotion((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.dx, event.tfinger.dy);
+		fingerMotion((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.dx, event.tfinger.dy, event.tfinger.pressure, event.tfinger.timestamp);
 		break;
 	case SDL_WINDOWEVENT: {
 		SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
@@ -322,21 +322,21 @@ void EventHandler::keyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	}
 }
 
-void EventHandler::fingerPress(void *windowHandle, int64_t finger, float x, float y) {
+void EventHandler::fingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) {
 	for (IEventObserver* observer : _observers) {
-		observer->onFingerPress(windowHandle, finger, x, y);
+		observer->onFingerPress(windowHandle, finger, x, y, pressure, timestamp);
 	}
 }
 
-void EventHandler::fingerRelease(void *windowHandle, int64_t finger, float x, float y) {
+void EventHandler::fingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp) {
 	for (IEventObserver* observer : _observers) {
-		observer->onFingerRelease(windowHandle, finger, x, y);
+		observer->onFingerRelease(windowHandle, finger, x, y, timestamp);
 	}
 }
 
-void EventHandler::fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) {
+void EventHandler::fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) {
 	for (IEventObserver* observer : _observers) {
-		observer->onFingerMotion(windowHandle, finger, x, y, dx, dy);
+		observer->onFingerMotion(windowHandle, finger, x, y, dx, dy, pressure, timestamp);
 	}
 }
 

@@ -97,15 +97,15 @@ public:
 		return false;
 	}
 
-	virtual bool onFingerPress(void *windowHandle, int64_t finger, float x, float y) {
+	virtual bool onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) {
 		return false;
 	}
 
-	virtual bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y) {
+	virtual bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp) {
 		return false;
 	}
 
-	virtual void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) {
+	virtual void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) {
 	}
 
 	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {

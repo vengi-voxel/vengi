@@ -241,15 +241,15 @@ void WindowedApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y,
 	handleKeyRelease(CUSTOM_SDL_KEYCODE(button), SDL_GetModState());
 }
 
-bool WindowedApp::onFingerPress(void *windowHandle, int64_t finger, float x, float y) {
+bool WindowedApp::onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) {
 	return false;
 }
 
-bool WindowedApp::onFingerRelease(void *windowHandle, int64_t finger, float x, float y) {
+bool WindowedApp::onFingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp) {
 	return false;
 }
 
-void WindowedApp::onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) {
+void WindowedApp::onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) {
 }
 
 bool WindowedApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {

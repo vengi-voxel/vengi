@@ -68,9 +68,9 @@ public:
 	void textInput(void *windowHandle, const core::String& text);
 	void keyRelease(void *windowHandle, int32_t key, int16_t modifier = 0);
 	void keyPress(void *windowHandle, int32_t key, int16_t modifier = 0);
-	void fingerPress(void *windowHandle, int64_t finger, float x, float y);
-	void fingerRelease(void *windowHandle, int64_t finger, float x, float y);
-	void fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy);
+	void fingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp);
+	void fingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp);
+	void fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp);
 };
 
 }

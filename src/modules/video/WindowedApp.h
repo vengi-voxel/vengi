@@ -148,9 +148,9 @@ public:
 	void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) override;
 	bool onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) override;
 	bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) override;
-	bool onFingerPress(void *windowHandle, int64_t finger, float x, float y) override;
-	bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y) override;
-	void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) override;
+	bool onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) override;
+	bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp) override;
+	void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) override;
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
