@@ -6,7 +6,7 @@
 #include "core/Var.h"
 #include "core/Log.h"
 #include <SDL_platform.h>
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
@@ -17,7 +17,7 @@ namespace app {
 
 CommandlineApp::CommandlineApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(filesystem, timeProvider, threadPoolSize) {
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 	// https://learn.microsoft.com/en-us/windows/console/setconsolemode
 	HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (stdoutHandle != INVALID_HANDLE_VALUE) {

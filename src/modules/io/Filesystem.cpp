@@ -16,7 +16,7 @@
 #include "io/FilesystemEntry.h"
 #include "system/System.h"
 #include "core/sdl/SDLSystem.h"
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include <locale>
 #else
 #include <unistd.h>
@@ -32,7 +32,7 @@ Filesystem::~Filesystem() {
 }
 
 bool Filesystem::init(const core::String &organisation, const core::String &appname) {
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 	// https://github.com/tronkko/dirent/issues/39
 	std::locale::global(std::locale("LC_CTYPE=.utf8"));
 #endif
@@ -373,7 +373,7 @@ bool Filesystem::sysIsReadableDir(const core::String &name) {
 
 bool Filesystem::sysIsRelativePath(const core::String &name) {
 	const size_t size = name.size();
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 	if (size < 2) {
 		return true;
 	}

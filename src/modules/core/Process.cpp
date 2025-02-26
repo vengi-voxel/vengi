@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <string.h>
 
-#if defined(__WINDOWS__)
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include "core/sdl/SDLSystem.h"
 #define WIN32_LEAN_AND_MEAN
 #ifndef NOMINMAX
@@ -24,7 +24,7 @@
 #include <io.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#elif defined(__LINUX__) or defined(__MACOSX__)
+#elif defined(__linux__) or defined(__APPLE__)
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -43,7 +43,7 @@ namespace core {
 
 int Process::exec(const core::String &command, const core::DynamicArray<core::String> &arguments,
 				  const char *workingDirectory, io::WriteStream *stream) {
-#if defined(__LINUX__) || defined(__MACOSX__)
+#if defined(__linux__) || defined(__APPLE__)
 	int stdoutfd[2];
 	if (::pipe(stdoutfd) < 0) {
 		Log::error("pipe failed: %s", strerror(errno));
@@ -173,7 +173,7 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 
 	// success
 	return 0;
-#elif __WINDOWS__
+#elif defined(_WIN32) || defined(__CYGWIN__)
 	core::String cmd = command;
 	if (!arguments.empty()) {
 		cmd.append(" ");

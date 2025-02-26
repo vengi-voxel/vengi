@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <SDL_platform.h>
 
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif

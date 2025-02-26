@@ -16,7 +16,7 @@
 #include <syslog.h>
 #endif
 
-#ifdef __LINUX__
+#ifdef __linux__
 #define ANSI_COLOR_RESET "\033[0m"
 #define ANSI_COLOR_RED "\033[31m"
 #define ANSI_COLOR_GREEN "\033[32m"

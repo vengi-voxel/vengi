@@ -24,9 +24,9 @@
 #include "core/sdl/SDLSystem.h"
 #include <glm/common.hpp>
 
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
-#elif __MACOSX__
+#elif __APPLE__
 extern "C" bool isOSXDarkMode();
 #endif
 
@@ -168,9 +168,9 @@ void WindowedApp::onWindowClose(void *windowHandle) {
 // https://stackoverflow.com/questions/25207077/how-to-detect-if-os-x-is-in-dark-mode
 // https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
 bool WindowedApp::isDarkMode() const {
-#ifdef __MACOSX__
+#ifdef __APPLE__
 	return isOSXDarkMode();
-#elif __LINUX__
+#elif __linux__
 	core::DynamicArray<core::String> arguments;
 	arguments.push_back("get");
 	arguments.push_back("org.gnome.desktop.interface");
@@ -184,7 +184,7 @@ bool WindowedApp::isDarkMode() const {
 		return core::string::icontains(output, "dark");
 	}
 	return true;
-#elif __WINDOWS__
+#elif defined(_WIN32) || defined(__CYGWIN__)
 	HKEY hkey;
 	if (RegOpenKey(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)", &hkey) == ERROR_SUCCESS) {
 		DWORD value = 0;

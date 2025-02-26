@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "core/Assert.h"
 #include <string.h>
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 #define network_cleanup() WSACleanup()
 #define network_return int
 #else

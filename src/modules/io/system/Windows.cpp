@@ -4,7 +4,7 @@
 
 #include <SDL_platform.h>
 
-#if defined(__WINDOWS__)
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include "core/collection/DynamicArray.h"
 #include "io/FilesystemEntry.h"
 #include "core/ArrayLength.h"

@@ -16,7 +16,7 @@ namespace _priv {
 
 static int _recompileErrors = 0;
 
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__CYGWIN__)
 void __stdcall
 #else
 void

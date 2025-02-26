@@ -8,7 +8,7 @@
 #include <SDL_platform.h>
 #include <SDL_cpuinfo.h>
 
-#if defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)
+#if defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT nullptr
@@ -19,7 +19,7 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-#elif defined(__WINDOWS__)
+#elif defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdlib.h> // mbstowcs
@@ -28,7 +28,7 @@
 namespace core {
 
 bool setThreadName(const char *name) {
-#if defined(__LINUX__)
+#if defined(__linux__)
 	int (*ppthread_setname_np)(pthread_t, const char*) = nullptr;
 	void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 	ppthread_setname_np = (int(*)(pthread_t, const char*)) fn;
@@ -41,7 +41,7 @@ bool setThreadName(const char *name) {
 		}
 		return err == 0;
 	}
-#elif defined(__MACOSX__)
+#elif defined(__APPLE__)
 	int (*ppthread_setname_np)(const char*) = nullptr;
 	void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 	ppthread_setname_np = (int(*)(const char*)) fn;
@@ -54,7 +54,7 @@ bool setThreadName(const char *name) {
 		}
 		return err == 0;
 	}
-#elif defined(__WINDOWS__)
+#elif defined(_WIN32) || defined(__CYGWIN__)
 	typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 	static pfnSetThreadDescription pSetThreadDescription = nullptr;
 	static HMODULE kernel32 = nullptr;
@@ -77,7 +77,7 @@ bool setThreadName(const char *name) {
 }
 
 void setThreadPriority(ThreadPriority prio) {
-#if defined(__LINUX__)
+#if defined(__linux__)
 	int value;
 	if (prio == ThreadPriority::Low) {
 		value = 19;
@@ -87,7 +87,7 @@ void setThreadPriority(ThreadPriority prio) {
 		value = 0;
 	}
 	setpriority(PRIO_PROCESS, syscall(SYS_gettid), value);
-#elif defined(__WINDOWS__)
+#elif defined(_WIN32) || defined(__CYGWIN__)
 	int value;
 
 	if (prio == ThreadPriority::Low) {

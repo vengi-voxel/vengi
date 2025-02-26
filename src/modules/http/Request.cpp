@@ -9,7 +9,7 @@
 #include "core/Var.h"
 #include "engine-config.h"
 
-#if __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include "system/WinHttp.h"
 #elif EMSCRIPTEN
 #include "system/Emscripten.h"

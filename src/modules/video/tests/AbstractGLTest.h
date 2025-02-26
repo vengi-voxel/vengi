@@ -62,7 +62,7 @@ public:
 		core::Var::get(cfg::ClientVSync, "false");
 		core::Var::get(cfg::ClientDebugSeverity, "3");
 		app::AbstractTest::SetUp();
-#ifdef __WINDOWS__
+#if defined(_WIN32) || defined(__CYGWIN__)
 		GTEST_SKIP() << "Skipping because there are problems in the pipeline when running this headless";
 #else
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {

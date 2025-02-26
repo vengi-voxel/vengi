@@ -73,7 +73,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		core::string::replaceAllChars(key, '_', ' ');
 		keyCode = SDL_GetKeyFromName(key.c_str());
 		if (keyCode == SDLK_UNKNOWN) {
-#if defined __MACOSX__ || defined __EMSCRIPTEN__
+#if defined __APPLE__ || defined __EMSCRIPTEN__
 			// see Cocoa_InitKeyboard
 			key = core::string::replaceAll(key, "alt", "option");
 			key = core::string::replaceAll(key, "gui", "command");

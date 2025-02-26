@@ -7,7 +7,7 @@
 #include <string.h>
 
 #ifndef SDLCALL
-#if defined(__WIN32__) && !defined(__GNUC__)
+#if defined(_WIN32) && !defined(__GNUC__)
 #define SDLCALL __cdecl
 #else
 #define SDLCALL

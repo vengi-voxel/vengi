@@ -52,10 +52,10 @@ const core::String &loadingDocument() {
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
-#if defined(__WIN32__)
+#if defined(_WIN32) || defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 #include <sys/utsname.h>
 #endif
 
@@ -113,24 +113,24 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	std::fesetround(FE_TONEAREST);
 #endif
 
-#if defined(__WIN32__)
+#if defined(_WIN32) || defined(__CYGWIN__)
 	_osName = "Windows";
-#elif defined(__MACOSX__)
+#elif defined(__APPLE__)
 	_osName = "MacOSX";
-#elif defined(__LINUX__)
+#elif defined(__linux__)
 	_osName = "Linux";
 #elif defined(__EMSCRIPTEN__)
 	_osName = "Emscripten";
 #endif
 
-#if defined(__WIN32__)
+#if defined(_WIN32) || defined(__CYGWIN__)
 	OSVERSIONINFOA osInfo;
 	osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
 	::GetVersionExA(&osInfo);
 	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion,
 									  (int)osInfo.dwBuildNumber);
 	_pid = _getpid();
-#elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 	struct utsname details;
 	if (uname(&details) == 0) {
 		_osVersion = core::string::format("%s %s", details.sysname, details.machine);
@@ -220,7 +220,7 @@ void App::remBlocker(AppState blockedState) {
 }
 
 bool App::isRunning(int pid) const {
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__CYGWIN__)
 	HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
 	if (process == nullptr) {
 		return false;

@@ -17,7 +17,7 @@ namespace _priv {
 
 int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& shaderName, bool block);
 
-#ifdef __WIN32__
+#if defined(_WIN32) || defined(__CYGWIN__)
 extern void __stdcall
 #else
 extern void

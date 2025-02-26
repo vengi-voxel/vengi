@@ -7,7 +7,7 @@
 #include "io/FilesystemEntry.h"
 #include <SDL_platform.h>
 
-#if defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -24,7 +24,7 @@
 #define PATH_MAX 1024
 #endif
 
-#ifdef __MACOSX__
+#ifdef __APPLE__
 #include <libproc.h>
 #include <sysdir.h>
 #endif
@@ -53,7 +53,7 @@ static inline core::String replaceHome(const core::String &in) {
 	return core::string::replaceAll(out, "${HOME}", envHome);
 }
 
-#ifdef __MACOSX__
+#ifdef __APPLE__
 
 // needs at least OSX 10.12
 static core::String appleDir(sysdir_search_path_directory_t dir) {
@@ -68,7 +68,7 @@ static core::String appleDir(sysdir_search_path_directory_t dir) {
 	return "";
 }
 
-#else // __MACOSX__
+#else // __APPLE__
 
 static core::String load(const core::String &file) {
 	FILE *fp = fopen(file.c_str(), "r");
@@ -122,7 +122,7 @@ bool initState(io::FilesystemState &state) {
 		Log::debug("HOME env var not found");
 		return false;
 	}
-#if defined __MACOSX__
+#if defined __APPLE__
 	state._directories[FilesystemDirectories::FS_Dir_Download] = priv::appleDir(SYSDIR_DIRECTORY_DOWNLOADS);
 	state._directories[FilesystemDirectories::FS_Dir_Documents] = priv::appleDir(SYSDIR_DIRECTORY_DOCUMENT);
 	state._directories[FilesystemDirectories::FS_Dir_Pictures] = priv::appleDir(SYSDIR_DIRECTORY_PICTURES);
@@ -168,7 +168,7 @@ bool initState(io::FilesystemState &state) {
 			state._directories[FilesystemDirectories::FS_Dir_Public] = priv::replaceHome(value);
 		}
 	}
-#endif // !__MACOSX__
+#endif // !__APPLE__
 
 	for (int n = 0; n < FilesystemDirectories::FS_Dir_Max; ++n) {
 		if (state._directories[n].empty()) {
