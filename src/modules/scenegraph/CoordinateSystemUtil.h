@@ -53,7 +53,7 @@ inline glm::mat4 convertCoordinateSystem(CoordinateSystem from, const glm::mat4 
 /**
  * @param[in] from This specifies the coordinate system of the format and is used to perform the transform
  * into the coordinate system of vengi (x right, y up, z back) @c FormatCoordinateSystem::Vengi
- * @param[in] fromMatrix The matrix to convert to the target coordinate system
+ * @param[in] fromTransform The matrix to convert to the target coordinate system
  * @note This does not update the volume coordinates, only the node transforms.
  */
 SceneGraphTransform convertCoordinateSystem(CoordinateSystem from, const SceneGraphTransform &fromTransform);
