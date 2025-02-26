@@ -59,29 +59,17 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		keyPress((void*)SDL_GetWindowFromID(event.key.windowID), (int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_MOUSEMOTION: {
-		if (event.motion.which == SDL_TOUCH_MOUSEID) {
-			break;
-		}
 		SDL_Window *window = SDL_GetWindowFromID(event.motion.windowID);
 		mouseMotion((void*)window, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.which);
 		break;
 	}
 	case SDL_MOUSEBUTTONDOWN:
-		if (event.button.which == SDL_TOUCH_MOUSEID) {
-			break;
-		}
 		mouseButtonPress((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button, event.button.clicks, event.button.which);
 		break;
 	case SDL_MOUSEBUTTONUP:
-		if (event.button.which == SDL_TOUCH_MOUSEID) {
-			break;
-		}
 		mouseButtonRelease((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button, event.button.which);
 		break;
 	case SDL_MOUSEWHEEL: {
-		if (event.wheel.which == SDL_TOUCH_MOUSEID) {
-			break;
-		}
 		float x;
 		float y;
 #if SDL_VERSION_ATLEAST(2, 0, 18)
