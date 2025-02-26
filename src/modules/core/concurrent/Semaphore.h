@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 struct SDL_semaphore;
+using core_semaphore = SDL_semaphore;
 
 namespace core {
 
@@ -16,7 +17,7 @@ enum class SemaphoreWaitState { Success, WouldBlock, Error };
  */
 class Semaphore {
 private:
-	SDL_semaphore *_semaphore;
+	core_semaphore *_semaphore;
 
 public:
 	/**
