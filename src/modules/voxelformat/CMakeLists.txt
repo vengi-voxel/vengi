@@ -1,15 +1,30 @@
 set(LIB voxelformat)
+
 set(EXTERNAL_SRCS
 	external/ogt_vox.h
 	external/tiny_obj_loader.h
 	external/tiny_gltf.h
 	external/ufbx.h external/ufbx.c
 	external/libvxl.h external/libvxl.c
-
 )
-set(SRCS
-	${EXTERNAL_SRCS}
+add_library(${LIB}-external ${EXTERNAL_SRCS})
+check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
+if (C_NO_SHADOW)
+	foreach (src ${EXTERNAL_SRCS})
+		set_property(SOURCE ${src} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-shadow")
+	endforeach()
+endif()
+check_c_compiler_flag("-Wno-unused-variable" C_NO_UNUSED_VARIABLE)
+if (C_NO_UNUSED_VARIABLE)
+	foreach (src ${EXTERNAL_SRCS})
+		set_property(SOURCE ${src} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-unused-variable")
+	endforeach()
+endif()
+foreach (src ${EXTERNAL_SRCS})
+	engine_source_optimize(${src})
+endforeach()
 
+set(SRCS
 	Format.h Format.cpp
 	FormatConfig.h FormatConfig.cpp
 	FormatThumbnail.h
@@ -94,23 +109,7 @@ set(SRCS
 	private/voxelmax/BinaryPList.h           private/voxelmax/BinaryPList.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric)
-
-check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
-if (C_NO_SHADOW)
-	foreach (src ${EXTERNAL_SRCS})
-		set_property(SOURCE ${src} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-shadow")
-	endforeach()
-endif()
-check_c_compiler_flag("-Wno-unused-variable" C_NO_UNUSED_VARIABLE)
-if (C_NO_UNUSED_VARIABLE)
-	foreach (src ${EXTERNAL_SRCS})
-		set_property(SOURCE ${src} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-unused-variable")
-	endforeach()
-endif()
-foreach (src ${EXTERNAL_SRCS})
-	engine_source_optimize(${src})
-endforeach()
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric ${LIB}-external)
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
