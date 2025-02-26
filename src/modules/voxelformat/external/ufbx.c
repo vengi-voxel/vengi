@@ -830,7 +830,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 17, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 17, 1)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -968,7 +968,7 @@ ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEAD
 	#define ufbxi_regression_assert(cond) (void)0
 #endif
 
-#if defined(UFBX_REGRESSION) || defined(UFBX_DEV)
+#if defined(UFBX_REGRESSION) || defined(UFBX_DEV) || defined(UFBX_UBSAN)
 	#define ufbxi_dev_assert(cond) ufbx_assert(cond)
 #else
 	#define ufbxi_dev_assert(cond) (void)0
@@ -1400,7 +1400,7 @@ static ufbxi_noinline void ufbxi_bigint_shift_left(ufbxi_bigint *bigint, uint32_
 	bigint->length += words + (b.limbs[b.length - 1] >> 1 >> bits_down != 0 ? 1 : 0);
 	b.limbs[b.length] = 0;
 	if (b.length <= 3 && words <= 3) {
-		ufbxi_bigint_limb l0 = ufbxi_maybe_uninit(b.length >= 0, b.limbs[0], ~0u);
+		ufbxi_bigint_limb l0 = b.limbs[0];
 		ufbxi_bigint_limb l1 = ufbxi_maybe_uninit(b.length >= 1, b.limbs[1], ~0u);
 		ufbxi_bigint_limb l2 = ufbxi_maybe_uninit(b.length >= 2, b.limbs[2], ~0u);
 		b.limbs[0] = 0;
@@ -1491,6 +1491,7 @@ static ufbxi_noinline double ufbxi_parse_double(const char *str, size_t max_leng
 				digits = digits * 10 + (uint64_t)(c - '0');
 				num_digits++;
 				if (num_digits >= 18) {
+					ufbxi_dev_assert(num_digits < ufbxi_arraycount(ufbxi_pow5_tab));
 					ufbxi_bigint_mad(&big_mantissa, ufbxi_pow5_tab[num_digits] << num_digits, digits);
 					digits = 0;
 					num_digits = 0;
@@ -1553,6 +1554,7 @@ static ufbxi_noinline double ufbxi_parse_double(const char *str, size_t max_leng
 		big_mantissa.length = (digits >> 32u) ? 2 : digits ? 1 : 0;
 		if (big_mantissa.length == 0) return negative ? -0.0 : 0.0;
 	} else {
+		ufbxi_dev_assert(num_digits < ufbxi_arraycount(ufbxi_pow5_tab));
 		ufbxi_bigint_mad(&big_mantissa, ufbxi_pow5_tab[num_digits] << num_digits, digits);
 	}
 
