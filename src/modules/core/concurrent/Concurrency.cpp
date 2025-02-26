@@ -5,8 +5,8 @@
 #include "Concurrency.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include <SDL_platform.h>
 #include <SDL_cpuinfo.h>
+#include <SDL_version.h>
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
@@ -123,7 +123,11 @@ void setThreadPriority(ThreadPriority prio) {
 }
 
 uint32_t cpus() {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	return core_max(1, SDL_GetNumLogicalCPUCores());
+#else
 	return core_max(1, SDL_GetCPUCount());
+#endif
 }
 
 uint32_t halfcpus() {

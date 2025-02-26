@@ -6,9 +6,15 @@
 
 #include "core/String.h"
 #include "core/concurrent/Concurrency.h"
+#include <SDL_version.h>
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+struct SDL_Mutex;
+using core_rwmutex = SDL_Mutex;
+#else
 struct SDL_mutex;
 using core_rwmutex = SDL_mutex;
+#endif
 namespace core {
 
 class core_thread_capability("mutex") ReadWriteLock {

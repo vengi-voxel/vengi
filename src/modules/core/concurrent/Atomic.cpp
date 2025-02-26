@@ -4,6 +4,13 @@
 
 #include "Atomic.h"
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_AtomicSet SDL_SetAtomicInt
+#define SDL_AtomicGet SDL_GetAtomicInt
+#define SDL_AtomicCAS SDL_CompareAndSwapAtomicInt
+#define SDL_AtomicAdd SDL_AddAtomicInt
+#endif
+
 namespace core {
 
 AtomicBool::AtomicBool(bool value) {

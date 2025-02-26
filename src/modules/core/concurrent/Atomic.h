@@ -5,7 +5,15 @@
 #pragma once
 
 #include <SDL_atomic.h>
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+struct SDL_Condition;
+using core_atomic = SDL_AtomicInt;
+#else
+struct SDL_cond;
 using core_atomic = SDL_atomic_t;
+#endif
 
 namespace core {
 
@@ -50,6 +58,13 @@ public:
 	bool operator==(int rhs) const;
 	bool operator==(const AtomicInt& rhs) const;
 };
+
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_AtomicSetPtr SDL_SetAtomicPointer
+#define SDL_AtomicGetPtr SDL_GetAtomicPointer
+#define SDL_AtomicCASPtr SDL_CompareAndSwapAtomicPointer
+#endif
 
 template<class T>
 class AtomicPtr {

@@ -7,6 +7,12 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include <SDL_assert.h>
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_assert_state SDL_AssertState
+#define SDL_assert_data SDL_AssertData
+#endif
 
 #ifdef HAVE_BACKWARD
 #include <backward.h>

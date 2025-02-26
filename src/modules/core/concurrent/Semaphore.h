@@ -4,8 +4,15 @@
 
 #include <stdint.h>
 
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+struct SDL_Semaphore;
+using core_semaphore = SDL_Semaphore;
+#else
 struct SDL_semaphore;
 using core_semaphore = SDL_semaphore;
+#endif
 
 namespace core {
 
