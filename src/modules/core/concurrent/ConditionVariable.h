@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 struct SDL_cond;
+using core_condition = SDL_cond;
 
 namespace core {
 
@@ -20,7 +21,7 @@ enum class ConditionVariableState {
 
 class ConditionVariable {
 private:
-	SDL_cond* _conditionVariable;
+	core_condition* _conditionVariable;;
 public:
 	ConditionVariable();
 	~ConditionVariable();

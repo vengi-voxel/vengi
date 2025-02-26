@@ -28,7 +28,7 @@ Lock::~Lock() {
 	SDL_DestroyMutex(_mutex);
 }
 
-SDL_mutex* Lock::handle() {
+core_mutex* Lock::handle() {
 	return _mutex;
 }
 

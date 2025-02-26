@@ -11,12 +11,13 @@
 #endif
 
 struct SDL_mutex;
+using core_mutex = SDL_mutex;
 
 namespace core {
 
 class core_thread_capability("mutex") Lock {
 private:
-	mutable SDL_mutex *_mutex;
+	mutable core_mutex *_mutex;
 
 public:
 #ifdef TRACY_ENABLE
@@ -37,7 +38,7 @@ public:
 	void unlock() const core_thread_release();
 	bool try_lock() const core_thread_try_acquire(true);
 
-	SDL_mutex *handle();
+	core_mutex *handle();
 };
 
 #ifdef TRACY_ENABLE

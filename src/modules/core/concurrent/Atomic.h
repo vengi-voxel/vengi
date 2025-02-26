@@ -5,12 +5,13 @@
 #pragma once
 
 #include <SDL_atomic.h>
+using core_atomic = SDL_atomic_t;
 
 namespace core {
 
 class AtomicBool {
 private:
-	SDL_atomic_t _value { 0 };
+	core_atomic _value { 0 };
 public:
 	AtomicBool(bool value);
 
@@ -28,7 +29,7 @@ public:
 
 class AtomicInt {
 private:
-	SDL_atomic_t _value;
+	core_atomic _value;
 public:
 	AtomicInt(int value = 0);
 
