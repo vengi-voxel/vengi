@@ -65,13 +65,29 @@ public:
 #if defined(_WIN32) || defined(__CYGWIN__)
 		GTEST_SKIP() << "Skipping because there are problems in the pipeline when running this headless";
 #else
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		if (!SDL_Init(SDL_INIT_VIDEO)) {
+#else
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+#endif
 			GTEST_SKIP() << "Failed to initialize SDL video subsystem";
 			return;
 		}
 		video::setup();
 		video::construct();
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		SDL_PropertiesID props = SDL_CreateProperties();
+		SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "test");
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+		_window = SDL_CreateWindowWithProperties(props);
+		SDL_DestroyProperties(props);
+#else
 		_window = SDL_CreateWindow("test", 0, 0, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+#endif
+
 		if (_window != nullptr) {
 			_ctx = video::createContext(_window);
 			if (_ctx == nullptr) {

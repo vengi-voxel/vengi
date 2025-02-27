@@ -39,7 +39,7 @@ if (NOT PkgConfig_FOUND)
 message(STATUS "PkgConfig not found")
 endif()
 
-set(USE_SDL_VERSION 2 CACHE STRING "SDL version to use (2 or 3)")
+set(USE_SDL_VERSION 3 CACHE STRING "SDL version to use (2 or 3)")
 set_property(CACHE USE_SDL_VERSION PROPERTY STRINGS 2 3)
 
 if (USE_SDL_VERSION EQUAL 3)

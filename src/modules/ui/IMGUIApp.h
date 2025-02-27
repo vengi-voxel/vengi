@@ -114,14 +114,14 @@ protected:
 	 */
 	virtual void loadKeymap(int keymap);
 
-	virtual bool onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) override;
-	virtual bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) override;
-	virtual bool onTextInput(void *windowHandle, const core::String& text) override;
-	virtual void onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) override;
-	virtual bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
-	virtual void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) override;
-	virtual void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) override;
-	virtual bool handleSDLEvent(SDL_Event& event) override;
+	bool onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) override;
+	bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) override;
+	bool onTextInput(void *windowHandle, const core::String& text) override;
+	void onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) override;
+	bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
+	void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) override;
+	void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) override;
+	bool handleSDLEvent(SDL_Event& event) override;
 
 	void renderBindingsDialog();
 	void renderTexturesDialog();

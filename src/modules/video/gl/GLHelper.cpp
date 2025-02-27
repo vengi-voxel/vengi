@@ -272,7 +272,11 @@ void setupFeatures() {
 	}
 
 	int mask = 0;
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask)) {
+#else
 	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
+#endif
 		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
 			renderState().features[core::enumVal(Feature::TextureCompressionDXT)] = true;
 			renderState().features[core::enumVal(Feature::InstancedArrays)] = true;

@@ -19,6 +19,7 @@ set(SRCS
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	OpenFileMode.h
+	PenAxis.h
 	Renderer.cpp Renderer.h
 	RendererInterface.h
 	RenderBuffer.cpp RenderBuffer.h

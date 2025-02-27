@@ -9,9 +9,23 @@
 #include "core/concurrent/Lock.h"
 #include "io/FormatDescription.h"
 #include "io/system/System.h"
-#include "core/sdl/SDLSystem.h"
 #ifdef __EMSCRIPTEN__
 #include "system/emscripten_browser_file.h"
+#endif
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#include <SDL_iostream.h>
+#define SDL_RWclose SDL_CloseIO
+#define RW_SEEK_CUR SDL_IO_SEEK_CUR
+#define RW_SEEK_END SDL_IO_SEEK_END
+#define RW_SEEK_SET SDL_IO_SEEK_SET
+#define SDL_RWsize SDL_GetIOSize
+#define SDL_RWtell SDL_TellIO
+#define SDL_RWseek(ctx, pos, whence) SDL_SeekIO(ctx, pos, (SDL_IOWhence)whence)
+#define SDL_RWread(ctx, ptr, size, maxnum) SDL_ReadIO(ctx, ptr, maxnum)
+#define SDL_RWwrite(ctx, ptr, size, num) SDL_WriteIO(ctx, ptr, num)
+#define SDL_RWFromFile SDL_IOFromFile
 #endif
 
 namespace io {
@@ -281,14 +295,22 @@ int File::read(void *buffer, int n) {
 		if (block > blockSize) {
 			block = blockSize;
 		}
-		const int readAmount = read(buf, 1, block);
-
-		/* end of file reached */
+		if (_mode != FileMode::Read && _mode != FileMode::SysRead) {
+			_state = IOSTATE_FAILED;
+			Log::debug("File %s is not opened in read mode", _rawPath.c_str());
+			return -1;
+		}
+		const int readAmount = (int)SDL_RWread(_file, buf, 1, block);
 		if (readAmount == 0) {
+			_state = IOSTATE_LOADED;
+			Log::trace("File %s: read successful", _rawPath.c_str());
 			return int(len - remaining + readAmount);
 		} else if (readAmount == -1) {
-			Log::debug("Read error while reading %s", _rawPath.c_str());
+			_state = IOSTATE_FAILED;
+			Log::trace("File %s: read failed", _rawPath.c_str());
 			return -1;
+		} else {
+			Log::trace("File %s: read %i bytes", _rawPath.c_str(), n);
 		}
 
 		/* do some progress bar thing here... */
@@ -297,26 +319,6 @@ int File::read(void *buffer, int n) {
 	}
 	Log::debug("Read %i bytes from %s", (int)len, _rawPath.c_str());
 	return (int)len;
-}
-
-int File::read(void *buf, size_t size, size_t maxnum) {
-	if (_mode != FileMode::Read && _mode != FileMode::SysRead) {
-		_state = IOSTATE_FAILED;
-		Log::debug("File %s is not opened in read mode", _rawPath.c_str());
-		return -1;
-	}
-	const int n = (int)SDL_RWread(_file, buf, size, maxnum);
-	if (n == 0) {
-		_state = IOSTATE_LOADED;
-		Log::trace("File %s: read successful", _rawPath.c_str());
-	} else if (n == -1) {
-		_state = IOSTATE_FAILED;
-		Log::trace("File %s: read failed", _rawPath.c_str());
-	} else {
-		Log::trace("File %s: read %i bytes", _rawPath.c_str(), n);
-	}
-
-	return n;
 }
 
 bool File::flush() {

@@ -8,8 +8,14 @@
 #include "io/Stream.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <SDL_version.h>
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+struct SDL_IOStream;
+#define SDL_RWops SDL_IOStream
+#else
 struct SDL_RWops;
+#endif
 
 namespace io {
 

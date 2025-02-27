@@ -6,9 +6,27 @@
 
 #include <SDL_keycode.h>
 #include <SDL_mouse.h>
+#include <SDL_version.h>
 #include "core/String.h"
 
 #define CUSTOM_SDL_KEYCODE(X) SDL_SCANCODE_TO_KEYCODE((util::button::CUSTOM_SCANCODES + (X)))
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_NUM_SCANCODES SDL_SCANCODE_COUNT
+#define KMOD_LSHIFT SDL_KMOD_LSHIFT
+#define KMOD_RSHIFT SDL_KMOD_RSHIFT
+#define KMOD_GUI SDL_KMOD_GUI
+#define KMOD_LGUI SDL_KMOD_LGUI
+#define KMOD_RGUI SDL_KMOD_RGUI
+#define KMOD_LALT SDL_KMOD_LALT
+#define KMOD_RALT SDL_KMOD_RALT
+#define KMOD_ALT SDL_KMOD_ALT
+#define KMOD_SHIFT SDL_KMOD_SHIFT
+#define KMOD_CTRL SDL_KMOD_CTRL
+#define KMOD_LCTRL SDL_KMOD_LCTRL
+#define KMOD_RCTRL SDL_KMOD_RCTRL
+#define KMOD_NONE SDL_KMOD_NONE
+#endif
 
 namespace util {
 namespace button {

@@ -11,6 +11,35 @@
 #include <cstdint> // intptr_t - not available in stdint.h
 #include <new>
 #include <initializer_list>
+#include <SDL_version.h>
+
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+
+extern "C" size_t SDLCALL SDL_GetSIMDAlignment();
+extern "C" void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+#ifndef core_aligned_malloc
+#define core_aligned_malloc(size) SDL_aligned_alloc(SDL_GetSIMDAlignment(), size)
+#endif
+
+#ifndef core_aligned_free
+#define core_aligned_free SDL_aligned_free
+#endif
+
+#else
+
+extern "C" void SDLCALL SDL_SIMDFree(void *ptr);
+extern "C" void *SDLCALL SDL_SIMDAlloc(const size_t len);
+
+#ifndef core_aligned_malloc
+#define core_aligned_malloc SDL_SIMDAlloc
+#endif
+
+#ifndef core_aligned_free
+#define core_aligned_free SDL_SIMDFree
+#endif
+#endif
 
 namespace core {
 

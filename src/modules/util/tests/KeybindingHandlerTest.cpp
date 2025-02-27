@@ -10,6 +10,13 @@
 #include "core/Log.h"
 #include <SDL_keycode.h>
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDLK_w SDLK_W
+#define SDLK_a SDLK_A
+#define SDLK_b SDLK_B
+#define KMOD_NUM SDL_KMOD_NUM
+#endif
+
 namespace util {
 
 namespace keybindingtest {

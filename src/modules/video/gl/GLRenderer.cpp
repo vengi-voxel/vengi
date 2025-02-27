@@ -1671,7 +1671,11 @@ int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String
 }
 
 void destroyContext(RendererContext &context) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	SDL_GL_DestroyContext((SDL_GLContext)context);
+#else
 	SDL_GL_DeleteContext((SDL_GLContext)context);
+#endif
 }
 
 RendererContext createContext(SDL_Window *window) {
@@ -1759,18 +1763,28 @@ float getScaleFactor() {
 }
 
 static bool setVSync(int value) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	return SDL_GL_SetSwapInterval(value);
+#else
 	return SDL_GL_SetSwapInterval(value) != -1;
+#endif
 }
 
 static int getVSync() {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	int val = 0;
+	SDL_GL_GetSwapInterval(&val);
+	return val;
+#else
 	return SDL_GL_GetSwapInterval();
+#endif
 }
 
 void handleVSync() {
 	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {
-		if (setVSync(-1)) {
-			if (setVSync(1)) {
+		if (!setVSync(-1)) {
+			if (!setVSync(1)) {
 				Log::warn("Could not activate vsync: %s", SDL_GetError());
 			}
 		}

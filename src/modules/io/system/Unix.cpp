@@ -5,7 +5,6 @@
 #include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FilesystemEntry.h"
-#include <SDL_platform.h>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 #include "core/Log.h"
@@ -32,7 +31,7 @@
 namespace io {
 namespace priv {
 
-static char *getHome() {
+static const char *getHome() {
 	const int uid = (int)getuid();
 	if (uid != 0) {
 		return SDL_getenv("HOME");
@@ -44,7 +43,7 @@ static char *getHome() {
  * @brief Replace the shell variable for the home dir
  */
 static inline core::String replaceHome(const core::String &in) {
-	char *envHome = getHome();
+	const char *envHome = getHome();
 	if (envHome == nullptr) {
 		return in;
 	}
@@ -117,7 +116,7 @@ static core::String load(const core::String &file) {
 
 bool initState(io::FilesystemState &state) {
 #ifndef __EMSCRIPTEN__
-	char *envHome = priv::getHome();
+	const char *envHome = priv::getHome();
 	if (envHome == nullptr) {
 		Log::debug("HOME env var not found");
 		return false;

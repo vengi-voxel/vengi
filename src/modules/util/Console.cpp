@@ -17,7 +17,17 @@
 #include "core/Tokenizer.h"
 #include "command/CommandHandler.h"
 #include "VarUtil.h"
-#include "core/sdl/SDLSystem.h"
+#include <SDL_log.h>
+#include <SDL_thread.h>
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_LogSetPriority SDL_SetLogPriority
+#define SDL_LogGetPriority SDL_GetLogPriority
+#define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
+#define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
+#define SDL_ThreadID SDL_GetCurrentThreadID
+#endif
 
 namespace util {
 

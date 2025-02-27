@@ -6,6 +6,13 @@
 #include "app/tests/AbstractTest.h"
 #include "command/Command.h"
 #include "core/Var.h"
+#include <SDL_version.h>
+#include <SDL_log.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
+#define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
+#endif
 
 namespace util {
 

@@ -64,7 +64,11 @@ protected:
 	/**
 	 * @brief Delta of the mouse movement since the last frame
 	 */
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	glm::vec2 _mouseRelativePos;
+#else
 	glm::ivec2 _mouseRelativePos;
+#endif
 
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 
@@ -151,6 +155,15 @@ public:
 	bool onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) override;
 	bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp) override;
 	void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) override;
+
+	void onPenAxis(void *windowHandle, uint32_t pen, float x, float y, PenAxis axis, float value) override;
+	void onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool eraser) override;
+	void onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) override;
+	void onPenButtonDown(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) override;
+	void onPenButtonUp(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) override;
+	void onPenProximityIn(void *windowHandle, uint32_t pen) override;
+	void onPenProximityOut(void *windowHandle, uint32_t pen) override;
+	void onPenMotion(void *windowHandle, uint32_t pen, float x, float y) override;
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;

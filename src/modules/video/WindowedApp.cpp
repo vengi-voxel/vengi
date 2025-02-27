@@ -21,13 +21,24 @@
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
-#include "core/sdl/SDLSystem.h"
 #include <glm/common.hpp>
+#include <SDL_events.h>
+#include <SDL_mouse.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #elif __APPLE__
 extern "C" bool isOSXDarkMode();
+#endif
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_GL_GetDrawableSize SDL_GetWindowSizeInPixels
+#define SDL_GetWindowDisplayIndex SDL_GetDisplayForWindow
+#define SDL_QUIT SDL_EVENT_QUIT
+#define SDL_WINDOW_ALLOW_HIGHDPI SDL_WINDOW_HIGH_PIXEL_DENSITY
+#define sdlCheckError() checkSDLError(__FILE__, __LINE__, "UNKNOWN")
+#else
+#define sdlCheckError() checkSDLError(__FILE__, __LINE__, SDL_FUNCTION)
 #endif
 
 namespace video {
@@ -42,7 +53,6 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 		Log::error("unknown error (%s:%i => %s)", file, line, function);
 	}
 }
-#define sdlCheckError() checkSDLError(__FILE__, __LINE__, SDL_FUNCTION)
 }
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
@@ -70,6 +80,31 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 	case SDL_QUIT:
 		// continue to handle any other following event
 		return true;
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	case SDL_EVENT_WINDOW_RESIZED:
+		// fallthrough
+	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: {
+		SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+		if (window == _window) {
+			const int w = event.window.data1;
+			const int h = event.window.data2;
+			int frameBufferWidth, frameBufferHeight;
+			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+			_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
+			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
+			_windowDimension = glm::ivec2(w, h);
+			const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
+			video::resize(w, h, scaleFactor);
+			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+		}
+		break;
+	}
+	case SDL_EVENT_WINDOW_MOVED: {
+		SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+		SDL_RaiseWindow(window);
+		break;
+	}
+#else
 	case SDL_WINDOWEVENT: {
 		SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
 		// we must be the first to handle this - but others should get their chance, too
@@ -90,6 +125,7 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 		}
 	}
 		// fallthrough
+#endif
 	default: {
 		core_trace_scoped(WindowedAppEventHandler);
 		const bool running = core::Singleton<video::EventHandler>::getInstance().handleEvent(event);
@@ -252,6 +288,30 @@ bool WindowedApp::onFingerRelease(void *windowHandle, int64_t finger, float x, f
 void WindowedApp::onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) {
 }
 
+void WindowedApp::onPenAxis(void *windowHandle, uint32_t pen, float x, float y, PenAxis axis, float value) {
+}
+
+void WindowedApp::onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+}
+
+void WindowedApp::onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+}
+
+void WindowedApp::onPenButtonDown(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) {
+}
+
+void WindowedApp::onPenButtonUp(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) {
+}
+
+void WindowedApp::onPenProximityIn(void *windowHandle, uint32_t pen) {
+}
+
+void WindowedApp::onPenProximityOut(void *windowHandle, uint32_t pen) {
+}
+
+void WindowedApp::onPenMotion(void *windowHandle, uint32_t pen, float x, float y) {
+}
+
 bool WindowedApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	return handleKeyPress(key, modifier);
 }
@@ -262,7 +322,19 @@ core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
 
 SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, uint32_t flags) {
 	const core::String windowName = fullAppname();
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, windowName.c_str());
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, displayIndex);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
+	SDL_Window* window = SDL_CreateWindowWithProperties(props);
+	SDL_DestroyProperties(props);
+	return window;
+#else
 	return SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
+#endif
 }
 
 app::AppState WindowedApp::onInit() {
@@ -271,7 +343,11 @@ app::AppState WindowedApp::onInit() {
 		return state;
 	}
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+#else
 	if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+#endif
 		sdlCheckError();
 		return app::AppState::InitFailure;
 	}
@@ -286,6 +362,11 @@ app::AppState WindowedApp::onInit() {
 
 	core::Singleton<video::EventHandler>::getInstance().registerObserver(this);
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	int numDisplays = 0;
+	SDL_DisplayID *displays = SDL_GetDisplays(&numDisplays);
+	SDL_free(displays);
+#else
 	Log::debug("CPU count: %d", SDL_GetCPUCount());
 	Log::debug("CacheLine size: %d", SDL_GetCPUCacheLineSize());
 	Log::debug("Altivec: %d", SDL_HasAltiVec());
@@ -301,21 +382,26 @@ app::AppState WindowedApp::onInit() {
 	Log::debug("NEON: %d", SDL_HasNEON());
 #endif
 	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
-
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
+#endif
+
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
 	Log::debug("Try to use display %i", displayIndex);
 
 	video::setup();
 
+#ifdef SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+#endif
 #ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_TIME
 	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "500");
 #endif
 #ifdef SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS
 	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, "32");
 #endif
+#ifdef SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK
 	SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
+#endif
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	if (!_showWindow) {
@@ -324,7 +410,11 @@ app::AppState WindowedApp::onInit() {
 	SDL_Rect displayBounds;
 	displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 	if (_fullScreenApplication) {
-		if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	if (!SDL_GetDisplayUsableBounds(displayIndex, &displayBounds)) {
+#else
+	if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
+#endif
 			Log::error("Failed to query usable display bounds: %s", SDL_GetError());
 			displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 		}
@@ -363,7 +453,7 @@ app::AppState WindowedApp::onInit() {
 		SDL_MaximizeWindow(_window);
 	}
 
-	if (displayIndex != SDL_GetWindowDisplayIndex(_window)) {
+	if (displayIndex != (int)SDL_GetWindowDisplayIndex(_window)) {
 		Log::error("Failed to create window at display %i", displayIndex);
 	}
 
@@ -457,7 +547,15 @@ void WindowedApp::resetKeybindings() {
 }
 
 void WindowedApp::showCursor(bool show) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	if (show) {
+		SDL_ShowCursor();
+	} else {
+		SDL_HideCursor();
+	}
+#else
 	SDL_ShowCursor(show ? SDL_TRUE : SDL_FALSE);
+#endif
 }
 
 void WindowedApp::centerMousePosition() {
@@ -465,7 +563,11 @@ void WindowedApp::centerMousePosition() {
 }
 
 bool WindowedApp::isRelativeMouseMode() const {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	return SDL_GetWindowRelativeMouseMode(_window);
+#else
 	return SDL_GetRelativeMouseMode();
+#endif
 }
 
 bool WindowedApp::toggleRelativeMouseMode() {
@@ -477,7 +579,11 @@ bool WindowedApp::setRelativeMouseMode(bool mode) {
 	if (mode && !_allowRelativeMouseMode) {
 		mode = false;
 	}
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	SDL_SetWindowRelativeMouseMode(_window, mode);
+#else
 	SDL_SetRelativeMouseMode(mode ? SDL_TRUE : SDL_FALSE);
+#endif
 	return mode;
 }
 

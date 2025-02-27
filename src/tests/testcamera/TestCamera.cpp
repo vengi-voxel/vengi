@@ -6,7 +6,6 @@
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include "util/CustomButtonNames.h"
-#include "core/sdl/SDLSystem.h"
 
 TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {

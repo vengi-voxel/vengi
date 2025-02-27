@@ -28,7 +28,6 @@ set(SRCS
 	dearimgui/imstb_truetype.h
 
 	dearimgui/backends/imgui_impl_opengl3.cpp dearimgui/backends/imgui_impl_opengl3.h
-	dearimgui/backends/imgui_impl_sdl2.cpp dearimgui/backends/imgui_impl_sdl2.h
 
 	dearimgui/imgui_neo_sequencer.cpp dearimgui/imgui_neo_sequencer.h
 	dearimgui/imgui_neo_internal.cpp dearimgui/imgui_neo_internal.h
@@ -38,6 +37,13 @@ set(SRCS
 
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
 )
+
+if (USE_SDL_VERSION EQUAL 2)
+	list(APPEND SRCS dearimgui/backends/imgui_impl_sdl2.cpp dearimgui/backends/imgui_impl_sdl2.h)
+endif()
+if (USE_SDL_VERSION EQUAL 3)
+	list(APPEND SRCS dearimgui/backends/imgui_impl_sdl3.cpp dearimgui/backends/imgui_impl_sdl3.h)
+endif()
 
 set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO -DIMGUI_DISABLE_DEFAULT_FONT -DIMGUI_ENABLE_OSX_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS)
 set(LIBS)

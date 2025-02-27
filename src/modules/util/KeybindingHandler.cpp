@@ -15,7 +15,8 @@
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "util/KeybindingParser.h"
-#include "core/sdl/SDLSystem.h"
+#include "util/CustomButtonNames.h"
+#include <SDL_keyboard.h>
 
 namespace util {
 

@@ -309,14 +309,20 @@ void App::onFrame() {
 				}
 				SDL_MessageBoxButtonData buttons[3];
 				core_memset(&buttons, 0, sizeof(buttons));
-				buttons[0].buttonid = 0;
 				buttons[0].text = "Reset";
 				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-				buttons[1].buttonid = 1;
 				buttons[1].text = "Continue";
 				buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-				buttons[2].buttonid = 2;
 				buttons[2].text = "Upload";
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+				buttons[0].buttonID = 0;
+				buttons[1].buttonID = 1;
+				buttons[2].buttonID = 2;
+#else
+				buttons[0].buttonid = 0;
+				buttons[1].buttonid = 1;
+				buttons[2].buttonid = 2;
+#endif
 				messageboxdata.buttons = buttons;
 				int buttonId = -1;
 				if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
@@ -456,7 +462,19 @@ AppState App::onConstruct() {
 		_dictManager.addDirectory(core::string::path(path, "po"));
 	}
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	int count = 0;
+	SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+	for (int i = 0; i < count; ++i) {
+		Log::debug("Preferred locale: %s", locales[i]->language);
+		Language lang = Language::fromSpec(locales[i]->language, locales[i]->country);
+		if (lang) {
+			_systemLanguage = lang;
+			break;
+		}
+	}
+	SDL_free((void*)locales);
+#elif SDL_VERSION_ATLEAST(2, 0, 14)
 	SDL_Locale *locales = SDL_GetPreferredLocales();
 	if (locales) {
 		SDL_Locale *locale = locales;
@@ -618,7 +636,11 @@ void App::onBeforeInit() {
 AppState App::onInit() {
 	Log::debug("Initialize sdl");
 
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
+	uint32_t flags = SDL_INIT_EVENTS;
+#if !SDL_VERSION_ATLEAST(3, 2, 0)
+	flags |= SDL_INIT_TIMER;
+#endif
+	SDL_Init(flags);
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
 

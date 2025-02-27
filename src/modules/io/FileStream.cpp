@@ -5,7 +5,18 @@
 #include "FileStream.h"
 #include "core/Log.h"
 #include "io/File.h"
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#include <SDL_iostream.h>
+#define SDL_RWsize SDL_GetIOSize
+#define SDL_RWtell SDL_TellIO
+#define SDL_RWseek(ctx, pos, whence) SDL_SeekIO(ctx, pos, (SDL_IOWhence)whence)
+#define SDL_RWread(ctx, ptr, size, maxnum) SDL_ReadIO(ctx, ptr, maxnum)
+#define SDL_RWwrite(ctx, ptr, size, num) SDL_WriteIO(ctx, ptr, num)
+#else
 #include <SDL_rwops.h>
+#endif
 
 namespace io {
 

@@ -22,7 +22,6 @@
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "dearimgui/backends/imgui_impl_opengl3.h"
-#include "dearimgui/backends/imgui_impl_sdl2.h"
 #include "dearimgui/implot.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -45,10 +44,22 @@
 
 #include "FontLucide.h"
 
-#include "core/sdl/SDLSystem.h"
-#include <SDL_events.h>
-#include <SDL_syswm.h>
 #include <glm/mat4x4.hpp>
+#include <SDL_events.h>
+#include <SDL_version.h>
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDL_MOUSEMOTION SDL_EVENT_MOUSE_MOTION
+#define SDL_MOUSEWHEEL SDL_EVENT_MOUSE_WHEEL
+#define SDL_MOUSEBUTTONUP SDL_EVENT_MOUSE_BUTTON_UP
+#define SDL_MOUSEBUTTONDOWN SDL_EVENT_MOUSE_BUTTON_DOWN
+#define SDL_TEXTINPUT SDL_EVENT_TEXT_INPUT
+#define SDL_KEYDOWN SDL_EVENT_KEY_DOWN
+#define SDL_KEYUP SDL_EVENT_KEY_UP
+#include "dearimgui/backends/imgui_impl_sdl3.h"
+#else
+#include <SDL_syswm.h>
+#include "dearimgui/backends/imgui_impl_sdl2.h"
+#endif
 
 namespace ui {
 
@@ -60,6 +71,14 @@ IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProvider
 IMGUIApp::~IMGUIApp() {
 }
 
+static inline void processEvent(SDL_Event &ev) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	ImGui_ImplSDL3_ProcessEvent(&ev);
+#else
+	ImGui_ImplSDL2_ProcessEvent(&ev);
+#endif
+}
+
 void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
 	Super::onMouseMotion(windowHandle, x, y, relX, relY, mouseId);
 
@@ -69,14 +88,15 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 	ev.motion.y = y;
 	ev.motion.which = mouseId;
 	ev.motion.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-	ImGui_ImplSDL2_ProcessEvent(&ev);
+	processEvent(ev);
 }
 
 bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 	if (!Super::onMouseWheel(windowHandle, x, y, mouseId)) {
 		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
-#if SDL_VERSION_ATLEAST(2, 0, 18)
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#elif SDL_VERSION_ATLEAST(2, 0, 18)
 		ev.wheel.preciseX = x;
 		ev.wheel.preciseY = y;
 #endif
@@ -84,8 +104,7 @@ bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseI
 		ev.wheel.y = (int)y;
 		ev.wheel.which = mouseId;
 		ev.wheel.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-
-		ImGui_ImplSDL2_ProcessEvent(&ev);
+		processEvent(ev);
 	}
 	return true;
 }
@@ -99,7 +118,7 @@ void IMGUIApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, ui
 	ev.button.y = y;
 	ev.button.which = mouseId;
 	ev.button.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-	ImGui_ImplSDL2_ProcessEvent(&ev);
+	processEvent(ev);
 }
 
 void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
@@ -112,7 +131,7 @@ void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint
 	ev.button.y = y;
 	ev.button.which = mouseId;
 	ev.button.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
-	ImGui_ImplSDL2_ProcessEvent(&ev);
+	processEvent(ev);
 }
 
 bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
@@ -122,8 +141,13 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 	SDL_Event ev{};
 	ev.type = SDL_TEXTINPUT;
 	ev.text.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	ev.text.text = text.c_str();
+	ImGui_ImplSDL3_ProcessEvent(&ev);
+#else
 	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
 	ImGui_ImplSDL2_ProcessEvent(&ev);
+#endif
 	return true;
 }
 
@@ -132,11 +156,18 @@ bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYDOWN;
+		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		ev.key.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
+		ev.key.key = (SDL_Keycode)key;
+		ev.key.mod = modifier;
+		ImGui_ImplSDL3_ProcessEvent(&ev);
+#else
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = (SDL_Keycode)key;
 		ev.key.keysym.mod = modifier;
-		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		ImGui_ImplSDL2_ProcessEvent(&ev);
+#endif
 		_keys.insert(key);
 	}
 	return true;
@@ -146,11 +177,18 @@ bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 	if (!Super::onKeyRelease(windowHandle, key, modifier) || _keys.has(key)) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYUP;
+		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		ev.key.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
+		ev.key.key = (SDL_Keycode)key;
+		ev.key.mod = modifier;
+		ImGui_ImplSDL3_ProcessEvent(&ev);
+#else
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = key;
 		ev.key.keysym.mod = modifier;
-		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		ImGui_ImplSDL2_ProcessEvent(&ev);
+#endif
 		_keys.remove(key);
 	}
 	return true;
@@ -161,7 +199,11 @@ bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 	if (event.type != SDL_MOUSEMOTION && event.type != SDL_MOUSEWHEEL && event.type != SDL_MOUSEBUTTONUP &&
 		event.type != SDL_MOUSEBUTTONDOWN && event.type != SDL_TEXTINPUT && event.type != SDL_KEYUP &&
 		event.type != SDL_KEYDOWN) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		ImGui_ImplSDL3_ProcessEvent(&event);
+#else
 		ImGui_ImplSDL2_ProcessEvent(&event);
+#endif
 	}
 	return state;
 }
@@ -351,7 +393,11 @@ app::AppState IMGUIApp::onInit() {
 
 	loadFonts();
 	setColorTheme();
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
+#else
 	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
+#endif
 	ImGui_ImplOpenGL3_Init(nullptr);
 
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
@@ -678,7 +724,11 @@ app::AppState IMGUIApp::onRunning() {
 	}
 
 	ImGui_ImplOpenGL3_NewFrame();
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	ImGui_ImplSDL3_NewFrame();
+#else
 	ImGui_ImplSDL2_NewFrame();
+#endif
 	ImGui::NewFrame();
 
 	const bool renderUI = _renderUI->boolVal();
@@ -865,7 +915,11 @@ app::AppState IMGUIApp::onCleanup() {
 #endif
 	if (_imguiBackendInitialized) {
 		ImGui_ImplOpenGL3_Shutdown();
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		ImGui_ImplSDL3_Shutdown();
+#else
 		ImGui_ImplSDL2_Shutdown();
+#endif
 		_imguiBackendInitialized = false;
 	}
 	if (ImGui::GetCurrentContext() != nullptr) {

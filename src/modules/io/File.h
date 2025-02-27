@@ -10,7 +10,12 @@
 #include "IOResource.h"
 #include "io/Stream.h"
 
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+struct SDL_IOStream;
+#define SDL_RWops SDL_IOStream
+#else
 struct SDL_RWops;
+#endif
 
 namespace io {
 
@@ -76,7 +81,6 @@ public:
 	bool open(FileMode mode);
 	void close();
 	bool flush();
-	int read(void *buf, size_t size, size_t maxnum);
 	long tell() const;
 	long seek(long offset, int seekType) const;
 

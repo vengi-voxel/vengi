@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "video/PenAxis.h"
 #include <inttypes.h>
 
 namespace video {
@@ -55,6 +56,38 @@ public:
 	}
 
 	virtual void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
+	}
+
+	// Pressure-sensitive pen angle/pressure/etc changed
+	virtual void onPenAxis(void *windowHandle, uint32_t pen, float x, float y, PenAxis axis, float value) {
+	}
+
+	// Pressure-sensitive pen touched drawing surface
+	virtual void onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+	}
+
+	// Pressure-sensitive pen stopped touching drawing surface
+	virtual void onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+	}
+
+	// Pressure-sensitive pen button pressed
+	virtual void onPenButtonDown(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) {
+	}
+
+	// Pressure-sensitive pen button released
+	virtual void onPenButtonUp(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) {
+	}
+
+	// Pressure-sensitive pen has become available
+	virtual void onPenProximityIn(void *windowHandle, uint32_t pen) {
+	}
+
+	// Pressure-sensitive pen has become unavailable
+	virtual void onPenProximityOut(void *windowHandle, uint32_t pen) {
+	}
+
+	// Pressure-sensitive pen is moving on the tablet
+	virtual void onPenMotion(void *windowHandle, uint32_t pen, float x, float y) {
 	}
 
 	/**

@@ -14,8 +14,6 @@
 #endif
 #endif
 
-extern "C" void SDLCALL SDL_SIMDFree(void *ptr);
-extern "C" void *SDLCALL SDL_SIMDAlloc(const size_t len);
 extern "C" void *SDLCALL SDL_malloc(size_t size);
 extern "C" void *SDLCALL SDL_realloc(void *mem, size_t size);
 extern "C" void SDLCALL SDL_free(void *mem);
@@ -44,14 +42,6 @@ extern "C" char *SDLCALL SDL_strdup(const char *str);
 
 #ifndef core_strdup
 #define core_strdup SDL_strdup
-#endif
-
-#ifndef core_aligned_malloc
-#define core_aligned_malloc SDL_SIMDAlloc
-#endif
-
-#ifndef core_aligned_free
-#define core_aligned_free SDL_SIMDFree
 #endif
 
 #ifndef core_memset
