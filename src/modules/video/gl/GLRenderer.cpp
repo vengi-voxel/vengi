@@ -1758,6 +1758,31 @@ float getScaleFactor() {
 	return glstate().scaleFactor;
 }
 
+static bool setVSync(int value) {
+	return SDL_GL_SetSwapInterval(value) != -1;
+}
+
+static int getVSync() {
+	return SDL_GL_GetSwapInterval();
+}
+
+void handleVSync() {
+	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
+	if (vsync) {
+		if (setVSync(-1)) {
+			if (setVSync(1)) {
+				Log::warn("Could not activate vsync: %s", SDL_GetError());
+			}
+		}
+	} else {
+		setVSync(0);
+	}
+	if (getVSync() == 0) {
+		Log::debug("Deactivated vsync");
+	} else {
+		Log::debug("Activated vsync");
+	}
+}
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glstate().glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glstate().glVersion.minorVersion);
@@ -1795,21 +1820,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		}
 	}
 
-	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
-	if (vsync) {
-		if (SDL_GL_SetSwapInterval(-1) == -1) {
-			if (SDL_GL_SetSwapInterval(1) == -1) {
-				Log::warn("Could not activate vsync: %s", SDL_GetError());
-			}
-		}
-	} else {
-		SDL_GL_SetSwapInterval(0);
-	}
-	if (SDL_GL_GetSwapInterval() == 0) {
-		Log::debug("Deactivated vsync");
-	} else {
-		Log::debug("Activated vsync");
-	}
+	handleVSync();
 
 	if (useFeature(Feature::DirectStateAccess)) {
 		Log::debug("Use direct state access");
