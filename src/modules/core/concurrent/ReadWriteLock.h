@@ -8,13 +8,13 @@
 #include "core/concurrent/Concurrency.h"
 
 struct SDL_mutex;
-
+using core_rwmutex = SDL_mutex;
 namespace core {
 
 class core_thread_capability("mutex") ReadWriteLock {
 private:
 	const core::String _name;
-	mutable SDL_mutex* _mutex;
+	mutable core_rwmutex* _mutex;
 public:
 	ReadWriteLock(const core::String& name);
 	~ReadWriteLock();
