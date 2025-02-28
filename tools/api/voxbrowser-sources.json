@@ -20,16 +20,6 @@
 			}
 		},
 		{
-			"name": "Akamai's Inspiring Game Scenes",
-			"license": "Attribution-NonCommercial-NoDerivatives 4.0 International",
-			"thumbnail": "https://raw.githubusercontent.com/Akamai-Community/inspiring-game-scenes/main/models/city-build-scene/city-build-scene.png",
-			"github": {
-				"repo": "Akamai-Community/inspiring-game-scenes",
-				"commit": "main",
-				"license": "license.md"
-			}
-		},
-		{
 			"name": "Oasis",
 			"license": "CC0 1.0 Universal",
 			"thumbnail": "https://raw.githubusercontent.com/Phyronnaz/VoxelAssets/master/Oasis/Screenshot.jpg",
