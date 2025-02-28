@@ -24,6 +24,7 @@
 #include <glm/common.hpp>
 #include <SDL_events.h>
 #include <SDL_mouse.h>
+#include <SDL_hints.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
