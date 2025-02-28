@@ -238,14 +238,6 @@ voxel::Region Modifier::calcBrushRegion() {
 }
 
 voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volume) const {
-	if (_selectionManager.hasSelection()) {
-		// TODO: SELECTION: this doesn't work anymore after the refactoring because
-		// the selection is no longer a region
-		voxel::Region srcRegion = _selectionManager.region();
-		const voxel::Region &region = volume->region();
-		srcRegion.cropTo(region);
-		return voxel::RawVolumeWrapper(volume, srcRegion);
-	}
 	return voxel::RawVolumeWrapper(volume);
 }
 
