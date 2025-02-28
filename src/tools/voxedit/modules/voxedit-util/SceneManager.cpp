@@ -161,7 +161,7 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 			Log::warn("Node %i has no normal palette", nodeId);
 			return false;
 		}
-		voxel::RawVolumeWrapper wrapper(node->volume());
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(node->volume());
 		if (fillAndHollow) {
 			voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
 		}
@@ -330,7 +330,7 @@ void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelT
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 	voxelutil::visitVolume(wrapper, [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (voxel.getColor() != palIdx) {
 			return;
@@ -543,7 +543,7 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	}
 	const voxel::Region &region = v->region();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 	voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 		if (voxel.getColor() == voxelColor.getColor()) {
 			newVolume->setVoxel(x, y, z, voxel);
@@ -2567,7 +2567,7 @@ void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<v
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 	voxelgenerator::lsystem::generate(wrapper, referencePosition(), axiom, rules, angle, length, width, widthIncrement, iterations, random, leavesRadius);
 	modified(nodeId, wrapper.dirtyRegion());
 }
@@ -2579,7 +2579,7 @@ void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 	voxelgenerator::tree::createTree(wrapper, ctx, random);
 	modified(nodeId, wrapper.dirtyRegion());
 }
