@@ -106,6 +106,7 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 			palette.setLowDynamicRange(palIdx, matl.ldr);
 		}
 		// TODO: VOXELFORMAT: not sure how to handle this yet
+		// TODO: VOXELFORMAT: handle k_ogt_vox_matl_have_ri
 		if (matl.content_flags & k_ogt_vox_matl_have_trans) {
 			palette.setAlpha(palIdx, matl.trans);
 		} else if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
