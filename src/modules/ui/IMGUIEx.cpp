@@ -363,11 +363,11 @@ void AddImage(video::Id handle, const glm::vec2 &uv0, const glm::vec2 &uv1) {
 }
 
 void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {
-	ImGui::Image((ImTextureID)(intptr_t)handle, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y), ImVec4(tintColor), ImVec4(borderColor));
+	ImGui::ImageWithBg((ImTextureID)(intptr_t)handle, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y), ImVec4(borderColor), ImVec4(tintColor));
 }
 
 void Image(video::Id handle, const ImVec2 &size, const ImVec2 &uv0, const ImVec2 &uv1, const ImVec4 &tintColor, const ImVec4 &borderColor) {
-	ImGui::Image((ImTextureID)(intptr_t)handle, size, uv0, uv1, tintColor, borderColor);
+	ImGui::ImageWithBg((ImTextureID)(intptr_t)handle, size, uv0, uv1, borderColor, tintColor);
 }
 
 bool ImageButton(const char *str_id, video::Id handle, const ImVec2 &size) {
