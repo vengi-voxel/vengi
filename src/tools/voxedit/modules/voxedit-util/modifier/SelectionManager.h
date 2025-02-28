@@ -35,6 +35,7 @@ public:
 	bool hasSelection() const;
 
 	// TODO: SELECTION: the plan here is to move the selected voxels into the sparse volume to allow copy/cut/move operations
+	//                  see https://github.com/vengi-voxel/vengi/issues/580
 	void invert(voxel::RawVolume &volume);
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
 	void unselect(voxel::RawVolume &volume);
