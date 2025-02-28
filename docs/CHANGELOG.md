@@ -16,6 +16,7 @@ General:
    - Fixed `KHR_materials_pbrSpecularGlossiness` handling for `gltf` exports
    - Added new lua script to create newel stairs
    - Fixed missing animation transfer from one scenegraph into other one
+   - Updated/Added SDL3 support (both SDL2 and SDL3 are supported now)
 
 VoxEdit:
 
