@@ -290,6 +290,11 @@
     static const uint32_t k_ogt_vox_matl_have_sp     = 1 << 11;
     static const uint32_t k_ogt_vox_matl_have_g      = 1 << 12;
     static const uint32_t k_ogt_vox_matl_have_media  = 1 << 13;
+    // Refractive index determines how much light bends when entering or exiting the material.
+    // Used for material types glass and emit.
+    // The default value is usually 1.0, which means no refraction (like air).
+    // Higher values (e.g., 1.5 for glass, 2.4 for diamond) create stronger bending effects, making the material look more like real-world glass or transparent surfaces.
+    static const uint32_t k_ogt_vox_matl_have_ri     = 1 << 14;
 
     // media type for blend, glass and cloud materials
     enum ogt_media_type {
@@ -319,6 +324,7 @@
         float          sp;
         float          g;
         float          media;
+        float          ri;            // refractive index
     } ogt_vox_matl;
 
     // Extended Material Chunk MATL array of materials
@@ -1722,8 +1728,8 @@
                     }
                     const char* ri_string = _vox_dict_get_value_as_string(&dict, "_ri", NULL);
                     if (ri_string) {
-                        materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_ior;
-                        materials.matl[material_id].ior = (float)atof(ri_string) - 1.0f;
+                        materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_ri;
+                        materials.matl[material_id].ri = (float)atof(ri_string);
                     }
                     const char* att_string = _vox_dict_get_value_as_string(&dict, "_att", NULL);
                     if (att_string) {
@@ -2678,6 +2684,7 @@
                 matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_sp)    ? 1 : 0;
                 matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_g)     ? 1 : 0;
                 matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_media) ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_ri)    ? 1 : 0;
 
                 uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
@@ -2700,6 +2707,9 @@
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_ior) {
                     _vox_file_write_dict_key_value_float(fp, "_ior", matl.ior);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_ri) {
+                    _vox_file_write_dict_key_value_float(fp, "_ri", matl.ior);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_att) {
                     _vox_file_write_dict_key_value_float(fp, "_att", matl.att);
