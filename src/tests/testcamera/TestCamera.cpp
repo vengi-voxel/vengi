@@ -125,8 +125,7 @@ void TestCamera::onRenderUI() {
 app::AppState TestCamera::onRunning() {
 	app::AppState state = Super::onRunning();
 	video::Camera& c = _renderCamera[_targetCamera];
-	const SDL_Keymod mods = SDL_GetModState();
-	if (mods & KMOD_SHIFT) {
+	if (ImGui::IsKeyPressed(ImGuiKey_LeftShift) || ImGui::IsKeyPressed(ImGuiKey_RightShift)) {
 		c.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
 	camera().setTarget(c.worldPosition());
@@ -147,10 +146,9 @@ app::AppState TestCamera::onCleanup() {
 }
 
 bool TestCamera::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
-	const SDL_Keymod mods = SDL_GetModState();
-	if (mods & KMOD_SHIFT) {
+	if (ImGui::IsKeyPressed(ImGuiKey_LeftShift) || ImGui::IsKeyPressed(ImGuiKey_RightShift)) {
 		video::Camera& c = _renderCamera[_targetCamera];
-		if (mods & KMOD_CONTROL) {
+		if (ImGui::IsKeyPressed(ImGuiKey_LeftCtrl) || ImGui::IsKeyPressed(ImGuiKey_RightCtrl)) {
 			c.setNearPlane(c.nearPlane() + (float)y);
 		} else {
 			c.setFarPlane(c.farPlane() + (float)y);
