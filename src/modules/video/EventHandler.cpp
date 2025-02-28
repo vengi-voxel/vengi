@@ -99,17 +99,6 @@
 namespace video {
 
 EventHandler::EventHandler() {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-	SDL_SetEventEnabled(SDL_EVENT_JOYSTICK_AXIS_MOTION, true);
-	SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
-	SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, true);
-#else
-	//SDL_JoystickEventState(SDL_DISABLE);
-	SDL_EventState(SDL_JOYAXISMOTION, SDL_ENABLE);
-	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-	SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
-
-#endif
 }
 
 EventHandler::~EventHandler() {
