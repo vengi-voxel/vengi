@@ -83,7 +83,7 @@ struct KFASeqTyp {
 struct KFAData {
 	core::Buffer<KFAHinge> hinge; //[numhinge]
 	// These are the hinge euler angles.
-	core::Buffer<core::Buffer<float>> frmval; //[numfrm][numhin]
+	core::DynamicArray<core::Buffer<float>> frmval; //[numfrm][numhin]
 	core::Buffer<KFASeqTyp> seq;				//[seqnum]
 };
 

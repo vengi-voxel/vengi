@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
@@ -239,7 +240,8 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 			const core::String &layerFilename = core::string::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
 			image::Image image(layerFilename);
-			core::Buffer<core::RGBA> rgba(region.getWidthInVoxels() * region.getHeightInVoxels());
+			core::DynamicArray<core::RGBA> rgba;
+			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());
 			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
 				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 					const voxel::Voxel &v = volume->voxel(x, y, z);
