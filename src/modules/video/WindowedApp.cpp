@@ -39,6 +39,7 @@ extern "C" bool isOSXDarkMode();
 #define SDL_WINDOW_ALLOW_HIGHDPI SDL_WINDOW_HIGH_PIXEL_DENSITY
 #define sdlCheckError() checkSDLError(__FILE__, __LINE__, "UNKNOWN")
 #else
+#include <SDL.h>
 #define sdlCheckError() checkSDLError(__FILE__, __LINE__, SDL_FUNCTION)
 #endif
 
