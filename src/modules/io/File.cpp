@@ -13,6 +13,7 @@
 #include "system/emscripten_browser_file.h"
 #endif
 #include <SDL_version.h>
+#include <SDL_error.h>
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 #include <SDL_iostream.h>
@@ -26,6 +27,8 @@
 #define SDL_RWread(ctx, ptr, size, maxnum) SDL_ReadIO(ctx, ptr, maxnum)
 #define SDL_RWwrite(ctx, ptr, size, num) SDL_WriteIO(ctx, ptr, num)
 #define SDL_RWFromFile SDL_IOFromFile
+#else
+#include <SDL_rwops.h>
 #endif
 
 namespace io {
