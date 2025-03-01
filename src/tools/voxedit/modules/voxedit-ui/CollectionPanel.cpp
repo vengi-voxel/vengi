@@ -13,6 +13,7 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelui/DragAndDropPayload.h"
 
 namespace voxedit {
 
@@ -250,6 +251,24 @@ void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile) {
 		}
 	}
 }
+
+void CollectionPanel::handleDragAndDrop(int &row, voxelcollection::VoxelFile *&voxelFile) {
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+		video::Id handle;
+		if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
+			handle = texture->handle();
+		} else {
+			handle = video::InvalidId;
+		}
+		core::String mdlId = core::string::format("%i", row);
+		ImGui::ImageButton(mdlId.c_str(), handle, ImVec2(50, 50));
+		_dragAndDropModel = voxelFile->targetFile();
+		ImGui::SetDragDropPayload(voxelui::dragdrop::ModelPayload, (const void *)&_dragAndDropModel,
+								  sizeof(_dragAndDropModel), ImGuiCond_Always);
+		ImGui::EndDragDropSource();
+	}
+}
+
 int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
 	core::DynamicArray<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
@@ -275,6 +294,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 			ImGui::TableNextColumn();
 			const bool selected = _selected == *voxelFile;
 
+			ImVec2 size(0, 0);
 			ImGui::PushID(row);
 			if (_thumbnails) {
 				video::Id handle;
@@ -284,7 +304,8 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 					handle = video::InvalidId;
 				}
 				const float w = core_max(64, ImGui::Size(8));
-				if (ImGui::ImageButton("##thumbnail", handle, ImVec2(w, w))) {
+				size = ImVec2(w, w);
+				if (ImGui::ImageButton("##thumbnail", handle, size)) {
 					if (!voxelFile->downloaded) {
 						_collectionMgr->download(*voxelFile);
 					}
@@ -292,6 +313,8 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 						_collectionMgr->createThumbnail(*voxelFile);
 					}
 				}
+				handleDragAndDrop(row, voxelFile);
+
 				if (handle == video::InvalidId) {
 					if (ImGui::BeginItemTooltip()) {
 						ImGui::TextUnformatted(_("Double click to create thumbnail"));
@@ -303,10 +326,13 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				}
 				ImGui::TableNextColumn();
 			}
+			const ImGuiStyle &style = ImGui::GetStyle();
 			if (ImGui::Selectable(voxelFile->name.c_str(), selected,
-								  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+								  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick,
+								  {0, size.y + style.FramePadding.y * 2.0f})) {
 				handleDoubleClick(voxelFile);
 			}
+			handleDragAndDrop(row, voxelFile);
 			if (!_thumbnails) {
 				thumbnailTooltip(voxelFile);
 			}

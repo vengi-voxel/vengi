@@ -27,6 +27,7 @@ private:
 	bool _thumbnails = true;
 	core::String _currentFilterName;
 	core::String _currentFilterLicense;
+	core::String _dragAndDropModel;
 	voxelcollection::VoxelFile _selected;
 	video::TexturePoolPtr _texturePool;
 
@@ -34,6 +35,7 @@ private:
 	void contextMenu(voxelcollection::VoxelFile *voxelFile);
 	void handleDoubleClick(voxelcollection::VoxelFile *voxelFile);
 	void thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile);
+	void handleDragAndDrop(int &row, voxelcollection::VoxelFile *&voxelFile);
 	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);
 
 	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;

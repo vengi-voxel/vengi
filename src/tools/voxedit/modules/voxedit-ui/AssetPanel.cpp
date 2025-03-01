@@ -84,16 +84,16 @@ void AssetPanel::update(const char *id, command::CommandExecutionListener &liste
 					core::String imgId = core::string::format("%i", n - 1);
 					ImGui::ImageButton(imgId.c_str(), handle, ImVec2(50, 50));
 					ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
-					if (n % maxImages == 0) {
-						ImGui::NewLine();
-					} else {
-						ImGui::SameLine();
-					}
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 						ImGui::ImageButton(imgId.c_str(), handle, ImVec2(50, 50));
 						ImGui::SetDragDropPayload(voxelui::dragdrop::ImagePayload, (const void *)&image, sizeof(image),
 												  ImGuiCond_Always);
 						ImGui::EndDragDropSource();
+					}
+					if (n % maxImages == 0) {
+						ImGui::NewLine();
+					} else {
+						ImGui::SameLine();
 					}
 					++n;
 				}
