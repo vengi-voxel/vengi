@@ -893,6 +893,10 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	const ImGuiStyle &imStyle = GetStyle();
 	ImGuiWindow *window = GetCurrentWindow();
+	if (window->SkipItems) {
+		return false;
+	}
+
 	const ImGuiID id = window->GetID(label);
 	ImVec2 labelSize = CalcTextSize(label);
 
@@ -907,6 +911,10 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 		addRes = GroupBehaviour(id, open, labelSize);
 	} else {
 		addRes = TimelineBehaviour(id, labelSize);
+	}
+
+	if (!ImGui::IsItemVisible()) {
+		return false;
 	}
 
 	if (currentTimelineDepth > 0) {
