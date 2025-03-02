@@ -1452,7 +1452,8 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 		newNode.setName(name);
 	}
 	palette::Palette palette;
-	if (!palette.load(core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str())) {
+	const core::String &paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal();
+	if (!palette.load(paletteName.c_str())) {
 		palette = voxel::getPalette();
 	}
 	newNode.setPalette(palette);
