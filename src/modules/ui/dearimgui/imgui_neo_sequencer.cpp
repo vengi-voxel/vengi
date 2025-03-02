@@ -639,7 +639,7 @@ static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 	if (addGroupRes) {
 		if (IsItemClicked()) {
 			context.LastSelectedTimeline = context.SelectedTimeline;
-			context.SelectedTimeline = context.SelectedTimeline == id ? 0 : id;
+			context.SelectedTimeline = id;
 		}
 	}
 	const float width = groupBB.Max.x - arrowBB.Min.x;
@@ -654,7 +654,7 @@ static bool TimelineBehaviour(const ImGuiID id, const ImVec2 labelSize) {
 	if (addGroupRes) {
 		if (IsItemClicked()) {
 			context.LastSelectedTimeline = context.SelectedTimeline;
-			context.SelectedTimeline = context.SelectedTimeline == id ? 0 : id;
+			context.SelectedTimeline = id;
 		}
 	}
 	const float width = groupBB.Max.x - groupBB.Min.x;
