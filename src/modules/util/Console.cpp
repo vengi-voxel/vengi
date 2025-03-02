@@ -48,7 +48,11 @@ static Log::Level toLevel(int priority) {
 }
 
 static SDL_LogPriority toPriority(Log::Level level) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
 	SDL_LogPriority priority = SDL_LOG_PRIORITY_INVALID;
+#else
+	SDL_LogPriority priority = 0;
+#endif
 	if (level == Log::Level::Error) {
 		priority = SDL_LOG_PRIORITY_ERROR;
 	} else if (level == Log::Level::Warn) {
