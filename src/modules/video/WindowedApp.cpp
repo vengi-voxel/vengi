@@ -328,7 +328,6 @@ SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, u
 	SDL_PropertiesID props = SDL_CreateProperties();
 	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, windowName.c_str());
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
-	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, displayIndex);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
 	SDL_Window* window = SDL_CreateWindowWithProperties(props);
@@ -365,9 +364,7 @@ app::AppState WindowedApp::onInit() {
 	core::Singleton<video::EventHandler>::getInstance().registerObserver(this);
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-	int numDisplays = 0;
-	SDL_DisplayID *displays = SDL_GetDisplays(&numDisplays);
-	SDL_free(displays);
+	const int displayIndex = 0;
 #else
 	Log::debug("CPU count: %d", SDL_GetCPUCount());
 	Log::debug("CacheLine size: %d", SDL_GetCPUCacheLineSize());
@@ -385,10 +382,10 @@ app::AppState WindowedApp::onInit() {
 #endif
 	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
-#endif
-
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
-	Log::debug("Try to use display %i", displayIndex);
+	Log::error("Try to use display %i", displayIndex);
+	Log::debug("found %i displays (use %i)", numDisplays, displayIndex);
+#endif
 
 	video::setup();
 
@@ -413,11 +410,13 @@ app::AppState WindowedApp::onInit() {
 	displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 	if (_fullScreenApplication) {
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-	if (!SDL_GetDisplayUsableBounds(displayIndex, &displayBounds)) {
+		SDL_DisplayID primaryDisplay = SDL_GetPrimaryDisplay();
+		if (!SDL_GetDisplayUsableBounds(primaryDisplay, &displayBounds)) {
+			Log::error("Failed to query usable display bounds at %i: %s", primaryDisplay, SDL_GetError());
 #else
-	if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
+		if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
+			Log::error("Failed to query usable display bounds at %i: %s", displayIndex, SDL_GetError());
 #endif
-			Log::error("Failed to query usable display bounds: %s", SDL_GetError());
 			displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 		}
 	}
@@ -435,7 +434,6 @@ app::AppState WindowedApp::onInit() {
 	}
 
 	Log::debug("driver: %s", SDL_GetCurrentVideoDriver());
-	Log::debug("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
 
 	const int width = core_max(_windowWidth, displayBounds.w);
 	const int height = core_max(_windowHeight, displayBounds.h);
@@ -455,9 +453,12 @@ app::AppState WindowedApp::onInit() {
 		SDL_MaximizeWindow(_window);
 	}
 
-	if (displayIndex != (int)SDL_GetWindowDisplayIndex(_window)) {
-		Log::error("Failed to create window at display %i", displayIndex);
+#if !SDL_VERSION_ATLEAST(3, 2, 0)
+	int actualDisplayIndex = (int)SDL_GetWindowDisplayIndex(_window);
+	if (displayIndex != actualDisplayIndex) {
+		Log::error("Failed to create window at display %i (got %i)", displayIndex, actualDisplayIndex);
 	}
+#endif
 
 	_rendererContext = video::createContext(_window);
 	if (_rendererContext == nullptr) {
