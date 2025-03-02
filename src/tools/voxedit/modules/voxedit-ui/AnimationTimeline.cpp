@@ -86,7 +86,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			}
 		}
 		if (activeNode != _lastActivedNodeId && modelNode.id() == activeNode) {
-			// TODO: doesn't work - see issue https://github.com/vengi-voxel/vengi/issues/437
+			// TODO: UI: doesn't work - see issue https://github.com/vengi-voxel/vengi/issues/437
 			ImGui::SetScrollHereY();
 			_lastActivedNodeId = activeNode;
 		}

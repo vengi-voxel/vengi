@@ -306,7 +306,6 @@ static bool CreateKeyframe(int32_t *frame) {
 					   ImVec2{timelineOffset + context.ValuesWidth + offset, 0};
 	const ImVec2 bbPos = pos - ImVec2{currentTimelineHeight / 2, 0};
 	const ImRect bb = {bbPos, bbPos + ImVec2{currentTimelineHeight, currentTimelineHeight}};
-	ImDrawList *drawList = ImGui::GetWindowDrawList();
 	const ImGuiID id = GetKeyframeID(frame);
 	bool hovered = ItemHoverable(bb, id, 0);
 
@@ -343,6 +342,7 @@ static bool CreateKeyframe(int32_t *frame) {
 
 	if (timelineOffset >= 0.0f) {
 		const ImColor color = GetKeyframeColor(context, hovered, inSelection);
+		ImDrawList *drawList = ImGui::GetWindowDrawList();
 		drawList->AddCircleFilled(pos + ImVec2{0, currentTimelineHeight / 2.f}, currentTimelineHeight / 3.0f, color, 4);
 	}
 
@@ -643,7 +643,7 @@ static bool GroupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 		}
 	}
 	const float width = groupBB.Max.x - arrowBB.Min.x;
-	context.ValuesWidth = std::max(context.ValuesWidth, width); // Make left panel wide enough
+	context.ValuesWidth = ImMax(context.ValuesWidth, width); // Make left panel wide enough
 	return addGroupRes && addArrowRes;
 }
 
@@ -658,7 +658,7 @@ static bool TimelineBehaviour(const ImGuiID id, const ImVec2 labelSize) {
 		}
 	}
 	const float width = groupBB.Max.x - groupBB.Min.x;
-	context.ValuesWidth = std::max(context.ValuesWidth, width); // Make left panel wide enough
+	context.ValuesWidth = ImMax(context.ValuesWidth, width); // Make left panel wide enough
 
 	return addGroupRes;
 }
@@ -687,23 +687,19 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 		return openChild;
 	}
 
-	ImGuiWindow *window = GetCurrentWindow();
-	const ImGuiStyle &imStyle = GetStyle();
-
 	if (inSequencer) {
 		return false;
 	}
 
+	ImGuiWindow *window = GetCurrentWindow();
 	if (window->SkipItems) {
 		return false;
 	}
 
-	ImDrawList *drawList = GetWindowDrawList();
-
 	const ImVec2 cursor = GetCursorScreenPos();
 	const ImVec2 area = ImGui::GetContentRegionAvail();
 
-	const ImVec2 cursorBasePos = GetCursorScreenPos() + window->Scroll;
+	const ImVec2 cursorBasePos = cursor + window->Scroll;
 
 	PushID(idin);
 	const unsigned int id = window->IDStack[window->IDStack.size() - 1];
@@ -736,8 +732,10 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 
 	context.TopBarSize = ImVec2(context.Size.x, style.TopBarHeight);
 
-	if (context.TopBarSize.y <= 0.0f)
+	if (context.TopBarSize.y <= 0.0f) {
+		const ImGuiStyle &imStyle = GetStyle();
 		context.TopBarSize.y = CalcTextSize("100").y + imStyle.FramePadding.y * 2.0f;
+	}
 
 	currentSequencer = window->IDStack[window->IDStack.size() - 1];
 
@@ -745,6 +743,7 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 	const float topCut = abs(context.TopLeftCursor.y - cursor.y);
 	backgroundSize.y = backgroundSize.y - (topCut);
 
+	ImDrawList *drawList = GetWindowDrawList();
 	RenderNeoSequencerBackground(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_Bg), context.TopLeftCursor,
 								 backgroundSize, drawList, style.SequencerRounding);
 
