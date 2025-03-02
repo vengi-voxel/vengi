@@ -307,13 +307,13 @@ static bool CreateKeyframe(int32_t *frame) {
 	const ImVec2 bbPos = pos - ImVec2{currentTimelineHeight / 2, 0};
 	const ImRect bb = {bbPos, bbPos + ImVec2{currentTimelineHeight, currentTimelineHeight}};
 	const ImGuiID id = GetKeyframeID(frame);
-	bool hovered = ItemHoverable(bb, id, 0);
+	bool hovered, held;
+	/*bool pressed =*/ButtonBehavior(bb, id, &hovered, &held, 0);
 
 	if (context.SelectionEnabled && context.Selection.contains(id) &&
 		(context.StateOfSelection != SelectionState::Selecting)) {
 		// process dragging
-		if (bb.Contains(GetMousePos()) && IsMouseClicked(ImGuiMouseButton_Left) &&
-			context.StateOfSelection != SelectionState::Dragging && context.DraggingEnabled) {
+		if (held && hovered && context.StateOfSelection != SelectionState::Dragging && context.DraggingEnabled) {
 			// Start dragging
 			context.StartDragging = true;
 		}
