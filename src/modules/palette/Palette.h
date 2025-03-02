@@ -37,6 +37,7 @@ private:
 	PaletteColorArray _colors {};
 	MaterialArray _materials {};
 	int _colorCount = 0;
+	// UI related
 	PaletteIndicesArray _uiIndices;
 
 	int findInsignificant(int skipSlotIndex) const;
@@ -45,16 +46,27 @@ private:
 public:
 	Palette();
 
+	// UI related methods
+
 	/**
 	 * In case the palette indices are changed, this gives you access to the real color index
 	 */
 	uint8_t uiIndex(uint8_t palettePanelIdx) const;
 	const PaletteIndicesArray &uiIndices() const;
 	PaletteIndicesArray &uiIndices();
+
+	void sortOriginal();
+	void sortHue();
+	void sortSaturation();
+	void sortBrightness();
+	void sortCIELab();
 	/**
 	 * @note Only for ui purposes - changes the color slots
 	 */
 	void exchangeUIIndices(uint8_t idx1, uint8_t idx2);
+
+	// End of UI related methods
+
 	void exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2);
 	void copy(uint8_t fromPaletteColorIdx, uint8_t toPaletteColorIdx);
 
@@ -123,12 +135,6 @@ public:
 	bool load(const char *name);
 	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
-
-	void sortOriginal();
-	void sortHue();
-	void sortSaturation();
-	void sortBrightness();
-	void sortCIELab();
 
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 
