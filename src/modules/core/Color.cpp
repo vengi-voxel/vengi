@@ -842,6 +842,10 @@ core::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t
 	return core::RGBA(r / f * f, g / f * f, b / f * f, a);
 }
 
+void Color::getCIELab(core::RGBA color, float &L, float &a, float &b) {
+	getCIELab(fromRGBA(color), L, a, b);
+}
+
 void Color::getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
 	float red, green, blue;
 	if (color.r > 0.04045f) {

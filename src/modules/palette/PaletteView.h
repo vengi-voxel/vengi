@@ -23,9 +23,10 @@ class PaletteView {
 private:
 	PaletteIndicesArray _uiIndices;
 	Palette *_palette;
+	// created by the Palette via friend access
+	explicit PaletteView(Palette *palette);
 
 public:
-	PaletteView(Palette *palette);
 	/**
 	 * In case the palette indices are changed, this gives you access to the real color index
 	 */

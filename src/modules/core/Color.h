@@ -101,6 +101,7 @@ public:
 	 * @param[out] b position between yellow and blue (negative values indicate blue and positive values indicate yellow)
 	 */
 	static void getCIELab(const glm::vec4&, float& L, float& a, float &b);
+	static void getCIELab(core::RGBA color, float& L, float& a, float &b);
 
 	static glm::vec3 gray(const glm::vec3&);
 	static glm::vec4 gray(const glm::vec4&);

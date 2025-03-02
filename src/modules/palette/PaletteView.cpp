@@ -39,15 +39,13 @@ void PaletteView::sortHue() {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
-		const glm::vec4 &lhc = core::Color::fromRGBA(_palette->color(lhs));
 
 		float rhhue = 0.0f;
 		float rhsaturation = 0.0f;
 		float rhbrightness = 0.0f;
-		const glm::vec4 &rhc = core::Color::fromRGBA(_palette->color(rhs));
 
-		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
-		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+		core::Color::getHSB(_palette->color(lhs), lhhue, lhsaturation, lhbrightness);
+		core::Color::getHSB(_palette->color(rhs), rhhue, rhsaturation, rhbrightness);
 		return lhhue < rhhue;
 	});
 	_palette->markDirty();
@@ -58,15 +56,13 @@ void PaletteView::sortSaturation() {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
-		const glm::vec4 &lhc = core::Color::fromRGBA(_palette->color(lhs));
 
 		float rhhue = 0.0f;
 		float rhsaturation = 0.0f;
 		float rhbrightness = 0.0f;
-		const glm::vec4 &rhc = core::Color::fromRGBA(_palette->color(rhs));
 
-		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
-		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+		core::Color::getHSB(_palette->color(lhs), lhhue, lhsaturation, lhbrightness);
+		core::Color::getHSB(_palette->color(rhs), rhhue, rhsaturation, rhbrightness);
 		return lhsaturation < rhsaturation;
 	});
 	_palette->markDirty();
@@ -74,39 +70,17 @@ void PaletteView::sortSaturation() {
 
 void PaletteView::sortBrightness() {
 	core::sort(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
-		float lhhue = 0.0f;
-		float lhsaturation = 0.0f;
-		float lhbrightness = 0.0f;
-		const glm::vec4 &lhc = core::Color::fromRGBA(_palette->color(lhs));
-
-		float rhhue = 0.0f;
-		float rhsaturation = 0.0f;
-		float rhbrightness = 0.0f;
-		const glm::vec4 &rhc = core::Color::fromRGBA(_palette->color(rhs));
-
-		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
-		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
-		return lhbrightness < rhbrightness;
+		return core::Color::brightness(_palette->color(lhs)) < core::Color::brightness(_palette->color(rhs));
 	});
 	_palette->markDirty();
 }
 
 void PaletteView::sortCIELab() {
 	core::sort(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
-		float lhL = 0.0f;
-		float lha = 0.0f;
-		float lhb = 0.0f;
-		const glm::vec4 &lhc = core::Color::fromRGBA(_palette->color(lhs));
-
-		float rhL = 0.0f;
-		float rha = 0.0f;
-		float rhb = 0.0f;
-		const glm::vec4 &rhc = core::Color::fromRGBA(_palette->color(rhs));
-
-		core::Color::getCIELab(lhc, lhL, lha, lhb);
-		core::Color::getCIELab(rhc, rhL, rha, rhb);
-		const glm::vec3 lcielab(lhL, lha, lhb);
-		const glm::vec3 rcielab(rhL, rha, rhb);
+		glm::vec3 lcielab;
+		glm::vec3 rcielab;
+		core::Color::getCIELab(_palette->color(lhs), lcielab.x, lcielab.y, lcielab.z);
+		core::Color::getCIELab(_palette->color(rhs), rcielab.x, rcielab.y, rcielab.z);
 		return glm::length2(lcielab) < glm::length2(rcielab);
 	});
 	_palette->markDirty();
