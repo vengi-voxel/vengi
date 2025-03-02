@@ -48,23 +48,17 @@ static Log::Level toLevel(int priority) {
 }
 
 static SDL_LogPriority toPriority(Log::Level level) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-	SDL_LogPriority priority = SDL_LOG_PRIORITY_INVALID;
-#else
-	SDL_LogPriority priority = 0;
-#endif
 	if (level == Log::Level::Error) {
-		priority = SDL_LOG_PRIORITY_ERROR;
+		return SDL_LOG_PRIORITY_ERROR;
 	} else if (level == Log::Level::Warn) {
-		priority = SDL_LOG_PRIORITY_WARN;
+		return SDL_LOG_PRIORITY_WARN;
 	} else if (level == Log::Level::Info) {
-		priority = SDL_LOG_PRIORITY_INFO;
+		return SDL_LOG_PRIORITY_INFO;
 	} else if (level == Log::Level::Debug) {
-		priority = SDL_LOG_PRIORITY_DEBUG;
-	} else if (level == Log::Level::Trace) {
-		priority = SDL_LOG_PRIORITY_VERBOSE;
+		return SDL_LOG_PRIORITY_DEBUG;
 	}
-	return priority;
+	// Log::Level::Trace
+	return SDL_LOG_PRIORITY_VERBOSE;
 }
 
 Console::Console() :
