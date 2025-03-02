@@ -330,8 +330,8 @@ static bool CreateKeyframe(int32_t *frame) {
 				context.DraggingSelectionStart[index] = *frame;
 			}
 			const float mouseDelta = GetMousePos().x - context.DraggingMouseStart.x;
-			const int32_t offsetA =
-				int32_t(mouseDelta / (context.Size.x / (float)context.EndFrame - (float)context.StartFrame));
+			const float viewSize = (float)(context.EndFrame - context.StartFrame) / context.Zoom;
+			const int32_t offsetA = int32_t(mouseDelta / (context.Size.x / viewSize));
 			*frame = context.DraggingSelectionStart[index] + offsetA;
 		}
 	}
