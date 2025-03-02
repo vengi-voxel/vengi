@@ -244,6 +244,7 @@ def update_dearimgui():
             (f"im*.cpp", "src/modules/ui/dearimgui"),
             (f"misc/cpp/*", "src/modules/ui/dearimgui"),
             (f"backends/imgui_impl_sdl2.*", "src/modules/ui/dearimgui/backends"),
+            (f"backends/imgui_impl_sdl3.*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_opengl3*", "src/modules/ui/dearimgui/backends"),
             (f"examples/example_sdl2_opengl3/main.cpp", "src/modules/ui/dearimgui/backends/example_sdl2_opengl3.cpp"),
             (f"misc/fonts/binary_to_compressed_c.cpp", "tools/binary_to_compressed_c"),
