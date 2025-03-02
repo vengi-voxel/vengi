@@ -8,6 +8,7 @@
 #include "io/FormatDescription.h"
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
+#include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
@@ -93,10 +94,11 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t *)payload->Data;
+			palette::PaletteView &palView = palette.view();
 			if (dragAndDropSortColors()) {
-				palette.view().exchangeUIIndices(paletteColorIdx, dragPalIdx);
+				palView.exchangeUIIndices(paletteColorIdx, dragPalIdx);
 			} else {
-				palette.exchange(paletteColorIdx, palette.view().uiIndex(dragPalIdx));
+				palette.exchange(paletteColorIdx, palView.uiIndex(dragPalIdx));
 			}
 			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
