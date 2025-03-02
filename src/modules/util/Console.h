@@ -94,7 +94,8 @@ protected:
 	bool _useOriginalLogFunction = true;
 
 	static core::String removeAnsiColors(const char *message);
-	static void logConsole(void *userdata, int category, Log::Level priority, const char *message);
+	// the sdl log function callback
+	static void logOutputFunction(void *userdata, int category, int priority, const char *message);
 	virtual void addLogLine(int category, Log::Level priority, const char *message);
 
 	void replaceLastParameter(const core::String &param);

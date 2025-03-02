@@ -31,6 +31,38 @@
 
 namespace util {
 
+static Log::Level toLevel(int priority) {
+	Log::Level level = Log::Level::None;
+	if (priority == SDL_LOG_PRIORITY_CRITICAL || priority == SDL_LOG_PRIORITY_ERROR) {
+		level = Log::Level::Error;
+	} else if (priority == SDL_LOG_PRIORITY_WARN) {
+		level = Log::Level::Warn;
+	} else if (priority == SDL_LOG_PRIORITY_INFO) {
+		level = Log::Level::Info;
+	} else if (priority == SDL_LOG_PRIORITY_DEBUG) {
+		level = Log::Level::Debug;
+	} else if (priority == SDL_LOG_PRIORITY_VERBOSE) {
+		level = Log::Level::Trace;
+	}
+	return level;
+}
+
+static SDL_LogPriority toPriority(Log::Level level) {
+	SDL_LogPriority priority = SDL_LOG_PRIORITY_INVALID;
+	if (level == Log::Level::Error) {
+		priority = SDL_LOG_PRIORITY_ERROR;
+	} else if (level == Log::Level::Warn) {
+		priority = SDL_LOG_PRIORITY_WARN;
+	} else if (level == Log::Level::Info) {
+		priority = SDL_LOG_PRIORITY_INFO;
+	} else if (level == Log::Level::Debug) {
+		priority = SDL_LOG_PRIORITY_DEBUG;
+	} else if (level == Log::Level::Trace) {
+		priority = SDL_LOG_PRIORITY_VERBOSE;
+	}
+	return priority;
+}
+
 Console::Console() :
 		_mainThread(SDL_ThreadID()) {
 }
@@ -40,7 +72,7 @@ Console::~Console() {
 
 void Console::registerOutputCallbacks() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
-	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
+	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logOutputFunction, this);
 }
 
 void Console::construct() {
@@ -221,26 +253,24 @@ core::String Console::removeAnsiColors(const char* message) {
 	return core::string::removeAnsiColors(message);
 }
 
-void Console::logConsole(void *userdata, int category, Log::Level priority, const char *message) {
-	if (priority < Log::Level::None || priority > Log::Level::Error) {
-		return;
-	}
-	if (priority < (Log::Level)SDL_LogGetPriority(category)) {
-		return;
-	}
+void Console::logOutputFunction(void *userdata, int category, int priority, const char *message) {
 	Console* console = (Console*)userdata;
+
+	Log::Level prio = toLevel(priority);
 	if (SDL_ThreadID() != console->_mainThread) {
 		core_assert(message);
-		console->_messageQueue.emplace(category, priority, message);
+		console->_messageQueue.emplace(category, prio, message);
 		return;
 	}
-	console->addLogLine(category, priority, message);
+
+	console->addLogLine(category, prio, message);
 }
 
 void Console::addLogLine(int category, Log::Level priority, const char *message) {
 	_messages.emplace_back(priority, removeAnsiColors(message));
 	if (_useOriginalLogFunction) {
-		((SDL_LogOutputFunction)_logFunction)(_logUserData, category, (SDL_LogPriority)priority, message);
+		SDL_LogPriority prio = toPriority(priority);
+		((SDL_LogOutputFunction)_logFunction)(_logUserData, category, prio, message);
 	}
 }
 
