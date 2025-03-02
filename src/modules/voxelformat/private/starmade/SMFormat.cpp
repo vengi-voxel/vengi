@@ -266,7 +266,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	const voxel::Region region(segmentPosition, segmentPosition + (priv::blocks - 1));
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
 	bool empty = true;

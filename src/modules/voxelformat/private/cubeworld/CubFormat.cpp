@@ -85,7 +85,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	palette::PaletteLookup palLookup(palette);
 	for (uint32_t h = 0u; h < height; ++h) {

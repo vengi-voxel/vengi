@@ -418,7 +418,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 	// y and z are switched here
 	Log::debug("size.x: %i, size.y: %i, size.z: %i", footer.xsize, (int)footer.zsize, (int)footer.ysize);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(header.name);
 	node.setPivot(footer.pivot());

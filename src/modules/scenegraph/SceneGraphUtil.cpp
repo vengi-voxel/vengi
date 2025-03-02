@@ -234,7 +234,7 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 			continue;
 		}
 		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
-			scenegraph::SceneGraphNode newNode;
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(node, newNode, true);
 			destSceneGraph.emplace(core::move(newNode));
 			Log::debug("No split needed for node '%s'", node.name().c_str());

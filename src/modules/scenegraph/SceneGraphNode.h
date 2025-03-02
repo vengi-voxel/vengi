@@ -68,7 +68,7 @@ using SceneGraphNodeProperties = core::StringMap<core::String>;
 class SceneGraphNode {
 	friend class SceneGraph;
 public:
-	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model, const core::String &uuid = "");
+	SceneGraphNode(SceneGraphNodeType type, const core::String &uuid = "");
 	SceneGraphNode(SceneGraphNode &&move) noexcept;
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 

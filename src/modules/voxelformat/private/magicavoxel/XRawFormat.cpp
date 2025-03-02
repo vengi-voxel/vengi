@@ -234,7 +234,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			}
 		}
 	}
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);

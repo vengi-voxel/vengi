@@ -51,7 +51,7 @@ TEST_F(AoSVXLFormatTest, testSave) {
 		}
 	}
 	scenegraph::SceneGraph sceneGraph;
-	scenegraph::SceneGraphNode node1;
+	scenegraph::SceneGraphNode node1(scenegraph::SceneGraphNodeType::Model);
 	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));
 

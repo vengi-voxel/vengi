@@ -290,7 +290,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	char dictValue[256];
 	int valueLength = 0;
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(core::string::format("model %i", size));
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {

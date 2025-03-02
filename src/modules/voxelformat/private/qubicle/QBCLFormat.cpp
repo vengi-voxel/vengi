@@ -472,7 +472,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		return true;
 	}
 
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume.release(), true);
 	node.setVisible(nodeHeader.visible);
 	node.setLocked(nodeHeader.locked);

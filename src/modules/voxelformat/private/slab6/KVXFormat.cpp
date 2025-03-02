@@ -166,7 +166,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	stream->seek(currentPos);
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;

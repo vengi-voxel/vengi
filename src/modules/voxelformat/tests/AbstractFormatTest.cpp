@@ -65,7 +65,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 	const io::ArchivePtr &archive = helper_archive();
 	scenegraph::SceneGraph sceneGraphsave(2);
 	{
-		scenegraph::SceneGraphNode node;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
 		sceneGraphsave.emplace(core::move(node));
 	}
@@ -88,7 +88,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	const io::ArchivePtr &archive = helper_archive();
 	scenegraph::SceneGraph sceneGraphsave1(2);
 	{
-		scenegraph::SceneGraphNode node;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&original, false);
 		node.setPalette(pal1);
 		sceneGraphsave1.emplace(core::move(node));
@@ -437,7 +437,7 @@ void AbstractFormatTest::testSave(const core::String &filename, Format *format, 
 	voxel::RawVolume model1(region);
 	EXPECT_TRUE(model1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	scenegraph::SceneGraph sceneGraph;
-	scenegraph::SceneGraphNode node1;
+	scenegraph::SceneGraphNode node1(scenegraph::SceneGraphNodeType::Model);
 	node1.setPalette(palette);
 	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));

@@ -20,7 +20,7 @@ TEST_F(SceneGraphUtilTest, testAddSceneGraphNodes) {
 		groupNodeId = source.emplace(core::move(node));
 	}
 	{
-		SceneGraphNode node;
+		SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setName("model");
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
 		source.emplace(core::move(node), groupNodeId);

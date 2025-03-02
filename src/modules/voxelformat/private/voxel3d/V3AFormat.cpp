@@ -49,7 +49,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 	int lineCnt = 0;
 	int width, depth, height;
 	width = depth = height = 0;
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	while (!stream->eos()) {
 		wrapBool(stream->readLine(line));
 		++lineCnt;

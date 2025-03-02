@@ -103,7 +103,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		palette.setColor(i, core::Color::getRGBA(color));
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);

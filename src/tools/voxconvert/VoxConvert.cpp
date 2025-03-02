@@ -646,7 +646,7 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGrap
 			continue;
 		}
 		scenegraph::SceneGraph newSceneGraph;
-		scenegraph::SceneGraphNode newNode;
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String &filename = getFilenameForModelName(inputfile, node.name(), ext, id, uniqueNames);

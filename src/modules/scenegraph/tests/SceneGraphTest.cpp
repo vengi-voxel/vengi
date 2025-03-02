@@ -439,7 +439,7 @@ TEST_F(SceneGraphTest, testMove) {
 }
 
 TEST_F(SceneGraphTest, testAddKeyFrame) {
-	SceneGraphNode node;
+	SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(0));
 	EXPECT_EQ(1, node.addKeyFrame(10));
 	EXPECT_EQ(2, node.addKeyFrame(20));

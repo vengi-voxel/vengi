@@ -218,7 +218,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				regionSize = glm::ivec3(11);
 			}
 		}
-		scenegraph::SceneGraphNode node;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		if (modelIdx >= (int)sceneDefinition->nodeNames.size()) {
 			Log::error("No node name for model %d of scene %s", modelIdx, sceneName.c_str());
 			node.setName(sceneName);

@@ -256,7 +256,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 							 io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 							 const palette::Palette &palette, const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 
 	int64_t startPos = stream.pos();
 	while (stream.pos() < startPos + chunk.chunkSize - 5) {
@@ -443,7 +443,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 							 CubzhReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 							 const palette::Palette &palette, const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(core::string::extractFilename(filename));
 	uint16_t shapeId = 1;
 	uint16_t parentShapeId = 0;

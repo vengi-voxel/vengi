@@ -74,7 +74,7 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 		blockPal.put(BLOCKCOLOR[i].blockId, palette.getClosestMatch(BLOCKCOLOR[i].color));
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	for (uint32_t i = 0; i < numBlocks; ++i) {
 		uint32_t x, y, z;

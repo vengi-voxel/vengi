@@ -207,7 +207,7 @@ bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scene
 				Log::error("Could not find 'BlockStates'");
 				return false;
 			}
-			scenegraph::SceneGraphNode node;
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setPalette(palette);
 			node.setName(name);
 			node.setVolume(new voxel::RawVolume(region), true);

@@ -227,7 +227,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 		return false;
 	}
 	scenegraph::SceneGraph newSceneGraph;
-	scenegraph::SceneGraphNode newNode;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(*node, newNode, false);
 	if (node->isReferenceNode()) {
 		newNode.setVolume(_sceneGraph.resolveVolume(*node));
@@ -382,7 +382,7 @@ static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
 		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 		newSceneGraph.clear();
-		scenegraph::SceneGraphNode newNode;
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setVolume(merged.volume(), true);
 		newNode.setPalette(merged.palette);
 		newNode.setNormalPalette(merged.normalPalette);
@@ -1140,7 +1140,7 @@ static bool shouldGetMerged(const scenegraph::SceneGraphNode &node, NodeMergeFla
 int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
-		scenegraph::SceneGraphNode copiedNode;
+		scenegraph::SceneGraphNode copiedNode(scenegraph::SceneGraphNodeType::Model);
 		const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 		if (node == nullptr) {
 			continue;

@@ -462,7 +462,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 			}
 		}
 	}
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume.release(), true);
 	node.setName(name);
 	node.setPivot(pivot);
