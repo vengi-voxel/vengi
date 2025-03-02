@@ -189,10 +189,6 @@ void StampBrush::convertToPalette(const palette::Palette &palette) {
 
 bool StampBrush::load(const core::String &filename) {
 	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
-	if (!archive->exists(filename)) {
-		Log::error("Failed to open model file %s", filename.c_str());
-		return false;
-	}
 	scenegraph::SceneGraph newSceneGraph;
 	voxelformat::LoadContext loadCtx;
 	io::FileDescription fileDesc;
