@@ -154,7 +154,7 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt32(0)) // emit colors are not written anymore
 	}
-	const palette::PaletteIndicesArray &indices = palette.uiIndices();
+	const palette::PaletteIndicesArray &indices = palette.view().uiIndices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt8(indices[i]))
 	}
@@ -289,7 +289,7 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(emitColors[i].rgba))
 	}
-	palette::PaletteIndicesArray &indices = palette.uiIndices();
+	palette::PaletteIndicesArray &indices = palette.view().uiIndices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt8(indices[i]))
 	}

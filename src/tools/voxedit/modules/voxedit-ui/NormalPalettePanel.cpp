@@ -149,7 +149,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
 			const palette::Palette &palette = node.palette();
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
-				const uint8_t paletteColorIdx = palette.uiIndex(palettePanelIdx);
+				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
 				addColor(pos.x, paletteColorIdx, node, listener);
 			}
 		}

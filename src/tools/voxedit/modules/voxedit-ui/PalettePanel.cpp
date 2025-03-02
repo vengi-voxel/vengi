@@ -94,9 +94,9 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t *)payload->Data;
 			if (dragAndDropSortColors()) {
-				palette.exchangeUIIndices(paletteColorIdx, dragPalIdx);
+				palette.view().exchangeUIIndices(paletteColorIdx, dragPalIdx);
 			} else {
-				palette.exchange(paletteColorIdx, palette.uiIndex(dragPalIdx));
+				palette.exchange(paletteColorIdx, palette.view().uiIndex(dragPalIdx));
 			}
 			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
@@ -362,7 +362,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
 			const palette::Palette &palette = node.palette();
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
-				const uint8_t paletteColorIdx = palette.uiIndex(palettePanelIdx);
+				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
 				addColor(pos.x, paletteColorIdx, node, listener);
 			}
 			ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));

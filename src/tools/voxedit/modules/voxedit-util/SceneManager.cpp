@@ -1668,16 +1668,17 @@ void SceneManager::construct() {
 		const int nodeId = activeNode();
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		palette::Palette &pal = node.palette();
+		palette::PaletteView &palView = pal.view();
 		if (type == "hue") {
-			pal.sortHue();
+			palView.sortHue();
 		} else if (type == "brightness") {
-			pal.sortBrightness();
+			palView.sortBrightness();
 		} else if (type == "cielab") {
-			pal.sortCIELab();
+			palView.sortCIELab();
 		} else if (type == "saturation") {
-			pal.sortSaturation();
+			palView.sortSaturation();
 		} else if (type == "original") {
-			pal.sortOriginal();
+			palView.sortOriginal();
 		}
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
 	}).setHelp(_("Change intensity by scaling the rgb values of the palette")).

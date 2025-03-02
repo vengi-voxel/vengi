@@ -4,24 +4,22 @@
 
 #pragma once
 
-#include "palette/Material.h"
 #include "core/DirtyState.h"
+#include "core/RGBA.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "palette/PaletteView.h"
 #include "image/Image.h"
-#include "core/RGBA.h"
-#include <cstdint>
-#include <stdint.h>
+#include "palette/Material.h"
 #include <glm/vec4.hpp>
+#include <stdint.h>
 
 namespace palette {
 
-static const int PaletteMaxColors = 256;
 static const int PaletteColorNotFound = -1;
 
 // RGBA color values in the range [0-255]
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
-using PaletteIndicesArray = uint8_t[PaletteMaxColors];
 using MaterialArray = Material[PaletteMaxColors];
 
 class Palette : public core::DirtyState {
@@ -31,41 +29,24 @@ private:
 	union hash {
 		uint32_t _hashColors[2];
 		uint64_t _hash;
-	} _hash {};
+	} _hash{};
+
+	PaletteView _view;
 
 	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
-	PaletteColorArray _colors {};
-	MaterialArray _materials {};
+	PaletteColorArray _colors{};
+	MaterialArray _materials{};
 	int _colorCount = 0;
-	// UI related
-	PaletteIndicesArray _uiIndices;
 
 	int findInsignificant(int skipSlotIndex) const;
 
 	bool loadLospec(const core::String &lospecId, const core::String &gimpPalette);
+
 public:
 	Palette();
 
-	// UI related methods
-
-	/**
-	 * In case the palette indices are changed, this gives you access to the real color index
-	 */
-	uint8_t uiIndex(uint8_t palettePanelIdx) const;
-	const PaletteIndicesArray &uiIndices() const;
-	PaletteIndicesArray &uiIndices();
-
-	void sortOriginal();
-	void sortHue();
-	void sortSaturation();
-	void sortBrightness();
-	void sortCIELab();
-	/**
-	 * @note Only for ui purposes - changes the color slots
-	 */
-	void exchangeUIIndices(uint8_t idx1, uint8_t idx2);
-
-	// End of UI related methods
+	PaletteView &view();
+	const PaletteView &view() const;
 
 	void exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2);
 	void copy(uint8_t fromPaletteColorIdx, uint8_t toPaletteColorIdx);
@@ -143,7 +124,7 @@ public:
 	 */
 	void fill();
 
-	static constexpr const char *builtIn[] = {"built-in:nippon", "built-in:minecraft", "built-in:magicavoxel",
+	static constexpr const char *builtIn[] = {"built-in:nippon", "built-in:minecraft",		   "built-in:magicavoxel",
 											  "built-in:quake1", "built-in:commandandconquer", "built-in:starmade"};
 
 	bool minecraft();
@@ -162,7 +143,8 @@ public:
 
 	/**
 	 * @param rgba Normalized color value [0.0-1.0]
-	 * @param skipPaletteColorIdx One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
+	 * @param skipPaletteColorIdx One particular palette color index that is not taken into account. This can be used to
+	 * e.g. search for replacements
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
 	int getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx = -1) const;
@@ -178,11 +160,19 @@ public:
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
 
-	static const char* getDefaultPaletteName();
-	static core::String extractPaletteName(const core::String& file);
-	static bool createPalette(const image::ImagePtr& image, palette::Palette &palette);
-	static bool convertImageToPalettePng(const image::ImagePtr& image, const char *paletteFile);
+	static const char *getDefaultPaletteName();
+	static core::String extractPaletteName(const core::String &file);
+	static bool createPalette(const image::ImagePtr &image, palette::Palette &palette);
+	static bool convertImageToPalettePng(const image::ImagePtr &image, const char *paletteFile);
 };
+
+inline PaletteView &Palette::view() {
+	return _view;
+}
+
+inline const PaletteView &Palette::view() const {
+	return _view;
+}
 
 inline const core::String &Palette::name() const {
 	return _name;
@@ -216,18 +206,6 @@ inline void Palette::markSaved() {
 	_needsSave = false;
 }
 
-inline const PaletteIndicesArray &Palette::uiIndices() const {
-	return _uiIndices;
-}
-
-inline PaletteIndicesArray &Palette::uiIndices(){
-	return _uiIndices;
-}
-
-inline uint8_t Palette::uiIndex(uint8_t palettePanelIdx) const {
-	return _uiIndices[palettePanelIdx];
-}
-
 inline core::RGBA Palette::color(uint8_t paletteColorIdx) const {
 	return _colors[paletteColorIdx];
 }
@@ -243,4 +221,4 @@ inline const Material &Palette::material(uint8_t paletteColorIdx) const {
 	return _materials[paletteColorIdx];
 }
 
-} // namespace voxel
+} // namespace palette

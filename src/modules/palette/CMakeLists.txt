@@ -20,6 +20,7 @@ set(SRCS
 
 	PaletteCache.cpp PaletteCache.h
 
+	PaletteView.h PaletteView.cpp
 	Palette.h Palette.cpp
 	PaletteLookup.h
 	PaletteCompleter.h
