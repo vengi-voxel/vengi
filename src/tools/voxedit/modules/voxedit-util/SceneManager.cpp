@@ -3535,7 +3535,7 @@ core::String SceneManager::getSuggestedFilename(const core::String &extension) c
 	core::String name = "scene";
 	core::String ext = extension;
 	if (!fileDesc.empty()) {
-		name = core::string::extractFilename(fileDesc.name);
+		name = core::string::stripExtension(fileDesc.name);
 		if (ext.empty()) {
 			ext = core::string::extractExtension(fileDesc.name);
 		}

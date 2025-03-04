@@ -584,6 +584,11 @@ TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 	// TODO: here we need to define which extension should be used - from the format, or the given one...
 	sceneMgr()->setLastFilename("test.vengi", &voxelformat::VoxFormat::format());
 	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
+	{
+		const core::String fullPath = core::string::path("path", "to", "scenefull.vengi");
+		sceneMgr()->setLastFilename(fullPath);
+		EXPECT_EQ(fullPath, _sceneMgr->getSuggestedFilename());
+	}
 }
 
 } // namespace voxedit
