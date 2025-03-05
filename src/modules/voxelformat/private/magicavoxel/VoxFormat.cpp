@@ -56,7 +56,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	const glm::mat4 &ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
-#ifdef MAGICAVOXEL_USE_REFERENCES
+#if MAGICAVOXEL_USE_REFERENCES
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
