@@ -151,14 +151,14 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 						  const palette::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
-	const char *name = ogt_group.name ? ogt_group.name : "Group";
+	const char *name = ogt_group.name ? ogt_group.name : "<group>";
 	const uint32_t layerIdx = ogt_group.layer_index;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (layerIdx < scene->num_layers) {
 		const ogt_vox_layer &layer = scene->layers[layerIdx];
 		hidden |= layer.hidden;
 		if (layer.name != nullptr) {
-			name = layer.name;
+			node.setProperty("layer", layer.name);
 		}
 		const core::RGBA color(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 		node.setColor(color);

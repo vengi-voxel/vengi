@@ -239,13 +239,9 @@ MVModelToNode::~MVModelToNode() {
 }
 
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
-	if (instance.layer_index >= scene->num_layers) {
-		return "";
-	}
-	const ogt_vox_layer &layer = scene->layers[instance.layer_index];
-	const char *name = instance.name == nullptr ? layer.name : instance.name;
+	const char *name = instance.name;
 	if (name == nullptr) {
-		name = "";
+		return "<vox>";
 	}
 	return name;
 }
