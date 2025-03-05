@@ -13,6 +13,8 @@
 #include <glm/mat4x4.hpp>
 #include "voxelformat/external/ogt_vox.h"
 
+#define MAGICAVOXEL_USE_REFERENCES 0
+
 namespace palette {
 class Palette;
 }

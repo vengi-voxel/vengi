@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
@@ -55,6 +56,44 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	const glm::mat4 &ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
+#ifdef MAGICAVOXEL_USE_REFERENCES
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
+	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
+	if (models[ogtInstance.model_index].nodeId != InvalidNodeId) {
+		type = scenegraph::SceneGraphNodeType::ModelReference;
+	}
+	scenegraph::SceneGraphNode node(type);
+	node.setTransform(keyFrameIdx, transform);
+	// loadKeyFrames(sceneGraph, node, ogtInstance, scene);
+	node.setColor(instanceColor(scene, ogtInstance));
+	if (ogtInstance.layer_index < scene->num_layers) {
+		const ogt_vox_layer &ogtLayer = scene->layers[ogtInstance.layer_index];
+		if (ogtLayer.name != nullptr) {
+			node.setProperty("layer", ogtLayer.name);
+		}
+	}
+	node.setProperty("layerId", core::string::toString(ogtInstance.layer_index));
+	node.setName(instanceName(scene, ogtInstance));
+	node.setVisible(!instanceHidden(scene, ogtInstance));
+	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
+		node.setReference(models[ogtInstance.model_index].nodeId);
+	} else {
+		node.setVolume(models[ogtInstance.model_index].volume, true);
+		models[ogtInstance.model_index].volume = nullptr;
+	}
+	// TODO: VOXELFORMAT: set correct pivot
+	// TODO: VOXELFORMAT: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
+	// TODO: VOXELFORMAT: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
+	node.setPalette(palette);
+	const int nodeId = sceneGraph.emplace(core::move(node), parent);
+	if (nodeId != InvalidNodeId) {
+		models[ogtInstance.model_index].nodeId = nodeId;
+		return true;
+	}
+	return false;
+#else
 	const glm::ivec3 &ogtMins = calcTransform(ogtMat, glm::vec3(0));
 	const glm::ivec3 &ogtMaxs = calcTransform(ogtMat, ogtVolumeSize(ogtModel));
 	const glm::ivec3 mins(-(ogtMins.x + 1), ogtMins.z, ogtMins.y);
@@ -103,7 +142,8 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	// TODO: VOXELFORMAT: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
 	// TODO: VOXELFORMAT: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
 	node.setPalette(palette);
-	return sceneGraph.emplace(core::move(node), parent) != -1;
+	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
+#endif
 }
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
@@ -125,8 +165,8 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	}
 	node.setName(name);
 	node.setVisible(!hidden);
-	const int groupId = parent == -1 ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
-	if (groupId == -1) {
+	const int groupId = parent == InvalidNodeId ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
+	if (groupId == InvalidNodeId) {
 		Log::error("Failed to add group node to the scene graph");
 		return false;
 	}
@@ -212,7 +252,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			continue;
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
-		if (!loadGroup(scene, i, sceneGraph, -1, models, addedInstances, palette)) {
+		if (!loadGroup(scene, i, sceneGraph, InvalidNodeId, models, addedInstances, palette)) {
 			return false;
 		}
 		break;
