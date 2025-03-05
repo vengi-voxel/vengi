@@ -261,6 +261,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		if (addedInstances.has(n)) {
 			continue;
 		}
+		Log::warn("Instance %i is not part of a group", n);
 		// TODO: VOXELFORMAT: the parent is wrong
 		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette)) {
 			return false;
