@@ -1,6 +1,10 @@
-set(SRCS
+set(EXTERNAL_SRCS
 	external/jo_mpeg.cpp external/jo_mpeg.h
+	ImageExt.cpp
+)
 
+set(SRCS
+	${EXTERNAL_SRCS}
 	Image.cpp Image.h
 	AVI.cpp AVI.h
 	CaptureTool.cpp CaptureTool.h
@@ -10,6 +14,9 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io util stb_image)
 if (NOT MSVC)
 	target_compile_options(${LIB} PRIVATE -Wno-unused-function -Wno-missing-field-initializers)
 endif()
+foreach (src ${EXTERNAL_SRCS})
+	engine_source_optimize(${src})
+endforeach()
 
 # TODO: not included as local lib yet
 if (NOT USE_LIBS_FORCE_LOCAL)
