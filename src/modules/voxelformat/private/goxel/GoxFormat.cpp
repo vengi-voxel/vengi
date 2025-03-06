@@ -846,18 +846,20 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 						},
 						voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
 
-					int pngSize = 0;
-					uint8_t *png = image::createPng(data, 64, 64, 4, &pngSize);
-					core_free(data);
-
-					if (stream.write(png, pngSize) == -1) {
-						Log::error("Could not write png into gox stream");
-						core_free(png);
+					image::Image image2("##");
+					if (!image2.loadRGBA((const uint8_t*)data, 64, 64)) {
+						Log::error("Could not load image data");
+						core_free(data);
 						delete mirrored;
 						return false;
 					}
-					core_free(png);
-					Log::debug("Saved BL16 chunk %i with a pngsize of %i", blocks, pngSize);
+					core_free(data);
+					if (!image2.writePng(stream)) {
+						Log::error("Could not write png into gox stream");
+						delete mirrored;
+						return false;
+					}
+					Log::debug("Saved BL16 chunk %i", blocks);
 					++blocks;
 				}
 			}

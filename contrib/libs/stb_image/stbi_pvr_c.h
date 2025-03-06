@@ -405,7 +405,7 @@ static void	UnpackModulations(const AMTC_BLOCK_STRUCT *pBlock,
 	}
 
 	// make sure nothing is left over
-	assert(ModulationBits==0);
+	STBI_ASSERT(ModulationBits==0);
 }
 
 /*!***********************************************************************
@@ -505,7 +505,7 @@ static void InterpolateColours(const int ColourP[4],
 	// sanity check
 	for(k = 0; k < 4; k++)
 	{
-		assert(Result[k] < 256);
+		STBI_ASSERT(Result[k] < 256);
 	}
 
 
@@ -524,7 +524,7 @@ static void InterpolateColours(const int ColourP[4],
 	// 2nd sanity check
 	for(k = 0; k < 4; k++)
 	{
-		assert(Result[k] < 256);
+		STBI_ASSERT(Result[k] < 256);
 	}
 
 }
@@ -629,11 +629,11 @@ static U32 TwiddleUV(U32 YSize, U32 XSize, U32 YPos, U32 XPos)
 
 	int ShiftCount;
 
-	assert(YPos < YSize);
-	assert(XPos < XSize);
+	STBI_ASSERT(YPos < YSize);
+	STBI_ASSERT(XPos < XSize);
 
-	assert(POWER_OF_2(YSize));
-	assert(POWER_OF_2(XSize));
+	STBI_ASSERT(POWER_OF_2(YSize));
+	STBI_ASSERT(POWER_OF_2(XSize));
 
 	if(YSize < XSize)
 	{

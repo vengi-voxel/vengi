@@ -25,3 +25,4 @@ set(SRCS
 )
 add_library(stb_image STATIC ${SRCS})
 target_include_directories(stb_image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+engine_target_optimize(stb_image)

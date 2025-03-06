@@ -17,7 +17,6 @@
 #include "io/FormatDescription.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
-#include <stb_image_resize2.h>
 
 #include <glm/common.hpp>
 #include <glm/ext/scalar_common.hpp>
@@ -31,6 +30,8 @@
 
 #define STBI_WRITE_NO_STDIO
 #include <stb_image_write.h>
+
+#include <stb_image_resize2.h>
 
 namespace image {
 
@@ -281,7 +282,7 @@ bool Image::loadRGBA(io::ReadStream &stream, int w, int h) {
 	if (_data) {
 		stbi_image_free(_data);
 	}
-	_data = (uint8_t *)STBI_MALLOC(length);
+	_data = (uint8_t *)core_malloc(length);
 	_width = w;
 	_height = h;
 	if (stream.read(_data, length) != length) {
@@ -406,7 +407,7 @@ glm::vec2 Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
 }
 
 bool Image::resize(int w, int h) {
-	uint8_t *res = (uint8_t *)STBI_MALLOC(w * h * _depthOfColor);
+	uint8_t *res = (uint8_t *)core_malloc(w * h * _depthOfColor);
 	if (_data) {
 		if (stbir_resize(_data, _width, _height, _depthOfColor * _width, res, w, h, _depthOfColor * w,
 						(stbir_pixel_layout)_depthOfColor, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP,
@@ -420,10 +421,6 @@ bool Image::resize(int w, int h) {
 	_width = w;
 	_height = h;
 	return true;
-}
-
-uint8_t *createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
-	return (uint8_t *)stbi_write_png_to_mem((const unsigned char *)pixels, 0, width, height, depth, pngSize);
 }
 
 static void stream_write_func(void *context, void *data, int size) {
