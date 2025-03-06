@@ -1,6 +1,9 @@
 // dear imgui test engine
 // (helpers/utilities. do NOT use this as a general purpose library)
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -903,7 +906,7 @@ bool ImBuildFindGitBranchName(const char* git_repo_path, Str* branch_name)
 
 bool    ImOsCreateProcess(const char* cmd_line)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_GAMING_XBOX)
     STARTUPINFOA siStartInfo;
     PROCESS_INFORMATION piProcInfo;
     ZeroMemory(&siStartInfo, sizeof(STARTUPINFOA));
@@ -918,6 +921,7 @@ bool    ImOsCreateProcess(const char* cmd_line)
     return ret != 0;
 #else
     IM_UNUSED(cmd_line);
+    IM_ASSERT(0);
     return false;
 #endif
 }
@@ -926,7 +930,7 @@ FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
 {
     IM_ASSERT(cmd_line != nullptr && *cmd_line);
     IM_ASSERT(mode != nullptr && *mode);
-#if _WIN32
+#if defined(_WIN32) && !defined(_GAMING_XBOX)
     ImVector<wchar_t> w_cmd_line;
     ImVector<wchar_t> w_mode;
     ImUtf8ToWideChar(cmd_line, &w_cmd_line);
@@ -934,6 +938,8 @@ FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
     w_mode.resize(w_mode.Size + 1);
     wcscat(w_mode.Data, L"b");   // Windows requires 'b' mode while unixes do not support it and default to binary.
     return _wpopen(w_cmd_line.Data, w_mode.Data);
+#elif defined(_GAMING_XBOX)
+    IM_ASSERT(0);
 #else
     return popen(cmd_line, mode);
 #endif
@@ -942,8 +948,10 @@ FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
 void        ImOsPClose(FILE* fp)
 {
     IM_ASSERT(fp != nullptr);
-#if _WIN32
+#if defined(_WIN32) && !defined(_GAMING_XBOX)
     _pclose(fp);
+#elif defined(_GAMING_XBOX)
+    IM_ASSERT(0);
 #else
     pclose(fp);
 #endif
@@ -952,9 +960,11 @@ void        ImOsPClose(FILE* fp)
 void    ImOsOpenInShell(const char* path)
 {
     Str256 command(path);
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_GAMING_XBOX)
     ImPathFixSeparatorsForCurrentOS(command.c_str());
     ::ShellExecuteA(nullptr, "open", command.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+#elif defined(_GAMING_XBOX)
+    IM_ASSERT(0);
 #else
 #if __APPLE__
     const char* open_executable = "open";
@@ -969,7 +979,7 @@ void    ImOsOpenInShell(const char* path)
 
 void    ImOsConsoleSetTextColor(ImOsConsoleStream stream, ImOsConsoleTextColor color)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_GAMING_XBOX)
     HANDLE hConsole = 0;
     switch (stream)
     {
@@ -1012,6 +1022,9 @@ void    ImOsConsoleSetTextColor(ImOsConsoleStream stream, ImOsConsoleTextColor c
     }
 
     fprintf(handle, "%s", modifier);
+#else
+    IM_UNUSED(stream);
+    IM_UNUSED(color);
 #endif
 }
 
@@ -1209,7 +1222,7 @@ ImFont* ImGui::FindFontByPrefix(const char* prefix)
 #if IMGUI_VERSION_NUM < 19184
         if (strncmp(font->ConfigData->Name, prefix, strlen(prefix)) == 0)
 #else
-        if (strncmp(font->Sources->Name, prefix, strlen(prefix)) == 0)
+        if (strncmp(font->Sources[0].Name, prefix, strlen(prefix)) == 0)
 #endif
             return font;
     return nullptr;

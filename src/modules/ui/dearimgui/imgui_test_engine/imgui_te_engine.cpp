@@ -3,6 +3,9 @@
 // This is the interface that your initial setup (app init, main loop) will mostly be using.
 // Actual tests will mostly use the interface of imgui_te_context.h
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif

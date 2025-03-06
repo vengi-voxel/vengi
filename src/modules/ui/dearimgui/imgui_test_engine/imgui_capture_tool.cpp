@@ -2,6 +2,9 @@
 // (screen/video capture tool)
 // This is usable as a standalone applet or controlled by the test engine.
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 // Two mode of operation:
 // - Interactive: call ImGuiCaptureToolUI::ShowCaptureToolWindow()
 // - Programmatic: generally via ImGuiTestContext::CaptureXXX functions

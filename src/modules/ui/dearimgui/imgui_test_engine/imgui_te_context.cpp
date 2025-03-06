@@ -2,6 +2,9 @@
 // (context when a running test + end user automation API)
 // This is the main (if not only) interface that your Tests will be using.
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -1873,7 +1876,11 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
                 if (is_hovering_resize_corner)
                 {
                     LogDebug("MouseMove: Child obstructed by parent's ResizeGrip, trying to resize window and trying again..");
+#if IMGUI_VERSION_NUM < 19172
                     float extra_size = window->CalcFontSize() * 3.0f;
+#else
+                    float extra_size = window->FontRefSize * 3.0f;
+#endif
                     WindowResize(window->ID, window->Size + ImVec2(extra_size, extra_size));
                     MouseMove(ref, flags | ImGuiTestOpFlags_IsSecondAttempt);
                     return;
@@ -3518,7 +3525,11 @@ void    ImGuiTestContext::MenuAction(ImGuiTestAction action, ImGuiTestRef ref)
                 ItemAction(Inputs->MouseButtonsValue ? ImGuiTestAction_Hover : ImGuiTestAction_Click, buf.c_str());
             }
         }
+#if IMGUI_VERSION_NUM < 19187
         current_window = GetWindowByRef(Str16f("//##Menu_%02d", depth).c_str());
+#else
+        current_window = GetWindowByRef(Str16f("//###Menu_%02d", depth).c_str());
+#endif
         IM_CHECK_SILENT(current_window != nullptr);
 
         path = p + 1;

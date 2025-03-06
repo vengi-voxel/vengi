@@ -2,6 +2,9 @@
 // (result exporters)
 // Read https://github.com/ocornut/imgui_test_engine/wiki/Exporting-Results
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 #pragma once
 
 //-------------------------------------------------------------------------

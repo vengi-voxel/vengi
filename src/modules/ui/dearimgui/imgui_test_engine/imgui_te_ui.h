@@ -2,6 +2,9 @@
 // (ui)
 // If you run tests in an interactive or visible application, you may want to call ImGuiTestEngine_ShowTestEngineWindows()
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 // Provide access to:
 // - "Dear ImGui Test Engine" main interface
 // - "Dear ImGui Capture Tool"

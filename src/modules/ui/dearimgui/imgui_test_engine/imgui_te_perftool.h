@@ -3,6 +3,9 @@
 // Browse and visualize samples recorded by ctx->PerfCapture() calls.
 // User access via 'Test Engine UI -> Tools -> Perf Tool'
 
+// This file is governed by the "Dear ImGui Test Engine License".
+// Details of the license are provided in the LICENSE.txt file in the same directory.
+
 #pragma once
 
 #include "imgui.h"
