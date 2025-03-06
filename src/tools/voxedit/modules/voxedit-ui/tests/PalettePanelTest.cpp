@@ -59,15 +59,15 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		const core::RGBA slot0 = activePalette.color(0);
 		const core::RGBA slot1 = activePalette.color(1);
-		const int index0 = activePalette.uiIndex(0);
-		const int index1 = activePalette.uiIndex(1);
+		const int index0 = activePalette.view().uiIndex(0);
+		const int index1 = activePalette.view().uiIndex(1);
 		ctx->KeyDown(ImGuiMod_Ctrl);
 		ctx->ItemDragAndDrop("$$0", "$$1");
 		ctx->KeyUp(ImGuiMod_Ctrl);
 		IM_CHECK_EQ(activePalette.color(0), slot0);
 		IM_CHECK_EQ(activePalette.color(1), slot1);
-		IM_CHECK_EQ(activePalette.uiIndex(0), index1);
-		IM_CHECK_EQ(activePalette.uiIndex(1), index0);
+		IM_CHECK_EQ(activePalette.view().uiIndex(0), index1);
+		IM_CHECK_EQ(activePalette.view().uiIndex(1), index0);
 		ctx->MenuClick("Sort/Original");
 	};
 }
