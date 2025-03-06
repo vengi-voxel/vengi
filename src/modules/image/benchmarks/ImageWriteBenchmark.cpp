@@ -5,7 +5,6 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
-#include <fcntl.h>
 
 class ImageWriteBenchmark : public app::AbstractBenchmark {
 protected:
