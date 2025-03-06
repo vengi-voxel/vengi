@@ -38,6 +38,7 @@ set(TEST_SRCS
 
 set(TEST_FILES
 	tests/test-palette-in.png
+	tests/benchmark-caveexpress.jpg
 )
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
