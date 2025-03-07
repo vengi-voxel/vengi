@@ -1,4 +1,4 @@
-# Allow the source files to find headers in src/
+#Allow the source files to find headers in src /
 include(GNUInstallDirs)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
@@ -39,6 +39,9 @@ set_property(
 if (PFM_FOUND)
   target_link_libraries(benchmark PRIVATE PFM::libpfm)
   target_compile_definitions(benchmark PRIVATE -DHAVE_LIBPFM)
+  install(
+      FILES "${PROJECT_SOURCE_DIR}/cmake/Modules/FindPFM.cmake"
+      DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 endif()
 
 # pthread affinity, if available
@@ -64,6 +67,7 @@ endif()
 # We need extra libraries on Solaris
 if(${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
   target_link_libraries(benchmark PRIVATE kstat)
+  set(BENCHMARK_PRIVATE_LINK_LIBRARIES -lkstat)
 endif()
 
 if (NOT BUILD_SHARED_LIBS)

@@ -188,7 +188,7 @@ def update_benchmark():
         "https://github.com/google/benchmark.git",
         [
             (f"src/*", "contrib/libs/benchmark/src"),
-            (f"include/benchmark/*.h", "contrib/libs/benchmark/include")
+            (f"include/benchmark/*.h", "contrib/libs/benchmark/include/benchmark")
         ]
     )
 
