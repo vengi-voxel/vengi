@@ -48,6 +48,14 @@ BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadJPG)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(ImageWriteBenchmark, WritePNG)(benchmark::State &state) {
+	io::BufferedReadWriteStream stream(1024 * 1024 * 4);
+	for (auto _ : state) {
+		_imagePNG->writePNG(stream);
+		stream.seek(0);
+	}
+}
+
 BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadPNG)(benchmark::State &state) {
 	for (auto _ : state) {
 		image::loadImage(_filePNG);
@@ -57,5 +65,6 @@ BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadPNG)(benchmark::State &state) {
 BENCHMARK_REGISTER_F(ImageWriteBenchmark, LoadPNG);
 BENCHMARK_REGISTER_F(ImageWriteBenchmark, LoadJPG);
 BENCHMARK_REGISTER_F(ImageWriteBenchmark, WriteJPG);
+BENCHMARK_REGISTER_F(ImageWriteBenchmark, WritePNG);
 
 BENCHMARK_MAIN();

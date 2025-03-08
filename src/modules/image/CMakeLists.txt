@@ -18,17 +18,24 @@ foreach (src ${EXTERNAL_SRCS})
 	engine_source_optimize(${src})
 endforeach()
 
-# TODO: not included as local lib yet
+# TODO: not included as local libs yet
 if (NOT USE_LIBS_FORCE_LOCAL)
 	find_package(JPEG)
 	if (JPEG_FOUND)
 		target_compile_definitions(${LIB} PRIVATE -DUSE_LIBJPEG)
 		target_link_libraries(${LIB} PRIVATE JPEG::JPEG)
 	endif()
+	find_package(PNG)
+	if (PNG_FOUND)
+		target_compile_definitions(${LIB} PRIVATE -DUSE_LIBPNG)
+		target_link_libraries(${LIB} PRIVATE PNG::PNG)
+	endif()
 else()
 	set(JPEG_FOUND 0)
+	set(PNG_FOUND 0)
 endif()
-set(USE_LIBJPEG ${JPEG_FOUND} CACHE BOOL "Use libjpeg for jpeg saving" FORCE)
+set(USE_LIBJPEG ${JPEG_FOUND} CACHE BOOL "Use libjpeg" FORCE)
+set(USE_LIBPNG ${PNG_FOUND} CACHE BOOL "Use libpng" FORCE)
 
 set(TEST_SRCS
 	tests/ImageTest.cpp
