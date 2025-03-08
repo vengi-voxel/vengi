@@ -75,6 +75,10 @@ void Image::setColor(core::RGBA rgba, int x, int y) {
 	if (y < 0 || y >= _height) {
 		return;
 	}
+	if (_colorComponents != 4) {
+		Log::error("Failed to set rgba color for an image with %i components", _colorComponents);
+		return;
+	}
 	const int colSpan = _width * _colorComponents;
 	const intptr_t offset = x * _colorComponents + y * colSpan;
 	*(core::RGBA *)(_colors + offset) = rgba;
