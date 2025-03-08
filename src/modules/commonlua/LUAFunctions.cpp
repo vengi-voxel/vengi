@@ -8,7 +8,6 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/String.h"
-#include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/StringSet.h"
 #include "http/Http.h"
@@ -1230,7 +1229,12 @@ static int clua_image_name(lua_State *s) {
 static int clua_image_save(lua_State *s) {
 	image::Image *image = clua_toimage(s, 1);
 	const char *filename = luaL_checkstring(s, 2);
-	if (!image::writeImage(*image, filename)) {
+	const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+	if (!file->validHandle()) {
+		return clua_error(s, "Failed to open file for saving: %s", filename);
+	}
+	io::FileStream stream(file);
+	if (!image::writePNG(*image, stream)) {
 		return clua_error(s, "Failed to save image to %s", filename);
 	}
 	return 0;

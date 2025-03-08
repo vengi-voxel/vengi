@@ -6,10 +6,10 @@
 
 #include "core/NonCopyable.h"
 #include "core/RGBA.h"
-#include "image/ImageType.h"
-#include "io/IOResource.h"
-#include "io/File.h"
 #include "core/SharedPtr.h"
+#include "image/ImageType.h"
+#include "io/File.h"
+#include "io/IOResource.h"
 #include "io/Stream.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
@@ -32,17 +32,17 @@ enum TextureWrap : uint8_t {
 /**
  * @brief Wrapper for image loading
  */
-class Image: public io::IOResource, core::NonCopyable {
+class Image : public io::IOResource, core::NonCopyable {
 private:
 	core::String _name;
 	int _width = -1;
 	int _height = -1;
 	int _colorComponents = -1;
 	// the color data - either RGBA or RGB - depends on the color components
-	uint8_t* _colors = nullptr;
+	uint8_t *_colors = nullptr;
 
 public:
-	Image(const core::String& name);
+	Image(const core::String &name);
 	~Image();
 
 	template<typename FUNC>
@@ -67,14 +67,16 @@ public:
 	/**
 	 * Loads a raw RGBA buffer
 	 */
-	bool loadRGBA(const uint8_t* buffer, int width, int height);
-	bool loadRGBA(io::ReadStream& stream, int w, int h);
-	bool loadBGRA(io::ReadStream& stream, int w, int h);
+	bool loadRGBA(const uint8_t *buffer, int width, int height);
+	bool loadRGBA(io::ReadStream &stream, int w, int h);
+	bool loadBGRA(io::ReadStream &stream, int w, int h);
 
 	void makeOpaque();
 
-	static glm::ivec2 pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false);
-	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
+	static glm::ivec2 pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS = TextureWrap::Repeat,
+							 TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false);
+	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
+					  TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 	/**
 	 * @sa MeshFormat::paletteUV()
 	 */
@@ -85,11 +87,12 @@ public:
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	bool writePNG(io::SeekableWriteStream &stream) const;
-	static bool writePNG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int components);
+	static bool writePNG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components);
 	/**
 	 * @param[in] quality Ranges from 1 to 100 where higher is better
 	 */
-	static bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int components, int quality = 100);
+	static bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components,
+						  int quality = 100);
 	bool writeJPEG(io::SeekableWriteStream &stream, int quality = 100) const;
 	core::String pngBase64() const;
 	core::RGBA colorAt(int x, int y) const;
@@ -100,17 +103,17 @@ public:
 
 	void setColor(core::RGBA rgba, int x, int y);
 
-	const uint8_t* at(int x, int y) const;
+	const uint8_t *at(int x, int y) const;
 
 	void setName(const core::String &name) {
 		_name = name;
 	}
 
-	inline const core::String& name() const {
+	inline const core::String &name() const {
 		return _name;
 	}
 
-	inline const uint8_t* data() const {
+	inline const uint8_t *data() const {
 		return _colors;
 	}
 
@@ -138,23 +141,21 @@ public:
 typedef core::SharedPtr<Image> ImagePtr;
 
 // creates an empty image
-inline ImagePtr createEmptyImage(const core::String& name) {
+inline ImagePtr createEmptyImage(const core::String &name) {
 	return core::make_shared<Image>(name);
 }
 
-ImagePtr loadImage(const io::FilePtr& file);
+ImagePtr loadImage(const io::FilePtr &file);
 ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length = -1);
 ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &stream, int w, int h);
 
 /**
  * @brief If there is no extension given, all supported extensions are tried
  */
-ImagePtr loadImage(const core::String& filename);
+ImagePtr loadImage(const core::String &filename);
 
-bool writeImage(const image::Image &image, io::SeekableWriteStream& stream);
-bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream& stream);
-bool writeImage(const image::Image &image, const core::String& filename);
-bool writeImage(const image::ImagePtr &image, const core::String& filename);
+bool writePNG(const image::Image &image, io::SeekableWriteStream &stream);
+bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream);
 core::String print(const image::ImagePtr &image, bool limited = true);
 
-}
+} // namespace image

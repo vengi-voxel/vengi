@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "image/Image.h"
+#include "io/FileStream.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
@@ -51,6 +52,8 @@ TEST_F(PathTracerTest, testHMec) {
 	ASSERT_TRUE(img->isLoaded());
 	ASSERT_EQ(512, img->width());
 	// ASSERT_EQ(dimensions, img->height());
-	image::writeImage(img, "hmec.vxl.png");
+	const io::FilePtr &file = _testApp->filesystem()->open("hmec.vxl.png", io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	EXPECT_TRUE(image::writePNG(img, stream));
 	ASSERT_TRUE(pathTracer.stop());
 }

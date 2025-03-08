@@ -98,17 +98,17 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	return colorAt(pc.x, pc.y);
 }
 
-bool writeImage(const image::Image &image, io::SeekableWriteStream &stream) {
+bool writePNG(const image::Image &image, io::SeekableWriteStream &stream) {
 	if (!image.isLoaded()) {
 		return false;
 	}
 	return image.writePNG(stream);
 }
 
-bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
+bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
 	if (!image)
 		return false;
-	return writeImage(*image.get(), stream);
+	return writePNG(*image.get(), stream);
 }
 
 /**
@@ -173,7 +173,7 @@ static ImageType getImageType(const core::String &filename) {
 	return ImageType::Unknown;
 }
 
-bool writeImage(const image::Image &image, const core::String &filename) {
+bool writePNG(const image::Image &image, const core::String &filename) {
 	if (!image.isLoaded()) {
 		return false;
 	}
@@ -195,11 +195,11 @@ bool writeImage(const image::Image &image, const core::String &filename) {
 	return false;
 }
 
-bool writeImage(const image::ImagePtr &image, const core::String &filename) {
+bool writePNG(const image::ImagePtr &image, const core::String &filename) {
 	if (!image) {
 		return false;
 	}
-	return writeImage(*image.get(), filename);
+	return writePNG(*image.get(), filename);
 }
 
 ImagePtr loadImage(const io::FilePtr &file) {

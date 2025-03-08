@@ -19,8 +19,8 @@
 namespace image {
 namespace format {
 namespace JPEG {
-static bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components,
-				 uint8_t **colors) {
+
+bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 #ifdef USE_LIBJPEG
 	jpeg_decompress_struct cinfo;
 	jpeg_error_mgr jerr;

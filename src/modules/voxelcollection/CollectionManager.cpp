@@ -214,7 +214,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			}
 			thumbnailImage->setName(voxelFile.name);
 			core::ScopedPtr<io::SeekableWriteStream> imageStream(archive->writeStream(targetImageFile));
-			if (!image::writeImage(thumbnailImage, *imageStream)) {
+			if (!image::writePNG(thumbnailImage, *imageStream)) {
 				Log::warn("Failed to save thumbnail for %s to %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			} else {
 				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
@@ -244,7 +244,7 @@ bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 	_imageQueue.push(image);
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
 	core::ScopedPtr<io::SeekableWriteStream> writeStream(_archive->writeStream(targetImageFile));
-	if (!writeStream || !image::writeImage(image, *writeStream)) {
+	if (!writeStream || !image::writePNG(image, *writeStream)) {
 		Log::warn("Failed to write thumbnail to %s - no caching", targetImageFile.c_str());
 	}
 	Log::info("Created thumbnail for %s at %s", fileName.c_str(), targetImageFile.c_str());

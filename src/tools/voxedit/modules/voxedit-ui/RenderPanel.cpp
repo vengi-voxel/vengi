@@ -4,10 +4,11 @@
 
 #include "RenderPanel.h"
 #include "IMGUIApp.h"
-#include "ui/IconsLucide.h"
 #include "core/SharedPtr.h"
+#include "io/FileStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
 #include "video/Texture.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelpathtracer/PathTracer.h"
@@ -24,9 +25,13 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 	if (ImGui::BeginMenuBar()) {
 		if (_image && _image->isLoaded()) {
 			if (ImGui::Button(_("Save image"))) {
-				_app->saveDialog([=](const core::String &file,
-									 const io::FormatDescription *desc) { image::writeImage(_image, file); },
-								 {}, io::format::images(), "render.png");
+				_app->saveDialog(
+					[=](const core::String &file, const io::FormatDescription *desc) {
+						const io::FilePtr &filePtr = _app->filesystem()->open(file, io::FileMode::SysWrite);
+						io::FileStream stream(filePtr);
+						image::writePNG(_image, stream);
+					},
+					{}, io::format::images(), "render.png");
 			}
 		}
 		ImGui::Dummy(ImVec2(20, 0));
@@ -110,14 +115,14 @@ void RenderPanel::updateSettings(const char *id, const scenegraph::SceneGraph &s
 		if (ImGui::Button(_("High quality"))) {
 			params = yocto::trace_params();
 			params.sampler = yocto::trace_sampler_type::path; // path tracing
-			params.samples = 1024; // high-sample count
-			params.bounces = 64;   // high max bounces
+			params.samples = 1024;							  // high-sample count
+			params.bounces = 64;							  // high max bounces
 			++changed;
 		}
 		if (ImGui::Button(_("Geometry preview"))) {
 			params = yocto::trace_params();
 			params.sampler = yocto::trace_sampler_type::eyelight; // geometry preview
-			params.samples = 16; // low-sample count
+			params.samples = 16;								  // low-sample count
 			++changed;
 		}
 

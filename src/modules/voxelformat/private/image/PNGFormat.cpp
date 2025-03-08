@@ -257,7 +257,12 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				Log::error("Failed to load sliced rgba data %s", layerFilename.c_str());
 				return false;
 			}
-			if (!image::writeImage(image, layerFilename)) {
+			core::ScopedPtr<io::SeekableWriteStream> writeStream(archive->writeStream(layerFilename));
+			if (!writeStream) {
+				Log::error("Failed to open write stream for %s", layerFilename.c_str());
+				return false;
+			}
+			if (!image::writePNG(image, *writeStream)) {
 				Log::error("Failed to write slice image %s", layerFilename.c_str());
 				return false;
 			}
