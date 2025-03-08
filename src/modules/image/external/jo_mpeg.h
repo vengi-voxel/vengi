@@ -1,6 +1,10 @@
 /* public domain Simple, Minimalistic, No Allocations MPEG writer - http://jonolick.com
  *
+ * Converted to C by Wladislav Artsimovich https://blog.frost.kiwi/jo-mpeg-in-c
+ *
  * Latest revisions:
+ * 	1.03 (15-08-2024) Reverted color space change from 1.02, as it resulted in
+ *                    overscaled color vectors and thus oversaturated colors
  * 	1.02 (22-03-2017) Fixed AC encoding bug.
  *                    Fixed color space bug (thx r- lyeh!)
  * 	1.01 (18-10-2016) warning fixes
@@ -8,10 +12,12 @@
  *
  * Basic usage:
  *	char *frame = new char[width*height*4]; // 4 component. RGBX format, where X is unused
+ *	FILE *fp = fopen("foo.mpg", "wb");
  *	jo_write_mpeg(fp, frame, width, height, 60);  // frame 0
  *	jo_write_mpeg(fp, frame, width, height, 60);  // frame 1
  *	jo_write_mpeg(fp, frame, width, height, 60);  // frame 2
  *	...
+ *	fclose(fp);
  *
  * Notes:
  * 	Only supports 24, 25, 30, 50, or 60 fps

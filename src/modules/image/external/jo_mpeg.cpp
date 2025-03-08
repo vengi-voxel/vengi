@@ -1,6 +1,10 @@
 /* public domain Simple, Minimalistic, No Allocations MPEG writer - http://jonolick.com
  *
+ * Converted to C by Wladislav Artsimovich https://blog.frost.kiwi/jo-mpeg-in-c
+ *
  * Latest revisions:
+ * 	1.03 (15-08-2024) Reverted color space change from 1.02, as it resulted in
+ *                    overscaled color vectors and thus oversaturated colors
  * 	1.02 (22-03-2017) Fixed AC encoding bug.
  *                    Fixed color space bug (thx r- lyeh!)
  * 	1.01 (18-10-2016) warning fixes
@@ -8,10 +12,12 @@
  *
  * Basic usage:
  *	char *frame = new char[width*height*4]; // 4 component. RGBX format, where X is unused
+ *	FILE *fp = fopen("foo.mpg", "wb");
  *	jo_write_mpeg(fp, frame, width, height, 60);  // frame 0
  *	jo_write_mpeg(fp, frame, width, height, 60);  // frame 1
  *	jo_write_mpeg(fp, frame, width, height, 60);  // frame 2
  *	...
+ *	fclose(fp);
  *
  * Notes:
  * 	Only supports 24, 25, 30, 50, or 60 fps
@@ -285,9 +291,9 @@ bool jo_write_mpeg(io::WriteStream &fp, const uint8_t *rgbx, int width, int heig
 				y = y >= height ? height - 1 : y;
 				const unsigned char *c = rgbx + y * width * 4 + x * 4;
 				float r = c[0], g = c[1], b = c[2];
-				Y[i] = (0.299f * r + 0.587f * g + 0.114f * b) * (219.f / 255) + 16;
-				CBx[i] = (-0.299f * r - 0.587f * g + 0.886f * b) * (224.f / 255) + 128;
-				CRx[i] = (0.701f * r - 0.587f * g - 0.114f * b) * (224.f / 255) + 128;
+				Y[i] = (0.59f * r + 0.30f * g + 0.11f * b) * (219.f / 255) + 16;
+				CBx[i] = (-0.17f * r - 0.33f * g + 0.50f * b) * (224.f / 255) + 128;
+				CRx[i] = (0.50f * r - 0.42f * g - 0.08f * b) * (224.f / 255) + 128;
 			}
 
 			// Downsample Cb,Cr (420 format)
