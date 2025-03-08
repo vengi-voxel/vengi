@@ -173,7 +173,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, const io
 	while (loadChunk_Header(c, *stream)) {
 		if (c.type == FourCC('P', 'R', 'E', 'V')) {
 			image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename) + ".png");
-			img->load(*stream, c.length);
+			img->load(image::ImageType::PNG, *stream, c.length);
 			return img;
 		} else {
 			stream->seek(c.length, SEEK_CUR);
@@ -357,7 +357,7 @@ bool GoxFormat::loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableRead
 	wrapBool(loadChunk_ReadData(stream, (char *)png, c.length))
 	image::ImagePtr img = image::createEmptyImage("gox-voxeldata");
 	io::MemoryReadStream pngStream(png, c.length);
-	bool success = img->load(pngStream, pngStream.size());
+	bool success = img->load(image::ImageType::PNG, pngStream, pngStream.size());
 	core_free(png);
 	if (!success) {
 		Log::error("Failed to load png chunk");

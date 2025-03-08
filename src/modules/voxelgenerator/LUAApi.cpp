@@ -591,7 +591,7 @@ static int luaVoxel_load_image(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
 	io::SeekableReadWriteStream *readStream = clua_tostream(s, 2);
 	image::Image* image = new image::Image(filename);
-	if (!image->load(*readStream, readStream->size())) {
+	if (!image->load(image::ImageType::Unknown, *readStream, readStream->size())) {
 		delete image;
 		return clua_error(s, "Image %s could not get loaded from stream", filename);
 	}

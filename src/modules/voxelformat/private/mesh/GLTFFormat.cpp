@@ -1158,7 +1158,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 					}
 					image::ImagePtr tex = image::createEmptyImage(name.c_str());
 					io::MemoryReadStream pngStream(buf, (int)gltfImgBufferView.byteLength);
-					if (!tex->load(pngStream, pngStream.size())) {
+					if (!tex->load(image::ImageType::PNG, pngStream, pngStream.size())) {
 						Log::warn("Failed to load embedded image %s", name.c_str());
 					} else {
 						Log::debug("Loaded embedded image %s", name.c_str());

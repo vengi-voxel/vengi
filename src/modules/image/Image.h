@@ -62,7 +62,7 @@ public:
 		_state = io::IOSTATE_LOADED;
 		return true;
 	}
-	bool load(io::SeekableReadStream &stream, int length);
+	bool load(ImageType type, io::SeekableReadStream &stream, int length);
 
 	/**
 	 * Loads a raw RGBA buffer

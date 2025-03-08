@@ -5,6 +5,7 @@
 #include "PNGPalette.h"
 #include "core/Log.h"
 #include "image/Image.h"
+#include "image/ImageType.h"
 #include "palette/Palette.h"
 
 namespace palette {
@@ -15,7 +16,7 @@ bool PNGPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		return false;
 	}
 	image::ImagePtr img = image::createEmptyImage(filename);
-	if (!img->load(stream, (int)stream.size())) {
+	if (!img->load(image::ImageType::PNG, stream, (int)stream.size())) {
 		Log::warn("Failed to load the palette image '%s'", filename.c_str());
 		return false;
 	}

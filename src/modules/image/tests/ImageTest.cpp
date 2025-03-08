@@ -55,40 +55,70 @@ protected:
 		b, b, r, r, b, b,
 		b, b, r, r, b, b,
 	};
+
+	bool validate(const image::ImagePtr &image, const core::RGBA *data, int w, int h, int d) {
+		if (image->width() != w || image->height() != h || image->components() != d) {
+			return false;
+		}
+		for (int x = 0; x < w; ++x) {
+			for (int y = 0; y < h; ++y) {
+				const core::RGBA c = image->colorAt(x, y);
+				if (c != data[y * w + x]) {
+					Log::error("Color mismatch at %i, %i: %s vs %s", x, y, core::Color::print(c).c_str(), core::Color::print(data[y * w + x]).c_str());
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 };
 
 TEST_F(ImageTest, testWriteJPEG) {
 	io::BufferedReadWriteStream stream1;
 	ASSERT_TRUE(image::Image::writeJPEG(stream1, (const uint8_t*)img1, 6, 6, 4));
 	stream1.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream1, (int)stream1.size()));
+	image::ImagePtr image1 = image::createEmptyImage("image1");
+	ASSERT_TRUE(image1->load(ImageType::JPEG, stream1, (int)stream1.size()));
+	// ASSERT_TRUE(validate(image1, img1, 6, 6, 4));
 
 	io::BufferedReadWriteStream stream2;
 	ASSERT_TRUE(image::Image::writeJPEG(stream2, (const uint8_t*)img2, 6, 6, 4));
 	stream2.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream2, (int)stream1.size()));
+	image::ImagePtr image2 = image::createEmptyImage("image2");
+	ASSERT_TRUE(image2->load(ImageType::JPEG, stream2, (int)stream2.size()));
+	// ASSERT_TRUE(validate(image2, img2, 6, 6, 4));
 
 	io::BufferedReadWriteStream stream3;
 	ASSERT_TRUE(image::Image::writeJPEG(stream3, (const uint8_t*)img3, 6, 6, 4));
 	stream3.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream3, (int)stream1.size()));
+	// auto detect the image type here
+	image::ImagePtr image3 = image::createEmptyImage("image3");
+	ASSERT_TRUE(image3->load(ImageType::Unknown, stream3, (int)stream3.size()));
+	// ASSERT_TRUE(validate(image3, img3, 6, 6, 4));
 }
 
 TEST_F(ImageTest, testWritePng) {
 	io::BufferedReadWriteStream stream1;
 	ASSERT_TRUE(image::Image::writePng(stream1, (const uint8_t*)img1, 6, 6, 4));
 	stream1.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream1, (int)stream1.size()));
+	image::ImagePtr image1 = image::createEmptyImage("image1");
+	ASSERT_TRUE(image1->load(ImageType::PNG, stream1, (int)stream1.size()));
+	ASSERT_TRUE(validate(image1, img1, 6, 6, 4));
 
 	io::BufferedReadWriteStream stream2;
 	ASSERT_TRUE(image::Image::writePng(stream2, (const uint8_t*)img2, 6, 6, 4));
 	stream2.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream2, (int)stream1.size()));
+	image::ImagePtr image2 = image::createEmptyImage("image2");
+	ASSERT_TRUE(image2->load(ImageType::PNG, stream2, (int)stream2.size()));
+	ASSERT_TRUE(validate(image2, img2, 6, 6, 4));
 
 	io::BufferedReadWriteStream stream3;
 	ASSERT_TRUE(image::Image::writePng(stream3, (const uint8_t*)img3, 6, 6, 4));
 	stream3.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream3, (int)stream1.size()));
+	// auto detect the image type here
+	image::ImagePtr image3 = image::createEmptyImage("image3");
+	ASSERT_TRUE(image3->load(ImageType::Unknown, stream3, (int)stream3.size()));
+	ASSERT_TRUE(validate(image3, img3, 6, 6, 4));
 }
 
 TEST_F(ImageTest, testGet) {

@@ -826,7 +826,7 @@ image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, const 
 		}
 		if (chunk.chunkId == priv::CHUNK_ID_PREVIEW) {
 			image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename) + ".png");
-			img->load(*stream, chunk.chunkSize);
+			img->load(image::ImageType::PNG, *stream, chunk.chunkSize);
 			return img;
 		}
 		if (!loadSkipChunk(header, chunk, *stream)) {

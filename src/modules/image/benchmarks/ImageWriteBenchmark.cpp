@@ -37,6 +37,7 @@ public:
 BENCHMARK_DEFINE_F(ImageWriteBenchmark, WriteJPG)(benchmark::State &state) {
 	io::BufferedReadWriteStream stream(1024 * 1024 * 4);
 	for (auto _ : state) {
+		_imagePNG->writeJPEG(stream);
 		stream.seek(0);
 	}
 }
@@ -49,7 +50,6 @@ BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadJPG)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadPNG)(benchmark::State &state) {
 	for (auto _ : state) {
-		_filePNG->seek(0, SEEK_SET);
 		image::loadImage(_filePNG);
 	}
 }
