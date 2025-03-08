@@ -262,7 +262,7 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				Log::error("Failed to open write stream for %s", layerFilename.c_str());
 				return false;
 			}
-			if (!image::writePNG(image, *writeStream)) {
+			if (!image.writePNG(*writeStream)) {
 				Log::error("Failed to write slice image %s", layerFilename.c_str());
 				return false;
 			}

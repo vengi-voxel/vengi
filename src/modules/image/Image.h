@@ -154,7 +154,6 @@ ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &strea
  */
 ImagePtr loadImage(const core::String &filename);
 
-bool writePNG(const image::Image &image, io::SeekableWriteStream &stream);
 bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream);
 core::String print(const image::ImagePtr &image, bool limited = true);
 

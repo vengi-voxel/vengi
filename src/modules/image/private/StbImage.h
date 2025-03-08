@@ -4,10 +4,14 @@
 
 #pragma once
 
+#include "core/Log.h"
 #include "io/Stream.h"
 
 #define STBI_NO_STDIO
 #include <stb_image.h>
+
+#define STBI_WRITE_NO_STDIO
+#include <stb_image_write.h>
 
 namespace image {
 namespace format {
@@ -33,8 +37,7 @@ static int stream_eos(void *user) {
 	return stream->eos() ? 1 : 0;
 }
 
-bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components,
-				 uint8_t **colors) {
+bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 	stbi_io_callbacks clbk;
 	clbk.read = stream_read;
 	clbk.skip = stream_skip;
@@ -43,6 +46,24 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 	// we are always using rgba
 	components = 4;
 	return true;
+}
+
+static void stream_write_func(void *context, void *data, int size) {
+	io::SeekableWriteStream *stream = (io::SeekableWriteStream *)context;
+	int64_t written = stream->write(data, size);
+	if (written != size) {
+		Log::error("Failed to write to image stream: %i vs %i", (int)written, size);
+	}
+}
+
+bool writePNG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components) {
+	return stbi_write_png_to_func(stream_write_func, &stream, width, height, components, buffer, width * components) !=
+		   0;
+}
+
+bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components,
+			   int quality = 100) {
+	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, components, buffer, quality) != 0;
 }
 
 } // namespace StbImage

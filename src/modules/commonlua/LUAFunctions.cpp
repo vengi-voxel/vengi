@@ -1234,7 +1234,7 @@ static int clua_image_save(lua_State *s) {
 		return clua_error(s, "Failed to open file for saving: %s", filename);
 	}
 	io::FileStream stream(file);
-	if (!image::writePNG(*image, stream)) {
+	if (!image->writePNG(stream)) {
 		return clua_error(s, "Failed to save image to %s", filename);
 	}
 	return 0;

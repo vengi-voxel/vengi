@@ -25,9 +25,6 @@
 #include <glm/common.hpp>
 #include <glm/ext/scalar_common.hpp>
 
-#define STBI_WRITE_NO_STDIO
-#include <stb_image_write.h>
-
 #include <stb_image_resize2.h>
 
 namespace image {
@@ -98,17 +95,11 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	return colorAt(pc.x, pc.y);
 }
 
-bool writePNG(const image::Image &image, io::SeekableWriteStream &stream) {
-	if (!image.isLoaded()) {
+bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
+	if (!image) {
 		return false;
 	}
-	return image.writePNG(stream);
-}
-
-bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
-	if (!image)
-		return false;
-	return writePNG(*image.get(), stream);
+	return image->writePNG(stream);
 }
 
 /**
@@ -173,8 +164,11 @@ static ImageType getImageType(const core::String &filename) {
 	return ImageType::Unknown;
 }
 
-bool writePNG(const image::Image &image, const core::String &filename) {
-	if (!image.isLoaded()) {
+bool writePNG(const image::ImagePtr &image, const core::String &filename) {
+	if (!image) {
+		return false;
+	}
+	if (!image->isLoaded()) {
 		return false;
 	}
 	if (filename.empty()) {
@@ -187,19 +181,12 @@ bool writePNG(const image::Image &image, const core::String &filename) {
 	io::FileStream stream(file);
 	ImageType type = getImageType(filename);
 	if (type == ImageType::JPEG) {
-		return image.writeJPEG(stream);
+		return image->writeJPEG(stream);
 	} else if (type == ImageType::PNG) {
-		return image.writePNG(stream);
+		return image->writePNG(stream);
 	}
 	Log::warn("Failed to write image %s: unsupported format", filename.c_str());
 	return false;
-}
-
-bool writePNG(const image::ImagePtr &image, const core::String &filename) {
-	if (!image) {
-		return false;
-	}
-	return writePNG(*image.get(), filename);
 }
 
 ImagePtr loadImage(const io::FilePtr &file) {
@@ -466,14 +453,6 @@ bool Image::resize(int w, int h) {
 	return true;
 }
 
-static void stream_write_func(void *context, void *data, int size) {
-	io::SeekableWriteStream *stream = (io::SeekableWriteStream *)context;
-	int64_t written = stream->write(data, size);
-	if (written != size) {
-		Log::error("Failed to write to image stream: %i vs %i", (int)written, size);
-	}
-}
-
 bool Image::writePNG(io::SeekableWriteStream &stream) const {
 	return writePNG(stream, _colors, _width, _height, _colorComponents);
 }
@@ -484,64 +463,11 @@ bool Image::writeJPEG(io::SeekableWriteStream &stream, int quality) const {
 
 bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components,
 					  int quality) {
-#ifdef USE_LIBJPEG
-	struct jpeg_compress_struct cinfo;
-	struct jpeg_error_mgr jerr;
-	unsigned char *outbuffer = nullptr;
-	unsigned long outsize = 0;
-
-	cinfo.err = jpeg_std_error(&jerr);
-	jpeg_create_compress(&cinfo);
-
-	jpeg_mem_dest(&cinfo, &outbuffer, &outsize);
-
-	cinfo.image_width = width;
-	cinfo.image_height = height;
-	cinfo.input_components = components;
-	if (components == 1) {
-		cinfo.in_color_space = JCS_GRAYSCALE;
-	} else if (components == 3) {
-		cinfo.in_color_space = JCS_RGB;
-	} else {
-		cinfo.in_color_space = JCS_EXT_RGBA;
-	}
-
-	jpeg_set_defaults(&cinfo);
-	jpeg_set_quality(&cinfo, quality, TRUE);
-
-	jpeg_start_compress(&cinfo, TRUE);
-
-	JSAMPROW row_pointer[1];
-	while (cinfo.next_scanline < cinfo.image_height) {
-		row_pointer[0] = (JSAMPROW)&buffer[cinfo.next_scanline * width * components];
-		if (jpeg_write_scanlines(&cinfo, row_pointer, 1) != 1) {
-			Log::error("Failed to write scanline %d", cinfo.next_scanline);
-			jpeg_destroy_compress(&cinfo);
-			free(outbuffer);
-			return false;
-		}
-	}
-
-	jpeg_finish_compress(&cinfo);
-	jpeg_destroy_compress(&cinfo);
-
-	if (stream.write(outbuffer, outsize) == -1) {
-		free(outbuffer);
-		Log::error("Failed to write JPEG image to stream");
-		return false;
-	}
-	free(outbuffer);
-
-	return true;
-#else
-	// stbi fallback implementation
-	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, components, buffer, quality) != 0;
-#endif
+	return image::format::JPEG::write(stream, buffer, width, height, components, quality);
 }
 
 bool Image::writePNG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components) {
-	return stbi_write_png_to_func(stream_write_func, &stream, width, height, components, (const void *)buffer,
-								  width * components) != 0;
+	return image::format::PNG::write(stream, buffer, width, height, components);
 }
 
 core::String Image::pngBase64() const {

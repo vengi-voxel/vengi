@@ -17,6 +17,10 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 	return StbImage::load(stream, length, width, height, components, colors);
 }
 
+bool write(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components) {
+	return StbImage::writePNG(stream, buffer, width, height, components);
+}
+
 } // namespace PNG
 } // namespace format
 } // namespace image
