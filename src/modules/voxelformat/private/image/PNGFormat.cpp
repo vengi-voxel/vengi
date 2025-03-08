@@ -105,7 +105,7 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 		Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
 		return false;
 	}
-	const bool coloredHeightmap = image->depth() == 4 && !image->isGrayScale();
+	const bool coloredHeightmap = image->components() == 4 && !image->isGrayScale();
 	const int maxHeight = voxelutil::importHeightMaxHeight(image, coloredHeightmap);
 	if (maxHeight <= 0) {
 		Log::error("There is no height in either the red channel or the alpha channel");

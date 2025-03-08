@@ -457,8 +457,8 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 }
 
 bool Palette::load(const image::ImagePtr &img) {
-	if (img->depth() != 4) {
-		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->depth());
+	if (img->components() != 4) {
+		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->components());
 		return false;
 	}
 	for (auto &m : _materials) {

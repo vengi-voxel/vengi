@@ -131,7 +131,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		io::FileStream outStream(outfile);
 		const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);
 		if (image) {
-			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
+			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->components())) {
 				Log::error("Failed to write image %s", filepath.c_str());
 				sceneGraphRenderer.shutdown();
 				renderContext.shutdown();

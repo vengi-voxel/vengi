@@ -249,8 +249,8 @@ bool NormalPalette::load(const char *paletteName) {
 }
 
 bool NormalPalette::load(const image::ImagePtr &img) {
-	if (img->depth() != 4) {
-		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->depth());
+	if (img->components() != 4) {
+		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->components());
 		return false;
 	}
 	if (img->width() * img->height() > NormalPaletteMaxNormals) {

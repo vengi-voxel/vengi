@@ -228,7 +228,7 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 		Log::error("No color image given");
 		return nullptr;
 	}
-	if (image->depth() != 4) {
+	if (image->components() != 4) {
 		Log::error("Expected to get an rgba image");
 		return nullptr;
 	}

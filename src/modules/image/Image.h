@@ -37,8 +37,9 @@ private:
 	core::String _name;
 	int _width = -1;
 	int _height = -1;
-	int _depthOfColor = -1;
-	uint8_t* _data = nullptr;
+	int _colorComponents = -1;
+	// the color data - either RGBA or RGB - depends on the color components
+	uint8_t* _colors = nullptr;
 
 public:
 	Image(const core::String& name);
@@ -46,7 +47,7 @@ public:
 
 	template<typename FUNC>
 	bool load(int w, int h, FUNC &&func) {
-		_depthOfColor = 4;
+		_colorComponents = 4;
 		if (!resize(w, h)) {
 			_state = io::IOSTATE_FAILED;
 			return false;
@@ -84,11 +85,11 @@ public:
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	bool writePng(io::SeekableWriteStream &stream) const;
-	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth);
+	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int components);
 	/**
 	 * @param[in] quality Ranges from 1 to 100 where higher is better
 	 */
-	static bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth, int quality = 100);
+	static bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int components, int quality = 100);
 	bool writeJPEG(io::SeekableWriteStream &stream, int quality = 100) const;
 	core::String pngBase64() const;
 	core::RGBA colorAt(int x, int y) const;
@@ -110,7 +111,7 @@ public:
 	}
 
 	inline const uint8_t* data() const {
-		return _data;
+		return _colors;
 	}
 
 	inline glm::vec2 size() const {
@@ -125,8 +126,8 @@ public:
 		return _height;
 	}
 
-	inline int depth() const {
-		return _depthOfColor;
+	inline int components() const {
+		return _colorComponents;
 	}
 
 	inline float aspect() const {

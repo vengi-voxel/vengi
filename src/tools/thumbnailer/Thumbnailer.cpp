@@ -207,7 +207,7 @@ bool Thumbnailer::saveImage(const image::ImagePtr &image) {
 			Log::error("Failed to open %s for writing", _outfile.c_str());
 			return false;
 		}
-		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
+		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->components())) {
 			Log::error("Failed to write image %s", _outfile.c_str());
 		} else {
 			Log::info("Write image %s", _outfile.c_str());

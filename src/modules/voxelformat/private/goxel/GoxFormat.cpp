@@ -216,7 +216,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		}
 		Log::debug("LAYR references BL16 image with index %i", index);
 		const uint8_t *rgba = img->data();
-		int bpp = img->depth();
+		int bpp = img->components();
 		int w = img->width();
 		int h = img->height();
 		core_assert(w == 64 && h == 64 && bpp == 4);
@@ -363,7 +363,7 @@ bool GoxFormat::loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableRead
 		Log::error("Failed to load png chunk");
 		return false;
 	}
-	if (img->width() != 64 || img->height() != 64 || img->depth() != 4) {
+	if (img->width() != 64 || img->height() != 64 || img->components() != 4) {
 		Log::error("Invalid image dimensions: %i:%i", img->width(), img->height());
 		return false;
 	}

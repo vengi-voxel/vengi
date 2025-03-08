@@ -20,7 +20,7 @@ Texture::Texture(const image::ImagePtr &image) : _name(image->name()) {
 	_config.type(TextureType::Texture2D);
 	_width = image->width();
 	_height = image->height();
-	if (image->depth() == 4) {
+	if (image->components() == 4) {
 		_config.format(TextureFormat::RGBA);
 	} else {
 		_config.format(TextureFormat::RGB);
@@ -54,7 +54,7 @@ void Texture::shutdown() {
 void Texture::upload(const image::ImagePtr &image, int index) {
 	_width = image->width();
 	_height = image->height();
-	if (image->depth() == 4) {
+	if (image->components() == 4) {
 		_config.format(TextureFormat::RGBA);
 	} else {
 		_config.format(TextureFormat::RGB);
@@ -141,7 +141,7 @@ void Texture::validate() {
 		_state = io::IOSTATE_FAILED;
 		return;
 	}
-	if (_image->depth() == 4) {
+	if (_image->components() == 4) {
 		_config.format(TextureFormat::RGBA);
 	} else {
 		_config.format(TextureFormat::RGB);
@@ -186,7 +186,7 @@ TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	}
 	TextureConfig cfg;
 	cfg.type(TextureType::Texture2D);
-	if (image->depth() == 4) {
+	if (image->components() == 4) {
 		cfg.format(TextureFormat::RGBA);
 	} else {
 		cfg.format(TextureFormat::RGB);
