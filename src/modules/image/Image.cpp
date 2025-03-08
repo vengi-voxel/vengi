@@ -41,7 +41,7 @@ Image::Image(const core::String &name) : io::IOResource(), _name(name) {
 
 Image::~Image() {
 	if (_colors) {
-		stbi_image_free(_colors);
+		core_free(_colors);
 	}
 }
 
@@ -230,7 +230,7 @@ bool Image::load(io::SeekableReadStream &stream, int length) {
 		return false;
 	}
 	if (_colors) {
-		stbi_image_free(_colors);
+		core_free(_colors);
 	}
 	stbi_io_callbacks clbk;
 	clbk.read = stream_read;
@@ -276,7 +276,7 @@ bool Image::loadRGBA(io::ReadStream &stream, int w, int h) {
 		return false;
 	}
 	if (_colors) {
-		stbi_image_free(_colors);
+		core_free(_colors);
 	}
 	_colors = (uint8_t *)core_malloc(length);
 	_width = w;
@@ -411,7 +411,7 @@ bool Image::resize(int w, int h) {
 			core_free(res);
 			return false;
 		}
-		stbi_image_free(_colors);
+		core_free(_colors);
 	}
 	_colors = res;
 	_width = w;
