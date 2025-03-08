@@ -35,7 +35,7 @@ protected:
 		const io::FilePtr &file = io::filesystem()->open("testseamlessNoise.png", io::FileMode::SysWrite);
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
-		EXPECT_TRUE(image::Image::writePng(stream, buffer, width, height, components));
+		EXPECT_TRUE(image::Image::writePNG(stream, buffer, width, height, components));
 		noise.shutdown();
 	}
 };

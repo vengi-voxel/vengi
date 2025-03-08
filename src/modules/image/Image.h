@@ -84,8 +84,8 @@ public:
 	bool resize(int w, int h);
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
-	bool writePng(io::SeekableWriteStream &stream) const;
-	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int components);
+	bool writePNG(io::SeekableWriteStream &stream) const;
+	static bool writePNG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int components);
 	/**
 	 * @param[in] quality Ranges from 1 to 100 where higher is better
 	 */

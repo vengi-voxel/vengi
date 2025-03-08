@@ -10,8 +10,10 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/BufferView.h"
-#include "core/collection/DynamicArray.h"
 #include "image/ImageType.h"
+#include "image/private/JPEG.h"
+#include "image/private/PNG.h"
+#include "image/private/StbImage.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
@@ -22,13 +24,6 @@
 
 #include <glm/common.hpp>
 #include <glm/ext/scalar_common.hpp>
-
-#ifdef USE_LIBJPEG
-#include <jpeglib.h>
-#endif
-
-#define STBI_NO_STDIO
-#include <stb_image.h>
 
 #define STBI_WRITE_NO_STDIO
 #include <stb_image_write.h>
@@ -107,7 +102,7 @@ bool writeImage(const image::Image &image, io::SeekableWriteStream &stream) {
 	if (!image.isLoaded()) {
 		return false;
 	}
-	return image.writePng(stream);
+	return image.writePNG(stream);
 }
 
 bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
@@ -116,35 +111,64 @@ bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
 	return writeImage(*image.get(), stream);
 }
 
+/**
+ * @brief Detect image type by magic bytes
+ */
 static ImageType getImageType(io::SeekableReadStream &stream) {
 	const int64_t pos = stream.pos();
-	uint8_t header[8];
+	uint8_t header[4];
 	if (stream.read(header, sizeof(header)) == -1) {
 		stream.seek(pos, SEEK_SET);
-		return ImageType::Max;
+		return ImageType::Unknown;
 	}
 	if (stream.seek(pos, SEEK_SET) == -1) {
-		return ImageType::Max;
+		return ImageType::Unknown;
 	}
-	if (header[0] == 0xFF && header[1] == 0xD8) {
+	// 137,80,78,71,13,10,26,10
+	if (header[0] == 0x89 && header[1] == 'P' && header[2] == 'N' && header[3] == 'G') {
+		return ImageType::PNG;
+	}
+	if (header[0] == 0xFF && header[1] == 0xD8 /*&& header[2] == 0xFF && (header[3] == 0xE0 || header[3] == 0xE1)*/) {
+		// 3rd and 4th byte are not always reliable and can be application specific
+		// JFIF = 0xE0 and EXIF = 0xE1
 		return ImageType::JPEG;
 	}
-	if (header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) {
-		return ImageType::PNG;
+	if (header[0] == 'G' && header[1] == 'I' && header[2] == 'F' && header[3] == '8') {
+		return ImageType::GIF;
 	}
 	return ImageType::Unknown;
 }
 
+/**
+ * @brief Detect image type by file extension
+ */
 static ImageType getImageType(const core::String &filename) {
+	const struct Mapping {
+		const char *ext;
+		ImageType type;
+	} mappings[] = {
+		// clang-format off
+		{"png", ImageType::PNG},
+		{"jpg", ImageType::JPEG},
+		{"jpeg", ImageType::JPEG},
+		{"tga", ImageType::TGA},
+		{"dds", ImageType::DDS},
+		{"pkm", ImageType::PKM},
+		{"pvr", ImageType::PVR},
+		{"bmp", ImageType::BMP},
+		{"psd", ImageType::PSD},
+		{"gif", ImageType::GIF},
+		{"hdr", ImageType::HDR},
+		{"pic", ImageType::PICT},
+		{"pnm", ImageType::PNM}
+		// clang-format on
+	};
+	static_assert(lengthof(mappings) == (int)ImageType::Max, "ImageType mapping mismatch");
 	const core::String ext = core::string::extractExtension(filename).toLower();
-	if (ext == "jpg" || ext == "jpeg") {
-		return ImageType::JPEG;
-	}
-	if (ext == "png") {
-		return ImageType::PNG;
-	}
-	if (ext == "gif") {
-		return ImageType::GIF;
+	for (const Mapping &m : mappings) {
+		if (ext == m.ext) {
+			return m.type;
+		}
 	}
 	return ImageType::Unknown;
 }
@@ -165,7 +189,7 @@ bool writeImage(const image::Image &image, const core::String &filename) {
 	if (type == ImageType::JPEG) {
 		return image.writeJPEG(stream);
 	} else if (type == ImageType::PNG) {
-		return image.writePng(stream);
+		return image.writePNG(stream);
 	}
 	Log::warn("Failed to write image %s: unsupported format", filename.c_str());
 	return false;
@@ -234,26 +258,6 @@ ImagePtr loadImage(const core::String &filename) {
 	return loadImage(file);
 }
 
-static int stream_read(void *user, char *data, int size) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
-	const int readSize = stream->read(data, size);
-	// prevent endless loops on errors
-	if (readSize < 0) {
-		return 0;
-	}
-	return readSize;
-}
-
-static void stream_skip(void *user, int n) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
-	stream->skip(n);
-}
-
-static int stream_eos(void *user) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
-	return stream->eos() ? 1 : 0;
-}
-
 bool Image::load(ImageType type, io::SeekableReadStream &stream, int length) {
 	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
@@ -269,81 +273,19 @@ bool Image::load(ImageType type, io::SeekableReadStream &stream, int length) {
 	if (type == ImageType::Unknown) {
 		type = getImageType(stream);
 	}
-#if 0
-	if (type == ImageType::Unknown) {
+	bool success = false;
+	if (type == ImageType::JPEG) {
+		success = format::JPEG::load(stream, length, _width, _height, _colorComponents, &_colors);
+	} else if (type == ImageType::PNG) {
+		success = format::PNG::load(stream, length, _width, _height, _colorComponents, &_colors);
+	} else {
+		success = format::StbImage::load(stream, length, _width, _height, _colorComponents, &_colors);
+	}
+	if (!success) {
 		_state = io::IOSTATE_FAILED;
-		Log::debug("Failed to load image %s: unknown format", _name.c_str());
+		Log::debug("Failed to load image %s: unsupported format: %s", _name.c_str(), stbi_failure_reason());
 		return false;
 	}
-#endif
-#if 0 // don't use libjpeg - stb_image is faster
-#ifdef USE_LIBJPEG
-	if (type == ImageType::JPEG) {
-		jpeg_decompress_struct cinfo;
-		jpeg_error_mgr jerr;
-
-		cinfo.err = jpeg_std_error(&jerr);
-		jpeg_create_decompress(&cinfo);
-
-		io::BufferedReadWriteStream buffer(stream, length);
-		jpeg_mem_src(&cinfo, buffer.getBuffer(), length);
-		if (jpeg_read_header(&cinfo, TRUE) != JPEG_HEADER_OK) {
-			jpeg_destroy_decompress(&cinfo);
-			_state = io::IOSTATE_FAILED;
-			Log::debug("Failed to load image %s: invalid JPEG header", _name.c_str());
-			return false;
-		}
-
-		if (!jpeg_start_decompress(&cinfo)) {
-			jpeg_destroy_decompress(&cinfo);
-			_state = io::IOSTATE_FAILED;
-			Log::debug("Failed to load image %s: decompression start failed", _name.c_str());
-			return false;
-		}
-
-		_width = cinfo.output_width;
-		_height = cinfo.output_height;
-		_colorComponents = 4; // Always RGBA
-
-		_colors = (unsigned char *)core_malloc(_width * _height * _colorComponents);
-		core::DynamicArray<unsigned char> row_buffer(_width * cinfo.output_components);
-
-		for (int y = 0; y < _height; ++y) {
-			JSAMPROW row_pointer = &row_buffer[0];
-			if (jpeg_read_scanlines(&cinfo, &row_pointer, 1) != 1) {
-				jpeg_destroy_decompress(&cinfo);
-				core_free(_colors);
-				_state = io::IOSTATE_FAILED;
-				Log::debug("Failed to load image %s: scanline read error", _name.c_str());
-				return false;
-			}
-			unsigned char *dst = _colors + y * _width * _colorComponents;
-			for (int x = 0; x < _width; ++x) {
-				dst[x * _colorComponents + 0] = row_buffer[x * cinfo.output_components + 0];
-				dst[x * _colorComponents + 1] =
-					row_buffer[x * cinfo.output_components + (cinfo.output_components > 1 ? 1 : 0)];
-				dst[x * _colorComponents + 2] =
-					row_buffer[x * cinfo.output_components + (cinfo.output_components > 2 ? 2 : 0)];
-				dst[x * _colorComponents + 3] = 255; // Default alpha to 255
-			}
-		}
-
-		jpeg_finish_decompress(&cinfo);
-		jpeg_destroy_decompress(&cinfo);
-
-		_state = io::IOSTATE_LOADED;
-		Log::debug("Loaded JPEG image %s", _name.c_str());
-		return true;
-	}
-#endif
-#endif
-	stbi_io_callbacks clbk;
-	clbk.read = stream_read;
-	clbk.skip = stream_skip;
-	clbk.eof = stream_eos;
-	_colors = stbi_load_from_callbacks(&clbk, &stream, &_width, &_height, &_colorComponents, STBI_rgb_alpha);
-	// we are always using rgba
-	_colorComponents = 4;
 	if (_colors == nullptr) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: unsupported format: %s", _name.c_str(), stbi_failure_reason());
@@ -532,8 +474,8 @@ static void stream_write_func(void *context, void *data, int size) {
 	}
 }
 
-bool Image::writePng(io::SeekableWriteStream &stream) const {
-	return writePng(stream, _colors, _width, _height, _colorComponents);
+bool Image::writePNG(io::SeekableWriteStream &stream) const {
+	return writePNG(stream, _colors, _width, _height, _colorComponents);
 }
 
 bool Image::writeJPEG(io::SeekableWriteStream &stream, int quality) const {
@@ -597,14 +539,14 @@ bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, in
 #endif
 }
 
-bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components) {
+bool Image::writePNG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components) {
 	return stbi_write_png_to_func(stream_write_func, &stream, width, height, components, (const void *)buffer,
 								  width * components) != 0;
 }
 
 core::String Image::pngBase64() const {
 	io::BufferedReadWriteStream s;
-	if (!writePng(s, _colors, _width, _height, _colorComponents)) {
+	if (!writePNG(s, _colors, _width, _height, _colorComponents)) {
 		return "";
 	}
 	s.seek(0);

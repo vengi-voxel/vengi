@@ -573,7 +573,7 @@ bool Viewport::saveImage(const char *filename) {
 	if (!stream.valid()) {
 		return false;
 	}
-	return image->writePng(stream);
+	return image->writePNG(stream);
 }
 
 void Viewport::resetCamera() {

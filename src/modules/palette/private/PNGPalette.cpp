@@ -31,7 +31,7 @@ bool PNGPalette::save(const palette::Palette &palette, const core::String &filen
 	}
 	// must be palette::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)colors, PaletteMaxColors, 1);
-	if (!img.writePng(stream)) {
+	if (!img.writePNG(stream)) {
 		Log::warn("Failed to write the palette file '%s'", filename.c_str());
 		return false;
 	}

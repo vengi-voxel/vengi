@@ -99,21 +99,21 @@ TEST_F(ImageTest, testWriteJPEG) {
 
 TEST_F(ImageTest, testWritePng) {
 	io::BufferedReadWriteStream stream1;
-	ASSERT_TRUE(image::Image::writePng(stream1, (const uint8_t*)img1, 6, 6, 4));
+	ASSERT_TRUE(image::Image::writePNG(stream1, (const uint8_t*)img1, 6, 6, 4));
 	stream1.seek(0);
 	image::ImagePtr image1 = image::createEmptyImage("image1");
 	ASSERT_TRUE(image1->load(ImageType::PNG, stream1, (int)stream1.size()));
 	ASSERT_TRUE(validate(image1, img1, 6, 6, 4));
 
 	io::BufferedReadWriteStream stream2;
-	ASSERT_TRUE(image::Image::writePng(stream2, (const uint8_t*)img2, 6, 6, 4));
+	ASSERT_TRUE(image::Image::writePNG(stream2, (const uint8_t*)img2, 6, 6, 4));
 	stream2.seek(0);
 	image::ImagePtr image2 = image::createEmptyImage("image2");
 	ASSERT_TRUE(image2->load(ImageType::PNG, stream2, (int)stream2.size()));
 	ASSERT_TRUE(validate(image2, img2, 6, 6, 4));
 
 	io::BufferedReadWriteStream stream3;
-	ASSERT_TRUE(image::Image::writePng(stream3, (const uint8_t*)img3, 6, 6, 4));
+	ASSERT_TRUE(image::Image::writePNG(stream3, (const uint8_t*)img3, 6, 6, 4));
 	stream3.seek(0);
 	// auto detect the image type here
 	image::ImagePtr image3 = image::createEmptyImage("image3");

@@ -717,7 +717,7 @@ bool GoxFormat::saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::See
 	}
 	const int64_t pos = stream.pos();
 	GoxScopedChunkWriter scoped(stream, FourCC('P', 'R', 'E', 'V'));
-	if (!image->writePng(stream)) {
+	if (!image->writePNG(stream)) {
 		Log::warn("Failed to write preview image");
 		return stream.seek(pos) == pos;
 	}
@@ -856,7 +856,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 						return false;
 					}
 					core_free(data);
-					if (!image2.writePng(stream)) {
+					if (!image2.writePNG(stream)) {
 						Log::error("Could not write png into gox stream");
 						delete mirrored;
 						return false;

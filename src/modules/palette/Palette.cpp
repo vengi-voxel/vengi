@@ -999,7 +999,7 @@ bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char 
 	for (int i = 0; i < PaletteMaxColors; i++) {
 		colors[i] = palette.color(i);
 	}
-	return paletteImg->writePng(stream, (const uint8_t *)colors, (int)palette.size(), 1, 4);
+	return paletteImg->writePNG(stream, (const uint8_t *)colors, (int)palette.size(), 1, 4);
 }
 
 } // namespace palette

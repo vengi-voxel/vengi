@@ -996,7 +996,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	const image::ImagePtr &image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbnailCtx);
 	if (image) {
 		WriteChunkStream ws(priv::CHUNK_ID_PREVIEW, *stream);
-		image->writePng(ws);
+		image->writePNG(ws);
 	}
 
 	{
