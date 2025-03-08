@@ -151,6 +151,7 @@ bool writeImage(const image::ImagePtr &image, const core::String &filename) {
 
 ImagePtr loadImage(const io::FilePtr &file) {
 	const ImagePtr &i = createEmptyImage(file->name());
+	file->seek(0, SEEK_SET);
 	io::FileStream stream(file);
 	if (!i->load(stream, stream.size())) {
 		Log::warn("Failed to load image %s", i->name().c_str());
@@ -203,7 +204,7 @@ ImagePtr loadImage(const core::String &filename) {
 }
 
 static int stream_read(void *user, char *data, int size) {
-	io::ReadStream *stream = (io::ReadStream *)user;
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
 	const int readSize = stream->read(data, size);
 	// prevent endless loops on errors
 	if (readSize < 0) {
@@ -213,19 +214,19 @@ static int stream_read(void *user, char *data, int size) {
 }
 
 static void stream_skip(void *user, int n) {
-	io::ReadStream *stream = (io::ReadStream *)user;
-	stream->skipDelta(n);
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	stream->skip(n);
 }
 
 static int stream_eos(void *user) {
-	io::ReadStream *stream = (io::ReadStream *)user;
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
 	return stream->eos() ? 1 : 0;
 }
 
 bool Image::load(io::SeekableReadStream &stream, int length) {
 	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
-		Log::debug("Failed to load image %s: buffer empty", _name.c_str());
+		Log::debug("Failed to load image %s: buffer stream", _name.c_str());
 		return false;
 	}
 	if (_colors) {
@@ -240,7 +241,7 @@ bool Image::load(io::SeekableReadStream &stream, int length) {
 	_colorComponents = 4;
 	if (_colors == nullptr) {
 		_state = io::IOSTATE_FAILED;
-		Log::debug("Failed to load image %s: unsupported format", _name.c_str());
+		Log::debug("Failed to load image %s: unsupported format: %s", _name.c_str(), stbi_failure_reason());
 		return false;
 	}
 	Log::debug("Loaded image %s", _name.c_str());

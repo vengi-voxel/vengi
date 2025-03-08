@@ -12,7 +12,18 @@
 #define SDL_RWsize SDL_GetIOSize
 #define SDL_RWtell SDL_TellIO
 #define SDL_RWseek(ctx, pos, whence) SDL_SeekIO(ctx, pos, (SDL_IOWhence)whence)
-#define SDL_RWread(ctx, ptr, size, maxnum) SDL_ReadIO(ctx, ptr, maxnum)
+
+static size_t custom_read(void *ptr, size_t size, size_t nitems, SDL_IOStream *stream) {
+	if (size > 0 && nitems > 0) {
+		const size_t val = SDL_ReadIO(stream, ptr, size * nitems) / size;
+		if (val == 0 && SDL_GetIOStatus(stream) != SDL_IO_STATUS_EOF) {
+			Log::error("IOStream read error: %s", SDL_GetError());
+		}
+		return val;
+	}
+	return 0;
+}
+#define SDL_RWread(ctx, ptr, size, maxnum) custom_read(ptr, size, maxnum, ctx)
 #define SDL_RWwrite(ctx, ptr, size, num) SDL_WriteIO(ctx, ptr, num)
 #else
 #include <SDL_rwops.h>
@@ -25,6 +36,10 @@ FileStream::FileStream(const FilePtr &file) : _file(file) {
 		_rwops = _file->_file;
 		if (_rwops) {
 			_size = SDL_RWsize(_rwops);
+			_pos = SDL_RWtell(_rwops);
+			if (_pos == -1) {
+				_pos = 0;
+			}
 		}
 	}
 }
@@ -68,6 +83,7 @@ int FileStream::write(const void *buf, size_t size) {
 
 int FileStream::read(void *dataPtr, size_t dataSize) {
 	if (_rwops == nullptr) {
+		Log::debug("No file handle");
 		return -1;
 	}
 	uint8_t *b = (uint8_t*)dataPtr;
