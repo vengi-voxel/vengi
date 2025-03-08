@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "StbImage.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
@@ -15,6 +13,8 @@
 #ifdef USE_LIBJPEG
 #include <jpeglib.h>
 #include <stdlib.h> // free
+#else
+#include "StbImage.h"
 #endif
 
 namespace image {
@@ -26,9 +26,8 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 	jpeg_decompress_struct cinfo;
 	jpeg_error_mgr jerr;
 
-	cinfo.err = jpeg_std_error(&jerr);
-	cinfo.out_color_space = JCS_EXT_RGBA;
 	jpeg_create_decompress(&cinfo);
+	cinfo.err = jpeg_std_error(&jerr);
 
 	io::BufferedReadWriteStream buffer(stream, length);
 	jpeg_mem_src(&cinfo, buffer.getBuffer(), length);
@@ -38,22 +37,23 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 		return false;
 	}
 
+	cinfo.out_color_space = JCS_EXT_RGBA;
 	if (!jpeg_start_decompress(&cinfo)) {
 		jpeg_destroy_decompress(&cinfo);
 		Log::debug("Failed to load image: decompression start failed");
 		return false;
 	}
 
-	width = cinfo.output_width;
-	height = cinfo.output_height;
-	components = 4; // Always RGBA
+	width = cinfo.image_width;
+	height = cinfo.image_height;
+	components = cinfo.output_components;
 
 	*colors = (unsigned char *)core_malloc(width * height * components);
-	JSAMPROW row_pointer = *colors;
+	JSAMPROW row_pointer[1];
 
 	for (int y = 0; y < height; ++y) {
-		jpeg_read_scanlines(&cinfo, &row_pointer, 1);
-		row_pointer += width * components;
+		row_pointer[0] = *colors + y * width * components;
+		jpeg_read_scanlines(&cinfo, row_pointer, 1);
 	}
 
 	jpeg_finish_decompress(&cinfo);
