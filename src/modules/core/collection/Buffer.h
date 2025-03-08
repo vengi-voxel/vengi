@@ -73,7 +73,9 @@ public:
 	Buffer(const Buffer& other) {
 		checkBufferSize(other._size);
 		_size = other._size;
-		core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
+		if (other._buffer != nullptr) {
+			core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
+		}
 	}
 
 	Buffer(Buffer &&other) noexcept :
@@ -93,7 +95,9 @@ public:
 		release();
 		checkBufferSize(other._size);
 		_size = other._size;
-		core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
+		if (other._buffer != nullptr) {
+			core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
+		}
 		return *this;
 	}
 
