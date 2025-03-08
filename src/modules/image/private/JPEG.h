@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include "StbImage.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
-#include "StbImage.h"
 
 #ifdef USE_LIBJPEG
 #include <jpeglib.h>
@@ -22,11 +22,12 @@ namespace format {
 namespace JPEG {
 
 bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
-#if 0 // libjpeg reading is slower than stb_image
+#if USE_LIBJPEG
 	jpeg_decompress_struct cinfo;
 	jpeg_error_mgr jerr;
 
 	cinfo.err = jpeg_std_error(&jerr);
+	cinfo.out_color_space = JCS_EXT_RGBA;
 	jpeg_create_decompress(&cinfo);
 
 	io::BufferedReadWriteStream buffer(stream, length);
@@ -48,24 +49,11 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 	components = 4; // Always RGBA
 
 	*colors = (unsigned char *)core_malloc(width * height * components);
-	core::DynamicArray<unsigned char> row_buffer(width * cinfo.output_components);
+	JSAMPROW row_pointer = *colors;
 
 	for (int y = 0; y < height; ++y) {
-		JSAMPROW row_pointer = &row_buffer[0];
-		if (jpeg_read_scanlines(&cinfo, &row_pointer, 1) != 1) {
-			jpeg_destroy_decompress(&cinfo);
-			core_free(*colors);
-			*colors = nullptr;
-			Log::debug("Failed to load image: scanline read error");
-			return false;
-		}
-		unsigned char *dst = *colors + y * width * components;
-		for (int x = 0; x < width; ++x) {
-			dst[x * components + 0] = row_buffer[x * cinfo.output_components + 0];
-			dst[x * components + 1] = row_buffer[x * cinfo.output_components + (cinfo.output_components > 1 ? 1 : 0)];
-			dst[x * components + 2] = row_buffer[x * cinfo.output_components + (cinfo.output_components > 2 ? 2 : 0)];
-			dst[x * components + 3] = 255; // Default alpha to 255
-		}
+		jpeg_read_scanlines(&cinfo, &row_pointer, 1);
+		row_pointer += width * components;
 	}
 
 	jpeg_finish_decompress(&cinfo);
