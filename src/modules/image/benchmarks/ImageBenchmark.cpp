@@ -3,10 +3,26 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "engine-config.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
 
-class ImageWriteBenchmark : public app::AbstractBenchmark {
+#if USE_LIBJPEG
+#define JPEG_WRITE_FUNC WriteLibJPEG
+#define JPEG_READ_FUNC ReadLibJPEG
+#else
+#define JPEG_WRITE_FUNC WriteJPEGStbImage
+#define JPEG_READ_FUNC ReadJPEGStbImage
+#endif
+#if USE_LIBPNG
+#define PNG_WRITE_FUNC WriteLibPNG
+#define PNG_READ_FUNC ReadLibPNG
+#else
+#define PNG_WRITE_FUNC WritePNGStbImage
+#define PNG_READ_FUNC ReadPNGStbImage
+#endif
+
+class ImageBenchmark : public app::AbstractBenchmark {
 protected:
 	image::ImagePtr _imagePNG;
 	io::FilePtr _filePNG;
@@ -34,7 +50,7 @@ public:
 	}
 };
 
-BENCHMARK_DEFINE_F(ImageWriteBenchmark, WriteJPG)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ImageBenchmark, JPEG_WRITE_FUNC)(benchmark::State &state) {
 	io::BufferedReadWriteStream stream(1024 * 1024 * 4);
 	for (auto _ : state) {
 		_imagePNG->writeJPEG(stream);
@@ -42,13 +58,13 @@ BENCHMARK_DEFINE_F(ImageWriteBenchmark, WriteJPG)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadJPG)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ImageBenchmark, JPEG_READ_FUNC)(benchmark::State &state) {
 	for (auto _ : state) {
 		image::loadImage(_fileJPG);
 	}
 }
 
-BENCHMARK_DEFINE_F(ImageWriteBenchmark, WritePNG)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ImageBenchmark, PNG_WRITE_FUNC)(benchmark::State &state) {
 	io::BufferedReadWriteStream stream(1024 * 1024 * 4);
 	for (auto _ : state) {
 		_imagePNG->writePNG(stream);
@@ -56,15 +72,16 @@ BENCHMARK_DEFINE_F(ImageWriteBenchmark, WritePNG)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(ImageWriteBenchmark, LoadPNG)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(ImageBenchmark, PNG_READ_FUNC)(benchmark::State &state) {
 	for (auto _ : state) {
 		image::loadImage(_filePNG);
 	}
 }
 
-BENCHMARK_REGISTER_F(ImageWriteBenchmark, LoadPNG);
-BENCHMARK_REGISTER_F(ImageWriteBenchmark, LoadJPG);
-BENCHMARK_REGISTER_F(ImageWriteBenchmark, WriteJPG);
-BENCHMARK_REGISTER_F(ImageWriteBenchmark, WritePNG);
+BENCHMARK_REGISTER_F(ImageBenchmark, JPEG_READ_FUNC);
+BENCHMARK_REGISTER_F(ImageBenchmark, JPEG_WRITE_FUNC);
+
+BENCHMARK_REGISTER_F(ImageBenchmark, PNG_READ_FUNC);
+BENCHMARK_REGISTER_F(ImageBenchmark, PNG_WRITE_FUNC);
 
 BENCHMARK_MAIN();

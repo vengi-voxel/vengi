@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "StbImage.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/collection/DynamicArray.h"
@@ -12,8 +13,6 @@
 
 #ifdef USE_LIBPNG
 #include <png.h>
-#else
-#include "StbImage.h"
 #endif
 
 namespace image {
@@ -38,11 +37,10 @@ static void pngWriteFunc(png_structp png, png_bytep data, png_size_t pnglength) 
 	io::SeekableWriteStream *s = (io::SeekableWriteStream *)png_get_io_ptr(png);
 	s->write(data, pnglength);
 }
-
 #endif
 
 bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
-#ifdef USE_LIBPNG
+#if 0 // libpng reading is slower than stb_image
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		return false;
@@ -107,6 +105,7 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 
 bool write(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components) {
 #ifdef USE_LIBPNG
+	// libpng writing is faster than stb_image
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		return false;

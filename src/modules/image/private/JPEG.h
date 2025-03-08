@@ -10,12 +10,11 @@
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
+#include "StbImage.h"
 
 #ifdef USE_LIBJPEG
 #include <jpeglib.h>
 #include <stdlib.h> // free
-#else
-#include "StbImage.h"
 #endif
 
 namespace image {
@@ -23,7 +22,7 @@ namespace format {
 namespace JPEG {
 
 bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
-#ifdef USE_LIBJPEG
+#if 0 // libjpeg reading is slower than stb_image
 	jpeg_decompress_struct cinfo;
 	jpeg_error_mgr jerr;
 
@@ -79,6 +78,7 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 
 bool write(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int components, int quality) {
 #ifdef USE_LIBJPEG
+	// libjpeg writing is fast than stb_image
 	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	unsigned char *outbuffer = nullptr;
