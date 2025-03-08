@@ -6,6 +6,7 @@
 
 #include "core/NonCopyable.h"
 #include "core/RGBA.h"
+#include "image/ImageType.h"
 #include "io/IOResource.h"
 #include "io/File.h"
 #include "core/SharedPtr.h"
@@ -60,8 +61,6 @@ public:
 		_state = io::IOSTATE_LOADED;
 		return true;
 	}
-	bool load(const io::FilePtr& file);
-	bool load(const uint8_t* buffer, int length);
 	bool load(io::SeekableReadStream &stream, int length);
 
 	/**

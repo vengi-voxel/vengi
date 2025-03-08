@@ -9,6 +9,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "image/ImageType.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "math/Axis.h"
@@ -355,7 +356,8 @@ bool GoxFormat::loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableRead
 	uint8_t *png = (uint8_t *)core_malloc(c.length);
 	wrapBool(loadChunk_ReadData(stream, (char *)png, c.length))
 	image::ImagePtr img = image::createEmptyImage("gox-voxeldata");
-	bool success = img->load(png, c.length);
+	io::MemoryReadStream pngStream(png, c.length);
+	bool success = img->load(pngStream, pngStream.size());
 	core_free(png);
 	if (!success) {
 		Log::error("Failed to load png chunk");

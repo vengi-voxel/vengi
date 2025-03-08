@@ -10,6 +10,7 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/BufferView.h"
+#include "image/ImageType.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
@@ -57,14 +58,6 @@ bool Image::isGrayScale() const {
 		}
 	}
 	return true;
-}
-
-bool Image::load(const io::FilePtr &file) {
-	uint8_t *buffer;
-	const int length = file->read((void **)&buffer);
-	const bool status = load(buffer, length);
-	delete[] buffer;
-	return status;
 }
 
 const uint8_t *Image::at(int x, int y) const {
@@ -118,6 +111,14 @@ bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
 	return writeImage(*image.get(), stream);
 }
 
+static ImageType getImageType(const core::String &filename) {
+	const core::String ext = core::string::extractExtension(filename).toLower();
+	if (ext == "jpg" || ext == "jpeg") {
+		return ImageType::JPEG;
+	}
+	return ImageType::PNG;
+}
+
 bool writeImage(const image::Image &image, const core::String &filename) {
 	if (!image.isLoaded()) {
 		return false;
@@ -126,25 +127,28 @@ bool writeImage(const image::Image &image, const core::String &filename) {
 		return false;
 	}
 	const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
-	if (!file->validHandle())
+	if (!file->validHandle()) {
 		return false;
+	}
 	io::FileStream stream(file);
-	const core::String ext = core::string::extractExtension(filename).toLower();
-	if (ext == "jpg" || ext == "jpeg") {
+	ImageType type = getImageType(filename);
+	if (type == ImageType::JPEG) {
 		return image.writeJPEG(stream);
 	}
 	return image.writePng(stream);
 }
 
 bool writeImage(const image::ImagePtr &image, const core::String &filename) {
-	if (!image)
+	if (!image) {
 		return false;
+	}
 	return writeImage(*image.get(), filename);
 }
 
 ImagePtr loadImage(const io::FilePtr &file) {
 	const ImagePtr &i = createEmptyImage(file->name());
-	if (!i->load(file)) {
+	io::FileStream stream(file);
+	if (!i->load(stream, stream.size())) {
 		Log::warn("Failed to load image %s", i->name().c_str());
 	}
 	return i;
@@ -192,11 +196,6 @@ ImagePtr loadImage(const core::String &filename) {
 	}
 	Log::debug("Load image '%s'", filename.c_str());
 	return loadImage(file);
-}
-
-bool Image::load(const uint8_t *buffer, int length) {
-	io::MemoryReadStream stream(buffer, length);
-	return load(stream, length);
 }
 
 static int stream_read(void *user, char *data, int size) {
