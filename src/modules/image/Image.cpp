@@ -166,14 +166,6 @@ ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &strea
 	return i;
 }
 
-ImagePtr loadImage(const core::String &name, io::ReadStream &stream, int length) {
-	const ImagePtr &i = createEmptyImage(name);
-	if (!i->load(stream, length)) {
-		Log::warn("Failed to load image %s", i->name().c_str());
-	}
-	return i;
-}
-
 ImagePtr loadImage(const core::String &filename) {
 	io::FilePtr file;
 	if (!core::string::extractExtension(filename).empty()) {
@@ -227,7 +219,7 @@ static int stream_eos(void *user) {
 	return stream->eos() ? 1 : 0;
 }
 
-bool Image::load(io::ReadStream &stream, int length) {
+bool Image::load(io::SeekableReadStream &stream, int length) {
 	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: buffer empty", _name.c_str());

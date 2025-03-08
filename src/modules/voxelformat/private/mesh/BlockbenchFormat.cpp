@@ -12,6 +12,7 @@
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Base64ReadStream.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -678,7 +679,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			Log::debug("Loading texture: %s with size: %d", name.c_str(), (int)data.size());
 			io::MemoryReadStream dataStream(data.c_str(), data.size());
 			io::Base64ReadStream base64Stream(dataStream);
-			const image::ImagePtr &image = image::loadImage(name, base64Stream, data.size());
+			io::BufferedReadWriteStream bufferedStream(base64Stream, data.size());
+			const image::ImagePtr &image = image::loadImage(name, bufferedStream);
 			if (image->isLoaded()) {
 				materials.emplace_back(createMaterial(image));
 			}

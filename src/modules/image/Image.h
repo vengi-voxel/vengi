@@ -62,7 +62,8 @@ public:
 	}
 	bool load(const io::FilePtr& file);
 	bool load(const uint8_t* buffer, int length);
-	bool load(io::ReadStream &stream, int length);
+	bool load(io::SeekableReadStream &stream, int length);
+
 	/**
 	 * Loads a raw RGBA buffer
 	 */
@@ -143,7 +144,6 @@ inline ImagePtr createEmptyImage(const core::String& name) {
 
 ImagePtr loadImage(const io::FilePtr& file);
 ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length = -1);
-ImagePtr loadImage(const core::String &name, io::ReadStream &stream, int length);
 ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &stream, int w, int h);
 
 /**
