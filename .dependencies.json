@@ -1,9 +1,9 @@
 {
     "emscripten-browser-file": "b7312b42dc92dc791dac53a7df96e231a8751607",
-    "SOIL2": "0823470d7fbddca4c2b130264d14b6294227be2c",
-    "stb": "5c205738c191bcb0abc65c4febfa9bd25ff35234",
-    "googletest": "0bdccf4aa2f5c67af967193caf31d42d5c49bde2",
-    "benchmark": "571c235e1e51633e8ee0995796fae1e093a700b2",
+    "SOIL2": "cdf361f07db7f0923f7520e3bc3b04a93a380794",
+    "stb": "f0569113c93ad095470c54bf34a17b36646bbbb5",
+    "googletest": "4902ea2d7c6faed89b6facee00baa34bb108fc0d",
+    "benchmark": "45ded53f70e129411b1a00de3876b604f049984e",
     "imguizmo": "b10e91756d32395f5c1fefd417899b657ed7cb88",
     "implot": "47522f47054d33178e7defa780042bd2a06b09f9",
     "backward-cpp": "51f0700452cf71c57d43c2d028277b24cde32502",
