@@ -21,6 +21,7 @@ def load_hashes():
 def save_hashes(hashes):
     with open(HASHFILE, "w") as f:
         json.dump(hashes, f, indent=4)
+        f.write("\n")
 
 def get_git_revision(directory):
     try:
