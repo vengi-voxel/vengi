@@ -4,6 +4,7 @@
 
 #include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "AbstractFormatTest.h"
+#include "util/VarUtil.h"
 
 namespace voxelformat {
 
@@ -25,6 +26,7 @@ TEST_F(SchematicFormatTest, testLoadStructory) {
 
 TEST_F(SchematicFormatTest, DISABLED_testSaveSmallVoxel) {
 	SchematicFormat f;
+	util::ScopedVarChange scoped(cfg::VoxformatMerge, "true");
 	testSaveLoadVoxel("minecraft-smallvolumesavetest.schematic", &f);
 }
 
