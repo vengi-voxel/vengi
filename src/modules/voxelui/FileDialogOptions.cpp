@@ -11,6 +11,7 @@
 #include "core/Var.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteCache.h"
+#include "palette/PaletteFormatDescription.h"
 #include "palette/private/RGBPalette.h"
 #include "ui/IMGUIEx.h"
 #include "video/FileDialogOptions.h"
@@ -27,7 +28,8 @@
 
 namespace voxelui {
 
-FileDialogOptions::FileDialogOptions(palette::PaletteCache &paletteCache) : _paletteCache(paletteCache) {
+FileDialogOptions::FileDialogOptions(palette::PaletteCache &paletteCache, bool palette)
+	: _paletteCache(paletteCache), _palette(palette) {
 }
 
 bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDescription *desc,
@@ -36,10 +38,23 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 		return false;
 	}
 
+	const io::FormatDescription *formats;
+	if (mode == video::OpenFileMode::Save) {
+		if (_palette) {
+			formats = palette::palettes();
+		} else {
+			formats = voxelformat::voxelSave();
+		}
+	} else {
+		if (_palette) {
+			formats = palette::palettes();
+		} else {
+			formats = voxelformat::voxelLoad();
+		}
+	}
 	// maybe we've manually specified a file extension that is different from the
 	// given description - in that case we try to detect it.
-	const io::FormatDescription *descByName = io::getDescription(
-		entry.name, 0, mode == video::OpenFileMode::Save ? voxelformat::voxelSave() : voxelformat::voxelLoad());
+	const io::FormatDescription *descByName = io::getDescription(entry.name, 0, formats);
 	if (descByName != nullptr) {
 		desc = descByName;
 	}
@@ -47,18 +62,35 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 		return false;
 	}
 
-	bool hasOptions = genericOptions(desc);
-	if (mode == video::OpenFileMode::Save) {
-		hasOptions |= saveOptions(desc, entry);
+	bool hasOptions;
+	if (_palette) {
+		hasOptions = paletteOptions(desc);
 	} else {
-		hasOptions |= loadOptions(desc, entry, _paletteCache);
+		hasOptions = genericOptions(desc);
+		if (mode == video::OpenFileMode::Save) {
+			hasOptions |= saveOptions(desc, entry);
+		} else {
+			hasOptions |= loadOptions(desc, entry, _paletteCache);
+		}
 	}
 	return hasOptions;
 }
 
-video::FileDialogOptions FileDialogOptions::build(palette::PaletteCache &paletteCache) {
-	FileDialogOptions options(paletteCache);
+video::FileDialogOptions FileDialogOptions::build(palette::PaletteCache &paletteCache, bool palette) {
+	FileDialogOptions options(paletteCache, palette);
 	return options;
+}
+
+bool paletteOptions(const io::FormatDescription *desc) {
+	if (desc == nullptr) {
+		return false;
+	}
+	if (*desc == palette::RGBPalette::format()) {
+		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
+		return true;
+	}
+	// TODO: add quantized palette options cfg::CoreColorReduction
+	return false;
 }
 
 bool genericOptions(const io::FormatDescription *desc) {

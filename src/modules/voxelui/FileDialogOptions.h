@@ -18,13 +18,18 @@ namespace voxelui {
 class FileDialogOptions {
 private:
 	palette::PaletteCache &_paletteCache;
+	const bool _palette;
 
 public:
-	FileDialogOptions(palette::PaletteCache &paletteCache);
+	FileDialogOptions(palette::PaletteCache &paletteCache, bool palette);
 	bool operator()(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry);
-	static video::FileDialogOptions build(palette::PaletteCache &paletteCache);
+	static video::FileDialogOptions build(palette::PaletteCache &paletteCache, bool palette);
 };
 
+// palette options
+bool paletteOptions(const io::FormatDescription *desc);
+
+// voxel format options
 bool genericOptions(const io::FormatDescription *desc);
 bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry);
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,

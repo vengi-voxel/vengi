@@ -22,6 +22,7 @@ General:
 VoxEdit:
 
    - Implemented selection invert
+   - Added palette options to file dialog
 
 ## 0.0.35 (2025-02-09)
 
