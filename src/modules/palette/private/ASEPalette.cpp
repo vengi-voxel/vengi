@@ -18,6 +18,72 @@ enum BlockTypes { COLOR_START = 0x0001, GROUP_START = 0xc001, GROUP_END = 0xc002
 
 }
 
+bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgba) const {
+	uint16_t nameLength;
+	if (stream.readUInt16BE(nameLength) == -1) {
+		Log::error("ASEPalette: Failed to read name length");
+		return false;
+	}
+	if (nameLength > 0) {
+		core::String name;
+		stream.readUTF16BE(nameLength, name);
+		Log::error("Name: %s", name.c_str());
+	}
+
+	union ToUpper {
+		uint32_t colorMode;
+		char colorModeStr[4];
+	} mode;
+	if (stream.readUInt32(mode.colorMode) == -1) {
+		Log::error("ASEPalette: Failed to read color mode");
+		return false;
+	}
+	for (int j = 0; j < 4; ++j) {
+		mode.colorModeStr[j] = core::string::toUpper(mode.colorModeStr[j]);
+	}
+
+	uint8_t buf[4];
+	FourCCRev(buf, mode.colorMode);
+	core::String colorModeStr((const char *)buf, 4);
+	Log::error("ASEPalette: color mode %s", colorModeStr.c_str());
+
+	glm::vec4 color(0.0f);
+	if (mode.colorMode == FourCC('C', 'M', 'Y', 'K')) {
+		stream.readFloatBE(color[0]);
+		stream.readFloatBE(color[1]);
+		stream.readFloatBE(color[2]);
+		stream.readFloatBE(color[3]);
+		const core::CMYK cmyk(color[0], color[1], color[2], color[3]);
+		rgba = cmyk.toRGB();
+	} else if (mode.colorMode == FourCC('R', 'G', 'B', ' ')) {
+		stream.readFloatBE(color[0]);
+		stream.readFloatBE(color[1]);
+		stream.readFloatBE(color[2]);
+		color[3] = 1.0f;
+		rgba = core::Color::getRGBA(color);
+	} else if (mode.colorMode == FourCC('L', 'A', 'B', ' ')) {
+		stream.readFloatBE(color[0]);
+		stream.readFloatBE(color[1]);
+		stream.readFloatBE(color[2]);
+		color[3] = 1.0f;
+		// TODO: convert to RGB
+		rgba = core::Color::getRGBA(color);
+	} else if (mode.colorMode == FourCC('G', 'R', 'A', 'Y')) {
+		stream.readFloatBE(color[0]);
+		color[1] = color[2] = color[0];
+		color[3] = 1.0f;
+		rgba = core::Color::getRGBA(color);
+	} else {
+		Log::error("ASEPalette: Unknown color mode %s", colorModeStr.c_str());
+		return false;
+	}
+
+	int16_t colorType; // 0 = global, 1 = spot, 2 = normal
+	stream.readInt16BE(colorType);
+
+	return true;
+}
+
 bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	int colorCount = 0;
 
@@ -63,59 +129,18 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			Log::error("ASEPalette: Failed to read block length");
 			return false;
 		}
-		if (blockType != priv::COLOR_START) {
-			// only extract the colors
-			stream.skip(blockLength);
-			continue;
-		}
-		uint16_t nameLength;
-		if (stream.readUInt16BE(nameLength) == -1) {
-			Log::error("ASEPalette: Failed to read name length");
-			return false;
-		}
-		if (nameLength > 0) {
-			core::String name;
-			stream.readUTF16BE(nameLength, name);
-			Log::debug("Name: %s", name.c_str());
-		}
-
-		union {
-			uint32_t colorMode;
-			char colorModeStr[4];
-		};
-		if (stream.readUInt32(colorMode) == -1) {
-			Log::error("ASEPalette: Failed to read color mode");
-			return false;
-		}
-		for (int j = 0; j < 4; ++j) {
-			colorModeStr[j] = core::string::toUpper(colorModeStr[j]);
-		}
-		glm::vec4 color(0.0f);
-		if (colorMode == FourCC('C', 'Y', 'M', 'K')) {
-			stream.readFloatBE(color[0]);
-			stream.readFloatBE(color[1]);
-			stream.readFloatBE(color[2]);
-			stream.readFloatBE(color[3]);
-			const core::CMYK cmyk(color[0], color[1], color[2], color[3]);
-			palette.setColor(colorCount, cmyk.toRGB());
+		if (blockType == priv::COLOR_START) {
+			core::RGBA rgba;
+			if (!parseColorBlock(stream, rgba)) {
+				Log::error("ASEPalette: Failed to parse color block %d/%d", i, blocks);
+				return false;
+			}
+			palette.setColor(colorCount, rgba);
 			++colorCount;
 			continue;
 		}
-
-		if (colorMode == FourCC('R', 'G', 'B', ' ') || colorMode == FourCC('L', 'A', 'B', ' ')) {
-			stream.readFloatBE(color[0]);
-			stream.readFloatBE(color[1]);
-			stream.readFloatBE(color[2]);
-			color[3] = 1.0f;
-		} else if (colorMode == FourCC('G', 'R', 'A', 'Y')) {
-			stream.readFloatBE(color[0]);
-			color[1] = color[2] = color[0];
-			color[3] = 1.0f;
-		} else {
-			continue;
-		}
-		palette.setColor(colorCount, core::Color::getRGBA(color));
-		++colorCount;
+		// only extract the colors
+		stream.skip(blockLength);
 	}
 
 	palette.setSize(colorCount);

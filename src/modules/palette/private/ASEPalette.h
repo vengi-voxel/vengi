@@ -60,8 +60,12 @@ namespace palette {
  *  The ASE file consists of a sequence of color and group blocks.
  *  Color blocks represent individual colors with their name, model, color values, and type.
  *  Group blocks group colors together and can be nested.
+ *
+ * http://www.selapa.net/swatches/colors/fileformats.php
  */
 class ASEPalette : public PaletteFormat {
+protected:
+	bool parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgba) const;
 public:
 	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) override;
 	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
