@@ -12,6 +12,7 @@
 #include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "voxel/Voxel.h"
 
 namespace voxelutil {
 
@@ -77,7 +78,7 @@ struct VisitColor {
 	VisitColor(uint8_t color) : _color(color) {
 	}
 	inline bool operator()(const voxel::Voxel &voxel) const {
-		return voxel.getColor() == _color;
+		return voxel.getMaterial() != voxel::VoxelType::Air && voxel.getColor() == _color;
 	}
 };
 
