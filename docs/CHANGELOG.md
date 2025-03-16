@@ -18,11 +18,18 @@ General:
    - Fixed missing animation transfer from one scenegraph into other one
    - Updated/Added SDL3 support (both SDL2 and SDL3 are supported now)
    - Added Adobe ColorBook (`acb`) palette support
+   - Fixed `xraw` palette issue with color slot 0
 
 VoxEdit:
 
    - Implemented selection invert
    - Added palette options to file dialog
+   - Allow to execute palette actions on multiple colors
+   - Allow to reduce multiple colors at once
+
+PalConvert:
+
+   - Added a new tool for dealing with palettes
 
 ## 0.0.35 (2025-02-09)
 
