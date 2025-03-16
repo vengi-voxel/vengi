@@ -245,13 +245,35 @@ static void errorVA(const char *msg, va_list args) {
 }
 
 static void printfVA(const char *msg, va_list args) {
-	char buf[priv::bufSize];
-	SDL_vsnprintf(buf, sizeof(buf), msg, args);
-	buf[sizeof(buf) - 1] = '\0';
-	if (priv::_logfile) {
-		fprintf(priv::_logfile, "%s", buf);
+	char tempBuf[priv::bufSize];
+
+	va_list args_copy;
+	va_copy(args_copy, args);
+	int neededSize = SDL_vsnprintf(tempBuf, sizeof(tempBuf), msg, args_copy);
+	va_end(args_copy);
+
+	if (neededSize < (int)sizeof(tempBuf)) {
+		// Output fits in tempBuf
+		if (priv::_logfile) {
+			fprintf(priv::_logfile, "%s", tempBuf);
+		}
+		printf("%s", tempBuf);
+	} else {
+		// Allocate a large enough buffer
+		char *buf = (char *)core_malloc(neededSize + 1);
+		if (!buf)
+			return; // Handle memory allocation failure
+
+		va_copy(args_copy, args);
+		SDL_vsnprintf(buf, neededSize + 1, msg, args_copy);
+		va_end(args_copy);
+
+		if (priv::_logfile) {
+			fprintf(priv::_logfile, "%s", buf);
+		}
+		printf("%s", buf);
+		core_free(buf);
 	}
-	printf("%s", buf);
 }
 
 void Log::trace(const char* msg, ...) {
