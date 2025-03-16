@@ -84,7 +84,6 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};
 		voxelutil::visitVolume(wrapper, region, visitor, voxelutil::SkipEmpty());
-
 	}
 }
 

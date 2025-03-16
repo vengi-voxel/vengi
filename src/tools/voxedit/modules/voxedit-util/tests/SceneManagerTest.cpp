@@ -20,6 +20,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -605,6 +606,20 @@ TEST_F(SceneManagerTest, testReduceColors) {
 	EXPECT_EQ(2, countVoxels(*v, targetVoxel));
 	EXPECT_TRUE(_sceneMgr->nodeReduceColors(nodeId, srcBuf, targetVoxel.getColor()));
 	EXPECT_EQ(7, countVoxels(*v, targetVoxel));
+}
+
+TEST_F(SceneManagerTest, testRemoveColors) {
+	Modifier &modifier = _sceneMgr->modifier();
+	const voxel::Region region{0, 0};
+
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	voxel::Voxel targetVoxel = modifier.cursorVoxel();
+	v->setVoxel(0, 0, 0, targetVoxel);
+	EXPECT_EQ(targetVoxel.getColor(), v->voxel(0, 0, 0).getColor());
+	EXPECT_TRUE(_sceneMgr->nodeRemoveColor(nodeId, targetVoxel.getColor()));
+	EXPECT_NE(targetVoxel.getColor(), v->voxel(0, 0, 0).getColor());
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, 0, 0).getMaterial()));
 }
 
 } // namespace voxedit
