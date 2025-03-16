@@ -30,9 +30,18 @@ void PalConvert::printUsageHeader() const {
 void PalConvert::usage() const {
 	Super::usage();
 	Log::info("Supported palette formats:");
+	int maxNameLen = 0;
+	int maxExtLen = 0;
 	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
+		maxNameLen = core_max(maxNameLen, (int)desc->name.size());
 		for (const core::String &ext : desc->exts) {
-			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
+			maxExtLen = core_max(maxExtLen, (int)ext.size());
+		}
+	}
+	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
+		const char *save = desc->flags & FORMAT_FLAG_SAVE ? "yes" : "no";
+		for (const core::String &ext : desc->exts) {
+			Log::info(" * %-*s (*.%-*s) (save: %s)", maxNameLen, desc->name.c_str(), maxExtLen, ext.c_str(), save);
 		}
 	}
 	Log::info("Built-in palettes:");
