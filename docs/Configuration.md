@@ -10,7 +10,7 @@ built-in console - or execute the application with `--help` (Example: `vengi-vox
 
 The variables can get their initial value from various sources. The highest order is the command line. If you specify it on
 the command line, every other method will not be used. If the engine finds the cvar name in your environment variables, this
-one will take precedence over the one the is found in the configuration file. Next is the configuration file - this one will
+one will take precedence over the one that is found in the configuration file. Next is the configuration file - this one will
 take precedence over the default settings that are specified in the code.
 
 The environment variable can be either lower case or upper case. For example it will work if you have `CL_GAMMA` or `cl_gamma`

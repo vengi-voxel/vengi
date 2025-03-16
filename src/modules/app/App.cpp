@@ -1005,7 +1005,7 @@ void App::usage() const {
 			  _appname.c_str());
 	Log::info("The highest order is the command line. If you specify it on the command line, every other method");
 	Log::info("will not be used. If the engine finds the cvar name in your environment variables, this one will");
-	Log::info("take precedence over the one the is found in the configuration file. Next is the configuration");
+	Log::info("take precedence over the one that is found in the configuration file. Next is the configuration");
 	Log::info("file - this one will take precedence over the default settings that are specified in the code.");
 	Log::info("The environment variable can be either lower case or upper case. For example it will work if you");
 	Log::info("have CL_GAMMA or cl_gamma exported. The lower case variant has the higher priority.");
