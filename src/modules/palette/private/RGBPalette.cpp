@@ -36,14 +36,19 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		maxColor = core_max(rgba.b, maxColor);
 	}
 	const bool is6Bit = maxColor <= 63;
-	if (is6Bit && core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal()) {
-		const float scale = (255.0f / 63.0f);
-		for (int i = 0; i < PaletteMaxColors; ++i) {
-			core::RGBA rgba = palette.color(i);
-			rgba.r = (float)rgba.r * scale;
-			rgba.g = (float)rgba.g * scale;
-			rgba.b = (float)rgba.b * scale;
-			palette.setColor(i, rgba);
+	if (is6Bit) {
+		if (core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal()) {
+			const float scale = (255.0f / 63.0f);
+			for (int i = 0; i < PaletteMaxColors; ++i) {
+				core::RGBA rgba = palette.color(i);
+				rgba.r = (float)rgba.r * scale;
+				rgba.g = (float)rgba.g * scale;
+				rgba.b = (float)rgba.b * scale;
+				palette.setColor(i, rgba);
+			}
+		} else {
+			Log::info("The palette colors are in a 6-bit range, you can set %s to true if your colors don't match-",
+					  cfg::PalformatRGB6Bit);
 		}
 	}
 
