@@ -63,9 +63,12 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 				const palette::MaterialProperty prop = (palette::MaterialProperty)i;
 				float value = palette.material(paletteColorIdx).value(prop);
 				if (ImGui::SliderFloat(palette::MaterialPropertyName(prop), &value,
-									   palette::MaterialPropertyMinMax(prop).minVal,
-									   palette::MaterialPropertyMinMax(prop).maxVal)) {
-					_sceneMgr->nodeSetMaterial(node.id(), paletteColorIdx, prop, value);
+									palette::MaterialPropertyMinMax(prop).minVal,
+									palette::MaterialPropertyMinMax(prop).maxVal)) {
+					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "changematerial");
+					for (const auto &e : _selectedIndices) {
+						_sceneMgr->nodeSetMaterial(node.id(), e->key, prop, value);
+					}
 				}
 			}
 
