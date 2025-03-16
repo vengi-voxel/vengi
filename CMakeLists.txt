@@ -15,6 +15,7 @@ option(VISUALTESTS "Builds with visual tests (src/tests)" ON)
 option(VOXEDIT "Builds voxedit" ON)
 option(THUMBNAILER "Builds thumbnailer" ON)
 option(VOXCONVERT "Builds voxconvert" ON)
+option(PALCONVERT "Builds palconvert" ON)
 
 option(USE_OPENGLES "Enable OpenGLES" OFF)
 option(USE_CCACHE "Use ccache" ON)

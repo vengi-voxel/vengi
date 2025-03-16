@@ -34,19 +34,26 @@ Package: vengi-voxedit
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
-Recommends: vengi-thumbnailer, vengi-voxconvert
+Recommends: vengi-thumbnailer, vengi-voxconvert, vengi-palconvert
 Description: Voxel editor
 
 Package: vengi-thumbnailer
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit, vengi-voxconvert
+Recommends: vengi-voxedit, vengi-voxconvert, vengi-palconvert
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
 
 Package: vengi-voxconvert
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit, vengi-thumbnailer
+Recommends: vengi-voxedit, vengi-thumbnailer, vengi-palconvert
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Convert, export or modify voxel volumes
+
+Package: vengi-palconvert
+Architecture: any
+Multi-Arch: foreign
+Recommends: vengi-voxedit, vengi-thumbnailer, vengi-voxconvert
+Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
+Description: Load palette formats

@@ -1,0 +1,8 @@
+@ECHO OFF
+
+set BINARY=%1
+set FILE=paint.net.txt
+
+xcopy /Y "@DATA_DIR@\tests\%FILE%" "@CMAKE_BINARY_DIR@"
+"%BINARY%" -f --input "@CMAKE_BINARY_DIR@\%FILE%" --output palette.png
+echo

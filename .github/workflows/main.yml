@@ -70,6 +70,12 @@ jobs:
             name: mac-vengi-voxconvert-app
             path: build/voxconvert/vengi-voxconvert.app
 
+        - name: Upload the palconvert app
+          uses: actions/upload-artifact@v4
+          with:
+            name: mac-vengi-palconvert-app
+            path: build/palconvert/vengi-palconvert.app
+
         - name: Upload the thumbnailer app
           uses: actions/upload-artifact@v4
           with:
@@ -301,6 +307,7 @@ jobs:
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component thumbnailer --prefix thumbnailer-install
             cmake --install . --component voxelthumb --prefix thumbnailer-install
+            cmake --install . --component palconvert --prefix palconvert-install
             cmake --install . --component voxconvert --prefix voxconvert-install
             cmake --install . --component voxconvertui --prefix voxconvert-install
             cpack
@@ -337,6 +344,12 @@ jobs:
             name: win-voxconvert
             path: build/voxconvert-install/
 
+        - name: Upload the palconvert artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: win-palconvert
+            path: build/palconvert-install/
+
         - name: Upload the thumbnailer artifacts
           uses: actions/upload-artifact@v4
           with:
@@ -363,6 +376,7 @@ jobs:
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component thumbnailer --prefix thumbnailer-install
             cmake --install . --component voxelthumb --prefix thumbnailer-install
+            cmake --install . --component palconvert --prefix palconvert-install
             cmake --install . --component voxconvert --prefix voxconvert-install
             cmake --install . --component voxconvertui --prefix voxconvert-install
 
@@ -416,6 +430,7 @@ jobs:
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component thumbnailer --prefix thumbnailer-install
             cmake --install . --component voxelthumb --prefix thumbnailer-install
+            cmake --install . --component palconvert --prefix palconvert-install
             cmake --install . --component voxconvert --prefix voxconvert-install
             cmake --install . --component voxconvertui --prefix voxconvert-install
 

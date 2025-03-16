@@ -1,0 +1,55 @@
+.\" This man page was written by Martin Gerhardy in @COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@. It is provided
+.\" under the GNU General Public License 3 or (at your option) any later version.
+.TH @COMMANDLINE@ "1" "@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@" "@COMMANDLINE@"
+.SH NAME
+@COMMANDLINE@ \- @DESCRIPTION@
+
+.SH SYNOPSIS
+.PP
+\fB@NAME@\fR [\fIoption\fR] --input infile --output outfile
+.SH DESCRIPTION
+\fB@COMMANDLINE@\fP is a command line application that can convert several palette
+formats into others.
+
+.SH GENERAL OPTIONS
+.TP
+\fB\--completion bash|zsh\fR
+Generate a bash or zsh-completion script
+
+.TP
+\fB\--help|-h\fR
+Print usage information with a a full list of cvars
+
+.TP
+\fB\--loglevel|-l\fR
+Set the log level to trace, debug, info, warn, error or fatal
+
+.TP
+\fB\--trace|--debug|--info|--warn|--error\fR
+Enable error, warn, trace, debug or info logging
+
+.TP
+\fB\--version|-v\fR
+Print the version of the application.
+
+.SH OPTIONS
+.TP
+\fB\--force|-f\fR
+Overwrite existing files.
+
+.TP
+\fB\--input|-i infile\fR
+Specify the input file to read from.
+
+.TP
+\fB\--output|-o outfile\fR
+Specify the output file to write to.
+
+.SH HOMEPAGE
+https://github.com/vengi-voxel/vengi
+
+.SH COPYRIGHT
+Copyright \[co] 2015\-@COPYRIGHT_YEAR@ by Martin Gerhardy.
+
+.SH BUGS
+If you find a bug, please report it at https://github.com/vengi-voxel/vengi/issues

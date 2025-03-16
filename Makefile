@@ -98,6 +98,10 @@ doc-images:
 deb-changelog:
 	$(Q)contrib/installer/linux/changelog.py docs/CHANGELOG.md > debian/changelog
 
+.PHONY: debian/vengi-palconvert.bash-completion
+debian/vengi-palconvert.bash-completion: palconvert
+	$(Q)$(call EXEC_PATH,palconvert) --completion bash > $@
+
 .PHONY: debian/vengi-voxconvert.bash-completion
 debian/vengi-voxconvert.bash-completion: voxconvert
 	$(Q)$(call EXEC_PATH,voxconvert) --completion bash > $@
@@ -111,7 +115,7 @@ debian/vengi-thumbnailer.bash-completion: thumbnailer
 	$(Q)$(call EXEC_PATH,thumbnailer) --completion bash > $@
 
 .PHONY: deb-bash-completion
-deb-bash-completion: debian/vengi-voxconvert.bash-completion debian/vengi-voxedit.bash-completion debian/vengi-thumbnailer.bash-completion
+deb-bash-completion: debian/vengi-palconvert.bash-completion debian/vengi-voxconvert.bash-completion debian/vengi-voxedit.bash-completion debian/vengi-thumbnailer.bash-completion
 
 deb: deb-changelog deb-bash-completion
 	$(Q)debuild -b -ui -uc -us
@@ -119,7 +123,7 @@ deb: deb-changelog deb-bash-completion
 tests:
 	$(Q)ctest --test-dir $(BUILDDIR) $(CTEST_FLAGS)
 
-package: voxedit thumbnailer voxconvert $(BUILDDIR)/CMakeCache.txt
+package: voxedit thumbnailer voxconvert palconvert $(BUILDDIR)/CMakeCache.txt
 ifeq ($(OS),Windows_NT)
 	$(Q)cd $(BUILDDIR) & cpack
 else
@@ -142,6 +146,7 @@ mac-verify-signatures-app:
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxedit)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,thumbnailer)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxconvert) # doesn't work
+	$(Q)codesign --verify --verbose=2 $(call APP_PATH,palconvert) # doesn't work
 
 mac-sign-dmg:
 	$(Q)codesign --force --verbose=2 --sign "Apple Distribution" $(BUILDDIR)/*.dmg
@@ -181,7 +186,7 @@ release-%:
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
-formatprinter thumbnailer voxedit voxconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
+formatprinter thumbnailer voxedit voxconvert palconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@/usr
 ifneq ($(OS),Windows_NT)
@@ -211,7 +216,7 @@ contrib/installer/osx/%.plist.in: formatprinter
 contrib/installer/linux/%.man.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --manpage $* > $@
 
-manpages: contrib/installer/linux/voxconvert.man.in contrib/installer/linux/thumbnailer.man.in contrib/installer/linux/application.man.in
+manpages: contrib/installer/linux/voxconvert.man.in contrib/installer/linux/palconvert.man.in contrib/installer/linux/thumbnailer.man.in contrib/installer/linux/application.man.in
 plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit.plist.in
 formats: manpages plists tools/html/data.js contrib/installer/linux/x-voxel.xml docs/Formats.md contrib/installer/windows/wixpatch.xml
 

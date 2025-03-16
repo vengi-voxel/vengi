@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+BINARY=$1
+FILE=tests/paint.net.txt
+BASE_FILE=$(basename $FILE)
+
+if [ -z "$BINARY" ]; then
+  BINARY="@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@"
+fi
+
+if [ ! -x "$BINARY" ]; then
+  echo "Binary not executable: $BINARY"
+  exit 1
+fi
+
+echo "convert palette @DATA_DIR@/$FILE to png"
+cp -f @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
+$BINARY -f --input @CMAKE_BINARY_DIR@/$BASE_FILE --output palette.png
+echo
