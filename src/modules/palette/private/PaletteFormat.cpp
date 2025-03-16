@@ -50,6 +50,9 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 		} else if (ext == JASCPalette::format().mainExtension()) {
 			if (desc.name == JASCPalette::format().name || magic == FourCC('J', 'A', 'S', 'C')) {
 				return core::make_shared<JASCPalette>();
+			// http://www.selapa.net/swatches/colors/fileformats.php
+			// } else if (magic == FourCC('R', 'I', 'F', 'F')) {
+			// 	return core::make_shared<RIFFPalette>();
 			}
 			return core::make_shared<RGBPalette>();
 		} else {
