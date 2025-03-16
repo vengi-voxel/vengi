@@ -148,7 +148,9 @@ bool Palette::removeColor(uint8_t paletteColorIdx) {
 			_view._uiIndices[i] = _view._uiIndices[i + 1];
 		}
 		_colors[paletteColorIdx] = core::RGBA(0, 0, 0, 0);
-		--_colorCount;
+		if (paletteColorIdx == _colorCount - 1) {
+			--_colorCount;
+		}
 		markDirty();
 		return true;
 	}
