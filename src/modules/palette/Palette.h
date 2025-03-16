@@ -30,16 +30,13 @@ private:
 		uint32_t _hashColors[2];
 		uint64_t _hash;
 	} _hash{};
-
 	PaletteView _view;
-
-	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
 	PaletteColorArray _colors{};
 	MaterialArray _materials{};
 	int _colorCount = 0;
 
+	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
 	int findInsignificant(int skipSlotIndex) const;
-
 	bool loadLospec(const core::String &lospecId, const core::String &gimpPalette);
 
 public:

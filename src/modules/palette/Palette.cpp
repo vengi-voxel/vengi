@@ -38,8 +38,9 @@ Palette::Palette() : _view(this) {
 }
 
 Palette::Palette(const Palette &other)
-	: DirtyState(other), _needsSave(other._needsSave), _name(other._name), _hash(other._hash), _view(this),
+	: DirtyState(other), _needsSave(other._needsSave), _name(other._name), _view(this),
 	  _colorCount(other._colorCount) {
+	_hash._hash = other._hash._hash;
 	core_memcpy(_colors, other._colors, sizeof(_colors));
 	core_memcpy(_materials, other._materials, sizeof(_materials));
 	core_memcpy(_view._uiIndices, other._view._uiIndices, sizeof(_view._uiIndices));
@@ -47,9 +48,10 @@ Palette::Palette(const Palette &other)
 
 Palette &Palette::operator=(const Palette &other) {
 	if (&other != this) {
+		_dirty = other._dirty;
 		_needsSave = other._needsSave;
 		_name = other._name;
-		_hash = other._hash;
+		_hash._hash = other._hash._hash;
 		_colorCount = other._colorCount;
 		core_memcpy(_colors, other._colors, sizeof(_colors));
 		core_memcpy(_materials, other._materials, sizeof(_materials));
@@ -59,8 +61,9 @@ Palette &Palette::operator=(const Palette &other) {
 }
 
 Palette::Palette(Palette &&other) noexcept
-	: DirtyState(other), _needsSave(other._needsSave), _name(core::move(other._name)), _hash(other._hash), _view(this),
+	: DirtyState(other), _needsSave(other._needsSave), _name(core::move(other._name)), _view(this),
 	  _colorCount(other._colorCount) {
+	_hash._hash = other._hash._hash;
 	core_memcpy(_colors, other._colors, sizeof(_colors));
 	core_memcpy(_materials, other._materials, sizeof(_materials));
 	core_memcpy(_view._uiIndices, other._view._uiIndices, sizeof(_view._uiIndices));
@@ -68,9 +71,10 @@ Palette::Palette(Palette &&other) noexcept
 
 Palette &Palette::operator=(Palette &&other) noexcept {
 	if (&other != this) {
+		_dirty = other._dirty;
 		_needsSave = other._needsSave;
 		_name = core::move(other._name);
-		_hash = other._hash;
+		_hash._hash = other._hash._hash;
 		_colorCount = other._colorCount;
 		core_memcpy(_colors, other._colors, sizeof(_colors));
 		core_memcpy(_materials, other._materials, sizeof(_materials));

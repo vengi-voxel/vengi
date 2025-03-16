@@ -3,6 +3,7 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "core/Color.h"
 #include "core/ScopedPtr.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "palette/tests/TestHelper.h"
@@ -83,6 +84,11 @@ TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 	}
 	const palette::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount(), pal.colorCount()) << palette << pal;
+	for (int i = 0; i < pal.colorCount(); ++i) {
+		const core::RGBA c1 = palette.color(i);
+		const core::RGBA c2 = pal.color(i);
+		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << core::Color::print(c1, true) << " != " << core::Color::print(c2, true);
+	}
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
 
@@ -139,6 +145,11 @@ TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 	}
 	const palette::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount(), pal.colorCount()) << palette << pal;
+	for (int i = 0; i < pal.colorCount(); ++i) {
+		const core::RGBA c1 = palette.color(i);
+		const core::RGBA c2 = pal.color(i);
+		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << core::Color::print(c1, true) << " != " << core::Color::print(c2, true);
+	}
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
 
