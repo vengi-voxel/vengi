@@ -905,6 +905,19 @@ void App::printUsageHeader() const {
 	Log::info("Version " PROJECT_VERSION);
 }
 
+void App::usageFooter() const {
+	Log::info("Links:");
+	Log::info(" * Bug reports: https://github.com/vengi-voxel/vengi");
+	Log::info(" * Mastodon: https://mastodon.social/@mgerhardy");
+	Log::info(" * Discord: https://vengi-voxel.de/discord");
+
+	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
+		Log::info(
+			"Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
+		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
+	}
+}
+
 void App::usage() const {
 	const core::VarPtr &logLevel = core::Var::get(cfg::CoreLogLevel, "");
 	logLevel->setVal((int)Log::Level::Info);

@@ -131,6 +131,7 @@ protected:
 	bool handleCompletion(const core::String &type) const;
 
 	virtual void usage() const;
+	void usageFooter() const;
 	virtual void printUsageHeader() const;
 
 	void setArgs(int argc, char *argv[]);

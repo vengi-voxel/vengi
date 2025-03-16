@@ -4,26 +4,19 @@
 
 #include "FormatConfig.h"
 #include "app/I18N.h"
-#include "core/Color.h"
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
-#include "palette/NormalPalette.h"
-#include "palette/Palette.h"
+#include "palette/FormatConfig.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 
 namespace voxelformat {
 
-static bool colorReductionValidator(const core::String &value) {
-	return core::Color::toColorReductionType(value.c_str()) != core::Color::ColorReductionType::Max;
-}
-
 bool FormatConfig::init() {
-	core::Var::get(cfg::CoreColorReduction,
-				   core::Color::toColorReductionTypeString(core::Color::ColorReductionType::MedianCut),
-				   _("Controls the algorithm that is used to perform the color reduction"), colorReductionValidator);
+	palette::FormatConfig::init();
+
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, _("Merge similar quads to optimize the mesh"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic),
@@ -76,8 +69,6 @@ bool FormatConfig::init() {
 				   _("Use palette mode in qubicle qbt export"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBTMergeCompounds, "false", core::CV_NOPERSIST, _("Merge compounds on load"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
-				   _("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"));
 	core::Var::get(cfg::VoxformatMerge, "false", core::CV_NOPERSIST, _("Merge all objects into one"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatEmptyPaletteIndex, "-1", core::CV_NOPERSIST,
@@ -85,8 +76,6 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type >= -1 && type <= 255;
 				   });
-	core::Var::get(cfg::NormalPalette, palette::NormalPalette::builtIn[0], core::CV_NOPERSIST,
-				   _("The normal palette to use for voxelization"));
 	core::Var::get(cfg::VoxformatVOXCreateGroups, "true", core::CV_NOPERSIST, _("Merge compounds on load"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST, _("Merge compounds on load"),
@@ -95,8 +84,10 @@ bool FormatConfig::init() {
 				   _("Toggle between left and right handed"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBSaveCompressed, "true", core::CV_NOPERSIST, _("Save RLE compressed"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST, _("Create own palette from textures or colors or remap the existing palette colors to a new palette"),
-				   core::Var::boolValidator);
+	core::Var::get(
+		cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST,
+		_("Create own palette from textures or colors or remap the existing palette colors to a new palette"),
+		core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatPointCloudSize, "1", core::CV_NOPERSIST,
 				   _("Specify the side length for the voxels when loading a point cloud"));
 	core::Var::get(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness, "true", core::CV_NOPERSIST,
@@ -121,12 +112,6 @@ bool FormatConfig::init() {
 				   core::Var::minMaxValidator<PNGFormat::ImportType::Plane, PNGFormat::ImportType::Volume>);
 	static_assert(PNGFormat::ImportType::Plane == 0, "Plane must be 0");
 	static_assert(PNGFormat::ImportType::Volume == 2, "Volume must be 2");
-
-	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,
-				   _("Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"),
-				   core::Var::boolValidator);
-	core::Var::get(cfg::PalformatMaxSize, "512", core::CV_NOPERSIST,
-				   _("The maximum size of an image in x and y direction to quantize to a palette"));
 
 	return true;
 }

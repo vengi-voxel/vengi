@@ -16,6 +16,7 @@ set(SRCS
 	private/PixeloramaPalette.cpp private/PixeloramaPalette.h
 	private/VPLPalette.cpp private/VPLPalette.h
 
+	FormatConfig.cpp FormatConfig.h
 	Material.cpp Material.h
 	NormalPalette.cpp NormalPalette.h
 
