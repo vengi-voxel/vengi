@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
+#include "memento/MementoHandler.h"
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "palette/PaletteView.h"
@@ -53,6 +54,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 		}
 
 		const bool usableColor = palette.color(paletteColorIdx).a > 0;
+		const bool singleSelection = _selectedIndices.size() == 1;
 		if (usableColor) {
 			for (int i = 0; i < palette::MaterialProperty::MaterialMax - 1; ++i) {
 				if (i == palette::MaterialProperty::MaterialNone) {
@@ -66,22 +68,32 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					_sceneMgr->nodeSetMaterial(node.id(), paletteColorIdx, prop, value);
 				}
 			}
-			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", paletteColorIdx);
-			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
-									   &listener);
+
+			if (singleSelection) {
+				// TODO: PALETTE: allow to extract multiple colors to a new node
+				const core::String &modelFromColorCmd = core::string::format("colortomodel %i", paletteColorIdx);
+				ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
+										&listener);
+			}
 
 			if (palette.color(paletteColorIdx).a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove alpha"))) {
-					_sceneMgr->nodeRemoveAlpha(node.id(), paletteColorIdx);
+					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removealpha");
+					for (const auto &e : _selectedIndices) {
+						_sceneMgr->nodeRemoveAlpha(node.id(), e->first);
+					}
 				}
 			}
-			if (palette.hasFreeSlot()) {
+			if (palette.hasFreeSlot() && singleSelection) {
 				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate color"))) {
 					_sceneMgr->nodeDuplicateColor(node.id(), paletteColorIdx);
 				}
 			}
 			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove color"))) {
-				_sceneMgr->nodeRemoveColor(node.id(), paletteColorIdx);
+				memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removecolor");
+				for (const auto &e : _selectedIndices) {
+					_sceneMgr->nodeRemoveColor(node.id(), e->first);
+				}
 			}
 		}
 
@@ -150,7 +162,25 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	ImGui::PushID(paletteColorIdx);
 	if (ImGui::InvisibleButton("", colorButtonSize)) {
 		if (usableColor) {
-			_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, paletteColorIdx));
+			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl)) {
+				if (!_selectedIndices.remove(paletteColorIdx)) {
+					_selectedIndices.insert(paletteColorIdx);
+				}
+				_selectedIndicesLast = paletteColorIdx;
+			} else if (ImGui::IsKeyDown(ImGuiMod_Shift) && _selectedIndicesLast != -1) {
+				const int start = core_min(_selectedIndicesLast, paletteColorIdx);
+				const int end = core_max(_selectedIndicesLast, paletteColorIdx);
+				for (int i = start; i <= end; ++i) {
+					if (palette.color(i).a > 0) {
+						_selectedIndices.insert(i);
+					}
+				}
+			} else {
+				_selectedIndicesLast = paletteColorIdx;
+				_selectedIndices.clear();
+				_selectedIndices.insert(paletteColorIdx);
+				_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, paletteColorIdx));
+			}
 		}
 	}
 	ImGui::PopID();
@@ -198,6 +228,8 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
 		}
 	} else if (paletteColorIdx == currentPaletteColorIndex()) {
+		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 4.0f);
+	} else if (_selectedIndices.has(paletteColorIdx)) {
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
 	globalCursorPos.x += colorButtonSize.x;

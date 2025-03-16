@@ -7,8 +7,9 @@
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #include "palette/PaletteCache.h"
+#include "palette/PaletteView.h"
 #include "ui/Panel.h"
 #include <glm/vec4.hpp>
 
@@ -25,10 +26,14 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
+using PaletteSelection = core::Set<uint8_t>;
+
 class PalettePanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
+	PaletteSelection _selectedIndices;
+	int _selectedIndicesLast = -1;
 	float _intensityChange = 0.0f;
 	int _closestMatchPaletteColorIdx = -1;
 	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
@@ -68,9 +73,14 @@ public:
 	void update(const char *id, command::CommandExecutionListener &listener);
 	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
 	bool hasFocus() const;
+	const PaletteSelection &selectedIndices() const;
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
+
+inline const PaletteSelection &PalettePanel::selectedIndices() const {
+	return _selectedIndices;
+}
 
 } // namespace voxedit
