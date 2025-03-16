@@ -269,6 +269,13 @@ The functions are:
 
 * `colors()`: Returns the palette RGBA colors as vec4 values between `0.0` and `1.0`.
 
+* `deltaE(paletteIndex1, paletteIndex2)`: Compute Delta E (CIE76)
+    - `<= .0`: Imperceptible
+    - `1-`: Noticeable on close inspection
+    - `2-1`: Perceptible at a glance
+    - `11-4`: Distinct but related colors
+    - `50-10`: Completely different colors
+
 * `load(palette)`: Allows to load a [built-in palette](Palette.md) or a filename to a supported [palette format](Formats.md).
 
 * `material(paletteIndex, material)`: Get the value of the material property for the given palette index.

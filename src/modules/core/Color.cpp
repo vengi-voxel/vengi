@@ -821,6 +821,53 @@ static float getDistanceHSB(const core::RGBA &rgba, RGBA rgba2) {
 	return getDistanceHSB(rgba2, hue, saturation, brightness);
 }
 
+double Color::srgbToLinear(uint8_t c) {
+	double v = c / 255.0;
+	return (v <= 0.04045) ? (v / 12.92) : pow((v + 0.055) / 1.055, 2.4);
+}
+
+void Color::rgbToXyz(uint8_t r, uint8_t g, uint8_t b, double &X, double &Y, double &Z) {
+	double R = srgbToLinear(r);
+	double G = srgbToLinear(g);
+	double B = srgbToLinear(b);
+
+	// sRGB to XYZ conversion matrix (D65 white point)
+	X = R * 0.4124564 + G * 0.3575761 + B * 0.1804375;
+	Y = R * 0.2126729 + G * 0.7151522 + B * 0.0721750;
+	Z = R * 0.0193339 + G * 0.1191920 + B * 0.9503041;
+}
+
+void Color::xyzToLab(double X, double Y, double Z, double &L, double &a, double &b) {
+	// D65 reference white point
+	double Xr = 0.95047, Yr = 1.00000, Zr = 1.08883;
+
+	auto f = [](double t) { return (t > 0.008856) ? pow(t, 1.0 / 3.0) : (7.787 * t + 16.0 / 116.0); };
+
+	double fx = f(X / Xr);
+	double fy = f(Y / Yr);
+	double fz = f(Z / Zr);
+
+	L = (116.0 * fy) - 16.0;
+	a = 500.0 * (fx - fy);
+	b = 200.0 * (fy - fz);
+}
+
+double Color::deltaE76(double L1, double a1, double b1, double L2, double a2, double b2) {
+	return sqrt(pow(L2 - L1, 2) + pow(a2 - a1, 2) + pow(b2 - b1, 2));
+}
+
+double Color::deltaE76(RGBA c1, RGBA c2) {
+	double X1, Y1, Z1, X2, Y2, Z2;
+	rgbToXyz(c1.r, c1.g, c1.b, X1, Y1, Z1);
+	rgbToXyz(c2.r, c2.g, c2.b, X2, Y2, Z2);
+
+	double L1, a1, b1, L2, a2, b2;
+	xyzToLab(X1, Y1, Z1, L1, a1, b1);
+	xyzToLab(X2, Y2, Z2, L2, a2, b2);
+
+	return deltaE76(L1, a1, b1, L2, a2, b2);
+}
+
 float Color::getDistance(RGBA rgba, RGBA rgba2, Distance d) {
 	if (rgba == rgba2) {
 		return 0.0f;

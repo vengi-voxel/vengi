@@ -2,9 +2,15 @@
 -- moves all voxels of the current color into a new scene node. it takes the closest palette index
 --
 
+function arguments()
+	return {
+		{ name = 'exactmatch', desc = 'Only exact match, not similar colors', type = 'bool', default = 'true' }
+	}
+end
+
 local vol = require "modules.volume"
 
-function main(node, region, color)
+function main(node, region, color, exactmatch)
 	local newLayer = g_scenegraph.new('split', region)
 	local newVolume = newLayer:volume()
 	newLayer:setPalette(node:palette())
@@ -14,13 +20,27 @@ function main(node, region, color)
 		volume:setVoxel(x, y, z, -1)
 	end
 
-	local condition = function (volume, x, y, z)
-		local voxel = volume:voxel(x, y, z)
-		if voxel == color then
-			return true
+	local palette = node:palette()
+	local condition
+	if exactmatch then
+		condition = function (volume, x, y, z)
+			local voxel = volume:voxel(x, y, z)
+			if voxel == color then
+				return true
+			end
+			return false
 		end
-		return false
+	else
+		condition = function (volume, x, y, z)
+			local voxel = volume:voxel(x, y, z)
+			local dist = palette:deltaE(voxel, color)
+			if dist < 48 then
+				return true
+			end
+			return false
+		end
 	end
 	vol.conditionYXZ(node:volume(), region, visitor, condition)
+
 	newVolume:crop()
 end

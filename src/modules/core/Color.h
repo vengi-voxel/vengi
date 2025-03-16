@@ -57,6 +57,25 @@ public:
 	static float getDistance(RGBA rgba, RGBA rgba2, Distance d);
 	static float getDistance(RGBA color, float hue, float saturation, float brightness);
 
+	// Helper function to convert sRGB component to linear space
+	static double srgbToLinear(uint8_t c);
+
+	// Convert RGB to XYZ color space
+	static void rgbToXyz(uint8_t r, uint8_t g, uint8_t b, double &X, double &Y, double &Z);
+
+	// Convert XYZ to LAB color space
+
+	static void xyzToLab(double X, double Y, double Z, double &L, double &a, double &b);
+
+	// Compute Delta E (CIE76)
+	// <= 1.0  Imperceptible
+	// 1-2     Noticeable on close inspection
+	// 2-10    Perceptible at a glance
+	// 11-49   Distinct but related colors
+	// 50-100  Completely different colors
+	static double deltaE76(double L1, double a1, double b1, double L2, double a2, double b2);
+	static double deltaE76(RGBA c1, RGBA c2);
+
 	static core::String print(RGBA rgba, bool colorAsHex = true);
 
 	static core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f);

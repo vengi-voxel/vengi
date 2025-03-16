@@ -743,6 +743,20 @@ static int luaVoxel_palette_materialproperty(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_palette_delta_e(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	const uint8_t idx2 = luaL_checkinteger(s, 3);
+	float distance = 0.0f;
+	if (idx != idx2) {
+		const core::RGBA c1 = palette->color(idx);
+		const core::RGBA c2 = palette->color(idx2);
+		distance = core::Color::deltaE76(c1, c2);
+	}
+	lua_pushnumber(s, distance);
+	return 1;
+}
+
 static int luaVoxel_palette_color_to_string(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t idx = luaL_checkinteger(s, 2);
@@ -1747,6 +1761,7 @@ static void prepareState(lua_State* s) {
 		{"similar", luaVoxel_palette_similar},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty},
 		{"material", luaVoxel_palette_materialproperty},
+		{"deltaE", luaVoxel_palette_delta_e},
 		{"colorString", luaVoxel_palette_color_to_string},
 		{"__eq", luaVoxel_palette_eq},
 		{nullptr, nullptr}
@@ -1763,6 +1778,7 @@ static void prepareState(lua_State* s) {
 		{"similar", luaVoxel_palette_similar},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty},
 		{"material", luaVoxel_palette_materialproperty},
+		{"deltaE", luaVoxel_palette_delta_e},
 		{"colorString", luaVoxel_palette_color_to_string},
 		{"__gc", luaVoxel_palette_gc},
 		{"__eq", luaVoxel_palette_eq},
