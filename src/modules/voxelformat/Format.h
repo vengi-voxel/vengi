@@ -41,7 +41,7 @@ namespace voxelformat {
  * the colors later on)
  */
 using RGBAMap = core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher>;
-using RGBAMaterialMap = core::DynamicMap<core::RGBA, const palette::Material*, 1031, core::RGBAHasher>;
+using RGBAMaterialMap = core::DynamicMap<core::RGBA, const palette::Material *, 1031, core::RGBAHasher>;
 
 typedef void (*ProgressMonitor)(const char *name, int cur, int max);
 
@@ -224,7 +224,8 @@ protected:
 	}
 	/**
 	 * A few formats are using a palette index to indicate an empty voxel.
-	 * @return A palette index of @c -1 means that the format doesn't support this feature. Otherwise an index between @c [0,palette::PaletteMaxColors] must be used
+	 * @return A palette index of @c -1 means that the format doesn't support this feature. Otherwise an index between
+	 * @c [0,palette::PaletteMaxColors] must be used
 	 */
 	virtual int emptyPaletteIndex() const;
 	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
@@ -255,6 +256,11 @@ protected:
 /**
  * @ingroup Formats
  */
-class RGBASinglePaletteFormat : public RGBAFormat {};
+class RGBASinglePaletteFormat : public RGBAFormat {
+protected:
+	virtual int emptyPaletteIndex() {
+		return 0;
+	}
+};
 
 } // namespace voxelformat
