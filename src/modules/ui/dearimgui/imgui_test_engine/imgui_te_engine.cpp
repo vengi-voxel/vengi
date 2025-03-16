@@ -27,7 +27,9 @@
 #include <windows.h>    // SetUnhandledExceptionFilter()
 #undef Yield            // Undo some of the damage done by <windows.h>
 #else
+#if !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
 #include <signal.h>     // signal()
+#endif
 #include <unistd.h>     // sleep()
 #endif
 
@@ -2047,7 +2049,7 @@ void ImGuiTestEngine_InstallDefaultCrashHandler()
 {
 #ifdef _WIN32
     SetUnhandledExceptionFilter(&ImGuiTestEngine_CrashHandlerWin32);
-#else
+#elif !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     // Install a crash handler to relevant signals.
     struct sigaction action = {};
     action.sa_handler = ImGuiTestEngine_CrashHandlerUnix;

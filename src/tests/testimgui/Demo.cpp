@@ -1,4 +1,4 @@
-// dear imgui, v1.91.9 WIP
+// dear imgui, v1.91.9
 // (demo code)
 
 // Help:
@@ -160,6 +160,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wold-style-cast"                 // warning: use of old-style cast                           // yes, they are more terse.
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"        // warning: 'xx' is deprecated: The POSIX name for this..   // for strdup used in demo code (so user can copy & paste the code)
 #pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"       // warning: cast to 'void *' from smaller integer type
+#pragma clang diagnostic ignored "-Wformat"                         // warning: format specifies type 'int' but the argument has type 'unsigned int'
 #pragma clang diagnostic ignored "-Wformat-security"                // warning: format string is not a string literal
 #pragma clang diagnostic ignored "-Wexit-time-destructors"          // warning: declaration requires an exit-time destructor    // exit-time destruction order is undefined. if MemFree() leads to users code that has been disabled before exit it might cause problems. ImGui coding style welcomes static/globals.
 #pragma clang diagnostic ignored "-Wunused-macros"                  // warning: macro is not used                               // we define snprintf/vsnprintf on Windows so they are available, but not always used.
@@ -168,6 +169,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wreserved-id-macro"              // warning: macro name is a reserved identifier
 #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"            // warning: 'xxx' is an unsafe pointer used for buffer access
+#pragma clang diagnostic ignored "-Wswitch-default"                 // warning: 'switch' missing 'default' label
 #elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wpragmas"                          // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wfloat-equal"                      // warning: comparing floating-point with '==' or '!=' is unsafe
@@ -8514,7 +8516,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
                 ImGui::EndTooltip();
             }
             ImGui::SameLine();
-            HelpMarker("When drawing circle primitives with \"num_segments == 0\" tesselation will be calculated automatically.");
+            HelpMarker("When drawing circle primitives with \"num_segments == 0\" tessellation will be calculated automatically.");
 
             ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
             ImGui::DragFloat("Disabled Alpha", &style.DisabledAlpha, 0.005f, 0.0f, 1.0f, "%.2f"); ImGui::SameLine(); HelpMarker("Additional alpha multiplier for disabled items (multiply over current value of Alpha).");
@@ -8545,7 +8547,7 @@ void ImGui::ShowUserGuide()
     ImGui::BulletText("CTRL+Tab to select a window.");
     if (io.FontAllowUserScaling)
         ImGui::BulletText("CTRL+Mouse Wheel to zoom window contents.");
-    ImGui::BulletText("While inputing text:\n");
+    ImGui::BulletText("While inputting text:\n");
     ImGui::Indent();
     ImGui::BulletText("CTRL+Left/Right to word jump.");
     ImGui::BulletText("CTRL+A or double-click to select all.");
@@ -8976,7 +8978,7 @@ struct ExampleAppConsole
                 else
                 {
                     // Multiple matches. Complete as much as we can..
-                    // So inputing "C"+Tab will complete to "CL" then display "CLEAR" and "CLASSIFY" as matches.
+                    // So inputting "C"+Tab will complete to "CL" then display "CLEAR" and "CLASSIFY" as matches.
                     int match_len = (int)(word_end - word_start);
                     for (;;)
                     {

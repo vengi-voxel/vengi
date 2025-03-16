@@ -1,4 +1,4 @@
-// dear imgui, v1.91.9 WIP
+// dear imgui, v1.91.9
 // (widgets code)
 
 /*
@@ -70,6 +70,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wunknown-pragmas"                // warning: unknown warning group 'xxx'
 #pragma clang diagnostic ignored "-Wold-style-cast"                 // warning: use of old-style cast                            // yes, they are more terse.
 #pragma clang diagnostic ignored "-Wfloat-equal"                    // warning: comparing floating point with == or != is unsafe // storing and comparing against same constants (typically 0.0f) is ok.
+#pragma clang diagnostic ignored "-Wformat"                         // warning: format specifies type 'int' but the argument has type 'unsigned int'
 #pragma clang diagnostic ignored "-Wformat-nonliteral"              // warning: format string is not a string literal            // passing non-literal to vsnformat(). yes, user passing incorrect format strings can crash the code.
 #pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
 #pragma clang diagnostic ignored "-Wunused-macros"                  // warning: macro is not used                                // we define snprintf/vsnprintf on Windows so they are available, but not always used.
@@ -80,6 +81,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"            // warning: 'xxx' is an unsafe pointer used for buffer access
 #pragma clang diagnostic ignored "-Wnontrivial-memaccess"           // warning: first argument in call to 'memset' is a pointer to non-trivially copyable type
+#pragma clang diagnostic ignored "-Wswitch-default"                 // warning: 'switch' missing 'default' label
 #elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wpragmas"                          // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wfloat-equal"                      // warning: comparing floating-point with '==' or '!=' is unsafe
@@ -169,7 +171,7 @@ void ImGui::TextEx(const char* text, const char* text_end, ImGuiTextFlags flags)
     // Calculate length
     const char* text_begin = text;
     if (text_end == NULL)
-        text_end = text + strlen(text); // FIXME-OPT
+        text_end = text + ImStrlen(text); // FIXME-OPT
 
     const ImVec2 text_pos(window->DC.CursorPos.x, window->DC.CursorPos.y + window->DC.CurrLineTextBaseOffset);
     const float wrap_pos_x = window->DC.TextWrapPos;
@@ -209,7 +211,7 @@ void ImGui::TextEx(const char* text, const char* text_end, ImGuiTextFlags flags)
                 int lines_skipped = 0;
                 while (line < text_end && lines_skipped < lines_skippable)
                 {
-                    const char* line_end = (const char*)memchr(line, '\n', text_end - line);
+                    const char* line_end = (const char*)ImMemchr(line, '\n', text_end - line);
                     if (!line_end)
                         line_end = text_end;
                     if ((flags & ImGuiTextFlags_NoWidthForLargeClippedText) == 0)
@@ -230,7 +232,7 @@ void ImGui::TextEx(const char* text, const char* text_end, ImGuiTextFlags flags)
                 if (IsClippedEx(line_rect, 0))
                     break;
 
-                const char* line_end = (const char*)memchr(line, '\n', text_end - line);
+                const char* line_end = (const char*)ImMemchr(line, '\n', text_end - line);
                 if (!line_end)
                     line_end = text_end;
                 text_size.x = ImMax(text_size.x, CalcTextSize(line, line_end).x);
@@ -245,7 +247,7 @@ void ImGui::TextEx(const char* text, const char* text_end, ImGuiTextFlags flags)
             int lines_skipped = 0;
             while (line < text_end)
             {
-                const char* line_end = (const char*)memchr(line, '\n', text_end - line);
+                const char* line_end = (const char*)ImMemchr(line, '\n', text_end - line);
                 if (!line_end)
                     line_end = text_end;
                 if ((flags & ImGuiTextFlags_NoWidthForLargeClippedText) == 0)
@@ -2070,7 +2072,7 @@ static const char* Items_SingleStringGetter(void* data, int idx)
     {
         if (idx == items_count)
             break;
-        p += strlen(p) + 1;
+        p += ImStrlen(p) + 1;
         items_count++;
     }
     return *p ? p : NULL;
@@ -2138,7 +2140,7 @@ bool ImGui::Combo(const char* label, int* current_item, const char* items_separa
     const char* p = items_separated_by_zeros;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
     while (*p)
     {
-        p += strlen(p) + 1;
+        p += ImStrlen(p) + 1;
         items_count++;
     }
     bool value_changed = Combo(label, current_item, Items_SingleStringGetter, (void*)items_separated_by_zeros, items_count, height_in_items);
@@ -2648,7 +2650,7 @@ bool ImGui::DragScalar(const char* label, ImGuiDataType data_type, void* p_data,
     bool temp_input_is_active = temp_input_allowed && TempInputIsActive(id);
     if (!temp_input_is_active)
     {
-        // Tabbing or CTRL-clicking on Drag turns it into an InputText
+        // Tabbing or CTRL+click on Drag turns it into an InputText
         const bool clicked = hovered && IsMouseClicked(0, ImGuiInputFlags_None, id);
         const bool double_clicked = (hovered && g.IO.MouseClickedCount[0] == 2 && TestKeyOwner(ImGuiKey_MouseLeft, id));
         const bool make_active = (clicked || double_clicked || g.NavActivateId == id);
@@ -3252,7 +3254,7 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_dat
     bool temp_input_is_active = temp_input_allowed && TempInputIsActive(id);
     if (!temp_input_is_active)
     {
-        // Tabbing or CTRL-clicking on Slider turns it into an input box
+        // Tabbing or CTRL+click on Slider turns it into an input box
         const bool clicked = hovered && IsMouseClicked(0, ImGuiInputFlags_None, id);
         const bool make_active = (clicked || g.NavActivateId == id);
         if (make_active && clicked)
@@ -3905,7 +3907,7 @@ static int InputTextCalcTextLenAndLineCount(const char* text_begin, const char**
         line_count++;
         if (s_eol == NULL)
         {
-            s = s + strlen(s);
+            s = s + ImStrlen(s);
             break;
         }
         s = s_eol + 1;
@@ -4193,7 +4195,7 @@ void ImGuiInputTextState::OnCharPressed(unsigned int c)
     // The changes we had to make to stb_textedit_key made it very much UTF-8 specific which is not too great.
     char utf8[5];
     ImTextCharToUtf8(utf8, c);
-    stb_textedit_text(this, Stb, utf8, (int)strlen(utf8));
+    stb_textedit_text(this, Stb, utf8, (int)ImStrlen(utf8));
     CursorFollow = true;
     CursorAnimReset();
 }
@@ -4244,7 +4246,7 @@ void ImGuiInputTextCallbackData::InsertChars(int pos, const char* new_text, cons
 
     // Grow internal buffer if needed
     const bool is_resizable = (Flags & ImGuiInputTextFlags_CallbackResize) != 0;
-    const int new_text_len = new_text_end ? (int)(new_text_end - new_text) : (int)strlen(new_text);
+    const int new_text_len = new_text_end ? (int)(new_text_end - new_text) : (int)ImStrlen(new_text);
     if (new_text_len + BufTextLen >= BufSize)
     {
         if (!is_resizable)
@@ -4300,7 +4302,13 @@ static bool InputTextFilterCharacter(ImGuiContext* ctx, unsigned int* p_char, Im
     if (c < 0x20)
     {
         bool pass = false;
-        pass |= (c == '\n') && (flags & ImGuiInputTextFlags_Multiline) != 0; // Note that an Enter KEY will emit \r and be ignored (we poll for KEY in InputText() code)
+        pass |= (c == '\n') && (flags & ImGuiInputTextFlags_Multiline) != 0;    // Note that an Enter KEY will emit \r and be ignored (we poll for KEY in InputText() code)
+        if (c == '\n' && input_source_is_clipboard && (flags & ImGuiInputTextFlags_Multiline) == 0) // In single line mode, replace \n with a space
+        {
+            c = *p_char = ' ';
+            pass = true;
+        }
+        pass |= (c == '\n') && (flags & ImGuiInputTextFlags_Multiline) != 0;
         pass |= (c == '\t') && (flags & ImGuiInputTextFlags_AllowTabInput) != 0;
         if (!pass)
             return false;
@@ -4566,7 +4574,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
     const bool init_state = (init_make_active || user_scroll_active);
     if (init_reload_from_user_buf)
     {
-        int new_len = (int)strlen(buf);
+        int new_len = (int)ImStrlen(buf);
         IM_ASSERT(new_len + 1 <= buf_size && "Is your input buffer properly zero-terminated?");
         state->WantReloadUserBuf = false;
         InputTextReconcileUndoState(state, state->TextA.Data, state->TextLen, buf, new_len);
@@ -4588,7 +4596,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
 
         // Take a copy of the initial buffer value.
         // From the moment we focused we are normally ignoring the content of 'buf' (unless we are in read-only mode)
-        const int buf_len = (int)strlen(buf);
+        const int buf_len = (int)ImStrlen(buf);
         IM_ASSERT(buf_len + 1 <= buf_size && "Is your input buffer properly zero-terminated?");
         state->TextToRevertTo.resize(buf_len + 1);    // UTF-8. we use +1 to make sure that .Data is always pointing to at least an empty string.
         memcpy(state->TextToRevertTo.Data, buf, buf_len + 1);
@@ -4673,7 +4681,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
 
         // Read-only mode always ever read from source buffer. Refresh TextLen when active.
         if (is_readonly && state != NULL)
-            state->TextLen = (int)strlen(buf);
+            state->TextLen = (int)ImStrlen(buf);
         //if (is_readonly && state != NULL)
         //    state->TextA.clear(); // Uncomment to facilitate debugging, but we otherwise prefer to keep/amortize th allocation.
     }
@@ -4952,7 +4960,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
             if (const char* clipboard = GetClipboardText())
             {
                 // Filter pasted buffer
-                const int clipboard_len = (int)strlen(clipboard);
+                const int clipboard_len = (int)ImStrlen(clipboard);
                 ImVector<char> clipboard_filtered;
                 clipboard_filtered.reserve(clipboard_len + 1);
                 for (const char* s = clipboard; *s != 0; )
@@ -4964,7 +4972,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                         continue;
                     char c_utf8[5];
                     ImTextCharToUtf8(c_utf8, c);
-                    int out_len = (int)strlen(c_utf8);
+                    int out_len = (int)ImStrlen(c_utf8);
                     clipboard_filtered.resize(clipboard_filtered.Size + out_len);
                     memcpy(clipboard_filtered.Data + clipboard_filtered.Size - out_len, c_utf8, out_len);
                 }
@@ -5094,7 +5102,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                     if (buf_dirty)
                     {
                         // Callback may update buffer and thus set buf_dirty even in read-only mode.
-                        IM_ASSERT(callback_data.BufTextLen == (int)strlen(callback_data.Buf)); // You need to maintain BufTextLen if you change the text!
+                        IM_ASSERT(callback_data.BufTextLen == (int)ImStrlen(callback_data.Buf)); // You need to maintain BufTextLen if you change the text!
                         InputTextReconcileUndoState(state, state->CallbackTextBackup.Data, state->CallbackTextBackup.Size - 1, callback_data.Buf, callback_data.BufTextLen);
                         state->TextLen = callback_data.BufTextLen;  // Assume correct length and valid UTF-8 from user, saves us an extra strlen()
                         state->CursorAnimReset();
@@ -5193,7 +5201,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
     if (is_displaying_hint)
     {
         buf_display = hint;
-        buf_display_end = hint + strlen(hint);
+        buf_display_end = hint + ImStrlen(hint);
     }
 
     // Render text. We currently only render selection when the widget is active or while scrolling.
@@ -5226,7 +5234,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
             int line_count = 1;
             if (is_multiline)
             {
-                for (const char* s = text_begin; (s = (const char*)memchr(s, '\n', (size_t)(text_end - s))) != NULL; s++)
+                for (const char* s = text_begin; (s = (const char*)ImMemchr(s, '\n', (size_t)(text_end - s))) != NULL; s++)
                 {
                     if (cursor_line_no == -1 && s >= cursor_ptr) { cursor_line_no = line_count; }
                     if (selmin_line_no == -1 && s >= selmin_ptr) { selmin_line_no = line_count; }
@@ -5304,7 +5312,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
                     break;
                 if (rect_pos.y < clip_rect.y)
                 {
-                    p = (const char*)memchr((void*)p, '\n', text_selected_end - p);
+                    p = (const char*)ImMemchr((void*)p, '\n', text_selected_end - p);
                     p = p ? p + 1 : text_selected_end;
                 }
                 else
@@ -5357,7 +5365,7 @@ bool ImGui::InputTextEx(const char* label, const char* hint, char* buf, int buf_
         else if (!is_displaying_hint && g.ActiveId == id)
             buf_display_end = buf_display + state->TextLen;
         else if (!is_displaying_hint)
-            buf_display_end = buf_display + strlen(buf_display);
+            buf_display_end = buf_display + ImStrlen(buf_display);
 
         if (is_multiline || (buf_display_end - buf_display) < buf_display_max_length)
         {
@@ -5502,7 +5510,7 @@ static void ColorEditRestoreHS(const float* col, float* H, float* S, float* V)
 
 // Edit colors components (each component in 0.0f..1.0f range).
 // See enum ImGuiColorEditFlags_ for available options. e.g. Only access 3 floats if ImGuiColorEditFlags_NoAlpha flag is set.
-// With typical options: Left-click on color square to open color picker. Right-click to open option menu. CTRL-Click over input fields to edit them and TAB to go to next item.
+// With typical options: Left-click on color square to open color picker. Right-click to open option menu. CTRL+Click over input fields to edit them and TAB to go to next item.
 bool ImGui::ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags)
 {
     ImGuiWindow* window = GetCurrentWindow();
@@ -7191,7 +7199,7 @@ ImGuiTypingSelectRequest* ImGui::GetTypingSelectRequest(ImGuiTypingSelectFlags f
 
     // Append to buffer
     const int buffer_max_len = IM_ARRAYSIZE(data->SearchBuffer) - 1;
-    int buffer_len = (int)strlen(data->SearchBuffer);
+    int buffer_len = (int)ImStrlen(data->SearchBuffer);
     bool select_request = false;
     for (ImWchar w : g.IO.InputQueueCharacters)
     {
@@ -8910,7 +8918,7 @@ bool ImGui::BeginMenuEx(const char* label, const char* icon, bool enabled)
     const ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_NoHoldingActiveID | ImGuiSelectableFlags_NoSetKeyOwner | ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_NoAutoClosePopups;
     if (window->DC.LayoutType == ImGuiLayoutType_Horizontal)
     {
-        // Menu inside an horizontal menu bar
+        // Menu inside a horizontal menu bar
         // Selectable extend their highlight by half ItemSpacing in each direction.
         // For ChildMenu, the popup position will be overwritten by the call to FindBestWindowPosForPopup() in Begin()
         popup_pos = ImVec2(pos.x - 1.0f - IM_TRUNC(style.ItemSpacing.x * 0.5f), pos.y - style.FramePadding.y + window->MenuBarHeight);
@@ -10170,7 +10178,7 @@ bool    ImGui::TabItemEx(ImGuiTabBar* tab_bar, const char* label, bool* p_open, 
     else
     {
         tab->NameOffset = (ImS32)tab_bar->TabsNames.size();
-        tab_bar->TabsNames.append(label, label + strlen(label) + 1);
+        tab_bar->TabsNames.append(label, label + ImStrlen(label) + 1);
     }
 
     // Update selected tab

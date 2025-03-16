@@ -1947,7 +1947,11 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ImGui::SetWindowSize(window, size_bkp);
         SetPerfToolWindowOpen(ctx, perf_was_open);                   // Restore window visibility
 
+#if !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
         const char* perf_report_output = getenv("CAPTURE_PERF_REPORT_OUTPUT");
+#else
+        const char* perf_report_output = nullptr;
+#endif
         if (perf_report_output == nullptr)
             perf_report_output = PerfToolReportDefaultOutputPath;
         perftool->SaveHtmlReport(perf_report_output, perf_report_image);

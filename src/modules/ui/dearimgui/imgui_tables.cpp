@@ -1,4 +1,4 @@
-// dear imgui, v1.91.9 WIP
+// dear imgui, v1.91.9
 // (tables and columns code)
 
 /*
@@ -221,6 +221,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wunknown-pragmas"                // warning: unknown warning group 'xxx'
 #pragma clang diagnostic ignored "-Wold-style-cast"                 // warning: use of old-style cast                            // yes, they are more terse.
 #pragma clang diagnostic ignored "-Wfloat-equal"                    // warning: comparing floating point with == or != is unsafe // storing and comparing against same constants (typically 0.0f) is ok.
+#pragma clang diagnostic ignored "-Wformat"                         // warning: format specifies type 'int' but the argument has type 'unsigned int'
 #pragma clang diagnostic ignored "-Wformat-nonliteral"              // warning: format string is not a string literal            // passing non-literal to vsnformat(). yes, user passing incorrect format strings can crash the code.
 #pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
 #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"  // warning: zero as null pointer constant                    // some standard header variations use #define NULL 0
@@ -230,6 +231,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"            // warning: 'xxx' is an unsafe pointer used for buffer access
 #pragma clang diagnostic ignored "-Wnontrivial-memaccess"           // warning: first argument in call to 'memset' is a pointer to non-trivially copyable type
+#pragma clang diagnostic ignored "-Wswitch-default"                 // warning: 'switch' missing 'default' label
 #elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wpragmas"                          // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wfloat-equal"                      // warning: comparing floating-point with '==' or '!=' is unsafe
@@ -977,7 +979,7 @@ void ImGui::TableUpdateLayout(ImGuiTable* table)
     // [Part 4] Apply final widths based on requested widths
     const ImRect work_rect = table->WorkRect;
     const float width_spacings = (table->OuterPaddingX * 2.0f) + (table->CellSpacingX1 + table->CellSpacingX2) * (table->ColumnsEnabledCount - 1);
-    const float width_removed = (table->HasScrollbarYPrev && !table->InnerWindow->ScrollbarY) ? g.Style.ScrollbarSize : 0.0f; // To synchronize decoration width of synched tables with mismatching scrollbar state (#5920)
+    const float width_removed = (table->HasScrollbarYPrev && !table->InnerWindow->ScrollbarY) ? g.Style.ScrollbarSize : 0.0f; // To synchronize decoration width of synced tables with mismatching scrollbar state (#5920)
     const float width_avail = ImMax(1.0f, (((table->Flags & ImGuiTableFlags_ScrollX) && table->InnerWidth == 0.0f) ? table->InnerClipRect.GetWidth() : work_rect.GetWidth()) - width_removed);
     const float width_avail_for_stretched_columns = width_avail - width_spacings - sum_width_requests;
     float width_remaining_for_stretched_columns = width_avail_for_stretched_columns;
@@ -1390,7 +1392,7 @@ void    ImGui::EndTable()
 
     // Setup inner scrolling range
     // FIXME: This ideally should be done earlier, in BeginTable() SetNextWindowContentSize call, just like writing to inner_window->DC.CursorMaxPos.y,
-    // but since the later is likely to be impossible to do we'd rather update both axises together.
+    // but since the later is likely to be impossible to do we'd rather update both axes together.
     if (table->Flags & ImGuiTableFlags_ScrollX)
     {
         const float outer_padding_for_border = (table->Flags & ImGuiTableFlags_BordersOuterV) ? TABLE_BORDER_SIZE : 0.0f;
@@ -1637,7 +1639,7 @@ void ImGui::TableSetupColumn(const char* label, ImGuiTableColumnFlags flags, flo
     if (table->IsInitializing)
     {
         ImGuiTableFlags init_flags = ~0;
-        if (column->WidthRequest >= 0.0f && column->StretchWeight >= 0.0f)
+        if (column->WidthRequest >= 0.0f || column->StretchWeight >= 0.0f)
             init_flags &= ~ImGuiTableFlags_Resizable;
         TableInitColumnDefaults(table, column, init_flags);
     }
@@ -1648,7 +1650,7 @@ void ImGui::TableSetupColumn(const char* label, ImGuiTableColumnFlags flags, flo
     if (label != NULL && label[0] != 0)
     {
         column->NameOffset = (ImS16)table->ColumnsNames.size();
-        table->ColumnsNames.append(label, label + strlen(label) + 1);
+        table->ColumnsNames.append(label, label + ImStrlen(label) + 1);
     }
 }
 

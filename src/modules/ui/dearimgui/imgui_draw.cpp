@@ -1,4 +1,4 @@
-// dear imgui, v1.91.9 WIP
+// dear imgui, v1.91.9
 // (drawing and font code)
 
 /*
@@ -68,6 +68,7 @@ Index of this file:
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"            // warning: 'xxx' is an unsafe pointer used for buffer access
 #pragma clang diagnostic ignored "-Wnontrivial-memaccess"           // warning: first argument in call to 'memset' is a pointer to non-trivially copyable type
 #pragma clang diagnostic ignored "-Wcast-qual"                      // warning: cast from 'const xxxx *' to 'xxx *' drops const qualifier
+#pragma clang diagnostic ignored "-Wswitch-default"                 // warning: 'switch' missing 'default' label
 #elif defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wpragmas"                          // warning: unknown option after '#pragma GCC diagnostic' kind
 #pragma GCC diagnostic ignored "-Wunused-function"                  // warning: 'xxxx' defined but not used
@@ -143,6 +144,7 @@ namespace IMGUI_STB_NAMESPACE
 #define STBTT_fabs(x)       ImFabs(x)
 #define STBTT_ifloor(x)     ((int)ImFloor(x))
 #define STBTT_iceil(x)      ((int)ImCeil(x))
+#define STBTT_strlen(x)     ImStrlen(x)
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #else
@@ -2678,7 +2680,7 @@ ImFont* ImFontAtlas::AddFontFromFileTTF(const char* filename, float size_pixels,
     {
         // Store a short copy of filename into into the font name for convenience
         const char* p;
-        for (p = filename + strlen(filename); p > filename && p[-1] != '/' && p[-1] != '\\'; p--) {}
+        for (p = filename + ImStrlen(filename); p > filename && p[-1] != '/' && p[-1] != '\\'; p--) {}
         ImFormatString(font_cfg.Name, IM_ARRAYSIZE(font_cfg.Name), "%s, %.0fpx", p, size_pixels);
     }
     return AddFontFromMemoryTTF(data, (int)data_size, size_pixels, &font_cfg, glyph_ranges);
@@ -2713,7 +2715,7 @@ ImFont* ImFontAtlas::AddFontFromMemoryCompressedTTF(const void* compressed_ttf_d
 
 ImFont* ImFontAtlas::AddFontFromMemoryCompressedBase85TTF(const char* compressed_ttf_data_base85, float size_pixels, const ImFontConfig* font_cfg, const ImWchar* glyph_ranges)
 {
-    int compressed_ttf_size = (((int)strlen(compressed_ttf_data_base85) + 4) / 5) * 4;
+    int compressed_ttf_size = (((int)ImStrlen(compressed_ttf_data_base85) + 4) / 5) * 4;
     void* compressed_ttf = IM_ALLOC((size_t)compressed_ttf_size);
     Decode85((const unsigned char*)compressed_ttf_data_base85, (unsigned char*)compressed_ttf);
     ImFont* font = AddFontFromMemoryCompressedTTF(compressed_ttf, compressed_ttf_size, size_pixels, font_cfg, glyph_ranges);
@@ -4035,7 +4037,7 @@ const char* ImFont::CalcWordWrapPositionA(float scale, const char* text, const c
 ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end, const char** remaining)
 {
     if (!text_end)
-        text_end = text_begin + strlen(text_begin); // FIXME-OPT: Need to avoid this.
+        text_end = text_begin + ImStrlen(text_begin); // FIXME-OPT: Need to avoid this.
 
     const float line_height = size;
     const float scale = size / FontSize;
@@ -4135,7 +4137,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, const ImVec2& pos, Im
         return;
 
     if (!text_end)
-        text_end = text_begin + strlen(text_begin); // ImGui:: functions generally already provides a valid text_end, so this is merely to handle direct calls.
+        text_end = text_begin + ImStrlen(text_begin); // ImGui:: functions generally already provides a valid text_end, so this is merely to handle direct calls.
 
     const float scale = size / FontSize;
     const float line_height = FontSize * scale;
@@ -4147,7 +4149,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, const ImVec2& pos, Im
     if (y + line_height < clip_rect.y)
         while (y + line_height < clip_rect.y && s < text_end)
         {
-            const char* line_end = (const char*)memchr(s, '\n', text_end - s);
+            const char* line_end = (const char*)ImMemchr(s, '\n', text_end - s);
             if (word_wrap_enabled)
             {
                 // FIXME-OPT: This is not optimal as do first do a search for \n before calling CalcWordWrapPositionA().
@@ -4171,7 +4173,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, const ImVec2& pos, Im
         float y_end = y;
         while (y_end < clip_rect.w && s_end < text_end)
         {
-            s_end = (const char*)memchr(s_end, '\n', text_end - s_end);
+            s_end = (const char*)ImMemchr(s_end, '\n', text_end - s_end);
             s_end = s_end ? s_end + 1 : text_end;
             y_end += line_height;
         }

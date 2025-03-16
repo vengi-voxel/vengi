@@ -840,6 +840,8 @@ const ImBuildInfo* ImBuildGetCompilationInfo()
         build_info.OS = "OSX";
 #elif defined(__ORBIS__)
         build_info.OS = "PS4";
+#elif defined(__PROSPERO__)
+        build_info.OS = "PS5";
 #elif defined(_DURANGO)
         build_info.OS = "XboxOne";
 #else
@@ -906,7 +908,7 @@ bool ImBuildFindGitBranchName(const char* git_repo_path, Str* branch_name)
 
 bool    ImOsCreateProcess(const char* cmd_line)
 {
-#if defined(_WIN32) && !defined(_GAMING_XBOX)
+#if defined(_WIN32) && !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     STARTUPINFOA siStartInfo;
     PROCESS_INFORMATION piProcInfo;
     ZeroMemory(&siStartInfo, sizeof(STARTUPINFOA));
@@ -930,7 +932,7 @@ FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
 {
     IM_ASSERT(cmd_line != nullptr && *cmd_line);
     IM_ASSERT(mode != nullptr && *mode);
-#if defined(_WIN32) && !defined(_GAMING_XBOX)
+#if defined(_WIN32) && !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     ImVector<wchar_t> w_cmd_line;
     ImVector<wchar_t> w_mode;
     ImUtf8ToWideChar(cmd_line, &w_cmd_line);
@@ -938,34 +940,33 @@ FILE*       ImOsPOpen(const char* cmd_line, const char* mode)
     w_mode.resize(w_mode.Size + 1);
     wcscat(w_mode.Data, L"b");   // Windows requires 'b' mode while unixes do not support it and default to binary.
     return _wpopen(w_cmd_line.Data, w_mode.Data);
-#elif defined(_GAMING_XBOX)
-    IM_ASSERT(0);
-#else
+#elif !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     return popen(cmd_line, mode);
+#else
+    IM_ASSERT(0);
+    return NULL;
 #endif
 }
 
 void        ImOsPClose(FILE* fp)
 {
     IM_ASSERT(fp != nullptr);
-#if defined(_WIN32) && !defined(_GAMING_XBOX)
+#if defined(_WIN32) && !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     _pclose(fp);
-#elif defined(_GAMING_XBOX)
-    IM_ASSERT(0);
-#else
+#elif !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     pclose(fp);
+#else
+    IM_ASSERT(0);
 #endif
 }
 
 void    ImOsOpenInShell(const char* path)
 {
     Str256 command(path);
-#if defined(_WIN32) && !defined(_GAMING_XBOX)
+#if defined(_WIN32) && !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     ImPathFixSeparatorsForCurrentOS(command.c_str());
     ::ShellExecuteA(nullptr, "open", command.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
-#elif defined(_GAMING_XBOX)
-    IM_ASSERT(0);
-#else
+#elif !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
 #if __APPLE__
     const char* open_executable = "open";
 #else
@@ -974,12 +975,15 @@ void    ImOsOpenInShell(const char* path)
     command.setf("%s \"%s\"", open_executable, path);
     ImPathFixSeparatorsForCurrentOS(command.c_str());
     system(command.c_str());
+#else
+    IM_UNUSED(path);
+    IM_ASSERT(0);
 #endif
 }
 
 void    ImOsConsoleSetTextColor(ImOsConsoleStream stream, ImOsConsoleTextColor color)
 {
-#if defined(_WIN32) && !defined(_GAMING_XBOX)
+#if defined(_WIN32) && !IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
     HANDLE hConsole = 0;
     switch (stream)
     {

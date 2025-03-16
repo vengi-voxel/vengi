@@ -1,4 +1,4 @@
-// dear imgui, v1.91.9 WIP
+// dear imgui, v1.91.9
 // (main code and documentation)
 
 // Help:
@@ -666,7 +666,7 @@ CODE
  - 2022/04/05 (1.88) - inputs: renamed ImGuiKeyModFlags to ImGuiModFlags. Kept inline redirection enums (will obsolete). This was never used in public API functions but technically present in imgui.h and ImGuiIO.
  - 2022/01/20 (1.87) - inputs: reworded gamepad IO.
                         - Backend writing to io.NavInputs[]            -> backend should call io.AddKeyEvent()/io.AddKeyAnalogEvent() with ImGuiKey_GamepadXXX values.
- - 2022/01/19 (1.87) - sliders, drags: removed support for legacy arithmetic operators (+,+-,*,/) when inputing text. This doesn't break any api/code but a feature that used to be accessible by end-users (which seemingly no one used).
+ - 2022/01/19 (1.87) - sliders, drags: removed support for legacy arithmetic operators (+,+-,*,/) when inputting text. This doesn't break any api/code but a feature that used to be accessible by end-users (which seemingly no one used).
  - 2022/01/17 (1.87) - inputs: reworked mouse IO.
                         - Backend writing to io.MousePos               -> backend should call io.AddMousePosEvent()
                         - Backend writing to io.MouseDown[]            -> backend should call io.AddMouseButtonEvent()
@@ -1156,17 +1156,19 @@ CODE
 #pragma clang diagnostic ignored "-Wunknown-pragmas"                // warning: unknown warning group 'xxx'
 #pragma clang diagnostic ignored "-Wold-style-cast"                 // warning: use of old-style cast                            // yes, they are more terse.
 #pragma clang diagnostic ignored "-Wfloat-equal"                    // warning: comparing floating point with == or != is unsafe // storing and comparing against same constants (typically 0.0f) is ok.
+#pragma clang diagnostic ignored "-Wformat"                         // warning: format specifies type 'int' but the argument has type 'unsigned int'
 #pragma clang diagnostic ignored "-Wformat-nonliteral"              // warning: format string is not a string literal            // passing non-literal to vsnformat(). yes, user passing incorrect format strings can crash the code.
+#pragma clang diagnostic ignored "-Wformat-pedantic"                // warning: format specifies type 'void *' but the argument has type 'xxxx *' // unreasonable, would lead to casting every %p arg to void*. probably enabled by -pedantic.
 #pragma clang diagnostic ignored "-Wexit-time-destructors"          // warning: declaration requires an exit-time destructor     // exit-time destruction order is undefined. if MemFree() leads to users code that has been disabled before exit it might cause problems. ImGui coding style welcomes static/globals.
 #pragma clang diagnostic ignored "-Wglobal-constructors"            // warning: declaration requires a global destructor         // similar to above, not sure what the exact difference is.
 #pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
-#pragma clang diagnostic ignored "-Wformat-pedantic"                // warning: format specifies type 'void *' but the argument has type 'xxxx *' // unreasonable, would lead to casting every %p arg to void*. probably enabled by -pedantic.
 #pragma clang diagnostic ignored "-Wint-to-void-pointer-cast"       // warning: cast to 'void *' from smaller integer type 'int'
 #pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"  // warning: zero as null pointer constant                    // some standard header variations use #define NULL 0
 #pragma clang diagnostic ignored "-Wdouble-promotion"               // warning: implicit conversion from 'float' to 'double' when passing argument to function  // using printf() is a misery with this as C++ va_arg ellipsis changes float to double.
 #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"            // warning: 'xxx' is an unsafe pointer used for buffer access
 #pragma clang diagnostic ignored "-Wnontrivial-memaccess"           // warning: first argument in call to 'memset' is a pointer to non-trivially copyable type
+#pragma clang diagnostic ignored "-Wswitch-default"                 // warning: 'switch' missing 'default' label
 #elif defined(__GNUC__)
 // We disable -Wpragmas because GCC doesn't provide a has_warning equivalent and some forks/patches may not follow the warning/version association.
 #pragma GCC diagnostic ignored "-Wpragmas"                          // warning: unknown option after '#pragma GCC diagnostic' kind
@@ -2046,15 +2048,15 @@ void ImStrncpy(char* dst, const char* src, size_t count)
 
 char* ImStrdup(const char* str)
 {
-    size_t len = strlen(str);
+    size_t len = ImStrlen(str);
     void* buf = IM_ALLOC(len + 1);
     return (char*)memcpy(buf, (const void*)str, len + 1);
 }
 
 char* ImStrdupcpy(char* dst, size_t* p_dst_size, const char* src)
 {
-    size_t dst_buf_size = p_dst_size ? *p_dst_size : strlen(dst) + 1;
-    size_t src_size = strlen(src) + 1;
+    size_t dst_buf_size = p_dst_size ? *p_dst_size : ImStrlen(dst) + 1;
+    size_t src_size = ImStrlen(src) + 1;
     if (dst_buf_size < src_size)
     {
         IM_FREE(dst);
@@ -2067,7 +2069,7 @@ char* ImStrdupcpy(char* dst, size_t* p_dst_size, const char* src)
 
 const char* ImStrchrRange(const char* str, const char* str_end, char c)
 {
-    const char* p = (const char*)memchr(str, (int)c, str_end - str);
+    const char* p = (const char*)ImMemchr(str, (int)c, str_end - str);
     return p;
 }
 
@@ -2082,13 +2084,13 @@ int ImStrlenW(const ImWchar* str)
 // Find end-of-line. Return pointer will point to either first \n, either str_end.
 const char* ImStreolRange(const char* str, const char* str_end)
 {
-    const char* p = (const char*)memchr(str, '\n', str_end - str);
+    const char* p = (const char*)ImMemchr(str, '\n', str_end - str);
     return p ? p : str_end;
 }
 
 const char* ImStrbol(const char* buf_mid_line, const char* buf_begin) // find beginning-of-line
 {
-    IM_ASSERT_PARANOID(buf_mid_line >= buf_begin && buf_mid_line <= buf_begin + strlen(buf_begin));
+    IM_ASSERT_PARANOID(buf_mid_line >= buf_begin && buf_mid_line <= buf_begin + ImStrlen(buf_begin));
     while (buf_mid_line > buf_begin && buf_mid_line[-1] != '\n')
         buf_mid_line--;
     return buf_mid_line;
@@ -2097,7 +2099,7 @@ const char* ImStrbol(const char* buf_mid_line, const char* buf_begin) // find be
 const char* ImStristr(const char* haystack, const char* haystack_end, const char* needle, const char* needle_end)
 {
     if (!needle_end)
-        needle_end = needle + strlen(needle);
+        needle_end = needle + ImStrlen(needle);
 
     const char un0 = (char)ImToUpper(*needle);
     while ((!haystack_end && *haystack) || (haystack_end && haystack < haystack_end))
@@ -2218,7 +2220,7 @@ void ImFormatStringToTempBufferV(const char** out_buf, const char** out_buf_end,
         if (buf == NULL)
             buf = "(null)";
         *out_buf = buf;
-        if (out_buf_end) { *out_buf_end = buf + strlen(buf); }
+        if (out_buf_end) { *out_buf_end = buf + ImStrlen(buf); }
     }
     else if (fmt[0] == '%' && fmt[1] == '.' && fmt[2] == '*' && fmt[3] == 's' && fmt[4] == 0)
     {
@@ -2627,11 +2629,11 @@ const char* ImTextFindPreviousUtf8Codepoint(const char* in_text_start, const cha
 int ImTextCountLines(const char* in_text, const char* in_text_end)
 {
     if (in_text_end == NULL)
-        in_text_end = in_text + strlen(in_text); // FIXME-OPT: Not optimal approach, discourage use for now.
+        in_text_end = in_text + ImStrlen(in_text); // FIXME-OPT: Not optimal approach, discourage use for now.
     int count = 0;
     while (in_text < in_text_end)
     {
-        const char* line_end = (const char*)memchr(in_text, '\n', in_text_end - in_text);
+        const char* line_end = (const char*)ImMemchr(in_text, '\n', in_text_end - in_text);
         in_text = line_end ? line_end + 1 : in_text_end;
         count++;
     }
@@ -2912,7 +2914,7 @@ void ImGuiTextFilter::ImGuiTextRange::split(char separator, ImVector<ImGuiTextRa
 void ImGuiTextFilter::Build()
 {
     Filters.resize(0);
-    ImGuiTextRange input_range(InputBuf, InputBuf + strlen(InputBuf));
+    ImGuiTextRange input_range(InputBuf, InputBuf + ImStrlen(InputBuf));
     input_range.split(',', &Filters);
 
     CountGrep = 0;
@@ -2980,7 +2982,7 @@ char ImGuiTextBuffer::EmptyString[1] = { 0 };
 
 void ImGuiTextBuffer::append(const char* str, const char* str_end)
 {
-    int len = str_end ? (int)(str_end - str) : (int)strlen(str);
+    int len = str_end ? (int)(str_end - str) : (int)ImStrlen(str);
 
     // Add zero-terminator the first time
     const int write_off = (Buf.Size != 0) ? Buf.Size : 1;
@@ -3039,7 +3041,7 @@ void ImGuiTextIndex::append(const char* base, int old_size, int new_size)
     if (EndOffset == 0 || base[EndOffset - 1] == '\n')
         LineOffsets.push_back(EndOffset);
     const char* base_end = base + new_size;
-    for (const char* p = base + old_size; (p = (const char*)memchr(p, '\n', base_end - p)) != 0; )
+    for (const char* p = base + old_size; (p = (const char*)ImMemchr(p, '\n', base_end - p)) != 0; )
         if (++p < base_end) // Don't push a trailing offset on last \n
             LineOffsets.push_back((int)(intptr_t)(p - base));
     EndOffset = ImMax(EndOffset, new_size);
@@ -3671,7 +3673,7 @@ void ImGui::RenderText(ImVec2 pos, const char* text, const char* text_end, bool 
     else
     {
         if (!text_end)
-            text_end = text + strlen(text); // FIXME-OPT
+            text_end = text + ImStrlen(text); // FIXME-OPT
         text_display_end = text_end;
     }
 
@@ -3689,7 +3691,7 @@ void ImGui::RenderTextWrapped(ImVec2 pos, const char* text, const char* text_end
     ImGuiWindow* window = g.CurrentWindow;
 
     if (!text_end)
-        text_end = text + strlen(text); // FIXME-OPT
+        text_end = text + ImStrlen(text); // FIXME-OPT
 
     if (text != text_end)
     {
@@ -4390,7 +4392,7 @@ ImGuiWindow::ImGuiWindow(ImGuiContext* ctx, const char* name) : DrawListInst(NUL
     memset(this, 0, sizeof(*this));
     Ctx = ctx;
     Name = ImStrdup(name);
-    NameBufLen = (int)strlen(name) + 1;
+    NameBufLen = (int)ImStrlen(name) + 1;
     ID = ImHashStr(name);
     IDStack.push_back(ID);
     ViewportAllowPlatformMonitorExtend = -1;
@@ -5082,7 +5084,7 @@ void ImGui::StartMouseMovingWindowOrNode(ImGuiWindow* window, ImGuiDockNode* nod
 
 // Handle mouse moving window
 // Note: moving window with the navigation keys (Square + d-pad / CTRL+TAB + Arrows) are processed in NavUpdateWindowing()
-// FIXME: We don't have strong guarantee that g.MovingWindow stay synched with g.ActiveId == g.MovingWindow->MoveId.
+// FIXME: We don't have strong guarantee that g.MovingWindow stay synced with g.ActiveId == g.MovingWindow->MoveId.
 // This is currently enforced by the fact that BeginDragDropSource() is setting all g.ActiveIdUsingXXXX flags to inhibit navigation inputs,
 // but if we should more thoroughly test cases where g.ActiveId or g.MovingWindow gets changed and not the other.
 void ImGui::UpdateMouseMovingWindowNewFrame()
@@ -6878,7 +6880,7 @@ static int ImGui::UpdateWindowManualResize(ImGuiWindow* window, const ImVec2& si
         {
             // Auto-fit when double-clicking
             size_target = CalcWindowSizeAfterConstraint(window, size_auto_fit);
-            ret_auto_fit_mask = 0x03; // Both axises
+            ret_auto_fit_mask = 0x03; // Both axes
             ClearActiveID();
         }
         else if (held)
@@ -7959,9 +7961,23 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
             ImVec2 needed_size_from_last_frame = window_just_created ? ImVec2(0, 0) : window->ContentSize + window->WindowPadding * 2.0f;
             float size_x_for_scrollbars = use_current_size_for_scrollbar_x ? avail_size_from_current_frame.x : avail_size_from_last_frame.x;
             float size_y_for_scrollbars = use_current_size_for_scrollbar_y ? avail_size_from_current_frame.y : avail_size_from_last_frame.y;
+            bool scrollbar_x_prev = window->ScrollbarX;
             //bool scrollbar_y_from_last_frame = window->ScrollbarY; // FIXME: May want to use that in the ScrollbarX expression? How many pros vs cons?
             window->ScrollbarY = (flags & ImGuiWindowFlags_AlwaysVerticalScrollbar) || ((needed_size_from_last_frame.y > size_y_for_scrollbars) && !(flags & ImGuiWindowFlags_NoScrollbar));
             window->ScrollbarX = (flags & ImGuiWindowFlags_AlwaysHorizontalScrollbar) || ((needed_size_from_last_frame.x > size_x_for_scrollbars - (window->ScrollbarY ? style.ScrollbarSize : 0.0f)) && !(flags & ImGuiWindowFlags_NoScrollbar) && (flags & ImGuiWindowFlags_HorizontalScrollbar));
+
+            // Track when ScrollbarX visibility keeps toggling, which is a sign of a feedback loop, and stabilize by enforcing visibility (#3285, #8488)
+            // (Feedback loops of this sort can manifest in various situations, but combining horizontal + vertical scrollbar + using a clipper with varying width items is one frequent cause.
+            //  The better solution is to, either (1) enforce visibility by using ImGuiWindowFlags_AlwaysHorizontalScrollbar or (2) declare stable contents width with SetNextWindowContentSize(), if you can compute it)
+            window->ScrollbarXStabilizeToggledHistory <<= 1;
+            window->ScrollbarXStabilizeToggledHistory |= (scrollbar_x_prev != window->ScrollbarX) ? 0x01 : 0x00;
+            const bool scrollbar_x_stabilize = (window->ScrollbarXStabilizeToggledHistory != 0) && ImCountSetBits(window->ScrollbarXStabilizeToggledHistory) >= 4; // 4 == half of bits in our U8 history.
+            if (scrollbar_x_stabilize)
+                window->ScrollbarX = true;
+            //if (scrollbar_x_stabilize && !window->ScrollbarXStabilizeEnabled)
+            //    IMGUI_DEBUG_LOG("[scroll] Stabilize ScrollbarX for Window '%s'\n", window->Name);
+            window->ScrollbarXStabilizeEnabled = scrollbar_x_stabilize;
+
             if (window->ScrollbarX && !window->ScrollbarY)
                 window->ScrollbarY = (needed_size_from_last_frame.y > size_y_for_scrollbars - style.ScrollbarSize) && !(flags & ImGuiWindowFlags_NoScrollbar);
             window->ScrollbarSizes = ImVec2(window->ScrollbarY ? style.ScrollbarSize : 0.0f, window->ScrollbarX ? style.ScrollbarSize : 0.0f);
@@ -9388,7 +9404,7 @@ ImGuiKeyData* ImGui::GetKeyData(ImGuiContext* ctx, ImGuiKey key)
     return &g.IO.KeysData[key - ImGuiKey_NamedKey_BEGIN];
 }
 
-// Those names a provided for debugging purpose and are not meant to be saved persistently not compared.
+// Those names are provided for debugging purpose and are not meant to be saved persistently nor compared.
 static const char* const GKeyNames[] =
 {
     "Tab", "LeftArrow", "RightArrow", "UpArrow", "DownArrow", "PageUp", "PageDown",
@@ -9403,7 +9419,7 @@ static const char* const GKeyNames[] =
     "Pause", "Keypad0", "Keypad1", "Keypad2", "Keypad3", "Keypad4", "Keypad5", "Keypad6",
     "Keypad7", "Keypad8", "Keypad9", "KeypadDecimal", "KeypadDivide", "KeypadMultiply",
     "KeypadSubtract", "KeypadAdd", "KeypadEnter", "KeypadEqual",
-    "AppBack", "AppForward",
+    "AppBack", "AppForward", "Oem102",
     "GamepadStart", "GamepadBack",
     "GamepadFaceLeft", "GamepadFaceRight", "GamepadFaceUp", "GamepadFaceDown",
     "GamepadDpadLeft", "GamepadDpadRight", "GamepadDpadUp", "GamepadDpadDown",
@@ -9445,7 +9461,7 @@ const char* ImGui::GetKeyChordName(ImGuiKeyChord key_chord)
         (key != ImGuiKey_None || key_chord == ImGuiKey_None) ? GetKeyName(key) : "");
     size_t len;
     if (key == ImGuiKey_None && key_chord != 0)
-        if ((len = strlen(g.TempKeychordName)) != 0) // Remove trailing '+'
+        if ((len = ImStrlen(g.TempKeychordName)) != 0) // Remove trailing '+'
             g.TempKeychordName[len - 1] = 0;
     return g.TempKeychordName;
 }
@@ -10322,7 +10338,7 @@ void ImGui::UpdateMouseWheel()
     if (g.IO.MouseWheelRequestAxisSwap)
         wheel = ImVec2(wheel.y, 0.0f);
 
-    // Maintain a rough average of moving magnitude on both axises
+    // Maintain a rough average of moving magnitude on both axes
     // FIXME: should by based on wall clock time rather than frame-counter
     g.WheelingAxisAvg.x = ImExponentialMovingAverage(g.WheelingAxisAvg.x, ImAbs(wheel.x), 30);
     g.WheelingAxisAvg.y = ImExponentialMovingAverage(g.WheelingAxisAvg.y, ImAbs(wheel.y), 30);
@@ -10335,7 +10351,7 @@ void ImGui::UpdateMouseWheel()
 
     // Mouse wheel scrolling: find target and apply
     // - don't renew lock if axis doesn't apply on the window.
-    // - select a main axis when both axises are being moved.
+    // - select a main axis when both axes are being moved.
     if (ImGuiWindow* window = (g.WheelingWindow ? g.WheelingWindow : FindBestWheelingWindow(wheel)))
         if (!(window->Flags & ImGuiWindowFlags_NoScrollWithMouse) && !(window->Flags & ImGuiWindowFlags_NoMouseInputs))
         {
@@ -14841,7 +14857,7 @@ bool ImGui::SetDragDropPayload(const char* type, const void* data, size_t data_s
         cond = ImGuiCond_Always;
 
     IM_ASSERT(type != NULL);
-    IM_ASSERT(strlen(type) < IM_ARRAYSIZE(payload.DataType) && "Payload type can be at most 32 characters long");
+    IM_ASSERT(ImStrlen(type) < IM_ARRAYSIZE(payload.DataType) && "Payload type can be at most 32 characters long");
     IM_ASSERT((data != NULL && data_size > 0) || (data == NULL && data_size == 0));
     IM_ASSERT(cond == ImGuiCond_Always || cond == ImGuiCond_Once);
     IM_ASSERT(payload.SourceId != 0); // Not called between BeginDragDropSource() and EndDragDropSource()
@@ -15085,7 +15101,7 @@ void ImGui::LogRenderedText(const ImVec2* ref_pos, const char* text, const char*
     }
 
     if (prefix)
-        LogRenderedText(ref_pos, prefix, prefix + strlen(prefix)); // Calculate end ourself to ensure "##" are included here.
+        LogRenderedText(ref_pos, prefix, prefix + ImStrlen(prefix)); // Calculate end ourself to ensure "##" are included here.
 
     // Re-adjust padding if we have popped out of our starting depth
     if (g.LogDepthRef > window->DC.TreeDepth)
@@ -15118,7 +15134,7 @@ void ImGui::LogRenderedText(const ImVec2* ref_pos, const char* text, const char*
     }
 
     if (suffix)
-        LogRenderedText(ref_pos, suffix, suffix + strlen(suffix));
+        LogRenderedText(ref_pos, suffix, suffix + ImStrlen(suffix));
 }
 
 // Start logging/capturing text output
@@ -15384,7 +15400,7 @@ void ImGui::LoadIniSettingsFromMemory(const char* ini_data, size_t ini_size)
     // For user convenience, we allow passing a non zero-terminated string (hence the ini_size parameter).
     // For our convenience and to make the code simpler, we'll also write zero-terminators within the buffer. So let's create a writable copy..
     if (ini_size == 0)
-        ini_size = strlen(ini_data);
+        ini_size = ImStrlen(ini_data);
     g.SettingsIniData.Buf.resize((int)ini_size + 1);
     char* const buf = g.SettingsIniData.Buf.Data;
     char* const buf_end = buf + ini_size;
@@ -15485,7 +15501,7 @@ ImGuiWindowSettings* ImGui::CreateNewWindowSettings(const char* name)
         if (const char* p = strstr(name, "###"))
             name = p;
     }
-    const size_t name_len = strlen(name);
+    const size_t name_len = ImStrlen(name);
 
     // Allocate chunk
     const size_t chunk_size = sizeof(ImGuiWindowSettings) + name_len + 1;
@@ -16144,11 +16160,15 @@ ImGuiViewportP* ImGui::AddUpdateViewport(ImGuiWindow* window, ImGuiID id, const 
     if (viewport)
     {
         // Always update for main viewport as we are already pulling correct platform pos/size (see #4900)
+        ImVec2 prev_pos = viewport->Pos;
+        ImVec2 prev_size = viewport->Size;
         if (!viewport->PlatformRequestMove || viewport->ID == IMGUI_VIEWPORT_DEFAULT_ID)
             viewport->Pos = pos;
         if (!viewport->PlatformRequestResize || viewport->ID == IMGUI_VIEWPORT_DEFAULT_ID)
             viewport->Size = size;
         viewport->Flags = flags | (viewport->Flags & (ImGuiViewportFlags_IsMinimized | ImGuiViewportFlags_IsFocused)); // Preserve existing flags
+        if (prev_pos != viewport->Pos || prev_size != viewport->Size)
+            UpdateViewportPlatformMonitor(viewport);
     }
     else
     {
@@ -19911,8 +19931,6 @@ ImGuiID ImGui::DockBuilderSplitNode(ImGuiID id, ImGuiDir split_dir, float size_r
         return 0;
     }
 
-    IM_ASSERT(!node->IsSplitNode()); // Assert if already Split
-
     ImGuiDockRequest req;
     req.Type = ImGuiDockRequestType_Split;
     req.DockTargetWindow = NULL;
@@ -20705,7 +20723,7 @@ static void Platform_SetClipboardTextFn_DefaultImpl(ImGuiContext*, const char* t
     if (!main_clipboard)
         PasteboardCreate(kPasteboardClipboard, &main_clipboard);
     PasteboardClear(main_clipboard);
-    CFDataRef cf_data = CFDataCreate(kCFAllocatorDefault, (const UInt8*)text, strlen(text));
+    CFDataRef cf_data = CFDataCreate(kCFAllocatorDefault, (const UInt8*)text, ImStrlen(text));
     if (cf_data)
     {
         PasteboardPutItemFlavor(main_clipboard, (PasteboardItemID)1, CFSTR("public.utf8-plain-text"), cf_data, 0);
@@ -20759,7 +20777,7 @@ static void Platform_SetClipboardTextFn_DefaultImpl(ImGuiContext* ctx, const cha
 {
     ImGuiContext& g = *ctx;
     g.ClipboardHandlerData.clear();
-    const char* text_end = text + strlen(text);
+    const char* text_end = text + ImStrlen(text);
     g.ClipboardHandlerData.resize((int)(text_end - text) + 1);
     memcpy(&g.ClipboardHandlerData[0], text, (size_t)(text_end - text));
     g.ClipboardHandlerData[(int)(text_end - text)] = 0;
@@ -20773,11 +20791,13 @@ static void Platform_SetClipboardTextFn_DefaultImpl(ImGuiContext* ctx, const cha
 #if defined(__APPLE__) && TARGET_OS_IPHONE
 #define IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
 #endif
-
+#if defined(__3DS__)
+#define IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
+#endif
 #if defined(_WIN32) && defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #define IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
 #endif
-#endif
+#endif // #ifndef IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
 
 #ifndef IMGUI_DISABLE_DEFAULT_SHELL_FUNCTIONS
 #ifdef _WIN32
@@ -22760,7 +22780,7 @@ void ImGui::DebugHookIdInfo(ImGuiID id, ImGuiDataType data_type, const void* dat
         ImFormatString(info->Desc, IM_ARRAYSIZE(info->Desc), "%d", (int)(intptr_t)data_id);
         break;
     case ImGuiDataType_String:
-        ImFormatString(info->Desc, IM_ARRAYSIZE(info->Desc), "%.*s", data_id_end ? (int)((const char*)data_id_end - (const char*)data_id) : (int)strlen((const char*)data_id), (const char*)data_id);
+        ImFormatString(info->Desc, IM_ARRAYSIZE(info->Desc), "%.*s", data_id_end ? (int)((const char*)data_id_end - (const char*)data_id) : (int)ImStrlen((const char*)data_id), (const char*)data_id);
         break;
     case ImGuiDataType_Pointer:
         ImFormatString(info->Desc, IM_ARRAYSIZE(info->Desc), "(void*)0x%p", data_id);

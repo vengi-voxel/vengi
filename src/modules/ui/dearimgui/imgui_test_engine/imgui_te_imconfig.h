@@ -28,6 +28,16 @@
 #define IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL 0
 #endif
 
+// [Optional, default 0] Disable calls that do not make sense on game consoles
+// (Disable: system(), popen(), sigaction(), colored TTY output)
+#ifndef IMGUI_TEST_ENGINE_IS_GAME_CONSOLE
+#if defined(__ORBIS__) || defined(__PROSPERO__) || defined(_GAMING_XBOX) || defined(_DURANGO)
+#define IMGUI_TEST_ENGINE_IS_GAME_CONSOLE 1
+#else
+#define IMGUI_TEST_ENGINE_IS_GAME_CONSOLE 0
+#endif
+#endif
+
 // Define IM_DEBUG_BREAK macros so it is accessible in imgui.h
 // (this is a conveniance for app using test engine may define an IM_ASSERT() that uses this instead of an actual assert)
 // (this is a copy of the block in imgui_internal.h. if the one in imgui_internal.h were to be defined at the top of imgui.h we wouldn't need this)
