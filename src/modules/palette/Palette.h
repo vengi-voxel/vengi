@@ -44,6 +44,10 @@ private:
 
 public:
 	Palette();
+	Palette(const Palette &other);
+	Palette &operator=(const Palette &other);
+	Palette(Palette &&other) noexcept;
+	Palette &operator=(Palette &&other) noexcept;
 
 	PaletteView &view();
 	const PaletteView &view() const;
