@@ -21,7 +21,9 @@ bool QuantizedPalette::load(const core::String &filename, io::SeekableReadStream
 		colorBuffer.push_back(e->first);
 	}
 	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	Log::info("Loaded %i colors and quanitized to %i", (int)colorCount, palette.colorCount());
+	if ((int)colorBuffer.size() != (int)palette.colorCount()) {
+		Log::info("Loaded %i colors and quanitized to %i", (int)colorCount, palette.colorCount());
+	}
 	return palette.colorCount() > 0;
 }
 

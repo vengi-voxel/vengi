@@ -10,7 +10,7 @@
 namespace palette {
 
 /**
- * Adobe Color Bock
+ * Adobe Color Bock (binary)
  *
  * https://github.com/albemala/color_palette_formats/tree/main/assets
  * https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577411_pgfId-1066780

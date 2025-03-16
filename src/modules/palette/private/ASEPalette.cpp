@@ -66,8 +66,9 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgb
 		stream.readFloatBE(color[1]);
 		stream.readFloatBE(color[2]);
 		color[3] = 1.0f;
-		// TODO: convert to RGB
-		rgba = core::Color::getRGBA(color);
+		// L goes from 0 to 100 percent
+		color[0] *= 100.0f;
+		rgba = core::Color::fromCIELab(color);
 	} else if (mode.colorMode == FourCC('G', 'R', 'A', 'Y')) {
 		stream.readFloatBE(color[0]);
 		color[1] = color[2] = color[0];

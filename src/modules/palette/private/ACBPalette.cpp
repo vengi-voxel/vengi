@@ -3,6 +3,7 @@
  */
 
 #include "ACBPalette.h"
+#include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -173,8 +174,19 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			const uint8_t g = (uint8_t)(glm::round(255 * (1 - M) * (1 - K)));
 			const uint8_t b = (uint8_t)(glm::round(255 * (1 - Y) * (1 - K)));
 			colors.put(core::RGBA{r, g, b, 255}, true);
+		} else if (space == ColorSpace::Lab) {
+			uint8_t lab[3];
+			if (stream.read(lab, sizeof(lab)) == -1) {
+				Log::error("ACBPalette: Failed to read cielab color");
+				return false;
+			}
+			// Convert ACB Lab (0–255) to standard Lab (0–100)
+			float L = lab[0] / 2.55f;
+			float a = lab[1] / 2.55f - 128.0f;
+			float b = lab[2] / 2.55f - 128.0f;
+			colors.put(core::Color::fromCIELab(glm::vec4(L, a, b, 1.0f)), true);
 		} else {
-			// TODO: PALETTE: support grayscale and CMYK at least...
+			// TODO: PALETTE: support grayscale...
 			Log::error("Unsupported color space %d", colorSpace);
 			return false;
 		}
