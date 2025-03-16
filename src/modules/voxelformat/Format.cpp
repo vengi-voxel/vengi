@@ -15,11 +15,11 @@
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "math/Math.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -94,8 +94,8 @@ size_t Format::loadPalette(const core::String &, const io::ArchivePtr &, palette
 	return 0;
 }
 
-size_t PaletteFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
-								  const LoadContext &ctx) {
+size_t PaletteFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive,
+								  palette::Palette &palette, const LoadContext &ctx) {
 	scenegraph::SceneGraph sceneGraph;
 	loadGroupsPalette(filename, archive, sceneGraph, palette, ctx);
 	return palette.size();
@@ -114,8 +114,8 @@ bool Format::singleVolume() const {
 	return core::Var::getSafe(cfg::VoxformatMerge)->boolVal();
 }
 
-bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-				  const io::ArchivePtr &archive, const SaveContext &ctx) {
+bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
+				  const SaveContext &ctx) {
 	bool needsSplit = false;
 	const glm::ivec3 maxsize = maxSize();
 	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
@@ -206,7 +206,7 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (!createPalette) {
 		Log::info("Remap the palette to %s", voxel::getPalette().name().c_str());
-		for (const auto &e :sceneGraph.nodes()) {
+		for (const auto &e : sceneGraph.nodes()) {
 			scenegraph::SceneGraphNode &node = e->value;
 			if (node.isAnyModelNode()) {
 				node.remapToPalette(voxel::getPalette());
@@ -226,7 +226,7 @@ int PaletteFormat::emptyPaletteIndex() const {
 }
 
 static void mergePalettesAndRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraph &newSceneGraph,
-	int emptyIndex) {
+								  int emptyIndex) {
 	const palette::Palette &palette = sceneGraph.mergePalettes(true, emptyIndex);
 	scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 	for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
@@ -237,7 +237,7 @@ static void mergePalettesAndRemap(const scenegraph::SceneGraph &sceneGraph, scen
 }
 
 static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraph &newSceneGraph,
-	int emptyIndex) {
+						  int emptyIndex) {
 	Log::debug("Need to convert voxels to a palette that has %i as an empty slot", emptyIndex);
 	scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 	for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
@@ -268,19 +268,20 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 #endif
 				{
 					Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
-							"them. We need to find a replacement for %i",
-							palette::PaletteMaxColors, emptyIndex);
+							   "them. We need to find a replacement for %i",
+							   palette::PaletteMaxColors, emptyIndex);
 					uint8_t replacement = palette.findReplacement(emptyIndex);
 					Log::debug("Looking for a similar color in the palette: %d", replacement);
 					if (replacement != emptyIndex) {
 						Log::debug("Replace %i with %i", emptyIndex, replacement);
 						voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-						voxelutil::visitVolume(
-							*v, [v, replaceFrom = emptyIndex, replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
-								if (voxel.getColor() == replaceFrom) {
-									v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
-								}
-							});
+						voxelutil::visitVolume(*v,
+											   [v, replaceFrom = emptyIndex, replaceTo = replacement,
+												pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
+												   if (voxel.getColor() == replaceFrom) {
+													   v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
+												   }
+											   });
 					}
 				}
 #if 0
@@ -310,13 +311,13 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 	if (onlyOnePalette() && sceneGraph.hasMoreThanOnePalette()) {
 		scenegraph::SceneGraph newSceneGraph;
 		mergePalettesAndRemap(sceneGraph, newSceneGraph, emptyIndex);
-		return Format::save(newSceneGraph, filename, archive, ctx);
+		return Super::save(newSceneGraph, filename, archive, ctx);
 	} else if (emptyIndex >= 0 && emptyIndex < palette::PaletteMaxColors) {
 		scenegraph::SceneGraph newSceneGraph;
 		palettesRemap(sceneGraph, newSceneGraph, emptyIndex);
-		return Format::save(newSceneGraph, filename, archive, ctx);
+		return Super::save(newSceneGraph, filename, archive, ctx);
 	}
-	return Format::save(sceneGraph, filename, archive, ctx);
+	return Super::save(sceneGraph, filename, archive, ctx);
 }
 
 Format::Format() {
@@ -382,6 +383,27 @@ bool RGBAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 	}
 	sceneGraph.updateTransforms();
 	return true;
+}
+
+int RGBASinglePaletteFormat::emptyPaletteIndex() const {
+	// this is only taken into account if the format doesn't force a
+	// particular empty index by overriding this method.
+	return core::Var::getSafe(cfg::VoxformatEmptyPaletteIndex)->intVal();
+}
+
+bool RGBASinglePaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+								   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	int emptyIndex = this->emptyPaletteIndex();
+	if (sceneGraph.hasMoreThanOnePalette()) {
+		scenegraph::SceneGraph newSceneGraph;
+		mergePalettesAndRemap(sceneGraph, newSceneGraph, emptyIndex);
+		return Super::save(newSceneGraph, filename, archive, ctx);
+	} else if (emptyIndex >= 0 && emptyIndex < palette::PaletteMaxColors) {
+		scenegraph::SceneGraph newSceneGraph;
+		palettesRemap(sceneGraph, newSceneGraph, emptyIndex);
+		return Super::save(newSceneGraph, filename, archive, ctx);
+	}
+	return Super::save(sceneGraph, filename, archive, ctx);
 }
 
 } // namespace voxelformat

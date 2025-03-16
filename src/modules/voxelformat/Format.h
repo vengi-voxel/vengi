@@ -211,6 +211,8 @@ class NoColorFormat : public Format {};
  * @ingroup Formats
  */
 class PaletteFormat : public Format {
+private:
+	using Super = Format;
 protected:
 	virtual bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
@@ -257,10 +259,14 @@ protected:
  * @ingroup Formats
  */
 class RGBASinglePaletteFormat : public RGBAFormat {
+private:
+	using Super = RGBAFormat;
 protected:
-	virtual int emptyPaletteIndex() {
-		return 0;
-	}
+	virtual int emptyPaletteIndex() const;
+
+public:
+	bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
+			  const SaveContext &ctx) override final;
 };
 
 } // namespace voxelformat
