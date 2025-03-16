@@ -17,6 +17,7 @@
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
+#include "palette/private/ACBPalette.h"
 #include "palette/private/PixeloramaPalette.h"
 #include "palette/private/VPLPalette.h"
 
@@ -44,6 +45,8 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 			return core::make_shared<PNGPalette>();
 		} else if (ext == VPLPalette::format().mainExtension()) {
 			return core::make_shared<VPLPalette>();
+		} else if (ext == ACBPalette::format().mainExtension()) {
+			return core::make_shared<ACBPalette>();
 		} else if (ext == JASCPalette::format().mainExtension()) {
 			if (desc.name == JASCPalette::format().name || magic == FourCC('J', 'A', 'S', 'C')) {
 				return core::make_shared<JASCPalette>();

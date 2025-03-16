@@ -3,6 +3,7 @@
  */
 
 #include "PaletteFormatDescription.h"
+#include "palette/private/ACBPalette.h"
 #include "palette/private/ASEPalette.h"
 #include "palette/private/CSVPalette.h"
 #include "palette/private/GimpPalette.h"
@@ -29,6 +30,7 @@ const io::FormatDescription *palettes() {
 		VPLPalette::format(),
 		CSVPalette::format(),
 		PaintNetPalette::format(),
+		ACBPalette::format(),
 		io::format::png(),
 		{"", {}, {}, 0u}};
 	// clang-format: on

@@ -1,6 +1,9 @@
 set(LIB palette)
 set(SRCS
 	private/PaletteFormat.cpp private/PaletteFormat.h
+	private/QuantizedPalette.cpp private/QuantizedPalette.h
+
+	private/ACBPalette.cpp private/ACBPalette.h
 	private/ASEPalette.cpp private/ASEPalette.h
 	private/CSVPalette.cpp private/CSVPalette.h
 	private/GimpPalette.cpp private/GimpPalette.h
