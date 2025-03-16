@@ -893,6 +893,36 @@ void Color::getCIELab(core::RGBA color, float &L, float &a, float &b) {
 	getCIELab(fromRGBA(color), L, a, b);
 }
 
+core::RGBA Color::fromCIELab(const glm::vec4 &in) {
+	float x = in.r / 100.0f;
+	float y = (in.g + 16.0f) / 116.0f;
+	float z = in.b / 200.0f;
+
+	float r = x * 3.2406f + y * -1.5372f + z * -0.4986f;
+	float g = x * -0.9689f + y * 1.8758f + z * 0.0415f;
+	float b = x * 0.0557f + y * -0.2040f + z * 1.0570f;
+
+	if (r > 0.0031308f) {
+		r = 1.055f * glm::pow(r, 1.0f / 2.4f) - 0.055f;
+	} else {
+		r = 12.92f * r;
+	}
+
+	if (g > 0.0031308f) {
+		g = 1.055f * glm::pow(g, 1.0f / 2.4f) - 0.055f;
+	} else {
+		g = 12.92f * g;
+	}
+
+	if (b > 0.0031308f) {
+		b = 1.055f * glm::pow(b, 1.0f / 2.4f) - 0.055f;
+	} else {
+		b = 12.92f * b;
+	}
+
+	return core::RGBA((uint8_t)(r * magnitude), (uint8_t)(g * magnitude), (uint8_t)(b * magnitude), 255u);
+}
+
 void Color::getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
 	float red, green, blue;
 	if (color.r > 0.04045f) {

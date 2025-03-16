@@ -121,6 +121,7 @@ public:
 	 */
 	static void getCIELab(const glm::vec4&, float& L, float& a, float &b);
 	static void getCIELab(core::RGBA color, float& L, float& a, float &b);
+	static core::RGBA fromCIELab(const glm::vec4 &in);
 
 	static glm::vec3 gray(const glm::vec3&);
 	static glm::vec4 gray(const glm::vec4&);
