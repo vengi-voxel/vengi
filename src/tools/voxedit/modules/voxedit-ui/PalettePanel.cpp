@@ -72,13 +72,6 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 				}
 			}
 
-			if (singleSelection) {
-				// TODO: PALETTE: allow to extract multiple colors to a new node
-				const core::String &modelFromColorCmd = core::string::format("colortomodel %i", paletteColorIdx);
-				ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
-										&listener);
-			}
-
 			if (palette.color(paletteColorIdx).a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove alpha"))) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removealpha");
@@ -87,15 +80,32 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					}
 				}
 			}
-			if (palette.hasFreeSlot() && singleSelection) {
-				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate color"))) {
-					_sceneMgr->nodeDuplicateColor(node.id(), paletteColorIdx);
+			if (singleSelection) {
+				// TODO: PALETTE: allow to extract multiple colors to a new node
+				const core::String &modelFromColorCmd = core::string::format("colortomodel %i", paletteColorIdx);
+				ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
+										&listener);
+				if (palette.hasFreeSlot()) {
+					if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate color"))) {
+						_sceneMgr->nodeDuplicateColor(node.id(), paletteColorIdx);
+					}
 				}
-			}
-			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove color"))) {
-				memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removecolor");
-				for (const auto &e : _selectedIndices) {
-					_sceneMgr->nodeRemoveColor(node.id(), e->first);
+				if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove color"))) {
+					_sceneMgr->nodeRemoveColor(node.id(), paletteColorIdx);
+					_selectedIndices.remove(paletteColorIdx);
+					_selectedIndicesLast = -1;
+				}
+			} else {
+				if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Reduce to selected"))) {
+					core::Buffer<uint8_t> srcIndiced;
+					srcIndiced.reserve(_selectedIndices.size());
+					for (const auto &e : _selectedIndices) {
+						if (e->key == paletteColorIdx) {
+							continue;
+						}
+						srcIndiced.push_back(e->key);
+					}
+					_sceneMgr->nodeReduceColors(node.id(), srcIndiced, paletteColorIdx);
 				}
 			}
 		}

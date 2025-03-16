@@ -57,16 +57,11 @@ protected:
 
 	template<typename Volume>
 	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) {
-		int cnt = 0;
-		voxelutil::visitVolume(
+		return voxelutil::visitVolume(
 			volume,
 			[&](int, int, int, const voxel::Voxel &v) {
-				if (v == voxel) {
-					++cnt;
-				}
 			},
-			voxelutil::VisitAll());
-		return cnt;
+			voxelutil::VisitColor(voxel.getColor()));
 	}
 
 	void TearDown() override {
@@ -379,19 +374,19 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 
 	// set voxel into second node
 	EXPECT_TRUE(_sceneMgr->nodeActivate(secondNodeId));
-	testSetVoxel(glm::ivec3(1, 1, 1));
+	testSetVoxel(glm::ivec3(1, 1, 1), modifier.cursorVoxel().getColor());
 	EXPECT_EQ(1, countVoxels(*_sceneMgr->volume(secondNodeId), modifier.cursorVoxel()));
 
 	// set voxel into third node
 	EXPECT_TRUE(_sceneMgr->nodeActivate(thirdNodeId));
-	testSetVoxel(glm::ivec3(2, 2, 2));
+	testSetVoxel(glm::ivec3(2, 2, 2), modifier.cursorVoxel().getColor());
 	EXPECT_EQ(1, countVoxels(*_sceneMgr->volume(thirdNodeId), modifier.cursorVoxel()));
 
 	// merge and validate
 	int newNodeId = _sceneMgr->mergeNodes(secondNodeId, thirdNodeId);
 	const voxel::RawVolume *v = _sceneMgr->volume(newNodeId);
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(2, countVoxels(*v, modifier.cursorVoxel()));
+	EXPECT_EQ(2, voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &voxel) {}, voxelutil::SkipEmpty()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
 
@@ -589,6 +584,27 @@ TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 		sceneMgr()->setLastFilename(fullPath);
 		EXPECT_EQ(fullPath, _sceneMgr->getSuggestedFilename());
 	}
+}
+
+TEST_F(SceneManagerTest, testReduceColors) {
+	Modifier &modifier = _sceneMgr->modifier();
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
+
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	core::Buffer<uint8_t> srcBuf;
+	voxel::Voxel targetVoxel = modifier.cursorVoxel();
+	for (int i = 0; i < 4; ++i) {
+		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
+		v->setVoxel(glm::ivec3(i, i, i), voxel::createVoxel(voxel::VoxelType::Generic, i));
+		if (i != targetVoxel.getColor()) {
+			srcBuf.push_back(i);
+		}
+	}
+	EXPECT_EQ(2, countVoxels(*v, targetVoxel));
+	EXPECT_TRUE(_sceneMgr->nodeReduceColors(nodeId, srcBuf, targetVoxel.getColor()));
+	EXPECT_EQ(7, countVoxels(*v, targetVoxel));
 }
 
 } // namespace voxedit

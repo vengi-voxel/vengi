@@ -78,7 +78,10 @@ struct VisitColor {
 	VisitColor(uint8_t color) : _color(color) {
 	}
 	inline bool operator()(const voxel::Voxel &voxel) const {
-		return voxel.getMaterial() != voxel::VoxelType::Air && voxel.getColor() == _color;
+		if (voxel.getMaterial() == voxel::VoxelType::Air) {
+			return false;
+		}
+		return voxel.getColor() == _color;
 	}
 };
 
