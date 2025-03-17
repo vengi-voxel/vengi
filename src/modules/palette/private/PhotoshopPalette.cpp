@@ -62,15 +62,15 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 		//  values. 0 = 100% ink. For example, pure cyan = 0,65535,65535,65535.
 		// TODO: multiply by 100.0f is correct?
 		core::CMYK cmyk(
-			100.0f - colorComponents[0] / 65535.0f * 100.0f, 100.0f - colorComponents[1] / 65535.0f * 100.0f,
-			100.0f - colorComponents[2] / 65535.0f * 100.0f, 100.0f - colorComponents[3] / 65535.0f * 100.0f);
+			1.0f - colorComponents[0] / 65535.0f, 1.0f - colorComponents[1] / 65535.0f,
+			1.0f - colorComponents[2] / 65535.0f, 1.0f - colorComponents[3] / 65535.0f);
 		rgba = cmyk.toRGB();
 		break;
 	}
 	case 8: {
 		// Grayscale
 		//  The first value in the color data is the gray value, from 0...10000.
-		uint8_t grayValue = (uint8_t)(colorComponents[0] / 10000.0f * 255.0f);
+		uint8_t grayValue = (uint8_t)((1.0f - colorComponents[0] / 10000.0f) * 255.0f);
 		rgba.r = grayValue;
 		rgba.g = grayValue;
 		rgba.b = grayValue;
