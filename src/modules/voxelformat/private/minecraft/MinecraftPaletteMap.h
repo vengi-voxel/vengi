@@ -32,5 +32,6 @@ const PaletteArray &getPaletteArray();
  * @param[in] defaultValue the value that is returned if the given name could not get matched
  */
 int findPaletteIndex(const core::String &name, int defaultValue = -1);
+core::String findPaletteName(int palIdx);
 
 } // namespace voxelformat

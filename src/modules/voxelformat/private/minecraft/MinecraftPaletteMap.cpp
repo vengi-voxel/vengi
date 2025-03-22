@@ -964,6 +964,16 @@ const PaletteArray &getPaletteArray() {
 	return mcPalette;
 }
 
+core::String findPaletteName(int palIdx) {
+	const PaletteArray &palette = getPaletteArray();
+	for (int i = 0; i < (int)palette.size(); i++) {
+		if (palette[i].palIdx == palIdx) {
+			return palette[i].name;
+		}
+	}
+	return {};
+}
+
 int findPaletteIndex(const core::String &name, int defaultValue) {
 	core::String key = name;
 	// minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554
