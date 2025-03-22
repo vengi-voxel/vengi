@@ -385,6 +385,7 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 		mcpal.resize(palette::PaletteMaxColors);
 		int paletteEntry = 0;
 		const int blockCnt = (int)blockIds.compound()->size();
+		Log::debug("Loading BlockIDs with %i entries", blockCnt);
 		for (int i = 0; i < blockCnt; ++i) {
 			const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
 			const core::String *value = nbt.string();
@@ -421,6 +422,26 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 			return paletteEntry;
 		}
 	}
+	// https://github.com/Lunatrius/Schematica/
+	const priv::NamedBinaryTag &schematicaMapping = schematic.get("SchematicaMapping");
+	if (schematicaMapping.valid()) {
+		if (schematicaMapping.valid() && schematicaMapping.type() == priv::TagType::COMPOUND) {
+			int paletteEntry = 0;
+			for (const auto &c : *schematicaMapping.compound()) {
+				core::String key = c->key;
+				const int palIdx = c->second.int16(-1);
+				if (palIdx == -1) {
+					Log::warn("Failed to get int value for %s", key.c_str());
+					continue;
+				}
+				// map to stone on default
+				mcpal[palIdx] = findPaletteIndex(key, 1);
+				++paletteEntry;
+			}
+			return paletteEntry;
+		}
+	}
+
 	return -1;
 }
 
