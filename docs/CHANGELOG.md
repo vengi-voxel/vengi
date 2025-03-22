@@ -19,6 +19,7 @@ General:
    - Updated/Added SDL3 support (both SDL2 and SDL3 are supported now)
    - Added Adobe ColorBook (`acb`) palette support
    - Fixed `xraw` palette issue with color slot 0
+   - Added `schematic` write support (Minecraft)
 
 VoxEdit:
 
