@@ -5,6 +5,7 @@
 #include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "AbstractFormatTest.h"
 #include "util/VarUtil.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -27,7 +28,32 @@ TEST_F(SchematicFormatTest, testLoadStructory) {
 TEST_F(SchematicFormatTest, DISABLED_testSaveSmallVoxel) {
 	SchematicFormat f;
 	util::ScopedVarChange scoped(cfg::VoxformatMerge, "true");
-	testSaveLoadVoxel("minecraft-smallvolumesavetest.schematic", &f);
+	core::String filename = "minecraft-smallvolumesavetest.schematic";
+	SCOPED_TRACE(filename.c_str());
+	int mins = 0;
+	int maxs = 1;
+	const voxel::Region region(mins, maxs);
+	voxel::RawVolume original(region);
+
+	original.setVoxel(mins, mins, mins, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	original.setVoxel(maxs, maxs, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+
+	palette::Palette pal;
+	pal.minecraft();
+
+	scenegraph::SceneGraph sceneGraph;
+	io::ArchivePtr archive = helper_archive();
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(&original);
+		node.setPalette(pal);
+		sceneGraph.emplace(core::move(node));
+		ASSERT_TRUE(f.save(sceneGraph, filename, archive, testSaveCtx)) << "Could not save the scene graph";
+	}
+
+	scenegraph::SceneGraph sceneGraphLoad;
+	ASSERT_TRUE(f.load(filename, archive, sceneGraphLoad, testLoadCtx)) << "Failed to load the scene grpah";
+	voxel::sceneGraphComparator(sceneGraph, sceneGraphLoad, voxel::ValidateFlags::All, 0.001f);
 }
 
 } // namespace voxelformat
