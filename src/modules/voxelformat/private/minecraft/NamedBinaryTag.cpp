@@ -64,8 +64,17 @@ NamedBinaryTag::NamedBinaryTag(core::String &&val) : _tagType(TagType::STRING) {
 	_tagData._string = new core::String(core::move(val));
 }
 
+NamedBinaryTag::NamedBinaryTag(const core::String &val) : _tagType(TagType::STRING) {
+	_tagData._string = new core::String(val);
+}
+
 NamedBinaryTag::NamedBinaryTag(core::DynamicArray<int8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
 	_tagData._byteArray = new core::DynamicArray<int8_t>(core::move(val));
+}
+
+NamedBinaryTag::NamedBinaryTag(core::DynamicArray<uint8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
+	_tagData._byteArray = new core::DynamicArray<int8_t>();
+	_tagData._byteArray->append(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(core::DynamicArray<int32_t> &&val) : _tagType(TagType::INT_ARRAY) {

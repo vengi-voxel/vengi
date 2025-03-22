@@ -165,9 +165,11 @@ public:
 	}
 
 	NamedBinaryTag(core::String &&val);
+	NamedBinaryTag(const core::String &val);
 	NamedBinaryTag(core::DynamicArray<int64_t> &&val);
 	NamedBinaryTag(core::DynamicArray<int32_t> &&val);
 	NamedBinaryTag(core::DynamicArray<int8_t> &&val);
+	NamedBinaryTag(core::DynamicArray<uint8_t> &&val);
 	NamedBinaryTag(NBTList &&val);
 	NamedBinaryTag(NBTCompound &&val);
 	~NamedBinaryTag();
