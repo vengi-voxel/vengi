@@ -14,6 +14,16 @@
 
 namespace voxelformat {
 
+static bool schematicTypeValidator(const core::String &value) {
+	static const char *schematicTypes[] = {"mcedit2", "worldedit", "schematica"};
+	for (const char *type : schematicTypes) {
+		if (value == type) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool FormatConfig::init() {
 	palette::FormatConfig::init();
 
@@ -112,6 +122,8 @@ bool FormatConfig::init() {
 				   core::Var::minMaxValidator<PNGFormat::ImportType::Plane, PNGFormat::ImportType::Volume>);
 	static_assert(PNGFormat::ImportType::Plane == 0, "Plane must be 0");
 	static_assert(PNGFormat::ImportType::Volume == 2, "Volume must be 2");
+	core::Var::get(cfg::VoxformatSchematicType, "mcedit2", core::CV_NOPERSIST,
+				   _("The type of schematic format to use when saving schematics"), schematicTypeValidator);
 
 	return true;
 }

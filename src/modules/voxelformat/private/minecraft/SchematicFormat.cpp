@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
@@ -409,10 +410,14 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 			mcpal.resize(paletteMax);
 			int paletteEntry = 0;
 			for (const auto &c : *palette.compound()) {
-				core::String key = c->key;
+				const core::String &key = c->key;
 				const int palIdx = c->second.int32(-1);
-				if (palIdx == -1) {
+				if (palIdx < 0) {
 					Log::warn("Failed to get int value for %s", key.c_str());
+					continue;
+				}
+				if (palIdx >= paletteMax) {
+					Log::warn("Palette index %i is out of bounds", palIdx);
 					continue;
 				}
 				// map to stone on default
@@ -430,8 +435,12 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 			for (const auto &c : *schematicaMapping.compound()) {
 				core::String key = c->key;
 				const int palIdx = c->second.int16(-1);
-				if (palIdx == -1) {
+				if (palIdx < 0) {
 					Log::warn("Failed to get int value for %s", key.c_str());
+					continue;
+				}
+				if (palIdx >= paletteMax) {
+					Log::warn("Palette index %i is out of bounds", palIdx);
 					continue;
 				}
 				// map to stone on default
@@ -553,7 +562,13 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	compound.put("z", (int32_t)mins.z);
 	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
 	compound.put("Version", 3);
-	// TODO: VOXELFORMAT: palette
+
+	palette::Palette minecraftPalette;
+	minecraftPalette.minecraft();
+
+	const core::VarPtr &schematicType = core::Var::getSafe(cfg::VoxformatSchematicType);
+	core::StringMap<int8_t> paletteMap;
+	int paletteIndex = 1;
 	{
 		core::DynamicArray<int8_t> blocks;
 		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);
@@ -566,13 +581,59 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 					if (voxel::isAir(voxel.getMaterial())) {
 						blocks[idx] = 0;
 					} else {
-						const uint8_t currentPalIdx = voxel.getColor();
-						blocks[idx] = (int8_t)currentPalIdx;
+						core::RGBA c = merged.palette.color(voxel.getColor());
+						const int currentPalIdx = minecraftPalette.getClosestMatch(c);
+						const core::String &blockState = findPaletteName(currentPalIdx);
+						int8_t blockDataIdx;
+						if (blockState.empty()) {
+							Log::warn("Failed to find block state for palette index %i", currentPalIdx);
+							blockDataIdx = 0;
+							if (!paletteMap.empty()) {
+								// pick a random one
+								blockDataIdx = paletteMap.begin()->second;
+							}
+						} else {
+							auto it = paletteMap.find(blockState);
+							if (it == paletteMap.end()) {
+								blockDataIdx = paletteIndex++;
+								Log::debug("New block state: %s -> %i", blockState.c_str(), blockDataIdx);
+								paletteMap.put(blockState, blockDataIdx);
+							} else {
+								blockDataIdx = it->second;
+							}
+						}
+
+						Log::debug("Set block state %s at %i %i %i to %i", blockState.c_str(), x, y, z, (int)blockDataIdx);
+						// Store the palette index in block data
+						blocks[idx] = blockDataIdx;
 					}
 				}
 			}
 		}
 		compound.put("Blocks", priv::NamedBinaryTag(core::move(blocks)));
+		if (schematicType->strVal() == "mcedit2") {
+			priv::NBTCompound paletteTag;
+			for (const auto &e : paletteMap) {
+				const core::String key = core::string::toString((int)e->second);
+				paletteTag.put(key, priv::NamedBinaryTag(e->first));
+			}
+			compound.put("BlockIDs", core::move(paletteTag));
+		} else if (schematicType->strVal() == "worldedit") {
+			priv::NBTCompound paletteTag;
+			for (const auto &e : paletteMap) {
+				paletteTag.put(e->first, (int32_t)e->second);
+			}
+			compound.put("Palette", core::move(paletteTag));
+			compound.put("PaletteMax", (int32_t)paletteMap.size());
+		} else if (schematicType->strVal() == "schematica") {
+			priv::NBTCompound paletteTag;
+			for (const auto &e : paletteMap) {
+				paletteTag.put(e->first, (int16_t)e->second);
+			}
+			compound.put("SchematicaMapping", core::move(paletteTag));
+		} else {
+			Log::error("Unknown schematic type: %s", schematicType->strVal().c_str());
+		}
 	}
 	const priv::NamedBinaryTag tag(core::move(compound));
 	return priv::NamedBinaryTag::write(tag, "Schematic", zipStream);

@@ -21,6 +21,7 @@
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
@@ -146,6 +147,24 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (meshFormat) {
 		saveOptionsMesh(desc);
+	}
+
+	if (*desc == voxelformat::SchematicFormat::format()) {
+		static const char *schematicTypes[] = {"mcedit2", "worldedit", "schematica"};
+		const core::VarPtr &schematicType = core::Var::getSafe(cfg::VoxformatSchematicType);
+		if (ImGui::BeginCombo(_("Schematic type"), schematicType->strVal().c_str())) {
+			for (int i = 0; i < lengthof(schematicTypes); ++i) {
+				const char *importType = schematicTypes[i];
+				const bool selected = schematicType->strVal() == importType;
+				if (ImGui::Selectable(importType, selected)) {
+					schematicType->setVal(importType);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 	}
 
 	ImGui::CheckboxVar(_("Single object"), cfg::VoxformatMerge);
