@@ -82,6 +82,18 @@ const jsonData = {
       "magics": []
     },
     {
+      "name": "Adobe Color Bock",
+      "extensions": [
+        "acb"
+      ],
+      "magics": [
+        {
+          "type": "string",
+          "value": "8BCB"
+        }
+      ]
+    },
+    {
       "name": "Portable Network Graphics",
       "extensions": [
         "png"
@@ -485,12 +497,12 @@ const jsonData = {
       "save": true
     },
     {
-      "name": "Minetest",
+      "name": "Luanti (Minetest)",
       "extensions": [
         "mts"
       ],
       "magics": [],
-      "mimetype": "application/x-minetest",
+      "mimetype": "application/x-luanti-(minetest)",
       "animation": false,
       "save": false
     },
@@ -526,7 +538,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-schematic",
       "animation": false,
-      "save": false
+      "save": true
     },
     {
       "name": "Quake Map",

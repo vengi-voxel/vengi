@@ -338,12 +338,12 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
-        <string>Minetest</string>
+        <string>Luanti (Minetest)</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-minetest</string>
+          <string>application/x-luanti-(minetest)</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>

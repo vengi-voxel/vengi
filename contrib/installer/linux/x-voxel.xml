@@ -154,8 +154,8 @@
 		<comment>CubeWorld</comment>
 		<glob pattern="*.cub"/>
 	</mime-type>
-	<mime-type type="application/x-minetest">
-		<comment>Minetest</comment>
+	<mime-type type="application/x-luanti-(minetest)">
+		<comment>Luanti (Minetest)</comment>
 		<glob pattern="*.mts"/>
 	</mime-type>
 	<mime-type type="application/x-minecraft-region">

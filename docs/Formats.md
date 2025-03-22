@@ -19,12 +19,12 @@
 | Cubzh World                | b64         | X       |        |            |         |            |
 | Goxel                      | gox         | X       | X      | X          | X       |            |
 | KenShape                   | kenshape    | X       |        |            | X       |            |
+| Luanti (Minetest)          | mts         | X       |        |            | X       |            |
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
 | Magicavoxel XRAW           | xraw        | X       | X      |            | X       |            |
 | Minecraft level dat        | dat         | X       |        |            |         |            |
 | Minecraft region           | mca         | X       |        |            | X       |            |
-| Minecraft schematic        | schematic   | X       |        |            | X       |            |
-| Minetest                   | mts         | X       |        |            | X       |            |
+| Minecraft schematic        | schematic   | X       | X      |            | X       |            |
 | Nicks Voxel Model          | nvm         | X       |        |            |         |            |
 | Particubes                 | pcubes      | X       | X      | X          | X       |            |
 | Portable Network Graphics  | png         | X       | X      |            |         |            |
@@ -72,6 +72,7 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 
 | Name                            | Extension | Loading | Saving |
 | :------------------------------ | --------- | ------- | ------ |
+| Adobe Color Bock                | acb       | X       |        |
 | Adobe Swatch Exchange           | ase       | X       | X      |
 | CSV Palette                     | csv       | X       | X      |
 | Gimp Palette                    | gpl       | X       | X      |

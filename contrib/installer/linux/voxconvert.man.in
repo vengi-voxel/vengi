@@ -309,6 +309,8 @@ Goxel (*.gox)
 .TP
 KenShape (*.kenshape)
 .TP
+Luanti (Minetest) (*.mts)
+.TP
 MagicaVoxel (*.vox)
 .TP
 Magicavoxel XRAW (*.xraw)
@@ -318,8 +320,6 @@ Minecraft level dat (*.dat)
 Minecraft region (*.mca, *.mcr)
 .TP
 Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
-.TP
-Minetest (*.mts)
 .TP
 Nicks Voxel Model (*.nvm)
 .TP
@@ -408,6 +408,8 @@ Goxel (*.gox)
 MagicaVoxel (*.vox)
 .TP
 Magicavoxel XRAW (*.xraw)
+.TP
+Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
 .TP
 Particubes (*.pcubes, *.particubes)
 .TP
