@@ -20,6 +20,7 @@ General:
    - Added Adobe ColorBook (`acb`) palette support
    - Fixed `xraw` palette issue with color slot 0
    - Added `schematic` write support (Minecraft)
+   - Fixed Adobe Swatch Exchange (`ase`) palette loading issue
 
 VoxEdit:
 
