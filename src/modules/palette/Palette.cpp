@@ -44,9 +44,7 @@ Palette::Palette(const Palette &other)
 	core_memcpy(_colors, other._colors, sizeof(_colors));
 	core_memcpy(_materials, other._materials, sizeof(_materials));
 	core_memcpy(_view._uiIndices, other._view._uiIndices, sizeof(_view._uiIndices));
-	for (int i = 0; i < PaletteMaxColors; ++i) {
-		_names[i] = other._names[i];
-	}
+	_names = other._names;
 }
 
 Palette &Palette::operator=(const Palette &other) {
@@ -59,9 +57,7 @@ Palette &Palette::operator=(const Palette &other) {
 		core_memcpy(_colors, other._colors, sizeof(_colors));
 		core_memcpy(_materials, other._materials, sizeof(_materials));
 		core_memcpy(_view._uiIndices, other._view._uiIndices, sizeof(_view._uiIndices));
-		for (int i = 0; i < PaletteMaxColors; ++i) {
-			_names[i] = other._names[i];
-		}
+		_names = other._names;
 	}
 	return *this;
 }
@@ -73,9 +69,7 @@ Palette::Palette(Palette &&other) noexcept
 	core_memcpy(_colors, other._colors, sizeof(_colors));
 	core_memcpy(_materials, other._materials, sizeof(_materials));
 	core_memcpy(_view._uiIndices, other._view._uiIndices, sizeof(_view._uiIndices));
-	for (int i = 0; i < PaletteMaxColors; ++i) {
-		_names[i] = core::move(other._names[i]);
-	}
+	_names = core::move(other._names);
 }
 
 Palette &Palette::operator=(Palette &&other) noexcept {
@@ -88,9 +82,7 @@ Palette &Palette::operator=(Palette &&other) noexcept {
 		core_memcpy(_colors, other._colors, sizeof(_colors));
 		core_memcpy(_materials, other._materials, sizeof(_materials));
 		core_memcpy(_view._uiIndices, other._view._uiIndices, sizeof(_view._uiIndices));
-		for (int i = 0; i < PaletteMaxColors; ++i) {
-			_names[i] = core::move(other._names[i]);
-		}
+		_names = core::move(other._names);
 	}
 	return *this;
 }
@@ -1060,6 +1052,23 @@ bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char 
 		colors[i] = palette.color(i);
 	}
 	return paletteImg->writePNG(stream, (const uint8_t *)colors, (int)palette.size(), 1, 4);
+}
+
+const core::String &Palette::colorName(uint8_t paletteColorIdx) const {
+	if (!_names.hasValue()) {
+		return core::String::Empty;
+	}
+	return (*_names.value())[paletteColorIdx];
+}
+
+void Palette::setColorName(uint8_t paletteColorIdx, const core::String &name) {
+	if (name.empty() && !_names.hasValue()) {
+		return;
+	}
+	if (!_names.hasValue()) {
+		_names.setValue(core::Array<core::String, PaletteMaxColors>{});
+	}
+	(*_names.value())[paletteColorIdx] = name;
 }
 
 } // namespace palette

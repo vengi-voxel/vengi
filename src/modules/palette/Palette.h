@@ -5,8 +5,10 @@
 #pragma once
 
 #include "core/DirtyState.h"
+#include "core/Optional.h"
 #include "core/RGBA.h"
 #include "core/String.h"
+#include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/PaletteView.h"
 #include "image/Image.h"
@@ -32,7 +34,7 @@ private:
 	} _hash{};
 	PaletteView _view;
 	PaletteColorArray _colors{};
-	core::String _names[PaletteMaxColors];
+	core::Optional<core::Array<core::String, PaletteMaxColors>> _names;
 	MaterialArray _materials{};
 	int _colorCount = 0;
 
@@ -178,14 +180,6 @@ inline PaletteView &Palette::view() {
 
 inline const PaletteView &Palette::view() const {
 	return _view;
-}
-
-inline const core::String &Palette::colorName(uint8_t paletteColorIdx) const {
-	return _names[paletteColorIdx];
-}
-
-inline void Palette::setColorName(uint8_t paletteColorIdx, const core::String &name) {
-	_names[paletteColorIdx] = name;
 }
 
 inline const core::String &Palette::name() const {
