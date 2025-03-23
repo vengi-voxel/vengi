@@ -110,6 +110,12 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 			}
 		}
 
+		core::String name = palette.colorName(paletteColorIdx);
+		if (ImGui::InputText(_("Name"), &name)) {
+			palette.setColorName(paletteColorIdx, name);
+			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+		}
+
 		ImGui::EndPopup();
 	}
 }
@@ -245,6 +251,14 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	} else if (_selectedIndices.has(paletteColorIdx)) {
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
+
+	if (!palette.colorName(paletteColorIdx).empty()) {
+		const ImVec2 trianglePos(v2.x - borderWidth, v1.y + borderWidth);
+		const int size = colorButtonSize.x / 3;
+		drawList->AddTriangleFilled(trianglePos, ImVec2(trianglePos.x - size, trianglePos.y),
+									ImVec2(trianglePos.x, trianglePos.y + size), ImGui::GetColorU32(ImGuiCol_Text));
+	}
+
 	globalCursorPos.x += colorButtonSize.x;
 	if (globalCursorPos.x > windowPos.x + contentRegionWidth - colorButtonSize.x) {
 		globalCursorPos.x = startingPosX;
