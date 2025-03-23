@@ -343,7 +343,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-luanti-(minetest)</string>
+          <string>application/x-luanti-minetest</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>

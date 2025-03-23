@@ -401,7 +401,7 @@
 		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mts" Value="" Type="string" />
 		<RegistryValue Root="HKCR" Key=".mts\OpenWithProgids" Name="vengi-voxedit.mts" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.mts" Description="Luanti (Minetest)" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
-			<Extension Id="mts" ContentType="application/x-luanti-(minetest)">
+			<Extension Id="mts" ContentType="application/x-luanti-minetest">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

@@ -129,6 +129,8 @@ core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	core::string::replaceAllChars(name, ':', '-');
 	core::string::replaceAllChars(name, '.', '-');
 	core::string::replaceAllChars(name, '/', '-');
+	name = core::string::eraseAllChars(name, '(');
+	name = core::string::eraseAllChars(name, ')');
 	core::String mt = core::string::format("application/x-%s", name.c_str());
 	if (_uniqueMimetypes.has(mt)) {
 		mt += "-" + desc.mainExtension();

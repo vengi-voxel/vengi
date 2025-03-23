@@ -502,7 +502,7 @@ const jsonData = {
         "mts"
       ],
       "magics": [],
-      "mimetype": "application/x-luanti-(minetest)",
+      "mimetype": "application/x-luanti-minetest",
       "animation": false,
       "save": false
     },
