@@ -16,6 +16,8 @@ namespace utf8 {
  */
 extern int next(const char** str);
 
+extern int toUtf16(const char *utf8, size_t utf8Size, uint16_t *utf16, size_t utf16Size);
+
 extern int toUtf8(uint32_t c, char *buf, size_t bufSize);
 /**
  * @param[in] wchars The input string

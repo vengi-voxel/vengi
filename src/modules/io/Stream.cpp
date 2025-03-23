@@ -124,6 +124,21 @@ bool WriteStream::writeLine(const core::String &string, const char *lineEnding) 
 	return writeString(lineEnding, false);
 }
 
+bool WriteStream::writeUTF16BE(const core::String &str) {
+	if (str.empty()) {
+		return true;
+	}
+	core::DynamicArray<uint16_t> utf16str;
+	utf16str.resize(str.size());
+	const int utf16Len = core::utf8::toUtf16(str.c_str(), str.size(), utf16str.data(), utf16str.size());
+	for (int i = 0; i < utf16Len; ++i) {
+		if (!writeUInt16BE(utf16str[i])) {
+			return false;
+		}
+	}
+	return utf16Len > 0;
+}
+
 bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
 	const uint16_t length = (uint16_t)str.size();
 	if (!writeUInt16(length)) {

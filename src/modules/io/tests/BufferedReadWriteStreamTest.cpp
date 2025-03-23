@@ -290,4 +290,16 @@ TEST(BufferedReadWriteStreamTest, testFourCCBE) {
 	EXPECT_EQ(fcc, fccs);
 }
 
+TEST(BufferedReadWriteStreamTest, testUTF16) {
+	BufferedReadWriteStream stream;
+	core::String str = "foobar string %&";
+	EXPECT_TRUE(stream.writeUTF16BE(str));
+	const int utf16Len = stream.pos();
+	EXPECT_EQ(utf16Len, str.size() * sizeof(uint16_t));
+	stream.seek(0);
+	core::String str2;
+	EXPECT_TRUE(stream.readUTF16BE(str.size(), str2));
+	EXPECT_STREQ(str.c_str(), str2.c_str());
+}
+
 }

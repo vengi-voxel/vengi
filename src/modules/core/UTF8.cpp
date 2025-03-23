@@ -209,5 +209,54 @@ int next(const char **str) {
 	*str += len;
 	return cp;
 }
+
+int toUtf16(const char *utf8, size_t utf8Size, uint16_t *utf16, size_t utf16Size) {
+	size_t utf16Pos = 0;
+	size_t utf8Pos = 0;
+	while (utf8Pos < utf8Size) {
+		const uint8_t c = utf8[utf8Pos];
+		if (c < 0x80) {
+			if (utf16Pos >= utf16Size) {
+				return -1;
+			}
+			utf16[utf16Pos++] = c;
+			utf8Pos++;
+		} else if (c < 0xc0) {
+			return -1;
+		} else if (c < 0xe0) {
+			if (utf8Pos + 1 >= utf8Size) {
+				return -1;
+			}
+			if (utf16Pos + 1 >= utf16Size) {
+				return -1;
+			}
+			utf16[utf16Pos++] = ((utf8[utf8Pos] & 0x1f) << 6) | (utf8[utf8Pos + 1] & 0x3f);
+			utf8Pos += 2;
+		} else if (c < 0xf0) {
+			if (utf8Pos + 2 >= utf8Size) {
+				return -1;
+			}
+			if (utf16Pos + 1 >= utf16Size) {
+				return -1;
+			}
+			utf16[utf16Pos++] = ((utf8[utf8Pos] & 0x0f) << 12) | ((utf8[utf8Pos + 1] & 0x3f) << 6) | (utf8[utf8Pos + 2] & 0x3f);
+			utf8Pos += 3;
+		} else if (c < 0xf8) {
+			if (utf8Pos + 3 >= utf8Size) {
+				return -1;
+			}
+			if (utf16Pos + 1 >= utf16Size) {
+				return -1;
+			}
+			utf16[utf16Pos++] = ((utf8[utf8Pos] & 0x07) << 18) | ((utf8[utf8Pos + 1] & 0x3f) << 12) | ((utf8[utf8Pos + 2] & 0x3f) <<
+				6) | (utf8[utf8Pos + 3] & 0x3f);
+			utf8Pos += 4;
+		} else {
+			return -1;
+		}
+	}
+	return (int)utf16Pos;
+}
+
 } // namespace utf8
 } // namespace core

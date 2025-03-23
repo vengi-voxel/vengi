@@ -294,6 +294,8 @@ public:
 	 */
 	bool writeFormat(const char *fmt, ...);
 
+	bool writeUTF16BE(const core::String &str);
+
 	bool writePascalStringUInt8(const core::String &str);
 
 	bool writePascalStringUInt32LE(const core::String &str);
