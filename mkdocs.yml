@@ -50,6 +50,10 @@ nav:
       - voxedit/Configuration.md
       - voxedit/Animation.md
       - voxedit/Screenshots.md
+  - PalConvert:
+      - palconvert/Index.md
+      - palconvert/Usage.md
+      - palconvert/Examples.md
   - Thumbnailer:
       - thumbnailer/Index.md
       - thumbnailer/Examples.md
