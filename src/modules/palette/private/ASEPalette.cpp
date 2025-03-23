@@ -27,7 +27,7 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgb
 	if (nameLength > 0) {
 		core::String name;
 		stream.readUTF16BE(nameLength, name);
-		Log::error("Name: %s", name.c_str());
+		Log::debug("Name: %s", name.c_str());
 	}
 
 	union ToUpper {
@@ -45,7 +45,7 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgb
 	uint8_t buf[4];
 	FourCCRev(buf, mode.colorMode);
 	core::String colorModeStr((const char *)buf, 4);
-	Log::error("ASEPalette: color mode %s", colorModeStr.c_str());
+	Log::debug("ASEPalette: color mode %s", colorModeStr.c_str());
 
 	glm::vec4 color(0.0f);
 	if (mode.colorMode == FourCC('C', 'M', 'Y', 'K')) {
@@ -164,6 +164,7 @@ bool ASEPalette::save(const palette::Palette &palette, const core::String &filen
 		stream.writeFloatBE(scaled.r);
 		stream.writeFloatBE(scaled.g);
 		stream.writeFloatBE(scaled.b);
+		stream.writeInt16BE(0); // colorType
 	}
 	return true;
 }
