@@ -31,6 +31,7 @@ private:
 	void copyBuf(const char *buf, size_t len);
 	void checkBufferSize(size_t len);
 public:
+	static const core::String Empty;
 	static const size_t npos;
 	/* constexpr */String() {}
 	String(size_t len, char chr);

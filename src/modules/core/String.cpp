@@ -14,6 +14,7 @@
 namespace core {
 
 const size_t String::npos = ~0u;
+const core::String String::Empty = {};
 
 size_t StringHash::operator()(const core::String &p) const {
 	size_t result = 0;
