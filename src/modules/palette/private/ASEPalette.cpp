@@ -18,14 +18,13 @@ enum BlockTypes { COLOR_START = 0x0001, GROUP_START = 0xc001, GROUP_END = 0xc002
 
 }
 
-bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgba) const {
+bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgba, core::String &name) const {
 	uint16_t nameLength;
 	if (stream.readUInt16BE(nameLength) == -1) {
 		Log::error("ASEPalette: Failed to read name length");
 		return false;
 	}
 	if (nameLength > 0) {
-		core::String name;
 		stream.readUTF16BE(nameLength, name);
 		Log::debug("Name: %s", name.c_str());
 	}
@@ -132,11 +131,13 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		}
 		if (blockType == priv::COLOR_START) {
 			core::RGBA rgba;
-			if (!parseColorBlock(stream, rgba)) {
+			core::String name;
+			if (!parseColorBlock(stream, rgba, name)) {
 				Log::error("ASEPalette: Failed to parse color block %d/%d", i, blocks);
 				return false;
 			}
 			palette.setColor(colorCount, rgba);
+			palette.setColorName(colorCount, name);
 			++colorCount;
 			continue;
 		}

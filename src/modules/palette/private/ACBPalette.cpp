@@ -7,23 +7,10 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "palette/private/AdobeColorSpace.h"
 #include <glm/common.hpp>
 
 namespace palette {
-
-enum class ColorSpace : uint8_t {
-	RGB = 0,
-	HSB = 1,
-	CMYK = 2,
-	Pantone = 3,
-	Focoltone = 4,
-	Trumatch = 5,
-	Toyo = 6,
-	Lab = 7, // CIELAB D50
-	Grayscale = 8,
-	HKS = 10,
-	Max
-};
 
 bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stream, RGBAMap &colors) {
 	uint32_t magic;
@@ -128,7 +115,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	}
 	Log::debug("ACBPalette: Color space: %d", colorSpace);
 
-	const ColorSpace space = (ColorSpace)colorSpace;
+	const adobe::ColorSpace space = (adobe::ColorSpace)colorSpace;
 	for (uint16_t i = 0; i < colorCount; ++i) {
 		core::String colorName;
 		if (stream.readUInt32BE(len) == -1) {
@@ -144,14 +131,14 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			Log::error("ACBPalette: Failed to read color code");
 			return false;
 		}
-		if (space == ColorSpace::RGB) {
+		if (space == adobe::ColorSpace::RGB) {
 			uint8_t rgb[3];
 			if (stream.read(rgb, 3) == -1) {
 				Log::error("ACBPalette: Failed to read RGB color");
 				return false;
 			}
 			colors.put(core::RGBA{rgb[0], rgb[1], rgb[2], 255}, true);
-		} else if (space == ColorSpace::CMYK) {
+		} else if (space == adobe::ColorSpace::CMYK) {
 			uint8_t cmyk[4];
 			if (stream.read(cmyk, sizeof(cmyk)) == -1) {
 				Log::error("ACBPalette: Failed to read cielab color");
@@ -174,7 +161,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			const uint8_t g = (uint8_t)(glm::round(255 * (1 - M) * (1 - K)));
 			const uint8_t b = (uint8_t)(glm::round(255 * (1 - Y) * (1 - K)));
 			colors.put(core::RGBA{r, g, b, 255}, true);
-		} else if (space == ColorSpace::Lab) {
+		} else if (space == adobe::ColorSpace::Lab) {
 			uint8_t lab[3];
 			if (stream.read(lab, sizeof(lab)) == -1) {
 				Log::error("ACBPalette: Failed to read cielab color");

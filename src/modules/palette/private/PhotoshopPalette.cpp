@@ -3,6 +3,7 @@
  */
 
 #include "PhotoshopPalette.h"
+#include "AdobeColorSpace.h"
 #include "core/CMYK.h"
 #include "core/Color.h"
 #include "core/Log.h"
@@ -15,6 +16,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 		Log::error("PhotoshopPalette: Failed to read color space");
 		return false;
 	}
+	uint8_t paletteColorIdx = palette.colorCount();
 	uint16_t colorComponents[4];
 	for (int j = 0; j < 4; ++j) {
 		if (stream.readUInt16BE(colorComponents[j]) == -1) {
@@ -33,13 +35,13 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 			Log::error("PhotoshopPalette: Failed to read color name with %i characters", (int)characters);
 			return false;
 		}
+		palette.setColorName(paletteColorIdx, colorName);
 	}
 
 	core::RGBA rgba;
 	// Convert the color space to RGBA
 	switch (colorSpace) {
-	case 0: {
-		// RGB
+	case adobe::ColorSpace::RGB: {
 		//  The first three values in the color data are red, green, and blue. They are full unsigned 16-bit values as
 		//  in Apple's RGBColor data structure. Pure red = 65535,0,0.
 		rgba.r = colorComponents[0] / 65535.0f * 255.0f;
@@ -48,16 +50,14 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 		rgba.a = 255;
 		break;
 	}
-	case 1: {
-		// HSB
+	case adobe::ColorSpace::HSB: {
 		//  The first three values in the color data are hue, saturation, and brightness. They are full unsigned 16-bit
 		//  values as in Apple's HSVColor data structure. Pure red = 0,65535,65535.
 		rgba = core::Color::fromHSB(colorComponents[0] / 65535.0f * 360.0f, colorComponents[1] / 65535.0f * 100.0f,
 									colorComponents[2] / 65535.0f * 100.0f);
 		break;
 	}
-	case 2: {
-		// CMYK
+	case adobe::ColorSpace::CMYK: {
 		//  The four values in the color data are cyan , magenta , yellow , and black. They are full unsigned 16-bit
 		//  values. 0 = 100% ink. For example, pure cyan = 0,65535,65535,65535.
 		// TODO: multiply by 100.0f is correct?
@@ -67,8 +67,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 		rgba = cmyk.toRGB();
 		break;
 	}
-	case 8: {
-		// Grayscale
+	case adobe::ColorSpace::Grayscale: {
 		//  The first value in the color data is the gray value, from 0...10000.
 		uint8_t grayValue = (uint8_t)((1.0f - colorComponents[0] / 10000.0f) * 255.0f);
 		rgba.r = grayValue;
@@ -77,8 +76,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 		rgba.a = 255;
 		break;
 	}
-	case 7: {
-		// Lab
+	case adobe::ColorSpace::Lab: {
 		//  The first three values in the color data are lightness, a chrominance, and b chrominance.
 		//  Lightness is a 16-bit value from 0...10000. Chrominance components are each 16-bit values from
 		//  -12800...12700. Gray values are represented by chrominance components of 0. Pure white = 10000,0,0.
@@ -90,7 +88,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 		return false;
 	}
 
-	palette.setColor(palette.colorCount(), rgba);
+	palette.setColor(paletteColorIdx, rgba);
 
 	return true;
 }
