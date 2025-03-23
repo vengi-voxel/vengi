@@ -587,20 +587,20 @@ bool Palette::load(const char *paletteName) {
 	if (!paletteFile->validHandle()) {
 		paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName));
 		if (!paletteFile->validHandle()) {
-			Log::error("Failed to load palette file %s", paletteName);
+			Log::error("Failed to load palette image file %s", paletteName);
 			return false;
 		}
 	}
 	io::FileStream stream(paletteFile);
 	if (!stream.valid()) {
-		Log::error("Failed to load image %s", paletteFile->name().c_str());
+		Log::error("Failed to open palette %s", paletteFile->name().c_str());
 		return false;
 	}
 
 	if (!palette::loadPalette(paletteFile->name(), stream, *this)) {
 		const image::ImagePtr &img = image::loadImage(paletteFile);
 		if (!img->isLoaded()) {
-			Log::error("Failed to load image %s", paletteFile->name().c_str());
+			Log::error("Failed to load palette %s", paletteFile->name().c_str());
 			return false;
 		}
 		return load(img);

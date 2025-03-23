@@ -21,12 +21,10 @@ namespace palette {
 class ACBPalette : public QuantizedPalette {
 public:
 	bool load(const core::String &filename, io::SeekableReadStream &stream, RGBAMap &colors) override;
-	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override {
-		return false;
-	}
+	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
 
 	static const io::FormatDescription &format() {
-		static const io::FormatDescription desc = {"Adobe Color Bock", {"acb"}, {"8BCB"}, 0u};
+		static const io::FormatDescription desc = {"Adobe Color Bock", {"acb"}, {"8BCB"}, FORMAT_FLAG_SAVE};
 		return desc;
 	}
 };

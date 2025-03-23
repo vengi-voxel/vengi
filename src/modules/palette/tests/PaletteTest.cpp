@@ -35,10 +35,11 @@ TEST_F(PaletteTest, testGimpPalette) {
 	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
-// TODO: no write support yet
-TEST_F(PaletteTest, DISABLED_testAdobeColorBookPalette) {
+TEST_F(PaletteTest, testAdobeColorBookPalette) {
 	Palette pal;
 	pal.nippon();
+	pal.setName("testAdobeColorBookPalette");
+	pal.setColorName(0, "Test");
 	const int cnt = pal.colorCount();
 	ASSERT_TRUE(pal.save("test.acb"));
 	EXPECT_TRUE(pal.load("test.acb"));

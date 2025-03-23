@@ -12,6 +12,40 @@
 
 namespace palette {
 
+#define wrapBool(x) if (!(x)) { Log::error("Failed to write to stream"); return false; }
+
+bool ACBPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+	wrapBool(stream.writeUInt32(FourCC('8', 'B', 'C', 'B')))
+	wrapBool(stream.writeUInt16BE(1)) // version
+	wrapBool(stream.writeUInt16BE(0)) // bookid
+	wrapBool(stream.writeUInt32BE(palette.name().size()))
+	wrapBool(stream.writeUTF16BE(palette.name()))
+	wrapBool(stream.writeUInt32BE(0)) // prefix
+	wrapBool(stream.writeUInt32BE(0)) // suffix
+	wrapBool(stream.writeUInt32BE(0)) // description
+	const int colorCount = palette.colorCount();
+	wrapBool(stream.writeUInt16BE(colorCount))
+	wrapBool(stream.writeUInt16BE(0)) // page size
+	wrapBool(stream.writeUInt16BE(0)) // page selector offset
+	wrapBool(stream.writeUInt16BE((uint16_t)adobe::ColorSpace::RGB))
+	for (int i = 0; i < colorCount; ++i) {
+		const core::String &name = palette.colorName(i);
+		wrapBool(stream.writeUInt32BE(name.size()))
+		wrapBool(stream.writeUTF16BE(name))
+		uint8_t code[6]	= {0};
+		if (stream.write(code, 6) != 6) {
+			Log::error("Failed to write to stream");
+			return false;
+		}
+		const core::RGBA &color = palette.color(i);
+		wrapBool(stream.writeUInt8(color.r))
+		wrapBool(stream.writeUInt8(color.g))
+		wrapBool(stream.writeUInt8(color.b))
+	}
+	return true;
+}
+#undef wrapBool
+
 bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stream, RGBAMap &colors) {
 	uint32_t magic;
 	if (stream.readUInt32(magic) == -1) {
@@ -35,7 +69,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	}
 
 	uint16_t bookId;
-	if (stream.readUInt16(bookId) == -1) {
+	if (stream.readUInt16BE(bookId) == -1) {
 		Log::error("ACBPalette: Failed to read bookId");
 		return false;
 	}
@@ -123,7 +157,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			return false;
 		}
 		if (!stream.readUTF16BE(len, colorName)) {
-			Log::error("ACBPalette: Failed to read color name");
+			Log::error("ACBPalette: Failed to read color name with len %d", len);
 			return false;
 		}
 		core::String code;
