@@ -6,17 +6,19 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
 #include "core/ConfigVar.h"
-#include "core/Var.h"
+#include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"
+#include "util/VarUtil.h"
 
 namespace palette {
 
 class PaletteTest : public app::AbstractTest {
 protected:
 	bool onInitApp() override {
-		core::Var::get(cfg::CoreColorReduction, core::Color::toColorReductionTypeString(core::Color::ColorReductionType::Octree));
-		core::Var::get(cfg::PalformatMaxSize, 512);
-		return true;
+		if (!app::AbstractTest::onInitApp()) {
+			return false;
+		}
+		return FormatConfig::init();
 	}
 };
 
@@ -24,6 +26,18 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	PaletteLookup pal;
 	core::RGBA rgba{0xffffffff};
 	EXPECT_EQ(0, pal.findClosestIndex(rgba));
+}
+
+TEST_F(PaletteTest, testGimpRGBAPalette) {
+	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "true");
+	Palette pal;
+	pal.nippon();
+	pal.setColor(0, core::RGBA{0, 0, 0, 127});
+	const int cnt = pal.colorCount();
+	ASSERT_TRUE(pal.save("test.gpl"));
+	EXPECT_TRUE(pal.load("test.gpl"));
+	EXPECT_EQ(pal.colorCount(), cnt);
+	EXPECT_EQ(pal.color(0).a, 127);
 }
 
 TEST_F(PaletteTest, testGimpPalette) {

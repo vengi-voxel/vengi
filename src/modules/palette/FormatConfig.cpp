@@ -26,6 +26,8 @@ bool FormatConfig::init() {
 				   core::Var::boolValidator);
 	core::Var::get(cfg::PalformatMaxSize, "512", core::CV_NOPERSIST,
 				   _("The maximum size of an image in x and y direction to quantize to a palette"));
+	core::Var::get(cfg::PalformatGimpRGBA, "false", core::CV_NOPERSIST,
+				   _("Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"));
 
 	core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
 				   _("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"));

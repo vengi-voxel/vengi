@@ -12,6 +12,7 @@
 #include "io/FormatDescription.h"
 #include "palette/PaletteCache.h"
 #include "palette/PaletteFormatDescription.h"
+#include "palette/private/GimpPalette.h"
 #include "palette/private/RGBPalette.h"
 #include "ui/IMGUIEx.h"
 #include "video/FileDialogOptions.h"
@@ -65,7 +66,7 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 
 	bool hasOptions;
 	if (_palette) {
-		hasOptions = paletteOptions(desc);
+		hasOptions = paletteOptions(mode, desc);
 	} else {
 		hasOptions = genericOptions(desc);
 		if (mode == video::OpenFileMode::Save) {
@@ -82,13 +83,16 @@ video::FileDialogOptions FileDialogOptions::build(palette::PaletteCache &palette
 	return options;
 }
 
-bool paletteOptions(const io::FormatDescription *desc) {
+bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc) {
 	if (desc == nullptr) {
 		return false;
 	}
 	if (*desc == palette::RGBPalette::format()) {
 		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
 		return true;
+	}
+	if (mode == video::OpenFileMode::Save && *desc == palette::GimpPalette::format()) {
+		ImGui::CheckboxVar(_("Gimp Aseprite Alpha extension"), cfg::PalformatGimpRGBA);
 	}
 	// TODO: add quantized palette options cfg::CoreColorReduction
 	return false;

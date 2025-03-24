@@ -27,7 +27,7 @@ public:
 };
 
 // palette options
-bool paletteOptions(const io::FormatDescription *desc);
+bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc);
 
 // voxel format options
 bool genericOptions(const io::FormatDescription *desc);
