@@ -77,6 +77,7 @@ void VoxConvertUI::onRenderUI() {
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
+	bool popupAbout = false;
 
 	if (ImGui::Begin("##main", nullptr,
 					 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
@@ -110,7 +111,7 @@ void VoxConvertUI::onRenderUI() {
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
 				if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
-					ImGui::OpenPopup(POPUP_TITLE_ABOUT);
+					popupAbout = true;
 				}
 				ImGui::EndMenu();
 			}
@@ -236,6 +237,10 @@ void VoxConvertUI::onRenderUI() {
 		ImGui::InputTextMultiline("##output", &_output, ImVec2(0, 0), ImGuiInputTextFlags_ReadOnly);
 	}
 	ImGui::End();
+
+	if (popupAbout) {
+		ImGui::OpenPopup(POPUP_TITLE_ABOUT);
+	}
 
 	ui::popupAbout();
 }
