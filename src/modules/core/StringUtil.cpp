@@ -205,14 +205,12 @@ core::String sanitizeFilename(const core::String &input) {
 
 core::String format(const char *msg, ...) {
 	va_list ap;
-	const size_t bufSize = 1024;
-	char text[bufSize];
+	char text[1024];
 
 	va_start(ap, msg);
-	int len = SDL_vsnprintf(text, bufSize, msg, ap);
+	const int len = SDL_vsnprintf(text, sizeof(text), msg, ap);
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
-
 	if (len >= 0) {
 		return core::String(text, len);
 	}

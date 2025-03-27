@@ -124,7 +124,8 @@ core::String FormatDescription::wildCard() const {
 		if (i > 0) {
 			pattern.append(",");
 		}
-		pattern += core::string::format("*.%s", exts[i].c_str());
+		pattern += "*.";
+		pattern += exts[i];
 	}
 	return pattern;
 }

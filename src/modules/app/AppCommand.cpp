@@ -174,10 +174,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			if (var->isDirty()) {
 				flagsStr[4]  = 'D';
 			}
-			const core::String& name = core::string::format("%-28s", var->name().c_str());
-			const core::String& valueStr = core::string::format(R"("%s")", value);
-			Log::info("* %s %s = %s (%u)", flagsStr.c_str(), name.c_str(), valueStr.c_str(),
-					var->getHistorySize());
+			Log::info("* %s %-28s = (%s) (%u)", flagsStr.c_str(), var->name().c_str(), value, var->getHistorySize());
 			const char *help = var->help();
 			if (help != nullptr) {
 				Log::info("        %s", help);

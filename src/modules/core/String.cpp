@@ -244,11 +244,19 @@ String String::upper(const char *string) {
 }
 
 String String::toLower() const {
-	return lower(_data._str);
+	core::String str(_data._str, _data._size);
+	for (char* i = str._data._str; i != str._data._str + str._data._size; ++i) {
+		*i = (char)SDL_tolower(*i);
+	}
+	return str;
 }
 
 String String::toUpper() const {
-	return upper(_data._str);
+	core::String str(_data._str, _data._size);
+	for (char* i = str._data._str; i != str._data._str + str._data._size; ++i) {
+		*i = (char)SDL_toupper(*i);
+	}
+	return str;
 }
 
 void String::updateSize() {
@@ -506,15 +514,16 @@ String String::trim() const {
 
 core::String String::format(const char *msg, ...) {
 	va_list ap;
-	constexpr size_t bufSize = 1024;
-	char text[bufSize];
+	char text[1024];
 
 	va_start(ap, msg);
-	SDL_vsnprintf(text, bufSize, msg, ap);
+	int len = SDL_vsnprintf(text, sizeof(text), msg, ap);
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
-
-	return String(text);
+	if (len >= 0) {
+		return core::String(text, len);
+	}
+	return core::String::Empty;
 }
 
 char String::last() const {
