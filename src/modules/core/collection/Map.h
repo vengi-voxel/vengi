@@ -188,7 +188,8 @@ public:
 
 	bool get(const KEYTYPE& key, VALUETYPE& value) const {
 		const size_t hashValue = (size_t)_hasher(key);
-		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+		const size_t bucketIdx = hashValue % BUCKETSIZE;
+		KeyValue *entry = _buckets[bucketIdx];
 		while (entry != nullptr) {
 			if (COMPARE()(entry->key, key)) {
 				value = entry->value;
@@ -205,10 +206,11 @@ public:
 
 	iterator find(const KEYTYPE& key) const {
 		const size_t hashValue = (size_t)_hasher(key);
-		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+		const size_t bucketIdx = hashValue % BUCKETSIZE;
+		KeyValue *entry = _buckets[bucketIdx];
 		while (entry != nullptr) {
 			if (COMPARE()(entry->key, key)) {
-				return iterator(this, hashValue % BUCKETSIZE, entry);
+				return iterator(this, bucketIdx, entry);
 			}
 			entry = entry->next;
 		}
@@ -217,8 +219,9 @@ public:
 
 	void emplace(const KEYTYPE& key, VALUETYPE&& value) {
 		const size_t hashValue = (size_t)_hasher(key);
+		const size_t bucketIdx = hashValue % BUCKETSIZE;
 		KeyValue *prev = nullptr;
-		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+		KeyValue *entry = _buckets[bucketIdx];
 
 		while (entry != nullptr && !COMPARE()(entry->key, key)) {
 			prev = entry;
@@ -229,7 +232,7 @@ public:
 			entry = _allocator.alloc(key, core::forward<VALUETYPE>(value));
 			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i (size: %i/%i)", (int)hashValue, (int)size(), (int)capacity());
 			if (prev == nullptr) {
-				_buckets[hashValue % BUCKETSIZE] = entry;
+				_buckets[bucketIdx] = entry;
 			} else {
 				prev->next = entry;
 			}
@@ -240,8 +243,9 @@ public:
 
 	void put(const KEYTYPE& key, const VALUETYPE& value) {
 		const size_t hashValue = (size_t)_hasher(key);
+		const size_t bucketIdx = hashValue % BUCKETSIZE;
 		KeyValue *prev = nullptr;
-		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+		KeyValue *entry = _buckets[bucketIdx];
 
 		while (entry != nullptr && !COMPARE()(entry->key, key)) {
 			prev = entry;
@@ -252,7 +256,7 @@ public:
 			entry = _allocator.alloc(key, value);
 			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i (size: %i/%i)", (int)hashValue, (int)size(), (int)capacity());
 			if (prev == nullptr) {
-				_buckets[hashValue % BUCKETSIZE] = entry;
+				_buckets[bucketIdx] = entry;
 			} else {
 				prev->next = entry;
 			}
@@ -293,7 +297,8 @@ public:
 
 	bool remove(const KEYTYPE& key) {
 		const size_t hashValue = (size_t)_hasher(key);
-		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
+		const size_t bucketIdx = hashValue % BUCKETSIZE;
+		KeyValue *entry = _buckets[bucketIdx];
 		KeyValue *prev = nullptr;
 
 		while (entry != nullptr) {
@@ -308,7 +313,7 @@ public:
 		}
 
 		if (prev == nullptr) {
-			_buckets[hashValue % BUCKETSIZE] = entry->next;
+			_buckets[bucketIdx] = entry->next;
 		} else {
 			prev->next = entry->next;
 		}
