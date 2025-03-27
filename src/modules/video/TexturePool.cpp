@@ -12,7 +12,7 @@
 namespace video {
 
 bool TexturePool::has(const core::String& name) const {
-	return _cache.find(name) != _cache.end();
+	return _cache.hasKey(name);
 }
 
 video::TexturePtr TexturePool::get(const core::String &name) {

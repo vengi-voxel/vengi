@@ -93,11 +93,11 @@ int Shader::getAttributeComponents(const core::String& name) const {
 }
 
 bool Shader::hasAttribute(const core::String& name) const {
-	return _attributes.find(name) != _attributes.end();
+	return _attributes.hasKey(name);
 }
 
 bool Shader::hasUniform(const core::String& name) const {
-	return _uniforms.find(name) != _uniforms.end();
+	return _uniforms.hasKey(name);
 }
 
 bool Shader::isUniformBlock(const core::String& name) const {

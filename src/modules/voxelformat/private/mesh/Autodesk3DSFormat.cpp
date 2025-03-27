@@ -678,7 +678,7 @@ bool Autodesk3DSFormat::readNode(const core::String &filename, const io::Archive
 				return false;
 			}
 			Log::debug("Add material with name: '%s'", material.name.c_str());
-			if (node.materials.find(material.name) != node.materials.end()) {
+			if (node.materials.hasKey(material.name)) {
 				Log::error("Material with name '%s' already exists", material.name.c_str());
 				return false;
 			}

@@ -289,7 +289,7 @@ bool SceneGraph::hasNode(int nodeId) const {
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
-	return _nodes.find(nodeId) != _nodes.end();
+	return _nodes.hasKey(nodeId);
 }
 
 const SceneGraphNode &SceneGraph::root() const {

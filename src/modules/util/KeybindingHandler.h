@@ -89,7 +89,7 @@ public:
 };
 
 inline bool KeyBindingHandler::isPressed(int32_t key) const {
-	return _keys.find(key) != _keys.end();
+	return _keys.hasKey(key);
 }
 
 inline const BindMap KeyBindingHandler::bindings() const {

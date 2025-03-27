@@ -201,7 +201,16 @@ public:
 	}
 
 	bool hasKey(const KEYTYPE& key) const {
-		return find(key) != end();
+		const size_t hashValue = (size_t)_hasher(key);
+		const size_t bucketIdx = hashValue % BUCKETSIZE;
+		KeyValue *entry = _buckets[bucketIdx];
+		while (entry != nullptr) {
+			if (COMPARE()(entry->key, key)) {
+				return true;
+			}
+			entry = entry->next;
+		}
+		return false;
 	}
 
 	iterator find(const KEYTYPE& key) const {

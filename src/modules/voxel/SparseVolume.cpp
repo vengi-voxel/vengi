@@ -30,7 +30,7 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 }
 
 bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
-	return _map.find(pos) != _map.end();
+	return _map.hasKey(pos);
 }
 
 void SparseVolume::clear() {
