@@ -26,6 +26,7 @@ BENCHMARK_DEFINE_F(MapBenchmark, compareToUnorderedMapStd) (benchmark::State& st
 	std::unordered_map<int64_t, int64_t, std::hash<int64_t>> unorderedMap;
 	for (auto _ : state) {
 		const int64_t n = state.range(0);
+		unorderedMap.reserve(n);
 		for (int64_t i = 0; i < n; ++i) {
 			unorderedMap.insert(std::make_pair(i, i));
 			const int value = (int)unorderedMap[i];
