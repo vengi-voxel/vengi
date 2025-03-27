@@ -201,11 +201,14 @@ core::String format(const char *msg, ...) {
 	char text[bufSize];
 
 	va_start(ap, msg);
-	SDL_vsnprintf(text, bufSize, msg, ap);
+	int len = SDL_vsnprintf(text, bufSize, msg, ap);
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
 
-	return core::String(text);
+	if (len >= 0) {
+		return core::String(text, len);
+	}
+	return core::String::Empty;
 }
 
 core::String humanSize(uint64_t bytes) {
