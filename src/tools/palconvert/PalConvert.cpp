@@ -12,6 +12,7 @@
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "palette/FormatConfig.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "palette/private/PaletteFormat.h"
@@ -58,6 +59,9 @@ app::AppState PalConvert::onConstruct() {
 		.setShort("-i")
 		.setDescription("Allow to specify input files")
 		.addFlag(ARGUMENT_FLAG_FILE | ARGUMENT_FLAG_MANDATORY);
+	registerArg("--type")
+		.setShort("-t")
+		.setDescription("Specify the output type (ansi, json, hex)");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--output")
 		.setShort("-o")
@@ -67,6 +71,55 @@ app::AppState PalConvert::onConstruct() {
 	palette::FormatConfig::init();
 
 	return state;
+}
+
+static void printJsonPalette(const palette::Palette &palette) {
+	Log::printf("{");
+	Log::printf("\"name\":\"%s\",", palette.name().c_str());
+	Log::printf("\"colors\":[");
+	for (int i = 0; i < (int)palette.size(); ++i) {
+		const core::RGBA color = palette.color(i);
+		Log::printf("{");
+		Log::printf("\"r\":%u,\"g\":%u,\"b\":%u,\"a\":%u", color.r, color.g, color.b, color.a);
+		if (!palette.colorName(i).empty()) {
+			Log::printf(",\"name\":\"%s\"", palette.colorName(i).c_str());
+		}
+		const palette::Material &mat = palette.material(i);
+		int n = palette::MaterialProperty::MaterialMetal;
+		const int maxN = palette::MaterialProperty::MaterialMax;
+		Log::printf(",\"material\":{");
+		int matPrinted = 0;
+		for (; n < maxN; ++n) {
+			const palette::MaterialProperty propEnum = (palette::MaterialProperty)n;
+			if (!mat.has(propEnum)) {
+				continue;
+			}
+			if (matPrinted > 0) {
+				Log::printf(",");
+			}
+			Log::printf("\"%s\":%f", palette::MaterialPropertyName(propEnum), mat.value(propEnum));
+			matPrinted++;
+		}
+		Log::printf("}"); // material
+		Log::printf("}"); // color
+
+		if (i != (int)palette.size() - 1) {
+			Log::printf(",");
+		}
+	}
+	Log::printf("]");
+	Log::printf("}\n");
+}
+
+static void printHexPalette(const palette::Palette &palette) {
+	for (int i = 0; i < (int)palette.size(); ++i) {
+		const core::RGBA color = palette.color(i);
+		Log::printf("0x%02x%02x%02x%02x", color.r, color.g, color.b, color.a);
+		if (i != (int)palette.size() - 1) {
+			Log::printf(", ");
+		}
+	}
+	Log::printf("\n");
 }
 
 bool PalConvert::handleInputFile(const core::String &infile, const core::String &outfile) {
@@ -87,9 +140,16 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 			  palette.name().c_str());
 
 	if (outfile.empty()) {
-		const core::String palStr = palette::Palette::print(palette);
-		Log::printf("%s", palStr.c_str());
-		Log::printf("\n");
+		const core::String type = getArgVal("--type", "ansi");
+		if (type == "json") {
+			printJsonPalette(palette);
+		} else if (type == "hex") {
+			printHexPalette(palette);
+		} else {
+			const core::String palStr = palette::Palette::print(palette);
+			Log::printf("%s", palStr.c_str());
+			Log::printf("\n");
+		}
 	} else {
 		if (!palette.save(outfile.c_str())) {
 			Log::error("Failed to save palette to '%s'", outfile.c_str());
