@@ -519,14 +519,16 @@ bool Palette::load(const image::ImagePtr &img) {
 	if (img->width() * img->height() > PaletteMaxColors) {
 		return createPalette(img, *this);
 	}
-	int ncolors = img->width();
+	int ncolors = img->width() * img->height();
 	if (ncolors > PaletteMaxColors) {
 		ncolors = PaletteMaxColors;
 		Log::warn("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
 	}
 	_colorCount = ncolors;
 	for (int i = 0; i < _colorCount; ++i) {
-		_colors[i] = img->colorAt(i, 0);
+		const int x = i % img->width();
+		const int y = i / img->width();
+		_colors[i] = img->colorAt(x, y);
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		_colors[i] = core::RGBA(0);
