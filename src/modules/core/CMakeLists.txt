@@ -159,6 +159,7 @@ gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
 	benchmarks/CollectionBenchmark.cpp
+	benchmarks/StringBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app)
