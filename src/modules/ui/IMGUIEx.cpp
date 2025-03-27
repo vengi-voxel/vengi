@@ -51,6 +51,15 @@ static int InputTextCallback(ImGuiInputTextCallbackData *data) {
 	return 0;
 }
 
+static core::String getId(const char *icon, const char *label) {
+	core::String id(icon);
+	id += ' ';
+	id += label;
+	id += "###";
+	id += label;
+	return id;
+}
+
 } // namespace _priv
 
 bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
@@ -110,7 +119,8 @@ void InputFile(const char *label, bool load, core::String *file, const io::Forma
 	BeginGroup();
 	InputText(label, file, flags);
 	SameLine();
-	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
+	core::String id(ICON_LC_FILE "##");
+	id += label;
 	if (Button(id.c_str())) {
 		if (load) {
 			imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
@@ -129,7 +139,8 @@ void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags fl
 	BeginGroup();
 	InputText(label, folder, flags);
 	SameLine();
-	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
+	core::String id(ICON_LC_FILE "##");
+	id += label;
 	if (Button(id.c_str())) {
 		imguiApp()->directoryDialog([folder] (const core::String &folderName, const io::FormatDescription *desc) {
 			*folder = folderName;
@@ -191,7 +202,7 @@ bool InputVarInt(const char *label, const char *varName, int step, int step_fast
 }
 
 bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return CheckboxVar(labelWithIcon.c_str(), var);
 }
 
@@ -209,7 +220,7 @@ bool CheckboxVar(const char *label, const core::VarPtr &var) {
 }
 
 bool IconCheckboxVar(const char *icon, const char *label, const char *varName) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return CheckboxVar(labelWithIcon.c_str(), varName);
 }
 
@@ -222,18 +233,18 @@ bool CheckboxVar(const char *label, const char *varName) {
 }
 
 bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return CheckboxFlags(labelWithIcon.c_str(), flags, flags_value);
 }
 
 bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return CollapsingHeader(labelWithIcon.c_str(), flags);
 }
 
 bool IconSliderVarInt(const char *icon, const char *label, const core::VarPtr &var, int v_min, int v_max,
 					  const char *format, ImGuiSliderFlags flags) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return SliderVarInt(labelWithIcon.c_str(), var, v_min, v_max, format, flags);
 }
 
@@ -447,7 +458,7 @@ const char *CommandButton(const char *label, const char *command, const char *to
 }
 
 const char *CommandIconButton(const char *icon, const char *label, const char *command, command::CommandExecutionListener &listener) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return CommandButton(labelWithIcon.c_str(), command, listener);
 }
 
@@ -496,12 +507,12 @@ bool NoButton() {
 }
 
 bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return Selectable(labelWithIcon.c_str(), selected, flags, size);
 }
 
 bool URLIconButton(const char *icon, const char *label, const char *url) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return URLButton(labelWithIcon.c_str(), url);
 }
 
@@ -515,7 +526,7 @@ bool URLButton(const char *label, const char *url) {
 }
 
 void URLIconItem(const char *icon, const char *label, const char *url, float width) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	URLItem(labelWithIcon.c_str(), url, width);
 }
 
@@ -661,12 +672,12 @@ void IconDialog(const char *icon, const char *text, bool wrap) {
 }
 
 bool IconCheckbox(const char *icon, const char *label, bool *v) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return ImGui::Checkbox(labelWithIcon.c_str(), v);
 }
 
 bool BeginIconCombo(const char *icon, const char *label, const char *preview_value, ImGuiComboFlags flags) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return ImGui::BeginCombo(labelWithIcon.c_str(), preview_value, flags);
 }
 
@@ -679,12 +690,12 @@ bool IconMenuItem(const char *icon, const char *label, const char *shortcut, boo
 }
 
 bool IconButton(const char *icon, const char *label, const ImVec2 &size) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return Button(labelWithIcon.c_str(), size);
 }
 
 bool DisabledIconButton(const char *icon, const char *label, bool disabled, const ImVec2 &size) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	const core::String labelWithIcon(_priv::getId(icon, label));
 	return DisabledButton(labelWithIcon.c_str(), disabled, size);
 }
 
