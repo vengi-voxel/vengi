@@ -769,7 +769,7 @@ core::RGBA Color::fromHex(const char *hex) {
 }
 
 core::String Color::print(RGBA rgba, bool colorAsHex) {
-	String buf = "\033[0m";
+	String buf("\033[0m", 4);
 	if (colorAsHex) {
 		buf = toHex(rgba);
 		buf.append(" ");

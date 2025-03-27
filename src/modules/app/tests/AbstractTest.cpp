@@ -19,7 +19,7 @@ core::String AbstractTest::fileToString(const core::String& filename) const {
 	const io::FilePtr& file = fs->open(filename);
 	if (!file->exists()) {
 		Log::error("Failed to load file '%s'", filename.c_str());
-		return "";
+		return core::String::Empty;
 	}
 	return file->load();
 }

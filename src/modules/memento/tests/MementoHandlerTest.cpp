@@ -20,7 +20,7 @@ private:
 protected:
 	static core::String toFakeUUID(int id) {
 		if (id == InvalidNodeId) {
-			return "";
+			return core::String::Empty;
 		}
 		return core::string::toString(id);
 	}

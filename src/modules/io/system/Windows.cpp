@@ -34,7 +34,7 @@ static core::String knownFolderPath(REFKNOWNFOLDERID id) {
 
 	if (!SUCCEEDED(hr)) {
 		Log::debug("Failed to get a known folder path");
-		return "";
+		return core::String::Empty;
 	}
 
 	retval = io_StringToUTF8W(path);
@@ -181,7 +181,7 @@ core::String fs_cwd() {
 	const WCHAR *p = _wgetcwd(buf, lengthof(buf));
 	if (p == nullptr) {
 		Log::error("Failed to get current working dir: %s", strerror(errno));
-		return "";
+		return core::String::Empty;
 	}
 	char *utf8 = io_StringToUTF8W(p);
 	const core::String str(utf8);
@@ -194,7 +194,7 @@ core::String fs_realpath(const char *path) {
 	WCHAR wfull[_MAX_PATH];
 	if (_wfullpath(wfull, wpath, lengthof(wfull)) == nullptr) {
 		SDL_free(wpath);
-		return "";
+		return core::String::Empty;
 	}
 	SDL_free(wpath);
 	priv::denormalizePath(wfull);
@@ -222,7 +222,7 @@ core::String fs_readlink(const char *path) {
 
 	if (hFile == INVALID_HANDLE_VALUE) {
 		Log::debug("Failed to open symbolic link %s: %s", path, strerror(errno));
-		return "";
+		return core::String::Empty;
 	}
 
 	// Get the target path of the symbolic link
@@ -233,7 +233,7 @@ core::String fs_readlink(const char *path) {
 
 	if (result == 0 || result >= MAX_PATH) {
 		Log::debug("Failed to resolve symbolic link %s: %s", path, strerror(errno));
-		return "";
+		return core::String::Empty;
 	}
 
 	priv::denormalizePath(buffer);

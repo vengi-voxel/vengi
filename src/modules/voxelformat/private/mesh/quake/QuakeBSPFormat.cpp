@@ -57,7 +57,7 @@ int32_t QuakeBSPFormat::validateLump(const BspLump &lump, size_t elementSize) co
 static core::String extractBaseDir(const core::String &filename) {
 	const size_t pos = filename.rfind("maps/");
 	if (pos == core::String::npos) {
-		return "";
+		return core::String::Empty;
 	}
 	return filename.substr(0, pos);
 }

@@ -92,6 +92,7 @@ bool startsWith(const char* string, const char* token);
 const char* after(const char* input, int character);
 
 bool endsWith(const core::String& string, const core::String& end);
+bool endsWith(const core::String& string, char end);
 
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr);
@@ -149,7 +150,7 @@ inline core::String path(T t, ArgTypes... args) {
 
 template <>
 inline core::String path() {
-	return "";
+	return core::String::Empty;
 }
 
 bool isSamePath(const core::String &a, const core::String &b);
@@ -194,7 +195,7 @@ inline bool icontains(const core::String& str, const core::String& search) {
 
 template<class T>
 inline core::String toString(const T& v) {
-	return core::String("No toString implementation");
+	return core::String("No toString implementation", 26);
 }
 
 template<>
@@ -224,7 +225,7 @@ inline core::String toString(const float& v) {
 
 template<>
 inline core::String toString(const bool& v) {
-	return v ? "true" : "false";
+	return v ? core::String("true", 4) : core::String("false", 5);
 }
 
 template<>
@@ -265,7 +266,7 @@ template<typename ITER>
 core::String join(const ITER& begin, const ITER& end, const char *delimiter) {
 	auto i = begin;
 	if (i == end) {
-		return "";
+		return core::String::Empty;
 	}
 	core::String ss;
 	ss += *i;
@@ -280,7 +281,7 @@ template<typename ITER, typename FUNC>
 core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUNC&& func) {
 	auto i = begin;
 	if (i == end) {
-		return "";
+		return core::String::Empty;
 	}
 	core::String ss;
 	ss += func(*i);

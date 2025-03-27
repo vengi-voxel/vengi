@@ -1100,7 +1100,7 @@ core::String App::getArgVal(const core::String &arg, const core::String &default
 		}
 		return a.defaultValue();
 	}
-	return "";
+	return core::String::Empty;
 }
 
 App::Argument &App::registerArg(const core::String &arg) {

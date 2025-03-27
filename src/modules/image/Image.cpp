@@ -473,7 +473,7 @@ bool Image::writePNG(io::SeekableWriteStream &stream, const uint8_t *buffer, int
 core::String Image::pngBase64() const {
 	io::BufferedReadWriteStream s;
 	if (!writePNG(s, _colors, _width, _height, _colorComponents)) {
-		return "";
+		return core::String::Empty;
 	}
 	s.seek(0);
 	return io::Base64::encode(s);

@@ -156,7 +156,7 @@ inline const core::String &Command::help() const {
 inline core::String help(const core::String &cmd) {
 	Command* command = Command::getCommand(cmd);
 	if (!command) {
-		return "";
+		return core::String::Empty;
 	}
 	return command->help();
 }

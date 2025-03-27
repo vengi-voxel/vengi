@@ -348,7 +348,7 @@ core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 	int32_t key;
 	uint16_t count;
 	if (!resolveKeyBindings(cmd, &modifier, &key, &count)) {
-		return "";
+		return core::String::Empty;
 	}
 	return toString(key, modifier, count);
 }

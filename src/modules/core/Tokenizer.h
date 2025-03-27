@@ -51,7 +51,7 @@ public:
 
 	inline core::String peekNext() const {
 		if (!hasNext()) {
-			return "";
+			return core::String::Empty;
 		}
 		return _tokens[_posIndex];
 	}

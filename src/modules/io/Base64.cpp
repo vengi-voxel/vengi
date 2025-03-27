@@ -61,7 +61,7 @@ core::String encode(io::ReadStream &stream) {
 	while (!stream.eos()) {
 		uint8_t val = 0;
 		if (stream.readUInt8(val) != 0) {
-			return "";
+			return core::String::Empty;
 		}
 		source[bytes++] = val;
 		if (bytes == 3) {

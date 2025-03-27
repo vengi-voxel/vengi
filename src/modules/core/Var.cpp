@@ -90,7 +90,7 @@ bool Var::_minMaxValidator(const core::String& value, int nmin, int nmax) {
 core::String Var::str(const core::String& name) {
 	const VarPtr& var = get(name);
 	if (!var) {
-		return "";
+		return core::String::Empty;
 	}
 	return var->strVal();
 }

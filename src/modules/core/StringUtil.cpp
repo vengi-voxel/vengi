@@ -88,6 +88,14 @@ const char *after(const char *input, int character) {
 	return s;
 }
 
+bool endsWith(const core::String& string, char end) {
+	if (string.empty()) {
+		return false;
+	}
+	const size_t strLength = string.size();
+	return string[strLength - 1] == end;
+}
+
 bool endsWith(const core::String &string, const core::String &end) {
 	const size_t strLength = string.size();
 	const size_t endLength = end.size();
@@ -1028,7 +1036,7 @@ char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetS
 
 core::String sanitizeDirPath(core::String str) {
 	str.replaceAllChars('\\', '/');
-	while (endsWith(str, "/")) {
+	while (endsWith(str, '/')) {
 		str.erase(str.size() - 1, 1);
 	}
 	return str.append("/");
@@ -1042,7 +1050,7 @@ core::String sanitizePath(const core::String& path) {
 core::String extractDir(const core::String &str) {
 	const size_t pos = str.rfind("/");
 	if (pos == core::String::npos) {
-		return "";
+		return core::String::Empty;
 	}
 	return str.substr(0, pos + 1);
 }
@@ -1088,7 +1096,7 @@ core::String extractExtension(const core::String &str) {
 	const core::String filename = extractFilenameWithExtension(str);
 	const size_t pos = filename.rfind(".");
 	if (pos == core::String::npos) {
-		return "";
+		return core::String::Empty;
 	}
 	return filename.substr(pos + 1);
 }
@@ -1096,7 +1104,7 @@ core::String extractExtension(const core::String &str) {
 core::String extractAllExtensions(const core::String &str) {
 	const size_t pos = str.find(".");
 	if (pos == core::String::npos) {
-		return "";
+		return core::String::Empty;
 	}
 	return str.substr(pos + 1);
 }

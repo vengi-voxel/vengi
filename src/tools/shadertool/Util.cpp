@@ -159,7 +159,7 @@ const char* getPrimitiveTypeString(video::Primitive primitive) {
 core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	switch (type) {
 	case Variable::MAX:
-		return "";
+		return core::String::Empty;
 	case Variable::FLOAT:
 		if (amount > 1) {
 			return "1fv";
@@ -218,14 +218,14 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 			// TODO: doesn't work yet, video::TextureUnit support is needed here
 			return "1iv";
 		}
-		return "";
+		return core::String::Empty;
 	case Variable::SAMPLERCUBEMAP:
 		if (amount > 1) {
 			return "1iv";
 		}
-		return "";
+		return core::String::Empty;
 	}
-	return "";
+	return core::String::Empty;
 }
 
 core::String convertName(const core::String& in, bool firstUpper) {

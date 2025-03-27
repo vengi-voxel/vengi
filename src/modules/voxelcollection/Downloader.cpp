@@ -121,7 +121,7 @@ static core::String findThumbnailUrl(const io::ArchivePtr &archive, const core::
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
 				if (shouldQuit) {
-					return "";
+					return core::String::Empty;
 				}
 				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
 					return github::downloadUrl(archive, source.github.repo, source.github.commit, entry.path, entry.size);
@@ -129,7 +129,7 @@ static core::String findThumbnailUrl(const io::ArchivePtr &archive, const core::
 			}
 		}
 	}
-	return "";
+	return core::String::Empty;
 }
 
 static core::String findThumbnailUrl(const core::DynamicArray<gitlab::TreeEntry> &entries, const gitlab::TreeEntry &current,
@@ -139,7 +139,7 @@ static core::String findThumbnailUrl(const core::DynamicArray<gitlab::TreeEntry>
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
 				if (shouldQuit) {
-					return "";
+					return core::String::Empty;
 				}
 				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
 					return gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, entry.path);
@@ -147,7 +147,7 @@ static core::String findThumbnailUrl(const core::DynamicArray<gitlab::TreeEntry>
 			}
 		}
 	}
-	return "";
+	return core::String::Empty;
 }
 
 bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &archiveFile,
@@ -261,7 +261,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 														 const VoxelSource &source, const io::ArchivePtr &archive,
 														 core::AtomicBool &shouldQuit) const {
 	core::DynamicArray<VoxelFile> files;
-	const core::String &licenseDownloadUrl = source.github.license.empty() ? "" :
+	const core::String &licenseDownloadUrl = source.github.license.empty() ? core::String::Empty :
 		github::downloadUrl(archive, source.github.repo, source.github.commit, source.github.license, 0);
 	const core::String cleanSource = core::string::cleanPath(source.name);
 	for (const auto &entry : entries) {

@@ -139,7 +139,7 @@ core::String File::load() {
 	const int len = read((void **) &buf);
 	if (buf == nullptr || len <= 0) {
 		delete[] buf;
-		return "";
+		return core::String::Empty;
 	}
 	core::String f(buf, len);
 	delete[] buf;
@@ -255,7 +255,7 @@ core::String File::fileName() const {
 core::String File::extension() const {
 	const char *ext = SDL_strrchr(name().c_str(), '.');
 	if (ext == nullptr) {
-		return "";
+		return core::String::Empty;
 	}
 	++ext;
 	return core::String(ext);

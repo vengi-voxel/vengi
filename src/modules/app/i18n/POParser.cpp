@@ -46,12 +46,12 @@ POParser::POParser(const core::String &filename, io::SeekableReadStream &in, Dic
 POParser::~POParser() {
 }
 
-void POParser::warning(const core::String &msg) {
-	Log::warn("%s:%i: %s", _filename.c_str(), _lineNumber, msg.c_str());
+void POParser::warning(const char *msg) {
+	Log::warn("%s:%i: %s", _filename.c_str(), _lineNumber, msg);
 }
 
-bool POParser::error(const core::String &msg) {
-	Log::error("%s:%i: %s", _filename.c_str(), _lineNumber, msg.c_str());
+bool POParser::error(const char *msg) {
+	Log::error("%s:%i: %s", _filename.c_str(), _lineNumber, msg);
 	_error = true;
 	return false;
 }
@@ -145,12 +145,12 @@ core::String POParser::getString(unsigned int skip) {
 
 	if (skip + 1 >= static_cast<unsigned int>(_currentLine.size())) {
 		error("unexpected end of line");
-		return "";
+		return core::String::Empty;
 	}
 
 	if (_currentLine[skip] == ' ' && _currentLine[skip + 1] == '"') {
 		if (!getStringLine(out, skip + 1)) {
-			return "";
+			return core::String::Empty;
 		}
 	} else {
 		if (pedantic) {
@@ -160,15 +160,15 @@ core::String POParser::getString(unsigned int skip) {
 		for (;;) {
 			if (skip >= static_cast<unsigned int>(_currentLine.size())) {
 				error("unexpected end of line");
-				return "";
+				return core::String::Empty;
 			} else if (_currentLine[skip] == '\"') {
 				if (!getStringLine(out, skip)) {
-					return "";
+					return core::String::Empty;
 				}
 				break;
 			} else if (!core::string::isspace(_currentLine[skip])) {
 				error("string must start with '\"'");
-				return "";
+				return core::String::Empty;
 			} else {
 				// skip space
 			}
@@ -188,7 +188,7 @@ next:
 			}
 
 			if (!getStringLine(out, i)) {
-				return "";
+				return core::String::Empty;
 			}
 			goto next;
 		} else if (core::string::isspace(_currentLine[i])) {
@@ -270,7 +270,8 @@ bool POParser::isEmptyLine() {
 }
 
 bool POParser::prefix(const char *prefixStr) {
-	return _currentLine.compare(0, strlen(prefixStr), prefixStr) == 0;
+	const size_t len = strlen(prefixStr);
+	return _currentLine.compare(0, len, {prefixStr, len}) == 0;
 }
 
 bool POParser::parse() {

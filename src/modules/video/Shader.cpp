@@ -372,7 +372,7 @@ core::String Shader::validPreprocessorName(const core::String& name) {
 
 core::String Shader::getSource(ShaderType shaderType, const core::String& buffer, bool finalize, core::List<core::String>* includedFiles) const {
 	if (buffer.empty()) {
-		return "";
+		return core::String::Empty;
 	}
 	core::String src;
 	src.append("#version ");

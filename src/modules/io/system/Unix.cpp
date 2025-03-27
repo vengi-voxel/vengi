@@ -64,7 +64,7 @@ static core::String appleDir(sysdir_search_path_directory_t dir) {
 			return replaceHome(path);
 		}
 	}
-	return "";
+	return core::String::Empty;
 }
 
 #else // __APPLE__
@@ -73,26 +73,26 @@ static core::String load(const core::String &file) {
 	FILE *fp = fopen(file.c_str(), "r");
 	if (fp == nullptr) {
 		Log::debug("Could not open file %s", file.c_str());
-		return "";
+		return core::String::Empty;
 	}
 
 	if (fseek(fp, 0L, SEEK_END) != 0) {
 		Log::debug("Error: fseek failed");
 		fclose(fp);
-		return "";
+		return core::String::Empty;
 	}
 
 	long int bufsize = ftell(fp);
 	if (bufsize == -1) {
 		Log::debug("Error: ftell failed");
 		fclose(fp);
-		return "";
+		return core::String::Empty;
 	}
 
 	if (fseek(fp, 0L, SEEK_SET) != 0) {
 		Log::debug("Error: fseek failed");
 		fclose(fp);
-		return "";
+		return core::String::Empty;
 	}
 
 	char *source = (char *)core_malloc(bufsize + 1);
@@ -100,12 +100,12 @@ static core::String load(const core::String &file) {
 	if (ferror(fp) != 0) {
 		perror("Error: failed to read shader file. ");
 		fclose(fp);
-		return "";
+		return core::String::Empty;
 	}
 	fclose(fp);
 
-	source[newLen++] = '\0';
-	core::String str(source);
+	source[newLen] = '\0';
+	core::String str(source, newLen);
 	core_free(source);
 	return str;
 }
@@ -247,7 +247,7 @@ core::String fs_realpath(const char *path) {
 	char buf[PATH_MAX];
 	const char *rp = realpath(path, buf);
 	if (rp == nullptr) {
-		return "";
+		return core::String::Empty;
 	}
 	return rp;
 }
@@ -273,7 +273,7 @@ core::String fs_readlink(const char *path) {
 	char buf[4096];
 	ssize_t len = readlink(path, buf, lengthof(buf) - 1);
 	if (len == -1) {
-		return "";
+		return core::String::Empty;
 	}
 
 	buf[len] = '\0';

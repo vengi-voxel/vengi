@@ -84,9 +84,9 @@ public:
 
 	inline core::String peekNext() const {
 		if (!_tok) {
-			return "";
+			return core::String::Empty;
 		}
-		return _tok->str().c_str();
+		return {_tok->str().c_str(), _tok->str().size()};
 	}
 };
 

@@ -59,7 +59,7 @@ HttpCacheStream::~HttpCacheStream() {
 core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
 	HttpCacheStream stream(archive, file, url);
 	if (!stream.valid()) {
-		return "";
+		return core::String::Empty;
 	}
 	core::String str;
 	stream.readString((int)stream.size(), str);

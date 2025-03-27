@@ -17,6 +17,14 @@ BENCHMARK_DEFINE_F(StringBenchmark, ctor2) (benchmark::State& state) {
 		benchmark::DoNotOptimize(str);
 	}
 }
+
+BENCHMARK_DEFINE_F(StringBenchmark, ctor3) (benchmark::State& state) {
+	for (auto _ : state) {
+		core::String str("");
+		benchmark::DoNotOptimize(str);
+	}
+}
+
 BENCHMARK_DEFINE_F(StringBenchmark, format) (benchmark::State& state) {
 	for (auto _ : state) {
 		core::String str(core::move(core::string::format("%100s", "test")));
@@ -35,3 +43,4 @@ BENCHMARK_REGISTER_F(StringBenchmark, format);
 BENCHMARK_REGISTER_F(StringBenchmark, formatBuf);
 BENCHMARK_REGISTER_F(StringBenchmark, ctor1);
 BENCHMARK_REGISTER_F(StringBenchmark, ctor2);
+BENCHMARK_REGISTER_F(StringBenchmark, ctor3);

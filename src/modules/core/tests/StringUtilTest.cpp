@@ -238,6 +238,11 @@ TEST_F(StringUtilTest, testReplaceAllEmpty) {
 	EXPECT_EQ("111222333", core::string::replaceAll(str, "", ""));
 }
 
+TEST_F(StringUtilTest, testReplaceAllWithEmpty) {
+	const String str("111222333");
+	EXPECT_EQ("222333", core::string::replaceAll(str, "1", ""));
+}
+
 TEST_F(StringUtilTest, testToString) {
 	const int32_t intVal = -2147483648;
 	EXPECT_EQ("-2147483648", core::string::toString(intVal));

@@ -851,7 +851,7 @@ bool Palette::nippon() {
 
 core::String Palette::extractPaletteName(const core::String &file) {
 	if (!core::string::startsWith(file, "palette-")) {
-		return "";
+		return core::String::Empty;
 	}
 	const core::String &nameWithExtension = file.substr(8);
 	const size_t extPos = nameWithExtension.rfind('.');

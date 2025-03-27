@@ -89,7 +89,7 @@ const FormatDescription *lua() {
 
 core::String FormatDescription::mainExtension(bool includeDot) const {
 	if (exts.empty()) {
-		return "";
+		return core::String::Empty;
 	}
 	if (!includeDot) {
 		return exts[0];

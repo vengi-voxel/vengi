@@ -480,25 +480,25 @@ int Language::match(const Language &lhs, const Language &rhs) {
 core::String Language::getLanguage() const {
 	if (_languageSpec)
 		return _languageSpec->language;
-	return "";
+	return core::String::Empty;
 }
 
 core::String Language::getCountry() const {
 	if (_languageSpec && _languageSpec->country)
 		return _languageSpec->country;
-	return "";
+	return core::String::Empty;
 }
 
 core::String Language::getModifier() const {
 	if (_languageSpec && _languageSpec->modifier)
 		return _languageSpec->modifier;
-	return "";
+	return core::String::Empty;
 }
 
 core::String Language::getName() const {
 	if (_languageSpec)
 		return _languageSpec->name;
-	return "";
+	return core::String::Empty;
 }
 
 core::String Language::getLocalizedName() const {
@@ -522,7 +522,7 @@ core::String Language::str() const {
 		}
 		return var;
 	}
-	return "";
+	return core::String::Empty;
 }
 
 bool Language::operator==(const Language &rhs) const {

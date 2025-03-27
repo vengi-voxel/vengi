@@ -7,6 +7,7 @@
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Path.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
@@ -174,7 +175,7 @@ core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
 			}
 		}
 	}
-	return "";
+	return core::String::Empty;
 }
 
 const core::DynamicArray<ThisPCEntry> Filesystem::sysOtherPaths() const {
@@ -341,7 +342,7 @@ core::String Filesystem::sysAbsolutePath(const core::String &path) const {
 			}
 		}
 		Log::debug("Failed to get absolute path for '%s'", path.c_str());
-		return "";
+		return core::String::Empty;
 	}
 	normalizePath(abspath);
 	return abspath;
@@ -401,7 +402,7 @@ bool Filesystem::sysIsRelativePath(const core::String &name) {
 }
 
 bool Filesystem::registerPath(const core::String &path) {
-	if (!core::string::endsWith(path, "/")) {
+	if (!core::string::endsWith(path, '/')) {
 		Log::error("Failed to register data path: '%s' - it must end on /.", path.c_str());
 		return false;
 	}
@@ -516,11 +517,14 @@ core::String Filesystem::load(const char *filename, ...) {
 	char text[bufSize];
 
 	va_start(ap, filename);
-	SDL_vsnprintf(text, bufSize, filename, ap);
+	int len = SDL_vsnprintf(text, bufSize, filename, ap);
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
 
-	return load(core::String(text));
+	if (len >= 0) {
+		return load(core::String(text, len));
+	}
+	return core::String::Empty;
 }
 
 core::String Filesystem::load(const core::String &filename) const {
@@ -534,7 +538,7 @@ core::String Filesystem::homeWritePath(const core::String &name) const {
 
 long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream) {
 	const core::String &fullPath = core::string::path(_homePath, filename);
-	const core::String path(core::string::extractDir(fullPath.c_str()));
+	const core::String path(core::string::extractDir(fullPath));
 	sysCreateDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	long written = f.write(stream);
@@ -544,7 +548,7 @@ long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream)
 
 bool Filesystem::homeWrite(const core::String &filename, const uint8_t *content, size_t length) {
 	const core::String &fullPath = core::string::path(_homePath, filename);
-	const core::String path(core::string::extractDir(fullPath.c_str()));
+	const core::String path(core::string::extractDir(fullPath));
 	sysCreateDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	return f.write(content, length) == static_cast<long>(length);

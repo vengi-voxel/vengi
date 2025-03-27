@@ -57,8 +57,8 @@ private:
 	bool getStringLine(io::WriteStream &str, size_t skip);
 	bool isEmptyLine();
 	bool prefix(const char *);
-	bool error(const core::String &msg);
-	void warning(const core::String &msg);
+	bool error(const char *msg);
+	void warning(const char *msg);
 
 public:
 	/**
