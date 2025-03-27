@@ -44,8 +44,9 @@ static bool dragAndDropSortColors() {
 
 void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 									 command::CommandExecutionListener &listener, palette::Palette &palette) {
-	const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", paletteColorIdx);
-	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
+	char buf[64];
+	core::string::formatBuf(buf, sizeof(buf), "Actions##context-palitem-%i", paletteColorIdx);
+	if (ImGui::BeginPopupContextItem(buf)) {
 		if (showColorPicker(paletteColorIdx, node, listener)) {
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
