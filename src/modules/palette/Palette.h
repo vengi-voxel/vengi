@@ -65,6 +65,7 @@ public:
 	 * @note The collection will have 256 entries - even if the palette has less entries
 	 */
 	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
+	void toVec4f(glm::highp_vec4 *vec4f) const;
 
 	core::RGBA emitColor(uint8_t paletteColorIdx) const;
 	/**
@@ -72,7 +73,8 @@ public:
 	 * @note The collection will have 256 entries - even if the palette has less entries
 	 */
 	void emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
-
+	void emitToVec4f(const core::DynamicArray<glm::vec4> &materialColors, core::DynamicArray<glm::vec4> &vec4f) const;
+	void emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4 *vec4f) const;
 	bool hasAlpha(uint8_t paletteColorIdx) const;
 	bool hasEmit(uint8_t paletteColorIdx) const;
 	void setMaterialType(uint8_t paletteColorIdx, MaterialType type);

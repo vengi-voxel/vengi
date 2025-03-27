@@ -33,6 +33,7 @@ public:
 	void setNormal(uint8_t index, const glm::vec3 &normal);
 
 	void toVec4f(core::DynamicArray<glm::vec4> &normals) const;
+	void toVec4f(glm::highp_vec4 *vec4f) const;
 
 	const core::String &name() const;
 	void setName(const core::String &name);

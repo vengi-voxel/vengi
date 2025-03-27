@@ -1018,11 +1018,46 @@ void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	}
 }
 
+void Palette::toVec4f(glm::highp_vec4 *vec4f) const {
+	for (int i = 0; i < _colorCount; ++i) {
+		const glm::vec4 &color = core::Color::fromRGBA(_colors[i]);
+		vec4f[i] = {color.x, color.y, color.z, color.a};
+	}
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
+		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
+	}
+}
+
+void Palette::emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4 *vec4f) const {
+	for (int i = 0; i < _colorCount; ++i) {
+		const glm::vec4 &c = materialColors[i];
+		const Material &mat = _materials[i];
+		const float emit = mat.emit;
+		vec4f[i] = {emit * c.x, emit * c.y, emit * c.z, c.a};
+	}
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
+		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
+	}
+}
+
+void Palette::emitToVec4f(const core::DynamicArray<glm::vec4> &materialColors, core::DynamicArray<glm::vec4> &vec4f) const {
+	vec4f.reserve(PaletteMaxColors);
+	for (int i = 0; i < _colorCount; ++i) {
+		const glm::vec4 &c = materialColors[i];
+		const Material &mat = _materials[i];
+		vec4f.emplace_back(c.x * mat.emit, c.y * mat.emit, c.z * mat.emit, c.a);
+	}
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
+		vec4f.emplace_back(0.0f);
+	}
+}
+
 void Palette::emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		glm::vec4 color = core::Color::fromRGBA(_colors[i]);
-		vec4f.push_back(color * _materials[i].emit);
+		const glm::vec4 c(core::Color::fromRGBA(_colors[i]));
+		const Material &mat = _materials[i];
+		vec4f.emplace_back(c.x * mat.emit, c.y * mat.emit, c.z * mat.emit, c.a);
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f.emplace_back(0.0f);

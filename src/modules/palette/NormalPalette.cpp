@@ -185,6 +185,16 @@ void NormalPalette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	}
 }
 
+void NormalPalette::toVec4f(glm::highp_vec4 *vec4f) const {
+	for (int i = 0; i < _size; ++i) {
+		const glm::vec3 &norm = toVec3(_normals[i]);
+		vec4f[i] = {norm.x, norm.y, norm.z, 0.0f};
+	}
+	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
+		vec4f[i] = {0.0f, 0.0f, 0.0f, 0.0f};
+	}
+}
+
 void NormalPalette::markDirty() {
 	core::DirtyState::markDirty();
 	_hash = core::hash(_normals, sizeof(_normals));

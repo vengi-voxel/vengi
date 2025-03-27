@@ -403,29 +403,20 @@ void RawVolumeRenderer::clear(const voxel::MeshStatePtr &meshState) {
 void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int idx) {
 	const int bufferIndex = meshState->resolveIdx(idx);
 	const palette::Palette &palette = meshState->palette(bufferIndex);
-	const palette::NormalPalette &normalsPalette = meshState->normalsPalette(bufferIndex);
 
 	if (palette.hash() != _paletteHash) {
 		_paletteHash = palette.hash();
-		core::DynamicArray<glm::vec4> materialColors;
-		palette.toVec4f(materialColors);
-		core::DynamicArray<glm::vec4> glowColors;
-		palette.emitToVec4f(glowColors);
+		palette.toVec4f(_voxelShaderVertData.materialcolor);
+		palette.emitToVec4f(_voxelShaderVertData.materialcolor, _voxelShaderVertData.glowcolor);
 		static_assert(lengthof(_voxelShaderVertData.materialcolor) == palette::PaletteMaxColors);
-		for (int i = 0; i < lengthof(_voxelShaderVertData.materialcolor); ++i) {
-			_voxelShaderVertData.materialcolor[i] = materialColors[i];
-			_voxelShaderVertData.glowcolor[i] = glowColors[i];
-		}
+		static_assert(lengthof(_voxelShaderVertData.glowcolor) == palette::PaletteMaxColors);
 	}
 
+	const palette::NormalPalette &normalsPalette = meshState->normalsPalette(bufferIndex);
 	if (normalsPalette.hash() != _normalsPaletteHash) {
 		_normalsPaletteHash = normalsPalette.hash();
-		core::DynamicArray<glm::vec4> normals;
-		normalsPalette.toVec4f(normals);
+		normalsPalette.toVec4f(_voxelShaderVertData.normals);
 		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals);
-		for (int i = 0; i < lengthof(_voxelShaderVertData.normals); ++i) {
-			_voxelShaderVertData.normals[i] = normals[i];
-		}
 	}
 }
 
