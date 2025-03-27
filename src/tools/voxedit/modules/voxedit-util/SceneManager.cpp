@@ -2377,7 +2377,12 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 		return false;
 	}
 	const int nodeId = _sceneGraph.activeNode();
-	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
+	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.isAnyModelNode()) {
+		Log::warn("The given node is not a model node");
+		return false;
+	}
+	const voxel::Region &region = _sceneGraph.resolveRegion(node);
 	_mementoHandler.beginGroup("lua script");
 	// TODO: MEMENTO: there are still no memento states for direct node modifications during the script run
 	//                we can e.g. set or modify the transforms, properties and so on of a node.
