@@ -381,8 +381,8 @@ app::AppState IMGUIApp::onInit() {
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = _windowDimension;
 
-	loadFonts();
 	setColorTheme();
+
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
 #else
