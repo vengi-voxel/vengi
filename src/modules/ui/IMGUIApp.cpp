@@ -251,13 +251,7 @@ app::AppState IMGUIApp::onConstruct() {
 	return state;
 }
 
-void IMGUIApp::loadFonts() {
-	ImGuiIO &io = ImGui::GetIO();
-	io.Fonts->Clear();
-
-	ImFontGlyphRangesBuilder builder;
-	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-	const app::Language &lang = app::Language::fromName(_languageVar->strVal());
+void IMGUIApp::addGlyphs(ImGuiIO &io, ImFontGlyphRangesBuilder &builder, const app::Language &lang) {
 	if (lang.getLanguage() == "uk" || lang.getLanguage() == "ru") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
 	} else if (lang.getLanguage() == "zh") {
@@ -272,6 +266,19 @@ void IMGUIApp::loadFonts() {
 		builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
 	} else if (lang.getLanguage() == "el") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesGreek());
+	}
+}
+
+void IMGUIApp::loadFonts() {
+	ImGuiIO &io = ImGui::GetIO();
+	io.Fonts->Clear();
+
+	ImFontGlyphRangesBuilder builder;
+	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
+	const app::Language &lang = app::Language::fromName(_languageVar->strVal());
+	addGlyphs(io, builder, lang);
+	if (lang != _systemLanguage) {
+		addGlyphs(io, builder, _systemLanguage);
 	}
 
 	ImVector<ImWchar> glyphRanges;

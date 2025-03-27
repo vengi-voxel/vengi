@@ -27,7 +27,9 @@ class Panel;
 class IMGUIApp: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
+	void addGlyphs(ImGuiIO &io, ImFontGlyphRangesBuilder &builder, const app::Language &lang);
 	void loadFonts();
+
 protected:
 	command::CommandExecutionListener _lastExecutedCommand;
 	core::Set<int32_t> _keys;
