@@ -165,6 +165,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				if (ImGui::Button(_("Textures"))) {
 					app->showTexturesDialog();
 				}
+				if (ImGui::Button(_("UI"))) {
+					core::Var::getSafe(cfg::UIShowMetrics)->setVal(true);
+				}
 				ImGui::EndMenu();
 			}
 #endif
