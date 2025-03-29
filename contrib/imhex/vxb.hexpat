@@ -40,7 +40,7 @@ Header hdr @0x00;
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
 		const int uniqueFace = indices[i];
 		const voxel::FaceNames faceName = faceNames[uniqueFace];
-		image::writeImage(diffuseImages[i], core::string::format("diffuse-r-%s.png", voxel::faceNameString(faceName)));
+		image::writeImage(diffuseImages[i], core::String::format("diffuse-r-%s.png", voxel::faceNameString(faceName)));
 	}
 
 
@@ -59,4 +59,4 @@ Header hdr @0x00;
 		core_assert(colors.size() == blockSize * blockSize);
 		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(core::RGBA));
 		image::ImagePtr img = image::loadRGBAImageFromStream("diffuse", memStream, blockSize, blockSize);
-		image::writeImage(img, core::string::format("diffuse-w-%s.png", voxel::faceNameString(faceName)));
+		image::writeImage(img, core::String::format("diffuse-w-%s.png", voxel::faceNameString(faceName)));

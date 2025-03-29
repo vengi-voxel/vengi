@@ -353,7 +353,7 @@ void CubzhB64Format::setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, c
 	root.setProperty("fogAbsorbtion", ambience.fogAbsorbtion);
 
 	root.setProperty("sunIntensity", ambience.sunIntensity);
-	root.setProperty("sunRotation", core::string::format("%f:%f", ambience.sunRotation[0], ambience.sunRotation[1]));
+	root.setProperty("sunRotation", core::String::format("%f:%f", ambience.sunRotation[0], ambience.sunRotation[1]));
 
 	root.setProperty("ambientSkyLightFactor", ambience.ambientSkyLightFactor);
 	root.setProperty("ambientDirLightFactor", ambience.ambientDirLightFactor);

@@ -584,7 +584,7 @@ void clua_vecregister(lua_State* s) {
 		{"normalize", clua_vecfunc<RAWTYPE>::normalize},
 		{nullptr, nullptr}
 	};
-	const core::String& globalMeta = core::string::format("%s_global", clua_meta<RAWTYPE>::name());
+	const core::String& globalMeta = core::String::format("%s_global", clua_meta<RAWTYPE>::name());
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<RAWTYPE>::name());
 }
 

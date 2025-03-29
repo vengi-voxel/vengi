@@ -81,7 +81,7 @@ void AssetPanel::update(const char *id, command::CommandExecutionListener &liste
 					}
 					const video::Id handle = e->second->handle();
 					const image::ImagePtr &image = _texturePool->loadImage(e->first);
-					core::String imgId = core::string::format("%i", n - 1);
+					core::String imgId = core::String::format("%i", n - 1);
 					ImGui::ImageButton(imgId.c_str(), handle, ImVec2(50, 50));
 					ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {

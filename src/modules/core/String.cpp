@@ -512,6 +512,21 @@ String String::trim() const {
 	return copy;
 }
 
+int String::formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	int w = SDL_vsnprintf(buf, bufSize, msg, args);
+	va_end(args);
+	if (buf == nullptr) {
+		return w;
+	}
+	if (w == -1 || w >= (int)bufSize) {
+		w = (int)bufSize - 1;
+	}
+	buf[w] = 0;
+	return w;
+}
+
 core::String String::format(const char *msg, ...) {
 	va_list ap;
 	char text[1024];

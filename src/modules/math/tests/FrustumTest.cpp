@@ -26,7 +26,7 @@ public:
 
 	const char *toString(const glm::vec3 &v) {
 		static char buf[128];
-		core::string::formatBuf(buf, sizeof(buf), "%f:%f:%f", v.x, v.y, v.z);
+		core::String::formatBuf(buf, sizeof(buf), "%f:%f:%f", v.x, v.y, v.z);
 		return buf;
 	}
 

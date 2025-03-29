@@ -370,7 +370,7 @@ app::AppState IMGUIApp::onInit() {
 	// xrandr --output <screen-name> --scale 1.6x1.6
 
 	if (_persistUISettings) {
-		const core::String iniFile = core::string::format("%s-%i-imgui.ini", _appname.c_str(), _iniVersion);
+		const core::String iniFile = core::String::format("%s-%i-imgui.ini", _appname.c_str(), _iniVersion);
 		_writePathIni = _filesystem->homeWritePath(iniFile);
 		io.IniFilename = _writePathIni.c_str();
 	} else {
@@ -520,9 +520,9 @@ void IMGUIApp::renderBindingsDialog() {
 				}
 				ImGui::TableNextColumn();
 				// TODO: change binding
-				const core::String &deleteButton = core::string::format(ICON_LC_TRASH "##del-key-%i", n++);
+				const core::String &deleteButton = core::String::format(ICON_LC_TRASH "##del-key-%i", n++);
 				if (ImGui::Button(deleteButton.c_str())) {
-					command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()),
+					command::executeCommands(core::String::format("unbind \"%s\"", keyBinding.c_str()),
 											 &_lastExecutedCommand);
 				}
 				ImGui::SameLine();

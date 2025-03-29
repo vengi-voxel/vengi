@@ -128,7 +128,7 @@ TEST_F(VarTest, testHistory) {
 TEST_F(VarTest, testHistoryCleanup) {
 	const VarPtr& v = Var::get("test", "nonsense");
 	for (int i = 0; i < 120; ++i) {
-		v->setVal(core::string::format("reasonable%i", i));
+		v->setVal(core::String::format("reasonable%i", i));
 	}
 	EXPECT_EQ("reasonable119", v->strVal());
 }

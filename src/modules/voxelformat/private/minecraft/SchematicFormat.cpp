@@ -512,7 +512,7 @@ void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBi
 	case priv::TagType::LIST: {
 		const priv::NBTList &list = *nbt.list();
 		scenegraph::SceneGraphNode listNode(scenegraph::SceneGraphNodeType::Group);
-		listNode.setName(core::string::format("%s: %i", key.c_str(), (int)list.size()));
+		listNode.setName(core::String::format("%s: %i", key.c_str(), (int)list.size()));
 		int nodeId = sceneGraph.emplace(core::move(listNode), node.id());
 		for (const priv::NamedBinaryTag &e : list) {
 			addMetadata_r(key, e, sceneGraph, sceneGraph.node(nodeId));

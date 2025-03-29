@@ -51,8 +51,8 @@ static bool s_hideAxis[3] {false, false, false};
 
 core::String Viewport::viewportId(int id, bool printable) {
 	if (printable)
-		return core::string::format("Viewport %i###viewport%i", id, id);
-	return core::string::format("###viewport%i", id);
+		return core::String::format("Viewport %i###viewport%i", id, id);
+	return core::String::format("###viewport%i", id);
 }
 
 Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, voxelrender::RenderMode renderMode,
@@ -455,7 +455,7 @@ void Viewport::menuBarCameraOptions(command::CommandExecutionListener *listener)
 }
 
 void Viewport::menuBarScreenshotOptions(command::CommandExecutionListener *listener) {
-	const core::String command = core::string::format("screenshot %i", _id);
+	const core::String command = core::String::format("screenshot %i", _id);
 	ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), command.c_str(), listener);
 }
 
@@ -534,9 +534,9 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 	core::String name;
 	if (_detailedTitle) {
-		name = core::string::format("%s %s%s", _(voxelrender::SceneCameraModeStr[(int)_camMode]), modeStr, _uiId.c_str());
+		name = core::String::format("%s %s%s", _(voxelrender::SceneCameraModeStr[(int)_camMode]), modeStr, _uiId.c_str());
 	} else {
-		name = core::string::format("%s%s", modeStr, _uiId.c_str());
+		name = core::String::format("%s%s", modeStr, _uiId.c_str());
 	}
 	if (ImGui::Begin(name.c_str(), nullptr, sceneWindowFlags)) {
 		_visible = true;

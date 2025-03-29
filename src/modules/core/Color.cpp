@@ -748,7 +748,7 @@ core::String Color::toHex(const RGBA rgba, bool hashPrefix) {
 	if (hashPrefix) {
 		hex.append("#");
 	}
-	hex.append(core::string::format("%02x%02x%02x%02x", rgba.r, rgba.g, rgba.b, rgba.a));
+	hex.append(core::String::format("%02x%02x%02x%02x", rgba.r, rgba.g, rgba.b, rgba.a));
 	return hex;
 }
 

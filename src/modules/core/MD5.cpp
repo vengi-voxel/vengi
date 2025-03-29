@@ -266,7 +266,7 @@ core::String md5ToString(uint8_t digest[16]) {
 	char strbuf[size * 2 + 1];
 	char *b = strbuf;
 	for (uint32_t i = 0u; i < size; ++i) {
-		core::string::formatBuf(b, sizeof(strbuf) - i * 2, "%02x", digest[i]);
+		core::String::formatBuf(b, sizeof(strbuf) - i * 2, "%02x", digest[i]);
 		b += 2;
 	}
 	strbuf[size * 2] = '\0';

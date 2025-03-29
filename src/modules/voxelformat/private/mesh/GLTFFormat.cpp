@@ -755,7 +755,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	const size_t modelNodes = meshes.size();
 	const core::String &appname = app::App::getInstance()->fullAppname();
-	const core::String &generator = core::string::format("%s " PROJECT_VERSION, appname.c_str());
+	const core::String &generator = core::String::format("%s " PROJECT_VERSION, appname.c_str());
 	// Define the asset. The version is required
 	gltfModel.asset.generator = generator.c_str();
 	gltfModel.asset.version = "2.0";
@@ -1154,7 +1154,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 					const uint8_t *buf = gltfImgBuffer.data.data() + offset;
 					core::String name = gltfImage.name.c_str();
 					if (name.empty()) {
-						name = core::string::format("image%i", gltfTexture.source);
+						name = core::String::format("image%i", gltfTexture.source);
 					}
 					image::ImagePtr tex = image::createEmptyImage(name.c_str());
 					io::MemoryReadStream pngStream(buf, (int)gltfImgBufferView.byteLength);
@@ -1171,7 +1171,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 				if (gltfImage.component == 4) {
 					core::String name = gltfImage.name.c_str();
 					if (name.empty()) {
-						name = core::string::format("image%i", gltfTexture.source);
+						name = core::String::format("image%i", gltfTexture.source);
 					}
 					meshMaterial->texture = image::createEmptyImage(name);
 					core_assert(gltfImage.image.size() ==
@@ -1203,7 +1203,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 		Log::debug("Invalid image index given %i", gltfTexture.source);
 	}
 
-	materialData.texCoordAttribute = core::string::format("TEXCOORD_%i", texCoordIndex);
+	materialData.texCoordAttribute = core::String::format("TEXCOORD_%i", texCoordIndex);
 	Log::debug("Texcoords: %s", materialData.texCoordAttribute.c_str());
 }
 
@@ -1544,7 +1544,7 @@ bool GLTFFormat::loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygl
 		const tinygltf::Animation &gltfAnimation = gltfModel.animations[animIdx];
 		core::String animationName = gltfAnimation.name.c_str();
 		if (animationName.empty()) {
-			animationName = core::string::format("animation %i", (int)animIdx);
+			animationName = core::String::format("animation %i", (int)animIdx);
 		}
 		sceneGraph.addAnimation(animationName);
 		if (!node.setAnimation(animationName)) {

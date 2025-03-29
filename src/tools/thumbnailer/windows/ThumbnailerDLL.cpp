@@ -102,7 +102,7 @@ STDAPI DllRegisterServer() {
 							   _T("ThreadingModel"), _T("Apartment")));
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				core::String id = core::string::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
+				core::String id = core::String::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
 				BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE, id.c_str(), NULL, THUMBNAIL_HANDLER_CLSID));
 			}
 		}
@@ -123,7 +123,7 @@ STDAPI DllUnregisterServer() {
 	if (SUCCEEDED(hr)) {
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				core::String id = core::string::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
+				core::String id = core::String::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
 				hr = RegDeleteTree(HKEY_LOCAL_MACHINE, id.c_str());
 			}
 		}

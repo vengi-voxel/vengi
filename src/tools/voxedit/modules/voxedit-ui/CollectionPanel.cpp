@@ -137,7 +137,7 @@ int CollectionPanel::update() {
 					ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 				}
 				const int n = (int)collection.files.size();
-				const core::String &label = core::string::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
+				const core::String &label = core::String::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
 					if (!collection.sorted) {
 						ImGui::TextUnformatted(_("Loading..."));
@@ -260,7 +260,7 @@ void CollectionPanel::handleDragAndDrop(int &row, voxelcollection::VoxelFile *&v
 		} else {
 			handle = video::InvalidId;
 		}
-		core::String mdlId = core::string::format("%i", row);
+		core::String mdlId = core::String::format("%i", row);
 		ImGui::ImageButton(mdlId.c_str(), handle, ImVec2(50, 50));
 		_dragAndDropModel = voxelFile->targetFile();
 		ImGui::SetDragDropPayload(voxelui::dragdrop::ModelPayload, (const void *)&_dragAndDropModel,

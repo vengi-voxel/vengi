@@ -291,7 +291,7 @@ bool ColorEdit3Var(const char *label, const char *varName) {
 	const core::VarPtr &var = core::Var::getSafe(varName);
 	var->vec3Val(&col[0]);
 	if (ImGui::ColorEdit3(label, glm::value_ptr(col))) {
-		const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
+		const core::String &c = core::String::format("%f %f %f", col.x, col.y, col.z);
 		var->setVal(c);
 		return true;
 	}
@@ -549,7 +549,7 @@ bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNodeFlags flag
 	if (window->SkipItems)
 		return false;
 
-	core::String labelWithIcon = core::string::format("%s %s", icon, label);
+	core::String labelWithIcon = core::String::format("%s %s", icon, label);
 	ImGuiID id = window->GetID(label);
 	return TreeNodeBehavior(id, flags, labelWithIcon.c_str(), nullptr);
 }
@@ -717,7 +717,7 @@ static bool axisValue(int &value, const char *label, const ImVec2 &buttonSize, c
 		ImGui::Button("##btn", buttonSize);
 	}
 	ImGui::SameLine();
-	core::string::formatBuf(buf, sizeof(buf), "%i", value);
+	core::String::formatBuf(buf, sizeof(buf), "%i", value);
 	if (ImGui::InputText("##val", buf, sizeof(buf), flags)) {
 		retVal = true;
 		value = core::string::toInt(buf);
@@ -745,7 +745,7 @@ static bool axisValue(float &value, const char *label, const ImVec2 &buttonSize,
 		ImGui::Button("##btn", buttonSize);
 	}
 	ImGui::SameLine();
-	core::string::formatBuf(buf, sizeof(buf), "%.3f", value);
+	core::String::formatBuf(buf, sizeof(buf), "%.3f", value);
 	if (ImGui::InputText("##val", buf, sizeof(buf), flags)) {
 		retVal = true;
 		value = core::string::toInt(buf);

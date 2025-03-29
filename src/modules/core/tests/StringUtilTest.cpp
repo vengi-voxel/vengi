@@ -60,7 +60,7 @@ TEST_F(StringUtilTest, testIsInteger) {
 TEST_F(StringUtilTest, testGetBeforeToken) {
 	const size_t bufSize = 32u;
 	char buf[64];
-	core::string::formatBuf(buf, sizeof(buf), "a = b c");
+	core::String::formatBuf(buf, sizeof(buf), "a = b c");
 	char *p = buf;
 	char *a = core::string::getBeforeToken(&p, " = ", bufSize);
 	char *b = p;
@@ -80,12 +80,6 @@ TEST_F(StringUtilTest, testSanitizeDirPath) {
 	EXPECT_EQ("foo/bar/", core::string::sanitizeDirPath("foo\\bar\\\\"));
 	EXPECT_EQ("foo/bar/", core::string::sanitizeDirPath("foo/bar//"));
 	EXPECT_EQ("foo/", core::string::sanitizeDirPath("foo"));
-}
-
-TEST_F(StringUtilTest, testFormat) {
-	EXPECT_EQ("1", core::string::format("1"));
-	EXPECT_EQ("10", core::string::format("%i", 10));
-	EXPECT_EQ("Hello World 10 after int", core::string::format("Hello World %i after int", 10));
 }
 
 TEST_F(StringUtilTest, testUrlEncode) {

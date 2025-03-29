@@ -341,7 +341,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 			wrap(stream.readFloat(f3x))
 			wrap(stream.readFloat(f3y))
 			wrap(stream.readFloat(f3z))
-			node.setProperty(name, core::string::format("%f:%f:%f", f3x, f3y, f3z));
+			node.setProperty(name, core::String::format("%f:%f:%f", f3x, f3y, f3z));
 			break;
 		}
 		default:
@@ -470,7 +470,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		case priv::CHUNK_ID_SHAPE_ID_V6:
 			wrap(stream.readUInt16(shapeId))
 			Log::debug("Load shape id %u", shapeId);
-			node.setProperty("shapeId", core::string::format("%d", shapeId));
+			node.setProperty("shapeId", core::String::format("%d", shapeId));
 			break;
 		case priv::CHUNK_ID_SHAPE_PARENT_ID_V6:
 			wrap(stream.readUInt16(parentShapeId))
@@ -681,7 +681,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	int parent = 0;
 	if (parentShapeId != 0) {
 		if (scenegraph::SceneGraphNode *parentNode =
-				sceneGraph.findNodeByPropertyValue("shapeId", core::string::format("%d", parentShapeId))) {
+				sceneGraph.findNodeByPropertyValue("shapeId", core::String::format("%d", parentShapeId))) {
 			parent = parentNode->id();
 			if (!paletteFound) {
 				node.setPalette(parentNode->palette());

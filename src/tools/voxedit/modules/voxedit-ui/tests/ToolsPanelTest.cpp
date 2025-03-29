@@ -15,7 +15,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		int buttonIdx = 0;
 		for (;;) {
-			const core::String &btnid = core::string::format("scenetools/###button%i", buttonIdx);
+			const core::String &btnid = core::String::format("scenetools/###button%i", buttonIdx);
 			if (ctx->ItemInfo(btnid.c_str(), ImGuiTestOpFlags_NoError).ID == 0) {
 				break;
 			}
@@ -31,7 +31,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		int buttonIdx = 0;
 		for (;;) {
-			const core::String &btnid = core::string::format("edittools/###button%i", buttonIdx);
+			const core::String &btnid = core::String::format("edittools/###button%i", buttonIdx);
 			if (ctx->ItemInfo(btnid.c_str(), ImGuiTestOpFlags_NoError).ID == 0) {
 				break;
 			}

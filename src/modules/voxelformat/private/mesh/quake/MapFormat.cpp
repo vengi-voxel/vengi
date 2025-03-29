@@ -314,7 +314,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			}
 			core::String classname;
 			props.get("classname", classname);
-			const core::String name = core::string::format("%s brush %i", classname.c_str(), entity);
+			const core::String name = core::String::format("%s brush %i", classname.c_str(), entity);
 			const int nodeId = voxelizeNode(name, sceneGraph, tris);
 			if (nodeId == InvalidNodeId) {
 				Log::error("Voxelization failed");

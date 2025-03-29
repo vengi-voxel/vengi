@@ -513,9 +513,9 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			}
 			if (padding) {
 				if (padding > 1) {
-					ub += core::string::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, padding);
+					ub += core::String::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, padding);
 				} else {
-					ub += core::string::format("\t\tuint32_t _padding%i;\n", paddingCnt);
+					ub += core::String::format("\t\tuint32_t _padding%i;\n", paddingCnt);
 				}
 				++paddingCnt;
 			}
@@ -575,7 +575,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		const size_t fillBytes = (offset * 4) % 16;
 		if (fillBytes > 0) {
 			// the minimum alignment is 16 bytes
-			ub += core::string::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, (16 - (int)fillBytes) / 4);
+			ub += core::String::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, (16 - (int)fillBytes) / 4);
 			offset += fillBytes / 4;
 		}
 		ub += "\t};\n\t#pragma pack(pop)\n";

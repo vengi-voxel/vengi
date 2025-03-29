@@ -82,7 +82,7 @@ bool initState(io::FilesystemState &state) {
 			// TODO: what about DRIVE_RAMDISK
 			if (addDrive) {
 				const char driveStr[4] = {driveLetter[0], ':', '/', '\0'};
-				const core::String description = core::string::format("Drive %c", driveLetter[0]);
+				const core::String description = core::String::format("Drive %c", driveLetter[0]);
 				state._thisPc.push_back({description, driveStr});
 			}
 		}

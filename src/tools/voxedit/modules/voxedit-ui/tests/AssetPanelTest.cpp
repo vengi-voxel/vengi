@@ -24,7 +24,7 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		for (size_t i = 0; i < n; ++i) {
 			IM_CHECK(focusWindow(ctx, id));
 			ctx->ItemClick("##assetpaneltabs/Images");
-			const core::String srcRef = core::string::format("##assetpaneltabs/Images/%i", (int)i);
+			const core::String srcRef = core::String::format("##assetpaneltabs/Images/%i", (int)i);
 			ctx->ItemDragAndDrop(srcRef.c_str(), viewPortId.c_str());
 		}
 	};

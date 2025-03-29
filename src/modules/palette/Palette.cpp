@@ -352,14 +352,14 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	core::String line;
 	for (int i = 0; i < palette._colorCount; ++i) {
 		if (i % 16 == 0 && !line.empty()) {
-			palStr.append(core::string::format("%03i %s\n", i - 16, line.c_str()));
+			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
 			line = "";
 		}
 		const core::String c = core::Color::print(palette._colors[i], colorAsHex);
 		line += c;
 	}
 	if (!line.empty()) {
-		palStr.append(core::string::format("%03i %s\n", (palette._colorCount - 1) / 16 * 16, line.c_str()));
+		palStr.append(core::String::format("%03i %s\n", (palette._colorCount - 1) / 16 * 16, line.c_str()));
 	}
 	return palStr;
 }
@@ -587,7 +587,7 @@ bool Palette::load(const char *paletteName) {
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr paletteFile = filesystem->open(paletteName);
 	if (!paletteFile->validHandle()) {
-		paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName));
+		paletteFile = filesystem->open(core::String::format("palette-%s.png", paletteName));
 		if (!paletteFile->validHandle()) {
 			Log::error("Failed to load palette image file %s", paletteName);
 			return false;

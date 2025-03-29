@@ -75,7 +75,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			const scenegraph::SceneGraphNode &node = *iter;
 			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(node, newNode, true);
-			newNode.setProperty("tileidx", core::string::format("%i", i));
+			newNode.setProperty("tileidx", core::String::format("%i", i));
 			newNode.setName(path);
 			tileGraph.emplace(core::move(newNode));
 		}
@@ -100,7 +100,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			continue;
 		}
 
-		const scenegraph::SceneGraphNode *node = tileGraph.findNodeByPropertyValue("tileidx", core::string::format("%i", modelIdx));
+		const scenegraph::SceneGraphNode *node = tileGraph.findNodeByPropertyValue("tileidx", core::String::format("%i", modelIdx));
 		if (node == nullptr) {
 			Log::warn("Failed to get model from scene graph with index %i", modelIdx);
 			continue;

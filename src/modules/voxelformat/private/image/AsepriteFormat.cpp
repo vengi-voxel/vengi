@@ -45,7 +45,7 @@ static bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &fil
 	voxel::Region region(0, 0, 0, ase->w - 1, ase->h - 1, 1);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	node.setVolume(v, true);
-	node.setName(core::string::format("%s_%d", filename.c_str(), frameIndex));
+	node.setName(core::String::format("%s_%d", filename.c_str(), frameIndex));
 	node.setPalette(palette);
 	for (int x = 0; x < ase->w; ++x) {
 		for (int y = 0; y < ase->h; ++y) {

@@ -46,7 +46,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, core::StringMap<core
 
 	curl_slist *headers = nullptr;
 	for (const auto &entry : ctx._headers) {
-		const core::String &headerLine = core::string::format("%s: %s", entry->first.c_str(), entry->second.c_str());
+		const core::String &headerLine = core::String::format("%s: %s", entry->first.c_str(), entry->second.c_str());
 		headers = curl_slist_append(headers, headerLine.c_str());
 	}
 	if (headers) {

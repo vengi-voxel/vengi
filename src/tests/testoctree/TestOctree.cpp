@@ -188,7 +188,7 @@ void TestOctree::onRenderUI() {
 				const glm::ivec3& mins = aabb.mins();
 				const glm::ivec3& maxs = aabb.maxs();
 				_itemVector.emplace_back(AABBInfo{aabb,
-						core::string::format("mins(%i:%i:%i) maxs(%i:%i:%i)",
+						core::String::format("mins(%i:%i:%i) maxs(%i:%i:%i)",
 						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z)});
 			}
 		}

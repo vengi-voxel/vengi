@@ -25,7 +25,7 @@ bool changeViewMode(ImGuiTestContext *ctx, ViewMode viewMode) {
 	ctx->Yield();
 	ctx->SetRef(POPUP_TITLE_WELCOME);
 	const char *viewModeStr = getViewModeString(viewMode);
-	const core::String &viewModeStrPath = core::string::format("View mode/%s", viewModeStr);
+	const core::String &viewModeStrPath = core::String::format("View mode/%s", viewModeStr);
 	ctx->ComboClick(viewModeStrPath.c_str());
 	ctx->ItemClick("###Close");
 	return true;

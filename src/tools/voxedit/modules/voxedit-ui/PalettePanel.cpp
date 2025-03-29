@@ -45,7 +45,7 @@ static bool dragAndDropSortColors() {
 void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 									 command::CommandExecutionListener &listener, palette::Palette &palette) {
 	char buf[64];
-	core::string::formatBuf(buf, sizeof(buf), "Actions##context-palitem-%i", paletteColorIdx);
+	core::String::formatBuf(buf, sizeof(buf), "Actions##context-palitem-%i", paletteColorIdx);
 	if (ImGui::BeginPopupContextItem(buf)) {
 		if (showColorPicker(paletteColorIdx, node, listener)) {
 			_colorPickerChange = true;
@@ -83,7 +83,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 			}
 			if (singleSelection) {
 				// TODO: PALETTE: allow to extract multiple colors to a new node
-				const core::String &modelFromColorCmd = core::string::format("colortomodel %i", paletteColorIdx);
+				const core::String &modelFromColorCmd = core::String::format("colortomodel %i", paletteColorIdx);
 				ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
 										&listener);
 				if (palette.hasFreeSlot()) {
@@ -381,7 +381,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	ImGui::SliderFloat(ICON_LC_SLIDERS_HORIZONTAL, &_intensityChange, -1.0f, 1.0f);
 	ImGui::SameLine();
-	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
+	const core::String &paletteChangeCmd = core::String::format("palette_changeintensity %f", _intensityChange);
 	if (ImGui::CommandButton(_("Apply"), paletteChangeCmd.c_str(), nullptr, ImVec2(0.0f, 0.0f), &listener)) {
 		_intensityChange = 0.0f;
 	}
@@ -395,7 +395,7 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 	ImGui::TooltipTextUnformatted(_("Select a color to find the closest match in the current loaded palette"));
 	ImGui::SameLine();
 	char buf[256];
-	core::string::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", _closestMatchPaletteColorIdx);
+	core::String::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", _closestMatchPaletteColorIdx);
 	if (ImGui::Selectable(buf) && _closestMatchPaletteColorIdx != -1) {
 		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, _closestMatchPaletteColorIdx));
 	}

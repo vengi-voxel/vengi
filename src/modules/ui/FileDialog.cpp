@@ -284,7 +284,7 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 	} else {
 		bookmarkTitle = title;
 	}
-	bookmarkTitle += core::string::format("###%i", index);
+	bookmarkTitle += core::String::format("###%i", index);
 	if (icon != nullptr) {
 		const float x = ImGui::GetCursorPosX();
 		ImGui::TextUnformatted(icon);

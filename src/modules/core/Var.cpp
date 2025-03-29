@@ -22,7 +22,7 @@ core_trace_mutex_static(Lock, Var, _lock);
 
 VarPtr Var::get(const core::String& name, int value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
 	char buf[64];
-	core::string::formatBuf(buf, sizeof(buf), "%i", value);
+	core::String::formatBuf(buf, sizeof(buf), "%i", value);
 	return get(name, buf, flags, help, validatorFunc);
 }
 
@@ -48,14 +48,14 @@ bool Var::setVal(int value) {
 	if (intVal() == value) {
 		return true;
 	}
-	return setVal(core::string::format("%i", value));
+	return setVal(core::String::format("%i", value));
 }
 
 bool Var::setVal(float value) {
 	if (glm::epsilonEqual(floatVal(), value, glm::epsilon<float>())) {
 		return true;
 	}
-	return setVal(core::string::format("%f", value));
+	return setVal(core::String::format("%f", value));
 }
 
 VarPtr Var::getSafe(const core::String& name) {

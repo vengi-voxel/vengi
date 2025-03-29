@@ -292,7 +292,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	int valueLength = 0;
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setName(core::string::format("model %i", size));
+	node.setName(core::String::format("model %i", size));
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 255 chars max
@@ -733,7 +733,7 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 	const palette::Palette &palette = sceneGraph.firstPalette();
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::String &name = core::string::format("mat%i", i);
+		const core::String &name = core::String::format("mat%i", i);
 		wrapBool(saveChunk_DictString(stream, "name", name))
 		const core::RGBA rgba = palette.color(i);
 		wrapBool(saveChunk_DictColor(stream, "color", rgba));

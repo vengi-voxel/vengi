@@ -26,13 +26,13 @@ namespace voxedit {
 
 static void commandNodeMenu(const char *icon, const char *title, const char *command, int nodeId,
 							bool enabled, command::CommandExecutionListener *listener) {
-	const core::String &cmd = core::string::format("%s %i", command, nodeId);
+	const core::String &cmd = core::String::format("%s %i", command, nodeId);
 	ImGui::CommandIconMenuItem(icon, title, cmd.c_str(), enabled, listener);
 }
 
 void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const int nodeId = node.id();
-	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", nodeId);
+	const core::String &contextMenuId = core::String::format("Edit##context-node-%i", nodeId);
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
 		scenegraph::SceneGraphNodeType nodeType = node.type();
@@ -120,7 +120,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		ImGui::TableNextRow();
 		{ // column 1
 			ImGui::TableNextColumn();
-			const core::String &visibleId = core::string::format("##visible-node-%i", nodeId);
+			const core::String &visibleId = core::String::format("##visible-node-%i", nodeId);
 			bool visible = node.visible();
 			{
 				ui::ScopedStyle style;
@@ -136,7 +136,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 		{ // column 2
 			ImGui::TableNextColumn();
-			const core::String &lockedId = core::string::format("##locked-node-%i", nodeId);
+			const core::String &lockedId = core::String::format("##locked-node-%i", nodeId);
 			bool locked = node.locked();
 			if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
 				command::executeCommands("nodetogglelock " + core::string::toString(nodeId), &listener);
@@ -146,7 +146,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			ImGui::TableNextColumn();
 			core::RGBA color = node.color();
 			glm::vec4 colvec = core::Color::fromRGBA(color);
-			const core::String &colorId = core::string::format(_("Color##node-%i"), nodeId);
+			const core::String &colorId = core::String::format(_("Color##node-%i"), nodeId);
 			if (ImGui::ColorEdit4(colorId.c_str(), glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
 				node.setColor(core::Color::getRGBA(colvec));
 			}
@@ -185,7 +185,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			case scenegraph::SceneGraphNodeType::Max:
 				break;
 			}
-			const core::String &name = core::string::format("%s##%i", node.name().c_str(), nodeId);
+			const core::String &name = core::String::format("%s##%i", node.name().c_str(), nodeId);
 			const bool selected = nodeId == sceneGraph.activeNode();
 			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
 			if (node.isLeaf()) {
@@ -242,7 +242,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		{ // column 5
 			ImGui::TableNextColumn();
 
-			const core::String &deleteId = core::string::format(ICON_LC_TRASH"##delete-node-%i", nodeId);
+			const core::String &deleteId = core::String::format(ICON_LC_TRASH"##delete-node-%i", nodeId);
 			if (ImGui::Button(deleteId.c_str())) {
 				_sceneMgr->nodeRemove(nodeId, false);
 			}
@@ -322,7 +322,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 				if (_sceneMgr->animateActive()) {
 					command::executeCommands("animate 0", &listener);
 				} else {
-					const core::String& cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
+					const core::String& cmd = core::String::format("animate %f", _animationSpeedVar->floatVal());
 					command::executeCommands(cmd.c_str(), &listener);
 				}
 			}

@@ -24,14 +24,14 @@ static nlohmann::json cachedJson(const io::ArchivePtr &archive, const core::Stri
 }
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
-	return core::string::format("https://gitlab.com/%s/-/raw/%s/%s", repository.c_str(), branch.c_str(), path.c_str());
+	return core::String::format("https://gitlab.com/%s/-/raw/%s/%s", repository.c_str(), branch.c_str(), path.c_str());
 }
 
 core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &repository,
 											const core::String &branch, const core::String &path) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String encoded = core::string::urlEncode(repository);
-	const core::String urlPages = core::string::format(
+	const core::String urlPages = core::String::format(
 		"https://gitlab.com/api/v4/projects/%s/repository/tree?ref=%s&recursive=1&per_page=100&page=1&path=%s",
 		encoded.c_str(), branch.c_str(), path.c_str());
 	http::Request request(urlPages, http::RequestType::GET);
@@ -52,10 +52,10 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 		if (app::App::getInstance()->shouldQuit()) {
 			break;
 		}
-		const core::String url = core::string::format(
+		const core::String url = core::String::format(
 			"https://gitlab.com/api/v4/projects/%s/repository/tree?ref=%s&recursive=1&per_page=100&page=%i&path=%s",
 			encoded.c_str(), branch.c_str(), page, path.c_str());
-		core::String file = core::string::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
+		core::String file = core::String::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
 		core::string::replaceAllChars(file, '/', '-');
 		const auto &json = cachedJson(archive, file, url);
 		if (!json.is_array()) {

@@ -42,7 +42,7 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 								  io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	core::String name = node.name();
 	if (name.empty()) {
-		name = core::string::format("%i", node.id());
+		name = core::String::format("%i", node.id());
 	}
 	wrapBool(stream.writeString(node.name(), true))
 	if (node.isAnyModelNode()) {
@@ -147,7 +147,7 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const core::String &basePath = core::string::extractDir(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
 	for (const core::String &id : animationIds) {
-		const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), id.c_str());
+		const core::String &vxaFilename = core::String::format("%s.%s.vxa", baseName.c_str(), id.c_str());
 		const core::String &vxaPath = core::string::path(basePath, vxaFilename);
 		wrapBool(saveVXA(sceneGraph, vxaPath, archive, id, ctx))
 	}
@@ -343,10 +343,10 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 			node.setProperty("ikConstraintsVisible", stream.readBool());
 			float rollmin;
 			wrap(stream.readFloat(rollmin))
-			node.setProperty("ikRollMin", core::string::format("%f", rollmin));
+			node.setProperty("ikRollMin", core::String::format("%f", rollmin));
 			float rollmax;
 			wrap(stream.readFloat(rollmax))
-			node.setProperty("ikRollMax", core::string::format("%f", rollmax));
+			node.setProperty("ikRollMax", core::String::format("%f", rollmax));
 			int32_t inverseKinematicsConstraints;
 			wrap(stream.readInt32(inverseKinematicsConstraints))
 			for (int32_t i = 0; i < inverseKinematicsConstraints; ++i) {
@@ -359,10 +359,10 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 			node.setProperty("pitch constraint", stream.readBool());
 			float pitchConstraintMin;
 			wrap(stream.readFloat(pitchConstraintMin))
-			node.setProperty("pitch constraint min", core::string::format("%f", pitchConstraintMin));
+			node.setProperty("pitch constraint min", core::String::format("%f", pitchConstraintMin));
 			float pitchConstraintMax;
 			wrap(stream.readFloat(pitchConstraintMax))
-			node.setProperty("pitch constraint max", core::string::format("%f", pitchConstraintMax));
+			node.setProperty("pitch constraint max", core::String::format("%f", pitchConstraintMax));
 			stream.readBool(); /* y counter clock wise allowed */
 			stream.readBool(); /* y clock wise allowed */
 			stream.readBool(); /* z counter clock wise allowed */

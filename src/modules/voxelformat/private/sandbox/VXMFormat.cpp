@@ -515,7 +515,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			wrapBool(stream->readString(sizeof(modelName), modelName, true))
 			visible = stream->readBool();
 		} else {
-			core::string::formatBuf(modelName, sizeof(modelName), "Model %i", model);
+			core::String::formatBuf(modelName, sizeof(modelName), "Model %i", model);
 		}
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		for (;;) {

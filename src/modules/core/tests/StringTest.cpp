@@ -222,4 +222,10 @@ TEST_F(StringTest, testIterate) {
 	EXPECT_EQ(first.size(), i);
 }
 
+TEST_F(StringTest, testFormat) {
+	EXPECT_EQ("1", core::String::format("1"));
+	EXPECT_EQ("10", core::String::format("%i", 10));
+	EXPECT_EQ("Hello World 10 after int", core::String::format("Hello World %i after int", 10));
+}
+
 }

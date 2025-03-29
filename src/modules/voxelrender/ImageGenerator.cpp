@@ -126,7 +126,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 	const core::String ext = core::string::extractExtension(imageFile);
 	const core::String baseFilePath = core::string::stripExtension(imageFile);
 	for (int i = 0; i < loops; ++i) {
-		const core::String &filepath = core::string::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
+		const core::String &filepath = core::String::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
 		const io::FilePtr &outfile = io::filesystem()->open(filepath, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
 		const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);

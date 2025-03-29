@@ -13,7 +13,7 @@
 namespace voxedit {
 
 static inline core::String toString(const memento::MementoState &state, const core::String &name, int n) {
-	return core::string::format("%s (%s): node %s, parent %s, name: %s##%i",
+	return core::String::format("%s (%s): node %s, parent %s, name: %s##%i",
 								memento::MementoHandler::typeToString(state.type), name.c_str(), state.nodeUUID.c_str(),
 								state.parentUUID.c_str(), state.name.c_str(), n);
 }

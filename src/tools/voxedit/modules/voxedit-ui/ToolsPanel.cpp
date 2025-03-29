@@ -130,10 +130,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		veui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
 		veui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
 		veui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
-		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
+		const core::String &shiftCmd = core::String::format("shift %i %i %i", translate.x, translate.y, translate.z);
 		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
 		ImGui::SameLine();
-		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
+		const core::String &moveCmd = core::String::format("move %i %i %i", translate.x, translate.y, translate.z);
 		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
 		ImGui::PopID();
 	}
@@ -149,7 +149,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::SameLine();
 		const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 		if (veui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
-			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
@@ -159,7 +159,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::TooltipCommand("locky");
 		ImGui::SameLine();
 		if (veui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
-			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
@@ -169,7 +169,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::TooltipCommand("lockz");
 		ImGui::SameLine();
 		if (veui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
-			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);

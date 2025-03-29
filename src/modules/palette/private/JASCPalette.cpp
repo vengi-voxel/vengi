@@ -51,10 +51,10 @@ bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &str
 bool JASCPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeLine("JASC-PAL");
 	stream.writeLine("0100");
-	stream.writeLine(core::string::format("%i", (int)palette.size()));
+	stream.writeLine(core::String::format("%i", (int)palette.size()));
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const core::RGBA &color = palette.color(i);
-		stream.writeLine(core::string::format("%i %i %i", color.r, color.g, color.b));
+		stream.writeLine(core::String::format("%i %i %i", color.r, color.g, color.b));
 	}
 	return true;
 }

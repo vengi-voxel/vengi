@@ -17,14 +17,14 @@ inline std::ostream &operator<<(::std::ostream &os, const core::BufferView<RGBA>
 	core::String line;
 	for (size_t i = 0; i < dt.size(); ++i) {
 		if (i % 16 == 0 && !line.empty()) {
-			palStr.append(core::string::format("%03i %s\n", (int)i - 16, line.c_str()));
+			palStr.append(core::String::format("%03i %s\n", (int)i - 16, line.c_str()));
 			line = "";
 		}
 		const core::String c = core::Color::print(dt[i], false);
 		line += c;
 	}
 	if (!line.empty()) {
-		palStr.append(core::string::format("%03i %s\n", (int)dt.size() / 16 * 16, line.c_str()));
+		palStr.append(core::String::format("%03i %s\n", (int)dt.size() / 16 * 16, line.c_str()));
 	}
 	return os << palStr.c_str();
 }

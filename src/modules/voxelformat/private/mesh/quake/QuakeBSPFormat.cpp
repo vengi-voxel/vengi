@@ -600,7 +600,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 		}
 		Log::debug("Voxelize level %i", i);
 		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph, palLookup,
-					 core::string::format("Level %i", i + 1))) {
+					 core::String::format("Level %i", i + 1))) {
 			state = true;
 		}
 	}

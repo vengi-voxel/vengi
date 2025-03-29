@@ -566,11 +566,11 @@ core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, 
 	const core::String &ext = outExt.empty() ? core::string::extractExtension(inputfile) : outExt;
 	core::String name;
 	if (modelName.empty()) {
-		name = core::string::format("model-%i.%s", id, ext.c_str());
+		name = core::String::format("model-%i.%s", id, ext.c_str());
 	} else if (uniqueNames) {
-		name = core::string::format("%s.%s", modelName.c_str(), ext.c_str());
+		name = core::String::format("%s.%s", modelName.c_str(), ext.c_str());
 	} else {
-		name = core::string::format("%s-%i.%s", modelName.c_str(), id, ext.c_str());
+		name = core::String::format("%s-%i.%s", modelName.c_str(), id, ext.c_str());
 	}
 	return core::string::path(core::string::extractDir(inputfile), core::string::sanitizeFilename(name));
 }

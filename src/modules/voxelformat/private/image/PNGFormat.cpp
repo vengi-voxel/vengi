@@ -196,7 +196,7 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	Log::debug("Base name for image layer import is: %s", basename.c_str());
 
 	io::ArchiveFiles entities;
-	archive->list(directory, entities, core::string::format("%s-*.png", basename.c_str()));
+	archive->list(directory, entities, core::String::format("%s-*.png", basename.c_str()));
 	if (entities.empty()) {
 		io::FilesystemEntry val = io::createFilesystemEntry(filename);
 		entities.push_back(val);
@@ -238,7 +238,7 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		const voxel::Region &region = volume->region();
 		const palette::Palette &palette = node.palette();
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-			const core::String &layerFilename = core::string::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
+			const core::String &layerFilename = core::String::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
 			image::Image image(layerFilename);
 			core::DynamicArray<core::RGBA> rgba;
 			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());

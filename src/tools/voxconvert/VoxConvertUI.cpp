@@ -208,7 +208,7 @@ void VoxConvertUI::onRenderUI() {
 					const core::String scriptArgs =
 						core::string::join(_luaApiCtx._args.begin(), _luaApiCtx._args.end(), " ");
 					arguments.push_back(
-						core::string::format("\"%s %s\"", _luaApiCtx._scriptFilename.c_str(), scriptArgs.c_str()));
+						core::String::format("\"%s %s\"", _luaApiCtx._scriptFilename.c_str(), scriptArgs.c_str()));
 				}
 
 				const core::String args = core::string::join(arguments.begin(), arguments.end(), " ");

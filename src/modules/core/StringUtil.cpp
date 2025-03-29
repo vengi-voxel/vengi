@@ -170,15 +170,6 @@ char *getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
 	return nullptr;
 }
 
-bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
-	va_list ap;
-	va_start(ap, msg);
-	const bool fit = SDL_vsnprintf(buf, bufSize, msg, ap) < (int)bufSize;
-	buf[bufSize - 1] = '\0';
-	va_end(ap);
-	return fit;
-}
-
 // TODO: take NAME_MAX into account
 core::String sanitizeFilename(const core::String &input) {
 	static const char unsafeChars[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
@@ -203,20 +194,6 @@ core::String sanitizeFilename(const core::String &input) {
 	return core::string::trim(output);
 }
 
-core::String format(const char *msg, ...) {
-	va_list ap;
-	char text[1024];
-
-	va_start(ap, msg);
-	const int len = SDL_vsnprintf(text, sizeof(text), msg, ap);
-	text[sizeof(text) - 1] = '\0';
-	va_end(ap);
-	if (len >= 0) {
-		return core::String(text, len);
-	}
-	return core::String::Empty;
-}
-
 core::String humanSize(uint64_t bytes) {
 	static const char *units[] = {"B", "KB", "MB", "GB", "TB"};
 	static const char length = lengthof(units);
@@ -227,7 +204,7 @@ core::String humanSize(uint64_t bytes) {
 		dblBytes = bytes / 1024.0;
 	}
 
-	return core::string::format("%.02lf%s", dblBytes, units[unitIdx]);
+	return core::String::format("%.02lf%s", dblBytes, units[unitIdx]);
 }
 
 core::String urlEncode(const core::String &inBuf) {

@@ -127,7 +127,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 
 	if (save && !isNodePalette && !palette.isBuiltIn()) {
 		const core::String filename = core::string::extractFilename(palette.name());
-		const core::String &paletteFilename = core::string::format("palette-%s.png", filename.c_str());
+		const core::String &paletteFilename = core::String::format("palette-%s.png", filename.c_str());
 		const core::String &pngFile = _filesystem->homeWritePath(paletteFilename);
 		palette.save(pngFile.c_str());
 	}
@@ -143,7 +143,7 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 	}
 
 	const core::String paletteName(core::string::extractFilename(file));
-	const core::String &paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
+	const core::String &paletteFilename = core::String::format("palette-%s.png", paletteName.c_str());
 	const core::String &pngFile = _filesystem->homeWritePath(paletteFilename);
 	if (palette.save(pngFile.c_str())) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
@@ -205,7 +205,7 @@ void SceneManager::autosave() {
 		const core::String &prefix = core::string::startsWith(filename, "autosave-") ? "" : "autosave-";
 		const core::String &ext = file->extension();
 		const core::String &autosaveFilename =
-			core::string::format("%s%s.%s", prefix.c_str(), filename.c_str(), ext.c_str());
+			core::String::format("%s%s.%s", prefix.c_str(), filename.c_str(), ext.c_str());
 		autoSaveFilename.set(_filesystem->homeWritePath(autosaveFilename), &_lastFilename.desc);
 	}
 	if (save(autoSaveFilename, true)) {
@@ -554,7 +554,7 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume, true);
-	newNode.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
+	newNode.setName(core::String::format("color: %i", (int)voxelColor.getColor()));
 	moveNodeToSceneGraph(newNode, node.parent());
 }
 
@@ -1623,7 +1623,7 @@ void SceneManager::construct() {
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
-				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
+				core::String::format("movecursor%s", DIRECTIONS[i].postfix),
 				_move[i], _("Move the cursor by keys, not by viewport mouse trace"));
 	}
 	command::Command::registerCommand("palette_changeintensity", [&] (const command::CmdArgs& args) {
@@ -1746,7 +1746,7 @@ void SceneManager::construct() {
 			return;
 		}
 		const int nodeId = core::string::toInt(args[0]);
-		core::String file = core::string::format("node%i.vengi", nodeId);
+		core::String file = core::String::format("node%i.vengi", nodeId);
 		if (args.size() == 2) {
 			file = args[1];
 		}

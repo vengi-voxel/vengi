@@ -16,7 +16,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->MenuClick("File/Switch");
 			ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
 			ctx->ItemClick("##type");
-			core::String name = core::string::format("//$FOCUSED/%s", palette::Palette::builtIn[i]);
+			core::String name = core::String::format("//$FOCUSED/%s", palette::Palette::builtIn[i]);
 			ctx->ItemClick(name.c_str());
 			ctx->ItemClick("###Ok");
 			palette::Palette check;

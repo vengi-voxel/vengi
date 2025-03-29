@@ -216,7 +216,7 @@ bool NormalPalette::load(const char *paletteName) {
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr paletteFile = filesystem->open(paletteName);
 	if (!paletteFile->validHandle()) {
-		paletteFile = filesystem->open(core::string::format("normals-%s.png", paletteName));
+		paletteFile = filesystem->open(core::String::format("normals-%s.png", paletteName));
 		if (!paletteFile->validHandle()) {
 			Log::error("Failed to load normal palette file %s", paletteName);
 			return false;

@@ -13,8 +13,6 @@ namespace core {
 namespace string {
 
 core::String sanitizeFilename(const core::String& input);
-core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
-bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
 core::String humanSize(uint64_t bytes);
 inline bool isspace(int c) {
 	return ::isspace(c);

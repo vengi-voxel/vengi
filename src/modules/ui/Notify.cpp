@@ -156,7 +156,7 @@ int RenderNotifications(ImGuiToasts &notifications) {
 
 		// Generate new unique name for this toast
 		char windowName[50];
-		core::string::formatBuf(windowName, sizeof(windowName), "##TOAST%i", (int)i);
+		core::String::formatBuf(windowName, sizeof(windowName), "##TOAST%i", (int)i);
 
 		// PushStyleColor(ImGuiCol_Text, text_color);
 		ImGui::SetNextWindowBgAlpha(opacity);

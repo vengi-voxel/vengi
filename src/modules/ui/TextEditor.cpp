@@ -880,7 +880,7 @@ void TextEditor::Render() {
 			}
 
 			// Draw line number (right aligned)
-			core::string::formatBuf(buf, sizeof(buf), "%d  ", lineNo + 1);
+			core::String::formatBuf(buf, sizeof(buf), "%d  ", lineNo + 1);
 
 			const float lineNoWidth =
 				ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, buf, nullptr, nullptr).x;

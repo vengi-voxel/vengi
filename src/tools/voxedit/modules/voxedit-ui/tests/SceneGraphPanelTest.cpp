@@ -13,11 +13,11 @@ namespace voxedit {
 static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext *ctx, int nodeId, const char *uiId) {
 	scenegraph::SceneGraphNode *modelNode = sceneMgr->sceneGraphModelNode(nodeId);
 	IM_CHECK(modelNode != nullptr);
-	const core::String uiNodeId = core::string::format("##nodelist/root##0/%s##%i", modelNode->name().c_str(), modelNode->id());
+	const core::String uiNodeId = core::String::format("##nodelist/root##0/%s##%i", modelNode->name().c_str(), modelNode->id());
 	// move to the node and open the context menu
 	ctx->MouseMove(uiNodeId.c_str());
 	ctx->MouseClick(ImGuiMouseButton_Right);
-	const core::String clickId = core::string::format("//$FOCUSED/%s", uiId);
+	const core::String clickId = core::String::format("//$FOCUSED/%s", uiId);
 	ctx->MenuClick(clickId.c_str());
 }
 

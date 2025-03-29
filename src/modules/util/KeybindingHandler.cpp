@@ -21,7 +21,7 @@
 namespace util {
 
 static core::String filename(int version) {
-	return core::string::format("keybindings-%i.cfg", version);
+	return core::String::format("keybindings-%i.cfg", version);
 }
 
 static inline bool checkModifierBitMask(int16_t mask, int16_t pressedModMask, int16_t commandModMask) {
@@ -340,7 +340,7 @@ core::String KeyBindingHandler::toString(int32_t key, int16_t modifier, uint16_t
 	}
 	const char *modifierName = getModifierName(modifier);
 	core_assert(modifierName != nullptr);
-	return core::string::format("%s+%s", modifierName, name.c_str());
+	return core::String::format("%s+%s", modifierName, name.c_str());
 }
 
 core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {

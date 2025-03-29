@@ -81,7 +81,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 			if (keyCode == SDLK_UNKNOWN)
 #endif
 			{
-				_lastError = core::string::format("could not get a valid key code for %s (skip binding for %s): %s",
+				_lastError = core::String::format("could not get a valid key code for %s (skip binding for %s): %s",
 												  key.c_str(), command.c_str(), SDL_GetError());
 				Log::warn("%s", _lastError.c_str());
 
@@ -115,7 +115,7 @@ KeybindingParser::KeybindingParser(const core::String& bindings) :
 			continue;
 		}
 
-		_lastError = core::string::format("Found invalid keybindings line '%s'", line.c_str());
+		_lastError = core::String::format("Found invalid keybindings line '%s'", line.c_str());
 		Log::warn("%s", _lastError.c_str());
 		++_invalidBindings;
 	}

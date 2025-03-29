@@ -127,13 +127,13 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	OSVERSIONINFOA osInfo;
 	osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
 	::GetVersionExA(&osInfo);
-	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion,
+	_osVersion = core::String::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion,
 									  (int)osInfo.dwBuildNumber);
 	_pid = _getpid();
 #elif defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 	struct utsname details;
 	if (uname(&details) == 0) {
-		_osVersion = core::string::format("%s %s", details.sysname, details.machine);
+		_osVersion = core::String::format("%s %s", details.sysname, details.machine);
 	}
 	_pid = getpid();
 #endif
@@ -938,7 +938,7 @@ void App::usage() const {
 	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
 	for (const Argument &a : _arguments) {
 		const core::String defaultVal =
-			a.defaultValue().empty() ? "" : core::string::format(" (default: %s)", a.defaultValue().c_str());
+			a.defaultValue().empty() ? "" : core::String::format(" (default: %s)", a.defaultValue().c_str());
 		if (a.shortArg().empty()) {
 			Log::info("%-*s - %s %s", maxWidthOnlyLong, a.longArg().c_str(), a.description().c_str(),
 					  defaultVal.c_str());

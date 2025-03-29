@@ -224,7 +224,7 @@ ImagePtr loadImage(const core::String &filename) {
 	} else {
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				const core::String &f = core::string::format("%s.%s", filename.c_str(), ext.c_str());
+				const core::String &f = core::String::format("%s.%s", filename.c_str(), ext.c_str());
 				if (io::filesystem()->exists(f)) {
 					file = io::filesystem()->open(f);
 					if (file) {
@@ -484,7 +484,7 @@ core::String print(const image::ImagePtr &image, bool limited) {
 		return "Image not loaded";
 	}
 	core::String str =
-		core::string::format("w: %i, h: %i, d: %i\n", image->width(), image->height(), image->components());
+		core::String::format("w: %i, h: %i, d: %i\n", image->width(), image->height(), image->components());
 	const int maxWidth = limited ? 64 : image->width();
 	const int maxHeight = limited ? 64 : image->height();
 	const int width = glm::min(image->width(), maxWidth);

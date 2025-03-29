@@ -609,7 +609,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	++_nextNodeId;
 	node.setId(nodeId);
 	if (node.name().empty()) {
-		node.setName(core::string::format("node %i", nodeId));
+		node.setName(core::String::format("node %i", nodeId));
 	}
 	if (_activeNodeId == InvalidNodeId) {
 		// try to set a sane default value for the active node

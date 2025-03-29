@@ -136,7 +136,7 @@ static core::String clua_stackdump(lua_State *L) {
 	}
 	dump.append("\n");
 	const int top = lua_gettop(L);
-	dump.append(core::string::format("%i values on stack%c", top, top > 0 ? '\n' : ' '));
+	dump.append(core::String::format("%i values on stack%c", top, top > 0 ? '\n' : ' '));
 
 	for (int i = 1; i <= top; i++) { /* repeat for each level */
 		const int t = lua_type(L, i);
@@ -542,7 +542,7 @@ void clua_quatregister(lua_State* s) {
 		{"rotateZ",      clua_quat_rotate_z},
 		{nullptr, nullptr}
 	};
-	const core::String& globalMeta = core::string::format("%s_global", clua_meta<glm::quat>::name());
+	const core::String& globalMeta = core::String::format("%s_global", clua_meta<glm::quat>::name());
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
 }
 
@@ -762,7 +762,7 @@ static int clua_http_get(lua_State *s) {
 			if (!headersStr.empty()) {
 				headersStr += ", ";
 			}
-			headersStr += core::string::format("'%s: %s'", it->first.c_str(), it->second.c_str());
+			headersStr += core::String::format("'%s: %s'", it->first.c_str(), it->second.c_str());
 		}
 		clua_error_prepare(s, "Failed to execute get request for url: %s (headers: %s)", request.url().c_str(),
 						  headersStr.c_str());
@@ -801,7 +801,7 @@ static int clua_http_post(lua_State *s) {
 			if (!headersStr.empty()) {
 				headersStr += ", ";
 			}
-			headersStr += core::string::format("'%s: %s'", it->first.c_str(), it->second.c_str());
+			headersStr += core::String::format("'%s: %s'", it->first.c_str(), it->second.c_str());
 		}
 		clua_error_prepare(s, "Failed to execute post request for url: %s and body '%s' (headers: %s)", request.url().c_str(),
 						  request.body().c_str(), headersStr.c_str());

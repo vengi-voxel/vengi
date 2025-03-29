@@ -58,7 +58,7 @@ void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) 
 				if (!valid) {
 					continue;
 				}
-				const core::String &title = core::string::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
+				const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
 				toolbar.customNoStyle([&]() {
 					if (ImGui::Button(title.c_str())) {
 						voxel::Region newRegion(glm::ivec3(0), maxs - 1);
@@ -310,7 +310,7 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 				}
 
 				if (!propertyAlreadyHandled) {
-					const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
+					const core::String &id = core::String::format("##%i-%s", node.id(), entry->key.c_str());
 					if (entry->value == "true" || entry->value == "false") {
 						bool value = core::string::toBool(entry->value);
 						if (ImGui::Checkbox(id.c_str(), &value)) {
@@ -324,7 +324,7 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 					}
 				}
 				ImGui::TableNextColumn();
-				const core::String &deleteId = core::string::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+				const core::String &deleteId = core::String::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
 				if (ImGui::Button(deleteId.c_str())) {
 					deleteKey = entry->key;
 				}
@@ -353,7 +353,7 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 }
 
 bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
-	const core::String &id = core::string::format("##%i-%s", node.id(), key.c_str());
+	const core::String &id = core::String::format("##%i-%s", node.id(), key.c_str());
 	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 

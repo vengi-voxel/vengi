@@ -59,9 +59,9 @@ const char *AxisButton(math::Axis axis, const char *name, const char *command, c
 	AxisStyleButton(style, axis);
 	char buf[16];
 	if (icon != nullptr) {
-		core::string::formatBuf(buf, sizeof(buf), "%s %s", icon, name);
+		core::String::formatBuf(buf, sizeof(buf), "%s %s", icon, name);
 	} else {
-		core::string::formatBuf(buf, sizeof(buf), "%s", name);
+		core::String::formatBuf(buf, sizeof(buf), "%s", name);
 	}
 	return ImGui::CommandButton(buf, command, tooltip, ImVec2(width, 0), listener);
 }

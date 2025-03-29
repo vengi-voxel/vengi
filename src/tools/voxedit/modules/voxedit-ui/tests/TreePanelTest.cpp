@@ -24,7 +24,7 @@ void TreePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		for (int i = 0; i < (int)voxelgenerator::TreeType::Max; ++i) {
 			ctx->ItemClick("###Type");
-			core::String name = core::string::format("//$FOCUSED/%s", treeTypeName(i));
+			core::String name = core::String::format("//$FOCUSED/%s", treeTypeName(i));
 			ctx->ItemClick(name.c_str());
 			ctx->ItemClick("###Ok");
 			IM_CHECK(voxelutil::visitVolume(*volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()) > 0);

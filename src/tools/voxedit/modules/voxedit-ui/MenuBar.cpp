@@ -71,7 +71,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 					if (f.empty()) {
 						break;
 					}
-					const core::String &item = core::string::format("%s##%i", f.c_str(), recentlyOpened);
+					const core::String &item = core::String::format("%s##%i", f.c_str(), recentlyOpened);
 					if (ImGui::MenuItem(item.c_str())) {
 						command::executeCommands("load \"" + f + "\"", &listener);
 					}

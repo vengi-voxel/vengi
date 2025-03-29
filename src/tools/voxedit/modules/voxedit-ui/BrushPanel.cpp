@@ -592,7 +592,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 
 	ui::Toolbar toolbarBrush("brushes", buttonSize, &listener);
 	for (int i = 0; i < (int)BrushType::Max; ++i) {
-		core::String cmd = core::string::format("brush%s", BrushTypeStr[i]).toLower();
+		core::String cmd = core::String::format("brush%s", BrushTypeStr[i]).toLower();
 		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
 		core::String tooltip = command::help(cmd);
 		if (tooltip.empty()) {
