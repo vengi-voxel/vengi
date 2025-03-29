@@ -30,11 +30,10 @@ static void ImGuiTestEngine_ExportJUnitXml(ImGuiTestEngine* engine, const char* 
 
 void ImGuiTestEngine_PrintResultSummary(ImGuiTestEngine* engine)
 {
-    int count_tested = 0;
-    int count_success = 0;
-    ImGuiTestEngine_GetResult(engine, count_tested, count_success);
+    ImGuiTestEngineResultSummary summary;
+    ImGuiTestEngine_GetResultSummary(engine, &summary);
 
-    if (count_success < count_tested)
+    if (summary.CountSuccess < summary.CountTested)
     {
         printf("\nFailing tests:\n");
         for (ImGuiTest* test : engine->TestsAll)
@@ -42,9 +41,12 @@ void ImGuiTestEngine_PrintResultSummary(ImGuiTestEngine* engine)
                 printf("- %s\n", test->Name);
     }
 
-    ImOsConsoleSetTextColor(ImOsConsoleStream_StandardOutput, (count_success == count_tested) ? ImOsConsoleTextColor_BrightGreen : ImOsConsoleTextColor_BrightRed);
-    printf("\nTests Result: %s\n", (count_success == count_tested) ? "OK" : "Errors");
-    printf("(%d/%d tests passed)\n", count_success, count_tested);
+    bool success = (summary.CountSuccess == summary.CountTested);
+    ImOsConsoleSetTextColor(ImOsConsoleStream_StandardOutput, success ? ImOsConsoleTextColor_BrightGreen : ImOsConsoleTextColor_BrightRed);
+    printf("\nTests Result: %s\n", success ? "OK" : "Errors");
+    printf("(%d/%d tests passed)\n", summary.CountSuccess, summary.CountTested);
+    if (summary.CountInQueue > 0)
+        printf("(%d queued tests remaining)\n", summary.CountInQueue);
     ImOsConsoleSetTextColor(ImOsConsoleStream_StandardOutput, ImOsConsoleTextColor_White);
 }
 

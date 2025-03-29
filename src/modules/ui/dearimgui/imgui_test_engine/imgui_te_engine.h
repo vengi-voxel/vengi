@@ -43,6 +43,7 @@ struct ImGuiTestContext;            // Context while a test is running
 struct ImGuiTestCoroutineInterface; // Interface to expose coroutine functions (imgui_te_coroutine provides a default implementation for C++11 using std::thread, but you may use your own)
 struct ImGuiTestEngine;             // Test engine instance
 struct ImGuiTestEngineIO;           // Test engine public I/O
+struct ImGuiTestEngineResultSummary;// Output of ImGuiTestEngine_GetResultSummary()
 struct ImGuiTestItemInfo;           // Info queried from item (id, geometry, status flags, debug label)
 struct ImGuiTestItemList;           // A list of items
 struct ImGuiTestInputs;             // Simulated user inputs (will be fed into ImGuiIO by the test engine)
@@ -153,6 +154,13 @@ enum ImGuiTestRunFlags_
     // TODO: Add GuiFunc options
 };
 
+struct ImGuiTestEngineResultSummary
+{
+    int     CountTested = 0;    // Number of tests executed
+    int     CountSuccess = 0;   // Number of tests succeeded
+    int     CountInQueue = 0;   // Number of tests remaining in queue (e.g. aborted, crashed)
+};
+
 //-------------------------------------------------------------------------
 // Functions
 //-------------------------------------------------------------------------
@@ -206,9 +214,14 @@ IMGUI_API ImGuiTest*          ImGuiTestEngine_FindTestByName(ImGuiTestEngine* en
 // FIXME: Clarify API to avoid function calls vs raw bools in ImGuiTestEngineIO
 IMGUI_API bool                ImGuiTestEngine_IsTestQueueEmpty(ImGuiTestEngine* engine);
 IMGUI_API bool                ImGuiTestEngine_IsUsingSimulatedInputs(ImGuiTestEngine* engine);
-IMGUI_API void                ImGuiTestEngine_GetResult(ImGuiTestEngine* engine, int& count_tested, int& success_count);
+IMGUI_API void                ImGuiTestEngine_GetResultSummary(ImGuiTestEngine* engine, ImGuiTestEngineResultSummary* out_results);
 IMGUI_API void                ImGuiTestEngine_GetTestList(ImGuiTestEngine* engine, ImVector<ImGuiTest*>* out_tests);
 IMGUI_API void                ImGuiTestEngine_GetTestQueue(ImGuiTestEngine* engine, ImVector<ImGuiTestRunTask>* out_tests);
+
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+// Obsoleted 2025/03/17
+static inline void            ImGuiTestEngine_GetResult(ImGuiTestEngine* engine, int& out_count_tested, int& out_count_success) { ImGuiTestEngineResultSummary summary; ImGuiTestEngine_GetResultSummary(engine, &summary); out_count_tested = summary.CountTested; out_count_success = summary.CountSuccess; }
+#endif
 
 // Functions: Crash Handling
 // Ensure past test results are properly exported even if application crash during a test.

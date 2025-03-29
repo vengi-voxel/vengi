@@ -4,11 +4,11 @@
     "stb": "f0569113c93ad095470c54bf34a17b36646bbbb5",
     "googletest": "4902ea2d7c6faed89b6facee00baa34bb108fc0d",
     "benchmark": "45ded53f70e129411b1a00de3876b604f049984e",
-    "imguizmo": "b10e91756d32395f5c1fefd417899b657ed7cb88",
-    "implot": "193b9d8f92c4a437e84182b171f1ae266e72321f",
+    "imguizmo": "5963494a945f0e67a2bdace9cdb7f7d39c87bd9d",
+    "implot": "3da8bd34299965d3b0ab124df743fe3e076fa222",
     "backward-cpp": "51f0700452cf71c57d43c2d028277b24cde32502",
     "im-neo-sequencer": "3b7930d4894408f655eefceb9f76e2ca15f1db24",
-    "imgui": "126d004f9e1eef062bf4b044b3b2faaf58d48c51",
+    "imgui": "0c079e453bf74acebc6c8b4f64c4fa40e76af760",
     "glm": "2d4c4b4dd31fde06cfffad7915c2b3006402322f",
     "sdl2": "4f488b9be2a814947711fd955ab87bbf8a3e3d9f",
     "tinygltf": "a5e653e46cca64bbc0ecee7ede007347a94c39b0",
@@ -22,5 +22,5 @@
     "ufbx": "6ca5309972f03625e6990f3084ff4c1cc55a09b6",
     "natsort": "cdd8df9602e727482ae5e051cff74b7ec7ffa07a",
     "miniz": "2fa13ca8a3cf196345001c9fe17bf42ee32c00f9",
-    "imgui_test_engine": "1f7eb3b6d49f53d097806776f9c7a3d417e072a3"
+    "imgui_test_engine": "32993a1cf5ce16bb2053f8cfdc869af83d6125a9"
 }

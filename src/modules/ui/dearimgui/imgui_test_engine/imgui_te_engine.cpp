@@ -547,14 +547,14 @@ void ImGuiTestEngine_ApplyInputToImGuiContext(ImGuiTestEngine* engine)
         if (g.InputEventsQueue[n].AddedByTestEngine == false)
             g.InputEventsQueue.erase(&g.InputEventsQueue[n--]);
 
-    // Special flags to stop submitting events
-    if (engine->TestContext->RunFlags & ImGuiTestRunFlags_EnableRawInputs)
-        return;
-
     // To support using ImGuiKey_NavXXXX shortcuts pointing to gamepad actions
     // FIXME-TEST-ENGINE: Should restore
     g.IO.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     g.IO.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+
+    // Special flags to stop submitting events
+    if (engine->TestContext->RunFlags & ImGuiTestRunFlags_EnableRawInputs)
+        return;
 
     const int input_event_count_prev = g.InputEventsQueue.Size;
 
@@ -1458,21 +1458,30 @@ void ImGuiTestEngine_UpdateTestsSourceLines(ImGuiTestEngine* engine)
         }
 }
 
-void ImGuiTestEngine_GetResult(ImGuiTestEngine* engine, int& count_tested, int& count_success)
+// count_remaining could be >0 if e.g. called during a crash handler or aborting a run.
+void ImGuiTestEngine_GetResultSummary(ImGuiTestEngine* engine, ImGuiTestEngineResultSummary* out_results)
 {
-    count_tested = 0;
-    count_success = 0;
+    int count_tested = 0;
+    int count_success = 0;
+    int count_remaining = 0;
     for (int n = 0; n < engine->TestsAll.Size; n++)
     {
         ImGuiTest* test = engine->TestsAll[n];
         if (test->Output.Status == ImGuiTestStatus_Unknown)
             continue;
-        IM_ASSERT(test->Output.Status != ImGuiTestStatus_Queued);
+        if (test->Output.Status == ImGuiTestStatus_Queued)
+        {
+            count_remaining++;
+            continue;
+        }
         IM_ASSERT(test->Output.Status != ImGuiTestStatus_Running);
         count_tested++;
         if (test->Output.Status == ImGuiTestStatus_Success)
             count_success++;
     }
+    out_results->CountTested = count_tested;
+    out_results->CountSuccess = count_success;
+    out_results->CountInQueue = count_remaining;
 }
 
 // Get a copy of the test list
@@ -2004,30 +2013,32 @@ void ImGuiTestEngine_ErrorRecoveryRun(ImGuiTestEngine* engine)
 
 void ImGuiTestEngine_CrashHandler()
 {
+    ImGuiContext& g = *GImGui;
+    ImGuiTestEngine* engine = (ImGuiTestEngine*)g.TestEngine;
+    ImGuiTest* crashed_test = (engine->TestContext && engine->TestContext->Test) ? engine->TestContext->Test : nullptr;
+
+    ImOsConsoleSetTextColor(ImOsConsoleStream_StandardError, ImOsConsoleTextColor_BrightRed);
+    if (crashed_test != nullptr)
+        fprintf(stderr, "**ImGuiTestEngine_CrashHandler()** Crashed while running \"%s\" :(\n", crashed_test->Name);
+    else
+        fprintf(stderr, "**ImGuiTestEngine_CrashHandler()** Crashed :(\n");
+
     static bool handled = false;
     if (handled)
         return;
     handled = true;
 
-    ImGuiContext& g = *GImGui;
-    ImGuiTestEngine* engine = (ImGuiTestEngine*)g.TestEngine;
-
     // Write stop times, because thread executing tests will no longer run.
     engine->BatchEndTime = ImTimeGetInMicroseconds();
-    for (int i = 0; i < engine->TestsAll.Size; i++)
+    if (crashed_test && crashed_test->Output.Status == ImGuiTestStatus_Running)
     {
-        if (engine->TestContext)
-            if (ImGuiTest* test = engine->TestContext->Test)
-                if (test->Output.Status == ImGuiTestStatus_Running)
-                {
-                    test->Output.Status = ImGuiTestStatus_Error;
-                    test->Output.EndTime = engine->BatchEndTime;
-                    break;
-                }
+        crashed_test->Output.Status = ImGuiTestStatus_Error;
+        crashed_test->Output.EndTime = engine->BatchEndTime;
     }
 
     // Export test run results.
     ImGuiTestEngine_Export(engine);
+    ImGuiTestEngine_PrintResultSummary(engine);
 }
 
 #ifdef _WIN32

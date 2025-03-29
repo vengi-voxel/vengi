@@ -1285,7 +1285,7 @@ namespace IMGUIZMO_NAMESPACE
       }
       ImDrawList* drawList = gContext.mDrawList;
 
-      bool isMultipleAxesMasked = gContext.mAxisMask & (gContext.mAxisMask - 1);
+      bool isMultipleAxesMasked = (gContext.mAxisMask & (gContext.mAxisMask - 1)) != 0;
       bool isNoAxesMasked = !gContext.mAxisMask;
 
       // colors
@@ -1316,7 +1316,7 @@ namespace IMGUIZMO_NAMESPACE
             continue;
          }
 
-         bool isAxisMasked = (1 << (2 - axis)) & gContext.mAxisMask;
+         bool isAxisMasked = ((1 << (2 - axis)) & gContext.mAxisMask) != 0;
 
          if ((!isAxisMasked || isMultipleAxesMasked) && !isNoAxesMasked)
          {
@@ -1958,7 +1958,7 @@ namespace IMGUIZMO_NAMESPACE
          {
             continue;
          }
-         bool isAxisMasked = (1 << i) & gContext.mAxisMask;
+         bool isAxisMasked = ((1 << i) & gContext.mAxisMask) != 0;
 
          vec_t dirPlaneX, dirPlaneY, dirAxis;
          bool belowAxisLimit, belowPlaneLimit;
@@ -2032,7 +2032,7 @@ namespace IMGUIZMO_NAMESPACE
       }
 
       bool isNoAxesMasked = !gContext.mAxisMask;
-      bool isMultipleAxesMasked = gContext.mAxisMask & (gContext.mAxisMask - 1);
+      bool isMultipleAxesMasked = (gContext.mAxisMask & (gContext.mAxisMask - 1)) != 0;
 
       ImGuiIO& io = ImGui::GetIO();
       int type = MT_NONE;
@@ -2057,7 +2057,7 @@ namespace IMGUIZMO_NAMESPACE
          {
             continue;
          }
-         bool isAxisMasked = (1 << i) & gContext.mAxisMask;
+         bool isAxisMasked = ((1 << i) & gContext.mAxisMask) != 0;
          // pickup plan
          vec_t pickupPlan = BuildPlan(gContext.mModel.v.position, planNormals[i]);
 
@@ -2099,7 +2099,7 @@ namespace IMGUIZMO_NAMESPACE
       }
 
       bool isNoAxesMasked = !gContext.mAxisMask;
-      bool isMultipleAxesMasked = gContext.mAxisMask & (gContext.mAxisMask - 1);
+      bool isMultipleAxesMasked = (gContext.mAxisMask & (gContext.mAxisMask - 1)) != 0;
 
       ImGuiIO& io = ImGui::GetIO();
       int type = MT_NONE;
@@ -2117,7 +2117,7 @@ namespace IMGUIZMO_NAMESPACE
       // compute
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         bool isAxisMasked = (1 << i) & gContext.mAxisMask;
+         bool isAxisMasked = ((1 << i) & gContext.mAxisMask) != 0;
          vec_t dirPlaneX, dirPlaneY, dirAxis;
          bool belowAxisLimit, belowPlaneLimit;
          ComputeTripodAxisAndVisibility(i, dirAxis, dirPlaneX, dirPlaneY, belowAxisLimit, belowPlaneLimit);
