@@ -5,7 +5,6 @@
 #pragma once
 
 #include "FileDialog.h"
-#include "core/Algorithm.h"
 #include "core/collection/DynamicArray.h"
 #include "video/WindowedApp.h"
 #include "IMGUIConsole.h"

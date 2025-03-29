@@ -725,6 +725,12 @@ app::AppState IMGUIApp::onRunning() {
 		_uistyle->markClean();
 	}
 
+	// if the monitor list is empty we currently don't have any monitor available (e.g. switched off)
+	// in the case we don't want imgui to trigger an error
+	if (ImGui::GetPlatformIO().Monitors.empty()) {
+		return app::AppState::Running;
+	}
+
 	{
 		core_trace_scoped(IMGUIAppBeforeUI);
 		beforeUI();
