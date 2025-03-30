@@ -345,12 +345,9 @@ public:
 
 		// Then we update the voxel pointer
 		if (currentPositionValid()) {
-			const glm::ivec3 &v3dLowerCorner = region.getLowerCorner();
-			const int32_t iLocalXPos = xPos - v3dLowerCorner.x;
-			const int32_t iLocalYPos = yPos - v3dLowerCorner.y;
-			const int32_t iLocalZPos = zPos - v3dLowerCorner.z;
+			const glm::aligned_ivec4 localPos = _posInVolume - region.getLowerCorner4();
 			const int32_t uVoxelIndex =
-				iLocalXPos + iLocalYPos * _volume->width() + iLocalZPos * _volume->width() * _volume->height();
+				localPos.x + localPos.y * _volume->width() + localPos.z * _volume->width() * _volume->height();
 
 			_currentVoxel = _volume->voxels() + uVoxelIndex;
 			return true;
