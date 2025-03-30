@@ -377,7 +377,7 @@ public:
 
 		_posInVolume.x += (int)offset;
 
-		if (!region().containsPointInX(_posInVolume.x)) {
+		if (region().getUpperX() < _posInVolume.x) {
 			_currentPositionInvalid |= SAMPLER_INVALIDX;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDX;
@@ -398,7 +398,7 @@ public:
 
 		_posInVolume.y += (int)offset;
 
-		if (!region().containsPointInY(_posInVolume.y)) {
+		if (region().getUpperY() < _posInVolume.y) {
 			_currentPositionInvalid |= SAMPLER_INVALIDY;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDY;
@@ -419,7 +419,7 @@ public:
 
 		_posInVolume.z += (int)offset;
 
-		if (!region().containsPointInZ(_posInVolume.z)) {
+		if (region().getUpperZ() < _posInVolume.z) {
 			_currentPositionInvalid |= SAMPLER_INVALIDZ;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
@@ -456,7 +456,7 @@ public:
 
 		_posInVolume.x -= (int)offset;
 
-		if (!region().containsPointInX(_posInVolume.x)) {
+		if (region().getLowerX() > _posInVolume.x) {
 			_currentPositionInvalid |= SAMPLER_INVALIDX;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDX;
@@ -477,7 +477,7 @@ public:
 
 		_posInVolume.y -= (int)offset;
 
-		if (!region().containsPointInY(_posInVolume.y)) {
+		if (region().getLowerY() > _posInVolume.y) {
 			_currentPositionInvalid |= SAMPLER_INVALIDY;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDY;
@@ -498,7 +498,7 @@ public:
 
 		_posInVolume.z -= (int)offset;
 
-		if (!region().containsPointInZ(_posInVolume.z)) {
+		if (region().getLowerZ() > _posInVolume.z) {
 			_currentPositionInvalid |= SAMPLER_INVALIDZ;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
