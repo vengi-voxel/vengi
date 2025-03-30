@@ -29,22 +29,17 @@ private:
 	bool _erase;
 	bool _override;
 	bool _paint;
-	bool _force;
 
-	static bool contains(const Selections &selections, int x, int y, int z) {
-		for (const Selection &sel : selections) {
-			if (sel.containsPoint(x, y, z)) {
+	bool skip(const glm::aligned_ivec4 &pos) const {
+		if (_selections.empty()) {
+			return false;
+		}
+		for (const Selection &sel : _selections) {
+			if (sel.containsPoint(pos)) {
 				return true;
 			}
 		}
 		return false;
-	}
-
-	bool skip(int x, int y, int z) const {
-		if (_selections.empty()) {
-			return false;
-		}
-		return !contains(_selections, x, y, z);
 	}
 
 public:
@@ -58,10 +53,10 @@ public:
 			if (_currentPositionInvalid) {
 				return false;
 			}
-			if (!_volume->_force) {
+			if (!_volume->_override) {
 				const voxel::Voxel existingVoxel = this->voxel();
 				const bool empty = voxel::isAir(existingVoxel.getMaterial());
-				if (_volume->_paint) {
+				if (_volume->_paint || _volume->_erase) {
 					if (empty) {
 						return false;
 					}
@@ -70,7 +65,7 @@ public:
 				}
 			}
 
-			if (_volume->skip(_posInVolume.x, _posInVolume.y, _posInVolume.z)) {
+			if (_volume->skip(_posInVolume)) {
 				return false;
 			}
 			if (_volume->_erase) {
@@ -93,7 +88,6 @@ public:
 		_erase = _modifierType == ModifierType::Erase;
 		_override = _modifierType == ModifierType::Override;
 		_paint = _modifierType == ModifierType::Paint;
-		_force = _override || _erase;
 	}
 
 	inline scenegraph::SceneGraphNode &node() const {
@@ -116,37 +110,11 @@ public:
 	}
 
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
-		if (!_region.containsPoint(x, y, z)) {
-			return true;
-		}
-		if (!_force) {
-			const voxel::Voxel existingVoxel = this->voxel(x, y, z);
-			const bool empty = voxel::isAir(existingVoxel.getMaterial());
-			if (_paint) {
-				if (empty) {
-					return false;
-				}
-			} else if (!empty) {
-				return false;
-			}
-		}
-
-		if (skip(x, y, z)) {
+		Sampler sampler(*this);
+		if (!sampler.setPosition(x, y, z)) {
 			return false;
 		}
-		voxel::Voxel placeVoxel = voxel;
-		if (_erase) {
-			placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
-		}
-		if (_volume->setVoxel(x, y, z, voxel)) {
-			if (_dirtyRegion.isValid()) {
-				_dirtyRegion.accumulate(x, y, z);
-			} else {
-				_dirtyRegion = voxel::Region(x, y, z, x, y, z);
-			}
-			return true;
-		}
-		return false;
+		return sampler.setVoxel(voxel);
 	}
 };
 
