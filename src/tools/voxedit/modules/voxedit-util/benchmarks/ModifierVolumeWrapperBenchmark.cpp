@@ -14,7 +14,6 @@
 class ModifierVolumeWrapperBenchmark : public app::AbstractBenchmark {
 protected:
 	scenegraph::SceneGraphNode *node = nullptr;
-	scenegraph::SceneGraphNode *node2 = nullptr;
 
 public:
 	void SetUp(::benchmark::State &state) override {
@@ -24,51 +23,46 @@ public:
 
 		node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
 		node->setVolume(new voxel::RawVolume(region), true);
-
-		node2 = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
-		node2->setVolume(new voxel::RawVolume(region), true);
-		voxelutil::visitVolume(*node2->volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			node2->volume()->setVoxel(x, y, z, voxel);
-		});
 	}
 
 	void TearDown(::benchmark::State &state) override {
 		delete node;
-		delete node2;
 		app::AbstractBenchmark::TearDown(state);
 	}
 };
 
 BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Place)(benchmark::State &state) {
 	const glm::ivec3 &mins = node->region().getLowerCorner();
-	const glm::ivec3 &dim = node2->region().getDimensionsInVoxels();
+	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Place);
 	for (auto _ : state) {
+		wrapper.fill(voxel::Voxel(voxel::VoxelType::Air, 0));
 		voxelgenerator::shape::createCubeNoCenter(wrapper, mins, dim, voxel);
 	}
-
 }
 
 BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Override)(benchmark::State &state) {
 	const glm::ivec3 &mins = node->region().getLowerCorner();
-	const glm::ivec3 &dim = node2->region().getDimensionsInVoxels();
+	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
 	for (auto _ : state) {
+		wrapper.fill(voxel::Voxel(voxel::VoxelType::Air, 0));
 		voxelgenerator::shape::createCubeNoCenter(wrapper, mins, dim, voxel);
 	}
 }
 
 BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Erase)(benchmark::State &state) {
 	const glm::ivec3 &mins = node->region().getLowerCorner();
-	const glm::ivec3 &dim = node2->region().getDimensionsInVoxels();
+	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel;
 
-	voxedit::ModifierVolumeWrapper wrapper(*node2, ModifierType::Erase);
+	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Erase);
 	for (auto _ : state) {
+		wrapper.fill(voxel::Voxel(voxel::VoxelType::Generic, 1));
 		voxelgenerator::shape::createCubeNoCenter(wrapper, mins, dim, voxel);
 	}
 }
