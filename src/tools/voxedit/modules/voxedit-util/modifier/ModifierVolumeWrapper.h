@@ -70,8 +70,7 @@ public:
 				}
 			}
 
-			const glm::ivec3 pos = position();
-			if (_volume->skip(pos.x, pos.y, pos.z)) {
+			if (_volume->skip(_posInVolume.x, _posInVolume.y, _posInVolume.z)) {
 				return false;
 			}
 			if (_volume->_erase) {
@@ -81,9 +80,9 @@ public:
 			}
 			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
 			if (dirtyRegion.isValid()) {
-				dirtyRegion.accumulate(pos);
+				dirtyRegion.accumulate(_posInVolume);
 			} else {
-				dirtyRegion = voxel::Region(pos, pos);
+				dirtyRegion = voxel::Region(_posInVolume.x, _posInVolume.y, _posInVolume.z, _posInVolume.x, _posInVolume.y, _posInVolume.z);
 			}
 			return true;
 		}
@@ -139,7 +138,15 @@ public:
 		if (_erase) {
 			placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 		}
-		return Super::setVoxel(x, y, z, placeVoxel);
+		if (_volume->setVoxel(x, y, z, voxel)) {
+			if (_dirtyRegion.isValid()) {
+				_dirtyRegion.accumulate(x, y, z);
+			} else {
+				_dirtyRegion = voxel::Region(x, y, z, x, y, z);
+			}
+			return true;
+		}
+		return false;
 	}
 };
 

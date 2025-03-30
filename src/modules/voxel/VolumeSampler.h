@@ -85,7 +85,7 @@ public:
 	}
 
 	inline const glm::ivec3 &position() const {
-		return _posInVolume;
+		return *(const glm::ivec3*)&_posInVolume.x;
 	}
 
 	inline const Voxel &voxel() const {
@@ -523,7 +523,7 @@ protected:
 	voxel::Region _region;
 
 	// The current position in the volume
-	glm::ivec3 _posInVolume{0, 0, 0};
+	glm::aligned_ivec4 _posInVolume{0, 0, 0, 0};
 
 	/** Other current position information */
 	Voxel *_currentVoxel = nullptr;
