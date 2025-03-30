@@ -235,4 +235,12 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	}
 }
 
+TEST_F(VoxelUtilTest, copyIntoRegion) {
+	voxel::RawVolume v{voxel::Region{-20, 20}};
+	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	voxel::RawVolume out(voxel::Region{0, 40});
+	voxelutil::copyIntoRegion(v, out, out.region());
+	EXPECT_EQ(1, out.voxel(20, 20, 20).getColor());
+}
+
 } // namespace voxelutil
