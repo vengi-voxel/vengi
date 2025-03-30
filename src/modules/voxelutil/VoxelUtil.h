@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "glm/geometric.hpp"
 #include "image/Image.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -170,6 +171,52 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
  * @return nullptr if the volumes don't differ in the shared region dimensions
  */
 [[nodiscard]] voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
-glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivity connectivity);
+
+template<typename Sampler>
+glm::vec3 calculateNormal(Sampler &sampler, voxel::Connectivity connectivity) {
+	const glm::ivec3 pos = sampler.position();
+	glm::ivec3 sum(0);
+	switch (connectivity) {
+	case voxel::Connectivity::TwentySixConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				sum -= offset;
+			}
+		}
+		/* fallthrough */
+
+	case voxel::Connectivity::EighteenConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				sum -= offset;
+			}
+		}
+		/* fallthrough */
+
+	case voxel::Connectivity::SixConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				sum -= offset;
+			}
+		}
+		break;
+	}
+	if (sum.x == 0 && sum.y == 0 && sum.z == 0) {
+		return glm::vec3(0.0f);
+	}
+	return glm::normalize(glm::vec3(sum));
+}
 
 } // namespace voxelutil

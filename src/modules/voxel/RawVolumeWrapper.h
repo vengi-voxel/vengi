@@ -18,39 +18,25 @@ protected:
 	Region _dirtyRegion = Region::InvalidRegion;
 
 public:
-	class Sampler : public RawVolume::Sampler {
+	class Sampler : public VolumeSampler<RawVolumeWrapper> {
 	private:
-		using Super = RawVolume::Sampler;
-		RawVolumeWrapper* _rawVolumeWrapper = nullptr;
+		using Super = VolumeSampler<RawVolumeWrapper>;
 	public:
-		Sampler(const RawVolumeWrapper *volume) : Super(volume->volume()) {
-			_region = volume->region();
-		}
+		VOLUMESAMPLERUSING;
 
-		Sampler(const RawVolumeWrapper &volume) : Super(volume.volume()) {
-			_region = volume.region();
-		}
-
-		Sampler(RawVolumeWrapper *volume) : Super(volume->volume()), _rawVolumeWrapper(volume) {
-			_region = volume->region();
-		}
-
-		Sampler(RawVolumeWrapper &volume) : Super(volume.volume()), _rawVolumeWrapper(&volume) {
-			_region = volume.region();
-		}
-
-		bool setVoxel(const Voxel& voxel) override {
-			if (Super::setVoxel(voxel)) {
-				voxel::Region &dirtyRegion = _rawVolumeWrapper->_dirtyRegion;
-				const glm::ivec3 &pos = position();
-				if (dirtyRegion.isValid()) {
-					dirtyRegion.accumulate(pos);
-				} else {
-					dirtyRegion = Region(pos, pos);
-				}
-				return true;
+		inline bool setVoxel(const Voxel& voxel) {
+			if (_currentPositionInvalid) {
+				return false;
 			}
-			return false;
+			*_currentVoxel = voxel;
+			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
+			const glm::ivec3 &pos = position();
+			if (dirtyRegion.isValid()) {
+				dirtyRegion.accumulate(pos);
+			} else {
+				dirtyRegion = Region(pos, pos);
+			}
+			return true;
 		}
 	};
 
@@ -64,6 +50,20 @@ public:
 	}
 
 	virtual ~RawVolumeWrapper() {}
+
+	inline Voxel *voxels() const {
+		return _volume->voxels();
+	}
+
+	inline int width() const {
+		return _volume->width();
+	}
+	inline int height() const {
+		return _volume->height();
+	}
+	inline int depth() const {
+		return _volume->depth();
+	}
 
 	inline operator RawVolume& () const {
 		return *_volume;

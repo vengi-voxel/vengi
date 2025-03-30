@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
+#include "voxel/VolumeSampler.h"
 
 namespace voxel {
 
@@ -20,17 +20,41 @@ private:
 	const Region& _region;
 
 public:
-	class Sampler : public RawVolume::Sampler {
+	class Sampler : public VolumeSampler<RawVolumeMoveWrapper> {
 	private:
-		using Super = RawVolume::Sampler;
+		using Super = VolumeSampler<RawVolumeMoveWrapper>;
 	public:
-		Sampler(const RawVolumeWrapper* volume) : Super(volume->volume()) {}
+		VOLUMESAMPLERUSING;
 
-		Sampler(const RawVolumeWrapper& volume) : Super(volume.volume()) {};
+		inline bool setVoxel(const Voxel &voxel) {
+			if (_currentPositionInvalid) {
+				const glm::ivec3& into = _region.moveInto(position().x, position().y, position().z);
+				_volume->setVoxel(into, voxel);
+				return true;
+			}
+			*_currentVoxel = voxel;
+			return true;
+		}
 	};
 
 	RawVolumeMoveWrapper(voxel::RawVolume* volume) :
 			_volume(volume), _region(volume->region()) {
+	}
+
+	inline Voxel *voxels() const {
+		return _volume->voxels();
+	}
+
+	inline int width() const {
+		return _volume->width();
+	}
+
+	inline int height() const {
+		return _volume->height();
+	}
+
+	inline int depth() const {
+		return _volume->depth();
 	}
 
 	inline operator RawVolume& () const {
