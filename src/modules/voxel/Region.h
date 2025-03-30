@@ -82,6 +82,9 @@ public:
 	/** Gets the position of the upper corner. */
 	const glm::ivec3& getUpperCorner() const;
 
+	/** Gets the position of the lower corner. */
+	const glm::aligned_ivec4& getLowerCorner4() const;
+
 	glm::ivec3 getLowerCenter() const;
 
 	glm::vec3 getLowerCornerf() const;
@@ -215,6 +218,10 @@ private:
 	glm::aligned_ivec4 _center;
 	int _stride;
 };
+
+inline const glm::aligned_ivec4& Region::getLowerCorner4() const {
+	return _mins;
+}
 
 /**
  * @return The 'x' position of the lower corner.
