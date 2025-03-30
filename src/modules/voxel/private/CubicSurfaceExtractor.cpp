@@ -104,23 +104,14 @@ typedef std::vector<QuadList> QuadListVector;
  * greater than zero (typically indicating it is solid).
  */
 CORE_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
-	if (isAir(back) || isTransparent(back)) {
-		return false;
-	}
-	if (!isAir(front) && !isTransparent(front)) {
-		return false;
-	}
-	return true;
+	return back == VoxelType::Generic && front <= VoxelType::Transparent;
 }
 
 CORE_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
-	if (isAir(back) || !isTransparent(back)) {
+	if (!isTransparent(back)) {
 		return false;
 	}
-	if (!isAir(front) && isTransparent(front)) {
-		return false;
-	}
-	return true;
+	return !isTransparent(front);
 }
 
 static CORE_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
@@ -411,9 +402,9 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 	QuadListVector vecQuads[core::enumVal(FaceNames::Max)];
 	QuadListVector vecQuadsT[core::enumVal(FaceNames::Max)];
 
-	const int xSize = upper.x - offset.x + 2;
-	const int ySize = upper.y - offset.y + 2;
-	const int zSize = upper.z - offset.z + 2;
+	const int32_t xSize = upper.x - offset.x + 2;
+	const int32_t ySize = upper.y - offset.y + 2;
+	const int32_t zSize = upper.z - offset.z + 2;
 	vecQuads[core::enumVal(FaceNames::NegativeX)].resize(xSize);
 	vecQuads[core::enumVal(FaceNames::PositiveX)].resize(xSize);
 	vecQuadsT[core::enumVal(FaceNames::NegativeX)].resize(xSize);
@@ -434,14 +425,16 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 	{
 	core_trace_scoped(QuadGeneration);
 	volumeSampler.setPosition(offset);
-	for (int32_t z = offset.z; z <= upper.z; ++z) {
-		const uint32_t regZ = z - offset.z;
+
+	const uint32_t w = upper.x - offset.x;
+	const uint32_t h = upper.y - offset.y;
+	const uint32_t d = upper.z - offset.z;
+
+	for (uint32_t regZ = 0; regZ <= d; ++regZ) {
 		voxel::RawVolume::Sampler volumeSampler2 = volumeSampler;
-		for (int32_t x = offset.x; x <= upper.x; ++x) {
-			const uint32_t regX = x - offset.x;
+		for (uint32_t regX = 0; regX <= w; ++regX) {
 			voxel::RawVolume::Sampler volumeSampler3 = volumeSampler2;
-			for (int32_t y = offset.y; y <= upper.y; ++y) {
-				const uint32_t regY = y - offset.y;
+			for (uint32_t regY = 0; regY <= h; ++regY) {
 
 				/**
 				 *
