@@ -45,6 +45,7 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
+	benchmarks/VoxelUtilBenchmark.cpp
 	benchmarks/VoxelVisitorBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
