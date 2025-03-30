@@ -10,6 +10,10 @@
 #include <glm/common.hpp>
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/type_aligned.hpp>
 #include <stdint.h>
 
 namespace voxel {
@@ -65,7 +69,7 @@ public:
 	 * @return The position of the center cell
 	 * @sa calcCenterf()
 	 */
-	const glm::ivec3& getCenter() const;
+	glm::ivec3 getCenter() const;
 	/**
 	 * @brief Calculate the voxel center coordinate
 	 * @sa getCenter()
@@ -151,6 +155,7 @@ public:
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
 	/** Enlarges the Region so that it contains the specified position. */
 	void accumulate(const glm::ivec3& v3dPos);
+	void accumulate(const glm::aligned_ivec4& v3dPos);
 
 	/** Enlarges the Region so that it contains the specified Region. */
 	void accumulate(const Region& reg);
@@ -201,11 +206,11 @@ public:
 private:
 	void update();
 
-	alignas(16) glm::ivec3 _mins;
-	alignas(16) glm::ivec3 _maxs;
-	alignas(16) glm::ivec3 _width;
-	alignas(16) glm::ivec3 _voxels;
-	alignas(16) glm::ivec3 _center;
+	glm::aligned_ivec4 _mins;
+	glm::aligned_ivec4 _maxs;
+	glm::aligned_ivec4 _width;
+	glm::aligned_ivec4 _voxels;
+	glm::aligned_ivec4 _center;
 	int _stride;
 };
 
@@ -324,8 +329,8 @@ inline Region::Region() :
  * @param maxsz The desired upper 'z' extent of the Region.
  */
 inline Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
-		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center(_mins + _width / 2),
-		_stride(_voxels.x * _voxels.y) {
+		_mins(minsx, minsy, minsz, 0), _maxs(maxsx, maxsy, maxsz, 0) {
+	update();
 }
 
 /**

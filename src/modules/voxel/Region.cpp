@@ -86,7 +86,7 @@ core::DynamicArray<Region> Region::subtract(const Region& a, const core::Dynamic
 void Region::update() {
 	_width = _maxs - _mins;
 	_center = _mins + _width / 2;
-	_voxels = _width + glm::ivec3(1);
+	_voxels = _width + 1;
 	_stride = _voxels.x * _voxels.y;
 }
 
@@ -135,13 +135,7 @@ int Region::voxels() const {
  * @param z The 'z' component of the position to accumulate.
  */
 void Region::accumulate(int32_t x, int32_t y, int32_t z) {
-	_mins.x = core_min(_mins.x, x);
-	_mins.y = core_min(_mins.y, y);
-	_mins.z = core_min(_mins.z, z);
-	_maxs.x = core_max(_maxs.x, x);
-	_maxs.y = core_max(_maxs.y, y);
-	_maxs.z = core_max(_maxs.z, z);
-	update();
+	accumulate(glm::aligned_ivec4(x, y, z, 0));
 }
 
 /**
@@ -157,8 +151,8 @@ void Region::accumulate(const Region& reg) {
 		core_assert_msg(false, "You cannot accumulate an invalid region.");
 	}
 
-	_mins = (glm::min)(_mins, reg.getLowerCorner());
-	_maxs = (glm::max)(_maxs, reg.getUpperCorner());
+	_mins = (glm::min)(_mins, reg._mins);
+	_maxs = (glm::max)(_maxs, reg._maxs);
 	update();
 }
 
@@ -212,41 +206,40 @@ void Region::grow(int32_t x, int32_t y, int32_t z) {
  * @param amount The amount to grow by (one component for each direction).
  */
 void Region::grow(const glm::ivec3& amount) {
-	_mins -= amount;
-	_maxs += amount;
+	const glm::aligned_ivec4 a(amount.x, amount.y, amount.z, 0);
+	_mins -= a;
+	_maxs += a;
 	update();
 }
 
-const glm::ivec3& Region::getCenter() const {
+glm::ivec3 Region::getCenter() const {
 	return _center;
 }
 
 glm::ivec3 Region::getLowerCenter() const {
-	glm::ivec3 c = _center;
-	c.y = _mins.y;
-	return c;
+	return {_center.x, _mins.y, _center.z};
 }
 
 glm::vec3 Region::calcCenterf() const {
-	return glm::vec3(_mins) + glm::vec3(_voxels) / 2.0f;
+	return glm::aligned_vec4(_mins + _voxels) / 2.0f;
 }
 
 glm::vec3 Region::calcCellCenterf() const {
-	return glm::vec3(_mins) + glm::vec3(_width) / 2.0f;
+	return glm::aligned_vec4(_mins + _width) / 2.0f;
 }
 
 /**
  * @return The position of the lower corner.
  */
 const glm::ivec3& Region::getLowerCorner() const {
-	return _mins;
+	return *(const glm::ivec3*)&_mins.x;
 }
 
 /**
  * @return The position of the upper corner.
  */
 const glm::ivec3& Region::getUpperCorner() const {
-	return _maxs;
+	return *(const glm::ivec3*)&_maxs.x;
 }
 
 glm::vec3 Region::getLowerCornerf() const {
@@ -262,7 +255,7 @@ glm::vec3 Region::getUpperCornerf() const {
  * @sa getDimensionsInCells()
  */
 const glm::ivec3& Region::getDimensionsInVoxels() const {
-	return _voxels;
+	return *(const glm::ivec3*)&_voxels.x;
 }
 
 /**
@@ -270,14 +263,16 @@ const glm::ivec3& Region::getDimensionsInVoxels() const {
  * @sa getDimensionsInVoxels()
  */
 const glm::ivec3& Region::getDimensionsInCells() const {
-	return _width;
+	return *(const glm::ivec3*)&_width.x;
 }
 
 /**
  * @param mins The new position of the lower corner.
  */
 void Region::setLowerCorner(const glm::ivec3& mins) {
-	_mins = mins;
+	_mins.x = mins.x;
+	_mins.y = mins.y;
+	_mins.z = mins.z;
 	update();
 }
 
@@ -285,7 +280,9 @@ void Region::setLowerCorner(const glm::ivec3& mins) {
  * @param maxs The new position of the upper corner.
  */
 void Region::setUpperCorner(const glm::ivec3& maxs) {
-	_maxs = maxs;
+	_maxs.x = maxs.x;
+	_maxs.y = maxs.y;
+	_maxs.z = maxs.z;
 	update();
 }
 
@@ -293,33 +290,43 @@ void Region::setUpperCorner(const glm::ivec3& maxs) {
  * @param pos The position to accumulate.
  */
 void Region::accumulate(const glm::ivec3& pos) {
-	accumulate(pos.x, pos.y, pos.z);
+	accumulate({pos.x, pos.y, pos.z, 0});
+}
+
+/**
+ * @param pos The position to accumulate.
+ */
+ void Region::accumulate(const glm::aligned_ivec4& pos) {
+	_mins = (glm::min)(_mins, pos);
+	_maxs = (glm::max)(_maxs, pos);
+	update();
 }
 
 /**
  * @see math::transform()
  */
 Region Region::rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const {
+	const glm::vec4 mins((float)_mins.x - 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f);
+	const glm::vec4 maxs((float)_maxs.x + 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f);
 	const glm::vec4 vertices[]{
-		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f),
-		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f)
+		mins,
+		glm::vec4(maxs.x, mins.y, mins.z, 1.0f),
+		glm::vec4(mins.x, maxs.y, mins.z, 1.0f),
+		glm::vec4(maxs.x, maxs.y, mins.z, 1.0f),
+		glm::vec4(mins.x, mins.y, maxs.z, 1.0f),
+		glm::vec4(maxs.x, mins.y, maxs.z, 1.0f),
+		glm::vec4(mins.x, maxs.y, maxs.z, 1.0f),
+		maxs
 	};
-	glm::ivec3 newMins(INT_MAX);
-	glm::ivec3 newMaxs(INT_MIN);
+	glm::aligned_ivec4 newMins(INT_MAX);
+	glm::aligned_ivec4 newMaxs(INT_MIN);
 	for (int i = 0; i < 8; ++i) {
-		const glm::vec3 &target = mat * vertices[i];
-		const glm::ivec3 &corrected = glm::round(target + 0.5f + pivot);
+		const glm::vec3 target(mat * vertices[i]);
+		const glm::aligned_ivec4 corrected(glm::round(target + 0.5f + pivot), 0);
 		newMins = glm::min(corrected, newMins);
 		newMaxs = glm::max(corrected, newMaxs);
 	}
-	const voxel::Region region(newMins, newMaxs - 1);
-	return region;
+	return {newMins.x, newMins.y, newMins.z, newMaxs.x - 1, newMaxs.y - 1, newMaxs.z - 1};
 }
 
 /**
@@ -369,7 +376,7 @@ void Region::shift(const glm::ivec3& amount) {
 }
 
 bool Region::isOnBorder(const glm::ivec3 &pos) const {
-	return glm::any(glm::equal(pos, _maxs)) || glm::any(glm::equal(pos, _mins));
+	return glm::any(glm::equal(pos, getUpperCorner())) || glm::any(glm::equal(pos, getLowerCorner()));
 }
 
 /**
