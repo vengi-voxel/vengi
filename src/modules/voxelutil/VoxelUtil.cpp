@@ -130,28 +130,48 @@ bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 	return true;
 }
 
-bool copy(const voxel::RawVolume &volume, const voxel::Region &inRegion, voxel::RawVolume &out,
-		  const voxel::Region &outRegion) {
-	int32_t xIn, yIn, zIn;
-	int32_t xOut, yOut, zOut;
-	voxel::RawVolumeWrapper wrapper(&out);
-	const glm::ivec3 &inmins = inRegion.getLowerCorner();
-	const glm::ivec3 &inmaxs = inRegion.getUpperCorner();
-	const glm::ivec3 &outmins = outRegion.getLowerCorner();
-	const glm::ivec3 &outmaxs = outRegion.getUpperCorner();
-	for (zIn = inmins.z, zOut = outmins.z; zIn <= inmaxs.z && zOut <= outmaxs.z; ++zIn, ++zOut) {
-		for (yIn = inmins.y, yOut = outmins.y; yIn <= inmaxs.y && yOut <= outmaxs.y; ++yIn, ++yOut) {
-			for (xIn = inmins.x, xOut = outmins.x; xIn <= inmaxs.x && xOut <= outmaxs.x; ++xIn, ++xOut) {
-				const voxel::Voxel &voxel = volume.voxel(xIn, yIn, zIn);
-				wrapper.setVoxel(xOut, yOut, zOut, voxel);
-			}
-		}
-	}
-	return wrapper.dirtyRegion().isValid();
-}
-
+/**
+ * @brief Copies a region from one voxel volume to another.
+ *
+ * This function copies a specified region from the input voxel volume to a specified region in the output voxel volume.
+ * The regions are defined by their lower and upper corners. The function also marks the region in the output volume as dirty.
+ *
+ * @param in The input voxel volume.
+ * @param out The output voxel volume.
+ * @param targetRegion The region to copy to in the output volume.
+ * @return true if the copied region in the output volume is valid, false otherwise.
+ */
 bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion) {
-	return copy(in, in.region(), out, targetRegion);
+	bool state = false;
+
+	voxel::RawVolume::Sampler outSampler(out);
+	outSampler.setPosition(targetRegion.getLowerCorner());
+
+	voxel::RawVolume::Sampler inSampler(in);
+	inSampler.setPosition(in.region().getLowerCorner());
+
+	const glm::ivec3 inSize = in.region().getDimensionsInVoxels();
+	const glm::ivec3 outSize = targetRegion.getDimensionsInVoxels();
+	const glm::ivec3 loopSize = glm::min(inSize, outSize);
+
+	for (int z = 0; z <= loopSize.z; ++z) {
+		voxel::RawVolume::Sampler inSampler2 = inSampler;
+		voxel::RawVolume::Sampler outSampler2 = outSampler;
+		for (int y = 0; y <= loopSize.y; ++y) {
+			voxel::RawVolume::Sampler inSampler3 = inSampler2;
+			voxel::RawVolume::Sampler outSampler3 = outSampler2;
+			for (int x = 0; x <= loopSize.x; ++x) {
+				state |= outSampler3.setVoxel(inSampler3.voxel());
+				inSampler3.movePositiveX();
+				outSampler3.movePositiveX();
+			}
+			inSampler2.movePositiveY();
+			outSampler2.movePositiveY();
+		}
+		inSampler.movePositiveZ();
+		outSampler.movePositiveZ();
+	}
+	return state;
 }
 
 void fillHollow(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {

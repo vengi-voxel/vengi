@@ -43,21 +43,6 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 voxel::Voxel getInterpolated(const voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette);
 
 /**
- * @brief Copies a region from one voxel volume to another.
- *
- * This function copies a specified region from the input voxel volume to a specified region in the output voxel volume.
- * The regions are defined by their lower and upper corners. The function also marks the region in the output volume as dirty.
- *
- * @param in The input voxel volume.
- * @param inRegion The region to copy from the input volume.
- * @param out The output voxel volume.
- * @param outRegion The region to copy to in the output volume.
- * @return true if the copied region in the output volume is valid, false otherwise.
- */
-bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawVolume &out,
-		  const voxel::Region &outRegion);
-
-/**
  * @brief Checks if there is a solid voxel around the given position
  */
 bool isTouching(const voxel::RawVolume &volume, const glm::ivec3& pos, voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
