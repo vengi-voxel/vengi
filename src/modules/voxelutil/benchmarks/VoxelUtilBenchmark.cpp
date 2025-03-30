@@ -18,4 +18,12 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyIntoRegion)(benchmark::State &state) 
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolume)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::RawVolume out(v, voxel::Region{0, 2});
+		benchmark::DoNotOptimize(out);
+	}
+}
+
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegion);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolume);
