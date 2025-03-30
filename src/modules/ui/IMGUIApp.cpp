@@ -827,7 +827,10 @@ app::AppState IMGUIApp::onRunning() {
 				int successCnt = 0;
 				core::String testresults = _appname + "-ui-tests.xml";
 				ImGuiTestEngine_ExportEx(_imguiTestEngine, ImGuiTestEngineExportFormat_JUnitXml, testresults.c_str());
-				ImGuiTestEngine_GetResult(_imguiTestEngine, testedCnt, successCnt);
+				ImGuiTestEngineResultSummary summary;
+				ImGuiTestEngine_GetResultSummary(_imguiTestEngine, &summary);
+				testedCnt = summary.CountTested;
+				successCnt = summary.CountSuccess;
 				if (successCnt != testedCnt) {
 					_exitCode = 1;
 				}
