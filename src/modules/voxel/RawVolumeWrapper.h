@@ -155,24 +155,6 @@ public:
 		}
 		return true;
 	}
-
-	inline bool setVoxels(int x, int z, const Voxel* voxels, int amount) {
-		for (int y = 0; y < amount; ++y) {
-			setVoxel(x, y, z, voxels[y]);
-		}
-		return true;
-	}
-
-	inline bool setVoxels(int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
-		for (int j = 0; j < nx; ++j) {
-			for (int k = 0; k < nz; ++k) {
-				for (int ny = 0; ny < amount; ++ny) {
-					setVoxel(x + j, y + ny, z + k, voxels[ny]);
-				}
-			}
-		}
-		return true;
-	}
 };
 
 }

@@ -39,7 +39,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	// prepare volume
 	voxel::RawVolume volume(region);
 	voxel::RawVolumeWrapper wrapper(&volume);
-	wrapper.setVoxels(0, 0, 0, region.getWidthInVoxels(), region.getDepthInVoxels(), &voxels.front(),
+	setVoxels(wrapper, 0, 0, 0, region.getWidthInVoxels(), region.getDepthInVoxels(), &voxels.front(),
 					  region.getHeightInVoxels());
 
 	const int expectedVoxelCount = region.getWidthInVoxels() * region.getDepthInVoxels() * region.getHeightInVoxels();

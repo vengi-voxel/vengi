@@ -98,13 +98,6 @@ public:
 		_volume->setVoxel(x, y, z, voxel);
 		return true;
 	}
-
-	inline bool setVoxels(int x, int z, const Voxel* voxels, int amount) {
-		for (int y = 0; y < amount; ++y) {
-			setVoxel(x, y, z, voxels[y]);
-		}
-		return true;
-	}
 };
 
 }

@@ -69,7 +69,7 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
 	const int depthLow = depth / 2;
 	core::Vector<voxel::Voxel, MAX_HEIGHT> voxels;
 	voxels.assign(voxel, height);
-	volume.setVoxels(center.x - widthLow, center.y - heightLow, center.z - depthLow,
+	setVoxels(volume, center.x - widthLow, center.y - heightLow, center.z - depthLow,
 			width, depth, &voxels.front(), height);
 }
 
@@ -88,7 +88,7 @@ template<class Volume, class VoxelType>
 void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const VoxelType& voxel) {
 	core::Vector<voxel::Voxel, MAX_HEIGHT> voxels;
 	voxels.assign(voxel, height);
-	volume.setVoxels(pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
+	setVoxels(volume, pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
 }
 
 template<class Volume, class VoxelType>
