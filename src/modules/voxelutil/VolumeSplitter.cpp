@@ -85,10 +85,9 @@ core::DynamicArray<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volum
 				const glm::ivec3 innerMins(x, y, z);
 				const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
 				const voxel::Region innerRegion(innerMins, innerMaxs);
-				voxel::RawVolume *copy = new voxel::RawVolume(innerRegion);
-				if (voxelutil::copy(*volume, innerRegion, *copy, innerRegion)) {
-					Log::debug("- split %s", innerRegion.toString().c_str());
-				} else if (!createEmpty) {
+				bool onlyAir = true;
+				voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, &onlyAir);
+				if (onlyAir && !createEmpty) {
 					Log::debug("- skip empty %s", innerRegion.toString().c_str());
 					delete copy;
 					continue;

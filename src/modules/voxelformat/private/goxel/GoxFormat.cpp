@@ -277,8 +277,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			voxel::Region destReg(modelVolume->region());
 			if (!destReg.containsRegion(blockRegion)) {
 				destReg.accumulate(blockRegion);
-				voxel::RawVolume *newVolume = new voxel::RawVolume(destReg);
-				voxelutil::copyIntoRegion(*modelVolume, *newVolume, modelVolume->region());
+				voxel::RawVolume *newVolume = new voxel::RawVolume(*modelVolume, destReg);
 				delete modelVolume;
 				modelVolume = newVolume;
 			}
