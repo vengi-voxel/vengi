@@ -129,6 +129,36 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
+void RawVolume::copyInto(const RawVolume &src) {
+	if (!intersects(_region, src.region())) {
+		return;
+	}
+	voxel::Region srcRegion = src.region();
+	if (!_region.containsRegion(srcRegion)) {
+		srcRegion.cropTo(_region);
+	}
+	const glm::ivec3 &mins = srcRegion.getLowerCorner();
+	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
+	const int tgtYStride = _region.getWidthInVoxels();
+	const int tgtZStride = _region.getWidthInVoxels() * _region.getHeightInVoxels();
+	const int srcYStride = srcRegion.getWidthInVoxels();
+	const int srcZStride = srcRegion.getWidthInVoxels() * srcRegion.getHeightInVoxels();
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		const int32_t srcXPos = x - mins.x;
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			const int32_t srcYPos = y - mins.y;
+			const int tgtStrideLocal = srcXPos + srcYPos * tgtYStride;
+			const int srcStrideLocal = srcXPos + srcYPos * srcYStride;
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				const int32_t srcZPos = z - mins.z;
+				const int tgtindex = tgtStrideLocal + srcZPos * tgtZStride;
+				const int srcindex = srcStrideLocal + srcZPos * srcZStride;
+				_data[tgtindex] = src._data[srcindex];
+			}
+		}
+	}
+}
+
 RawVolume::RawVolume(RawVolume &&move) noexcept {
 	_data = move._data;
 	move._data = nullptr;

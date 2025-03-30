@@ -246,7 +246,7 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	}
 	core::ScopedPtr<voxel::RawVolume> v(
 		voxel::RawVolume::createRaw((voxel::Voxel *)uncompressedBuf, mementoData.region()));
-	voxelutil::copyIntoRegion(*v, *volume, mementoData.region());
+	volume->copyInto(*v);
 	return true;
 }
 

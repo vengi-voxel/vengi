@@ -240,9 +240,9 @@ TEST_F(VoxelUtilTest, copyIntoRegion) {
 	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	v.setVoxel(v.region().getLowerCorner(), voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	v.setVoxel(v.region().getUpperCorner(), voxel::createVoxel(voxel::VoxelType::Generic, 3));
-	voxel::RawVolume out(voxel::Region{0, 40});
-	voxelutil::copyIntoRegion(v, out, out.region());
-	EXPECT_EQ(1, out.voxel(20, 20, 20).getColor());
+	voxel::RawVolume out(voxel::Region{-20, 20});
+	out.copyInto(v);
+	EXPECT_EQ(1, out.voxel(0, 0, 0).getColor());
 	EXPECT_EQ(2, out.voxel(out.region().getLowerCorner()).getColor());
 	EXPECT_EQ(3, out.voxel(out.region().getUpperCorner()).getColor());
 }

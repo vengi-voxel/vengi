@@ -22,18 +22,6 @@ class Palette;
 namespace voxelutil {
 
 /**
- * @brief Copies the entire input voxel volume into a specified region in the output voxel volume.
- *
- * This function is a convenience wrapper around the 'copy' function. It copies the entire input volume into a specified region in the output volume.
- *
- * @param in The input voxel volume.
- * @param out The output voxel volume.
- * @param targetRegion The region to copy to in the output volume.
- * @return true if the copied region in the output volume is valid, false otherwise.
- */
-bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion);
-
-/**
  * @brief The interpolated voxel for the given position
  *
  * @param v The voxel volume to operate on.

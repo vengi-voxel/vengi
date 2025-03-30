@@ -130,50 +130,6 @@ bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 	return true;
 }
 
-/**
- * @brief Copies a region from one voxel volume to another.
- *
- * This function copies a specified region from the input voxel volume to a specified region in the output voxel volume.
- * The regions are defined by their lower and upper corners. The function also marks the region in the output volume as dirty.
- *
- * @param in The input voxel volume.
- * @param out The output voxel volume.
- * @param targetRegion The region to copy to in the output volume.
- * @return true if the copied region in the output volume is valid, false otherwise.
- */
-bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion) {
-	bool state = false;
-
-	voxel::RawVolume::Sampler outSampler(out);
-	outSampler.setPosition(targetRegion.getLowerCorner());
-
-	voxel::RawVolume::Sampler inSampler(in);
-	inSampler.setPosition(in.region().getLowerCorner());
-
-	const glm::ivec3 inSize = in.region().getDimensionsInCells();
-	const glm::ivec3 outSize = targetRegion.getDimensionsInCells();
-	const glm::ivec3 loopSize = glm::min(inSize, outSize);
-
-	for (int z = 0; z <= loopSize.z; ++z) {
-		voxel::RawVolume::Sampler inSampler2 = inSampler;
-		voxel::RawVolume::Sampler outSampler2 = outSampler;
-		for (int y = 0; y <= loopSize.y; ++y) {
-			voxel::RawVolume::Sampler inSampler3 = inSampler2;
-			voxel::RawVolume::Sampler outSampler3 = outSampler2;
-			for (int x = 0; x <= loopSize.x; ++x) {
-				state |= outSampler3.setVoxel(inSampler3.voxel());
-				inSampler3.movePositiveX();
-				outSampler3.movePositiveX();
-			}
-			inSampler2.movePositiveY();
-			outSampler2.movePositiveY();
-		}
-		inSampler.movePositiveZ();
-		outSampler.movePositiveZ();
-	}
-	return state;
-}
-
 void fillHollow(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {
 	const voxel::Region &region = volume.region();
 	const int width = region.getWidthInVoxels();
