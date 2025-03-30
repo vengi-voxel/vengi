@@ -49,8 +49,11 @@ TEST_F(RegionTest, testContains) {
 	const glm::ivec3 maxs(15, 15, 15);
 	voxel::Region region(mins, maxs);
 	ASSERT_TRUE(region.containsPoint(mins));
+	ASSERT_TRUE(region.containsPoint({mins.x, mins.y, mins.z, 0}));
 	ASSERT_TRUE(region.containsPoint(maxs));
+	ASSERT_TRUE(region.containsPoint({maxs.x, maxs.y, maxs.z, 0}));
 	ASSERT_FALSE(region.containsPoint(maxs + 1));
+	ASSERT_FALSE(region.containsPoint({maxs.x + 1, maxs.y + 1, maxs.z + 1, 0}));
 	ASSERT_TRUE(region.containsRegion(region));
 }
 

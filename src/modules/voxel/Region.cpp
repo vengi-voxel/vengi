@@ -367,6 +367,11 @@ bool Region::containsPoint(const glm::ivec3& pos) const {
 	return containsPoint(pos.x, pos.y, pos.z);
 }
 
+bool Region::containsPoint(const glm::aligned_ivec4 &pos) const {
+	// TODO: glm misses simd for relational operators
+	return (pos.x <= _maxs.x) && (pos.y <= _maxs.y) && (pos.z <= _maxs.z) && (pos.x >= _mins.x) && (pos.y >= _mins.y) &&
+		   (pos.z >= _mins.z);}
+
 /**
  * @param amount The amount to move the Region by.
  */

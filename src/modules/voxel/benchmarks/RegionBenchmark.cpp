@@ -22,5 +22,25 @@ BENCHMARK_DEFINE_F(RegionBenchmark, Accumulate)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(RegionBenchmark, ContainsPoint_1)(benchmark::State &state) {
+	int i = 0;
+	for (auto _ : state) {
+		voxel::Region region(0, 0, 0, i, i, i);
+		region.containsPoint(1, 2, 3);
+		i = (i + 1) % 100;
+	}
+}
+
+BENCHMARK_DEFINE_F(RegionBenchmark, ContainsPoint_2)(benchmark::State &state) {
+	int i = 0;
+	for (auto _ : state) {
+		voxel::Region region(0, 0, 0, i, i, i);
+		region.containsPoint({1, 2, 3, 0});
+		i = (i + 1) % 100;
+	}
+}
+
 BENCHMARK_REGISTER_F(RegionBenchmark, IsValid);
 BENCHMARK_REGISTER_F(RegionBenchmark, Accumulate);
+BENCHMARK_REGISTER_F(RegionBenchmark, ContainsPoint_1);
+BENCHMARK_REGISTER_F(RegionBenchmark, ContainsPoint_2);

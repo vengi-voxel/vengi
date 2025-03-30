@@ -131,10 +131,12 @@ public:
 	bool containsPoint(float fX, float fY, float fZ) const;
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(const glm::vec3& pos) const;
+
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(int32_t iX, int32_t iY, int32_t iZ) const;
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(const glm::ivec3& pos) const;
+	bool containsPoint(const glm::aligned_ivec4& pos) const;
 	/** Tests whether the given position is contained in the 'x' range of this Region. */
 	bool containsPointInX(float pos) const;
 	/** Tests whether the given position is contained in the 'x' range of this Region. */
