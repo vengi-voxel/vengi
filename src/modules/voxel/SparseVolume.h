@@ -36,7 +36,7 @@ public:
 		virtual ~Sampler();
 
 		const Voxel &voxel() const;
-		virtual const Region region() const;
+		const Region &region() const;
 
 		bool currentPositionValid() const;
 
@@ -195,7 +195,7 @@ inline int32_t SparseVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
 
-inline const Region SparseVolume::Sampler::region() const {
+inline const Region& SparseVolume::Sampler::region() const {
 	return _volume->region();
 }
 

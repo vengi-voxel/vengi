@@ -9,7 +9,6 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
-#include "voxelutil/VolumeVisitor.h"
 
 class ModifierVolumeWrapperBenchmark : public app::AbstractBenchmark {
 protected:

@@ -30,11 +30,10 @@ public:
 			}
 			*_currentVoxel = voxel;
 			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
-			const glm::ivec3 &pos = position();
 			if (dirtyRegion.isValid()) {
-				dirtyRegion.accumulate(pos);
+				dirtyRegion.accumulate(_posInVolume);
 			} else {
-				dirtyRegion = Region(pos, pos);
+				dirtyRegion = Region(_posInVolume, _posInVolume);
 			}
 			return true;
 		}
