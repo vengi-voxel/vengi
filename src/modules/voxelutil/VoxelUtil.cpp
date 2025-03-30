@@ -150,8 +150,8 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 	voxel::RawVolume::Sampler inSampler(in);
 	inSampler.setPosition(in.region().getLowerCorner());
 
-	const glm::ivec3 inSize = in.region().getDimensionsInVoxels();
-	const glm::ivec3 outSize = targetRegion.getDimensionsInVoxels();
+	const glm::ivec3 inSize = in.region().getDimensionsInCells();
+	const glm::ivec3 outSize = targetRegion.getDimensionsInCells();
 	const glm::ivec3 loopSize = glm::min(inSize, outSize);
 
 	for (int z = 0; z <= loopSize.z; ++z) {
