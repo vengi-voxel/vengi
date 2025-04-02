@@ -772,12 +772,7 @@ bool MementoHandler::recordVolumeStates(const voxel::RawVolume *volume) const {
 	if (volume == nullptr) {
 		return false;
 	}
-	// check the max voxel amount
-	const glm::ivec3 &maxDim = _maxUndoRegion.getDimensionsInVoxels();
-	const glm::ivec3 &volDim = volume->region().getDimensionsInVoxels();
-	const int maxVoxels = maxDim.x * maxDim.y * maxDim.z;
-	const int volVoxels = volDim.x * volDim.y * volDim.z;
-	return maxVoxels >= volVoxels;
+	return _maxUndoRegion.voxels() >= volume->region().voxels();
 }
 
 } // namespace memento

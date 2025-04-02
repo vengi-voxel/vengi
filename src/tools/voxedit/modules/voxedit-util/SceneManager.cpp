@@ -3243,9 +3243,8 @@ bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 bool SceneManager::exceedsMaxSuggestedVolumeSize() const {
 	const int maxDim = _maxSuggestedVolumeSize->intVal();
 	const int maxVoxels = maxDim * maxDim * maxDim;
-	const voxel::Region &region = _sceneGraph.region();
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
-	return dim.x * dim.y * dim.z > maxVoxels;
+	const voxel::Region &region = _sceneGraph.maxRegion();
+	return region.voxels() > maxVoxels;
 }
 
 void SceneManager::markDirty() {
