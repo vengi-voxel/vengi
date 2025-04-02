@@ -42,6 +42,7 @@ set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
+	tests/ModifierVolumeWrapperTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp
 	tests/PlaneBrushTest.cpp

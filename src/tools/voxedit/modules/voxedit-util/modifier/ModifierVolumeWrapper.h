@@ -36,10 +36,10 @@ private:
 		}
 		for (const Selection &sel : _selections) {
 			if (sel.containsPoint(pos)) {
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 public:
