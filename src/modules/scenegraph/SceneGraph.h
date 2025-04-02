@@ -107,6 +107,7 @@ public:
 	 * @sa sceneRegion()
 	 */
 	const voxel::Region &region() const;
+	voxel::Region maxRegion() const;
 	const core::String &uuid(int nodeId) const;
 
 	bool isRegistered(SceneGraphListener *listener) const;

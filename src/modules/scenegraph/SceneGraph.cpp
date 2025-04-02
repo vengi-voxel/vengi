@@ -453,6 +453,22 @@ void SceneGraph::updateTransforms() {
 	core_assert_always(setAnimation(animId));
 }
 
+voxel::Region SceneGraph::maxRegion() const {
+	int maxVoxels = 0;
+	voxel::Region r;
+	for (const auto &n : nodes()) {
+		const SceneGraphNode &node = n->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		if (node.region().voxels() > maxVoxels) {
+			maxVoxels = node.region().voxels();
+			r = node.region();
+		}
+	}
+	return r;
+}
+
 voxel::Region SceneGraph::calcRegion() const {
 	voxel::Region r;
 	bool validVolume = false;
