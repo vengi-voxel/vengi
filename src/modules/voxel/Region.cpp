@@ -221,11 +221,11 @@ glm::ivec3 Region::getLowerCenter() const {
 }
 
 glm::vec3 Region::calcCenterf() const {
-	return glm::aligned_vec4(_mins + _voxels) / 2.0f;
+	return glm::aligned_vec4(_mins) + glm::aligned_vec4(_voxels) / 2.0f;
 }
 
 glm::vec3 Region::calcCellCenterf() const {
-	return glm::aligned_vec4(_mins + _width) / 2.0f;
+	return glm::aligned_vec4(_mins) + glm::aligned_vec4(_width) / 2.0f;
 }
 
 /**
