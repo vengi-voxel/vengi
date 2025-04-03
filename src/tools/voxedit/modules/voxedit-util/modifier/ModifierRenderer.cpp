@@ -147,11 +147,11 @@ void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, pale
 	}
 }
 
-void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region) {
+void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region, core::RGBA color) {
 	core_assert(idx >= 0 && idx < lengthof(_aabbs));
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Green());
-	_shapeBuilder.aabb(region.getLowerCorner(), region.getUpperCorner() + glm::one<glm::ivec3>());
+	_shapeBuilder.setColor(core::Color::fromRGBA(color));
+	_shapeBuilder.cube(region.getLowerCorner(), region.getUpperCorner() + glm::one<glm::ivec3>());
 	_shapeRenderer.createOrUpdate(_aabbs[idx], _shapeBuilder);
 }
 

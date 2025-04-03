@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/RGBA.h"
 #include "core/SharedPtr.h"
 #include "math/Axis.h"
 #include "video/Camera.h"
@@ -34,7 +35,7 @@ public:
 	}
 	virtual void clear() {
 	}
-	virtual void updateBrushVolume(int idx, const voxel::Region &region) {
+	virtual void updateBrushVolume(int idx, const voxel::Region &region, core::RGBA color) {
 	}
 	virtual void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
 	}

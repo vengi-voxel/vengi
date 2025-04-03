@@ -85,7 +85,7 @@ protected:
 		core::Var::get(cfg::VoxEditPlaneSize, "0");
 		core::Var::get(cfg::VoxEditShowPlane, "false");
 		core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128");
-		core::Var::get(cfg::VoxEditMaxSuggestedVolumeSizePreview, "64");
+		core::Var::get(cfg::VoxEditMaxSuggestedVolumeSizePreview, "32");
 		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic));
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		core::Var::get(cfg::VoxEditShowaabb, "");
