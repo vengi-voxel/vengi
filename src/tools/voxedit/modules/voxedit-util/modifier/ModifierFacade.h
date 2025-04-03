@@ -7,6 +7,7 @@
 #include "Modifier.h"
 #include "IModifierRenderer.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 
 namespace voxedit {
 
@@ -14,9 +15,10 @@ class ModifierFacade : public Modifier {
 private:
 	using Super = Modifier;
 	ModifierRendererPtr _modifierRenderer;
-	core::ScopedPtr<voxel::RawVolume> _mirrorVolume;
-	core::ScopedPtr<voxel::RawVolume> _volume;
+	core::ScopedPtr<voxel::RawVolume> _previewMirrorVolume;
+	core::ScopedPtr<voxel::RawVolume> _previewVolume;
 	SceneManager *_sceneMgr;
+	core::VarPtr _maxSuggestedVolumeSizePreview;
 
 	bool previewNeedsExistingVolume() const;
 	void updateBrushVolumePreview(palette::Palette &activePalette);

@@ -23,6 +23,7 @@ private:
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
 	glm::vec3 _referencePoint{0.0f};
+	int32_t _aabbs[2];
 
 public:
 	ModifierRenderer();
@@ -40,6 +41,7 @@ public:
 	 * But it is keeping a pointer to the volume!
 	 */
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) override;
+	void updateBrushVolume(int idx, const voxel::Region &region) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion) override;
 	void updateSelectionBuffers(const Selections &selections) override;

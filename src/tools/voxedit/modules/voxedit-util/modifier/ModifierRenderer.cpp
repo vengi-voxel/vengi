@@ -134,6 +134,10 @@ void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 
 void ModifierRenderer::clear() {
 	_volumeRenderer.clear(_meshState);
+	for (int i = 0; i < lengthof(_aabbs); ++i) {
+		_shapeRenderer.deleteMesh(_aabbs[i]);
+		_aabbs[i] = -1;
+	}
 }
 
 void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
@@ -141,6 +145,14 @@ void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, pale
 	if (volume != nullptr) {
 		_volumeRenderer.scheduleRegionExtraction(_meshState, idx, volume->region());
 	}
+}
+
+void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region) {
+	core_assert(idx >= 0 && idx < lengthof(_aabbs));
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::Green());
+	_shapeBuilder.aabb(region.getLowerCorner(), region.getUpperCorner() + glm::one<glm::ivec3>());
+	_shapeRenderer.createOrUpdate(_aabbs[idx], _shapeBuilder);
 }
 
 void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm::mat4 &model) {
@@ -165,6 +177,9 @@ void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &curs
 	_shapeRenderer.render(_voxelCursorMesh, camera, cursor);
 	_shapeRenderer.render(_mirrorMeshIndex, camera, model);
 	_shapeRenderer.render(_referencePointMesh, camera, glm::translate(model, _referencePoint));
+	for (int i = 0; i < lengthof(_aabbs); ++i) {
+		_shapeRenderer.render(_aabbs[i], camera, model);
+	}
 }
 
 void ModifierRenderer::updateReferencePosition(const glm::ivec3 &pos) {

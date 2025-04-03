@@ -34,6 +34,8 @@ public:
 	}
 	virtual void clear() {
 	}
+	virtual void updateBrushVolume(int idx, const voxel::Region &region) {
+	}
 	virtual void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
 	}
 
