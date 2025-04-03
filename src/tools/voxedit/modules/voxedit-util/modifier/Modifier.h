@@ -60,6 +60,7 @@ protected:
 	 * modifier triggered
 	 */
 	double _nextSingleExecution = 0;
+	double _nowSeconds = 0;
 
 	core::Buffer<Brush *> _brushes;
 	BrushContext _brushContext;

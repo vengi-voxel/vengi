@@ -165,8 +165,18 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 
 	if (brush && brush->active()) {
 		if (brush->dirty()) {
-			updateBrushVolumePreview(activePalette);
+			if (_nextPreviewUpdateSeconds > 0.0) {
+				_nextPreviewUpdateSeconds -= 0.02f;
+			} else {
+				_nextPreviewUpdateSeconds = _nowSeconds + 0.1f;
+			}
 			brush->markClean();
+		}
+		if (_nextPreviewUpdateSeconds > 0.0) {
+			if (_nextPreviewUpdateSeconds <= _nowSeconds) {
+				_nextPreviewUpdateSeconds = 0.0f;
+				updateBrushVolumePreview(activePalette);
+			}
 		}
 		video::polygonOffset(glm::vec3(-0.1f));
 		_modifierRenderer->renderBrushVolume(camera, model);

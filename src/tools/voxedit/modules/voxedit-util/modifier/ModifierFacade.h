@@ -19,6 +19,7 @@ private:
 	core::ScopedPtr<voxel::RawVolume> _previewVolume;
 	SceneManager *_sceneMgr;
 	core::VarPtr _maxSuggestedVolumeSizePreview;
+	double _nextPreviewUpdateSeconds = 0;
 
 	bool previewNeedsExistingVolume() const;
 	void updateBrushVolumePreview(palette::Palette &activePalette);

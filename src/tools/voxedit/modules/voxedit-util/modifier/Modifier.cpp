@@ -139,6 +139,7 @@ void Modifier::shutdown() {
 }
 
 void Modifier::update(double nowSeconds, const video::Camera *camera) {
+	_nowSeconds = nowSeconds;
 	_brushContext.fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
 	AABBBrush *aabbBrush = currentAABBBrush();
 	if (aabbBrush) {
