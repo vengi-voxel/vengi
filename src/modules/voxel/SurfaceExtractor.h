@@ -37,8 +37,8 @@ struct SurfaceExtractionContext {
 };
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-										   const glm::ivec3 &translate, bool mergeQuads, bool reuseVertices,
-										   bool ambientOcclusion, bool optimize);
+										   const glm::ivec3 &translate = glm::ivec3(0), bool mergeQuads = true, bool reuseVertices = true,
+										   bool ambientOcclusion = true, bool optimize = false);
 SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 										   const glm::ivec3 &translate = glm::ivec3(0), bool mergeQuads = true,
 										   bool reuseVertices = true, bool ambientOcclusion = true, bool optimize = false);

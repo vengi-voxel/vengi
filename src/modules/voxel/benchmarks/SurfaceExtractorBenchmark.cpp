@@ -91,7 +91,7 @@ public:
 	}
 };
 
-BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Visit)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Cubic)(benchmark::State &state) {
 	for (auto _ : state) {
 		const bool mergeQuads = true;
 		const bool reuseVertices = true;
@@ -105,6 +105,21 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Visit)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Visit);
+BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Binary)(benchmark::State &state) {
+	for (auto _ : state) {
+		const bool mergeQuads = true;
+		const bool reuseVertices = true;
+		const bool ambientOcclusion = false;
+
+		voxel::ChunkMesh mesh;
+
+		voxel::SurfaceExtractionContext ctx =
+			voxel::buildBinaryContext(&v, v.region(), mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion, true);
+		voxel::extractSurface(ctx);
+	}
+}
+
+BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Cubic);
+BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Binary);
 
 BENCHMARK_MAIN();
