@@ -45,14 +45,6 @@ static constexpr int CS_P = CS + 2;
 static constexpr int CS_P2 = CS_P * CS_P;
 static constexpr int CS_P3 = CS_P * CS_P * CS_P;
 
-struct MeshData {
-	std::vector<uint64_t> col_face_masks; // CS_P2 * 6
-	std::vector<uint64_t> a_axis_cols;	  // CS_P2
-	std::vector<uint64_t> b_axis_cols;	  // CS_P
-	std::vector<uint64_t> merged_right;	  // CS_P
-	std::vector<uint64_t> merged_forward; // CS_P2
-};
-
 CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const int c) {
 	if (axis == 0)
 		return b + (a * CS_P) + (c * CS_P2);
@@ -100,7 +92,7 @@ CORE_FORCE_INLINE void insert_quad(Mesh &mesh, uint32_t v1, uint32_t v2, uint32_
 CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, uint32_t x, uint32_t y, uint32_t z, const voxel::Voxel &voxel,
 									  uint32_t norm, uint32_t ao, const glm::ivec3 &translate) {
 	VoxelVertex vertex;
-	vertex.position = glm::vec3(x + translate.x, y + translate.y, z + translate.z);
+	vertex.position = glm::vec3(x - 1 + translate.x, y - 1 + translate.y, z - 1 + translate.z);
 	vertex.info = 0;
 	vertex.ambientOcclusion = ao;
 	vertex.colorIndex = voxel.getColor();
@@ -112,17 +104,18 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, uint32_t x, uint32_t y, uint32
 static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
 static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
-static void prepareChunk(const voxel::RawVolume &map, std::vector<Voxel> &voxels, const glm::ivec3 &chunkPos,
-						 MeshData &mesh) {
+static void prepareChunk(const voxel::RawVolume &map, std::vector<Voxel> &voxels, const glm::ivec3 &chunkPos) {
 	voxel::RawVolume::Sampler sampler(map);
 	voxels.resize(CS_P3);
 	sampler.setPosition(chunkPos);
 	for (uint32_t y = 0; y < CS_P; y++) {
 		voxel::RawVolume::Sampler sampler2 = sampler;
+		const uint32_t yoffset = y * CS_P2;
 		for (uint32_t x = 0; x < CS_P; x++) {
 			voxel::RawVolume::Sampler sampler3 = sampler2;
+			const uint32_t xyoffset = (x * CS_P) + yoffset;
 			for (uint32_t z = 0; z < CS_P; z++) {
-				const int index = z + (x * CS_P) + (y * CS_P2);
+				const int index = z + xyoffset;
 				voxels[index] = sampler3.voxel();
 				sampler3.movePositiveZ();
 			}
@@ -141,15 +134,14 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	const glm::ivec3& offset = region.getLowerCorner();
 	result->setOffset(offset);
 
-	MeshData meshData;
 	std::vector<voxel::Voxel> voxels;
-	prepareChunk(*volData, voxels, region.getLowerCorner(), meshData);
+	prepareChunk(*volData, voxels, region.getLowerCorner() - 1);
 
-	std::vector<uint64_t> col_face_masks = meshData.col_face_masks;
-	std::vector<uint64_t> a_axis_cols = meshData.a_axis_cols;
-	std::vector<uint64_t> b_axis_cols = meshData.b_axis_cols;
-	std::vector<uint64_t> merged_right = meshData.merged_right;
-	std::vector<uint64_t> merged_forward = meshData.merged_forward;
+	std::vector<uint64_t> col_face_masks;
+	std::vector<uint64_t> a_axis_cols;
+	std::vector<uint64_t> b_axis_cols;
+	std::vector<uint64_t> merged_right;
+	std::vector<uint64_t> merged_forward;
 	col_face_masks.resize(CS_P2 * 6);
 	a_axis_cols.resize(CS_P2);
 	b_axis_cols.resize(CS_P);
@@ -157,7 +149,6 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	merged_forward.resize(CS_P2);
 	// Begin culling faces
 	auto p = voxels.begin();
-	core_memset(a_axis_cols.data(), 0, CS_P2);
 	for (int a = 0; a < CS_P; a++) {
 		core_memset(b_axis_cols.data(), 0, CS_P * 8);
 
