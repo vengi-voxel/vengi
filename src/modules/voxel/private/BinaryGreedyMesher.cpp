@@ -115,13 +115,13 @@ static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 static void prepareChunk(const voxel::RawVolume &map, std::vector<Voxel> &voxels, const glm::ivec3 &chunkPos,
 						 MeshData &mesh) {
 	voxel::RawVolume::Sampler sampler(map);
-	voxels.reserve(CS_P3);
+	voxels.resize(CS_P3);
 	sampler.setPosition(chunkPos);
-	for (uint32_t y = 1; y < CS_P; y++) {
+	for (uint32_t y = 0; y < CS_P; y++) {
 		voxel::RawVolume::Sampler sampler2 = sampler;
-		for (uint32_t x = 1; x < CS_P; x++) {
+		for (uint32_t x = 0; x < CS_P; x++) {
 			voxel::RawVolume::Sampler sampler3 = sampler2;
-			for (uint32_t z = 1; z < CS_P; z++) {
+			for (uint32_t z = 0; z < CS_P; z++) {
 				const int index = z + (x * CS_P) + (y * CS_P2);
 				voxels[index] = sampler3.voxel();
 				sampler3.movePositiveZ();
@@ -150,11 +150,11 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	std::vector<uint64_t> b_axis_cols = meshData.b_axis_cols;
 	std::vector<uint64_t> merged_right = meshData.merged_right;
 	std::vector<uint64_t> merged_forward = meshData.merged_forward;
-	col_face_masks.reserve(CS_P2 * 6);
-	a_axis_cols.reserve(CS_P2);
-	b_axis_cols.reserve(CS_P);
-	merged_right.reserve(CS_P);
-	merged_forward.reserve(CS_P2);
+	col_face_masks.resize(CS_P2 * 6);
+	a_axis_cols.resize(CS_P2);
+	b_axis_cols.resize(CS_P);
+	merged_right.resize(CS_P);
+	merged_forward.resize(CS_P2);
 	// Begin culling faces
 	auto p = voxels.begin();
 	core_memset(a_axis_cols.data(), 0, CS_P2);
