@@ -159,7 +159,7 @@ bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 		ev.type = SDL_KEYDOWN;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-		ev.key.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
+		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
 		ev.key.mod = modifier;
 		ImGui_ImplSDL3_ProcessEvent(&ev);
@@ -180,7 +180,7 @@ bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 		ev.type = SDL_KEYUP;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-		ev.key.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
+		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
 		ev.key.mod = modifier;
 		ImGui_ImplSDL3_ProcessEvent(&ev);
