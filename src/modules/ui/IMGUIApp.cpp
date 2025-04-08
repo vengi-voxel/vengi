@@ -7,6 +7,7 @@
 #include "Panel.h"
 #include "Style.h"
 #include "app/i18n/Language.h"
+#include "core/ConfigVar.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
@@ -435,6 +436,9 @@ void IMGUIApp::setColorTheme() {
 	}
 	ImGui::StyleColorsNeoSequencer();
 	ImGui::StyleImGuizmo();
+	if (core::Var::getSafe(cfg::ClientWindowHighDPI)->boolVal()) {
+		style.ScaleAllSizes(_dpiScale);
+	}
 }
 
 const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
@@ -695,9 +699,13 @@ app::AppState IMGUIApp::onRunning() {
 		static_assert(ImGuiLocKey_COUNT == 13, "Please update ImGui translations");
 	}
 
-	const float dpiScale = core_max(0.1f, ImGui::GetMainViewport()->DpiScale);
+	const float dpiScale = ImGui::GetMainViewport()->DpiScale;
 	if (_languageVar->isDirty() || _uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
-		_dpiScale = dpiScale;
+		if (dpiScale > 0.0f) {
+			Log::debug("Dpi: %f", dpiScale);
+			_dpiScale = dpiScale;
+			setColorTheme();
+		}
 		loadFonts();
 		_uiFontSize->markClean();
 		_languageVar->markClean();
