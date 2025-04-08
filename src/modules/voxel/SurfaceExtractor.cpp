@@ -32,10 +32,17 @@ SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Regio
 									mergeQuads, reuseVertices, ambientOcclusion, optimize);
 }
 
+static bool isValidForBinaryMesher(const voxel::Region &region) {
+	if (region.getWidthInVoxels() > 62 || region.getHeightInVoxels() > 62 || region.getDepthInVoxels() > 62) {
+		return false;
+	}
+	return true;
+}
+
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh, ctx.optimize);
-	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
+	} else if (ctx.type == voxel::SurfaceExtractionType::Binary && isValidForBinaryMesher(ctx.region)) {
 		voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion,
 									   ctx.optimize);
 	} else {

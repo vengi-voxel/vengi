@@ -22,7 +22,8 @@ bool MeshState::init() {
 }
 
 void MeshState::construct() {
-	_meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY | core::CV_NOPERSIST);
+	// this must be 62 for the binary cubic mesher
+	_meshSize = core::Var::get(cfg::VoxelMeshSize, "62", core::CV_READONLY | core::CV_NOPERSIST);
 }
 
 glm::vec3 MeshState::VolumeData::centerPos(bool applyModel) const {
