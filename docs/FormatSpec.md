@@ -12,7 +12,7 @@ A VENGI file consists of the following main sections:
 
 1. **Magic Number**: A 4-byte identifier `VENG`.
 2. **Zip data**: zlib header (0x78, 0xDA)
-    * **Version**: A 4-byte version number. The current supported version is `3`.
+    * **Version**: A 4-byte version number. The current supported version is `4`.
     * **Scene Graph Data**: Contains information about the scene graph nodes.
 
 ## Node Structure
@@ -23,6 +23,7 @@ Nodes are composed of data chunks that each start with a FourCC code.
     * `PROP`: Contains properties of a node (only present if there are properties).
     * `DATA`: Contains voxel data of a node (only if type is `Model`).
     * `PALC`: Contains palette colors (only present if PALI is not).
+    * `PALN`: Contains palette normals
     * `PALI`: Contains a palette identifier (only present if PALC is not).
     * `ANIM`: Contains animation data for a node.
         * `KEYF[]`: Contains keyframe data for an animation.
@@ -91,7 +92,8 @@ Voxel data is stored in the `DATA` chunk.
 * **Region**: Six 4-byte signed integers (lowerX, lowerY, lowerZ, upperX, upperY, upperZ)
 * **Voxel Information**: For each voxel in the region:
     * **Air**: 1-byte boolean (true if air, false if solid)
-    * **Color**: 1-byte unsigned integer (only if not air)
+    * **Color**: 1-byte unsigned integer (only if not air) (Color palette index)
+    * **Normal**: 1-byte unsigned integer (only if not air) (Normal palette index)
 
 The voxel data is stored like this:
 
@@ -121,6 +123,15 @@ Palette colors are stored in the `PALC` chunk (or in `PALI` - see below):
     * **Properties**: For each property:
         * **Name**: String (16-bit length prefix, followed by UTF-8 encoded string)
         * **Value**: 4-byte float
+
+#### Palette Normals
+
+Palette normals are stored in the `PALN` chunk:
+
+* **FourCC**: `PALN`
+* **Normal Count**: 4-byte unsigned integer
+* **Normals**: For each color:
+    * **ABGR**: 4-byte unsigned integer
 
 #### Palette Identifier
 
