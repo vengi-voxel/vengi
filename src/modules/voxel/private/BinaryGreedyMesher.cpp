@@ -126,7 +126,7 @@ static void prepareChunk(const voxel::RawVolume &map, std::vector<Voxel> &voxels
 }
 
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-							 const glm::ivec3 &translate, bool bake_ao, bool optimize) {
+							 const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
 	// loop over each chunk of the size CS_P * CS_P * CS_P and extract the mesh for it
 	// then merge the mesh into the result
 
@@ -226,7 +226,7 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 
 					if (voxels[get_axis_i(axis, right, forward, bit_pos)].isSame(
 							voxels[get_axis_i(axis, right, forward + 1, bit_pos)]) &&
-						(!bake_ao || compare_ao(voxels, axis, forward, right, bit_pos + air_dir, 1, 0))) {
+						(!ambientOcclusion || compare_ao(voxels, axis, forward, right, bit_pos + air_dir, 1, 0))) {
 						merged_forward[(right * CS_P) + bit_pos]++;
 					} else {
 						bits_merging_forward &= ~(1ULL << bit_pos);
@@ -248,7 +248,7 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 					if ((bits_merging_right & (1ULL << bit_pos)) != 0 &&
 						(merged_forward[(right * CS_P) + bit_pos] == merged_forward[(right + 1) * CS_P + bit_pos]) &&
 						(type.isSame(voxels[get_axis_i(axis, right + 1, forward, bit_pos)])) &&
-						(!bake_ao || compare_ao(voxels, axis, forward, right, bit_pos + air_dir, 0, 1))) {
+						(!ambientOcclusion || compare_ao(voxels, axis, forward, right, bit_pos + air_dir, 0, 1))) {
 						bits_walking_right |= 1ULL << bit_pos;
 						merged_right[bit_pos]++;
 						merged_forward[rightxCS_P + bit_pos] = 0;
@@ -264,7 +264,7 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 					const uint8_t mesh_up = bit_pos + (face % 2 == 0 ? 1 : 0);
 
 					uint8_t ao_LB = 3, ao_RB = 3, ao_RF = 3, ao_LF = 3;
-					if (bake_ao) {
+					if (ambientOcclusion) {
 						const int c = bit_pos + air_dir;
 						const uint8_t ao_F = solid_check(voxels[get_axis_i(axis, right, forward - 1, c)]);
 						const uint8_t ao_B = solid_check(voxels[get_axis_i(axis, right, forward + 1, c)]);
