@@ -518,7 +518,10 @@ voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisibl
 }
 
 voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const {
-	return node.sceneRegion(resolveRegion(node), node.pivot(), keyFrameIdx);
+	const auto& transform = transformForFrame(node, keyFrameIdx);
+	const voxel::Region &region = resolveRegion(node);
+	const auto &obb = toOBB(true, region, node.pivot(), transform);
+	return toRegion(obb);
 }
 
 void SceneGraph::fixErrors() {

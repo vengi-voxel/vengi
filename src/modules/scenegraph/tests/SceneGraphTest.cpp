@@ -269,6 +269,50 @@ TEST_F(SceneGraphTest, testMerge) {
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()));
 }
 
+TEST_F(SceneGraphTest, testNodeSceneRegion_1) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(-3, 3));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.translate(glm::vec3(10.0f, 11.0f, 12.0f));
+		node.setPivot(glm::vec3(0.5f));
+		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
+		sceneGraph.updateTransforms();
+	}
+	const voxel::Region &region = sceneGraph.sceneRegion(sceneGraph.node(1));
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+	EXPECT_EQ(3, mins.x);
+	EXPECT_EQ(4, mins.y);
+	EXPECT_EQ(5, mins.z);
+	EXPECT_EQ(10, maxs.x);
+	EXPECT_EQ(11, maxs.y);
+	EXPECT_EQ(12, maxs.z);
+}
+
+TEST_F(SceneGraphTest, testNodeSceneRegion_2) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(0, 3));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.translate(glm::vec3(10.0f, 11.0f, 12.0f));
+		node.setPivot(glm::vec3(0.0f));
+		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
+		sceneGraph.updateTransforms();
+	}
+	const voxel::Region &region = sceneGraph.sceneRegion(sceneGraph.node(1));
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+	EXPECT_EQ(10, mins.x);
+	EXPECT_EQ(11, mins.y);
+	EXPECT_EQ(12, mins.z);
+	EXPECT_EQ(13, maxs.x);
+	EXPECT_EQ(14, maxs.y);
+	EXPECT_EQ(15, maxs.z);
+}
+
 TEST_F(SceneGraphTest, testMergeWithTranslation) {
 	SceneGraph sceneGraph;
 	{
@@ -282,6 +326,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		transform.setWorldTranslation(glm::vec3(-10));
 		node.setTransform(0, transform);
 		sceneGraph.emplace(core::move(node));
+		// [-10, 0]
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
@@ -293,7 +338,9 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		transform.setWorldTranslation(glm::vec3(10));
 		node.setTransform(0, transform);
 		sceneGraph.emplace(core::move(node));
+		// [11, 15]
 	}
+	sceneGraph.updateTransforms();
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
@@ -329,6 +376,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		node.setPivot(glm::vec3(0.0f));
 		sceneGraph.emplace(core::move(node));
 	}
+	sceneGraph.updateTransforms();
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);

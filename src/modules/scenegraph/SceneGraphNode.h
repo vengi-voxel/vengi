@@ -209,7 +209,6 @@ public:
 	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
 	 */
 	const voxel::Region &region() const;
-	voxel::Region sceneRegion(const voxel::Region &volumeRegion, const glm::vec3 &pivot, KeyFrameIndex keyFrameIdx) const;
 	/**
 	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
 	 * @param transferOwnership this is @c true if the volume should get deleted by this class, @c false if

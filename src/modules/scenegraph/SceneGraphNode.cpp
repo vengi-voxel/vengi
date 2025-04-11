@@ -13,6 +13,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -491,17 +492,6 @@ const voxel::Region &SceneGraphNode::region() const {
 		return voxel::Region::InvalidRegion;
 	}
 	return _volume->region();
-}
-
-voxel::Region SceneGraphNode::sceneRegion(const voxel::Region &volumeRegion, const glm::vec3 &pivot,
-										  KeyFrameIndex keyFrameIdx) const {
-	const SceneGraphTransform &transform = this->transform(keyFrameIdx);
-	const glm::vec3 &scale = transform.worldScale();
-	// TODO: SCENEGRAPH: rotation
-	const glm::vec3 translation = transform.worldTranslation() - pivot * glm::vec3(volumeRegion.getDimensionsInVoxels());
-	const glm::vec3 mins = (volumeRegion.getLowerCornerf() + translation) * scale;
-	const glm::vec3 maxs = mins + glm::vec3(volumeRegion.getDimensionsInCells());
-	return {glm::floor(mins), glm::ceil(maxs)};
 }
 
 bool SceneGraphNode::isLeaf() const {
