@@ -257,8 +257,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
-	sceneGraph.emplace(core::move(node));
-	return true;
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
 #undef wrap
@@ -290,8 +289,8 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 	palette::Palette palette = node->palette();
 	uint8_t replacement = palette.findReplacement(emptyPaletteIndex());
-	const core::RGBA color = palette.color(0);
-	if (palette.colorCount() < palette::PaletteMaxColors) {
+	const core::RGBA color = palette.color(emptyPaletteIndex());
+	if (color.a != 0 && palette.colorCount() < palette::PaletteMaxColors) {
 		palette.setColor(0, core::RGBA(0, 0, 0, 0));
 		palette.tryAdd(color, false, &replacement, false, 0);
 	}
