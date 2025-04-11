@@ -41,7 +41,10 @@ enum class ColorChannelCount : uint8_t {
 
 static core::RGBA readColor(io::SeekableReadStream &stream) {
 	core::RGBA rgba;
-	stream.readUInt32(rgba.rgba);
+	if (stream.readUInt32(rgba.rgba) == -1) {
+		Log::error("Could not load xraw palette data: Not enough data in stream");
+		return core::RGBA(0);
+	}
 	return rgba;
 }
 
@@ -81,6 +84,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	}
 	uint32_t magic;
 	wrap(stream->readUInt32(magic))
+	Log::debug("Try loading xraw palette from file %s", filename.c_str());
 
 	if (magic != FourCC('X', 'R', 'A', 'W')) {
 		Log::error("Could not load xraw file: Invalid magic number");
@@ -89,21 +93,26 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 
 	ColorChannelDataType colorChannelDataType;
 	wrap(stream->readUInt8((uint8_t &)colorChannelDataType))
+	Log::debug("Color channel data type: %i", (int)colorChannelDataType);
 
 	ColorChannelCount colorChannelCount;
 	wrap(stream->readUInt8((uint8_t &)colorChannelCount))
+	Log::debug("Color channel count: %i", (int)colorChannelCount);
 
 	uint8_t bitsPerColorChannel;
 	wrap(stream->readUInt8(bitsPerColorChannel))
+	Log::debug("Bits per color channel: %u", bitsPerColorChannel);
 
 	uint8_t bitsPerIndex;
 	wrap(stream->readUInt8(bitsPerIndex))
+	Log::debug("Bits per index: %u", bitsPerIndex);
 
 	// address = x + y * width + z * (width * height)
 	uint32_t width, depth, height;
 	wrap(stream->readUInt32(width))
 	wrap(stream->readUInt32(depth))
 	wrap(stream->readUInt32(height))
+	Log::debug("Width: %u, Depth: %u, Height: %u", width, depth, height);
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -113,6 +122,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	// 256, 32768
 	uint32_t paletteSize;
 	wrap(stream->readUInt32(paletteSize))
+	Log::debug("Palette size: %u", paletteSize);
 
 	if (colorChannelDataType != ColorChannelDataType::TypeUnsignedInteger) {
 		Log::error("Could not load xraw file: Unsupported color channel data type: %i", (int)colorChannelDataType);
@@ -131,7 +141,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 
 	// voxel buffer, voxels if no palette, indices if palette
 	if (paletteSize == 0 || bitsPerIndex == 0u) {
-		Log::debug("No palette found - not supported yet to build on with the rgba values of the voxels");
+		Log::debug("No palette found - not supported yet to handle rgba values of the voxels");
 		return 0;
 	}
 
@@ -142,11 +152,14 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 
 	// palette buffer
 	if (paletteSize <= (uint32_t)palette::PaletteMaxColors) {
+		Log::debug("Loading palette with %u colors", paletteSize);
 		for (uint32_t i = 0u; i < paletteSize; ++i) {
 			const core::RGBA rgba = readColor(*stream);
 			palette.setColor(i, rgba);
 		}
 	} else {
+		// we have to create a palette from the colors
+		Log::debug("Palette size exceeds the max allowed size: %i (we have to quantize the colors)", paletteSize);
 		RGBAMap colors;
 		for (uint32_t i = 0u; i < paletteSize; ++i) {
 			const core::RGBA rgba = flattenRGB(readColor(*stream));
@@ -176,6 +189,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 	ColorChannelDataType colorChannelDataType;
 	wrap(stream->readUInt8((uint8_t &)colorChannelDataType))
+	Log::debug("Color channel data type: %i", (int)colorChannelDataType);
 	if (colorChannelDataType != ColorChannelDataType::TypeUnsignedInteger) {
 		Log::error("Could not load xraw file: Unsupported color channel data type: %i", (int)colorChannelDataType);
 		return 0;
@@ -183,6 +197,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 	ColorChannelCount colorChannelCount;
 	wrap(stream->readUInt8((uint8_t &)colorChannelCount))
+	Log::debug("Color channel count: %i", (int)colorChannelCount);
 	if (colorChannelCount != ColorChannelCount::RGBA) {
 		Log::error("Could not load xraw file: Unsupported color channel count: %i", (int)colorChannelCount);
 		return 0;
@@ -190,6 +205,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 	uint8_t bitsPerColorChannel;
 	wrap(stream->readUInt8(bitsPerColorChannel))
+	Log::debug("Bits per color channel: %u", bitsPerColorChannel);
 	if (bitsPerColorChannel != 8) {
 		Log::error("Could not load xraw file: Unsupported bits per color channel: %i", bitsPerColorChannel);
 		return 0;
@@ -197,12 +213,14 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 	uint8_t bitsPerIndex;
 	wrap(stream->readUInt8(bitsPerIndex))
+	Log::debug("Bits per index: %u", bitsPerIndex);
 
 	// address = x + y * width + z * (width * height)
 	uint32_t width, depth, height;
 	wrap(stream->readUInt32(width))
 	wrap(stream->readUInt32(depth))
 	wrap(stream->readUInt32(height))
+	Log::debug("Width: %u, Depth: %u, Height: %u", width, depth, height);
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -212,6 +230,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	// 256, 32768
 	uint32_t paletteSize;
 	wrap(stream->readUInt32(paletteSize))
+	Log::debug("Palette size: %u", paletteSize);
 
 	// end of header
 
