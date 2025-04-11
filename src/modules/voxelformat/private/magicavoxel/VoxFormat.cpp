@@ -84,8 +84,9 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 		models[ogtInstance.model_index].volume = nullptr;
 	}
 	// TODO: VOXELFORMAT: set correct pivot
-	// TODO: VOXELFORMAT: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
-	// TODO: VOXELFORMAT: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
+	glm::vec3 ogtPivot = ogtVolumePivot(ogtModel);
+	ogtPivot /= (ogtVolumeSize(ogtModel) + 1.0f);
+	node.setPivot({ogtPivot.x, ogtPivot.z, ogtPivot.y});
 	node.setPalette(palette);
 	const int nodeId = sceneGraph.emplace(core::move(node), parent);
 	if (nodeId != InvalidNodeId) {

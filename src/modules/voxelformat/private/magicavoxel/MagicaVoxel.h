@@ -90,6 +90,7 @@ inline glm::vec4 ogtVolumePivot(const ogt_vox_model *model) {
 	return glm::vec4((float)(int)(model->size_x / 2), (float)(int)(model->size_y / 2), (float)(int)(model->size_z / 2),
 					 0.0f);
 }
+
 struct MVModelToNode {
 	MVModelToNode();
 	~MVModelToNode();

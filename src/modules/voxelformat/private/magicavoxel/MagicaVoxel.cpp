@@ -24,12 +24,14 @@
 
 namespace voxelformat {
 
+#if MAGICAVOXEL_USE_REFERENCES == 0
 static glm::mat4 computeTransformationMatrix(const glm::mat4 transform, const glm::vec3 &pivot) {
 	static const glm::mat4 shiftMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f));
 	const glm::mat4 pivotMatrix = glm::translate(glm::mat4(1.0f), -pivot);
 	const glm::mat4 combinedMatrix = transform * shiftMatrix * pivotMatrix;
 	return combinedMatrix;
 }
+#endif
 
 glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameIdx, const ogt_vox_scene *scene,
 							const ogt_vox_model *ogtModel) {
@@ -38,8 +40,12 @@ glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameI
 	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
 	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
 	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
+#if MAGICAVOXEL_USE_REFERENCES
+	return glm::mat4{col0, col1, col2, col3};
+#else
 	const glm::vec3 &ogtPivot = ogtVolumePivot(ogtModel);
 	return computeTransformationMatrix(glm::mat4{col0, col1, col2, col3}, ogtPivot);
+#endif
 }
 
 void *_ogt_alloc(size_t size) {
