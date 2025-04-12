@@ -88,7 +88,9 @@ Mesh &Mesh::operator=(Mesh &&other) noexcept {
 }
 
 Mesh::~Mesh() {
-	core_free(_compressedIndices);
+	if (_compressedIndices != nullptr) {
+		core_free(_compressedIndices);
+	}
 }
 
 const NormalArray &Mesh::getNormalVector() const {

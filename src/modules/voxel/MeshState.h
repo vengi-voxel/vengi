@@ -71,7 +71,7 @@ private:
 		}
 		glm::ivec3 mins{};
 		int idx = -1;
-		voxel::ChunkMesh mesh;
+		voxel::ChunkMesh mesh{0, 0, true};
 
 		inline bool operator<(const ExtractionCtx &rhs) const {
 			return idx < rhs.idx;
