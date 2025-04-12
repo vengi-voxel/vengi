@@ -21,6 +21,10 @@ General:
    - Fixed `xraw` palette issue with color slot 0
    - Added `schematic` write support (Minecraft)
    - Fixed Adobe Swatch Exchange (`ase`) palette loading issue
+   - Use a faster binary-greedy-mesher
+   - Optimizations
+   - Fixed node merging with pivots
+   - Allow to load other palette image dimensions than 1x256
 
 VoxEdit:
 
@@ -28,6 +32,7 @@ VoxEdit:
    - Added palette options to file dialog
    - Allow to execute palette actions on multiple colors
    - Allow to reduce multiple colors at once
+   - Fixed missing font glyphs in some cases
 
 PalConvert:
 
