@@ -129,11 +129,11 @@ public:
 		_refCnt = nullptr;
 	}
 
-	T *get() const {
+	inline T *get() const {
 		return _ptr;
 	}
 
-	T *operator->() const {
+	inline T *operator->() const {
 		return _ptr;
 	}
 
@@ -141,39 +141,39 @@ public:
 		release();
 	}
 
-	operator bool() const {
+	inline operator bool() const {
 		return *this != nullptr;
 	}
 
-	bool operator==(const SharedPtr &rhs) const {
+	inline bool operator==(const SharedPtr &rhs) const {
 		return _ptr == rhs._ptr;
 	}
 
-	bool operator!=(const SharedPtr &rhs) const {
+	inline bool operator!=(const SharedPtr &rhs) const {
 		return _ptr != rhs._ptr;
 	}
 
-	bool operator<(const SharedPtr &rhs) const {
+	inline bool operator<(const SharedPtr &rhs) const {
 		return _ptr < rhs._ptr;
 	}
 
-	bool operator>(const SharedPtr &rhs) const {
+	inline bool operator>(const SharedPtr &rhs) const {
 		return _ptr > rhs._ptr;
 	}
 
-	bool operator<=(const SharedPtr &rhs) const {
+	inline bool operator<=(const SharedPtr &rhs) const {
 		return _ptr <= rhs._ptr;
 	}
 
-	bool operator>=(const SharedPtr &rhs) const {
+	inline bool operator>=(const SharedPtr &rhs) const {
 		return _ptr >= rhs._ptr;
 	}
 
-	bool operator==(decltype(nullptr)) const {
+	inline bool operator==(decltype(nullptr)) const {
 		return nullptr == _ptr;
 	}
 
-	bool operator!=(decltype(nullptr)) const {
+	inline bool operator!=(decltype(nullptr)) const {
 		return nullptr != _ptr;
 	}
 };
