@@ -47,7 +47,7 @@ bool ModifierRenderer::init() {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue(), 0.8f));
 	_shapeBuilder.sphere(8, 6, 0.5f);
-	_referencePointMesh = _shapeRenderer.create(_shapeBuilder);
+	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 
 	return true;
 }
@@ -57,6 +57,9 @@ void ModifierRenderer::shutdown() {
 	_selectionIndex = -1;
 	_voxelCursorMesh = -1;
 	_referencePointMesh = -1;
+	for (int i = 0; i < lengthof(_aabbs); ++i) {
+		_aabbs[i] = -1;
+	}
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_volumeRendererCtx.shutdown();
