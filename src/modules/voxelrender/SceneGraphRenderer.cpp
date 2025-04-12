@@ -231,8 +231,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				continue;
 			}
 			const glm::ivec2 size(cameraNode.width(), cameraNode.height());
-			video::Camera camera = toCamera(size, cameraNode);
-			_cameras.push_back(camera);
+			_cameras.emplace_back(toCamera(size, cameraNode));
 			continue;
 		} else if (!node.isModelNode()) {
 			continue;
