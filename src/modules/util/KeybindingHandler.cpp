@@ -340,7 +340,10 @@ core::String KeyBindingHandler::toString(int32_t key, int16_t modifier, uint16_t
 	}
 	const char *modifierName = getModifierName(modifier);
 	core_assert(modifierName != nullptr);
-	return core::String::format("%s+%s", modifierName, name.c_str());
+	core::String str(modifierName);
+	str.append("+");
+	str.append(name);
+	return str;
 }
 
 core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
