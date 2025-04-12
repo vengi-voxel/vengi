@@ -59,6 +59,11 @@ static const ogt_vox_transform ogt_identity_transform{
  * @return glm::vec4 The transformed world position
  */
 inline glm::ivec3 calcTransform(const glm::mat4x4 &mat, const glm::vec3 &pos) {
+	// magicavoxel is doing this in the shader - we have to do it on the cpu as the matrix which is linear
+	// can't get expressed by this non-linear floor operation - or at least I don't know how. We could try
+	// to floor the translation part of the matrix - as the rotations should be 90 degree aligned. But this
+	// would just be an approximation and not the correct way to do it. So we have to do it the hard way and
+	// apply the transformation to the local position and floor the result.
 	return glm::floor(mat * glm::vec4(pos, 1.0f));
 }
 
