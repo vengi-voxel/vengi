@@ -439,7 +439,7 @@ app::AppState WindowedApp::onInit() {
 	const int height = core_max(_windowHeight, displayBounds.h);
 	_window = createWindow(width, height, displayIndex, flags);
 	if (!_window) {
-		Log::warn("Failed to get multisampled window - try to disable it");
+		Log::warn("Failed to get multisampled window - retrying without multisampling");
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		_window = createWindow(width, height, displayIndex, flags);
