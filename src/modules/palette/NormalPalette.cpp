@@ -195,9 +195,18 @@ void NormalPalette::toVec4f(glm::highp_vec4 *vec4f) const {
 	}
 }
 
+uint32_t NormalPalette::hash() const {
+	if (_hashDirty) {
+		_hashDirty = false;
+		_hash = core::hash(_normals, sizeof(_normals));
+	}
+	return _hash;
+}
+
+
 void NormalPalette::markDirty() {
 	core::DirtyState::markDirty();
-	_hash = core::hash(_normals, sizeof(_normals));
+	_hashDirty = true;
 }
 
 bool NormalPalette::load(const char *paletteName) {

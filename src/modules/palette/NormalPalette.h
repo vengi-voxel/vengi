@@ -17,8 +17,9 @@ static const int NormalPaletteMaxNormals = 255;
 class NormalPalette : public core::DirtyState {
 private:
 	bool _needsSave = false;
+	mutable bool _hashDirty = false;
 	core::String _name;
-	uint32_t _hash = 0u;
+	mutable uint32_t _hash = 0u;
 	uint8_t _size = 0u;
 	core::RGBA _normals[NormalPaletteMaxNormals]{};
 
@@ -62,10 +63,6 @@ inline const core::String &NormalPalette::name() const {
 
 inline void NormalPalette::setName(const core::String &name) {
 	_name = name;
-}
-
-inline uint32_t NormalPalette::hash() const {
-	return _hash;
 }
 
 inline void NormalPalette::markSave() {

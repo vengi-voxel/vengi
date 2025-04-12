@@ -51,6 +51,7 @@ Palette &Palette::operator=(const Palette &other) {
 	if (&other != this) {
 		_dirty = other._dirty;
 		_needsSave = other._needsSave;
+		_hashDirty = other._hashDirty;
 		_name = other._name;
 		_hash._hash = other._hash._hash;
 		_colorCount = other._colorCount;
@@ -63,7 +64,7 @@ Palette &Palette::operator=(const Palette &other) {
 }
 
 Palette::Palette(Palette &&other) noexcept
-	: DirtyState(other), _needsSave(other._needsSave), _name(core::move(other._name)), _view(this),
+	: DirtyState(other), _needsSave(other._needsSave), _hashDirty(other._hashDirty), _name(core::move(other._name)), _view(this),
 	  _colorCount(other._colorCount) {
 	_hash._hash = other._hash._hash;
 	core_memcpy(_colors, other._colors, sizeof(_colors));
@@ -76,6 +77,7 @@ Palette &Palette::operator=(Palette &&other) noexcept {
 	if (&other != this) {
 		_dirty = other._dirty;
 		_needsSave = other._needsSave;
+		_hashDirty = other._hashDirty;
 		_name = core::move(other._name);
 		_hash._hash = other._hash._hash;
 		_colorCount = other._colorCount;
@@ -116,10 +118,18 @@ void Palette::setSize(int cnt) {
 	_colorCount = glm::clamp(cnt, 0, PaletteMaxColors);
 }
 
+uint64_t Palette::hash() const {
+	if (_hashDirty) {
+		_hashDirty = false;
+		_hash._hashColors[0] = core::hash(_colors, sizeof(_colors));
+		_hash._hashColors[1] = core::hash(_materials, sizeof(_materials));
+	}
+	return _hash._hash;
+}
+
 void Palette::markDirty() {
 	core::DirtyState::markDirty();
-	_hash._hashColors[0] = core::hash(_colors, sizeof(_colors));
-	_hash._hashColors[1] = core::hash(_materials, sizeof(_materials));
+	_hashDirty = true;
 }
 
 glm::vec4 Palette::color4(uint8_t i) const {

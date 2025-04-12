@@ -27,8 +27,9 @@ using MaterialArray = Material[PaletteMaxColors];
 class Palette : public core::DirtyState {
 private:
 	bool _needsSave = false;
+	mutable bool _hashDirty = false;
 	core::String _name;
-	union hash {
+	mutable union hash {
 		uint32_t _hashColors[2];
 		uint64_t _hash;
 	} _hash{};
@@ -190,10 +191,6 @@ inline const core::String &Palette::name() const {
 
 inline void Palette::setName(const core::String &name) {
 	_name = name;
-}
-
-inline uint64_t Palette::hash() const {
-	return _hash._hash;
 }
 
 inline int Palette::colorCount() const {
