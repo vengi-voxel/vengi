@@ -415,6 +415,7 @@ void IMGUIApp::setColorTheme() {
 	// reset to default
 	ImGuiStyle &style = ImGui::GetStyle();
 	style = ImGuiStyle();
+	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesFull;
 
 	switch (_uistyle->intVal()) {
 	case ImGui::StyleCorporateGrey:
