@@ -53,7 +53,7 @@ void AxisStyleText(ui::ScopedStyle &style, math::Axis axis, bool dark) {
 	}
 }
 
-const char *AxisButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip, float width,
+bool AxisButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip, float width,
 					   command::CommandExecutionListener *listener) {
 	ui::ScopedStyle style;
 	AxisStyleButton(style, axis);

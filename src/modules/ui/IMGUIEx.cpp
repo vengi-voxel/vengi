@@ -441,10 +441,10 @@ void TooltipCommand(const char *command) {
 	}
 }
 
-const char *CommandButton(const char *label, const char *command, const char *tooltip, const ImVec2 &size, command::CommandExecutionListener* listener) {
+bool CommandButton(const char *label, const char *command, const char *tooltip, const ImVec2 &size, command::CommandExecutionListener* listener) {
 	if (ImGui::Button(label, size)) {
 		if (command::executeCommands(command, listener) > 0) {
-			return command;
+			return true;
 		}
 	}
 	ui::ScopedStyle style;
@@ -454,15 +454,15 @@ const char *CommandButton(const char *label, const char *command, const char *to
 	} else {
 		TooltipCommand(command);
 	}
-	return nullptr;
+	return false;
 }
 
-const char *CommandIconButton(const char *icon, const char *label, const char *command, command::CommandExecutionListener &listener) {
+bool CommandIconButton(const char *icon, const char *label, const char *command, command::CommandExecutionListener &listener) {
 	const core::String labelWithIcon(_priv::getId(icon, label));
 	return CommandButton(labelWithIcon.c_str(), command, listener);
 }
 
-const char *CommandButton(const char *label, const char *command, command::CommandExecutionListener &listener) {
+bool CommandButton(const char *label, const char *command, command::CommandExecutionListener &listener) {
 	return CommandButton(label, command, nullptr, {0.0f, 0.0f}, &listener);
 }
 
@@ -475,18 +475,18 @@ bool CommandRadioButton(const char *label, const core::String &command, bool ena
 	return activated;
 }
 
-const char *CommandIconMenuItem(const char *icon, const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
+bool CommandIconMenuItem(const char *icon, const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
 	if (ImGui::MenuItemEx(label, icon, keybinding.c_str(), false, enabled)) {
 		if (command::executeCommands(command, listener) > 0) {
-			return command;
+			return true;
 		}
 	}
 	TooltipCommand(command);
-	return nullptr;
+	return false;
 }
 
-const char *CommandMenuItem(const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
+bool CommandMenuItem(const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	return CommandIconMenuItem(nullptr, label, command, enabled, listener);
 }
 
