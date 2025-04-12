@@ -34,8 +34,8 @@ private:
 	bool import(voxelcollection::VoxelFile *voxelFile);
 	void contextMenu(voxelcollection::VoxelFile *voxelFile);
 	void handleDoubleClick(voxelcollection::VoxelFile *voxelFile);
-	void thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile);
-	void handleDragAndDrop(int &row, voxelcollection::VoxelFile *&voxelFile);
+	void thumbnailTooltip(voxelcollection::VoxelFile *voxelFile);
+	void handleDragAndDrop(int row, voxelcollection::VoxelFile *voxelFile);
 	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);
 
 	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;

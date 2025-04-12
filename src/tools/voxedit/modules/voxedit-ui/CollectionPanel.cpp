@@ -241,7 +241,7 @@ void CollectionPanel::handleDoubleClick(voxelcollection::VoxelFile *voxelFile) {
 	}
 }
 
-void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile) {
+void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *voxelFile) {
 	if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 		if (ImGui::BeginItemTooltip()) {
 			const video::Id handle = texture->handle();
@@ -252,7 +252,7 @@ void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile) {
 	}
 }
 
-void CollectionPanel::handleDragAndDrop(int &row, voxelcollection::VoxelFile *&voxelFile) {
+void CollectionPanel::handleDragAndDrop(int row, voxelcollection::VoxelFile *voxelFile) {
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 		video::Id handle;
 		if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
@@ -260,8 +260,9 @@ void CollectionPanel::handleDragAndDrop(int &row, voxelcollection::VoxelFile *&v
 		} else {
 			handle = video::InvalidId;
 		}
-		core::String mdlId = core::String::format("%i", row);
-		ImGui::ImageButton(mdlId.c_str(), handle, ImVec2(50, 50));
+		char mdlId[64];
+		core::String::formatBuf(mdlId, sizeof(mdlId), "%i", row);
+		ImGui::ImageButton(mdlId, handle, ImVec2(50, 50));
 		_dragAndDropModel = voxelFile->targetFile();
 		ImGui::SetDragDropPayload(voxelui::dragdrop::ModelPayload, (const void *)&_dragAndDropModel,
 								  sizeof(_dragAndDropModel), ImGuiCond_Always);
@@ -286,6 +287,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 	ImGuiListClipper clipper;
 	clipper.Begin((int)f.size());
 
+	const bool thumbnails = _thumbnails;
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
 			voxelcollection::VoxelFile *voxelFile = f[row];
@@ -293,10 +295,11 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			const bool selected = _selected == *voxelFile;
+			const ImGuiStyle &style = ImGui::GetStyle();
 
-			ImVec2 size(0, 0);
+			ImVec2 size(0, ImGui::GetFontSize());
 			ImGui::PushID(row);
-			if (_thumbnails) {
+			if (thumbnails) {
 				video::Id handle;
 				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 					handle = texture->handle();
@@ -326,14 +329,13 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				}
 				ImGui::TableNextColumn();
 			}
-			const ImGuiStyle &style = ImGui::GetStyle();
 			if (ImGui::Selectable(voxelFile->name.c_str(), selected,
 								  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick,
 								  {0, size.y + style.FramePadding.y * 2.0f})) {
 				handleDoubleClick(voxelFile);
 			}
 			handleDragAndDrop(row, voxelFile);
-			if (!_thumbnails) {
+			if (!thumbnails) {
 				thumbnailTooltip(voxelFile);
 			}
 			if (selected) {
