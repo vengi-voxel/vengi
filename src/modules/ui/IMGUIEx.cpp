@@ -549,9 +549,10 @@ bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNodeFlags flag
 	if (window->SkipItems)
 		return false;
 
-	core::String labelWithIcon = core::String::format("%s %s", icon, label);
+	char labelWithIcon[256];
+	core::String::formatBuf(labelWithIcon, sizeof(labelWithIcon), "%s %s", icon, label);
 	ImGuiID id = window->GetID(label);
-	return TreeNodeBehavior(id, flags, labelWithIcon.c_str(), nullptr);
+	return TreeNodeBehavior(id, flags, labelWithIcon, nullptr);
 }
 
 bool Fullscreen(const char *label, ImGuiWindowFlags additionalFlags) {

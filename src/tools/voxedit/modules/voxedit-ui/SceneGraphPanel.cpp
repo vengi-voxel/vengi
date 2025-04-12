@@ -26,14 +26,16 @@ namespace voxedit {
 
 static void commandNodeMenu(const char *icon, const char *title, const char *command, int nodeId,
 							bool enabled, command::CommandExecutionListener *listener) {
-	const core::String &cmd = core::String::format("%s %i", command, nodeId);
-	ImGui::CommandIconMenuItem(icon, title, cmd.c_str(), enabled, listener);
+	char cmd[64];
+	core::String::formatBuf(cmd, sizeof(cmd), "%s %i", command, nodeId);
+	ImGui::CommandIconMenuItem(icon, title, cmd, enabled, listener);
 }
 
 void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const int nodeId = node.id();
-	const core::String &contextMenuId = core::String::format("Edit##context-node-%i", nodeId);
-	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
+	char contextMenuId[64];
+	core::String::formatBuf(contextMenuId, sizeof(contextMenuId), "Edit##context-node-%i", nodeId);
+	if (ImGui::BeginPopupContextItem(contextMenuId)) {
 		const int validModels = (int)sceneGraph.size();
 		scenegraph::SceneGraphNodeType nodeType = node.type();
 
@@ -118,14 +120,15 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 
 	if (!filtered) {
 		ImGui::TableNextRow();
+		char idbuf[64];
 		{ // column 1
 			ImGui::TableNextColumn();
-			const core::String &visibleId = core::String::format("##visible-node-%i", nodeId);
+			core::String::formatBuf(idbuf, sizeof(idbuf), "##visible-node-%i", nodeId);
 			bool visible = node.visible();
 			{
 				ui::ScopedStyle style;
 				ImGui::BeginDisabled(_hideInactive->boolVal());
-				if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
+				if (ImGui::Checkbox(idbuf, &visible)) {
 					command::executeCommands("nodetogglevisible " + core::string::toString(nodeId), &listener);
 				}
 				ImGui::EndDisabled();
@@ -136,9 +139,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 		{ // column 2
 			ImGui::TableNextColumn();
-			const core::String &lockedId = core::String::format("##locked-node-%i", nodeId);
+			core::String::formatBuf(idbuf, sizeof(idbuf), "##locked-node-%i", nodeId);
 			bool locked = node.locked();
-			if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
+			if (ImGui::Checkbox(idbuf, &locked)) {
 				command::executeCommands("nodetogglelock " + core::string::toString(nodeId), &listener);
 			}
 		}
@@ -146,8 +149,8 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			ImGui::TableNextColumn();
 			core::RGBA color = node.color();
 			glm::vec4 colvec = core::Color::fromRGBA(color);
-			const core::String &colorId = core::String::format(_("Color##node-%i"), nodeId);
-			if (ImGui::ColorEdit4(colorId.c_str(), glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+			core::String::formatBuf(idbuf, sizeof(idbuf), _("Color##node-%i"), nodeId);
+			if (ImGui::ColorEdit4(idbuf, glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
 				node.setColor(core::Color::getRGBA(colvec));
 			}
 		}
@@ -242,8 +245,8 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		{ // column 5
 			ImGui::TableNextColumn();
 
-			const core::String &deleteId = core::String::format(ICON_LC_TRASH"##delete-node-%i", nodeId);
-			if (ImGui::Button(deleteId.c_str())) {
+			core::String::formatBuf(idbuf, sizeof(idbuf), ICON_LC_TRASH"##delete-node-%i", nodeId);
+			if (ImGui::Button(idbuf)) {
 				_sceneMgr->nodeRemove(nodeId, false);
 			}
 			ImGui::TooltipTextUnformatted(_("Delete this model"));

@@ -45,8 +45,9 @@ public:
 			style.highlight(ImGuiCol_Text);
 		}
 		ImGui::PushID(_name.c_str());
-		core::String label = core::String::format("%s###button%d", icon, _nextId);
-		bool pressed = ImGui::Button(label.c_str(), _size);
+		char label[64];
+		core::String::formatBuf(label, sizeof(label), "%s###button%d", icon, _nextId);
+		bool pressed = ImGui::Button(label, _size);
 		if (pressed) {
 			func();
 		}

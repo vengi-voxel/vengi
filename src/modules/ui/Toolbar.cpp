@@ -61,8 +61,9 @@ bool Toolbar::button(const char *icon, const char *command, bool darken) {
 		style.darker(ImGuiCol_Text);
 	}
 	ImGui::PushID(_name.c_str());
-	core::String label = core::String::format("%s###button%d", icon, _nextId);
-	bool pressed = ImGui::CommandButton(label.c_str(), command, nullptr, _size, _listener);
+	char label[64];
+	core::String::formatBuf(label, sizeof(label), "%s###button%d", icon, _nextId);
+	bool pressed = ImGui::CommandButton(label, command, nullptr, _size, _listener);
 	ImGui::PopID();
 	next();
 
