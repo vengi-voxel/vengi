@@ -23,7 +23,7 @@ private:
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
 	glm::vec3 _referencePoint{0.0f};
-	int32_t _aabbs[2] { -1, -1 };
+	int32_t _aabbMeshes[2] { -1, -1 };
 
 public:
 	ModifierRenderer();
