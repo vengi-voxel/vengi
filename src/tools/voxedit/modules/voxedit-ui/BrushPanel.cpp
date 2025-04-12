@@ -78,7 +78,7 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 	}
 	const core::String &help = command::help(cmd);
 	if (!help.empty()) {
-		ImGui::TooltipText("%s", help.c_str());
+		ImGui::TooltipTextUnformatted(help.c_str());
 	}
 	return false;
 }

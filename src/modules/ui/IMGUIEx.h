@@ -109,6 +109,7 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 }
 
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+IMGUI_API bool TooltipTextUnformatted(const char *text);
 
 template<class Collection>
 bool ComboVar(const char *label, const char *varName, const Collection &items) {
@@ -120,7 +121,7 @@ bool ComboVar(const char *label, const char *varName, const Collection &items) {
 		return true;
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
@@ -131,7 +132,6 @@ IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2 &size = ImVec2(0, 0));
 IMGUI_API bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2 &size = ImVec2(0, 0));
 IMGUI_API void TextWrappedUnformatted(const char *text);
-IMGUI_API bool TooltipTextUnformatted(const char *text);
 IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
 						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
 IMGUI_API bool InputTextMultiline(const char *label, core::String *str, const ImVec2 &size = ImVec2(0, 0),

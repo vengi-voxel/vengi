@@ -520,7 +520,7 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 		ImGui::CloseCurrentPopup();
 		_sceneMgr->load(fileDesc, (const uint8_t *)model.data, (size_t)model.size);
 	}
-	ImGui::TooltipText("%s", name.c_str());
+	ImGui::TooltipTextUnformatted(name.c_str());
 }
 
 void MainWindow::newSceneTemplates() {

@@ -157,7 +157,7 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 				return validScriptIndex;
 			}
 			if (!p.description.empty()) {
-				ImGui::TooltipText("%s", p.description.c_str());
+				ImGui::TooltipTextUnformatted(p.description.c_str());
 			}
 		}
 	}

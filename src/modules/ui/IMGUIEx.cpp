@@ -109,7 +109,7 @@ bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFl
 		}
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
@@ -157,7 +157,7 @@ bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float
 		}
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
@@ -191,7 +191,7 @@ bool InputVarInt(const char *label, const core::VarPtr &var, int step, int step_
 		}
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
@@ -261,7 +261,7 @@ bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_m
 		return true;
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
@@ -296,7 +296,7 @@ bool ColorEdit3Var(const char *label, const char *varName) {
 		return true;
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
@@ -436,7 +436,7 @@ void TooltipCommand(const char *command) {
 		}
 		const core::String &help = command::help(buf);
 		if (!help.empty()) {
-			ImGui::TooltipText("%s", help.c_str());
+			ImGui::TooltipTextUnformatted(help.c_str());
 		}
 	}
 }
@@ -450,7 +450,7 @@ bool CommandButton(const char *label, const char *command, const char *tooltip, 
 	ui::ScopedStyle style;
 	style.setFont(imguiApp()->defaultFont());
 	if (tooltip != nullptr) {
-		ImGui::TooltipText("%s", tooltip);
+		ImGui::TooltipTextUnformatted(tooltip);
 	} else {
 		TooltipCommand(command);
 	}

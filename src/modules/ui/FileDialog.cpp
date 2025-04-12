@@ -295,7 +295,7 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 	if (ImGui::Selectable(bookmarkTitle.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 		setCurrentPath(type, path);
 	}
-	ImGui::TooltipText("%s", path.c_str());
+	ImGui::TooltipTextUnformatted(path.c_str());
 	return true;
 }
 

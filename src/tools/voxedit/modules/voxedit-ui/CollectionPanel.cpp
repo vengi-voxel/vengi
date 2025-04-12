@@ -148,7 +148,7 @@ int CollectionPanel::update() {
 					ImGui::TreePop();
 				}
 				if (source.isLocal()) {
-					ImGui::TooltipText("%s", _collectionMgr->localDir().c_str());
+					ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
 				}
 			} else {
 				if (!_collectionMgr->resolved(source)) {
