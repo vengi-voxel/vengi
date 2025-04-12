@@ -246,7 +246,7 @@ void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile) {
 		if (ImGui::BeginItemTooltip()) {
 			const video::Id handle = texture->handle();
 			ImGui::Image(handle, ImGui::Size(40.0f));
-			ImGui::Text("%s", voxelFile->fullPath.c_str());
+			ImGui::TextUnformatted(voxelFile->fullPath.c_str());
 			ImGui::EndTooltip();
 		}
 	}
@@ -318,7 +318,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				if (handle == video::InvalidId) {
 					if (ImGui::BeginItemTooltip()) {
 						ImGui::TextUnformatted(_("Double click to create thumbnail"));
-						ImGui::Text("%s", voxelFile->fullPath.c_str());
+						ImGui::TextUnformatted(voxelFile->fullPath.c_str());
 						ImGui::EndTooltip();
 					}
 				} else {

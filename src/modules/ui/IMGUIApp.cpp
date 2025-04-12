@@ -603,7 +603,7 @@ void IMGUIApp::renderCvarDialog() {
 					ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				}
 				ImGui::TableNextColumn();
-				ImGui::Text("%s", var->help() ? var->help() : "");
+				ImGui::TextUnformatted(var->help() ? var->help() : "");
 			});
 			ImGui::EndTable();
 		}
