@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stdint.h>
 #include <stddef.h>
 #include "core/Common.h"
 
@@ -13,18 +14,18 @@ class String {
 private:
 	struct data {
 		// the string length cached
-		size_t _size = 0u;
+		uint32_t _size = 0u;
+		// capacity of any allocated string buffer
+		uint32_t _capacity = 0u;
 		// pointer to the internal buffer or to the allocated buffer - see @c _capacity
 		char *_str = nullptr;
-		// capacity of any allocated string buffer
-		size_t _capacity = 0u;
 	};
 
 	// buffer to prevent memory allocation. If string is longer than the available buffer size,
 	// perform dynamic memory allocation
 	// ensure proper alignment
 	char _buf[64 - sizeof(data)] = "";
-	data _data {0u, _buf, 0u};
+	data _data {0u, 0u, _buf};
 	static const constexpr size_t _stackBufCapacity = sizeof(_buf);
 
 	bool onStack() const;
