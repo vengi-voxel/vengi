@@ -23,7 +23,14 @@ private:
 
 	bool previewNeedsExistingVolume() const;
 	void updateBrushVolumePreview(palette::Palette &activePalette);
-	bool generatePreviewVolume(const Brush *brush, const voxel::Region &region) const;
+	/**
+	 * @brief Should the simple preview rendering be used
+	 * @param brush The brush to use
+	 * @param region The region to use
+	 * @return true if the simple preview cube-based rendering should be used
+	 * @return false if the complex preview voxel-based rendering should be used
+	 */
+	bool generateSimplePreview(const Brush *brush, const voxel::Region &region) const;
 
 public:
 	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
