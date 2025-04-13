@@ -61,6 +61,11 @@ bool ModifierFacade::previewNeedsExistingVolume() const {
 	return false;
 }
 
+bool ModifierFacade::generatePreviewVolume(const Brush *brush, const voxel::Region &region) const {
+	const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
+	return region.voxels() <= maxPreviewRegion.voxels();
+}
+
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _brushContext.modifierType;
@@ -91,10 +96,10 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	// and hide the real volume to show the modification only.
 	if (const Brush *brush = currentBrush()) {
 		preExecuteBrush(activeVolume);
-		const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
 		const voxel::Region &region = brush->calcRegion(_brushContext);
 		if (region.isValid()) {
-			if (region.voxels() < maxPreviewRegion.voxels()) {
+			bool generatePreview = generatePreviewVolume(brush, region);
+			if (generatePreview) {
 				glm::ivec3 minsMirror = region.getLowerCorner();
 				glm::ivec3 maxsMirror = region.getUpperCorner();
 				if (brush->getMirrorAABB(minsMirror, maxsMirror)) {

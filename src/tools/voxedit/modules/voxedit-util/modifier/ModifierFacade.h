@@ -23,6 +23,7 @@ private:
 
 	bool previewNeedsExistingVolume() const;
 	void updateBrushVolumePreview(palette::Palette &activePalette);
+	bool generatePreviewVolume(const Brush *brush, const voxel::Region &region) const;
 
 public:
 	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
