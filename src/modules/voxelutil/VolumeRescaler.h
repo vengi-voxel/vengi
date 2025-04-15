@@ -15,6 +15,7 @@
 
 namespace voxelutil {
 
+// TODO: use Face::visibleFaces
 template<typename Sampler>
 static bool isHidden(const Sampler &srcSampler) {
 	Sampler sampler1 = srcSampler;
