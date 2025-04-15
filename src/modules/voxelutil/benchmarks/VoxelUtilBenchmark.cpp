@@ -4,11 +4,14 @@
 
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/ScopedPtr.h"
+#include "palette/Palette.h"
+#include "palette/PaletteView.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
+#include "voxelutil/VolumeRescaler.h"
 
 class VoxelUtilBenchmark : public app::AbstractBenchmark {
 protected:
@@ -30,6 +33,25 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Move)(benchmark::State &state) {
 		voxel::RawVolume in(voxel::Region{-20, 20});
 		in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		voxelutil::moveVolume(&out, &in, glm::ivec3(1, 1, 1));
+	}
+}
+
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleDown)(benchmark::State &state) {
+	palette::Palette pal;
+	pal.nippon();
+	int color = 0;
+	voxel::RawVolume in(voxel::Region{0, 20});
+	in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(2, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(3, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(4, 2, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(5, 3, 2, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(5, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	for (auto _ : state) {
+		voxel::RawVolume out(voxel::Region{0, 10});
+		voxelutil::scaleDown(in, pal, out);
 	}
 }
 
@@ -65,6 +87,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolume)(benchmark::State &state
 	}
 }
 
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleDown);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Crop);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Move);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Merge);
