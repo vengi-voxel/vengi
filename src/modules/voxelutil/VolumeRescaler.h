@@ -50,7 +50,6 @@ template<typename SourceVolume, typename DestVolume>
 void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette, const voxel::Region &sourceRegion,
 			   DestVolume &destVolume, const voxel::Region &destRegion) {
 	core_trace_scoped(ScaleVolumeDown);
-	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
 	const int32_t depth = destRegion.getDepthInVoxels();
 	const int32_t height = destRegion.getHeightInVoxels();
@@ -70,19 +69,25 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 				float avgColorGreen = 0.0f;
 				float avgColorBlue = 0.0f;
 				voxel::Voxel colorGuardVoxel;
+
+				typename SourceVolume::Sampler srcSampler1(sourceVolume);
+				srcSampler1.setPosition(srcPos);
 				for (int32_t childZ = 0; childZ < 2; ++childZ) {
+					typename SourceVolume::Sampler srcSampler2 = srcSampler1;
 					for (int32_t childY = 0; childY < 2; ++childY) {
+						typename SourceVolume::Sampler srcSampler3 = srcSampler2;
 						for (int32_t childX = 0; childX < 2; ++childX) {
-							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
-							if (!srcSampler.currentPositionValid()) {
+							if (!srcSampler3.currentPositionValid()) {
+								srcSampler3.movePositiveX();
 								continue;
 							}
-							const voxel::Voxel &child = srcSampler.voxel();
+							const voxel::Voxel &child = srcSampler3.voxel();
 
 							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
-								if (isHidden(srcSampler)) {
+								if (isHidden(srcSampler3)) {
 									colorGuardVoxel = child;
+									srcSampler3.movePositiveX();
 									continue;
 								}
 								const glm::vec4 &color = core::Color::fromRGBA(palette.color(child.getColor()));
@@ -91,8 +96,11 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 								avgColorBlue += color.b;
 								++colorContributors;
 							}
+							srcSampler3.movePositiveX();
 						}
+						srcSampler2.movePositiveY();
 					}
+					srcSampler1.movePositiveZ();
 				}
 
 				// We only make a voxel solid if the eight corresponding voxels are also all solid. This
@@ -154,6 +162,8 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 				float totalBlue = 0.0f;
 				float totalExposedFaces = 0.0f;
 
+				typename SourceVolume::Sampler srcSampler(sourceVolume);
+				// TODO: Use copy sampler pattern here
 				// Look at the 64 (4x4x4) children
 				for (int32_t childZ = -1; childZ < 3; childZ++) {
 					for (int32_t childY = -1; childY < 3; childY++) {
