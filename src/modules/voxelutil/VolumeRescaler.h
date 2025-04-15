@@ -8,36 +8,13 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "palette/Palette.h"
+#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
 namespace voxelutil {
-
-// TODO: use Face::visibleFaces
-template<typename Sampler>
-static bool isHidden(const Sampler &srcSampler) {
-	Sampler sampler1 = srcSampler;
-	const glm::ivec3 pos = sampler1.position() - 1;
-	// TODO: use copy sampler pattern and only move on one axis and skip the more expensive setPosition
-	for (int32_t childZ = -1; childZ <= 1; ++childZ) {
-		for (int32_t childY = -1; childY <= 1; ++childY) {
-			for (int32_t childX = -1; childX <= 1; ++childX) {
-				if (childZ == 0 && childY == 0 && childX == 0) {
-					continue;
-				}
-				if (!sampler1.setPosition(pos.x + childX, pos.y + childY, pos.z + childZ)) {
-					return false;
-				}
-				if (!isBlocked(sampler1.voxel().getMaterial())) {
-					return false;
-				}
-			}
-		}
-	}
-	return true;
-}
 
 /**
  * @brief Rescales a volume by sampling two voxels to produce one output voxel.
@@ -86,7 +63,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 
 							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
-								if (isHidden(srcSampler3)) {
+								if (voxel::FaceBits::None == voxel::visibleFaces(srcSampler3)) {
 									colorGuardVoxel = child;
 									srcSampler3.movePositiveX();
 									continue;
