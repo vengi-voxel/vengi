@@ -341,3 +341,19 @@ gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_deps(tests-${LIB} ${LIB} test-app video)
 gtest_suite_end(tests-${LIB})
+set(BENCHMARK_FILES
+	tests/glTF/lantern/Lantern.gltf
+	tests/chr_knight.fbx
+
+	tests/chr_knight.qb
+	tests/chr_knight.qbcl
+	tests/chr_knight.gox
+	voxedit/chr_knight.vengi
+)
+
+set(BENCHMARK_SRCS
+	benchmarks/MeshFormatBenchmark.cpp
+	benchmarks/VolumeFormatBenchmark.cpp
+)
+engine_add_executable(TARGET benchmarks-${LIB} FILES ${BENCHMARK_FILES} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
