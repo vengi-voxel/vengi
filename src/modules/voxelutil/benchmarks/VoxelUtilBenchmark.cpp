@@ -7,6 +7,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeMover.h"
 
 class VoxelUtilBenchmark : public app::AbstractBenchmark {
 protected:
@@ -19,6 +21,33 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Crop)(benchmark::State &state) {
 		out.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		core::ScopedPtr<voxel::RawVolume> v(voxelutil::cropVolume(&out));
 		benchmark::DoNotOptimize(v);
+	}
+}
+
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Move)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::RawVolume out(voxel::Region{-20, 20});
+		voxel::RawVolume in(voxel::Region{-20, 20});
+		in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		voxelutil::moveVolume(&out, &in, glm::ivec3(1, 1, 1));
+	}
+}
+
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Merge)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::RawVolume out(voxel::Region{-20, 20});
+		voxel::RawVolume in(voxel::Region{-20, 20});
+		in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		voxelutil::mergeVolumes(&out, &in, out.region(), in.region());
+	}
+}
+
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, MergeSameDim)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::RawVolume out(voxel::Region{-20, 20});
+		voxel::RawVolume in(voxel::Region{-20, 20});
+		in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		voxelutil::mergeRawVolumesSameDimension(&out, &in);
 	}
 }
 
@@ -37,5 +66,8 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolume)(benchmark::State &state
 }
 
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Crop);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Move);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Merge);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, MergeSameDim);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegion);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolume);
