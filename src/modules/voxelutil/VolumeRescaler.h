@@ -133,44 +133,44 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	// color changes, as this is very noticeable. Our solution is to process again only those voxels
 	// which lie on a material-air boundary, and to recompute their color using a larger neighborhood
 	// while also accounting for how visible the child voxels are.
-	typename DestVolume::Sampler dstSampler(destVolume);
+	typename DestVolume::Sampler dstSampler1(destVolume);
+	dstSampler1.setPosition(destRegion.getLowerCorner());
 	for (int32_t z = 0; z < destRegion.getDepthInVoxels(); ++z) {
+		typename DestVolume::Sampler dstSampler2 = dstSampler1;
 		for (int32_t y = 0; y < destRegion.getHeightInVoxels(); ++y) {
+			typename DestVolume::Sampler dstSampler3 = dstSampler2;
 			for (int32_t x = 0; x < destRegion.getWidthInVoxels(); ++x) {
-				const glm::ivec3 curPos(x, y, z);
-				const glm::ivec3 dstPos = destRegion.getLowerCorner() + curPos;
-
-				dstSampler.setPosition(dstPos);
-
 				// Skip empty voxels
-				if (dstSampler.voxel().getMaterial() == voxel::VoxelType::Air) {
+				if (dstSampler3.voxel().getMaterial() == voxel::VoxelType::Air) {
+					dstSampler3.movePositiveX();
 					continue;
 				}
 				// Only process voxels on a material-air boundary.
-				if (dstSampler.peekVoxel0px0py1nz().getMaterial() != voxel::VoxelType::Air &&
-					dstSampler.peekVoxel0px0py1pz().getMaterial() != voxel::VoxelType::Air &&
-					dstSampler.peekVoxel0px1ny0pz().getMaterial() != voxel::VoxelType::Air &&
-					dstSampler.peekVoxel0px1py0pz().getMaterial() != voxel::VoxelType::Air &&
-					dstSampler.peekVoxel1nx0py0pz().getMaterial() != voxel::VoxelType::Air &&
-					dstSampler.peekVoxel1px0py0pz().getMaterial() != voxel::VoxelType::Air) {
+				if (dstSampler3.peekVoxel0px0py1nz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler3.peekVoxel0px0py1pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler3.peekVoxel0px1ny0pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler3.peekVoxel0px1py0pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler3.peekVoxel1nx0py0pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler3.peekVoxel1px0py0pz().getMaterial() != voxel::VoxelType::Air) {
+					dstSampler3.movePositiveX();
 					continue;
 				}
-				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
+				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + dstSampler3.position() * 2;
 
 				float totalRed = 0.0f;
 				float totalGreen = 0.0f;
 				float totalBlue = 0.0f;
 				float totalExposedFaces = 0.0f;
 
-				typename SourceVolume::Sampler srcSampler(sourceVolume);
-				// TODO: Use copy sampler pattern here
+				typename SourceVolume::Sampler srcSampler1(sourceVolume);
+				srcSampler1.setPosition(srcPos - 1);
 				// Look at the 64 (4x4x4) children
 				for (int32_t childZ = -1; childZ < 3; childZ++) {
+					typename SourceVolume::Sampler srcSampler2 = srcSampler1;
 					for (int32_t childY = -1; childY < 3; childY++) {
+						typename SourceVolume::Sampler srcSampler3 = srcSampler2;
 						for (int32_t childX = -1; childX < 3; childX++) {
-							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
-
-							const voxel::Voxel &child = srcSampler.voxel();
+							const voxel::Voxel &child = srcSampler3.voxel();
 							if (child.getMaterial() == voxel::VoxelType::Air) {
 								continue;
 							}
@@ -178,22 +178,22 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 							// For each small voxel, count the exposed faces and use this
 							// to determine the importance of the color contribution.
 							float exposedFaces = 0.0f;
-							if (srcSampler.peekVoxel0px0py1nz().getMaterial() == voxel::VoxelType::Air) {
+							if (srcSampler3.peekVoxel0px0py1nz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel0px0py1pz().getMaterial() == voxel::VoxelType::Air) {
+							if (srcSampler3.peekVoxel0px0py1pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel0px1ny0pz().getMaterial() == voxel::VoxelType::Air) {
+							if (srcSampler3.peekVoxel0px1ny0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel0px1py0pz().getMaterial() == voxel::VoxelType::Air) {
+							if (srcSampler3.peekVoxel0px1py0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel1nx0py0pz().getMaterial() == voxel::VoxelType::Air) {
+							if (srcSampler3.peekVoxel1nx0py0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel1px0py0pz().getMaterial() == voxel::VoxelType::Air) {
+							if (srcSampler3.peekVoxel1px0py0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
 
@@ -217,9 +217,12 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 				core::RGBA avgRGBA = core::Color::getRGBA(avgColor);
 				const int index = palette.getClosestMatch(avgRGBA);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, index);
-				destVolume.setVoxel(dstPos, voxel);
+				dstSampler3.setVoxel(voxel);
+				dstSampler3.movePositiveX();
 			}
+			dstSampler2.movePositiveY();
 		}
+		dstSampler1.movePositiveZ();
 	}
 }
 
