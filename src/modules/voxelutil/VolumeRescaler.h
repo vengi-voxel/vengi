@@ -16,19 +16,20 @@
 namespace voxelutil {
 
 template<typename Sampler>
-static bool isHidden(Sampler &srcSampler) {
-	const glm::ivec3 pos = srcSampler.position();
+static bool isHidden(const Sampler &srcSampler) {
+	Sampler sampler1 = srcSampler;
+	const glm::ivec3 pos = sampler1.position() - 1;
+	// TODO: use copy sampler pattern and only move on one axis and skip the more expensive setPosition
 	for (int32_t childZ = -1; childZ <= 1; ++childZ) {
 		for (int32_t childY = -1; childY <= 1; ++childY) {
 			for (int32_t childX = -1; childX <= 1; ++childX) {
 				if (childZ == 0 && childY == 0 && childX == 0) {
 					continue;
 				}
-				srcSampler.setPosition(pos.x + childX, pos.y + childY, pos.z + childZ);
-				if (!srcSampler.currentPositionValid()) {
+				if (!sampler1.setPosition(pos.x + childX, pos.y + childY, pos.z + childZ)) {
 					return false;
 				}
-				if (!isBlocked(srcSampler.voxel().getMaterial())) {
+				if (!isBlocked(sampler1.voxel().getMaterial())) {
 					return false;
 				}
 			}
