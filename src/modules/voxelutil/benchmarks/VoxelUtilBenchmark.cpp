@@ -91,14 +91,14 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, MergeSameDim)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyIntoRegion)(benchmark::State &state) {
 	for (auto _ : state) {
-		voxel::RawVolume out(voxel::Region{-20, 20});
+		voxel::RawVolume out(voxel::Region{-19, 20});
 		out.copyInto(v);
 	}
 }
 
 BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolume)(benchmark::State &state) {
 	for (auto _ : state) {
-		voxel::RawVolume out(v, voxel::Region{-20, 20});
+		voxel::RawVolume out(v, voxel::Region{-19, 20});
 		benchmark::DoNotOptimize(out);
 	}
 }
