@@ -204,6 +204,12 @@ BENCHMARK_DEFINE_F(ColorBenchmark, getHSB)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(ColorBenchmark, fromHSB)(benchmark::State &state) {
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(core::Color::fromHSB(0.5f, 0.5f, 0.5f, 1.0f));
+	}
+}
+
 BENCHMARK_REGISTER_F(ColorBenchmark, quantizeKMeans);
 BENCHMARK_REGISTER_F(ColorBenchmark, quantizeWu);
 BENCHMARK_REGISTER_F(ColorBenchmark, quantizeOctree);
@@ -213,3 +219,4 @@ BENCHMARK_REGISTER_F(ColorBenchmark, fromRGBA);
 BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA4);
 BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA3);
 BENCHMARK_REGISTER_F(ColorBenchmark, getHSB);
+BENCHMARK_REGISTER_F(ColorBenchmark, fromHSB);
