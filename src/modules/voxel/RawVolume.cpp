@@ -308,7 +308,7 @@ void RawVolume::initialise(const Region &regValidRegion) {
 
 void RawVolume::clear() {
 	const size_t size = RawVolume::size(_region);
-	core_memset(_data, 0, size);
+	core_memset((void*)_data, 0, size);
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {

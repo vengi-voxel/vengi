@@ -71,7 +71,7 @@ public:
 	}
 
 	void clear() {
-		core_memset(_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
+		core_memset((void*)_elements, 0x0, _width * _height * _depth * sizeof(VertexData));
 	}
 
 	inline VertexData& operator()(uint32_t x, uint32_t y, uint32_t z) {
