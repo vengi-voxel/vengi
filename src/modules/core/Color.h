@@ -8,6 +8,7 @@
 #include "core/String.h"
 #include "core/RGBA.h"
 #include <glm/fwd.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <float.h>
 
