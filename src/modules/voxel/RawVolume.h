@@ -44,7 +44,7 @@ public:
 	RawVolume(const RawVolume &copy, const Region &region, bool *onlyAir = nullptr);
 	RawVolume(const RawVolume &copy, const core::DynamicArray<Region> &regions);
 
-	void copyInto(const RawVolume &src);
+	bool copyInto(const RawVolume &src);
 
 	/**
 	 * @brief Calculate the amount of bytes a volume with the given region would consume

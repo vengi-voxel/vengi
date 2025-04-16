@@ -129,9 +129,9 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
-void RawVolume::copyInto(const RawVolume &src) {
+bool RawVolume::copyInto(const RawVolume &src) {
 	if (!intersects(_region, src.region())) {
-		return;
+		return false;
 	}
 	voxel::Region srcRegion = src.region();
 	if (!_region.containsRegion(srcRegion)) {
@@ -144,19 +144,23 @@ void RawVolume::copyInto(const RawVolume &src) {
 	const int srcYStride = srcRegion.getWidthInVoxels();
 	const int srcZStride = srcRegion.getWidthInVoxels() * srcRegion.getHeightInVoxels();
 	for (int x = mins.x; x <= maxs.x; ++x) {
-		const int32_t srcXPos = x - mins.x;
+		const int srcXPos = x - mins.x;
+		const int tgtXPos = x - _region.getLowerX();
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int32_t srcYPos = y - mins.y;
-			const int tgtStrideLocal = srcXPos + srcYPos * tgtYStride;
+			const int srcYPos = y - mins.y;
+			const int tgtYPos = y - _region.getLowerY();
+			const int tgtStrideLocal = tgtXPos + tgtYPos * tgtYStride;
 			const int srcStrideLocal = srcXPos + srcYPos * srcYStride;
 			for (int z = mins.z; z <= maxs.z; ++z) {
-				const int32_t srcZPos = z - mins.z;
-				const int tgtindex = tgtStrideLocal + srcZPos * tgtZStride;
+				const int srcZPos = z - mins.z;
+				const int tgtZPos = z - _region.getLowerZ();
+				const int tgtindex = tgtStrideLocal + tgtZPos * tgtZStride;
 				const int srcindex = srcStrideLocal + srcZPos * srcZStride;
 				_data[tgtindex] = src._data[srcindex];
 			}
 		}
 	}
+	return true;
 }
 
 RawVolume::RawVolume(RawVolume &&move) noexcept {
