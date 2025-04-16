@@ -7,11 +7,14 @@
 #include "palette/Palette.h"
 #include "palette/PaletteView.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeRescaler.h"
+#include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VoxelUtil.h"
 
 class VoxelUtilBenchmark : public app::AbstractBenchmark {
 protected:
@@ -55,6 +58,19 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleDown)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, FillHollow)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{0, 20});
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, voxel); };
+	voxelutil::visitVolume(in, visitor, voxelutil::VisitAll());
+	in.setVoxel(in.region().getCenter(), voxel::Voxel());
+	for (auto _ : state) {
+		voxel::RawVolume copy(in);
+		voxel::RawVolumeWrapper wrapper(&copy);
+		voxelutil::fillHollow(wrapper, voxel);
+	}
+}
+
 BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Merge)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxel::RawVolume out(voxel::Region{-20, 20});
@@ -89,6 +105,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolume)(benchmark::State &state
 
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleDown);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Crop);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, FillHollow);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Move);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Merge);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, MergeSameDim);
