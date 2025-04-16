@@ -22,8 +22,8 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Crop)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxel::RawVolume out(voxel::Region{-20, 20});
 		out.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		core::ScopedPtr<voxel::RawVolume> v(voxelutil::cropVolume(&out));
-		benchmark::DoNotOptimize(v);
+		core::ScopedPtr<voxel::RawVolume> volume(voxelutil::cropVolume(&out));
+		benchmark::DoNotOptimize(volume);
 	}
 }
 
