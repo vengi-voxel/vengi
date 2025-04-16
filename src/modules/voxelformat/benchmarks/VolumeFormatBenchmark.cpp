@@ -67,5 +67,3 @@ BENCHMARK_REGISTER_F(VolumeFormatBenchmark, QB);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, QBCL);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, GOX);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, VENGI);
-
-BENCHMARK_MAIN();
