@@ -103,6 +103,20 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolume)(benchmark::State &state
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyIntoRegionSameDim)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::RawVolume out(voxel::Region{-20, 20});
+		out.copyInto(v);
+	}
+}
+
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolumeSameDim)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxel::RawVolume out(v, voxel::Region{-20, 20});
+		benchmark::DoNotOptimize(out);
+	}
+}
+
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleDown);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Crop);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, FillHollow);
@@ -111,3 +125,5 @@ BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Merge);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, MergeSameDim);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegion);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolume);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegionSameDim);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolumeSameDim);
