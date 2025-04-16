@@ -150,6 +150,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 						for (int32_t childX = -1; childX < 3; childX++) {
 							const voxel::Voxel &child = srcSampler3.voxel();
 							if (child.getMaterial() == voxel::VoxelType::Air) {
+								srcSampler3.movePositiveX();
 								continue;
 							}
 
@@ -181,8 +182,11 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 							totalBlue += color.b * exposedFaces;
 
 							totalExposedFaces += exposedFaces;
+							srcSampler3.movePositiveX();
 						}
+						srcSampler2.movePositiveY();
 					}
+					srcSampler1.movePositiveZ();
 				}
 
 				// Avoid divide by zero if there were no exposed faces.
