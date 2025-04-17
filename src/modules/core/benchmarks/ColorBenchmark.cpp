@@ -181,6 +181,12 @@ BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA2)(benchmark::State &state) {
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(core::Color::fromRGBA(buf[0].r, buf[0].g, buf[0].b, buf[0].a));
+	}
+}
+
 BENCHMARK_DEFINE_F(ColorBenchmark, getRGBA4)(benchmark::State &state) {
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(core::Color::getRGBA({0.0f, 0.0f, 0.0f, 0.0f}));
@@ -216,6 +222,7 @@ BENCHMARK_REGISTER_F(ColorBenchmark, quantizeOctree);
 BENCHMARK_REGISTER_F(ColorBenchmark, quantizeMedianCut);
 BENCHMARK_REGISTER_F(ColorBenchmark, quantizeNeuQuant);
 BENCHMARK_REGISTER_F(ColorBenchmark, fromRGBA);
+BENCHMARK_REGISTER_F(ColorBenchmark, fromRGBA2);
 BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA4);
 BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA3);
 BENCHMARK_REGISTER_F(ColorBenchmark, getHSB);
