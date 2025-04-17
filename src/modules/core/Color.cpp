@@ -339,7 +339,8 @@ static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 }
 
 static inline float getDistance(const glm::vec4 &p1, const glm::vec4 &p2) {
-	return glm::length(p1 - p2);
+	const glm::aligned_vec4 v = p1 - p2;
+	return glm::dot(v, v);
 }
 
 static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
