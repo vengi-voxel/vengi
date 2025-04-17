@@ -344,12 +344,12 @@ static inline float getDistance(const glm::vec4 &p1, const glm::vec4 &p2) {
 
 static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core::DynamicArray<glm::vec4> centers;
-	centers.resize(maxTargetBufColors);
+	centers.reserve(maxTargetBufColors);
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dis(0, (int)inputBufColors - 1);
 	for (int i = 0; i < (int)maxTargetBufColors; i++) {
-		centers[i] = core::Color::fromRGBA(inputBuf[dis(gen)]);
+		centers.emplace_back(core::Color::fromRGBA(inputBuf[dis(gen)]));
 	}
 
 	bool changed = true;
