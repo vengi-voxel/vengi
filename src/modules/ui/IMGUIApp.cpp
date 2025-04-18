@@ -144,11 +144,10 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 	ev.text.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	ev.text.text = text.c_str();
-	ImGui_ImplSDL3_ProcessEvent(&ev);
 #else
 	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
-	ImGui_ImplSDL2_ProcessEvent(&ev);
 #endif
+	processEvent(ev);
 	return true;
 }
 
@@ -162,13 +161,12 @@ bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
 		ev.key.mod = modifier;
-		ImGui_ImplSDL3_ProcessEvent(&ev);
 #else
 		ev.key.keysym.scancode = SDL_GetScancodeFromKey(key);
 		ev.key.keysym.sym = (SDL_Keycode)key;
 		ev.key.keysym.mod = modifier;
-		ImGui_ImplSDL2_ProcessEvent(&ev);
 #endif
+		processEvent(ev);
 		_keys.insert(key);
 	}
 	return true;
@@ -183,13 +181,12 @@ bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 		ev.key.scancode = SDL_GetScancodeFromKey(key, nullptr);
 		ev.key.key = (SDL_Keycode)key;
 		ev.key.mod = modifier;
-		ImGui_ImplSDL3_ProcessEvent(&ev);
 #else
 		ev.key.keysym.scancode = SDL_GetScancodeFromKey(key);
 		ev.key.keysym.sym = key;
 		ev.key.keysym.mod = modifier;
-		ImGui_ImplSDL2_ProcessEvent(&ev);
 #endif
+		processEvent(ev);
 		_keys.remove(key);
 	}
 	return true;
@@ -200,11 +197,7 @@ bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 	if (event.type != SDL_MOUSEMOTION && event.type != SDL_MOUSEWHEEL && event.type != SDL_MOUSEBUTTONUP &&
 		event.type != SDL_MOUSEBUTTONDOWN && event.type != SDL_TEXTINPUT && event.type != SDL_KEYUP &&
 		event.type != SDL_KEYDOWN) {
-#if SDL_VERSION_ATLEAST(3, 2, 0)
-		ImGui_ImplSDL3_ProcessEvent(&event);
-#else
-		ImGui_ImplSDL2_ProcessEvent(&event);
-#endif
+		processEvent(event);
 	}
 	return state;
 }
