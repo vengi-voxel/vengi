@@ -90,7 +90,7 @@ bool ZipReadStream::isZipStream(io::SeekableReadStream &stream) {
 			if (ret == Z_OK || ret == Z_STREAM_END) {
 				return true;
 			}
-			Log::debug("No raw deflate stream found with error %s", zError(ret));
+			Log::debug("No raw deflate stream found with error: '%s'", zError(ret));
 		}
 	}
 

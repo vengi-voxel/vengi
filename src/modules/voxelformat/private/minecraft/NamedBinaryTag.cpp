@@ -366,7 +366,7 @@ NamedBinaryTag NamedBinaryTag::parse(NamedBinaryTagContext &ctx) {
 	}
 	if (type != TagType::COMPOUND) {
 		// TODO: in bedrock this is sometimes a LIST
-		Log::debug("Root tag is not a compound");
+		Log::debug("Root tag is not a compound but %i", (int)type);
 		return NamedBinaryTag{};
 	}
 	core::String rootName;
