@@ -124,6 +124,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.minecraft();
 	priv::NamedBinaryTagContext ctx;
+#if 0
 	const bool bedrock = !io::ZipReadStream::isZipStream(*stream);
 	if (bedrock) {
 		// bedrock is uncompressed and little endian
@@ -144,7 +145,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		Log::debug("File length without header: %u", fileLengthWithoutHeader);
 		return priv::load(filename, ctx, sceneGraph, archive, loadctx);
 	}
-
+#endif
 	Log::debug("Loading from zip stream");
 	io::ZipReadStream zipStream(*stream);
 	ctx.stream = &zipStream;
