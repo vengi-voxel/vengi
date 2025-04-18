@@ -50,6 +50,7 @@
 #include "voxelformat/private/mesh/quake/QuakeBSPFormat.h"
 #include "voxelformat/private/minecraft/DatFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
+#include "voxelformat/private/minecraft/MCWorldFormat.h"
 #include "voxelformat/private/minecraft/MTSFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
@@ -98,6 +99,7 @@ const io::FormatDescription *voxelLoad() {
 												 MTSFormat::format(),
 												 MCRFormat::format(),
 												 DatFormat::format(),
+												 MCWorldFormat::format(),
 												 SchematicFormat::format(),
 												 MapFormat::format(),
 												 QuakeBSPFormat::formatUFOAI(),
@@ -181,6 +183,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<MTSFormat>();
 		} else if (ext == DatFormat::format().mainExtension()) {
 			return core::make_shared<DatFormat>();
+		} else if (ext == MCWorldFormat::format().mainExtension()) {
+			return core::make_shared<MCWorldFormat>();
 		} else if (ext == SMFormat::format().mainExtension()) {
 			return core::make_shared<SMFormat>();
 		} else if (ext == SMTPLFormat::format().mainExtension()) {
