@@ -12,6 +12,8 @@
   * @brief Minecraft bedrock leveldb format
   *
   * @ingroup Formats
+  *
+  * https://minecraft.fandom.com/wiki/Bedrock_Edition_level_format#Mojang_variant_LevelDB_format
   */
  class LevelDBFormat : public PaletteFormat {
  protected:

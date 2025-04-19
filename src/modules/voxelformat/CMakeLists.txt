@@ -6,8 +6,104 @@ set(EXTERNAL_SRCS
 	external/tiny_gltf.h
 	external/ufbx.h external/ufbx.c
 	external/libvxl.h external/libvxl.c
+	external/leveldb/db/builder.cc
+	external/leveldb/db/builder.h
+	external/leveldb/db/c.cc
+	external/leveldb/db/db_impl.cc
+	external/leveldb/db/db_impl.h
+	external/leveldb/db/db_iter.cc
+	external/leveldb/db/db_iter.h
+	external/leveldb/db/dbformat.cc
+	external/leveldb/db/dbformat.h
+	external/leveldb/db/dumpfile.cc
+	external/leveldb/db/filename.cc
+	external/leveldb/db/filename.h
+	external/leveldb/db/log_format.h
+	external/leveldb/db/log_reader.cc
+	external/leveldb/db/log_reader.h
+	external/leveldb/db/log_writer.cc
+	external/leveldb/db/log_writer.h
+	external/leveldb/db/memtable.cc
+	external/leveldb/db/memtable.h
+	external/leveldb/db/repair.cc
+	external/leveldb/db/skiplist.h
+	external/leveldb/db/snappy_compressor.cc
+	external/leveldb/db/snapshot.h
+	external/leveldb/db/table_cache.cc
+	external/leveldb/db/table_cache.h
+	external/leveldb/db/version_edit.cc
+	external/leveldb/db/version_edit.h
+	external/leveldb/db/version_set.cc
+	external/leveldb/db/version_set.h
+	external/leveldb/db/write_batch_internal.h
+	external/leveldb/db/write_batch.cc
+	external/leveldb/db/zlib_compressor.cc
+	external/leveldb/port/port_stdcxx.h
+	external/leveldb/port/port.h
+	external/leveldb/port/thread_annotations.h
+	external/leveldb/table/block_builder.cc
+	external/leveldb/table/block_builder.h
+	external/leveldb/table/block.cc
+	external/leveldb/table/block.h
+	external/leveldb/table/filter_block.cc
+	external/leveldb/table/filter_block.h
+	external/leveldb/table/format.cc
+	external/leveldb/table/format.h
+	external/leveldb/table/iterator_wrapper.h
+	external/leveldb/table/iterator.cc
+	external/leveldb/table/merger.cc
+	external/leveldb/table/merger.h
+	external/leveldb/table/table_builder.cc
+	external/leveldb/table/table.cc
+	external/leveldb/table/two_level_iterator.cc
+	external/leveldb/table/two_level_iterator.h
+	external/leveldb/util/arena.cc
+	external/leveldb/util/arena.h
+	external/leveldb/util/bloom.cc
+	external/leveldb/util/cache.cc
+	external/leveldb/util/coding.cc
+	external/leveldb/util/coding.h
+	external/leveldb/util/comparator.cc
+	external/leveldb/util/crc32c.cc
+	external/leveldb/util/crc32c.h
+	external/leveldb/util/env.cc
+	external/leveldb/util/filter_policy.cc
+	external/leveldb/util/hash.cc
+	external/leveldb/util/hash.h
+	external/leveldb/util/logging.cc
+	external/leveldb/util/logging.h
+	external/leveldb/util/mutexlock.h
+	external/leveldb/util/no_destructor.h
+	external/leveldb/util/options.cc
+	external/leveldb/util/random.h
+	external/leveldb/util/status.cc
+	external/leveldb/helpers/memenv/memenv.cc
+	external/leveldb/helpers/memenv/memenv.h
 )
+
+if(WIN32)
+	list(APPEND EXTERNAL_SRCS
+		external/leveldb/util/env_windows.cc
+		external/leveldb/util/windows_logger.h
+	)
+else()
+	list(APPEND EXTERNAL_SRCS
+		external/leveldb/util/env_posix.cc
+		external/leveldb/util/posix_logger.h
+	)
+endif()
+
 add_library(${LIB}-external ${EXTERNAL_SRCS})
+target_include_directories(${LIB}-external PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/leveldb)
+target_include_directories(${LIB}-external PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/external/leveldb/include)
+if (WIN32)
+	target_compile_definitions(${LIB}-external PRIVATE LEVELDB_PLATFORM_WINDOWS=1)
+else()
+	target_compile_definitions(${LIB}-external PRIVATE LEVELDB_PLATFORM_POSIX=1)
+endif()
+find_package(ZLIB REQUIRED)
+target_link_libraries(${LIB}-external ZLIB::ZLIB)
+
 check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
 if (C_NO_SHADOW)
 	foreach (src ${EXTERNAL_SRCS})
