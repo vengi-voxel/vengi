@@ -102,4 +102,11 @@ constexpr uint32_t operator()(const glm::vec<4, int, Q>& v) const {
 }
 };
 
+inline int intMod(int a, int b) {
+	if (a > 0) {
+		return a % b;
+	}
+	return (a % b + b) % b;
+}
+
 }
