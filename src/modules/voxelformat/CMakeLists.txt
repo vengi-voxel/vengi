@@ -77,12 +77,13 @@ set(SRCS
 	private/mesh/PosSampling.h               private/mesh/PosSampling.cpp
 	private/mesh/MeshTri.h                   private/mesh/MeshTri.cpp
 	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
+	private/minecraft/LevelDBFormat.h        private/minecraft/LevelDBFormat.cpp
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
-	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
-	private/minecraft/SchematicFormat.h      private/minecraft/SchematicFormat.cpp
 	private/minecraft/MCWorldFormat.h        private/minecraft/MCWorldFormat.cpp
 	private/minecraft/MinecraftPaletteMap.h  private/minecraft/MinecraftPaletteMap.cpp
+	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
 	private/minecraft/NamedBinaryTag.h       private/minecraft/NamedBinaryTag.cpp
+	private/minecraft/SchematicFormat.h      private/minecraft/SchematicFormat.cpp
 	private/minecraft/SchematicIntReader.h   private/minecraft/SchematicIntWriter.h
 	private/qubicle/QBTFormat.h              private/qubicle/QBTFormat.cpp
 	private/qubicle/QBFormat.h               private/qubicle/QBFormat.cpp
