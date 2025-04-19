@@ -19,82 +19,17 @@
 
 namespace io {
 
-bool ZipReadStream::isZipStream(io::SeekableReadStream &stream) {
-	const int64_t length = stream.remaining();
-	if (length < 2) {
-		Log::debug("There is not enough data in the stream to determine if it is a zip stream");
+bool ZipReadStream::isZipStream(io::SeekableReadStream &readStream) {
+	int64_t pos = readStream.pos();
+	ZipReadStream s(readStream);
+	if (s.err()) {
+		readStream.seek(pos);
 		return false;
 	}
-
-	uint8_t buffer[64];
-	const int bytesRead = stream.read(buffer, sizeof(buffer));
-	if (bytesRead == -1) {
-		Log::debug("Failed to read from the input stream");
-		return false;
-	}
-	if (stream.seek(-bytesRead, SEEK_CUR) == -1) {
-		Log::error("Failed to seek back in the input stream");
-	}
-
-	uint8_t out[64];
-
-	{
-		z_stream zstream;
-		core_memset(&zstream, 0, sizeof(zstream));
-		zstream.zalloc = Z_NULL;
-		zstream.zfree = Z_NULL;
-		zstream.next_in = (unsigned char *)buffer;
-		zstream.avail_in = bytesRead;
-		zstream.next_out = out;
-		zstream.avail_out = sizeof(out);
-		// Check for GZIP
-		if (inflateInit2(&zstream, -Z_DEFAULT_WINDOW_BITS) == Z_OK) {
-			int ret = inflate(&zstream, Z_NO_FLUSH);
-			inflateEnd(&zstream);
-			if (ret == Z_OK || ret == Z_STREAM_END) {
-				return true;
-			}
-			Log::debug("No gzip stream found with error %s", zError(ret));
-		}
-	}
-
-	{
-		z_stream zstream;
-		memset(&zstream, 0, sizeof(zstream));
-		zstream.next_in = (unsigned char *)buffer;
-		zstream.avail_in = bytesRead;
-		zstream.next_out = out;
-		zstream.avail_out = sizeof(out);
-		// Check for ZLIB
-		if (inflateInit(&zstream) == Z_OK) {
-			int ret = inflate(&zstream, Z_NO_FLUSH);
-			inflateEnd(&zstream);
-			if (ret == Z_OK || ret == Z_STREAM_END) {
-				return true;
-			}
-			Log::debug("No zlib stream found with error %s", zError(ret));
-		}
-	}
-
-	{
-		z_stream zstream;
-		memset(&zstream, 0, sizeof(zstream));
-		zstream.next_in = (unsigned char *)buffer;
-		zstream.avail_in = bytesRead;
-		zstream.next_out = out;
-		zstream.avail_out = sizeof(out);
-		// Check for raw DEFLATE
-		if (inflateInit2(&zstream, -Z_DEFAULT_WINDOW_BITS) == Z_OK) {
-			int ret = inflate(&zstream, Z_NO_FLUSH);
-			inflateEnd(&zstream);
-			if (ret == Z_OK || ret == Z_STREAM_END) {
-				return true;
-			}
-			Log::debug("No raw deflate stream found with error: '%s'", zError(ret));
-		}
-	}
-
-	return false;
+	uint32_t val;
+	int retVal = s.readUInt32(val);
+	readStream.seek(pos);
+	return retVal == 0;
 }
 
 ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
