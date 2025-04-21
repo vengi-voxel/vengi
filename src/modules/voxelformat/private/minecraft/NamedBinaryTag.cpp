@@ -177,10 +177,16 @@ void NamedBinaryTag::dump_r(io::WriteStream &stream, const char *name, const Nam
 	};
 	static_assert((int)TagType::MAX == lengthof(Names), "Array size doesn't match tag types");
 
+	int type = (int)tag.type();
+	if (type < 0 || type >= lengthof(Names)) {
+		Log::error("Invalid tag type %i", type);
+		return;
+	}
+
 	if (name == nullptr || *name == '\0') {
-		stream.writeStringFormat(false, "%*s%s", level, " ", Names[(int)tag.type()]);
+		stream.writeStringFormat(false, "%*s%s", level, " ", Names[type]);
 	} else {
-		stream.writeStringFormat(false, "%*s%s[%s]", level, " ", name, Names[(int)tag.type()]);
+		stream.writeStringFormat(false, "%*s%s[%s]", level, " ", name, Names[type]);
 	}
 	switch (tag.type()) {
 	case TagType::BYTE:
