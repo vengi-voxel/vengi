@@ -2378,7 +2378,7 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	}
 	const int nodeId = _sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.isAnyModelNode()) {
+	if (!node.isAnyModelNode()) {
 		Log::warn("The given node (%s:%i) is not a model node", node.name().c_str(), nodeId);
 		return false;
 	}
