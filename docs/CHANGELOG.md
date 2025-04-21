@@ -8,6 +8,10 @@ See [the documentation](https://vengi-voxel.github.io/vengi/) for further detail
 
 Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
+## 0.0.37 (2025-XX-X)
+
+General:
+
 ## 0.0.36 (2025-04-21)
 
 General:
