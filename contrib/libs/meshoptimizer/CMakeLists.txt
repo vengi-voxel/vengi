@@ -2,12 +2,14 @@ add_library(meshoptimizer STATIC
 	meshoptimizer.h
 	allocator.cpp
 	clusterizer.cpp
+	indexanalyzer.cpp
 	indexcodec.cpp
 	indexgenerator.cpp
 	overdrawanalyzer.cpp
 	overdrawoptimizer.cpp
 	partition.cpp
 	quantization.cpp
+	rasterizer.cpp
 	simplifier.cpp
 	spatialorder.cpp
 	stripifier.cpp
