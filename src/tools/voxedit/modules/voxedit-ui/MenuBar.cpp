@@ -122,7 +122,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				_app->languageOption();
 
 				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
-					_("Cubes"), _("Marching cubes")};
+					_("Cubes"), _("Marching cubes"), _("Binary")};
+				static_assert(3 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
 				ImGui::ComboVar(_("Mesh mode"), cfg::VoxelMeshMode, meshModes);
 				ImGui::InputVarInt(_("Model animation speed"), cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt(_("Autosave delay in seconds"), cfg::VoxEditAutoSaveSeconds);

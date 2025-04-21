@@ -89,6 +89,8 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 	const int itemCount = (int)items.size();
 	if (*currentItem >= 0 && *currentItem < itemCount) {
 		previewValue = items[*currentItem].c_str();
+	} else {
+		previewValue = _("Unknown");
 	}
 
 	if (ImGui::BeginCombo(label, previewValue, ImGuiComboFlags_None)) {
