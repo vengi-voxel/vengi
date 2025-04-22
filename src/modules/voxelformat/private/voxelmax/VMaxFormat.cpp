@@ -36,7 +36,7 @@ namespace voxelformat {
 #define jsonVec(json, name, obj)                                                                                       \
 	if ((json).find(#name) == (json).end() || !(json)[#name].is_array()) {                                             \
 		const std::string dump = (json).dump();                                                                        \
-		Log::debug("Failed to parse json array " #name ": %s", dump.c_str());                                          \
+		Log::debug("Failed to parse json array '" #name "': %s", dump.c_str());                                          \
 	} else {                                                                                                           \
 		for (int i = 0; i < (obj).name.length(); ++i) {                                                                \
 			(obj).name[i] = (json)[#name][i].get<float>();                                                             \
@@ -46,7 +46,7 @@ namespace voxelformat {
 #define jsonInt(json, name, obj)                                                                                       \
 	if ((json).find(#name) == (json).end() || !(json)[#name].is_number_integer()) {                                    \
 		const std::string dump = (json).dump();                                                                        \
-		Log::debug("Failed to parse json integer " #name ": %s", dump.c_str());                                        \
+		Log::debug("Failed to parse json integer '" #name "': %s", dump.c_str());                                        \
 	} else {                                                                                                           \
 		(obj).name = (json)[#name].get<int>();                                                                         \
 	}
@@ -61,13 +61,13 @@ namespace voxelformat {
 		(obj).name = (float)(json)[#name].get<int>();                                                                  \
 	} else {                                                                                                           \
 		const std::string dump = (json).dump();                                                                        \
-		Log::debug("Failed to parse json float " #name ": %s", dump.c_str());                                          \
+		Log::debug("Failed to parse json float '" #name "': %s", dump.c_str());                                          \
 	}
 
 #define jsonBool(json, name, obj)                                                                                      \
 	if ((json).find(#name) == (json).end() || !(json)[#name].is_boolean()) {                                           \
 		const std::string dump = (json).dump();                                                                        \
-		Log::debug("Failed to parse json bool " #name ": %s", dump.c_str());                                           \
+		Log::debug("Failed to parse json bool '" #name "': %s", dump.c_str());                                           \
 	} else {                                                                                                           \
 		(obj).name = (json)[#name].get<bool>();                                                                        \
 	}
@@ -75,7 +75,7 @@ namespace voxelformat {
 #define jsonString(json, name, obj)                                                                                    \
 	if ((json).find(#name) == (json).end() || !(json)[#name].is_string()) {                                            \
 		const std::string dump = (json).dump();                                                                        \
-		Log::debug("Failed to parse json string " #name ": %s", dump.c_str());                                         \
+		Log::debug("Failed to parse json string '" #name "': %s", dump.c_str());                                         \
 	} else {                                                                                                           \
 		(obj).name = (json)[#name].get<std::string>().c_str();                                                         \
 	}
