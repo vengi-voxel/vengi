@@ -853,11 +853,13 @@ void App::bashCompletion() const {
 		}
 		if (arg.needsFile()) {
 			Log::printf("\t%s)\n", args.c_str());
-			Log::printf("\t\tCOMPREPLY=( $(compgen -f -- \"$cur\") )\n");
+			Log::printf("\t\tcompopt -o nospace 2>/dev/null\n");
+			Log::printf("\t\tmapfile -t COMPREPLY < <(compgen -f -- \"$cur\")\n");
 			Log::printf("\t\t;;\n");
 		} else if (arg.needsDirectory()) {
 			Log::printf("\t%s)\n", args.c_str());
-			Log::printf("\t\tCOMPREPLY=( $(compgen -d -- \"$cur\") )\n");
+			Log::printf("\t\tcompopt -o nospace 2>/dev/null\n");
+			Log::printf("\t\tmapfile -t COMPREPLY < <(compgen -d -- \"$cur\")\n");
 			Log::printf("\t\t;;\n");
 		} else if (!arg.validValues().empty()) {
 			Log::printf("\t%s)\n", args.c_str());
@@ -869,14 +871,17 @@ void App::bashCompletion() const {
 				Log::printf("%s", arg.validValues()[n].c_str());
 			}
 			Log::printf("\"\n");
+			Log::printf("\t\tcompopt +o nospace 2>/dev/null\n");
 			Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$valid_values\" -- \"$cur\") )\n");
 			Log::printf("\t\t;;\n");
 		}
 	}
 	Log::printf("\t-set)\n");
+	Log::printf("\t\tcompopt +o nospace 2>/dev/null\n");
 	Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$variable_names\" -- \"$cur\") )\n");
 	Log::printf("\t\t;;\n");
 	Log::printf("\t*)\n");
+	Log::printf("\t\tcompopt +o nospace 2>/dev/null\n");
 	Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$options\" -- \"$cur\") )\n");
 	Log::printf("\t\t;;\n");
 	Log::printf("\tesac\n");
@@ -886,7 +891,7 @@ void App::bashCompletion() const {
 		binary = fullAppname();
 	}
 	// https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion-Builtins.html
-	Log::printf("complete -o default -o nospace -F _%s_completion %s\n", appname().c_str(), binary.c_str());
+	Log::printf("complete -o nosort -F _%s_completion -o bashdefault -- %s\n", appname().c_str(), binary.c_str());
 }
 
 bool App::handleCompletion(const core::String &type) const {
