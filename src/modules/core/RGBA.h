@@ -46,6 +46,10 @@ union alignas(4) RGBA {
 	}
 
 	static core::RGBA mix(const core::RGBA rgba1, const core::RGBA rgba2, float t = 0.5f);
+
+	constexpr double brightness() const {
+		return 0.299 * (double)r + 0.587 * (double)g + 0.114 * (double)b;
+	}
 };
 
 static_assert(sizeof(RGBA) == sizeof(uint32_t), "Expected RGBA union size");
