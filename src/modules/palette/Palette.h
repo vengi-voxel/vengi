@@ -170,6 +170,8 @@ public:
 				int skipPaletteColorIdx = -1);
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
+	void constrastStretching();
+	void whiteBalance();
 
 	static const char *getDefaultPaletteName();
 	static core::String extractPaletteName(const core::String &file);

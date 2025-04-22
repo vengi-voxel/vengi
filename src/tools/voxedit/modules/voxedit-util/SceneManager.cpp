@@ -1645,6 +1645,24 @@ void SceneManager::construct() {
 		nodeRemoveUnusedColors(nodeId, updateVoxels);
 	}).setHelp(_("Remove unused colors from palette"));
 
+	command::Command::registerCommand("palette_whitebalancing", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		palette::Palette currentPal = node.palette();
+		currentPal.whiteBalance();
+		node.setPalette(currentPal);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
+	}).setHelp(_("Apply white balance to the current palette"));
+
+	command::Command::registerCommand("palette_contraststretching", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		palette::Palette currentPal = node.palette();
+		currentPal.constrastStretching();
+		node.setPalette(currentPal);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
+	}).setHelp(_("Apply color stretching to the current palette"));
+
 	command::Command::registerCommand("palette_applyall", [&] (const command::CmdArgs& args) {
 		const int nodeId = activeNode();
 		const scenegraph::SceneGraphNode &currentNode = _sceneGraph.node(nodeId);

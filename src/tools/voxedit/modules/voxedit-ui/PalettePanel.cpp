@@ -365,6 +365,8 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::CommandIconMenuItem(ICON_LC_TRASH, _("Remove unused color"), "palette_removeunused", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_TRASH_2, _("Remove and re-create palette"), "palette_removeunused true", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_PICKAXE, _("Model from color"), "colortomodel", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_RULER_DIMENSION_LINE, _("Contrast stretching"), "palette_contraststretching", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCALE, _("White balancing"), "palette_whitebalancing", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_REPLACE_ALL, _("Apply to all nodes"), "palette_applyall", true, &listener);
 			// TODO: add color quantisation to parts of the palette
 			ImGui::EndMenu();

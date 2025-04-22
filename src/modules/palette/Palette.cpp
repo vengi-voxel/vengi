@@ -464,6 +464,101 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx) const {
 	return minIndex;
 }
 
+void Palette::whiteBalance() {
+	if (_colorCount == 0) {
+		return;
+	}
+	double totalR = 0.0;
+	double totalG = 0.0;
+	double totalB = 0.0;
+
+	for (int i = 0; i < _colorCount; ++i) {
+		const core::RGBA &color = _colors[i];
+		if (color.a == 0) {
+			continue;
+		}
+		totalR += color.r;
+		totalG += color.g;
+		totalB += color.b;
+	}
+
+	// Average of all the colors
+	const double avgR = totalR / _colorCount;
+	const double avgG = totalG / _colorCount;
+	const double avgB = totalB / _colorCount;
+
+	// Compute the scaling factors for each channel to normalize the average RGB values
+	const double scaleR = avgR <= 0.0 ? 1.0 : 128.0 / avgR;
+	const double scaleG = avgG <= 0.0 ? 1.0 : 128.0 / avgG;
+	const double scaleB = avgB <= 0.0 ? 1.0 : 128.0 / avgB;
+
+	// Apply the white balance by scaling each color's channels
+	for (int i = 0; i < _colorCount; ++i) {
+		core::RGBA &color = _colors[i];
+		color.r = static_cast<uint8_t>(glm::clamp(color.r * scaleR, 0.0, 255.0));
+		color.g = static_cast<uint8_t>(glm::clamp(color.g * scaleG, 0.0, 255.0));
+		color.b = static_cast<uint8_t>(glm::clamp(color.b * scaleB, 0.0, 255.0));
+	}
+	markDirty();
+	markSave();
+}
+
+void Palette::constrastStretching() {
+	uint8_t minR = 255;
+	uint8_t maxR = 0;
+	uint8_t minG = 255;
+	uint8_t maxG = 0;
+	uint8_t minB = 255;
+	uint8_t maxB = 0;
+
+	// Find per-channel min and max
+	for (int i = 0; i < _colorCount; ++i) {
+		const core::RGBA &color = _colors[i];
+		if (color.r < minR) {
+			minR = color.r;
+		}
+		if (color.r > maxR) {
+			maxR = color.r;
+		}
+
+		if (color.g < minG) {
+			minG = color.g;
+		}
+		if (color.g > maxG) {
+			maxG = color.g;
+		}
+
+		if (color.b < minB) {
+			minB = color.b;
+		}
+		if (color.b > maxB) {
+			maxB = color.b;
+		}
+	}
+
+	// Prevent divide-by-zero
+	if (minR == maxR) {
+		maxR = minR + 1;
+	}
+	if (minG == maxG) {
+		maxG = minG + 1;
+	}
+	if (minB == maxB) {
+		maxB = minB + 1;
+	}
+
+	// Stretch each channel
+	for (int i = 0; i < _colorCount; ++i) {
+		core::RGBA &color = _colors[i];
+
+		color.r = (uint8_t)((color.r - minR) * 255.0 / (double)(maxR - minR));
+		color.g = (uint8_t)((color.g - minG) * 255.0 / (double)(maxG - minG));
+		color.b = (uint8_t)((color.b - minB) * 255.0 / (double)(maxB - minB));
+	}
+	markDirty();
+	markSave();
+}
+
 void Palette::changeIntensity(float scale) {
 	const float f = glm::abs(scale) + 1.0f;
 	for (int i = 0; i < _colorCount; ++i) {
