@@ -482,12 +482,12 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	//      materials->array
 	//            dict
 	//      name->string
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
+	core::ScopedPtr<io::SeekableReadStream> archiveStream(archive->readStream(filename));
+	if (!archiveStream) {
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	io::ArchivePtr zipArchive = io::openZipArchive(stream);
+	io::ArchivePtr zipArchive = io::openZipArchive(archiveStream);
 	const core::String &paletteName = "palette.png";
 	if (zipArchive) {
 		if (!loadPaletteFromArchive(zipArchive ? zipArchive : archive, paletteName, palette, ctx)) {

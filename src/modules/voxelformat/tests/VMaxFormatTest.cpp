@@ -3,10 +3,15 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
 
 class VMaxFormatTest : public AbstractFormatTest {};
+
+TEST_F(VMaxFormatTest, testLoad) {
+	ASSERT_TRUE(io::isA("0voxel.vmax.zip", voxelformat::voxelLoad()));
+}
 
 TEST_F(VMaxFormatTest, testLoad0) {
 	// Node 'snapshots' is empty - this scene doesn't contain anything

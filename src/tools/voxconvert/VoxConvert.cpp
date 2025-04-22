@@ -371,7 +371,7 @@ app::AppState VoxConvert::onInit() {
 				Log::error("Could not find a valid input file in directory %s", infile.c_str());
 				return app::AppState::InitFailure;
 			}
-		} else if (io::isZipArchive(infile)) {
+		} else if (!io::isA(infile, voxelformat::voxelLoad()) && io::isZipArchive(infile)) {
 			io::FileStream archiveStream(filesystem()->open(infile, io::FileMode::SysRead));
 			io::ArchivePtr archive = io::openZipArchive(&archiveStream);
 			if (!archive) {
