@@ -154,9 +154,9 @@ private:
 		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // rotation
 		glm::vec3 t_s{1.0f};				   // scale
 		glm::vec3 ind{0.0f};				   // index
-		glm::vec3 e_c{0.0f};				   // center
-		glm::vec3 e_ma{0.0f};				   // boundsMax
-		glm::vec3 e_mi{0.0f};				   // boundsMin
+		glm::vec3 e_c{0.0f};				   // extent center
+		glm::vec3 e_ma{0.0f};				   // extent max
+		glm::vec3 e_mi{0.0f};				   // extent min
 		bool s = true;						   // selected
 		bool h = false;						   // hidden
 	};
@@ -209,9 +209,23 @@ private:
 	};
 
 	// scene.json
+	struct VMaxGroup {
+		core::String id;
+		core::String name;
+		core::String pid;					   // parent id
+		glm::vec3 t_p{0.0f};				   // position
+		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // rotation
+		glm::vec3 t_s{1.0f};				   // scale
+		glm::vec3 e_c{0.0f};				   // extent center
+		glm::vec3 e_ma{0.0f};				   // extent max
+		glm::vec3 e_mi{0.0f};				   // extent min
+		bool s = true;						   // selected
+	};
 	// scene nodes hierarchy, groups and volumes
 	struct VMaxScene {
+		// objects are instances of models
 		core::DynamicArray<VMaxObject> objects;
+		core::DynamicArray<VMaxGroup> groups;
 		VMaxCamera cam;
 		int v = 0;				 //
 		bool nrn = true;		 //

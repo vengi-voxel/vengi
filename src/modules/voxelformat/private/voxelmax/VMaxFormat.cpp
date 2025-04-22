@@ -158,6 +158,26 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 		scene.objects.push_back(o);
 	}
 
+	auto groups = json.find("groups");
+	if (groups != json.end() && groups->is_array()) {
+		for (const auto &obj : groups.value()) {
+			VMaxGroup o;
+			jsonBool(obj, s, o);
+			jsonString(obj, pid, o);
+			jsonString(obj, id, o);
+			jsonVec(obj, e_c, o);
+			jsonVec(obj, e_mi, o);
+			jsonVec(obj, e_ma, o);
+			jsonVec(obj, t_p, o);
+			jsonVec(obj, t_s, o);
+			jsonVec(obj, t_r, o);
+			o.e_c = glm::ceil(o.e_c);
+			o.e_mi = glm::ceil(o.e_mi);
+			o.e_ma = glm::ceil(o.e_ma);
+			scene.groups.push_back(o);
+		}
+	}
+
 	return true;
 }
 
@@ -176,9 +196,32 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 	}
 
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
+	Log::debug("Load %i scene groups", (int)scene.groups.size());
 	const core::String &ext = core::string::extractExtension(filename);
 	const core::String &objName = core::string::extractFilenameWithExtension(filename);
 	const bool onlyOneObject = ext == "vmaxb";
+	for (size_t i = 0; i < scene.groups.size(); ++i) {
+		if (stopExecution()) {
+			return false;
+		}
+		const VMaxGroup &obj = scene.groups[i];
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group, obj.id);
+		node.setName(obj.name);
+		scenegraph::SceneGraphTransform transform;
+		const glm::mat4x4 matrix =
+			glm::translate(obj.t_p) * glm::mat4_cast(glm::quat(glm::radians(obj.t_r))) * glm::scale(obj.t_s);
+		transform.setLocalMatrix(matrix);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx, transform);
+		if (!obj.pid.empty()) {
+			node.setProperty("parent-uuid", obj.pid);
+		}
+		node.setVisible(!obj.s);
+		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
+			Log::error("Failed to add group %s to the scene graph", obj.id.c_str());
+			return false;
+		}
+	}
 	for (size_t i = 0; i < scene.objects.size(); ++i) {
 		if (stopExecution()) {
 			return false;
@@ -298,7 +341,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 
 	int parent = sceneGraph.root().id();
 	if (!obj.pid.empty()) {
-		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByPropertyValue("uuid", obj.pid)) {
+		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByUUID(obj.pid)) {
 			parent = parentNode->id();
 		}
 	}
@@ -406,7 +449,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		Log::error("No volumes found in the scene graph");
 		return false;
 	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, obj.id);
 	node.setName(obj.n);
 
 	scenegraph::SceneGraphTransform transform;
@@ -416,7 +459,6 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
-	node.setProperty("uuid", obj.id);
 	if (!obj.pid.empty()) {
 		node.setProperty("parent-uuid", obj.pid);
 	}
