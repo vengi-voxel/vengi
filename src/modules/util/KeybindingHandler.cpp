@@ -358,10 +358,25 @@ core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 
 bool KeyBindingHandler::resolveKeyBindings(const char *cmd, int16_t* modifier, int32_t* key, uint16_t *count) const {
 	const char *match = SDL_strchr(cmd, ' ');
+	for (const auto& b : _bindings) {
+		const CommandModifierPair& pair = b.second;
+		if (!SDL_strcmp(pair.command.c_str(), cmd)) {
+			if (modifier != nullptr) {
+				*modifier = pair.modifier;
+			}
+			if (count != nullptr) {
+				*count = pair.count;
+			}
+			if (key != nullptr) {
+				*key = b.first;
+			}
+			return true;
+		}
+	}
 	const size_t size = match != nullptr ? (size_t)(intptr_t)(match - cmd) : SDL_strlen(cmd);
 	for (const auto& b : _bindings) {
 		const CommandModifierPair& pair = b.second;
-		if (!SDL_strcmp(pair.command.c_str(), cmd) || !SDL_strncmp(pair.command.c_str(), cmd, size)) {
+		if (!SDL_strncmp(pair.command.c_str(), cmd, size)) {
 			if (modifier != nullptr) {
 				*modifier = pair.modifier;
 			}
