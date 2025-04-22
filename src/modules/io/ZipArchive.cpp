@@ -164,12 +164,14 @@ SeekableReadStream* ZipArchive::readStream(const core::String &filePath) {
 		delete stream;
 		return nullptr;
 	}
+	Log::debug("Read stream for file '%s' from zip", filePath.c_str());
 	stream->seek(0);
 	return stream;
 }
 
 SeekableWriteStream* ZipArchive::writeStream(const core::String &filePath) {
 	// TODO: implement me
+	Log::debug("Write stream for file '%s' from zip", filePath.c_str());
 	return nullptr;
 }
 
