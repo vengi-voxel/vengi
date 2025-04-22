@@ -371,10 +371,10 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		while (!dsStream.eos()) {
 			// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
 			// with option to add more in the future up to 128
-			uint8_t extendedLayerInfo;
+			uint8_t material;
 			// palette index 0 means air
 			uint8_t palIdx;
-			wrap(dsStream.readUInt8(extendedLayerInfo))
+			wrap(dsStream.readUInt8(material))
 			wrap(dsStream.readUInt8(palIdx))
 			if (palIdx == 0) {
 				++mortonIdx;
@@ -471,6 +471,58 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 		Log::error("Failed to load palette from image %s", paletteName.c_str());
 		return false;
 	}
+
+	core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream("palette.settings.vmaxpsb"));
+	if (paletteSettingsStream) {
+		const priv::BinaryPList &plist = priv::BinaryPList::parse(*paletteSettingsStream);
+		if (plist.isDict()) {
+			const priv::PListDict &dict = plist.asDict();
+
+			const auto &name = plist.getDictEntry("name");
+			if (name.isString()) {
+				palette.setName(name.asString());
+			}
+
+			auto materials = dict.find("materials");
+			if (materials != dict.end()) {
+				if (materials->value.isArray()) {
+					const priv::PListArray &materialsArray = materials->value.asArray();
+					Log::debug("Found %i materials", (int)materialsArray.size());
+					// should always be 8 materials
+					for (size_t i = 0; i < materialsArray.size(); ++i) {
+						VmaxMaterial vmaxmaterial;
+						const auto &material = materialsArray[i];
+						// const auto &materialIndex = material.getDictEntry("mi");
+						const auto &transmission = material.getDictEntry("tc");
+						const auto &emission = material.getDictEntry("sic");
+						const auto &roughness = material.getDictEntry("rc");
+						const auto &metallic = material.getDictEntry("mc");
+						// const auto &enableShadow = material.getDictEntry("sh");
+						if (transmission.isReal()) {
+							vmaxmaterial.transmission = transmission.asReal();
+						}
+						if (emission.isReal()) {
+							vmaxmaterial.emission = emission.asReal();
+						}
+						if (roughness.isReal()) {
+							vmaxmaterial.roughness = roughness.asReal();
+						}
+						if (metallic.isReal()) {
+							vmaxmaterial.metalness = metallic.asReal();
+						}
+						// TODO: MATERIAL: use the material properties
+					}
+				} else {
+					Log::debug("Node 'materials' has unexpected type");
+				}
+			} else {
+				Log::debug("No 'materials' node found in bplist");
+			}
+		}
+	} else {
+		Log::debug("No 'palette.settings.vmaxpsb' node found in archive");
+	}
+
 	return true;
 }
 
@@ -488,14 +540,18 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 	io::ArchivePtr zipArchive = io::openZipArchive(archiveStream);
+	io::ArchivePtr readArchive = zipArchive ? zipArchive : archive;
 	const core::String &paletteName = "palette.png";
 	if (zipArchive) {
-		if (!loadPaletteFromArchive(zipArchive ? zipArchive : archive, paletteName, palette, ctx)) {
+		Log::debug("Found zip archive %s", filename.c_str());
+		if (!loadPaletteFromArchive(readArchive, paletteName, palette, ctx)) {
+			Log::error("Failed to load palette from %s", paletteName.c_str());
 			return 0u;
 		}
 	} else {
 		const core::String fullPath = core::string::path(core::string::extractDir(filename), paletteName);
-		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx)) {
+		if (!loadPaletteFromArchive(readArchive, fullPath, palette, ctx)) {
+			Log::error("Failed to load palette from %s", fullPath.c_str());
 			return 0u;
 		}
 	}

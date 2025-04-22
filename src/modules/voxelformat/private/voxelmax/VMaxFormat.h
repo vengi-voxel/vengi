@@ -161,6 +161,15 @@ private:
 		bool h = false;						   // hidden
 	};
 
+	struct VmaxMaterial {
+		core::String name;
+		double transmission;
+		double roughness;
+		double metalness;
+		double emission;
+		bool enableShadows;
+	};
+
 	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
 
 	struct VolumeExtent {
