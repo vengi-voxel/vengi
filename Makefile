@@ -238,6 +238,10 @@ update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
 	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui
 
+update-icons:
+	curl https://raw.githubusercontent.com/juliettef/IconFontCppHeaders/refs/heads/main/IconsLucide.h -o src/modules/ui//IconsLucide.h
+	curl -L https://unpkg.com/lucide-static@latest/font/lucide.ttf -o data/ui/lucide.ttf
+
 update-tracy:
 	git submodule update --remote --merge src/modules/core/tracy
 
