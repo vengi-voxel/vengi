@@ -202,15 +202,15 @@ public:
 	}
 
 	inline bool isInt() const {
-		return _tagType & BPListFormats::Int;
+		return (_tagType & BPListFormats::Int) == BPListFormats::Int;
 	}
 
 	inline bool isReal() const {
-		return _tagType & BPListFormats::Real;
+		return (_tagType & BPListFormats::Real) == BPListFormats::Real;
 	}
 
 	inline bool isDate() const {
-		return _tagType & BPListFormats::Date;
+		return _tagType == BPListFormats::Date;
 	}
 
 	inline bool isUID() const {
@@ -239,6 +239,7 @@ public:
 	uint32_t asUInt32() const;
 	uint64_t asUInt64() const;
 	float asFloat() const;
+	double asReal() const;
 	double asDouble() const;
 	const core::String &asString() const;
 

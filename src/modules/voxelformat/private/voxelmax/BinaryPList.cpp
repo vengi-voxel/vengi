@@ -75,37 +75,44 @@ uint64_t BinaryPList::asInt() const {
 }
 
 uint8_t BinaryPList::asUInt8() const {
-	core_assert(_tagType == BPListFormats::Int8);
+	core_assert_msg(_tagType == BPListFormats::Int8, "Expected Int8, got %i", _tagType);
 	return _tagData._byte;
 }
 
 uint16_t BinaryPList::asUInt16() const {
-	core_assert(_tagType == BPListFormats::Int16);
+	core_assert_msg(_tagType == BPListFormats::Int16, "Expected Int16, got %i", _tagType);
 	return _tagData._short;
 }
 
 uint32_t BinaryPList::asUInt32() const {
-	core_assert(_tagType == BPListFormats::Int32);
+	core_assert_msg(_tagType == BPListFormats::Int32, "Expected Int32, got %i", _tagType);
 	return _tagData._int;
 }
 
 uint64_t BinaryPList::asUInt64() const {
-	core_assert(_tagType == BPListFormats::Int64);
+	core_assert_msg(_tagType == BPListFormats::Int64, "Expected Int64, got %i", _tagType);
 	return _tagData._long;
 }
 
+double BinaryPList::asReal() const {
+	if (_tagType == BPListFormats::Real32) {
+		return asFloat();
+	}
+	return asDouble();
+}
+
 float BinaryPList::asFloat() const {
-	core_assert(_tagType == BPListFormats::Real32);
+	core_assert_msg(_tagType == BPListFormats::Real32, "Expected Real32, got %i", _tagType);
 	return _tagData._float;
 }
 
 double BinaryPList::asDouble() const {
-	core_assert(_tagType == BPListFormats::Real64);
+	core_assert_msg(_tagType == BPListFormats::Real64, "Expected Real64, got %i", _tagType);
 	return _tagData._double;
 }
 
 const core::String &BinaryPList::asString() const {
-	core_assert(isString());
+	core_assert_msg(isString(), "Expected String, got %i", _tagType);
 	return *_tagData._string;
 }
 
@@ -422,16 +429,16 @@ BinaryPList BinaryPList::readInt(io::SeekableReadStream &stream, BPListFormats s
 	return BinaryPList{};
 }
 
-BinaryPList BinaryPList::readReal(io::SeekableReadStream &stream, BPListFormats size) {
-	Log::debug("BPLIST: Read real of type %i", (int)size);
-	if (size == 2) {
+BinaryPList BinaryPList::readReal(io::SeekableReadStream &stream, BPListFormats type) {
+	Log::debug("BPLIST: Read real of type %i", (int)type);
+	if (type == 2) {
 		float val;
 		if (stream.readFloatBE(val) != 0) {
 			Log::error("Failed to read float");
 			return BinaryPList{};
 		}
 		return BinaryPList{val};
-	} else if (size == 3) {
+	} else if (type == 3) {
 		double val;
 		if (stream.readDoubleBE(val) != 0) {
 			Log::error("Failed to read double");
@@ -439,7 +446,7 @@ BinaryPList BinaryPList::readReal(io::SeekableReadStream &stream, BPListFormats 
 		}
 		return BinaryPList{val};
 	}
-	Log::error("Can't read real number with %i as id", (int)size);
+	Log::error("Can't read real number with %i as id", (int)type);
 	return BinaryPList{};
 }
 
