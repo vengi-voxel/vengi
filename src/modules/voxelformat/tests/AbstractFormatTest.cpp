@@ -76,6 +76,24 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 	voxel::sceneGraphComparator(sceneGraphsave, sceneGraphLoad, flags, 0.001f);
 }
 
+void AbstractFormatTest::testTransform(const core::String &filename) {
+	SCOPED_TRACE(filename.c_str());
+	scenegraph::SceneGraph sceneGraph;
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
+		<< "Failed to load " << filename.c_str();
+	EXPECT_EQ(20u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_EQ("original", node->name());
+	const scenegraph::SceneGraphTransform &transform = node->transform();
+	EXPECT_EQ(23.0f, transform.worldTranslation().x);
+	EXPECT_EQ(-2.0f, transform.worldTranslation().y);
+	EXPECT_EQ(23.0f, transform.worldTranslation().z);
+}
+
 void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &srcFilename,
 																Format &destFormat, const core::String &destFilename,
 																voxel::ValidateFlags flags) {

@@ -59,6 +59,8 @@ protected:
 	// load test_material.vox and check the material for the given target format (identified by the filename)
 	void testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
 
+	void testTransform(const core::String &filename);
+
 	// save as any other format
 	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);
 

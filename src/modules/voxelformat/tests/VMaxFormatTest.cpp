@@ -13,6 +13,10 @@ TEST_F(VMaxFormatTest, testLoad) {
 	ASSERT_TRUE(io::isA("0voxel.vmax.zip", voxelformat::voxelLoad()));
 }
 
+TEST_F(VMaxFormatTest, DISABLED_testTransform) {
+	testTransform("test-transform.vmax.zip");
+}
+
 TEST_F(VMaxFormatTest, testLoad0) {
 	// Node 'snapshots' is empty - this scene doesn't contain anything
 	testLoad("0voxel.vmax.zip", 0);

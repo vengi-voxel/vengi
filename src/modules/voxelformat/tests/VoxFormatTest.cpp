@@ -20,6 +20,10 @@ class VoxFormatTest : public AbstractFormatTest {};
 
 // TODO: VOXELFORMAT: add a test to check the group handling scene graph layout in general.
 
+TEST_F(VoxFormatTest, testTransform) {
+	testTransform("test-transform.vox");
+}
+
 TEST_F(VoxFormatTest, testLoad) {
 	testLoad("magicavoxel.vox");
 }

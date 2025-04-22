@@ -241,6 +241,8 @@ set(TEST_FILES
 	tests/test-fillplane.png
 	tests/test-heightmap-dm.png
 	tests/test-heightmap.png
+	tests/test-transform.vox
+	tests/test-transform.vmax.zip
 	tests/rgb.vxl
 	tests/rgb.csv
 	tests/rgb.gltf
