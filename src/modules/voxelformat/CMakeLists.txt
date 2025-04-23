@@ -107,7 +107,6 @@ set(SRCS
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
-	private/voxelmax/BinaryPList.h           private/voxelmax/BinaryPList.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric ${LIB}-external)
@@ -168,7 +167,6 @@ set(TEST_SRCS
 	tests/VMaxFormatTest.cpp
 	tests/XRawFormatTest.cpp
 
-	tests/BinaryPListTest.cpp
 	tests/MinecraftPaletteMapTest.cpp
 	tests/NamedBinaryTagTest.cpp
 	tests/TextureLookupTest.cpp

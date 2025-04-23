@@ -12,9 +12,7 @@
 #include "io/Stream.h"
 #include <stdint.h>
 
-namespace voxelformat {
-
-namespace priv {
+namespace util {
 
 enum BPListFormats : uint8_t {
 	Null = 0x00,
@@ -247,6 +245,4 @@ public:
 	BinaryPList &operator=(BinaryPList &&val) noexcept;
 };
 
-} // namespace priv
-
-} // namespace voxelformat
+} // namespace util

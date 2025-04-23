@@ -3,7 +3,6 @@
  */
 
 #include "VMaxFormat.h"
-#include "BinaryPList.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -247,16 +246,16 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 	return true;
 }
 
-VMaxFormat::VolumeStats VMaxFormat::parseStats(const priv::BinaryPList &snapshot) const {
+VMaxFormat::VolumeStats VMaxFormat::parseStats(const util::BinaryPList &snapshot) const {
 	VolumeStats volumeStats;
-	const priv::BinaryPList &stats = snapshot.getDictEntry("st");
-	const priv::BinaryPList &extent = stats.getDictEntry("extent");
+	const util::BinaryPList &stats = snapshot.getDictEntry("st");
+	const util::BinaryPList &extent = stats.getDictEntry("extent");
 	volumeStats.count = (int)stats.getDictEntry("count").asInt();
 	volumeStats.scount = (int)stats.getDictEntry("scount").asInt();
-	const priv::PListArray &statsMins = stats.getDictEntry("min").asArray();
-	const priv::PListArray &statsMaxs = stats.getDictEntry("max").asArray();
-	const priv::PListArray &statsSmins = stats.getDictEntry("smin").asArray();
-	const priv::PListArray &statsSmaxs = stats.getDictEntry("smax").asArray();
+	const util::PListArray &statsMins = stats.getDictEntry("min").asArray();
+	const util::PListArray &statsMaxs = stats.getDictEntry("max").asArray();
+	const util::PListArray &statsSmins = stats.getDictEntry("smin").asArray();
+	const util::PListArray &statsSmaxs = stats.getDictEntry("smax").asArray();
 	for (int i = 0; i < 4; ++i) {
 		volumeStats.min[i] = (int)statsMins[i].asInt();
 		volumeStats.max[i] = (int)statsMaxs[i].asInt();
@@ -266,9 +265,9 @@ VMaxFormat::VolumeStats VMaxFormat::parseStats(const priv::BinaryPList &snapshot
 	// TODO: VOXELFORMAT: is this extent.mins/maxs ?? volumeStats.emin
 	// TODO: VOXELFORMAT: is this extent.mins/maxs ?? volumeStats.emax
 	volumeStats.extent.o = (int)extent.getDictEntry("o").asInt();
-	// const priv::BinaryPList &regionBounds = extent.getDictEntry("r");
-	// const priv::PListArray &extentMins = regionBounds.getDictEntry("min").asArray();
-	// const priv::PListArray &extentMaxs = regionBounds.getDictEntry("max").asArray();
+	// const util::BinaryPList &regionBounds = extent.getDictEntry("r");
+	// const util::PListArray &extentMins = regionBounds.getDictEntry("min").asArray();
+	// const util::PListArray &extentMaxs = regionBounds.getDictEntry("max").asArray();
 	// for (int i = 0; i < 3; ++i) {
 	// 	volumeStats.extent.min[i] = (int)extentMins[i].asInt();
 	// 	volumeStats.extent.max[i] = (int)extentMaxs[i].asInt();
@@ -277,12 +276,12 @@ VMaxFormat::VolumeStats VMaxFormat::parseStats(const priv::BinaryPList &snapshot
 	return volumeStats;
 }
 
-VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) const {
+VMaxFormat::VolumeId VMaxFormat::parseId(const util::BinaryPList &snapshot) const {
 	VolumeId volumeId;
-	const priv::BinaryPList &identifier = snapshot.getDictEntry("id");
-	const priv::BinaryPList &identifierC = identifier.getDictEntry("c");
-	const priv::BinaryPList &identifierS = identifier.getDictEntry("s");
-	const priv::BinaryPList &identifierT = identifier.getDictEntry("t");
+	const util::BinaryPList &identifier = snapshot.getDictEntry("id");
+	const util::BinaryPList &identifierC = identifier.getDictEntry("c");
+	const util::BinaryPList &identifierS = identifier.getDictEntry("s");
+	const util::BinaryPList &identifierT = identifier.getDictEntry("t");
 
 	if (identifierC.isInt()) {
 		volumeId.mortonChunkIdx = (int)identifierC.asInt();
@@ -317,13 +316,13 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 	// io::filesystem()->write(filename + ".plist", stream);
 	// stream.seek(0);
 
-	priv::BinaryPList plist = priv::BinaryPList::parse(stream);
+	util::BinaryPList plist = util::BinaryPList::parse(stream);
 	if (!plist.isDict()) {
 		Log::error("Expected a bplist dict");
 		return false;
 	}
 
-	const priv::PListDict &dict = plist.asDict();
+	const util::PListDict &dict = plist.asDict();
 	auto snapshots = dict.find("snapshots");
 	if (snapshots == dict.end()) {
 		Log::error("No 'snapshots' node found in bplist");
@@ -333,7 +332,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		Log::error("Node 'snapshots' has unexpected type");
 		return false;
 	}
-	const priv::PListArray &snapshotsArray = snapshots->value.asArray();
+	const util::PListArray &snapshotsArray = snapshots->value.asArray();
 	if (snapshotsArray.empty()) {
 		Log::debug("Node 'snapshots' is empty");
 		return true;
@@ -349,15 +348,15 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 	scenegraph::SceneGraph objectSceneGraph;
 	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
 		Log::debug("Load snapshot %i of %i", (int)i, (int)snapshotsArray.size());
-		const priv::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
+		const util::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
 		if (snapshot.empty()) {
 			Log::error("Node 'snapshots' child %i doesn't contain node 's'", (int)i);
 			return false;
 		}
 
-		// const priv::BinaryPList &deselectedLayerColorUsage = snapshot.getDictEntry("dlc");
-		const priv::BinaryPList &dsData = snapshot.getDictEntry("ds");
-		// const priv::BinaryPList &layerColorUsage = snapshot.getDictEntry("lc");
+		// const util::BinaryPList &deselectedLayerColorUsage = snapshot.getDictEntry("dlc");
+		const util::BinaryPList &dsData = snapshot.getDictEntry("ds");
+		// const util::BinaryPList &layerColorUsage = snapshot.getDictEntry("lc");
 		const VolumeId &volumeId = parseId(snapshot);
 		const VolumeStats &volumeStats = parseStats(snapshot);
 		const VolumeExtent &extent = volumeStats.extent;
@@ -516,9 +515,9 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 	core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream("palette.settings.vmaxpsb"));
 	if (paletteSettingsStream) {
-		const priv::BinaryPList &plist = priv::BinaryPList::parse(*paletteSettingsStream);
+		const util::BinaryPList &plist = util::BinaryPList::parse(*paletteSettingsStream);
 		if (plist.isDict()) {
-			const priv::PListDict &dict = plist.asDict();
+			const util::PListDict &dict = plist.asDict();
 
 			const auto &name = plist.getDictEntry("name");
 			if (name.isString()) {
@@ -528,7 +527,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 			auto materials = dict.find("materials");
 			if (materials != dict.end()) {
 				if (materials->value.isArray()) {
-					const priv::PListArray &materialsArray = materials->value.asArray();
+					const util::PListArray &materialsArray = materials->value.asArray();
 					Log::debug("Found %i materials", (int)materialsArray.size());
 					// should always be 8 materials
 					for (size_t i = 0; i < materialsArray.size(); ++i) {

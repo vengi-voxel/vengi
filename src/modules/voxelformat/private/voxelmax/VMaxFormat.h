@@ -8,7 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
-#include "BinaryPList.h"
+#include "util/BinaryPList.h"
 
 namespace voxelformat {
 
@@ -255,8 +255,8 @@ private:
 		SnapshotType type = SnapshotType::UndoRestore;
 	};
 
-	VolumeStats parseStats(const priv::BinaryPList &snapshot) const;
-	VolumeId parseId(const priv::BinaryPList &snapshot) const;
+	VolumeStats parseStats(const util::BinaryPList &snapshot) const;
+	VolumeId parseId(const util::BinaryPList &snapshot) const;
 
 	bool loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const;
 	bool loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,

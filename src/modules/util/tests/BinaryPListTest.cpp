@@ -2,25 +2,25 @@
  * @file
  */
 
-#include "voxelformat/private/voxelmax/BinaryPList.h"
+#include "util/BinaryPList.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "io/FileStream.h"
 
-namespace voxelformat {
+namespace util {
 
 class BinaryPListTest : public app::AbstractTest {};
 
 TEST_F(BinaryPListTest, testRead) {
 	io::FileStream stream(io::filesystem()->open("test.plist", io::FileMode::Read));
-	const priv::BinaryPList &plist = priv::BinaryPList::parse(stream);
+	const util::BinaryPList &plist = util::BinaryPList::parse(stream);
 	ASSERT_TRUE(plist.isDict());
 	ASSERT_EQ(3u, plist.asDict().size());
 
 	auto travelLog = plist.asDict().find("Travel Log");
 	ASSERT_NE(travelLog, plist.asDict().end());
 	ASSERT_TRUE(travelLog->value.isArray());
-	const priv::PListArray &travelLogArray = travelLog->value.asArray();
+	const util::PListArray &travelLogArray = travelLog->value.asArray();
 	ASSERT_EQ(3u, travelLogArray.size());
 	ASSERT_TRUE(travelLogArray[0].isString());
 	ASSERT_TRUE(travelLogArray[1].isString());
@@ -41,11 +41,11 @@ TEST_F(BinaryPListTest, testRead) {
 
 TEST_F(BinaryPListTest, testReadVMaxPalette) {
 	io::FileStream stream(io::filesystem()->open("palette.settings.vmaxpsb", io::FileMode::Read));
-	const priv::BinaryPList &plist = priv::BinaryPList::parse(stream);
+	const util::BinaryPList &plist = util::BinaryPList::parse(stream);
 	ASSERT_TRUE(plist.isDict());
 	ASSERT_EQ(11u, plist.asDict().size());
 	ASSERT_TRUE(plist.asDict().hasKey("materials"));
 	ASSERT_TRUE(plist.asDict().hasKey("name"));
 }
 
-} // namespace voxelformat
+} // namespace util

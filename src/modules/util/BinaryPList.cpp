@@ -9,9 +9,7 @@
 #include "io/Stream.h"
 #include <stdint.h>
 
-namespace voxelformat {
-
-namespace priv {
+namespace util {
 
 void PListData::copy(BPListFormats type, const PListData &data) {
 	BPListFormats typeFirstNibble = (BPListFormats)(type & 0xF0);
@@ -684,6 +682,4 @@ BinaryPList BinaryPList::parse(io::SeekableReadStream &stream, BPListState &stat
 	return BinaryPList{};
 }
 
-} // namespace priv
-
-} // namespace voxelformat
+} // namespace util
