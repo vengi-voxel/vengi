@@ -12,19 +12,7 @@ function arguments()
 	}
 end
 
-function main(node, region, color, r, g, b)
-	local newcolor = node:palette():match(r, g, b)
-
-	local visitor = function (volume, x, y, z)
-		volume:setVoxel(x, y, z, -1)
-	end
-
-	local condition = function (volume, x, y, z)
-		local voxel = volume:voxel(x, y, z)
-		if voxel == newcolor then
-			return true
-		end
-		return false
-	end
-	vol.conditionYXZ(node:volume(), region, visitor, condition)
+function main(node, region, _, r, g, b)
+	local colormatch = node:palette():match(r, g, b)
+	vol.replaceColor(node, region, colormatch, -1)
 end
