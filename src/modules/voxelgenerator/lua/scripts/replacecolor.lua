@@ -11,16 +11,5 @@ function arguments()
 end
 
 function main(node, region, color, newcolor)
-	local visitor = function (volume, x, y, z)
-		volume:setVoxel(x, y, z, newcolor)
-	end
-
-	local condition = function (volume, x, y, z)
-		local voxel = volume:voxel(x, y, z)
-		if voxel == color then
-			return true
-		end
-		return false
-	end
-	vol.conditionYXZ(node:volume(), region, visitor, condition)
+	vol.replaceColor(node, region, color, newcolor)
 end

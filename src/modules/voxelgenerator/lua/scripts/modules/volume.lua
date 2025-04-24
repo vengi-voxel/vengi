@@ -172,4 +172,19 @@ function module.visitConnected6(volume, x, y, z, visitor)
 	visitConnected6Internal(volume, x, y, z, visitor, visited)
 end
 
+function module.replaceColor(node, region, oldColor, newColor)
+	local visitor = function (volume, x, y, z)
+		volume:setVoxel(x, y, z, newColor)
+	end
+
+	local condition = function (volume, x, y, z)
+		local voxel = volume:voxel(x, y, z)
+		if voxel == oldColor then
+			return true
+		end
+		return false
+	end
+	module.conditionYXZ(node:volume(), region, visitor, condition)
+end
+
 return module
