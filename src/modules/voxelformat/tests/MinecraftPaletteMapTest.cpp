@@ -18,6 +18,8 @@ TEST_F(MinecraftPaletteMapTest, testParse) {
 	EXPECT_EQ(164,
 			  findPaletteIndex(
 				  "minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554"));
+	EXPECT_EQ(34, findPaletteIndex("stairs:stair_outer_desert_sandstone_brick"));
+	EXPECT_EQ(34, findPaletteIndex("stairs:stair_outer_desert_sandstone_brick[INT]"));
 }
 
 // parses a blocks.json file to find new colors
