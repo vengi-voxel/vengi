@@ -5,7 +5,6 @@
 #include "voxelformat/private/minecraft/MinecraftPaletteMap.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Color.h"
 #include "core/Log.h"
 #include "palette/Palette.h"
 #include <glm/vec3.hpp>
@@ -23,6 +22,22 @@ TEST_F(MinecraftPaletteMapTest, testParse) {
 
 // parses a blocks.json file to find new colors
 // disabled because the blocks.json file is not available in the repository and was parsed already
+// example blocks.json layout:
+// [
+// 	{
+// 		"rgb": [
+// 			255,
+// 			255,
+// 			255
+// 		],
+// 		"blocks": [
+// 			"minecraft:stone[facing=east][INT]",
+// 			"minecraft:grass",
+// 			"minecraft:dirt"
+// 		]
+// 	}
+// ]
+
 TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 	const core::String &str = io::filesystem()->load("blocks.json");
 	if (str.empty()) {
@@ -37,20 +52,20 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 		if (rgb.empty()) {
 			continue;
 		}
-		if (rgb.size() != 3) {
+		if (rgb.size() < 3 || rgb.size() > 4) {
 			continue;
 		}
 		core::RGBA rgba;
 		{
 			int idx = 0;
-			glm::ivec3 color;
+			glm::ivec4 color(0, 0, 0, 255);
 			for (const auto &c : rgb) {
 				color[idx++] = c.get<int>();
 			}
 			rgba.r = color[0];
 			rgba.g = color[1];
 			rgba.b = color[2];
-			rgba.a = 255;
+			rgba.a = color[3];
 		}
 
 		const auto &blocks = e["blocks"];
@@ -61,7 +76,7 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 			const std::string blockId = block.get<std::string>();
 			if (findPaletteIndex(blockId.c_str()) == -1) {
 				int palMatch = pal.getClosestMatch(rgba);
-				printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
+				Log::printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
 			} else {
 				// Log::error("Found %s", blockId.c_str());
 			}
