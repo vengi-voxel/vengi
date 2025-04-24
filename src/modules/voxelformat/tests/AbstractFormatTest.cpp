@@ -88,6 +88,10 @@ void AbstractFormatTest::testTransform(const core::String &filename) {
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
 	EXPECT_EQ("original", node->name());
+	EXPECT_EQ(node->region().getLowerCorner(), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(node->region().getUpperCorner(), glm::ivec3(39, 29, 39));
+	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(0, 0, 0).getMaterial())) << *node->volume();
+	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(0, 20, 0).getMaterial())) << *node->volume();
 	const scenegraph::SceneGraphTransform &transform = node->transform();
 	EXPECT_EQ(23.0f, transform.worldTranslation().x);
 	EXPECT_EQ(-2.0f, transform.worldTranslation().y);
