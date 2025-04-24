@@ -211,8 +211,6 @@ set(TEST_FILES
 	tests/testao.vox
 	tests/test.gox
 	tests/test.map
-	tests/test.plist
-	tests/palette.settings.vmaxpsb
 	tests/0voxel.vmax.zip
 	tests/1voxel.vmax.zip
 	tests/2voxel.vmax.zip

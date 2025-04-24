@@ -28,6 +28,8 @@ set(TEST_SRCS
 	tests/VersionTest.cpp
 )
 set(TEST_FILES
+	tests/palette.settings.vmaxpsb
+	tests/test.plist
 	testutil/main.h
 	testutil/one.h
 	testutil/two.h
