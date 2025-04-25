@@ -178,6 +178,10 @@ inline float Size(float size) {
 	return ImGui::CalcTextSize("#").x * size;
 }
 
+inline float Height(float size) {
+	return ImGui::GetTextLineHeightWithSpacing() * size;
+}
+
 IMGUI_API void SetItemTooltipUnformatted(const char *text);
 
 } // namespace ImGui
