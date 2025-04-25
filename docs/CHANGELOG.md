@@ -12,6 +12,19 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Added new minecraft block to color mappings
+   - Improved bash completion scripts
+   - Fixed `vmax.zip` loading
+   - Improved VoxelMax scene loading
+   - Improved color mapping for minecraft blocks with prefixes
+   - Fixed some dpi issues with a few dialog sizes
+
+VoxEdit:
+
+   - Added new dialog to show the minecraft block to color mappings
+   - Extended palette function (white-balancing and constrast-stretching)
+   - Fixed showing a few keybinding hints
+
 ## 0.0.36 (2025-04-21)
 
 General:
