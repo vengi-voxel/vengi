@@ -38,7 +38,7 @@ void LSystemPanel::update(const char *id) {
 		}
 
 		const uint32_t tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize(0.0f, ImGui::GetTextLineHeightWithSpacing() * 6);
+		const ImVec2 outerSize(0.0f, ImGui::Height(6.0f));
 		if (ImGui::BeginTable("##lsystemrules", 2, tableFlags, outerSize)) {
 			ImGui::TableSetupColumn(_("Command"), ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);

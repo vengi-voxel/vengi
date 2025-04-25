@@ -488,7 +488,7 @@ void IMGUIApp::renderBindingsDialog() {
 		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
 										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize(0.0f, 400.0f);
+		const ImVec2 outerSize(0.0f, ImGui::Height(25.0f));
 		if (ImGui::BeginTable("##bindingslist", 4, TableFlags, outerSize)) {
 			ImGui::TableSetupColumn(_("Keys"), ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(_("Command"), ImGuiTableColumnFlags_WidthFixed);
@@ -556,7 +556,7 @@ void IMGUIApp::renderCvarDialog() {
 		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
 										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize(0.0f, 400.0f);
+		const ImVec2 outerSize(0.0f, ImGui::Height(25.0f));
 		if (ImGui::BeginTable("##cvars", 4, TableFlags, outerSize)) {
 			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
@@ -613,7 +613,7 @@ void IMGUIApp::renderCommandDialog() {
 		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
 										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize(0.0f, 400.0f);
+		const ImVec2 outerSize(0.0f, ImGui::Height(25.0f));
 		if (ImGui::BeginTable("##commands", 2, TableFlags, outerSize)) {
 			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
