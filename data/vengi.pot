@@ -78,6 +78,28 @@ msgstr ""
 msgid "Show the list of known commands (wildcards supported)"
 msgstr ""
 
+msgid "Controls the algorithm that is used to perform the color reduction"
+msgstr ""
+
+msgid ""
+"Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
+msgstr ""
+
+msgid ""
+"The maximum size of an image in x and y direction to quantize to a palette"
+msgstr ""
+
+msgid "Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"
+msgstr ""
+
+msgid ""
+"This is the NAME part of palette-<NAME>.png or absolute png file to use "
+"(1x256)"
+msgstr ""
+
+msgid "The normal palette to use for voxelization"
+msgstr ""
+
 msgid "Camera free look on toggle"
 msgstr ""
 
@@ -388,6 +410,9 @@ msgstr ""
 msgid "Z"
 msgstr ""
 
+msgid "Unknown"
+msgstr ""
+
 msgid "Enable sending anonymous metrics"
 msgstr ""
 
@@ -478,13 +503,10 @@ msgstr ""
 msgid "Minimize the window"
 msgstr ""
 
-msgid "Controls the algorithm that is used to perform the color reduction"
-msgstr ""
-
 msgid "Merge similar quads to optimize the mesh"
 msgstr ""
 
-msgid "0 = cubes, 1 = marching cubes"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
 msgstr ""
 
 msgid "Reuse vertices or always create new ones"
@@ -551,18 +573,10 @@ msgstr ""
 msgid "Merge compounds on load"
 msgstr ""
 
-msgid ""
-"This is the NAME part of palette-<NAME>.png or absolute png file to use "
-"(1x256)"
-msgstr ""
-
 msgid "Merge all objects into one"
 msgstr ""
 
 msgid "The index of the empty color in the palette"
-msgstr ""
-
-msgid "The normal palette to use for voxelization"
 msgstr ""
 
 msgid "Toggle between left and right handed"
@@ -605,12 +619,7 @@ msgstr ""
 msgid "0 = plane, 1 = heightmap, 2 = volume"
 msgstr ""
 
-msgid ""
-"Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
-msgstr ""
-
-msgid ""
-"The maximum size of an image in x and y direction to quantize to a palette"
+msgid "The type of schematic format to use when saving schematics"
 msgstr ""
 
 msgid "Back"
@@ -632,6 +641,12 @@ msgid "Right"
 msgstr ""
 
 msgid "Top"
+msgstr ""
+
+msgid "6 bit colors"
+msgstr ""
+
+msgid "Gimp Aseprite Alpha extension"
 msgstr ""
 
 msgid "Uniform scale"
@@ -687,6 +702,9 @@ msgid "Texture coordinates"
 msgstr ""
 
 msgid "Export materials"
+msgstr ""
+
+msgid "Schematic type"
 msgstr ""
 
 msgid "Single object"
@@ -776,9 +794,6 @@ msgid "Create palette"
 msgstr ""
 
 msgid "Map colors to palette"
-msgstr ""
-
-msgid "6 bit colors"
 msgstr ""
 
 msgid "Max image size"
@@ -940,6 +955,9 @@ msgstr ""
 msgid ""
 "The maximum size of a volume before a few features are disabled (e.g. undo/"
 "autosave)"
+msgstr ""
+
+msgid "The maximum size of the preview volume"
 msgstr ""
 
 msgid "Configure the editor view mode"
@@ -1431,6 +1449,18 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
+msgid "Minecraft mapping"
+msgstr ""
+
+msgid ""
+"The voxel editor uses a different mapping than Minecraft.\n"
+"\n"
+"Here you can see which block type is mapped to which color"
+msgstr ""
+
+msgid "Color"
+msgstr ""
+
 msgid "Welcome"
 msgstr ""
 
@@ -1627,6 +1657,9 @@ msgstr ""
 msgid "Color wheel"
 msgstr ""
 
+msgid "Binary"
+msgstr ""
+
 msgid "Cubes"
 msgstr ""
 
@@ -1661,6 +1694,9 @@ msgid "Invert"
 msgstr ""
 
 msgid "All"
+msgstr ""
+
+msgid "UI"
 msgstr ""
 
 msgid "Welcome screen"
@@ -1791,16 +1827,19 @@ msgstr ""
 msgid "Calculate normals for the model"
 msgstr ""
 
-msgid "Model from color"
+msgid "Remove alpha"
 msgstr ""
 
-msgid "Remove alpha"
+msgid "Model from color"
 msgstr ""
 
 msgid "Duplicate color"
 msgstr ""
 
 msgid "Remove color"
+msgstr ""
+
+msgid "Reduce to selected"
 msgstr ""
 
 msgid "Release CTRL to change the voxel color"
@@ -1873,6 +1912,12 @@ msgstr ""
 msgid "Remove and re-create palette"
 msgstr ""
 
+msgid "Contrast stretching"
+msgstr ""
+
+msgid "White balancing"
+msgstr ""
+
 msgid "Apply to all nodes"
 msgstr ""
 
@@ -1887,9 +1932,6 @@ msgstr ""
 
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
-msgstr ""
-
-msgid "Color"
 msgstr ""
 
 msgid "Save image"
@@ -2423,6 +2465,12 @@ msgid "Change intensity by scaling the rgb values of the palette"
 msgstr ""
 
 msgid "Remove unused colors from palette"
+msgstr ""
+
+msgid "Apply white balance to the current palette"
+msgstr ""
+
+msgid "Apply color stretching to the current palette"
 msgstr ""
 
 msgid "Apply the current palette to all model nodes"
