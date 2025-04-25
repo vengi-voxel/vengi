@@ -33,6 +33,7 @@
 #define POPUP_TITLE_MODEL_NODE_SETTINGS "###modelsettingspopup"
 #define POPUP_TITLE_TIPOFTHEDAY "###tipofthedaypopup"
 #define POPUP_TITLE_WELCOME "###welcomepopup"
+#define POPUP_TITLE_MINECRAFTMAPPING "###minecraftmappingpopup"
 #define POPUP_TITLE_VOLUME_SPLIT "###volumesplitpopup"
 #define POPUP_TITLE_RENAME_NODE "###renamenodepopup"
 #define POPUP_TITLE_CREATE_ANIMATION "###createanimationpopup"

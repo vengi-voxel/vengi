@@ -185,6 +185,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				core::Var::getSafe(cfg::VoxEditPopupWelcome)->setVal(true);
 			}
 			ImGui::Separator();
+			if (ImGui::MenuItem(_("Minecraft mapping"))) {
+				core::Var::getSafe(cfg::VoxEditPopupMinecraftMapping)->setVal(true);
+			}
+			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
 				core::Var::getSafe(cfg::VoxEditPopupAbout)->setVal(true);
 			}

@@ -52,6 +52,7 @@ private:
 	core::VarPtr _tipOfTheDay;
 	core::VarPtr _popupTipOfTheDay;
 	core::VarPtr _popupWelcome;
+	core::VarPtr _popupMinecraftMapping;
 	core::VarPtr _popupSceneSettings;
 	core::VarPtr _popupAbout;
 	core::VarPtr _popupRenameNode;
@@ -130,6 +131,7 @@ private:
 	void popupNewScene();
 	void popupModelUnreference();
 	void popupWelcome();
+	void popupMinecraftMapping();
 	void popupNodeRename();
 	void popupTipOfTheDay();
 	void popupFailedSave();

@@ -137,6 +137,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupWelcome, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupMinecraftMapping, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupAbout, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupRenameNode, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);

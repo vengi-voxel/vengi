@@ -30,6 +30,7 @@ constexpr const char *VoxEditTipOftheDay = "ve_tipoftheday";
 constexpr const char *VoxEditPopupSceneSettings = "ve_popupscenesettings";
 constexpr const char *VoxEditPopupTipOfTheDay = "ve_popuptipoftheday";
 constexpr const char *VoxEditPopupWelcome = "ve_popupwelcome";
+constexpr const char *VoxEditPopupMinecraftMapping = "ve_popupminecraftmapping";
 constexpr const char *VoxEditPopupAbout = "ve_popupabout";
 constexpr const char *VoxEditPopupRenameNode = "ve_popuprenamenode";
 constexpr const char *VoxEditPopupCreateAnimation = "ve_popupcreateanimation";

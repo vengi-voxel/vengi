@@ -34,6 +34,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/minecraft/MinecraftPaletteMap.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -232,6 +233,7 @@ bool MainWindow::init() {
 	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
 	_popupTipOfTheDay = core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay);
 	_popupWelcome = core::Var::getSafe(cfg::VoxEditPopupWelcome);
+	_popupMinecraftMapping = core::Var::getSafe(cfg::VoxEditPopupMinecraftMapping);
 	_popupSceneSettings = core::Var::getSafe(cfg::VoxEditPopupSceneSettings);
 	_popupAbout = core::Var::getSafe(cfg::VoxEditPopupAbout);
 	_popupRenameNode = core::Var::getSafe(cfg::VoxEditPopupRenameNode);
@@ -562,6 +564,44 @@ void MainWindow::popupTipOfTheDay() {
 	}
 }
 
+void MainWindow::popupMinecraftMapping() {
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
+	const core::String title = makeTitle(_("Minecraft mapping"), POPUP_TITLE_MINECRAFTMAPPING);
+	if (ImGui::BeginPopupModal(title.c_str())) {
+		ImGui::IconDialog(ICON_LC_CIRCLE_HELP,
+						  _("The voxel editor uses a different mapping than Minecraft.\n\nHere you can see which block "
+							"type is mapped to which color"),
+						  true);
+		const voxelformat::PaletteArray &minecraftPaletteMap = voxelformat::getPaletteArray();
+		palette::Palette mcPal;
+		mcPal.minecraft();
+		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
+										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		const ImVec2 outerSize(0.0f, ImGui::Height(25.0f));
+		if (ImGui::BeginTable("##minecraftmapping", 2, TableFlags, outerSize)) {
+			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(_("Color"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+			for (int i = 0; i < minecraftPaletteMap.size(); ++i) {
+				const core::String &name = minecraftPaletteMap[i].name;
+				const core::RGBA &color = mcPal.color(minecraftPaletteMap[i].palIdx);
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(name.c_str());
+				ImGui::TableNextColumn();
+				ImGui::ColorButton(name.c_str(), ImColor(color.rgba),
+								   ImGuiColorEditFlags_NoInputs);
+			}
+			ImGui::EndTable();
+		}
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
+	}
+}
+
 void MainWindow::popupWelcome() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Welcome"), POPUP_TITLE_WELCOME);
@@ -828,6 +868,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_WELCOME);
 		_popupWelcome->setVal("false");
 	}
+	if (_popupMinecraftMapping->boolVal()) {
+		ImGui::OpenPopup(POPUP_TITLE_MINECRAFTMAPPING);
+		_popupMinecraftMapping->setVal("false");
+	}
 	if (_popupAbout->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_ABOUT);
 		_popupAbout->setVal("false");
@@ -849,6 +893,7 @@ void MainWindow::registerPopups() {
 	popupTipOfTheDay();
 	popupAbout();
 	popupWelcome();
+	popupMinecraftMapping();
 	popupNodeRename();
 	popupModelUnreference();
 
