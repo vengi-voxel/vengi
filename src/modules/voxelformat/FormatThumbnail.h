@@ -24,12 +24,16 @@ struct ThumbnailContext {
 	float roll = 0.0f;
 	float distance = -1.0f;
 	float farPlane = 5000.0f;
+	/** The camera rotation - see @c deltaFrameSeconds */
 	glm::vec3 omega{0.0f, 0.0f, 0.0f};
-	core::String cameraMode = "free";
+	core::String cameraMode = "free"; // see voxelrender::SceneCameraModeStr
 	/** only used when @c useWorldPosition is set to @c true */
 	glm::vec3 worldPosition{0.0f, 0.0f, 0.0f};
+	/** This is particularly useful when also using @c omega for the camera rotation */
 	double deltaFrameSeconds = 0.001;
+	/** Use the scene node camera for rendering the thumbnail */
 	bool useSceneCamera = false;
+	/** Use @c worldPosition in the camera for rendering the thumbnail */
 	bool useWorldPosition = false;
 };
 
