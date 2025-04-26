@@ -24,6 +24,8 @@ using PaletteMap = core::StringMap<McColor>;
 using PaletteArray = core::BufferView<McColorScheme>;
 
 // this list was found in enkiMI by Doug Binks and extended
+// https://github.com/PrismarineJS/minecraft-data
+// https://github.com/spoutn1k/mcmap
 const PaletteMap &getPaletteMap();
 const PaletteArray &getPaletteArray();
 /**
