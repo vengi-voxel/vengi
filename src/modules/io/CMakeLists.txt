@@ -23,6 +23,7 @@ set(SRCS
 	StdStreamBuf.h
 	Stream.cpp Stream.h
 	StringStream.cpp StringStream.h
+	TokenStream.cpp TokenStream.h
 	ZipArchive.cpp ZipArchive.h
 	ZipReadStream.cpp ZipReadStream.h
 	ZipWriteStream.cpp ZipWriteStream.h
@@ -65,6 +66,7 @@ set(TEST_SRCS
 	tests/MemoryArchiveTest.cpp
 	tests/MemoryReadStreamTest.cpp
 	tests/StdStreamBufTest.cpp
+	tests/TokenStreamTest.cpp
 	tests/ZipArchiveTest.cpp
 	tests/ZipStreamTest.cpp
 	tests/Z85Test.cpp
