@@ -20,6 +20,31 @@ protected:
 		}
 		return FormatConfig::init();
 	}
+
+	static void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f) {
+		ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
+		for (int i = 0; i < pal1.colorCount(); ++i) {
+			const core::RGBA &c1 = pal1.color(i);
+			const core::RGBA &c2 = pal2.color(i);
+			if (c1 != c2) {
+				const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
+				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
+										   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+										   << "\nPalette 1:\n"
+										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
+										   << palette::Palette::print(pal2);
+			}
+		}
+	}
+
+	void testSaveLoad(const char *filename) {
+		Palette pal;
+		pal.nippon();
+		ASSERT_TRUE(pal.save(filename));
+		Palette pal2;
+		EXPECT_TRUE(pal2.load(filename));
+		paletteComparator(pal, pal2);
+	}
 };
 
 TEST_F(PaletteTest, testPaletteLookup) {
@@ -41,12 +66,7 @@ TEST_F(PaletteTest, testGimpRGBAPalette) {
 }
 
 TEST_F(PaletteTest, testGimpPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.gpl"));
-	EXPECT_TRUE(pal.load("test.gpl"));
-	EXPECT_EQ(pal.colorCount(), cnt);
+	testSaveLoad("test.gpl");
 }
 
 TEST_F(PaletteTest, testAdobeColorBookPalette) {
@@ -61,12 +81,7 @@ TEST_F(PaletteTest, testAdobeColorBookPalette) {
 }
 
 TEST_F(PaletteTest, testPNGPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.png"));
-	EXPECT_TRUE(pal.load("test.png"));
-	EXPECT_EQ(pal.colorCount(), cnt);
+	testSaveLoad("test.png");
 }
 
 TEST_F(PaletteTest, testPaintNetPalette) {
@@ -96,12 +111,7 @@ TEST_F(PaletteTest, testPhotoshopPalette) {
 }
 
 TEST_F(PaletteTest, testASEPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.ase"));
-	EXPECT_TRUE(pal.load("test.ase"));
-	EXPECT_EQ(pal.colorCount(), cnt);
+	testSaveLoad("test.ase");
 }
 
 TEST_F(PaletteTest, testVPLPalette) {
@@ -111,21 +121,11 @@ TEST_F(PaletteTest, testVPLPalette) {
 }
 
 TEST_F(PaletteTest, testCSVPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.csv"));
-	EXPECT_TRUE(pal.load("test.csv"));
-	EXPECT_EQ(pal.colorCount(), cnt);
+	testSaveLoad("test.csv");
 }
 
 TEST_F(PaletteTest, testRGBPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.pal"));
-	EXPECT_TRUE(pal.load("test.pal"));
-	EXPECT_EQ(pal.colorCount(), cnt);
+	testSaveLoad("test.pal");
 }
 
 TEST_F(PaletteTest, testReduce) {
