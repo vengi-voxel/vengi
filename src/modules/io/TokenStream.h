@@ -43,7 +43,7 @@ public:
 		return _stream.eos();
 	}
 
-	core::String next();
+	virtual core::String next();
 };
 
 } // namespace io
