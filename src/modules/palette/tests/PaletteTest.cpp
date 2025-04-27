@@ -69,6 +69,15 @@ TEST_F(PaletteTest, testGimpPalette) {
 	testSaveLoad("test.gpl");
 }
 
+TEST_F(PaletteTest, testAVMTPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount();
+	ASSERT_TRUE(pal.save("test.avmt"));
+	EXPECT_TRUE(pal.load("test.avmt"));
+	EXPECT_EQ(pal.colorCount(), cnt);
+}
+
 TEST_F(PaletteTest, testAdobeColorBookPalette) {
 	Palette pal;
 	pal.nippon();

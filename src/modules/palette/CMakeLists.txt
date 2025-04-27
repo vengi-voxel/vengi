@@ -6,6 +6,7 @@ set(SRCS
 	private/AdobeColorSpace.h
 	private/ACBPalette.cpp private/ACBPalette.h
 	private/ASEPalette.cpp private/ASEPalette.h
+	private/AVMTPalette.cpp private/AVMTPalette.h
 	private/CSVPalette.cpp private/CSVPalette.h
 	private/GimpPalette.cpp private/GimpPalette.h
 	private/JASCPalette.cpp private/JASCPalette.h

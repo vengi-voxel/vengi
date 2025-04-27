@@ -14,6 +14,7 @@
 #include "palette/private/QBCLPalette.h"
 #include "palette/private/RGBPalette.h"
 #include "palette/private/VPLPalette.h"
+#include "palette/private/AVMTPalette.h"
 
 namespace palette {
 
@@ -22,6 +23,7 @@ const io::FormatDescription *palettes() {
 	static thread_local io::FormatDescription desc[] = {
 		ACBPalette::format(),
 		ASEPalette::format(),
+		AVMTPalette::format(),
 		CSVPalette::format(),
 		GimpPalette::format(),
 		JASCPalette::format(),

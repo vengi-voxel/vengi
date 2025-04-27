@@ -5,6 +5,7 @@
 #include "PaletteFormat.h"
 #include "ACBPalette.h"
 #include "ASEPalette.h"
+#include "AVMTPalette.h"
 #include "CSVPalette.h"
 #include "GimpPalette.h"
 #include "JASCPalette.h"
@@ -46,6 +47,8 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 			return core::make_shared<PNGPalette>();
 		} else if (ext == VPLPalette::format().mainExtension()) {
 			return core::make_shared<VPLPalette>();
+		} else if (ext == AVMTPalette::format().mainExtension()) {
+			return core::make_shared<AVMTPalette>();
 		} else if (ext == ACBPalette::format().mainExtension()) {
 			return core::make_shared<ACBPalette>();
 		} else if (ext == JASCPalette::format().mainExtension()) {
