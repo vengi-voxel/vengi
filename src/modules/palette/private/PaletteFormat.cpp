@@ -3,6 +3,7 @@
  */
 
 #include "PaletteFormat.h"
+#include "ACBPalette.h"
 #include "ASEPalette.h"
 #include "CSVPalette.h"
 #include "GimpPalette.h"
@@ -10,17 +11,16 @@
 #include "PNGPalette.h"
 #include "PaintNetPalette.h"
 #include "PhotoshopPalette.h"
+#include "PixeloramaPalette.h"
 #include "QBCLPalette.h"
 #include "RGBPalette.h"
+#include "VPLPalette.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "metric/MetricFacade.h"
 #include "palette/PaletteFormatDescription.h"
-#include "palette/private/ACBPalette.h"
-#include "palette/private/PixeloramaPalette.h"
-#include "palette/private/VPLPalette.h"
 
 namespace palette {
 

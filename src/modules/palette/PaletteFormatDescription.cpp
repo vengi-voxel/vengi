@@ -20,17 +20,17 @@ namespace palette {
 const io::FormatDescription *palettes() {
 	// clang-format: off
 	static thread_local io::FormatDescription desc[] = {
-		GimpPalette::format(),
-		QBCLPalette::format(),
-		JASCPalette::format(),
-		ASEPalette::format(),
-		PhotoshopPalette::format(),
-		RGBPalette::format(),
-		PixeloramaPalette::format(),
-		VPLPalette::format(),
-		CSVPalette::format(),
-		PaintNetPalette::format(),
 		ACBPalette::format(),
+		ASEPalette::format(),
+		CSVPalette::format(),
+		GimpPalette::format(),
+		JASCPalette::format(),
+		PaintNetPalette::format(),
+		PhotoshopPalette::format(),
+		PixeloramaPalette::format(),
+		QBCLPalette::format(),
+		RGBPalette::format(),
+		VPLPalette::format(),
 		io::format::png(),
 		{"", {}, {}, 0u}};
 	// clang-format: on
