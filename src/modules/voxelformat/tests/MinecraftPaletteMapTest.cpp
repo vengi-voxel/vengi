@@ -5,10 +5,13 @@
 #include "voxelformat/private/minecraft/MinecraftPaletteMap.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
+#include "core/Color.h"
 #include "core/Log.h"
+#include "core/Process.h"
+#include "io/BufferedReadWriteStream.h"
 #include "palette/Palette.h"
-#include <glm/vec3.hpp>
 #include "json/JSON.h"
+#include <glm/vec3.hpp>
 
 namespace voxelformat {
 
@@ -78,10 +81,58 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 			const std::string blockId = block.get<std::string>();
 			if (findPaletteIndex(blockId.c_str()) == -1) {
 				int palMatch = pal.getClosestMatch(rgba);
+				// TODO: alpha
 				Log::printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
 			} else {
 				// Log::error("Found %s", blockId.c_str());
 			}
+		}
+	}
+}
+
+TEST_F(MinecraftPaletteMapTest, testNewMcmapColors) {
+	io::BufferedReadWriteStream jsonOutput;
+	if (core::Process::exec("/home/mgerhardy/bin/mcmap", {"-dumpcolors"}, nullptr, &jsonOutput) != 0) {
+		GTEST_SKIP() << "Failed to execute mcmap https://github.com/spoutn1k/mcmap";
+		return;
+	}
+	const core::String str((const char *)jsonOutput.getBuffer(), jsonOutput.pos());
+	ASSERT_FALSE(str.empty());
+	palette::Palette pal;
+	pal.minecraft();
+	nlohmann::json j = nlohmann::json::parse(str, nullptr, false, true);
+	struct Data {
+		core::String colorHex;
+		core::RGBA rgba;
+		core::String type;
+		core::String accent;
+	};
+	for (auto &[blockId, value] : j.items()) {
+		Data data;
+		if (value.is_string()) {
+			data.colorHex = value.get<std::string>().c_str();
+		} else if (value.is_object()) {
+			if (value.contains("type")) {
+				data.colorHex = value["type"].get<std::string>().c_str();
+			}
+			if (value.contains("accent")) {
+				data.colorHex = value["accent"].get<std::string>().c_str();
+			}
+			if (value.contains("color")) {
+				data.colorHex = value["color"].get<std::string>().c_str();
+			}
+		}
+		if (data.colorHex.empty()) {
+			continue;
+		}
+		data.rgba = core::Color::fromHex(data.colorHex.c_str());
+
+		if (findPaletteIndex(blockId.c_str()) == -1) {
+			int palMatch = pal.getClosestMatch(data.rgba);
+			// TODO: alpha
+			Log::printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
+		} else {
+			// Log::error("Found %s", blockId.c_str());
 		}
 	}
 }
