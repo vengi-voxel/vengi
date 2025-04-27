@@ -219,7 +219,10 @@ bool WindowedApp::isDarkMode() const {
 		stream.seek(0);
 		core::String output;
 		stream.readString(stream.size(), output);
+		Log::debug("gsettings gtk-theme: '%s'", output.c_str());
 		return core::string::icontains(output, "dark");
+	} else {
+		Log::warn("Failed to execute gsettings: %i", exitCode);
 	}
 	return true;
 #elif defined(_WIN32) || defined(__CYGWIN__)
