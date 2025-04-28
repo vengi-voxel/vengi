@@ -103,7 +103,7 @@ bool AVMTPalette::save(const palette::Palette &palette, const core::String &file
 	stream.writeString("\t\t\tType =\t1\n", false);
 	stream.writeString("\t\t\tPaletteSize =\t{\n", false);
 	stream.writeString("\t\t\t\tx =\t1\n", false);
-	stream.writeString("\t\t\t\ty =\t256\n", false);
+	stream.writeStringFormat(false, "\t\t\t\ty =\t%i\n", palette.colorCount());
 	stream.writeString("\t\t\t}\n", false);
 	stream.writeString("\t\t\tVoxMaterialParams =\t[\n", false);
 	stream.writeString("\t\t\t\t{\n", false);
