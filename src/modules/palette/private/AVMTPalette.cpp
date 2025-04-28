@@ -69,11 +69,13 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 				color.b = ts.nextStringValue().toFloat();
 				_hasColor = true;
 			} else if (token == "metallic") {
-				/*const float v =*/ts.nextStringValue().toFloat();
+				const float v = ts.nextStringValue().toFloat();
+				palette.setMetal(palIdx, v);
 			} else if (token == "smooth") {
 				/*const float v =*/ts.nextStringValue().toFloat();
 			} else if (token == "emissive") {
-				/*const float v =*/ts.nextStringValue().toFloat();
+				const float v = ts.nextStringValue().toFloat();
+				palette.setEmit(palIdx, v);
 			} else if (token == "name") {
 				const core::String &colorName = ts.nextStringValue();
 				palette.setColorName(palIdx, colorName);
