@@ -5,7 +5,6 @@
 #include "AVMTPalette.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "glm/ext/scalar_integer.hpp"
 #include "io/TokenStream.h"
 
 namespace palette {
