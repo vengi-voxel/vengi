@@ -86,6 +86,7 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 			if (_hasColor) {
 				palette.setColor(palIdx, core::Color::getRGBA(color));
 				palIdx++;
+				color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 				_hasColor = false;
 			}
 			Log::debug("token %s at depth %i and array depth %i", token.c_str(), ts.blockDepth(), ts.arrayDepth());
@@ -117,9 +118,9 @@ bool AVMTPalette::save(const palette::Palette &palette, const core::String &file
 		}
 		++added;
 		const glm::vec4 &c = palette.color4(i);
-		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%f\n", c.r);
-		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%f\n", c.g);
-		stream.writeStringFormat(false, "\t\t\t\t\tb =\t%f\n", c.b);
+		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.6f\n", c.r);
+		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.6f\n", c.g);
+		stream.writeStringFormat(false, "\t\t\t\t\tb =\t%0.6f\n", c.b);
 		const Material &mat = palette.material(i);
 		stream.writeStringFormat(false, "\t\t\t\t\tmetallic =\t%f\n", mat.metal);
 		// stream.writeStringFormat(false, "\t\t\t\t\tsmooth =\t%f\n", mat.smooth);

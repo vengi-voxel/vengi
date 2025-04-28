@@ -23,6 +23,8 @@ protected:
 
 	static void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f) {
 		ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
+		// TODO: name ASSERT_EQ(pal1.name(), pal2.name());
+		// TODO: materials
 		for (int i = 0; i < pal1.colorCount(); ++i) {
 			const core::RGBA &c1 = pal1.color(i);
 			const core::RGBA &c2 = pal2.color(i);
@@ -34,16 +36,17 @@ protected:
 										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
 										   << palette::Palette::print(pal2);
 			}
+			// TODO: color names
 		}
 	}
 
-	void testSaveLoad(const char *filename) {
+	void testSaveLoad(const char *filename, float maxDelta = 0.001f) {
 		Palette pal;
 		pal.nippon();
 		ASSERT_TRUE(pal.save(filename));
 		Palette pal2;
 		EXPECT_TRUE(pal2.load(filename));
-		paletteComparator(pal, pal2);
+		paletteComparator(pal, pal2, maxDelta);
 	}
 };
 
