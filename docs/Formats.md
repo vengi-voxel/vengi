@@ -74,6 +74,7 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 | :------------------------------ | --------- | ------- | ------ |
 | Adobe Color Bock                | acb       | X       | X      |
 | Adobe Swatch Exchange           | ase       | X       | X      |
+| Avoyd Material                  | avmt      | X       | X      |
 | CSV Palette                     | csv       | X       | X      |
 | Gimp Palette                    | gpl       | X       | X      |
 | JASC Palette                    | pal       | X       | X      |

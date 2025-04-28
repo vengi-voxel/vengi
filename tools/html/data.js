@@ -1,28 +1,14 @@
 const jsonData = {
   "palettes": [
     {
-      "name": "Gimp Palette",
+      "name": "Adobe Color Bock",
       "extensions": [
-        "gpl"
-      ],
-      "magics": []
-    },
-    {
-      "name": "Qubicle Palette",
-      "extensions": [
-        "qsm"
-      ],
-      "magics": []
-    },
-    {
-      "name": "JASC Palette",
-      "extensions": [
-        "pal"
+        "acb"
       ],
       "magics": [
         {
           "type": "string",
-          "value": "JASC"
+          "value": "8BCB"
         }
       ]
     },
@@ -39,31 +25,9 @@ const jsonData = {
       ]
     },
     {
-      "name": "Photoshop Palette",
+      "name": "Avoyd Material",
       "extensions": [
-        "aco",
-        "8bco"
-      ],
-      "magics": []
-    },
-    {
-      "name": "RGB Palette",
-      "extensions": [
-        "pal"
-      ],
-      "magics": []
-    },
-    {
-      "name": "Pixelorama",
-      "extensions": [
-        "json"
-      ],
-      "magics": []
-    },
-    {
-      "name": "Tiberian Sun Palette",
-      "extensions": [
-        "vpl"
+        "avmt"
       ],
       "magics": []
     },
@@ -75,6 +39,25 @@ const jsonData = {
       "magics": []
     },
     {
+      "name": "Gimp Palette",
+      "extensions": [
+        "gpl"
+      ],
+      "magics": []
+    },
+    {
+      "name": "JASC Palette",
+      "extensions": [
+        "pal"
+      ],
+      "magics": [
+        {
+          "type": "string",
+          "value": "JASC"
+        }
+      ]
+    },
+    {
       "name": "Paint.NET Palette",
       "extensions": [
         "txt"
@@ -82,16 +65,40 @@ const jsonData = {
       "magics": []
     },
     {
-      "name": "Adobe Color Bock",
+      "name": "Photoshop Palette",
       "extensions": [
-        "acb"
+        "aco",
+        "8bco"
       ],
-      "magics": [
-        {
-          "type": "string",
-          "value": "8BCB"
-        }
-      ]
+      "magics": []
+    },
+    {
+      "name": "Pixelorama",
+      "extensions": [
+        "json"
+      ],
+      "magics": []
+    },
+    {
+      "name": "Qubicle Palette",
+      "extensions": [
+        "qsm"
+      ],
+      "magics": []
+    },
+    {
+      "name": "RGB Palette",
+      "extensions": [
+        "pal"
+      ],
+      "magics": []
+    },
+    {
+      "name": "Tiberian Sun Palette",
+      "extensions": [
+        "vpl"
+      ],
+      "magics": []
     },
     {
       "name": "Portable Network Graphics",
