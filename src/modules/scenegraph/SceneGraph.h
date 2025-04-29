@@ -360,6 +360,7 @@ public:
 
 	/**
 	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
+	 * @note This is not related to the group node types.
 	 */
 	template<class FUNC>
 	void foreachGroup(FUNC&& f) {

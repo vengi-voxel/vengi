@@ -530,6 +530,9 @@ public:
 	 */
 	void nodeMoveVoxels(int nodeId, const glm::ivec3 &m);
 	void nodeRemoveUnusedColors(int nodeId, bool updateVoxels = false);
+	/**
+	 * @note This is not related to the group node type
+	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
 
