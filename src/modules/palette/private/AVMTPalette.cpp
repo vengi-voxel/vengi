@@ -5,7 +5,10 @@
 #include "AVMTPalette.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "io/TokenStream.h"
+#include "palette/Material.h"
 
 namespace palette {
 
@@ -46,53 +49,79 @@ public:
 	}
 };
 
-bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
-	AVMTStream ts(stream);
+struct AVMTMaterial {
+	core::RGBA rgba;
+	glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
+	core::String name;
+	palette::Material mat;
+};
 
-	glm::vec4 color(0.0f, 0.0f, 0.0f, 1.0f);
-	int palIdx = 0;
-	bool _hasColor = false;
-	while (!ts.eos()) {
-		const core::String &token = ts.next();
-		if (ts.arrayDepth() == 1 && ts.blockDepth() == 2) {
+bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+	AVMTStream avmtStream(stream);
+	core::DynamicArray<AVMTMaterial, 128> materials;
+
+	AVMTMaterial currentMaterial;
+	bool currentMatColorFound = false;
+
+	while (!avmtStream.eos()) {
+		const core::String &token = avmtStream.next();
+		if (avmtStream.arrayDepth() == 1 && avmtStream.blockDepth() == 2) {
 			if (token == "Name") {
-				palette.setName(ts.nextStringValue());
+				palette.setName(avmtStream.nextStringValue());
 			}
-		} else if (ts.arrayDepth() == 2 && ts.blockDepth() == 3) {
+		} else if (avmtStream.arrayDepth() == 2 && avmtStream.blockDepth() == 3) {
 			if (token == "r") {
-				color.r = ts.nextStringValue().toFloat();
-				_hasColor = true;
+				currentMaterial.color.r = avmtStream.nextStringValue().toFloat();
+				currentMatColorFound = true;
 			} else if (token == "g") {
-				color.g = ts.nextStringValue().toFloat();
-				_hasColor = true;
+				currentMaterial.color.g = avmtStream.nextStringValue().toFloat();
+				currentMatColorFound = true;
 			} else if (token == "b") {
-				color.b = ts.nextStringValue().toFloat();
-				_hasColor = true;
+				currentMaterial.color.b = avmtStream.nextStringValue().toFloat();
+				currentMatColorFound = true;
 			} else if (token == "metallic") {
-				const float v = ts.nextStringValue().toFloat();
-				palette.setMetal(palIdx, v);
+				const float v = avmtStream.nextStringValue().toFloat();
+				currentMaterial.mat.setValue(MaterialProperty::MaterialMetal, v);
 			} else if (token == "smooth") {
-				/*const float v =*/ts.nextStringValue().toFloat();
+				/*const float v =*/avmtStream.nextStringValue().toFloat();
+				// m.mat.setValue(MaterialProperty::MaterialSmooth, v);
 			} else if (token == "emissive") {
-				const float v = ts.nextStringValue().toFloat();
-				palette.setEmit(palIdx, v);
+				const float v = avmtStream.nextStringValue().toFloat();
+				currentMaterial.mat.setValue(MaterialProperty::MaterialEmit, v);
 			} else if (token == "name") {
-				const core::String &colorName = ts.nextStringValue();
-				palette.setColorName(palIdx, colorName);
+				currentMaterial.name = avmtStream.nextStringValue();
 			} else {
 				Log::debug("%s (r, g, b, metallic, smooth, emissive)", token.c_str());
 			}
 		} else {
-			if (_hasColor) {
-				palette.setColor(palIdx, core::Color::getRGBA(color));
-				palIdx++;
-				color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-				_hasColor = false;
+			if (currentMatColorFound) {
+				currentMaterial.rgba = core::Color::getRGBA(currentMaterial.color);
+				materials.push_back(currentMaterial);
+				currentMaterial = {};
+				currentMatColorFound = false;
 			}
-			Log::debug("token %s at depth %i and array depth %i", token.c_str(), ts.blockDepth(), ts.arrayDepth());
+			Log::debug("token %s at depth %i and array depth %i", token.c_str(), avmtStream.blockDepth(),
+					   avmtStream.arrayDepth());
 		}
 	}
-	palette.changeSize(palIdx);
+
+	core::Buffer<core::RGBA, 1024> colorBuffer;
+	colorBuffer.reserve(materials.size());
+	for (const auto &e : materials) {
+		colorBuffer.push_back(e.rgba);
+	}
+	palette.quantize(colorBuffer.data(), colorBuffer.size());
+
+	for (size_t i = 0; i < materials.size(); ++i) {
+		const AVMTMaterial &m = materials[i];
+		int palIdx = palette.getClosestMatch(m.rgba);
+		if (palIdx == PaletteColorNotFound) {
+			continue;
+		}
+		palette.setColorName(palIdx, m.name);
+		palette.setMaterial(palIdx, m.mat);
+	}
+
 	return true;
 }
 
