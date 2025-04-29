@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #include "io/TokenStream.h"
 #include "palette/Material.h"
 
@@ -26,12 +27,16 @@ public:
 		core::String n = Super::next();
 		if (n == "{") {
 			++_blockDepth;
+			return next();
 		} else if (n == "}") {
 			--_blockDepth;
+			return next();
 		} else if (n == "[") {
 			++_arrayDepth;
+			return next();
 		} else if (n == "]") {
 			--_arrayDepth;
+			return next();
 		}
 		return n;
 	}
@@ -68,13 +73,15 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 	AVMTMaterial currentMaterial;
 	bool currentMatColorFound = false;
 
+	core::Set<core::RGBA, 521> colorSet;
+
 	while (!avmtStream.eos()) {
 		const core::String &token = avmtStream.next();
 		if (avmtStream.arrayDepth() == 1 && avmtStream.blockDepth() == 2) {
 			if (token == "Name") {
 				palette.setName(avmtStream.nextStringValue());
 			}
-		} else if (avmtStream.arrayDepth() == 2 && avmtStream.blockDepth() == 3) {
+		} else if (avmtStream.arrayDepth() == 2 && avmtStream.blockDepth() >= 3) {
 			if (token == "r") {
 				currentMaterial.color.r = avmtStream.nextStringValue().toFloat();
 				currentMatColorFound = true;
@@ -87,6 +94,21 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 			} else if (token == "metallic") {
 				const float v = avmtStream.nextStringValue().toFloat();
 				currentMaterial.mat.setValue(MaterialProperty::MaterialMetal, v);
+			} else if (token == "indexOfRefraction") {
+				const float v = avmtStream.nextStringValue().toFloat();
+				currentMaterial.mat.setValue(MaterialProperty::MaterialIndexOfRefraction, v);
+			} else if (token == "absorptionLength") {
+				/*const float v =*/avmtStream.nextStringValue().toFloat();
+				// currentMaterial.mat.setValue(MaterialProperty::MaterialAbsorptionLength, v);
+			} else if (token == "surfaceTransmission") {
+				/*const float v =*/avmtStream.nextStringValue().toFloat();
+				// currentMaterial.mat.setValue(MaterialProperty::MaterialSurfaceTransmission, v);
+			} else if (token == "scatterLength") {
+				/*const float v =*/avmtStream.nextStringValue().toFloat();
+				// currentMaterial.mat.setValue(MaterialProperty::MaterialScatterLength, v);
+			} else if (token == "phase") {
+				/*const float v =*/avmtStream.nextStringValue().toFloat();
+				// currentMaterial.mat.setValue(MaterialProperty::MaterialPhase, v);
 			} else if (token == "smooth") {
 				/*const float v =*/avmtStream.nextStringValue().toFloat();
 				// m.mat.setValue(MaterialProperty::MaterialSmooth, v);
@@ -95,18 +117,29 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 				currentMaterial.mat.setValue(MaterialProperty::MaterialEmit, v);
 			} else if (token == "name") {
 				currentMaterial.name = avmtStream.nextStringValue();
+			} else if (token == "materialTransparency") {
+				// skip =
+				if (avmtStream.next() != "=") {
+					Log::error("Expected '=' after materialTransparency but got '%s'", token.c_str());
+				}
 			} else {
-				Log::debug("Unknown token: '%s' (expected are: r, g, b, metallic, smooth, emissive, name)",
+				Log::debug("Unhandled token: '%s' (expected are: r, g, b, metallic, smooth, emissive, name)",
 						   token.c_str());
 			}
 		} else {
 			if (currentMatColorFound) {
 				currentMaterial.rgba = core::Color::getRGBA(currentMaterial.color);
+				if (!colorSet.insert(currentMaterial.rgba)) {
+					Log::trace("Duplicate color found: %s", core::Color::print(currentMaterial.rgba).c_str());
+					currentMaterial = {};
+					currentMatColorFound = false;
+					continue;
+				}
 				materials.push_back(currentMaterial);
 				currentMaterial = {};
 				currentMatColorFound = false;
 			}
-			Log::trace("token %s at depth %i and array depth %i", token.c_str(), avmtStream.blockDepth(),
+			Log::trace("Token %s at depth %i and array depth %i", token.c_str(), avmtStream.blockDepth(),
 					   avmtStream.arrayDepth());
 		}
 	}
@@ -116,7 +149,7 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 		return false;
 	}
 
-	core::Buffer<core::RGBA, 1024> colorBuffer;
+	core::Buffer<core::RGBA> colorBuffer;
 	colorBuffer.reserve(materials.size());
 	for (const auto &e : materials) {
 		colorBuffer.push_back(e.rgba);
