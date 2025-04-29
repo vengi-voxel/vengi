@@ -93,7 +93,7 @@ public:
 	void setAlpha(uint8_t paletteColorIdx, float factor = 1.0f);
 	void setDensity(uint8_t paletteColorIdx, float factor = 1.0f);
 	void setSp(uint8_t paletteColorIdx, float factor = 1.0f);
-	void setGlossiness(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setPhase(uint8_t paletteColorIdx, float factor = 1.0f);
 	void setMedia(uint8_t paletteColorIdx, float factor = 1.0f);
 	void setLowDynamicRange(uint8_t paletteColorIdx, float factor = 1.0f);
 	// returns true if the palette has any materials set

@@ -1098,11 +1098,11 @@ void Palette::setSp(uint8_t paletteColorIdx, float factor) {
 	setMaterialValue(paletteColorIdx, MaterialSp, factor);
 }
 
-void Palette::setGlossiness(uint8_t paletteColorIdx, float factor) {
+void Palette::setPhase(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected glossiness factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialGlossiness, glm::clamp(factor, 0.0f, 1.0f));
+	setMaterialValue(paletteColorIdx, MaterialPhase, glm::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setMedia(uint8_t paletteColorIdx, float factor) {

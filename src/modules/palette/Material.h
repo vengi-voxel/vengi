@@ -35,7 +35,7 @@ enum MaterialProperty : uint32_t {
 	MaterialLowDynamicRange = 8,
 	MaterialDensity = 9,
 	MaterialSp = 10,
-	MaterialGlossiness = 11,
+	MaterialPhase = 11, // asymmetry parameter, g = 0: isotropic scattering, g > 0: forward scattering, g < 0: backward scattering
 	MaterialMedia = 12,
 
 	MaterialMax
@@ -57,7 +57,7 @@ struct Material {
 	float lowDynamicRange = 0.0f;
 	float density = 0.0f;
 	float sp = 0.0f;
-	float glossiness = 0.0f;
+	float phase = 0.0f; // g in magicavoxel material (for scattering)
 	float media = 0.0f;
 
 	bool operator==(const Material &rhs) const;
@@ -69,9 +69,9 @@ struct Material {
 
 // make sure to keep the order of the properties - see Material struct float values
 // none is not included in this array - beware of the -1 offset
-static constexpr const char *MaterialPropertyNames[] = {"metal",	   "roughness", "specular",	  "indexOfRefraction",
-														"attenuation", "flux",		"emit",		  "lowDynamicRange",
-														"density",	   "sp",		"glossiness", "media"};
+static constexpr const char *MaterialPropertyNames[] = {"metal",	   "roughness", "specular", "indexOfRefraction",
+														"attenuation", "flux",		"emit",		"lowDynamicRange",
+														"density",	   "sp",		"phase",	"media"};
 static_assert(lengthof(MaterialPropertyNames) == MaterialMax - 1, "MaterialPropertyNames size mismatch");
 
 inline const char *MaterialPropertyName(MaterialProperty prop) {

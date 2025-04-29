@@ -12,6 +12,7 @@
 #include "core/collection/Array.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/Material.h"
 #include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -317,6 +318,9 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 			wrapBool(stream.readPascalStringUInt16LE(name))
 			float value;
 			wrap(stream.readFloat(value))
+			if (name == "glossiness") {
+				name = MaterialPropertyName(palette::MaterialProperty::MaterialPhase);
+			}
 			palette.setMaterialProperty(i, name, value);
 		}
 	}

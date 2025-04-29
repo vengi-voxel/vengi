@@ -118,14 +118,14 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 		} else if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
 			palette.setAlpha(palIdx, matl.alpha);
 		}
-		if (matl.content_flags & k_ogt_vox_matl_have_d) {
-			palette.setGlossiness(palIdx, matl.d);
-		}
+		// if (matl.content_flags & k_ogt_vox_matl_have_d) {
+		// 	palette.setXXX(palIdx, matl.d);
+		// }
 		if (matl.content_flags & k_ogt_vox_matl_have_sp) {
 			palette.setSp(palIdx, matl.sp);
 		}
 		if (matl.content_flags & k_ogt_vox_matl_have_g) {
-			palette.setGlossiness(palIdx, matl.g);
+			palette.setPhase(palIdx, matl.g);
 		}
 		if (matl.content_flags & k_ogt_vox_matl_have_media) {
 			palette.setMedia(palIdx, matl.media);

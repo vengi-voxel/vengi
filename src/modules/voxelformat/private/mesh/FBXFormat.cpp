@@ -377,7 +377,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					mat->transparency = 1.0f - fbxmaterial->pbr.opacity.value_real;
 				}
 				if (fbxmaterial->pbr.glossiness.has_value) {
-					mat->material.setValue(palette::MaterialProperty::MaterialGlossiness,
+					mat->material.setValue(palette::MaterialProperty::MaterialPhase,
 										   fbxmaterial->pbr.glossiness.value_real);
 				}
 				if (fbxmaterial->pbr.specular_factor.has_value) {

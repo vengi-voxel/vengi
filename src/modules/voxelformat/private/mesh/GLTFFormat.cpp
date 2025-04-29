@@ -587,8 +587,8 @@ bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 	// The glossiness or smoothness of the material. A value of 1.0 means the material has full glossiness or is
 	// perfectly smooth. A value of 0.0 means the material has no glossiness or is perfectly rough. This value is
 	// linear.
-	if (material.has(palette::MaterialProperty::MaterialGlossiness)) {
-		const float glossiness = material.value(palette::MaterialProperty::MaterialGlossiness);
+	if (material.has(palette::MaterialProperty::MaterialPhase)) {
+		const float glossiness = material.value(palette::MaterialProperty::MaterialPhase);
 		sg["glossinessFactor"] = tinygltf::Value(glossiness);
 	} else if (material.has(palette::MaterialProperty::MaterialRoughness)) {
 		sg["glossinessFactor"] =
@@ -1280,7 +1280,7 @@ void GLTFFormat::load_KHR_materials_pbrSpecularGlossiness(palette::Material &mat
 	auto glossinessFactorIter = sg.find("glossinessFactor");
 	if (glossinessFactorIter != sg.end()) {
 		const float v = (float)glossinessFactorIter->second.Get<double>();
-		material.setValue(palette::MaterialProperty::MaterialGlossiness, v);
+		material.setValue(palette::MaterialProperty::MaterialPhase, v);
 	}
 
 	auto specularFactorIter = sg.find("specularFactor");
