@@ -19,7 +19,8 @@ private:
 	int _arrayDepth = 0;
 
 public:
-	using io::TokenStream::TokenStream;
+	AVMTStream(io::SeekableReadStream &stream) : Super(stream, {}, " (){},;\n\t") {
+	}
 
 	core::String next() override {
 		core::String n = Super::next();
@@ -36,8 +37,12 @@ public:
 	}
 
 	core::String nextStringValue() {
-		Super::next(); // skip =
-		return Super::next();
+		// skip =
+		const core::String equalSign = next();
+		if (equalSign != "=") {
+			Log::error("Expected '=' but got '%s'", equalSign.c_str());
+		}
+		return next();
 	}
 
 	int blockDepth() const {
@@ -91,7 +96,8 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 			} else if (token == "name") {
 				currentMaterial.name = avmtStream.nextStringValue();
 			} else {
-				Log::debug("%s (r, g, b, metallic, smooth, emissive)", token.c_str());
+				Log::debug("Unknown token: '%s' (expected are: r, g, b, metallic, smooth, emissive, name)",
+						   token.c_str());
 			}
 		} else {
 			if (currentMatColorFound) {
@@ -100,9 +106,14 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 				currentMaterial = {};
 				currentMatColorFound = false;
 			}
-			Log::debug("token %s at depth %i and array depth %i", token.c_str(), avmtStream.blockDepth(),
+			Log::trace("token %s at depth %i and array depth %i", token.c_str(), avmtStream.blockDepth(),
 					   avmtStream.arrayDepth());
 		}
+	}
+
+	if (materials.empty()) {
+		Log::error("No materials found in %s", filename.c_str());
+		return false;
 	}
 
 	core::Buffer<core::RGBA, 1024> colorBuffer;
@@ -111,10 +122,11 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 		colorBuffer.push_back(e.rgba);
 	}
 	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	Log::debug("Palette has %i colors from %i materials", palette.colorCount(), (int)materials.size());
 
 	for (size_t i = 0; i < materials.size(); ++i) {
 		const AVMTMaterial &m = materials[i];
-		int palIdx = palette.getClosestMatch(m.rgba);
+		const int palIdx = palette.getClosestMatch(m.rgba);
 		if (palIdx == PaletteColorNotFound) {
 			continue;
 		}
