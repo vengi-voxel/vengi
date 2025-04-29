@@ -19,6 +19,7 @@ General:
    - Improved color mapping for minecraft blocks with prefixes
    - Fixed some dpi issues with a few dialog sizes
    - Added support for Avoyd material template (`avmt`) files
+   - Fixed new binary mesher for negative region offsets
 
 VoxEdit:
 
