@@ -124,6 +124,7 @@ app::AppState FormatPrinter::onRunning() {
 
 core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	// TODO: maybe add a mimetype to the format description
+	// TODO: e.g. image/png could be a problem here
 	core::String name = desc.name.toLower();
 	core::string::replaceAllChars(name, ' ', '-');
 	core::string::replaceAllChars(name, ':', '-');
@@ -707,7 +708,7 @@ void FormatPrinter::printMimeInfo() {
 				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n", e.c_str());
 			} else {
 				for (size_t i = 0; i < e.size(); ++i) {
-					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"%i\"/>\n", (int)i, (int)e[i]);
+					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"%x\"/>\n", (int)i, (uint8_t)e[i]);
 				}
 			}
 			Log::printf("\t\t</magic>\n");
