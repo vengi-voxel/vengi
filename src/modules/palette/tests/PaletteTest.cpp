@@ -77,8 +77,9 @@ TEST_F(PaletteTest, testAVMTPalette) {
 	pal.nippon();
 	const int cnt = pal.colorCount();
 	ASSERT_TRUE(pal.save("test.avmt"));
-	EXPECT_TRUE(pal.load("test.avmt"));
-	EXPECT_EQ(pal.colorCount(), cnt);
+	Palette pal2;
+	EXPECT_TRUE(pal2.load("test.avmt"));
+	EXPECT_EQ(pal2.colorCount(), cnt);
 }
 
 TEST_F(PaletteTest, testAdobeColorBookPalette) {

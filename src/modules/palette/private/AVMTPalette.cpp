@@ -181,7 +181,6 @@ bool AVMTPalette::save(const palette::Palette &palette, const core::String &file
 	stream.writeStringFormat(false, "\t\t\t\ty =\t%i\n", palette.colorCount());
 	stream.writeString("\t\t\t}\n", false);
 	stream.writeString("\t\t\tVoxMaterialParams =\t[\n", false);
-	stream.writeString("\t\t\t\t{\n", false);
 	int added = 0;
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		if (palette.color(i).a == 0) {
@@ -192,6 +191,7 @@ bool AVMTPalette::save(const palette::Palette &palette, const core::String &file
 		}
 		++added;
 		const glm::vec4 &c = palette.color4(i);
+		stream.writeString("\t\t\t\t{\n", false);
 		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.6f\n", c.r);
 		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.6f\n", c.g);
 		stream.writeStringFormat(false, "\t\t\t\t\tb =\t%0.6f\n", c.b);
