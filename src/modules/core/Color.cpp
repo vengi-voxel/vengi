@@ -155,10 +155,11 @@ const char *Color::toColorReductionTypeString(Color::ColorReductionType type) {
 
 Color::ColorReductionType Color::toColorReductionType(const char *str) {
 	for (int i = 0; i < lengthof(ColorReductionAlgorithmStr); ++i) {
-		if (!SDL_strcmp(str, ColorReductionAlgorithmStr[i])) {
+		if (!SDL_strcasecmp(str, ColorReductionAlgorithmStr[i])) {
 			return (Color::ColorReductionType)i;
 		}
 	}
+	Log::warn("Could not find a color reduction algorithm for '%s'", str);
 	return ColorReductionType::Max;
 }
 
