@@ -94,7 +94,7 @@ CORE_FORCE_INLINE void insert_quad(Mesh &mesh, uint32_t v1, uint32_t v2, uint32_
 	}
 }
 
-CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, uint32_t x, uint32_t y, uint32_t z, const voxel::Voxel &voxel,
+CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel,
 									  uint32_t norm, uint32_t ao, const glm::ivec3 &translate) {
 	VoxelVertex vertex;
 	vertex.position = glm::vec3(x - 1 + translate.x, y - 1 + translate.y, z - 1 + translate.z);
