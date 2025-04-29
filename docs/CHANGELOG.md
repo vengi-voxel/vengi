@@ -18,12 +18,17 @@ General:
    - Improved VoxelMax scene loading
    - Improved color mapping for minecraft blocks with prefixes
    - Fixed some dpi issues with a few dialog sizes
+   - Added support for Avoyd material template (`avmt`) files
 
 VoxEdit:
 
    - Added new dialog to show the minecraft block to color mappings
    - Extended palette function (white-balancing and constrast-stretching)
    - Fixed showing a few keybinding hints
+
+PalConvert:
+
+   - Print palette and color names
 
 ## 0.0.36 (2025-04-21)
 
