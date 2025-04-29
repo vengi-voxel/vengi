@@ -146,9 +146,21 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 		} else if (type == "hex") {
 			printHexPalette(palette);
 		} else {
+			const core::String &paletteName = palette.name();
+			if (!paletteName.empty()) {
+				Log::printf("Palette name: %s\n", paletteName.c_str());
+			}
 			const core::String palStr = palette::Palette::print(palette);
 			Log::printf("%s", palStr.c_str());
 			Log::printf("\n");
+
+			for (int i = 0; i < palette.colorCount(); ++i) {
+				const core::String &name = palette.colorName(i);
+				if (name.empty()) {
+					continue;
+				}
+				Log::printf("%03i: %s\n", i, name.c_str());
+			}
 		}
 	} else {
 		if (!palette.save(outfile.c_str())) {
