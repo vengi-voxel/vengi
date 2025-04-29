@@ -16,6 +16,12 @@
 
 namespace voxedit {
 
+/**
+ * @brief The scene renderer is responsible for rendering the scene graph
+ * and the voxel volumes. It is used by the scene manager.
+ *
+ * @sa ISceneRenderer
+ */
 class SceneRenderer : public ISceneRenderer {
 private:
 	voxel::MeshStatePtr _meshState;

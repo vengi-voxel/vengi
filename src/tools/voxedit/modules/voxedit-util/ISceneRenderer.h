@@ -17,6 +17,11 @@ class SceneGraph;
 
 namespace voxedit {
 
+/**
+ * @brief Interface for the scene render component
+ *
+ * This mainly exists because the tests that run in headless mode, don't always have a graphical context available.
+ */
 class ISceneRenderer : public core::IComponent {
 public:
 	virtual ~ISceneRenderer() = default;
