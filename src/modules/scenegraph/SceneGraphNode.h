@@ -148,7 +148,10 @@ public:
 	palette::NormalPalette &normalPalette() const;
 	void setNormalPalette(const palette::NormalPalette &normalPalette);
 
-	bool removeUnusedColors(bool updateVoxels);
+	/**
+	 * @param[in] reindexPalette the palette is being compacted and voxel references are being adjusted accordingly
+	 */
+	bool removeUnusedColors(bool reindexPalette);
 	int findUnusedPaletteIndex(bool startFromEnd) const;
 
 	// normalized pivot of [0-1] to be somewhere inside the volume region

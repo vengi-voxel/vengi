@@ -529,7 +529,13 @@ public:
 	 * @brief Move the voxels inside the volume regions
 	 */
 	void nodeMoveVoxels(int nodeId, const glm::ivec3 &m);
-	void nodeRemoveUnusedColors(int nodeId, bool updateVoxels = false);
+	/**
+	 * @brief Remove unused colors from the palette of the given node
+	 *
+	 * @param[in] reindexPalette If @c true the palette will be reindexed after removing the unused colors to remove
+	 * gaps. This will also update the voxels.
+	 */
+	void nodeRemoveUnusedColors(int nodeId, bool reindexPalette = false);
 	/**
 	 * @note This is not related to the group node type
 	 */

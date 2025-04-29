@@ -188,7 +188,7 @@ palette::Palette &SceneGraphNode::palette() const {
 	return *_palette.value();
 }
 
-bool SceneGraphNode::removeUnusedColors(bool updateVoxels) {
+bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 	voxel::RawVolume *v = volume();
 	if (v == nullptr) {
 		return false;
@@ -211,7 +211,7 @@ bool SceneGraphNode::removeUnusedColors(bool updateVoxels) {
 		return false;
 	}
 	Log::debug("Unused colors: %i", unused);
-	if (updateVoxels) {
+	if (reindexPalette) {
 		int newMappingPos = 0;
 		core::Array<uint8_t, palette::PaletteMaxColors> newMapping;
 		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {

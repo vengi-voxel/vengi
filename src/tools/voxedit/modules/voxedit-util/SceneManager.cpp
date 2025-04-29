@@ -2303,10 +2303,10 @@ void SceneManager::construct() {
 	}).setHelp(_("Unreference from model and allow to edit the voxels for this node"));
 }
 
-void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
+void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	node.removeUnusedColors(updateVoxels);
-	if (updateVoxels) {
+	node.removeUnusedColors(reindexPalette);
+	if (reindexPalette) {
 		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "removeunusedcolors");
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
 		modified(nodeId, _sceneGraph.resolveRegion(node));
