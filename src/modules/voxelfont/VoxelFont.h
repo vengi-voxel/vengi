@@ -27,8 +27,6 @@ private:
 	uint8_t *_ttfBuffer = nullptr;
 	core::String _filename;
 
-	bool renderGlyphs(const char *string);
-
 public:
 	~VoxelFont();
 
