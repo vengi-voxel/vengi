@@ -96,13 +96,13 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 				currentMaterial.mat.setValue(MaterialProperty::MaterialMetal, v);
 			} else if (token == "indexOfRefraction") {
 				const float v = avmtStream.nextStringValue().toFloat();
-				currentMaterial.mat.setValue(MaterialProperty::MaterialIndexOfRefraction, v);
+				currentMaterial.mat.setValue(MaterialProperty::MaterialIndexOfRefraction, 1.0f - v);
 			} else if (token == "absorptionLength") {
 				/*const float v =*/avmtStream.nextStringValue().toFloat();
 				// currentMaterial.mat.setValue(MaterialProperty::MaterialAbsorptionLength, v);
 			} else if (token == "surfaceTransmission") {
-				/*const float v =*/avmtStream.nextStringValue().toFloat();
-				// currentMaterial.mat.setValue(MaterialProperty::MaterialSurfaceTransmission, v);
+				// TODO: MATERIAL: this is not really alpha
+				// currentMaterial.color.a = avmtStream.nextStringValue().toFloat();
 			} else if (token == "scatterLength") {
 				/*const float v =*/avmtStream.nextStringValue().toFloat();
 				// currentMaterial.mat.setValue(MaterialProperty::MaterialScatterLength, v);
@@ -110,8 +110,8 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 				/*const float v =*/avmtStream.nextStringValue().toFloat();
 				// currentMaterial.mat.setValue(MaterialProperty::MaterialPhase, v);
 			} else if (token == "smooth") {
-				/*const float v =*/avmtStream.nextStringValue().toFloat();
-				// m.mat.setValue(MaterialProperty::MaterialSmooth, v);
+				const float v = avmtStream.nextStringValue().toFloat();
+				currentMaterial.mat.setValue(MaterialProperty::MaterialRoughness, 1.0f - v);
 			} else if (token == "emissive") {
 				const float v = avmtStream.nextStringValue().toFloat();
 				currentMaterial.mat.setValue(MaterialProperty::MaterialEmit, v);
