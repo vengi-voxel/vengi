@@ -32,7 +32,7 @@ private:
 public:
 	~VoxelFont();
 
-	bool init(const char *font);
+	bool init(const core::String &font);
 	void shutdown();
 
 	void dimensions(const char *string, uint8_t size, int &w, int &h) const;

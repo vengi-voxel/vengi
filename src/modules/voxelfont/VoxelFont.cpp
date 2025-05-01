@@ -32,27 +32,27 @@ VoxelFont::~VoxelFont() {
 	shutdown();
 }
 
-bool VoxelFont::init(const char *filename) {
+bool VoxelFont::init(const core::String &filename) {
 	if (_filename == filename) {
 		return true;
 	}
 	shutdown();
 	const io::FilePtr &file = io::filesystem()->open(filename);
 	if (!file->exists()) {
-		Log::info("Failed to initialize voxel font, %s doesn't exist", filename);
+		Log::info("Failed to initialize voxel font, %s doesn't exist", filename.c_str());
 		return false;
 	}
 	delete[] _ttfBuffer;
 	file->read((void **)&_ttfBuffer);
 	if (_ttfBuffer == nullptr) {
-		Log::info("Failed to initialize voxel font, can not read %s", filename);
+		Log::info("Failed to initialize voxel font, can not read %s", filename.c_str());
 		return false;
 	}
 	const int offset = stbtt_GetFontOffsetForIndex(_ttfBuffer, 0);
 	_font = new stbtt_fontinfo();
 	stbtt_InitFont(_font, _ttfBuffer, offset);
 
-	Log::info("Initialized voxel font for %s", filename);
+	Log::info("Initialized voxel font for %s", filename.c_str());
 	_filename = filename;
 	return true;
 }

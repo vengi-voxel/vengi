@@ -26,7 +26,7 @@ void TextBrush::construct() {
 }
 
 voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
-	if (!_voxelFont.init(_font.c_str())) {
+	if (!_voxelFont.init(_font)) {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return voxel::Region::InvalidRegion;
 	}
@@ -48,7 +48,7 @@ voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
 
 void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &context, const voxel::Region &region) {
-	if (!_voxelFont.init(_font.c_str())) {
+	if (!_voxelFont.init(_font)) {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return;
 	}
