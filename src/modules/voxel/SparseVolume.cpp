@@ -244,12 +244,16 @@ Region SparseVolume::calculateRegion() const {
 		return Region::InvalidRegion;
 	}
 
-	const glm::ivec3 &p = _map.begin()->key;
-	Region region(p, p);
-	for (auto *e : _map) {
-		region.accumulate(e->key);
+	auto iter = _map.begin();
+	const glm::ivec3 &p = iter->key;
+	glm::aligned_ivec4 mins(p, 0);
+	glm::aligned_ivec4 maxs(p, 0);
+	for (++iter; iter != _map.end(); ++iter) {
+		const glm::aligned_ivec4 k(iter->key, 0);
+		maxs = (glm::max)(maxs, k);
+		mins = (glm::min)(mins, k);
 	}
-	return region;
+	return voxel::Region{mins, maxs};
 }
 
 } // namespace voxel
