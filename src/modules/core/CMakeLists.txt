@@ -35,7 +35,7 @@ set(SRCS
 
 	sdl/SDLSystem.h
 
-	Algorithm.h
+	Algorithm.cpp Algorithm.h
 	Alphanumeric.cpp Alphanumeric.h
 	ArrayLength.h
 	Assert.cpp Assert.h
@@ -83,6 +83,8 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
 else()
 	message(STATUS "Building with tracy disabled")
 endif()
+
+engine_source_optimize(Algorithm.cpp)
 
 set(LIB core)
 set(SDLLIB)

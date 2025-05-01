@@ -5,6 +5,8 @@
 #pragma once
 
 #include "core/Common.h"
+#include <stddef.h>
+
 namespace core {
 
 template<class Iter>
@@ -202,5 +204,7 @@ void sortedUnion(const Type *buf1, int buf1Length, const Type *buf2, int buf2Len
 		out[outIdx++] = buf2[j++];
 	}
 }
+
+void *memchr_not(const void *s, int c, size_t n);
 
 }
