@@ -19,7 +19,7 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxel)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(RawVolumeBenchmark, IsEmpty)(benchmark::State &state) {
 	for (auto _ : state) {
-		v.isEmpty(v.region());
+		benchmark::DoNotOptimize(v.isEmpty(v.region()));
 	}
 }
 

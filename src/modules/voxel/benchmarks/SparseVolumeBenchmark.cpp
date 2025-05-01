@@ -18,6 +18,14 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxel)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(SparseVolumeBenchmark, CalculateRegion)(benchmark::State &state) {
+	for (auto _ : state) {
+		for (int i = 0; i < 10; ++i)
+			v.setVoxel(96, i, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
+		benchmark::DoNotOptimize(v.calculateRegion());
+	}
+}
+
 BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelSampler)(benchmark::State &state) {
 	voxel::SparseVolume::Sampler sampler(&v);
 	for (auto _ : state) {
@@ -49,3 +57,4 @@ BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxel_unlimit);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelSampler_unlimit);
+BENCHMARK_REGISTER_F(SparseVolumeBenchmark, CalculateRegion);
