@@ -129,6 +129,43 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
+bool RawVolume::isEmpty(const Region &region) const {
+	if (!intersects(_region, region)) {
+		return true;
+	}
+
+	voxel::Region r = region;
+	if (!_region.containsRegion(r)) {
+		r.cropTo(_region);
+	}
+
+	const glm::ivec3 &mins = r.getLowerCorner();
+	const glm::ivec3 &maxs = r.getUpperCorner();
+	const int width = _region.getWidthInVoxels();
+	const int height = _region.getHeightInVoxels();
+	const int yStride = width;
+	const int zStride = width * height;
+
+	const int lineLength = maxs.x - mins.x + 1;
+	const int voxelLineSize = sizeof(voxel::Voxel) * lineLength;
+	const int xStart = (mins.x - _region.getLowerX());
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		const int zPos = z - _region.getLowerZ();
+		const int zBase = zPos * zStride + xStart;
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			const int yPos = y - _region.getLowerY();
+			const int baseIndex = zBase + (yPos * yStride);
+			const voxel::Voxel* dataLine = &_data[baseIndex];
+
+			if (core::memchr_not(dataLine, 0, voxelLineSize) != nullptr) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 bool RawVolume::copyInto(const RawVolume &src) {
 	if (!intersects(_region, src.region())) {
 		return false;

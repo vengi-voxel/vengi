@@ -51,6 +51,11 @@ public:
 	 */
 	static size_t size(const Region &region);
 
+	/**
+	 * @brief Checks if the volume is empty in the given region
+	 */
+	bool isEmpty(const Region &region) const;
+
 	static RawVolume *createRaw(const Voxel *data, const voxel::Region &region) {
 		return new RawVolume(data, region);
 	}

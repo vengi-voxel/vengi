@@ -9,6 +9,20 @@
 
 namespace voxel {
 
+int countVoxels(const voxel::RawVolume &volume) {
+	int cnt = 0;
+	for (int z = 0; z < volume.depth(); ++z) {
+		for (int y = 0; y < volume.height(); ++y) {
+			for (int x = 0; x < volume.width(); ++x) {
+				if (!voxel::isAir(volume.voxel(x, y, z).getMaterial())) {
+					++cnt;
+				}
+			}
+		}
+	}
+	return cnt;
+}
+
 class RawVolumeTest: public AbstractVoxelTest {
 protected:
 	bool pageIn(const voxel::Region& region, RawVolume &v) {
@@ -37,6 +51,17 @@ protected:
 	}
 };
 
+TEST_F(RawVolumeTest, testIsEmpty) {
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 2, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 1, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 0, 1).getMaterial());
+	ASSERT_FALSE(v.isEmpty(v.region()));
+	ASSERT_FALSE(v.isEmpty(Region{0, 2}));
+	ASSERT_TRUE(v.isEmpty(Region{30, 63}));
+}
+
 TEST_F(RawVolumeTest, testCopyRegions) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
@@ -48,6 +73,17 @@ TEST_F(RawVolumeTest, testCopyRegions) {
 	EXPECT_EQ(v2.region(), Region(0, 0, 0, 2, 0, 2));
 	EXPECT_EQ(7, v2.voxel(0, 0, 2).getColor());
 	EXPECT_EQ(3, v2.voxel(2, 0, 0).getColor());
+}
+
+TEST_F(RawVolumeTest, testCopy) {
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+
+	RawVolume v2(v, Region{0, 2});
+	EXPECT_EQ(19, countVoxels(v2));
+
+	RawVolume v3(v, Region{3, 5});
+	EXPECT_EQ(0, countVoxels(v3));
 }
 
 TEST_F(RawVolumeTest, testSamplerPeek) {

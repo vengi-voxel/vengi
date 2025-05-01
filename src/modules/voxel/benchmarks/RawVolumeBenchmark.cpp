@@ -17,6 +17,12 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxel)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, IsEmpty)(benchmark::State &state) {
+	for (auto _ : state) {
+		v.isEmpty(v.region());
+	}
+}
+
 BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxelSampler)(benchmark::State &state) {
 	voxel::RawVolume::Sampler sampler(&v);
 	for (auto _ : state) {
@@ -29,3 +35,4 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxelSampler)(benchmark::State &state)
 
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);
