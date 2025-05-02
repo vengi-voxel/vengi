@@ -1646,6 +1646,15 @@ int findPaletteIndex(const core::String &name, int defaultValue) {
 		return iter->value.palIdx;
 	}
 
+	size_t biome = key.find(",biome=");
+	if (biome != core::String::npos) {
+		key = key.substr(biome + 1, key.size() - biome - 1);
+		iter = map.find(key);
+		if (iter != map.end()) {
+			return iter->value.palIdx;
+		}
+	}
+
 	Log::debug("Could not find a color mapping for '%s'", key.c_str());
 	return defaultValue;
 }
