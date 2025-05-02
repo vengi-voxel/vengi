@@ -7,6 +7,7 @@ set(SRCS
 	private/ACBPalette.cpp private/ACBPalette.h
 	private/ASEPalette.cpp private/ASEPalette.h
 	private/AVMTPalette.cpp private/AVMTPalette.h
+	private/AVMTHelper.cpp private/AVMTHelper.h
 	private/CSVPalette.cpp private/CSVPalette.h
 	private/GimpPalette.cpp private/GimpPalette.h
 	private/JASCPalette.cpp private/JASCPalette.h
