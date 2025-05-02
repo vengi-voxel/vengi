@@ -97,18 +97,26 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 			} else if (token == "indexOfRefraction") {
 				const float v = avmtStream.nextStringValue().toFloat();
 				currentMaterial.mat.setValue(MaterialProperty::MaterialIndexOfRefraction, 1.0f - v);
+			} else if (token == "surfaceTransmission") {
+				const float alpha = avmtStream.nextStringValue().toFloat();
+				if (alpha >= 1.0f) {
+					currentMaterial.mat.type = palette::MaterialType::Media;
+					currentMaterial.mat.setValue(MaterialProperty::MaterialMedia, 1.0f);
+				} else if (alpha > 0.0f) {
+					currentMaterial.mat.type = palette::MaterialType::Blend;
+					// currentMaterial.color.a = alpha; // TODO: MATERIAL: not really the alpha value...
+				}
 			} else if (token == "absorptionLength") {
 				/*const float v =*/avmtStream.nextStringValue().toFloat();
 				// currentMaterial.mat.setValue(MaterialProperty::MaterialAbsorptionLength, v);
-			} else if (token == "surfaceTransmission") {
-				// TODO: MATERIAL: this is not really alpha
-				// currentMaterial.color.a = avmtStream.nextStringValue().toFloat();
 			} else if (token == "scatterLength") {
 				/*const float v =*/avmtStream.nextStringValue().toFloat();
 				// currentMaterial.mat.setValue(MaterialProperty::MaterialScatterLength, v);
 			} else if (token == "phase") {
-				/*const float v =*/avmtStream.nextStringValue().toFloat();
-				// currentMaterial.mat.setValue(MaterialProperty::MaterialPhase, v);
+				const float v = avmtStream.nextStringValue().toFloat();
+				if (v > 0.0f) {
+				 	currentMaterial.mat.setValue(MaterialProperty::MaterialPhase, v);
+				}
 			} else if (token == "smooth") {
 				const float v = avmtStream.nextStringValue().toFloat();
 				currentMaterial.mat.setValue(MaterialProperty::MaterialRoughness, 1.0f - v);
@@ -201,6 +209,7 @@ bool AVMTPalette::save(const palette::Palette &palette, const core::String &file
 		stream.writeStringFormat(false, "\t\t\t\t\temissive =\t%f\n", mat.emit);
 		stream.writeString("\t\t\t\t\tmaterialTransparency =\t{\n", false);
 		if (mat.type == palette::MaterialType::Glass || mat.type == palette::MaterialType::Blend) {
+			// TODO: MATERIAL: not really the alpha value...
 			stream.writeStringFormat(false, "\t\t\t\t\t\tsurfaceTransmission =\t%f\n", c.a);
 		} else if (mat.type == palette::MaterialType::Media) {
 			stream.writeString("\t\t\t\t\t\tsurfaceTransmission =\t1.0\n", false);
