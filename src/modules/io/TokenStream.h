@@ -38,6 +38,7 @@ public:
 	TokenStream(const char *string, const core::TokenizerConfig &cfg = {}, const char *separator = " (){};\n\t")
 		: _memStream{string, strlen(string)}, _stream(_memStream), _cfg(cfg), _separator(separator) {
 	}
+	virtual ~TokenStream() = default;
 
 	bool eos() const {
 		return _stream.eos();
