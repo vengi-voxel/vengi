@@ -126,6 +126,13 @@ TEST_F(StringUtilTest, testSplit) {
 	EXPECT_EQ("foobar", tokens[0]);
 }
 
+TEST_F(StringUtilTest, testSplitNoDelimiter) {
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString("foobar", tokens, "+");
+	ASSERT_EQ(1u, tokens.size());
+	EXPECT_EQ("foobar", tokens[0]);
+}
+
 TEST_F(StringUtilTest, testAppendSmall1) {
 	char buf1[4] = { '\0' };
 	EXPECT_EQ(&buf1[1], core::string::append(buf1, sizeof(buf1), "a"));
