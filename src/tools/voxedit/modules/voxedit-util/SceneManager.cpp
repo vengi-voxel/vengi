@@ -2150,6 +2150,29 @@ void SceneManager::construct() {
 		flip(axis);
 	}).setHelp(_("Flip the selected nodes around the given axis")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
+	command::Command::registerCommand("transformreset", [&] (const command::CmdArgs& args) {
+		const int argc = (int)args.size();
+		int nodeId = activeNode();
+		if (argc == 1) {
+			nodeId = core::string::toInt(args[0]);
+		}
+		nodeResetTransform(nodeId, InvalidKeyFrame);
+	}).setHelp(_("Reset the transform of the current node and keyframe to the default transform"));
+
+	command::Command::registerCommand("transformmirror", [&] (const command::CmdArgs& args) {
+		const int argc = (int)args.size();
+		if (argc < 1) {
+			Log::info("Usage: transformmirror <x|y|z> [nodeid]");
+			return;
+		}
+		const math::Axis axis = math::toAxis(args[0]);
+		int nodeId = activeNode();
+		if (argc == 2) {
+			nodeId = core::string::toInt(args[1]);
+		}
+		nodeTransformMirror(nodeId, InvalidKeyFrame, axis);
+	}).setHelp(_("Mirrors the transform at the given axes for the given node"));
+
 	command::Command::registerCommand("modeladd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
