@@ -1646,7 +1646,7 @@ int findPaletteIndex(const core::String &name, int defaultValue) {
 		return iter->value.palIdx;
 	}
 
-	size_t biome = key.find(",biome=");
+	size_t biome = key.find(",");
 	if (biome != core::String::npos) {
 		key = key.substr(biome + 1, key.size() - biome - 1);
 		iter = map.find(key);

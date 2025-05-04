@@ -27,7 +27,7 @@ protected:
 		if (n != core::String::npos) {
 			name = name.substr(0, n);
 		}
-		size_t biome = name.find(",biome=");
+		size_t biome = name.find(",");
 		if (biome != core::String::npos) {
 			name = name.substr(biome + 1, name.size() - biome - 1);
 		}
