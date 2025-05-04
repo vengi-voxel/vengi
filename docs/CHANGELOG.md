@@ -26,6 +26,10 @@ VoxEdit:
    - Added new dialog to show the minecraft block to color mappings
    - Extended palette function (white-balancing and constrast-stretching)
    - Fixed showing a few keybinding hints
+   - Refactored the node inspector
+   - Improved the camera panel
+   - Allow to change the cvar `ve_regionsizes` from within the UI
+   - Fixed crash in memento panel tooltip handling
 
 PalConvert:
 
