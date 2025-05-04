@@ -3,7 +3,6 @@
  */
 
 #include "FileDialog.h"
-#include "IMGUIEx.h"
 #include "IconsLucide.h"
 #include "ScopedStyle.h"
 #include "app/App.h"
@@ -21,11 +20,12 @@
 #include "io/Filesystem.h"
 #include "io/FilesystemEntry.h"
 #include "io/FormatDescription.h"
+#include "ui/IMGUIEx.h"
 #ifdef __EMSCRIPTEN__
 #include "io/MemoryReadStream.h"
 #endif
-#include "ui/IMGUIApp.h"
 #include "ui/DragAndDropPayload.h"
+#include "ui/IMGUIApp.h"
 #include "video/OpenFileMode.h"
 
 namespace ui {
