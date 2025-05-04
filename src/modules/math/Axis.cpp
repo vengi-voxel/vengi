@@ -4,30 +4,32 @@
 
 #include "Axis.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 
 namespace math {
 
-math::Axis toAxis(const core::String &axisStr) {
-	const char axisChr = core::string::toLower(axisStr[0]);
-	math::Axis axis = math::Axis::None;
-	switch (axisChr) {
-	case 'x':
-		axis = math::Axis::X;
-		break;
-	case 'y':
-		axis = math::Axis::Y;
-		break;
-	case 'z':
-		axis = math::Axis::Z;
-		break;
-	default:
-		break;
+math::Axis toAxis(const core::String &axesStr) {
+	const core::String axes = axesStr.toLower();
+	math::Axis axesMask = math::Axis::None;
+	for (size_t i = 0; i < axes.size(); ++i) {
+		const char axisChr = axes[i];
+		switch (axisChr) {
+		case 'x':
+			axesMask |= math::Axis::X;
+			break;
+		case 'y':
+			axesMask |= math::Axis::Y;
+			break;
+		case 'z':
+			axesMask |= math::Axis::Z;
+			break;
+		default:
+			break;
+		}
 	}
-	if (axis == math::Axis::None) {
+	if (axesMask == math::Axis::None) {
 		Log::warn("Invalid axis given (valid are x, y and z)");
 	}
-	return axis;
+	return axesMask;
 }
 
 } // namespace math

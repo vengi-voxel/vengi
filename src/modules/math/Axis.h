@@ -39,6 +39,6 @@ inline constexpr const char *getCharForAxis(math::Axis axis) {
 	return "";
 }
 
-math::Axis toAxis(const core::String &axisStr);
+math::Axis toAxis(const core::String &axesStr);
 
 } // namespace math
