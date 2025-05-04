@@ -765,6 +765,13 @@ static int luaVoxel_palette_color_to_string(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_palette_tostring(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const core::String pal = palette::Palette::print(*palette);
+	lua_pushfstring(s, "%s", pal.c_str());
+	return 1;
+}
+
 static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const float r = (float)luaL_checkinteger(s, 2) / 255.0f;
@@ -1763,6 +1770,7 @@ static void prepareState(lua_State* s) {
 		{"material", luaVoxel_palette_materialproperty},
 		{"deltaE", luaVoxel_palette_delta_e},
 		{"colorString", luaVoxel_palette_color_to_string},
+		{"__tostring", luaVoxel_palette_tostring},
 		{"__eq", luaVoxel_palette_eq},
 		{nullptr, nullptr}
 	};
@@ -1780,6 +1788,7 @@ static void prepareState(lua_State* s) {
 		{"material", luaVoxel_palette_materialproperty},
 		{"deltaE", luaVoxel_palette_delta_e},
 		{"colorString", luaVoxel_palette_color_to_string},
+		{"__tostring", luaVoxel_palette_tostring},
 		{"__gc", luaVoxel_palette_gc},
 		{"__eq", luaVoxel_palette_eq},
 		{nullptr, nullptr}
