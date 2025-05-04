@@ -4,6 +4,9 @@
 
 #include "NodeInspectorPanel.h"
 #include "core/ArrayLength.h"
+#include "core/Common.h"
+#include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -13,6 +16,7 @@
 #include "ui/Toolbar.h"
 #include "ui/dearimgui/implot.h"
 #include "voxedit-util/Config.h"
+#include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -32,28 +36,13 @@ bool NodeInspectorPanel::init() {
 void NodeInspectorPanel::shutdown() {
 }
 
-void NodeInspectorPanel::modelRegions(command::CommandExecutionListener &listener, const core::String &sizes,
-									  scenegraph::SceneGraphNode &node) {
+void NodeInspectorPanel::modelRegions(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, _("Region"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		static const char *max = "888x888x888";
 		const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
 		ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 
-		core::DynamicArray<core::String> regionSizes;
-		core::string::splitString(sizes, regionSizes, ",");
-		for (const core::String &s : regionSizes) {
-			glm::ivec3 maxs(0);
-			core::string::parseIVec3(s, &maxs[0]);
-			bool valid = true;
-			for (int i = 0; i < 3; ++i) {
-				if (maxs[i] <= 0 || maxs[i] > 256) {
-					valid = false;
-					break;
-				}
-			}
-			if (!valid) {
-				continue;
-			}
+		for (glm::ivec3 maxs : _validRegionSizes) {
 			const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
 			toolbar.customNoStyle([&]() {
 				if (ImGui::Button(title.c_str())) {
@@ -100,33 +89,83 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 	}
 }
 
+void NodeInspectorPanel::saveRegionSizes(const core::DynamicArray<glm::ivec3> &sizes) {
+	core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>> uniqueSizes;
+	for (const glm::ivec3 &maxs : sizes) {
+		uniqueSizes.insert(maxs);
+	}
+
+	core::String valStr;
+	for (const auto &e : uniqueSizes) {
+		const glm::ivec3 &maxs = e->key;
+		if (!valStr.empty()) {
+			valStr += ",";
+		}
+		if (maxs.x <= 0 || maxs.x > MaxVolumeSize || maxs.y <= 0 || maxs.y > MaxVolumeSize || maxs.z <= 0 ||
+			maxs.z > MaxVolumeSize) {
+			Log::warn("Invalid region size %ix%ix%i", maxs.x, maxs.y, maxs.z);
+			continue;
+		}
+		valStr += core::String::format("%i %i %i", maxs.x, maxs.y, maxs.z);
+	}
+	_regionSizes->setVal(valStr);
+	_validRegionSizes.clear();
+}
+
 void NodeInspectorPanel::modelViewMenuBar(scenegraph::SceneGraphNode &node) {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Tools"))) {
 			const voxel::Region &region = node.region();
 			const glm::ivec3 &mins = region.getLowerCorner();
-			if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
-				if (ImGui::IconButton(ICON_LC_MOVE_3D, _("Convert the region offset into the keyframe transforms"))) {
-					const glm::ivec3 &f = region.getLowerCorner();
-					_sceneMgr->nodeShiftAllKeyframes(node.id(), f);
-					_sceneMgr->nodeShift(node.id(), -f);
+			ImGui::BeginDisabled(!region.isValid() || (mins.x == 0 && mins.y == 0 && mins.z == 0));
+			if (ImGui::IconButton(ICON_LC_MOVE_3D, _("To transform"))) {
+				_sceneMgr->nodeShiftAllKeyframes(node.id(), mins);
+				_sceneMgr->nodeShift(node.id(), -mins);
+			}
+			ImGui::TooltipTextUnformatted(_("Convert the region offset into the keyframe transforms"));
+			ImGui::EndDisabled();
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginIconMenu(ICON_LC_CAMERA, _("Options"))) {
+			if (ImGui::BeginIconMenu(ICON_LC_SIGMA, _("Region sizes"))) {
+				int removeIdx = -1;
+				for (size_t i = 0; i < _validRegionSizes.size(); ++i) {
+					const glm::ivec3 &maxs = _validRegionSizes[i];
+					const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
+					if (ImGui::Selectable(title.c_str())) {
+						removeIdx = (int)i;
+					}
 				}
+				if (removeIdx != -1) {
+					_validRegionSizes.erase(removeIdx);
+					saveRegionSizes(_validRegionSizes);
+				}
+				ImGui::InputXYZ("##newregion", _newRegionSize);
+				if (ImGui::MenuItem(_("Add"))) {
+					_validRegionSizes.push_back(_newRegionSize);
+					saveRegionSizes(_validRegionSizes);
+				}
+				ImGui::EndMenu();
+			}
+			if (!_validRegionSizes.empty()) {
+				char cmdBuffer[64];
+				core::String::formatBuf(cmdBuffer, sizeof(cmdBuffer), "clear %s", cfg::VoxEditRegionSizes);
+				ImGui::CommandIconMenuItem(ICON_LC_X, _("Reset region sizes"), cmdBuffer);
 			}
 			ImGui::EndMenu();
 		}
-		// TODO: allow to edit VoxEditRegionSizes
 		ImGui::EndMenuBar();
 	}
 }
 
 void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) {
 	core_trace_scoped(ModelView);
-	const core::String &sizes = _regionSizes->strVal();
+	updateModelRegionSizes();
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 		modelViewMenuBar(*node);
-		if (!sizes.empty()) {
-			modelRegions(listener, sizes, *node);
+		if (!_validRegionSizes.empty()) {
+			modelRegions(listener, *node);
 		} else {
 			modelProperties(*node);
 		}
@@ -455,9 +494,29 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 	return true;
 }
 
+void NodeInspectorPanel::updateModelRegionSizes() {
+	if (_regionSizes->isDirty()) {
+		_validRegionSizes.clear();
+		core::DynamicArray<core::String> strs;
+		core::string::splitString(_regionSizes->strVal(), strs, ",");
+		_validRegionSizes.reserve(strs.size());
+		for (const core::String &s : strs) {
+			glm::ivec3 maxs(0);
+			core::string::parseIVec3(s, &maxs[0]);
+			if (maxs.x <= 0 || maxs.x > MaxVolumeSize || maxs.y <= 0 || maxs.y > MaxVolumeSize || maxs.z <= 0 ||
+				maxs.z > MaxVolumeSize) {
+				continue;
+			}
+			_validRegionSizes.push_back(maxs);
+		}
+		_regionSizes->markClean();
+	}
+}
+
 void NodeInspectorPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NodeInspectorPanel);
 	const core::String title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
+
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (sceneMode) {
 			const int activeNode = _sceneMgr->sceneGraph().activeNode();

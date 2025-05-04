@@ -19,12 +19,15 @@ private:
 	using Super = ui ::Panel;
 	core::VarPtr _localSpace;
 	core::VarPtr _regionSizes;
+	core::DynamicArray<glm::ivec3> _validRegionSizes;
+	glm::ivec3 _newRegionSize{32, 32, 32};
 	SceneManagerPtr _sceneMgr;
 	core::String _propertyKey;
 	core::String _propertyValue;
 
-	void modelRegions(command::CommandExecutionListener &listener, const core::String &sizes,
-					  scenegraph::SceneGraphNode &node);
+	void modelRegions(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node);
+	void updateModelRegionSizes();
+	void saveRegionSizes(const core::DynamicArray<glm::ivec3> &regionSizes);
 	void modelProperties(scenegraph::SceneGraphNode &node);
 	void modelView(command::CommandExecutionListener &listener);
 	void modelViewMenuBar(scenegraph::SceneGraphNode &node);
