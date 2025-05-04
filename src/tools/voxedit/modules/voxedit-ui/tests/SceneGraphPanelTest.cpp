@@ -67,7 +67,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
 		const int before = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
-		ctx->ItemClick("scenegraphtools/###button0");
+		ctx->ItemClick("toolbar/###button0");
 		ctx->Yield();
 
 		IM_CHECK(focusWindow(ctx, POPUP_TITLE_MODEL_NODE_SETTINGS));
@@ -85,7 +85,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
 		const int before = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
-		ctx->ItemClick("scenegraphtools/###button1");
+		ctx->ItemClick("toolbar/###button1");
 		const int after = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
 		IM_CHECK(after == before + 1);
 	};

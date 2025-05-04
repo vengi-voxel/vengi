@@ -10,6 +10,7 @@ set(SRCS
 	Gizmo.h
 	ViewMode.h
 	NodeInspectorPanel.h NodeInspectorPanel.cpp
+	NodePropertiesPanel.h NodePropertiesPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
@@ -23,7 +24,6 @@ set(SRCS
 	StatusBar.h StatusBar.cpp
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
-	Util.h Util.cpp
 	ViewMode.h ViewMode.cpp
 	Viewport.h Viewport.cpp
 	QuitDisallowReason.h
@@ -38,6 +38,7 @@ if (USE_IMGUITESTENGINE)
 		tests/CameraPanelTest.cpp
 		tests/CollectionPanelTest.cpp
 		tests/NodeInspectorPanelTest.cpp
+		tests/NodePropertiesPanelTest.cpp
 		tests/LSystemPanelTest.cpp
 		tests/MainWindowTest.cpp
 		tests/MementoPanelTest.cpp

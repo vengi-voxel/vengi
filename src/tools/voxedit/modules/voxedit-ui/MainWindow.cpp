@@ -4,7 +4,6 @@
 
 #include "MainWindow.h"
 #include "ImGuizmo.h"
-#include "Util.h"
 #include "ViewMode.h"
 #include "Viewport.h"
 #include "WindowTitles.h"
@@ -118,10 +117,10 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
-	  _nodeInspectorPanel(app, _sceneMgr), _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr),
-	  _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
-	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline),
-	  _cameraPanel(app, _sceneMgr) {
+	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
+	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
+	  _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
+	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr) {
 
 	_tipOfTheDayList.push_back(_("Switch between scene and edit mode (not in simple UI mode) by pressing the <cmd:togglescene> key."));
 	_tipOfTheDayList.push_back(_("Use the file dialog options for format specific options."));
@@ -258,6 +257,7 @@ bool MainWindow::init() {
 	_lsystemPanel.init();
 	_treePanel.init();
 	_nodeInspectorPanel.init();
+	_nodePropertiesPanel.init();
 	_toolsPanel.init();
 	_assetPanel.init();
 	_animationTimeline.init();
@@ -298,6 +298,7 @@ void MainWindow::shutdown() {
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 	_nodeInspectorPanel.shutdown();
+	_nodePropertiesPanel.shutdown();
 	_toolsPanel.shutdown();
 	_assetPanel.shutdown();
 }
@@ -391,6 +392,7 @@ void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
 void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_BRUSHPANEL, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_NODE_PROPERTIES, dockId);
 }
 
 void MainWindow::leftWidget() {
@@ -405,6 +407,7 @@ void MainWindow::leftWidget() {
 		_brushPanel.update(TITLE_BRUSHPANEL, listener);
 		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, false, listener);
 	}
+	_nodePropertiesPanel.update(TITLE_NODE_PROPERTIES, listener);
 }
 
 // end of left side
@@ -659,17 +662,17 @@ void MainWindow::popupNewScene() {
 
 			ImGui::TextUnformatted(_("Position"));
 			ImGui::Separator();
-			veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
-			veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
-			veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
+			ImGui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
+			ImGui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
+			ImGui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 			ImGui::NewLine();
 
 			ImGui::TextUnformatted(_("Size"));
 			ImGui::Separator();
 			bool sizeDirty = false;
-			sizeDirty |= veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
-			sizeDirty |= veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
-			sizeDirty |= veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
+			sizeDirty |= ImGui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
+			sizeDirty |= ImGui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
+			sizeDirty |= ImGui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
 			if (sizeDirty) {
 				_modelNodeSettings.checkMaxVoxels();
 			}
@@ -792,16 +795,16 @@ void MainWindow::popupModelNodeSettings() {
 
 		ImGui::TextUnformatted(_("Position"));
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
-		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
-		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
+		ImGui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
+		ImGui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
+		ImGui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 		ImGui::NewLine();
 
 		ImGui::TextUnformatted(_("Size"));
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
+		ImGui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
+		ImGui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
+		ImGui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
 		if (ImGui::OkButton()) {

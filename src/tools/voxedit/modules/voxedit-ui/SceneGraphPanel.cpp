@@ -290,7 +290,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 		}
 		const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-		ui::Toolbar toolbar("scenegraphtools", buttonSize);
+		ui::Toolbar toolbar("toolbar", buttonSize);
 
 		toolbar.button(ICON_LC_SQUARE_PLUS, _("Add a new model node"), [&sceneGraph, this, modelNodeSettings] () {
 			const int nodeId = sceneGraph.activeNode();

@@ -25,6 +25,8 @@ private:
 	using Super = ui::Panel;
 	SceneManagerPtr _sceneMgr;
 
+	void addToolbar(command::CommandExecutionListener &listener, video::Camera &camera);
+
 public:
 	CameraPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "camera"), _sceneMgr(sceneMgr) {
 	}

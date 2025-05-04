@@ -8,6 +8,7 @@
 #define TITLE_PALETTE "###palettepanel"
 #define TITLE_NORMALPALETTE "###normalpalettepanel"
 #define TITLE_NODE_INSPECTOR "###nodeinspectorpanel"
+#define TITLE_NODE_PROPERTIES "###nodepropertiespanel"
 #define TITLE_VOLUME_INSPECTOR "###nodeinspectorpanel"
 #define TITLE_ANIMATION_TIMELINE "###animationtimeline"
 #define TITLE_TOOLS "###toolspanel"

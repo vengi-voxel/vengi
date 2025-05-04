@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "ui/Panel.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "ui/Panel.h"
 
 namespace voxedit {
 
@@ -23,20 +23,25 @@ private:
 	core::String _propertyKey;
 	core::String _propertyValue;
 
+	void modelRegions(command::CommandExecutionListener &listener, const core::String &sizes,
+					  scenegraph::SceneGraphNode &node);
+	void modelProperties(scenegraph::SceneGraphNode &node);
 	void modelView(command::CommandExecutionListener &listener);
+	void modelViewMenuBar(scenegraph::SceneGraphNode &node);
 	void keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
-	void keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-								   scenegraph::FrameIndex frameIdx, scenegraph::KeyFrameIndex keyFrameIdx);
-	void sceneView(command::CommandExecutionListener &listener);
+	void sceneView(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node);
+	void sceneViewMenuBar(scenegraph::SceneGraphNode &node);
 	void detailView(scenegraph::SceneGraphNode &node);
 	/**
 	 * @return @c true if the property was handled with a special ui input widget - @c false if it should just be a
 	 * normal text input field
 	 */
-	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value);
+	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key,
+							  const core::String &value);
 
 public:
-	NodeInspectorPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "nodeinspector"), _sceneMgr(sceneMgr) {
+	NodeInspectorPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)
+		: Super(app, "nodeinspector"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
 	void shutdown();

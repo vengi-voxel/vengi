@@ -16,31 +16,23 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	IM_REGISTER_TEST(engine, testCategory(), "transform")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
-		ctx->ItemInputValue("Tr/$$0", 1.0f);
-		ctx->ItemInputValue("Tr/$$1", 2.0f);
-		ctx->ItemInputValue("Tr/$$2", 3.0f);
+		ctx->ItemInputValue("##node_props/Translation/$$0", 1.0f);
+		ctx->ItemInputValue("##node_props/Translation/$$1", 2.0f);
+		ctx->ItemInputValue("##node_props/Translation/$$2", 3.0f);
 
-		ctx->ItemInputValue("Rt/$$0", 45.0f);
-		ctx->ItemInputValue("Rt/$$1", 90.0f);
-		ctx->ItemInputValue("Rt/$$2", 45.0f);
+		ctx->ItemInputValue("##node_props/Rotation/$$0", 45.0f);
+		ctx->ItemInputValue("##node_props/Rotation/$$1", 90.0f);
+		ctx->ItemInputValue("##node_props/Rotation/$$2", 45.0f);
 
-		ctx->ItemInputValue("Sc/$$0", 2.0f);
-		ctx->ItemInputValue("Sc/$$1", 2.0f);
-		ctx->ItemInputValue("Sc/$$2", 2.0f);
+		ctx->ItemInputValue("##node_props/Scale/$$0", 2.0f);
+		ctx->ItemInputValue("##node_props/Scale/$$1", 2.0f);
+		ctx->ItemInputValue("##node_props/Scale/$$2", 2.0f);
 
-		ctx->ItemInputValue("Pv/$$0", 1.0f);
-		ctx->ItemInputValue("Pv/$$1", 1.0f);
-		ctx->ItemInputValue("Pv/$$2", 1.0f);
+		ctx->ItemInputValue("##node_props/Pivot/$$0", 1.0f);
+		ctx->ItemInputValue("##node_props/Pivot/$$1", 1.0f);
+		ctx->ItemInputValue("##node_props/Pivot/$$2", 1.0f);
 
-		ctx->ItemClick("Reset all");
-	};
-
-	IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activateViewportSceneMode(ctx, _app));
-		IM_CHECK(focusWindow(ctx, id));
-		ctx->ItemInputValue("##nodelist/##newpropertykey", "Key");
-		ctx->ItemInputValue("##nodelist/##newpropertyvalue", "Value");
-		ctx->ItemClick("##nodelist/###nodepropertyadd");
+		ctx->MenuClick("Tools/Reset transforms");
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "sizes")->TestFunc = [=](ImGuiTestContext *ctx) {

@@ -17,6 +17,7 @@
 #include "voxedit-ui/MementoPanel.h"
 #include "voxedit-ui/NodeInspectorPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
+#include "voxedit-ui/NodePropertiesPanel.h"
 #include "voxedit-ui/NormalPalettePanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/SceneGraphPanel.h"
@@ -89,6 +90,7 @@ private:
 	AssetPanel _assetPanel;
 	MementoPanel _mementoPanel;
 	NodeInspectorPanel _nodeInspectorPanel;
+	NodePropertiesPanel _nodePropertiesPanel;
 	PalettePanel _palettePanel;
 	NormalPalettePanel _normalPalettePanel;
 	MenuBar _menuBar;

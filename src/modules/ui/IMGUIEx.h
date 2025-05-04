@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include "ScopedStyle.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "core/Common.h"
 #include "core/Var.h"
 #include "dearimgui/imgui.h"
+#include "math/Axis.h"
 #include "video/FileDialogOptions.h"
 #include "video/Types.h"
 #include <glm/fwd.hpp>
@@ -38,6 +40,8 @@ IMGUI_API bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags
 IMGUI_API bool InputVec3(const char *label, glm::vec3 &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputXYZ(const char *label, glm::vec3 &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputXYZ(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags = 0);
+// extension for optional in-table input
+IMGUI_API bool InputFloat(const char *label, float &v, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 
 IMGUI_API bool InputVarString(const char *label, const char *varName, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags = 0);
@@ -81,6 +85,13 @@ IMGUI_API void InputFile(const char *label, bool load, core::String *file, const
 IMGUI_API void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags = 0u);
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
 IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
+IMGUI_API void AxisStyleText(ui::ScopedStyle &style, math::Axis axis, bool dark = true);
+
+IMGUI_API bool AxisCommandButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip,
+	float width, command::CommandExecutionListener *listener);
+IMGUI_API bool InputAxisInt(math::Axis axis, const char *name, int* value, int step = 1);
+IMGUI_API bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value);
+
 IMGUI_API bool CancelButton();
 IMGUI_API bool OkButton();
 IMGUI_API bool YesButton();
@@ -173,9 +184,6 @@ IMGUI_API bool ButtonFullWidth(const char *title);
 IMGUI_API bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNodeFlags flags = 0);
 
 IMGUI_API void TooltipCommand(const char *command);
-
-IMGUI_API bool XYZValues(const char *title, float width, glm::ivec3 &v, bool showNames = true);
-IMGUI_API bool XYZValues(const char *title, float width, glm::vec3 &v, bool showNames = true);
 
 inline float Size(float size) {
 	return ImGui::CalcTextSize("#").x * size;

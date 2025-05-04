@@ -14,7 +14,6 @@
 #include "ui/dearimgui/implot.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxel/RawVolume.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -33,72 +32,109 @@ bool NodeInspectorPanel::init() {
 void NodeInspectorPanel::shutdown() {
 }
 
+void NodeInspectorPanel::modelRegions(command::CommandExecutionListener &listener, const core::String &sizes,
+									  scenegraph::SceneGraphNode &node) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, _("Region"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		static const char *max = "888x888x888";
+		const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
+		ui::Toolbar toolbar("toolbar", buttonSize, &listener);
+
+		core::DynamicArray<core::String> regionSizes;
+		core::string::splitString(sizes, regionSizes, ",");
+		for (const core::String &s : regionSizes) {
+			glm::ivec3 maxs(0);
+			core::string::parseIVec3(s, &maxs[0]);
+			bool valid = true;
+			for (int i = 0; i < 3; ++i) {
+				if (maxs[i] <= 0 || maxs[i] > 256) {
+					valid = false;
+					break;
+				}
+			}
+			if (!valid) {
+				continue;
+			}
+			const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
+			toolbar.customNoStyle([&]() {
+				if (ImGui::Button(title.c_str())) {
+					voxel::Region newRegion(glm::ivec3(0), maxs - 1);
+					_sceneMgr->nodeResize(node.id(), newRegion);
+				}
+			});
+		}
+	}
+}
+
+void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
+	const voxel::Region &region = node.region();
+	if (!region.isValid()) {
+		return;
+	}
+	static const uint32_t tableFlags =
+		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
+	ui::ScopedStyle style;
+	style.setIndentSpacing(0.0f);
+	if (ImGui::BeginTable("##volume_props", 2, tableFlags)) {
+		const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
+								  ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
+
+		ImGui::TableSetupScrollFreeze(0, 1);
+		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn(_("Name"), colFlags);
+		ImGui::TableHeadersRow();
+
+		glm::ivec3 position = region.getLowerCorner();
+		ImGui::InputXYZ(_("Position"), position);
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			const glm::ivec3 &f = position - region.getLowerCorner();
+			_sceneMgr->nodeShift(node.id(), f);
+		}
+
+		glm::ivec3 dimensions = region.getDimensionsInVoxels();
+		ImGui::InputXYZ(_("Size"), dimensions);
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + dimensions - 1);
+			_sceneMgr->nodeResize(node.id(), newRegion);
+		}
+		ImGui::EndTable();
+	}
+}
+
+void NodeInspectorPanel::modelViewMenuBar(scenegraph::SceneGraphNode &node) {
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Tools"))) {
+			const voxel::Region &region = node.region();
+			const glm::ivec3 &mins = region.getLowerCorner();
+			if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
+				if (ImGui::IconButton(ICON_LC_MOVE_3D, _("Convert the region offset into the keyframe transforms"))) {
+					const glm::ivec3 &f = region.getLowerCorner();
+					_sceneMgr->nodeShiftAllKeyframes(node.id(), f);
+					_sceneMgr->nodeShift(node.id(), -f);
+				}
+			}
+			ImGui::EndMenu();
+		}
+		// TODO: allow to edit VoxEditRegionSizes
+		ImGui::EndMenuBar();
+	}
+}
+
 void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) {
 	core_trace_scoped(ModelView);
-	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, _("Region"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		const core::String &sizes = _regionSizes->strVal();
+	const core::String &sizes = _regionSizes->strVal();
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
+		modelViewMenuBar(*node);
 		if (!sizes.empty()) {
-			static const char *max = "888x888x888";
-			const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
-			ui::Toolbar toolbar("regions", buttonSize, &listener);
-
-			core::DynamicArray<core::String> regionSizes;
-			core::string::splitString(sizes, regionSizes, ",");
-			for (const core::String &s : regionSizes) {
-				glm::ivec3 maxs(0);
-				core::string::parseIVec3(s, &maxs[0]);
-				bool valid = true;
-				for (int i = 0; i < 3; ++i) {
-					if (maxs[i] <= 0 || maxs[i] > 256) {
-						valid = false;
-						break;
-					}
-				}
-				if (!valid) {
-					continue;
-				}
-				const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
-				toolbar.customNoStyle([&]() {
-					if (ImGui::Button(title.c_str())) {
-						voxel::Region newRegion(glm::ivec3(0), maxs - 1);
-						_sceneMgr->nodeResize(nodeId, newRegion);
-					}
-				});
-			}
-		} else if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
-			const voxel::RawVolume *v = node->volume();
-			if (v != nullptr) {
-				const voxel::Region &region = v->region();
-				glm::ivec3 mins = region.getLowerCorner();
-				glm::ivec3 maxs = region.getDimensionsInVoxels();
-				const float wPos = ImGui::CalcTextWidth(_("Pos"));
-				const float wSize = ImGui::CalcTextWidth(_("Size"));
-				const float xyzWidth = core_max(wPos, wSize);
-				if (ImGui::XYZValues(_("Pos"), xyzWidth, mins, false)) {
-					const glm::ivec3 &f = mins - region.getLowerCorner();
-					_sceneMgr->nodeShift(nodeId, f);
-				}
-				if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
-					ImGui::SameLine();
-					if (ImGui::Button(_("To transform"))) {
-						const glm::ivec3 &f = region.getLowerCorner();
-						_sceneMgr->nodeShiftAllKeyframes(nodeId, f);
-						_sceneMgr->nodeShift(nodeId, -f);
-					}
-					ImGui::TooltipTextUnformatted(_("Convert the region offset into the keyframe transforms"));
-				}
-				if (ImGui::XYZValues(_("Size"), xyzWidth, maxs, false)) {
-					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
-					_sceneMgr->nodeResize(nodeId, newRegion);
-				}
-			}
+			modelRegions(listener, sizes, *node);
+		} else {
+			modelProperties(*node);
 		}
 	}
 }
 
 void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node,
-												   scenegraph::KeyFrameIndex keyFrameIdx) {
+													   scenegraph::KeyFrameIndex keyFrameIdx) {
 	ImGui::BeginDisabled(node.type() == scenegraph::SceneGraphNodeType::Camera);
 	const scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	const int currentInterpolation = (int)keyFrame.interpolation;
@@ -136,142 +172,172 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 	ImGui::EndDisabled();
 }
 
-void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph,
-											   scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx,
-											   scenegraph::KeyFrameIndex keyFrameIdx) {
-	if (ImGui::Button(_("Reset all"))) {
-		_sceneMgr->nodeResetTransform(node.id(), keyFrameIdx);
-	}
+void NodeInspectorPanel::sceneViewMenuBar(scenegraph::SceneGraphNode &node) {
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginIconMenu(ICON_LC_CAMERA, _("Tools"))) {
+			ImGui::CommandIconMenuItem(ICON_LC_X, _("Reset transforms"), "transformreset");
+			char cmdBuffer[64];
+			core::String::formatBuf(cmdBuffer, sizeof(cmdBuffer), "transformmirror x %i", node.id());
+			ImGui::CommandIconMenuItem(ICON_LC_FLIP_HORIZONTAL_2, _("Mirror X"), cmdBuffer);
 
-	// TODO: icons and convert to commands
-	if (ImGui::Button(_("Mirror X"))) {
-		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X);
-	}
+			core::String::formatBuf(cmdBuffer, sizeof(cmdBuffer), "transformmirror y %i", node.id());
+			ImGui::CommandIconMenuItem(ICON_LC_FLIP_VERTICAL_2, _("Mirror Y"), cmdBuffer);
 
-	if (ImGui::Button(_("Mirror XZ"))) {
-		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X | math::Axis::Z);
-	}
+			core::String::formatBuf(cmdBuffer, sizeof(cmdBuffer), "transformmirror xz %i", node.id());
+			ImGui::CommandIconMenuItem(_("XZ"), _("Mirror XZ"), cmdBuffer);
 
-	if (ImGui::Button(_("Mirror XYZ"))) {
-		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X | math::Axis::Y | math::Axis::Z);
-	}
-}
-
-void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) {
-	core_trace_scoped(SceneView);
-	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Transform"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		const int activeNode = sceneGraph.activeNode();
-		if (activeNode != InvalidNodeId) {
-			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
-
-			const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
-			scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
-			scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-			glm::vec3 matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
-			glm::vec3 matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
-			glm::quat matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
-			glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
-
+			core::String::formatBuf(cmdBuffer, sizeof(cmdBuffer), "transformmirror xyz %i", node.id());
+			ImGui::CommandIconMenuItem(_("XYZ"), _("Mirror XYZ"), cmdBuffer);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
 			ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
 			ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+}
 
-			bool change = false;
-			bool changeMultiple = false;
-			ImGui::InputXYZ(_("Tr"), matrixTranslation);
-			change |= ImGui::IsItemDeactivatedAfterEdit();
-			if (_localSpace->boolVal()) {
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_LC_X "##resettr")) {
-					matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
-					change = true;
-				}
-				ImGui::TooltipTextUnformatted(_("Reset"));
+void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node) {
+	core_trace_scoped(SceneView);
 
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_LC_LOCK "##multipletr")) {
-					changeMultiple = true;
-				}
-				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
-			}
+	sceneViewMenuBar(node);
 
-			ImGui::InputXYZ(_("Rt"), matrixRotation);
-			change |= ImGui::IsItemDeactivatedAfterEdit();
-			if (_localSpace->boolVal()) {
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_LC_X "##resetrt")) {
-					matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
-					change = true;
-				}
-				ImGui::TooltipTextUnformatted(_("Reset"));
+	bool change = false;
+	bool changeMultiple = false;
+	bool pivotChanged = false;
 
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_LC_LOCK "##multiplert")) {
-					changeMultiple = true;
-				}
-				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
-			}
+	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
+	scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
+	scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
+	glm::vec3 matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
+	glm::vec3 matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
+	glm::quat matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
+	glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
+	glm::vec3 pivot = node.pivot();
+	static const uint32_t tableFlags =
+		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
+	ui::ScopedStyle style;
+	style.setIndentSpacing(0.0f);
+	if (ImGui::BeginTable("##node_props", 4, tableFlags)) {
+		const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
+								  ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
-			ImGui::InputXYZ(_("Sc"), matrixScale);
-			change |= ImGui::IsItemDeactivatedAfterEdit();
-			if (_localSpace->boolVal()) {
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_LC_X "##resetsc")) {
-					matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
-					change = true;
-				}
-				ImGui::TooltipTextUnformatted(_("Reset"));
+		ImGui::TableSetupScrollFreeze(0, 1);
+		ImGui::TableSetupColumn(ICON_LC_X "##reset", colFlags);
+		ImGui::TableSetupColumn(ICON_LC_LOCK "##lock", colFlags);
+		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn(_("Name"), colFlags);
+		ImGui::TableHeadersRow();
 
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_LC_LOCK "##multiplesc")) {
-					changeMultiple = true;
-				}
-				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
-			}
-
-			glm::vec3 pivot = node.pivot();
-			ImGui::InputXYZ(_("Pv"), pivot);
-			bool pivotChanged = ImGui::IsItemDeactivatedAfterEdit();
-			change |= pivotChanged;
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_LC_X "##resetpv")) {
-				pivot[0] = pivot[1] = pivot[2] = 0.0f;
-				pivotChanged = change = true;
+		if (_localSpace->boolVal()) {
+			ImGui::TableNextColumn();
+			if (ImGui::Button(ICON_LC_X "##resettr")) {
+				matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
+				change = true;
 			}
 			ImGui::TooltipTextUnformatted(_("Reset"));
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_LC_LOCK "##multiplepv")) {
-				_sceneMgr->nodeUpdatePivotGroup(pivot);
+
+			ImGui::TableNextColumn();
+			if (ImGui::Button(ICON_LC_LOCK "##multipletr")) {
+				changeMultiple = true;
 			}
 			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
-			keyFrameActionsAndOptions(sceneGraph, node, frameIdx, keyFrameIdx);
-			keyFrameInterpolationSettings(node, keyFrameIdx);
+		} else {
+			ImGui::TableNextColumn();
+			ImGui::TableNextColumn();
+		}
+		ImGui::InputXYZ(_("Translation"), matrixTranslation);
+		change |= ImGui::IsItemDeactivatedAfterEdit();
 
-			if (change) {
-				const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
-				// check if a new keyframe should get generated automatically
-				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
-					if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
-						const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
-						core_assert(newKeyFrameIdx != keyFrameIdx);
-						core_assert(newKeyFrameIdx != InvalidKeyFrame);
-						keyFrameIdx = newKeyFrameIdx;
-					}
-				}
-				if (pivotChanged) {
-					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
-				} else {
-					_sceneMgr->nodeUpdateTransform(node.id(), matrixRotation, matrixScale, matrixTranslation,
-												   keyFrameIdx, _localSpace->boolVal());
-				}
-			} else if (changeMultiple) {
-				_sceneMgr->nodeUpdateTransformGroup(matrixRotation, matrixScale, matrixTranslation, frameIdx, _localSpace->boolVal());
+		// ------------------
+
+		if (_localSpace->boolVal()) {
+			ImGui::TableNextColumn();
+			if (ImGui::Button(ICON_LC_X "##resetrt")) {
+				matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
+				change = true;
+			}
+			ImGui::TooltipTextUnformatted(_("Reset"));
+
+			ImGui::TableNextColumn();
+			if (ImGui::Button(ICON_LC_LOCK "##multiplert")) {
+				changeMultiple = true;
+			}
+			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+		} else {
+			ImGui::TableNextColumn();
+			ImGui::TableNextColumn();
+		}
+		ImGui::InputXYZ(_("Rotation"), matrixRotation);
+		change |= ImGui::IsItemDeactivatedAfterEdit();
+
+		// ------------------
+
+		if (_localSpace->boolVal()) {
+			ImGui::TableNextColumn();
+			if (ImGui::Button(ICON_LC_X "##resetsc")) {
+				matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
+				change = true;
+			}
+			ImGui::TooltipTextUnformatted(_("Reset"));
+
+			ImGui::TableNextColumn();
+			if (ImGui::Button(ICON_LC_LOCK "##multiplesc")) {
+				changeMultiple = true;
+			}
+			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+		} else {
+			ImGui::TableNextColumn();
+			ImGui::TableNextColumn();
+		}
+		ImGui::InputXYZ(_("Scale"), matrixScale);
+		change |= ImGui::IsItemDeactivatedAfterEdit();
+
+		// ------------------
+
+		ImGui::TableNextColumn();
+		if (ImGui::Button(ICON_LC_X "##resetpv")) {
+			pivot[0] = pivot[1] = pivot[2] = 0.0f;
+			pivotChanged = change = true;
+		}
+		ImGui::TooltipTextUnformatted(_("Reset"));
+		ImGui::TableNextColumn();
+		if (ImGui::Button(ICON_LC_LOCK "##multiplepv")) {
+			_sceneMgr->nodeUpdatePivotGroup(pivot);
+		}
+		ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+		ImGui::InputXYZ(_("Pivot"), pivot);
+		pivotChanged |= ImGui::IsItemDeactivatedAfterEdit();
+		change |= pivotChanged;
+
+		ImGui::EndTable();
+	}
+
+	keyFrameInterpolationSettings(node, keyFrameIdx);
+
+	if (change) {
+		const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
+		// check if a new keyframe should get generated automatically
+		if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
+			if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
+				const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+				core_assert(newKeyFrameIdx != keyFrameIdx);
+				core_assert(newKeyFrameIdx != InvalidKeyFrame);
+				keyFrameIdx = newKeyFrameIdx;
 			}
 		}
-	}
-	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Properties"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		detailView(sceneGraph.node(sceneGraph.activeNode()));
+		if (pivotChanged) {
+			_sceneMgr->nodeUpdatePivot(node.id(), pivot);
+		} else {
+			_sceneMgr->nodeUpdateTransform(node.id(), matrixRotation, matrixScale, matrixTranslation, keyFrameIdx,
+										   _localSpace->boolVal());
+		}
+	} else if (changeMultiple) {
+		_sceneMgr->nodeUpdateTransformGroup(matrixRotation, matrixScale, matrixTranslation, frameIdx,
+											_localSpace->boolVal());
 	}
 }
 
@@ -279,15 +345,14 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 	ImGui::Text(_("UUID: %s"), node.uuid().c_str());
 
 	core::String deleteKey;
-	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-										ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
-										ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
-										ImGuiTableFlags_NoSavedSettings;
+	static const uint32_t tableFlags =
+		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
+		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
 	ui::ScopedStyle style;
 	style.setIndentSpacing(0.0f);
 	if (ImGui::BeginTable("##nodelist", 3, tableFlags)) {
 		const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
-									ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
+								  ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
 		ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
@@ -306,7 +371,8 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 				bool propertyAlreadyHandled = false;
 
 				if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
-					propertyAlreadyHandled = handleCameraProperty(scenegraph::toCameraNode(node), entry->key, entry->value);
+					propertyAlreadyHandled =
+						handleCameraProperty(scenegraph::toCameraNode(node), entry->key, entry->value);
 				}
 
 				if (!propertyAlreadyHandled) {
@@ -318,13 +384,16 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 						}
 					} else {
 						core::String value = entry->value;
-						if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+						if (ImGui::InputText(id.c_str(), &value,
+											 ImGuiInputTextFlags_EnterReturnsTrue |
+												 ImGuiInputTextFlags_AutoSelectAll)) {
 							_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
 						}
 					}
 				}
 				ImGui::TableNextColumn();
-				const core::String &deleteId = core::String::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+				const core::String &deleteId =
+					core::String::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
 				if (ImGui::Button(deleteId.c_str())) {
 					deleteKey = entry->key;
 				}
@@ -352,7 +421,8 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 	}
 }
 
-bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
+bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key,
+											  const core::String &value) {
 	const core::String &id = core::String::format("##%i-%s", node.id(), key.c_str());
 	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
@@ -388,9 +458,13 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 void NodeInspectorPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NodeInspectorPanel);
 	const core::String title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (sceneMode) {
-			sceneView(listener);
+			const int activeNode = _sceneMgr->sceneGraph().activeNode();
+			if (activeNode != InvalidNodeId) {
+				scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(activeNode);
+				sceneView(listener, node);
+			}
 		} else {
 			modelView(listener);
 		}

@@ -25,6 +25,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_assetPanel.registerUITests(engine, TITLE_ASSET);
 	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
 	_nodeInspectorPanel.registerUITests(engine, TITLE_NODE_INSPECTOR);
+	_nodePropertiesPanel.registerUITests(engine, TITLE_NODE_PROPERTIES);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
 	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
 	_menuBar.registerUITests(engine, "##MenuBar");

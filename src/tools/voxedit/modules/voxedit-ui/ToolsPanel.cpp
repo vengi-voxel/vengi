@@ -4,7 +4,6 @@
 
 #include "ToolsPanel.h"
 #include "Toolbar.h"
-#include "Util.h"
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
@@ -63,7 +62,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 			ui::ScopedStyle style;
 			style.setFont(_app->bigIconFont());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-			ui::Toolbar toolbar("scenetools", buttonSize, &listener);
+			ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 			toolbar.button(ICON_LC_COPY, "nodeduplicate");
 			toolbar.button(ICON_LC_TRASH, "nodedelete");
 			if (nodeType == scenegraph::SceneGraphNodeType::Model) {
@@ -83,7 +82,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ui::ScopedStyle style;
 		style.setFont(_app->bigIconFont());
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-		ui::Toolbar toolbar("edittools", buttonSize, &listener);
+		ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
 		toolbar.button(ICON_LC_SCALING, "resizetoselection", !_sceneMgr->modifier().selectionMgr().hasSelection());
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");
@@ -100,26 +99,26 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	const float buttonWidth = (float)_app->fontSize() * 4;
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotatevolumeonaxis");
-		veui::AxisButton(math::Axis::X, _("X"), "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::X, _("X"), "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, _("Y"), "rotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "rotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, _("Z"), "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
 		ImGui::PopID();
 	}
 
 	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##flipvolumeonaxis");
-		veui::AxisButton(math::Axis::X, _("X"), "flip x", ICON_LC_MOVE_HORIZONTAL, nullptr, buttonWidth,
+		ImGui::AxisCommandButton(math::Axis::X, _("X"), "flip x", ICON_LC_MOVE_HORIZONTAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, _("Y"), "flip y", ICON_LC_MOVE_VERTICAL, nullptr, buttonWidth,
+		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "flip y", ICON_LC_MOVE_VERTICAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, _("Z"), "flip z", ICON_LC_MOVE_DIAGONAL, nullptr, buttonWidth,
+		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "flip z", ICON_LC_MOVE_DIAGONAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::PopID();
 	}
@@ -127,9 +126,9 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##translatevolume");
 		static glm::ivec3 translate{0};
-		veui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
-		veui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
-		veui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
+		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
+		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
+		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
 		const core::String &shiftCmd = core::String::format("shift %i %i %i", translate.x, translate.y, translate.z);
 		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
 		ImGui::SameLine();
@@ -142,33 +141,33 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::PushID("##cursor");
 		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
-		if (veui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
+		if (ImGui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
 			command::executeCommands("lockx", &listener);
 		}
 		ImGui::TooltipCommand("lockx");
 		ImGui::SameLine();
 		const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
-		if (veui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
+		if (ImGui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
 			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
-		if (veui::CheckboxAxisFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
+		if (ImGui::CheckboxAxisFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
 			command::executeCommands("locky", &listener);
 		}
 		ImGui::TooltipCommand("locky");
 		ImGui::SameLine();
-		if (veui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
+		if (ImGui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
 			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
 
-		if (veui::CheckboxAxisFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
+		if (ImGui::CheckboxAxisFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
 			command::executeCommands("lockz", &listener);
 		}
 		ImGui::TooltipCommand("lockz");
 		ImGui::SameLine();
-		if (veui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
+		if (ImGui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
 			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}

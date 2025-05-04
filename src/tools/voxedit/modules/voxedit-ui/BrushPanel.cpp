@@ -16,7 +16,6 @@
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
-#include "voxedit-ui/Util.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -70,7 +69,7 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 	cmd += math::getCharForAxis(type);
 	{
 		ui::ScopedStyle style;
-		veui::AxisStyleText(style, type, false);
+		ImGui::AxisStyleText(style, type, false);
 		if (ImGui::RadioButton(title, brush.mirrorAxis() == type)) {
 			command::executeCommands(cmd, &listener);
 			return true;
@@ -165,13 +164,13 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	const float buttonWidth = (float)_app->fontSize() * 4;
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotateonaxis");
-		veui::AxisButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, _("Y"), "stampbrushrotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "stampbrushrotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, _("Z"), "stampbrushrotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "stampbrushrotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
 		ImGui::PopID();
 	}
@@ -376,13 +375,13 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	ImGui::TooltipTextUnformatted(_("Thickness"));
 
 	const float buttonWidth = (float)_app->fontSize() * 4;
-	veui::AxisButton(math::Axis::X, _("X"), "textbrushaxis x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+	ImGui::AxisCommandButton(math::Axis::X, _("X"), "textbrushaxis x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 	ImGui::TooltipTextUnformatted(_("Print text along the x axis"));
 	ImGui::SameLine();
-	veui::AxisButton(math::Axis::Y, _("Y"), "textbrushaxis y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+	ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "textbrushaxis y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 	ImGui::TooltipTextUnformatted(_("Print text along the y axis"));
 	ImGui::SameLine();
-	veui::AxisButton(math::Axis::Z, _("Z"), "textbrushaxis z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+	ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "textbrushaxis z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 	ImGui::TooltipTextUnformatted(_("Print text along the z axis"));
 
 	addMirrorPlanes(listener, modifier.textBrush());
@@ -499,7 +498,7 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 			ui::ScopedStyle style;
 			style.setFont(_app->bigIconFont());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-			ui::Toolbar toolbar("scenetools", buttonSize, &listener);
+			ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 			toolbar.button(ICON_LC_FLIP_HORIZONTAL, "texturebrushmirroru");
 			toolbar.button(ICON_LC_FLIP_VERTICAL, "texturebrushmirrorv");
 			toolbar.button(ICON_LC_X, "texturebrushresetuv");
