@@ -2,10 +2,10 @@
  * @file
  */
 #include "TestOctree.h"
+#include "ui/IMGUIEx.h"
 #include "core/Color.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
-#include "core/StringUtil.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include "core/sdl/SDLSystem.h"
@@ -152,8 +152,8 @@ void TestOctree::onRenderUI() {
 	ImGui::Checkbox("Render Items", &_renderItems);
 	ImGui::Separator();
 
-	ImGui::InputInt3("mins", (int*)glm::value_ptr(_queryMins));
-	ImGui::InputInt3("maxs", (int*)glm::value_ptr(_queryMaxs));
+	ImGui::InputVec3("mins", _queryMins);
+	ImGui::InputVec3("maxs", _queryMaxs);
 
 	if (ImGui::Button("Query")) {
 		_results.clear();

@@ -20,14 +20,14 @@ protected:
 	const float _startingPosX;
 	const ImVec2 _size;
 	command::CommandExecutionListener *_listener;
-	const core::String _name;
+	const core::String _id;
 	float windowWidth() const;
 	void setCursor();
 	void next();
 	void newline();
 	void last();
 public:
-	Toolbar(const core::String &name, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
+	Toolbar(const core::String &id, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
 	~Toolbar();
 
 	bool button(const char *icon, const char *command, bool darken = false);
@@ -44,7 +44,7 @@ public:
 		if (highlight) {
 			style.highlight(ImGuiCol_Text);
 		}
-		ImGui::PushID(_name.c_str());
+		ImGui::PushID(_id.c_str());
 		char label[64];
 		core::String::formatBuf(label, sizeof(label), "%s###button%d", icon, _nextId);
 		bool pressed = ImGui::Button(label, _size);

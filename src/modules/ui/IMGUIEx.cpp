@@ -183,6 +183,14 @@ bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
 	return InputInt3(label, glm::value_ptr(vec), flags);
 }
 
+bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags) {
+	return InputVec3(label, vec, format, flags);
+}
+
+bool InputXYZ(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
+	return InputVec3(label, vec, flags);
+}
+
 bool InputVarInt(const char *label, const core::VarPtr &var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	int v = var->intVal();
 	if (InputInt(label, &v, step, step_fast, extra_flags)) {

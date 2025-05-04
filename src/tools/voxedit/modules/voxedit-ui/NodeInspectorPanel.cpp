@@ -179,7 +179,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 
 			bool change = false;
 			bool changeMultiple = false;
-			ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f");
+			ImGui::InputXYZ(_("Tr"), matrixTranslation);
 			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
@@ -196,7 +196,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
 			}
 
-			ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f");
+			ImGui::InputXYZ(_("Rt"), matrixRotation);
 			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
@@ -213,7 +213,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
 			}
 
-			ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f");
+			ImGui::InputXYZ(_("Sc"), matrixScale);
 			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
@@ -231,7 +231,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			}
 
 			glm::vec3 pivot = node.pivot();
-			ImGui::InputFloat3(_("Pv"), glm::value_ptr(pivot), "%.3f");
+			ImGui::InputXYZ(_("Pv"), pivot);
 			bool pivotChanged = ImGui::IsItemDeactivatedAfterEdit();
 			change |= pivotChanged;
 			ImGui::SameLine();

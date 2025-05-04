@@ -18,8 +18,16 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 	const core::String title = makeTitle(ICON_LC_CAMERA, _("Camera"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		glm::vec3 pos = camera.worldPosition();
-		if (ImGui::InputFloat3(_("Position"), &pos.x)) {
+		if (ImGui::InputXYZ(_("Position"), pos)) {
 			camera.setWorldPosition(pos);
+		}
+		glm::vec3 target = camera.target();
+		if (ImGui::InputXYZ(_("Target"), target)) {
+			camera.setTarget(target);
+		}
+		float targetDistance = camera.targetDistance();
+		if (ImGui::InputFloat(_("Target distance"), &targetDistance)) {
+			camera.setTargetDistance(targetDistance);
 		}
 		float farplane = camera.farPlane();
 		if (ImGui::InputFloat(_("Farplane"), &farplane, 0.0f, 0.0f, "%.3f")) {
@@ -32,14 +40,6 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 		float fov = camera.fieldOfView();
 		if (ImGui::InputFloat(_("FOV"), &fov, 0.0f, 0.0f, "%.3f")) {
 			camera.setFieldOfView(fov);
-		}
-		glm::vec3 target = camera.target();
-		if (ImGui::InputFloat3(_("Target"), &target.x)) {
-			camera.setTarget(target);
-		}
-		float targetDistance = camera.targetDistance();
-		if (ImGui::InputFloat(_("Target distance"), &targetDistance)) {
-			camera.setTargetDistance(targetDistance);
 		}
 
 		float aspect = camera.aspect();

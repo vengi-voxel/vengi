@@ -77,9 +77,9 @@ void TestShapeBuilder::onRenderUI() {
 	ImGui::Text("General settings");
 	ImGui::Indent();
 	ImGui::ColorEdit4("color", glm::value_ptr(_color));
-	ImGui::InputInt3("pos", glm::value_ptr(pos));
-	ImGui::InputFloat3("scale", glm::value_ptr(scale));
-	if (ImGui::InputFloat3("rotation (degree)", glm::value_ptr(rotation))) {
+	ImGui::InputVec3("pos", pos);
+	ImGui::InputVec3("scale", scale);
+	if (ImGui::InputVec3("rotation (degree)", rotation)) {
 		rotation = glm::clamp(rotation, 0.0f, 360.0f);
 	}
 	ImGui::TooltipText("Applies rendering only scale");
@@ -106,8 +106,8 @@ void TestShapeBuilder::onRenderUI() {
 	}
 
 	if (ImGui::CollapsingHeader("Cube", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
-		ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
-		ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));
+		ImGui::InputVec3("Mins", _mins);
+		ImGui::InputVec3("Maxs", _maxs);
 		if (ImGui::Button("Add cube")) {
 			_shapeBuilder.cube(_mins, _maxs);
 			buildMesh = true;
@@ -127,8 +127,8 @@ void TestShapeBuilder::onRenderUI() {
 		}
 	}
 	if (ImGui::CollapsingHeader("AABB grid", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
-		ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
-		ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));
+		ImGui::InputVec3("Mins", _mins);
+		ImGui::InputVec3("Maxs", _maxs);
 		ImGui::Checkbox("Near plane", &_near);
 		ImGui::InputFloat("Step width", &_stepWidth);
 		if (ImGui::Button("Add AABB Grid XY")) {
@@ -148,8 +148,8 @@ void TestShapeBuilder::onRenderUI() {
 	}
 
 	if (ImGui::CollapsingHeader("Line", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
-		ImGui::InputFloat3("Start", glm::value_ptr(_line.start));
-		ImGui::InputFloat3("End", glm::value_ptr(_line.end));
+		ImGui::InputVec3("Start", _line.start);
+		ImGui::InputVec3("End", _line.end);
 		if (ImGui::Button("Add Line")) {
 			_shapeBuilder.line(_line.start, _line.end);
 			buildMesh = true;
