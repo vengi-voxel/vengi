@@ -593,6 +593,14 @@ AppState App::onConstruct() {
 		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
 	}).setHelp(_("Set a variable value"));
 
+	command::Command::registerCommand("clear", [](const command::CmdArgs &args) {
+		if (args.size() < 1) {
+			Log::info("usage: reset <name>");
+			return;
+		}
+		core::Var::get(args[0], "")->setVal("");
+	}).setHelp(_("Clear the variable value"));
+
 	command::Command::registerCommand("quit", [&](const command::CmdArgs &args) {
 		requestQuit();
 	}).setHelp(_("Quit the application"));
