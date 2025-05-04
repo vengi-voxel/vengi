@@ -19,6 +19,7 @@ set(LUA_SRCS
 	scripts/delete-rgb.lua
 	scripts/erode.lua
 	scripts/fillhollow.lua
+	scripts/fillz.lua
 	scripts/flatten.lua
 	scripts/gameoflife.lua
 	scripts/gradient.lua

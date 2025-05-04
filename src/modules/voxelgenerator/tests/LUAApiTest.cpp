@@ -264,6 +264,11 @@ TEST_F(LUAApiTest, testScriptFillHollow) {
 	runFile(sceneGraph, "fillhollow.lua");
 }
 
+TEST_F(LUAApiTest, testScriptFillz) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "fillz.lua");
+}
+
 TEST_F(LUAApiTest, testScriptGradient) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "gradient.lua");
