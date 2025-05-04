@@ -2909,6 +2909,10 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFr
 
 bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
 									   math::Axis axis) {
+	if (keyFrameIdx == InvalidKeyFrame) {
+		scenegraph::FrameIndex frameIdx = currentFrame();
+		keyFrameIdx = node.keyFrameForFrame(frameIdx);
+	}
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 	if (axis == math::Axis::X) {
@@ -3152,6 +3156,10 @@ void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec
 
 bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
 	nodeSetPivot(node, {0.0f, 0.0f, 0.0f});
+	if (keyFrameIdx == InvalidKeyFrame) {
+		scenegraph::FrameIndex frameIdx = currentFrame();
+		keyFrameIdx = node.keyFrameForFrame(frameIdx);
+	}
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 	transform.setLocalMatrix(glm::mat4(1.0f));
