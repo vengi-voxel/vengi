@@ -64,6 +64,12 @@ struct LUAParameterDescription {
 struct LUAScript {
 	core::String filename;
 	bool valid = false; // main() was found
+	bool cached = false;
+	core::String desc;
+
+	core::DynamicArray<voxelgenerator::LUAParameterDescription> parameterDescription;
+	core::DynamicArray<core::String> enumValues;
+	core::DynamicArray<core::String> parameters;
 
 	const char *c_str() const {
 		return filename.c_str();
@@ -97,8 +103,12 @@ public:
 	const core::String &error() const;
 
 	core::String load(const core::String &scriptName) const;
+	bool prepare(lua::LUA &lua, const core::String &luaScript) const;
 	core::DynamicArray<LUAScript> listScripts() const;
+	bool argumentInfo(lua::LUA& lua, core::DynamicArray<LUAParameterDescription> &params);
+	core::String description(lua::LUA& lua) const;
 	bool argumentInfo(const core::String &luaScript, core::DynamicArray<LUAParameterDescription> &params);
+	core::String description(const core::String &luaScript) const;
 	/**
 	 * @note The real execution happens in the @c update() method
 	 * @param luaScript The lua script string to execute

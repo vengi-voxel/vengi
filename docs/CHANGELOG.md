@@ -20,6 +20,8 @@ General:
    - Fixed some dpi issues with a few dialog sizes
    - Added support for Avoyd material template (`avmt`) files
    - Fixed new binary mesher for negative region offsets
+   - New lua scripts
+   - Added lua script description
 
 VoxEdit:
 
@@ -30,6 +32,7 @@ VoxEdit:
    - Improved the camera panel
    - Allow to change the cvar `ve_regionsizes` from within the UI
    - Fixed crash in memento panel tooltip handling
+   - Optimized lua script panel
 
 PalConvert:
 

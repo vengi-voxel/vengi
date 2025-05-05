@@ -39,9 +39,8 @@ public:
 
 private:
 	int _currentScript = -1;
-	core::DynamicArray<voxelgenerator::LUAParameterDescription> _scriptParameterDescription;
-	core::DynamicArray<core::String> _enumValues;
-	core::DynamicArray<core::String> _scriptParameters;
+	voxelgenerator::LUAScript *cs();
+	bool updateScriptParameters(voxelgenerator::LUAScript &script, const palette::Palette &palette);
 
 public:
 	void clear();
@@ -49,6 +48,7 @@ public:
 	const voxelgenerator::LUAScript &script(int idx) const;
 	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, const core::String &script);
 	void reloadScript(voxelgenerator::LUAApi &luaApi);
+	void loadScript(voxelgenerator::LUAApi &luaApi);
 	/**
 	 * @return @c true if the current script is valid
 	 */
@@ -58,6 +58,13 @@ public:
 
 inline const voxelgenerator::LUAScript &LUAApiWidget::currentScript() const {
 	return script(_currentScript);
+}
+
+inline voxelgenerator::LUAScript *LUAApiWidget::cs() {
+	if (_currentScript < 0 || _currentScript >= (int)_scripts.size()) {
+		return nullptr;
+	}
+	return &_scripts[_currentScript];
 }
 
 inline const voxelgenerator::LUAScript &LUAApiWidget::script(int idx) const {

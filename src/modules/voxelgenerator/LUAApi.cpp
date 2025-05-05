@@ -1930,18 +1930,58 @@ void LUAApi::shutdown() {
 	_lua.resetState();
 }
 
-bool LUAApi::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
+core::String LUAApi::description(const core::String &luaScript) const {
 	lua::LUA lua;
+	if (!prepare(lua, luaScript)) {
+		return "";
+	}
+	return description(lua);
+}
 
-	// load and run once to initialize the global variables
+core::String LUAApi::description(lua::LUA &lua) const {
+	// get description method
+	lua_getglobal(lua, "description");
+	if (!lua_isfunction(lua, -1)) {
+		// this is no error - just no description...
+		return "";
+	}
+
+	const int error = lua_pcall(lua, 0, 1, 0);
+	if (error != LUA_OK) {
+		Log::error("LUA generate description script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
+		return "";
+	}
+
+	core::String desc;
+	if (lua_isstring(lua, -1)) {
+		desc = lua_tostring(lua, -1);
+	} else {
+		Log::error("Expected to get a string return value");
+	}
+
+	return desc;
+}
+
+bool LUAApi::prepare(lua::LUA &lua, const core::String &luaScript) const {
 	if (luaL_dostring(lua, luaScript.c_str())) {
 		Log::error("%s", lua_tostring(lua, -1));
 		return false;
 	}
+	return true;
+}
 
+bool LUAApi::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
+	lua::LUA lua;
+	if (!prepare(lua, luaScript)) {
+		return false;
+	}
+	return argumentInfo(lua, params);
+}
+
+bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescription>& params) {
 	const int preTop = lua_gettop(lua);
 
-	// get help method
+	// get arguments method
 	lua_getglobal(lua, "arguments");
 	if (!lua_isfunction(lua, -1)) {
 		// this is no error - just no parameters are needed...
@@ -2117,19 +2157,9 @@ core::DynamicArray<LUAScript> LUAApi::listScripts() const {
 	scripts.reserve(entities.size());
 	for (const auto& e : entities) {
 		const core::String path = core::string::path("scripts", e.name);
-		lua::LUA lua;
-		if (!lua.load(_filesystem->load(path))) {
-			Log::warn("Failed to load %s", path.c_str());
-			scripts.push_back({e.name, false});
-			continue;
-		}
-		lua_getglobal(lua, "main");
-		if (!lua_isfunction(lua, -1)) {
-			Log::debug("No main() function found in %s", path.c_str());
-			scripts.push_back({e.name, false});
-			continue;
-		}
-		scripts.push_back({e.name, true});
+		LUAScript script;
+		script.filename = e.name;
+		scripts.emplace_back(core::move(script));
 	}
 	return scripts;
 }
