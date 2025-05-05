@@ -119,7 +119,6 @@ public:
 	void releaseOwnership();
 	bool owns() const;
 
-	bool isLocked() const;
 	bool isReferenceNode() const;
 	bool isReferenceable() const;
 	bool isAnyModelNode() const;

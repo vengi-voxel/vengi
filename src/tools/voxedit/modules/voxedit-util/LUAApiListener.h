@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraphListener.h"
 

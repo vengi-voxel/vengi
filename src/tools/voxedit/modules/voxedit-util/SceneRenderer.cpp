@@ -210,7 +210,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	core_trace_scoped(UpdateAABBMesh);
 	_shapeBuilder.clear();
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
-	const bool activeNodeLocked = activeNode.isLocked();
+	const bool activeNodeLocked = activeNode.locked();
 	int modelNodes = 0;
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
@@ -222,7 +222,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		}
 		if (node.id() == sceneGraph.activeNode()) {
 			continue;
-		} else if (activeNodeLocked && node.isLocked()) {
+		} else if (activeNodeLocked && node.locked()) {
 			_shapeBuilder.setColor(style::color(style::ColorLockedNode));
 		} else if (node.isReferenceNode()) {
 			_shapeBuilder.setColor(style::color(style::ColorReferenceNode));
