@@ -18,11 +18,13 @@ class SceneManager;
  */
 class LUAApiListener : public scenegraph::SceneGraphListener {
 private:
+	SceneManager *_sceneMgr;
 	memento::MementoHandler &_mementoHandler;
 	const scenegraph::SceneGraph &_sceneGraph;
 
 public:
-	LUAApiListener(memento::MementoHandler &mementoHandler, const scenegraph::SceneGraph &sceneGraph);
+	LUAApiListener(SceneManager *sceneMgr, memento::MementoHandler &mementoHandler,
+				   const scenegraph::SceneGraph &sceneGraph);
 
 	void onNodeAdded(int nodeId) override;
 	void onNodeRemove(int nodeId) override;

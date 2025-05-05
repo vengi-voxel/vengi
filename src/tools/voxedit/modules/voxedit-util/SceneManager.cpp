@@ -94,7 +94,7 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer),
-	  _luaApi(filesystem), _luaApiListener(_mementoHandler, _sceneGraph), _filesystem(filesystem) {
+	  _luaApi(filesystem), _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem) {
 }
 
 SceneManager::~SceneManager() {

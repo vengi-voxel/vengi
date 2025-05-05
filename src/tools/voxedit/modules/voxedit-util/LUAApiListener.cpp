@@ -7,17 +7,19 @@
 
 namespace voxedit {
 
-LUAApiListener::LUAApiListener(memento::MementoHandler &mementoHandler,
+LUAApiListener::LUAApiListener(SceneManager *sceneMgr, memento::MementoHandler &mementoHandler,
 							   const scenegraph::SceneGraph &sceneGraph)
-	: _mementoHandler(mementoHandler), _sceneGraph(sceneGraph) {
+	: _sceneMgr(sceneMgr), _mementoHandler(mementoHandler), _sceneGraph(sceneGraph) {
 }
 
 void LUAApiListener::onNodeAdded(int nodeId) {
-	_mementoHandler.markNodeAdded(_sceneGraph, _sceneGraph.node(nodeId));
+	_sceneMgr->onNewNodeAdded(nodeId);
 }
 
 void LUAApiListener::onNodeRemove(int nodeId) {
 	_mementoHandler.markNodeRemove(_sceneGraph, _sceneGraph.node(nodeId));
+	// TODO: this doesn't handle reference nodes and the like - see SceneManager::nodeRemove()
+	_sceneMgr->markDirty();
 }
 
 void LUAApiListener::onAnimationAdded(const core::String &name) {
