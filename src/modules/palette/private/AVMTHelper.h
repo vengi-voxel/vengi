@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "io/TokenStream.h"
