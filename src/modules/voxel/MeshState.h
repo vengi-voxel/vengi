@@ -106,13 +106,13 @@ private:
 	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
-	void clear();
 	bool runScheduledExtractions(size_t maxExtraction = 1);
 	void waitForPendingExtractions();
 	bool deleteMeshes(int idx);
 	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
 
 public:
+	void clear();
 	const MeshesMap &meshes(MeshType type) const;
 	/**
 	 * @brief This will transfer the extracted meshes into the mesh state and make

@@ -5,8 +5,6 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
-#include "util/VarUtil.h"
-#include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
@@ -15,8 +13,28 @@
 class MeshStateBenchmark : public app::AbstractBenchmark {
 protected:
 	voxel::RawVolume v{voxel::Region{0, 0, 0, 61, 22, 61}};
+	voxel::MeshState mesh;
 
 public:
+	void onCleanupApp() override {
+		(void)mesh.shutdown();
+		app::AbstractBenchmark::onCleanupApp();
+	}
+
+	bool onInitApp() override {
+		if (!app::AbstractBenchmark::onInitApp()) {
+			return false;
+		}
+		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		mesh.construct();
+		if (!mesh.init()) {
+			Log::error("Failed to initialize mesh state");
+			return false;
+		}
+		return true;
+	}
+
+
 	void SetUp(::benchmark::State &state) override {
 		app::AbstractBenchmark::SetUp(state);
 
@@ -97,16 +115,18 @@ public:
 };
 
 BENCHMARK_DEFINE_F(MeshStateBenchmark, Extract)(benchmark::State &state) {
-	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
 	for (auto _ : state) {
-		voxel::MeshState mesh;
-		mesh.construct();
-		mesh.init();
 		bool meshDeleted = false;
 		delete mesh.setVolume(0, &v, &voxel::getPalette(), nullptr, true, meshDeleted);
 		mesh.scheduleRegionExtraction(0, v.region());
 		mesh.extractAllPending();
-		(void)mesh.shutdown();
+		for (;;) {
+			const int idx = mesh.pop();
+			if (idx == -1) {
+				break;
+			}
+		}
+		mesh.clear();
 	}
 }
 
