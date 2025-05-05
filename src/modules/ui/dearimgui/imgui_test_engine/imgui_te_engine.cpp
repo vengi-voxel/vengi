@@ -1639,6 +1639,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
             test_output->EndTime = test_output->StartTime;
         ctx->Test = nullptr;
         ctx->TestOutput = nullptr;
+        ctx->CaptureArgs = nullptr;
         return;
     }
 
@@ -1920,6 +1921,11 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
             parent_ctx->GenericVars = backup_generic_vars;
         }
     }
+
+    // 'ctx' at this point is either a local variable or shared with parent.
+    //ctx->Test = nullptr;
+    //ctx->TestOutput = nullptr;
+    //ctx->CaptureArgs = nullptr;
 
     IM_ASSERT(engine->TestContext == ctx);
     engine->TestContext = parent_ctx;

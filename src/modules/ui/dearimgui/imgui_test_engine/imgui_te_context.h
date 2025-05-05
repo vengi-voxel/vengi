@@ -426,7 +426,6 @@ struct IMGUI_API ImGuiTestContext
     void        ItemClose(ImGuiTestRef ref, ImGuiTestOpFlags flags = 0)                 { ItemAction(ImGuiTestAction_Close, ref, flags); }
     void        ItemInput(ImGuiTestRef ref, ImGuiTestOpFlags flags = 0)                 { ItemAction(ImGuiTestAction_Input, ref, flags); }
     void        ItemNavActivate(ImGuiTestRef ref, ImGuiTestOpFlags flags = 0)           { ItemAction(ImGuiTestAction_NavActivate, ref, flags); }
-    bool        ItemOpenFullPath(ImGuiTestRef);
 
     // Item/Widgets: Batch actions over an entire scope
     void        ItemActionAll(ImGuiTestAction action, ImGuiTestRef ref_parent, const ImGuiTestActionFilter* filter = nullptr);

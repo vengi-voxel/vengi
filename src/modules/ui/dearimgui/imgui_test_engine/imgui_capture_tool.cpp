@@ -206,6 +206,7 @@ void ImGuiCaptureContext::PreRender()
     if (IsCapturing())
     {
         const ImGuiCaptureArgs* args = _CaptureArgs;
+        IM_ASSERT(args != NULL);
         g.IO.MouseDrawCursor = !(args->InFlags & ImGuiCaptureFlags_HideMouseCursor);
     }
 }
@@ -618,6 +619,7 @@ void ImGuiCaptureContext::EndVideoCapture()
     IM_ASSERT(_VideoRecording == true);
 
     _VideoRecording = false;
+    _CaptureArgs = nullptr;
 }
 
 bool ImGuiCaptureContext::IsCapturingVideo()
