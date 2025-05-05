@@ -15,6 +15,7 @@ set(LUA_SRCS
 	scripts/aos_rainbow_towers.lua
 	scripts/aos_sinc.lua
 	scripts/aos_slope.lua
+	scripts/compaction.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
 	scripts/erode.lua

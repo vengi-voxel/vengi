@@ -244,6 +244,11 @@ TEST_F(LUAApiTest, DISABLED_testDownloadAndImport) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testScriptCompaction) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "compaction.lua");
+}
+
 TEST_F(LUAApiTest, testScriptCover) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "cover.lua");
