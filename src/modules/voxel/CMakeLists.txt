@@ -47,6 +47,7 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
+	benchmarks/MeshStateBenchmark.cpp
 	benchmarks/RawVolumeBenchmark.cpp
 	benchmarks/RawVolumeMoveWrapperBenchmark.cpp
 	benchmarks/RawVolumeWrapperBenchmark.cpp
