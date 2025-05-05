@@ -1,8 +1,4 @@
 set(SRCS
-	SceneManager.h SceneManager.cpp
-	AxisUtil.h AxisUtil.cpp
-	Config.h
-
 	modifier/brush/AABBBrush.cpp modifier/brush/AABBBrush.h
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
@@ -25,6 +21,12 @@ set(SRCS
 	modifier/Selection.h
 	modifier/ShapeType.h
 	modifier/SelectionManager.h modifier/SelectionManager.cpp
+
+	SceneManager.h SceneManager.cpp
+	AxisUtil.h AxisUtil.cpp
+	Config.h
+
+	LUAApiListener.h
 
 	ISceneRenderer.h
 	SceneRenderer.h SceneRenderer.cpp
