@@ -142,17 +142,17 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	std::vector<voxel::Voxel> voxels;
 	prepareChunk(*volData, voxels, region.getLowerCorner() - 1);
 
+	std::vector<uint64_t> col_face_masks;
+	std::vector<uint64_t> a_axis_cols;
+	std::vector<uint64_t> b_axis_cols;
+	std::vector<uint64_t> merged_right;
+	std::vector<uint64_t> merged_forward;
+	col_face_masks.resize(CS_P2 * 6);
+	a_axis_cols.resize(CS_P2);
+	b_axis_cols.resize(CS_P);
+	merged_right.resize(CS_P);
+	merged_forward.resize(CS_P2);
 	for (int meshIndex = 0; meshIndex < 2; meshIndex++) {
-		std::vector<uint64_t> col_face_masks;
-		std::vector<uint64_t> a_axis_cols;
-		std::vector<uint64_t> b_axis_cols;
-		std::vector<uint64_t> merged_right;
-		std::vector<uint64_t> merged_forward;
-		col_face_masks.resize(CS_P2 * 6);
-		a_axis_cols.resize(CS_P2);
-		b_axis_cols.resize(CS_P);
-		merged_right.resize(CS_P);
-		merged_forward.resize(CS_P2);
 		Mesh &mesh = result->mesh[meshIndex];
 
 		// Begin culling faces
