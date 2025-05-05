@@ -1,11 +1,11 @@
---
--- applies a gradient to the volume
---
-
 function arguments()
 	return {
 		{ name = 'minheight', desc = 'the minimum height to keep at the edges', type = 'int', default = '0', min = '0', max = '255' },
 	}
+end
+
+function description()
+	return "Applies a gradient to the volume, with the maximum height at the center and decreasing towards the edges."
 end
 
 function main(node, region, _, minheight)

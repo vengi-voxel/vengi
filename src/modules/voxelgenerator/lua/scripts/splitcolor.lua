@@ -1,11 +1,11 @@
---
--- moves all voxels of the current color into a new scene node. it takes the closest palette index
---
-
 function arguments()
 	return {
 		{ name = 'exactmatch', desc = 'Only exact match, not similar colors', type = 'bool', default = 'true' }
 	}
+end
+
+function description()
+	return "Moves all voxels of the current color into a new scene node. It takes the closest palette index."
 end
 
 local vol = require "modules.volume"

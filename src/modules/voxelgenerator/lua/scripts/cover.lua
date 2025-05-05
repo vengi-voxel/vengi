@@ -1,12 +1,13 @@
---
--- place n voxels on top of the surface - allows e.g. to put snow on everything.
---
 local vol = require "modules.volume"
 
 function arguments()
 	return {
 		{ name = 'n', desc = 'height level', type = 'int', default = '1' }
 	}
+end
+
+function description()
+	return "Places n voxels on top of the surface - allows e.g. to put snow on everything."
 end
 
 function main(node, region, color, n)

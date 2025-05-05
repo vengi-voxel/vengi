@@ -1,6 +1,5 @@
 --
--- replace the colors in a model and set a new palette. The colors in the
--- colormap are just examples. You can replace them with the colors you want.
+-- The colors in the colormap are just examples. You can replace them with the colors you want.
 --
 
 local vol = require "modules.volume"
@@ -9,6 +8,10 @@ function arguments()
 	return {
 		{ name = 'palettename', desc = 'the palette name', type = 'string', default = 'built-in:nippon' },
 	}
+end
+
+function description()
+	return "Replaces the colors in a model and sets a new palette."
 end
 
 function main(node, region, _, palettename)

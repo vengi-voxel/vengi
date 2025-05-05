@@ -1,13 +1,13 @@
---
--- cuts a node into smaller pieces. If you e.g. specify 1 for each of width, height and depth, you will get one node (or model) per voxel.
---
-
 function arguments()
 	return {
 		{ name = 'width', desc = 'the amount of voxels for the width', type = 'int', default = '32' },
 		{ name = 'height', desc = 'the amount of voxels for the height', type = 'int', default = '32' },
 		{ name = 'depth', desc = 'the amount of voxels for the depth', type = 'int', default = '32' },
 	}
+end
+
+function description()
+	return "Cuts a node into smaller pieces. If you e.g. specify 1 for each of width, height and depth, you will get one node (or model) per voxel."
 end
 
 function main(node, region, color, width, height, depth)

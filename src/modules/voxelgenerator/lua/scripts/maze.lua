@@ -1,7 +1,7 @@
 local vol = require "modules.volume"
 
-function arguments()
-	return {}
+function description()
+	return "Generates a maze in the given region."
 end
 
 local function randomUnvisitedNeighbour(volume, x, y, z, visited)

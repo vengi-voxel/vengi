@@ -1,7 +1,3 @@
---
--- calculate erosion
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -12,6 +8,10 @@ function arguments()
 		{ name = 'gain', desc = 'Scales the amplitude', type = 'float', default = '0.5', min = '-3', max = '3' },
 		{ name = 'threshold', desc = 'Noise threshold', type = 'float', default = '0.3', min = '-1', max = '1' }
 	}
+end
+
+function description()
+	return "Erodes a given region of a node by removing voxels that are surrounded by empty voxels."
 end
 
 function main(node, region, color, emptycnt, octaves, lacunarity, gain, threshold)

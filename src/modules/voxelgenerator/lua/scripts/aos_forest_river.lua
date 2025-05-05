@@ -199,6 +199,10 @@ local function build_ground()
 	stb_aos.compute_ground_lighting(4, 24)
 end
 
+function description()
+	return "Generates a forest with a river."
+end
+
 function main(node, _, _)
 	build_ground()
 	stb_aos.place_trees(-0.5, 0.75)

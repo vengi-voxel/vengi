@@ -124,6 +124,10 @@ local function build_ground()
 	stb_aos.compute_ground_lighting(4, 48)
 end
 
+function description()
+	return "AOS slope generator"
+end
+
 function main(node, _, _)
 	build_ground()
 

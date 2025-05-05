@@ -1,6 +1,6 @@
---
--- fill from the bottom to the top until a voxel is found
---
+function description()
+	return "Fills the region with the selected color from the bottom to the first solid voxel."
+end
 
 function main(node, region, color)
 	local volume = node:volume()

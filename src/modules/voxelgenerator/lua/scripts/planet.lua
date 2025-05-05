@@ -1,13 +1,13 @@
---
--- Build a small noise based planet in the center of the region
---
-
 local perlin = require "modules.perlin"
 
 function arguments()
 	return {
 		{ name = 'size', desc = 'size of the planet', type = 'int', default = '15', min = '10', max = '255' }
 	}
+end
+
+function description()
+	return "Generates a planet in the given region."
 end
 
 function main(node, region, color, size)

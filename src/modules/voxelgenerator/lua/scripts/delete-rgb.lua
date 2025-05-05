@@ -1,7 +1,3 @@
---
--- deletes voxel by rgb values. it takes the closest palette index
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -10,6 +6,10 @@ function arguments()
 		{ name = 'g', desc = 'green [0-255]', type = 'int', default = '0', min = '0', max = '255' },
 		{ name = 'b', desc = 'blue [0-255]', type = 'int', default = '0', min = '0', max = '255' }
 	}
+end
+
+function description()
+	return "Deletes all voxels of a given color in the scene graph. It takes the closest palette index."
 end
 
 function main(node, region, _, r, g, b)

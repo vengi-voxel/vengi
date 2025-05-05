@@ -1,8 +1,3 @@
---
--- thickens existing voxels
--- The region must be big enough to hold the thickened voxels
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -10,6 +5,10 @@ function arguments()
 		{ name = 'amount', desc = 'the amount of voxel to add', type = 'int', default = '1' },
 		{ name = 'thickencolor', desc = 'a value of -1 means everything except air - otherwise it is taken as palette index', type = 'colorindex', default = '-1' }
 	}
+end
+
+function description()
+	return "Thickens existing voxels. The region must be big enough to hold the thickened voxels."
 end
 
 function main(node, region, color, amount, thickencolor)

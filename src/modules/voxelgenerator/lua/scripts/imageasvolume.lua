@@ -9,6 +9,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Imports a color texture and a depth map as a volume."
+end
+
 function main(node, _, _, nametexture, namedepthmap, thickness, bothsides)
 	if namedepthmap == "" then
 		local ext = util.getFileExtension(nametexture)

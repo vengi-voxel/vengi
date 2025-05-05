@@ -94,6 +94,10 @@ local function build_ground()
 	stb_aos.compute_ground_lighting(4, 24)
 end
 
+function description()
+	return "AOS Sinc"
+end
+
 function main(node, _, _)
 	build_ground()
 

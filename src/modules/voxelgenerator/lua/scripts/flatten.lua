@@ -1,7 +1,3 @@
---
--- flatten a model by filling minor gaps between voxels or by removing voxels are not well connected
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -9,6 +5,10 @@ function arguments()
 		{ name = 'empty', desc = 'The amount of empty voxels that will lead to a removal.', type = 'int', default = '24', min = '1', max = '26' },
 		{ name = 'nonempty', desc = 'The amount of non-empty voxels that will lead to a new voxel.', type = 'int', default = '16', min = '1', max = '25' }
 	}
+end
+
+function description()
+	return "Fills minor gaps between voxels or removes voxels that are not well connected."
 end
 
 function main(node, region, color, empty, nonempty)

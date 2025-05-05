@@ -8,6 +8,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Creates a spiral staircase in the given region."
+end
+
 function main(node, region, color, coils, width, height)
 	local regionCenter = region:center()
 	local regionSize = region:size()

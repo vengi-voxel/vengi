@@ -238,6 +238,10 @@ local function draw_pillar(x, y, z)
 	end
 end
 
+function description()
+	return "Generates a sky bridge world with pillars and skyways."
+end
+
 function main(node, _, _)
 	build_ground()
 

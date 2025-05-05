@@ -1,7 +1,3 @@
---
--- Generate Mandelbulb fractal
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -10,6 +6,10 @@ function arguments()
 		{ name = 'iterations', type = 'int', default = '10', min = '1', max = '20' },
 		{ name = 'threshold', desc = 'Threshold for escape condition.', type = 'float', default = '2.0', min = '0.5', max = '4.0' }
 	}
+end
+
+function description()
+	return "Generates a Mandelbulb fractal in the given region."
 end
 
 function main(node, region, color, power, iterations, threshold)

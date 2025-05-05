@@ -1,7 +1,3 @@
---
--- Smoothing of voxel edges.
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -9,6 +5,10 @@ function arguments()
 		{ name = 'size', desc = 'The size of the smoothing.', type = 'int', default = '2', min = '1', max = '3' },
 		{ name = 'strength', desc = 'The strength of the smoothing', type = 'float', default = '0.3', min = '0.0', max = '1.0' }
 	}
+end
+
+function description()
+	return "Smoothing of voxel edges."
 end
 
 function main(node, region, _, size, strength)

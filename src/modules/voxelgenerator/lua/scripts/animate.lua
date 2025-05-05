@@ -30,6 +30,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Animate a given scene if the nodes are named correctly. Valid names are belt, head, foot, shoulder or hand with either left or right indicators."
+end
+
 local function addOrGetKeyFrame(node, frame)
 	if node:hasKeyFrameForFrame(frame) then
 		return node:keyFrameForFrame(frame)

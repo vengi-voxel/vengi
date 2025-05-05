@@ -11,6 +11,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Generates a noise pattern in the given region."
+end
+
 local function noise2d(volume, region, color, freq, amplitude, type, seed)
 	local visitor = function (noiseVolume, x, z)
 		if noiseVolume == nil then

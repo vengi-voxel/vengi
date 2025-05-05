@@ -1,7 +1,3 @@
---
--- This will compact given region of a node by a percentage along a specified axis.
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -9,6 +5,10 @@ function arguments()
 		{ name = 'percent', desc = 'percentage', type = 'int', default = '50', min = '0', max = '100' },
 		{ name = 'axis', desc = 'axis', type = 'enum', enum = 'x,y,z', default = 'y' }
 	}
+end
+
+function description()
+	return "Compacts the given region of a node by a percentage along a specified axis."
 end
 
 function main(node, region, _, percent, axis)

@@ -5,9 +5,6 @@
 --
 -- https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 --
--- make sure to place a few voxels in the region to start the game
--- it also helps if the region only has a height of 1 here
---
 
 local vol = require "modules.volume"
 
@@ -15,6 +12,10 @@ function arguments()
 	return {
 		{ name = 'steps', desc = 'the amount of steps for the game of life', type = 'int', default = '10', min = '1', max = '255' },
 	}
+end
+
+function description()
+	return "Generates a game of life simulation. Make sure to place a few voxels in the region to start the game. It also helps if the region only has a height of 1."
 end
 
 local function step(node, region, color)

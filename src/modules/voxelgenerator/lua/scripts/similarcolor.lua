@@ -1,7 +1,3 @@
---
--- distribute similar color values to the given input color
---
-
 local vol = require "modules.volume"
 
 function arguments()
@@ -9,6 +5,10 @@ function arguments()
 		{ name = 'density', desc = 'the voxel replacement density', type = 'int', default = '4', min = '1' },
 		{ name = 'colors', desc = 'the color variations', type = 'int', default = '4', min = '1', max = '255' }
 	}
+end
+
+function description()
+	return "Distributes similar color values to the given input color."
 end
 
 function main(node, region, color, density, colors)

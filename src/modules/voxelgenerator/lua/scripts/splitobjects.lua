@@ -1,9 +1,3 @@
---
--- moves all connected voxels of the node's volume into new volumes
---
--- split all single identifiable objects into own models/nodes
---
-
 local vol = require "modules.volume"
 
 local splitVolume = {}
@@ -20,6 +14,10 @@ local function connectedVisitor(volume, x, y, z)
 	local color = volume:voxel(x, y, z)
 	splitVolume:setVoxel(x, y, z, color)
 	volume:setVoxel(x, y, z, -1)
+end
+
+function description()
+	return "Moves all connected voxels of the node's volume into new volumes. Split all single identifiable objects into own models/nodes."
 end
 
 function main(node, region, _)

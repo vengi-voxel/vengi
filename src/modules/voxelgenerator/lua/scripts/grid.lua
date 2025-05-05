@@ -10,6 +10,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Creates a grid pattern in the given region."
+end
+
 function main(node, region, color, gridcolor, thickness, size_x, size_y, size_z)
 	local visitor = function (volume, x, y, z)
 		if size_x > thickness and x % size_x < thickness then

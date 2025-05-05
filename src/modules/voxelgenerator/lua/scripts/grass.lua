@@ -17,6 +17,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Adds grass to the surface of a given region. Select the color of the surface to build the grass on - all other voxel colors are ignored. This allows you to e.g. place grass on the green voxels, but not on the gray voxels that reprensent rocks or the street."
+end
+
 function main(node, region, color, grasscolor, height, density, similarcolors, upwards)
 	if grasscolor == -1 then
 		grasscolor = node:palette():match(0, 255, 0)

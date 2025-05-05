@@ -25,6 +25,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Generates a 3D model from a text prompt using the Meshy API. The script will wait for the model to be generated and then import it into the scene."
+end
+
 function downloadFiles(retrievalJson, headers)
 	local modelUrl = retrievalJson.model_urls.glb
 	local textures = retrievalJson.texture_urls

@@ -9,6 +9,10 @@ function arguments()
 	}
 end
 
+function description()
+	return "Generates a noise pattern in the given region."
+end
+
 function main(node, region, color, freq, amplitude, offset)
 	perlin:load()
 
