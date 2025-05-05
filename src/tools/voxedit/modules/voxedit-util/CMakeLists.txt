@@ -26,7 +26,7 @@ set(SRCS
 	AxisUtil.h AxisUtil.cpp
 	Config.h
 
-	LUAApiListener.h
+	LUAApiListener.h LUAApiListener.cpp
 
 	ISceneRenderer.h
 	SceneRenderer.h SceneRenderer.cpp
