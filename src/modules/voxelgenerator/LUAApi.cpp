@@ -1611,6 +1611,42 @@ static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraphnode_hide(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	node->node->setVisible(false);
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_show(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	node->node->setVisible(true);
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_lock(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	node->node->setLocked(true);
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_unlock(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	node->node->setLocked(false);
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_isvisible(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->visible() ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_islocked(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->locked() ? 1 : 0);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushfstring(s, "node: [%d, %s]", node->node->id(), node->node->name().c_str());
@@ -1723,6 +1759,12 @@ static void prepareState(lua_State* s) {
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},
 		{"setPivot", luaVoxel_scenegraphnode_setpivot},
+		{"hide", luaVoxel_scenegraphnode_hide},
+		{"show", luaVoxel_scenegraphnode_show},
+		{"lock", luaVoxel_scenegraphnode_lock},
+		{"unlock", luaVoxel_scenegraphnode_unlock},
+		{"isVisible", luaVoxel_scenegraphnode_isvisible},
+		{"isLocked", luaVoxel_scenegraphnode_islocked},
 		{"keyFrame", luaVoxel_scenegraphnode_keyframe},
 		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe},
 		{"addKeyFrame", luaVoxel_scenegraphnode_addframe},

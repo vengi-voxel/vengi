@@ -179,6 +179,18 @@ end
 
 * `isReference()`: Returns true if the node is a model reference
 
+* `isLocked()`:
+
+* `lock()`:
+
+* `unlock()`:
+
+* `isVisible()`:
+
+* `hide()`:
+
+* `unhide()`:
+
 * `keyFrame(keyFrameIdx)`: Returns an existing keyframe (see below)
 
 * `keyFrameForFrame(frame)`: Returns an existing keyframe that has a frame number <= the given frame
