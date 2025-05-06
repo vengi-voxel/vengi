@@ -97,7 +97,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Cubic)(benchmark::State &state) {
 		const bool reuseVertices = true;
 		const bool ambientOcclusion = false;
 
-		voxel::ChunkMesh mesh;
+		voxel::ChunkMesh mesh{65536, 65536, false};
 
 		voxel::SurfaceExtractionContext ctx =
 			voxel::buildCubicContext(&v, v.region(), mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
@@ -109,7 +109,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Binary)(benchmark::State &state) {
 	for (auto _ : state) {
 		const bool ambientOcclusion = false;
 
-		voxel::ChunkMesh mesh;
+		voxel::ChunkMesh mesh{65536, 65536, false};
 
 		voxel::SurfaceExtractionContext ctx =
 			voxel::buildBinaryContext(&v, v.region(), mesh, glm::ivec3(0), ambientOcclusion);
