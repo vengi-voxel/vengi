@@ -27,6 +27,8 @@ namespace core {
 template<class TYPE, size_t INCREASE = 32u>
 class Buffer {
 private:
+	static_assert(core::is_trivially_copyable<TYPE>::value, "only trivially copyable types are allowed - use DynamicArray<TYPE>");
+	static_assert(core::is_trivially_destructible<TYPE>::value, "only trivially destructible types are allowed - use DynamicArray<TYPE>");
 	TYPE* _buffer = nullptr;
 	size_t _capacity = 0u;
 	size_t _size = 0u;
