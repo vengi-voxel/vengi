@@ -27,7 +27,8 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
-#include "core/Log.h"
+#include "core/collection/Array.h"
+#include "core/collection/Buffer.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -55,11 +56,12 @@ CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const
 }
 
 // Add checks to this function to skip culling against grass for example
-CORE_FORCE_INLINE bool solid_check(const voxel::Voxel &voxel, int mesh_type) {
-	if (mesh_type == 0) {
-		return !isAir(voxel.getMaterial()) && !isTransparent(voxel.getMaterial());
+template<int MeshType>
+CORE_FORCE_INLINE bool solid_check(const voxel::Voxel &voxel) {
+	if constexpr (MeshType == 0) {
+		return voxel.getMaterial() == VoxelType::Generic;
 	}
-	return !isAir(voxel.getMaterial()) && isTransparent(voxel.getMaterial());
+	return isTransparent(voxel.getMaterial());
 }
 
 static const glm::ivec2 ao_dirs[8] = {
@@ -71,13 +73,13 @@ CORE_FORCE_INLINE int vertexAO(uint8_t side1, uint8_t side2, uint8_t corner) {
 	return (side1 && side2) ? 0 : (3 - (side1 + side2 + corner));
 }
 
-CORE_FORCE_INLINE bool compare_ao(const std::vector<voxel::Voxel> &voxels, int axis, int forward, int right, int c,
-								  int forward_offset, int right_offset, int mesh_type) {
+template<int MeshType>
+CORE_FORCE_INLINE bool compare_ao(const core::Buffer<voxel::Voxel> &voxels, int axis, int forward, int right, int c,
+								  int forward_offset, int right_offset) {
 	for (const auto &ao_dir : ao_dirs) {
-		if (solid_check(voxels[get_axis_i(axis, right + ao_dir[0], forward + ao_dir[1], c)], mesh_type) !=
-			solid_check(
-				voxels[get_axis_i(axis, right + right_offset + ao_dir[0], forward + forward_offset + ao_dir[1], c)],
-				mesh_type)) {
+		if (solid_check<MeshType>(voxels[get_axis_i(axis, right + ao_dir[0], forward + ao_dir[1], c)]) !=
+			solid_check<MeshType>(
+				voxels[get_axis_i(axis, right + right_offset + ao_dir[0], forward + forward_offset + ao_dir[1], c)])) {
 			return false;
 		}
 	}
@@ -109,7 +111,7 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t 
 static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
 static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
-static void prepareChunk(const voxel::RawVolume &map, std::vector<Voxel> &voxels, const glm::ivec3 &chunkPos) {
+static void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos) {
 	voxel::RawVolume::Sampler sampler(map);
 	voxels.resize(CS_P3);
 	sampler.setPosition(chunkPos);
@@ -130,6 +132,193 @@ static void prepareChunk(const voxel::RawVolume &map, std::vector<Voxel> &voxels
 	}
 }
 
+template<int MeshType>
+void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion,
+								 const core::Buffer<voxel::Voxel> &voxels, Mesh &mesh) {
+	alignas(16) core::Array<uint64_t, CS_P2 * 6> col_face_masks({});
+	alignas(16) core::Array<uint64_t, CS_P2> a_axis_cols({});
+	auto p = voxels.begin();
+	for (int a = 0; a < CS_P; a++) {
+		alignas(16) core::Array<uint64_t, CS_P> b_axis_cols({});
+
+		for (int b = 0; b < CS_P; ++b) {
+			uint64_t cb = 0;
+
+			for (int c = 0; c < CS_P; ++c) {
+				if (solid_check<MeshType>(*p)) {
+					a_axis_cols[b + (c * CS_P)] |= 1ULL << a;
+					b_axis_cols[c] |= 1ULL << b;
+					cb |= 1ULL << c;
+				}
+				++p;
+			}
+
+			// Cull third axis faces
+			col_face_masks[a + (b * CS_P) + (4 * CS_P2)] = cb & ~((cb >> 1) | CULL_MASK);
+			col_face_masks[a + (b * CS_P) + (5 * CS_P2)] = cb & ~((cb << 1) | 1ULL);
+		}
+
+		// Cull second axis faces
+		const int faceIndex = (a * CS_P) + (2 * CS_P2);
+		for (int b = 1; b < CS_P - 1; ++b) {
+			const uint64_t &col = b_axis_cols[b];
+			col_face_masks[faceIndex + b] = col & ~((col >> 1) | CULL_MASK);
+			col_face_masks[faceIndex + b + CS_P2] = col & ~((col << 1) | 1ULL);
+		}
+	}
+
+	// Cull first axis faces
+	for (int a = 1; a < CS_P - 1; a++) {
+		const int faceIndex = a * CS_P;
+		for (int b = 1; b < CS_P - 1; ++b) {
+			const uint64_t &col = a_axis_cols[faceIndex + b];
+
+			col_face_masks[faceIndex + b] = col & ~((col >> 1) | CULL_MASK);
+			col_face_masks[faceIndex + b + CS_P2] = col & ~((col << 1) | 1ULL);
+		}
+	}
+
+	// Greedy meshing
+	for (uint8_t face = 0; face < 6; face++) {
+		const int axis = face / 2;
+		const int air_dir = face % 2 == 0 ? 1 : -1;
+		alignas(16) core::Array<uint64_t, CS_P2> merged_forward({});
+
+		for (int forward = 1; forward < CS_P - 1; forward++) {
+			uint64_t bits_walking_right = 0;
+			const int forwardIndex = (forward * CS_P) + (face * CS_P2);
+
+			alignas(16) core::Array<uint64_t, CS_P> merged_right({});
+
+			for (int right = 1; right < CS_P - 1; right++) {
+				const int rightxCS_P = right * CS_P;
+
+				const uint64_t bits_here = col_face_masks[forwardIndex + right] & ~BORDER_MASK;
+				const uint64_t bits_right = right >= CS ? 0 : col_face_masks[forwardIndex + right + 1];
+				const uint64_t bits_forward = forward >= CS ? 0 : col_face_masks[forwardIndex + right + CS_P];
+
+				uint64_t bits_merging_forward = bits_here & bits_forward & ~bits_walking_right;
+				const uint64_t bits_merging_right = bits_here & bits_right;
+
+				unsigned long bit_pos;
+
+				uint64_t copy_front = bits_merging_forward;
+				while (copy_front) {
+#ifdef _MSC_VER
+					_BitScanForward64(&bit_pos, copy_front);
+#else
+					bit_pos = __builtin_ctzll(copy_front);
+#endif
+
+					copy_front &= ~(1ULL << bit_pos);
+
+					if (voxels[get_axis_i(axis, right, forward, bit_pos)].isSame(
+							voxels[get_axis_i(axis, right, forward + 1, bit_pos)]) &&
+						(!ambientOcclusion ||
+						 compare_ao<MeshType>(voxels, axis, forward, right, bit_pos + air_dir, 1, 0))) {
+						merged_forward[(right * CS_P) + bit_pos]++;
+					} else {
+						bits_merging_forward &= ~(1ULL << bit_pos);
+					}
+				}
+
+				uint64_t bits_stopped_forward = bits_here & ~bits_merging_forward;
+				while (bits_stopped_forward) {
+#ifdef _MSC_VER
+					_BitScanForward64(&bit_pos, bits_stopped_forward);
+#else
+					bit_pos = __builtin_ctzll(bits_stopped_forward);
+#endif
+
+					bits_stopped_forward &= ~(1ULL << bit_pos);
+
+					const voxel::Voxel &type = voxels[get_axis_i(axis, right, forward, bit_pos)];
+
+					if ((bits_merging_right & (1ULL << bit_pos)) != 0 &&
+						(merged_forward[(right * CS_P) + bit_pos] == merged_forward[(right + 1) * CS_P + bit_pos]) &&
+						(type.isSame(voxels[get_axis_i(axis, right + 1, forward, bit_pos)])) &&
+						(!ambientOcclusion ||
+						 compare_ao<MeshType>(voxels, axis, forward, right, bit_pos + air_dir, 0, 1))) {
+						bits_walking_right |= 1ULL << bit_pos;
+						merged_right[bit_pos]++;
+						merged_forward[rightxCS_P + bit_pos] = 0;
+						continue;
+					}
+
+					bits_walking_right &= ~(1ULL << bit_pos);
+
+					const uint8_t mesh_left = right - merged_right[bit_pos];
+					const uint8_t mesh_right = right + 1;
+					const uint8_t mesh_front = forward - merged_forward[rightxCS_P + bit_pos];
+					const uint8_t mesh_back = forward + 1;
+					const uint8_t mesh_up = bit_pos + (face % 2 == 0 ? 1 : 0);
+
+					uint8_t ao_LB = 3, ao_RB = 3, ao_RF = 3, ao_LF = 3;
+					if (ambientOcclusion) {
+						const int c = bit_pos + air_dir;
+						const uint8_t ao_F = solid_check<MeshType>(voxels[get_axis_i(axis, right, forward - 1, c)]);
+						const uint8_t ao_B = solid_check<MeshType>(voxels[get_axis_i(axis, right, forward + 1, c)]);
+						const uint8_t ao_L = solid_check<MeshType>(voxels[get_axis_i(axis, right - 1, forward, c)]);
+						const uint8_t ao_R = solid_check<MeshType>(voxels[get_axis_i(axis, right + 1, forward, c)]);
+
+						uint8_t ao_LFC = !ao_L && !ao_F &&
+										 solid_check<MeshType>(voxels[get_axis_i(axis, right - 1, forward - 1, c)]);
+						uint8_t ao_LBC = !ao_L && !ao_B &&
+										 solid_check<MeshType>(voxels[get_axis_i(axis, right - 1, forward + 1, c)]);
+						uint8_t ao_RFC = !ao_R && !ao_F &&
+										 solid_check<MeshType>(voxels[get_axis_i(axis, right + 1, forward - 1, c)]);
+						uint8_t ao_RBC = !ao_R && !ao_B &&
+										 solid_check<MeshType>(voxels[get_axis_i(axis, right + 1, forward + 1, c)]);
+
+						ao_LB = vertexAO(ao_L, ao_B, ao_LBC);
+						ao_RB = vertexAO(ao_R, ao_B, ao_RBC);
+						ao_RF = vertexAO(ao_R, ao_F, ao_RFC);
+						ao_LF = vertexAO(ao_L, ao_F, ao_LFC);
+					}
+
+					merged_forward[rightxCS_P + bit_pos] = 0;
+					merged_right[bit_pos] = 0;
+
+					uint32_t v1, v2, v3, v4;
+					if (face == 0) {
+						v1 = get_vertex(mesh, mesh_left, mesh_up, mesh_back, type, face, ao_LB, translate);
+						v2 = get_vertex(mesh, mesh_right, mesh_up, mesh_back, type, face, ao_RB, translate);
+						v3 = get_vertex(mesh, mesh_right, mesh_up, mesh_front, type, face, ao_RF, translate);
+						v4 = get_vertex(mesh, mesh_left, mesh_up, mesh_front, type, face, ao_LF, translate);
+					} else if (face == 1) {
+						v1 = get_vertex(mesh, mesh_left, mesh_up, mesh_back, type, face, ao_LB, translate);
+						v2 = get_vertex(mesh, mesh_left, mesh_up, mesh_front, type, face, ao_LF, translate);
+						v3 = get_vertex(mesh, mesh_right, mesh_up, mesh_front, type, face, ao_RF, translate);
+						v4 = get_vertex(mesh, mesh_right, mesh_up, mesh_back, type, face, ao_RB, translate);
+					} else if (face == 2) {
+						v1 = get_vertex(mesh, mesh_up, mesh_back, mesh_left, type, face, ao_LB, translate);
+						v2 = get_vertex(mesh, mesh_up, mesh_back, mesh_right, type, face, ao_RB, translate);
+						v3 = get_vertex(mesh, mesh_up, mesh_front, mesh_right, type, face, ao_RF, translate);
+						v4 = get_vertex(mesh, mesh_up, mesh_front, mesh_left, type, face, ao_LF, translate);
+					} else if (face == 3) {
+						v1 = get_vertex(mesh, mesh_up, mesh_back, mesh_left, type, face, ao_LB, translate);
+						v2 = get_vertex(mesh, mesh_up, mesh_front, mesh_left, type, face, ao_LF, translate);
+						v3 = get_vertex(mesh, mesh_up, mesh_front, mesh_right, type, face, ao_RF, translate);
+						v4 = get_vertex(mesh, mesh_up, mesh_back, mesh_right, type, face, ao_RB, translate);
+					} else if (face == 4) {
+						v1 = get_vertex(mesh, mesh_back, mesh_left, mesh_up, type, face, ao_LB, translate);
+						v2 = get_vertex(mesh, mesh_back, mesh_right, mesh_up, type, face, ao_RB, translate);
+						v3 = get_vertex(mesh, mesh_front, mesh_right, mesh_up, type, face, ao_RF, translate);
+						v4 = get_vertex(mesh, mesh_front, mesh_left, mesh_up, type, face, ao_LF, translate);
+					} else {
+						v1 = get_vertex(mesh, mesh_back, mesh_left, mesh_up, type, face, ao_LB, translate);
+						v2 = get_vertex(mesh, mesh_front, mesh_left, mesh_up, type, face, ao_LF, translate);
+						v3 = get_vertex(mesh, mesh_front, mesh_right, mesh_up, type, face, ao_RF, translate);
+						v4 = get_vertex(mesh, mesh_back, mesh_right, mesh_up, type, face, ao_RB, translate);
+					}
+
+					insert_quad(mesh, v1, v2, v3, v4, ao_LB + ao_RF > ao_RB + ao_LF);
+				}
+			}
+		}
+	}
+}
+
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
 							 const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
 	// loop over each chunk of the size CS_P * CS_P * CS_P and extract the mesh for it
@@ -139,204 +328,13 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	const glm::ivec3 &offset = region.getLowerCorner();
 	result->setOffset(offset);
 
-	std::vector<voxel::Voxel> voxels;
+	core::Buffer<voxel::Voxel> voxels;
 	prepareChunk(*volData, voxels, region.getLowerCorner() - 1);
 
-	std::vector<uint64_t> col_face_masks;
-	std::vector<uint64_t> a_axis_cols;
-	std::vector<uint64_t> b_axis_cols;
-	std::vector<uint64_t> merged_right;
-	std::vector<uint64_t> merged_forward;
-	col_face_masks.resize(CS_P2 * 6);
-	a_axis_cols.resize(CS_P2);
-	b_axis_cols.resize(CS_P);
-	merged_right.resize(CS_P);
-	merged_forward.resize(CS_P2);
-	for (int meshIndex = 0; meshIndex < 2; meshIndex++) {
-		Mesh &mesh = result->mesh[meshIndex];
-
-		// Begin culling faces
-		auto p = voxels.begin();
-		for (int a = 0; a < CS_P; a++) {
-			core_memset(b_axis_cols.data(), 0, CS_P * 8);
-
-			for (int b = 0; b < CS_P; b++) {
-				uint64_t cb = 0;
-
-				for (int c = 0; c < CS_P; c++) {
-					if (solid_check(*p, meshIndex)) {
-						a_axis_cols[b + (c * CS_P)] |= 1ULL << a;
-						b_axis_cols[c] |= 1ULL << b;
-						cb |= 1ULL << c;
-					}
-					++p;
-				}
-
-				// Cull third axis faces
-				col_face_masks[a + (b * CS_P) + (4 * CS_P2)] = cb & ~((cb >> 1) | CULL_MASK);
-				col_face_masks[a + (b * CS_P) + (5 * CS_P2)] = cb & ~((cb << 1) | 1ULL);
-			}
-
-			// Cull second axis faces
-			int faceIndex = (a * CS_P) + (2 * CS_P2);
-			for (int b = 1; b < CS_P - 1; b++) {
-				uint64_t col = b_axis_cols[b];
-				col_face_masks[faceIndex + b] = col & ~((col >> 1) | CULL_MASK);
-				col_face_masks[faceIndex + b + CS_P2] = col & ~((col << 1) | 1ULL);
-			}
-		}
-
-		// Cull first axis faces
-		for (int a = 1; a < CS_P - 1; a++) {
-			int faceIndex = a * CS_P;
-			for (int b = 1; b < CS_P - 1; b++) {
-				uint64_t col = a_axis_cols[faceIndex + b];
-
-				col_face_masks[faceIndex + b] = col & ~((col >> 1) | CULL_MASK);
-				col_face_masks[faceIndex + b + CS_P2] = col & ~((col << 1) | 1ULL);
-			}
-		}
-
-		// Greedy meshing
-		for (uint8_t face = 0; face < 6; face++) {
-			int axis = face / 2;
-			int air_dir = face % 2 == 0 ? 1 : -1;
-
-			core_memset(merged_forward.data(), 0, CS_P2 * 8);
-
-			for (int forward = 1; forward < CS_P - 1; forward++) {
-				uint64_t bits_walking_right = 0;
-				int forwardIndex = (forward * CS_P) + (face * CS_P2);
-
-				core_memset(merged_right.data(), 0, CS_P * 8);
-
-				for (int right = 1; right < CS_P - 1; right++) {
-					int rightxCS_P = right * CS_P;
-
-					uint64_t bits_here = col_face_masks[forwardIndex + right] & ~BORDER_MASK;
-					uint64_t bits_right = right >= CS ? 0 : col_face_masks[forwardIndex + right + 1];
-					uint64_t bits_forward = forward >= CS ? 0 : col_face_masks[forwardIndex + right + CS_P];
-
-					uint64_t bits_merging_forward = bits_here & bits_forward & ~bits_walking_right;
-					uint64_t bits_merging_right = bits_here & bits_right;
-
-					unsigned long bit_pos;
-
-					uint64_t copy_front = bits_merging_forward;
-					while (copy_front) {
-#ifdef _MSC_VER
-						_BitScanForward64(&bit_pos, copy_front);
-#else
-						bit_pos = __builtin_ctzll(copy_front);
-#endif
-
-						copy_front &= ~(1ULL << bit_pos);
-
-						if (voxels[get_axis_i(axis, right, forward, bit_pos)].isSame(
-								voxels[get_axis_i(axis, right, forward + 1, bit_pos)]) &&
-							(!ambientOcclusion || compare_ao(voxels, axis, forward, right, bit_pos + air_dir, 1, 0, meshIndex))) {
-							merged_forward[(right * CS_P) + bit_pos]++;
-						} else {
-							bits_merging_forward &= ~(1ULL << bit_pos);
-						}
-					}
-
-					uint64_t bits_stopped_forward = bits_here & ~bits_merging_forward;
-					while (bits_stopped_forward) {
-#ifdef _MSC_VER
-						_BitScanForward64(&bit_pos, bits_stopped_forward);
-#else
-						bit_pos = __builtin_ctzll(bits_stopped_forward);
-#endif
-
-						bits_stopped_forward &= ~(1ULL << bit_pos);
-
-						const voxel::Voxel &type = voxels[get_axis_i(axis, right, forward, bit_pos)];
-
-						if ((bits_merging_right & (1ULL << bit_pos)) != 0 &&
-							(merged_forward[(right * CS_P) + bit_pos] ==
-							 merged_forward[(right + 1) * CS_P + bit_pos]) &&
-							(type.isSame(voxels[get_axis_i(axis, right + 1, forward, bit_pos)])) &&
-							(!ambientOcclusion || compare_ao(voxels, axis, forward, right, bit_pos + air_dir, 0, 1, meshIndex))) {
-							bits_walking_right |= 1ULL << bit_pos;
-							merged_right[bit_pos]++;
-							merged_forward[rightxCS_P + bit_pos] = 0;
-							continue;
-						}
-
-						bits_walking_right &= ~(1ULL << bit_pos);
-
-						const uint8_t mesh_left = right - merged_right[bit_pos];
-						const uint8_t mesh_right = right + 1;
-						const uint8_t mesh_front = forward - merged_forward[rightxCS_P + bit_pos];
-						const uint8_t mesh_back = forward + 1;
-						const uint8_t mesh_up = bit_pos + (face % 2 == 0 ? 1 : 0);
-
-						uint8_t ao_LB = 3, ao_RB = 3, ao_RF = 3, ao_LF = 3;
-						if (ambientOcclusion) {
-							const int c = bit_pos + air_dir;
-							const uint8_t ao_F = solid_check(voxels[get_axis_i(axis, right, forward - 1, c)], meshIndex);
-							const uint8_t ao_B = solid_check(voxels[get_axis_i(axis, right, forward + 1, c)], meshIndex);
-							const uint8_t ao_L = solid_check(voxels[get_axis_i(axis, right - 1, forward, c)], meshIndex);
-							const uint8_t ao_R = solid_check(voxels[get_axis_i(axis, right + 1, forward, c)], meshIndex);
-
-							uint8_t ao_LFC =
-								!ao_L && !ao_F && solid_check(voxels[get_axis_i(axis, right - 1, forward - 1, c)], meshIndex);
-							uint8_t ao_LBC =
-								!ao_L && !ao_B && solid_check(voxels[get_axis_i(axis, right - 1, forward + 1, c)], meshIndex);
-							uint8_t ao_RFC =
-								!ao_R && !ao_F && solid_check(voxels[get_axis_i(axis, right + 1, forward - 1, c)], meshIndex);
-							uint8_t ao_RBC =
-								!ao_R && !ao_B && solid_check(voxels[get_axis_i(axis, right + 1, forward + 1, c)], meshIndex);
-
-							ao_LB = vertexAO(ao_L, ao_B, ao_LBC);
-							ao_RB = vertexAO(ao_R, ao_B, ao_RBC);
-							ao_RF = vertexAO(ao_R, ao_F, ao_RFC);
-							ao_LF = vertexAO(ao_L, ao_F, ao_LFC);
-						}
-
-						merged_forward[rightxCS_P + bit_pos] = 0;
-						merged_right[bit_pos] = 0;
-
-						uint32_t v1, v2, v3, v4;
-						if (face == 0) {
-							v1 = get_vertex(mesh, mesh_left, mesh_up, mesh_back, type, face, ao_LB, translate);
-							v2 = get_vertex(mesh, mesh_right, mesh_up, mesh_back, type, face, ao_RB, translate);
-							v3 = get_vertex(mesh, mesh_right, mesh_up, mesh_front, type, face, ao_RF, translate);
-							v4 = get_vertex(mesh, mesh_left, mesh_up, mesh_front, type, face, ao_LF, translate);
-						} else if (face == 1) {
-							v1 = get_vertex(mesh, mesh_left, mesh_up, mesh_back, type, face, ao_LB, translate);
-							v2 = get_vertex(mesh, mesh_left, mesh_up, mesh_front, type, face, ao_LF, translate);
-							v3 = get_vertex(mesh, mesh_right, mesh_up, mesh_front, type, face, ao_RF, translate);
-							v4 = get_vertex(mesh, mesh_right, mesh_up, mesh_back, type, face, ao_RB, translate);
-						} else if (face == 2) {
-							v1 = get_vertex(mesh, mesh_up, mesh_back, mesh_left, type, face, ao_LB, translate);
-							v2 = get_vertex(mesh, mesh_up, mesh_back, mesh_right, type, face, ao_RB, translate);
-							v3 = get_vertex(mesh, mesh_up, mesh_front, mesh_right, type, face, ao_RF, translate);
-							v4 = get_vertex(mesh, mesh_up, mesh_front, mesh_left, type, face, ao_LF, translate);
-						} else if (face == 3) {
-							v1 = get_vertex(mesh, mesh_up, mesh_back, mesh_left, type, face, ao_LB, translate);
-							v2 = get_vertex(mesh, mesh_up, mesh_front, mesh_left, type, face, ao_LF, translate);
-							v3 = get_vertex(mesh, mesh_up, mesh_front, mesh_right, type, face, ao_RF, translate);
-							v4 = get_vertex(mesh, mesh_up, mesh_back, mesh_right, type, face, ao_RB, translate);
-						} else if (face == 4) {
-							v1 = get_vertex(mesh, mesh_back, mesh_left, mesh_up, type, face, ao_LB, translate);
-							v2 = get_vertex(mesh, mesh_back, mesh_right, mesh_up, type, face, ao_RB, translate);
-							v3 = get_vertex(mesh, mesh_front, mesh_right, mesh_up, type, face, ao_RF, translate);
-							v4 = get_vertex(mesh, mesh_front, mesh_left, mesh_up, type, face, ao_LF, translate);
-						} else {
-							v1 = get_vertex(mesh, mesh_back, mesh_left, mesh_up, type, face, ao_LB, translate);
-							v2 = get_vertex(mesh, mesh_front, mesh_left, mesh_up, type, face, ao_LF, translate);
-							v3 = get_vertex(mesh, mesh_front, mesh_right, mesh_up, type, face, ao_RF, translate);
-							v4 = get_vertex(mesh, mesh_back, mesh_right, mesh_up, type, face, ao_RB, translate);
-						}
-
-						insert_quad(mesh, v1, v2, v3, v4, ao_LB + ao_RF > ao_RB + ao_LF);
-					}
-				}
-			}
-		}
-	}
+	// opaque type
+	extractBinaryGreedyMeshType<0>(translate, ambientOcclusion, voxels, result->mesh[0]);
+	// transparent type
+	extractBinaryGreedyMeshType<1>(translate, ambientOcclusion, voxels, result->mesh[1]);
 
 	if (optimize) {
 		result->optimize();
