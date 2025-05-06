@@ -50,21 +50,6 @@ public:
 		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _unused2(0) {
 	}
 
-	constexpr inline Voxel(const Voxel &voxel)
-		: _material(voxel._material), _flags(voxel._flags), _unused(voxel._unused), _colorIndex(voxel._colorIndex),
-		  _normalIndex(voxel._normalIndex), _unused2(voxel._unused2) {
-	}
-
-	constexpr inline Voxel& operator=(const Voxel& voxel) {
-		_material = voxel._material;
-		_colorIndex = voxel._colorIndex;
-		_flags = voxel._flags;
-		_unused = voxel._unused;
-		_normalIndex = voxel._normalIndex;
-		_unused2 = voxel._unused2;
-		return *this;
-	}
-
 	/**
 	 * @brief Compares by the material type
 	 */
