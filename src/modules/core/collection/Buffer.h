@@ -42,14 +42,10 @@ private:
 		if (_capacity >= newSize) {
 			return;
 		}
-		replaceBuffer(newSize);
-	}
-
-	void replaceBuffer(size_t newSize) {
 		size_t newCapacity = align(newSize);
 		TYPE* newBuffer = (TYPE*)core_malloc(newCapacity * sizeof(TYPE));
 		if (_buffer != nullptr) {
-			core_memcpy(newBuffer, _buffer, _capacity * sizeof(TYPE));
+			core_memcpy(newBuffer, _buffer, core_min(newSize, _size) * sizeof(TYPE));
 			core_free(_buffer);
 		}
 		_buffer = newBuffer;
@@ -351,16 +347,9 @@ public:
 	 * @brief This might shrink the buffer capacity. If any new slots were added, they are not initialized
 	 */
 	void resize(size_t size) {
-		replaceBuffer(size);
+		checkBufferSize(size);
 		for (size_t i = _size; i < size; ++i) {
 			_buffer[i] = TYPE();
-		}
-		_size = size;
-	}
-
-	void resizeIfNeeded(size_t size) {
-		if (size > capacity()) {
-			replaceBuffer(size);
 		}
 		_size = size;
 	}

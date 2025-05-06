@@ -126,6 +126,7 @@ TEST(BufferTest, testResize) {
 	array.resize(3);
 	EXPECT_EQ(4u, array.capacity()) << array;
 	ASSERT_EQ(3u, array.size()) << array;
+	EXPECT_EQ(1337, array[2]._bar) << array;
 }
 
 TEST(BufferTest, testErase) {
