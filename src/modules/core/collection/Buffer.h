@@ -196,9 +196,19 @@ public:
 	};
 	using const_iterator = iterator;
 
+	void push_front(const TYPE& val) {
+		insert(begin(), &val, 1);
+	}
+
 	inline void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
 		_buffer[_size++] = val;
+	}
+
+	template<typename... _Args>
+	void emplace_back(_Args&&... args) {
+		checkBufferSize(_size + 1u);
+		_buffer[_size++] = TYPE(core::forward<_Args>(args)...);
 	}
 
 	void pop() {
@@ -209,6 +219,26 @@ public:
 	void fill(const TYPE& value) {
 		for (size_t i = 0u; i < _size; ++i) {
 			_buffer[i] = value;
+		}
+	}
+
+	/**
+	 * @brief Insertion sort
+	 * @note stable
+	 * @note @c COMPARATOR must return true on @code lhs > rhs @endcode to sort ascending
+	 */
+	template<typename COMPARATOR>
+	void sort(COMPARATOR comp) {
+		int i;
+		for (i = 1; i < (int)_size; ++i) {
+			TYPE key = core::move(_buffer[i]);
+			int j = i - 1;
+
+			while (j >= 0 && comp(_buffer[j], key)) {
+				_buffer[j + 1] = core::move(_buffer[j]);
+				--j;
+			}
+			_buffer[j + 1] = core::move(key);
 		}
 	}
 
@@ -259,10 +289,27 @@ public:
 		_size = 0u;
 	}
 
+	template<class COLLECTION>
+	void append(const COLLECTION& collection) {
+		const size_t n = collection.size();
+		checkBufferSize(_size + n);
+		for (size_t i = 0u; i < n; ++i) {
+			_buffer[_size++] = collection[i];
+		}
+	}
+
 	void append(const TYPE* array, size_t n) {
 		checkBufferSize(_size + n);
 		for (size_t i = 0u; i < n; ++i) {
 			_buffer[_size++] = array[i];
+		}
+	}
+
+	template<class FUNC>
+	void append(size_t n, FUNC&& func) {
+		checkBufferSize(_size + n);
+		for (size_t i = 0u; i < n; ++i) {
+			_buffer[_size++] = func(i);
 		}
 	}
 
@@ -305,6 +352,9 @@ public:
 	 */
 	void resize(size_t size) {
 		replaceBuffer(size);
+		for (size_t i = _size; i < size; ++i) {
+			_buffer[i] = TYPE();
+		}
 		_size = size;
 	}
 
@@ -372,6 +422,14 @@ public:
 			}
 		}
 		_size -= delta;
+	}
+
+	bool erase(iterator iter, size_t n = 1) {
+		if (iter == end()) {
+			return false;
+		}
+		erase(index(iter), n);
+		return true;
 	}
 
 	inline size_t size() const {
