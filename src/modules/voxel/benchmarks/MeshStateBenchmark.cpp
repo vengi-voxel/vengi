@@ -117,7 +117,7 @@ public:
 BENCHMARK_DEFINE_F(MeshStateBenchmark, Extract)(benchmark::State &state) {
 	for (auto _ : state) {
 		bool meshDeleted = false;
-		delete mesh.setVolume(0, &v, &voxel::getPalette(), nullptr, true, meshDeleted);
+		(void)mesh.setVolume(0, &v, &voxel::getPalette(), nullptr, true, meshDeleted);
 		mesh.scheduleRegionExtraction(0, v.region());
 		mesh.extractAllPending();
 		for (;;) {
@@ -127,6 +127,7 @@ BENCHMARK_DEFINE_F(MeshStateBenchmark, Extract)(benchmark::State &state) {
 			}
 		}
 		mesh.clear();
+		(void)mesh.setVolume(0, nullptr, nullptr, nullptr, true, meshDeleted);
 	}
 }
 

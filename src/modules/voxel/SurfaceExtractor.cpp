@@ -26,10 +26,9 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 }
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-										   const glm::ivec3 &translate, bool mergeQuads, bool reuseVertices,
-										   bool ambientOcclusion, bool optimize) {
+										   const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
 	return SurfaceExtractionContext(volume, getPalette(), region, mesh, translate, SurfaceExtractionType::Binary,
-									mergeQuads, reuseVertices, ambientOcclusion, optimize);
+									false, false, ambientOcclusion, optimize);
 }
 
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
@@ -51,8 +50,7 @@ voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type,
 	if (type == voxel::SurfaceExtractionType::MarchingCubes) {
 		return voxel::buildMarchingCubesContext(volume, region, mesh, palette, optimize);
 	} else if (type == voxel::SurfaceExtractionType::Binary) {
-		return voxel::buildBinaryContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion,
-								optimize);
+		return voxel::buildBinaryContext(volume, region, mesh, translate, ambientOcclusion, optimize);
 	}
 	return voxel::buildCubicContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion,
 									optimize);
