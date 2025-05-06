@@ -6,6 +6,7 @@
 
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
+#include "io/FormatDescription.h"
 #include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 
