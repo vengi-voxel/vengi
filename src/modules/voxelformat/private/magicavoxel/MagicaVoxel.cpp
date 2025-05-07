@@ -84,6 +84,12 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 	palette.setSize(0);
 	int palIdx = 0;
 	for (int i = 0; i < lengthof(scene->palette.color) - 1; ++i) {
+		if (i < (int)scene->num_color_names) {
+			const char *name = scene->color_names[i];
+			if (name != nullptr) {
+				palette.setColorName(palIdx, name);
+			}
+		}
 		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
 		palette.setColor(palIdx, core::RGBA(color.r, color.g, color.b, color.a));
 		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];

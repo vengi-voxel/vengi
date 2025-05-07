@@ -471,8 +471,15 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	ogt_vox_matl_array &mat = output_scene.materials;
 
 	const palette::Palette &palette = sceneGraph.firstPalette();
+	output_scene.num_color_names = palette.colorCount();
+	core::Buffer<const char *> colorNamesPtr;
+	colorNamesPtr.resize(output_scene.num_color_names);
+	output_scene.color_names = &colorNamesPtr[0];
+
 	Log::debug("vox save color count: %i (including first transparent slot)", palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
+		output_scene.color_names[i] = palette.colorName(i).c_str();
+
 		const core::RGBA &rgba = palette.color(i);
 		pal.color[i].r = rgba.r;
 		pal.color[i].g = rgba.g;
