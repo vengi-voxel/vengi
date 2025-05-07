@@ -350,7 +350,9 @@ public:
 
 	void pop() {
 		core_assert(_size > 0u);
-		_buffer[--_size].~TYPE();
+		if (_size > 0u) {
+			_buffer[--_size].~TYPE();
+		}
 	}
 
 	TYPE* data() {
