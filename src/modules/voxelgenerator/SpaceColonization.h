@@ -9,7 +9,7 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/collection/Map.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include <glm/gtc/epsilon.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -30,7 +30,7 @@ struct AttractionPoint {
 
 struct Branch {
 	Branch *_parent;
-	core::DynamicArray<Branch*> _children;
+	core::Buffer<Branch*> _children;
 	glm::vec3 _position;
 	glm::vec3 _growDirection;
 	glm::vec3 _originalGrowDirection;

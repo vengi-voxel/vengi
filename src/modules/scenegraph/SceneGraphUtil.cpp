@@ -190,9 +190,9 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	return newNodeId;
 }
 
-core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent) {
+core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent) {
 	const SceneGraphNode &sourceRoot = source.root();
-	core::DynamicArray<int> nodesAdded;
+	core::Buffer<int> nodesAdded;
 
 	for (const core::String &animation : source.animations()) {
 		target.addAnimation(animation);
@@ -241,7 +241,7 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 			continue;
 		}
 		Log::debug("Split needed for node '%s'", node.name().c_str());
-		core::DynamicArray<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(node.volume(), maxSize, createEmpty);
+		core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(node.volume(), maxSize, createEmpty);
 		Log::debug("Created %i volumes", (int)rawVolumes.size());
 		for (voxel::RawVolume *v : rawVolumes) {
 			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);

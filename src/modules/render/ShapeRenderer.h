@@ -41,7 +41,7 @@ private:
 	mutable shader::ColorData _uniformBlock;
 	shader::ColorShader& _colorShader;
 
-	core::DynamicArray<Vertex> _vertices;
+	core::Buffer<Vertex> _vertices;
 
 	void activateShader(const video::Camera &camera, const glm::mat4 &model) const;
 

@@ -137,7 +137,7 @@ void fillHollow(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {
 	const int depth = region.getDepthInVoxels();
 	const int size = width * height * depth;
 	const glm::ivec3 mins = volume.region().getLowerCorner();
-	core::DynamicArray<glm::ivec3> positions;
+	core::Buffer<glm::ivec3> positions;
 	positions.reserve(size);
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
@@ -267,7 +267,7 @@ void fill(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, bool overw
 }
 
 void hollow(voxel::RawVolumeWrapper &volume) {
-	core::DynamicArray<glm::ivec3> filled;
+	core::Buffer<glm::ivec3> filled;
 	voxelutil::visitUndergroundVolume(
 		volume, [&filled](int x, int y, int z, const voxel::Voxel &voxel) { filled.emplace_back(x, y, z); });
 	for (const glm::ivec3 &pos : filled) {

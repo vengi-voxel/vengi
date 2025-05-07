@@ -112,7 +112,7 @@ static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const
 }
 
 template<typename T>
-void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices,
+void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Buffer<uint32_t> &indices,
 					 size_t offset) {
 	indices.reserve(indices.size() + count);
 	for (size_t i = 0; i < count; i++) {
@@ -1082,7 +1082,7 @@ scenegraph::SceneGraphTransform GLTFFormat::loadTransform(const tinygltf::Node &
 }
 
 bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-							 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const {
+							 core::Buffer<uint32_t> &indices, size_t indicesOffset) const {
 	if (gltfPrimitive.mode != TINYGLTF_MODE_TRIANGLES) {
 		Log::warn("Unexpected primitive mode: %i", gltfPrimitive.mode);
 		return false;
@@ -1643,7 +1643,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	Log::debug("Primitives: %i in mesh %i", (int)gltfMesh.primitives.size(), gltfNode.mesh);
 
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
-		core::DynamicArray<uint32_t> indices;
+		core::Buffer<uint32_t> indices;
 		core::DynamicArray<GltfVertex> vertices;
 		if (!loadAttributes(filename, gltfModel, materials, primitive, vertices)) {
 			Log::warn("Failed to load vertices");
@@ -1659,7 +1659,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 				node.setTransform(0, transform);
 				nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
 			} else {
-				core::DynamicArray<PointCloudVertex> pointCloud;
+				core::Buffer<PointCloudVertex> pointCloud;
 				pointCloud.resize(vertices.size());
 				for (int i = 0; i < (int)vertices.size(); ++i) {
 					pointCloud[i].position = vertices[i].pos;

@@ -235,7 +235,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 			Log::warn("Failed to load 3zh file: %s", luaName.c_str());
 		}
 
-		core::DynamicArray<int> modelNodeIds;
+		core::Buffer<int> modelNodeIds;
 		for (uint16_t j = 0; j < numInstances; ++j) {
 			uint8_t numFields;
 			wrap(stream.readUInt8(numFields))

@@ -22,7 +22,7 @@ void SelectionManager::invert(voxel::RawVolume &volume) {
 	if (!hasSelection()) {
 		select(volume, volume.region().getLowerCorner(), volume.region().getUpperCorner());
 	} else {
-		const core::DynamicArray<Selection> &remainingSelections = voxel::Region::subtract(volume.region(), _selections);
+		const Selections &remainingSelections = voxel::Region::subtract(volume.region(), _selections);
 		reset();
 		for (const Selection &selection : remainingSelections) {
 			select(volume, selection.getLowerCorner(), selection.getUpperCorner());

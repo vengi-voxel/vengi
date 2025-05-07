@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include "core/Assert.h"
 #include "core/UTF8.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "core/Endian.h"
 #include <SDL_stdinc.h>
 #include <stdio.h>
@@ -128,7 +128,7 @@ bool WriteStream::writeUTF16BE(const core::String &str) {
 	if (str.empty()) {
 		return true;
 	}
-	core::DynamicArray<uint16_t> utf16str;
+	core::Buffer<uint16_t> utf16str;
 	utf16str.resize(str.size());
 	const int utf16Len = core::utf8::toUtf16(str.c_str(), str.size(), utf16str.data(), utf16str.size());
 	for (int i = 0; i < utf16Len; ++i) {
@@ -466,7 +466,7 @@ bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
 		return true;
 	}
 	str.clear();
-	core::DynamicArray<uint16_t> utf16str;
+	core::Buffer<uint16_t> utf16str;
 	utf16str.reserve(characters);
 	for (uint32_t i = 0; i < characters; ++i) {
 		uint16_t c;
@@ -476,7 +476,7 @@ bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
 		utf16str.push_back(c);
 	}
 
-	core::DynamicArray<uint8_t> utf8str;
+	core::Buffer<uint8_t> utf8str;
 	utf8str.resize((size_t)characters * 4);
 	const int len = core::utf8::toUtf8(utf16str.data(), characters, (char *)utf8str.data(), utf8str.size());
 	if (len == -1) {

@@ -82,7 +82,7 @@ private:
 		glm::vec3 minVertex{0.0f};
 	};
 	void createPointMesh(tinygltf::Model &gltfModel, const scenegraph::SceneGraphNode &node) const;
-	using Stack = core::DynamicArray<core::Pair<int, int>>;
+	using Stack = core::Buffer<core::Pair<int, int>>;
 	using MaterialMap = core::Map<uint64_t, core::Array<int, palette::PaletteMaxColors>>;
 	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 					  const scenegraph::SceneGraphNode &graphNode, Stack &stack,
@@ -132,7 +132,7 @@ private:
 	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &gltfModel,
 					const core::DynamicArray<GltfMaterialData> &materials, int gltfNodeIdx, int parentNodeId) const;
 	bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
-					 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;
+					 core::Buffer<uint32_t> &indices, size_t indicesOffset) const;
 	scenegraph::SceneGraphTransform loadTransform(const tinygltf::Node &gltfNode) const;
 	size_t accessorSize(const tinygltf::Accessor &gltfAccessor) const;
 	const tinygltf::Accessor *getAccessor(const tinygltf::Model &gltfModel, int id) const;

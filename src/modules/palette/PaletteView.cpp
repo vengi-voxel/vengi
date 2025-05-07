@@ -4,6 +4,7 @@
 
 #include "PaletteView.h"
 #include "core/Color.h"
+#include "core/Algorithm.h"
 #include "core/Common.h"
 #include "palette/Palette.h"
 #include <glm/vec3.hpp>

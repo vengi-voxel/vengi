@@ -187,7 +187,7 @@ public:
 	 *
 	 * @sa init()
 	 */
-	[[nodiscard]] core::DynamicArray<voxel::RawVolume *> shutdown();
+	[[nodiscard]] core::Buffer<voxel::RawVolume *> shutdown();
 
 	[[nodiscard]] voxel::RawVolume *volume(int idx);
 	[[nodiscard]] const voxel::RawVolume *volume(int idx) const;

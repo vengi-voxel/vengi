@@ -45,7 +45,7 @@ protected:
 	mutable bool _regionDirty = true;
 	mutable FrameIndex _cachedMaxFrame = -1;
 	const core::String _emptyUUID;
-	core::DynamicArray<SceneGraphListener*> _listeners;
+	core::Buffer<SceneGraphListener*> _listeners;
 
 	void updateTransforms_r(SceneGraphNode &node);
 	voxel::Region calcRegion() const;

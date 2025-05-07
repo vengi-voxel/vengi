@@ -9,7 +9,6 @@
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Base64ReadStream.h"
 #include "io/BufferedReadWriteStream.h"
@@ -35,7 +34,7 @@ namespace priv {
 
 struct KeyFrame {
 	core::String channel; // "rotation", "position", "scale"
-	core::DynamicArray<glm::vec3> dataPoints;
+	core::Buffer<glm::vec3> dataPoints;
 	core::String uuid;
 	float time = 0.0f;
 	int color; // none = -1, white = 0, black, red, green, blue, yellow, pink, purple, orange, brown, cyan, gray, lightgray

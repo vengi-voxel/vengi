@@ -6,7 +6,7 @@
 
 #include "PaletteFormat.h"
 #include "core/collection/Array.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "io/FormatDescription.h"
 
 namespace palette {
@@ -20,7 +20,7 @@ namespace palette {
  */
 class VPLPalette : public PaletteFormat {
 private:
-	core::DynamicArray<core::Array<uint8_t, 256>> _luts;
+	core::Buffer<core::Array<uint8_t, 256>> _luts;
 public:
 	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) override;
 	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override {

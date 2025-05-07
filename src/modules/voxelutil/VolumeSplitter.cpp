@@ -3,13 +3,11 @@
  */
 
 #include "VolumeSplitter.h"
-#include "core/Common.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "voxelutil/VoxelUtil.h"
 
 namespace voxelutil {
 
@@ -46,11 +44,11 @@ static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object
 	}
 }
 
-core::DynamicArray<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, VisitorOrder order) {
+core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, VisitorOrder order) {
 	voxel::RawVolume copy(*v);
 	copy.setBorderValue(priv::visited);
 
-	core::DynamicArray<voxel::RawVolume *> rawVolumes;
+	core::Buffer<voxel::RawVolume *> rawVolumes;
 
 	visitVolume(copy, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (voxel.getFlags() == priv::visitedFlag) {
@@ -70,12 +68,12 @@ core::DynamicArray<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, V
 	return rawVolumes;
 }
 
-core::DynamicArray<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize, bool createEmpty) {
+core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize, bool createEmpty) {
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 
-	core::DynamicArray<voxel::RawVolume *> rawVolumes;
+	core::Buffer<voxel::RawVolume *> rawVolumes;
 
 	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), maxSize);
 	Log::debug("split region: %s", region.toString().c_str());

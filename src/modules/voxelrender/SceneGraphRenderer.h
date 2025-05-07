@@ -7,7 +7,7 @@
 #include "RawVolumeRenderer.h"
 #include "app/I18N.h"
 #include "core/SharedPtr.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "render/CameraFrustum.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
@@ -41,7 +41,7 @@ class SceneGraphRenderer : public core::NonCopyable {
 protected:
 	RawVolumeRenderer _volumeRenderer;
 	render::CameraFrustum _cameraRenderer;
-	core::DynamicArray<video::Camera> _cameras;
+	core::Buffer<video::Camera> _cameras;
 	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
 								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx,
 								   const voxel::Region &region);

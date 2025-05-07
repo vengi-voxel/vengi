@@ -25,6 +25,7 @@
 
 #include "Dictionary.h"
 #include "Language.h"
+#include "core/collection/Buffer.h"
 #include "io/Filesystem.h"
 
 namespace app {
@@ -51,7 +52,7 @@ private:
 	Dictionary _emptyDict;
 
 	// available languages from po files found in the search paths
-	core::DynamicArray<Language> _languages;
+	core::Buffer<Language> _languages;
 
 	io::FilesystemPtr _filesystem;
 
@@ -93,7 +94,7 @@ public:
 	void removeDirectory(const core::String &pathname);
 
 	/** Return a set of the available languages in their country code */
-	core::DynamicArray<Language> getLanguages();
+	core::Buffer<Language> getLanguages();
 
 	/**
 	 * This function converts a .po filename (e.g. zh_TW.po) into a language

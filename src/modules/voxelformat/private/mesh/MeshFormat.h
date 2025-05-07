@@ -47,7 +47,7 @@ protected:
 		glm::vec3 position{0.0f};
 		core::RGBA color{0, 0, 0, 255};
 	};
-	using PointCloud = core::DynamicArray<PointCloudVertex>;
+	using PointCloud = core::Buffer<PointCloudVertex>;
 
 	struct MeshExt {
 		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);

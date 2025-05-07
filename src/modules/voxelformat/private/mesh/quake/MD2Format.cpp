@@ -132,7 +132,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 
-	core::DynamicArray<glm::vec3> vertices;
+	core::Buffer<glm::vec3> vertices;
 	vertices.reserve(hdr.numVerts);
 	Log::debug("Reading %i vertices", hdr.numVerts);
 	for (uint32_t i = 0; i < hdr.numVerts; ++i) {
@@ -152,7 +152,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 
-	core::DynamicArray<glm::vec2> uvs;
+	core::Buffer<glm::vec2> uvs;
 	uvs.reserve(hdr.numST);
 	for (uint32_t i = 0; i < hdr.numST; ++i) {
 		glm::i16vec2 uv;

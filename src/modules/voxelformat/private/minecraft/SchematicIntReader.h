@@ -4,17 +4,17 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 
 namespace voxelformat {
 
 class SchematicIntReader {
 private:
-	const core::DynamicArray<int8_t> *_blocks;
+	const core::Buffer<int8_t> *_blocks;
 	int _index = 0;
 
 public:
-	SchematicIntReader(const core::DynamicArray<int8_t> *blocks) : _blocks(blocks) {
+	SchematicIntReader(const core::Buffer<int8_t> *blocks) : _blocks(blocks) {
 	}
 
 	bool eos() const {

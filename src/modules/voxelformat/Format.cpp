@@ -11,7 +11,6 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
-#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "math/Math.h"
@@ -161,7 +160,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	if (saveVisibleOnly) {
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
-		core::DynamicArray<int> nodes;
+		core::Buffer<int> nodes;
 		for (auto iter = newSceneGraph.nodes().begin(); iter != newSceneGraph.nodes().end(); ++iter) {
 			const scenegraph::SceneGraphNode &node = iter->second;
 			if (!node.visible()) {

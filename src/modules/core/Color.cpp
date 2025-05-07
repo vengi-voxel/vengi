@@ -345,7 +345,7 @@ static inline float getDistance(const glm::vec4 &p1, const glm::vec4 &p2) {
 }
 
 static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
-	core::DynamicArray<glm::vec4> centers;
+	core::Buffer<glm::vec4> centers;
 	centers.reserve(maxTargetBufColors);
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -357,7 +357,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	bool changed = true;
 	while (changed) {
 		changed = false;
-		core::DynamicArray<core::DynamicArray<glm::vec4>> clusters(maxTargetBufColors);
+		core::DynamicArray<core::Buffer<glm::vec4>> clusters(maxTargetBufColors);
 		for (size_t i = 0; i < inputBufColors; ++i) {
 			const glm::vec4 point = core::Color::fromRGBA(inputBuf[i]);
 			int closest = 0;

@@ -8,7 +8,7 @@
 
 #include "core/TimedValue.h"
 #include "core/Var.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "io/FilesystemEntry.h"
 #include "ui/Panel.h"
 #include "video/FileDialogOptions.h"
@@ -35,7 +35,7 @@ private:
 	// cached file system content of the current directory
 	core::DynamicArray<io::FilesystemEntry> _entities;
 	// sorted and filtered pointers to the cached file system entities
-	core::DynamicArray<const io::FilesystemEntry*> _filteredEntities;
+	core::Buffer<const io::FilesystemEntry*> _filteredEntities;
 	io::FilesystemEntry _parentDir;
 
 	using TimedString = core::TimedValue<core::String>;

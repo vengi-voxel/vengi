@@ -205,7 +205,7 @@ void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {
 void Mesh::removeUnusedVertices() {
 	const size_t vertices = _vecVertices.size();
 	const size_t indices = _vecIndices.size();
-	core::DynamicArray<bool> isVertexUsed(vertices);
+	core::Buffer<bool> isVertexUsed(vertices);
 	isVertexUsed.fill(false);
 
 	for (size_t triCt = 0u; triCt < indices; ++triCt) {

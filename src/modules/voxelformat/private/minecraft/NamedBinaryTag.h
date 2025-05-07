@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "io/Stream.h"
@@ -39,9 +40,9 @@ using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::Str
 
 union TagData {
 	NBTCompound *_compound;
-	core::DynamicArray<int8_t> *_byteArray;
-	core::DynamicArray<int32_t> *_intArray;
-	core::DynamicArray<int64_t> *_longArray;
+	core::Buffer<int8_t> *_byteArray;
+	core::Buffer<int32_t> *_intArray;
+	core::Buffer<int64_t> *_longArray;
 	NBTList *_list;
 	core::String *_string;
 	float _float;
@@ -77,13 +78,13 @@ union TagData {
 	operator const NBTCompound &() const {
 		return *_compound;
 	}
-	operator const core::DynamicArray<int8_t> &() const {
+	operator const core::Buffer<int8_t> &() const {
 		return *_byteArray;
 	}
-	operator const core::DynamicArray<int32_t> &() const {
+	operator const core::Buffer<int32_t> &() const {
 		return *_intArray;
 	}
-	operator const core::DynamicArray<int64_t> &() const {
+	operator const core::Buffer<int64_t> &() const {
 		return *_longArray;
 	}
 	operator const NBTList &() const {
@@ -164,10 +165,10 @@ public:
 
 	NamedBinaryTag(core::String &&val);
 	NamedBinaryTag(const core::String &val);
-	NamedBinaryTag(core::DynamicArray<int64_t> &&val);
-	NamedBinaryTag(core::DynamicArray<int32_t> &&val);
-	NamedBinaryTag(core::DynamicArray<int8_t> &&val);
-	NamedBinaryTag(core::DynamicArray<uint8_t> &&val);
+	NamedBinaryTag(core::Buffer<int64_t> &&val);
+	NamedBinaryTag(core::Buffer<int32_t> &&val);
+	NamedBinaryTag(core::Buffer<int8_t> &&val);
+	NamedBinaryTag(core::Buffer<uint8_t> &&val);
 	NamedBinaryTag(NBTList &&val);
 	NamedBinaryTag(NBTCompound &&val);
 	~NamedBinaryTag();
@@ -249,21 +250,21 @@ public:
 		return _tagData._string;
 	}
 
-	inline const core::DynamicArray<int8_t> *byteArray() const {
+	inline const core::Buffer<int8_t> *byteArray() const {
 		if (_tagType != TagType::BYTE_ARRAY) {
 			return nullptr;
 		}
 		return _tagData._byteArray;
 	}
 
-	inline const core::DynamicArray<int32_t> *intArray() const {
+	inline const core::Buffer<int32_t> *intArray() const {
 		if (_tagType != TagType::INT_ARRAY) {
 			return nullptr;
 		}
 		return _tagData._intArray;
 	}
 
-	inline const core::DynamicArray<int64_t> *longArray() const {
+	inline const core::Buffer<int64_t> *longArray() const {
 		if (_tagType != TagType::LONG_ARRAY) {
 			return nullptr;
 		}

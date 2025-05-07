@@ -122,7 +122,7 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 											   const priv::NamedBinaryTag &blockStates,
 											   scenegraph::SceneGraphNode &node,
 											   const core::Buffer<int> &mcpal) {
-	const core::DynamicArray<int64_t> *data = blockStates.longArray();
+	const core::Buffer<int64_t> *data = blockStates.longArray();
 	if (data == nullptr) {
 		Log::error("Invalid BlockStates - expected long array");
 		return false;
@@ -276,7 +276,7 @@ static glm::ivec3 voxelPosFromIndex(int width, int depth, int idx) {
 
 bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 									 palette::Palette &palette, const priv::NamedBinaryTag &blockData) {
-	const core::DynamicArray<int8_t> *blocks = blockData.byteArray();
+	const core::Buffer<int8_t> *blocks = blockData.byteArray();
 	if (blocks == nullptr) {
 		Log::error("Invalid BlockData - expected byte array");
 		return false;
@@ -570,7 +570,7 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	core::StringMap<int8_t> paletteMap;
 	int paletteIndex = 1;
 	{
-		core::DynamicArray<int8_t> blocks;
+		core::Buffer<int8_t> blocks;
 		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);
 
 		for (int x = 0; x < size.x; ++x) {

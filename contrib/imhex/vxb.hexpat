@@ -44,7 +44,7 @@ Header hdr @0x00;
 	}
 
 
-		core::DynamicArray<core::RGBA> colors;
+		core::Buffer<core::RGBA> colors;
 		colors.reserve(blockSize * blockSize);
 		const voxel::FaceNames faceName = faceNames[indices[i]];
 		Log::error("Save face %s", voxel::faceNameString(faceName));

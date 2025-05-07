@@ -6,7 +6,7 @@
 
 #include "MeshFormat.h"
 #include "MeshMaterial.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/StringMap.h"
 #include "util/Version.h"
 #include "voxel/Face.h"

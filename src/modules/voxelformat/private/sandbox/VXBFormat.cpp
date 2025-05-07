@@ -381,7 +381,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const palette::Palette &palette = model->palette();
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
 #if VXB_PRINT_IMAGES
-		core::DynamicArray<core::RGBA> colors;
+		core::Buffer<core::RGBA> colors;
 		colors.reserve(blockSize * blockSize);
 #endif
 		const int uniqueFace = indices[i];

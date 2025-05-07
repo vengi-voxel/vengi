@@ -127,7 +127,7 @@ protected:
 	voxel::RawVolume *activeVolume();
 
 	/** @return the new node id that was created from the merged nodes */
-	int mergeNodes(const core::DynamicArray<int> &nodeIds);
+	int mergeNodes(const core::Buffer<int> &nodeIds);
 
 	/**
 	 * @brief Assumes that the current active scene is a fresh scene, no undo states

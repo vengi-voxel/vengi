@@ -11,7 +11,7 @@
 
 namespace voxelutil {
 
-voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volumes) {
+voxel::RawVolume* merge(const core::Buffer<const voxel::RawVolume*>& volumes) {
 	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
 	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
 	for (const voxel::RawVolume* v : volumes) {
@@ -33,8 +33,8 @@ voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volum
 	return merged;
 }
 
-voxel::RawVolume* merge(const core::DynamicArray<voxel::RawVolume*>& volumes) {
-	core::DynamicArray<const voxel::RawVolume*> v;
+voxel::RawVolume* merge(const core::Buffer<voxel::RawVolume*>& volumes) {
+	core::Buffer<const voxel::RawVolume*> v;
 	v.reserve(volumes.size());
 	for (const voxel::RawVolume *v1 : volumes) {
 		v.push_back(v1);

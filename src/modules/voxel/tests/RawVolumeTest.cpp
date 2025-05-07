@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -66,7 +66,7 @@ TEST_F(RawVolumeTest, testCopyRegions) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
 
-	core::DynamicArray<voxel::Region> regions;
+	core::Buffer<voxel::Region> regions;
 	regions.push_back(Region(0, 0, 2, 0, 0, 2)); // color index 7
 	regions.push_back(Region(2, 0, 0, 2, 0, 0)); // color index 3
 	RawVolume v2(v, regions);

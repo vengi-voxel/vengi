@@ -6,7 +6,6 @@
 
 #include "voxelformat/Format.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "palette/Palette.h"
 
@@ -92,7 +91,7 @@ private:
 		palette::Palette mcpal;
 	};
 
-	using SectionVolumes = core::DynamicArray<voxel::RawVolume *>;
+	using SectionVolumes = core::Buffer<voxel::RawVolume *>;
 
 	voxel::RawVolume *error(SectionVolumes &volumes);
 	voxel::RawVolume *finalize(SectionVolumes &volumes, int xPos, int zPos);

@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
 
 using Selection = voxel::Region;
-using Selections = core::DynamicArray<Selection>;
+using Selections = core::Buffer<Selection>;
 
 } // namespace voxedit

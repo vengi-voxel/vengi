@@ -6,7 +6,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/collection/DynamicArray.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
@@ -58,7 +57,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	int maxDepth = 0;
 	// parse tiles
 	const nlohmann::json &tiles = json["tiles"];
-	core::DynamicArray<KenTile> kenTiles;
+	core::Buffer<KenTile> kenTiles;
 	for (const auto &tile : tiles) {
 		const int shape = tile.value("shape", 0);
 		const int angle = tile.value("angle", 0);

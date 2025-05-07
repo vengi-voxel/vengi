@@ -5,7 +5,7 @@
 #include "Emscripten.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 
 #include <emscripten/fetch.h>
 #include <emscripten/threading.h>
@@ -74,7 +74,7 @@ static bool http_request_sync(RequestResponse &userdata, RequestContext &ctx) {
 	core::string::strncpyz(method, strlen(method), attr.requestMethod, sizeof(attr.requestMethod));
 
 	Log::debug("Requesting %s via %s", ctx._url.c_str(), attr.requestMethod);
-	core::DynamicArray<const char *> headers;
+	core::Buffer<const char *> headers;
 	headers.reserve((ctx._headers.size() + (ctx._userAgent.empty() ? 0 : 2)) * 2 + 1);
 	if (!ctx._userAgent.empty()) {
 		headers.push_back("User-Agent");

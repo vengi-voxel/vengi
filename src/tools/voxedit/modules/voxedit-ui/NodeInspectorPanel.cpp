@@ -89,7 +89,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 	}
 }
 
-void NodeInspectorPanel::saveRegionSizes(const core::DynamicArray<glm::ivec3> &sizes) {
+void NodeInspectorPanel::saveRegionSizes(const core::Buffer<glm::ivec3> &sizes) {
 	core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>> uniqueSizes;
 	for (const glm::ivec3 &maxs : sizes) {
 		uniqueSizes.insert(maxs);

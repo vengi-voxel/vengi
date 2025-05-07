@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/String.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include <stdint.h>
 
 union SDL_Event;
@@ -19,7 +19,7 @@ class IEventObserver;
  */
 class EventHandler {
 private:
-	typedef core::DynamicArray<IEventObserver*> EventObservers;
+	typedef core::Buffer<IEventObserver*> EventObservers;
 	EventObservers _observers;
 	struct Event {
 		Event(IEventObserver* _observer, bool _remove) : observer(_observer), remove(_remove) {
@@ -28,7 +28,7 @@ private:
 		IEventObserver* observer;
 		bool remove;
 	};
-	core::DynamicArray<Event> _events;
+	core::Buffer<Event> _events;
 
 	static core::String getControllerButtonName(uint8_t button);
 

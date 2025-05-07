@@ -6,7 +6,7 @@
 
 #include "MeshFormat.h"
 #include "MeshMaterial.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -14,9 +14,9 @@ namespace voxelformat {
 
 class Polygon {
 private:
-	core::DynamicArray<glm::vec2> _uvs;
-	core::DynamicArray<glm::vec3> _vertices;
-	core::DynamicArray<core::RGBA> _colors;
+	core::Buffer<glm::vec2> _uvs;
+	core::Buffer<glm::vec3> _vertices;
+	core::Buffer<core::RGBA> _colors;
 	MeshMaterialPtr _material;
 	void addTriangle(MeshFormat::MeshTriCollection &tris, int idx0, int idx1, int idx2) const;
 

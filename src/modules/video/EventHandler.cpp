@@ -467,6 +467,8 @@ bool EventHandler::handleAppEvent(SDL_Event &event) {
 	case SDL_APP_DIDENTERFOREGROUND:
 		foreground();
 		return true;
+	default:
+		break;
 	}
 	return false;
 }

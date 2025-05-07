@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 
 namespace video {
 
@@ -17,7 +17,7 @@ class Shader;
  */
 class ShaderManager {
 private:
-	typedef core::DynamicArray<Shader*> Shaders;
+	typedef core::Buffer<Shader*> Shaders;
 	Shaders _shaders;
 public:
 	void registerShader(Shader* shader);

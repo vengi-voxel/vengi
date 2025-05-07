@@ -24,7 +24,7 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 
 int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const std::function<void(int)> &onNodeAdded = {});
 
-core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
+core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
 
 /**
  * @param[in] parent The parent node id - if @c -1 it will use the node parent id

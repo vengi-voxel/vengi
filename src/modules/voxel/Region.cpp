@@ -15,8 +15,8 @@ namespace voxel {
 
 const Region Region::InvalidRegion = Region(0, -1);
 
-static core::DynamicArray<Region> subtractRegion(const Region &box, const Region &sub) {
-	core::DynamicArray<Region> result;
+static core::Buffer<Region> subtractRegion(const Region &box, const Region &sub) {
+	core::Buffer<Region> result;
 	result.reserve(6);
 
 	// Ensure the subtraction region is inside the box
@@ -67,15 +67,15 @@ static core::DynamicArray<Region> subtractRegion(const Region &box, const Region
 	return result;
 }
 
-core::DynamicArray<Region> Region::subtract(const Region& a, const core::DynamicArray<Region>& b) {
-	core::DynamicArray<Region> remainingSelections;
+core::Buffer<Region> Region::subtract(const Region& a, const core::Buffer<Region>& b) {
+	core::Buffer<Region> remainingSelections;
 	remainingSelections.reserve(b.size() * 6);
 	remainingSelections.push_back(a);
 
 	for (const Region &r : b) {
-		core::DynamicArray<Region> newSelections;
+		core::Buffer<Region> newSelections;
 		for (const Region &region : remainingSelections) {
-			const core::DynamicArray<Region> &subtracted = subtractRegion(region, r);
+			const core::Buffer<Region> &subtracted = subtractRegion(region, r);
 			newSelections.insert(newSelections.end(), subtracted.begin(), subtracted.end());
 		}
 		remainingSelections = core::move(newSelections);

@@ -46,7 +46,7 @@ private:
 	bool readLayerHeaders(io::SeekableReadStream &stream, vxl::VXLModel &mdl) const;
 
 	bool saveVXL(const scenegraph::SceneGraph &sceneGraph,
-				 core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
+				 core::Buffer<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
 				 const io::ArchivePtr &archive);
 
 	bool prepareModel(vxl::VXLModel &mdl) const;

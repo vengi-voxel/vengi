@@ -6,7 +6,7 @@
 
 #include "Region.h"
 #include "Voxel.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "VolumeSampler.h"
 #include <glm/vec3.hpp>
 
@@ -42,7 +42,7 @@ public:
 	RawVolume(const RawVolume &copy);
 	RawVolume(RawVolume &&move) noexcept;
 	RawVolume(const RawVolume &copy, const Region &region, bool *onlyAir = nullptr);
-	RawVolume(const RawVolume &copy, const core::DynamicArray<Region> &regions);
+	RawVolume(const RawVolume &copy, const core::Buffer<Region> &regions);
 
 	bool copyInto(const RawVolume &src);
 

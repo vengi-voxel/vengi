@@ -329,7 +329,7 @@ void ShapeBuilder::geom(const glm::vec3* vert, size_t vertCount, const uint32_t*
 	}
 }
 
-void ShapeBuilder::geom(const core::DynamicArray<glm::vec3>& vert, const core::DynamicArray<uint32_t>& indices, Primitive primitive) {
+void ShapeBuilder::geom(const core::Buffer<glm::vec3>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive) {
 	geom(&vert.front(), vert.size(), &indices.front(), indices.size(), primitive);
 }
 
@@ -749,7 +749,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	camera.frustumCorners(out, indices);
 
 	if (splitFrustum > 0) {
-		core::DynamicArray<float> planes(splitFrustum * 2);
+		core::Buffer<float> planes(splitFrustum * 2);
 		camera.sliceFrustum(&planes[0], splitFrustum * 2, splitFrustum);
 
 		for (int splitStep = 0; splitStep < splitFrustum; ++splitStep) {

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/String.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include <glm/matrix.hpp>
 
 namespace voxelformat {
@@ -113,7 +113,7 @@ struct HVAHeader {
 };
 
 // transformation matrix for each section
-using HVAFrames = core::DynamicArray<VXLMatrix>;
+using HVAFrames = core::Buffer<VXLMatrix>;
 
 // https://ppmforums.com/topic-29369/red-alert-2-file-format-descriptions/
 struct HVAModel {

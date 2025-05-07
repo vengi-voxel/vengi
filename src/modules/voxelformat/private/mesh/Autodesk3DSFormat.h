@@ -6,6 +6,7 @@
 
 #include "MeshFormat.h"
 #include "core/String.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include <glm/mat4x4.hpp>
@@ -33,11 +34,11 @@ private:
 	struct Mesh3ds {
 		core::String name;
 		glm::mat4 matrix{1.0f};
-		core::DynamicArray<glm::vec3> vertices;
-		core::DynamicArray<glm::vec3> normals;
-		core::DynamicArray<glm::vec2> texcoords;
+		core::Buffer<glm::vec3> vertices;
+		core::Buffer<glm::vec3> normals;
+		core::Buffer<glm::vec2> texcoords;
 		core::DynamicArray<Face3ds> faces;
-		core::DynamicArray<core::RGBA> colors;
+		core::Buffer<core::RGBA> colors;
 	};
 
 	struct Chunk3ds {

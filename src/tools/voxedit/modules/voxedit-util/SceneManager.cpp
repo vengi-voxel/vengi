@@ -601,7 +601,7 @@ void SceneManager::splitObjects() {
 	if (node == nullptr) {
 		return;
 	}
-	core::DynamicArray<voxel::RawVolume *> volumes = voxelutil::splitObjects(node->volume());
+	core::Buffer<voxel::RawVolume *> volumes = voxelutil::splitObjects(node->volume());
 	if (volumes.empty()) {
 		return;
 	}
@@ -670,7 +670,7 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 		modified(nodeId, voxel::Region::InvalidRegion);
 	} else {
 		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "resize");
-		const core::DynamicArray<voxel::Region> &regions = voxel::Region::subtract(oldRegion, region);
+		const core::Buffer<voxel::Region> &regions = voxel::Region::subtract(oldRegion, region);
 		for (const voxel::Region &r : regions) {
 			modified(nodeId, r);
 		}
@@ -1137,7 +1137,7 @@ static bool shouldGetMerged(const scenegraph::SceneGraphNode &node, NodeMergeFla
 	return add;
 }
 
-int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
+int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
 		scenegraph::SceneGraphNode copiedNode(scenegraph::SceneGraphNodeType::Model);
@@ -1187,7 +1187,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 }
 
 int SceneManager::mergeNodes(NodeMergeFlags flags) {
-	core::DynamicArray<int> nodeIds;
+	core::Buffer<int> nodeIds;
 	nodeIds.reserve(_sceneGraph.size());
 	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -1216,7 +1216,7 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 	if (volume2 == nullptr) {
 		return InvalidNodeId;
 	}
-	core::DynamicArray<int> nodeIds(2);
+	core::Buffer<int> nodeIds(2);
 	nodeIds[0] = nodeId1;
 	nodeIds[1] = nodeId2;
 	return mergeNodes(nodeIds);

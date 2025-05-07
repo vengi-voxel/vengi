@@ -6,7 +6,7 @@
 
 #include "core/DirtyState.h"
 #include "core/RGBA.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "image/Image.h"
 #include <glm/fwd.hpp>
 
@@ -33,7 +33,7 @@ public:
 	void setNormal(uint8_t index, const core::RGBA &normal);
 	void setNormal(uint8_t index, const glm::vec3 &normal);
 
-	void toVec4f(core::DynamicArray<glm::vec4> &normals) const;
+	void toVec4f(core::Buffer<glm::vec4> &normals) const;
 	void toVec4f(glm::highp_vec4 *vec4f) const;
 
 	const core::String &name() const;

@@ -367,10 +367,10 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 	return old;
 }
 
-core::DynamicArray<voxel::RawVolume *> MeshState::shutdown() {
+core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
 	_threadPool.shutdown();
 	clear();
-	core::DynamicArray<voxel::RawVolume *> old;
+	core::Buffer<voxel::RawVolume *> old;
 	old.reserve(MAX_VOLUMES);
 	for (int idx = 0; idx < (int)_volumeData.size(); ++idx) {
 		VolumeData &state = _volumeData[idx];

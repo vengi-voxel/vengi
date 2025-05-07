@@ -8,7 +8,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
@@ -251,7 +250,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			return false;
 		}
 
-		const core::DynamicArray<int64_t> &blockStates = *data.longArray();
+		const core::Buffer<int64_t> &blockStates = *data.longArray();
 
 		constexpr int blockCount = MAX_SIZE * MAX_SIZE * MAX_SIZE;
 		uint8_t blocks[blockCount];

@@ -279,7 +279,7 @@ bool PLYFormat::parseHeader(io::SeekableReadStream &stream, Header &header) {
 }
 
 bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream,
-								core::DynamicArray<PLYFace> &faces, core::DynamicArray<PLYPolygon> &polygons) const {
+								core::Buffer<PLYFace> &faces, core::DynamicArray<PLYPolygon> &polygons) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -327,7 +327,7 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 }
 
 bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
-								   core::DynamicArray<PLYVertex> &vertices) const {
+								   core::Buffer<PLYVertex> &vertices) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -393,7 +393,7 @@ bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStrea
 
 bool PLYFormat::parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
 									  scenegraph::SceneGraph &sceneGraph, const Header &header,
-									  core::DynamicArray<PLYVertex> &vertices) const {
+									  core::Buffer<PLYVertex> &vertices) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
@@ -411,7 +411,7 @@ bool PLYFormat::parsePointCloudBinary(const core::String &filename, io::Seekable
 
 bool PLYFormat::parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 									 scenegraph::SceneGraph &sceneGraph, const Header &header,
-									 core::DynamicArray<PLYVertex> &vertices) const {
+									 core::Buffer<PLYVertex> &vertices) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name != "vertex") {
@@ -431,7 +431,7 @@ bool PLYFormat::parsePointCloudAscii(const core::String &filename, io::SeekableR
 bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 								const Header &header) const {
-	core::DynamicArray<PLYVertex> vertices;
+	core::Buffer<PLYVertex> vertices;
 	if (header.format == PlyFormatType::Ascii) {
 		if (!parsePointCloudAscii(filename, stream, sceneGraph, header, vertices)) {
 			return false;
@@ -441,7 +441,7 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 			return false;
 		}
 	}
-	core::DynamicArray<PointCloudVertex> pointCloud;
+	core::Buffer<PointCloudVertex> pointCloud;
 	pointCloud.resize(vertices.size());
 	for (int i = 0; i < (int)vertices.size(); ++i) {
 		pointCloud[i].position = vertices[i].position;
@@ -450,8 +450,8 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	return voxelizePointCloud(filename, sceneGraph, pointCloud);
 }
 
-void PLYFormat::convertToTris(MeshTriCollection &tris, core::DynamicArray<PLYVertex> &vertices,
-							  core::DynamicArray<PLYFace> &faces) const {
+void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &vertices,
+							  core::Buffer<PLYFace> &faces) const {
 	tris.reserve(tris.size() + faces.size());
 	for (int i = 0; i < (int)faces.size(); ++i) {
 		const PLYFace &face = faces[i];
@@ -471,8 +471,8 @@ void PLYFormat::convertToTris(MeshTriCollection &tris, core::DynamicArray<PLYVer
  * @param[in] polygons The indices of the polygon
  */
 void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-									const core::DynamicArray<PLYVertex> &vertices,
-									core::DynamicArray<PLYFace> &faces) const {
+									const core::Buffer<PLYVertex> &vertices,
+									core::Buffer<PLYFace> &faces) const {
 	if (polygons.empty()) {
 		Log::debug("No polygons to triangulate");
 		return;
@@ -538,7 +538,7 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 }
 
 bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
-								 core::DynamicArray<PLYFace> &faces, core::DynamicArray<PLYPolygon> &polygons,
+								 core::Buffer<PLYFace> &faces, core::DynamicArray<PLYPolygon> &polygons,
 								 const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	Log::debug("loading %i faces", element.count);
@@ -585,7 +585,7 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 }
 
 bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
-									core::DynamicArray<PLYVertex> &vertices, const Header &header) const {
+									core::Buffer<PLYVertex> &vertices, const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	vertices.reserve(element.count);
 	Log::debug("loading %i vertices", element.count);
@@ -656,8 +656,8 @@ bool PLYFormat::skipElementBinary(const Element &element, io::SeekableReadStream
 bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 								MeshTriCollection &tris) const {
-	core::DynamicArray<PLYVertex> vertices;
-	core::DynamicArray<PLYFace> faces;
+	core::Buffer<PLYVertex> vertices;
+	core::Buffer<PLYFace> faces;
 	core::DynamicArray<PLYPolygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
@@ -687,8 +687,8 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 							   MeshTriCollection &tris) const {
-	core::DynamicArray<PLYVertex> vertices;
-	core::DynamicArray<PLYFace> faces;
+	core::Buffer<PLYVertex> vertices;
+	core::Buffer<PLYFace> faces;
 	core::DynamicArray<PLYPolygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];

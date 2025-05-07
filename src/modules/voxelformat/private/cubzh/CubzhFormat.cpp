@@ -262,7 +262,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 	while (stream.pos() < startPos + chunk.chunkSize - 5) {
 		Chunk subChunk;
 		wrapBool(loadSubChunkHeader(header, stream, subChunk))
-		core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
+		core::Buffer<uint8_t> volumeBuffer; // used in case the size chunk is late
 		switch (subChunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_SIZE_V5:
 			wrap(stream.readUInt16(width))
@@ -465,7 +465,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		Log::debug("Remaining sub stream data: %d", (int)stream.remaining());
 		Chunk subChunk;
 		wrapBool(loadSubChunkHeader(header, stream, subChunk))
-		core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
+		core::Buffer<uint8_t> volumeBuffer; // used in case the size chunk is late
 		switch (subChunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_ID_V6:
 			wrap(stream.readUInt16(shapeId))

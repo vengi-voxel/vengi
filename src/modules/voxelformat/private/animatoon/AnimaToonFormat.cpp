@@ -6,7 +6,6 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
@@ -209,7 +208,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	glm::ivec3 regionSize = sceneDefinition->size;
 	Log::debug("scene size: %d %d %d", regionSize.x, regionSize.y, regionSize.z);
 
-	core::DynamicArray<int> modelNodeIds;
+	core::Buffer<int> modelNodeIds;
 	for (const auto &e : json["ModelSave"]) {
 		const int modelIdx = (int)modelNodeIds.size();
 		regionSize = sceneDefinition->size;

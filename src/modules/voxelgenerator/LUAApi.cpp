@@ -799,7 +799,7 @@ static int luaVoxel_palette_similar(lua_State* s) {
 	if (paletteIndex < 0 || paletteIndex >= palette.colorCount()) {
 		return clua_error(s, "Palette index out of bounds");
 	}
-	core::DynamicArray<uint8_t> newColorIndices;
+	core::Buffer<uint8_t> newColorIndices;
 	newColorIndices.resize(colorCount);
 	int maxColorIndices = 0;
 	for (; maxColorIndices < colorCount; ++maxColorIndices) {

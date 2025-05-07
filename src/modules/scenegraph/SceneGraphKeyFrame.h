@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/ArrayLength.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/StringMap.h"
 #include "scenegraph/SceneGraphTransform.h"
 
@@ -57,7 +57,7 @@ public:
 		return _transform;
 	}
 };
-using SceneGraphKeyFrames = core::DynamicArray<SceneGraphKeyFrame>;
+using SceneGraphKeyFrames = core::Buffer<SceneGraphKeyFrame>;
 using SceneGraphKeyFramesMap = core::StringMap<SceneGraphKeyFrames>;
 
 }; // namespace scenegraph

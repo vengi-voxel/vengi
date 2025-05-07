@@ -271,7 +271,7 @@ void CollectionPanel::handleDragAndDrop(int row, voxelcollection::VoxelFile *vox
 }
 
 int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
-	core::DynamicArray<voxelcollection::VoxelFile *> f;
+	core::Buffer<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
 	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {

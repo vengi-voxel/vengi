@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Path.h"
 #include "core/StandardLib.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/Map.h"
 #include <SDL_stdinc.h>
 #include <ctype.h>
@@ -379,7 +380,7 @@ size_t levenshteinDistance(const core::String &source, const core::String &targe
 
 	const size_t minSize = source.size();
 	const size_t maxSize = target.size();
-	core::DynamicArray<size_t> levDist(minSize + 1);
+	core::Buffer<size_t> levDist(minSize + 1);
 
 	for (size_t i = 0; i <= minSize; ++i) {
 		levDist[i] = i;
@@ -417,8 +418,8 @@ static double jaroWinklerDistance(const core::String &s1, const core::String &s2
 
 	const size_t matchDistance = core_max(s1Len, s2Len) / 2 - 1;
 
-	core::DynamicArray<bool> s1Matches(s1Len);
-	core::DynamicArray<bool> s2Matches(s2Len);
+	core::Buffer<bool> s1Matches(s1Len);
+	core::Buffer<bool> s2Matches(s2Len);
 
 	size_t matches = 0;
 

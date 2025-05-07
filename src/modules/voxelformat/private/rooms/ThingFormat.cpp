@@ -132,7 +132,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			palette.setColor(i, rgba);
 		}
 	}
-	const core::DynamicArray<int> &nodeIds = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
+	const core::Buffer<int> &nodeIds = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
 	voxSceneGraph.clear();
 	if (nodeIds.empty()) {
 		Log::error("ThingFormat: Failed to copy the scene graph from node %s", nodeSpec.modelName.c_str());

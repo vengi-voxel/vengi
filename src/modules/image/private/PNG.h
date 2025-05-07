@@ -7,7 +7,7 @@
 #include "StbImage.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "engine-config.h"
 #include "io/Stream.h"
 
@@ -41,6 +41,7 @@ static void pngWriteFunc(png_structp png, png_bytep data, png_size_t pnglength) 
 
 bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 #if 0 // libpng reading is slower than stb_image
+// #ifdef USE_LIBPNG
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png) {
 		return false;
@@ -125,7 +126,7 @@ bool write(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, in
 				 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_write_info(png, info);
 
-	core::DynamicArray<png_bytep> row_pointers;
+	core::Buffer<png_bytep> row_pointers;
 	row_pointers.resize(height);
 	for (int y = 0; y < height; ++y) {
 		row_pointers[y] = const_cast<png_bytep>(buffer) + y * width * components;

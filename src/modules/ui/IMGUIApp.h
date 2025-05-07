@@ -103,7 +103,7 @@ protected:
 	}
 #endif
 
-	core::DynamicArray<Panel*> _panels;
+	core::Buffer<Panel*> _panels;
 	FileDialog _fileDialog;
 
 	void setColorTheme();

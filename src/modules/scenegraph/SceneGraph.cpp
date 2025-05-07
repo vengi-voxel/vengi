@@ -999,7 +999,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 }
 
 void SceneGraph::align(int padding) {
-	core::DynamicArray<stbrp_rect> stbRects;
+	core::Buffer<stbrp_rect> stbRects;
 	int width = 0;
 	int depth = 0;
 	for (const auto &entry : nodes()) {
@@ -1025,7 +1025,7 @@ void SceneGraph::align(int padding) {
 		return;
 	}
 
-	core::DynamicArray<stbrp_node> stbNodes;
+	core::Buffer<stbrp_node> stbNodes;
 	stbNodes.resize(width);
 
 	stbrp_context context;

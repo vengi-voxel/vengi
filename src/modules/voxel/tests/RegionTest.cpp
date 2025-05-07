@@ -236,7 +236,7 @@ TEST_F(RegionTest, testCenter) {
 TEST_F(RegionTest, testSubtract) {
 	voxel::Region a(0, 3);
 	voxel::Region b(1, 1);
-	const core::DynamicArray<voxel::Region> &remainingSelections = voxel::Region::subtract(a, b);
+	const core::Buffer<voxel::Region> &remainingSelections = voxel::Region::subtract(a, b);
 	EXPECT_EQ(6u, remainingSelections.size());
 	for (const voxel::Region &region : remainingSelections) {
 		EXPECT_FALSE(intersects(b, region));

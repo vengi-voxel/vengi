@@ -31,8 +31,8 @@ glm::vec2 Polygon::uv(int x, int y) const {
 	return {0.0f, 0.0f};
 }
 
-static void projectPoints(const core::DynamicArray<glm::vec3> &vertexCoords,
-						  core::DynamicArray<glm::vec2> &pointsProjected, const glm::vec3 &normal,
+static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords,
+						  core::Buffer<glm::vec2> &pointsProjected, const glm::vec3 &normal,
 						  const glm::vec3 &axis, const glm::vec3 &origin) {
 	const glm::vec3 &perpendicularAxis = glm::cross(normal, axis);
 	for (const glm::vec3 &vc : vertexCoords) {
@@ -78,7 +78,7 @@ bool Polygon::toTris(MeshFormat::MeshTriCollection &tris) const {
 	normal = glm::normalize(normal);
 
 	const glm::vec3 &axis = glm::normalize(_vertices[1] - _vertices[0]);
-	core::DynamicArray<glm::vec2> projectedPoints;
+	core::Buffer<glm::vec2> projectedPoints;
 	projectedPoints.reserve(_vertices.size());
 	projectPoints(_vertices, projectedPoints, normal, axis, _vertices[0]);
 

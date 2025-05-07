@@ -119,7 +119,7 @@ bool convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, scenegr
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(0);
 	scenegraph::SceneGraphKeyFramesMap &allKeyFrames = rootNode.allKeyFrames();
 	for (auto e : allKeyFrames) {
-		core::DynamicArray<scenegraph::SceneGraphKeyFrame> &frames = e->value;
+		core::Buffer<scenegraph::SceneGraphKeyFrame> &frames = e->value;
 		for (scenegraph::SceneGraphKeyFrame &frame : frames) {
 			// the world matrix is still in 'fromSystem' coordinates
 			const glm::mat4x4 fromWorldMatrix = frame.transform().worldMatrix();
@@ -132,7 +132,7 @@ bool convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, scenegr
 		scenegraph::SceneGraphNode &node = *iter;
 		scenegraph::SceneGraphKeyFramesMap &allKeyFrames = node.allKeyFrames();
 		for (auto e : allKeyFrames) {
-			core::DynamicArray<scenegraph::SceneGraphKeyFrame> &frames = e->value;
+			core::Buffer<scenegraph::SceneGraphKeyFrame> &frames = e->value;
 			for (scenegraph::SceneGraphKeyFrame &frame : frames) {
 				// the local matrix is still in 'fromSystem' coordinates
 				const glm::mat4x4 fromLocalMatrix = frame.transform().localMatrix();

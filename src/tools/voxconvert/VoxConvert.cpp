@@ -663,7 +663,7 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGrap
 	const scenegraph::SceneGraph::MergeResult &merged = sceneGraph.merge();
 	sceneGraph.clear();
 	core::ScopedPtr<voxel::RawVolume> volume(merged.volume());
-	core::DynamicArray<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(volume, size);
+	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(volume, size);
 	for (voxel::RawVolume *v : rawVolumes) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, true);
@@ -686,7 +686,7 @@ void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Remove non-surface voxels");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		core::DynamicArray<glm::ivec3> filled;
+		core::Buffer<glm::ivec3> filled;
 		voxelutil::visitUndergroundVolume(*node.volume(), [&filled](int x, int y, int z, const voxel::Voxel &voxel) {
 			filled.emplace_back(x, y, z);
 		});
@@ -717,7 +717,7 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 				args[i - 1] = tokens[i];
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
-			core::DynamicArray<int> nodes;
+			core::Buffer<int> nodes;
 			for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 				nodes.push_back((*iter).id());
 			}

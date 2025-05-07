@@ -113,14 +113,14 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 	// previous adjacent cells, and so we can obtain these by careful bit-shifting. These variables keep track of
 	// previous cells for this purpose.
 	uint8_t previousCellIndex = 0;
-	core::DynamicArray<uint8_t> previousRowCellIndices(w);
-	core::DynamicArray<uint8_t> previousSliceCellIndicesBuf((size_t)(w * h));
+	core::Buffer<uint8_t> previousRowCellIndices(w);
+	core::Buffer<uint8_t> previousSliceCellIndicesBuf((size_t)(w * h));
 	core::Array2DView<uint8_t> previousSliceCellIndicesView(previousSliceCellIndicesBuf.data(), w, h);
 
 	// A given vertex may be shared by multiple triangles, so we need to keep track of the indices into the vertex
 	// array.
-	core::DynamicArray<glm::ivec3> indicesBuf((size_t)(w * h));
-	core::DynamicArray<glm::ivec3> previousIndicesBuf((size_t)(w * h));
+	core::Buffer<glm::ivec3> indicesBuf((size_t)(w * h));
+	core::Buffer<glm::ivec3> previousIndicesBuf((size_t)(w * h));
 
 	// A sampler pointing at the beginning of the region, which gets incremented to always point at the beginning of a
 	// slice.

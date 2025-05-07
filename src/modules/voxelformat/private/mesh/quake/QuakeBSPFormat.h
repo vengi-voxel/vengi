@@ -115,9 +115,9 @@ private:
 		MeshMaterialPtr material;
 	};
 
-	bool voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
-				  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-				  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
+	bool voxelize(const core::DynamicArray<Texture> &textures, const core::Buffer<Face> &faces,
+				  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
+				  const core::Buffer<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
 				  palette::PaletteLookup &palLookup, const core::String &name);
 
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
@@ -126,12 +126,12 @@ private:
 					   const BspHeader &header);
 	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<Texture> &textures, MeshMaterialMap &meshMaterials);
-	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<Face> &faces,
+	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Face> &faces,
 						 const core::DynamicArray<Texture> &textures);
-	bool loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<BspEdge> &edges,
-						 core::DynamicArray<int32_t> &surfEdges);
+	bool loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<BspEdge> &edges,
+						 core::Buffer<int32_t> &surfEdges);
 	bool loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
-							core::DynamicArray<BspVertex> &vertices);
+							core::Buffer<BspVertex> &vertices);
 
 	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
 								 scenegraph::SceneGraph &sceneGraph, const BspHeader &header);
@@ -139,16 +139,16 @@ private:
 									  const BspHeader &header, core::DynamicArray<Texture> &textures,
 									  MeshMaterialMap &meshMaterials);
 	bool loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, const BspHeader &header,
-								   core::DynamicArray<Face> &faces);
+								   core::Buffer<Face> &faces);
 	bool loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, const BspHeader &header,
-								   core::DynamicArray<BspEdge> &edges, core::DynamicArray<int32_t> &surfEdges);
+								   core::Buffer<BspEdge> &edges, core::Buffer<int32_t> &surfEdges);
 	bool loadUFOAlienInvasionVertices(io::SeekableReadStream &stream, const BspHeader &header,
-									  core::DynamicArray<BspVertex> &vertices);
+									  core::Buffer<BspVertex> &vertices);
 	bool loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &stream, const BspHeader &header,
-										   core::DynamicArray<Face> &faces, core::DynamicArray<Face> &facesLevel,
-										   const core::DynamicArray<Model> &models, int level);
+										   core::Buffer<Face> &faces, core::Buffer<Face> &facesLevel,
+										   const core::Buffer<Model> &models, int level);
 	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
-									core::DynamicArray<Model> &models);
+									core::Buffer<Model> &models);
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;

@@ -240,7 +240,7 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 			const core::String &layerFilename = core::String::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
 			image::Image image(layerFilename);
-			core::DynamicArray<core::RGBA> rgba;
+			core::Buffer<core::RGBA> rgba;
 			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());
 			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
 				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {

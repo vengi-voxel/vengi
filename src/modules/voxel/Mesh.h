@@ -5,13 +5,13 @@
 #pragma once
 
 #include "VoxelVertex.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 
 namespace voxel {
 
-using VertexArray = core::DynamicArray<voxel::VoxelVertex, 1024>;
-using IndexArray = core::DynamicArray<voxel::IndexType, 1024>;
-using NormalArray = core::DynamicArray<glm::vec3, 1024>;
+using VertexArray = core::Buffer<voxel::VoxelVertex, 1024>;
+using IndexArray = core::Buffer<voxel::IndexType, 1024>;
+using NormalArray = core::Buffer<glm::vec3, 1024>;
 
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.

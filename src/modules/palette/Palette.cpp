@@ -1113,7 +1113,7 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 	setMaterialValue(paletteColorIdx, MaterialLowDynamicRange, factor);
 }
 
-void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
+void Palette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
 		vec4f.push_back(core::Color::fromRGBA(_colors[i]));
@@ -1145,7 +1145,7 @@ void Palette::emitToVec4f(const glm::highp_vec4 *materialColors, glm::highp_vec4
 	}
 }
 
-void Palette::emitToVec4f(const core::DynamicArray<glm::vec4> &materialColors, core::DynamicArray<glm::vec4> &vec4f) const {
+void Palette::emitToVec4f(const core::Buffer<glm::vec4> &materialColors, core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
 		const glm::vec4 &c = materialColors[i];
@@ -1157,7 +1157,7 @@ void Palette::emitToVec4f(const core::DynamicArray<glm::vec4> &materialColors, c
 	}
 }
 
-void Palette::emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
+void Palette::emitToVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
 		const glm::vec4 c(core::Color::fromRGBA(_colors[i]));

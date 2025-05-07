@@ -17,6 +17,7 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "video/Renderer.h"
@@ -1150,7 +1151,7 @@ const glm::vec4 &framebufferUV() {
 bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	video_trace_scoped(SetupFramebuffer);
-	core::DynamicArray<GLenum> attachments;
+	core::Buffer<GLenum> attachments;
 	attachments.reserve(core::enumVal(FrameBufferAttachment::Max));
 
 	for (int i = 0; i < core::enumVal(FrameBufferAttachment::Max); ++i) {

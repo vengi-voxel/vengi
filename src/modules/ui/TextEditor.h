@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "core/collection/Buffer.h"
 #include "dearimgui/imgui.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -135,7 +136,7 @@ public:
 		}
 	};
 
-	typedef core::DynamicArray<Glyph> Line;
+	typedef core::Buffer<Glyph> Line;
 	typedef core::DynamicArray<Line> Lines;
 
 	struct LanguageDefinition {

@@ -277,7 +277,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 }
 
 bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
-						core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
+						core::Buffer<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
 						const io::ArchivePtr &archive) {
 	if (nodes.empty()) {
 		return false;
@@ -337,9 +337,9 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 
 bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
-	core::DynamicArray<const scenegraph::SceneGraphNode *> body;
-	core::DynamicArray<const scenegraph::SceneGraphNode *> barrel;
-	core::DynamicArray<const scenegraph::SceneGraphNode *> turret;
+	core::Buffer<const scenegraph::SceneGraphNode *> body;
+	core::Buffer<const scenegraph::SceneGraphNode *> barrel;
+	core::Buffer<const scenegraph::SceneGraphNode *> turret;
 
 	const size_t numNodes = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	body.reserve(numNodes);

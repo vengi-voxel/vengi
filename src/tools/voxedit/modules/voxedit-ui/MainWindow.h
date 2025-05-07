@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteCache.h"
 #include "ui/IMGUIEx.h"
@@ -58,7 +58,7 @@ private:
 	core::VarPtr _popupAbout;
 	core::VarPtr _popupRenameNode;
 
-	core::DynamicArray<Viewport*> _viewports;
+	core::Buffer<Viewport*> _viewports;
 	Viewport* _lastHoveredViewport = nullptr;
 
 	bool _popupUnsaved = false;

@@ -554,7 +554,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderTransparency);
 	const video::PolygonMode mode = camera.polygonMode();
-	core::DynamicArray<int> sorted;
+	core::Buffer<int> sorted;
 	{
 		core_trace_scoped(Sort);
 		sorted.reserve(voxel::MAX_VOLUMES);

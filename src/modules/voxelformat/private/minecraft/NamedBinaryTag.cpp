@@ -68,21 +68,21 @@ NamedBinaryTag::NamedBinaryTag(const core::String &val) : _tagType(TagType::STRI
 	_tagData._string = new core::String(val);
 }
 
-NamedBinaryTag::NamedBinaryTag(core::DynamicArray<int8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
-	_tagData._byteArray = new core::DynamicArray<int8_t>(core::move(val));
+NamedBinaryTag::NamedBinaryTag(core::Buffer<int8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
+	_tagData._byteArray = new core::Buffer<int8_t>(core::move(val));
 }
 
-NamedBinaryTag::NamedBinaryTag(core::DynamicArray<uint8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
-	_tagData._byteArray = new core::DynamicArray<int8_t>();
+NamedBinaryTag::NamedBinaryTag(core::Buffer<uint8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
+	_tagData._byteArray = new core::Buffer<int8_t>();
 	_tagData._byteArray->append(val);
 }
 
-NamedBinaryTag::NamedBinaryTag(core::DynamicArray<int32_t> &&val) : _tagType(TagType::INT_ARRAY) {
-	_tagData._intArray = new core::DynamicArray<int32_t>(core::move(val));
+NamedBinaryTag::NamedBinaryTag(core::Buffer<int32_t> &&val) : _tagType(TagType::INT_ARRAY) {
+	_tagData._intArray = new core::Buffer<int32_t>(core::move(val));
 }
 
-NamedBinaryTag::NamedBinaryTag(core::DynamicArray<int64_t> &&val) : _tagType(TagType::LONG_ARRAY) {
-	_tagData._longArray = new core::DynamicArray<int64_t>(core::move(val));
+NamedBinaryTag::NamedBinaryTag(core::Buffer<int64_t> &&val) : _tagType(TagType::LONG_ARRAY) {
+	_tagData._longArray = new core::Buffer<int64_t>(core::move(val));
 }
 
 NamedBinaryTag::NamedBinaryTag(NBTList &&val) : _tagType(TagType::LIST) {
@@ -105,13 +105,13 @@ void TagData::copy(TagType type, const TagData &data) {
 		_compound = new NBTCompound(*data._compound);
 		break;
 	case TagType::BYTE_ARRAY:
-		_byteArray = new core::DynamicArray<int8_t>(*data._byteArray);
+		_byteArray = new core::Buffer<int8_t>(*data._byteArray);
 		break;
 	case TagType::INT_ARRAY:
-		_intArray = new core::DynamicArray<int32_t>(*data._intArray);
+		_intArray = new core::Buffer<int32_t>(*data._intArray);
 		break;
 	case TagType::LONG_ARRAY:
-		_longArray = new core::DynamicArray<int64_t>(*data._longArray);
+		_longArray = new core::Buffer<int64_t>(*data._longArray);
 		break;
 	case TagType::LIST:
 		_list = new NBTList(*data._list);
@@ -453,7 +453,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		if (ctx.readUInt32(length) != 0) {
 			return NamedBinaryTag{};
 		}
-		core::DynamicArray<int8_t> array;
+		core::Buffer<int8_t> array;
 		array.reserve(length);
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {
@@ -474,7 +474,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 			Log::debug("Failed to read int array length");
 			return NamedBinaryTag{};
 		}
-		core::DynamicArray<int32_t> array;
+		core::Buffer<int32_t> array;
 		array.reserve(length);
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {
@@ -492,7 +492,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 			Log::debug("Failed to read long array length");
 			return NamedBinaryTag{};
 		}
-		core::DynamicArray<int64_t> array;
+		core::Buffer<int64_t> array;
 		array.reserve(length);
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {

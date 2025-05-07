@@ -9,7 +9,7 @@
 #include <glm/fwd.hpp>
 #include <glm/common.hpp>
 #include "core/String.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -115,9 +115,9 @@ public:
 	/** Sets the position of the upper corner. */
 	void setUpperCorner(const glm::ivec3& maxs);
 
-	static core::DynamicArray<voxel::Region> subtract(const voxel::Region& a, const core::DynamicArray<voxel::Region>& b);
-	static core::DynamicArray<voxel::Region> subtract(const voxel::Region& a, const voxel::Region& b) {
-		core::DynamicArray<voxel::Region> result;
+	static core::Buffer<voxel::Region> subtract(const voxel::Region& a, const core::Buffer<voxel::Region>& b);
+	static core::Buffer<voxel::Region> subtract(const voxel::Region& a, const voxel::Region& b) {
+		core::Buffer<voxel::Region> result;
 		result.push_back(b);
 		return subtract(a, result);
 	}

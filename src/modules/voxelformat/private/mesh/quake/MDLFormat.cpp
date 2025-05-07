@@ -114,7 +114,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::debug("skin group %i", (int)group);
 		if (group == 1) {
 			wrap(stream->readInt32(numberOfTextures))
-			core::DynamicArray<float> times; // ignored for now
+			core::Buffer<float> times; // ignored for now
 			times.reserve(numberOfTextures);
 			for (int32_t j = 0; j < numberOfTextures; ++j) {
 				float time;
@@ -144,7 +144,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	/* To get uv coordinates (ranging from 0.0 to 1.0), you have to add 0.5 to the uv coordinates and then
 	 * divide the result by hdr.skinwidth for u and hdr.skinheight for v */
-	core::DynamicArray<glm::vec2> texCoords;
+	core::Buffer<glm::vec2> texCoords;
 	const uint32_t maxTexCoords = idPolyModel ? hdr.numVerts : hdr.numTexCoords;
 	for (uint32_t i = 0; i < maxTexCoords; ++i) {
 		uint32_t onseam;
@@ -172,7 +172,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	};
 
 	// tris
-	core::DynamicArray<MDLTriangle> tris;
+	core::Buffer<MDLTriangle> tris;
 	tris.reserve(hdr.numTris);
 	if (idPolyModel) {
 		for (uint32_t i = 0; i < hdr.numTris; ++i) {
@@ -207,13 +207,13 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		glm::u8vec4 bboxmin; // vertex[0-3], normalindex
 		glm::u8vec4 bboxmax; // vertex[0-3], normalindex
 		core::String name;	 // 16 chars
-		core::DynamicArray<glm::vec3> vertices;
+		core::Buffer<glm::vec3> vertices;
 	};
 
 	struct MDLPose {
 		glm::u8vec4 bboxmin;
 		glm::u8vec4 bboxmax;
-		core::DynamicArray<float> times; // for group frames
+		core::Buffer<float> times; // for group frames
 		core::DynamicArray<MDLFrame> frames;
 	};
 

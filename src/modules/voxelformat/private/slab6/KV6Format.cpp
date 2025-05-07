@@ -310,7 +310,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	}
 
 	// TODO: VOXELFORMAT: the order here matters for the references in the kfa structs
-	core::DynamicArray<voxel::RawVolume *> volumes = voxelutil::splitObjects(volume, voxelutil::VisitorOrder::XYZ);
+	core::Buffer<voxel::RawVolume *> volumes = voxelutil::splitObjects(volume, voxelutil::VisitorOrder::XYZ);
 	if (volumes.empty()) {
 		Log::error("Could not split volume into single objects");
 		return false;
@@ -545,7 +545,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	uint16_t xyoffsets[256][256]{}; // our z
 
 	constexpr uint32_t MAXVOXS = 1048576;
-	core::DynamicArray<priv::VoxtypeKV6> voxdata;
+	core::Buffer<priv::VoxtypeKV6> voxdata;
 	voxdata.reserve(MAXVOXS);
 
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(

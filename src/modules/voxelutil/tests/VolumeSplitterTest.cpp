@@ -47,7 +47,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	EXPECT_EQ(expectedVoxelCount, foundVoxels);
 
 	// perform split
-	core::DynamicArray<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, glm::ivec3(16));
+	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, glm::ivec3(16));
 	EXPECT_EQ(8u, rawVolumes.size());
 
 	// merge volumes
@@ -84,7 +84,7 @@ TEST_F(VolumeSplitterTest, testSplitObjects) {
 	volume.setVoxel(0, 0, 1, voxel);
 	volume.setVoxel(0, 1, 1, voxel);
 
-	core::DynamicArray<voxel::RawVolume *> rawVolumes = voxelutil::splitObjects(&volume);
+	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitObjects(&volume);
 	EXPECT_EQ(5u, rawVolumes.size());
 	for (voxel::RawVolume *v : rawVolumes) {
 		delete v;

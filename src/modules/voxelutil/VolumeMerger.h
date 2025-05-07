@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "voxel/RawVolume.h"
 #include "palette/Palette.h"
 #include "core/Trace.h"
@@ -118,7 +118,7 @@ inline int mergeRawVolumesSameDimension(voxel::RawVolume* destination, const vox
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
-[[nodiscard]] voxel::RawVolume* merge(const core::DynamicArray<voxel::RawVolume*>& volumes);
-[[nodiscard]] voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volumes);
+[[nodiscard]] voxel::RawVolume* merge(const core::Buffer<voxel::RawVolume*>& volumes);
+[[nodiscard]] voxel::RawVolume* merge(const core::Buffer<const voxel::RawVolume*>& volumes);
 
 }

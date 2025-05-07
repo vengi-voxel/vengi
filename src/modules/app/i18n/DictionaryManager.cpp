@@ -126,7 +126,7 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 	return *dict;
 }
 
-core::DynamicArray<Language> DictionaryManager::getLanguages() {
+core::Buffer<Language> DictionaryManager::getLanguages() {
 	if (!_languages.empty()) {
 		return _languages;
 	}

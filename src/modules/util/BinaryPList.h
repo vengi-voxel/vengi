@@ -7,6 +7,7 @@
 
 #include "core/Enum.h"
 #include "core/String.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "io/Stream.h"
@@ -63,7 +64,7 @@ class BinaryPList;
 
 using PListDict = core::StringMap<BinaryPList>;
 using PListArray = core::DynamicArray<BinaryPList>;
-using PListByteArray = core::DynamicArray<uint8_t>;
+using PListByteArray = core::Buffer<uint8_t>;
 
 union PListData {
 	PListDict *_dict;

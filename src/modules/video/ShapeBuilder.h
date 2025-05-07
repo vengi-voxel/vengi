@@ -10,7 +10,7 @@
 #include "math/OBB.h"
 #include "math/Plane.h"
 #include "video/Types.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include <glm/mat3x3.hpp>
 #include <stdint.h>
 
@@ -37,10 +37,10 @@ CORE_ENUM_BIT_OPERATIONS(ShapeBuilderCube);
  */
 class ShapeBuilder {
 public:
-	typedef core::DynamicArray<uint32_t, 256> Indices;
-	typedef core::DynamicArray<glm::vec3, 256> Vertices;
-	typedef core::DynamicArray<glm::vec2, 256> Texcoords;
-	typedef core::DynamicArray<glm::vec4, 256> Colors;
+	typedef core::Buffer<uint32_t, 256> Indices;
+	typedef core::Buffer<glm::vec3, 256> Vertices;
+	typedef core::Buffer<glm::vec2, 256> Texcoords;
+	typedef core::Buffer<glm::vec4, 256> Colors;
 private:
 	alignas(32) Indices _indices;
 	alignas(32) Texcoords _texcoords;
@@ -150,7 +150,7 @@ public:
 	void plane(uint32_t tesselation = 10);
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive = Primitive::Triangles);
-	void geom(const core::DynamicArray<glm::vec3>& vert, const core::DynamicArray<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
+	void geom(const core::Buffer<glm::vec3>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
 	void pyramid(const glm::vec3& size = glm::vec3(1.0f));
 	/**
@@ -185,7 +185,7 @@ public:
 	 */
 	const Vertices& getVertices() const;
 	const Vertices& getNormals() const;
-	void convertVertices(core::DynamicArray<glm::vec4>& out) const;
+	void convertVertices(core::Buffer<glm::vec4>& out) const;
 
 	template<class FUNC>
 	size_t iterate(FUNC&& func) const {
@@ -235,7 +235,7 @@ inline const ShapeBuilder::Vertices& ShapeBuilder::getNormals() const {
 	return _normals;
 }
 
-inline void ShapeBuilder::convertVertices(core::DynamicArray<glm::vec4>& out) const {
+inline void ShapeBuilder::convertVertices(core::Buffer<glm::vec4>& out) const {
 	const ShapeBuilder::Vertices& vertices = getVertices();
 	out.reserve(vertices.size());
 	for (const ShapeBuilder::Vertices::value_type& v : vertices) {

@@ -10,7 +10,6 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/PaletteLookup.h"
@@ -65,11 +64,11 @@ static core::String extractBaseDir(const core::String &filename) {
 bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream,
 										const BspHeader &header, core::DynamicArray<Texture> &textures,
 										MeshMaterialMap &meshMaterials) {
-	core::DynamicArray<Quake1Texinfo> miptex;
+	core::Buffer<Quake1Texinfo> miptex;
 
 	struct TextureLump {
 		int32_t nummiptex;
-		core::DynamicArray<int32_t> dataofs;
+		core::Buffer<int32_t> dataofs;
 	};
 
 	TextureLump m;
@@ -163,7 +162,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			continue;
 		}
 
-		core::DynamicArray<core::RGBA> buffer;
+		core::Buffer<core::RGBA> buffer;
 		buffer.resize(pixelSize);
 		for (int j = 0; j < pixelSize; ++j) {
 			buffer[j] = pal.color(pixels[j]);
@@ -234,7 +233,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 }
 
 bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header,
-									 core::DynamicArray<Face> &faces, const core::DynamicArray<Texture> &textures) {
+									 core::Buffer<Face> &faces, const core::DynamicArray<Texture> &textures) {
 	const int32_t faceCount = validateLump(header.lumps[_priv::quake1FacesLump], sizeof(BspFace));
 	if (faceCount <= 0) {
 		Log::error("Invalid bsp file with no faces in lump");
@@ -279,7 +278,7 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, const BspHeader &header,
-											   core::DynamicArray<Face> &faces) {
+											   core::Buffer<Face> &faces) {
 	const int32_t faceCount = validateLump(header.lumps[_priv::ufoaiFacesLump], sizeof(BspFace));
 	if (faceCount <= 0) {
 		Log::error("Invalid bsp file with no faces in lump");
@@ -307,9 +306,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, c
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &stream, const BspHeader &header,
-													   core::DynamicArray<Face> &faces,
-													   core::DynamicArray<Face> &facesLevel,
-													   const core::DynamicArray<Model> &models, int level) {
+													   core::Buffer<Face> &faces,
+													   core::Buffer<Face> &facesLevel,
+													   const core::Buffer<Model> &models, int level) {
 	const uint32_t size = models.size();
 	if (size < 255) {
 		return false;
@@ -338,8 +337,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &s
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, const BspHeader &header,
-											   core::DynamicArray<BspEdge> &edges,
-											   core::DynamicArray<int32_t> &surfEdges) {
+											   core::Buffer<BspEdge> &edges,
+											   core::Buffer<int32_t> &surfEdges) {
 	const int32_t edgeCount = validateLump(header.lumps[_priv::ufoaiEdgesLump], sizeof(BspEdge));
 	if (edgeCount <= 0) {
 		Log::error("Invalid bsp file with no edges in lump");
@@ -375,7 +374,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, c
 }
 
 bool QuakeBSPFormat::loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header,
-									 core::DynamicArray<BspEdge> &edges, core::DynamicArray<int32_t> &surfEdges) {
+									 core::Buffer<BspEdge> &edges, core::Buffer<int32_t> &surfEdges) {
 	const int32_t edgeCount = validateLump(header.lumps[_priv::quake1EdgesLump], sizeof(BspEdge));
 	if (edgeCount <= 0) {
 		Log::error("Invalid bsp file with no edges in lump");
@@ -411,7 +410,7 @@ bool QuakeBSPFormat::loadQuake1Edges(io::SeekableReadStream &stream, const BspHe
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionVertices(io::SeekableReadStream &stream, const BspHeader &header,
-												  core::DynamicArray<BspVertex> &vertices) {
+												  core::Buffer<BspVertex> &vertices) {
 	const int32_t vertexCount = validateLump(header.lumps[_priv::ufoaiVerticesLump], sizeof(BspVertex));
 	if (vertexCount <= 0) {
 		return false;
@@ -430,7 +429,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionVertices(io::SeekableReadStream &stream
 }
 
 bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
-										core::DynamicArray<BspVertex> &vertices) {
+										core::Buffer<BspVertex> &vertices) {
 	const int32_t vertexCount = validateLump(header.lumps[_priv::quake1VerticesLump], sizeof(BspVertex));
 	if (vertexCount <= 0) {
 		return false;
@@ -457,20 +456,20 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	core::DynamicArray<Face> faces;
+	core::Buffer<Face> faces;
 	if (!loadQuake1Faces(stream, header, faces, textures)) {
 		Log::error("Failed to load faces");
 		return false;
 	}
 
-	core::DynamicArray<BspEdge> edges;
-	core::DynamicArray<int32_t> surfEdges;
+	core::Buffer<BspEdge> edges;
+	core::Buffer<int32_t> surfEdges;
 	if (!loadQuake1Edges(stream, header, edges, surfEdges)) {
 		Log::error("Failed to load edges");
 		return false;
 	}
 
-	core::DynamicArray<BspVertex> vertices;
+	core::Buffer<BspVertex> vertices;
 	if (!loadQuake1Vertices(stream, header, vertices)) {
 		Log::error("Failed to load vertices");
 		return false;
@@ -488,7 +487,7 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
-												core::DynamicArray<Model> &models) {
+												core::Buffer<Model> &models) {
 	const int32_t modelCount = validateLump(header.lumps[_priv::ufoaiModelsLump], sizeof(BspModel));
 	if (modelCount <= 0) {
 		Log::error("Invalid bsp file with no models in lump");
@@ -551,29 +550,29 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	}
 
 	Log::debug("Load faces");
-	core::DynamicArray<Face> faces;
+	core::Buffer<Face> faces;
 	if (!loadUFOAlienInvasionFaces(stream, header, faces)) {
 		Log::error("Failed to load faces");
 		return false;
 	}
 
 	Log::debug("Load edges");
-	core::DynamicArray<BspEdge> edges;
-	core::DynamicArray<int32_t> surfEdges;
+	core::Buffer<BspEdge> edges;
+	core::Buffer<int32_t> surfEdges;
 	if (!loadUFOAlienInvasionEdges(stream, header, edges, surfEdges)) {
 		Log::error("Failed to load edges");
 		return false;
 	}
 
 	Log::debug("Load vertices");
-	core::DynamicArray<BspVertex> vertices;
+	core::Buffer<BspVertex> vertices;
 	if (!loadUFOAlienInvasionVertices(stream, header, vertices)) {
 		Log::error("Failed to load vertices");
 		return false;
 	}
 
 	Log::debug("Load models");
-	core::DynamicArray<Model> models;
+	core::Buffer<Model> models;
 	if (!loadUFOAlienInvasionModels(stream, header, models)) {
 		Log::error("Failed to load models");
 		return false;
@@ -590,7 +589,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	// make one palette for all 8 levels
 	palette::PaletteLookup palLookup;
 
-	core::DynamicArray<Face> facesLevel;
+	core::Buffer<Face> facesLevel;
 	for (int i = 0; i < maxLevel; ++i) {
 		Log::debug("Load level %i/%i", i, maxLevel);
 		facesLevel.clear();
@@ -608,9 +607,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	return state;
 }
 
-bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
-							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-							  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
+bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::Buffer<Face> &faces,
+							  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
+							  const core::Buffer<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
 							  palette::PaletteLookup &palLookup, const core::String &name) {
 	int vertexCount = 0;
 	int indexCount = 0;
@@ -623,10 +622,10 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 
 	Log::debug("Prepare voxeliziation bsp with %i vertices", vertexCount);
 
-	core::DynamicArray<glm::vec2> texcoords(vertexCount);
-	core::DynamicArray<glm::vec3> verts(vertexCount);
-	core::DynamicArray<int32_t> textureIndices(vertexCount);
-	core::DynamicArray<int32_t> indices(indexCount);
+	core::Buffer<glm::vec2> texcoords(vertexCount);
+	core::Buffer<glm::vec3> verts(vertexCount);
+	core::Buffer<int32_t> textureIndices(vertexCount);
+	core::Buffer<int32_t> indices(indexCount);
 
 	int offset = 0;
 	for (Face &face : faces) {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
+#include "core/collection/Buffer.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -22,11 +22,11 @@ protected:
 		bool isModified;
 		bool isLeftHandClosed;
 		bool isRightHandClosed;
-		core::DynamicArray<glm::vec3> meshPositions;
-		core::DynamicArray<glm::quat> meshRotations;
-		core::DynamicArray<glm::vec3> ikPositions;
-		core::DynamicArray<glm::quat> ikRotations;
-		core::DynamicArray<bool> ikModified;
+		core::Buffer<glm::vec3> meshPositions;
+		core::Buffer<glm::quat> meshRotations;
+		core::Buffer<glm::vec3> ikPositions;
+		core::Buffer<glm::quat> ikRotations;
+		core::Buffer<bool> ikModified;
 	};
 
 	enum AnimaToonVoxelState : uint8_t { inactive, active, hidden };
@@ -41,7 +41,7 @@ protected:
 		int xSize = 40;
 		int ySize = 40;
 		int zSize = 40;
-		core::DynamicArray<AnimaToonVoxel> voxels;
+		core::Buffer<AnimaToonVoxel> voxels;
 	};
 
 	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,

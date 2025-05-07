@@ -72,7 +72,7 @@ public:
 		int indices[3]{0, 0, 0};
 	};
 	struct PLYPolygon {
-		core::DynamicArray<int> indices;
+		core::Buffer<int> indices;
 	};
 
 protected:
@@ -81,31 +81,31 @@ protected:
 	static DataType dataType(const core::String &in);
 	static PropertyUse use(const core::String &in);
 	static bool parseHeader(io::SeekableReadStream &stream, Header &header);
-	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<PLYFace> &faces,
+	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::Buffer<PLYFace> &faces,
 						 core::DynamicArray<PLYPolygon> &polygons) const;
 	bool parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
-							core::DynamicArray<PLYVertex> &vertices) const;
+							core::Buffer<PLYVertex> &vertices) const;
 	void triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-							 const core::DynamicArray<PLYVertex> &vertices, core::DynamicArray<PLYFace> &faces) const;
-	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<PLYFace> &faces,
+							 const core::Buffer<PLYVertex> &vertices, core::Buffer<PLYFace> &faces) const;
+	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, core::Buffer<PLYFace> &faces,
 						  core::DynamicArray<PLYPolygon> &polygons, const Header &header) const;
 	bool parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
-							 core::DynamicArray<PLYVertex> &vertices, const Header &header) const;
+							 core::Buffer<PLYVertex> &vertices, const Header &header) const;
 
 	bool parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const Header &header,
-							   core::DynamicArray<PLYVertex> &vertices) const;
+							   core::Buffer<PLYVertex> &vertices) const;
 	bool parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, const Header &header,
-							  core::DynamicArray<PLYVertex> &vertices) const;
+							  core::Buffer<PLYVertex> &vertices) const;
 	bool parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header) const;
 
 	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						 MeshTriCollection &tris) const;
-	void convertToTris(MeshTriCollection &tris, core::DynamicArray<PLYVertex> &vertices,
-					   core::DynamicArray<PLYFace> &faces) const;
+	void convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &vertices,
+					   core::Buffer<PLYFace> &faces) const;
 	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						MeshTriCollection &tris) const;

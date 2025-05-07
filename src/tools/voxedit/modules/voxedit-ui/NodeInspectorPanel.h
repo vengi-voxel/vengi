@@ -6,6 +6,7 @@
 
 #include "command/CommandHandler.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
 
@@ -19,7 +20,7 @@ private:
 	using Super = ui ::Panel;
 	core::VarPtr _localSpace;
 	core::VarPtr _regionSizes;
-	core::DynamicArray<glm::ivec3> _validRegionSizes;
+	core::Buffer<glm::ivec3> _validRegionSizes;
 	glm::ivec3 _newRegionSize{32, 32, 32};
 	SceneManagerPtr _sceneMgr;
 	core::String _propertyKey;
@@ -27,7 +28,7 @@ private:
 
 	void modelRegions(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node);
 	void updateModelRegionSizes();
-	void saveRegionSizes(const core::DynamicArray<glm::ivec3> &regionSizes);
+	void saveRegionSizes(const core::Buffer<glm::ivec3> &regionSizes);
 	void modelProperties(scenegraph::SceneGraphNode &node);
 	void modelView(command::CommandExecutionListener &listener);
 	void modelViewMenuBar(scenegraph::SceneGraphNode &node);

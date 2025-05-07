@@ -23,6 +23,7 @@
 
 #include "Language.h"
 #include "core/String.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 
@@ -362,7 +363,7 @@ core::String resolve_language_alias(const core::String &name) {
 } // namespace
 
 Language Language::fromSpec(const core::String &language, const core::String &country, const core::String &modifier) {
-	typedef core::StringMap<core::DynamicArray<const LanguageSpec *>> LanguageSpecMap;
+	typedef core::StringMap<core::Buffer<const LanguageSpec *>> LanguageSpecMap;
 	static LanguageSpecMap language_map;
 
 	if (language_map.empty()) { // Init language_map
@@ -379,7 +380,7 @@ Language Language::fromSpec(const core::String &language, const core::String &co
 
 	LanguageSpecMap::iterator i = language_map.find(language);
 	if (i != language_map.end()) {
-		core::DynamicArray<const LanguageSpec *> &lst = i->value;
+		core::Buffer<const LanguageSpec *> &lst = i->value;
 
 		LanguageSpec tmpspec;
 		tmpspec.language = language.c_str();

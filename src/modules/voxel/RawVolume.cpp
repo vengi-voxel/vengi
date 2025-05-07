@@ -3,6 +3,7 @@
  */
 
 #include "RawVolume.h"
+#include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include <glm/common.hpp>
@@ -39,7 +40,7 @@ RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	core_memcpy((void*)_data, (void*)copy._data, size);
 }
 
-static inline voxel::Region accumulate(const core::DynamicArray<Region> &regions) {
+static inline voxel::Region accumulate(const core::Buffer<Region> &regions) {
 	voxel::Region r = voxel::Region::InvalidRegion;
 	for (const Region &region : regions) {
 		if (r.isValid()) {
@@ -51,7 +52,7 @@ static inline voxel::Region accumulate(const core::DynamicArray<Region> &regions
 	return r;
 }
 
-RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &copyRegions)
+RawVolume::RawVolume(const RawVolume &src, const core::Buffer<Region> &copyRegions)
 	: _region(accumulate(copyRegions)) {
 	_region.cropTo(src.region());
 	setBorderValue(src.borderValue());
