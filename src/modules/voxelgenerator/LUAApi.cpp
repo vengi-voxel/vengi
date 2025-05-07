@@ -1214,9 +1214,6 @@ static int luaVoxel_scenegraph_get_node_by_id(lua_State* s) {
 		return clua_error(s, "Could not find node for id %d", nodeId);
 	}
 	scenegraph::SceneGraphNode& node = sceneGraph->node(nodeId);
-	if (!node.isAnyModelNode()) {
-		return clua_error(s, "Invalid node for id %d", nodeId);
-	}
 	return luaVoxel_pushscenegraphnode(s, node);
 }
 
