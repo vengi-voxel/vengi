@@ -1644,6 +1644,32 @@ static int luaVoxel_scenegraphnode_islocked(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraphnode_setproperty(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const char *key = luaL_checkstring(s, 2);
+	if (key == nullptr) {
+		return clua_error(s, "Key is nil");
+	}
+	const char *value = luaL_checkstring(s, 3);
+	if (value == nullptr) {
+		return clua_error(s, "Value is nil");
+	}
+	const bool ret = node->node->setProperty(key, value);
+	lua_pushboolean(s, ret ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_property(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const char *key = luaL_checkstring(s, 2);
+	if (key == nullptr) {
+		return clua_error(s, "Key is nil");
+	}
+	const core::String &value = node->node->property(key);
+	lua_pushstring(s, value.c_str());
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushfstring(s, "node: [%d, %s]", node->node->id(), node->node->name().c_str());
@@ -1762,6 +1788,8 @@ static void prepareState(lua_State* s) {
 		{"unlock", luaVoxel_scenegraphnode_unlock},
 		{"isVisible", luaVoxel_scenegraphnode_isvisible},
 		{"isLocked", luaVoxel_scenegraphnode_islocked},
+		{"setProperty", luaVoxel_scenegraphnode_setproperty},
+		{"property", luaVoxel_scenegraphnode_property},
 		{"keyFrame", luaVoxel_scenegraphnode_keyframe},
 		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe},
 		{"addKeyFrame", luaVoxel_scenegraphnode_addframe},

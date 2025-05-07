@@ -191,6 +191,10 @@ end
 
 * `unhide()`:
 
+* `property(key)`: Get the property for the given key.
+
+* `setProperty(key, value)`: If the property was changed or added, this returns `true` - `false` otherwise
+
 * `keyFrame(keyFrameIdx)`: Returns an existing keyframe (see below)
 
 * `keyFrameForFrame(frame)`: Returns an existing keyframe that has a frame number <= the given frame
