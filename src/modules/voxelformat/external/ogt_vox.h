@@ -419,6 +419,8 @@
         uint32_t                num_instances;  // number of instances in the scene (on anim frame 0)
         uint32_t                num_layers;     // number of layers in the scene
         uint32_t                num_groups;     // number of groups in the scene
+        uint32_t                num_color_names;// number of color names in the scene
+        const char**            color_names;    // array of color names. size is num_color_names
         const ogt_vox_model**   models;         // array of models. size is num_models
         const ogt_vox_instance* instances;      // array of instances. size is num_instances
         const ogt_vox_layer*    layers;         // array of layers. size is num_layers
@@ -520,6 +522,7 @@
     static const uint32_t CHUNK_ID_MATT = MAKE_VOX_CHUNK_ID('M','A','T','T');
     static const uint32_t CHUNK_ID_rOBJ = MAKE_VOX_CHUNK_ID('r','O','B','J');
     static const uint32_t CHUNK_ID_rCAM = MAKE_VOX_CHUNK_ID('r','C','A','M');
+    static const uint32_t CHUNK_ID_NOTE = MAKE_VOX_CHUNK_ID('N','O','T','E');
 
     static const uint32_t NAME_MAX_LEN     = 256;       // max name len = 255 plus 1 for null terminator
     static const uint32_t CHUNK_HEADER_LEN = 12;        // 4 bytes for each of: chunk_id, chunk_size, chunk_child_size
@@ -650,6 +653,23 @@
             *data = bs.f;
         }
         return ret;
+    }
+
+    static char *_vox_file_read_string(_vox_file* fp, char *buf, uint32_t buf_size) {
+        uint32_t str_len = 0;
+        _vox_file_read_uint32(fp, &str_len);
+        if (str_len == 0) {
+            return NULL;
+        }
+        ogt_assert(str_len <= _vox_file_bytes_remaining(fp), "string length exceeds bytes remaining in file");
+        if (str_len > _vox_file_bytes_remaining(fp)) {
+            return NULL;
+        }
+        uint32_t bytes_to_read = _vox_min(str_len, buf_size - 1);
+        memcpy(buf, &fp->buffer[fp->offset], bytes_to_read);
+        buf[bytes_to_read + 1] = 0; // ensure null terminated
+        fp->offset += str_len;
+        return buf;
     }
 
     static void _vox_file_seek_forwards(_vox_file* fp, uint32_t offset) {
@@ -1381,6 +1401,7 @@
         _vox_array<_vox_scene_node_> nodes;
         _vox_array<ogt_vox_instance> instances;
         _vox_array<ogt_vox_cam>      cameras;
+        _vox_array<char *>           color_names;
         _vox_suballoc_array           misc_data;
         _vox_array<ogt_vox_layer>    layers;
         _vox_array<ogt_vox_group>    groups;
@@ -1837,6 +1858,20 @@
                     _vox_file_seek_forwards(fp, remaining);
                     break;
                 }
+                case CHUNK_ID_NOTE:
+                {
+                    uint32_t num_names;
+                    _vox_file_read_uint32(fp, &num_names);
+                    for (uint32_t i = 0; i < num_names; i++) {
+                        char color_name[NAME_MAX_LEN] = "";
+                        const char* color_name_string = _vox_file_read_string(fp, color_name, sizeof(color_name));
+                        if (color_name_string != NULL)
+                            color_names.push_back((char*)misc_data.push_string(color_name_string));
+                        else
+                            color_names.push_back((char*)misc_data.push_string(""));
+                    }
+                    break;
+                }
                 case CHUNK_ID_rCAM:
                 {
                     ogt_vox_cam camera;
@@ -2181,6 +2216,16 @@
             scene->cameras = scene_cameras;
             scene->num_cameras = (uint32_t)cameras.size();
 
+            scene->num_color_names = (uint32_t)color_names.size();
+            scene->color_names = (const char **)_vox_malloc(sizeof(char*) * scene->num_color_names);
+            // now patch up color name pointers to point into the scene string area
+            for (uint32_t i = 0; i < scene->num_color_names; i++) {
+                if (color_names[i])
+                    scene->color_names[i] = scene_misc_data + (size_t)color_names[i];
+                else
+                    scene->color_names[i] = NULL;
+            }
+
             // copy model pointers over to the scene,
             size_t num_scene_models = model_ptrs.size();
             ogt_vox_model** scene_models = (ogt_vox_model * *)_vox_malloc(sizeof(ogt_vox_model*) * num_scene_models);
@@ -2264,6 +2309,11 @@
         if (scene->cameras) {
             _vox_free(const_cast<ogt_vox_cam*>(scene->cameras));
             scene->cameras = NULL;
+        }
+        // free color names array
+        if (scene->color_names) {
+            _vox_free(const_cast<char**>(scene->color_names));
+            scene->color_names = NULL;
         }
         // free layer array
         if (scene->layers) {
@@ -2657,6 +2707,28 @@
             _vox_file_write_uint32(fp, 0);
             // write the palette chunk payload
             _vox_file_write(fp, &rotated_palette, sizeof(ogt_vox_palette));
+        }
+
+        // write out NOTE chunk for the palette
+        if (scene->num_color_names) {
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
+            // write the palette chunk header
+            _vox_file_write_uint32(fp, CHUNK_ID_NOTE);
+            _vox_file_write_uint32(fp, 0); // chunk_size will get patched up later
+            _vox_file_write_uint32(fp, 0);
+            _vox_file_write_uint32(fp, scene->num_color_names);
+            for (uint32_t i = 0; i < scene->num_color_names; i++) {
+                if (scene->color_names[i] == NULL) {
+                    _vox_file_write_uint32(fp, 0u);
+                    continue;
+                }
+                const uint32_t name_len = (uint32_t)_vox_strlen(scene->color_names[i]);
+                _vox_file_write_uint32(fp, name_len);
+                _vox_file_write(fp, scene->color_names[i], name_len);
+            }
+            // compute and patch up the chunk size in the chunk header
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
         // write out MATL chunk
