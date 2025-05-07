@@ -57,7 +57,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 		const bool usableColor = palette.color(paletteColorIdx).a > 0;
 		const bool singleSelection = _selectedIndices.size() == 1;
 		if (usableColor) {
-			for (int i = 0; i < palette::MaterialProperty::MaterialMax - 1; ++i) {
+			for (int i = 0; i < palette::MaterialProperty::MaterialMax; ++i) {
 				if (i == palette::MaterialProperty::MaterialNone) {
 					continue;
 				}
