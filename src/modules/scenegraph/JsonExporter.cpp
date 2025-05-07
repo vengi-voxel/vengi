@@ -5,6 +5,7 @@
 #include "JsonExporter.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "palette/Material.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
@@ -45,6 +46,45 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 	Log::printf("\"type\": \"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	const glm::vec3 &pivot = node.pivot();
 	Log::printf("\"pivot\": \"%f:%f:%f\"", pivot.x, pivot.y, pivot.z);
+	if (node.hasPalette()) {
+		Log::printf(",\"palette\": {\n");
+		const palette::Palette &palette = node.palette();
+		Log::printf("\"name\": \"%s\"", palette.name().c_str());
+		Log::printf(",\"color_count\": %i", palette.colorCount());
+		Log::printf(",\"colors\": [");
+		for (size_t i = 0; i < palette.size(); ++i) {
+			if (i > 0) {
+				Log::printf(",");
+			}
+			const core::RGBA &color = palette.color(i);
+			Log::printf("{");
+			Log::printf("\"r\": %i", color.r);
+			Log::printf(",\"g\": %i", color.g);
+			Log::printf(",\"b\": %i", color.b);
+			Log::printf(",\"a\": %i", color.a);
+			if (!palette.colorName(i).empty()) {
+				Log::printf(",\"name\": \"%s\"", palette.colorName(i).c_str());
+			}
+			const palette::Material &mat = palette.material(i);
+			Log::printf(",\"material\": {");
+			Log::printf("\"type\": \"%i\"", (int)mat.type);
+			for (int m = 0; m < (int)palette::MaterialProperty::MaterialMax; ++m) {
+				if (m == palette::MaterialProperty::MaterialNone) {
+					continue;
+				}
+				palette::MaterialProperty prop = (palette::MaterialProperty)m;
+				if (!mat.has(prop)) {
+					continue;
+				}
+				const float value = mat.value(prop);
+				Log::printf(",\"%s\": %f", palette::MaterialPropertyName(prop), value);
+			}
+			Log::printf("}\n");
+			Log::printf("}");
+		}
+		Log::printf("]");
+		Log::printf("}");
+	}
 	NodeStats stats;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		const voxel::RawVolume *v = node.volume();
