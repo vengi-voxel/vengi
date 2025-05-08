@@ -15,7 +15,7 @@
 
     HOW TO COMPILE THIS LIBRARY
 
-    1.  To compile this library, do this in *one* C or C++ file:
+    1.  To compile this library, do this in *one* C++ file:
         #define OGT_VOX_IMPLEMENTATION
         #include "ogt_vox.h"
 
@@ -344,6 +344,15 @@
         int          fov;         // angle in degree
     } ogt_vox_cam;
 
+    typedef struct ogt_vox_sun
+    {
+        float        intensity;
+        float        area;     // 1.0 ~= 43.5 degrees
+        float        angle[2]; // elevation, azimuth
+        ogt_vox_rgba rgba;
+        bool         disk;     // visible sun disk
+    } ogt_vox_sun;
+
     // a 3-dimensional model of voxels
     typedef struct ogt_vox_model
     {
@@ -429,6 +438,7 @@
         ogt_vox_matl_array      materials;      // the extended materials for this scene
         uint32_t                num_cameras;    // number of cameras for this scene
         const ogt_vox_cam*      cameras;        // the cameras for this scene
+        ogt_vox_sun*            sun;            // sun - primary light at infinity
     } ogt_vox_scene;
 
     // allocate memory function interface. pass in size, and get a pointer to memory with at least that size available.
@@ -468,6 +478,9 @@
     // writes the scene to a new buffer and returns the buffer size. free the buffer with ogt_vox_free
     uint8_t* ogt_vox_write_scene(const ogt_vox_scene* scene, uint32_t* buffer_size);
 
+    // convert the camera into a transform
+    void ogt_vox_camera_to_transform(const ogt_vox_cam* camera, ogt_vox_transform* transform);
+
     // merges the specified scenes together to create a bigger scene. Merged scene can be destroyed using ogt_vox_destroy_scene
     // If you require specific colors in the merged scene palette, provide up to and including 255 of them via required_colors/required_color_count.
     ogt_vox_scene* ogt_vox_merge_scenes(const ogt_vox_scene** scenes, uint32_t scene_count, const ogt_vox_rgba* required_colors, const uint32_t required_color_count);
@@ -504,6 +517,8 @@
     #include <stdlib.h>
     #include <string.h>
     #include <stdio.h>
+    #define _USE_MATH_DEFINES
+    #include <math.h>
 
     // MAKE_VOX_CHUNK_ID: used to construct a literal to describe a chunk in a .vox file.
     #define MAKE_VOX_CHUNK_ID(c0,c1,c2,c3)     ( (c0<<0) | (c1<<8) | (c2<<16) | (c3<<24) )
@@ -602,6 +617,10 @@
     };
     static inline vec3 vec3_make(float x, float y, float z) { vec3 v; v.x = x; v.y = y; v.z = z; return v; }
     static inline vec3 vec3_negate(const vec3& v) { vec3 r; r.x = -v.x;  r.y = -v.y; r.z = -v.z; return r; }
+    static inline vec3 vec3_normalize(const vec3& v) { float inv_len = 1.0f / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z); vec3 r; r.x = v.x * inv_len; r.y = v.y * inv_len; r.z = v.z * inv_len; return r; }
+    static inline vec3 vec3_cross(const vec3& a, const vec3& b) { vec3 r; r.x = a.y * b.z - a.z * b.y; r.y = a.z * b.x - a.x * b.z; r.z = a.x * b.y - a.y * b.x; return r; }
+    static inline vec3 vec3_sub(const vec3& a, const vec3& b) { vec3 r; r.x = a.x - b.x; r.y = a.y - b.y; r.z = a.z - b.z; return r; }
+    static inline float vec3_dot(const vec3& a, const vec3& b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 
     // API for emulating file transactions on an in-memory buffer of data.
     struct _vox_file {
@@ -1043,7 +1062,7 @@
         if (!str)
             return default_value;
         uint32_t value;
-        _vox_str_scanf(str, "%i", &value);
+        _vox_str_scanf(str, "%u", &value);
         return value;
     }
 
@@ -1392,6 +1411,50 @@
         return group->transform_anim.num_keyframes ? ogt_vox_sample_anim_transform(&group->transform_anim, frame_index) : group->transform;
     }
 
+    static ogt_vox_transform transform_look_at(vec3 eye, vec3 target, vec3 up) {
+        vec3 cam_forward = vec3_normalize(vec3_sub(target, eye));
+        vec3 cam_right = vec3_normalize(vec3_cross(up, cam_forward));
+        vec3 cam_up = vec3_cross(cam_forward, cam_right);
+
+        // Build the 4x4 view matrix
+        ogt_vox_transform transform;
+        transform.m00 = cam_right.x;
+        transform.m01 = cam_up.x;
+        transform.m02 = -cam_forward.x;
+        transform.m03 = 0.0f;
+
+        transform.m10 = cam_right.y;
+        transform.m11 = cam_up.y;
+        transform.m12 = -cam_forward.y;
+        transform.m13 = 0.0f;
+
+        transform.m20 = cam_right.z;
+        transform.m21 = cam_up.z;
+        transform.m22 = -cam_forward.z;
+        transform.m23 = 0.0f;
+
+        transform.m30 = -vec3_dot(cam_right, eye);
+        transform.m31 = -vec3_dot(cam_up, eye);
+        transform.m32 = vec3_dot(cam_forward, eye);
+        transform.m33 = 1.0f;
+
+        return transform;
+    }
+
+    void ogt_vox_camera_to_transform(const ogt_vox_cam* camera, ogt_vox_transform* transform) {
+        const vec3 focus = vec3_make(camera->focus[0], camera->focus[1], camera->focus[2]);
+        const float yaw = camera->angle[1] * (float)(M_PI / 180.0);
+        const float pitch = camera->angle[0] * (float)(M_PI / 180.0);
+        const vec3 camera_pos = vec3_make(
+            focus.x + camera->radius * cosf(pitch) * sinf(yaw),
+            focus.y + camera->radius * sinf(pitch),
+            focus.z + camera->radius * cosf(pitch) * cosf(yaw)
+        );
+        // Define the up vector (assuming Y-up orientation)
+        const vec3 up = vec3_make(0.0f, 1.0f, 0.0f);
+        *transform = transform_look_at(camera_pos, focus, up);
+    }
+
     const ogt_vox_scene* ogt_vox_read_scene_with_flags(const uint8_t * buffer, uint32_t buffer_size, uint32_t read_flags) {
         _vox_file file = { buffer, buffer_size, 0 };
         _vox_file* fp = &file;
@@ -1414,6 +1477,8 @@
         uint32_t                     size_z = 0;
         uint8_t                      index_map[256];
         bool                         found_index_map_chunk = false;
+        ogt_vox_sun                  sun;
+        bool                         found_sun = false;
 
         // size some of our arrays to prevent resizing during the parsing for smallish cases.
         model_ptrs.reserve(64);
@@ -1435,6 +1500,7 @@
 
         // zero initialize materials (this sets valid defaults)
         memset(&materials, 0, sizeof(materials));
+        memset(&sun, 0, sizeof(sun));
 
         // load and validate fileheader and file version.
         uint32_t file_header = 0;
@@ -1507,7 +1573,9 @@
                             uint8_t z = packed_voxel_data[i * 4 + 2];
                             uint8_t color_index = packed_voxel_data[i * 4 + 3];
                             ogt_assert(x < size_x && y < size_y && z < size_z, "invalid data in XYZI chunk");
-                            voxel_data[(x * k_stride_x) + (y * k_stride_y) + (z * k_stride_z)] = color_index;
+                            if(x < size_x && y < size_y && z < size_z ) {
+                                voxel_data[(x * k_stride_x) + (y * k_stride_y) + (z * k_stride_z)] = color_index;
+                            }
                         }
                         _vox_file_seek_forwards(fp, num_voxels_in_chunk * 4);
                         // compute the hash of the voxels in this model-- used to accelerate duplicate models checking.
@@ -1918,8 +1986,43 @@
                     cameras.push_back(camera);
                     break;
                 }
-                // we don't handle rOBJ (just a dict of render settings), so we just skip the chunk payload.
                 case CHUNK_ID_rOBJ:
+                {
+                    _vox_file_read_dict(&dict, fp);
+                    const char* mode_string = _vox_dict_get_value_as_string(&dict, "_type", NULL);
+                    if (mode_string && !_vox_strcmp(mode_string, "_inf")) {
+                        // "_type" == "_inf" is a dictionary of sun settings
+                        found_sun    = true;
+                        // set defaults
+                        sun.intensity = 0.7f;
+                        sun.area      = 0.7f;
+                        sun.angle[0]  = 50.0f;
+                        sun.angle[1]  = 50.0f;
+                        sun.rgba      = { 0xff, 0xff, 0xff, 0xff };
+                        sun.disk      = false;
+
+                        const char* intensity_string = _vox_dict_get_value_as_string(&dict, "_i", NULL);
+                        if (intensity_string) {
+                            _vox_str_scanf(intensity_string, "%f", &sun.intensity);
+                        }
+                        const char* area_string = _vox_dict_get_value_as_string(&dict, "_area", NULL);
+                        if (area_string) {
+                            _vox_str_scanf(area_string, "%f", &sun.area);
+                        }
+                        const char* angle_string = _vox_dict_get_value_as_string(&dict, "_angle", NULL);
+                        if (angle_string) {
+                            _vox_str_scanf(angle_string, "%f %f", &sun.angle[0], &sun.angle[1]);
+                        }
+                        const char* rgba_string = _vox_dict_get_value_as_string(&dict, "_k", NULL);
+                        if (rgba_string) {
+                            uint32_t urgb[3];
+                            _vox_str_scanf(rgba_string, "%u %u %u", &urgb[0], &urgb[1], &urgb[2]);
+                            sun.rgba.r = (uint8_t)urgb[0]; sun.rgba.g = (uint8_t)urgb[1]; sun.rgba.b = (uint8_t)urgb[2];
+                        }
+                        sun.disk = _vox_dict_get_value_as_bool(&dict, "_disk", false);
+                    }
+                    break;
+                }
                 default:
                 {
                     _vox_file_seek_forwards(fp, chunk_size);
@@ -2277,6 +2380,12 @@
 
             // copy the materials.
             scene->materials = materials;
+
+            // copy the sun
+            if (found_sun) {
+                scene->sun = (ogt_vox_sun*)_vox_malloc(sizeof(ogt_vox_sun));
+                *scene->sun = sun;
+            }
         }
 
         if (g_progress_callback_func) {
@@ -2324,6 +2433,11 @@
         if (scene->groups) {
             _vox_free(const_cast<ogt_vox_group*>(scene->groups));
             scene->groups = NULL;
+        }
+        // free sun
+        if (scene->sun) {
+            _vox_free(scene->sun);
+            scene->sun = NULL;
         }
         // finally, free the scene.
         _vox_free(scene);
@@ -2401,7 +2515,7 @@
     }
     static void _vox_file_write_dict_key_value_uint32(_vox_file_writeable* fp, const char* key, uint32_t value) {
         char value_str[64];
-        _vox_sprintf(value_str, sizeof(value_str), "%i", value);
+        _vox_sprintf(value_str, sizeof(value_str), "%u", value);
         _vox_file_write_dict_key_value(fp, key, value_str);
     }
     static void _vox_file_write_dict_key_value_float(_vox_file_writeable* fp, const char* key, float value) {
@@ -2694,6 +2808,41 @@
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
+        // write out the sun chunk
+        if (scene->sun) {
+
+            ogt_vox_sun* sun = scene->sun;
+            char sun_intensity[32] = "";
+            char sun_area[32] = "";
+            char sun_angle[64] = "";
+            char sun_rgba[64] = "";
+
+            _vox_sprintf(sun_intensity, sizeof(sun_intensity), "%.5f", sun->intensity);
+            _vox_sprintf(sun_area, sizeof(sun_area), "%.5f", sun->area);
+            _vox_sprintf(sun_angle, sizeof(sun_angle), "%i %i", (int32_t)sun->angle[0], (int32_t)sun->angle[1]);
+            _vox_sprintf(sun_rgba, sizeof(sun_rgba), "%u %u %u", sun->rgba.r, sun->rgba.g, sun->rgba.b);
+            const char* sun_disk = sun->disk ? "1" : "0";
+
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
+
+            // write the rOBJ header
+            _vox_file_write_uint32(fp, CHUNK_ID_rOBJ);
+            _vox_file_write_uint32(fp, 0); // chunk_size will get patched up later
+            _vox_file_write_uint32(fp, 0);
+
+            _vox_file_write_uint32(fp, 6);  // num key values
+            _vox_file_write_dict_key_value(fp, "_type", "_inf");
+            _vox_file_write_dict_key_value(fp, "_i", sun_intensity);
+            _vox_file_write_dict_key_value(fp, "_area", sun_area);
+            _vox_file_write_dict_key_value(fp, "_angle", sun_angle);
+            _vox_file_write_dict_key_value(fp, "_k", sun_rgba);
+            _vox_file_write_dict_key_value(fp, "_disk", sun_disk);
+
+            // compute and patch up the chunk size in the chunk header
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
+        }
+
         // write out RGBA chunk for the palette
         {
             // .vox stores palette rotated by 1 color index, so do that now.
@@ -2735,13 +2884,20 @@
         {
             // keep in sync with ogt_matl_type
             static const char *type_str[] = {"_diffuse", "_metal", "_glass", "_emit", "_blend", "_media"};
+            // keep in sync with ogt_media_type
+            static const char *media_type_str[] = {"_absorb", "_scatter", "_emit", "_sss"};
 
             for (int32_t i = 0; i < 256; ++i) {
                 const ogt_vox_matl &matl = scene->materials.matl[i];
                 if (matl.content_flags == 0u) {
                     continue;
                 }
-                uint32_t matl_dict_keyvalue_count = 1;
+                uint32_t matl_dict_keyvalue_count = 1; // _type
+                bool add_media_type = false;
+                if (matl.type == ogt_matl_type_glass || matl.type == ogt_matl_type_blend || matl.type == ogt_matl_type_media) {
+                    add_media_type = true;
+                    matl_dict_keyvalue_count += 1; // _media_type
+                }
                 matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_metal) ? 1 : 0;
                 matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_rough) ? 1 : 0;
                 matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_spec)  ? 1 : 0;
@@ -2768,6 +2924,9 @@
                 _vox_file_write_uint32(fp, i); // material id
                 _vox_file_write_uint32(fp, matl_dict_keyvalue_count);
                 _vox_file_write_dict_key_value(fp, "_type", type_str[matl.type]);
+                if (add_media_type) {
+                    _vox_file_write_dict_key_value(fp, "_media_type", media_type_str[matl.media_type]);
+                }
                 if (matl.content_flags & k_ogt_vox_matl_have_metal) {
                     _vox_file_write_dict_key_value_float(fp, "_metal", matl.metal);
                 }
