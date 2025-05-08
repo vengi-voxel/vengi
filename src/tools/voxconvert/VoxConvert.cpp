@@ -7,8 +7,10 @@
 #include "core/Enum.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
@@ -701,8 +703,12 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
 	} else {
-		core::DynamicArray<core::String> tokens;
-		core::string::splitString(scriptParameters, tokens);
+		core::TokenizerConfig cfg;
+		core::Tokenizer tokenizer(cfg, scriptParameters);
+		const core::Tokens &tokens = tokenizer.tokens();
+		for (const core::String &token : tokens) {
+			Log::debug("Script token: %s", token.c_str());
+		}
 		const core::String &luaScript = script.load(tokens[0]);
 		if (luaScript.empty()) {
 			Log::error("Failed to load %s", tokens[0].c_str());

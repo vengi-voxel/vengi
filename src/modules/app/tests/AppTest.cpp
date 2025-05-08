@@ -7,6 +7,7 @@
 #include "core/ArrayLength.h"
 #include "io/Filesystem.h"
 #include <gtest/gtest.h>
+#include "core/tests/TestHelper.h"
 
 namespace app {
 
@@ -53,6 +54,18 @@ TEST(AppTest, testArguments) {
 	EXPECT_FALSE(app.hasArg("-te"));
 	EXPECT_EQ("value", app.getArgVal("--test"));
 	EXPECT_EQ("value", app.getArgVal("-t"));
+	EXPECT_EQ("", app.getArgVal("-te"));
+}
+
+TEST(AppTest, testArgumentString) {
+	const char *args[] = {"testbinary", "-t", "\"value1 value2\""};
+	TestApp app(lengthof(args), args);
+	app.registerArg("--test").setDescription("test").setShort("-t");
+	EXPECT_TRUE(app.hasArg("--test"));
+	EXPECT_TRUE(app.hasArg("-t"));
+	EXPECT_FALSE(app.hasArg("-te"));
+	EXPECT_EQ("value1 value2", app.getArgVal("--test"));
+	EXPECT_EQ("value1 value2", app.getArgVal("-t"));
 	EXPECT_EQ("", app.getArgVal("-te"));
 }
 
