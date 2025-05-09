@@ -122,6 +122,16 @@ struct is_trivially_destructible {
 #endif
 };
 
+template<bool Condition, typename TrueType, typename FalseType>
+struct conditional {
+	using type = TrueType;
+};
+
+template<typename TrueType, typename FalseType>
+struct conditional<false, TrueType, FalseType> {
+	using type = FalseType;
+};
+
 template<class T>
 struct remove_reference { typedef T type; };
 template<class T>
