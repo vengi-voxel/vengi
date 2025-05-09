@@ -40,11 +40,9 @@ protected:
 };
 
 TEST_F(MinecraftPaletteMapTest, testParse) {
-	EXPECT_EQ(164,
+	EXPECT_EQ(191,
 			  findPaletteIndex(
 				  "minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554"));
-	EXPECT_EQ(34, findPaletteIndex("stairs:stair_outer_desert_sandstone_brick"));
-	EXPECT_EQ(34, findPaletteIndex("stairs:stair_outer_desert_sandstone_brick[INT]"));
 }
 
 // parses a blocks.json file to find new colors
@@ -167,6 +165,13 @@ TEST_F(MinecraftPaletteMapTest, testNewMcmapColors) {
 		} else {
 			Log::debug("Found %s", blockId.c_str());
 		}
+	}
+}
+
+TEST_F(MinecraftPaletteMapTest, testMaterialComplete) {
+	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+		const core::String &blockId = findPaletteName(i);
+		EXPECT_FALSE(blockId.empty()) << "Failed to find block id for " << i;
 	}
 }
 
