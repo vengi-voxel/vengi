@@ -30,6 +30,8 @@
 
 namespace app {
 
+using Languages = core::Buffer<Language>;
+
 /**
  * Manager class for dictionaries, you give it a bunch of directories
  * with .po files and it will then automatically load the right file
@@ -52,7 +54,7 @@ private:
 	Dictionary _emptyDict;
 
 	// available languages from po files found in the search paths
-	core::Buffer<Language> _languages;
+	Languages _languages;
 
 	io::FilesystemPtr _filesystem;
 
@@ -94,7 +96,7 @@ public:
 	void removeDirectory(const core::String &pathname);
 
 	/** Return a set of the available languages in their country code */
-	core::Buffer<Language> getLanguages();
+	Languages getLanguages();
 
 	/**
 	 * This function converts a .po filename (e.g. zh_TW.po) into a language

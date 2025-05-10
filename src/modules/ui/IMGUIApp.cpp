@@ -852,7 +852,7 @@ void IMGUIApp::loadKeymap(int keymap) {
 void IMGUIApp::languageOption() {
 	core::String currentLanguage = _languageVar->strVal();
 	if (ImGui::BeginCombo(_("Language"), _languageVar->strVal().c_str())) {
-		const core::Buffer<app::Language> &languages = _dictManager.getLanguages();
+		const app::Languages &languages = _dictManager.getLanguages();
 		app::Language currentLang = app::Language::fromEnv(currentLanguage);
 		for (const auto &lang : languages) {
 			bool isSelected = lang == currentLang;
