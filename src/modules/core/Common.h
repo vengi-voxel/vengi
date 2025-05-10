@@ -86,39 +86,31 @@
 namespace core {
 
 template<typename T>
-struct is_trivial {
-#ifdef __clang__
-	static constexpr bool value = __is_trivial(T);
-#elif defined(__GNUC__)
-	static constexpr bool value = __is_trivial(T);
-#elif defined(_MSC_VER)
+struct is_trivially_constructible {
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 	static constexpr bool value = __is_trivially_constructible(T);
 #else
-#error "Compiler not supported for is_trivial trait"
+#error "Compiler not supported for is_trivially_constructible trait"
 #endif
 };
 
 template<typename T>
 struct is_trivially_copyable {
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 	static constexpr bool value = __is_trivially_copyable(T);
-#elif defined(_MSC_VER)
-	static constexpr bool value = __is_trivially_copyable(T); // Same on MSVC
 #else
-#error "Compiler not supported"
+#error "Compiler not supported for is_trivially_copyable trait"
 #endif
 };
 
 template<typename T>
 struct is_trivially_destructible {
-#if defined(__clang__) && (__clang_major__ >= 15)
+#if (defined(__clang__) && (__clang_major__ >= 15)) || defined(_MSC_VER)
 	static constexpr bool value = __is_trivially_destructible(T);
 #elif defined(__clang__) || defined(__GNUC__)
 	static constexpr bool value = __has_trivial_destructor(T);
-#elif defined(_MSC_VER)
-	static constexpr bool value = __is_trivially_destructible(T);
 #else
-	#error "Compiler not supported"
+	#error "Compiler not supported for is_trivially_destructible trait"
 #endif
 };
 
