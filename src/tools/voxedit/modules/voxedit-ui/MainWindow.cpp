@@ -575,7 +575,7 @@ void MainWindow::popupMinecraftMapping() {
 						  _("The voxel editor uses a different mapping than Minecraft.\n\nHere you can see which block "
 							"type is mapped to which color"),
 						  true);
-		const voxelformat::PaletteArray &minecraftPaletteMap = voxelformat::getPaletteArray();
+		const voxelformat::McPaletteArray &minecraftPaletteMap = voxelformat::getPaletteArray();
 		palette::Palette mcPal;
 		mcPal.minecraft();
 		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
