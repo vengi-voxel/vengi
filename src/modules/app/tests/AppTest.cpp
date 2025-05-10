@@ -58,7 +58,7 @@ TEST(AppTest, testArguments) {
 }
 
 TEST(AppTest, testArgumentString) {
-	const char *args[] = {"testbinary", "-t", "\"value1 value2\""};
+	const char *args[] = {"testbinary", "-t", "value1 value2"};
 	TestApp app(lengthof(args), args);
 	app.registerArg("--test").setDescription("test").setShort("-t");
 	EXPECT_TRUE(app.hasArg("--test"));
