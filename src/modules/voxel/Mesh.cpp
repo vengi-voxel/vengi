@@ -203,6 +203,12 @@ void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {
 }
 
 void Mesh::removeUnusedVertices() {
+	if (_vecVertices.empty()) {
+		return;
+	}
+	if (_vecIndices.empty()) {
+		return;
+	}
 	const size_t vertices = _vecVertices.size();
 	const size_t indices = _vecIndices.size();
 	core::Buffer<bool> isVertexUsed(vertices);
