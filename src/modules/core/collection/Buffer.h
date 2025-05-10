@@ -8,13 +8,12 @@
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include <stdint.h>
-#include <new>
 #include <initializer_list>
 
 namespace core {
 
 /**
- * @brief Dynamically growing continuous storage buffer similiar to @c DynamicBuffer but without ctor and dtor handling
+ * @brief Dynamically growing continuous storage buffer similiar to @c DynamicArray but without ctor and dtor handling
  *
  * @note This array does not have an upper size limit. Each time the capacity is reached, it will
  * allocate new slots given by the @c INCREASE template parameter.
