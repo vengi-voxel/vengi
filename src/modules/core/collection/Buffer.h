@@ -58,6 +58,7 @@ public:
 	}
 
 	explicit Buffer(size_t amount) {
+		core_assert(amount > 0u);
 		checkBufferSize(amount);
 		core_memset(_buffer, 0, _capacity * sizeof(TYPE));
 		_size = amount;
