@@ -622,6 +622,10 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 
 	Log::debug("Prepare voxeliziation bsp with %i vertices", vertexCount);
 
+	if (vertexCount == 0 || indexCount == 0) {
+		Log::debug("No vertices or indices found - skipping");
+		return false;
+	}
 	core::Buffer<glm::vec2> texcoords(vertexCount);
 	core::Buffer<glm::vec3> verts(vertexCount);
 	core::Buffer<int32_t> textureIndices(vertexCount);
