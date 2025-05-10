@@ -18,6 +18,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/private/minecraft/LevelDBFormat.h"
 
 #include <glm/common.hpp>
 
@@ -32,10 +33,10 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 		return false;
 	}
 
-	const priv::NamedBinaryTag &data = root.get("Data");
+	priv::NamedBinaryTag data = root.get("Data");
 	if (!data.valid()) {
-		Log::error("Could not find 'Data' tag");
-		return false;
+		Log::warn("Could not find 'Data' tag");
+		data = root;
 	}
 	if (data.type() != priv::TagType::COMPOUND) {
 		Log::error("Tag 'Data' is no compound (%i)", (int)data.type());
@@ -66,27 +67,41 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 	}
 	io::ArchiveFiles entities;
 	const core::String baseName = core::string::extractDir(filename);
-	archive->list(core::string::path(baseName, "region"), entities, "*.mca,*.mcr");
+	core::String folderName = "region";
+	core::String filter = "*.mca,*.mcr";
+	if (ctx.bedrock) {
+		folderName = "db";
+		filter = "*.ldb";
+	}
+	archive->list(core::string::path(baseName, folderName), entities, filter);
 	if (entities.empty()) {
-		Log::error("Could not find any region file");
+		Log::error("Could not find any region file in folder '%s' with extensions: '%s'", folderName.c_str(), filter.c_str());
 		return false;
 	}
 
 	int nodesAdded = 0;
 
 	core::DynamicArray<std::future<scenegraph::SceneGraph>> futures;
-	Log::info("Found %i region files", (int)entities.size());
+	Log::info("Found %i region files in %s", (int)entities.size(), filename.c_str());
 	for (const io::FilesystemEntry &e : entities) {
 		if (e.type != io::FilesystemEntry::Type::file) {
 			continue;
 		}
-		const core::String &regionFilename = core::string::path(baseName, "region", e.name);
-		futures.emplace_back(app::async([regionFilename, &archive, &loadctx]() {
-			MCRFormat mcrFormat;
+		const core::String &regionFilename = core::string::path(baseName, folderName, e.name);
+		futures.emplace_back(app::async([regionFilename, &archive, &loadctx, &ctx]() {
 			scenegraph::SceneGraph newSceneGraph;
-			if (!mcrFormat.load(regionFilename, archive, newSceneGraph, loadctx)) {
-				Log::debug("Could not load %s", regionFilename.c_str());
-				return core::move(newSceneGraph);
+			if (ctx.bedrock) {
+				LevelDBFormat levelDBFormat;
+				if (!levelDBFormat.load(regionFilename, archive, newSceneGraph, loadctx)) {
+					Log::debug("Could not load %s", regionFilename.c_str());
+					return core::move(newSceneGraph);
+				}
+			} else {
+				MCRFormat mcrFormat;
+				if (!mcrFormat.load(regionFilename, archive, newSceneGraph, loadctx)) {
+					Log::debug("Could not load %s", regionFilename.c_str());
+					return core::move(newSceneGraph);
+				}
 			}
 			const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 			newSceneGraph.clear();
@@ -124,7 +139,6 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.minecraft();
 	priv::NamedBinaryTagContext ctx;
-#if 0
 	const bool bedrock = !io::ZipReadStream::isZipStream(*stream);
 	if (bedrock) {
 		// bedrock is uncompressed and little endian
@@ -145,7 +159,6 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		Log::debug("File length without header: %u", fileLengthWithoutHeader);
 		return priv::load(filename, ctx, sceneGraph, archive, loadctx);
 	}
-#endif
 	Log::debug("Loading from zip stream");
 	io::ZipReadStream zipStream(*stream);
 	ctx.stream = &zipStream;
