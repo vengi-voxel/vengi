@@ -24,6 +24,9 @@ msgstr ""
 msgid "Set a variable value"
 msgstr ""
 
+msgid "Clear the variable value"
+msgstr ""
+
 msgid "Quit the application"
 msgstr ""
 
@@ -386,6 +389,15 @@ msgstr ""
 msgid "Auto scrolling"
 msgstr ""
 
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Z"
+msgstr ""
+
 msgid "Ok"
 msgstr ""
 
@@ -399,15 +411,6 @@ msgstr ""
 msgid ""
 "Open in browser\n"
 "%s"
-msgstr ""
-
-msgid "X"
-msgstr ""
-
-msgid "Y"
-msgstr ""
-
-msgid "Z"
 msgstr ""
 
 msgid "Unknown"
@@ -799,6 +802,9 @@ msgstr ""
 msgid "Max image size"
 msgstr ""
 
+msgid "Script parameters"
+msgstr ""
+
 msgid "LUA scripts for manipulating the voxel volumes"
 msgstr ""
 
@@ -806,9 +812,6 @@ msgid "Run"
 msgstr ""
 
 msgid "Execute the selected script for the currently loaded voxel volumes"
-msgstr ""
-
-msgid "Script parameters"
 msgstr ""
 
 msgid "Quit"
@@ -884,7 +887,7 @@ msgstr ""
 msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
 
-msgid "Show fixed region sizes in the positions panel"
+msgid "Show fixed region sizes in the volume inspector"
 msgstr ""
 
 msgid "Use local space for transforms"
@@ -1227,10 +1230,16 @@ msgstr ""
 msgid "Brush"
 msgstr ""
 
+msgid "Add new camera"
+msgstr ""
+
 msgid "Camera"
 msgstr ""
 
 msgid "Position"
+msgstr ""
+
+msgid "Target distance"
 msgstr ""
 
 msgid "Farplane"
@@ -1242,13 +1251,10 @@ msgstr ""
 msgid "FOV"
 msgstr ""
 
-msgid "Target distance"
+msgid "Field of view in degrees"
 msgstr ""
 
-msgid "Aspect"
-msgstr ""
-
-msgid "Add new camera"
+msgid "Aspect ratio"
 msgstr ""
 
 msgid "License"
@@ -1705,7 +1711,7 @@ msgstr ""
 msgid "Region"
 msgstr ""
 
-msgid "Pos"
+msgid "Tools"
 msgstr ""
 
 msgid "To transform"
@@ -1714,25 +1720,37 @@ msgstr ""
 msgid "Convert the region offset into the keyframe transforms"
 msgstr ""
 
+msgid "Region sizes"
+msgstr ""
+
+msgid "Reset region sizes"
+msgstr ""
+
 msgid "Interpolation"
 msgstr ""
 
 msgid "Interpolation details"
 msgstr ""
 
-msgid "Reset all"
+msgid "Reset transforms"
 msgstr ""
 
 msgid "Mirror X"
 msgstr ""
 
+msgid "Mirror Y"
+msgstr ""
+
 msgid "Mirror XZ"
+msgstr ""
+
+msgid "XZ"
 msgstr ""
 
 msgid "Mirror XYZ"
 msgstr ""
 
-msgid "Transform"
+msgid "XYZ"
 msgstr ""
 
 msgid "Local transforms"
@@ -1744,22 +1762,19 @@ msgstr ""
 msgid "Auto Keyframe"
 msgstr ""
 
-msgid "Tr"
-msgstr ""
-
 msgid "Update all locked nodes with this value"
 msgstr ""
 
-msgid "Rt"
+msgid "Translation"
 msgstr ""
 
-msgid "Sc"
+msgid "Rotation"
 msgstr ""
 
-msgid "Pv"
+msgid "Scale"
 msgstr ""
 
-msgid "Properties"
+msgid "Pivot"
 msgstr ""
 
 #, c-format
@@ -1776,6 +1791,12 @@ msgid "Node Inspector"
 msgstr ""
 
 msgid "Volume Inspector"
+msgstr ""
+
+msgid "Node Properties"
+msgstr ""
+
+msgid "UUID"
 msgstr ""
 
 msgid "Tiberian Sun"
@@ -1903,9 +1924,6 @@ msgstr ""
 msgid "CIELab"
 msgstr ""
 
-msgid "Tools"
-msgstr ""
-
 msgid "Remove unused color"
 msgstr ""
 
@@ -2009,6 +2027,9 @@ msgid "High quality bounding volume hierarchy"
 msgstr ""
 
 msgid "Denoise"
+msgstr ""
+
+msgid "Reset all"
 msgstr ""
 
 msgid "High quality"
@@ -2205,9 +2226,6 @@ msgid "Activate the rotate operation"
 msgstr ""
 
 msgid "Activate the translate operation"
-msgstr ""
-
-msgid "Pivot"
 msgstr ""
 
 msgid "Snap to grid"
@@ -2621,6 +2639,13 @@ msgid "Pick the current selected color from current cursor voxel"
 msgstr ""
 
 msgid "Flip the selected nodes around the given axis"
+msgstr ""
+
+msgid ""
+"Reset the transform of the current node and keyframe to the default transform"
+msgstr ""
+
+msgid "Mirrors the transform at the given axes for the given node"
 msgstr ""
 
 msgid ""

@@ -45,6 +45,9 @@ msgstr "Protokollniveau von 1 (Trace) auf 6 (nur kritisch) ändern"
 msgid "Set a variable value"
 msgstr "Einen Variablenwert setzen"
 
+msgid "Clear the variable value"
+msgstr "Einen Variablenwert löschen"
+
 msgid "Quit the application"
 msgstr "Die Anwendung beenden"
 
@@ -414,6 +417,15 @@ msgstr "Debug-Protokollierung für die Konsole aktivieren"
 msgid "Auto scrolling"
 msgstr "Automatisches Scrollen"
 
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
 msgid "Ok"
 msgstr "Ok"
 
@@ -430,15 +442,6 @@ msgid ""
 msgstr ""
 "Im Browser öffnen\n"
 "%s"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
 
 msgid "Unknown"
 msgstr ""
@@ -829,6 +832,9 @@ msgstr "Mappe Farben auf Palette"
 msgid "Max image size"
 msgstr ""
 
+msgid "Script parameters"
+msgstr "Skriptparameter"
+
 msgid "LUA scripts for manipulating the voxel volumes"
 msgstr "LUA-Skripte zur Manipulation der Voxelvolumen"
 
@@ -838,9 +844,6 @@ msgstr "Ausführen"
 msgid "Execute the selected script for the currently loaded voxel volumes"
 msgstr ""
 "Das ausgewählte Skript für die aktuell geladenen Voxelvolumen ausführen"
-
-msgid "Script parameters"
-msgstr "Skriptparameter"
 
 msgid "Quit"
 msgstr "Beenden"
@@ -917,8 +920,8 @@ msgstr ""
 "Millisekunden, in denen eine Region in bestimmten Situationen hervorgehoben "
 "werden sollte"
 
-msgid "Show fixed region sizes in the positions panel"
-msgstr "Feste Regionengrößen im Positions-Panel anzeigen"
+msgid "Show fixed region sizes in the volume inspector"
+msgstr ""
 
 msgid "Use local space for transforms"
 msgstr "Lokalen Raum für Transformationen verwenden"
@@ -1267,11 +1270,17 @@ msgstr "Klicken Sie auf einen Voxel, um die Farbe auszuwählen"
 msgid "Brush"
 msgstr "Pinsel"
 
+msgid "Add new camera"
+msgstr "Neue Kamera hinzufügen"
+
 msgid "Camera"
 msgstr "Kamera"
 
 msgid "Position"
 msgstr "Position"
+
+msgid "Target distance"
+msgstr "Entfernung zum Ziel"
 
 msgid "Farplane"
 msgstr "Farplane"
@@ -1282,14 +1291,11 @@ msgstr "Nearplane"
 msgid "FOV"
 msgstr "FOV"
 
-msgid "Target distance"
-msgstr "Entfernung zum Ziel"
+msgid "Field of view in degrees"
+msgstr ""
 
-msgid "Aspect"
+msgid "Aspect ratio"
 msgstr "Seitenverhältnis"
-
-msgid "Add new camera"
-msgstr "Neue Kamera hinzufügen"
 
 msgid "License"
 msgstr "Lizenz"
@@ -1792,8 +1798,8 @@ msgstr "Willkommensbildschirm"
 msgid "Region"
 msgstr "Region"
 
-msgid "Pos"
-msgstr "Pos"
+msgid "Tools"
+msgstr "Werkzeuge"
 
 msgid "To transform"
 msgstr "Zu Transform"
@@ -1802,26 +1808,38 @@ msgid "Convert the region offset into the keyframe transforms"
 msgstr ""
 "Wandeln Sie die Position der Region in die Keyframe-Transformationen um"
 
+msgid "Region sizes"
+msgstr "Regionengrößen"
+
+msgid "Reset region sizes"
+msgstr ""
+
 msgid "Interpolation"
 msgstr "Interpolation"
 
 msgid "Interpolation details"
 msgstr "Interpolationsdetails"
 
-msgid "Reset all"
-msgstr "Alles zurücksetzen"
+msgid "Reset transforms"
+msgstr "Transform resetten"
 
 msgid "Mirror X"
 msgstr "Spiegelung X"
 
+msgid "Mirror Y"
+msgstr "Spiegelung Y"
+
 msgid "Mirror XZ"
 msgstr "Spiegelung XZ"
+
+msgid "XZ"
+msgstr "XZ"
 
 msgid "Mirror XYZ"
 msgstr "Spiegelung XYZ"
 
-msgid "Transform"
-msgstr "Transformation"
+msgid "XYZ"
+msgstr "XYZ"
 
 msgid "Local transforms"
 msgstr "Lokale Transformationen"
@@ -1832,23 +1850,20 @@ msgstr "Kinder aktualisieren"
 msgid "Auto Keyframe"
 msgstr "Automatischer Keyframe"
 
-msgid "Tr"
-msgstr "Tr"
-
 msgid "Update all locked nodes with this value"
 msgstr ""
 
-msgid "Rt"
-msgstr "Rt"
+msgid "Translation"
+msgstr "Verschiebung"
 
-msgid "Sc"
-msgstr "Sc"
+msgid "Rotation"
+msgstr "Drehung"
 
-msgid "Pv"
-msgstr "Pv"
+msgid "Scale"
+msgstr "Skalierung"
 
-msgid "Properties"
-msgstr "Eigenschaften"
+msgid "Pivot"
+msgstr "Pivot"
 
 #, c-format
 msgid "UUID: %s"
@@ -1865,6 +1880,12 @@ msgstr "Knoteninspektor"
 
 msgid "Volume Inspector"
 msgstr "Volumeninspektor"
+
+msgid "Node Properties"
+msgstr "Knoteneigenschaften"
+
+msgid "UUID"
+msgstr "UUID"
 
 msgid "Tiberian Sun"
 msgstr "Tiberian Sun"
@@ -2005,9 +2026,6 @@ msgstr "Helligkeit"
 msgid "CIELab"
 msgstr "CIELab"
 
-msgid "Tools"
-msgstr "Werkzeuge"
-
 msgid "Remove unused color"
 msgstr "Unbenutzte Farbe entfernen"
 
@@ -2119,6 +2137,9 @@ msgstr ""
 
 msgid "Denoise"
 msgstr "Rauschunterdrückung"
+
+msgid "Reset all"
+msgstr "Alles zurücksetzen"
 
 msgid "High quality"
 msgstr "Hohe Qualität"
@@ -2317,9 +2338,6 @@ msgstr "Die Drehoperation aktivieren"
 
 msgid "Activate the translate operation"
 msgstr "Die Verschiebeoperation aktivieren"
-
-msgid "Pivot"
-msgstr "Pivot"
 
 msgid "Snap to grid"
 msgstr "Am Raster ausrichten"
@@ -2774,6 +2792,13 @@ msgstr "Wählt die aktuell ausgewählte Farbe aus dem aktuellen Cursor-Voxel aus
 
 msgid "Flip the selected nodes around the given axis"
 msgstr "Kippt die ausgewählten Knoten um die angegebene Achse"
+
+msgid ""
+"Reset the transform of the current node and keyframe to the default transform"
+msgstr ""
+
+msgid "Mirrors the transform at the given axes for the given node"
+msgstr ""
 
 msgid ""
 "Add a new model node (with a given name and width, height, depth - all "
