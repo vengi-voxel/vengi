@@ -5,8 +5,8 @@ function(engine_add_valgrind TARGET)
 			COMMAND
 				${VALGRIND_EXECUTABLE} --xml=yes --xml-file=${CMAKE_CURRENT_BINARY_DIR}/memcheck-${TARGET}.xml
 				--tool=memcheck --leak-check=full --show-reachable=yes
-				--undef-value-errors=yes --track-origins=no --child-silent-after-fork=no
-				--trace-children=no
+				--undef-value-errors=yes --track-origins=yes --child-silent-after-fork=no
+				--trace-children=yes --track-fds=yes
 				$<TARGET_FILE:${TARGET}>
 			USES_TERMINAL
 			DEPENDS ${TARGET}
@@ -16,8 +16,8 @@ function(engine_add_valgrind TARGET)
 		add_custom_target(${TARGET}-memcheck
 			COMMAND
 				${VALGRIND_EXECUTABLE} --tool=memcheck --leak-check=full --show-reachable=yes
-				--undef-value-errors=yes --track-origins=no --child-silent-after-fork=no
-				--trace-children=no --log-file=${CMAKE_CURRENT_BINARY_DIR}/memcheck-${TARGET}.log
+				--undef-value-errors=yes --track-origins=yes --child-silent-after-fork=no
+				--trace-children=yes --track-fds=yes --log-file=${CMAKE_CURRENT_BINARY_DIR}/memcheck-${TARGET}.log
 				$<TARGET_FILE:${TARGET}>
 			USES_TERMINAL
 			DEPENDS ${TARGET}
