@@ -12,6 +12,9 @@
 namespace voxel {
 
 size_t RawVolume::size(const Region &region) {
+	if (!region.isValid()) {
+		return 0;
+	}
 	const size_t w = region.getWidthInVoxels();
 	const size_t h = region.getHeightInVoxels();
 	const size_t d = region.getDepthInVoxels();
