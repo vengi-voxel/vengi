@@ -288,6 +288,10 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	uint32_t numFrames;
 	wrap(stream->readUInt32(numFrames))
 	Log::debug("numfrm: %u", numFrames);
+	if (numFrames > 65536) {
+		Log::error("Max allowed frames exceeded: %u (max is %u)", numFrames, 65536);
+		return false;
+	}
 	kfa.frmval.resize(numFrames);
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		kfa.frmval[i].reserve(numHinge);
