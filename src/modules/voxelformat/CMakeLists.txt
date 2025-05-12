@@ -342,8 +342,8 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app video)
 gtest_suite_end(tests-${LIB})
 set(BENCHMARK_FILES
 	tests/glTF/lantern/Lantern.gltf
+	tests/minecraft_110.mca
 	tests/chr_knight.fbx
-
 	tests/chr_knight.qb
 	tests/chr_knight.qbcl
 	tests/chr_knight.gox

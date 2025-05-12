@@ -8,6 +8,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/minecraft/MCRFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
@@ -63,7 +64,17 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, VENGI)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, MCR)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxelformat::MCRFormat f;
+		const core::String filename = "minecraft_110.mca";
+		f.load(filename, _archive, _sceneGraph, _ctx);
+		_sceneGraph.clear();
+	}
+}
+
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, QB);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, QBCL);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, GOX);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, VENGI);
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, MCR);
