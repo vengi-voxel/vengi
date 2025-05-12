@@ -3,7 +3,9 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/collection/Vector.h"
 #include "voxel/SparseVolume.h"
+#include "voxel/VolumeSampler.h"
 
 class SparseVolumeBenchmark : public app::AbstractBenchmark {
 protected:
@@ -53,8 +55,30 @@ BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelSampler_unlimit)(benchmark::St
 	}
 }
 
+BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxelsY)(benchmark::State &state) {
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	core::Vector<voxel::Voxel, 22> voxels;
+	voxels.assign(voxel, voxels.capacity());
+	for (auto _ : state) {
+		voxel::setVoxels(v, 0, 0, &voxels.front(), v.region().getHeightInVoxels());
+	}
+}
+
+BENCHMARK_DEFINE_F(SparseVolumeBenchmark, SetVoxels)(benchmark::State &state) {
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	core::Vector<voxel::Voxel, 22> voxels;
+	voxels.assign(voxel, voxels.capacity());
+
+	for (auto _ : state) {
+		voxel::setVoxels(v, 0, 0, 0, v.region().getWidthInVoxels(), v.region().getDepthInVoxels(), &voxels.front(),
+				  v.region().getHeightInVoxels());
+	}
+}
+
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxel_unlimit);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelSampler_unlimit);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, CalculateRegion);
+BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxelsY);
+BENCHMARK_REGISTER_F(SparseVolumeBenchmark, SetVoxels);

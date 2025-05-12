@@ -3,6 +3,7 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/collection/Vector.h"
 #include "voxel/RawVolume.h"
 
 class RawVolumeBenchmark : public app::AbstractBenchmark {
@@ -33,6 +34,28 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxelSampler)(benchmark::State &state)
 	}
 }
 
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxelsY)(benchmark::State &state) {
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	core::Vector<voxel::Voxel, 22> voxels;
+	voxels.assign(voxel, voxels.capacity());
+	for (auto _ : state) {
+		voxel::setVoxels(v, 0, 0, &voxels.front(), v.region().getHeightInVoxels());
+	}
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, SetVoxels)(benchmark::State &state) {
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	core::Vector<voxel::Voxel, 22> voxels;
+	voxels.assign(voxel, voxels.capacity());
+
+	for (auto _ : state) {
+		voxel::setVoxels(v, 0, 0, 0, v.region().getWidthInVoxels(), v.region().getDepthInVoxels(), &voxels.front(),
+				  v.region().getHeightInVoxels());
+	}
+}
+
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelsY);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxels);

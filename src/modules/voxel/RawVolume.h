@@ -210,34 +210,4 @@ inline const Voxel &RawVolume::voxel(const glm::ivec3 &pos) const {
 	return voxel(pos.x, pos.y, pos.z);
 }
 
-template<class Volume>
-inline bool setVoxels(Volume &volume, int x, int z, const Voxel* voxels, int amount) {
-	typename Volume::Sampler sampler(volume);
-	sampler.setPosition(x, 0, z);
-	for (int y = 0; y < amount; ++y) {
-		sampler.setVoxel(x, y, z, voxels[y]);
-		sampler.movePositiveY();
-	}
-	return true;
-}
-
-template<class Volume>
-inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
-	typename Volume::Sampler sampler(volume);
-	sampler.setPosition(x, y, z);
-	for (int j = 0; j < nx; ++j) {
-		typename Volume::Sampler sampler2(sampler);
-		for (int k = 0; k < nz; ++k) {
-			typename Volume::Sampler sampler3(sampler2);
-			for (int ny = 0; ny < amount; ++ny) {
-				sampler3.setVoxel(voxels[ny]);
-				sampler3.movePositiveY();
-			}
-			sampler2.movePositiveZ();
-		}
-		sampler.movePositiveX();
-	}
-	return true;
-}
-
 } // namespace voxel
