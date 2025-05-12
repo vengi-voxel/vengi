@@ -198,22 +198,21 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		if (v == nullptr) {
 			continue;
 		}
-		const voxel::Region &finalRegion = extractRegion.region;
+		const voxel::Region finalRegion = extractRegion.region;
 		bool onlyAir = true;
 		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
 		if (!copyRegion.isValid()) {
 			continue;
 		}
 		voxel::RawVolume copy(v, copyRegion, &onlyAir);
-		const glm::ivec3 &mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
-			const palette::Palette pal = palette(resolveIdx(idx));
 			++_pendingExtractorTasks;
-			_threadPool.enqueue([type, pal, movedCopy = core::move(copy), mins, idx,
-								 finalRegion, this]() {
+			_threadPool.enqueue([type, pal = palette(resolveIdx(idx)), movedCopy = core::move(copy), idx,
+				region = extractRegion.region, this]() {
+				const glm::ivec3 &mins = region.getLowerCorner();
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
-				voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, finalRegion, pal, mesh, mins);
+				voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, region, pal, mesh, mins);
 				voxel::extractSurface(ctx);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
@@ -221,7 +220,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 				--_pendingExtractorTasks;
 			});
 		} else {
-			_pendingQueue.emplace(mins, idx, core::move(voxel::ChunkMesh(0, 0)));
+			_pendingQueue.emplace(extractRegion.region.getLowerCorner(), idx, core::move(voxel::ChunkMesh(0, 0)));
 		}
 		--maxExtraction;
 		if (maxExtraction == 0) {
