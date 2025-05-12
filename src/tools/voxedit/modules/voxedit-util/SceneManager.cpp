@@ -519,7 +519,8 @@ bool SceneManager::supportsEditMode() const {
 	return node.isModelNode();
 }
 
-void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo, uint64_t renderRegionMillis) {
+void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, SceneModifiedFlags flags, uint64_t renderRegionMillis) {
+	const bool markUndo = (flags & SceneModifiedFlags::MarkUndo) == SceneModifiedFlags::MarkUndo;
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
@@ -531,7 +532,10 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
 	markDirty();
-	resetLastTrace();
+	const bool resetTrace = (flags & SceneModifiedFlags::ResetTrace) == SceneModifiedFlags::ResetTrace;
+	if (resetTrace) {
+		resetLastTrace();
+	}
 }
 
 void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
@@ -838,7 +842,7 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 		}
 		node->setName(s.name);
 		node->setPalette(s.palette);
-		modified(node->id(), s.data.region(), false);
+		modified(node->id(), s.data.region(), SceneModifiedFlags::NoUndo);
 		return true;
 	}
 	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
@@ -1084,7 +1088,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		return false;
 	}
 	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
-	modified(nodeId, modifiedRegion, true, dismissMillis);
+	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
 	return true;
 }
 
@@ -1112,7 +1116,7 @@ bool SceneManager::cut() {
 		return false;
 	}
 	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
-	modified(nodeId, modifiedRegion, true, dismissMillis);
+	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
 	return true;
 }
 
@@ -1743,7 +1747,7 @@ void SceneManager::construct() {
 			if (!node.isModelNode()) {
 				continue;
 			}
-			modified(node.id(), _sceneGraph.resolveRegion(node), true);
+			modified(node.id(), _sceneGraph.resolveRegion(node));
 		}
 	}).setHelp(_("Allow to align all nodes on the floor next to each other without overlapping"));
 
@@ -2523,7 +2527,7 @@ bool SceneManager::update(double nowSeconds) {
 	} else if (state == voxelgenerator::ScriptState::Finished) {
 		const voxel::Region dirtyRegion = _luaApi.dirtyRegion();
 		if (dirtyRegion.isValid()) {
-			modified(activeNode(), dirtyRegion, true);
+			modified(activeNode(), dirtyRegion);
 		}
 		if (_sceneGraph.dirty()) {
 			markDirty();

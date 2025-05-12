@@ -54,6 +54,16 @@ enum class NodeMergeFlags {
 };
 CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 
+enum class SceneModifiedFlags : uint32_t {
+	MarkUndo = 1 << 0,
+	ResetTrace = 1 << 1,
+	Max,
+
+	All = MarkUndo | ResetTrace,
+	NoUndo = All & ~MarkUndo
+};
+CORE_ENUM_BIT_OPERATIONS(SceneModifiedFlags)
+
 /**
  * @note The data is shared across all viewports
  */
@@ -261,7 +271,7 @@ public:
 
 	const glm::ivec3 &referencePosition() const;
 
-	void modified(int nodeId, const voxel::Region &modifiedRegion, bool markUndo = true,
+	void modified(int nodeId, const voxel::Region &modifiedRegion, SceneModifiedFlags flags = SceneModifiedFlags::All,
 				  uint64_t renderRegionMillis = 0);
 	voxel::RawVolume *volume(int nodeId);
 	const voxel::RawVolume *volume(int nodeId) const;
