@@ -207,13 +207,13 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		voxel::RawVolume copy(v, copyRegion, &onlyAir);
 		const glm::ivec3 &mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
-			const palette::Palette &pal = palette(resolveIdx(idx));
+			const palette::Palette pal = palette(resolveIdx(idx));
 			++_pendingExtractorTasks;
-			_threadPool.enqueue([type, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx,
+			_threadPool.enqueue([type, pal, movedCopy = core::move(copy), mins, idx,
 								 finalRegion, this]() {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
-				voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, finalRegion, movedPal, mesh, mins);
+				voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, finalRegion, pal, mesh, mins);
 				voxel::extractSurface(ctx);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
