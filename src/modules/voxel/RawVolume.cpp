@@ -207,6 +207,7 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	const int srcZOffset = mins.z - fullSrcRegion.getLowerZ();
 	const int srcYStride = srcWidth;
 	const int srcZStride = srcWidth * srcHeight;
+	const int tgtXOffset = mins.x - _region.getLowerX();
 
 	const int lineLength = maxs.x - mins.x + 1;
 	const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
@@ -214,13 +215,15 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		const int tgtZPos = z - _region.getLowerZ();
 		const int srcZPos = srcZOffset + z - mins.z;
+		const int srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
+		const int tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
 
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			const int tgtYPos = y - _region.getLowerY();
 			const int srcYPos = srcYOffset + y - mins.y;
 
-			const int tgtBaseIndex = tgtZPos * tgtZStride + tgtYPos * tgtYStride + (mins.x - _region.getLowerX());
-			const int srcBaseIndex = srcXOffset + srcZPos * srcZStride + srcYPos * srcYStride;
+			const int tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
+			const int srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
 
 			const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
 			voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
