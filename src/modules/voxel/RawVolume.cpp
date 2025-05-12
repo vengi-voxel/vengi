@@ -185,14 +185,19 @@ bool RawVolume::isEmpty(const Region &region) const {
 }
 
 bool RawVolume::copyInto(const RawVolume &src) {
-	if (!intersects(_region, src.region())) {
-		return false;
-	}
 	if (_region == src.region()) {
 		core_memcpy((void *)_data, (void *)src._data, RawVolume::size(_region));
 		return true;
 	}
 	voxel::Region srcRegion = src.region();
+	return copyInto(src, srcRegion);
+}
+
+bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
+	if (!intersects(_region, region)) {
+		return false;
+	}
+	voxel::Region srcRegion = region;
 	if (!_region.containsRegion(srcRegion)) {
 		srcRegion.cropTo(_region);
 	}

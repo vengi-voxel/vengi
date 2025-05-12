@@ -110,6 +110,21 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyIntoRegionSameDim)(benchmark::State &
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolumeMultipleRegions)(benchmark::State &state) {
+	const core::Buffer<voxel::Region> regions {
+		voxel::Region{-10, 10},
+		voxel::Region{10, 20},
+		voxel::Region{1, 1},
+		voxel::Region{5, 5},
+		voxel::Region{-20, -18},
+		voxel::Region{-17, 10}
+	};
+	for (auto _ : state) {
+		voxel::RawVolume out(v, regions);
+		benchmark::DoNotOptimize(out);
+	}
+}
+
 BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolumeSameDim)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxel::RawVolume out(v, voxel::Region{-20, 20});
@@ -127,3 +142,4 @@ BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegion);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolume);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegionSameDim);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolumeSameDim);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolumeMultipleRegions);

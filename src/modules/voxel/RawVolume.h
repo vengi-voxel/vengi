@@ -45,6 +45,7 @@ public:
 	RawVolume(const RawVolume &copy, const core::Buffer<Region> &regions);
 
 	bool copyInto(const RawVolume &src);
+	bool copyInto(const RawVolume &src, const voxel::Region &region);
 
 	/**
 	 * @brief Calculate the amount of bytes a volume with the given region would consume
