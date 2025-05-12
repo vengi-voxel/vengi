@@ -3,26 +3,25 @@
  */
 
 #include "SchematicFormat.h"
+#include "MinecraftPaletteMap.h"
+#include "NamedBinaryTag.h"
+#include "SchematicIntReader.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
-#include "core/collection/DynamicArray.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
-#include "palette/Palette.h"
-#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "MinecraftPaletteMap.h"
-#include "NamedBinaryTag.h"
-#include "SchematicIntReader.h"
 
 #include <glm/common.hpp>
 
@@ -83,13 +82,14 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 	switch (version) {
 	case 1:
 	case 2:
-		// WorldEdit legacy
+		Log::debug("WorldEdit legacy");
 		if (loadSponge1And2(schematic, sceneGraph, palette)) {
 			return true;
 		}
 		// fall through
 	case 3:
 	default:
+		Log::debug("Sponge 3");
 		if (loadSponge3(schematic, sceneGraph, palette, version)) {
 			return true;
 		}
@@ -120,8 +120,7 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegr
 
 bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 											   const priv::NamedBinaryTag &blockStates,
-											   scenegraph::SceneGraphNode &node,
-											   const core::Buffer<int> &mcpal) {
+											   scenegraph::SceneGraphNode &node, const SchematicPalette &mcpal) {
 	const core::Buffer<int64_t> *data = blockStates.longArray();
 	if (data == nullptr) {
 		Log::error("Invalid BlockStates - expected long array");
@@ -142,12 +141,13 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 					id = (uint64_t)((*data)[start]) >> rshiftVal & mask;
 				} else {
 					if (start >= data->size() || start + 1 >= data->size()) {
-						Log::error("Invalid BlockStates, out of bounds, start_state: %i, max size: %i, endnum: %i", (int)start,
-								   (int)data->size(), (int)end);
+						Log::error("Invalid BlockStates, out of bounds, start_state: %i, max size: %i, endnum: %i",
+								   (int)start, (int)data->size(), (int)end);
 						return false;
 					}
 					uint64_t move_num_2 = 64 - rshiftVal;
-					id = (((uint64_t)(*data)[start]) >> rshiftVal | ((uint64_t)(*data)[start + 1]) << move_num_2) & mask;
+					id =
+						(((uint64_t)(*data)[start]) >> rshiftVal | ((uint64_t)(*data)[start + 1]) << move_num_2) & mask;
 				}
 				if (id == 0) {
 					continue;
@@ -189,10 +189,10 @@ bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scene
 			}
 
 			const priv::NBTList &blockStatePaletteNbt = *blockStatesPalette.list();
-			core::Buffer<int> mcpal;
+			SchematicPalette mcpal;
 			mcpal.resize(blockStatePaletteNbt.size());
 			int paletteSize = 0;
-			for (const auto & palNbt : blockStatePaletteNbt) {
+			for (const auto &palNbt : blockStatePaletteNbt) {
 				const priv::NamedBinaryTag &materialName = palNbt.get("Name");
 				mcpal[paletteSize++] = findPaletteIndex(materialName.string()->c_str(), 1);
 			}
@@ -281,7 +281,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 		Log::error("Invalid BlockData - expected byte array");
 		return false;
 	}
-	core::Buffer<int> mcpal;
+	SchematicPalette mcpal;
 	const int paletteEntry = parsePalette(schematic, mcpal);
 
 	const int16_t width = schematic.get("Width").int16();
@@ -293,7 +293,6 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 		return false;
 	}
 
-	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	SchematicIntReader reader(blocks);
 	int index = 0;
@@ -321,9 +320,9 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	int nodeId = sceneGraph.emplace(core::move(node));
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		return false;
 	}
 	parseMetadata(schematic, sceneGraph, sceneGraph.node(nodeId));
@@ -332,7 +331,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 
 bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 								  palette::Palette &palette, const priv::NamedBinaryTag &blocks, int version) {
-	core::Buffer<int> mcpal;
+	SchematicPalette mcpal;
 	const int paletteEntry = parsePalette(schematic, mcpal);
 
 	const int16_t width = schematic.get("Width").int16();
@@ -344,7 +343,6 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 	// * https://github.com/mcedit/mcedit2/blob/master/src/mceditlib/schematic.py#L143
 	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
 
-	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
@@ -371,86 +369,111 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	int nodeId = sceneGraph.emplace(core::move(node));
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		return false;
 	}
 	parseMetadata(schematic, sceneGraph, sceneGraph.node(nodeId));
 	return true;
 }
 
-int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const {
-	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs"); // MCEdit2
-	if (blockIds.valid()) {
-		mcpal.resize(palette::PaletteMaxColors);
+int SchematicFormat::loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const {
+	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs");
+	if (!blockIds.valid()) {
+		return -1;
+	}
+	Log::debug("Found MCEdit2 BlockIDs");
+	mcpal.resize(palette::PaletteMaxColors);
+	int paletteEntry = 0;
+	const int blockCnt = (int)blockIds.compound()->size();
+	Log::debug("Loading BlockIDs with %i entries", blockCnt);
+	for (int i = 0; i < blockCnt; ++i) {
+		const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
+		const core::String *value = nbt.string();
+		if (value == nullptr) {
+			Log::warn("Empty string in BlockIDs for %i", i);
+			continue;
+		}
+		// map to stone on default
+		mcpal[i] = findPaletteIndex(*value, 1);
+		++paletteEntry;
+	}
+	return paletteEntry;
+}
+
+int SchematicFormat::loadWorldEditPalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const {
+	const int paletteMax = schematic.get("PaletteMax").int32(-1);
+	if (paletteMax == -1) {
+		return -1;
+	}
+	Log::debug("Found WorldEdit PaletteMax %i", paletteMax);
+	const priv::NamedBinaryTag &palette = schematic.get("Palette");
+	if (palette.valid() && palette.type() == priv::TagType::COMPOUND) {
+		if ((int)palette.compound()->size() != paletteMax) {
+			return -1;
+		}
+		mcpal.resize(paletteMax);
 		int paletteEntry = 0;
-		const int blockCnt = (int)blockIds.compound()->size();
-		Log::debug("Loading BlockIDs with %i entries", blockCnt);
-		for (int i = 0; i < blockCnt; ++i) {
-			const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
-			const core::String *value = nbt.string();
-			if (value == nullptr) {
-				Log::warn("Empty string in BlockIDs for %i", i);
+		for (const auto &c : *palette.compound()) {
+			const core::String &key = c->key;
+			const int palIdx = c->second.int32(-1);
+			if (palIdx < 0) {
+				Log::warn("Failed to get int value for %s", key.c_str());
+				continue;
+			}
+			if (palIdx >= paletteMax) {
+				Log::warn("Palette index %i is out of bounds", palIdx);
 				continue;
 			}
 			// map to stone on default
-			mcpal[i] = findPaletteIndex(*value, 1);
+			mcpal[palIdx] = findPaletteIndex(key, 1);
 			++paletteEntry;
 		}
 		return paletteEntry;
 	}
-	const int paletteMax = schematic.get("PaletteMax").int32(-1); // WorldEdit
-	if (paletteMax != -1) {
-		const priv::NamedBinaryTag &palette = schematic.get("Palette");
-		if (palette.valid() && palette.type() == priv::TagType::COMPOUND) {
-			if ((int)palette.compound()->size() != paletteMax) {
-				return -1;
-			}
-			mcpal.resize(paletteMax);
-			int paletteEntry = 0;
-			for (const auto &c : *palette.compound()) {
-				const core::String &key = c->key;
-				const int palIdx = c->second.int32(-1);
-				if (palIdx < 0) {
-					Log::warn("Failed to get int value for %s", key.c_str());
-					continue;
-				}
-				if (palIdx >= paletteMax) {
-					Log::warn("Palette index %i is out of bounds", palIdx);
-					continue;
-				}
-				// map to stone on default
-				mcpal[palIdx] = findPaletteIndex(key, 1);
-				++paletteEntry;
-			}
-			return paletteEntry;
-		}
-	}
-	// https://github.com/Lunatrius/Schematica/
-	const priv::NamedBinaryTag &schematicaMapping = schematic.get("SchematicaMapping");
-	if (schematicaMapping.valid()) {
-		if (schematicaMapping.valid() && schematicaMapping.type() == priv::TagType::COMPOUND) {
-			int paletteEntry = 0;
-			for (const auto &c : *schematicaMapping.compound()) {
-				core::String key = c->key;
-				const int palIdx = c->second.int16(-1);
-				if (palIdx < 0) {
-					Log::warn("Failed to get int value for %s", key.c_str());
-					continue;
-				}
-				if (palIdx >= paletteMax) {
-					Log::warn("Palette index %i is out of bounds", palIdx);
-					continue;
-				}
-				// map to stone on default
-				mcpal[palIdx] = findPaletteIndex(key, 1);
-				++paletteEntry;
-			}
-			return paletteEntry;
-		}
-	}
+	return -1;
+}
 
+// https://github.com/Lunatrius/Schematica/
+int SchematicFormat::loadSchematicaPalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const {
+	const priv::NamedBinaryTag &schematicaMapping = schematic.get("SchematicaMapping");
+	if (!schematicaMapping.valid()) {
+		return -1;
+	}
+	if (schematicaMapping.type() != priv::TagType::COMPOUND) {
+		return -1;
+	}
+	Log::debug("Found SchematicaMapping");
+	int paletteEntry = 0;
+	for (const auto &c : *schematicaMapping.compound()) {
+		core::String key = c->key;
+		const int palIdx = c->second.int16(-1);
+		if (palIdx < 0) {
+			Log::warn("Failed to get int value for %s", key.c_str());
+			continue;
+		}
+		// map to stone on default
+		mcpal[palIdx] = findPaletteIndex(key, 1);
+		++paletteEntry;
+	}
+	return paletteEntry;
+}
+
+int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const {
+	int paletteEntry = loadMCEdit2Palette(schematic, mcpal);
+	if (paletteEntry != -1) {
+		return paletteEntry;
+	}
+	paletteEntry = loadWorldEditPalette(schematic, mcpal);
+	if (paletteEntry != -1) {
+		return paletteEntry;
+	}
+	paletteEntry = loadSchematicaPalette(schematic, mcpal);
+	if (paletteEntry != -1) {
+		return paletteEntry;
+	}
+	Log::warn("Could not find valid 'BlockIDs' or 'Palette' tag");
 	return -1;
 }
 
@@ -603,7 +626,8 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 							}
 						}
 
-						Log::debug("Set block state %s at %i %i %i to %i", blockState.c_str(), x, y, z, (int)blockDataIdx);
+						Log::debug("Set block state %s at %i %i %i to %i", blockState.c_str(), x, y, z,
+								   (int)blockDataIdx);
 						// Store the palette index in block data
 						blocks[idx] = blockDataIdx;
 					}

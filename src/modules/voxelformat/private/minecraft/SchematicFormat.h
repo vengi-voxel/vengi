@@ -19,6 +19,7 @@ class NamedBinaryTag;
 
 /**
  * @note https://minecraft.wiki/w/Schematic_file_format
+ * @note https://www.minecraft-schematics.com/
  * @note https://github.com/SpongePowered/Schematic-Specification/tree/master/versions
  * @note https://abfielder.com/
  *
@@ -26,6 +27,7 @@ class NamedBinaryTag;
  */
 class SchematicFormat : public PaletteFormat {
 protected:
+	using SchematicPalette = core::Buffer<int>;
 	bool loadSponge1And2(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 						 palette::Palette &palette);
 	bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
@@ -34,7 +36,7 @@ protected:
 	bool loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 				 int dataVersion);
 	bool readLitematicBlockStates(const glm::ivec3 &size, int bits, const priv::NamedBinaryTag &blockStates,
-								  scenegraph::SceneGraphNode &node, const core::Buffer<int> &mcpal);
+								  scenegraph::SceneGraphNode &node, const SchematicPalette &mcpal);
 	bool loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 					   palette::Palette &palette);
 	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
@@ -46,7 +48,11 @@ protected:
 					   scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node);
 	void parseMetadata(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 					   scenegraph::SceneGraphNode &node);
-	int parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const;
+	int loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
+	int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
+	int loadSchematicaPalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
+
+	int parsePalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
