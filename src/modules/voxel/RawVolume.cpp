@@ -61,22 +61,8 @@ RawVolume::RawVolume(const RawVolume &src, const core::Buffer<Region> &copyRegio
 	setBorderValue(src.borderValue());
 	initialise(_region);
 
-	for (Region copyRegion : copyRegions) {
-		core_assert(copyRegion.isValid());
-		copyRegion.cropTo(_region);
-		RawVolume::Sampler destSampler(*this);
-		RawVolume::Sampler srcSampler(src);
-		for (int32_t x = copyRegion.getLowerX(); x <= copyRegion.getUpperX(); ++x) {
-			for (int32_t y = copyRegion.getLowerY(); y <= copyRegion.getUpperY(); ++y) {
-				srcSampler.setPosition(x, y, copyRegion.getLowerZ());
-				destSampler.setPosition(x, y, copyRegion.getLowerZ());
-				for (int32_t z = copyRegion.getLowerZ(); z <= copyRegion.getUpperZ(); ++z) {
-					destSampler.setVoxel(srcSampler.voxel());
-					destSampler.movePositiveZ();
-					srcSampler.movePositiveZ();
-				}
-			}
-		}
+	for (const Region &copyRegion : copyRegions) {
+		copyInto(src, copyRegion);
 	}
 }
 
@@ -198,9 +184,13 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		return false;
 	}
 	voxel::Region srcRegion = region;
+	if (!src.region().containsRegion(srcRegion)) {
+		srcRegion.cropTo(src.region());
+	}
 	if (!_region.containsRegion(srcRegion)) {
 		srcRegion.cropTo(_region);
 	}
+	const voxel::Region &fullSrcRegion = src.region();
 	const glm::ivec3 &mins = srcRegion.getLowerCorner();
 	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 
@@ -210,8 +200,11 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	const int tgtYStride = width;
 	const int tgtZStride = width * height;
 
-	const int srcWidth = src.region().getWidthInVoxels();
-	const int srcHeight = src.region().getHeightInVoxels();
+	const int srcWidth = fullSrcRegion.getWidthInVoxels();
+	const int srcHeight = fullSrcRegion.getHeightInVoxels();
+	const int srcXOffset = mins.x - fullSrcRegion.getLowerX();
+	const int srcYOffset = mins.y - fullSrcRegion.getLowerY();
+	const int srcZOffset = mins.z - fullSrcRegion.getLowerZ();
 	const int srcYStride = srcWidth;
 	const int srcZStride = srcWidth * srcHeight;
 
@@ -220,14 +213,14 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		const int tgtZPos = z - _region.getLowerZ();
-		const int srcZPos = z - mins.z;
+		const int srcZPos = srcZOffset + z - mins.z;
 
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			const int tgtYPos = y - _region.getLowerY();
-			const int srcYPos = y - mins.y;
+			const int srcYPos = srcYOffset + y - mins.y;
 
 			const int tgtBaseIndex = tgtZPos * tgtZStride + tgtYPos * tgtYStride + (mins.x - _region.getLowerX());
-			const int srcBaseIndex = srcZPos * srcZStride + srcYPos * srcYStride;
+			const int srcBaseIndex = srcXOffset + srcZPos * srcZStride + srcYPos * srcYStride;
 
 			const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
 			voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
