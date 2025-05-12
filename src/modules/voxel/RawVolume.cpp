@@ -188,6 +188,10 @@ bool RawVolume::copyInto(const RawVolume &src) {
 	if (!intersects(_region, src.region())) {
 		return false;
 	}
+	if (_region == src.region()) {
+		core_memcpy((void *)_data, (void *)src._data, RawVolume::size(_region));
+		return true;
+	}
 	voxel::Region srcRegion = src.region();
 	if (!_region.containsRegion(srcRegion)) {
 		srcRegion.cropTo(_region);
