@@ -139,6 +139,7 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 			}
 			stream->write(output, n);
 		}
+		close(stdoutfd[STDIN_FILENO]);
 		for (;;) {
 			const int n = (int)::read(stderrfd[STDIN_FILENO], output, sizeof(output));
 			if (n <= 0) {
@@ -146,6 +147,11 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 			}
 			stream->write(output, n);
 		}
+		close(stderrfd[STDIN_FILENO]);
+	} else {
+		// we are not interested in the output, so close the read end of the pipes
+		close(stdoutfd[STDIN_FILENO]);
+		close(stderrfd[STDIN_FILENO]);
 	}
 	// we are the parent and are blocking until the child stopped
 	int status;
