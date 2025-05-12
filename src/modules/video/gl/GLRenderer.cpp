@@ -887,13 +887,13 @@ bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t *
 	}
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
-	*pixels = (uint8_t *)SDL_malloc(h * pitch);
+	*pixels = (uint8_t *)core_malloc(h * pitch);
 	core_assert(glPixelStorei != nullptr);
 	core_assert(glReadPixels != nullptr);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glReadPixels(x, y, w, h, f.dataFormat, f.dataType, (void *)*pixels);
 	if (checkError()) {
-		SDL_free(*pixels);
+		core_free(*pixels);
 		*pixels = nullptr;
 		return false;
 	}

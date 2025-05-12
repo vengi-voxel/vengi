@@ -41,12 +41,12 @@ void String::checkBufferSize(size_t len) {
 	}
 	if (_data._capacity <= 0) {
 		// string must be moved over because it exceeds the internal buffer
-		_data._str = (char*)SDL_malloc(len);
+		_data._str = (char*)core_malloc(len);
 		SDL_memcpy(_data._str, _buf, _data._size + 1);
 		_data._capacity = len;
 	} else {
 		_data._capacity = align(len, 32);
-		_data._str = (char*)SDL_realloc(_data._str, _data._capacity);
+		_data._str = (char*)core_realloc(_data._str, _data._capacity);
 	}
 }
 
@@ -57,13 +57,13 @@ void String::copyBuf(const char *str, size_t len) {
 
 	if (len >= _stackBufCapacity) {
 		if (_data._capacity > 0u) {
-			SDL_free(_data._str);
+			core_free(_data._str);
 		}
 		_data._capacity = len + 1;
-		_data._str = (char*)SDL_malloc(_data._capacity);
+		_data._str = (char*)core_malloc(_data._capacity);
 	} else {
 		if (_data._capacity > 0u) {
-			SDL_free(_data._str);
+			core_free(_data._str);
 		}
 		_data._str = _buf;
 		_data._capacity = 0u;
@@ -79,7 +79,7 @@ String::String(size_t len, char chr) {
 
 	if (len >= _stackBufCapacity) {
 		_data._capacity = len + 1;
-		_data._str = (char*)SDL_malloc(_data._capacity);
+		_data._str = (char*)core_malloc(_data._capacity);
 	} else {
 		_data._str = _buf;
 		_data._capacity = 0u;
@@ -124,7 +124,7 @@ String::~String() {
 	if (onStack()) {
 		return;
 	}
-	SDL_free(_data._str);
+	core_free(_data._str);
 #ifdef DEBUG
 	_data._str = nullptr;
 	_data._capacity = 0u;
@@ -186,7 +186,7 @@ void String::clear() {
 		_data._str[0] = '\0';
 		return;
 	}
-	SDL_free(_data._str);
+	core_free(_data._str);
 	_data._str = _buf;
 	_data._capacity = 0u;
 }
@@ -292,7 +292,7 @@ String &String::operator=(String &&str) noexcept {
 	}
 	if (_data._capacity > 0u) {
 		_data._capacity = 0u;
-		SDL_free(_data._str);
+		core_free(_data._str);
 	}
 	if (str.onStack()) {
 		SDL_memcpy(_buf, str._buf, str.size() + 1);
