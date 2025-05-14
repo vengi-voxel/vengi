@@ -32,7 +32,7 @@ struct SurfaceExtractionContext {
 	const SurfaceExtractionType type;
 	const bool mergeQuads;		 // used only for Cubic
 	const bool reuseVertices;	 // used only for Cubic
-	const bool ambientOcclusion; // used only for Cubic
+	const bool ambientOcclusion; // used only for Cubic and Binary
 	const bool optimize;
 };
 

@@ -100,9 +100,11 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t 
 									  uint32_t norm, uint32_t ao, const glm::ivec3 &translate) {
 	VoxelVertex vertex;
 	vertex.position = glm::vec3(x - 1 + translate.x, y - 1 + translate.y, z - 1 + translate.z);
-	vertex.info = 0;
 	vertex.ambientOcclusion = ao;
 	vertex.colorIndex = voxel.getColor();
+	vertex.flags = voxel.getFlags();
+	vertex.padding = 0u; // Voxel::_unused
+	vertex.padding2 = 0u;
 	IndexType index = mesh.addVertex(vertex);
 	// mesh.setNormal(index, norm);
 	return index;
