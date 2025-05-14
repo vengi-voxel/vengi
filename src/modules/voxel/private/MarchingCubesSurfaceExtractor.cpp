@@ -97,9 +97,12 @@ static void generateVertex(math::Axis axis, const palette::Palette &palette, Raw
 	sampler.movePositive(axis);
 }
 
-void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &region, ChunkMesh *result, bool optimize) {
+void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &ctxRegion, ChunkMesh *result, bool optimize) {
 	core_assert_msg(volume != nullptr, "Provided volume cannot be null");
 	core_assert_msg(result != nullptr, "Provided mesh cannot be null");
+
+	voxel::Region region = ctxRegion;
+	region.shrink(-1);
 
 	result->clear();
 

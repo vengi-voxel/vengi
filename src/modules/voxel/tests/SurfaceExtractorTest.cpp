@@ -4,6 +4,7 @@
 
 #include "voxel/SurfaceExtractor.h"
 #include "app/tests/AbstractTest.h"
+#include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 
@@ -98,11 +99,12 @@ TEST_F(SurfaceExtractorTest, DISABLED_testMeshExtraction) {
 	const bool mergeQuads = true;
 	const bool reuseVertices = true;
 	const bool ambientOcclusion = false;
+	const bool optimize = true;
 
 	voxel::ChunkMesh mesh;
 
 	SurfaceExtractionContext ctx =
-		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion, optimize);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(48, (int)mesh.mesh[0].getNoOfVertices());
 }
@@ -131,6 +133,30 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionIssue445) {
 		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(8, (int)mesh.mesh[0].getNoOfVertices());
+}
+
+TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
+	glm::ivec3 mins(-1, -1, -1);
+	glm::ivec3 maxs(1, -1, 1);
+	voxel::Region region(mins, maxs);
+	voxel::RawVolume v(region);
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	voxel::ChunkMesh mesh;
+	palette::Palette pal;
+	pal.nippon();
+
+	region.shiftUpperCorner(1, 1, 1);
+	SurfaceExtractionContext ctx =
+		voxel::buildMarchingCubesContext(&v, region, mesh, pal, false);
+	voxel::extractSurface(ctx);
+	EXPECT_EQ(30, (int)mesh.mesh[0].getNoOfVertices());
 }
 
 } // namespace voxel
