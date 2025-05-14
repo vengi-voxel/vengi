@@ -33,25 +33,32 @@ vec4 calcColor(void) {
 	return vec4(color, v_color.a);
 }
 
+vec4 darken(vec4 color) {
+	return vec4(color.rgb * vec3(0.3, 0.3, 0.3), o_color.a);
+}
+
+vec4 brighten(vec4 color) {
+	return clamp(vec4(color.rgb * vec3(1.5, 1.5, 1.5), o_color.a), 0.0, 1.0);
+}
+
 void main(void) {
 	o_color = calcColor();
 	if ((v_flags & FLAGOUTLINE) != 0u) {
 		// TODO: these must be zoom, scale and view related
 		const float epsilona = 0.025;
 		const float epsilonb = 0.0001;
-		float xx = abs(fract(v_pos.x));
-		float yy = abs(fract(v_pos.y));
-		float zz = abs(fract(v_pos.z));
-		bool nearX = (xx <= epsilona || 1.0 - xx <= epsilona);
-		bool nearY = (yy <= epsilona || 1.0 - yy <= epsilona);
-		bool nearZ = (zz <= epsilona || 1.0 - zz <= epsilona);
-		bool overX = (xx <= epsilonb || 1.0 - xx <= epsilonb);
-		bool overY = (yy <= epsilonb || 1.0 - yy <= epsilonb);
-		bool overZ = (zz <= epsilonb || 1.0 - zz <= epsilonb);
+		vec4 frac = abs(fract(v_pos));
+		bool nearX = (frac.x <= epsilona || 1.0 - frac.x <= epsilona);
+		bool nearY = (frac.y <= epsilona || 1.0 - frac.y <= epsilona);
+		bool nearZ = (frac.z <= epsilona || 1.0 - frac.z <= epsilona);
+		bool overX = (frac.x <= epsilonb || 1.0 - frac.x <= epsilonb);
+		bool overY = (frac.y <= epsilonb || 1.0 - frac.y <= epsilonb);
+		bool overZ = (frac.z <= epsilonb || 1.0 - frac.z <= epsilonb);
 		if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
-			o_color = vec4(o_color.rgb * vec3(0.3, 0.3, 0.3), o_color.a);
 			if (o_color.r < 0.1 && o_color.g < 0.1 && o_color.b < 0.1) {
-				o_color.rgb = vec3(1.0, 1.0, 1.0);
+				o_color = brighten(o_color);
+			} else {
+				o_color = darken(o_color);
 			}
 		}
 	}
