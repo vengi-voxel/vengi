@@ -10,7 +10,7 @@ set(SRCS
 	CaptureTool.cpp CaptureTool.h
 )
 set(LIB image)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io util stb_image)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util stb_image)
 if (NOT MSVC)
 	target_compile_options(${LIB} PRIVATE -Wno-unused-function -Wno-missing-field-initializers)
 endif()

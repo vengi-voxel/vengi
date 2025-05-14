@@ -57,7 +57,7 @@ if (APPLE)
 endif()
 
 set(LIB video)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image util)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image)
 if (RENDERER STREQUAL "GL")
 	set(OpenGL_GL_PREFERENCE GLVND)
 	find_package(OpenGL)

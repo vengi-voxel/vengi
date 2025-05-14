@@ -32,7 +32,7 @@ set(SRCS
 	PaletteLookup.h
 	PaletteCompleter.h
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image http json)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image)
 
 set(TEST_SRCS
 	tests/NormalPaletteTest.cpp

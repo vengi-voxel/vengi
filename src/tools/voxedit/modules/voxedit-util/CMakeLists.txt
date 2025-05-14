@@ -37,7 +37,7 @@ set(SRCS
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator voxelfont memento)
+set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS

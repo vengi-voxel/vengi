@@ -13,7 +13,7 @@ set(SRCS
 	VersionCheck.h VersionCheck.cpp
 )
 set(LIB util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command http json io)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command http json)
 
 set(TEST_SRCS
 	tests/BinaryPListTest.cpp

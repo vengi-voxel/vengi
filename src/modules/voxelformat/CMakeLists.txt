@@ -109,7 +109,7 @@ set(SRCS
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric ${LIB}-external)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric ${LIB}-external)
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
