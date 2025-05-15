@@ -103,11 +103,11 @@ typedef std::vector<QuadList> QuadListVector;
  * space) while the voxel behind the potential quad would have a value
  * greater than zero (typically indicating it is solid).
  */
-CORE_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
+static CORE_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
 	return back == VoxelType::Generic && front <= VoxelType::Transparent;
 }
 
-CORE_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
+static CORE_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
 	if (!isTransparent(back)) {
 		return false;
 	}
