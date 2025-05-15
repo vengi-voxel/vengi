@@ -35,7 +35,6 @@ SOFTWARE.
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
 #include <stdint.h>
-#include <vector>
 
 namespace voxel {
 
