@@ -33,6 +33,8 @@ SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Regio
 }
 
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
+	core_assert_msg(ctx.volume != nullptr, "Provided volume cannot be null");
+
 	ctx.mesh.clear();
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
