@@ -3,6 +3,7 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
@@ -117,7 +118,20 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Binary)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, MarchingCubes)(benchmark::State &state) {
+	palette::Palette pal;
+	pal.nippon();
+	for (auto _ : state) {
+		voxel::ChunkMesh mesh{65536, 65536, false};
+
+		voxel::SurfaceExtractionContext ctx =
+			voxel::buildMarchingCubesContext(&v, v.region(), mesh, pal, true);
+		voxel::extractSurface(ctx);
+	}
+}
+
 BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Cubic);
 BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Binary);
+BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, MarchingCubes);
 
 BENCHMARK_MAIN();
