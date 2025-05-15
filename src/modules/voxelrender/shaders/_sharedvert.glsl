@@ -11,7 +11,7 @@ layout(std140) uniform u_vert {
 	int u_gray;
 };
 
-$out vec4 v_pos;
+$out vec3 v_pos;
 $out vec3 v_normal;
 $out vec4 v_color;
 $out vec4 v_glow;

@@ -11,7 +11,8 @@ layout (location = 2) $in vec3 a_normal;
 void main(void) {
 	uint a_flags = ((a_info[0] & ~3u) >> 2u);
 	uint a_colorindex = a_info[1];
-	v_pos = u_model * vec4(a_pos - u_pivot, 1.0);
+	vec4 pos = u_model * vec4(a_pos - u_pivot, 1.0);
+	v_pos = a_pos;
 	v_normal = a_normal;
 
 	int materialColorIndex = int(a_colorindex);
@@ -32,9 +33,9 @@ void main(void) {
 	v_glow = glowColor;
 
 #if cl_shadowmap == 1
-	v_lightspacepos = v_pos.xyz;
+	v_lightspacepos = pos.xyz;
 	v_viewz = (u_viewprojection * vec4(v_lightspacepos, 1.0)).w;
 #endif // cl_shadowmap
 
-	gl_Position = u_viewprojection * v_pos;
+	gl_Position = u_viewprojection * pos;
 }

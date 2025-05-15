@@ -128,3 +128,33 @@ vec3 checkerBoardColor(in vec3 normal, in vec3 pos, in vec3 color) {
 }
 
 #endif // r_checkerboard == 1
+
+
+vec4 darken(vec4 color) {
+	return vec4(color.rgb * vec3(0.3, 0.3, 0.3), color.a);
+}
+
+vec4 brighten(vec4 color) {
+	return clamp(vec4(color.rgb * vec3(1.5, 1.5, 1.5), color.a), 0.0, 1.0);
+}
+
+// pos is in object space
+vec4 outline(vec3 pos, vec4 color) {
+	const float epsilona = 0.025;
+	const float epsilonb = 0.0001;
+	vec3 frac = abs(fract(pos));
+	bool nearX = (frac.x <= epsilona || 1.0 - frac.x <= epsilona);
+	bool nearY = (frac.y <= epsilona || 1.0 - frac.y <= epsilona);
+	bool nearZ = (frac.z <= epsilona || 1.0 - frac.z <= epsilona);
+	bool overX = (frac.x <= epsilonb || 1.0 - frac.x <= epsilonb);
+	bool overY = (frac.y <= epsilonb || 1.0 - frac.y <= epsilonb);
+	bool overZ = (frac.z <= epsilonb || 1.0 - frac.z <= epsilonb);
+	if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
+		if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) {
+			color = brighten(color);
+		} else {
+			color = darken(color);
+		}
+	}
+	return color;
+}
