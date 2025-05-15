@@ -19,6 +19,6 @@ class Region;
 struct ChunkMesh;
 
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-							 const glm::ivec3 &translate, bool ambientOcclusion = true, bool optimize = false);
+							 const glm::ivec3 &translate, bool ambientOcclusion = true);
 
 } // namespace voxel

@@ -322,7 +322,7 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 }
 
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-							 const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
+							 const glm::ivec3 &translate, bool ambientOcclusion) {
 	// loop over each chunk of the size CS_P * CS_P * CS_P and extract the mesh for it
 	// then merge the mesh into the result
 
@@ -337,12 +337,6 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	extractBinaryGreedyMeshType<0>(translate, ambientOcclusion, voxels, result->mesh[0]);
 	// transparent type
 	extractBinaryGreedyMeshType<1>(translate, ambientOcclusion, voxels, result->mesh[1]);
-
-	if (optimize) {
-		result->optimize();
-	}
-	result->removeUnusedVertices();
-	result->compressIndices();
 }
 
 } // namespace voxel

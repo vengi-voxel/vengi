@@ -97,14 +97,12 @@ static void generateVertex(math::Axis axis, const palette::Palette &palette, Raw
 	sampler.movePositive(axis);
 }
 
-void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &ctxRegion, ChunkMesh *result, bool optimize) {
+void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &ctxRegion, ChunkMesh *result) {
 	core_assert_msg(volume != nullptr, "Provided volume cannot be null");
 	core_assert_msg(result != nullptr, "Provided mesh cannot be null");
 
 	voxel::Region region = ctxRegion;
 	region.shrink(-1);
-
-	result->clear();
 
 	// Store some commonly used values for performance and convenience
 	const int32_t w = region.getWidthInVoxels();
@@ -283,13 +281,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 
 		core::exchange(indicesBuf, previousIndicesBuf);
 	}
-
-	if (optimize) {
-		result->optimize();
-	}
 	result->setOffset(region.getLowerCorner());
-	result->removeUnusedVertices();
-	result->compressIndices();
 }
 
 } // namespace voxel

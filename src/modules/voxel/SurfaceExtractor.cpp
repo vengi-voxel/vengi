@@ -3,6 +3,7 @@
  */
 
 #include "SurfaceExtractor.h"
+#include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/RawVolume.h"
@@ -32,15 +33,20 @@ SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Regio
 }
 
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
+	ctx.mesh.clear();
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
-		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh, ctx.optimize);
+		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
 	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
-		voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion,
-									   ctx.optimize);
+		voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion);
 	} else {
-		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
-								ctx.ambientOcclusion, ctx.optimize);
+		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
+								ctx.reuseVertices);
 	}
+	if (ctx.optimize) {
+		ctx.mesh.optimize();
+	}
+	ctx.mesh.removeUnusedVertices();
+	ctx.mesh.compressIndices();
 }
 
 voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type, const voxel::RawVolume *volume,
