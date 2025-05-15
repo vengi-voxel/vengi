@@ -6,10 +6,6 @@
 
 #include <glm/fwd.hpp>
 
-namespace palette {
-class Palette;
-}
-
 namespace voxel {
 
 class RawVolume;
