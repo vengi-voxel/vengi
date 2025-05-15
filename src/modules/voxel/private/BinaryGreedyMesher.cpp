@@ -325,7 +325,6 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	// loop over each chunk of the size CS_P * CS_P * CS_P and extract the mesh for it
 	// then merge the mesh into the result
 
-	result->clear();
 	const glm::ivec3 &offset = region.getLowerCorner();
 	result->setOffset(offset);
 
