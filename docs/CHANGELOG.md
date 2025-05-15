@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Fixed an off-by-one bug in the marching cubes extractor
+   - Fixed outline rendering in scene mode
 
 ## 0.0.37 (2025-05-12)
 
