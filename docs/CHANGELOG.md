@@ -15,6 +15,10 @@ General:
    - Fixed an off-by-one bug in the marching cubes extractor
    - Fixed outline rendering in scene mode
 
+VoxEdit:
+
+   - Fixed directory import on Windows systems
+
 ## 0.0.37 (2025-05-12)
 
 General:

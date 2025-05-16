@@ -436,11 +436,9 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 			continue;
 		}
 		scenegraph::SceneGraph newSceneGraph;
-		io::FilePtr filePtr = _filesystem->open(e.fullPath, io::FileMode::SysRead);
-		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
 		io::FileDescription fileDesc;
-		fileDesc.set(filePtr->name(), format);
+		fileDesc.set(e.fullPath, format);
 		if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
