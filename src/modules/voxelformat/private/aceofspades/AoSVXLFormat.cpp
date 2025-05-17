@@ -3,6 +3,7 @@
  */
 
 #include "AoSVXLFormat.h"
+#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -53,6 +54,19 @@ static inline uint8_t vxl_red(uint32_t c) {
 	return (c >> 16) & 0xFF;
 }
 
+static bool readVec3(io::SeekableReadStream *stream, glm::dvec3 &vec) {
+	if (stream->readDouble(vec.x) != 0) {
+		return false;
+	}
+	if (stream->readDouble(vec.y) != 0) {
+		return false;
+	}
+	if (stream->readDouble(vec.z) != 0) {
+		return false;
+	}
+	return true;
+}
+
 bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
@@ -61,7 +75,53 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 		Log::error("Failed to open stream for file: %s", filename.c_str());
 		return false;
 	}
-	const int64_t size = stream->size();
+	size_t mapSize, mapHeight;
+	uint32_t magic = 0;
+	stream->peekUInt32(magic);
+	const bool slab5 = magic == FourCC('\x00', '\x20', '\x07', '\x09') || magic == FourCC('\x09', '\x07', '\x20', '\x00');
+	if (slab5) {
+		stream->skip(4);
+		Log::debug("Found slab5 vxl");
+		uint32_t width, height;
+		if (stream->readUInt32(width) != 0) {
+			Log::error("Failed to read width");
+			return false;
+		}
+		if (stream->readUInt32(height) != 0) {
+			Log::error("Failed to read height");
+			return false;
+		}
+
+		if (width != 1024 || height != 1024) {
+			Log::error("Invalid dimensions: %u:%u", width, height);
+			return false;
+		}
+
+		mapSize = width;
+		mapHeight = 256;
+
+		glm::dvec3 ipo;
+		if (!readVec3(stream, ipo)) {
+			Log::error("Failed to read ipo/camera position");
+			return false;
+		}
+		glm::dvec3 ist;
+		if (!readVec3(stream, ist)) {
+			Log::error("Failed to read ist/unit right vector");
+			return false;
+		}
+		glm::dvec3 ihe;
+		if (!readVec3(stream, ihe)) {
+			Log::error("Failed to read ihe/unit down vector");
+			return false;
+		}
+		glm::dvec3 ifo;
+		if (!readVec3(stream, ifo)) {
+			Log::error("Failed to read ifo/unit forward vector");
+			return false;
+		}
+	}
+	const int64_t size = stream->remaining();
 	uint8_t *data = (uint8_t *)core_malloc(size);
 	if (stream->read(data, size) == -1) {
 		Log::error("Failed to read vxl stream for %s of size %i", filename.c_str(), (int)size);
@@ -69,8 +129,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	size_t mapSize, mapHeight;
-	if (!libvxl_size(&mapSize, &mapHeight, data, size)) {
+	if (!slab5 && !libvxl_size(&mapSize, &mapHeight, data, size)) {
 		Log::error("Failed to determine vxl size");
 		core_free(data);
 		return false;
