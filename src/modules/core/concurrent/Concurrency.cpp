@@ -134,4 +134,8 @@ uint32_t halfcpus() {
 	return core_max(1, cpus() / 2u);
 }
 
+uint32_t mostcpus() {
+	return core_max(1, cpus() - 1u);
+}
+
 }

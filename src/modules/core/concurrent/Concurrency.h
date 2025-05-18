@@ -88,6 +88,7 @@ namespace core {
 
 extern uint32_t cpus();
 extern uint32_t halfcpus();
+extern uint32_t mostcpus();
 
 extern bool setThreadName(const char *name);
 
