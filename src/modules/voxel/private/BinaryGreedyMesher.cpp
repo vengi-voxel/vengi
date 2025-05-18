@@ -113,7 +113,7 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t 
 static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
 static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
-static void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos) {
+void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos) {
 	core_trace_scoped(PrepareChunks);
 	voxel::RawVolume::Sampler sampler(map);
 	voxels.resize(CS_P3);

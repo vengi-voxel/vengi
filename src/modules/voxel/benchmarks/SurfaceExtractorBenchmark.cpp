@@ -106,6 +106,18 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Cubic)(benchmark::State &state) {
 	}
 }
 
+namespace voxel {
+void prepareChunk(const voxel::RawVolume &map, core::Buffer<voxel::Voxel> &voxels, const glm::ivec3 &chunkPos);
+}
+
+BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, BinaryPrepareChunk)(benchmark::State &state) {
+	for (auto _ : state) {
+		core::Buffer<voxel::Voxel> voxels;
+		glm::ivec3 chunkPos = v.region().getLowerCorner() - 1;
+		voxel::prepareChunk(v, voxels, chunkPos);
+	}
+}
+
 BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Binary)(benchmark::State &state) {
 	for (auto _ : state) {
 		const bool ambientOcclusion = false;
@@ -132,6 +144,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, MarchingCubes)(benchmark::State &s
 
 BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Cubic);
 BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, Binary);
+BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, BinaryPrepareChunk);
 BENCHMARK_REGISTER_F(SurfaceExtractorBenchmark, MarchingCubes);
 
 BENCHMARK_MAIN();
