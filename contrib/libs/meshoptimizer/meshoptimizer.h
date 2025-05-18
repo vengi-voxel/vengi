@@ -304,8 +304,9 @@ MESHOPTIMIZER_API size_t meshopt_encodeVertexBufferBound(size_t vertex_count, si
  * The default compression level implied by meshopt_encodeVertexBuffer is 2.
  *
  * level should be in the range [0, 3] with 0 being the fastest and 3 being the slowest and producing the best compression ratio.
+ * version should be -1 to use the default version (specified via meshopt_encodeVertexVersion), or 0/1 to override the version; per above, level won't take effect if version is 0.
  */
-MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size, int level);
+MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size, int level, int version);
 
 /**
  * Set vertex encoder format version
@@ -437,6 +438,19 @@ MESHOPTIMIZER_API size_t meshopt_simplifyWithAttributes(unsigned int* destinatio
  * result_error can be NULL; when it's not NULL, it will contain the resulting (relative) error after simplification
  */
 MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* result_error);
+
+/**
+ * Experimental: Mesh simplifier (pruner)
+ * Reduces the number of triangles in the mesh by removing small isolated parts of the mesh
+ * Returns the number of indices after simplification, with destination containing new index data
+ * The resulting index buffer references vertices from the original vertex buffer.
+ * If the original vertex data isn't required, creating a compact vertex buffer using meshopt_optimizeVertexFetch is recommended.
+ *
+ * destination must contain enough space for the target index buffer, worst case is index_count elements
+ * vertex_positions should have float3 position in the first 12 bytes of each vertex
+ * target_error represents the error relative to mesh extents that can be tolerated, e.g. 0.01 = 1% deformation; value range [0..1]
+ */
+MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifyPrune(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, float target_error);
 
 /**
  * Point cloud simplifier
