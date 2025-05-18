@@ -271,9 +271,10 @@ const io::FormatDescription *getDescription(const core::String &filename, uint32
 			continue;
 		}
 		if (magic > 0 && !desc->magics.empty() && !isA(*desc, magic)) {
-			Log::debug("File doesn't have the expected magic number");
+			Log::debug("File doesn't have the expected magic number for %s", desc->name.c_str());
 			continue;
 		}
+		Log::debug("Found format %s for file %s", desc->name.c_str(), filename.c_str());
 		return desc;
 	}
 	if (magic > 0) {
