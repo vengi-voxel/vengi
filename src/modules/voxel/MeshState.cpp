@@ -12,6 +12,9 @@
 
 namespace voxel {
 
+MeshState::MeshState() : _lockedIndices(MAX_VOLUMES) {
+}
+
 bool MeshState::init() {
 	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
 	_meshMode->markClean();
@@ -178,6 +181,27 @@ voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const glm::
 	return voxel::Region{mins, maxs};
 }
 
+void MeshState::lockIdx(int idx) {
+	core::ScopedLock lock(_lock);
+	auto iter = _lockedIndices.find(idx);
+	if (iter != _lockedIndices.end()) {
+		++iter->value;
+	} else {
+		_lockedIndices.emplace(idx, 1);
+	}
+}
+
+void MeshState::unlockIdx(int idx) {
+	core::ScopedLock lock(_lock);
+	auto iter = _lockedIndices.find(idx);
+	if (iter != _lockedIndices.end()) {
+		core_assert(iter->value > 0);
+		if (--iter->value == 0) {
+			_lockedIndices.erase(iter);
+		}
+	}
+}
+
 bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 	const size_t n = _extractRegions.size();
 	if (n == 0) {
@@ -194,6 +218,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 			break;
 		}
 		const int idx = extractRegion.idx;
+		lockIdx(idx);
 		const voxel::RawVolume *v = volume(idx);
 		if (v == nullptr) {
 			continue;
@@ -203,18 +228,16 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		if (!copyRegion.isValid()) {
 			continue;
 		}
-		// TODO: this copy is only needed because we don't lock the mesh state for the given idx while an extraction is running.
-		//       it is possible to set a new volume while the extraction is running, which would
-		//       lead to a crash when the extraction is done and we try to access the volume
-		voxel::RawVolume copy(v, copyRegion);
+
 		++_pendingExtractorTasks;
-		_threadPool.enqueue([type, pal = palette(resolveIdx(idx)), movedCopy = core::move(copy), idx,
+		_threadPool.enqueue([type, pal = palette(resolveIdx(idx)), v, idx,
 			region = extractRegion.region, this]() {
 			const glm::ivec3 &mins = region.getLowerCorner();
 			++_runningExtractorTasks;
 			voxel::ChunkMesh mesh(65536, 65536, true);
-			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, region, pal, mesh, mins);
+			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, region, pal, mesh, mins);
 			voxel::extractSurface(ctx);
+			unlockIdx(idx);
 			_pendingQueue.emplace(mins, idx, core::move(mesh));
 			Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 			--_runningExtractorTasks;
@@ -242,7 +265,7 @@ bool MeshState::update() {
 		}
 		triggerClear = true;
 	}
-	runScheduledExtractions();
+	runScheduledExtractions(app::App::getInstance()->threadPool().size());
 	return triggerClear;
 }
 
@@ -348,8 +371,15 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 	if (old == v) {
 		return nullptr;
 	}
+	_lock.lock();
+	while (_lockedIndices.hasKey(idx)) {
+		_lock.unlock();
+		app::App::getInstance()->wait(1);
+		_lock.lock();
+	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	_volumeData[idx]._rawVolume = v;
+	_lock.unlock();
 	if (meshDelete) {
 		deleteMeshes(idx);
 		meshDeleted = true;

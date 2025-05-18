@@ -99,6 +99,9 @@ private:
 	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
+	core_trace_mutex(core::Lock, _lock, "MeshState");
+	core::Map<int, int> _lockedIndices;
+
 	core::AtomicInt _runningExtractorTasks{0};
 	core::AtomicInt _pendingExtractorTasks{0};
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const;
@@ -106,12 +109,15 @@ private:
 	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
-	bool runScheduledExtractions(size_t maxExtraction = 1);
+	void lockIdx(int idx);
+	void unlockIdx(int idx);
+	bool runScheduledExtractions(size_t maxExtraction = 3);
 	void waitForPendingExtractions();
 	bool deleteMeshes(int idx);
 	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
 
 public:
+	MeshState();
 	void clear();
 	const MeshesMap &meshes(MeshType type) const;
 	/**
