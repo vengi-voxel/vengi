@@ -281,7 +281,6 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
-		core_trace_scoped(SceneGraphPanel);
 		ImVec2 size = ImGui::GetWindowSize();
 		const float textLineHeight = ImGui::GetTextLineHeight();
 		size.y -= textLineHeight * 4.0f;

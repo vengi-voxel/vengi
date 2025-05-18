@@ -55,8 +55,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	core_trace_scoped(MenuBar);
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
-		core_trace_scoped(MenuBar);
-
 		ImGui::Dummy({});
 
 		const Modifier &modifier = _sceneMgr->modifier();

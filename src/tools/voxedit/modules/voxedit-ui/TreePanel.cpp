@@ -77,7 +77,6 @@ void TreePanel::update(const char *id) {
 	core_trace_scoped(TreePanel);
 	const core::String title = makeTitle(ICON_LC_TREE_PINE, _("Trees"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		core_trace_scoped(TreePanel);
 		if (ImGui::BeginIconCombo(ICON_LC_TREES, _("Type"), treeTypeName(core::enumVal(_treeGeneratorContext.cfg.type)), 0)) {
 			for (int i = 0; i < (int)voxelgenerator::TreeType::Max; ++i) {
 				if (ImGui::Selectable(treeTypeName(i), i == core::enumVal(_treeGeneratorContext.cfg.type))) {
