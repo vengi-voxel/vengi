@@ -71,14 +71,16 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	core_trace_scoped(RawVolumeCopyRegion);
 	core_assert(region.isValid());
 	setBorderValue(src.borderValue());
-	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
 	if (!intersects(src.region(), _region)) {
 		if (onlyAir) {
 			*onlyAir = true;
 		}
+		const size_t size = RawVolume::size(_region);
+		_data = (Voxel *)core_malloc(size);
 		core_memset((void *)_data, 0, size);
 	} else if (src.region() == _region) {
+		const size_t size = RawVolume::size(_region);
+		_data = (Voxel *)core_malloc(size);
 		core_memcpy((void *)_data, (void *)src._data, size);
 		if (onlyAir) {
 			*onlyAir = false;
@@ -90,6 +92,8 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
+		const size_t size = RawVolume::size(_region);
+		_data = (Voxel *)core_malloc(size);
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
 		const glm::ivec3 &tgtMaxs = _region.getUpperCorner();
 		const glm::ivec3 &srcMins = src._region.getLowerCorner();
