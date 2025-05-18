@@ -4,29 +4,12 @@
 
 #include "voxel/Region.h"
 #include "app/tests/AbstractTest.h"
+#include "math/tests/TestMathHelper.h"
 #include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/epsilon.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/euler_angles.hpp>
-
-#define EXPECT_GLM_EQ(expected, v1) \
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(expected, v1, glm::epsilon<float>()))) << "Got: " << v1 << ", expected " << expected
-
-namespace glm {
-
-::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
-	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	return os;
-}
-
-::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
-	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	return os;
-}
-
-} // namespace glm
 
 namespace voxel {
 
@@ -226,11 +209,11 @@ TEST_F(RegionTest, testCenter) {
 
 	voxel::Region region3(-2, 11);
 	EXPECT_EQ(glm::ivec3(4), region3.getCenter());
-	EXPECT_GLM_EQ(glm::vec3(5.0f), region3.calcCenterf());
+	EXPECT_VEC_NEAR(glm::vec3(5.0f), region3.calcCenterf(), glm::epsilon<float>());
 
 	voxel::Region region4(0, 0);
 	EXPECT_EQ(glm::ivec3(0), region4.getCenter());
-	EXPECT_GLM_EQ(glm::vec3(0.5f), region4.calcCenterf());
+	EXPECT_VEC_NEAR(glm::vec3(0.5f), region4.calcCenterf(), glm::epsilon<float>());
 }
 
 TEST_F(RegionTest, testSubtract) {
