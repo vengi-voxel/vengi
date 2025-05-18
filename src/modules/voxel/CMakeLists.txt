@@ -35,6 +35,7 @@ set(TEST_SRCS
 	tests/ModificationRecorderTest.cpp
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
+	tests/RawVolumeViewTest.cpp
 	tests/RegionTest.cpp
 	tests/SparseVolumeTest.cpp
 	tests/SurfaceExtractorTest.cpp

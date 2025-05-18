@@ -332,6 +332,7 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	const glm::ivec3 &offset = region.getLowerCorner();
 	result->setOffset(offset);
 
+	// TODO: use the RawVolumeView
 	core::Buffer<voxel::Voxel> voxels;
 	prepareChunk(*volData, voxels, region.getLowerCorner() - 1);
 

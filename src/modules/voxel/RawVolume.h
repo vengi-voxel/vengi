@@ -16,6 +16,8 @@ namespace voxel {
  * Simple volume implementation which stores data in a single large 3D array.
  */
 class RawVolume {
+private:
+	friend class RawVolumeView;
 public:
 	class Sampler : public VolumeSampler<RawVolume> {
 	private:
