@@ -80,6 +80,9 @@ set(SRCS
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
 	list(APPEND SRCS tracy/public/TracyClient.cpp)
 	message(STATUS "Building with tracy enabled")
+	set_source_files_properties(tracy/public/TracyClient.cpp PROPERTIES
+		COMPILE_FLAGS "$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wno-empty-body -Wno-missing-field-initializers -Wno-shadow>"
+	)
 else()
 	message(STATUS "Building with tracy disabled")
 endif()
