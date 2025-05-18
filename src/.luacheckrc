@@ -38,7 +38,9 @@ globals = {
 	"g_vec4",
 	"g_quat",
 	"g_sys",
-	"g_io"
+	"g_io",
+
+	"tracy"
 }
 
 read_globals = {

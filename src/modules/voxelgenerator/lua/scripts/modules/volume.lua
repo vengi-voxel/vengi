@@ -12,6 +12,7 @@ local module = {}
 function module.conditionYXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
+	tracy.ZoneBegin()
 	for y = mins.y, maxs.y do
 		coroutine.yield()
 		for x = mins.x, maxs.x do
@@ -22,6 +23,7 @@ function module.conditionYXZ(volume, region, visitor, condition)
 			end
 		end
 	end
+	tracy.ZoneEnd()
 end
 
 ---

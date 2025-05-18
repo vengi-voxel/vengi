@@ -182,6 +182,7 @@ voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const glm::
 }
 
 void MeshState::lockIdx(int idx) {
+	core_trace_scoped(MeshStateLockIdx);
 	core::ScopedLock lock(_lock);
 	auto iter = _lockedIndices.find(idx);
 	if (iter != _lockedIndices.end()) {
@@ -192,6 +193,7 @@ void MeshState::lockIdx(int idx) {
 }
 
 void MeshState::unlockIdx(int idx) {
+	core_trace_scoped(MeshStateUnlockIdx);
 	core::ScopedLock lock(_lock);
 	auto iter = _lockedIndices.find(idx);
 	if (iter != _lockedIndices.end()) {
