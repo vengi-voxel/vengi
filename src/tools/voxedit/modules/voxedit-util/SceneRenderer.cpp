@@ -81,6 +81,15 @@ bool SceneRenderer::isSliceModeActive() const {
 	return _sceneGraphRenderer.isSliceModeActive();
 }
 
+SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
+	RendererStats stats;
+	stats.pendingRegions = _extractRegions.size();
+	stats.pendingExtractions = _meshState->pendingExtractions();
+	stats.runningExtractorTasks = _meshState->runningExtractorTasks();
+	stats.pendingExtractorTasks = _meshState->pendingExtractorTasks();
+	return stats;
+}
+
 void SceneRenderer::shutdown() {
 	_sceneGraphRenderer.shutdown();
 	// don't free the volumes here, they belong to the scene graph

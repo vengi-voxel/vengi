@@ -32,9 +32,9 @@
 
 VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 				 const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
-				 const video::TexturePoolPtr &texturePool)
-	: Super(filesystem, timeProvider, core::halfcpus()), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr),
-	  _texturePool(texturePool), _paletteCache(sceneMgr, filesystem) {
+				 const video::TexturePoolPtr &texturePool, const voxedit::SceneRendererPtr &sceneRenderer)
+	: Super(filesystem, timeProvider, core::mostcpus()), _sceneMgr(sceneMgr), _sceneRenderer(sceneRenderer),
+	  _collectionMgr(collectionMgr), _texturePool(texturePool), _paletteCache(sceneMgr, filesystem) {
 	init(ORGANISATION, "voxedit");
 	core::registerBindingContext("scene", core::BindingContext::Context1);
 	core::registerBindingContext("model", core::BindingContext::Context2);
@@ -435,7 +435,8 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_mainWindow = new voxedit::MainWindow(this, _sceneMgr, _texturePool, _collectionMgr, _filesystem, _paletteCache);
+	_mainWindow = new voxedit::MainWindow(this, _sceneMgr, _texturePool, _collectionMgr, _filesystem, _paletteCache,
+										  _sceneRenderer);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
 		return app::AppState::InitFailure;

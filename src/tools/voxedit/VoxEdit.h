@@ -8,6 +8,7 @@
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
+#include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/PaletteCacheEx.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelcollection/CollectionManager.h"
@@ -31,6 +32,7 @@ protected:
 	voxedit::MainWindow *_mainWindow = nullptr;
 	core::DynamicArray<io::FormatDescription> _paletteFormats;
 	voxedit::SceneManagerPtr _sceneMgr;
+	voxedit::SceneRendererPtr _sceneRenderer;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
 	voxedit::PaletteCacheEx _paletteCache;
@@ -53,7 +55,7 @@ protected:
 public:
 	VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 			const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
-			const video::TexturePoolPtr &texturePool);
+			const video::TexturePoolPtr &texturePool, const voxedit::SceneRendererPtr &sceneRenderer);
 
 	void onRenderUI() override;
 

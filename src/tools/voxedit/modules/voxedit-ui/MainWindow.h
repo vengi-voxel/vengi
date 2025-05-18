@@ -20,6 +20,7 @@
 #include "voxedit-ui/NodePropertiesPanel.h"
 #include "voxedit-ui/NormalPalettePanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
+#include "voxedit-ui/SceneDebugPanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ScriptPanel.h"
@@ -99,6 +100,7 @@ private:
 	AnimationTimeline _animationTimeline;
 	AnimationPanel _animationPanel;
 	CameraPanel _cameraPanel;
+	SceneDebugPanel _sceneDebugPanel;
 
 	/**
 	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
@@ -148,7 +150,7 @@ private:
 	void updateViewMode();
 public:
 	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
-			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem, palette::PaletteCache &paletteCache);
+			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem, palette::PaletteCache &paletteCache, const SceneRendererPtr &sceneRenderer);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();

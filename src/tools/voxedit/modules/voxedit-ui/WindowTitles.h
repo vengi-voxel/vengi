@@ -14,6 +14,7 @@
 #define TITLE_TOOLS "###toolspanel"
 #define TITLE_MEMENTO "###mementopanel"
 #define TITLE_CAMERA "###camerapanel"
+#define TITLE_SCENEDEBUGPANEL "###scenedebugpanel"
 #define TITLE_ASSET "###assetpanel"
 #define TITLE_SCRIPT "###scriptpanel"
 #define TITLE_SCENEGRAPH "###scenegraph"

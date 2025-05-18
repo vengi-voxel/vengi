@@ -28,6 +28,13 @@ class ISceneRenderer : public core::IComponent {
 public:
 	virtual ~ISceneRenderer() = default;
 
+	struct RendererStats {
+		int pendingRegions = 0;
+		int pendingExtractions = 0;
+		int runningExtractorTasks = 0;
+		int pendingExtractorTasks = 0;
+	};
+
 	virtual void update() {
 	}
 	virtual void clear() {
@@ -66,6 +73,9 @@ public:
 	}
 	virtual bool isSliceModeActive() const {
 		return sliceRegion().isValid();
+	}
+	virtual RendererStats rendererStats() const {
+		return {};
 	}
 };
 

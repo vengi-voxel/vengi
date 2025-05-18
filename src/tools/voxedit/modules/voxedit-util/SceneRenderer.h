@@ -91,6 +91,7 @@ public:
 	const voxel::Region &sliceRegion() const override;
 	void setSliceRegion(const voxel::Region &region) override;
 	bool isSliceModeActive() const override;
+	RendererStats rendererStats() const override;
 };
 
 } // namespace voxedit

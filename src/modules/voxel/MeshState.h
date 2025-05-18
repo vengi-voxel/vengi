@@ -139,6 +139,9 @@ public:
 	int pendingExtractions() const;
 	void clearPendingExtractions();
 
+	int runningExtractorTasks() const;
+	int pendingExtractorTasks() const;
+
 	/**
 	 * @sa shutdown()
 	 */
@@ -219,6 +222,14 @@ using MeshStatePtr = core::SharedPtr<MeshState>;
 
 inline int MeshState::pendingExtractions() const {
 	return (int)_extractRegions.size();
+}
+
+inline int MeshState::runningExtractorTasks() const {
+	return _runningExtractorTasks;
+}
+
+inline int MeshState::pendingExtractorTasks() const {
+	return _pendingExtractorTasks;
 }
 
 inline voxel::RawVolume *MeshState::volume(int idx) {

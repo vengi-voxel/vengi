@@ -12,6 +12,6 @@ int main(int argc, char *argv[]) {
 		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
 	const voxelcollection::CollectionManagerPtr &collectionMgr =
 		core::make_shared<voxelcollection::CollectionManager>(filesystem, texturePool);
-	VoxEdit app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool);
+	VoxEdit app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer);
 	return app.startMainLoop(argc, argv);
 }

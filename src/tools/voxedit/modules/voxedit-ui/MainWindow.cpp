@@ -15,7 +15,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
-#include "dearimgui/imgui_internal.h"
+#include "ui/dearimgui/imgui_internal.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
@@ -109,7 +109,7 @@ bool MainWindow::_popupModelUnreference = false;
 
 MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
 					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem,
-					   palette::PaletteCache &paletteCache)
+					   palette::PaletteCache &paletteCache, const SceneRendererPtr &sceneRenderer)
 	: Super(app, "main"), _texturePool(texturePool), _sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
 	  _renderPanel(app, _sceneMgr),
@@ -120,7 +120,8 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
 	  _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
-	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr) {
+	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr),
+	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer) {
 
 	_tipOfTheDayList.push_back(_("Switch between scene and edit mode (not in simple UI mode) by pressing the <cmd:togglescene> key."));
 	_tipOfTheDayList.push_back(_("Use the file dialog options for format specific options."));
@@ -497,6 +498,7 @@ void MainWindow::rightWidget() {
 			_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 		}
 	}
+	// _sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);

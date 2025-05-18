@@ -9,8 +9,8 @@ private:
 public:
 	VoxEditTest(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 				const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
-				const video::TexturePoolPtr &texturePool)
-		: VoxEdit(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool) {
+				const video::TexturePoolPtr &texturePool, const voxedit::SceneRendererPtr &sceneRenderer)
+		: VoxEdit(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer) {
 		_showWindow = false;
 		_wantCrashLogs = false;
 	}
@@ -26,6 +26,6 @@ int main(int argc, char *argv[]) {
 		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
 	const voxelcollection::CollectionManagerPtr &collectionMgr =
 		core::make_shared<voxelcollection::CollectionManager>(filesystem, texturePool);
-	VoxEditTest app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool);
+	VoxEditTest app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer);
 	return app.startMainLoop(argc, argv);
 }

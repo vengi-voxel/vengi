@@ -18,6 +18,7 @@ set(SRCS
 	NormalPalettePanel.h NormalPalettePanel.cpp
 	PalettePanel.h PalettePanel.cpp
 	RenderPanel.h RenderPanel.cpp
+	SceneDebugPanel.h SceneDebugPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	BrushPanel.h BrushPanel.cpp
