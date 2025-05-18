@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "core/ArrayLength.h"
+#include "core/RGBA.h"
 
 namespace palette {
 class Palette;
@@ -120,6 +121,7 @@ constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIn
 	return Voxel(type, colorIndex, normalIndex, flags);
 }
 
+voxel::Voxel createVoxelFromColor(const palette::Palette &pal, core::RGBA color);
 voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = 0u, uint8_t flags = 0u);
 
 inline bool isBlocked(VoxelType material) {
