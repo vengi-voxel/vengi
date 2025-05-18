@@ -3,11 +3,11 @@
  */
 
 #include "Mesh.h"
+#include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Trace.h"
-#include "core/collection/DynamicArray.h"
 #include "meshoptimizer.h"
 #include "util/BufferUtil.h"
 #include <glm/common.hpp>
