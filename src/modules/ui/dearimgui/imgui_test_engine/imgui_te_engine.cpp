@@ -327,7 +327,11 @@ void    ImGuiTestEngine_RebootUiContext(ImGuiTestEngine* engine)
     ImGuiTestEngine_UnbindImGuiContext(engine, ctx);
 
     // Backup
+#ifdef IMGUI_HAS_TEXTURES
+    ImGuiContext* backup_atlas_owner = ctx->IO.Fonts->OwnerContext;
+#else
     bool backup_atlas_owned_by_context = ctx->FontAtlasOwnedByContext;
+#endif
     ImFontAtlas* backup_atlas = ctx->IO.Fonts;
     ImGuiIO backup_io = ctx->IO;
 #ifdef IMGUI_HAS_VIEWPORT
@@ -341,7 +345,11 @@ void    ImGuiTestEngine_RebootUiContext(ImGuiTestEngine* engine)
 #endif
 
     // Recreate
+#ifdef IMGUI_HAS_TEXTURES
+    ctx->IO.Fonts->OwnerContext = backup_atlas_owner;
+#else
     ctx->FontAtlasOwnedByContext = false;
+#endif
 #if 1
     ImGui::DestroyContext();
     ImGui::CreateContext(backup_atlas);
@@ -354,7 +362,11 @@ void    ImGuiTestEngine_RebootUiContext(ImGuiTestEngine* engine)
 #endif
 
     // Restore
+#ifdef IMGUI_HAS_TEXTURES
+    ctx->IO.Fonts->OwnerContext = ctx;
+#else
     ctx->FontAtlasOwnedByContext = backup_atlas_owned_by_context;
+#endif
     ctx->IO = backup_io;
 #ifdef IMGUI_HAS_VIEWPORT
     //backup_platform_io.Viewports.swap(ctx->PlatformIO.Viewports);

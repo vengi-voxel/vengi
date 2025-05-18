@@ -1225,6 +1225,8 @@ ImFont* ImGui::FindFontByPrefix(const char* prefix)
     for (ImFont* font : g.IO.Fonts->Fonts)
 #if IMGUI_VERSION_NUM < 19184
         if (strncmp(font->ConfigData->Name, prefix, strlen(prefix)) == 0)
+#elif defined(IMGUI_HAS_TEXTURES)
+        if (strncmp(font->Sources[0]->Name, prefix, strlen(prefix)) == 0)
 #else
         if (strncmp(font->Sources[0].Name, prefix, strlen(prefix)) == 0)
 #endif
