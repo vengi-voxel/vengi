@@ -13,7 +13,6 @@
 #include "io/FilesystemArchive.h"
 #include "io/Stream.h"
 #include "io/StreamArchive.h"
-#include "lua.h"
 #include "math/Axis.h"
 #include "noise/Simplex.h"
 #include "palette/PaletteFormatDescription.h"
