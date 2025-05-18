@@ -199,29 +199,27 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 			continue;
 		}
 		const voxel::Region finalRegion = extractRegion.region;
-		bool onlyAir = true;
 		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
 		if (!copyRegion.isValid()) {
 			continue;
 		}
-		voxel::RawVolume copy(v, copyRegion, &onlyAir);
-		if (!onlyAir) {
-			++_pendingExtractorTasks;
-			_threadPool.enqueue([type, pal = palette(resolveIdx(idx)), movedCopy = core::move(copy), idx,
-				region = extractRegion.region, this]() {
-				const glm::ivec3 &mins = region.getLowerCorner();
-				++_runningExtractorTasks;
-				voxel::ChunkMesh mesh(65536, 65536, true);
-				voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, region, pal, mesh, mins);
-				voxel::extractSurface(ctx);
-				_pendingQueue.emplace(mins, idx, core::move(mesh));
-				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
-				--_runningExtractorTasks;
-				--_pendingExtractorTasks;
-			});
-		} else {
-			_pendingQueue.emplace(extractRegion.region.getLowerCorner(), idx, core::move(voxel::ChunkMesh(0, 0)));
-		}
+		// TODO: this copy is only needed because we don't lock the mesh state for the given idx while an extraction is running.
+		//       it is possible to set a new volume while the extraction is running, which would
+		//       lead to a crash when the extraction is done and we try to access the volume
+		voxel::RawVolume copy(v, copyRegion);
+		++_pendingExtractorTasks;
+		_threadPool.enqueue([type, pal = palette(resolveIdx(idx)), movedCopy = core::move(copy), idx,
+			region = extractRegion.region, this]() {
+			const glm::ivec3 &mins = region.getLowerCorner();
+			++_runningExtractorTasks;
+			voxel::ChunkMesh mesh(65536, 65536, true);
+			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, region, pal, mesh, mins);
+			voxel::extractSurface(ctx);
+			_pendingQueue.emplace(mins, idx, core::move(mesh));
+			Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
+			--_runningExtractorTasks;
+			--_pendingExtractorTasks;
+		});
 		--maxExtraction;
 		if (maxExtraction == 0) {
 			break;
