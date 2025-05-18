@@ -113,25 +113,26 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t 
 static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
 static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
+// TODO: the binary mesher would be way faster if we would not convert this from xyz to zxy order
 void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos) {
 	core_trace_scoped(PrepareChunks);
-	voxel::RawVolume::Sampler sampler(map);
+	voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
+	voxel::RawVolume copy(copyRegion);
+	copy.copyInto(map, copyRegion);
+	const voxel::Voxel* data = copy.voxels();
 	voxels.resize(CS_P3);
-	sampler.setPosition(chunkPos);
 	for (uint32_t y = 0; y < CS_P; y++) {
-		voxel::RawVolume::Sampler sampler2 = sampler;
 		const uint32_t yoffset = y * CS_P2;
+		const uint32_t vyoffset = y * CS_P;
 		for (uint32_t x = 0; x < CS_P; x++) {
-			voxel::RawVolume::Sampler sampler3 = sampler2;
 			const uint32_t xyoffset = (x * CS_P) + yoffset;
+			const uint32_t vxyoffset = x + vyoffset;
 			for (uint32_t z = 0; z < CS_P; z++) {
 				const int index = z + xyoffset;
-				voxels[index] = sampler3.voxel();
-				sampler3.movePositiveZ();
+				const int vindex = vxyoffset + z * (CS_P2);
+				voxels[index] = data[vindex];
 			}
-			sampler2.movePositiveX();
 		}
-		sampler.movePositiveY();
 	}
 }
 
