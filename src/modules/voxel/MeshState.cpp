@@ -203,6 +203,7 @@ void MeshState::unlockIdx(int idx) {
 }
 
 bool MeshState::runScheduledExtractions(size_t maxExtraction) {
+	core_trace_scoped(MeshStateRunScheduledExtractions);
 	const size_t n = _extractRegions.size();
 	if (n == 0) {
 		return false;
@@ -253,6 +254,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 }
 
 bool MeshState::update() {
+	core_trace_scoped(MeshStateUpdate);
 	bool triggerClear = false;
 	if (_meshMode->isDirty()) {
 		_meshMode->markClean();
@@ -313,18 +315,21 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 }
 
 void MeshState::extractAllPending() {
+	core_trace_scoped(MeshStateExtractAllPending);
 	while (runScheduledExtractions(100)) {
 	}
 	waitForPendingExtractions();
 }
 
 void MeshState::waitForPendingExtractions() {
+	core_trace_scoped(MeshStateWaitForPendingExtractions);
 	while (_pendingExtractorTasks > 0) {
 		app::App::getInstance()->wait(1);
 	}
 }
 
 void MeshState::clearPendingExtractions() {
+	core_trace_scoped(MeshStateClearPendingExtractions);
 	_threadPool.abort();
 	while (_runningExtractorTasks > 0) {
 		app::App::getInstance()->wait(1);
@@ -361,6 +366,7 @@ bool MeshState::sameNormalPalette(int idx, const palette::NormalPalette *palette
 
 voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Palette *palette, palette::NormalPalette *normalPalette, bool meshDelete,
 									   bool &meshDeleted) {
+	core_trace_scoped(MeshStateSetVolume);
 	meshDeleted = false;
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;

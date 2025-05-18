@@ -27,6 +27,7 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
+#include "core/Trace.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "voxel/ChunkMesh.h"
@@ -113,6 +114,7 @@ static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
 static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
 static void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos) {
+	core_trace_scoped(PrepareChunks);
 	voxel::RawVolume::Sampler sampler(map);
 	voxels.resize(CS_P3);
 	sampler.setPosition(chunkPos);
@@ -136,6 +138,7 @@ static void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxel
 template<int MeshType>
 void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion,
 								 const core::Buffer<voxel::Voxel> &voxels, Mesh &mesh) {
+	core_trace_scoped(ExtractBinaryGreedyMeshType);
 	alignas(16) core::Array<uint64_t, CS_P2 * 6> col_face_masks({});
 	alignas(16) core::Array<uint64_t, CS_P2> a_axis_cols({});
 	auto p = voxels.begin();
@@ -322,6 +325,7 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
 							 const glm::ivec3 &translate, bool ambientOcclusion) {
+	core_trace_scoped(ExtractBinaryGreedyMesh);
 	// loop over each chunk of the size CS_P * CS_P * CS_P and extract the mesh for it
 	// then merge the mesh into the result
 

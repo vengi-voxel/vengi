@@ -6,6 +6,7 @@
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
+#include "core/Trace.h"
 #include <glm/common.hpp>
 #include <limits>
 
@@ -67,6 +68,7 @@ RawVolume::RawVolume(const RawVolume &src, const core::Buffer<Region> &copyRegio
 }
 
 RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) : _region(region) {
+	core_trace_scoped(RawVolumeCopyRegion);
 	core_assert(region.isValid());
 	setBorderValue(src.borderValue());
 	const size_t size = RawVolume::size(_region);
@@ -134,6 +136,7 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 }
 
 bool RawVolume::isEmpty(const Region &region) const {
+	core_trace_scoped(RawVolumeIsEmpty);
 	if (!intersects(_region, region)) {
 		return true;
 	}
@@ -180,6 +183,7 @@ bool RawVolume::copyInto(const RawVolume &src) {
 }
 
 bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
+	core_trace_scoped(RawVolumeCopyInto);
 	if (!intersects(_region, region)) {
 		return false;
 	}

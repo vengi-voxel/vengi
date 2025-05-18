@@ -5,6 +5,7 @@
 #include "MarchingCubesSurfaceExtractor.h"
 #include "core/Color.h"
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "core/collection/Array2DView.h"
 #include "MarchingCubesTables.h"
 #include "math/Axis.h"
@@ -98,6 +99,7 @@ static void generateVertex(math::Axis axis, const palette::Palette &palette, Raw
 }
 
 void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &ctxRegion, ChunkMesh *result) {
+	core_trace_scoped(ExtractMarchingCubesMesh);
 	voxel::Region region = ctxRegion;
 	region.shrink(-1);
 
