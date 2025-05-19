@@ -718,6 +718,7 @@ static int clua_http_requestexec(lua_State *s, http::Request &request) {
 	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream();
 	int status = 0;
 	core::StringMap<core::String> outheaders;
+	// TODO: this should be threaded and we should just return a future
 	if (!request.execute(*outStream, &status, &outheaders)) {
 		if (!outStream->empty()) {
 			outStream->seek(0);

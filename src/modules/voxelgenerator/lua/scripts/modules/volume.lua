@@ -13,13 +13,18 @@ function module.conditionYXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
 	tracy.ZoneBegin()
+	local yieldCounter = 32*32*32
 	for y = mins.y, maxs.y do
-		coroutine.yield()
 		for x = mins.x, maxs.x do
 			for z = mins.z, maxs.z do
 				if condition(volume, x, y, z) then
 					visitor(volume, x, y, z)
 				end
+				if yieldCounter == 0 then
+					coroutine.yield()
+					yieldCounter = 32*32*32
+				end
+				yieldCounter = yieldCounter - 1
 			end
 		end
 	end
@@ -34,12 +39,17 @@ end
 function module.conditionXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
+	local yieldCounter = 32*32*32
 	for x = mins.x, maxs.x do
-		coroutine.yield()
 		for z = mins.z, maxs.z do
 			if condition(volume, x, z) then
 				visitor(volume, x, z)
 			end
+			if yieldCounter == 0 then
+				coroutine.yield()
+				yieldCounter = 32*32*32
+			end
+			yieldCounter = yieldCounter - 1
 		end
 	end
 end
@@ -50,13 +60,18 @@ end
 function module.conditionYXZDown(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
+	local yieldCounter = 32*32*32
 	for y = maxs.y, mins.y, -1 do
-		coroutine.yield()
 		for x = mins.x, maxs.x do
 			for z = mins.z, maxs.z do
 				if condition(volume, x, y, z) then
 					visitor(volume, x, y, z)
 				end
+				if yieldCounter == 0 then
+					coroutine.yield()
+					yieldCounter = 32*32*32
+				end
+				yieldCounter = yieldCounter - 1
 			end
 		end
 	end
