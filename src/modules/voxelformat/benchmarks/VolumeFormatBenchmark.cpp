@@ -28,7 +28,7 @@ protected:
 	}
 };
 
-BENCHMARK_DEFINE_F(VolumeFormatBenchmark, QB)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, chr_knight_QB)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxelformat::QBFormat f;
 		const core::String filename = "chr_knight.qb";
@@ -37,7 +37,7 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, QB)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(VolumeFormatBenchmark, QBCL)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, chr_knight_QBCL)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxelformat::QBCLFormat f;
 		const core::String filename = "chr_knight.qbcl";
@@ -46,7 +46,7 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, QBCL)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(VolumeFormatBenchmark, GOX)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, chr_knight_GOX)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxelformat::GoxFormat f;
 		const core::String filename = "chr_knight.gox";
@@ -55,7 +55,7 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, GOX)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(VolumeFormatBenchmark, VENGI)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, chr_knight_VENGI)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxelformat::VENGIFormat f;
 		const core::String filename = "chr_knight.vengi";
@@ -73,8 +73,8 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, MCR)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_REGISTER_F(VolumeFormatBenchmark, QB);
-BENCHMARK_REGISTER_F(VolumeFormatBenchmark, QBCL);
-BENCHMARK_REGISTER_F(VolumeFormatBenchmark, GOX);
-BENCHMARK_REGISTER_F(VolumeFormatBenchmark, VENGI);
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_QB);
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_QBCL);
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_GOX);
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_VENGI);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, MCR);
