@@ -23,7 +23,7 @@
 #include <syslog.h>
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #define ANSI_COLOR_RESET "\033[0m"
 #define ANSI_COLOR_RED "\033[31m"
 #define ANSI_COLOR_GREEN "\033[32m"
