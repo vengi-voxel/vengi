@@ -14,6 +14,7 @@ General:
 
    - Fixed an off-by-one bug in the marching cubes extractor
    - Fixed outline rendering in scene mode
+   - Fixed `vxl` slab5 loading
 
 VoxEdit:
 
