@@ -73,8 +73,10 @@ CORE_FORCE_INLINE int vertexAO(uint8_t side1, uint8_t side2, uint8_t corner) {
 	return (side1 && side2) ? 0 : (3 - (side1 + side2 + corner));
 }
 
+using BinaryMesherInput = core::Buffer<Voxel>;
+
 template<int MeshType>
-CORE_FORCE_INLINE bool compare_ao(const core::Buffer<voxel::Voxel> &voxels, int axis, int forward, int right, int c,
+CORE_FORCE_INLINE bool compare_ao(const BinaryMesherInput &voxels, int axis, int forward, int right, int c,
 								  int forward_offset, int right_offset) {
 	for (const auto &ao_dir : ao_dirs) {
 		if (solid_check<MeshType>(voxels[get_axis_i(axis, right + ao_dir[0], forward + ao_dir[1], c)]) !=
@@ -114,7 +116,7 @@ static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
 static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
 // TODO: the binary mesher would be way faster if we would not convert this from xyz to zxy order
-void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos) {
+void prepareChunk(const voxel::RawVolume &map, BinaryMesherInput &voxels, const glm::ivec3 &chunkPos) {
 	core_trace_scoped(PrepareChunks);
 	voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
 	voxel::RawVolume copy(copyRegion);
@@ -138,7 +140,7 @@ void prepareChunk(const voxel::RawVolume &map, core::Buffer<Voxel> &voxels, cons
 
 template<int MeshType>
 void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion,
-								 const core::Buffer<voxel::Voxel> &voxels, Mesh &mesh) {
+								 const BinaryMesherInput &voxels, Mesh &mesh) {
 	core_trace_scoped(ExtractBinaryGreedyMeshType);
 	alignas(16) core::Array<uint64_t, CS_P2 * 6> col_face_masks({});
 	alignas(16) core::Array<uint64_t, CS_P2> a_axis_cols({});
@@ -334,8 +336,9 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	result->setOffset(offset);
 
 	// TODO: use the RawVolumeView
-	core::Buffer<voxel::Voxel> voxels;
-	prepareChunk(*volData, voxels, region.getLowerCorner() - 1);
+	BinaryMesherInput voxels;
+	const glm::ivec3 chunkPos = offset - 1;
+	prepareChunk(*volData, voxels, chunkPos);
 
 	// opaque type
 	extractBinaryGreedyMeshType<0>(translate, ambientOcclusion, voxels, result->mesh[0]);
