@@ -153,7 +153,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	const glm::ivec3 &offset = -mins;
 	const float scale = 1.0f;
 
-	wrapBool(stream->writeString("#binvox 1\n", false))
+	wrapBool(stream->writeString("#binvox 2\n", false))
 	stream->writeStringFormat(false, "dim %u %u %u\n", width, depth, height);
 	stream->writeStringFormat(false, "translate %i %i %i\n", offset.x, offset.y, offset.z);
 	stream->writeStringFormat(false, "scale %f\n", scale);
