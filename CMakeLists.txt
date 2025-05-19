@@ -72,7 +72,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_EXTENSIONS off)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if (${CMAKE_BUILD_TYPE} MATCHES "^(Release|RelWithDebInfo|MinSizeRel)$")
+if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 	set(CMAKE_LINK_WHAT_YOU_USE ON)
 	option(USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" ON)
 else()
