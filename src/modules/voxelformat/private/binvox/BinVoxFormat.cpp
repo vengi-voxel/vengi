@@ -47,10 +47,17 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 		uint8_t value;
 		uint8_t count;
 		wrap(stream.readUInt8(value))
+		// TODO: VOXELFORMAT: there is no official version 3 format spec - but the one file that was sent to
+		// me on the vengi discord server that was found, uses either 16 bit palette values or 8 bit palette
+		// followed by three unknown bytes. If there ever is a version 3 binvox spec, this might need to be
+		// changed
+		if (state._version >= 3) {
+			stream.skipDelta(3);
+		}
 		wrap(stream.readUInt8(count))
 		endIndex = index + count;
 		if (endIndex > numVoxels) {
-			Log::error("Given count is out of bounds");
+			Log::error("Given count is out of bounds: %i/%i", endIndex, numVoxels);
 			return false;
 		}
 		if (value != 0u) {
@@ -81,15 +88,13 @@ bool BinVoxFormat::loadGroups(const core::String &filename, const io::ArchivePtr
 	}
 
 	wrapBool(stream->readLine(sizeof(line), line))
-	if (0 != strcmp(line, "#binvox 1")) {
-		Log::error("Expected to get '#binvox 1', but got '%s'", line);
-		return false;
-	}
-
 	State state;
 	if (SDL_sscanf(line, "#binvox %u", &state._version) != 1) {
 		Log::error("Failed to parse binvox version");
 		return false;
+	}
+	if (state._version != 1 && state._version != 2) {
+		Log::warn("Only version 1 and 2 are supported. Found version %i", state._version);
 	}
 
 	for (;;) {
