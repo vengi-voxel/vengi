@@ -232,7 +232,7 @@ app::AppState IMGUIApp::onConstruct() {
 	_uiFontSize =
 		core::Var::get(cfg::UIFontSize, "14", -1, _("Allow to change the ui font size"), [](const core::String &val) {
 			const float size = core::string::toFloat(val);
-			return size >= 2.0f;
+			return size >= 8.0f;
 		});
 
 	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", _("Which keybinding to use"));
