@@ -52,7 +52,21 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 		// followed by three unknown bytes. If there ever is a version 3 binvox spec, this might need to be
 		// changed
 		if (state._version >= 3) {
-			stream.skipDelta(3);
+			if (value == 0u) {
+				wrap(stream.readUInt8(value))
+			} else {
+				stream.skipDelta(1);
+			}
+			if (value == 0u) {
+				wrap(stream.readUInt8(value))
+			} else {
+				stream.skipDelta(1);
+			}
+			if (value == 0u) {
+				wrap(stream.readUInt8(value))
+			} else {
+				stream.skipDelta(1);
+			}
 		}
 		wrap(stream.readUInt8(count))
 		endIndex = index + count;
