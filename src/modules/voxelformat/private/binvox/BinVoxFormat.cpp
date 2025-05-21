@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
@@ -147,6 +148,16 @@ bool BinVoxFormat::loadGroups(const core::String &filename, const io::ArchivePtr
 	return true;
 }
 
+static bool writeValue(io::SeekableWriteStream *stream, uint8_t value, int binvoxVersion) {
+	wrapBool(stream->writeUInt8(value))
+	if (binvoxVersion == 3) {
+		wrapBool(stream->writeUInt8(0))
+		wrapBool(stream->writeUInt8(0))
+		wrapBool(stream->writeUInt8(0))
+	}
+	return true;
+}
+
 bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							  const io::ArchivePtr &archive, const SaveContext &ctx) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -167,7 +178,9 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	const glm::ivec3 &offset = -mins;
 	const float scale = 1.0f;
 
-	wrapBool(stream->writeString("#binvox 2\n", false))
+	const int binvoxVersion = core::Var::getSafe(cfg::VoxformatBinvoxVersion)->intVal();
+
+	stream->writeStringFormat(false, "#binvox %i\n", binvoxVersion);
 	stream->writeStringFormat(false, "dim %u %u %u\n", width, depth, height);
 	stream->writeStringFormat(false, "translate %i %i %i\n", offset.x, offset.y, offset.z);
 	stream->writeStringFormat(false, "scale %f\n", scale);
@@ -192,7 +205,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		if (isAir(voxel.getMaterial())) {
 			if (value != 0u || count == 255u) {
 				if (count > 0u) {
-					wrapBool(stream->writeUInt8(value))
+					wrapBool(writeValue(stream, value, binvoxVersion))
 					wrapBool(stream->writeUInt8(count))
 				}
 				voxels += count;
@@ -205,9 +218,13 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 			if (v == 0) {
 				v = emptyColorReplacement;
 			}
+			if (binvoxVersion == 1 && v != 0u) {
+				// for version 1 we only store a one to indicate a solid voxel
+				v = 1u;
+			}
 			if (value != v || count == 255u) {
 				if (count > 0u) {
-					wrapBool(stream->writeUInt8(value))
+					wrapBool(writeValue(stream, value, binvoxVersion))
 					wrapBool(stream->writeUInt8(count))
 				}
 				voxels += count;
@@ -228,7 +245,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		}
 	}
 	core_assert_msg(count > 0u, "Expected to have at least one voxel left: %i", (int)count);
-	wrapBool(stream->writeUInt8(value))
+	wrapBool(writeValue(stream, value, binvoxVersion))
 	wrapBool(stream->writeUInt8(count))
 	voxels += count;
 	const uint32_t expectedVoxels = width * height * depth;

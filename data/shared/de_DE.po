@@ -655,6 +655,9 @@ msgstr ""
 msgid "The type of schematic format to use when saving schematics"
 msgstr ""
 
+msgid "Save in version 1, 2 or the unofficial version 3"
+msgstr ""
+
 msgid "Back"
 msgstr "Rückseite"
 
@@ -737,6 +740,18 @@ msgstr "Texturkoordinaten"
 msgid "Export materials"
 msgstr "Materialien exportieren"
 
+msgid "Binvox 1 (white)"
+msgstr "Binvox 1 (weiß)"
+
+msgid "Binvox 2 (multi colors)"
+msgstr "Binvox 2 (Mehrfarbig)"
+
+msgid "Binvox 3 (unofficial)"
+msgstr "Binvox 3 (inoffiziell)"
+
+msgid "Binvox version"
+msgstr "Binvox Version"
+
 msgid "Schematic type"
 msgstr ""
 
@@ -797,7 +812,7 @@ msgid "Min height"
 msgstr "Mindesthöhe"
 
 msgid "Texture search path"
-msgstr ""
+msgstr "Texturensuchpfad"
 
 msgid "Fill hollow"
 msgstr "Hohlraum füllen"
@@ -830,7 +845,7 @@ msgid "Map colors to palette"
 msgstr "Mappe Farben auf Palette"
 
 msgid "Max image size"
-msgstr ""
+msgstr "Maximale Bildgröße"
 
 msgid "Script parameters"
 msgstr "Skriptparameter"
@@ -2146,6 +2161,29 @@ msgstr "Hohe Qualität"
 
 msgid "Geometry preview"
 msgstr "Geometrie-Vorschau"
+
+msgid "Scene insights"
+msgstr "Szeneninterna"
+
+#, c-format
+msgid "Pending extractions: %i"
+msgstr ""
+
+#, c-format
+msgid "Pending regions: %i"
+msgstr "Ausstehende Regionen: %u"
+
+#, c-format
+msgid "Pending tasks: %i"
+msgstr "Ausstehende Jobs: %u"
+
+#, c-format
+msgid "Running tasks: %i"
+msgstr "Laufende Jobs: %i"
+
+#, c-format
+msgid "Threads: %i"
+msgstr "Threads: %i"
 
 msgid "Rename"
 msgstr "Umbenennen"

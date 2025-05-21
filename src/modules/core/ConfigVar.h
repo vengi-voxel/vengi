@@ -112,5 +112,6 @@ constexpr const char *VoxformatImageVolumeBothSides = "voxformat_imagevolumeboth
 constexpr const char *VoxformatImageImportType = "voxformat_imageimporttype";
 constexpr const char *VoxformatTexturePath = "voxformat_texturepath";
 constexpr const char *VoxformatSchematicType = "voxformat_schematictype";
+constexpr const char *VoxformatBinvoxVersion = "voxformat_binvoxversion";
 
 }

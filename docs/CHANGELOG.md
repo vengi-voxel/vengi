@@ -15,7 +15,8 @@ General:
    - Fixed an off-by-one bug in the marching cubes extractor
    - Fixed outline rendering in scene mode
    - Fixed `vxl` slab5 loading
-   - Support `binvox` version 2
+   - Support `binvox` version 2 and 3 (unofficial)
+   - Allow to save all three versions of `binvox` files (cvar `voxformat_binvoxversion`)
 
 VoxEdit:
 

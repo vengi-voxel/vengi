@@ -18,6 +18,7 @@
 #include "video/FileDialogOptions.h"
 #include "video/OpenFileMode.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
@@ -151,6 +152,23 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (meshFormat) {
 		saveOptionsMesh(desc);
+	}
+
+	if (*desc == voxelformat::BinVoxFormat::format()) {
+		const char *binvoxVersions[] = {_("Binvox 1 (white)"), _("Binvox 2 (multi colors)"), _("Binvox 3 (unofficial)")};
+		const core::VarPtr &binvoxVersion = core::Var::getSafe(cfg::VoxformatBinvoxVersion);
+		if (ImGui::BeginCombo(_("Binvox version"), binvoxVersion->strVal().c_str())) {
+			for (int i = 0; i < lengthof(binvoxVersions); ++i) {
+				const bool selected = binvoxVersion->intVal() == i + 1;
+				if (ImGui::Selectable(binvoxVersions[i], selected)) {
+					binvoxVersion->setVal(i + 1);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 	}
 
 	if (*desc == voxelformat::SchematicFormat::format()) {

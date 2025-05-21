@@ -625,6 +625,9 @@ msgstr ""
 msgid "The type of schematic format to use when saving schematics"
 msgstr ""
 
+msgid "Save in version 1, 2 or the unofficial version 3"
+msgstr ""
+
 msgid "Back"
 msgstr ""
 
@@ -705,6 +708,18 @@ msgid "Texture coordinates"
 msgstr ""
 
 msgid "Export materials"
+msgstr ""
+
+msgid "Binvox 1 (white)"
+msgstr ""
+
+msgid "Binvox 2 (multi colors)"
+msgstr ""
+
+msgid "Binvox 3 (unofficial)"
+msgstr ""
+
+msgid "Binvox version"
 msgstr ""
 
 msgid "Schematic type"
@@ -2036,6 +2051,29 @@ msgid "High quality"
 msgstr ""
 
 msgid "Geometry preview"
+msgstr ""
+
+msgid "Scene insights"
+msgstr ""
+
+#, c-format
+msgid "Pending extractions: %i"
+msgstr ""
+
+#, c-format
+msgid "Pending regions: %i"
+msgstr ""
+
+#, c-format
+msgid "Pending tasks: %i"
+msgstr ""
+
+#, c-format
+msgid "Running tasks: %i"
+msgstr ""
+
+#, c-format
+msgid "Threads: %i"
 msgstr ""
 
 msgid "Rename"

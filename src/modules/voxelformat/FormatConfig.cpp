@@ -124,6 +124,11 @@ bool FormatConfig::init() {
 	static_assert(PNGFormat::ImportType::Volume == 2, "Volume must be 2");
 	core::Var::get(cfg::VoxformatSchematicType, "mcedit2", core::CV_NOPERSIST,
 				   _("The type of schematic format to use when saving schematics"), schematicTypeValidator);
+	core::Var::get(cfg::VoxformatBinvoxVersion, "2", core::CV_NOPERSIST,
+				   _("Save in version 1, 2 or the unofficial version 3"), [](const core::String &var) {
+					   const int type = var.toInt();
+					   return type >= 1 && type <= 3;
+				   });
 
 	return true;
 }
