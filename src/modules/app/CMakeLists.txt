@@ -1,7 +1,7 @@
 set(SRCS
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
-	Async.h
+	Async.cpp Async.h
 	CommandlineApp.h CommandlineApp.cpp
 
 	i18n/Dictionary.cpp i18n/Dictionary.h
@@ -39,6 +39,7 @@ engine_add_module(TARGET test-${LIB} SRCS ${TEST_MODULE_SRCS} DEPENDENCIES gtest
 
 set(TEST_SRCS
 	tests/AppTest.cpp
+	tests/AsyncTest.cpp
 	tests/CommandCompleterTest.cpp
 	tests/POParserTest.cpp
 )

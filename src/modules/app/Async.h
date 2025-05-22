@@ -16,4 +16,6 @@ auto async(F &&f, Args &&...args) -> std::future<typename std::invoke_result<F, 
 	return app::App::getInstance()->threadPool().enqueue(core::forward<F>(f), core::forward<Args>(args)...);
 }
 
+void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda);
+
 } // namespace app
