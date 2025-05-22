@@ -254,14 +254,14 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				// * the region changed
 				// * we don't yet have a sliced volume view but requested one
 				if (_sliceVolumeDirty || _sliceVolumeNodeId != activeNodeId || !_sliceVolume || _sliceVolume->region() != _sliceRegion) {
-					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion);
+					// this enforces the lock on the volume renderer if the volume is currently extracted
+					core::SharedPtr<voxel::RawVolume> newVolume(core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion));
+					const voxel::RawVolume *oldV = _volumeRenderer.setVolume(meshState, idx, newVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
+					if (_sliceVolumeDirty || oldV != nullptr) {
+						_volumeRenderer.scheduleRegionExtraction(meshState, idx, newVolume->region());
+					}
+					_sliceVolume = newVolume;
 					_sliceVolumeNodeId = activeNodeId;
-				}
-				// either node or slice volume (nodes get their volume managed - and here we have a smart pointer)
-				// if the old volume was not the slice volume, the return value is not null
-				const voxel::RawVolume *oldV = _volumeRenderer.setVolume(meshState, idx, _sliceVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
-				if (_sliceVolumeDirty || oldV != nullptr) {
-					_volumeRenderer.scheduleRegionExtraction(meshState, idx, _sliceVolume->region());
 				}
 				_sliceVolumeDirty = false;
 
