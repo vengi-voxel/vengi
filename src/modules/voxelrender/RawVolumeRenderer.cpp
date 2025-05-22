@@ -698,7 +698,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
-	const bool normals = meshMode != voxel::SurfaceExtractionType::Cubic;
+	const bool normals = meshMode == voxel::SurfaceExtractionType::MarchingCubes;
 	video::Id oldShader = video::getProgram();
 	if (normals) {
 		_voxelNormShader.activate();
