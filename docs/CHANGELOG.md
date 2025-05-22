@@ -21,6 +21,7 @@ General:
 VoxEdit:
 
    - Fixed directory import on Windows systems
+   - Fixed missing ambient occlusion for the binary mesher mode
 
 ## 0.0.37 (2025-05-12)
 
