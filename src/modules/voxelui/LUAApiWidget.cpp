@@ -136,7 +136,9 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 	if (_scripts.empty()) {
 		return false;
 	}
-
+	if (_currentScript == -1 && _scripts[0].valid) {
+		_currentScript = 0;
+	}
 	if (ctx.isRunning) {
 		ImGui::Spinner("running_scripts", ImGui::Size(1.0f));
 		return true;
