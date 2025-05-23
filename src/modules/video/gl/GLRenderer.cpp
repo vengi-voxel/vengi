@@ -879,27 +879,6 @@ const core::DynamicSet<Id> &textures() {
 	return glstate().textures;
 }
 
-bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t **pixels) {
-	video_trace_scoped(ReadFrameBuffer);
-	core_assert(glstate().framebufferHandle != InvalidId);
-	if (glstate().framebufferHandle == InvalidId) {
-		return false;
-	}
-	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
-	const int pitch = w * f.bits / 8;
-	*pixels = (uint8_t *)core_malloc(h * pitch);
-	core_assert(glPixelStorei != nullptr);
-	core_assert(glReadPixels != nullptr);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(x, y, w, h, f.dataFormat, f.dataType, (void *)*pixels);
-	if (checkError()) {
-		core_free(*pixels);
-		*pixels = nullptr;
-		return false;
-	}
-	return true;
-}
-
 void genFramebuffers(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {

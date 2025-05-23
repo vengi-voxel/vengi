@@ -125,10 +125,6 @@ void deleteTextures(uint8_t amount, Id *ids);
 Id currentFramebuffer();
 void genFramebuffers(uint8_t amount, Id *ids);
 void deleteFramebuffers(uint8_t amount, Id *ids);
-/**
- * @note The returned buffer should get freed with SDL_free
- */
-bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t **pixels);
 void genRenderbuffers(uint8_t amount, Id *ids);
 void deleteRenderbuffers(uint8_t amount, Id *ids);
 void configureAttribute(const Attribute &a);
