@@ -27,7 +27,6 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
-#include "app/App.h"
 #include "app/Async.h"
 #include "core/Trace.h"
 #include "core/collection/Array.h"
@@ -48,7 +47,6 @@ static constexpr int CS = 62;
 static constexpr int CS_P = CS + 2;
 static constexpr int CS_P2 = CS_P * CS_P;
 static constexpr int CS_P3 = CS_P * CS_P * CS_P;
-static constexpr int CS_P_4 = CS_P / 4;
 
 CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const int c) {
 	if (axis == 0)
@@ -126,19 +124,8 @@ void prepareChunk(const voxel::RawVolume &map, BinaryMesherInput &voxels, const 
 	copy.copyInto(map, copyRegion);
 	const voxel::Voxel* data = copy.voxels();
 	voxels.resize(CS_P3);
-	static const struct ForRange {
-		uint32_t start;
-		uint32_t end;
-	} dataArray[] {
-		{0, CS_P_4},
-		{CS_P_4, CS_P_4 * 2},
-		{CS_P_4 * 2, CS_P_4 * 3},
-		{CS_P_4 * 3, CS_P_4 * 4}
-	};
-	static_assert(CS_P % lengthof(dataArray) == 0, "invalid CS_P size");
-	std::future<void> futures[lengthof(dataArray)];
-	auto func = [&voxels, &data](ForRange cdata) {
-		for (uint32_t y = cdata.start; y < cdata.end; y++) {
+	auto func = [&voxels, &data](int start, int end) {
+		for (int y = start; y < end; y++) {
 			const uint32_t yoffset = y * CS_P2;
 			const uint32_t vyoffset = y * CS_P;
 			for (uint32_t x = 0; x < CS_P; x++) {
@@ -152,14 +139,7 @@ void prepareChunk(const voxel::RawVolume &map, BinaryMesherInput &voxels, const 
 			}
 		}
 	};
-	for (int i = 0; i < lengthof(dataArray); ++i) {
-		futures[i] = app::async(func, dataArray[i]);
-	}
-	for (int i = 0; i < lengthof(futures); ++i) {
-		if (futures[i].valid()) {
-			futures[i].wait();
-		}
-	}
+	app::for_parallel(0, CS_P, func);
 }
 
 template<int MeshType>
