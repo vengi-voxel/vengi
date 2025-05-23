@@ -1416,29 +1416,58 @@ void uploadTexture(Id texture, TextureType type, TextureFormat format, int width
 				   int samples) {
 	video_trace_scoped(UploadTexture);
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
-	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
-	core_assert(type != TextureType::Max);
-	if (type == TextureType::Texture1D) {
-		core_assert(height == 1);
-		core_assert(glTexImage1D != nullptr);
-		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
-	} else if (type == TextureType::Texture2D) {
-		core_assert(glTexImage2D != nullptr);
-		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
-		checkError();
-	} else if (type == TextureType::Texture2DMultisample) {
-		core_assert(samples > 0);
-		core_assert(glTexImage2DMultisample != nullptr);
-		glTexImage2DMultisample(glType, samples, f.internalFormat, width, height, false);
-		checkError();
-	} else if (type == TextureType::Texture2DMultisampleArray) {
-		core_assert(glTexImage3DMultisample != nullptr);
-		glTexImage3DMultisample(glType, samples, f.internalFormat, width, height, index, false);
-		checkError();
+	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glTextureStorage2D != nullptr);
+		core_assert(glTextureStorage3D != nullptr);
+		if (type == TextureType::Texture1D) {
+			core_assert(height == 1);
+			core_assert(glTextureStorage1D != nullptr);
+			glTextureStorage1D(texture, 1, f.internalFormat, width);
+			checkError();
+		} else if (type == TextureType::Texture2D) {
+			core_assert(glTextureStorage2D != nullptr);
+			glTextureStorage2D(texture, 1, f.internalFormat, width, height);
+			checkError();
+		} else if (type == TextureType::Texture2DMultisample) {
+			core_assert(samples > 0);
+			core_assert(glTextureStorage2D != nullptr);
+			glTextureStorage2DMultisample(texture, samples, f.internalFormat, width, height, false);
+			checkError();
+		} else if (type == TextureType::Texture2DMultisampleArray) {
+			core_assert(samples > 0);
+			core_assert(glTextureStorage3DMultisample != nullptr);
+			glTextureStorage3DMultisample(texture, samples, f.internalFormat, width, height, index, false);
+			checkError();
+		} else {
+			core_assert(glTextureStorage3D != nullptr);
+			glTextureStorage3D(texture, 1, f.internalFormat, width, height, index);
+			checkError();
+		}
 	} else {
-		core_assert(glTexImage3D != nullptr);
-		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
-		checkError();
+		const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
+		core_assert(type != TextureType::Max);
+		if (type == TextureType::Texture1D) {
+			core_assert(height == 1);
+			core_assert(glTexImage1D != nullptr);
+			glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
+		} else if (type == TextureType::Texture2D) {
+			core_assert(glTexImage2D != nullptr);
+			glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
+			checkError();
+		} else if (type == TextureType::Texture2DMultisample) {
+			core_assert(samples > 0);
+			core_assert(glTexImage2DMultisample != nullptr);
+			glTexImage2DMultisample(glType, samples, f.internalFormat, width, height, false);
+			checkError();
+		} else if (type == TextureType::Texture2DMultisampleArray) {
+			core_assert(glTexImage3DMultisample != nullptr);
+			glTexImage3DMultisample(glType, samples, f.internalFormat, width, height, index, false);
+			checkError();
+		} else {
+			core_assert(glTexImage3D != nullptr);
+			glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
+			checkError();
+		}
 	}
 }
 
