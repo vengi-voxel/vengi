@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 
 namespace video {
 
@@ -157,6 +158,7 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	if (!isValid(idx)) {
 		return false;
 	}
+	core_trace_scoped(UpdateBuffer);
 
 	core_assert(video::boundVertexArray() == InvalidId);
 	const size_t oldSize = _size[idx];
