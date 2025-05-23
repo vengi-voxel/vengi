@@ -358,7 +358,7 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
 }
 
-bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
+bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
 	return false;
 }
 
@@ -377,18 +377,18 @@ const glm::vec4 &framebufferUV() {
 	return todo;
 }
 
-bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear) {
+bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear) {
 	return false;
 }
 
-bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)], const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
+bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)], const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	return false;
 }
 
-void setupTexture(const TextureConfig &config) {
+void setupTexture(Id texture, const TextureConfig &config) {
 }
 
-void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t *data, int index, int samples) {
+void uploadTexture(Id texture, video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t *data, int index, int samples) {
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {

@@ -98,7 +98,7 @@ bool FrameBuffer::init(const FrameBufferConfig& cfg) {
 	Id prev = video::bindFramebuffer(_fbo);
 	bool retVal = prepareAttachments(cfg);
 	if (retVal) {
-		retVal = video::setupFramebuffer(_colorAttachments, _bufferAttachments);
+		retVal = video::setupFramebuffer(_fbo, _colorAttachments, _bufferAttachments);
 	}
 	video::bindFramebuffer(prev);
 	return retVal;
@@ -174,7 +174,7 @@ bool FrameBuffer::bindTextureAttachment(FrameBufferAttachment attachment, int la
 		Log::warn("Given layer index (%i) is out of bounds: %i", layerIndex, (int)tex->layers());
 		return false;
 	}
-	return video::bindFrameBufferAttachment(tex->handle(), attachment, layerIndex, clear);
+	return video::bindFrameBufferAttachment(_fbo, tex->handle(), attachment, layerIndex, clear);
 }
 
 void FrameBuffer::unbind() {

@@ -140,16 +140,16 @@ void configureAttribute(const Attribute &a);
  */
 Id bindFramebuffer(Id handle, FrameBufferMode mode = FrameBufferMode::Default);
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height);
-bool setupRenderBuffer(TextureFormat format, int w, int h, int samples);
+bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples);
 Id bindRenderbuffer(Id handle);
 void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size);
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size);
 const glm::vec4 &framebufferUV();
-bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear);
-bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
+bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear);
+bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]);
-void setupTexture(const TextureConfig &config);
-void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t *data,
+void setupTexture(Id texture, const TextureConfig &config);
+void uploadTexture(Id texture, video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t *data,
 				   int index, int samples);
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset = nullptr);
 void drawArrays(Primitive mode, size_t count);

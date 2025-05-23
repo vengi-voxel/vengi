@@ -21,7 +21,7 @@ RenderBuffer::~RenderBuffer() {
 bool RenderBuffer::init() {
 	video::genRenderbuffers(1, &_rbo);
 	const Id old = video::bindRenderbuffer(_rbo);
-	video::setupRenderBuffer(_format, _w, _h, _samples);
+	video::setupRenderBuffer(_rbo, _format, _w, _h, _samples);
 	video::bindRenderbuffer(old);
 	return true;
 }

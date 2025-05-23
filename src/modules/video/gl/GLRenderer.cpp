@@ -1037,8 +1037,9 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	return old;
 }
 
-bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
+bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
 	video_trace_scoped(SetupRenderBuffer);
+
 	if (useFeature(Feature::DirectStateAccess)) {
 		if (samples > 0) {
 			core_assert(glNamedRenderbufferStorageMultisample != nullptr);
@@ -1148,7 +1149,7 @@ const glm::vec4 &framebufferUV() {
 	return uv;
 }
 
-bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
+bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	video_trace_scoped(SetupFramebuffer);
 	core::Buffer<GLenum> attachments;
@@ -1182,6 +1183,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 		const video::Id textureId = colorTextures[i]->handle();
 		if (textureTarget == TextureType::TextureCube) {
 			core_assert(glFramebufferTexture2D != nullptr);
+			// TODO: Pass correct face or loop over 6 faces
 			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureId, 0);
 			checkError();
 		} else if (useFeature(Feature::DirectStateAccess)) {
@@ -1234,7 +1236,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
-bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
+bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
 	video_trace_scoped(BindFrameBufferAttachment);
 	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
 
@@ -1270,7 +1272,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void setupTexture(const TextureConfig &config) {
+void setupTexture(Id texture, const TextureConfig &config) {
 	video_trace_scoped(SetupTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
 	core_assert(glTexParameteri != nullptr);
@@ -1328,7 +1330,7 @@ void setupTexture(const TextureConfig &config) {
 	checkError();
 }
 
-void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t *data, int index,
+void uploadTexture(Id texture, TextureType type, TextureFormat format, int width, int height, const uint8_t *data, int index,
 				   int samples) {
 	video_trace_scoped(UploadTexture);
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
