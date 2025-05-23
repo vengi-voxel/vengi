@@ -1278,22 +1278,29 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 	video_trace_scoped(BindFrameBufferAttachment);
 	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
 
-	if (attachment == FrameBufferAttachment::Depth
-	 || attachment == FrameBufferAttachment::Stencil
-	 || attachment == FrameBufferAttachment::DepthStencil) {
-		if (useFeature(Feature::DirectStateAccess)) {
+	const bool textureLayer = attachment == FrameBufferAttachment::Depth ||
+							  attachment == FrameBufferAttachment::Stencil ||
+							  attachment == FrameBufferAttachment::DepthStencil;
+	if (useFeature(Feature::DirectStateAccess)) {
+		if (textureLayer) {
 			core_assert(glNamedFramebufferTextureLayer != nullptr);
 			glNamedFramebufferTextureLayer(fbo, glAttachment, (GLuint)texture, 0, layerIndex);
 			checkError();
 		} else {
-			core_assert(glFramebufferTextureLayer != nullptr);
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
+			core_assert(glNamedFramebufferTexture != nullptr);
+			glNamedFramebufferTexture(fbo, glAttachment, (GLuint)texture, 0);
 			checkError();
 		}
 	} else {
-		core_assert(glDrawBuffers != nullptr);
-		glDrawBuffers((GLsizei)1, &glAttachment);
-		checkError();
+		if (textureLayer) {
+			core_assert(glFramebufferTextureLayer != nullptr);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
+			checkError();
+		} else {
+			core_assert(glDrawBuffers != nullptr);
+			glDrawBuffers((GLsizei)1, &glAttachment);
+			checkError();
+		}
 	}
 	if (shouldClear) {
 		if (attachment == FrameBufferAttachment::Depth) {
