@@ -240,10 +240,6 @@ bool polygonOffset(const glm::vec2 &offset) {
 	return false;
 }
 
-bool activateTextureUnit(TextureUnit unit) {
-	return false;
-}
-
 Id currentTexture(TextureUnit unit) {
 	return InvalidId;
 }

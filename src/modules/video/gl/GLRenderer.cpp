@@ -516,7 +516,7 @@ bool pointSize(float size) {
 	return true;
 }
 
-bool activateTextureUnit(TextureUnit unit) {
+static bool activateTextureUnit(TextureUnit unit) {
 	if (glstate().textureUnit == unit) {
 		return false;
 	}
