@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/Thread.h"
 
 namespace command {
 struct CommandExecutionListener;
@@ -87,7 +88,7 @@ protected:
 	core::ConcurrentQueue<LogLine> _messageQueue;
 	core::DynamicArray<core::String> _history;
 	uint32_t _historyPos = 0;
-	const unsigned long _mainThread;
+	const core::ThreadId _mainThread;
 	void *_logFunction = nullptr;
 	void *_logUserData = nullptr;
 	core::String _commandLine;

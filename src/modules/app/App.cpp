@@ -138,6 +138,8 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	_pid = getpid();
 #endif
 
+	_mainThread = core::getCurrentThreadId();
+
 	if (_osName.empty()) {
 		_osName = "unknown";
 	}
@@ -260,6 +262,10 @@ void App::deletePid() {
 		return;
 	}
 	io::Filesystem::sysRemoveFile(_filesystem->homeWritePath("app.pid"));
+}
+
+bool App::isMainThread(core::ThreadId threadId) const {
+	return threadId == _mainThread;
 }
 
 void App::onFrame() {

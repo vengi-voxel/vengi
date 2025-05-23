@@ -18,6 +18,8 @@ typedef int (*ThreadFunction)(void *data);
 
 typedef unsigned long ThreadId;
 
+ThreadId getCurrentThreadId();
+
 class Thread {
 private:
 	mutable SDL_Thread *_thread;

@@ -11,6 +11,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/SharedPtr.h"
+#include "core/concurrent/Thread.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 
@@ -64,6 +65,7 @@ protected:
 
 	Log::Level _initialLogLevel = Log::Level::Info;
 	int _pid = -1;
+	core::ThreadId _mainThread = 0;
 
 	core::String _organisation;
 	core::String _appname;
@@ -191,6 +193,8 @@ public:
 	bool hasEnoughMemory(size_t bytes) const;
 
 	bool setLanguage(const core::String &language);
+
+	bool isMainThread(core::ThreadId threadId) const;
 
 	// includes organisation - but not the version
 	core::String fullAppname() const;

@@ -11,6 +11,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "app/I18N.h"
+#include "core/concurrent/Thread.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
 #include "core/Common.h"
@@ -26,7 +27,6 @@
 #define SDL_LogGetPriority SDL_GetLogPriority
 #define SDL_LogGetOutputFunction SDL_GetLogOutputFunction
 #define SDL_LogSetOutputFunction SDL_SetLogOutputFunction
-#define SDL_ThreadID SDL_GetCurrentThreadID
 #endif
 
 namespace util {
@@ -62,7 +62,7 @@ static SDL_LogPriority toPriority(Log::Level level) {
 }
 
 Console::Console() :
-		_mainThread(SDL_ThreadID()) {
+		_mainThread(core::getCurrentThreadId()) {
 }
 
 Console::~Console() {
@@ -255,7 +255,7 @@ void Console::logOutputFunction(void *userdata, int category, int priority, cons
 	Console* console = (Console*)userdata;
 
 	Log::Level prio = toLevel(priority);
-	if (SDL_ThreadID() != console->_mainThread) {
+	if (core::getCurrentThreadId() != console->_mainThread) {
 		core_assert(message);
 		console->_messageQueue.emplace(category, prio, message);
 		return;
@@ -273,7 +273,7 @@ void Console::addLogLine(int category, Log::Level priority, const char *message)
 }
 
 void Console::update(double /*deltaFrameSeconds*/) {
-	core_assert(_mainThread == SDL_ThreadID());
+	core_assert(_mainThread == core::getCurrentThreadId());
 	LogLine msg;
 	while (_messageQueue.pop(msg)) {
 		core_assert(msg.message);
