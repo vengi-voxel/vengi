@@ -19,7 +19,7 @@ void AbstractBenchmark::SetUp(benchmark::State& st) {
 	SDL_SetAssertionHandler(Test_AssertionHandler, nullptr);
 	const io::FilesystemPtr filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = core::make_shared<core::TimeProvider>();
-	_benchmarkApp = new BenchmarkApp(filesystem, timeProvider, this);
+	_benchmarkApp = new BenchmarkApp(filesystem, timeProvider, this, _threadPoolSize);
 }
 
 void AbstractBenchmark::TearDown(benchmark::State& st) {
@@ -29,8 +29,10 @@ void AbstractBenchmark::TearDown(benchmark::State& st) {
 	_benchmarkApp = nullptr;
 }
 
-AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
-		Super(filesystem, timeProvider), _benchmark(benchmark) {
+AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr &filesystem,
+											  const core::TimeProviderPtr &timeProvider, AbstractBenchmark *benchmark,
+											  size_t threadPoolSize)
+	: Super(filesystem, timeProvider, threadPoolSize), _benchmark(benchmark) {
 	init(ORGANISATION, "benchmark");
 	_initialLogLevel = Log::Level::Warn;
 	while (_curState < AppState::Running) {

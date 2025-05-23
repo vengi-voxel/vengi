@@ -3,7 +3,6 @@
  */
 
 #include "Async.h"
-#include "core/Log.h"
 #include "core/collection/DynamicArray.h"
 
 namespace app {
