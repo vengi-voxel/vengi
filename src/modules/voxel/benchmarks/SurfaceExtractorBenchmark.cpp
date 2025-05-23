@@ -9,10 +9,14 @@
 #include "voxel/SurfaceExtractor.h"
 
 class SurfaceExtractorBenchmark : public app::AbstractBenchmark {
+private:
+	using Super = app::AbstractBenchmark;
 protected:
 	voxel::RawVolume v{voxel::Region{0, 0, 0, 61, 22, 61}};
 
 public:
+	SurfaceExtractorBenchmark() : Super(2) {
+	}
 	void SetUp(::benchmark::State &state) override {
 		app::AbstractBenchmark::SetUp(state);
 
