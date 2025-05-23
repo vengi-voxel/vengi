@@ -23,7 +23,7 @@ set(SRCS
 	VoxelData.h VoxelData.cpp
 	VoxelNormalUtil.h VoxelNormalUtil.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer app)
 engine_target_optimize(${LIB})
 
 set(TEST_SRCS

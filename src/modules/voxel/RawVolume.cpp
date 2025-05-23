@@ -3,6 +3,7 @@
  */
 
 #include "RawVolume.h"
+#include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
@@ -198,47 +199,48 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	if (!_region.containsRegion(srcRegion)) {
 		srcRegion.cropTo(_region);
 	}
-	const voxel::Region &fullSrcRegion = src.region();
-	const glm::ivec3 &mins = srcRegion.getLowerCorner();
-	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 
-	const int width = _region.getWidthInVoxels();
-	const int height = _region.getHeightInVoxels();
+	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&src, this, srcRegion](int start, int end) {
+		const glm::ivec3 &mins = srcRegion.getLowerCorner();
+		const glm::ivec3 &maxs = srcRegion.getUpperCorner();
+		const voxel::Region &fullSrcRegion = src.region();
+		const int width = _region.getWidthInVoxels();
+		const int height = _region.getHeightInVoxels();
 
-	const int tgtYStride = width;
-	const int tgtZStride = width * height;
+		const int tgtYStride = width;
+		const int tgtZStride = width * height;
 
-	const int srcWidth = fullSrcRegion.getWidthInVoxels();
-	const int srcHeight = fullSrcRegion.getHeightInVoxels();
-	const int srcXOffset = mins.x - fullSrcRegion.getLowerX();
-	const int srcYOffset = mins.y - fullSrcRegion.getLowerY();
-	const int srcZOffset = mins.z - fullSrcRegion.getLowerZ();
-	const int srcYStride = srcWidth;
-	const int srcZStride = srcWidth * srcHeight;
-	const int tgtXOffset = mins.x - _region.getLowerX();
+		const int srcWidth = fullSrcRegion.getWidthInVoxels();
+		const int srcHeight = fullSrcRegion.getHeightInVoxels();
+		const int srcXOffset = mins.x - fullSrcRegion.getLowerX();
+		const int srcYOffset = mins.y - fullSrcRegion.getLowerY();
+		const int srcZOffset = mins.z - fullSrcRegion.getLowerZ();
+		const int srcYStride = srcWidth;
+		const int srcZStride = srcWidth * srcHeight;
+		const int tgtXOffset = mins.x - _region.getLowerX();
 
-	const int lineLength = maxs.x - mins.x + 1;
-	const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
+		const int lineLength = maxs.x - mins.x + 1;
+		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
+		for (int z = start; z < end; ++z) {
+			const int tgtZPos = z - _region.getLowerZ();
+			const int srcZPos = srcZOffset + z - mins.z;
+			const int srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
+			const int tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
-		const int tgtZPos = z - _region.getLowerZ();
-		const int srcZPos = srcZOffset + z - mins.z;
-		const int srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
-		const int tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				const int tgtYPos = y - _region.getLowerY();
+				const int srcYPos = srcYOffset + y - mins.y;
 
-		for (int y = mins.y; y <= maxs.y; ++y) {
-			const int tgtYPos = y - _region.getLowerY();
-			const int srcYPos = srcYOffset + y - mins.y;
+				const int tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
+				const int srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
 
-			const int tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
-			const int srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
+				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
+				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
 
-			const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
-			voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
-
-			core_memcpy((void*)tgtLine, (void*)srcLine, lineSize);
+				core_memcpy((void*)tgtLine, (void*)srcLine, lineSize);
+			}
 		}
-	}
+	});
 	return true;
 }
 
