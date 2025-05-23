@@ -921,7 +921,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 		return;
 	}
 	for (int i = 0; i < amount; ++i) {
-		if (ids[i] == glstate().framebufferHandle) {
+		if (ids[i] == currentFramebuffer()) {
 			bindFramebuffer(InvalidId);
 		}
 		ids[i] = InvalidId;
