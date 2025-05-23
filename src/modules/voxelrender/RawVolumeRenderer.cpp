@@ -262,10 +262,7 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 		if (idx == -1) {
 			break;
 		}
-		if (!updateBufferForVolume(meshState, idx, voxel::MeshType_Opaque)) {
-			Log::error("Failed to update the mesh at index %i", idx);
-		}
-		if (!updateBufferForVolume(meshState, idx, voxel::MeshType_Transparency)) {
+		if (!updateBufferForVolume(meshState, idx)) {
 			Log::error("Failed to update the mesh at index %i", idx);
 		}
 		++cnt;
