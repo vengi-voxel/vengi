@@ -1003,18 +1003,24 @@ void finish() {
 }
 
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
-	video::bindFramebuffer(target, FrameBufferMode::Draw);
-	video::bindFramebuffer(handle, FrameBufferMode::Read);
 	const GLbitfield glValue = getBitField(flag);
 	GLenum filter = GL_NEAREST;
 	if (flag == ClearFlag::Color) {
 		filter = GL_LINEAR;
 	}
-	core_assert(glBlitFramebuffer != nullptr);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, filter);
-	checkError();
-	video::bindFramebuffer(handle, FrameBufferMode::Default);
-	video::bindFramebuffer(target, FrameBufferMode::Default);
+	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glBlitNamedFramebuffer != nullptr);
+		glBlitNamedFramebuffer(handle, target, 0, 0, width, height, 0, 0, width, height, glValue, filter);
+		checkError();
+	} else {
+		video::bindFramebuffer(target, FrameBufferMode::Draw);
+		video::bindFramebuffer(handle, FrameBufferMode::Read);
+		core_assert(glBlitFramebuffer != nullptr);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, filter);
+		checkError();
+		video::bindFramebuffer(handle, FrameBufferMode::Default);
+		video::bindFramebuffer(target, FrameBufferMode::Default);
+	}
 }
 
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
@@ -1918,6 +1924,7 @@ void handleVSync() {
 		Log::debug("Activated vsync");
 	}
 }
+
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glstate().glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glstate().glVersion.minorVersion);
