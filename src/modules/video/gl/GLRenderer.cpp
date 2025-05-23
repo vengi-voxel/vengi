@@ -562,14 +562,26 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
 	video_trace_scoped(ReadTexture);
-	bindTexture(unit, type, handle);
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
 	*pixels = (uint8_t *)core_malloc(h * pitch);
 	core_assert(glPixelStorei != nullptr);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	core_assert(glGetTexImage != nullptr);
-	glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void *)*pixels);
+
+	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glGetTextureImage != nullptr);
+		glGetTextureImage(handle,
+						  0,			// mipmap level
+						  f.dataFormat, // e.g. GL_RGBA
+						  f.dataType,	// e.g. GL_UNSIGNED_BYTE
+						  h * pitch,	// size of the destination buffer
+						  *pixels		// destination pointer
+		);
+	} else {
+		bindTexture(unit, type, handle);
+		core_assert(glGetTexImage != nullptr);
+		glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void *)*pixels);
+	}
 	if (checkError()) {
 		core_free(*pixels);
 		*pixels = nullptr;
