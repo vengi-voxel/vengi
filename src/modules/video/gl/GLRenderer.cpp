@@ -1283,7 +1283,7 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 	 || attachment == FrameBufferAttachment::DepthStencil) {
 		if (useFeature(Feature::DirectStateAccess)) {
 			core_assert(glNamedFramebufferTextureLayer != nullptr);
-			glNamedFramebufferTextureLayer(glstate().framebufferHandle, glAttachment, (GLuint)texture, 0, layerIndex);
+			glNamedFramebufferTextureLayer(fbo, glAttachment, (GLuint)texture, 0, layerIndex);
 			checkError();
 		} else {
 			core_assert(glFramebufferTextureLayer != nullptr);
