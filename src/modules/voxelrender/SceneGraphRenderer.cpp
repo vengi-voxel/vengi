@@ -5,6 +5,7 @@
 #include "SceneGraphRenderer.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -109,6 +110,7 @@ bool SceneGraphRenderer::init(bool normals) {
 }
 
 void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {
+	core_trace_scoped(SceneGraphRendererUpdate);
 	_volumeRenderer.update(meshState);
 }
 
@@ -353,6 +355,7 @@ void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderCont
 	core_trace_scoped(SceneGraphRenderer);
 	prepare(meshState, renderContext);
 	if (waitPending) {
+		core_trace_scoped(SceneGraphRendererWaitPending);
 		meshState->extractAllPending();
 		_volumeRenderer.update(meshState);
 	}

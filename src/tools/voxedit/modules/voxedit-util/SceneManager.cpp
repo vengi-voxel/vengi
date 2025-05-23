@@ -2494,6 +2494,7 @@ bool SceneManager::isLoading() const {
 }
 
 bool SceneManager::update(double nowSeconds) {
+	core_trace_scoped(SceneManagerUpdate);
 	updateDelta(nowSeconds);
 	bool loadedNewScene = false;
 	if (_loadingFuture.valid()) {

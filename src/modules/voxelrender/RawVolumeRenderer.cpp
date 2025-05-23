@@ -251,6 +251,7 @@ void RawVolumeRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &mesh
 }
 
 void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
+	core_trace_scoped(RawVolumeRendererUpdateMeshState);
 	if (meshState->update()) {
 		resetStateBuffers(meshState->hasNormals());
 	}
@@ -377,6 +378,7 @@ voxel::RawVolume *RawVolumeRenderer::resetVolume(const voxel::MeshStatePtr &mesh
 }
 
 bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx) {
+	core_trace_scoped(RawVolumeRendererUpdateBothBuffers);
 	bool success = true;
 	if (!updateBufferForVolume(meshState, idx, voxel::MeshType_Opaque)) {
 		success = false;
@@ -388,6 +390,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 }
 
 void RawVolumeRenderer::clear(const voxel::MeshStatePtr &meshState) {
+	core_trace_scoped(RawVolumeRendererClear);
 	meshState->clearPendingExtractions();
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a
@@ -612,20 +615,8 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	}
 }
 
-void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow) {
-	core_trace_scoped(RawVolumeRendererRender);
-
-	bool visible = false;
-	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-		updateCulling(meshState, idx, camera);
-		if (!isVisible(meshState, idx)) {
-			continue;
-		}
-		visible = true;
-	}
-	if (!visible) {
-		return;
-	}
+void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
+	core_trace_scoped(RawVolumeRendererSortBeforeRender);
 	for (const auto &i : meshState->meshes(voxel::MeshType_Transparency)) {
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
 			if (!isVisible(meshState, idx)) {
@@ -643,6 +634,24 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			}
 		}
 	}
+}
+
+void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
+							   const video::Camera &camera, bool shadow) {
+	core_trace_scoped(RawVolumeRendererRender);
+
+	bool visible = false;
+	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		updateCulling(meshState, idx, camera);
+		if (!isVisible(meshState, idx)) {
+			continue;
+		}
+		visible = true;
+	}
+	if (!visible) {
+		return;
+	}
+	sortBeforeRender(meshState, camera);
 
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

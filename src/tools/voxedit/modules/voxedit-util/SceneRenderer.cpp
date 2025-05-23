@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "scenegraph/FrameTransform.h"
 #include "ui/Style.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -334,6 +335,7 @@ void SceneRenderer::removeNode(int nodeId) {
 }
 
 void SceneRenderer::update() {
+	core_trace_scoped(SceneRendererUpdate);
 	_gridRenderer.setRenderAABB(_showAABB->boolVal());
 	_gridRenderer.setRenderGrid(_showGrid->boolVal());
 	_gridRenderer.setGridResolution(_gridSize->intVal());
