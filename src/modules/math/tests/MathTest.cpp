@@ -10,7 +10,7 @@
 #include <glm/gtx/euler_angles.hpp>
 
 namespace glm {
-::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
+inline ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
 	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 	return os;
 }

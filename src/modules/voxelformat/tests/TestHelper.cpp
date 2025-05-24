@@ -39,19 +39,11 @@ namespace glm {
 	os << to_string(v);
 	return os;
 }
-::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
-	os << to_string(v);
-	return os;
-}
 ::std::ostream &operator<<(::std::ostream &os, const vec4 &v) {
 	os << to_string(v);
 	return os;
 }
 ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
-	os << to_string(v);
-	return os;
-}
-::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
 	os << to_string(v);
 	return os;
 }

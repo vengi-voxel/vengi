@@ -15,11 +15,11 @@
 #include <glm/gtx/string_cast.hpp>
 
 namespace glm {
-::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
+inline ::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
 	os << to_string(v);
 	return os;
 }
-::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
+inline ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
 	os << to_string(v);
 	return os;
 }
