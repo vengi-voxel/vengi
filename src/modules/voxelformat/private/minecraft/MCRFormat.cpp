@@ -71,7 +71,8 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			wrap(stream->readUInt8(raw[2]));
 			wrap(stream->readUInt8(_offsets[i].sectorCount));
 
-			_offsets[i].offset = ((raw[0] << 16) + (raw[1] << 8) + raw[2]) * SECTOR_BYTES;
+			const uint32_t o = ((raw[0] << 16) + (raw[1] << 8) + raw[2]);
+			_offsets[i].offset = o * SECTOR_BYTES;
 		}
 
 		for (int i = 0; i < SECTOR_INTS; ++i) {

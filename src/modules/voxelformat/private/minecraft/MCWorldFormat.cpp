@@ -21,7 +21,7 @@ bool MCWorldFormat::loadGroupsPalette(const core::String &filename, const io::Ar
 	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 	DatFormat datFormat;
 	if (!datFormat.load("level.dat", zipArchive, sceneGraph, ctx)) {
-		Log::error("Failed to load level.dat from %s", filename.c_str());
+		Log::error("Failed to load level.dat or regions from '%s'", filename.c_str());
 		return false;
 	}
 	return true;
