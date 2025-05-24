@@ -8,6 +8,7 @@
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxel/VolumeSampler.h"
 
 namespace voxel {
 
@@ -182,6 +183,36 @@ public:
 		voxelutil::visitVolume(source, visitor);
 	}
 };
+
+template<>
+inline bool setVoxels<SparseVolume>(SparseVolume &volume, int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
+	const voxel::Region &region = volume.region();
+	if (region.isValid()) {
+		const int xDiff = region.getLowerX() - x;
+		if (xDiff > 0) {
+			x += xDiff;
+			nx -= xDiff;
+		}
+		const int yDiff = region.getLowerY() - y;
+		if (yDiff > 0) {
+			y += yDiff;
+			amount -= yDiff;
+		}
+		const int zDiff = region.getLowerZ() - z;
+		if (zDiff > 0) {
+			z += zDiff;
+			nz -= zDiff;
+		}
+	}
+	for (int lz = 0; lz < nz; ++lz) {
+		for (int lx = 0; lx < nx; ++lx) {
+			for (int ly = 0; ly < amount; ++ly) {
+				volume.setVoxel(x + lx, y + ly, z + lz, voxels[ly]);
+			}
+		}
+	}
+	return true;
+}
 
 inline int32_t SparseVolume::width() const {
 	return _region.getWidthInVoxels();

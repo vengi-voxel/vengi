@@ -4,16 +4,18 @@
 
 #include "voxel/SparseVolume.h"
 #include "app/tests/AbstractTest.h"
+#include "core/collection/Vector.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxel {
 
 class SparseVolumeTest : public app::AbstractTest {};
 
-TEST_F(SparseVolumeTest, testSetVoxels) {
+TEST_F(SparseVolumeTest, testSetVoxel) {
 	voxel::SparseVolume v(voxel::Region(0, 10));
 	ASSERT_EQ(0u, v.size());
 	ASSERT_TRUE(v.empty());
@@ -52,6 +54,17 @@ TEST_F(SparseVolumeTest, testCopyToRawVolume) {
 			}
 		}
 	}
+}
+
+TEST_F(SparseVolumeTest, testSetVoxels) {
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	core::Vector<voxel::Voxel, 6> voxels;
+	voxels.assign(voxel, voxels.capacity());
+	voxel::SparseVolume v{voxel::Region{0, 0, 0, 3, 6, 3}};
+	voxel::setVoxels(v, 0, 0, 0, v.region().getWidthInVoxels(), v.region().getDepthInVoxels(), &voxels.front(),
+				v.region().getHeightInVoxels());
+	const int vxls = voxelutil::visitVolume(v, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+	ASSERT_EQ(v.region().voxels(), vxls);
 }
 
 TEST_F(SparseVolumeTest, testFullSamplerLoop) {
