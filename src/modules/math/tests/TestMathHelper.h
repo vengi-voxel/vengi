@@ -77,6 +77,16 @@ inline ::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
 	return os;
 }
 
+inline ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
+	for (int i = 0; i < v.length(); i++) {
+		if (i > 0) {
+			os << ", ";
+		}
+		os << v[i];
+	}
+	return os;
+}
+
 }
 
 
