@@ -56,6 +56,8 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 
 		const bool usableColor = palette.color(paletteColorIdx).a > 0;
 		const bool singleSelection = _selectedIndices.size() == 1;
+		// we might open the context menu for a color that is not in the selection
+		const bool isCurrentInSelection = _selectedIndices.has(paletteColorIdx);
 		if (usableColor) {
 			for (int i = 0; i < palette::MaterialProperty::MaterialMax; ++i) {
 				if (i == palette::MaterialProperty::MaterialNone) {
@@ -67,8 +69,12 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 									palette::MaterialPropertyMinMax(prop).minVal,
 									palette::MaterialPropertyMinMax(prop).maxVal)) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "changematerial");
-					for (const auto &e : _selectedIndices) {
-						_sceneMgr->nodeSetMaterial(node.id(), e->key, prop, value);
+					if (isCurrentInSelection) {
+						for (const auto &e : _selectedIndices) {
+							_sceneMgr->nodeSetMaterial(node.id(), e->key, prop, value);
+						}
+					} else {
+						_sceneMgr->nodeSetMaterial(node.id(), paletteColorIdx, prop, value);
 					}
 				}
 			}
@@ -76,8 +82,12 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 			if (palette.color(paletteColorIdx).a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove alpha"))) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removealpha");
-					for (const auto &e : _selectedIndices) {
-						_sceneMgr->nodeRemoveAlpha(node.id(), e->first);
+					if (isCurrentInSelection) {
+						for (const auto &e : _selectedIndices) {
+							_sceneMgr->nodeRemoveAlpha(node.id(), e->first);
+						}
+					} else {
+						_sceneMgr->nodeRemoveAlpha(node.id(), paletteColorIdx);
 					}
 				}
 			}
