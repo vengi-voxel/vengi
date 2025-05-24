@@ -183,7 +183,8 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 		return 0;
 	}
 
-	size_t mapSize, mapHeight;
+	size_t mapSize = 0;
+	size_t mapHeight = 0;
 	uint32_t magic = 0;
 	stream->peekUInt32(magic);
 	const bool slab5 = magic == FourCC('\x00', '\x20', '\x07', '\x09') || magic == FourCC('\x09', '\x07', '\x20', '\x00');
