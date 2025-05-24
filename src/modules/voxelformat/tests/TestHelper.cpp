@@ -35,22 +35,6 @@ namespace glm {
 	os << to_string(matrix);
 	return os;
 }
-::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
-	os << to_string(v);
-	return os;
-}
-::std::ostream &operator<<(::std::ostream &os, const vec4 &v) {
-	os << to_string(v);
-	return os;
-}
-::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
-	os << to_string(v);
-	return os;
-}
-::std::ostream &operator<<(::std::ostream &os, const ivec4 &v) {
-	os << to_string(v);
-	return os;
-}
 } // namespace glm
 
 

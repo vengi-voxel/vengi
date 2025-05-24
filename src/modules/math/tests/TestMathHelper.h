@@ -6,7 +6,9 @@
 
 #include <glm/vector_relational.hpp>
 #include <glm/gtc/epsilon.hpp>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <gtest/gtest.h>
 #include <iomanip>
 
@@ -78,6 +80,46 @@ inline ::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
 }
 
 inline ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
+	for (int i = 0; i < v.length(); i++) {
+		if (i > 0) {
+			os << ", ";
+		}
+		os << v[i];
+	}
+	return os;
+}
+inline ::std::ostream &operator<<(::std::ostream &os, const vec4 &v) {
+	os << std::fixed << std::setprecision(7);
+	for (int i = 0; i < v.length(); i++) {
+		if (i > 0) {
+			os << ", ";
+		}
+		os << v[i];
+	}
+	return os;
+}
+
+inline ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v) {
+	for (int i = 0; i < v.length(); i++) {
+		if (i > 0) {
+			os << ", ";
+		}
+		os << v[i];
+	}
+	return os;
+}
+
+inline ::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
+	for (int i = 0; i < v.length(); i++) {
+		if (i > 0) {
+			os << ", ";
+		}
+		os << v[i];
+	}
+	return os;
+}
+
+inline ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
 	for (int i = 0; i < v.length(); i++) {
 		if (i > 0) {
 			os << ", ";

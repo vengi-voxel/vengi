@@ -7,21 +7,11 @@
 #include "core/ScopedPtr.h"
 #include "math/Axis.h"
 #include "math/Math.h"
+#include "math/tests/TestMathHelper.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
-
-namespace glm {
-::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
-	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	return os;
-}
-::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
-	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	return os;
-}
-} // namespace glm
 
 namespace voxelutil {
 

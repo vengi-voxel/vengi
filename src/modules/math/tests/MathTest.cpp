@@ -3,18 +3,12 @@
  */
 
 #include "math/Math.h"
+#include "math/tests/TestMathHelper.h"
 #include "app/tests/AbstractTest.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/euler_angles.hpp>
-
-namespace glm {
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
-	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	return os;
-}
-} // namespace glm
 
 TEST(MathTest, testTransform) {
 	const glm::mat4 &mat = glm::eulerAngleY(glm::radians(90.0f));

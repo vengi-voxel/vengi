@@ -8,22 +8,6 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "math/tests/TestMathHelper.h"
-#include <glm/vec2.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/string_cast.hpp>
-
-namespace glm {
-inline ::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
-	os << to_string(v);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
-	os << to_string(v);
-	return os;
-}
-} // namespace glm
 
 namespace image {
 
