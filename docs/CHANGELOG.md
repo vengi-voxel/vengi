@@ -17,11 +17,16 @@ General:
    - Fixed `vxl` slab5 loading
    - Support `binvox` version 2 and 3 (unofficial)
    - Allow to save all three versions of `binvox` files (cvar `voxformat_binvoxversion`)
+   - Improved DirectStateAccess (DSA) support for OpenGL
+   - Quite a few performance improvements
+   - Support ansi colors on apple terminals, too
 
 VoxEdit:
 
    - Fixed directory import on Windows systems
    - Fixed missing ambient occlusion for the binary mesher mode
+   - Fixed bloom rendering artifacts
+   - Fixed material changes not being applied to the palette
 
 ## 0.0.37 (2025-05-12)
 
