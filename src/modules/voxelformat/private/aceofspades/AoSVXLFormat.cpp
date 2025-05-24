@@ -75,7 +75,8 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 		Log::error("Failed to open stream for file: %s", filename.c_str());
 		return false;
 	}
-	size_t mapSize, mapHeight;
+	size_t mapSize = 0;
+	size_t mapHeight = 0;
 	uint32_t magic = 0;
 	stream->peekUInt32(magic);
 	const bool slab5 = magic == FourCC('\x00', '\x20', '\x07', '\x09') || magic == FourCC('\x09', '\x07', '\x20', '\x00');
