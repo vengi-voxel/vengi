@@ -95,7 +95,7 @@ core::String normalizePath(const core::String& str) {
 
 void normalizePath(core::String& str) {
 	core::string::replaceAllChars(str, '\\', '/');
-#if not defined(_WIN32) && not defined(__CYGWIN__)
+#if !defined(_WIN32) && !defined(__CYGWIN__)
 	if (str.size() >= 3 && str[0] != '\0' && core::string::isAlpha(str[0]) && str[1] == ':' && (str[2] == '\\' || str[2] == '/')) {
 		str.erase(0, 2);
 	}
