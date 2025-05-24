@@ -530,6 +530,9 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 		}
 		ImGui::EndTable();
 	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::GetCurrentContext()->PlatformImeData.WantTextInput = true;
+	}
 	ImGui::EndChild();
 
 	if (doubleClickedDir) {
@@ -604,8 +607,9 @@ void FileDialog::resetState() {
 		++_entryIndex;
 	}
 
-	_selectedEntry = io::FilesystemEntry();
-	_error = TimedString();
+	_selectedEntry = {};
+	_scrollToText = {};
+	_error = {};
 }
 
 void FileDialog::popupNotWriteable() {
