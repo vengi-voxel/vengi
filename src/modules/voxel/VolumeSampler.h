@@ -551,17 +551,17 @@ template<class Volume>
 inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
 	typename Volume::Sampler sampler(volume);
 	sampler.setPosition(x, y, z);
-	for (int j = 0; j < nx; ++j) {
-		typename Volume::Sampler sampler2(sampler);
-		for (int k = 0; k < nz; ++k) {
-			typename Volume::Sampler sampler3(sampler2);
-			for (int ny = 0; ny < amount; ++ny) {
-				sampler3.setVoxel(voxels[ny]);
-				sampler3.movePositiveY();
+	for (int k = 0; k < nz; ++k) {
+		typename Volume::Sampler samplerZ(sampler);
+		for (int ny = 0; ny < amount; ++ny) {
+			typename Volume::Sampler samplerY(samplerZ);
+			for (int j = 0; j < nx; ++j) {
+				samplerY.setVoxel(voxels[ny]);
+				samplerY.movePositiveX();
 			}
-			sampler2.movePositiveZ();
+			samplerZ.movePositiveY();
 		}
-		sampler.movePositiveX();
+		sampler.movePositiveZ();
 	}
 	return true;
 }

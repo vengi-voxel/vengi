@@ -432,9 +432,9 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 
 	for (uint32_t regZ = 0; regZ <= d; ++regZ) {
 		voxel::RawVolume::Sampler volumeSampler2 = volumeSampler;
-		for (uint32_t regX = 0; regX <= w; ++regX) {
+		for (uint32_t regY = 0; regY <= h; ++regY) {
 			voxel::RawVolume::Sampler volumeSampler3 = volumeSampler2;
-			for (uint32_t regY = 0; regY <= h; ++regY) {
+			for (uint32_t regX = 0; regX <= w; ++regX) {
 
 				/**
 				 *
@@ -697,9 +697,9 @@ void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, Chu
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate); //3
 					vecQuadsT[core::enumVal(FaceNames::PositiveZ)][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 				}
-				volumeSampler3.movePositiveY();
+				volumeSampler3.movePositiveX();
 			}
-			volumeSampler2.movePositiveX();
+			volumeSampler2.movePositiveY();
 		}
 		volumeSampler.movePositiveZ();
 
