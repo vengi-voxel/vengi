@@ -426,7 +426,7 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	const palette::Palette &palette = node->palette();
 	EXPECT_EQ(palette::PaletteMaxColors, (int)palette.size());
 	_sceneMgr->nodeRemoveUnusedColors(nodeId, true);
-	EXPECT_EQ(1, palette.size()) << palette;
+	EXPECT_EQ(1u, palette.size()) << palette;
 }
 
 // https://github.com/vengi-voxel/vengi/issues/418
