@@ -19,8 +19,6 @@ static inline core::String toString(const memento::MementoState &state, const co
 }
 
 static void stateTooltip(const memento::MementoState &state) {
-	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
-	const glm::ivec3 &maxs = state.dataRegion().getUpperCorner();
 	core::String palHash = core::string::toString(state.palette.hash());
 	if (ImGui::BeginItemTooltip()) {
 		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), state.nodeUUID.c_str());
@@ -28,7 +26,12 @@ static void stateTooltip(const memento::MementoState &state) {
 		ImGui::Text(" - name: %s", state.name.c_str());
 		ImGui::Text(" - type: %s", scenegraph::SceneGraphNodeTypeStr[(int)state.nodeType]);
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");
-		ImGui::Text(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		const glm::ivec3 &dataMins = state.dataRegion().getLowerCorner();
+		const glm::ivec3 &dataMaxs = state.dataRegion().getUpperCorner();
+		ImGui::Text(" - dataregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", dataMins.x, dataMins.y, dataMins.z, dataMaxs.x, dataMaxs.y, dataMaxs.z);
+		const glm::ivec3 &volumeMins = state.volumeRegion().getLowerCorner();
+		const glm::ivec3 &volumeMaxs = state.volumeRegion().getUpperCorner();
+		ImGui::Text(" - volumeregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", volumeMins.x, volumeMins.y, volumeMins.z, volumeMaxs.x, volumeMaxs.y, volumeMaxs.z);
 		ImGui::Text(" - size: %ib", (int)state.data.size());
 		ImGui::Text(" - palette: %s", palHash.c_str());
 		ImGui::Text(" - pivot: %f:%f:%f", state.pivot.x, state.pivot.y, state.pivot.z);

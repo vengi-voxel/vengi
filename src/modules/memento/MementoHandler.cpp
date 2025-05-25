@@ -23,6 +23,10 @@
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
 
+// TODO: MEMENTO: this doesn't yet work but would save a lot of memory and would allow us
+//       to re-enable the undo/redo functionality for huge volumes
+#define MEMENTO_PARTIAL_REGION 0
+
 namespace memento {
 
 static const MementoStateGroup InvalidMementoGroup{};
@@ -125,8 +129,8 @@ MementoState::MementoState(MementoType _type, const core::DynamicArray<core::Str
 	: type(_type), nodeType(scenegraph::SceneGraphNodeType::Max), pivot(0.0f), stringList(_stringList) {
 }
 
-MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
-	: _compressedSize(bufSize), _region(region) {
+MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion)
+	: _compressedSize(bufSize), _dataRegion(dataRegion), _volumeRegion(volumeRegion) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = buf;
@@ -135,8 +139,8 @@ MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &regi
 	}
 }
 
-MementoData::MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &region)
-	: _compressedSize(bufSize), _region(region) {
+MementoData::MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion)
+	: _compressedSize(bufSize), _dataRegion(dataRegion), _volumeRegion(volumeRegion) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = (uint8_t *)core_malloc(_compressedSize);
@@ -147,7 +151,7 @@ MementoData::MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region
 }
 
 MementoData::MementoData(MementoData &&o) noexcept
-	: _compressedSize(o._compressedSize), _buffer(o._buffer), _region(o._region) {
+	: _compressedSize(o._compressedSize), _buffer(o._buffer), _dataRegion(o._dataRegion), _volumeRegion(o._volumeRegion) {
 	o._compressedSize = 0;
 	o._buffer = nullptr;
 }
@@ -159,7 +163,7 @@ MementoData::~MementoData() {
 	}
 }
 
-MementoData::MementoData(const MementoData &o) : _compressedSize(o._compressedSize), _region(o._region) {
+MementoData::MementoData(const MementoData &o) : _compressedSize(o._compressedSize), _dataRegion(o._dataRegion), _volumeRegion(o._volumeRegion) {
 	if (o._buffer != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = (uint8_t *)core_malloc(_compressedSize);
@@ -178,7 +182,8 @@ MementoData &MementoData::operator=(MementoData &&o) noexcept {
 		}
 		_buffer = o._buffer;
 		o._buffer = nullptr;
-		_region = o._region;
+		_dataRegion = o._dataRegion;
+		_volumeRegion = o._volumeRegion;
 	}
 	return *this;
 }
@@ -197,7 +202,8 @@ MementoData &MementoData::operator=(const MementoData &o) noexcept {
 		} else {
 			core_assert(_compressedSize == 0);
 		}
-		_region = o._region;
+		_dataRegion = o._dataRegion;
+		_volumeRegion = o._volumeRegion;
 	}
 	return *this;
 }
@@ -207,25 +213,28 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		return MementoData();
 	}
 	voxel::Region mementoRegion = region;
+#if MEMENTO_PARTIAL_REGION
 	// TODO: MEMENTO: see issue https://github.com/vengi-voxel/vengi/issues/200
-	// const bool partialMemento = mementoRegion.isValid();
+	const bool partialMemento = mementoRegion.isValid();
+#else
 	const bool partialMemento = false;
+#endif
 	if (!partialMemento) {
 		mementoRegion = volume->region();
 	}
 
-	const int allVoxels = volume->region().voxels();
+	const int allVoxels = mementoRegion.voxels();
 	io::BufferedReadWriteStream outStream(allVoxels * sizeof(voxel::Voxel));
 	io::ZipWriteStream stream(outStream);
 	if (partialMemento) {
-		voxel::RawVolume v(volume, region);
+		voxel::RawVolume v(volume, mementoRegion);
 		stream.write(v.data(), allVoxels * sizeof(voxel::Voxel));
 	} else {
 		stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
 	}
 	stream.flush();
 	const size_t size = (size_t)outStream.size();
-	return {outStream.release(), size, mementoRegion};
+	return {outStream.release(), size, mementoRegion, volume->region()};
 }
 
 bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData) {
@@ -236,7 +245,7 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	if (volume == nullptr) {
 		return false;
 	}
-	const size_t uncompressedBufferSize = mementoData.region().voxels() * sizeof(voxel::Voxel);
+	const size_t uncompressedBufferSize = mementoData.dataRegion().voxels() * sizeof(voxel::Voxel);
 	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
 	io::ZipReadStream stream(dataStream, (int)dataStream.size());
 	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(uncompressedBufferSize);
@@ -245,7 +254,7 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 		return false;
 	}
 	core::ScopedPtr<voxel::RawVolume> v(
-		voxel::RawVolume::createRaw((voxel::Voxel *)uncompressedBuf, mementoData.region()));
+		voxel::RawVolume::createRaw((voxel::Voxel *)uncompressedBuf, mementoData.dataRegion()));
 	volume->copyInto(*v);
 	return true;
 }
@@ -327,9 +336,12 @@ void MementoHandler::printState(const MementoState &state) const {
 	Log::info(" - parent: %s", state.parentUUID.c_str());
 	Log::info(" - name: %s", state.name.c_str());
 	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
-	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
-	const glm::ivec3 &maxs = state.dataRegion().getUpperCorner();
-	Log::info(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+	const glm::ivec3 &dataMins = state.dataRegion().getLowerCorner();
+	const glm::ivec3 &dataMaxs = state.dataRegion().getUpperCorner();
+	Log::info(" - dataregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", dataMins.x, dataMins.y, dataMins.z, dataMaxs.x, dataMaxs.y, dataMaxs.z);
+	const glm::ivec3 &volumeMins = state.volumeRegion().getLowerCorner();
+	const glm::ivec3 &volumeMaxs = state.volumeRegion().getUpperCorner();
+	Log::info(" - volumeregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", volumeMins.x, volumeMins.y, volumeMins.z, volumeMaxs.x, volumeMaxs.y, volumeMaxs.z);
 	Log::info(" - size: %ib", (int)state.data.size());
 	Log::info(" - palette: %s", palHash.c_str());
 	Log::info(" - normalPalette: %s", normalPalHash.c_str());

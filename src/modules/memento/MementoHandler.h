@@ -63,10 +63,11 @@ private:
 	/**
 	 * The region the given volume data is for
 	 */
-	voxel::Region _region{};
+	voxel::Region _dataRegion{};
+	voxel::Region _volumeRegion{};
 
-	MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &region);
-	MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region);
+	MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
+	MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
 
 public:
 	MementoData() {
@@ -82,8 +83,12 @@ public:
 	MementoData &operator=(MementoData &&o) noexcept;
 	MementoData &operator=(const MementoData &o) noexcept;
 
-	inline const voxel::Region &region() const {
-		return _region;
+	inline const voxel::Region &dataRegion() const {
+		return _dataRegion;
+	}
+
+	inline const voxel::Region &volumeRegion() const {
+		return _volumeRegion;
 	}
 
 	inline bool hasVolume() const {
@@ -152,7 +157,11 @@ struct MementoState {
 	}
 
 	inline const voxel::Region &dataRegion() const {
-		return data._region;
+		return data._dataRegion;
+	}
+
+	inline const voxel::Region &volumeRegion() const {
+		return data._volumeRegion;
 	}
 };
 

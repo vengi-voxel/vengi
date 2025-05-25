@@ -840,7 +840,7 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 		}
 		node->setName(s.name);
 		node->setPalette(s.palette);
-		modified(node->id(), s.data.region(), SceneModifiedFlags::NoUndo);
+		modified(node->id(), s.data.dataRegion(), SceneModifiedFlags::NoUndo);
 		return true;
 	}
 	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
