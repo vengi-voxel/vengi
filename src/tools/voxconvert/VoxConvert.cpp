@@ -409,6 +409,9 @@ app::AppState VoxConvert::onInit() {
 			}
 		}
 	}
+	if (_printSceneGraph) {
+		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
+	}
 	if (hasArg("--script") && sceneGraph.empty()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		const voxel::Region region(0, 63);
@@ -605,9 +608,6 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 		parent = sceneGraph.emplace(core::move(groupNode), parent);
 	}
 	scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
-	if (_printSceneGraph) {
-		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
-	}
 
 	return true;
 }
