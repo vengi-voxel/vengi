@@ -305,29 +305,38 @@ void App::onFrame() {
 				core::String crashLog = file->load();
 				const core::String crashlogFilename = file->name();
 				file->close();
-				messageboxdata.numbuttons = crashLog.empty() ? 2 : 3;
-				if (messageboxdata.numbuttons == 3) {
+				messageboxdata.numbuttons = crashLog.empty() ? 2 : 4;
+				if (messageboxdata.numbuttons == 4) {
 					messageboxdata.message = "Please upload the crash logs."
 						"\n"
 						"If the error persists, reset the configuration\n\n";
 				} else {
 					messageboxdata.message = "If the error persists, reset the configuration\n\n";
 				}
-				SDL_MessageBoxButtonData buttons[3];
+				SDL_MessageBoxButtonData buttons[4];
 				core_memset(&buttons, 0, sizeof(buttons));
 				buttons[0].text = "Reset";
 				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
 				buttons[1].text = "Continue";
 				buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 				buttons[2].text = "Upload";
+				if (!crashLog.empty()) {
+					buttons[3].text = "Copy to clipboard";
+				}
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 				buttons[0].buttonID = 0;
 				buttons[1].buttonID = 1;
 				buttons[2].buttonID = 2;
+				if (!crashLog.empty()) {
+					buttons[3].buttonID = 3;
+				}
 #else
 				buttons[0].buttonid = 0;
 				buttons[1].buttonid = 1;
 				buttons[2].buttonid = 2;
+				if (!crashLog.empty()) {
+					buttons[3].buttonid = 3;
+				}
 #endif
 				messageboxdata.buttons = buttons;
 				int buttonId = -1;
@@ -352,6 +361,10 @@ void App::onFrame() {
 						} else {
 							io::Filesystem::sysRemoveFile(crashlogFilename);
 						}
+					}
+					if (buttonId == 3 && !crashLog.empty()) {
+						Log::info("Copy crash log to clipboard");
+						SDL_SetClipboardText(crashLog.c_str());
 					}
 				}
 			}
