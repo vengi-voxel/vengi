@@ -5,6 +5,7 @@
 #include "RawVolumeRenderer.h"
 #include "ShaderAttribute.h"
 #include "VoxelShaderConstants.h"
+#include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -257,6 +258,9 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 	}
 
 	int cnt = 0;
+
+	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
+	const uint64_t startTime = timeProvider->systemMillis();
 	for (;;) {
 		const int idx = meshState->pop();
 		if (idx == -1) {
@@ -266,6 +270,11 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 			Log::error("Failed to update the mesh at index %i", idx);
 		}
 		++cnt;
+		const uint64_t deltaT = timeProvider->systemMillis() - startTime;
+		if (deltaT > 50u) { // 50ms max
+			Log::debug("Update took too long: %u ms", (int32_t)(deltaT));
+			break;
+		}
 	}
 	if (cnt > 0) {
 		Log::debug("Perform %i mesh updates in this frame", cnt);
