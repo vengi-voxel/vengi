@@ -129,7 +129,7 @@ void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thic
 		}
 		d *= (thickness * 0.5f);
 
-		// TODO: this is broken - cube is of course not correct
+		// TODO: RENDERER: this is broken - cube is of course not correct
 		const float dp = core_max(d.x, core_max(d.y, d.z));
 		const glm::vec3 mins(start.x + dp, start.y - dp, start.z - dp);
 		const glm::vec3 maxs(  end.x - dp,   end.y + dp,   end.z + dp);

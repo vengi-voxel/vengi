@@ -450,7 +450,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}, core::CV_SHADER);
 
 	if (finalize) {
-		// TODO: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
+		// TODO: RENDERER: https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 		// https://www.khronos.org/opengl/wiki/GLSL_Optimizations
 		// https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
 		core::String replaceIn = "in";

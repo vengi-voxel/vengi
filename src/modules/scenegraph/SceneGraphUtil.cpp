@@ -292,7 +292,7 @@ double interpolate(InterpolationType interpolationType, double current, double s
 		val = util::easing::cubicBezier(current, start, end);
 		break;
 	case InterpolationType::CatmullRom: {
-		// TODO: check the parameters here
+		// TODO: SCENEGRAPH: check the parameters here
 		const double t = (end - start) / current;
 		val = util::easing::catmullRom(start, start, end, end, t);
 		break;

@@ -127,7 +127,7 @@ bool checkError(bool triggerAssert) {
 #endif
 }
 
-// TODO: use FrameBufferConfig
+// TODO: RENDERER: use FrameBufferConfig
 void readBuffer(GBufferTextureType textureType) {
 	video_trace_scoped(ReadBuffer);
 	core_assert(glReadBuffer != nullptr);
@@ -343,7 +343,7 @@ bool scissor(int x, int y, int w, int h) {
 }
 
 void colorMask(bool red, bool green, bool blue, bool alpha) {
-	// TODO: reduce state changes here by putting the real gl call to the draw calls - only cache the desired state here.
+	// TODO: RENDERER: reduce state changes here by putting the real gl call to the draw calls - only cache the desired state here.
 	core_assert(glColorMask != nullptr);
 	glColorMask((GLboolean)red, (GLboolean)green, (GLboolean)blue, (GLboolean)alpha);
 	checkError();
@@ -1107,7 +1107,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	if (glstate().vendor[core::enumVal(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		core_assert(glFlush != nullptr);
-		glFlush(); // TODO: use glFenceSync here glClientWaitSync
+		glFlush(); // TODO: RENDERER: use glFenceSync here glClientWaitSync
 	}
 	checkError();
 }
@@ -1175,7 +1175,7 @@ bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(Fr
 			const video::Id textureId = colorTextures[i]->handle();
 			if (textureTarget == TextureType::TextureCube) {
 				core_assert(glNamedFramebufferTextureLayer != nullptr);
-				// TODO: Pass correct face or loop over 6 faces
+				// TODO: RENDERER: Pass correct face or loop over 6 faces
 				glNamedFramebufferTextureLayer(fbo, glAttachmentType, textureId, GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0);
 				checkError();
 			} else if (textureTarget == TextureType::Texture2D || textureTarget == TextureType::Texture2DMultisample) {
@@ -1230,7 +1230,7 @@ bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(Fr
 			const video::Id textureId = colorTextures[i]->handle();
 			if (textureTarget == TextureType::TextureCube) {
 				core_assert(glFramebufferTexture2D != nullptr);
-				// TODO: Pass correct face or loop over 6 faces
+				// TODO: RENDERER: Pass correct face or loop over 6 faces
 				glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureId, 0);
 				checkError();
 			} else if (textureTarget == TextureType::Texture2D) {

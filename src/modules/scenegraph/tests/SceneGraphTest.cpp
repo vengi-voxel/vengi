@@ -385,7 +385,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(12, 12, 12).getMaterial()));
 }
 
-// TODO: implement rotation here
+// TODO: SCENEGRAPH: implement rotation here
 TEST_F(SceneGraphTest, DISABLED_testMergeWithTranslationPivotAndRotation) {
 	SceneGraph sceneGraph;
 	{
