@@ -180,6 +180,10 @@ void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &curs
 	_shapeRenderer.render(_voxelCursorMesh, camera, cursor);
 	_shapeRenderer.render(_mirrorMeshIndex, camera, model);
 	_shapeRenderer.render(_referencePointMesh, camera, glm::translate(model, _referencePoint));
+
+	video::ScopedState scopedDepth(video::State::DepthTest);
+	video::depthFunc(video::CompareFunc::LessEqual);
+
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
 		_shapeRenderer.render(_aabbMeshes[i], camera, model);
 	}
