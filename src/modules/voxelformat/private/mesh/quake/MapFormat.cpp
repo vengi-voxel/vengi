@@ -219,7 +219,7 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		Polygon polygon;
 		polygon.setMaterial(material);
 
-		// TODO: this is broken
+		// TODO: VOXELFORMAT: this is broken
 		// Generate a basis for the plane (u, v)
 		const glm::vec3 &u = glm::normalize(qface.edge1);
 		const glm::vec3 &v = glm::normalize(glm::cross(qface.normal, u));

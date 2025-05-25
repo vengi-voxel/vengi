@@ -371,7 +371,7 @@ NamedBinaryTag NamedBinaryTag::parse(NamedBinaryTagContext &ctx) {
 		return NamedBinaryTag{};
 	}
 	if (type != TagType::COMPOUND) {
-		// TODO: in bedrock this is sometimes a LIST
+		// TODO: VOXELFORMAT: in bedrock this is sometimes a LIST
 		Log::debug("Root tag is not a compound but %i", (int)type);
 		return NamedBinaryTag{};
 	}
