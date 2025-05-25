@@ -386,6 +386,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 }
 
 // TODO: SCENEGRAPH: implement rotation here
+//       https://github.com/vengi-voxel/vengi/issues/433
 TEST_F(SceneGraphTest, DISABLED_testMergeWithTranslationPivotAndRotation) {
 	SceneGraph sceneGraph;
 	{
