@@ -344,13 +344,13 @@ glm::vec3 SceneGraphNode::worldPivot() const {
 	return r.getLowerCornerf() + _pivot * glm::vec3(r.getDimensionsInVoxels());
 }
 
-void SceneGraphNode::translate(const glm::vec3 &translation) {
-	Log::debug("Translate the node by %f %f %f", translation.x, translation.y, translation.z);
+void SceneGraphNode::localTranslate(const glm::vec3 &localTranslation) {
+	Log::debug("Translate the node by %f %f %f", localTranslation.x, localTranslation.y, localTranslation.z);
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
 			const glm::vec3 &t =
-				transform.localTranslation() + glm::conjugate(transform.localOrientation()) * translation;
+				transform.localTranslation() + glm::conjugate(transform.localOrientation()) * localTranslation;
 			transform.setLocalTranslation(t);
 		}
 	}

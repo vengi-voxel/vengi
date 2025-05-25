@@ -3177,7 +3177,7 @@ void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec
 	if (node.setPivot(pivot)) {
 		const glm::vec3 deltaPivot = pivot - oldPivot;
 		const glm::vec3 size = node.region().getDimensionsInVoxels();
-		node.translate(deltaPivot * size);
+		node.localTranslate(deltaPivot * size);
 	}
 }
 

@@ -275,7 +275,7 @@ TEST_F(SceneGraphTest, testNodeSceneRegion_1) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(&v, false);
-		node.translate(glm::vec3(10.0f, 11.0f, 12.0f));
+		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
 		node.setPivot(glm::vec3(0.5f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
 		sceneGraph.updateTransforms();
@@ -297,7 +297,7 @@ TEST_F(SceneGraphTest, testNodeSceneRegion_2) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(&v, false);
-		node.translate(glm::vec3(10.0f, 11.0f, 12.0f));
+		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
 		node.setPivot(glm::vec3(0.0f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
 		sceneGraph.updateTransforms();
@@ -679,7 +679,7 @@ TEST_F(SceneGraphTest, testSceneRegion) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(&v, false);
-		node.translate(glm::vec3(10.0f, 11.0f, 12.0f));
+		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
 		node.setPivot(glm::vec3(0.0f));
 		sceneGraph.emplace(core::move(node));
 	}

@@ -160,9 +160,9 @@ public:
 	glm::vec3 worldPivot() const;
 
 	/**
-	 * @brief Apply the given @c translation vector to all keyframe transform of this node
+	 * @brief Apply the given @c localTranslation vector to all keyframe transform of this node
 	 */
-	void translate(const glm::vec3 &translation);
+	void localTranslate(const glm::vec3 &localTranslation);
 	/**
 	 * @brief Set the given @c translation vector to all keyframe transform of this node
 	 */
