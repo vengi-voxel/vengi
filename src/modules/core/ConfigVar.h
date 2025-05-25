@@ -33,6 +33,8 @@ constexpr const char *AssetPanelLocalDirectory = "ui_assetlocaldirectory";
 
 constexpr const char *HttpConnectTimeout = "http_connecttimeout";
 constexpr const char *HttpTimeout = "http_timeout";
+constexpr const char *HttpConnectTimeoutAssets = "http_connecttimeout_assets";
+constexpr const char *HttpTimeoutAssets = "http_timeout_assets";
 
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientShadowMap = "cl_shadowmap";

@@ -1580,6 +1580,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 			_modifierFacade.render(camera, activePalette(), modelMatrix(renderContext));
 		}
 	}
+	// TODO: the multisample frame buffer needs to blit back in the unbind
 	renderContext.frameBuffer.unbind();
 }
 
