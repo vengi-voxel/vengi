@@ -513,8 +513,6 @@ AppState App::onConstruct() {
 	}
 
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, (int)_initialLogLevel);
-	core::VarPtr syslogVar = core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
-	syslogVar->setValidator(core::Var::boolValidator);
 
 	Log::debug("Initialize the cvars");
 	for (int i = 0; i < _argc; ++i) {
@@ -585,7 +583,6 @@ AppState App::onConstruct() {
 	setLanguage(langVar->strVal());
 
 	langVar->setHelp(_("The language to use - empty means system default"));
-	syslogVar->setHelp(_("Log to the system log"));
 	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
@@ -674,7 +671,6 @@ AppState App::onInit() {
 	Log::debug("Initialize the log system");
 	Log::init();
 	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
-	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
 
 	core::Var::needsSaving();
 	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
@@ -758,10 +754,9 @@ void App::onAfterInit() {
 	}
 
 	// we might have changed the loglevel from the commandline
-	if (_logLevelVar->isDirty() || _syslogVar->isDirty()) {
+	if (_logLevelVar->isDirty()) {
 		Log::init();
 		_logLevelVar->markClean();
-		_syslogVar->markClean();
 	}
 }
 
@@ -1053,10 +1048,9 @@ void App::onBeforeRunning() {
 }
 
 AppState App::onRunning() {
-	if (_logLevelVar->isDirty() || _syslogVar->isDirty()) {
+	if (_logLevelVar->isDirty()) {
 		Log::init();
 		_logLevelVar->markClean();
-		_syslogVar->markClean();
 	}
 
 	command::Command::update(_deltaFrameSeconds);

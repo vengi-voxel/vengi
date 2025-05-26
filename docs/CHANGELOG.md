@@ -19,7 +19,7 @@ General:
    - Allow to save all three versions of `binvox` files (cvar `voxformat_binvoxversion`)
    - Improved DirectStateAccess (DSA) support for OpenGL
    - Quite a few performance improvements
-   - Support ansi colors on apple terminals, too
+   - Support colors on apple and windows terminals, too
 
 VoxEdit:
 

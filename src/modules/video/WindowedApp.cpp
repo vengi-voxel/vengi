@@ -386,7 +386,7 @@ app::AppState WindowedApp::onInit() {
 	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
-	Log::error("Try to use display %i", displayIndex);
+	Log::debug("Try to use display %i", displayIndex);
 	Log::debug("found %i displays (use %i)", numDisplays, displayIndex);
 #endif
 

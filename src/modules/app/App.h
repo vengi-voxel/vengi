@@ -126,7 +126,6 @@ protected:
 	Language _systemLanguage;
 
 	core::VarPtr _logLevelVar;
-	core::VarPtr _syslogVar;
 
 	void bashCompletion() const;
 	void zshCompletion() const;

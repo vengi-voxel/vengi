@@ -33,7 +33,6 @@ endif()
 
 #set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} ${CMAKE_DL_LIBS}")
 
-check_include_files("syslog.h" HAVE_SYSLOG_H)
 check_include_files("execinfo.h" HAVE_EXECINFO_H)
 check_include_files("sys/resource.h" HAVE_SYS_RESOURCE_H)
 check_include_files("sys/time.h" HAVE_SYS_TIME_H)
