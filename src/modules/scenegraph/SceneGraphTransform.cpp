@@ -20,6 +20,7 @@
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/geometric.hpp>
 
 namespace scenegraph {
 
@@ -32,10 +33,10 @@ void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const
 										const glm::vec3 &worldScale, const glm::vec3 &localTranslation,
 										const glm::quat &localOrientation, const glm::vec3 &localScale) {
 	_worldTranslation = worldTranslation;
-	_worldOrientation = worldOrientation;
+	_worldOrientation = glm::normalize(worldOrientation);
 	_worldScale = worldScale;
 	_localTranslation = localTranslation;
-	_localOrientation = localOrientation;
+	_localOrientation = glm::normalize(localOrientation);
 	_localScale = localScale;
 	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
 	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
@@ -58,7 +59,7 @@ void SceneGraphTransform::setWorldOrientation(const glm::quat &orientation) {
 	}
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
 	_dirty |= DIRTY_WORLDVALUES;
-	_worldOrientation = orientation;
+	_worldOrientation = glm::normalize(orientation);
 }
 
 void SceneGraphTransform::setWorldScale(const glm::vec3 &scale) {
@@ -93,7 +94,7 @@ void SceneGraphTransform::setLocalOrientation(const glm::quat &orientation) {
 	}
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
 	_dirty |= DIRTY_LOCALVALUES;
-	_localOrientation = orientation;
+	_localOrientation = glm::normalize(orientation);
 }
 
 void SceneGraphTransform::mirrorX() {
