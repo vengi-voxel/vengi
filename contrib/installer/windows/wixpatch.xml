@@ -82,6 +82,9 @@
 		<RegistryKey Root="HKCR" Key=".dat">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".mcworld">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".schematic">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -429,6 +432,15 @@
 		<RegistryValue Root="HKCR" Key=".dat\OpenWithProgids" Name="vengi-voxedit.dat" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.dat" Description="Minecraft level dat" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="dat" ContentType="application/x-minecraft-level-dat">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mcworld" Value="vengi-voxedit.mcworld" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mcworld" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".mcworld\OpenWithProgids" Name="vengi-voxedit.mcworld" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.mcworld" Description="Minecraft mcworld" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mcworld" ContentType="application/x-minecraft-mcworld">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

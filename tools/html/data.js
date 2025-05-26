@@ -535,6 +535,16 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "Minecraft mcworld",
+      "extensions": [
+        "mcworld"
+      ],
+      "magics": [],
+      "mimetype": "application/x-minecraft-mcworld",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Minecraft schematic",
       "extensions": [
         "schematic",

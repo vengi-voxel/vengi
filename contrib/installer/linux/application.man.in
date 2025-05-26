@@ -70,6 +70,8 @@ Magicavoxel XRAW (*.xraw)
 .TP
 Minecraft level dat (*.dat)
 .TP
+Minecraft mcworld (*.mcworld)
+.TP
 Minecraft region (*.mca, *.mcr)
 .TP
 Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)

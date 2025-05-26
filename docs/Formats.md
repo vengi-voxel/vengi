@@ -23,6 +23,7 @@
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
 | Magicavoxel XRAW           | xraw        | X       | X      |            | X       |            |
 | Minecraft level dat        | dat         | X       |        |            |         |            |
+| Minecraft mcworld          | mcworld     | X       |        |            |         |            |
 | Minecraft region           | mca         | X       |        |            | X       |            |
 | Minecraft schematic        | schematic   | X       | X      |            | X       |            |
 | Nicks Voxel Model          | nvm         | X       |        |            |         |            |

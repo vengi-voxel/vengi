@@ -167,6 +167,10 @@
 		<comment>Minecraft level dat</comment>
 		<glob pattern="*.dat"/>
 	</mime-type>
+	<mime-type type="application/x-minecraft-mcworld">
+		<comment>Minecraft mcworld</comment>
+		<glob pattern="*.mcworld"/>
+	</mime-type>
 	<mime-type type="application/x-minecraft-schematic">
 		<comment>Minecraft schematic</comment>
 		<glob pattern="*.schematic"/>
@@ -189,7 +193,7 @@
 		<comment>Quake 1</comment>
 		<glob pattern="*.bsp"/>
 		<magic priority="50">
-			<match type="byte" offset="0" value="29"/>
+			<match type="byte" offset="0" value="\x1d"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-quake-1-model">
@@ -355,10 +359,10 @@
 		<comment>Portable Network Graphics</comment>
 		<glob pattern="*.png"/>
 		<magic priority="50">
-			<match type="byte" offset="0" value="-119"/>
-			<match type="byte" offset="1" value="80"/>
-			<match type="byte" offset="2" value="78"/>
-			<match type="byte" offset="3" value="71"/>
+			<match type="byte" offset="0" value="\x89"/>
+			<match type="byte" offset="1" value="\x50"/>
+			<match type="byte" offset="2" value="\x4e"/>
+			<match type="byte" offset="3" value="\x47"/>
 		</magic>
 	</mime-type>
 </mime-info>

@@ -708,7 +708,7 @@ void FormatPrinter::printMimeInfo() {
 				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n", e.c_str());
 			} else {
 				for (size_t i = 0; i < e.size(); ++i) {
-					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"%x\"/>\n", (int)i, (uint8_t)e[i]);
+					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e[i]);
 				}
 			}
 			Log::printf("\t\t</magic>\n");
