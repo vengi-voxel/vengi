@@ -39,6 +39,7 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vector_relational.hpp>
+#include <glm/ext/quaternion_common.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -852,7 +853,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 		if (sceneMode) {
 			if (_pivotMode->boolVal()) {
 				const glm::vec3 size = node.region().getDimensionsInVoxels();
-				const glm::vec3 deltaTranslation = glm::vec3(deltaMatrix[3]);
+				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+				const glm::vec3 deltaTranslation = -glm::conjugate(transform.worldOrientation()) * glm::vec3(deltaMatrix[3]);
 				// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?
 				//       https://github.com/vengi-voxel/vengi/issues/611
 				const glm::vec3 deltaPivot = deltaTranslation / size;
