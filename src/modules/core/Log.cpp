@@ -36,6 +36,9 @@ static SDL_LogOutputFunction _logCallback = nullptr;
 static void *_logCallbackUserData = nullptr;
 
 static void logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	if (_logCallback == nullptr) {
+		return;
+	}
 #if defined(__linux__) || defined(__APPLE__)
 	char buf[priv::bufSize + 16]; // additional ansi color codes
 	#define ANSI_COLOR_RESET "\033[00m"
@@ -161,17 +164,18 @@ void Log::init(const char *logfile) {
 
 	if (priv::_logCallback == nullptr) {
 		SDL_LogGetOutputFunction(&priv::_logCallback, &priv::_logCallbackUserData);
+		SDL_LogSetOutputFunction(priv::logOutputFunction, nullptr);
 	}
-	core_assert(priv::_logCallback != priv::logOutputFunction);
-	SDL_LogSetOutputFunction(priv::logOutputFunction, nullptr);
 }
 
 void Log::shutdown() {
 	// this is one of the last methods that is executed - so don't rely on anything
 	// still being available here - it won't
-	SDL_LogSetOutputFunction(priv::_logCallback, priv::_logCallbackUserData);
-	priv::_logCallback = nullptr;
-	priv::_logCallbackUserData = nullptr;
+	if (priv::_logCallback != nullptr) {
+		SDL_LogSetOutputFunction(priv::_logCallback, priv::_logCallbackUserData);
+		priv::_logCallback = nullptr;
+		priv::_logCallbackUserData = nullptr;
+	}
 	if (priv::_logfile) {
 		fflush(priv::_logfile);
 		fclose(priv::_logfile);
