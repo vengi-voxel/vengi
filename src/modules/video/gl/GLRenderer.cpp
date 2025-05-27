@@ -1369,7 +1369,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 		}
 		if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
 			const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
-			glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin);
+			glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin); // TODO: RENDERER: mipmapping
 			checkError();
 		}
 		if (config.type() == TextureType::Texture3D && config.wrapR() != TextureWrap::Max) {
@@ -1420,33 +1420,62 @@ void uploadTexture(Id texture, TextureType type, TextureFormat format, int width
 				   int samples) {
 	video_trace_scoped(UploadTexture);
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
+	const int levels = 1; // TODO: RENDERER: mipmapping glm::floor(glm::log2((float)core_max(width, height))) + 1;
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glTextureStorage2D != nullptr);
 		core_assert(glTextureStorage3D != nullptr);
 		if (type == TextureType::Texture1D) {
 			core_assert(height == 1);
 			core_assert(glTextureStorage1D != nullptr);
-			glTextureStorage1D(texture, 1, f.internalFormat, width);
+			core_assert(glTextureSubImage1D != nullptr);
+			glTextureStorage1D(texture, levels, f.internalFormat, width);
 			checkError();
+			if (data) {
+				glTextureSubImage1D(texture, 0, 0, width, f.dataFormat, f.dataType, (const GLvoid *)data);
+				checkError();
+			}
 		} else if (type == TextureType::Texture2D) {
 			core_assert(glTextureStorage2D != nullptr);
-			glTextureStorage2D(texture, 1, f.internalFormat, width, height);
+			core_assert(glTextureSubImage2D != nullptr);
+			glTextureStorage2D(texture, levels, f.internalFormat, width, height);
 			checkError();
+			if (data) {
+				glTextureSubImage2D(texture, 0, 0, 0, width, height, f.dataFormat, f.dataType, (const GLvoid *)data);
+				checkError();
+			}
 		} else if (type == TextureType::Texture2DMultisample) {
 			core_assert(samples > 0);
 			core_assert(glTextureStorage2D != nullptr);
+			core_assert(glTextureSubImage2D != nullptr);
 			glTextureStorage2DMultisample(texture, samples, f.internalFormat, width, height, false);
 			checkError();
+			if (data) {
+				glTextureSubImage2D(texture, 0, 0, 0, width, height, f.dataFormat, f.dataType, (const GLvoid *)data);
+				checkError();
+			}
 		} else if (type == TextureType::Texture2DMultisampleArray) {
 			core_assert(samples > 0);
+			core_assert(index > 0);
 			core_assert(glTextureStorage3DMultisample != nullptr);
+			core_assert(glTextureSubImage3D != nullptr);
 			glTextureStorage3DMultisample(texture, samples, f.internalFormat, width, height, index, false);
 			checkError();
+			if (data) {
+				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType, (const GLvoid *)data);
+				checkError();
+			}
 		} else {
 			core_assert(glTextureStorage3D != nullptr);
-			glTextureStorage3D(texture, 1, f.internalFormat, width, height, index);
+			core_assert(glTextureSubImage3D != nullptr);
+			glTextureStorage3D(texture, levels, f.internalFormat, width, height, index);
 			checkError();
+			if (data) {
+				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType, (const GLvoid *)data);
+				checkError();
+			}
 		}
+		// TODO: RENDERER: mipmapping glGenerateTextureMipmap(texture);
+		// checkError();
 	} else {
 		const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
 		core_assert(type != TextureType::Max);
@@ -1472,6 +1501,8 @@ void uploadTexture(Id texture, TextureType type, TextureFormat format, int width
 			glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 			checkError();
 		}
+		// TODO: RENDERER: mipmapping glGenerateMipmap(glType);
+		// checkError();
 	}
 }
 
