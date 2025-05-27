@@ -404,6 +404,13 @@ app::AppState WindowedApp::onInit() {
 #ifdef SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK
 	SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
 #endif
+#ifdef SDL_HINT_VIDEO_ALLOW_SCREENSAVER
+	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+#endif
+	// done in application.manifest.in
+	// #ifdef SDL_HINT_WINDOWS_DPI_AWARENESS
+	// 	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+	// #endif
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	if (!_showWindow) {
