@@ -1084,8 +1084,9 @@ static int luaVoxel_noise_worley3(lua_State* s) {
 static int luaVoxel_genland(lua_State *s) {
 	voxelgenerator::GenlandSettings settings;
 	settings.seed = (int)luaL_optinteger(s, 1, 0);
-	settings.height = (int)luaL_optinteger(s, 2, 64);
-	settings.octaves = (int)luaL_optinteger(s, 3, 10);
+	settings.size = (int)luaL_optinteger(s, 2, 256);
+	settings.height = (int)luaL_optinteger(s, 3, 64);
+	settings.octaves = (int)luaL_optinteger(s, 4, 10);
 	voxel::RawVolume *v = voxelgenerator::genland(settings);
 	if (v == nullptr) {
 		return clua_error(s, "Failed to generate land");

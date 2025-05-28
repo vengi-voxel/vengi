@@ -21,6 +21,7 @@
 #include "Genland.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "glm/ext/scalar_integer.hpp"
 #include "math/Random.h"
 #include "noise/Noise.h"
 #include "palette/Palette.h"
@@ -30,8 +31,6 @@
 #include "voxel/Voxel.h"
 
 namespace voxelgenerator {
-
-#define VSID 512
 
 //----------------------------------------------------------------------------
 // Noise algo based on "Improved Perlin Noise" by Ken Perlin
@@ -78,23 +77,24 @@ static CORE_FORCE_INLINE float fgrad(long h, float x, float y, float z) {
 	return (0);
 }
 
-static uint8_t noisep[512], noisep15[512];
+static uint8_t noisep[512];
+static uint8_t noisep15[512];
 
 static void noiseinit(math::Random &rand) {
-	for (long i = 256 - 1; i >= 0; i--) {
+	for (long i = (lengthof(noisep) / 2) - 1; i >= 0; i--) {
 		noisep[i] = i;
 	}
-	for (long i = 256 - 1; i > 0; i--) {
+	for (long i = (lengthof(noisep) / 2) - 1; i > 0; i--) {
 		const long n = rand.random(0, 32767);
 		const long j = ((n * (i + 1)) >> 15);
 		const long k = noisep[i];
 		noisep[i] = noisep[j];
 		noisep[j] = k;
 	}
-	for (long i = 256 - 1; i >= 0; i--) {
-		noisep[i + 256] = noisep[i];
+	for (long i = (lengthof(noisep) / 2) - 1; i >= 0; i--) {
+		noisep[i + (lengthof(noisep) / 2)] = noisep[i];
 	}
-	for (long i = 512 - 1; i >= 0; i--) {
+	for (long i = lengthof(noisep15) - 1; i >= 0; i--) {
 		noisep15[i] = noisep[i] & 15;
 	}
 }
@@ -144,24 +144,55 @@ static double noise3d(double fx, double fy, double fz, long mask) {
 	return ((f[1] - f[0]) * p[0] + f[0]);
 }
 
-static core::RGBA buf[VSID * VSID];	// 2d heightmap colors for writing out the voxels or the heightmap image
-static core::RGBA amb[VSID * VSID];	// ambient
-static float hgt[VSID * VSID];	// height values
-static uint8_t sh[VSID * VSID]; // shadows
+class TempBuffer {
+private:
+	const int _bufSize;
+
+public:
+	core::RGBA *buf; // 2d heightmap colors for writing out the voxels or the heightmap image
+	core::RGBA *amb; // ambient
+	float *hgt;		 // height values
+	uint8_t *sh;	 // shadows
+	TempBuffer(int size) : _bufSize(size * size) {
+		buf = new core::RGBA[_bufSize];
+		amb = new core::RGBA[_bufSize];
+		hgt = new float[_bufSize];
+		sh = new uint8_t[_bufSize];
+	}
+	~TempBuffer() {
+		delete[] buf;
+		delete[] amb;
+		delete[] hgt;
+		delete[] sh;
+	}
+	void clearShadow() {
+		core_memset(sh, 0, sizeof(uint8_t) * _bufSize);
+	}
+};
 
 voxel::RawVolume *genland(GenlandSettings &settings) {
-	constexpr double EPS = 0.1;
-	core::Buffer<double> amplut;
-	double samp[3], csamp[3];
-	core::Buffer<long> msklut;
+	if (!glm::isPowerOfTwo(settings.size)) {
+		Log::error("Size must be a power of two, got %d", settings.size);
+		return nullptr;
+	}
+
+	if (settings.octaves < 1) {
+		Log::error("Octaves must be at least 1, got %d", settings.octaves);
+		return nullptr;
+	}
 
 	if (settings.height >= 256) {
 		Log::error("Height must be less than 256, got %d", settings.height);
 		return nullptr;
 	}
 
+	TempBuffer tempBuffer(settings.size);
 	math::Random rand;
 	rand.setSeed(settings.seed);
+
+	constexpr double EPS = 0.1;
+	core::Buffer<double> amplut;
+	core::Buffer<long> msklut;
 
 	amplut.resize(settings.octaves);
 	msklut.resize(settings.octaves);
@@ -178,19 +209,22 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		d *= settings.persistence;
 		msklut[i] = core_min((1 << (i + 2)) - 1, 255);
 	}
-	for (int k = 0, y = 0; y < VSID; y++) {
-		for (int x = 0; x < VSID; x++, k++) {
+
+	double samp[3], csamp[3];
+
+	for (int k = 0, y = 0; y < settings.size; y++) {
+		for (int x = 0; x < settings.size; x++, k++) {
 			// Get 3 samples (0,0), (EPS,0), (0,EPS):
-			for (int i = 0; i < 3; i++) {
-				double dx = (x * (256.0 / (double)VSID) + (double)(i & 1) * EPS) * (1.0 / 64.0);
-				double dy = (y * (256.0 / (double)VSID) + (double)(i >> 1) * EPS) * (1.0 / 64.0);
+			for (int i = 0; i < lengthof(samp); i++) {
+				double dx = (x * (256.0 / (double)settings.size) + (double)(i & 1) * EPS) * (1.0 / 64.0);
+				double dy = (y * (256.0 / (double)settings.size) + (double)(i >> 1) * EPS) * (1.0 / 64.0);
 				d = 0;
 				double river = 0;
 				for (long o = 0; o < settings.octaves; o++) {
 					d += noise3d(dx, dy, 9.5, msklut[o]) * amplut[o] * (d * 1.6 + 1.0); // multi-fractal
 					river += noise3d(dx, dy, 13.2, msklut[o]) * amplut[o];
-					dx *= 2;
-					dy *= 2;
+					dx *= 2.0;
+					dy *= 2.0;
 				}
 				samp[i] = d * -20.0 + 28.0;
 				d = sin(x * (glm::pi<double>() / 256.0) + river * 4.0) * (0.5 + settings.riverWidth) +
@@ -217,80 +251,86 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			nz *= d;
 
 			// Ground colors
-			double gr = 140;
-			double gg = 125;
-			double gb = 115;
+			double gr = settings.ground.r;
+			double gg = settings.ground.g;
+			double gb = settings.ground.b;
 			// blend factor
-			double g = core_min(core_max(core_max(-nz, 0) * 1.4 - csamp[0] / 32.0 +
+			double g = core_min(core_max(core_max(-nz, 0.0) * 1.4 - csamp[0] / 32.0 +
 											 noise3d(x * (1.0 / 64.0), y * (1.0 / 64.0), 0.3, 15) * 0.3,
 										 0),
 								1);
-			gr += (72 - gr) * g;
-			gg += (80 - gg) * g;
-			gb += (32 - gb) * g; // Grass
+			// Grass
+			gr += (settings.grass.r - gr) * g;
+			gg += (settings.grass.g - gg) * g;
+			gb += (settings.grass.b - gb) * g;
 
-			double g2 = (1 - fabs(g - 0.5) * 2) * 0.7;
-			gr += (68 - gr) * g2;
-			gg += (78 - gg) * g2;
-			gb += (40 - gb) * g2; // Grass2
+			// Grass2
+			double g2 = (1.0 - fabs(g - 0.5) * 2.0) * 0.7;
+			gr += (settings.grass2.r - gr) * g2;
+			gg += (settings.grass2.g - gg) * g2;
+			gb += (settings.grass2.b - gb) * g2;
 
+			// Water
 			g2 = core_max(core_min((samp[0] - csamp[0]) * 1.5, 1), 0);
-			g = 1 - g2 * 0.2;
-			gr += (60 * g - gr) * g2;
-			gg += (100 * g - gg) * g2;
-			gb += (120 * g - gb) * g2; // Water
+			g = 1.0 - g2 * 0.2;
+			gr += (settings.water.r * g - gr) * g2;
+			gg += (settings.water.g * g - gg) * g2;
+			gb += (settings.water.b * g - gb) * g2;
 
 			d = 0.3;
-			amb[k].r = (uint8_t)core_min(core_max(gr * d, 0), 255);
-			amb[k].g = (uint8_t)core_min(core_max(gg * d, 0), 255);
-			amb[k].b = (uint8_t)core_min(core_max(gb * d, 0), 255);
-			const uint8_t maxa = core_max(core_max(amb[k].r, amb[k].g), amb[k].b);
+			tempBuffer.amb[k].r = (uint8_t)core_min(core_max(gr * d, 0), 255);
+			tempBuffer.amb[k].g = (uint8_t)core_min(core_max(gg * d, 0), 255);
+			tempBuffer.amb[k].b = (uint8_t)core_min(core_max(gb * d, 0), 255);
+			const uint8_t maxa = core_max(core_max(tempBuffer.amb[k].r, tempBuffer.amb[k].g), tempBuffer.amb[k].b);
 
 			// lighting
 			d = (nx * 0.5 + ny * 0.25 - nz) / sqrt(0.5 * 0.5 + 0.25 * 0.25 + 1.0 * 1.0);
 			d *= 1.2;
-			buf[k].a = (uint8_t)(settings.height - samp[0]);
-			buf[k].r = (uint8_t)core_min(core_max(gr * d, 0), 255 - maxa);
-			buf[k].g = (uint8_t)core_min(core_max(gg * d, 0), 255 - maxa);
-			buf[k].b = (uint8_t)core_min(core_max(gb * d, 0), 255 - maxa);
+			tempBuffer.buf[k].a = (uint8_t)(settings.height - samp[0]);
+			tempBuffer.buf[k].r = (uint8_t)core_min(core_max(gr * d, 0), 255 - maxa);
+			tempBuffer.buf[k].g = (uint8_t)core_min(core_max(gg * d, 0), 255 - maxa);
+			tempBuffer.buf[k].b = (uint8_t)core_min(core_max(gb * d, 0), 255 - maxa);
 
-			hgt[k] = csamp[0];
+			tempBuffer.hgt[k] = csamp[0];
 		}
-		Log::debug("%i percent done", (int)(((y + 1) * 100) / VSID));
+		Log::debug("%i percent done", (int)(((y + 1) * 100) / settings.size));
 	}
 
+	// TODO: make this optional
 	Log::debug("Applying shadows");
-
-	const int VSHL = glm::log2((float)VSID);
-
-	// Shadows:
-	core_memset(sh, 0, sizeof(sh));
-	for (int k = 0, y = 0; y < VSID; y++) {
-		for (int x = 0; x < VSID; x++, k++) {
-			float f = hgt[k] + 0.44f;
+	const int VSHL = glm::log2((float)settings.size);
+	tempBuffer.clearShadow();
+	for (int k = 0, y = 0; y < settings.size; y++) {
+		for (int x = 0; x < settings.size; x++, k++) {
+			float f = tempBuffer.hgt[k] + 0.44f;
 			int i, j;
-			for (i = j = 1; i < (VSID >> 2); j++, i++, f += 0.44f) {
-				if (hgt[(((y - (j >> 1)) & (VSID - 1)) << VSHL) + ((x - i) & (VSID - 1))] > f) {
-					sh[k] = 32;
+			for (i = j = 1; i < (settings.size >> 2); j++, i++, f += 0.44f) {
+				if (tempBuffer.hgt[(((y - (j >> 1)) & (settings.size - 1)) << VSHL) + ((x - i) & (settings.size - 1))] >
+					f) {
+					tempBuffer.sh[k] = 32;
 					break;
 				}
 			}
 		}
 	}
-	// for(i=2;i>0;i--) // smooth sh 2 times
-	for (int y = 0, k = 0; y < VSID; y++) {
-		for (int x = 0; x < VSID; x++, k++) {
-			sh[k] = (sh[k] + sh[(((y + 1) & (VSID - 1)) << VSHL) + x] + sh[(y << VSHL) + ((x + 1) & (VSID - 1))] +
-					 sh[(((y + 1) & (VSID - 1)) << VSHL) + ((x + 1) & (VSID - 1))] + 2) >>
+	for (int i = settings.smoothing; i > 0; i--) // smoothing
+		for (int y = 0, k = 0; y < settings.size; y++) {
+			for (int x = 0; x < settings.size; x++, k++) {
+				tempBuffer.sh[k] =
+					(tempBuffer.sh[k] + tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + x] +
+					 tempBuffer.sh[(y << VSHL) + ((x + 1) & (settings.size - 1))] +
+					 tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + ((x + 1) & (settings.size - 1))] + 2) >>
 					2;
+			}
 		}
-	}
-	for (int y = 0, k = 0; y < VSID; y++) {
-		for (int x = 0; x < VSID; x++, k++) {
-			const int i = 256 - (sh[k] << 2);
-			buf[k].r = ((buf[k].r * i) >> 8) + amb[k].r;
-			buf[k].g = ((buf[k].g * i) >> 8) + amb[k].g;
-			buf[k].b = ((buf[k].b * i) >> 8) + amb[k].b;
+
+	// TODO: make ambience optional
+	for (int y = 0, k = 0; y < settings.size; y++) {
+		for (int x = 0; x < settings.size; x++, k++) {
+			const int i = 256 - (tempBuffer.sh[k] << 2);
+			tempBuffer.buf[k].r = ((tempBuffer.buf[k].r * i) >> 8) + tempBuffer.amb[k].r;
+			tempBuffer.buf[k].g = ((tempBuffer.buf[k].g * i) >> 8) + tempBuffer.amb[k].g;
+			tempBuffer.buf[k].b = ((tempBuffer.buf[k].b * i) >> 8) + tempBuffer.amb[k].b;
 		}
 	}
 
@@ -298,11 +338,12 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	palette.nippon();
 	palette::PaletteLookup paletteLookup(palette);
 
-	const core::RGBA *heightmap = buf;
+	const core::RGBA *heightmap = tempBuffer.buf;
 	core::Array<voxel::Voxel, 256> voxels;
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, VSID - 1, settings.height - 1, VSID - 1));
-	for (int vz = 0; vz < VSID; ++vz) {
-		for (int vx = 0; vx < VSID; ++vx, ++heightmap) {
+	voxel::RawVolume *volume =
+		new voxel::RawVolume(voxel::Region(0, 0, 0, settings.size - 1, settings.height - 1, settings.size - 1));
+	for (int vz = 0; vz < settings.size; ++vz) {
+		for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
 			const int maxsy = glm::clamp((settings.height - 1) - (int)heightmap->a, 0, settings.height);
 			if (maxsy == 0) {
 				const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
