@@ -203,7 +203,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	Log::debug("Generating landscape with seed %d, height %d, octaves %d", settings.seed, settings.height,
 			   settings.octaves);
 	double d;
-	d = 1.0;
+	d = settings.amplitude;
 	for (int i = 0; i < settings.octaves; i++) {
 		amplut[i] = d;
 		d *= settings.persistence;
@@ -221,22 +221,26 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 				d = 0;
 				double river = 0;
 				for (long o = 0; o < settings.octaves; o++) {
-					d += noise3d(dx, dy, 9.5, msklut[o]) * amplut[o] * (d * 1.6 + 1.0); // multi-fractal
-					river += noise3d(dx, dy, 13.2, msklut[o]) * amplut[o];
+					d += noise3d(dx, dy, settings.freqGround, msklut[o]) * amplut[o] * (d * 1.6 + 1.0); // multi-fractal
+					river += noise3d(dx, dy, settings.freqRiver, msklut[o]) * amplut[o];
 					dx *= 2.0;
 					dy *= 2.0;
 				}
 				samp[i] = d * -20.0 + 28.0;
-				d = sin(x * (glm::pi<double>() / 256.0) + river * 4.0) * (0.5 + settings.riverWidth) +
-					(0.5 - settings.riverWidth);
-				if (d > 1.0) {
-					d = 1.0;
+				if (settings.river) {
+					d = sin(x * (glm::pi<double>() / 256.0) + river * 4.0) * (0.5 + settings.riverWidth) +
+						(0.5 - settings.riverWidth);
+					if (d > 1.0) {
+						d = 1.0;
+					}
+					csamp[i] = samp[i] * d;
+					if (d < 0.0) {
+						d = 0.0;
+					}
+					samp[i] *= d;
+				} else {
+					csamp[i] = samp[i];
 				}
-				csamp[i] = samp[i] * d;
-				if (d < 0.0) {
-					d = 0.0;
-				}
-				samp[i] *= d;
 				if (csamp[i] < samp[i]) {
 					csamp[i] = -log(1.0 - csamp[i]); // simulate water normal ;)
 				}
@@ -286,7 +290,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			// lighting
 			d = (nx * 0.5 + ny * 0.25 - nz) / sqrt(0.5 * 0.5 + 0.25 * 0.25 + 1.0 * 1.0);
 			d *= 1.2;
-			tempBuffer.buf[k].a = (uint8_t)(settings.height - samp[0]);
+			tempBuffer.buf[k].a = (uint8_t)samp[0];
 			tempBuffer.buf[k].r = (uint8_t)core_min(core_max(gr * d, 0), 255 - maxa);
 			tempBuffer.buf[k].g = (uint8_t)core_min(core_max(gg * d, 0), 255 - maxa);
 			tempBuffer.buf[k].b = (uint8_t)core_min(core_max(gb * d, 0), 255 - maxa);
@@ -296,33 +300,35 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		Log::debug("%i percent done", (int)(((y + 1) * 100) / settings.size));
 	}
 
-	// TODO: make this optional
-	Log::debug("Applying shadows");
-	const int VSHL = glm::log2((float)settings.size);
 	tempBuffer.clearShadow();
-	for (int k = 0, y = 0; y < settings.size; y++) {
-		for (int x = 0; x < settings.size; x++, k++) {
-			float f = tempBuffer.hgt[k] + 0.44f;
-			int i, j;
-			for (i = j = 1; i < (settings.size >> 2); j++, i++, f += 0.44f) {
-				if (tempBuffer.hgt[(((y - (j >> 1)) & (settings.size - 1)) << VSHL) + ((x - i) & (settings.size - 1))] >
-					f) {
-					tempBuffer.sh[k] = 32;
-					break;
+	if (settings.shadow) {
+		Log::debug("Applying shadows");
+		const int VSHL = glm::log2((float)settings.size);
+		for (int k = 0, y = 0; y < settings.size; y++) {
+			for (int x = 0; x < settings.size; x++, k++) {
+				float f = tempBuffer.hgt[k] + 0.44f;
+				int i, j;
+				for (i = j = 1; i < (settings.size >> 2); j++, i++, f += 0.44f) {
+					if (tempBuffer.hgt[(((y - (j >> 1)) & (settings.size - 1)) << VSHL) + ((x - i) & (settings.size - 1))] >
+						f) {
+						tempBuffer.sh[k] = 32;
+						break;
+					}
+				}
+			}
+		}
+		for (int i = settings.smoothing; i > 0; i--) {
+			for (int y = 0, k = 0; y < settings.size; y++) {
+				for (int x = 0; x < settings.size; x++, k++) {
+					tempBuffer.sh[k] =
+						(tempBuffer.sh[k] + tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + x] +
+						tempBuffer.sh[(y << VSHL) + ((x + 1) & (settings.size - 1))] +
+						tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + ((x + 1) & (settings.size - 1))] + 2) >>
+						2;
 				}
 			}
 		}
 	}
-	for (int i = settings.smoothing; i > 0; i--) // smoothing
-		for (int y = 0, k = 0; y < settings.size; y++) {
-			for (int x = 0; x < settings.size; x++, k++) {
-				tempBuffer.sh[k] =
-					(tempBuffer.sh[k] + tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + x] +
-					 tempBuffer.sh[(y << VSHL) + ((x + 1) & (settings.size - 1))] +
-					 tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + ((x + 1) & (settings.size - 1))] + 2) >>
-					2;
-			}
-		}
 
 	// TODO: make ambience optional
 	for (int y = 0, k = 0; y < settings.size; y++) {
@@ -344,7 +350,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		new voxel::RawVolume(voxel::Region(0, 0, 0, settings.size - 1, settings.height - 1, settings.size - 1));
 	for (int vz = 0; vz < settings.size; ++vz) {
 		for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
-			const int maxsy = glm::clamp((settings.height - 1) - (int)heightmap->a, 0, settings.height);
+			const int maxsy = glm::clamp((int)heightmap->a, 0, settings.height);
 			if (maxsy == 0) {
 				const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
 				const int palIdx = paletteLookup.findClosestIndex(color);

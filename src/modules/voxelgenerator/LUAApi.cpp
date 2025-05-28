@@ -1087,13 +1087,22 @@ static int luaVoxel_genland(lua_State *s) {
 	settings.size = (int)luaL_optinteger(s, 2, 256);
 	settings.height = (int)luaL_optinteger(s, 3, 64);
 	settings.octaves = (int)luaL_optinteger(s, 4, 10);
+	settings.smoothing = (int)luaL_optnumber(s, 5, 1);
+	settings.persistence = (float)luaL_optnumber(s, 6, 0.4f);
+	settings.amplitude = (float)luaL_optnumber(s, 7, 0.4f);
+	settings.riverWidth = (float)luaL_optnumber(s, 8, 0.02f);
+	settings.freqGround = (float)luaL_optnumber(s, 9, 9.5f);
+	settings.freqRiver = (float)luaL_optnumber(s, 10, 13.2f);
+	settings.shadow = clua_optboolean(s, 11, true);
+	settings.river = clua_optboolean(s, 12, true);
+
 	voxel::RawVolume *v = voxelgenerator::genland(settings);
 	if (v == nullptr) {
 		return clua_error(s, "Failed to generate land");
 	}
 	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v);
+	node.setVolume(v, true);
 	node.setName("Generated Land");
 	int newNodeId = sceneGraph->emplace(core::move(node));
 	if (newNodeId == InvalidNodeId) {
