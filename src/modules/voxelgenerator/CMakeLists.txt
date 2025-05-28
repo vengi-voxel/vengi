@@ -23,6 +23,7 @@ set(LUA_SRCS
 	scripts/fillz.lua
 	scripts/flatten.lua
 	scripts/gameoflife.lua
+	scripts/genland.lua
 	scripts/gradient.lua
 	scripts/grass.lua
 	scripts/grid.lua
@@ -50,6 +51,7 @@ set(LUA_SRCS
 engine_add_module(TARGET ${LIB}-lua LUA_SRCS ${LUA_SRCS})
 
 set(SRCS
+	Genland.h Genland.cpp
 	Spiral.h
 	ShapeGenerator.h
 	SpaceColonization.h SpaceColonization.cpp

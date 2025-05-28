@@ -420,6 +420,11 @@ TEST_F(LUAApiTest, testScriptNewelStair) {
 	runFile(sceneGraph, "newelstair.lua");
 }
 
+TEST_F(LUAApiTest, testScriptGenland) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "genland.lua");
+}
+
 // long runtime - thus disabled
 TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesRainbowTowers) {
 	scenegraph::SceneGraph sceneGraph;

@@ -14,6 +14,7 @@
 #include "io/Stream.h"
 #include "io/StreamArchive.h"
 #include "math/Axis.h"
+#include "math/Random.h"
 #include "noise/Simplex.h"
 #include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
@@ -33,6 +34,7 @@
 #include "voxelfont/VoxelFont.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelgenerator/Genland.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
@@ -151,6 +153,10 @@ static const char *luaVoxel_metashape() {
 
 static const char *luaVoxel_metaimporter() {
 	return "__meta_importer";
+}
+
+static const char *luaVoxel_metaalgorithm() {
+	return "__meta_algorithm";
 }
 
 static inline const char *luaVoxel_metaregion() {
@@ -1075,6 +1081,27 @@ static int luaVoxel_noise_worley3(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_genland(lua_State *s) {
+	voxelgenerator::GenlandSettings settings;
+	settings.seed = (int)luaL_optinteger(s, 1, 0);
+	settings.height = (int)luaL_optinteger(s, 2, 64);
+	settings.octaves = (int)luaL_optinteger(s, 3, 10);
+	voxel::RawVolume *v = voxelgenerator::genland(settings);
+	if (v == nullptr) {
+		return clua_error(s, "Failed to generate land");
+	}
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(v);
+	node.setName("Generated Land");
+	int newNodeId = sceneGraph->emplace(core::move(node));
+	if (newNodeId == InvalidNodeId) {
+		delete v;
+		return clua_error(s, "Failed to add generated land node to scene graph");
+	}
+	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(newNodeId));
+}
+
 static int luaVoxel_region_new(lua_State* s) {
 	const int minsx = (int)luaL_checkinteger(s, 1);
 	const int minsy = (int)luaL_checkinteger(s, 2);
@@ -1906,6 +1933,12 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, importerFuncs, luaVoxel_metaimporter(), "g_import");
+
+	static const luaL_Reg algorithmFuncs[] = {
+		{"genland", luaVoxel_genland},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, algorithmFuncs, luaVoxel_metaalgorithm(), "g_algorithm");
 
 	clua_imageregister(s);
 	clua_streamregister(s);

@@ -39,6 +39,7 @@ globals = {
 	"g_quat",
 	"g_sys",
 	"g_io",
+	"g_algorithm",
 
 	"tracy"
 }
