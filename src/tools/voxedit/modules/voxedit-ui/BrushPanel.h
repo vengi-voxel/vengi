@@ -60,7 +60,7 @@ public:
 	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)
 		: Super(app, "brush"), _sceneMgr(sceneMgr), _texturePool(texturePool) {
 	}
-	void update(const char *id, command::CommandExecutionListener &listener);
+	void update(const char *id, bool sceneMode, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif

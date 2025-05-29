@@ -626,13 +626,17 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 }
 
-void BrushPanel::update(const char *id, command::CommandExecutionListener &listener) {
+void BrushPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
 	core_trace_scoped(BrushPanel);
 	const core::String title = makeTitle(ICON_LC_BRUSH, _("Brush"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		addModifiers(listener);
-		brushSettings(listener);
-		createPopups(listener);
+		if (sceneMode) {
+			ImGui::TextWrappedUnformatted(_("Brushes are only available in edit mode - you are currently in scene mode"));
+		} else {
+			addModifiers(listener);
+			brushSettings(listener);
+			createPopups(listener);
+		}
 	}
 	ImGui::End();
 }

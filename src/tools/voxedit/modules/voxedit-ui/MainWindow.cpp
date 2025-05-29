@@ -402,12 +402,8 @@ void MainWindow::leftWidget() {
 	if (_viewMode->intVal() == (int)ViewMode::CommandAndConquer) {
 		_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
 	}
-	if (_lastSceneMode) {
-		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, true, listener);
-	} else {
-		_brushPanel.update(TITLE_BRUSHPANEL, listener);
-		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, false, listener);
-	}
+	_brushPanel.update(TITLE_BRUSHPANEL, _lastSceneMode, listener);
+	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	_nodePropertiesPanel.update(TITLE_NODE_PROPERTIES, listener);
 }
 
