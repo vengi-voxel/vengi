@@ -20,7 +20,7 @@ function arguments()
 end
 
 function description()
-	return "Genland - procedural landscape generator."
+	return "Genland - procedural landscape generator by Tom Dobrowolski."
 end
 
 function main(_, _, _, seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, river, shadow)
