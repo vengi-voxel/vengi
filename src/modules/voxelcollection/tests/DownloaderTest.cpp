@@ -118,7 +118,7 @@ TEST_F(DownloaderTest, testTargetDirWithPath) {
 	ASSERT_EQ("vengi/data/", file.targetDir());
 }
 
-TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
+TEST_F(DownloaderTest, DISABLED_testConvertTreeEntryToVoxelFileGithub) {
 	Downloader downloader;
 
 	VoxelSource source;
@@ -139,6 +139,7 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
 
 	entries.push_back(entry1);
 
+	// TODO: here we are calling the github api because the license file is fetched with size 0
 	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
 	ASSERT_FALSE(collection.empty());
 	const VoxelFile &voxelFile = collection.front();
