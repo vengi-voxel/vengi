@@ -268,13 +268,15 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	_state.lights = {};
 
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
-	// TODO: support references
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = e->value;
+		if (!node.isModelNode()) {
+			continue;
+		}
 		if (!node.visible()) {
 			continue;
 		}
-		const voxel::RawVolume *v = node.volume();
+		const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 		if (v == nullptr) {
 			continue;
 		}
