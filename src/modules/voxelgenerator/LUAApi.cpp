@@ -1104,6 +1104,7 @@ static int luaVoxel_genland(lua_State *s) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v, true);
 	node.setName("Generated Land");
+	node.setProperty("Generator", "Genland by Tom Dobrowolski");
 	int newNodeId = sceneGraph->emplace(core::move(node));
 	if (newNodeId == InvalidNodeId) {
 		delete v;
