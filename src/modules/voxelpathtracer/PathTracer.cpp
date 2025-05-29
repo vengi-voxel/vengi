@@ -19,6 +19,8 @@
 #include "voxelrender/SceneGraphRenderer.h"
 #include "yocto_scene.h"
 
+#define PATHTRACER_TEXTURES 0
+
 namespace voxelpathtracer {
 
 namespace priv {
@@ -26,6 +28,12 @@ namespace priv {
 static inline yocto::vec3f toVec3f(const glm::vec3 &in) {
 	return yocto::vec3f{in.x, in.y, in.z};
 }
+
+#if PATHTRACER_TEXTURES
+static inline yocto::vec4f toColor(const glm::vec4 &in, float ambientOcclusion_unused) {
+	return yocto::vec4f{in.r, in.g, in.b, in.a};
+}
+#endif
 
 /**
  * Simplified read stream that knows how image::Image::loadRGBA() works.
@@ -62,8 +70,7 @@ public:
 			}
 		}
 		_eos = true;
-		Log::debug("Loaded %d bytes from the image with size %dx%d", (int)dataSize, _img.width,
-				   _img.height);
+		Log::debug("Loaded %d bytes from the image with size %dx%d", (int)dataSize, _img.width, _img.height);
 		return (int)dataSize;
 	}
 
@@ -78,9 +85,11 @@ PathTracer::~PathTracer() {
 	stop();
 }
 
-bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-							 const voxel::Mesh &mesh, bool opaque) {
-	// const palette::Palette &palette = node.palette();
+bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+						 const voxel::Mesh &mesh, bool opaque) {
+#if PATHTRACER_TEXTURES
+	const palette::Palette &palette = node.palette();
+#endif
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const voxel::IndexArray &indices = mesh.getIndexVector();
@@ -107,21 +116,22 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		const glm::vec3 pos1 = transform.apply(vertex1.position, pivot * size);
 		const glm::vec3 pos2 = transform.apply(vertex2.position, pivot * size);
 		// uv is the same for all three vertices
-		// const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette::PaletteMaxColors, 1);
 		yocto::shape_data *shape = &shapes[vertex0.colorIndex];
-
-		// const core::RGBA rgba = palette.color(vertex0.colorIndex);
-		// const glm::vec4 &color = core::Color::fromRGBA(rgba);
-		// shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
-		// shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
-		// shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
 
 		shape->positions.push_back(priv::toVec3f(pos0));
 		shape->positions.push_back(priv::toVec3f(pos1));
 		shape->positions.push_back(priv::toVec3f(pos2));
-		// shape->texcoords.push_back({uv[0], uv[1]});
-		// shape->texcoords.push_back({uv[0], uv[1]});
-		// shape->texcoords.push_back({uv[0], uv[1]});
+#if PATHTRACER_TEXTURES
+		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette::PaletteMaxColors, 1);
+		const core::RGBA rgba = palette.color(vertex0.colorIndex);
+		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+		shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
+		shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
+		shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
+		shape->texcoords.push_back({uv[0], uv[1]});
+		shape->texcoords.push_back({uv[0], uv[1]});
+		shape->texcoords.push_back({uv[0], uv[1]});
+#endif
 		if (useNormals) {
 			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 0]]));
 			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 1]]));
@@ -193,18 +203,18 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 static yocto::material_type mapMaterialType(palette::MaterialType type) {
 	// https://xelatihy.github.io/yocto-gl/yocto/yocto_scene/#materials
 	switch (type) {
-		case palette::MaterialType::Diffuse:
-			return yocto::material_type::matte;
-		case palette::MaterialType::Emit:
-			return yocto::material_type::volumetric;
-		case palette::MaterialType::Metal:
-			return yocto::material_type::reflective;
-		case palette::MaterialType::Glass:
-			return yocto::material_type::refractive;
-		case palette::MaterialType::Blend:
-			return yocto::material_type::transparent;
-		case palette::MaterialType::Media:
-			return yocto::material_type::subsurface;
+	case palette::MaterialType::Diffuse:
+		return yocto::material_type::matte;
+	case palette::MaterialType::Emit:
+		return yocto::material_type::volumetric;
+	case palette::MaterialType::Metal:
+		return yocto::material_type::reflective;
+	case palette::MaterialType::Glass:
+		return yocto::material_type::refractive;
+	case palette::MaterialType::Blend:
+		return yocto::material_type::transparent;
+	case palette::MaterialType::Media:
+		return yocto::material_type::subsurface;
 	}
 	return yocto::material_type::matte;
 }
@@ -239,7 +249,7 @@ static void setupMaterial(yocto::scene_data &scene, const palette::Palette &pale
 	scene.materials.push_back(material);
 }
 
-#if 0
+#if PATHTRACER_TEXTURES
 static void addEmissiveTexture(yocto::scene_data &scene, const palette::Palette &palette) {
 	yocto::texture_data texture;
 	texture.height = 1;
@@ -276,7 +286,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->value;
-		if (!node.isModelNode()) {
+		if (!node.isAnyModelNode()) {
 			continue;
 		}
 		if (!node.visible()) {
@@ -298,16 +308,17 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 
 		// scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		// const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		if (!createScene(sceneGraph, node, mesh.mesh[0], true)) {
+		if (!addNode(sceneGraph, node, mesh.mesh[0], true)) {
 			return false;
 		}
-		if (!createScene(sceneGraph, node, mesh.mesh[1], false)) {
+		if (!addNode(sceneGraph, node, mesh.mesh[1], false)) {
 			return false;
 		}
 
-		// addPaletteTexture(_state.scene, palette);
-		// addEmissiveTexture(_state.scene, palette);
-
+#if PATHTRACER_TEXTURES
+		addPaletteTexture(_state.scene, palette);
+		addEmissiveTexture(_state.scene, palette);
+#endif
 		for (int i = 0; i < palette.colorCount(); ++i) {
 			setupMaterial(_state.scene, palette, i);
 		}

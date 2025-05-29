@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "core/SharedPtr.h"
 #include "core/GLM.h"
+#include "core/SharedPtr.h"
 #include <yocto_scene.h>
 #include <yocto_trace.h>
 
@@ -54,8 +54,8 @@ private:
 	void addCamera(const scenegraph::SceneGraphNodeCamera &node);
 	void addCamera(const char *name, const video::Camera &cam);
 
-	bool createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-					 const voxel::Mesh &mesh, bool opaque);
+	bool addNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+				 const voxel::Mesh &mesh, bool opaque);
 	bool createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera);
 
 public:

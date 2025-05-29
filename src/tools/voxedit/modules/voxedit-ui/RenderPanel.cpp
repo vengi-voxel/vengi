@@ -17,7 +17,6 @@ namespace voxedit {
 
 bool RenderPanel::init() {
 	_texture = video::createEmptyTexture("pathtracer");
-
 	return true;
 }
 
