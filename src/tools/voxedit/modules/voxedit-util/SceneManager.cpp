@@ -518,7 +518,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
-		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		_mementoHandler.markModification(_sceneGraph, node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
