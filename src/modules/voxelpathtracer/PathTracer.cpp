@@ -30,11 +30,9 @@ static inline yocto::vec3f toVec3f(const glm::vec3 &in) {
 	return yocto::vec3f{in.x, in.y, in.z};
 }
 
-#if PATHTRACER_TEXTURES
 static inline yocto::vec4f toColor(const glm::vec4 &in, float ambientOcclusion_unused) {
 	return yocto::vec4f{in.r, in.g, in.b, in.a};
 }
-#endif
 
 /**
  * Simplified read stream that knows how image::Image::loadRGBA() works.
@@ -99,7 +97,7 @@ bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegr
 	const voxel::NormalArray &normals = mesh.getNormalVector();
 	const bool useNormals = normals.size() == vertices.size();
 
-	const palette::Palette &palette = node.palette();
+	const palette::Palette &palette = sceneGraph.resolvePalette(node);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
@@ -120,13 +118,13 @@ bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegr
 		shape->positions.push_back(priv::toVec3f(pos0));
 		shape->positions.push_back(priv::toVec3f(pos1));
 		shape->positions.push_back(priv::toVec3f(pos2));
-#if PATHTRACER_TEXTURES
-		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette.colorCount(), 1);
 		const core::RGBA rgba = palette.color(vertex0.colorIndex);
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
 		shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
 		shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
 		shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
+#if PATHTRACER_TEXTURES
+		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette.colorCount(), 1);
 		shape->texcoords.push_back({uv[0], uv[1]});
 		shape->texcoords.push_back({uv[0], uv[1]});
 		shape->texcoords.push_back({uv[0], uv[1]});
@@ -302,9 +300,9 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 			continue;
 		}
 
-		voxel::Region region = v->region();
+		const voxel::Region &region = v->region();
 
-		const palette::Palette &palette = node.palette();
+		const palette::Palette &palette = sceneGraph.resolvePalette(node);
 		voxel::SurfaceExtractionContext ctx =
 			voxel::createContext(type, v, region, palette, mesh, region.getLowerCorner(), true, true, false, true);
 
