@@ -153,7 +153,7 @@ bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region &region = _extractRegions[i].region;
 		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(sceneGraph, _extractRegions[i].nodeId)) {
-			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, *node, region);
+			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, _extractRegions[i].nodeId, region);
 			Log::debug("Extract node %i", _extractRegions[i].nodeId);
 			voxel::logRegion("Extraction", region);
 		}

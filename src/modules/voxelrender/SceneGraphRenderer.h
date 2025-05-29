@@ -71,7 +71,7 @@ public:
 	 */
 	bool isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty = true) const;
 
-	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node, const voxel::Region &region);
+	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, int nodeId, const voxel::Region &region);
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is
 	 * false, you have to call @c update() manually!

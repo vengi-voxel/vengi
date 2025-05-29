@@ -114,8 +114,8 @@ void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {
 	_volumeRenderer.update(meshState);
 }
 
-void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	const int idx = getVolumeIdx(node);
+void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, int nodeId, const voxel::Region &region) {
+	const int idx = getVolumeIdx(nodeId);
 	if (_sliceVolume && _sliceVolume.get() == meshState->volume(idx)) {
 		_sliceVolumeDirty = true;
 		return;
