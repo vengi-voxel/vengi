@@ -471,6 +471,10 @@ For creating quaternions, you can use `g_quat.new()`
 
 * `rotateZ(z)`: Rotates the object along the Z axis by the specified angle.
 
+## Algorithms
+
+The global `g_algorithm` provides a `genland` function to generate a land mass with the given parameters. You can find the parameters in the `genland.lua` script file in the `scripts` folder.
+
 ## HTTP
 
 You can perform http requests from within the lua script to query apis or download files
