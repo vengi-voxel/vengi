@@ -53,7 +53,7 @@ struct RenderContext : public core::NonCopyable {
 	bool onlyModels = false;
 	// render the built-in normals
 	bool renderNormals = false;
-	bool applyTransformsInEditMode = false;
+	bool applyTransformsInEditMode = true;
 	RenderMode renderMode = RenderMode::Edit;
 
 	bool isEditMode() const;
