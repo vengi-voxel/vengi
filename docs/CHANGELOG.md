@@ -20,6 +20,7 @@ General:
    - Improved DirectStateAccess (DSA) support for OpenGL
    - Quite a few performance improvements
    - Support colors on apple and windows terminals, too
+   - Added lua binding for genland algorithm. See the new `g_algorithm.genland` function
 
 VoxEdit:
 
