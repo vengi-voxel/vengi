@@ -30,6 +30,7 @@
 #include "voxelutil/Picking.h"
 #include "LUAApiListener.h"
 #include <functional>
+#include <future>
 
 namespace voxedit {
 
