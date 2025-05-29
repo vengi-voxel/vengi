@@ -58,15 +58,8 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(RenderPanel);
 	const core::String title = makeTitle(ICON_LC_IMAGE, _("Render"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
-		if (_pathTracer.started()) {
-			voxelpathtracer::PathTracerState &state = _pathTracer.state();
-			yocto::trace_params &params = state.params;
-			if (params.resolution != ImGui::GetContentRegionAvail().x) {
-				params.resolution = ImGui::GetContentRegionAvail().x;
-				_pathTracer.restart(sceneGraph, _sceneMgr->activeCamera());
-			}
-		}
+	if (ImGui::Begin(title.c_str(), nullptr,
+					 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		renderMenuBar(sceneGraph);
 		// TODO: allow to change the current scene camera like in the scene view in the Viewport class
 		if (_texture->isLoaded()) {
@@ -84,7 +77,7 @@ void RenderPanel::updateSettings(const char *id, const scenegraph::SceneGraph &s
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 		int changed = 0;
-		changed += ImGui::InputInt(_("Dimensions"), &params.resolution, 0, 0, ImGuiInputTextFlags_ReadOnly);
+		changed += ImGui::InputInt(_("Dimensions"), &params.resolution);
 		changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
 		changed += ImGui::InputInt(_("Samples"), &params.samples, 16, 4096);
 		ImGui::TooltipTextUnformatted(_("The number of per-pixel samples used while rendering and is the only "
