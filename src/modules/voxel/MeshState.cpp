@@ -285,6 +285,7 @@ void MeshState::extractAllPending() {
 void MeshState::clearPendingExtractions() {
 	core_trace_scoped(MeshStateClearPendingExtractions);
 	_pendingQueue.clear();
+	_extractRegions.clear();
 }
 
 voxel::SurfaceExtractionType MeshState::meshMode() const {
