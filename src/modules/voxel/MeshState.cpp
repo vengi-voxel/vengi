@@ -4,7 +4,9 @@
 
 #include "MeshState.h"
 #include "app/App.h"
+#include "app/Async.h"
 #include "core/Log.h"
+#include "core/concurrent/Concurrency.h"
 #include "palette/NormalPalette.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
@@ -94,16 +96,9 @@ void MeshState::addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType ty
 }
 
 int MeshState::pop() {
-	MeshState::ExtractionCtx result;
-	while (_pendingQueue.pop(result)) {
-		if (_volumeData[result.idx]._rawVolume == nullptr) {
-			continue;
-		}
-		addOrReplaceMeshes(result, MeshType_Opaque);
-		addOrReplaceMeshes(result, MeshType_Transparency);
-		return result.idx;
-	}
-	return -1;
+	int result = -1;
+	_pendingMeshes.try_pop(result);
+	return result;
 }
 
 bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
@@ -185,31 +180,56 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		return false;
 	}
 	if (maxExtraction == 0) {
-		return true;
+		maxExtraction = core::cpus();
 	}
-	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
-	for (size_t i = 0; i < maxExtraction; ++i) {
-		ExtractRegion extractRegion;
-		if (!_extractRegions.pop(extractRegion)) {
+	ExtractRegion regions[64] {};
+	if (maxExtraction > lengthof(regions)) {
+		maxExtraction = lengthof(regions);
+	}
+	for (size_t i = 0; i < maxExtraction && i < n; ++i) {
+		if (!_extractRegions.pop(regions[i])) {
+			maxExtraction = i;
 			break;
 		}
-		const int idx = extractRegion.idx;
-		const voxel::RawVolume *v = volume(idx);
-		if (v == nullptr) {
-			continue;
-		}
-		const voxel::Region finalRegion = extractRegion.region;
-		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
-		if (!copyRegion.isValid()) {
-			continue;
-		}
+	}
+	ExtractionCtx results[lengthof(regions)] {};
+	Log::debug("running %i extractions in parallel", (int)maxExtraction);
+	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
+	auto fn = [&regions, &results, this, type] (size_t start, size_t end) {
+		for (size_t i = start; i < end; ++i) {
+			const ExtractRegion &extractRegion = regions[i];
+			const int idx = extractRegion.idx;
+			if (idx == -1) {
+				continue;
+			}
+			const voxel::RawVolume *v = volume(idx);
+			if (v == nullptr) {
+				continue;
+			}
+			const voxel::Region finalRegion = extractRegion.region;
+			const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
+			if (!copyRegion.isValid()) {
+				continue;
+			}
 
-		const palette::Palette &pal = palette(resolveIdx(idx));
-		const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
-		voxel::ChunkMesh mesh(65536, 65536, true);
-		voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, extractRegion.region, pal, mesh, mins);
-		voxel::extractSurface(ctx);
-		_pendingQueue.emplace(mins, idx, core::move(mesh));
+			const palette::Palette &pal = palette(resolveIdx(idx));
+			const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
+			voxel::ChunkMesh mesh(65536, 65536, true);
+			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, extractRegion.region, pal, mesh, mins);
+			voxel::extractSurface(ctx);
+			results[i] = {mins, idx, core::move(mesh)};
+		}
+	};
+	app::for_parallel(0, maxExtraction, fn);
+
+	for (size_t i = 0; i < maxExtraction; ++i) {
+		ExtractionCtx &result = results[i];
+		if (result.idx == -1) {
+			continue;
+		}
+		addOrReplaceMeshes(result, MeshType_Opaque);
+		addOrReplaceMeshes(result, MeshType_Transparency);
+		_pendingMeshes.push(result.idx);
 	}
 
 	return true;
@@ -284,7 +304,7 @@ void MeshState::extractAllPending() {
 
 void MeshState::clearPendingExtractions() {
 	core_trace_scoped(MeshStateClearPendingExtractions);
-	_pendingQueue.clear();
+	_pendingMeshes.clear();
 	_extractRegions.clear();
 }
 

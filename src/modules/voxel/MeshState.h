@@ -10,6 +10,7 @@
 #include "core/collection/Array.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/PriorityQueue.h"
+#include "core/collection/Queue.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "video/Types.h"
@@ -98,10 +99,10 @@ private:
 	RegionQueue _extractRegions;
 
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const;
-	core::PriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
+	core::Queue<int> _pendingMeshes;
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
-	bool runScheduledExtractions(size_t maxExtraction = 3);
+	bool runScheduledExtractions(size_t maxExtraction = 0);
 	bool deleteMeshes(int idx);
 	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
 

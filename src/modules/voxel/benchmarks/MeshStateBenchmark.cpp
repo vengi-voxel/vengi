@@ -13,11 +13,11 @@
 class MeshStateBenchmark : public app::AbstractBenchmark {
 protected:
 	voxel::RawVolume v{voxel::Region{0, 0, 0, 61, 22, 61}};
-	voxel::MeshState mesh;
+	voxel::MeshState meshState;
 
 public:
 	void onCleanupApp() override {
-		(void)mesh.shutdown();
+		(void)meshState.shutdown();
 		app::AbstractBenchmark::onCleanupApp();
 	}
 
@@ -26,8 +26,8 @@ public:
 			return false;
 		}
 		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
-		mesh.construct();
-		if (!mesh.init()) {
+		meshState.construct();
+		if (!meshState.init()) {
 			Log::error("Failed to initialize mesh state");
 			return false;
 		}
@@ -117,17 +117,17 @@ public:
 BENCHMARK_DEFINE_F(MeshStateBenchmark, Extract)(benchmark::State &state) {
 	for (auto _ : state) {
 		bool meshDeleted = false;
-		(void)mesh.setVolume(0, &v, &voxel::getPalette(), nullptr, true, meshDeleted);
-		mesh.scheduleRegionExtraction(0, v.region());
-		mesh.extractAllPending();
+		(void)meshState.setVolume(0, &v, &voxel::getPalette(), nullptr, true, meshDeleted);
+		meshState.scheduleRegionExtraction(0, v.region());
+		meshState.extractAllPending();
 		for (;;) {
-			const int idx = mesh.pop();
+			const int idx = meshState.pop();
 			if (idx == -1) {
 				break;
 			}
 		}
-		mesh.clear();
-		(void)mesh.setVolume(0, nullptr, nullptr, nullptr, true, meshDeleted);
+		meshState.clear();
+		(void)meshState.setVolume(0, nullptr, nullptr, nullptr, true, meshDeleted);
 	}
 }
 
