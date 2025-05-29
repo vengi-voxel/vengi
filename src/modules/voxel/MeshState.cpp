@@ -83,16 +83,17 @@ void MeshState::clear() {
 	}
 }
 
-void MeshState::addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type) {
+void MeshState::addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType type) {
 	auto iter = _meshes[type].find(result.mins);
 	if (iter != _meshes[type].end()) {
 		delete iter->value[result.idx];
 		iter->value[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
 		return;
 	}
-	_meshes[type].emplace(result.mins, Meshes());
-	auto newIter = _meshes[type].find(result.mins);
-	newIter->value[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
+	Meshes meshes;
+	meshes.fill(nullptr);
+	meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
+	_meshes[type].emplace(result.mins, core::move(meshes));
 }
 
 int MeshState::pop() {
@@ -192,7 +193,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 			break;
 		}
 	}
-	ExtractionCtx results[lengthof(regions)] {};
+	ExtractionResult results[lengthof(regions)] {};
 	Log::debug("running %i extractions in parallel", (int)maxExtraction);
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
 	auto fn = [&regions, &results, this, type] (size_t start, size_t end) {
@@ -223,7 +224,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 	app::for_parallel(0, maxExtraction, fn);
 
 	for (size_t i = 0; i < maxExtraction; ++i) {
-		ExtractionCtx &result = results[i];
+		ExtractionResult &result = results[i];
 		if (result.idx == -1) {
 			continue;
 		}

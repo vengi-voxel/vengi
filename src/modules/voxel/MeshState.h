@@ -62,17 +62,17 @@ private:
 	};
 	typedef core::Array<VolumeData, MAX_VOLUMES> Volumes;
 
-	struct ExtractionCtx {
-		ExtractionCtx() {
+	struct ExtractionResult {
+		ExtractionResult() {
 		}
-		ExtractionCtx(const glm::ivec3 &_mins, int _idx, voxel::ChunkMesh &&_mesh)
+		ExtractionResult(const glm::ivec3 &_mins, int _idx, voxel::ChunkMesh &&_mesh)
 			: mins(_mins), idx(_idx), mesh(_mesh) {
 		}
 		glm::ivec3 mins{};
 		int idx = -1;
 		voxel::ChunkMesh mesh{0, 0, true};
 
-		inline bool operator<(const ExtractionCtx &rhs) const {
+		inline bool operator<(const ExtractionResult &rhs) const {
 			return idx < rhs.idx;
 		}
 	};
@@ -104,7 +104,7 @@ private:
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool runScheduledExtractions(size_t maxExtraction = 0);
 	bool deleteMeshes(int idx);
-	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
+	void addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType type);
 
 public:
 	MeshState();
