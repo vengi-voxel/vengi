@@ -286,7 +286,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 
 		const palette::Palette &palette = node.palette();
 		voxel::SurfaceExtractionContext ctx =
-			voxel::createContext(type, v, region, palette, mesh, region.getLowerCorner());
+			voxel::createContext(type, v, region, palette, mesh, region.getLowerCorner(), true, true, false, true);
 
 		voxel::extractSurface(ctx);
 
