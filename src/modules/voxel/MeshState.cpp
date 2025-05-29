@@ -224,11 +224,13 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		lockIdx(idx);
 		const voxel::RawVolume *v = volume(idx);
 		if (v == nullptr) {
+			unlockIdx(idx);
 			continue;
 		}
 		const voxel::Region finalRegion = extractRegion.region;
 		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
 		if (!copyRegion.isValid()) {
+			unlockIdx(idx);
 			continue;
 		}
 
