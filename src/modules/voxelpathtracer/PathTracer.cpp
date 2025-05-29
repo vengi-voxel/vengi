@@ -105,15 +105,15 @@ bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegr
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::vec3 size(region.getDimensionsInVoxels());
 	const glm::vec3 &pivot = node.pivot();
-
+	const glm::vec3 objPivot = pivot * size;
 	for (int i = 0; i < tris; i++) {
 		const voxel::VoxelVertex &vertex0 = vertices[indices[i * 3 + 0]];
 		const voxel::VoxelVertex &vertex1 = vertices[indices[i * 3 + 1]];
 		const voxel::VoxelVertex &vertex2 = vertices[indices[i * 3 + 2]];
 
-		const glm::vec3 pos0 = transform.apply(vertex0.position, pivot * size);
-		const glm::vec3 pos1 = transform.apply(vertex1.position, pivot * size);
-		const glm::vec3 pos2 = transform.apply(vertex2.position, pivot * size);
+		const glm::vec3 pos0 = transform.apply(vertex0.position, objPivot);
+		const glm::vec3 pos1 = transform.apply(vertex1.position, objPivot);
+		const glm::vec3 pos2 = transform.apply(vertex2.position, objPivot);
 		// uv is the same for all three vertices
 		yocto::shape_data *shape = &shapes[vertex0.colorIndex];
 
@@ -241,6 +241,9 @@ static void setupMaterial(yocto::scene_data &scene, const palette::Palette &pale
 		material.ior = ownMaterial.value(palette::MaterialProperty::MaterialIndexOfRefraction);
 	}
 	material.opacity = color.a;
+#if PATHTRACER_TEXTURES
+	#error "TODO: add texture support"
+#endif
 	// TODO: map these
 	// material.emission
 	// material.scanisotropy
@@ -285,6 +288,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	_state.lights = {};
 
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+	voxel::ChunkMesh mesh(65536, 65536, true);
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->value;
 		if (!node.isAnyModelNode()) {
@@ -298,7 +302,6 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 			continue;
 		}
 
-		voxel::ChunkMesh mesh(65536, 65536, true);
 		voxel::Region region = v->region();
 
 		const palette::Palette &palette = node.palette();
