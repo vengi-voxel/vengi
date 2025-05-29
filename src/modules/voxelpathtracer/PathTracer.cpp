@@ -6,7 +6,6 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
@@ -47,6 +46,10 @@ public:
 
 	// the complete image is read with one call!!
 	int read(void *dataPtr, size_t dataSize) override {
+		if (dataSize != _img.width * _img.height * 4) {
+			Log::error("Expected to read %d bytes, but got %d", (int)(_img.width * _img.height * 4), (int)dataSize);
+			return -1;
+		}
 		if ((int)dataSize != _img.width * _img.height * 4) {
 			return -1;
 		}
@@ -54,10 +57,13 @@ public:
 		for (int i = 0; i < _img.height; i++) {
 			for (int j = 0; j < _img.width; j++) {
 				const yocto::vec4b &v = yocto::float_to_byte(_img[{j, i}]);
-				memcpy(&buf[(size_t)(i * _img.width + j) * 4], &v, 4);
+				memcpy(buf, &v, 4);
+				buf += 4;
 			}
 		}
 		_eos = true;
+		Log::debug("Loaded %d bytes from the image with size %dx%d", (int)dataSize, _img.width,
+				   _img.height);
 		return (int)dataSize;
 	}
 
