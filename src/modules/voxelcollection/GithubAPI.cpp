@@ -23,7 +23,7 @@ static nlohmann::json cachedJson(const io::ArchivePtr &archive, const core::Stri
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
 						 const core::String &path, int size) {
 	// the git lfs stuff is usually not larger than 150 bytes because it's just a reference
-	if (size < 150) {
+	if (size < 150) { // TODO: this check is not really good, but it works for now
 		core_assert_msg(!path.empty(), "Path must not be empty (repository: %s, branch: %s)", repository.c_str(), branch.c_str());
 		const core::String &branchEnc = core::string::urlPathEncode(branch);
 		const core::String &pathEnc = core::string::urlPathEncode(path);
