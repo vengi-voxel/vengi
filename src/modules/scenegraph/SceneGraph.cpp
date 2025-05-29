@@ -929,6 +929,14 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 	return palette;
 }
 
+const palette::Palette& SceneGraph::resolvePalette(const SceneGraphNode &n) const {
+	if (n.type() == SceneGraphNodeType::ModelReference) {
+		return resolvePalette(node(n.reference()));
+	}
+	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve palette for node of type %i", (int)n.type());
+	return n.palette();
+}
+
 voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
 		return resolveRegion(node(n.reference()));

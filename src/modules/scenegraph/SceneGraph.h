@@ -248,6 +248,7 @@ public:
 	 * Performs the recursive lookup in case of model references
 	 */
 	voxel::Region resolveRegion(const SceneGraphNode& node) const;
+	const palette::Palette& resolvePalette(const SceneGraphNode &n) const;
 	/**
 	 * Performs the recursive lookup in case of model references
 	 */
