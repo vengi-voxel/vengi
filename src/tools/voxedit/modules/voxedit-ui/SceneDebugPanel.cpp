@@ -17,7 +17,6 @@ void SceneDebugPanel::update(const char *id) {
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const ISceneRenderer::RendererStats stats = _sceneRenderer->rendererStats();
 		ImGui::Text(_("Pending extractions: %i"), stats.pendingExtractions);
-		ImGui::Text(_("Pending regions: %i"), stats.pendingRegions);
 	}
 	ImGui::End();
 }

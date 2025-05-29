@@ -50,19 +50,11 @@ private:
 	int32_t _boneMeshIndex = -1;
 	int32_t _sliceRegionMeshIndex = -1;
 
-	struct DirtyRegion {
-		voxel::Region region;
-		int nodeId;
-	};
-	using RegionQueue = core::DynamicArray<DirtyRegion>;
-	RegionQueue _extractRegions;
-
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
 
 	void updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	void updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
-	bool extractVolume(const scenegraph::SceneGraph &sceneGraph);
 	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
 						   const glm::ivec3 &cursorPosition);
 	void updateSliceRegionMesh();

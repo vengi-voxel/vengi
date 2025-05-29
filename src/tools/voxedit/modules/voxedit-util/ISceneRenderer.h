@@ -29,7 +29,6 @@ public:
 	virtual ~ISceneRenderer() = default;
 
 	struct RendererStats {
-		int pendingRegions = 0;
 		int pendingExtractions = 0;
 	};
 

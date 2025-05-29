@@ -84,7 +84,6 @@ bool SceneRenderer::isSliceModeActive() const {
 
 SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
 	RendererStats stats;
-	stats.pendingRegions = _extractRegions.size();
 	stats.pendingExtractions = _meshState->pendingExtractions();
 	return stats;
 }
@@ -110,19 +109,7 @@ void SceneRenderer::updateGridRegion(const voxel::Region &region) {
 }
 
 void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
-	bool addNew = true;
-	for (const auto &r : _extractRegions) {
-		if (r.nodeId != nodeId) {
-			continue;
-		}
-		if (r.region.containsRegion(region)) {
-			addNew = false;
-			break;
-		}
-	}
-	if (addNew) {
-		_extractRegions.push_back({region, nodeId});
-	}
+	_sceneGraphRenderer.scheduleRegionExtraction(_meshState, nodeId, region);
 	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 	_highlightRegion = TimedRegion(region, timeProvider->tickNow(), renderRegionMillis);
 }
@@ -141,25 +128,6 @@ static scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGr
 		return n;
 	}
 	return nullptr;
-}
-
-bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
-	core_trace_scoped(ExtractVolume);
-	const size_t n = _extractRegions.size();
-	if (n <= 0) {
-		return false;
-	}
-	Log::debug("Extract the meshes for %i regions", (int)n);
-	for (size_t i = 0; i < n; ++i) {
-		const voxel::Region &region = _extractRegions[i].region;
-		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(sceneGraph, _extractRegions[i].nodeId)) {
-			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, _extractRegions[i].nodeId, region);
-			Log::debug("Extract node %i", _extractRegions[i].nodeId);
-			voxel::logRegion("Extraction", region);
-		}
-	}
-	_extractRegions.clear();
-	return true;
 }
 
 void SceneRenderer::updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph,
@@ -380,7 +348,6 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 	updateAABBMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
 	updateBoneMesh(renderContext.isSceneMode(), *renderContext.sceneGraph, renderContext.frame);
 	_sceneGraphRenderer.render(_meshState, renderContext, camera, _renderShadow->boolVal(), false);
-	extractVolume(*renderContext.sceneGraph);
 }
 
 void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
