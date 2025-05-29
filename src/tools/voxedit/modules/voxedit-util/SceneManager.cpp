@@ -465,10 +465,6 @@ bool SceneManager::load(const io::FileDescription& file) {
 		voxelformat::LoadContext loadCtx;
 		voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
 		mergeIfNeeded(newSceneGraph);
-		/**
-		 * TODO: stuff that happens in MeshState::scheduleRegionExtraction() and
-		 * MeshState::runScheduledExtractions() should happen here
-		 */
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(file.name, &file.desc);

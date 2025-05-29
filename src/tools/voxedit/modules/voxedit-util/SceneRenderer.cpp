@@ -86,8 +86,6 @@ SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
 	RendererStats stats;
 	stats.pendingRegions = _extractRegions.size();
 	stats.pendingExtractions = _meshState->pendingExtractions();
-	stats.runningExtractorTasks = _meshState->runningExtractorTasks();
-	stats.pendingExtractorTasks = _meshState->pendingExtractorTasks();
 	return stats;
 }
 

@@ -8,10 +8,8 @@
 #include "core/SharedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
-#include "core/collection/ConcurrentPriorityQueue.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/PriorityQueue.h"
-#include "core/concurrent/ThreadPool.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "video/Types.h"
@@ -99,20 +97,11 @@ private:
 	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
-	core_trace_mutex(core::Lock, _lock, "MeshState");
-	core::Map<int, int> _lockedIndices;
-
-	core::AtomicInt _runningExtractorTasks{0};
-	core::AtomicInt _pendingExtractorTasks{0};
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const;
-	core::ThreadPool _threadPool{core::halfcpus(), "VolumeRndr"};
-	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
+	core::PriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
-	void lockIdx(int idx);
-	void unlockIdx(int idx);
 	bool runScheduledExtractions(size_t maxExtraction = 3);
-	void waitForPendingExtractions();
 	bool deleteMeshes(int idx);
 	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
 
@@ -144,9 +133,6 @@ public:
 	 */
 	int pendingExtractions() const;
 	void clearPendingExtractions();
-
-	int runningExtractorTasks() const;
-	int pendingExtractorTasks() const;
 
 	/**
 	 * @sa shutdown()
@@ -228,14 +214,6 @@ using MeshStatePtr = core::SharedPtr<MeshState>;
 
 inline int MeshState::pendingExtractions() const {
 	return (int)_extractRegions.size();
-}
-
-inline int MeshState::runningExtractorTasks() const {
-	return _runningExtractorTasks;
-}
-
-inline int MeshState::pendingExtractorTasks() const {
-	return _pendingExtractorTasks;
 }
 
 inline voxel::RawVolume *MeshState::volume(int idx) {

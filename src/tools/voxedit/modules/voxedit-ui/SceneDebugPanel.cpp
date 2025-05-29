@@ -18,9 +18,6 @@ void SceneDebugPanel::update(const char *id) {
 		const ISceneRenderer::RendererStats stats = _sceneRenderer->rendererStats();
 		ImGui::Text(_("Pending extractions: %i"), stats.pendingExtractions);
 		ImGui::Text(_("Pending regions: %i"), stats.pendingRegions);
-		ImGui::Text(_("Pending tasks: %i"), stats.pendingExtractorTasks);
-		ImGui::Text(_("Running tasks: %i"), stats.runningExtractorTasks);
-		ImGui::Text(_("Threads: %i"), (int)_app->threadPool().size());
 	}
 	ImGui::End();
 }

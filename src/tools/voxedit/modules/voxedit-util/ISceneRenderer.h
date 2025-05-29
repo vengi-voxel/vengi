@@ -31,8 +31,6 @@ public:
 	struct RendererStats {
 		int pendingRegions = 0;
 		int pendingExtractions = 0;
-		int runningExtractorTasks = 0;
-		int pendingExtractorTasks = 0;
 	};
 
 	virtual void update() {

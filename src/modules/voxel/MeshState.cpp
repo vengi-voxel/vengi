@@ -12,15 +12,12 @@
 
 namespace voxel {
 
-MeshState::MeshState() : _lockedIndices(MAX_VOLUMES) {
+MeshState::MeshState() {
 }
 
 bool MeshState::init() {
 	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
 	_meshMode->markClean();
-
-	_threadPool.init();
-	Log::debug("Threadpool size: %i", (int)_threadPool.size());
 	return true;
 }
 
@@ -181,29 +178,6 @@ voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const glm::
 	return voxel::Region{mins, maxs};
 }
 
-void MeshState::lockIdx(int idx) {
-	core_trace_scoped(MeshStateLockIdx);
-	core::ScopedLock lock(_lock);
-	auto iter = _lockedIndices.find(idx);
-	if (iter != _lockedIndices.end()) {
-		++iter->value;
-	} else {
-		_lockedIndices.emplace(idx, 1);
-	}
-}
-
-void MeshState::unlockIdx(int idx) {
-	core_trace_scoped(MeshStateUnlockIdx);
-	core::ScopedLock lock(_lock);
-	auto iter = _lockedIndices.find(idx);
-	if (iter != _lockedIndices.end()) {
-		core_assert(iter->value > 0);
-		if (--iter->value == 0) {
-			_lockedIndices.erase(iter);
-		}
-	}
-}
-
 bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 	core_trace_scoped(MeshStateRunScheduledExtractions);
 	const size_t n = _extractRegions.size();
@@ -214,44 +188,28 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 		return true;
 	}
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
-	size_t i;
-	for (i = 0; i < n; ++i) {
+	for (size_t i = 0; i < maxExtraction; ++i) {
 		ExtractRegion extractRegion;
 		if (!_extractRegions.pop(extractRegion)) {
 			break;
 		}
 		const int idx = extractRegion.idx;
-		lockIdx(idx);
 		const voxel::RawVolume *v = volume(idx);
 		if (v == nullptr) {
-			unlockIdx(idx);
 			continue;
 		}
 		const voxel::Region finalRegion = extractRegion.region;
 		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
 		if (!copyRegion.isValid()) {
-			unlockIdx(idx);
 			continue;
 		}
 
-		++_pendingExtractorTasks;
-		_threadPool.enqueue([type, pal = palette(resolveIdx(idx)), v, idx,
-			region = extractRegion.region, this]() {
-			const glm::ivec3 &mins = region.getLowerCorner();
-			++_runningExtractorTasks;
-			voxel::ChunkMesh mesh(65536, 65536, true);
-			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, region, pal, mesh, mins);
-			voxel::extractSurface(ctx);
-			unlockIdx(idx);
-			_pendingQueue.emplace(mins, idx, core::move(mesh));
-			Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
-			--_runningExtractorTasks;
-			--_pendingExtractorTasks;
-		});
-		--maxExtraction;
-		if (maxExtraction == 0) {
-			break;
-		}
+		const palette::Palette &pal = palette(resolveIdx(idx));
+		const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
+		voxel::ChunkMesh mesh(65536, 65536, true);
+		voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, extractRegion.region, pal, mesh, mins);
+		voxel::extractSurface(ctx);
+		_pendingQueue.emplace(mins, idx, core::move(mesh));
 	}
 
 	return true;
@@ -271,7 +229,7 @@ bool MeshState::update() {
 		}
 		triggerClear = true;
 	}
-	runScheduledExtractions(app::App::getInstance()->threadPool().size());
+	runScheduledExtractions();
 	return triggerClear;
 }
 
@@ -322,24 +280,11 @@ void MeshState::extractAllPending() {
 	core_trace_scoped(MeshStateExtractAllPending);
 	while (runScheduledExtractions(100)) {
 	}
-	waitForPendingExtractions();
-}
-
-void MeshState::waitForPendingExtractions() {
-	core_trace_scoped(MeshStateWaitForPendingExtractions);
-	while (_pendingExtractorTasks > 0) {
-		app::App::getInstance()->wait(1);
-	}
 }
 
 void MeshState::clearPendingExtractions() {
 	core_trace_scoped(MeshStateClearPendingExtractions);
-	_threadPool.abort();
-	while (_runningExtractorTasks > 0) {
-		app::App::getInstance()->wait(1);
-	}
 	_pendingQueue.clear();
-	_pendingExtractorTasks = 0;
 }
 
 voxel::SurfaceExtractionType MeshState::meshMode() const {
@@ -381,15 +326,8 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 	if (old == v) {
 		return nullptr;
 	}
-	_lock.lock();
-	while (_lockedIndices.hasKey(idx)) {
-		_lock.unlock();
-		app::App::getInstance()->wait(1);
-		_lock.lock();
-	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	_volumeData[idx]._rawVolume = v;
-	_lock.unlock();
 	if (meshDelete) {
 		deleteMeshes(idx);
 		meshDeleted = true;
@@ -405,7 +343,6 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 }
 
 core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
-	_threadPool.shutdown();
 	clear();
 	core::Buffer<voxel::RawVolume *> old;
 	old.reserve(MAX_VOLUMES);
