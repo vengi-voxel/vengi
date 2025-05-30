@@ -3,6 +3,7 @@
  */
 
 #include "VolumeRotator.h"
+#include "app/Async.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
 #include "core/Log.h"
@@ -40,26 +41,28 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const palette:
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	voxel::RawVolumeWrapper destVolumeWrapper(destVolume);
 
-	voxel::RawVolume::Sampler srcSampler(srcVolume);
-	srcSampler.setPosition(srcRegion.getLowerCorner());
-	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
-		voxel::RawVolume::Sampler srcSampler2 = srcSampler;
-		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
-			voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
-			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
-				const voxel::Voxel voxel = srcSampler3.voxel();
-				if (!voxel::isAir(voxel.getMaterial())) {
-					const glm::vec3 srcPos(x, y, z);
-					const glm::vec3 &destPos = math::transform(mat, srcPos, pivot);
-					const glm::ivec3 &destPosFloor = glm::floor(destPos);
-					destVolumeWrapper.setVoxel(destPosFloor, voxel);
+	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&srcVolume, srcRegion, &destVolumeWrapper, mat, pivot] (size_t start, size_t end) {
+		voxel::RawVolume::Sampler srcSampler(srcVolume);
+		srcSampler.setPosition(srcRegion.getLowerX(), srcRegion.getLowerY(), start);
+		for (size_t z = start; z < end; ++z) {
+			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
+			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
+				for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+					const voxel::Voxel voxel = srcSampler3.voxel();
+					if (!voxel::isAir(voxel.getMaterial())) {
+						const glm::vec3 srcPos(x, y, z);
+						const glm::vec3 &destPos = math::transform(mat, srcPos, pivot);
+						const glm::ivec3 &destPosFloor = glm::floor(destPos);
+						destVolumeWrapper.setVoxel(destPosFloor, voxel);
+					}
+					srcSampler3.movePositiveX();
 				}
-				srcSampler3.movePositiveX();
+				srcSampler2.movePositiveY();
 			}
-			srcSampler2.movePositiveY();
+			srcSampler.movePositiveZ();
 		}
-		srcSampler.movePositiveZ();
-	}
+	});
 	return destVolume;
 }
 
