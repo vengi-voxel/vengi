@@ -237,21 +237,21 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	voxel::RawVolume::Sampler sourceSampler(sourceVolume);
 	sourceSampler.setPosition(mins);
-	for (int32_t x = 0; x < dim.x; ++x) {
-		voxel::RawVolume::Sampler sampler2 = sourceSampler;
+	for (int32_t z = 0; z < dim.z; ++z) {
+		voxel::RawVolume::Sampler sourceSampler2 = sourceSampler;
 		for (int32_t y = 0; y < dim.y; ++y) {
-			voxel::RawVolume::Sampler sampler3 = sampler2;
-			for (int32_t z = 0; z < dim.z; ++z) {
-				const voxel::Voxel &voxel = sampler3.voxel();
+			voxel::RawVolume::Sampler sourceSampler3 = sourceSampler2;
+			for (int32_t x = 0; x < dim.x; ++x) {
+				const voxel::Voxel &voxel = sourceSampler3.voxel();
 				const glm::ivec3 targetPos(mins.x + x * 2, mins.y + y * 2, mins.z + z * 2);
 				for (int i = 0; i < 8; ++i) {
 					destVolume->setVoxel(targetPos + directions[i], voxel);
 				}
-				sampler3.movePositiveZ(1);
+				sourceSampler3.movePositiveX();
 			}
-			sampler2.movePositiveY(1);
+			sourceSampler2.movePositiveY();
 		}
-		sourceSampler.movePositiveX(1);
+		sourceSampler.movePositiveZ();
 	}
 	return destVolume;
 }
