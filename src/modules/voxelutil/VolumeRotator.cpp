@@ -41,10 +41,10 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const palette:
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	voxel::RawVolumeWrapper destVolumeWrapper(destVolume);
 
-	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&srcVolume, srcRegion, &destVolumeWrapper, mat, pivot] (size_t start, size_t end) {
+	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&srcVolume, srcRegion, &destVolumeWrapper, mat, pivot] (int start, int end) {
 		voxel::RawVolume::Sampler srcSampler(srcVolume);
 		srcSampler.setPosition(srcRegion.getLowerX(), srcRegion.getLowerY(), start);
-		for (size_t z = start; z < end; ++z) {
+		for (int32_t z = start; z < end; ++z) {
 			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
 			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
 				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;

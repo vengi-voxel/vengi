@@ -33,10 +33,10 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	const int32_t depth = destRegion.getDepthInVoxels();
 	// First of all we iterate over all destination voxels and compute their color as the
 	// avg of the colors of the eight corresponding voxels in the higher resolution version.
-	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion](size_t start, size_t end) {
+	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion](int start, int end) {
 		const int32_t height = destRegion.getHeightInVoxels();
 		const int32_t width = destRegion.getWidthInVoxels();
-		for (size_t z = start; z < end; ++z) {
+		for (int32_t z = start; z < end; ++z) {
 			for (int32_t y = 0; y < height; ++y) {
 				for (int32_t x = 0; x < width; ++x) {
 					const glm::ivec3 curPos(x, y, z);
@@ -114,12 +114,12 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	// color changes, as this is very noticeable. Our solution is to process again only those voxels
 	// which lie on a material-air boundary, and to recompute their color using a larger neighborhood
 	// while also accounting for how visible the child voxels are.
-	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion](size_t start, size_t end) {
+	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion](int start, int end) {
 		typename DestVolume::Sampler dstSampler1(destVolume);
 		glm::ivec3 pos = destRegion.getLowerCorner();
 		pos.z += start;
 		dstSampler1.setPosition(pos);
-		for (size_t z = start; z < end; ++z) {
+		for (int32_t z = start; z < end; ++z) {
 			typename DestVolume::Sampler dstSampler2 = dstSampler1;
 			for (int32_t y = 0; y < destRegion.getHeightInVoxels(); ++y) {
 				typename DestVolume::Sampler dstSampler3 = dstSampler2;
@@ -233,12 +233,12 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 											 glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1)};
 
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
-	app::for_parallel(0, srcRegion.getDepthInVoxels(), [&sourceVolume, destVolume](size_t start, size_t end) {
+	app::for_parallel(0, srcRegion.getDepthInVoxels(), [&sourceVolume, destVolume](int start, int end) {
 		voxel::RawVolume::Sampler sourceSampler(sourceVolume);
 		const glm::ivec3 &dim = sourceVolume.region().getDimensionsInVoxels();
 		const glm::ivec3 &mins = sourceVolume.region().getLowerCorner();
 		sourceSampler.setPosition(mins.x, mins.y, mins.z + start);
-		for (size_t z = start; z < end; ++z) {
+		for (int32_t z = start; z < end; ++z) {
 			voxel::RawVolume::Sampler sourceSampler2 = sourceSampler;
 			for (int32_t y = 0; y < dim.y; ++y) {
 				voxel::RawVolume::Sampler sourceSampler3 = sourceSampler2;
