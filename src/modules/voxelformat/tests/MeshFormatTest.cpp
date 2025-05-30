@@ -156,7 +156,6 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	mesh.voxelize(sceneGraph, tris);
 	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
 	ASSERT_NE(nullptr, node);
-	voxel::getPalette() = node->palette();
 	const voxel::RawVolume *v = node->volume();
 	EXPECT_COLOR_NEAR(nipponRed, node->palette().color(v->voxel(0, 0, 0).getColor()), 0.01f);
 	EXPECT_COLOR_NEAR(nipponRed, node->palette().color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.01f);
