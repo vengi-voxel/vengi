@@ -154,7 +154,7 @@ void Console::autoComplete() {
 	const core::Tokens strings = core::Tokenizer(lastCmd, " ").tokens();
 	core::String baseSearchString = "";
 	bool parameter = _commandLine.last() == ' ' || strings.size() > 1;
-	if (parameter) {
+	if (parameter && !strings.empty()) {
 		const command::Command* cmd = command::Command::getCommand(strings.front());
 		if (cmd != nullptr) {
 			if (strings.back() == strings.front()) {
