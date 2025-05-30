@@ -13,11 +13,11 @@ namespace voxelutil {
 
 class VolumeResizerTest : public app::AbstractTest {};
 
-TEST_F(VolumeResizerTest, DISABLED_testResize) {
+TEST_F(VolumeResizerTest, testResize) {
 	voxel::RawVolume volume({-8, 8});
 	voxelutil::visitVolume(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-	});
+	}, VisitAll());
 	voxel::Region newRegion = volume.region();
 	newRegion.grow(5);
 	core::ScopedPtr<voxel::RawVolume> v(voxelutil::resize(&volume, newRegion));
