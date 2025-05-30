@@ -106,4 +106,46 @@ TEST_F(VolumeRotatorTest, testRotateAxisY45) {
 									 << " " << region;
 }
 
+TEST_F(VolumeRotatorTest, testMirrorAxisX) {
+	const voxel::Region region(-1, -1, -1, 2, 2, 1);
+	voxel::RawVolume smallVolume(region);
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, -1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	core::ScopedPtr<voxel::RawVolume> mirrored(voxelutil::mirrorAxis(&smallVolume, math::Axis::X));
+	ASSERT_NE(nullptr, mirrored) << "No new volume was returned for the desired mirroring";
+	ASSERT_EQ(mirrored->region(), region) << "Mirroring around an axis should not modify the region";
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(1, 0, 0).getMaterial())) << smallVolume << *mirrored;
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(1, 1, 0).getMaterial())) << smallVolume << *mirrored;
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(1, 0, -1).getMaterial())) << smallVolume << *mirrored;
+}
+
+TEST_F(VolumeRotatorTest, testMirrorAxisY) {
+	const voxel::Region region(-1, -1, -1, 2, 2, 1);
+	voxel::RawVolume smallVolume(region);
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, -1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	core::ScopedPtr<voxel::RawVolume> mirrored(voxelutil::mirrorAxis(&smallVolume, math::Axis::Y));
+	ASSERT_NE(nullptr, mirrored) << "No new volume was returned for the desired mirroring";
+	ASSERT_EQ(mirrored->region(), region) << "Mirroring around an axis should not modify the region";
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(0, 0, 0).getMaterial())) << smallVolume << *mirrored;
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(0, 1, 0).getMaterial())) << smallVolume << *mirrored;
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(0, 1, -1).getMaterial())) << smallVolume << *mirrored;
+}
+
+TEST_F(VolumeRotatorTest, testMirrorAxisZ) {
+	const voxel::Region region(-1, -1, -1, 1, 2, 2);
+	voxel::RawVolume smallVolume(region);
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, -1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	core::ScopedPtr<voxel::RawVolume> mirrored(voxelutil::mirrorAxis(&smallVolume, math::Axis::Z));
+	ASSERT_NE(nullptr, mirrored) << "No new volume was returned for the desired mirroring";
+	ASSERT_EQ(mirrored->region(), region) << "Mirroring around an axis should not modify the region";
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(0, 0, 1).getMaterial())) << smallVolume << *mirrored;
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(0, 1, 1).getMaterial())) << smallVolume << *mirrored;
+	EXPECT_TRUE(voxel::isBlocked(mirrored->voxel(0, 0, 2).getMaterial())) << smallVolume << *mirrored;
+}
+
 } // namespace voxelutil
