@@ -44,6 +44,7 @@ bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, co
 	const image::TextureWrap wrapS = flipU ? image::TextureWrap::MirroredRepeat : image::Repeat;
 	const image::TextureWrap wrapT = flipV ? image::TextureWrap::MirroredRepeat : image::Repeat;
 
+	// TODO: FOR-PARALLEL
 	for (int axis1 = axisMins1; axis1 <= axisMaxs1; ++axis1) {
 		const float axis1Factor = ((float)(axis1 - axisMins1) + 0.5f) / (float)size[axisIdx1];
 		for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
@@ -113,6 +114,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, palette::PaletteLoo
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
 	const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)255.0f : 1.0f;
 	float imageY = 0.0f;
+	// TODO: FOR-PARALLEL
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
@@ -170,6 +172,7 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 	const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)maxImageHeight : 1.0f;
 	float imageY = 0.0f;
 	// TODO: use a volume sampler
+	// TODO: FOR-PARALLEL
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {

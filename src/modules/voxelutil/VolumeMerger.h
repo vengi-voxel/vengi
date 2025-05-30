@@ -36,6 +36,7 @@ int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Regio
 	typename Volume1::Sampler destSampler(destination);
 	const int relX = destReg.getLowerX();
 	sourceSampler.setPosition(sourceReg.getLowerCorner());
+	// TODO: FOR-PARALLEL
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
 		typename Volume2::Sampler sourceSampler2 = sourceSampler;
@@ -77,6 +78,7 @@ int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalett
 	typename Volume1::Sampler destSampler(destination);
 	const int relX = destReg.getLowerX();
 	sourceSampler.setPosition(sourceReg.getLowerCorner());
+	// TODO: FOR-PARALLEL
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
 		typename Volume2::Sampler sourceSampler2 = sourceSampler;
