@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/Async.h"
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"
 #include "core/Trace.h"
@@ -18,20 +19,34 @@ int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& of
 	const voxel::Region& destReg = destination->region();
 	const voxel::Region& sourceReg = source->region();
 
-	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
-		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ() + offsets.z;
-		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
-			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY() + offsets.y;
-			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				const int destX = destReg.getLowerX() + x - sourceReg.getLowerX() + offsets.x;
-				const voxel::Voxel& voxel = source->voxel(x, y, z);
-				if (voxel == skipVoxel) {
-					continue;
+	app::for_parallel(sourceReg.getLowerZ(), sourceReg.getUpperZ() + 1, [&destination, &source, &destReg, &sourceReg, &offsets, &skipVoxel, &cnt] (int start, int end) {
+		typename Volume1::Sampler destSampler(destination);
+		typename Volume2::Sampler sourceSampler(source);
+		for (int32_t z = start; z < end; ++z) {
+			sourceSampler.setPosition(sourceReg.getLowerX(), sourceReg.getLowerY(), z);
+			destSampler.setPosition(destReg.getLowerX() + offsets.x, destReg.getLowerY() + offsets.y, destReg.getLowerZ() + offsets.z);
+			for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
+				sourceSampler.setPosition(sourceReg.getLowerX(), y, z);
+				destSampler.setPosition(destReg.getLowerX() + offsets.x, y + offsets.y, destReg.getLowerZ() + offsets.z);
+				for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
+					const voxel::Voxel& voxel = sourceSampler.voxel();
+					if (voxel == skipVoxel) {
+						sourceSampler.movePositiveX();
+						destSampler.movePositiveX();
+						continue;
+					}
+					destSampler.setVoxel(voxel);
+					++cnt;
+					sourceSampler.movePositiveX();
+					destSampler.movePositiveX();
 				}
-				destination->setVoxel(destX, destY, destZ, voxel);
+				sourceSampler.movePositiveY();
+				destSampler.movePositiveY();
 			}
+			sourceSampler.movePositiveZ();
+			destSampler.movePositiveZ();
 		}
-	}
+	});
 	return cnt;
 }
 
