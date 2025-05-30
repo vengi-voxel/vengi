@@ -77,7 +77,7 @@ void MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollec
 	const glm::vec3 size = maxs - mins;
 	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
 		voxelformat::MeshTri out[4];
-		meshTri.subdivide(out);
+		subdivide(meshTri, out);
 		for (int i = 0; i < lengthof(out); ++i) {
 			subdivideTri(out[i], tinyTris);
 		}
