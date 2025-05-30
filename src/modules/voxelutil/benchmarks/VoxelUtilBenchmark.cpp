@@ -58,6 +58,26 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleDown)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleUp)(benchmark::State &state) {
+	int color = 0;
+	voxel::RawVolume in(voxel::Region{0, 20});
+	in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(2, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(3, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(4, 2, 1, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(5, 3, 2, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	in.setVoxel(5, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
+	for (auto _ : state) {
+		voxel::RawVolume *scaled = voxelutil::scaleUp(in);
+		if (scaled != nullptr) {
+			benchmark::DoNotOptimize(scaled);
+			delete scaled;
+		}
+	}
+}
+
 BENCHMARK_DEFINE_F(VoxelUtilBenchmark, FillHollow)(benchmark::State &state) {
 	voxel::RawVolume in(voxel::Region{0, 20});
 	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
@@ -133,6 +153,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolumeSameDim)(benchmark::State
 }
 
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleDown);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleUp);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Crop);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, FillHollow);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Move);
