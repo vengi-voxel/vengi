@@ -139,50 +139,60 @@ voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis)
 }
 
 voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {
-	const voxel::Region &srcRegion = source->region();
 	voxel::RawVolume *destination = new voxel::RawVolume(source);
-	voxel::RawVolume::Sampler destSampler(destination);
-	voxel::RawVolume::Sampler srcSampler(source);
 
+	const voxel::Region &srcRegion = source->region();
 	const glm::ivec3 &mins = srcRegion.getLowerCorner();
 	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 
 	if (axis == math::Axis::X) {
-		for (int32_t z = mins.z; z <= maxs.z; ++z) {
-			for (int32_t y = mins.y; y <= maxs.y; ++y) {
-				srcSampler.setPosition(mins.x, y, z);
-				destSampler.setPosition(maxs.x, y, z);
-				for (int32_t x = mins.x; x <= maxs.x; ++x) {
-					destSampler.setVoxel(srcSampler.voxel());
-					srcSampler.movePositiveX();
-					destSampler.moveNegativeX();
-				}
-			}
-		}
-	} else if (axis == math::Axis::Y) {
-		for (int32_t z = mins.z; z <= maxs.z; ++z) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				srcSampler.setPosition(x, mins.y, z);
-				destSampler.setPosition(x, maxs.y, z);
+		app::for_parallel(mins.z, maxs.z + 1, [&source, &destination, mins, maxs] (int start, int end) {
+			voxel::RawVolume::Sampler destSampler(destination);
+			voxel::RawVolume::Sampler srcSampler(source);
+			for (int32_t z = start; z < end; ++z) {
 				for (int32_t y = mins.y; y <= maxs.y; ++y) {
-					destSampler.setVoxel(srcSampler.voxel());
-					srcSampler.movePositiveY();
-					destSampler.moveNegativeY();
+					srcSampler.setPosition(mins.x, y, z);
+					destSampler.setPosition(maxs.x, y, z);
+					for (int32_t x = mins.x; x <= maxs.x; ++x) {
+						destSampler.setVoxel(srcSampler.voxel());
+						srcSampler.movePositiveX();
+						destSampler.moveNegativeX();
+					}
 				}
 			}
-		}
+		});
+	} else if (axis == math::Axis::Y) {
+		app::for_parallel(mins.z, maxs.z + 1, [&source, &destination, mins, maxs] (int start, int end) {
+			voxel::RawVolume::Sampler destSampler(destination);
+			voxel::RawVolume::Sampler srcSampler(source);
+			for (int32_t z = start; z < end; ++z) {
+				for (int32_t x = mins.x; x <= maxs.x; ++x) {
+					srcSampler.setPosition(x, mins.y, z);
+					destSampler.setPosition(x, maxs.y, z);
+					for (int32_t y = mins.y; y <= maxs.y; ++y) {
+						destSampler.setVoxel(srcSampler.voxel());
+						srcSampler.movePositiveY();
+						destSampler.moveNegativeY();
+					}
+				}
+			}
+		});
 	} else if (axis == math::Axis::Z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				srcSampler.setPosition(x, y, mins.z);
-				destSampler.setPosition(x, y, maxs.z);
-				for (int32_t z = mins.z; z <= maxs.z; ++z) {
-					destSampler.setVoxel(srcSampler.voxel());
-					srcSampler.movePositiveZ();
-					destSampler.moveNegativeZ();
+		app::for_parallel(mins.y, maxs.y + 1, [&source, &destination, mins, maxs] (int start, int end) {
+			voxel::RawVolume::Sampler destSampler(destination);
+			voxel::RawVolume::Sampler srcSampler(source);
+			for (int32_t y = start; y < end; ++y) {
+				for (int32_t x = mins.x; x <= maxs.x; ++x) {
+					srcSampler.setPosition(x, y, mins.z);
+					destSampler.setPosition(x, y, maxs.z);
+					for (int32_t z = mins.z; z <= maxs.z; ++z) {
+						destSampler.setVoxel(srcSampler.voxel());
+						srcSampler.movePositiveZ();
+						destSampler.moveNegativeZ();
+					}
 				}
 			}
-		}
+		});
 	}
 	return destination;
 }
