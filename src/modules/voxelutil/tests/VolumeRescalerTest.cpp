@@ -16,16 +16,19 @@ class VolumeRescalerTest : public app::AbstractTest {
 protected:
 	void testScaleUpFull(int lower, int upper) {
 		voxel::RawVolume volume({lower, upper});
-		voxelutil::visitVolume(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const int n = voxelutil::visitVolume(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-		});
+		}, VisitAll());
+		ASSERT_GT(n, 0);
 		core::ScopedPtr<voxel::RawVolume> v(voxelutil::scaleUp(volume));
 		ASSERT_TRUE(v);
 		const voxel::Region scaledRegion = v->region();
+		EXPECT_EQ(v->region().voxels(), n * 8);
 		const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
 		const glm::ivec3 mins = scaledRegion.getLowerCorner();
 		ASSERT_EQ(dims, volume.region().getDimensionsInVoxels() * 2);
 		ASSERT_EQ(mins, volume.region().getLowerCorner());
+		EXPECT_EQ(countVoxels(*v), n * 8) << "Expected " << n * 8 << " voxels, but got " << countVoxels(*v);
 	}
 
 	int countVoxels(const voxel::RawVolume &volume) {
