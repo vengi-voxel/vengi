@@ -989,19 +989,20 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		}
 		const voxel::Region &sourceRegion = resolveRegion(node);
 		const voxel::Region &destRegion = sceneRegion(node, keyFrameIdx);
+		const palette::Palette &pal = node.palette();
 
-		auto func = [&node, &mergedPalette](voxel::Voxel &voxel) {
+		auto mergeCondition = [&pal, &mergedPalette](voxel::Voxel &voxel) {
 			if (isAir(voxel.getMaterial())) {
 				return false;
 			}
-			const core::RGBA color = node.palette().color(voxel.getColor());
+			const core::RGBA color = pal.color(voxel.getColor());
 			const uint8_t index = mergedPalette.getClosestMatch(color);
 			voxel.setColor(index);
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
 		// TODO: SCENEGRAPH: rotation
-		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, func);
+		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
 	}
 	return MergeResult{merged, mergedPalette, normalPalette};
 }
