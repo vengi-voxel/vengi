@@ -120,6 +120,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 		palette::PaletteLookup palLookup(palette);
 		float imageY = 0.0f;
 
+		// TODO: use a volume sampler
 		for (int z = start; z < end; ++z, imageY += stepWidthY) {
 			float imageX = 0.0f;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
