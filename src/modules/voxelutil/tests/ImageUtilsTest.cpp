@@ -45,7 +45,7 @@ TEST_F(ImageUtilsTest, testImportAsVolume2) {
 	EXPECT_EQ(depth, volume->depth());
 }
 
-TEST_F(ImageUtilsTest, importHeightMaxHeightAlpha) {
+TEST_F(ImageUtilsTest, testImportHeightMaxHeightAlpha) {
 	constexpr int h = 4;
 	constexpr int w = 4;
 	constexpr core::RGBA buffer[w * h]{{255, 0, 0, 127},  {255, 255, 0, 128},  {255, 0, 255, 129},	{255, 255, 255, 1},

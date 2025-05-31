@@ -21,6 +21,12 @@ private:
 						const core::String &filename, const io::ArchivePtr &archive) const;
 	bool importAsPlane(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					   const core::String &filename, const io::ArchivePtr &archive) const;
+	bool saveSlices(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					const io::ArchivePtr &archive) const;
+	bool saveHeightmaps(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						const io::ArchivePtr &archive) const;
+	bool saveVolumes(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					 const io::ArchivePtr &archive) const;
 
 protected:
 	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
@@ -32,7 +38,7 @@ public:
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
-	enum ImportType { Plane = 0, Heightmap = 1, Volume = 2 };
+	enum ImageType { Plane = 0, Heightmap = 1, Volume = 2 };
 };
 
 } // namespace voxelformat

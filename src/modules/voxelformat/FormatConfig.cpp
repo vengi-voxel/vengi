@@ -117,11 +117,14 @@ bool FormatConfig::init() {
 				   _("Import the image as volume for both sides"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatTexturePath, "", core::CV_NOPERSIST,
 				   _("Register an additional search path for texture lookups"));
-	core::Var::get(cfg::VoxformatImageImportType, PNGFormat::ImportType::Plane, core::CV_NOPERSIST,
+	core::Var::get(cfg::VoxformatImageImportType, PNGFormat::ImageType::Plane, core::CV_NOPERSIST,
 				   _("0 = plane, 1 = heightmap, 2 = volume"),
-				   core::Var::minMaxValidator<PNGFormat::ImportType::Plane, PNGFormat::ImportType::Volume>);
-	static_assert(PNGFormat::ImportType::Plane == 0, "Plane must be 0");
-	static_assert(PNGFormat::ImportType::Volume == 2, "Volume must be 2");
+				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
+	core::Var::get(cfg::VoxformatImageSaveType, PNGFormat::ImageType::Plane, core::CV_NOPERSIST,
+				   _("0 = plane, 1 = heightmap, 2 = volume"),
+				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
+	static_assert(PNGFormat::ImageType::Plane == 0, "Plane must be 0");
+	static_assert(PNGFormat::ImageType::Volume == 2, "Volume must be 2");
 	core::Var::get(cfg::VoxformatSchematicType, "mcedit2", core::CV_NOPERSIST,
 				   _("The type of schematic format to use when saving schematics"), schematicTypeValidator);
 	core::Var::get(cfg::VoxformatBinvoxVersion, "2", core::CV_NOPERSIST,

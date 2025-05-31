@@ -22,7 +22,7 @@ TEST_F(PNGFormatTest, testLoadPlane) {
 }
 
 TEST_F(PNGFormatTest, testLoadVolume) {
-	util::ScopedVarChange scped(cfg::VoxformatImageImportType, PNGFormat::ImportType::Volume);
+	util::ScopedVarChange scoped(cfg::VoxformatImageImportType, PNGFormat::ImageType::Volume);
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test-heightmap.png", 1);
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -32,7 +32,7 @@ TEST_F(PNGFormatTest, testLoadVolume) {
 }
 
 TEST_F(PNGFormatTest, testLoadHeightmap) {
-	util::ScopedVarChange scped(cfg::VoxformatImageImportType, PNGFormat::ImportType::Heightmap);
+	util::ScopedVarChange scoped(cfg::VoxformatImageImportType, PNGFormat::ImageType::Heightmap);
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test-heightmap.png", 1);
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();

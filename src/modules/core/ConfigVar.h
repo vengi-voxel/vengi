@@ -111,6 +111,7 @@ constexpr const char *VoxformatImageVolumeMaxDepth = "voxformat_imagevolumemaxde
 constexpr const char *VoxformatImageHeightmapMinHeight = "voxformat_imageheightmapminheight";
 constexpr const char *VoxformatImageVolumeBothSides = "voxformat_imagevolumebothsides";
 constexpr const char *VoxformatImageImportType = "voxformat_imageimporttype";
+constexpr const char *VoxformatImageSaveType = "voxformat_imagesavetype";
 constexpr const char *VoxformatTexturePath = "voxformat_texturepath";
 constexpr const char *VoxformatSchematicType = "voxformat_schematictype";
 constexpr const char *VoxformatBinvoxVersion = "voxformat_binvoxversion";

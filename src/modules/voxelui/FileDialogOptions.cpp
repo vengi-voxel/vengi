@@ -114,12 +114,43 @@ bool genericOptions(const io::FormatDescription *desc) {
 	return false;
 }
 
+static int genericPngOptions(const core::VarPtr &imageTypeVar) {
+	const char *imageTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
+	static_assert(voxelformat::PNGFormat::ImageType::Volume == 2, "Volume must be at index 2");
+	static_assert(voxelformat::PNGFormat::ImageType::Heightmap == 1, "Heightmap must be at index 1");
+	static_assert(voxelformat::PNGFormat::ImageType::Plane == 0, "Plane must be at index 0");
+	const int currentImageType = imageTypeVar->intVal();
+
+	if (ImGui::BeginCombo(_("Import type"), imageTypes[currentImageType])) {
+		for (int i = 0; i < lengthof(imageTypes); ++i) {
+			const char *imageType = imageTypes[i];
+			if (imageType == nullptr) {
+				continue;
+			}
+			const bool selected = i == currentImageType;
+			if (ImGui::Selectable(imageType, selected)) {
+				imageTypeVar->setVal(core::string::toString(i));
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	return currentImageType;
+}
+
 static void saveOptionsPng(const io::FilesystemEntry &entry) {
-	ImGui::SeparatorText(_("Layer information"));
-	const core::String basename = core::string::extractFilename(entry.name);
-	ImGui::IconDialog(ICON_LC_INFO, _("This is saving several images as layers per object.\n\n"
-									  "The name of the files will include the uuid of the node\n"
-									  "and the z layer index."));
+	const core::VarPtr &imageTypeVar = core::Var::getSafe(cfg::VoxformatImageSaveType);
+	const int currentImageType = genericPngOptions(imageTypeVar);
+
+	if (currentImageType == voxelformat::PNGFormat::ImageType::Plane) {
+		ImGui::SeparatorText(_("Layer information"));
+		const core::String basename = core::string::extractFilename(entry.name);
+		ImGui::IconDialog(ICON_LC_INFO, _("This is saving several images as layers per object.\n\n"
+										"The name of the files will include the uuid of the node\n"
+										"and the z layer index."));
+	}
 }
 
 static void saveOptionsMesh(const io::FormatDescription *desc) {
@@ -219,30 +250,10 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 }
 
 static void loadOptionsPng(const io::FilesystemEntry &entry) {
-	const char *importTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
-	static_assert(voxelformat::PNGFormat::ImportType::Volume == 2, "Volume must be at index 2");
-	static_assert(voxelformat::PNGFormat::ImportType::Heightmap == 1, "Heightmap must be at index 1");
-	static_assert(voxelformat::PNGFormat::ImportType::Plane == 0, "Plane must be at index 0");
-	const core::VarPtr &importTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
-	const int currentImportType = importTypeVar->intVal();
+	const core::VarPtr &imageTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
+	const int currentImageType = genericPngOptions(imageTypeVar);
 
-	if (ImGui::BeginCombo(_("Import type"), importTypes[currentImportType])) {
-		for (int i = 0; i < lengthof(importTypes); ++i) {
-			const char *importType = importTypes[i];
-			if (importType == nullptr) {
-				continue;
-			}
-			const bool selected = i == currentImportType;
-			if (ImGui::Selectable(importType, selected)) {
-				importTypeVar->setVal(core::string::toString(i));
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-	if (currentImportType == voxelformat::PNGFormat::ImportType::Volume) {
+	if (currentImageType == voxelformat::PNGFormat::ImageType::Volume) {
 		ImGui::InputVarInt(_("Max depth"), cfg::VoxformatImageVolumeMaxDepth);
 		ImGui::CheckboxVar(_("Both sides"), cfg::VoxformatImageVolumeBothSides);
 		if (!entry.fullPath.empty()) {
@@ -255,7 +266,7 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 				ImGui::TooltipTextUnformatted(depthMapName.c_str());
 			}
 		}
-	} else if (currentImportType == voxelformat::PNGFormat::ImportType::Volume) {
+	} else if (currentImageType == voxelformat::PNGFormat::ImageType::Volume) {
 		ImGui::InputVarInt(_("Min height"), cfg::VoxformatImageHeightmapMinHeight);
 	}
 }

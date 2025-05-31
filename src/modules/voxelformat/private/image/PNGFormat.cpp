@@ -74,8 +74,8 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 			return false;
 		}
 		if (imageWidth != image->width() || imageHeight != image->height()) {
-			Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)", layetFilename.c_str(),
-					   image->width(), image->height(), imageWidth, imageHeight);
+			Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)",
+					   layetFilename.c_str(), image->width(), image->height(), imageWidth, imageHeight);
 			return false;
 		}
 		const int layer = extractLayerFromFilename(layetFilename);
@@ -120,7 +120,7 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 	voxel::RawVolumeWrapper wrapper(volume);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	const uint8_t minHeight = core::Var::getSafe(cfg::VoxformatImageHeightmapMinHeight)->intVal();;
+	const uint8_t minHeight = core::Var::getSafe(cfg::VoxformatImageHeightmapMinHeight)->intVal();
 	if (coloredHeightmap) {
 		voxelutil::importColoredHeightmap(wrapper, palette, image, dirtVoxel, minHeight, false);
 	} else {
@@ -179,10 +179,10 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	const int type = core::Var::getSafe(cfg::VoxformatImageImportType)->intVal();
-	if (type == ImportType::Heightmap) {
+	if (type == ImageType::Heightmap) {
 		return importAsHeightmap(sceneGraph, palette, filename, archive);
 	}
-	if (type == ImportType::Volume) {
+	if (type == ImageType::Volume) {
 		return importAsVolume(sceneGraph, palette, filename, archive);
 	}
 
@@ -212,7 +212,7 @@ size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 							  const LoadContext &ctx) {
 	const image::ImagePtr &image = image::loadImage(filename);
 	const int type = core::Var::getSafe(cfg::VoxformatImageImportType)->intVal();
-	if (type == ImportType::Heightmap) {
+	if (type == ImageType::Heightmap) {
 		image->makeOpaque();
 	}
 
@@ -226,6 +226,31 @@ size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 
 bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	const int type = core::Var::getSafe(cfg::VoxformatImageSaveType)->intVal();
+	if (type == ImageType::Heightmap) {
+		return saveHeightmaps(sceneGraph, filename, archive);
+	}
+	if (type == ImageType::Volume) {
+		return saveVolumes(sceneGraph, filename, archive);
+	}
+
+	return saveSlices(sceneGraph, filename, archive);
+}
+
+bool PNGFormat::saveHeightmaps(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							   const io::ArchivePtr &archive) const {
+	Log::error("Saving heightmaps as PNG is not supported");
+	return false;
+}
+
+bool PNGFormat::saveVolumes(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							const io::ArchivePtr &archive) const {
+	Log::error("Saving volumes as PNG is not supported");
+	return false;
+}
+
+bool PNGFormat::saveSlices(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   const io::ArchivePtr &archive) const {
 	const core::String &basename = core::string::stripExtension(filename);
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->value;
@@ -237,7 +262,8 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		const voxel::Region &region = volume->region();
 		const palette::Palette &palette = node.palette();
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-			const core::String &layerFilename = core::String::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
+			const core::String &layerFilename =
+				core::String::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
 			image::Image image(layerFilename);
 			core::Buffer<core::RGBA> rgba;
 			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());
