@@ -120,7 +120,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 		palette::PaletteLookup palLookup(palette);
 		float imageY = 0.0f;
 
-		// TODO: use a volume sampler
+		voxel::RawVolumeWrapper::Sampler sampler(volume);
 		for (int z = start; z < end; ++z, imageY += stepWidthY) {
 			float imageX = 0.0f;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
@@ -133,20 +133,16 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 				if (voxel::isAir(underground.getMaterial())) {
 					const glm::ivec3 pos(x, heightValue - 1, z);
 					const glm::ivec3 regionPos = mins + pos;
-					if (!region.containsPoint(regionPos)) {
-						continue;
-					}
+					sampler.setPosition(regionPos);
 					const uint8_t palidx =
 						palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
 					const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), palidx);
-					volume.setVoxel(regionPos, voxel);
+					sampler.setVoxel(voxel);
 				} else {
+					const glm::ivec3 pos(x, 0, z);
+					const glm::ivec3 regionPos = mins + pos;
+					sampler.setPosition(regionPos);
 					for (int y = 0; y < heightValue; ++y) {
-						const glm::ivec3 pos(x, y, z);
-						const glm::ivec3 regionPos = mins + pos;
-						if (!region.containsPoint(regionPos)) {
-							continue;
-						}
 						voxel::Voxel voxel;
 						if (y < heightValue - 1) {
 							voxel = underground;
@@ -155,7 +151,8 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 								core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
 							voxel = voxel::createVoxel(palLookup.palette(), palidx);
 						}
-						volume.setVoxel(regionPos, voxel);
+						sampler.setVoxel(voxel);
+						sampler.movePositiveY();
 					}
 				}
 			}
