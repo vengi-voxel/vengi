@@ -138,6 +138,7 @@ set(TEST_SRCS
 	tests/MCRFormatTest.cpp
 	tests/MD2FormatTest.cpp
 	tests/MDLFormatTest.cpp
+	tests/MTSFormatTest.cpp
 	tests/OBJFormatTest.cpp
 	tests/PLYFormatTest.cpp
 	tests/PNGFormatTest.cpp
