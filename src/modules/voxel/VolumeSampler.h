@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/Async.h"
 #include "math/Axis.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -549,20 +550,22 @@ inline bool setVoxels(Volume &volume, int x, int z, const Voxel* voxels, int amo
 
 template<class Volume>
 inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const Voxel* voxels, int amount) {
-	typename Volume::Sampler sampler(volume);
-	sampler.setPosition(x, y, z);
-	for (int k = 0; k < nz; ++k) {
-		typename Volume::Sampler samplerZ(sampler);
-		for (int ny = 0; ny < amount; ++ny) {
-			typename Volume::Sampler samplerY(samplerZ);
-			for (int j = 0; j < nx; ++j) {
-				samplerY.setVoxel(voxels[ny]);
-				samplerY.movePositiveX();
+	app::for_parallel(0, nz, [nx, amount, &volume, &voxels, x, y, z] (int start, int end) {
+		typename Volume::Sampler sampler(volume);
+		sampler.setPosition(x, y, z + start);
+		for (int k = start; k < end; ++k) {
+			typename Volume::Sampler samplerZ(sampler);
+			for (int ny = 0; ny < amount; ++ny) {
+				typename Volume::Sampler samplerY(samplerZ);
+				for (int j = 0; j < nx; ++j) {
+					samplerY.setVoxel(voxels[ny]);
+					samplerY.movePositiveX();
+				}
+				samplerZ.movePositiveY();
 			}
-			samplerZ.movePositiveY();
+			sampler.movePositiveZ();
 		}
-		sampler.movePositiveZ();
-	}
+	});
 	return true;
 }
 

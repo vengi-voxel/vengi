@@ -80,7 +80,6 @@ public:
 	}
 
 	void addToDirtyRegion(const glm::ivec3 &pos) {
-		// TODO: we need locking here
 		if (_dirtyRegion.isValid()) {
 			_dirtyRegion.accumulate(pos);
 		} else {
