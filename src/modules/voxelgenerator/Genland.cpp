@@ -19,6 +19,7 @@
  */
 
 #include "Genland.h"
+#include "app/Async.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "glm/ext/scalar_integer.hpp"
@@ -27,6 +28,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 
@@ -342,29 +344,31 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 
 	palette::Palette palette;
 	palette.nippon();
-	palette::PaletteLookup paletteLookup(palette);
 
-	const core::RGBA *heightmap = tempBuffer.buf;
-	core::Array<voxel::Voxel, 256> voxels;
-	voxel::RawVolume *volume =
-		new voxel::RawVolume(voxel::Region(0, 0, 0, settings.size - 1, settings.height - 1, settings.size - 1));
-	for (int vz = 0; vz < settings.size; ++vz) {
-		for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
-			const int maxsy = glm::clamp((int)heightmap->a, 0, settings.height);
-			if (maxsy == 0) {
+	const voxel::Region region(0, 0, 0, settings.size - 1, settings.height - 1, settings.size - 1);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	app::for_parallel(0, settings.size, [&palette, &tempBuffer, &settings, volume] (int start, int end) {
+		palette::PaletteLookup paletteLookup(palette);
+		const core::RGBA *heightmap = tempBuffer.buf + start * settings.size;
+		for (int vz = start; vz < end; ++vz) {
+			for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
+				const int maxsy = glm::clamp((int)heightmap->a, 0, settings.height);
+				if (maxsy == 0) {
+					const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
+					const int palIdx = paletteLookup.findClosestIndex(color);
+					volume->setVoxel(vx, 0, vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+					continue;
+				} else if (maxsy < 0) {
+					continue;
+				}
 				const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
 				const int palIdx = paletteLookup.findClosestIndex(color);
-				volume->setVoxel(vx, 0, vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
-				continue;
-			} else if (maxsy < 0) {
-				continue;
+				core::Array<voxel::Voxel, 256> voxels;
+				voxels.fill(voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+				voxel::setVoxels(*volume, vx, vz, voxels.data(), maxsy);
 			}
-			const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
-			const int palIdx = paletteLookup.findClosestIndex(color);
-			voxels.fill(voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
-			voxel::setVoxels(*volume, vx, vz, voxels.data(), maxsy);
 		}
-	}
+	});
 
 	return volume;
 }
