@@ -41,12 +41,12 @@ bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, co
 	const int axisMaxs2 = maxs[axisIdx2];
 	const int axisIdxUV1 = (axisIdx1 + 0) % 2;
 	const int axisIdxUV2 = (axisIdx1 + 1) % 2;
-	const bool flipU = false;
-	const bool flipV = false;
-	const image::TextureWrap wrapS = flipU ? image::TextureWrap::MirroredRepeat : image::Repeat;
-	const image::TextureWrap wrapT = flipV ? image::TextureWrap::MirroredRepeat : image::Repeat;
 
-	app::for_parallel(axisMins1, axisMaxs1 + 1, [axisIdx1, axisMaxs2, axisMins2, replacementPalIdx, &image, axisIdxUV1, axisIdxUV2, &palette, &uv0, &uv1, axisIdx2, &size, axisFixed, axisIdx0, &volume] (int start, int end) {
+	app::for_parallel(axisMins1, axisMaxs1 + 1, [axisFixed, axisIdx0, axisIdx1, axisIdx2, axisMaxs2, axisMins2, axisIdxUV1, axisIdxUV2, replacementPalIdx, &image, &palette, &uv0, &uv1, &size, &volume] (int start, int end) {
+		const bool flipU = false;
+		const bool flipV = false;
+		const image::TextureWrap wrapS = flipU ? image::TextureWrap::MirroredRepeat : image::Repeat;
+		const image::TextureWrap wrapT = flipV ? image::TextureWrap::MirroredRepeat : image::Repeat;
 		for (int axis1 = start; axis1 < end; ++axis1) {
 			const float axis1Factor = ((float)(axis1 - start) + 0.5f) / (float)size[axisIdx1];
 			for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
