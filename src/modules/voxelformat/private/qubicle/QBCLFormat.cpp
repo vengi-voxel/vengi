@@ -288,9 +288,9 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
-	wrapBool(stream->writeUInt32(FourCC('Q', 'B', 'C', 'L')))
-	wrapBool(stream->writeUInt32(131331))
-	wrapBool(stream->writeUInt32(qbcl::VERSION))
+	wrapSave(stream->writeUInt32(FourCC('Q', 'B', 'C', 'L')))
+	wrapSave(stream->writeUInt32(131331))
+	wrapSave(stream->writeUInt32(qbcl::VERSION))
 	bool imageAdded = false;
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
@@ -298,8 +298,8 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	if (image) {
 		const int size = image->width() * image->height() * image->components();
 		if (size > 0) {
-			wrapBool(stream->writeUInt32(image->width()))
-			wrapBool(stream->writeUInt32(image->height()))
+			wrapSave(stream->writeUInt32(image->width()))
+			wrapSave(stream->writeUInt32(image->height()))
 			for (int x = 0; x < image->width(); ++x) {
 				for (int y = 0; y < image->height(); ++y) {
 					const core::RGBA color = image->colorAt(x, y);
@@ -316,20 +316,20 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	}
 
 	if (!imageAdded) {
-		wrapBool(stream->writeUInt32(0)) // thumbnail w/h
-		wrapBool(stream->writeUInt32(0)) // thumbnail w/h
+		wrapSave(stream->writeUInt32(0)) // thumbnail w/h
+		wrapSave(stream->writeUInt32(0)) // thumbnail w/h
 	}
 
 	const scenegraph::SceneGraphNode &rootNode = sceneGraph.root();
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Title")))
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Description")))
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Metadata")))
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Author")))
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Company")))
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Website")))
-	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Copyright")))
-	wrapBool(stream->writeUInt64(0)) // timestamp1
-	wrapBool(stream->writeUInt64(0)) // timestamp2
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Title")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Description")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Metadata")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Author")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Company")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Website")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Copyright")))
+	wrapSave(stream->writeUInt64(0)) // timestamp1
+	wrapSave(stream->writeUInt64(0)) // timestamp2
 	return saveNode(*stream, sceneGraph, sceneGraph.root());
 }
 
