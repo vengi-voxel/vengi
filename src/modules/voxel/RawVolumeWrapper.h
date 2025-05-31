@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
+#include "core/concurrent/Lock.h"
 #include "voxel/RawVolume.h"
 
 namespace voxel {
@@ -16,11 +18,13 @@ protected:
 	RawVolume* _volume;
 	Region _region;
 	Region _dirtyRegion = Region::InvalidRegion;
+	mutable core_trace_mutex(core::Lock, _lock, "RawVolumeWrapper");
 
 public:
 	class Sampler : public VolumeSampler<RawVolumeWrapper> {
 	private:
 		using Super = VolumeSampler<RawVolumeWrapper>;
+		core::DynamicArray<glm::ivec3, 1024> _positions;
 	public:
 		VOLUMESAMPLERUSING;
 
@@ -29,8 +33,20 @@ public:
 				return false;
 			}
 			*_currentVoxel = voxel;
-			_volume->addToDirtyRegion(_posInVolume);
+			if (_positions.size() >= _positions.capacity()) {
+				_volume->addToDirtyRegion(_positions);
+				_positions.clear();
+			}
+			_positions.push_back(_posInVolume);
 			return true;
+		}
+
+		void flush() {
+			_volume->addToDirtyRegion(_positions);
+		}
+
+		~Sampler() {
+			flush();
 		}
 	};
 
@@ -79,11 +95,26 @@ public:
 		return _volume;
 	}
 
-	void addToDirtyRegion(const glm::ivec3 &pos) {
+	inline void addToDirtyRegion(const glm::ivec3 &pos) {
+		core::ScopedLock lock(_lock);
 		if (_dirtyRegion.isValid()) {
 			_dirtyRegion.accumulate(pos);
 		} else {
 			_dirtyRegion = Region(pos, pos);
+		}
+	}
+
+	template<class COLLECTION>
+	void addToDirtyRegion(const COLLECTION &positions) {
+		if (positions.empty()) {
+			return;
+		}
+		core::ScopedLock lock(_lock);
+		if (!_dirtyRegion.isValid()) {
+			_dirtyRegion = Region(positions[0], positions[0]);
+		}
+		for (const glm::ivec3 &pos : positions) {
+			_dirtyRegion.accumulate(pos);
 		}
 	}
 
@@ -142,6 +173,7 @@ public:
 	 * @return @c false if the voxel was not placed because the given position is outside of the valid region, @c
 	 * true if the voxel was placed in the region.
 	 * @note The return values have a different meaning as for the wrapped RawVolume.
+	 * @note You should never use this directly - but just with a sampler
 	 */
 	virtual bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		const glm::ivec3 p(x, y, z);
@@ -149,11 +181,7 @@ public:
 			return false;
 		}
 		if (_volume->setVoxel(p, voxel)) {
-			if (_dirtyRegion.isValid()) {
-				_dirtyRegion.accumulate(p);
-			} else {
-				_dirtyRegion = Region(p, p);
-			}
+			addToDirtyRegion(p);
 		}
 		return true;
 	}
