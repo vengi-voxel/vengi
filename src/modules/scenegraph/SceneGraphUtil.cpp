@@ -244,6 +244,9 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 		core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(node.volume(), maxSize, createEmpty);
 		Log::debug("Created %i volumes", (int)rawVolumes.size());
 		for (voxel::RawVolume *v : rawVolumes) {
+			if (v == nullptr) {
+				continue;
+			}
 			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);
 			if (crop) {
 				voxel::RawVolume *cv = voxelutil::cropVolume(v);

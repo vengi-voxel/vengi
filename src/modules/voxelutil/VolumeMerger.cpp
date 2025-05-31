@@ -37,6 +37,9 @@ voxel::RawVolume* merge(const core::Buffer<voxel::RawVolume*>& volumes) {
 	core::Buffer<const voxel::RawVolume*> v;
 	v.reserve(volumes.size());
 	for (const voxel::RawVolume *v1 : volumes) {
+		if (v1 == nullptr) {
+			continue;
+		}
 		v.push_back(v1);
 	}
 	return merge(v);

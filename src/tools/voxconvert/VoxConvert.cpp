@@ -667,6 +667,9 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGrap
 	core::ScopedPtr<voxel::RawVolume> volume(merged.volume());
 	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(volume, size);
 	for (voxel::RawVolume *v : rawVolumes) {
+		if (v == nullptr) {
+			continue;
+		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, true);
 		node.setPalette(merged.palette);
