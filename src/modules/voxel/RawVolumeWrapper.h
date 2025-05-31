@@ -29,12 +29,7 @@ public:
 				return false;
 			}
 			*_currentVoxel = voxel;
-			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
-			if (dirtyRegion.isValid()) {
-				dirtyRegion.accumulate(_posInVolume);
-			} else {
-				dirtyRegion = Region(_posInVolume, _posInVolume);
-			}
+			_volume->addToDirtyRegion(_posInVolume);
 			return true;
 		}
 	};
@@ -82,6 +77,15 @@ public:
 
 	inline RawVolume* volume() const {
 		return _volume;
+	}
+
+	void addToDirtyRegion(const glm::ivec3 &pos) {
+		// TODO: we need locking here
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(pos);
+		} else {
+			_dirtyRegion = Region(pos, pos);
+		}
 	}
 
 	void fill(const voxel::Voxel &voxel) {
