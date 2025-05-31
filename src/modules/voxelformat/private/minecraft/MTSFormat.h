@@ -9,9 +9,9 @@
 namespace voxelformat {
 
 /**
- * The Minetest Schematic File Format (minetest)
+ * The Minetest/Luanti Schematic File Format (minetest)
  *
- * @note https://dev.minetest.net/Minetest_Schematic_File_Format
+ * @note https://docs.luanti.org/for-creators/luanti-schematic-file-format/
  *
  * @ingroup Formats
  */
