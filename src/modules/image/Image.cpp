@@ -29,7 +29,8 @@
 
 namespace image {
 
-Image::Image(const core::String &name) : io::IOResource(), _name(name) {
+Image::Image(const core::String &name, int colorComponents)
+	: io::IOResource(), _name(name), _colorComponents(colorComponents) {
 }
 
 Image::~Image() {

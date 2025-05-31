@@ -42,7 +42,7 @@ private:
 	uint8_t *_colors = nullptr;
 
 public:
-	Image(const core::String &name);
+	Image(const core::String &name, int colorComponents = 4);
 	~Image();
 
 	template<typename FUNC>
