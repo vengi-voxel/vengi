@@ -414,10 +414,9 @@ static int luaVoxel_volumewrapper_importcoloredheightmap(lua_State *s) {
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
-	palette::PaletteLookup palLookup(volume->node()->palette());
 	const voxel::Voxel dirt = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
-	voxelutil::importColoredHeightmap(*volume, palLookup, image, underground);
+	voxelutil::importColoredHeightmap(*volume, volume->node()->palette(), image, underground);
 	return 0;
 }
 

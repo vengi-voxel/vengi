@@ -122,8 +122,7 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	const uint8_t minHeight = core::Var::getSafe(cfg::VoxformatImageHeightmapMinHeight)->intVal();;
 	if (coloredHeightmap) {
-		palette::PaletteLookup palLookup(palette);
-		voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel, minHeight, false);
+		voxelutil::importColoredHeightmap(wrapper, palette, image, dirtVoxel, minHeight, false);
 	} else {
 		const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel, minHeight, false);

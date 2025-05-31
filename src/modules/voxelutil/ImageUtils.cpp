@@ -3,6 +3,7 @@
  */
 
 #include "ImageUtils.h"
+#include "app/Async.h"
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/GLM.h"
@@ -21,6 +22,7 @@
 
 namespace voxelutil {
 
+// TODO: unittest
 bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName,
 				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx) {
 	const glm::ivec3 &mins = region.getLowerCorner();
@@ -44,31 +46,32 @@ bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, co
 	const image::TextureWrap wrapS = flipU ? image::TextureWrap::MirroredRepeat : image::Repeat;
 	const image::TextureWrap wrapT = flipV ? image::TextureWrap::MirroredRepeat : image::Repeat;
 
-	// TODO: FOR-PARALLEL
-	for (int axis1 = axisMins1; axis1 <= axisMaxs1; ++axis1) {
-		const float axis1Factor = ((float)(axis1 - axisMins1) + 0.5f) / (float)size[axisIdx1];
-		for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
-			int palIdx = replacementPalIdx;
-			if (image) {
-				const float axis2Factor = ((float)(axis2 - axisMins2) + 0.5f) / (float)size[axisIdx2];
-				glm::vec2 uv;
-				uv[axisIdxUV1] = glm::mix(flipU ? -uv0[axisIdxUV1] : uv0[axisIdxUV1],
-										  flipV ? -uv1[axisIdxUV1] : uv1[axisIdxUV1], axis1Factor);
-				uv[axisIdxUV2] = glm::mix(flipU ? -uv0[axisIdxUV2] : uv0[axisIdxUV2],
-										  flipV ? -uv1[axisIdxUV2] : uv1[axisIdxUV2], axis2Factor);
-				const core::RGBA color = image->colorAt(uv, wrapS, wrapT);
-				palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = replacementPalIdx;
+	app::for_parallel(axisMins1, axisMaxs1 + 1, [axisIdx1, axisMaxs2, axisMins2, replacementPalIdx, &image, axisIdxUV1, axisIdxUV2, &palette, &uv0, &uv1, axisIdx2, &size, axisFixed, axisIdx0, &volume] (int start, int end) {
+		for (int axis1 = start; axis1 < end; ++axis1) {
+			const float axis1Factor = ((float)(axis1 - start) + 0.5f) / (float)size[axisIdx1];
+			for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
+				int palIdx = replacementPalIdx;
+				if (image) {
+					const float axis2Factor = ((float)(axis2 - axisMins2) + 0.5f) / (float)size[axisIdx2];
+					glm::vec2 uv;
+					uv[axisIdxUV1] = glm::mix(flipU ? -uv0[axisIdxUV1] : uv0[axisIdxUV1],
+											flipV ? -uv1[axisIdxUV1] : uv1[axisIdxUV1], axis1Factor);
+					uv[axisIdxUV2] = glm::mix(flipU ? -uv0[axisIdxUV2] : uv0[axisIdxUV2],
+											flipV ? -uv1[axisIdxUV2] : uv1[axisIdxUV2], axis2Factor);
+					const core::RGBA color = image->colorAt(uv, wrapS, wrapT);
+					palIdx = palette.getClosestMatch(color);
+					if (palIdx == palette::PaletteColorNotFound) {
+						palIdx = replacementPalIdx;
+					}
 				}
+				glm::ivec3 pos;
+				pos[axisIdx0] = axisFixed;
+				pos[axisIdx1] = axis1;
+				pos[axisIdx2] = axis2;
+				volume.setVoxel(pos, voxel::createVoxel(palette, palIdx));
 			}
-			glm::ivec3 pos;
-			pos[axisIdx0] = axisFixed;
-			pos[axisIdx1] = axis1;
-			pos[axisIdx2] = axis2;
-			volume.setVoxel(pos, voxel::createVoxel(palette, palIdx));
 		}
-	}
+	});
 	return true;
 }
 
@@ -100,113 +103,117 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight) {
 	return maxHeight;
 }
 
-void importColoredHeightmap(voxel::RawVolumeWrapper &volume, palette::PaletteLookup &palLookup,
+void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Palette &palette,
 							const image::ImagePtr &image, const voxel::Voxel &underground, uint8_t minHeight,
 							bool adoptHeight) {
-	const int imageWidth = image->width();
-	const int imageHeight = image->height();
-	const voxel::Region &region = volume.region();
-	const int volumeHeight = region.getHeightInVoxels();
-	const int volumeWidth = region.getWidthInVoxels();
-	const int volumeDepth = region.getDepthInVoxels();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
-	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
-	const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)255.0f : 1.0f;
-	float imageY = 0.0f;
-	// TODO: FOR-PARALLEL
-	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
-		float imageX = 0.0f;
-		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
-			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-			uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.a) * scaleHeight));
-			if (heightValue < minHeight) {
-				heightValue = minHeight;
-			}
+	app::for_parallel(0, volume.region().getDepthInVoxels(), [&palette, &volume, &image, adoptHeight, minHeight, underground] (int start, int end) {
+		const voxel::Region &region = volume.region();
+		const int volumeHeight = region.getHeightInVoxels();
+		const int volumeWidth = region.getWidthInVoxels();
+		const int volumeDepth = region.getDepthInVoxels();
+		const glm::ivec3 &mins = region.getLowerCorner();
+		const int imageWidth = image->width();
+		const int imageHeight = image->height();
+		const float stepWidthY = (float)imageHeight / (float)volumeDepth;
+		const float stepWidthX = (float)imageWidth / (float)volumeWidth;
+		const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)255.0f : 1.0f;
+		palette::PaletteLookup palLookup(palette);
+		float imageY = 0.0f;
 
-			if (voxel::isAir(underground.getMaterial())) {
-				const glm::ivec3 pos(x, heightValue - 1, z);
-				const glm::ivec3 regionPos = mins + pos;
-				if (!region.containsPoint(regionPos)) {
-					continue;
+		for (int z = start; z < end; ++z, imageY += stepWidthY) {
+			float imageX = 0.0f;
+			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
+				const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
+				uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.a) * scaleHeight));
+				if (heightValue < minHeight) {
+					heightValue = minHeight;
 				}
-				const uint8_t palidx =
-					palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
-				const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), palidx);
-				volume.setVoxel(regionPos, voxel);
-			} else {
-				for (int y = 0; y < heightValue; ++y) {
-					const glm::ivec3 pos(x, y, z);
+
+				if (voxel::isAir(underground.getMaterial())) {
+					const glm::ivec3 pos(x, heightValue - 1, z);
 					const glm::ivec3 regionPos = mins + pos;
 					if (!region.containsPoint(regionPos)) {
 						continue;
 					}
-					voxel::Voxel voxel;
-					if (y < heightValue - 1) {
-						voxel = underground;
-					} else {
-						const uint8_t palidx = palLookup.findClosestIndex(
-							core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
-						voxel = voxel::createVoxel(palLookup.palette(), palidx);
-					}
+					const uint8_t palidx =
+						palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
+					const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), palidx);
 					volume.setVoxel(regionPos, voxel);
+				} else {
+					for (int y = 0; y < heightValue; ++y) {
+						const glm::ivec3 pos(x, y, z);
+						const glm::ivec3 regionPos = mins + pos;
+						if (!region.containsPoint(regionPos)) {
+							continue;
+						}
+						voxel::Voxel voxel;
+						if (y < heightValue - 1) {
+							voxel = underground;
+						} else {
+							const uint8_t palidx = palLookup.findClosestIndex(
+								core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
+							voxel = voxel::createVoxel(palLookup.palette(), palidx);
+						}
+						volume.setVoxel(regionPos, voxel);
+					}
 				}
 			}
 		}
-	}
+	});
 }
 
 void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &underground,
 					 const voxel::Voxel &surface, uint8_t minHeight, bool adoptHeight) {
-	const int imageWidth = image->width();
-	const int imageHeight = image->height();
-	const voxel::Region &region = volume.region();
-	const int volumeHeight = region.getHeightInVoxels();
-	const int volumeWidth = region.getWidthInVoxels();
-	const int volumeDepth = region.getDepthInVoxels();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
-	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
-	Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
 	const int maxImageHeight = importHeightMaxHeight(image, true);
-	const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)maxImageHeight : 1.0f;
-	float imageY = 0.0f;
-	// TODO: use a volume sampler
-	// TODO: FOR-PARALLEL
-	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
-		float imageX = 0.0f;
-		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
-			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-			uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
-			if (heightValue < minHeight) {
-				heightValue = minHeight;
-			}
-
-			if (voxel::isAir(underground.getMaterial())) {
-				const glm::ivec3 pos(x, heightValue - 1, z);
-				const glm::ivec3 regionPos = mins + pos;
-				if (!region.containsPoint(regionPos)) {
-					continue;
+	app::for_parallel(0, volume.region().getDepthInVoxels(), [&image, adoptHeight, minHeight, &volume, underground, surface, maxImageHeight] (int start, int end) {
+		const int imageWidth = image->width();
+		const int imageHeight = image->height();
+		const voxel::Region &region = volume.region();
+		const int volumeHeight = region.getHeightInVoxels();
+		const int volumeWidth = region.getWidthInVoxels();
+		const int volumeDepth = region.getDepthInVoxels();
+		const glm::ivec3 &mins = region.getLowerCorner();
+		const float stepWidthY = (float)imageHeight / (float)volumeDepth;
+		const float stepWidthX = (float)imageWidth / (float)volumeWidth;
+		Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
+		const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)maxImageHeight : 1.0f;
+		float imageY = 0.0f;
+		// TODO: use a volume sampler
+		for (int z = start; z < end; ++z, imageY += stepWidthY) {
+			float imageX = 0.0f;
+			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
+				const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
+				uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
+				if (heightValue < minHeight) {
+					heightValue = minHeight;
 				}
-				volume.setVoxel(regionPos, surface);
-			} else {
-				for (int y = 0; y < heightValue; ++y) {
-					const glm::ivec3 pos(x, y, z);
+
+				if (voxel::isAir(underground.getMaterial())) {
+					const glm::ivec3 pos(x, heightValue - 1, z);
 					const glm::ivec3 regionPos = mins + pos;
 					if (!region.containsPoint(regionPos)) {
 						continue;
 					}
-					voxel::Voxel voxel;
-					if (y < heightValue - 1) {
-						voxel = underground;
-					} else {
-						voxel = surface;
+					volume.setVoxel(regionPos, surface);
+				} else {
+					for (int y = 0; y < heightValue; ++y) {
+						const glm::ivec3 pos(x, y, z);
+						const glm::ivec3 regionPos = mins + pos;
+						if (!region.containsPoint(regionPos)) {
+							continue;
+						}
+						voxel::Voxel voxel;
+						if (y < heightValue - 1) {
+							voxel = underground;
+						} else {
+							voxel = surface;
+						}
+						volume.setVoxel(regionPos, voxel);
 					}
-					volume.setVoxel(regionPos, voxel);
 				}
 			}
 		}
-	}
+	});
 }
 
 voxel::RawVolume *importAsPlane(const image::ImagePtr &image, uint8_t thickness) {
