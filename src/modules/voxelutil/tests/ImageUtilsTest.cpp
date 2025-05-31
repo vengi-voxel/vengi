@@ -6,7 +6,9 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
 #include "image/Image.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxelutil {
 
@@ -61,6 +63,19 @@ TEST_F(ImageUtilsTest, testImportHeightMaxHeightAlpha) {
 
 	const int maxHeight = voxelutil::importHeightMaxHeight(texture, true);
 	EXPECT_EQ(129, maxHeight);
+}
+
+TEST_F(ImageUtilsTest, testImportFace) {
+	const image::ImagePtr &image = image::loadImage("test-heightmap.png");
+	ASSERT_TRUE(image && image->isLoaded());
+	voxel::Region region(0, 0, 0, image->width() - 1, image->height() - 1, 0);
+	voxel::RawVolume volume(region);
+	voxel::RawVolumeWrapper wrapper(&volume);
+	palette::Palette palette;
+	palette.nippon();
+	voxel::FaceNames faceName = voxel::FaceNames::PositiveY;
+	ASSERT_TRUE(voxelutil::importFace(wrapper, region, palette, faceName, image, glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
+	// TODO: check the imported face voxels
 }
 
 } // namespace voxelutil

@@ -22,7 +22,6 @@
 
 namespace voxelutil {
 
-// TODO: unittest
 bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName,
 				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx) {
 	const glm::ivec3 &mins = region.getLowerCorner();
