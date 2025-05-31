@@ -3,6 +3,7 @@
  */
 
 #include "PNGFormat.h"
+#include "app/Async.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -239,8 +240,54 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 bool PNGFormat::saveHeightmaps(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							   const io::ArchivePtr &archive) const {
-	Log::error("Saving heightmaps as PNG is not supported");
-	return false;
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = e->value;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		core_assert(volume != nullptr);
+		const voxel::Region &region = volume->region();
+		// TODO: VOXELFORMAT: make max height configurable
+		const float heightScale = 256.0f / (float)region.getHeightInVoxels();
+		const palette::Palette &palette = node.palette();
+		const core::String name = core::String::format("%s-%s.png", core::string::stripExtension(filename).c_str(),
+												 node.uuid().c_str());
+		image::Image image(name, 4);
+		image.resize(region.getWidthInVoxels(), region.getDepthInVoxels());
+		app::for_parallel(region.getLowerZ(), region.getUpperZ() + 1, [&image, volume, &region, &palette, heightScale] (int start, int end) {
+			voxel::RawVolume::Sampler sampler(volume);
+			sampler.setPosition(region.getLowerX(), region.getUpperY(), start);
+			for (int z = start; z < end; ++z) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
+						if (isBlocked(sampler3.voxel().getMaterial())) {
+							core::RGBA color = palette.color(sampler3.voxel().getColor());
+							color.a = (y + 1) * heightScale;
+							image.setColor(color, x - region.getLowerX(),
+										z - region.getLowerZ());
+							break;
+						}
+						sampler3.moveNegativeY();
+					}
+					sampler2.movePositiveX();
+				}
+				sampler.movePositiveZ();
+			}
+		});
+		core::ScopedPtr<io::SeekableWriteStream> writeStream(archive->writeStream(name));
+		if (!writeStream) {
+			Log::error("Failed to open write stream for %s", name.c_str());
+			return false;
+		}
+		if (!image.writePNG(*writeStream)) {
+			Log::error("Failed to write image %s", name.c_str());
+			return false;
+		}
+	}
+	return true;
 }
 
 bool PNGFormat::saveVolumes(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
