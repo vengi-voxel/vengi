@@ -67,6 +67,13 @@ bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	return true;
 }
 
+bool Panel::cancelSaveFile(ImGuiTestContext *ctx) {
+	IM_CHECK_RETV(focusWindow(ctx, "Save file"), false);
+	ctx->ItemClick("###Cancel");
+	ctx->Yield();
+	return true;
+}
+
 bool Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
 	IM_CHECK_SILENT_RETV(title != nullptr, false);
 	ImGuiWindow* window = ImGui::FindWindowByName(title);
