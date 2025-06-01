@@ -4,15 +4,33 @@
 
 #include "voxelutil/ImageUtils.h"
 #include "app/tests/AbstractTest.h"
+#include "core/Color.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
+#include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
-class ImageUtilsTest : public app::AbstractTest {};
+class ImageUtilsTest : public app::AbstractTest {
+protected:
+	int countVoxels(const voxel::RawVolume &volume) {
+		return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+	}
+
+	void validateVoxel(const voxel::RawVolume &volume, const palette::Palette &palette, const image::ImagePtr &image, int x, int y) {
+		const core::RGBA expectedColor = image->colorAt(x, y);
+		const voxel::Voxel &voxel = volume.voxel(x, y, 0);
+		const core::RGBA actualColor = palette.color(voxel.getColor());
+		EXPECT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
+			<< "Expected color: " << core::Color::print(expectedColor) << ", but got: "
+			<< core::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
+	}
+};
 
 TEST_F(ImageUtilsTest, testImportAsPlane) {
 	const image::ImagePtr &img = image::loadImage("test-palette-in.png");
@@ -73,9 +91,19 @@ TEST_F(ImageUtilsTest, testImportFace) {
 	voxel::RawVolumeWrapper wrapper(&volume);
 	palette::Palette palette;
 	palette.nippon();
-	voxel::FaceNames faceName = voxel::FaceNames::PositiveY;
-	ASSERT_TRUE(voxelutil::importFace(wrapper, region, palette, faceName, image, glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f)));
-	// TODO: check the imported face voxels
+	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
+	ASSERT_TRUE(
+		voxelutil::importFace(wrapper, region, palette, faceName, image, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
+	ASSERT_EQ(8, countVoxels(volume));
+
+	validateVoxel(volume, palette, image, 5, 7);
+	validateVoxel(volume, palette, image, 6, 5);
+	validateVoxel(volume, palette, image, 6, 6);
+	validateVoxel(volume, palette, image, 6, 7);
+	validateVoxel(volume, palette, image, 7, 4);
+	validateVoxel(volume, palette, image, 7, 5);
+	validateVoxel(volume, palette, image, 7, 6);
+	validateVoxel(volume, palette, image, 7, 7);
 }
 
 } // namespace voxelutil
