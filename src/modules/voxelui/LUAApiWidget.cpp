@@ -59,7 +59,7 @@ bool LUAApiWidget::updateScriptParameters(voxelgenerator::LUAScript &script, con
 				if (p.shouldClamp()) {
 					int maxVal = (int)(p.maxValue + glm::epsilon<double>());
 					int minVal = (int)(p.minValue + glm::epsilon<double>());
-					if (ImGui::SliderInt(p.name.c_str(), &val, minVal, maxVal)) {
+					if (ImGui::DragInt(p.name.c_str(), &val, 1.0f, minVal, maxVal)) {
 						str = core::string::toString(val);
 					}
 				} else if (ImGui::InputInt(p.name.c_str(), &val)) {
@@ -80,7 +80,7 @@ bool LUAApiWidget::updateScriptParameters(voxelgenerator::LUAScript &script, con
 						format = "%.3f";
 					}
 
-					if (ImGui::SliderFloat(p.name.c_str(), &val, minVal, maxVal, format)) {
+					if (ImGui::DragFloat(p.name.c_str(), &val, 0.005f, minVal, maxVal, format)) {
 						str = core::string::toString(val);
 					}
 				} else if (ImGui::InputFloat(p.name.c_str(), &val)) {
