@@ -363,6 +363,7 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 		return nullptr;
 	}
 	SectionVolumes volumes;
+	// TODO: FOR_PARALLEL
 	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const priv::NamedBinaryTag &blockStates = section.get("block_states");
 		if (!blockStates.valid()) {
