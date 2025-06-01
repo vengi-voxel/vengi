@@ -22,6 +22,7 @@ General:
    - Support colors on apple and windows terminals, too
    - Added lua binding for genland algorithm. See the new `g_algorithm.genland` function
    - Allow to save scenes as heightmaps (`png`). See the new `voxformat_imagesavetype` cvar
+   - Added support for writing Luanti/Minecraft `mts` files
 
 VoxEdit:
 

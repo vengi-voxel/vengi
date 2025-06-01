@@ -49,18 +49,18 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	glm::i16vec3 size;
-	wrap(stream->readInt16BE(size.x))
-	wrap(stream->readInt16BE(size.y))
-	wrap(stream->readInt16BE(size.z))
+	glm::u16vec3 size;
+	wrap(stream->readUInt16BE(size.x))
+	wrap(stream->readUInt16BE(size.y))
+	wrap(stream->readUInt16BE(size.z))
 
-	Log::debug("Size: %i:%i:%i", size.x, size.y, size.z);
+	Log::debug("Size: %u:%u:%u", size.x, size.y, size.z);
 
 	core::Buffer<uint8_t> probs;
 	probs.resize(size.y);
 
 	if (version >= 3) {
-		for (int16_t y = 0; y < size.y; ++y) {
+		for (uint16_t y = 0; y < size.y; ++y) {
 			wrap(stream->readUInt8(probs[y]))
 		}
 	} else {
@@ -88,26 +88,35 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	Log::debug("found %i materials", (int)names.size());
 
 	struct Node {
-		uint16_t param0; // material?
+		uint16_t param0;	 // color name index - the index param0[(Z-z)*Z*Y + y*X + x].
+							 // The Z axis is mirrored.
+		uint8_t probability; // param1 - ranges from 0 (0%) to 127 (100%). Bit 7 means force node placement,
+							 // i.e. the node will be able to replace non-air nodes as well. (In legacy version 3,
+							 // param1’s probability range was from 0 to 0xFF, there’s no force placement.)
+		uint8_t param2;		 // param2 - an 8-bit value (0-255), the meaning depends on the node definition.
+							 // See lua_api.md to learn more about param2 (keywords: “param2”, “paramtype2”).
 	};
-	static_assert(sizeof(Node) == sizeof(uint16_t), "Unexpected node struct size");
 
 	const int nodecount = (int)size.x * (int)size.y * (int)size.z;
 	core::Buffer<Node> databuf;
 	databuf.resize(nodecount);
 
 	io::ZipReadStream zipStream(*stream);
+	// read param0 values
 	for (int i = 0; i < nodecount; ++i) {
 		wrap(zipStream.readUInt16BE(databuf[i].param0))
 	}
 
+	// skip the probability values (param1)
+	// skip the param2 values
+
 	palette.minecraft();
-	const voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
+	const voxel::Region region(0, 0, 0, (int)size.x - 1, (int)size.y - 1, (int)size.z - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	core::Array3DView<Node> view(databuf.data(), size.x, size.y, size.z);
-	for (int16_t x = 0; x < size.x; ++x) {
-		for (int16_t y = 0; y < size.y; ++y) {
-			for (int16_t z = 0; z < size.z; ++z) {
+	for (uint16_t x = 0; x < size.x; ++x) {
+		for (uint16_t y = 0; y < size.y; ++y) {
+			for (uint16_t z = 0; z < size.z; ++z) {
 				const Node &node = view.get(x, y, z);
 				if (node.param0 >= idmapcount) {
 					continue;
@@ -154,13 +163,13 @@ bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	wrapBool(stream->writeUInt32(FourCC('M', 'T', 'S', 'M')))
-	wrapBool(stream->writeUInt16BE(4))						   // version 4
-	wrapBool(stream->writeInt16BE(region.getWidthInVoxels()))  // size x
-	wrapBool(stream->writeInt16BE(region.getHeightInVoxels())) // size y
-	wrapBool(stream->writeInt16BE(region.getDepthInVoxels()))  // size z
+	wrapBool(stream->writeUInt16BE(4))							// version 4
+	wrapBool(stream->writeUInt16BE(region.getWidthInVoxels()))	// size x
+	wrapBool(stream->writeUInt16BE(region.getHeightInVoxels())) // size y
+	wrapBool(stream->writeUInt16BE(region.getDepthInVoxels()))	// size z
 
 	for (int32_t y = 0; y < region.getHeightInVoxels(); ++y) {
-		wrapBool(stream->writeUInt8(0xFF))
+		wrapBool(stream->writeUInt8(0x7f))
 	}
 
 	uint16_t idmapcount = node->palette().colorCount();
@@ -177,14 +186,27 @@ bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream->writePascalStringUInt16BE(name))
 	}
 
+	// param0
 	io::ZipWriteStream zipStream(*stream);
 	for (int32_t x = 0; x < region.getWidthInVoxels(); ++x) {
 		for (int32_t y = 0; y < region.getHeightInVoxels(); ++y) {
 			for (int32_t z = 0; z < region.getDepthInVoxels(); ++z) {
 				const voxel::Voxel &v = volume->voxel(x, y, z);
+				if (voxel::isAir(v.getMaterial())) {
+					wrapBool(zipStream.writeUInt16BE(0)) // air
+					continue;
+				}
 				wrapBool(zipStream.writeUInt16BE(v.getColor() + 1))
 			}
 		}
+	}
+	// probability values (param1)
+	for (int32_t n = 0; n < region.voxels(); ++n) {
+		wrapBool(zipStream.writeUInt8(0x7f))
+	}
+	// param2
+	for (int32_t n = 0; n < region.voxels(); ++n) {
+		wrapBool(zipStream.writeUInt8(0x00))
 	}
 	zipStream.flush();
 	return true;

@@ -511,7 +511,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-luanti-minetest",
       "animation": false,
-      "save": false
+      "save": true
     },
     {
       "name": "Minecraft region",

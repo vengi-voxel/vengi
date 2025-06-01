@@ -10,21 +10,24 @@ namespace voxelformat {
 
 class MTSFormatTest : public AbstractFormatTest {};
 
-TEST_F(MTSFormatTest, DISABLED_testSaveCubeModel) {
+TEST_F(MTSFormatTest, testSaveCubeModel) {
 	MTSFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	// this is converted to minecraft block ids and when loaded, we are using the minecraft palette
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
 	testSaveLoadCube("mts-savecubemodel.mts", &f, flags);
 }
 
-TEST_F(MTSFormatTest, DISABLED_testSaveSmallVoxel) {
+TEST_F(MTSFormatTest, testSaveSmallVoxel) {
 	MTSFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testSaveLoadVoxel("mts-smallvolumesavetest.mts", &f, -16, 15, flags);
+	// this is converted to minecraft block ids and when loaded, we are using the minecraft palette
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
+	testSaveLoadVoxel("mts-smallvolumesavetest.mts", &f, 0, 15, flags);
 }
 
 TEST_F(MTSFormatTest, DISABLED_testLoadSave) {
 	MTSFormat f;
-	voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	// this is converted to minecraft block ids and when loaded, we are using the minecraft palette
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
 	testConvert("minetest.mts", f, "mts-voxlap5.mts", f, flags);
 }
 

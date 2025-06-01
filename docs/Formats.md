@@ -19,7 +19,7 @@
 | Cubzh World                | b64         | X       |        |            |         |            |
 | Goxel                      | gox         | X       | X      | X          | X       |            |
 | KenShape                   | kenshape    | X       |        |            | X       |            |
-| Luanti (Minetest)          | mts         | X       |        |            | X       |            |
+| Luanti (Minetest)          | mts         | X       | X      |            | X       |            |
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
 | Magicavoxel XRAW           | xraw        | X       | X      |            | X       |            |
 | Minecraft level dat        | dat         | X       |        |            |         |            |

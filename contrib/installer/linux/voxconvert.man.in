@@ -407,6 +407,8 @@ Godot Scene (*.escn)
 .TP
 Goxel (*.gox)
 .TP
+Luanti (Minetest) (*.mts)
+.TP
 MagicaVoxel (*.vox)
 .TP
 Magicavoxel XRAW (*.xraw)
