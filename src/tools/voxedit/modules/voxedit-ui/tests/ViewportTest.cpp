@@ -4,6 +4,8 @@
 
 #include "../Viewport.h"
 #include "command/CommandHandler.h"
+#include "util/VarUtil.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "TestUtil.h"
@@ -22,6 +24,8 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(model != nullptr);
 		const int cnt = voxelutil::visitVolume(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 		IM_CHECK(cnt == 0);
+		util::ScopedVarChange scoped(cfg::VoxEditGridsize, "1");
+		ctx->Yield();
 		executeViewportClick();
 		IM_CHECK_EQ(1, voxelutil::visitVolume(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()));
 	};
