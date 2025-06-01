@@ -214,8 +214,10 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 
 	double samp[3], csamp[3];
 
-	for (int k = 0, y = 0; y < settings.size; y++) {
-		for (int x = 0; x < settings.size; x++, k++) {
+	// TODO: FOR-PARALLEL
+	for (int y = 0; y < settings.size; y++) {
+		for (int x = 0; x < settings.size; x++) {
+			const int k = y * settings.size + x;
 			// Get 3 samples (0,0), (EPS,0), (0,EPS):
 			for (int i = 0; i < lengthof(samp); i++) {
 				double dx = (x * (256.0 / (double)settings.size) + (double)(i & 1) * EPS) * (1.0 / 64.0);
