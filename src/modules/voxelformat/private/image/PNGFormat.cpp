@@ -68,19 +68,19 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	node.setPalette(palette);
 
 	for (const auto &entity : entities) {
-		const core::String &layetFilename = entity.fullPath;
-		const image::ImagePtr &image = image::loadImage(layetFilename);
+		const core::String &layerFilename = entity.fullPath;
+		const image::ImagePtr &image = image::loadImage(layerFilename);
 		if (!image || !image->isLoaded()) {
-			Log::error("Failed to load image %s", layetFilename.c_str());
+			Log::error("Failed to load image %s", layerFilename.c_str());
 			return false;
 		}
 		if (imageWidth != image->width() || imageHeight != image->height()) {
 			Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)",
-					   layetFilename.c_str(), image->width(), image->height(), imageWidth, imageHeight);
+					   layerFilename.c_str(), image->width(), image->height(), imageWidth, imageHeight);
 			return false;
 		}
-		const int layer = extractLayerFromFilename(layetFilename);
-		Log::debug("Import layer %i of image %s", layer, layetFilename.c_str());
+		const int layer = extractLayerFromFilename(layerFilename);
+		Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
 		for (int y = 0; y < imageHeight; ++y) {
 			for (int x = 0; x < imageWidth; ++x) {
 				const core::RGBA &color = flattenRGB(image->colorAt(x, y));
