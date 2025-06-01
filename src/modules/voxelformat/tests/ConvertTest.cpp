@@ -7,6 +7,7 @@
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
@@ -127,6 +128,14 @@ TEST_F(ConvertTest, testQbToQbt) {
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbt", target, flags);
+}
+
+TEST_F(ConvertTest, testQbToPng) {
+	QBFormat src;
+	PNGFormat target;
+	// we are only getting the used colors back when loading the png
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.png", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToSproxel) {
