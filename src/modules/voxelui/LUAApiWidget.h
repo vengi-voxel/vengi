@@ -41,14 +41,15 @@ private:
 	int _currentScript = -1;
 	voxelgenerator::LUAScript *cs();
 	bool updateScriptParameters(voxelgenerator::LUAScript &script, const palette::Palette &palette);
+	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script);
 
 public:
 	void clear();
 	const voxelgenerator::LUAScript &currentScript() const;
 	const voxelgenerator::LUAScript &script(int idx) const;
-	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, const core::String &script);
-	void reloadScript(voxelgenerator::LUAApi &luaApi);
-	void loadScript(voxelgenerator::LUAApi &luaApi);
+	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script, const core::String &luaScript);
+	void reloadCurrentScript(voxelgenerator::LUAApi &luaApi);
+	void loadCurrentScript(voxelgenerator::LUAApi &luaApi);
 	/**
 	 * @return @c true if the current script is valid
 	 */

@@ -64,7 +64,7 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 			ImGui::TooltipTextUnformatted(_("Edit the selected lua script"));
 			ImGui::SameLine();
 			if (ImGui::IconButton(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
-				_luaApiWidget.reloadScript(luaApi);
+				_luaApiWidget.reloadCurrentScript(luaApi);
 			}
 		}
 
@@ -84,16 +84,16 @@ bool ScriptPanel::updateEditor(const char *id) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute"))) {
-					_luaApiWidget.reloadScriptParameters(luaApi, _textEditor.GetText());
+					_luaApiWidget.reloadScriptParameters(luaApi, _luaScript, _textEditor.GetText());
 				}
 				if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
-					_luaApiWidget.reloadScript(luaApi);
+					_luaApiWidget.reloadCurrentScript(luaApi);
 				}
 				if (!_activeScriptFilename.empty()) {
 					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save"))) {
 						if (_app->filesystem()->homeWrite(core::string::path("scripts", _activeScriptFilename),
 														  _textEditor.GetText())) {
-							_luaApiWidget.reloadScriptParameters(luaApi, _textEditor.GetText());
+							_luaApiWidget.reloadScriptParameters(luaApi, _luaScript, _textEditor.GetText());
 						}
 					}
 					ImGui::TooltipText(_("Overwrite scripts/%s"), _activeScriptFilename.c_str());

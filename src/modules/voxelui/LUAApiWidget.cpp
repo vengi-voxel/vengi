@@ -136,8 +136,11 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 	if (_scripts.empty()) {
 		return false;
 	}
-	if (_currentScript == -1 && _scripts[0].valid) {
+	if (_currentScript == -1) {
 		_currentScript = 0;
+		if (!_scripts[0].valid) {
+			reloadScriptParameters(luaApi, _scripts[0]);
+		}
 	}
 	if (ctx.isRunning) {
 		ImGui::Spinner("running_scripts", ImGui::Size(1.0f));
@@ -146,7 +149,7 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 
 	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
 		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
-			loadScript(luaApi);
+			loadCurrentScript(luaApi);
 		}
 	}
 	ImGui::TooltipTextUnformatted(_("LUA scripts for manipulating the voxel volumes"));
@@ -181,23 +184,22 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 	return validScriptIndex;
 }
 
-void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, const core::String &script) {
-	if (_currentScript < 0 || _currentScript >= (int)_scripts.size()) {
-		Log::error("Invalid script index %i", _currentScript);
+void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script) {
+	if (script.cached) {
 		return;
 	}
-	_activeScript = script;
-	voxelgenerator::LUAScript &s = _scripts[_currentScript];
-	if (s.cached) {
-		return;
-	}
+	reloadScriptParameters(luaApi, script, luaApi.load(script.filename));
+}
+
+void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &s, const core::String &luaScript) {
+	_activeScript = luaScript;
 	s.valid = false;
 	s.parameterDescription.clear();
 	s.parameters.clear();
 	s.enumValues.clear();
 
 	lua::LUA lua;
-	if (!luaApi.prepare(lua, script)) {
+	if (!luaApi.prepare(lua, luaScript)) {
 		return;
 	}
 	luaApi.argumentInfo(lua, s.parameterDescription);
@@ -214,17 +216,17 @@ void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, const 
 	s.valid = true;
 }
 
-void LUAApiWidget::reloadScript(voxelgenerator::LUAApi &luaApi) {
-	const core::String &scriptName = currentScript().filename;
+void LUAApiWidget::reloadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 	if (voxelgenerator::LUAScript *s = cs()) {
 		s->cached = false;
-		reloadScriptParameters(luaApi, luaApi.load(scriptName));
+		reloadScriptParameters(luaApi, *s);
 	}
 }
 
-void LUAApiWidget::loadScript(voxelgenerator::LUAApi &luaApi) {
-	const core::String &scriptName = currentScript().filename;
-	reloadScriptParameters(luaApi, luaApi.load(scriptName));
+void LUAApiWidget::loadCurrentScript(voxelgenerator::LUAApi &luaApi) {
+	if (voxelgenerator::LUAScript *s = cs()) {
+		reloadScriptParameters(luaApi, *s);
+	}
 }
 
 } // namespace voxelui

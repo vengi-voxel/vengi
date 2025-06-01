@@ -6,6 +6,7 @@
 
 #include "ui/Panel.h"
 #include "ui/TextEditor.h"
+#include "voxelgenerator/LUAApi.h"
 #include "voxelui/LUAApiWidget.h"
 
 namespace command {
@@ -29,6 +30,7 @@ private:
 	voxelui::LUAApiWidget _luaApiWidget;
 	bool _scriptEditor = false;
 	core::String _activeScriptFilename;
+	voxelgenerator::LUAScript _luaScript;
 
 public:
 	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "script"), _sceneMgr(sceneMgr) {
