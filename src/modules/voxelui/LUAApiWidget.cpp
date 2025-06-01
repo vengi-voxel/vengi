@@ -182,6 +182,10 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 }
 
 void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, const core::String &script) {
+	if (_currentScript < 0 || _currentScript >= (int)_scripts.size()) {
+		Log::error("Invalid script index %i", _currentScript);
+		return;
+	}
 	_activeScript = script;
 	voxelgenerator::LUAScript &s = _scripts[_currentScript];
 	if (s.cached) {
