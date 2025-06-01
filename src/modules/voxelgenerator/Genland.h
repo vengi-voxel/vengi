@@ -5,6 +5,9 @@
 #pragma once
 
 #include "core/RGBA.h"
+
+#include <glm/vec2.hpp>
+
 namespace voxel {
 class RawVolume;
 }
@@ -38,6 +41,7 @@ struct GenlandSettings {
 	bool shadow = true;
 	// Generate a river in the land
 	bool river = true;
+	glm::ivec2 offset{0, 0};
 };
 
 voxel::RawVolume *genland(GenlandSettings &settings);

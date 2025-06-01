@@ -188,6 +188,15 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		return nullptr;
 	}
 
+	if (settings.offset[0] < 0) {
+		Log::error("Offset X must be at least 0, got %d", settings.offset[0]);
+		return nullptr;
+	}
+	if (settings.offset[1] < 0) {
+		Log::error("Offset Y must be at least 0, got %d", settings.offset[1]);
+		return nullptr;
+	}
+
 	TempBuffer tempBuffer(settings.size);
 	math::Random rand;
 	rand.setSeed(settings.seed);
@@ -212,18 +221,18 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		msklut[i] = core_min((1 << (i + 2)) - 1, 255);
 	}
 
-	// TODO: FOR-PARALLEL
-	for (int y = 0; y < settings.size; y++) {
+	const double freq = (1.0 / 64.0);
+	// TODO: FOR_PARALLEL
+	for (int z = 0; z < settings.size; z++) {
 		for (int x = 0; x < settings.size; x++) {
 			double samp[3];
 			double csamp[3];
-			const int k = y * settings.size + x;
 			// Get 3 samples (0,0), (EPS,0), (0,EPS):
 			for (int i = 0; i < lengthof(samp); i++) {
-				double dx = (x * (256.0 / (double)settings.size) + (double)(i & 1) * EPS) * (1.0 / 64.0);
-				double dy = (y * (256.0 / (double)settings.size) + (double)(i >> 1) * EPS) * (1.0 / 64.0);
-				double temp1 = 0;
-				double river = 0;
+				double dx = ((settings.offset[0] + x) * (256.0 / (double)(settings.offset[0] + settings.size)) + (double)(i & 1) * EPS) * freq;
+				double dy = ((settings.offset[1] + z) * (256.0 / (double)(settings.offset[1] + settings.size)) + (double)(i >> 1) * EPS) * freq;
+				double temp1 = 0.0;
+				double river = 0.0;
 				for (long o = 0; o < settings.octaves; o++) {
 					temp1 += noise3d(dx, dy, settings.freqGround, msklut[o]) * amplut[o] * (temp1 * 1.6 + 1.0); // multi-fractal
 					river += noise3d(dx, dy, settings.freqRiver, msklut[o]) * amplut[o];
@@ -232,7 +241,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 				}
 				samp[i] = temp1 * -20.0 + 28.0;
 				if (settings.river) {
-					temp1 = sin(x * (glm::pi<double>() / 256.0) + river * 4.0) * (0.5 + settings.riverWidth) +
+					temp1 = sin((settings.offset[0] + x) * (glm::pi<double>() / 256.0) + river * 4.0) * (0.5 + settings.riverWidth) +
 						(0.5 - settings.riverWidth);
 					if (temp1 > 1.0) {
 						temp1 = 1.0;
@@ -253,7 +262,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			double nx = csamp[1] - csamp[0];
 			double ny = csamp[2] - csamp[0];
 			double nz = -EPS;
-			double temp2 = 1.0 / sqrt(nx * nx + ny * ny + nz * nz);
+			const double temp2 = 1.0 / sqrt(nx * nx + ny * ny + nz * nz);
 			nx *= temp2;
 			ny *= temp2;
 			nz *= temp2;
@@ -264,7 +273,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			double gb = settings.ground.b;
 			// blend factor
 			double g = core_min(core_max(core_max(-nz, 0.0) * 1.4 - csamp[0] / 32.0 +
-											 noise3d(x * (1.0 / 64.0), y * (1.0 / 64.0), 0.3, 15) * 0.3,
+											 noise3d((settings.offset[0] + x) * freq, (settings.offset[1] + z) * freq, 0.3, 15) * 0.3,
 										 0),
 								1);
 			// Grass
@@ -285,37 +294,39 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			gg += (settings.water.g * g - gg) * g2;
 			gb += (settings.water.b * g - gb) * g2;
 
-			temp2 = 0.3;
-			tempBuffer.amb[k].r = (uint8_t)core_min(core_max(gr * temp2, 0), 255);
-			tempBuffer.amb[k].g = (uint8_t)core_min(core_max(gg * temp2, 0), 255);
-			tempBuffer.amb[k].b = (uint8_t)core_min(core_max(gb * temp2, 0), 255);
+			const int k = z * settings.size + x;
+			tempBuffer.amb[k].r = (uint8_t)core_min(core_max(gr * 0.3, 0), 255);
+			tempBuffer.amb[k].g = (uint8_t)core_min(core_max(gg * 0.3, 0), 255);
+			tempBuffer.amb[k].b = (uint8_t)core_min(core_max(gb * 0.3, 0), 255);
 			const uint8_t maxa = core_max(core_max(tempBuffer.amb[k].r, tempBuffer.amb[k].g), tempBuffer.amb[k].b);
 
 			// lighting
-			temp2 = (nx * 0.5 + ny * 0.25 - nz) / sqrt(0.5 * 0.5 + 0.25 * 0.25 + 1.0 * 1.0);
-			temp2 *= 1.2;
+			double temp3 = (nx * 0.5 + ny * 0.25 - nz) / sqrt(0.5 * 0.5 + 0.25 * 0.25 + 1.0 * 1.0);
+			temp3 *= 1.2;
 			tempBuffer.buf[k].a = (uint8_t)samp[0];
-			tempBuffer.buf[k].r = (uint8_t)core_min(core_max(gr * temp2, 0), 255 - maxa);
-			tempBuffer.buf[k].g = (uint8_t)core_min(core_max(gg * temp2, 0), 255 - maxa);
-			tempBuffer.buf[k].b = (uint8_t)core_min(core_max(gb * temp2, 0), 255 - maxa);
+			tempBuffer.buf[k].r = (uint8_t)core_min(core_max(gr * temp3, 0), 255 - maxa);
+			tempBuffer.buf[k].g = (uint8_t)core_min(core_max(gg * temp3, 0), 255 - maxa);
+			tempBuffer.buf[k].b = (uint8_t)core_min(core_max(gb * temp3, 0), 255 - maxa);
 
 			tempBuffer.hgt[k] = csamp[0];
 		}
-		Log::debug("%i percent done", (int)(((y + 1) * 100) / settings.size));
+		Log::debug("%i percent done", (int)(((z + 1) * 100) / settings.size));
 	}
 
 	tempBuffer.clearShadow();
 	if (settings.shadow) {
 		Log::debug("Applying shadows");
 		const int VSHL = glm::log2((float)settings.size);
-		for (int y = 0; y < settings.size; y++) {
+		for (int z = 0; z < settings.size; z++) {
 			for (int x = 0; x < settings.size; x++) {
-				const int k = y * settings.size + x;
+				const int k = z * settings.size + x;
 				float f = tempBuffer.hgt[k] + 0.44f;
 				int i, j;
 				for (i = j = 1; i < (settings.size >> 2); j++, i++, f += 0.44f) {
-					if (tempBuffer.hgt[(((y - (j >> 1)) & (settings.size - 1)) << VSHL) + ((x - i) & (settings.size - 1))] >
-						f) {
+					const int heightz = ((z - (j >> 1)) & (settings.size - 1));
+					const int heightx = ((x - i) & (settings.size - 1));
+					const int heightidx = (heightz << VSHL) + heightx;
+					if (tempBuffer.hgt[heightidx] > f) {
 						tempBuffer.sh[k] = 32;
 						break;
 					}
@@ -323,13 +334,13 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			}
 		}
 		for (int i = settings.smoothing; i > 0; i--) {
-			for (int y = 0; y < settings.size; y++) {
+			for (int z = 0; z < settings.size; z++) {
 				for (int x = 0; x < settings.size; x++) {
-					const int k = y * settings.size + x;
+					const int k = z * settings.size + x;
 					tempBuffer.sh[k] =
-						(tempBuffer.sh[k] + tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + x] +
-						tempBuffer.sh[(y << VSHL) + ((x + 1) & (settings.size - 1))] +
-						tempBuffer.sh[(((y + 1) & (settings.size - 1)) << VSHL) + ((x + 1) & (settings.size - 1))] + 2) >>
+						(tempBuffer.sh[k] + tempBuffer.sh[(((z + 1) & (settings.size - 1)) << VSHL) + x] +
+						tempBuffer.sh[(z << VSHL) + ((x + 1) & (settings.size - 1))] +
+						tempBuffer.sh[(((z + 1) & (settings.size - 1)) << VSHL) + ((x + 1) & (settings.size - 1))] + 2) >>
 						2;
 				}
 			}
@@ -374,7 +385,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			}
 		}
 	});
-
+	// volume->translate(glm::ivec3(settings.offset[0], 0, settings.offset[1]));
 	return volume;
 }
 

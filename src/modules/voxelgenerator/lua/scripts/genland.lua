@@ -14,8 +14,10 @@ function arguments()
 		{ name = 'riverWidth', type = 'float', default = 0.02, min = 0.01, max = 0.1, desc = 'Width of the rivers in the landscape.' },
 		{ name = 'freqGround', type = 'float', default = 9.5, min = 0.1, max = 20.0, desc = 'Frequency of the ground noise.' },
 		{ name = 'freqRiver', type = 'float', default = 13.2, min = 0.1, max = 20.0, desc = 'Frequency of the river noise.' },
-		{ name = 'river', type = 'bool', default = 'true', desc = 'Generate rivers in the landscape.' },
-		{ name = 'shadow', type = 'bool', default = 'true', desc = 'Generate shadows in the landscape.' }
+		{ name = 'offsetx', type = 'int', default = 0, min = 0, max = 100000, desc = 'X offset for the landscape generation.' },
+		{ name = 'offsety', type = 'int', default = 0, min = 0, max = 100000, desc = 'Y offset for the landscape generation.' },
+		{ name = 'shadow', type = 'bool', default = 'true', desc = 'Generate shadows in the landscape.' },
+		{ name = 'river', type = 'bool', default = 'true', desc = 'Generate rivers in the landscape.' }
 	}
 end
 
@@ -23,7 +25,7 @@ function description()
 	return "Genland - procedural landscape generator by Tom Dobrowolski."
 end
 
-function main(_, _, _, seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, river, shadow)
+function main(_, _, _, seed, size, height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, offsetx, offsety, shadow, river)
 	-- TODO: colors
-	g_algorithm.genland(seed, tonumber(size), height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, river, shadow)
+	g_algorithm.genland(seed, tonumber(size), height, octaves, smoothing, persistence, amplitude, riverWidth, freqGround, freqRiver, shadow, river, offsetx, offsety)
 end

@@ -1094,6 +1094,8 @@ static int luaVoxel_genland(lua_State *s) {
 	settings.freqRiver = (float)luaL_optnumber(s, 10, 13.2f);
 	settings.shadow = clua_optboolean(s, 11, true);
 	settings.river = clua_optboolean(s, 12, true);
+	settings.offset[0] = (int)luaL_optinteger(s, 13, 0);
+	settings.offset[1] = (int)luaL_optinteger(s, 14, 0);
 
 	voxel::RawVolume *v = voxelgenerator::genland(settings);
 	if (v == nullptr) {
