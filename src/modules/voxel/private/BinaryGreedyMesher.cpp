@@ -59,10 +59,12 @@ CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const
 // Add checks to this function to skip culling against grass for example
 template<int MeshType>
 CORE_FORCE_INLINE bool solid_check(const voxel::Voxel &voxel) {
-	if constexpr (MeshType == 0) {
-		return voxel.getMaterial() == VoxelType::Generic;
-	}
 	return isTransparent(voxel.getMaterial());
+}
+
+template<>
+CORE_FORCE_INLINE bool solid_check<0>(const voxel::Voxel &voxel) {
+	return voxel.getMaterial() == VoxelType::Generic;
 }
 
 static const glm::ivec2 ao_dirs[8] = {
