@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/tests/TestColorHelper.h"
+#include "voxel/tests/VoxelPrinter.h"
 #include "image/Image.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -104,6 +105,24 @@ TEST_F(ImageUtilsTest, testImportFace) {
 	validateVoxel(volume, palette, image, 7, 5);
 	validateVoxel(volume, palette, image, 7, 6);
 	validateVoxel(volume, palette, image, 7, 7);
+}
+
+TEST_F(ImageUtilsTest, testImportColoredHeightmap) {
+	const core::String filename = "test-colored-heightmap.png";
+	image::ImagePtr image = image::loadImage(filename);
+	ASSERT_TRUE(image && image->isLoaded()) << "Failed to load image: " << filename;
+	voxel::Region region(0, 0, 0, image->width() - 1, 31, image->height() - 1);
+	voxel::RawVolume volume(region);
+	voxel::RawVolumeWrapper wrapper(&volume);
+	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	palette::Palette palette;
+	palette.nippon();
+	voxelutil::importColoredHeightmap(wrapper, palette, image, dirtVoxel, 1, true);
+	voxel::Region expectedRegion(region.getLowerX(), region.getLowerY(), region.getLowerZ(), region.getUpperX(), 17,
+								 region.getUpperZ());
+	EXPECT_EQ(expectedRegion, wrapper.dirtyRegion());
+	ASSERT_EQ(4112, countVoxels(volume));
+	// TODO: validate colors and height
 }
 
 } // namespace voxelutil
