@@ -510,6 +510,7 @@ bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sc
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	const palette::Palette &palette = voxel::getPalette();
+	// TODO: FOR_PARALLEL
 	for (const PointCloudVertex &vertex : vertices) {
 		const glm::ivec3 pos = glm::round(vertex.position);
 		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(vertex.color));

@@ -251,6 +251,7 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 	Log::debug("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	// TODO: FOR_PARALLEL
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);
@@ -328,6 +329,8 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(volume);
+	// TODO: FOR_PARALLEL
+	// TODO: use a volume sampler
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);

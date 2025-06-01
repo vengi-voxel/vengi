@@ -81,6 +81,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 		}
 		const int layer = extractLayerFromFilename(layerFilename);
 		Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
+		// TODO: FOR_PARALLEL
 		for (int y = 0; y < imageHeight; ++y) {
 			for (int x = 0; x < imageWidth; ++x) {
 				const core::RGBA &color = flattenRGB(image->colorAt(x, y));

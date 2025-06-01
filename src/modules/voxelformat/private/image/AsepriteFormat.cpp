@@ -47,6 +47,7 @@ static bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &fil
 	node.setVolume(v, true);
 	node.setName(core::String::format("%s_%d", filename.c_str(), frameIndex));
 	node.setPalette(palette);
+	// TODO: FOR_PARALLEL
 	for (int x = 0; x < ase->w; ++x) {
 		for (int y = 0; y < ase->h; ++y) {
 			const ase_color_t pixel = frame->pixels[x + y * ase->w];
