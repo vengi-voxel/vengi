@@ -43,14 +43,13 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 		bool validScript = _luaApiWidget.updateScriptExecutionPanel(luaApi, _sceneMgr->activePalette(), ctx,
 																	voxelui::LUAAPI_WIDGET_FLAG_RUN);
 		if (ImGui::Button(_("New"))) {
-			_scriptEditor = true;
-			_activeScriptFilename = "";
-			const voxelgenerator::LUAScript &script = _luaApiWidget.script(0);
-			if (script.valid) {
-				_textEditor.SetText(luaApi.load(script.filename));
-			} else {
-				_textEditor.SetText("");
-			}
+			const core::String savePath = _app->filesystem()->homeWritePath("scripts");
+			_app->filesystem()->sysCreateDir(savePath);
+			_app->saveDialog([&](const core::String &file, const io::FormatDescription *desc) {
+				if (_app->filesystem()->sysWrite(file, _luaApiWidget._activeScript)) {
+					_luaApiWidget.clear();
+				}
+			}, {}, io::format::lua(), core::string::path(savePath, "new_script.lua"));
 		}
 		ImGui::TooltipTextUnformatted(_("Create a new lua script"));
 
@@ -83,9 +82,6 @@ bool ScriptPanel::updateEditor(const char *id) {
 		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
-				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute"))) {
-					_luaApiWidget.reloadScriptParameters(luaApi, _luaScript, _textEditor.GetText());
-				}
 				if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
 					_luaApiWidget.reloadCurrentScript(luaApi);
 				}
@@ -100,6 +96,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 				}
 				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save as"))) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
+					const core::String savePath = _app->filesystem()->homeWritePath("scripts");
 					_app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
 							if (_app->filesystem()->homeWrite(file, _textEditor.GetText())) {
@@ -109,7 +106,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 								Log::warn("Failed to save script %s", file.c_str());
 							}
 						},
-						{}, io::format::lua());
+						{}, io::format::lua(), core::string::path(savePath, _activeScriptFilename));
 				}
 				if (ImGui::IconMenuItem(ICON_LC_X, _("Close"))) {
 					_scriptEditor = false;
