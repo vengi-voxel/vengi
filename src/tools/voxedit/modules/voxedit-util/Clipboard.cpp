@@ -5,7 +5,6 @@
 #include "Clipboard.h"
 #include "core/Log.h"
 #include "voxedit-util/modifier/Selection.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeMerger.h"
 #include <glm/common.hpp>
 
@@ -42,20 +41,24 @@ voxel::VoxelData cut(voxel::VoxelData &voxelData, const Selections &selections, 
 		const glm::ivec3 &mins = selection.getLowerCorner();
 		const glm::ivec3 &maxs = selection.getUpperCorner();
 		static constexpr voxel::Voxel AIR;
-		voxel::RawVolumeWrapper wrapper(voxelData.volume, selection);
-		for (int32_t x = mins.x; x <= maxs.x; ++x) {
+		voxel::RawVolume::Sampler sampler(voxelData.volume);
+		sampler.setPosition(mins);
+		for (int32_t z = mins.z; z <= maxs.z; ++z) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int32_t y = mins.y; y <= maxs.y; ++y) {
-				for (int32_t z = mins.z; z <= maxs.z; ++z) {
-					wrapper.setVoxel(x, y, z, AIR);
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				for (int32_t x = mins.x; x <= maxs.x; ++x) {
+					sampler3.setVoxel(AIR);
+					sampler3.movePositiveX();
 				}
+				sampler2.movePositiveY();
 			}
+			sampler.movePositiveZ();
 		}
-		if (wrapper.dirtyRegion().isValid()) {
-			if (modifiedRegion.isValid()) {
-				modifiedRegion.accumulate(wrapper.dirtyRegion());
-			} else {
-				modifiedRegion = wrapper.dirtyRegion();
-			}
+		if (modifiedRegion.isValid()) {
+			modifiedRegion.accumulate(selection);
+		} else {
+			modifiedRegion = selection;
 		}
 	}
 	return {v, voxelData.palette, true};
