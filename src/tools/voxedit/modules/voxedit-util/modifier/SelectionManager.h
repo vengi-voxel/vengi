@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Selection.h"
+#include "core/SharedPtr.h"
 
 namespace voxel {
 class RawVolume;
@@ -46,5 +47,7 @@ public:
 inline bool SelectionManager::hasSelection() const {
 	return !_selections.empty();
 }
+
+using SelectionManagerPtr = core::SharedPtr<SelectionManager>;
 
 } // namespace voxedit

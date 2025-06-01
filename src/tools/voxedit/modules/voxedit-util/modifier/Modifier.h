@@ -47,8 +47,7 @@ public:
 	using ModifiedRegionCallback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
 
 protected:
-	// TODO: SELECTION: remove member but use the selection manager as a component that's handed in
-	SelectionManager _selectionManager;
+	SelectionManagerPtr _selectionManager;
 
 	// lock the modifier to not perform any modification
 	// this can be useful when the user is interaction with the ui elements
@@ -90,7 +89,7 @@ protected:
 		const ModifiedRegionCallback &callback = {});
 
 public:
-	Modifier(SceneManager *sceneMgr);
+	Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionManager);
 
 	/**
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account
@@ -120,8 +119,7 @@ public:
 	void unselect(voxel::RawVolume &volume);
 	void invert(voxel::RawVolume &volume);
 
-	const SelectionManager &selectionMgr() const;
-	SelectionManager &selectionMgr();
+	const SelectionManagerPtr &selectionMgr() const;
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
@@ -314,11 +312,7 @@ inline const glm::ivec3 &Modifier::cursorPosition() const {
 	return _brushContext.cursorPosition;
 }
 
-inline const SelectionManager &Modifier::selectionMgr() const {
-	return _selectionManager;
-}
-
-inline SelectionManager &Modifier::selectionMgr() {
+inline const SelectionManagerPtr &Modifier::selectionMgr() const {
 	return _selectionManager;
 }
 

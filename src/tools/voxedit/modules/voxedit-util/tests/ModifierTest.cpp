@@ -4,9 +4,11 @@
 
 #include "../modifier/Modifier.h"
 #include "app/tests/AbstractTest.h"
+#include "core/SharedPtr.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
@@ -50,8 +52,9 @@ protected:
 
 TEST_F(ModifierTest, testModifierAction) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	Modifier modifier(&mgr);
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
+	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
+	Modifier modifier(&mgr, selectionManager);
 	ASSERT_TRUE(modifier.init());
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	voxel::RawVolume volume({-10, 10});
@@ -72,8 +75,9 @@ TEST_F(ModifierTest, testModifierSelection) {
 	voxel::RawVolume volume({-10, 10});
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	Modifier modifier(&mgr);
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
+	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
+	Modifier modifier(&mgr, selectionManager);
 	ASSERT_TRUE(modifier.init());
 	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
 
@@ -89,8 +93,9 @@ TEST_F(ModifierTest, testModifierSelection) {
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
 	EXPECT_EQ(1, modifierExecuted);
-	EXPECT_EQ(glm::ivec3(-1), modifier.selectionMgr().region().getLowerCorner());
-	EXPECT_EQ(glm::ivec3(1), modifier.selectionMgr().region().getUpperCorner());
+	const voxel::Region &selectionRegion = modifier.selectionMgr()->region();
+	EXPECT_EQ(glm::ivec3(-1), selectionRegion.getLowerCorner());
+	EXPECT_EQ(glm::ivec3(1), selectionRegion.getUpperCorner());
 	EXPECT_FALSE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume.voxel(-2, -2, -2).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));
@@ -100,8 +105,9 @@ TEST_F(ModifierTest, testModifierSelection) {
 TEST_F(ModifierTest, testClamp) {
 	scenegraph::SceneGraph sceneGraph;
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	Modifier modifier(&mgr);
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
+	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
+	Modifier modifier(&mgr, selectionManager);
 	ASSERT_TRUE(modifier.init());
 
 	voxel::RawVolume volume(voxel::Region(0, 0, 0, 10, 20, 4));

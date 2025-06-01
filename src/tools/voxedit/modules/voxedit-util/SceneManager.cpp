@@ -92,9 +92,12 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 }
 
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
-						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
-	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer),
-	  _luaApi(filesystem), _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem) {
+						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
+						   const SelectionManagerPtr &selectionManager)
+	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
+	  _modifierFacade(this, modifierRenderer, selectionManager), _luaApi(filesystem),
+	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
+	  _selectionManager(selectionManager) {
 }
 
 SceneManager::~SceneManager() {
@@ -996,7 +999,7 @@ bool SceneManager::doRedo() {
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
-	if (!_modifierFacade.selectionMgr().hasSelection()) {
+	if (!_selectionManager->hasSelection()) {
 		return false;
 	}
 	const int nodeId = activeNode();
@@ -1017,7 +1020,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 
 	const voxel::RawVolume *volume = _sceneGraph.resolveVolume(*node);
 	scenegraph::SceneGraph newSceneGraph;
-	_modifierFacade.selectionMgr().visitSelections([&] (const Selection &selection) {
+	_selectionManager->visitSelections([&] (const Selection &selection) {
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::copyNode(*node, newNode, false);
 		newNode.setVolume(new voxel::RawVolume(volume, selection), true);
@@ -1032,7 +1035,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 }
 
 bool SceneManager::copy() {
-	if (!_modifierFacade.selectionMgr().hasSelection()) {
+	if (!_selectionManager->hasSelection()) {
 		Log::debug("Nothing selected yet - failed to copy");
 		return false;
 	}
@@ -1042,7 +1045,7 @@ bool SceneManager::copy() {
 		return false;
 	}
 	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
-	const Selections& selections = _modifierFacade.selectionMgr().selections();
+	const Selections& selections = _selectionManager->selections();
 	_copy = voxedit::tool::copy(voxelData, selections);
 	return _copy;
 }
@@ -1087,7 +1090,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 }
 
 bool SceneManager::cut() {
-	if (!_modifierFacade.selectionMgr().hasSelection()) {
+	if (!_selectionManager->hasSelection()) {
 		Log::debug("Nothing selected - failed to cut");
 		return false;
 	}
@@ -1098,7 +1101,7 @@ bool SceneManager::cut() {
 	}
 	voxel::Region modifiedRegion;
 	voxel::VoxelData voxelData(node.volume(), node.palette(), false);
-	const Selections& selections = _modifierFacade.selectionMgr().selections();
+	const Selections& selections = _selectionManager->selections();
 	_copy = voxedit::tool::cut(voxelData, selections, modifiedRegion);
 	if (!_copy) {
 		Log::debug("Failed to cut");
@@ -1592,7 +1595,7 @@ void SceneManager::construct() {
 	_maxSuggestedVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize);
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
-		const voxel::Region &region = modifier().selectionMgr().region();
+		const voxel::Region &region = modifier().selectionMgr()->region();
 		nodeResize(sceneGraph().activeNode(), region);
 	}).setHelp(_("Resize the volume to the current selection"));
 
@@ -2001,8 +2004,8 @@ void SceneManager::construct() {
 	}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		if (_modifierFacade.selectionMgr().hasSelection()) {
-			paste(_modifierFacade.selectionMgr().region().getLowerCorner());
+		if (_selectionManager->hasSelection()) {
+			paste(_selectionManager->region().getLowerCorner());
 		} else {
 			paste(referencePosition());
 		}
@@ -2401,7 +2404,7 @@ bool SceneManager::init() {
 
 	voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
 	_mementoHandler.setMaxUndoRegion(maxUndoRegion);
-	_modifierFacade.selectionMgr().setMaxRegionSize(maxUndoRegion);
+	_selectionManager->setMaxRegionSize(maxUndoRegion);
 
 	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;
@@ -2510,7 +2513,7 @@ bool SceneManager::update(double nowSeconds) {
 	if (_maxSuggestedVolumeSize->isDirty()) {
 		voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
 		_mementoHandler.setMaxUndoRegion(maxUndoRegion);
-		_modifierFacade.selectionMgr().setMaxRegionSize(maxUndoRegion);
+		_selectionManager->setMaxRegionSize(maxUndoRegion);
 		_maxSuggestedVolumeSize->markClean();
 	}
 

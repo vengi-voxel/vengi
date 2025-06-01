@@ -98,17 +98,6 @@ public:
 		return _modifierType;
 	}
 
-	void addDirtyRegion(const voxel::Region &region) {
-		if (!region.isValid()) {
-			return;
-		}
-		if (_dirtyRegion.isValid()) {
-			_dirtyRegion.accumulate(region);
-		} else {
-			_dirtyRegion = region;
-		}
-	}
-
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
 		Sampler sampler(*this);
 		if (!sampler.setPosition(x, y, z)) {

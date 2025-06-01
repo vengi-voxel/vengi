@@ -21,7 +21,8 @@ protected:
 
 TEST_F(StampBrushTest, testExecute) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(),
+					 core::make_shared<SelectionManager>());
 	StampBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());

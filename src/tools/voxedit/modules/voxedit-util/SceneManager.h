@@ -20,6 +20,7 @@
 #include "util/Movement.h"
 #include "voxedit-util/Clipboard.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -82,6 +83,7 @@ protected:
 	voxelgenerator::LUAApi _luaApi;
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
+	SelectionManagerPtr _selectionManager;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -222,7 +224,8 @@ protected:
 
 public:
 	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
-				 const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
+				 const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
+				 const SelectionManagerPtr &selectionManager);
 	~SceneManager();
 
 	void construct() override;

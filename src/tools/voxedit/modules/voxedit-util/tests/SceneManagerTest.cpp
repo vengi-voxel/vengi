@@ -30,8 +30,9 @@ namespace voxedit {
 class SceneManagerEx : public SceneManager {
 public:
 	SceneManagerEx(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
-				   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
-		: SceneManager(timeProvider, filesystem, sceneRenderer, modifierRenderer) {
+				   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
+				   const SelectionManagerPtr &selectionManager)
+		: SceneManager(timeProvider, filesystem, sceneRenderer, modifierRenderer, selectionManager) {
 	}
 	bool loadForTest(scenegraph::SceneGraph &&sceneGraph) {
 		return loadSceneGraph(core::move(sceneGraph));
@@ -76,8 +77,9 @@ protected:
 		const auto timeProvider = core::make_shared<core::TimeProvider>();
 		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
 		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
-		_sceneMgr =
-			core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer, modifierRenderer);
+		const auto selectionManager = core::make_shared<SelectionManager>();
+		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
+													  modifierRenderer, selectionManager);
 		core::Var::get(cfg::VoxEditShowgrid, "true");
 		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
 		core::Var::get(cfg::VoxEditRendershadow, "true");
@@ -348,7 +350,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	Modifier &modifier = _sceneMgr->modifier();
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
-	EXPECT_TRUE(modifier.selectionMgr().hasSelection());
+	EXPECT_TRUE(modifier.selectionMgr()->hasSelection());
 	EXPECT_TRUE(_sceneMgr->copy());
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));

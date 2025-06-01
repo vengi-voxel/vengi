@@ -1,6 +1,7 @@
 #include "VoxEdit.h"
 #include "voxedit-util/SceneRenderer.h"
 #include "voxedit-util/modifier/ModifierRenderer.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
@@ -8,8 +9,9 @@ int main(int argc, char *argv[]) {
 	const core::SharedPtr<voxedit::SceneRenderer> &sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
 	const core::SharedPtr<voxedit::ModifierRenderer> &modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
 	const video::TexturePoolPtr &texturePool = core::make_shared<video::TexturePool>();
-	const voxedit::SceneManagerPtr &sceneMgr =
-		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
+	const voxedit::SelectionManagerPtr& selectionManager = core::make_shared<voxedit::SelectionManager>();
+	const voxedit::SceneManagerPtr &sceneMgr = core::make_shared<voxedit::SceneManager>(
+		timeProvider, filesystem, sceneRenderer, modifierRenderer, selectionManager);
 	const voxelcollection::CollectionManagerPtr &collectionMgr =
 		core::make_shared<voxelcollection::CollectionManager>(filesystem, texturePool);
 	VoxEdit app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer);

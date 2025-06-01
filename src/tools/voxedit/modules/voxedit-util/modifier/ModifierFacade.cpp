@@ -9,6 +9,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
@@ -20,8 +21,8 @@
 
 namespace voxedit {
 
-ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer)
-	: Super(sceneMgr), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
+ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer, const SelectionManagerPtr &selectionManager)
+	: Super(sceneMgr, selectionManager), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
 }
 
 bool ModifierFacade::init() {
@@ -163,13 +164,13 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	if (_brushType == BrushType::Select && brush->active()) {
 		if (brush->dirty()) {
 			const voxel::Region &region = brush->calcRegion(_brushContext);
-			Selections selections = selectionMgr().selections();
+			Selections selections = selectionMgr()->selections();
 			selections.push_back(region);
 			_modifierRenderer->updateSelectionBuffers(selections);
 			brush->markClean();
 		}
 	} else {
-		_modifierRenderer->updateSelectionBuffers(selectionMgr().selections());
+		_modifierRenderer->updateSelectionBuffers(selectionMgr()->selections());
 	}
 	_modifierRenderer->renderSelection(camera, model);
 

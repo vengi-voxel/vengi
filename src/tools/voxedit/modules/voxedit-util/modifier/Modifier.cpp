@@ -7,7 +7,6 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -25,8 +24,8 @@
 
 namespace voxedit {
 
-Modifier::Modifier(SceneManager *sceneMgr)
-	: _stampBrush(sceneMgr), _selectBrush(&_selectionManager), _actionExecuteButton(sceneMgr),
+Modifier::Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionManager)
+	: _selectionManager(selectionManager), _stampBrush(sceneMgr), _selectBrush(_selectionManager), _actionExecuteButton(sceneMgr),
 	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
@@ -163,7 +162,7 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 }
 
 void Modifier::reset() {
-	_selectionManager.reset();
+	_selectionManager->reset();
 	_brushContext.gridResolution = 1;
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
@@ -194,18 +193,18 @@ void Modifier::executeAdditionalAction() {
 }
 
 void Modifier::invert(voxel::RawVolume &volume) {
-	_selectionManager.invert(volume);
+	_selectionManager->invert(volume);
 }
 
 void Modifier::unselect(voxel::RawVolume &volume) {
-	_selectionManager.unselect(volume);
+	_selectionManager->unselect(volume);
 }
 
 bool Modifier::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	if (_locked) {
 		return false;
 	}
-	_selectionManager.select(volume, mins, maxs);
+	_selectionManager->select(volume, mins, maxs);
 	return true;
 }
 
@@ -350,7 +349,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 							ModifierType modifierType, const voxel::Voxel &voxel,
 							const ModifiedRegionCallback &callback) {
 	if (Brush *brush = currentBrush()) {
-		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager.selections());
+		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager->selections());
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 		if (brush->brushClamping()) {

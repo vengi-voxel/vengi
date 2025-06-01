@@ -98,7 +98,7 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 										command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	ui::ScopedStyle selectionStyle;
-	ImGui::BeginDisabled(!modifier.selectionMgr().hasSelection());
+	ImGui::BeginDisabled(!modifier.selectionMgr()->hasSelection());
 	ImGui::CommandButton(_("Use selection"), "stampbrushuseselection", listener);
 	ImGui::EndDisabled();
 }

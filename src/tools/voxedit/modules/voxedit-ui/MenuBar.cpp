@@ -58,7 +58,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		ImGui::Dummy({});
 
 		const Modifier &modifier = _sceneMgr->modifier();
-		const bool hasSelection = modifier.selectionMgr().hasSelection();
+		const bool hasSelection = modifier.selectionMgr()->hasSelection();
 
 		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("New"), "new", true, &listener);

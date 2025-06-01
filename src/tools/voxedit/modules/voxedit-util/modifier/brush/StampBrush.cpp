@@ -52,10 +52,10 @@ void StampBrush::construct() {
 
 	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
 		Modifier &modifier = _sceneMgr->modifier();
-		if (modifier.selectionMgr().hasSelection()) {
+		if (modifier.selectionMgr()->hasSelection()) {
 			if (const scenegraph::SceneGraphNode *node =
 					_sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
-				const Selections &selections = modifier.selectionMgr().selections();
+				const Selections &selections = modifier.selectionMgr()->selections();
 				const voxel::RawVolume stampVolume(node->volume(), selections);
 				setVolume(stampVolume, node->palette());
 				// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
