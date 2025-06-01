@@ -37,6 +37,7 @@ set(TEST_FILES
 	tests/test-fillplane.png
 	tests/test-heightmap.png
 	tests/test-heightmap-dm.png
+	tests/test-colored-heightmap.png
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
