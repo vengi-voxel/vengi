@@ -399,6 +399,10 @@ bool MeshFormat::calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, g
 }
 
 void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
+	if (posMap.empty()) {
+		Log::debug("Empty volume - no positions given");
+		return;
+	}
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	palette::Palette palette;
 	const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
