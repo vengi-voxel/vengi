@@ -58,6 +58,10 @@ nat_toupper(nat_char a)
      return toupper((unsigned char) a);
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702) // unreachable code
+#endif
 
 static int
 compare_right(nat_char const *a, nat_char const *b)
@@ -110,6 +114,9 @@ compare_left(nat_char const *a, nat_char const *b)
      return 0;
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static int
 strnatcmp0(nat_char const *a, nat_char const *b, int fold_case)

@@ -17,6 +17,11 @@
 #elif __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-function" // for stb_truetype.h
 #endif
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4505) // unreferenced local function has been removed
+#pragma warning(disable : 4127) // conditional expression is constant
+#endif
 
 #define STBTT_assert core_assert
 #define STBTT_malloc(x, u) ((void)(u), core_malloc(x))
@@ -125,4 +130,8 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 
 #ifdef __clang__
 #pragma clang diagnostic pop
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(pop)
 #endif

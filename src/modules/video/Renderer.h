@@ -24,6 +24,11 @@ struct to_type {
 
 DataType mapIndexTypeBySize(size_t size);
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4702) // unreachable code
+#endif
+
 /**
  * @brief Maps data types to GL enums
  */
@@ -66,6 +71,10 @@ constexpr inline DataType mapType() {
 	}
 	return DataType::Int;
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 template <> constexpr inline DataType mapType<glm::ivec2>() {
 	return mapType<typename glm::ivec2::value_type>();
