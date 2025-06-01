@@ -350,6 +350,7 @@ app::AppState IMGUIApp::onInit() {
 #endif
 
 	ImGuiIO &io = ImGui::GetIO();
+	io.ConfigDragClickToInputText = true;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode() && core::Var::getSafe(cfg::UIMultiMonitor)->boolVal()) {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
