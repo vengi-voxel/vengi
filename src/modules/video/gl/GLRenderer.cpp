@@ -891,6 +891,16 @@ const core::DynamicSet<Id> &textures() {
 	return glstate().textures;
 }
 
+void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
+	if (handle == InvalidId) {
+		return;
+	}
+#if GL_VERSION_4_3
+	glObjectLabel(ObjectNameTypes[(int)type], handle, -1, name.c_str());
+	checkError();
+#endif
+}
+
 void genFramebuffers(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {

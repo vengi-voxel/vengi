@@ -420,6 +420,9 @@ int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String
 	return -1;
 }
 
+void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
+}
+
 void flush() {
 }
 

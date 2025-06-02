@@ -153,6 +153,8 @@ bool compileShader(Id id, ShaderType shaderType, const core::String &source, con
 bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name = "unknown-shader");
 bool linkComputeShader(Id program, Id comp, const core::String &name = "unknown-shader");
 bool bindImage(Id handle, AccessMode mode, ImageFormat format);
+void setObjectName(Id handle, ObjectNameType type, const core::String &name);
+
 /**
  * @brief Execute a compute shader
  */

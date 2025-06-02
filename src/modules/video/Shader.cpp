@@ -498,6 +498,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 bool Shader::createProgramFromShaders() {
 	if (_program == InvalidId) {
 		_program = video::genProgram();
+		setObjectName(_program, video::ObjectNameType::Program, _name);
 	}
 
 	const Id comp = getShader(ShaderType::Compute);
@@ -506,8 +507,11 @@ bool Shader::createProgramFromShaders() {
 	}
 
 	const Id vert = getShader(ShaderType::Vertex);
+	setObjectName(vert, video::ObjectNameType::Shader, _name);
 	const Id frag = getShader(ShaderType::Fragment);
+	setObjectName(frag, video::ObjectNameType::Shader, _name);
 	const Id geom = getShader(ShaderType::Geometry);
+	setObjectName(geom, video::ObjectNameType::Shader, _name);
 
 	return video::linkShader(_program, vert, frag, geom, _name);
 }

@@ -273,6 +273,23 @@ static const GLenum DataTypes[] {
 };
 static_assert(core::enumVal(DataType::Max) == lengthof(DataTypes), "Array sizes don't match Max");
 
+#if GL_VERSION_4_3
+static const GLenum ObjectNameTypes[] = {
+	GL_BUFFER,
+	GL_SHADER,
+	GL_PROGRAM,
+	GL_VERTEX_ARRAY,
+	GL_QUERY,
+	GL_PROGRAM_PIPELINE,
+	GL_TRANSFORM_FEEDBACK,
+	GL_SAMPLER,
+	GL_TEXTURE,
+	GL_RENDERBUFFER,
+	GL_FRAMEBUFFER
+};
+static_assert(core::enumVal(ObjectNameType::Max) == lengthof(ObjectNameTypes), "Array sizes don't match Max");
+#endif
+
 static const GLenum ImageFormatTypes[] = {
 	GL_RGBA32F,
 	GL_RGBA16F,

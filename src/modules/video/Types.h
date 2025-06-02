@@ -449,8 +449,27 @@ enum class DataType {
 	Max
 };
 
+enum class ObjectNameType {
+	Buffer,
+	Shader,
+	Program,
+	VertexArray,
+	Query,
+	PrograMPipeline,
+	TransformFeedback,
+	Sampler,
+	Texture,
+	Renderbuffer,
+	Framebuffer,
+
+	Max
+};
+
 enum GBufferTextureType {
-	GBUFFER_TEXTURE_TYPE_POSITION, GBUFFER_TEXTURE_TYPE_DIFFUSE, GBUFFER_TEXTURE_TYPE_NORMAL, GBUFFER_NUM_TEXTURES
+	GBUFFER_TEXTURE_TYPE_POSITION,
+	GBUFFER_TEXTURE_TYPE_DIFFUSE,
+	GBUFFER_TEXTURE_TYPE_NORMAL,
+	GBUFFER_NUM_TEXTURES
 };
 
 enum class DebugSeverity {

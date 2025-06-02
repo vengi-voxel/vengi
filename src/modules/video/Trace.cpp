@@ -25,7 +25,6 @@ void traceGLInit() {
 #ifdef TRACY_ENABLE
 	TracyGpuContext;
 #endif
-
 }
 
 void traceGLShutdown() {
@@ -33,10 +32,12 @@ void traceGLShutdown() {
 
 void traceGLBegin(const char* name) {
 	core::traceBegin(name);
+	// glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name);
 }
 
 void traceGLEnd() {
 	core::traceEnd();
+	// glPopDebugGroup();
 }
 
 }

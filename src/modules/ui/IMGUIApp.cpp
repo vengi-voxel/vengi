@@ -308,6 +308,7 @@ void IMGUIApp::loadFonts() {
 	cfg.format(video::TextureFormat::RGBA);
 	if (_texture == video::InvalidId) {
 		_texture = video::genTexture(cfg);
+		setObjectName(_texture, video::ObjectNameType::Texture, "imgui_texture");
 	}
 
 	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
