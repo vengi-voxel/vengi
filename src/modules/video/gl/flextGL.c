@@ -62,6 +62,10 @@ int flextInit(void)
         FLEXT_ARB_shader_storage_buffer_object = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_KHR_debug")) {
+        FLEXT_KHR_debug = GL_TRUE;
+    }
+
 
     return 0;
 }
@@ -218,6 +222,20 @@ void flextLoadOpenGLFunctions(void)
     glpfIsTransformFeedback = (PFNGLISTRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glIsTransformFeedback");
     glpfPauseTransformFeedback = (PFNGLPAUSETRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glPauseTransformFeedback");
     glpfResumeTransformFeedback = (PFNGLRESUMETRANSFORMFEEDBACK_PROC*)SDL_GL_GetProcAddress("glResumeTransformFeedback");
+
+    /* GL_KHR_debug */
+
+    glpfDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACK_PROC*)SDL_GL_GetProcAddress("glDebugMessageCallback");
+    glpfDebugMessageControl = (PFNGLDEBUGMESSAGECONTROL_PROC*)SDL_GL_GetProcAddress("glDebugMessageControl");
+    glpfDebugMessageInsert = (PFNGLDEBUGMESSAGEINSERT_PROC*)SDL_GL_GetProcAddress("glDebugMessageInsert");
+    glpfGetDebugMessageLog = (PFNGLGETDEBUGMESSAGELOG_PROC*)SDL_GL_GetProcAddress("glGetDebugMessageLog");
+    glpfGetObjectLabel = (PFNGLGETOBJECTLABEL_PROC*)SDL_GL_GetProcAddress("glGetObjectLabel");
+    glpfGetObjectPtrLabel = (PFNGLGETOBJECTPTRLABEL_PROC*)SDL_GL_GetProcAddress("glGetObjectPtrLabel");
+    glpfGetPointerv = (PFNGLGETPOINTERV_PROC*)SDL_GL_GetProcAddress("glGetPointerv");
+    glpfObjectLabel = (PFNGLOBJECTLABEL_PROC*)SDL_GL_GetProcAddress("glObjectLabel");
+    glpfObjectPtrLabel = (PFNGLOBJECTPTRLABEL_PROC*)SDL_GL_GetProcAddress("glObjectPtrLabel");
+    glpfPopDebugGroup = (PFNGLPOPDEBUGGROUP_PROC*)SDL_GL_GetProcAddress("glPopDebugGroup");
+    glpfPushDebugGroup = (PFNGLPUSHDEBUGGROUP_PROC*)SDL_GL_GetProcAddress("glPushDebugGroup");
 
     /* GL_VERSION_1_0 */
 
@@ -612,6 +630,7 @@ int FLEXT_ARB_compute_shader = GL_FALSE;
 int FLEXT_ARB_shader_image_load_store = GL_FALSE;
 int FLEXT_ARB_transform_feedback2 = GL_FALSE;
 int FLEXT_ARB_shader_storage_buffer_object = GL_FALSE;
+int FLEXT_KHR_debug = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 
@@ -763,6 +782,20 @@ PFNGLGENTRANSFORMFEEDBACKS_PROC* glpfGenTransformFeedbacks = NULL;
 PFNGLISTRANSFORMFEEDBACK_PROC* glpfIsTransformFeedback = NULL;
 PFNGLPAUSETRANSFORMFEEDBACK_PROC* glpfPauseTransformFeedback = NULL;
 PFNGLRESUMETRANSFORMFEEDBACK_PROC* glpfResumeTransformFeedback = NULL;
+
+/* GL_KHR_debug */
+
+PFNGLDEBUGMESSAGECALLBACK_PROC* glpfDebugMessageCallback = NULL;
+PFNGLDEBUGMESSAGECONTROL_PROC* glpfDebugMessageControl = NULL;
+PFNGLDEBUGMESSAGEINSERT_PROC* glpfDebugMessageInsert = NULL;
+PFNGLGETDEBUGMESSAGELOG_PROC* glpfGetDebugMessageLog = NULL;
+PFNGLGETOBJECTLABEL_PROC* glpfGetObjectLabel = NULL;
+PFNGLGETOBJECTPTRLABEL_PROC* glpfGetObjectPtrLabel = NULL;
+PFNGLGETPOINTERV_PROC* glpfGetPointerv = NULL;
+PFNGLOBJECTLABEL_PROC* glpfObjectLabel = NULL;
+PFNGLOBJECTPTRLABEL_PROC* glpfObjectPtrLabel = NULL;
+PFNGLPOPDEBUGGROUP_PROC* glpfPopDebugGroup = NULL;
+PFNGLPUSHDEBUGGROUP_PROC* glpfPushDebugGroup = NULL;
 
 /* GL_VERSION_1_0 */
 

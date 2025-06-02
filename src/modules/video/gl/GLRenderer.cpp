@@ -895,10 +895,10 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 	if (handle == InvalidId) {
 		return;
 	}
-#if GL_VERSION_4_3
-	glObjectLabel(ObjectNameTypes[(int)type], handle, -1, name.c_str());
-	checkError();
-#endif
+	if (glObjectLabel != nullptr) {
+		glObjectLabel(_priv::ObjectNameTypes[(int)type], handle, -1, name.c_str());
+		checkError();
+	}
 }
 
 void genFramebuffers(uint8_t amount, Id *ids) {
