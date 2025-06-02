@@ -23,7 +23,7 @@ struct GenlandSettings {
 	int height = 64;
 	// Number of octaves for the noise generation
 	int octaves = 10;
-	// Smoothing iterations to apply to the generated heightmapF
+	// Smoothing iterations to apply to the generated heightmap shadows
 	int smoothing = 1;
 	// the persistence defines how much of the amplitude will be applied to the next noise
 	// call (only makes sense if you have @c octaves > 1). The higher this value is (ranges
@@ -41,6 +41,7 @@ struct GenlandSettings {
 	bool shadow = true;
 	// Generate a river in the land
 	bool river = true;
+	bool ambience = true;
 	glm::ivec2 offset{0, 0};
 };
 

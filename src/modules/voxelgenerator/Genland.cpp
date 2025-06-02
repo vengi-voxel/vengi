@@ -347,14 +347,15 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		}
 	}
 
-	// TODO: make ambience optional
-	for (int y = 0; y < settings.size; y++) {
-		for (int x = 0; x < settings.size; x++) {
-			const int k = y * settings.size + x;
-			const int i = 256 - (tempBuffer.sh[k] << 2);
-			tempBuffer.buf[k].r = ((tempBuffer.buf[k].r * i) >> 8) + tempBuffer.amb[k].r;
-			tempBuffer.buf[k].g = ((tempBuffer.buf[k].g * i) >> 8) + tempBuffer.amb[k].g;
-			tempBuffer.buf[k].b = ((tempBuffer.buf[k].b * i) >> 8) + tempBuffer.amb[k].b;
+	if (settings.ambience) {
+		for (int y = 0; y < settings.size; y++) {
+			for (int x = 0; x < settings.size; x++) {
+				const int k = y * settings.size + x;
+				const int i = 256 - (tempBuffer.sh[k] << 2);
+				tempBuffer.buf[k].r = ((tempBuffer.buf[k].r * i) >> 8) + tempBuffer.amb[k].r;
+				tempBuffer.buf[k].g = ((tempBuffer.buf[k].g * i) >> 8) + tempBuffer.amb[k].g;
+				tempBuffer.buf[k].b = ((tempBuffer.buf[k].b * i) >> 8) + tempBuffer.amb[k].b;
+			}
 		}
 	}
 
