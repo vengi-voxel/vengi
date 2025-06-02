@@ -2057,4 +2057,17 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	return true;
 }
 
+void traceVideoBegin(const char* name) {
+	if (glPushDebugGroup == nullptr)
+		return;
+	// glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name);
+	// checkError();
+}
+
+void traceVideoEnd() {
+	if (glPopDebugGroup == nullptr)
+		return;
+	// glPopDebugGroup();
+}
+
 } // namespace video

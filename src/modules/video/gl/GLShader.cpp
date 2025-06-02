@@ -3,7 +3,6 @@
  */
 
 #include "core/Log.h"
-#include "core/collection/DynamicArray.h"
 #include "video/RendererInterface.h"
 #include "video/Shader.h"
 #include "video/UniformBuffer.h"

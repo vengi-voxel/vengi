@@ -7,11 +7,11 @@
 #include "VkRenderer.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/Trace.h"
 #include "core/Var.h"
 #include "flextVk.h"
 #include "video/Renderer.h"
 #include "video/Types.h"
-#include "video/gl/GLTypes.h"
 #include "core/sdl/SDLSystem.h"
 #include <SDL_vulkan.h>
 
@@ -427,6 +427,14 @@ void flush() {
 }
 
 void finish() {
+}
+
+void traceVideoBegin(const char* name) {
+	core::traceBegin(name);
+}
+
+void traceVideoEnd() {
+	core::traceEnd();
 }
 
 } // namespace video

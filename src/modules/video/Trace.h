@@ -12,31 +12,31 @@
 
 namespace video {
 
-class TraceGLScoped {
+class VideoTraceScoped {
 public:
-	TraceGLScoped(const char* name, const char *msg = nullptr);
-	~TraceGLScoped();
+	VideoTraceScoped(const char* name, const char *msg = nullptr);
+	~VideoTraceScoped();
 };
 
-extern void traceGLInit();
-extern void traceGLShutdown();
-extern void traceGLBegin(const char* name);
-extern void traceGLEnd();
-extern void traceGLFrameEnd();
+extern void traceVideoInit();
+extern void traceVideoShutdown();
+extern void traceVideoBegin(const char* name);
+extern void traceVideoEnd();
+extern void traceVideoFrameEnd();
 
-#define video_trace_init() video::traceGLInit()
-#define video_trace_shutdown() video::traceGLShutdown()
-#define video_trace_frame_end() video::traceGLFrameEnd()
+#define video_trace_init() video::traceVideoInit()
+#define video_trace_shutdown() video::traceVideoShutdown()
+#define video_trace_frame_end() video::traceVideoFrameEnd()
 #ifdef TRACY_ENABLE
 #define video_trace_begin(name)
 #define video_trace_begin_dynamic(name)
 #define video_trace_end()
 #define video_trace_scoped(name) TracyGpuNamedZone(__tracy_scoped_##name, #name, true)
 #else
-#define video_trace_begin(name) video::traceGLBegin(#name)
-#define video_trace_begin_dynamic(name) video::traceGLBegin(#name)
-#define video_trace_end() video::traceGLEnd()
-#define video_trace_scoped(name) video::TraceGLScoped __trace__##name(#name)
+#define video_trace_begin(name) video::traceVideoBegin(#name)
+#define video_trace_begin_dynamic(name) video::traceVideoBegin(#name)
+#define video_trace_end() video::traceVideoEnd()
+#define video_trace_scoped(name) video::VideoTraceScoped __trace__##name(#name)
 #endif
 
 }
