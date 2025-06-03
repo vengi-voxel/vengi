@@ -41,6 +41,9 @@ enum MaterialProperty : uint32_t {
 	MaterialMax
 };
 
+/**
+ * @brief Each palette color can have a material assigned to it.
+ */
 struct Material {
 	Material();
 	uint32_t mask = MaterialNone;

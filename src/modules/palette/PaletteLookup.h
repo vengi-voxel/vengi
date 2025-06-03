@@ -10,6 +10,13 @@
 
 namespace palette {
 
+/**
+ * @brief A lookup table for palette colors, allowing fast retrieval of the closest color index
+ * from a given RGBA color value.
+ *
+ * This class uses a hash map to store the mapping between RGBA colors and their corresponding
+ * palette indices, enabling efficient lookups.
+ */
 class PaletteLookup {
 private:
 	palette::Palette _palette;

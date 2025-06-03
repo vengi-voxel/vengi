@@ -14,6 +14,10 @@ namespace palette {
 
 static const int NormalPaletteMaxNormals = 255;
 
+/**
+ * @brief Some voxel formats are also storing normals in a palette. This is e.g.
+ * used for the Command & Conquer voxel formats.
+ */
 class NormalPalette : public core::DirtyState {
 private:
 	bool _needsSave = false;
