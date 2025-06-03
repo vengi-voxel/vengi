@@ -5,6 +5,7 @@
 #include "PaletteFormatDescription.h"
 #include "palette/private/ACBPalette.h"
 #include "palette/private/ASEPalette.h"
+#include "palette/private/AVMTPalette.h"
 #include "palette/private/CSVPalette.h"
 #include "palette/private/GimpPalette.h"
 #include "palette/private/JASCPalette.h"
@@ -14,7 +15,6 @@
 #include "palette/private/QBCLPalette.h"
 #include "palette/private/RGBPalette.h"
 #include "palette/private/VPLPalette.h"
-#include "palette/private/AVMTPalette.h"
 
 namespace palette {
 

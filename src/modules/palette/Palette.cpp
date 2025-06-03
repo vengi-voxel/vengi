@@ -162,18 +162,21 @@ bool Palette::hasColor(core::RGBA rgba) {
 	return false;
 }
 
-void Palette::duplicateColor(uint8_t paletteColorIdx) {
+int Palette::duplicateColor(uint8_t paletteColorIdx) {
 	if (_colorCount < PaletteMaxColors) {
-		setColor(_colorCount + 1, color(paletteColorIdx));
+		const uint8_t idx = _colorCount + 1;
+		setColor(idx, color(paletteColorIdx));
+		return idx;
 	} else {
 		// search a free slot
 		for (int i = 0; i < PaletteMaxColors; ++i) {
 			if (!hasAlpha(i)) {
 				setColor(i, color(paletteColorIdx));
-				return;
+				return i;
 			}
 		}
 	}
+	return PaletteColorNotFound;
 }
 
 void Palette::exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2) {

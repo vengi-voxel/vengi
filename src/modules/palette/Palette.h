@@ -100,7 +100,10 @@ public:
 	bool hasMaterials() const;
 
 	bool hasFreeSlot() const;
-	void duplicateColor(uint8_t paletteColorIdx);
+	/**
+	 * @return The slot for the new color entry or -1 if not possible
+	 */
+	int duplicateColor(uint8_t paletteColorIdx);
 	/**
 	 * @brief Tries to remove the given color from the palette
 	 * @note Always keeps at least one color in the palette
