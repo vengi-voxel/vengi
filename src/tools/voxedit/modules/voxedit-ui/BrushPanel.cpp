@@ -404,11 +404,11 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	PaintBrush &brush = modifier.paintBrush();
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();
-	if (ImGui::BeginCombo(_("Mode"), PaintBrush::PaintModeStr[(int)paintMode], ImGuiComboFlags_None)) {
+	if (ImGui::BeginCombo(_("Mode"), _(PaintBrush::PaintModeStr[(int)paintMode]), ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)PaintBrush::PaintMode::Max; ++i) {
 			const PaintBrush::PaintMode mode = (PaintBrush::PaintMode)i;
 			const bool selected = mode == paintMode;
-			if (ImGui::Selectable(PaintBrush::PaintModeStr[i], selected)) {
+			if (ImGui::Selectable(_(PaintBrush::PaintModeStr[i]), selected)) {
 				brush.setPaintMode(mode);
 			}
 			if (selected) {

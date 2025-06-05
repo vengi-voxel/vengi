@@ -1,9 +1,6 @@
 msgid "The language to use - empty means system default"
 msgstr ""
 
-msgid "Log to the system log"
-msgstr ""
-
 msgid ""
 "The lower the value, the more you see. 1 is the highest log level, 5 is just "
 "fatal errors."
@@ -667,6 +664,18 @@ msgstr ""
 msgid "Z axis scale"
 msgstr ""
 
+msgid "Heightmap"
+msgstr ""
+
+msgid "Plane"
+msgstr ""
+
+msgid "Volume"
+msgstr ""
+
+msgid "Import type"
+msgstr ""
+
 msgid "Layer information"
 msgstr ""
 
@@ -750,18 +759,6 @@ msgid "Compressed"
 msgstr ""
 
 msgid "Empty palette index"
-msgstr ""
-
-msgid "Heightmap"
-msgstr ""
-
-msgid "Plane"
-msgstr ""
-
-msgid "Volume"
-msgstr ""
-
-msgid "Import type"
 msgstr ""
 
 msgid "Max depth"
@@ -1185,6 +1182,9 @@ msgstr ""
 msgid "Single"
 msgstr ""
 
+msgid "Single Move"
+msgstr ""
+
 msgid "Radius"
 msgstr ""
 
@@ -1243,6 +1243,10 @@ msgid "Click on a voxel to pick the color"
 msgstr ""
 
 msgid "Brush"
+msgstr ""
+
+msgid ""
+"Brushes are only available in edit mode - you are currently in scene mode"
 msgstr ""
 
 msgid "Add new camera"
@@ -2060,22 +2064,6 @@ msgstr ""
 msgid "Pending extractions: %i"
 msgstr ""
 
-#, c-format
-msgid "Pending regions: %i"
-msgstr ""
-
-#, c-format
-msgid "Pending tasks: %i"
-msgstr ""
-
-#, c-format
-msgid "Running tasks: %i"
-msgstr ""
-
-#, c-format
-msgid "Threads: %i"
-msgstr ""
-
 msgid "Rename"
 msgstr ""
 
@@ -2201,9 +2189,6 @@ msgid "Scripting manual"
 msgstr ""
 
 msgid "Script Editor"
-msgstr ""
-
-msgid "Apply and execute"
 msgstr ""
 
 #, c-format
@@ -2788,6 +2773,11 @@ msgid ""
 "the action button"
 msgstr ""
 
+msgid ""
+"Set single voxel building mode - continue setting voxels until you release "
+"the action button - but don't overwrite the last voxel"
+msgstr ""
+
 msgid "Mirror along the x axis at the reference position"
 msgstr ""
 
@@ -2798,6 +2788,18 @@ msgid "Mirror along the z axis at the reference position"
 msgstr ""
 
 msgid "Disable mirror axis"
+msgstr ""
+
+msgid "Brighten"
+msgstr ""
+
+msgid "Darken"
+msgstr ""
+
+msgid "Random"
+msgstr ""
+
+msgid "Variation"
 msgstr ""
 
 msgid ""

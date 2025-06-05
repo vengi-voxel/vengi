@@ -221,7 +221,7 @@ bool AABBBrush::isMode(uint32_t mode) const {
 
 void AABBBrush::setMode(uint32_t mode) {
 	_mode = mode;
-	if (_mode == BRUSH_MODE_SINGLE_MOVE) {
+	if (singleModeMove()) {
 		_sceneModifiedFlags = SceneModifiedFlags::NoResetTrace;
 	} else {
 		_sceneModifiedFlags = SceneModifiedFlags::All;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "app/I18N.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
 namespace palette {
@@ -21,7 +22,7 @@ class PaintBrush : public AABBBrush {
 public:
 	enum class PaintMode : uint8_t { Replace, Brighten, Darken, Random, Variation, Max };
 
-	static constexpr const char *PaintModeStr[] = {"Replace", "Brighten", "Darken", "Random", "Variation"};
+	static constexpr const char *PaintModeStr[] = {N_("Replace"), N_("Brighten"), N_("Darken"), N_("Random"), N_("Variation")};
 	static_assert(lengthof(PaintModeStr) == (int)PaintBrush::PaintMode::Max, "PaintModeStr size mismatch");
 
 private:
