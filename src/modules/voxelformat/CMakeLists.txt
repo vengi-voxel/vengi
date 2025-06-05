@@ -343,6 +343,11 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app video)
 gtest_suite_end(tests-${LIB})
 set(BENCHMARK_FILES
 	tests/glTF/lantern/Lantern.gltf
+	tests/glTF/lantern/Lantern.bin
+	tests/glTF/lantern/Lantern_baseColor.png
+	tests/glTF/lantern/Lantern_emissive.png
+	tests/glTF/lantern/Lantern_normal.png
+	tests/glTF/lantern/Lantern_roughnessMetallic.png
 	tests/minecraft_110.mca
 	tests/chr_knight.fbx
 	tests/chr_knight.qb
