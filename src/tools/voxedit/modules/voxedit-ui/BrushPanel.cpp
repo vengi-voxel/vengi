@@ -314,6 +314,10 @@ void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, A
 	core::String toggleSingleCmd = "set" + brush.name().toLower() + "brushsingle";
 	ImGui::CommandRadioButton(_("Single"), toggleSingleCmd, single, &listener);
 
+	const bool singleMove = brush.singleModeMove();
+	core::String toggleSingleMoveCmd = "set" + brush.name().toLower() + "brushsinglemove";
+	ImGui::CommandRadioButton(_("Single Move"), toggleSingleMoveCmd, singleMove, &listener);
+
 	const bool center = brush.centerMode();
 	core::String toggleCenterCmd = "set" + brush.name().toLower() + "brushcenter";
 	ImGui::CommandRadioButton(_("Center"), toggleCenterCmd, center, &listener);

@@ -19,10 +19,13 @@ enum BrushFlags : uint32_t {
 	 * also the mins.
 	 */
 	BRUSH_MODE_CENTER = 1,
-	BRUSH_MODE_SINGLE = 2
+	// continously set voxels until the action button is released
+	BRUSH_MODE_SINGLE = 2,
+	BRUSH_MODE_SINGLE_MOVE = 3,
+
+	// extend your own flags by using this macro for the first shift value
+	BRUSH_MODE_CUSTOM = 4,
 };
-// extend your own flags by using this macro for the first shift value
-#define BRUSH_MODE_CUSTOM 3
 
 /**
  * @brief A brush that operates on an axis aligned bounding box
@@ -132,6 +135,11 @@ public:
 	void setSingleMode();
 	bool singleMode() const;
 
+	void setSingleModeMove();
+	bool singleModeMove() const;
+
+	bool anySingleMode() const;
+
 	void setAABBMode();
 	bool aabbMode() const;
 
@@ -140,7 +148,7 @@ public:
 };
 
 inline int AABBBrush::radius() const {
-	if (!isMode(BRUSH_MODE_SINGLE)) {
+	if (!anySingleMode()) {
 		return 0;
 	}
 	return _radius;
@@ -154,12 +162,24 @@ inline void AABBBrush::setCenterMode() {
 	setMode(BRUSH_MODE_CENTER);
 }
 
+inline bool AABBBrush::anySingleMode() const {
+	return singleMode() || singleModeMove();
+}
+
 inline bool AABBBrush::singleMode() const {
 	return isMode(BRUSH_MODE_SINGLE);
 }
 
 inline void AABBBrush::setSingleMode() {
 	setMode(BRUSH_MODE_SINGLE);
+}
+
+inline bool AABBBrush::singleModeMove() const {
+	return isMode(BRUSH_MODE_SINGLE_MOVE);
+}
+
+inline void AABBBrush::setSingleModeMove() {
+	setMode(BRUSH_MODE_SINGLE_MOVE);
 }
 
 inline bool AABBBrush::aabbMode() const {

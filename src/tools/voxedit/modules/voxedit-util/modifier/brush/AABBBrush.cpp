@@ -22,16 +22,20 @@ void AABBBrush::construct() {
 	// TODO: some aabb brushes don't support center or single mode (e.g. the plane brush)
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
-		setMode(BRUSH_MODE_CENTER);
+		setCenterMode();
 	}).setHelp(_("Set center plane building"));
 
 	command::Command::registerCommand("set" + cmdName + "aabb", [this](const command::CmdArgs &args) {
-		setMode(BRUSH_MODE_AABB);
+		setAABBMode();
 	}).setHelp(_("Set default aabb voxel building mode"));
 
 	command::Command::registerCommand("set" + cmdName + "single", [this](const command::CmdArgs &args) {
-		setMode(BRUSH_MODE_SINGLE);
+		setSingleMode();
 	}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button"));
+
+	command::Command::registerCommand("set" + cmdName + "singlemove", [this](const command::CmdArgs &args) {
+		setSingleModeMove();
+	}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button - but don't overwrite the last voxel"));
 }
 
 void AABBBrush::reset() {
@@ -155,7 +159,7 @@ glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &brushContext) co
 }
 
 bool AABBBrush::wantAABB() const {
-	return !singleMode();
+	return !anySingleMode();
 }
 
 bool AABBBrush::start(const BrushContext &context) {
@@ -186,7 +190,7 @@ void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
 bool AABBBrush::active() const {
-	return _aabbMode || singleMode();
+	return _aabbMode || anySingleMode();
 }
 
 bool AABBBrush::aborted(const BrushContext &context) const {
@@ -217,6 +221,11 @@ bool AABBBrush::isMode(uint32_t mode) const {
 
 void AABBBrush::setMode(uint32_t mode) {
 	_mode = mode;
+	if (_mode == BRUSH_MODE_SINGLE_MOVE) {
+		_sceneModifiedFlags = SceneModifiedFlags::NoResetTrace;
+	} else {
+		_sceneModifiedFlags = SceneModifiedFlags::All;
+	}
 }
 
 void AABBBrush::setRadius(int radius) {
@@ -227,12 +236,12 @@ void AABBBrush::setRadius(int radius) {
 voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
 	// TODO: locked axis support
 	const glm::ivec3 &pos = currentCursorPosition(context);
-	if (!singleMode() && centerMode()) {
+	if (!anySingleMode() && centerMode()) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, context.gridResolution);
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return voxel::Region(first - delta, first + delta);
 	}
-	const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
+	const glm::ivec3 &first = anySingleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
 	const int rad = radius();
 	if (rad > 0) {
 		// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
