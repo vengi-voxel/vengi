@@ -127,7 +127,7 @@ void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uin
 void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 							   const palette::NormalPalette &normalPalette) const {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
-	auto fn = [&tris, &normalPalette, &posMap, this] (int start, int end) {
+	auto fn = [&tris, &normalPalette, &posMap, this](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			const voxelformat::MeshTri &meshTri = tris[i];
 			if (stopExecution()) {
@@ -153,7 +153,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 										  const palette::NormalPalette &normalPalette) const {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
-	auto fn = [&tris, &normalPalette, region, &posMap, this] (int start, int end) {
+	auto fn = [&tris, &normalPalette, region, &posMap, this](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			const voxelformat::MeshTri &meshTri = tris[i];
 			if (stopExecution()) {
@@ -174,14 +174,18 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 			Log::trace("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
 			const uint8_t normalIdx = normalPalette.getClosestMatch(normal);
 			for (int x = mins.x; x < maxs.x; x++) {
+				if (!region.containsPointInX(x + sideDelta.x)) {
+					continue;
+				}
 				for (int y = mins.y; y < maxs.y; y++) {
+					if (!region.containsPointInY(y + sideDelta.y)) {
+						continue;
+					}
 					for (int z = mins.z; z < maxs.z; z++) {
-						const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
-						if (!region.containsPoint(p)) {
-							Log::debug("Failed to transform tri %i:%i:%i (region: %s), (sideDelta: %i:%i:%i)", p.x, p.y,
-									p.z, region.toString().c_str(), sideDelta.x, sideDelta.y, sideDelta.z);
+						if (!region.containsPointInZ(z + sideDelta.z)) {
 							continue;
 						}
+						const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
 						addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
 					}
 				}
@@ -519,7 +523,7 @@ bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sc
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	const palette::Palette &palette = voxel::getPalette();
-	auto fn = [&vertices, &palette, pointSize, v] (int start, int end) {
+	auto fn = [&vertices, &palette, pointSize, v](int start, int end) {
 		palette::PaletteLookup palLookup(palette);
 		for (int i = start; i < end; ++i) {
 			if (stopExecution()) {
@@ -584,6 +588,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
+	// TODO: use a future
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
