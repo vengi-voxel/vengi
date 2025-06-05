@@ -18,13 +18,13 @@ private:
 	core::Buffer<glm::vec3> _vertices;
 	core::Buffer<core::RGBA> _colors;
 	MeshMaterialPtr _material;
-	void addTriangle(MeshFormat::MeshTriCollection &tris, int idx0, int idx1, int idx2) const;
+	void addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2) const;
 
 public:
 	Polygon &setMaterial(const MeshMaterialPtr &material);
 	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color = core::RGBA(0, 0, 0));
 	glm::vec2 uv(int x, int y) const;
-	bool toTris(MeshFormat::MeshTriCollection &tris) const;
+	bool toTris(MeshTriCollection &tris) const;
 
 	glm::vec3 center() const;
 	size_t size() const;

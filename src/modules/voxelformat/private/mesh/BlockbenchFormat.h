@@ -43,7 +43,7 @@ public:
 	};
 
 	struct Mesh {
-		MeshFormat::MeshTriCollection tris;
+		MeshTriCollection tris;
 	};
 
 	struct Node {

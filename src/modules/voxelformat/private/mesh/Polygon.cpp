@@ -41,7 +41,7 @@ static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords,
 	}
 }
 
-void Polygon::addTriangle(MeshFormat::MeshTriCollection &tris, int idx0, int idx1, int idx2) const {
+void Polygon::addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2) const {
 	MeshTri meshTri;
 	meshTri.vertices[0] = _vertices[idx0];
 	meshTri.vertices[1] = _vertices[idx1];
@@ -56,7 +56,7 @@ void Polygon::addTriangle(MeshFormat::MeshTriCollection &tris, int idx0, int idx
 	tris.push_back(meshTri);
 }
 
-bool Polygon::toTris(MeshFormat::MeshTriCollection &tris) const {
+bool Polygon::toTris(MeshTriCollection &tris) const {
 	if (3 == _vertices.size()) {
 		addTriangle(tris, 0, 1, 2);
 		return true;

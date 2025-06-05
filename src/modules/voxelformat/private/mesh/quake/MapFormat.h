@@ -20,9 +20,9 @@ protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	bool parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-					MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris, const glm::vec3 &scale) const;
+					MeshMaterialMap &materials, MeshTriCollection &tris, const glm::vec3 &scale) const;
 	bool parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-					 MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris,
+					 MeshMaterialMap &materials, MeshTriCollection &tris,
 					 core::StringMap<core::String> &props, const glm::vec3 &scale) const;
 
 public:

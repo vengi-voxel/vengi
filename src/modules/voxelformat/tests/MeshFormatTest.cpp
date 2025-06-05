@@ -22,7 +22,7 @@ namespace voxelformat {
 class MeshFormatTest : public AbstractFormatTest {};
 
 TEST_F(MeshFormatTest, testSubdivide) {
-	MeshFormat::MeshTriCollection tinyTris;
+	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
 	meshTri.vertices[0] = glm::vec3(-8.77272797, -11.43335, -0.154544264);
 	meshTri.vertices[1] = glm::vec3(-8.77272701, 11.1000004, -0.154543981);
@@ -51,7 +51,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 }
 
 TEST_F(MeshFormatTest, testCalculateAABB) {
-	MeshFormat::MeshTriCollection tris;
+	MeshTriCollection tris;
 	voxelformat::MeshTri meshTri;
 
 	{
@@ -79,7 +79,7 @@ TEST_F(MeshFormatTest, testCalculateAABB) {
 }
 
 TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
-	MeshFormat::MeshTriCollection tris;
+	MeshTriCollection tris;
 	voxelformat::MeshTri meshTri;
 
 	{
@@ -115,14 +115,14 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}
-		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshFormat::MeshTriCollection &tris) {
+		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris) {
 			voxelizeNode("test", sceneGraph, tris);
 			sceneGraph.updateTransforms();
 		}
 	};
 
 	TestMesh mesh;
-	MeshFormat::MeshTriCollection tris;
+	MeshTriCollection tris;
 
 	video::ShapeBuilder b;
 	scenegraph::SceneGraph sceneGraph;

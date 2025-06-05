@@ -123,7 +123,7 @@ static bool skipFace(const core::String &texture) {
 }
 
 bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-						   MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris,
+						   MeshMaterialMap &materials, MeshTriCollection &tris,
 						   const glm::vec3 &scale) const {
 	QBrush qbrush;
 	while (tok.hasNext()) {
@@ -248,7 +248,7 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 }
 
 bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-							MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris,
+							MeshMaterialMap &materials, MeshTriCollection &tris,
 							core::StringMap<core::String> &props, const glm::vec3 &scale) const {
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
@@ -303,7 +303,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
 		if (t == "{") {
-			MeshFormat::MeshTriCollection tris;
+			MeshTriCollection tris;
 			core::StringMap<core::String> props;
 			if (!parseEntity(filename, archive, tok, materials, tris, props, scale)) {
 				Log::error("Failed to parse entity");

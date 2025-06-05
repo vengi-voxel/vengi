@@ -9,12 +9,43 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
 
 class MeshFormatBenchmark : public app::AbstractBenchmark {
 private:
 	using Super = app::AbstractBenchmark;
 
 protected:
+	class MeshFormatEx : public voxelformat::MeshFormat {
+	private:
+		using Super = voxelformat::MeshFormat;
+
+	public:
+		void voxelizePointCloud(const voxelformat::PointCloud &vertices) {
+			scenegraph::SceneGraph sceneGraph;
+			Super::voxelizePointCloud("benchmark", sceneGraph, vertices);
+		}
+
+		void transformTris(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap) const {
+			palette::NormalPalette normalPalette;
+			normalPalette.redAlert2();
+			voxel::Region region{-1000, 1000};
+			Super::transformTris(region, tris, posMap, normalPalette);
+		}
+
+		void transformTrisAxisAligned(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap) const {
+			palette::NormalPalette normalPalette;
+			normalPalette.redAlert2();
+			voxel::Region region{-1000, 1000};
+			Super::transformTrisAxisAligned(region, tris, posMap, normalPalette);
+		}
+
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+	};
+
 	voxelformat::LoadContext _ctx;
 	scenegraph::SceneGraph _sceneGraph;
 	io::ArchivePtr _archive;
@@ -43,7 +74,39 @@ BENCHMARK_DEFINE_F(MeshFormatBenchmark, FBX)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(MeshFormatBenchmark, voxelizePointCloud)(benchmark::State &state) {
+	voxelformat::PointCloud vertices;
+	vertices.resize(10000);
+	for (auto _ : state) {
+		MeshFormatEx f;
+		f.voxelizePointCloud(vertices);
+	}
+}
+
+BENCHMARK_DEFINE_F(MeshFormatBenchmark, transformTris)(benchmark::State &state) {
+	voxelformat::MeshTriCollection tris;
+	tris.resize(10000);
+	for (auto _ : state) {
+		MeshFormatEx f;
+		voxelformat::PosMap posMap;
+		f.transformTris(tris, posMap);
+	}
+}
+
+BENCHMARK_DEFINE_F(MeshFormatBenchmark, transformTrisAxisAligned)(benchmark::State &state) {
+	voxelformat::MeshTriCollection tris;
+	tris.resize(10000);
+	for (auto _ : state) {
+		MeshFormatEx f;
+		voxelformat::PosMap posMap;
+		f.transformTrisAxisAligned(tris, posMap);
+	}
+}
+
 BENCHMARK_REGISTER_F(MeshFormatBenchmark, GLTF);
 BENCHMARK_REGISTER_F(MeshFormatBenchmark, FBX);
+BENCHMARK_REGISTER_F(MeshFormatBenchmark, voxelizePointCloud);
+BENCHMARK_REGISTER_F(MeshFormatBenchmark, transformTris);
+BENCHMARK_REGISTER_F(MeshFormatBenchmark, transformTrisAxisAligned);
 
 BENCHMARK_MAIN();

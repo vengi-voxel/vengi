@@ -16,6 +16,14 @@
 
 namespace voxelformat {
 
+struct PointCloudVertex {
+	glm::vec3 position{0.0f};
+	core::RGBA color{0, 0, 0, 255};
+};
+using PointCloud = core::Buffer<PointCloudVertex>;
+using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri, 512>;
+using PosMap = core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>>;
+
 /**
  * @brief Convert the volume data into a mesh
  *
@@ -26,7 +34,6 @@ namespace voxelformat {
 class MeshFormat : public Format {
 public:
 	static constexpr const uint8_t FillColorIndex = 2;
-	using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri, 512>;
 
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
@@ -44,12 +51,6 @@ protected:
 	 */
 	bool _weightedAverage = true;
 	core_trace_mutex(core::Lock, _mutex, "PosSampling");
-
-	struct PointCloudVertex {
-		glm::vec3 position{0.0f};
-		core::RGBA color{0, 0, 0, 255};
-	};
-	using PointCloud = core::Buffer<PointCloudVertex>;
 
 	struct MeshExt {
 		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
@@ -134,7 +135,6 @@ protected:
 	/**
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
-	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 	void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
 					 const MeshMaterialPtr &material) const;
 
