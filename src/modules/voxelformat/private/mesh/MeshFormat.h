@@ -8,6 +8,7 @@
 #include "PosSampling.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
+#include "core/concurrent/Lock.h"
 #include "io/Archive.h"
 #include "palette/NormalPalette.h"
 #include "voxel/ChunkMesh.h"
@@ -42,6 +43,7 @@ protected:
 	 * @brief Color flatten factor - see @c PosSampling::getColor()
 	 */
 	bool _weightedAverage = true;
+	core_trace_mutex(core::Lock, _mutex, "PosSampling");
 
 	struct PointCloudVertex {
 		glm::vec3 position{0.0f};
@@ -133,8 +135,8 @@ protected:
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
-	static void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
-							const MeshMaterialPtr &material);
+	void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+					 const MeshMaterialPtr &material) const;
 
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at
@@ -144,8 +146,8 @@ protected:
 	 * @sa transformTrisAxisAligned()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
-							  const palette::NormalPalette &normalPalette);
+	void transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
+					   const palette::NormalPalette &normalPalette) const;
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
 	 * aligned aligned triangles. This is usually the case for meshes that were exported from voxels.
@@ -155,8 +157,8 @@ protected:
 	 * @sa transformTris()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
-										 const palette::NormalPalette &normalPalette);
+	void transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
+								  const palette::NormalPalette &normalPalette) const;
 	/**
 	 * @brief Convert the given @c PosMap into a volume
 	 *

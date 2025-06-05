@@ -109,10 +109,11 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 }
 
 void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
-							 const MeshMaterialPtr &material) {
+							 const MeshMaterialPtr &material) const {
 	if (rgba.a <= AlphaThreshold) {
 		return;
 	}
+	core::ScopedLock lock(_mutex);
 	auto iter = posMap.find(pos);
 	if (iter == posMap.end()) {
 		posMap.emplace(pos, {area, rgba, normalIdx, material});
@@ -123,64 +124,70 @@ void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uin
 }
 
 void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
-							   const palette::NormalPalette &normalPalette) {
+							   const palette::NormalPalette &normalPalette) const {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
-	for (const voxelformat::MeshTri &meshTri : tris) {
-		if (stopExecution()) {
-			return;
-		}
-		const core::RGBA rgba = meshTri.centerColor();
-		if (rgba.a <= AlphaThreshold) {
-			continue;
-		}
-		const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
-		glm::vec3 c = meshTri.center();
-		convertToVoxelGrid(c);
+	auto fn = [&tris, &normalPalette, &posMap, this] (int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const voxelformat::MeshTri &meshTri = tris[i];
+			if (stopExecution()) {
+				return;
+			}
+			const core::RGBA rgba = meshTri.centerColor();
+			if (rgba.a <= AlphaThreshold) {
+				continue;
+			}
+			const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
+			glm::vec3 c = meshTri.center();
+			convertToVoxelGrid(c);
 
-		const uint8_t normalIdx = normalPalette.getClosestMatch(meshTri.normal());
+			const uint8_t normalIdx = normalPalette.getClosestMatch(meshTri.normal());
 
-		const glm::ivec3 p(c);
-		core_assert_msg(region.containsPoint(p), "Failed to transform tri %i:%i:%i (region: %s)", p.x, p.y, p.z,
-						region.toString().c_str());
-		addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
-	}
+			const glm::ivec3 p(c);
+			addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
+		}
+	};
+	app::for_parallel(0, tris.size(), fn);
 }
 
 void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
-										  const palette::NormalPalette &normalPalette) {
+										  const palette::NormalPalette &normalPalette) const {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
-	for (const voxelformat::MeshTri &meshTri : tris) {
-		if (stopExecution()) {
-			return;
-		}
-		const core::RGBA rgba = meshTri.centerColor();
-		if (rgba.a <= AlphaThreshold) {
-			continue;
-		}
-		const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
-		const glm::vec3 &normal = glm::normalize(meshTri.normal());
-		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
-		const glm::ivec3 mins = meshTri.roundedMins();
-		const glm::ivec3 maxs = meshTri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
-		Log::trace("mins: %i:%i:%i", mins.x, mins.y, mins.z);
-		Log::trace("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
-		Log::trace("normal: %f:%f:%f", normal.x, normal.y, normal.z);
-		Log::trace("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
-		const uint8_t normalIdx = normalPalette.getClosestMatch(normal);
-		for (int x = mins.x; x < maxs.x; x++) {
-			for (int y = mins.y; y < maxs.y; y++) {
-				for (int z = mins.z; z < maxs.z; z++) {
-					const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
-					if (!region.containsPoint(p)) {
-						Log::debug("Failed to transform tri %i:%i:%i (region: %s), (sideDelta: %i:%i:%i)", p.x, p.y,
-								   p.z, region.toString().c_str(), sideDelta.x, sideDelta.y, sideDelta.z);
-						continue;
+	auto fn = [&tris, &normalPalette, region, &posMap, this] (int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const voxelformat::MeshTri &meshTri = tris[i];
+			if (stopExecution()) {
+				break;
+			}
+			const core::RGBA rgba = meshTri.centerColor();
+			if (rgba.a <= AlphaThreshold) {
+				continue;
+			}
+			const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
+			const glm::vec3 &normal = glm::normalize(meshTri.normal());
+			const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
+			const glm::ivec3 mins = meshTri.roundedMins();
+			const glm::ivec3 maxs = meshTri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
+			Log::trace("mins: %i:%i:%i", mins.x, mins.y, mins.z);
+			Log::trace("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
+			Log::trace("normal: %f:%f:%f", normal.x, normal.y, normal.z);
+			Log::trace("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
+			const uint8_t normalIdx = normalPalette.getClosestMatch(normal);
+			for (int x = mins.x; x < maxs.x; x++) {
+				for (int y = mins.y; y < maxs.y; y++) {
+					for (int z = mins.z; z < maxs.z; z++) {
+						const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
+						if (!region.containsPoint(p)) {
+							Log::debug("Failed to transform tri %i:%i:%i (region: %s), (sideDelta: %i:%i:%i)", p.x, p.y,
+									p.z, region.toString().c_str(), sideDelta.x, sideDelta.y, sideDelta.z);
+							continue;
+						}
+						addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
 					}
-					addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
 				}
 			}
 		}
-	}
+	};
+	app::for_parallel(0, tris.size(), fn);
 }
 
 bool MeshFormat::isVoxelMesh(const MeshTriCollection &tris) {
