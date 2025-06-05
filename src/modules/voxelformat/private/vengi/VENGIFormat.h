@@ -11,8 +11,7 @@
 namespace voxelformat {
 
 /**
- * This format is our own format which stores a scene graph node hierarchy
- * with animation and (lua-)script support.
+ * This format is our own format which stores a scene graph node hierarchy.
  *
  * It's a RIFF header based format. It stores one palette per model node.
  *
