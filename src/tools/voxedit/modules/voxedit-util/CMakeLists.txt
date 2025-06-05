@@ -21,11 +21,11 @@ set(SRCS
 	modifier/Selection.h
 	modifier/ShapeType.h
 	modifier/SelectionManager.h modifier/SelectionManager.cpp
+	modifier/SceneModifiedFlags.h
 
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
 	Config.h
-	SceneModifiedFlags.h
 
 	LUAApiListener.h LUAApiListener.cpp
 
