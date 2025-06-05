@@ -892,11 +892,18 @@ const core::DynamicSet<Id> &textures() {
 }
 
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
-	if (handle == InvalidId) {
+	if (handle == InvalidId || name.empty()) {
 		return;
 	}
 	if (glObjectLabel != nullptr) {
-		glObjectLabel(_priv::ObjectNameTypes[(int)type], handle, -1, name.c_str());
+		const GLenum glidentifier = _priv::ObjectNameTypes[(int)type];
+		const GLuint glname = (GLuint)handle;
+		const GLsizei gllength = (GLsizei)name.size();
+		if (gllength >= limit(Limit::MaxLabelLength)) {
+			return;
+		}
+		const GLchar *gllabel = (const GLchar *)name.c_str();
+		glObjectLabel(glidentifier, glname, gllength, gllabel);
 		checkError();
 	}
 }
