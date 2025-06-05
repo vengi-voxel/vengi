@@ -413,6 +413,7 @@ enum class Limit {
 	MaxUniformBufferSize,
 	MaxUniformBufferBindings,
 	MaxShaderStorageBufferSize,
+	MaxLabelLength,
 
 	Max
 };

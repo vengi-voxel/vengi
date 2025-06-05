@@ -187,6 +187,10 @@ void setupLimitsAndSpecs() {
 		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupInvocations)]);
 		checkError();
 	}
+	if (FLEXT_KHR_debug) {
+		glGetIntegerv(GL_MAX_LABEL_LENGTH, &renderState().limits[core::enumVal(Limit::MaxLabelLength)]);
+		checkError();
+	}
 #ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
 	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &renderState().limits[core::enumVal(Limit::MaxVertexUniformComponents)]);
 	checkError();
