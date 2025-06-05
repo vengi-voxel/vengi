@@ -13,6 +13,7 @@
 #ifdef USE_LIBJPEG
 #include <jpeglib.h>
 #include <stdlib.h> // free
+#include <setjmp.h>
 #else
 #include "StbImage.h"
 #endif
@@ -21,16 +22,51 @@ namespace image {
 namespace format {
 namespace JPEG {
 
+#if USE_LIBJPEG
+struct LibJPEGErrorHandler {
+	struct jpeg_error_mgr pub;
+	jmp_buf setjmp_buffer;
+};
+
+static void LibJPGErrorExit(j_common_ptr cinfo) {
+	char buffer[JMSG_LENGTH_MAX];
+	LibJPEGErrorHandler *jerr = (LibJPEGErrorHandler *)cinfo->err;
+	(*cinfo->err->format_message)(cinfo, buffer);
+	Log::error("%s", buffer);
+	longjmp(jerr->setjmp_buffer, 1);
+}
+
+static void LibJPGOutputMessage(j_common_ptr cinfo) {
+	char buffer[JMSG_LENGTH_MAX];
+	(*cinfo->err->format_message)(cinfo, buffer);
+	Log::info("%s", buffer);
+}
+#endif
+
 bool load(io::SeekableReadStream &stream, int length, int &width, int &height, int &components, uint8_t **colors) {
 #if USE_LIBJPEG
+	io::BufferedReadWriteStream buffer(stream, length);
+	if (buffer.size() != length) {
+		Log::debug("Failed to load image: stream size mismatch");
+		return false;
+	}
 	jpeg_decompress_struct cinfo;
-	jpeg_error_mgr jerr;
+	core_memset(&cinfo, 0, sizeof(cinfo));
+	LibJPEGErrorHandler jerr;
+	cinfo.err = jpeg_std_error(&jerr.pub);
+	cinfo.err->error_exit = LibJPGErrorExit;
+	cinfo.err->output_message = LibJPGOutputMessage;
+
+	if (setjmp(jerr.setjmp_buffer)) {
+		jpeg_destroy_decompress(&cinfo);
+		/* Append the filename to the error for easier debugging */
+		return false;
+	}
 
 	jpeg_create_decompress(&cinfo);
-	cinfo.err = jpeg_std_error(&jerr);
 
-	io::BufferedReadWriteStream buffer(stream, length);
-	jpeg_mem_src(&cinfo, buffer.getBuffer(), length);
+	const uint8_t *buf = buffer.getBuffer();
+	jpeg_mem_src(&cinfo, buf, length);
 	if (jpeg_read_header(&cinfo, TRUE) != JPEG_HEADER_OK) {
 		jpeg_destroy_decompress(&cinfo);
 		Log::debug("Failed to load image: invalid JPEG header");
