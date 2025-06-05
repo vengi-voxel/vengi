@@ -29,7 +29,6 @@ using PosMap = core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>>;
  *
  * http://research.michael-schwarz.com/publ/2010/vox/
  * http://research.michael-schwarz.com/publ/files/vox-siga10.pdf
- * https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.12.6294
  */
 class MeshFormat : public Format {
 public:

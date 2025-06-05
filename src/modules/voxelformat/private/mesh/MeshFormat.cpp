@@ -26,6 +26,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
@@ -518,18 +519,36 @@ bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sc
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	const palette::Palette &palette = voxel::getPalette();
-	// TODO: FOR_PARALLEL
-	for (const PointCloudVertex &vertex : vertices) {
-		const glm::ivec3 pos = glm::round(vertex.position);
-		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(vertex.color));
-		for (int x = 0; x < pointSize; ++x) {
-			for (int y = 0; y < pointSize; ++y) {
-				for (int z = 0; z < pointSize; ++z) {
-					v->setVoxel(pos + glm::ivec3(x, y, z), voxel);
+	auto fn = [&vertices, &palette, pointSize, v] (int start, int end) {
+		palette::PaletteLookup palLookup(palette);
+		for (int i = start; i < end; ++i) {
+			if (stopExecution()) {
+				return;
+			}
+			const PointCloudVertex &vertex = vertices[i];
+			const glm::ivec3 pos = glm::round(vertex.position);
+			const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(vertex.color));
+			if (pointSize == 1) {
+				v->setVoxel(pos, voxel);
+				return;
+			}
+			voxel::RawVolume::Sampler sampler(v);
+			sampler.setPosition(pos);
+			for (int z = 0; z < pointSize; ++z) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int y = 0; y < pointSize; ++y) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int x = 0; x < pointSize; ++x) {
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveX();
+					}
+					sampler2.movePositiveY();
 				}
+				sampler.movePositiveZ();
 			}
 		}
-	}
+	};
+	app::for_parallel(0, vertices.size(), fn);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v, true);
