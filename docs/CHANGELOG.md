@@ -12,6 +12,12 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Fixed handling of invalid `jpeg` files
+
+VoxEdit:
+
+   - New single-non-contiguous voxel placing mode in the brushes
+
 ## 0.0.38 (2025-06-01)
 
 General:
