@@ -455,7 +455,7 @@ enum class ObjectNameType {
 	Program,
 	VertexArray,
 	Query,
-	PrograMPipeline,
+	ProgramPipeline,
 	TransformFeedback,
 	Sampler,
 	Texture,
