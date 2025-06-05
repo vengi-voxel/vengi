@@ -892,6 +892,8 @@ const core::DynamicSet<Id> &textures() {
 }
 
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
+#if 0
+	// TODO: this is throwing a lot of GL_INVALID_VALUE errors
 	if (handle == InvalidId || name.empty()) {
 		return;
 	}
@@ -906,6 +908,7 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 		glObjectLabel(glidentifier, glname, gllength, gllabel);
 		checkError();
 	}
+#endif
 }
 
 void genFramebuffers(uint8_t amount, Id *ids) {
