@@ -68,12 +68,8 @@ void ModifierButton::execute(bool single) {
 			if (v == nullptr) {
 				return;
 			}
-			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, bool markUndo) {
+			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
 				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-					SceneModifiedFlags flags = SceneModifiedFlags::NoUndo;
-					if (markUndo) {
-						flags = SceneModifiedFlags::All;
-					}
 					_sceneMgr->modified(nodeId, region, flags);
 				}
 			};

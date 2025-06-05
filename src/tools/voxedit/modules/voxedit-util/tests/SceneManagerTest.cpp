@@ -130,7 +130,7 @@ protected:
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, false);
 		int executed = 0;
-		auto callback = [&](const voxel::Region &region, ModifierType, bool) {
+		auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
 			executed++;
 			_sceneMgr->modified(nodeId, region);
 		};
@@ -151,7 +151,7 @@ protected:
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume({mins, maxs}), true);
-		EXPECT_TRUE(modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, bool) {}));
+		EXPECT_TRUE(modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, SceneModifiedFlags) {}));
 		modifier.setBrushType(BrushType::Shape);
 	}
 

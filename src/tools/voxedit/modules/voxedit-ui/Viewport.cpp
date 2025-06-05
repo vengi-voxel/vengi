@@ -153,12 +153,8 @@ void Viewport::dragAndDrop(float headerSize) {
 					ModifierFacade &modifier = _sceneMgr->modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
 					modifier.start();
-					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type, bool markUndo) {
+					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
 						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-							SceneModifiedFlags flags = SceneModifiedFlags::NoUndo;
-							if (markUndo) {
-								flags = SceneModifiedFlags::All;
-							}
 							_sceneMgr->modified(nodeId, region, flags);
 						}
 					};

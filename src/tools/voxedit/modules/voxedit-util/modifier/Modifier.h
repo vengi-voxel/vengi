@@ -6,22 +6,23 @@
 
 #include "ModifierButton.h"
 #include "ModifierType.h"
+#include "SceneModifiedFlags.h"
 #include "SelectionManager.h"
+#include "brush/Brush.h"
+#include "brush/BrushType.h"
+#include "brush/LineBrush.h"
+#include "brush/PaintBrush.h"
+#include "brush/PathBrush.h"
+#include "brush/PlaneBrush.h"
+#include "brush/SelectBrush.h"
+#include "brush/ShapeBrush.h"
+#include "brush/StampBrush.h"
+#include "brush/TextBrush.h"
+#include "brush/TextureBrush.h"
 #include "core/IComponent.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxedit-util/modifier/brush/Brush.h"
-#include "voxedit-util/modifier/brush/BrushType.h"
-#include "voxedit-util/modifier/brush/LineBrush.h"
-#include "voxedit-util/modifier/brush/PaintBrush.h"
-#include "voxedit-util/modifier/brush/PathBrush.h"
-#include "voxedit-util/modifier/brush/PlaneBrush.h"
-#include "voxedit-util/modifier/brush/SelectBrush.h"
-#include "voxedit-util/modifier/brush/ShapeBrush.h"
-#include "voxedit-util/modifier/brush/StampBrush.h"
-#include "voxedit-util/modifier/brush/TextBrush.h"
-#include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -44,7 +45,8 @@ class SceneManager;
  */
 class Modifier : public core::IComponent {
 public:
-	using ModifiedRegionCallback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
+	using ModifiedRegionCallback =
+		std::function<void(const voxel::Region &region, ModifierType type, SceneModifiedFlags flags)>;
 
 protected:
 	SelectionManagerPtr _selectionManager;
@@ -83,10 +85,8 @@ protected:
 	/**
 	 * @brief Execute the brush operation on the given node volume
 	 */
-	bool executeBrush(
-		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
-		const voxel::Voxel &voxel,
-		const ModifiedRegionCallback &callback = {});
+	bool executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
+					  const voxel::Voxel &voxel, const ModifiedRegionCallback &callback = {});
 
 public:
 	Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionManager);

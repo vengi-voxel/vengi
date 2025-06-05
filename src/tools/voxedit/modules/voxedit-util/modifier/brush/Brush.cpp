@@ -11,6 +11,10 @@
 
 namespace voxedit {
 
+SceneModifiedFlags Brush::sceneModifiedFlags() const {
+	return _sceneModifiedFlags;
+}
+
 void Brush::reset() {
 	_brushClamping = false;
 	_referencePosition = glm::ivec3(0);

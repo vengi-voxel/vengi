@@ -25,6 +25,7 @@ set(SRCS
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
 	Config.h
+	SceneModifiedFlags.h
 
 	LUAApiListener.h LUAApiListener.cpp
 

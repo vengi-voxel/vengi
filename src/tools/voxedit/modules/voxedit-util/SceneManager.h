@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include "Clipboard.h"
 #include "ISceneRenderer.h"
-#include "memento/MementoHandler.h"
+#include "LUAApiListener.h"
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
@@ -14,13 +15,14 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
+#include "memento/MementoHandler.h"
+#include "modifier/IModifierRenderer.h"
 #include "modifier/ModifierFacade.h"
+#include "modifier/SceneModifiedFlags.h"
+#include "modifier/SelectionManager.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "util/Movement.h"
-#include "voxedit-util/Clipboard.h"
-#include "voxedit-util/modifier/IModifierRenderer.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -29,7 +31,6 @@
 #include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeContext.h"
 #include "voxelutil/Picking.h"
-#include "LUAApiListener.h"
 #include <functional>
 #include <future>
 
@@ -56,21 +57,12 @@ enum class NodeMergeFlags {
 };
 CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 
-enum class SceneModifiedFlags : uint32_t {
-	MarkUndo = 1 << 0,
-	ResetTrace = 1 << 1,
-	Max,
-
-	All = MarkUndo | ResetTrace,
-	NoUndo = All & ~MarkUndo
-};
-CORE_ENUM_BIT_OPERATIONS(SceneModifiedFlags)
-
 /**
  * @note The data is shared across all viewports
  */
 class SceneManager : public core::DeltaFrameSeconds {
 	friend class LUAApiListener;
+
 protected:
 	scenegraph::SceneGraph _sceneGraph;
 	memento::MementoHandler _mementoHandler;

@@ -15,6 +15,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -362,7 +363,9 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		if (modifiedRegion.isValid()) {
 			voxel::logRegion("Dirty region", modifiedRegion);
 			if (callback) {
-				callback(modifiedRegion, _brushContext.modifierType, true);
+				SceneModifiedFlags flags = brush->sceneModifiedFlags();
+				flags |= SceneModifiedFlags::MarkUndo;
+				callback(modifiedRegion, _brushContext.modifierType, flags);
 			}
 		}
 		_brushContext.cursorPosition = prevCursorPos;

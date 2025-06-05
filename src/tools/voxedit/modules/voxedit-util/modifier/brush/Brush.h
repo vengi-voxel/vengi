@@ -11,9 +11,9 @@
 #include "BrushType.h"
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
-#include "core/Log.h"
 #include "core/String.h"
 #include "math/Axis.h"
+#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -66,6 +66,7 @@ protected:
 	const BrushType _brushType;
 	const ModifierType _defaultModifier;
 	const ModifierType _supportedModifiers;
+	SceneModifiedFlags _sceneModifiedFlags = SceneModifiedFlags::All;
 
 	glm::ivec3 _referencePosition{0};
 
@@ -148,6 +149,8 @@ public:
 	 * @sa name()
 	 */
 	BrushType type() const;
+
+	SceneModifiedFlags sceneModifiedFlags() const;
 
 	/**
 	 * @brief The region that this brush is modifying (without mirroring or anything like that)

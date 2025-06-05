@@ -63,7 +63,7 @@ TEST_F(ModifierTest, testModifierAction) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	EXPECT_TRUE(
-		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, bool markUndo) {
+		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
 			modifierExecuted = true;
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
@@ -88,7 +88,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 	node.setVolume(&volume, false);
 	int modifierExecuted = 0;
 	EXPECT_TRUE(
-		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, bool markUndo) {
+		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
 			++modifierExecuted;
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
@@ -129,7 +129,7 @@ TEST_F(ModifierTest, testClamp) {
 		voxel::Region dirtyRegion;
 		EXPECT_TRUE(modifier.execute(
 			sceneGraph, node,
-			[&dirtyRegion](const voxel::Region &region, ModifierType type, bool markUndo) { dirtyRegion = region; }));
+			[&dirtyRegion](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) { dirtyRegion = region; }));
 		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(6, 9, 1));
 	}
 	volume.clear();
@@ -138,7 +138,7 @@ TEST_F(ModifierTest, testClamp) {
 		voxel::Region dirtyRegion;
 		EXPECT_TRUE(modifier.execute(
 			sceneGraph, node,
-			[&dirtyRegion](const voxel::Region &region, ModifierType type, bool markUndo) { dirtyRegion = region; }));
+			[&dirtyRegion](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) { dirtyRegion = region; }));
 		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(10, 9, 1));
 	}
 

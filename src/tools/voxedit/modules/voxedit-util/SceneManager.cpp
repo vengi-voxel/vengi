@@ -183,7 +183,7 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 		if (fillAndHollow) {
 			voxelutil::hollow(wrapper);
 		}
-		modified(nodeId, wrapper.dirtyRegion());
+		modified(nodeId, wrapper.dirtyRegion(), SceneModifiedFlags::NoResetTrace);
 		return true;
 	}
 
