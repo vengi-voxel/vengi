@@ -207,7 +207,7 @@ voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPo
 }
 
 bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
-								 SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
+								 SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) const {
 	Log::debug("Parse block states");
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
@@ -488,7 +488,7 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 }
 
 bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette,
-								 MinecraftSectionPalette &sectionPal) {
+								 MinecraftSectionPalette &sectionPal) const {
 	if (palette.type() != priv::TagType::LIST) {
 		Log::error("Invalid type for palette: %i", (int)palette.type());
 		return false;

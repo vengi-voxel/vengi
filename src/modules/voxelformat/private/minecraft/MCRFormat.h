@@ -99,9 +99,10 @@ private:
 	static int getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
 
 	// shared across versions
-	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette, MinecraftSectionPalette &sectionPal);
+	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette,
+						  MinecraftSectionPalette &sectionPal) const;
 	bool parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
-						  SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal);
+						  SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) const;
 
 	// new version (>= 2844)
 	voxel::RawVolume *parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector,
