@@ -80,10 +80,11 @@ private:
 	static constexpr int VERSION_DEFLATE = 2;
 	static constexpr int MAX_SIZE = 16;
 
-	struct Offsets {
+	struct Offset {
 		uint32_t offset;
 		uint8_t sectorCount;
-	} _offsets[SECTOR_INTS];
+	};
+	using Offsets = core::Array<Offset, SECTOR_INTS>;
 
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
@@ -93,8 +94,8 @@ private:
 
 	using SectionVolumes = core::Buffer<voxel::RawVolume *>;
 
-	voxel::RawVolume *error(SectionVolumes &volumes);
-	voxel::RawVolume *finalize(SectionVolumes &volumes, int xPos, int zPos);
+	voxel::RawVolume *error(SectionVolumes &volumes) const;
+	voxel::RawVolume *finalize(SectionVolumes &volumes, int xPos, int zPos) const;
 
 	static int getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
 
@@ -106,20 +107,18 @@ private:
 
 	// new version (>= 2844)
 	voxel::RawVolume *parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector,
-									const palette::Palette &palette);
+									const palette::Palette &palette) const;
 
 	// old version (< 2844)
 	voxel::RawVolume *parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector,
-										 const palette::Palette &palette);
+										 const palette::Palette &palette) const;
 
-	bool readCompressedNBT(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector,
-						   const palette::Palette &palette);
-	bool loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream,
-							 const palette::Palette &palette);
+	voxel::RawVolume *readCompressedNBT(io::SeekableReadStream &stream, int sector,
+										const palette::Palette &palette) const;
 
 	bool saveSections(const scenegraph::SceneGraph &sceneGraph, priv::NBTList &sections, int sector);
 	bool saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream, int sector);
-	bool saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream);
+	bool saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream, const Offsets &offsets);
 
 protected:
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
