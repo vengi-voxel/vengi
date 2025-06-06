@@ -16,7 +16,6 @@ namespace io {
 class MemoryReadStream : public SeekableReadStream {
 protected:
 	const uint8_t *_buf = nullptr;
-	uint8_t *_ownBuf = nullptr;
 	int64_t _size;
 	int64_t _pos = 0;
 

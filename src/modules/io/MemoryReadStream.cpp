@@ -11,7 +11,6 @@ MemoryReadStream::MemoryReadStream(const void *buf, size_t size) : _buf((const u
 }
 
 MemoryReadStream::~MemoryReadStream() {
-	core_free(_ownBuf);
 }
 
 int MemoryReadStream::read(void *dataPtr, size_t dataSize) {
@@ -25,11 +24,7 @@ int MemoryReadStream::read(void *dataPtr, size_t dataSize) {
 	if (_pos + (int64_t)dataSize > _size) {
 		return -1;
 	}
-	if (_ownBuf) {
-		core_memcpy(dataPtr, &_ownBuf[_pos], dataSize);
-	} else {
-		core_memcpy(dataPtr, &_buf[_pos], dataSize);
-	}
+	core_memcpy(dataPtr, &_buf[_pos], dataSize);
 	_pos += (int64_t)dataSize;
 	return (int)dataSize;
 }
