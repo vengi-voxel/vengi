@@ -26,6 +26,7 @@ namespace voxelutil {
  */
 void importColoredHeightmap(voxel::RawVolumeWrapper& volume, const palette::Palette &palette, const image::ImagePtr& image, const voxel::Voxel &underground, uint8_t minHeight = 0, bool adoptHeight = true);
 void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image, const voxel::Voxel &underground, const voxel::Voxel &surface, uint8_t minHeight = 0, bool adoptHeight = true);
+int getHeightValueFromAlpha(uint8_t alpha, bool adoptHeight, int volumeHeight, int minHeight);
 /**
  * @param alphaAsHeight If this is @c true, the rgb color is used for the colors - otherwise the red channel is used
  * (because a gray scale image is expected)

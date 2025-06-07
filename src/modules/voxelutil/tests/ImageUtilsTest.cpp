@@ -8,11 +8,12 @@
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/tests/TestColorHelper.h"
-#include "voxel/tests/VoxelPrinter.h"
 #include "image/Image.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/Voxel.h"
+#include "voxel/tests/VoxelPrinter.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
@@ -23,13 +24,59 @@ protected:
 		return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 	}
 
-	void validateVoxel(const voxel::RawVolume &volume, const palette::Palette &palette, const image::ImagePtr &image, int x, int y) {
+	void validateVoxel(const voxel::RawVolume &volume, const palette::Palette &palette, const image::ImagePtr &image,
+					   int x, int y) {
 		const core::RGBA expectedColor = image->colorAt(x, y);
 		const voxel::Voxel &voxel = volume.voxel(x, y, 0);
 		const core::RGBA actualColor = palette.color(voxel.getColor());
 		EXPECT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
-			<< "Expected color: " << core::Color::print(expectedColor) << ", but got: "
-			<< core::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
+			<< "Expected color: " << core::Color::print(expectedColor)
+			<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
+	}
+
+	void validateHeightmap(voxel::Voxel underground) {
+		const core::String filename = "test-colored-heightmap.png";
+		image::ImagePtr image = image::loadImage(filename);
+		ASSERT_TRUE(image && image->isLoaded()) << "Failed to load image: " << filename;
+		ASSERT_EQ(16, image->width()) << "Expected height to be 16, but got: " << image->height();
+		ASSERT_EQ(16, image->height()) << "Expected width to be 16, but got: " << image->width();
+		voxel::Region region(0, 0, 0, image->width() - 1, 31, image->height() - 1);
+		voxel::RawVolume volume(region);
+		voxel::RawVolumeWrapper wrapper(&volume);
+		palette::Palette palette;
+		palette.nippon();
+		const int minHeight = 1;
+		voxelutil::importColoredHeightmap(wrapper, palette, image, underground, 1, true);
+		int minsY;
+		if (voxel::isAir(underground.getMaterial())) {
+			minsY = region.getLowerY() + 3;
+		} else {
+			minsY = region.getLowerY();
+		}
+		voxel::Region expectedRegion(region.getLowerX(), minsY, region.getLowerZ(), region.getUpperX(), 17,
+									 region.getUpperZ());
+		int expectedVoxelCount = voxel::isAir(underground.getMaterial()) ? image->width() * image->height() : 3626;
+		EXPECT_EQ(expectedVoxelCount, countVoxels(volume));
+		for (int x = 0; x < image->width(); ++x) {
+			for (int z = 0; z < image->height(); ++z) {
+				const core::RGBA expectedColor = image->colorAt(x, z);
+				const int volumeHeight = region.getHeightInVoxels();
+				const int expectedY = getHeightValueFromAlpha(expectedColor.a, true, volumeHeight, minHeight) - 1;
+				const voxel::Voxel &voxel = volume.voxel(x, expectedY, z);
+				const core::RGBA actualColor = palette.color(voxel.getColor());
+				ASSERT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
+					<< "Expected color: " << core::Color::print(expectedColor)
+					<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", "
+					<< expectedY << ", " << z << ") with height alpha value " << (int)expectedColor.a
+					<< " and min height " << minHeight << " and height in voxels " << volumeHeight;
+					if (voxel::isAir(underground.getMaterial())) {
+						if (expectedY > 0) {
+							const voxel::Voxel &actualUnderground = volume.voxel(x, expectedY - 1, z);
+							ASSERT_TRUE(voxel::isAir(actualUnderground.getMaterial()));
+						}
+					}
+			}
+		}
 	}
 };
 
@@ -107,22 +154,23 @@ TEST_F(ImageUtilsTest, testImportFace) {
 	validateVoxel(volume, palette, image, 7, 7);
 }
 
+TEST_F(ImageUtilsTest, testGetHeightValueFromAlpha) {
+	EXPECT_EQ(0, getHeightValueFromAlpha(0, true, 10, 0));
+	EXPECT_EQ(5, getHeightValueFromAlpha(127, true, 10, 0));
+	EXPECT_EQ(10, getHeightValueFromAlpha(255, true, 10, 0));
+	EXPECT_EQ(1, getHeightValueFromAlpha(0, true, 10, 1));
+	EXPECT_EQ(15, getHeightValueFromAlpha(127, true, 31, 0));
+	EXPECT_EQ(17, getHeightValueFromAlpha(132, true, 32, 1));
+}
+
 TEST_F(ImageUtilsTest, testImportColoredHeightmap) {
-	const core::String filename = "test-colored-heightmap.png";
-	image::ImagePtr image = image::loadImage(filename);
-	ASSERT_TRUE(image && image->isLoaded()) << "Failed to load image: " << filename;
-	voxel::Region region(0, 0, 0, image->width() - 1, 31, image->height() - 1);
-	voxel::RawVolume volume(region);
-	voxel::RawVolumeWrapper wrapper(&volume);
-	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	palette::Palette palette;
-	palette.nippon();
-	voxelutil::importColoredHeightmap(wrapper, palette, image, dirtVoxel, 1, true);
-	voxel::Region expectedRegion(region.getLowerX(), region.getLowerY(), region.getLowerZ(), region.getUpperX(), 17,
-								 region.getUpperZ());
-	EXPECT_EQ(expectedRegion, wrapper.dirtyRegion());
-	ASSERT_EQ(4112, countVoxels(volume));
-	// TODO: validate colors and height
+	const voxel::Voxel underground = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	validateHeightmap(underground);
+}
+
+TEST_F(ImageUtilsTest, testImportColoredHeightmapSurfaceOnly) {
+	const voxel::Voxel underground = voxel::createVoxel(voxel::VoxelType::Air, 1);
+	validateHeightmap(underground);
 }
 
 } // namespace voxelutil

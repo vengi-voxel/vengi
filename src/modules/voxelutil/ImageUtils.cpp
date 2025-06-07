@@ -105,10 +105,18 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight) {
 	return maxHeight;
 }
 
+int getHeightValueFromAlpha(uint8_t alpha, bool adoptHeight, int volumeHeight, int minHeight) {
+	int heightValue = adoptHeight ? (int)glm::round((float)alpha * (float)volumeHeight / 255.0f) : (int)alpha;
+	if (heightValue < minHeight) {
+		heightValue = minHeight;
+	}
+	return heightValue;
+}
+
 void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Palette &palette,
 							const image::ImagePtr &image, const voxel::Voxel &underground, uint8_t minHeight,
 							bool adoptHeight) {
-	app::for_parallel(0, volume.region().getDepthInVoxels(), [&palette, &volume, &image, adoptHeight, minHeight, underground] (int start, int end) {
+	auto fn = [&palette, &volume, &image, adoptHeight, minHeight, underground](int start, int end) {
 		const voxel::Region &region = volume.region();
 		const int volumeHeight = region.getHeightInVoxels();
 		const int volumeWidth = region.getWidthInVoxels();
@@ -118,40 +126,33 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 		const int imageHeight = image->height();
 		const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 		const float stepWidthX = (float)imageWidth / (float)volumeWidth;
-		const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)255.0f : 1.0f;
 		palette::PaletteLookup palLookup(palette);
-		float imageY = 0.0f;
+		float imageY = start * stepWidthY;
 
 		voxel::RawVolumeWrapper::Sampler sampler(volume);
 		for (int z = start; z < end; ++z, imageY += stepWidthY) {
 			float imageX = 0.0f;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
 				const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-				uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.a) * scaleHeight));
-				if (heightValue < minHeight) {
-					heightValue = minHeight;
-				}
-
+				const uint8_t heightValue =
+					getHeightValueFromAlpha(heightmapPixel.a, adoptHeight, volumeHeight, minHeight);
+				const core::RGBA rgba(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b);
+				const uint8_t palidx = palLookup.findClosestIndex(rgba);
+				const voxel::Voxel surfaceVoxel = voxel::createVoxel(palLookup.palette(), palidx);
 				if (voxel::isAir(underground.getMaterial())) {
 					const glm::ivec3 pos(x, heightValue - 1, z);
 					const glm::ivec3 regionPos = mins + pos;
 					sampler.setPosition(regionPos);
-					const uint8_t palidx =
-						palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
-					const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), palidx);
-					sampler.setVoxel(voxel);
+					sampler.setVoxel(surfaceVoxel);
 				} else {
 					const glm::ivec3 pos(x, 0, z);
 					const glm::ivec3 regionPos = mins + pos;
 					sampler.setPosition(regionPos);
+
 					for (int y = 0; y < heightValue; ++y) {
-						voxel::Voxel voxel;
-						if (y < heightValue - 1) {
-							voxel = underground;
-						} else {
-							const uint8_t palidx = palLookup.findClosestIndex(
-								core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
-							voxel = voxel::createVoxel(palLookup.palette(), palidx);
+						voxel::Voxel voxel = underground;
+						if (y >= heightValue - 1) {
+							voxel = surfaceVoxel;
 						}
 						sampler.setVoxel(voxel);
 						sampler.movePositiveY();
@@ -159,7 +160,8 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 				}
 			}
 		}
-	});
+	};
+	app::for_parallel(0, volume.region().getDepthInVoxels(), fn);
 }
 
 void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &underground,
