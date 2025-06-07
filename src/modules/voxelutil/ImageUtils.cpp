@@ -7,6 +7,7 @@
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "palette/Palette.h"

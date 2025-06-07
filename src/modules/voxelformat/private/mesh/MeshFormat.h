@@ -6,6 +6,7 @@
 
 #include "MeshTri.h"
 #include "PosSampling.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"

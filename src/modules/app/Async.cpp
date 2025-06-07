@@ -3,6 +3,7 @@
  */
 
 #include "Async.h"
+#include "app/App.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Thread.h"
 
