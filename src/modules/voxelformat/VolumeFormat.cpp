@@ -346,6 +346,8 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 	if (desc == nullptr) {
 		return false;
 	}
+	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	const uint64_t msStart = timeProvider->systemMillis();
 	const core::String &filename = fileDesc.name;
 	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
 	if (f) {
@@ -367,7 +369,9 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 				   filename.c_str());
 		return false;
 	}
-	Log::info("Load file %s with %i model nodes and %i point nodes", filename.c_str(), models, points);
+	const uint64_t msEnd = timeProvider->systemMillis();
+	const uint64_t msDiff = msEnd - msStart;
+	Log::info("Load file %s with %i model nodes and %i point nodes (%ums)", filename.c_str(), models, points, (uint32_t)msDiff);
 	const core::String &ext = core::string::extractExtension(filename);
 	if (!ext.empty()) {
 		metric::count("load", 1, {{"type", ext.toLower()}});
