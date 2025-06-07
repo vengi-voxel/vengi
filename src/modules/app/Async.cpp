@@ -16,7 +16,7 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 	// if we are already running in a thread - we might be running in the thread pool - and as the threads in this pool are limited,
 	// we might wait endlessly because these enqueue calls would not get executed.
-	if (end - start == 1 || threadPool.size() == 1u || !app::App::getInstance()->isMainThread(core::getCurrentThreadId())) {
+	if (end - start == 1 || !app::App::getInstance()->isMainThread(core::getCurrentThreadId())) {
 		// if we are not on the main thread, we can just call the taskLambda directly
 		taskLambda(start, end);
 		return;
