@@ -18,7 +18,7 @@ private:
 	protected:
 		AbstractTest* _test = nullptr;
 	public:
-		TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
+		TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test, size_t threadPoolSize = 1);
 		virtual ~TestApp();
 
 		void run();
@@ -32,6 +32,7 @@ private:
 
 protected:
 	TestApp *_testApp = nullptr;
+	size_t _threadPoolSize;
 
 	core::String fileToString(const core::String& filename) const;
 
@@ -43,6 +44,9 @@ protected:
 	}
 
 public:
+	AbstractTest(size_t threadPoolSize = 1) : _threadPoolSize(threadPoolSize) {
+	}
+
 	virtual void SetUp() override;
 
 	virtual void TearDown() override;

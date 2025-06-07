@@ -6,6 +6,7 @@
 
 #include "TestHelper.h"
 #include "core/String.h"
+#include "core/concurrent/Concurrency.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
@@ -32,7 +33,7 @@ protected:
 
 	SaveContext testSaveCtx;
 	LoadContext testLoadCtx;
-	AbstractFormatTest() {
+	AbstractFormatTest() : voxel::AbstractVoxelTest(core::cpus()) {
 		testSaveCtx.thumbnailCreator = helper_testThumbnailCreator;
 	}
 

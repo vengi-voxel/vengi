@@ -18,6 +18,9 @@ protected:
 	const voxel::Region _region { glm::ivec3(0), glm::ivec3(63) };
 
 public:
+	AbstractVoxelTest(size_t threadPoolSize = 1) : app::AbstractTest(threadPoolSize) {
+	}
+
 	void SetUp() override {
 		app::AbstractTest::SetUp();
 		_random.setSeed(_seed);

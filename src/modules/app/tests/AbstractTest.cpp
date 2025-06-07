@@ -27,7 +27,7 @@ core::String AbstractTest::fileToString(const core::String& filename) const {
 void AbstractTest::SetUp() {
 	const io::FilesystemPtr filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = core::make_shared<core::TimeProvider>();
-	_testApp = new TestApp(filesystem, timeProvider, this);
+	_testApp = new TestApp(filesystem, timeProvider, this, _threadPoolSize);
 	_testApp->run();
 	const bool isRunning = _testApp->_curState == AppState::Running;
 	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
@@ -40,8 +40,8 @@ void AbstractTest::TearDown() {
 	_testApp = nullptr;
 }
 
-AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
-		Super(filesystem, timeProvider), _test(test) {
+AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test, size_t threadPoolSize) :
+		Super(filesystem, timeProvider, threadPoolSize), _test(test) {
 	init(ORGANISATION, "test");
 	_initialLogLevel = Log::Level::Warn;
 	_argc = ::_argc;
