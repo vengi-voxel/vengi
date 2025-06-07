@@ -69,11 +69,12 @@ protected:
 					<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", "
 					<< expectedY << ", " << z << ") with height alpha value " << (int)expectedColor.a
 					<< " and min height " << minHeight << " and height in voxels " << volumeHeight;
-					if (voxel::isAir(underground.getMaterial())) {
-						if (expectedY > 0) {
-							const voxel::Voxel &actualUnderground = volume.voxel(x, expectedY - 1, z);
-							ASSERT_TRUE(voxel::isAir(actualUnderground.getMaterial()));
-						}
+					if (expectedY > 0) {
+						const voxel::Voxel &actualUnderground = volume.voxel(x, expectedY - 1, z);
+						EXPECT_EQ(underground.getMaterial(), actualUnderground.getMaterial())
+							<< "Expected underground voxel at (" << x << ", " << expectedY - 1 << ", " << z
+							<< ") to have material " << underground.getMaterial()
+							<< ", but got: " << actualUnderground.getMaterial();
 					}
 			}
 		}
