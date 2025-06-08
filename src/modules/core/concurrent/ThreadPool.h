@@ -62,6 +62,7 @@ public:
 
 	void reserve(size_t n);
 private:
+	static thread_local bool _inThreadPool;
 	const size_t _threads;
 	const char *_name;
 	// need to keep track of threads so we can join them
@@ -74,6 +75,7 @@ private:
 	core::ConditionVariable _queueCondition;
 	core::AtomicBool _stop { false };
 	core::AtomicBool _force { false };
+	core::AtomicInt _activeWorkers { 0 };
 };
 
 inline void ThreadPool::reserve(size_t n) {
@@ -90,17 +92,30 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 		return std::future<return_type>();
 	}
 
-	core::SharedPtr<std::packaged_task<return_type()> > task = core::make_shared<std::packaged_task<return_type()> >(std::bind(core::forward<F>(f), core::forward<Args>(args)...));
-
-	std::future<return_type> res = task->get_future();
 	{
 		core::ScopedLock lock(_queueMutex);
+
 		if (_stop) {
 			return std::future<return_type>();
 		}
-		_tasks.emplace([task]() {(*task.get())();});
+
+		if (!_inThreadPool || (int)_activeWorkers < (int)_threads) {
+			core::SharedPtr<std::packaged_task<return_type()>> task =
+				core::make_shared<std::packaged_task<return_type()>>(
+					std::bind(core::forward<F>(f), core::forward<Args>(args)...));
+
+			std::future<return_type> res = task->get_future();
+			_tasks.emplace([task]() {(*task.get())();});
+			_queueCondition.notify_one();
+			return res;
+		}
 	}
-	_queueCondition.notify_one();
+
+	// If we are in a thread pool thread, execute the task inline if no free worker is available
+	// this prevents the nested parallelism deadlock problem
+	auto task = std::packaged_task<return_type()>(std::bind(core::forward<F>(f), core::forward<Args>(args)...));
+	std::future<return_type> res = task.get_future();
+	task();
 	return res;
 }
 

@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "core/concurrent/ThreadPool.h"
+#include "core/collection/DynamicArray.h"
 #include "core/concurrent/Atomic.h"
 
 namespace core {
@@ -40,6 +41,32 @@ TEST_F(ThreadPoolTest, testMultiplePush) {
 	}
 	pool.shutdown(true);
 	ASSERT_EQ(x, _count) << "Not all threads were executed";
+}
+
+TEST_F(ThreadPoolTest, testMultiplePushNested) {
+	const int x = 100;
+	core::ThreadPool pool(3);
+	pool.init();
+	static core::AtomicInt nestedCount = 0;
+	core::DynamicArray<std::future<void>> futures;
+	for (int i = 0; i < x; ++i) {
+		futures.emplace_back(pool.enqueue([this, &pool] () {
+			++_count;
+			auto fut = pool.enqueue([] () {
+				++nestedCount;
+			});
+			if (fut.valid())
+				fut.wait();
+		}));
+	}
+	for (auto &fut : futures) {
+		if (fut.valid()) {
+			fut.wait();
+		}
+	}
+	pool.shutdown(true);
+	ASSERT_EQ(x, _count) << "Not all threads were executed";
+	ASSERT_EQ(x, nestedCount) << "Not all nested threads were executed";
 }
 
 }

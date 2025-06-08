@@ -75,6 +75,7 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 	int nodesAdded = 0;
 
 	core::DynamicArray<std::future<scenegraph::SceneGraph>> futures;
+	futures.reserve(entities.size());
 	Log::info("Found %i region files", (int)entities.size());
 	for (const io::FilesystemEntry &e : entities) {
 		if (e.type != io::FilesystemEntry::Type::file) {
