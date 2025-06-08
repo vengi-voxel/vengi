@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Fixed handling of invalid `jpeg` files
+   - Added new normal palette from slab6
 
 VoxEdit:
 

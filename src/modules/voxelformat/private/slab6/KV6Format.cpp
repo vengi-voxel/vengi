@@ -13,6 +13,8 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
+#include "palette/NormalPalette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
@@ -39,8 +41,8 @@ struct VoxtypeKV6 {
 	uint8_t col = 0;
 	/** Low 6 bits say if neighbor is solid or air - @sa priv::SLABVisibility */
 	SLABVisibility vis = SLABVisibility::None;
-	/** Uses 256-entry lookup table - lighting bit - @sa priv::directions */
-	uint8_t dir = 0;
+	/** Uses 256-entry lookup table - lighting bit - see built-in:slab6 */
+	uint8_t normal = 0;
 };
 
 struct State {
@@ -457,6 +459,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	stream->seek(headerSize);
 
 	core::ScopedPtr<priv::State> state(new priv::State());
+	palette::PaletteLookup paletteLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
 		wrapBool(priv::readBGRColor(*stream, color));
@@ -464,15 +467,15 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 		wrap(stream->readUInt8(state->voxdata[c].z))
 		wrap2(stream->skip(1)) // slab6 always 0
 		wrap(stream->readUInt8((uint8_t &)state->voxdata[c].vis))
-		wrap(stream->readUInt8(state->voxdata[c].dir))
+		wrap(stream->readUInt8(state->voxdata[c].normal))
 
 		if (slab5) {
 			palette.tryAdd(color, false, &state->voxdata[c].col, false);
 		} else {
-			state->voxdata[c].col = palette.getClosestMatch(color);
+			state->voxdata[c].col = paletteLookup.findClosestIndex(color);
 		}
 		Log::debug("voxel %u/%u z: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
-				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
+				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].normal, state->voxdata[c].col);
 	}
 
 	for (uint32_t x = 0u; x < width; ++x) {
@@ -494,7 +497,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 		for (uint32_t y = 0; y < depth; ++y) {
 			for (int end = idx + state->xyoffsets[x][y]; idx < end; ++idx) {
 				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
-				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
+				const voxel::Voxel col = voxel::createVoxel(palette, vox.col, vox.normal);
 				volume->setVoxel((int)x, (int)((height - 1) - vox.z), (int)y, col);
 			}
 		}
@@ -507,6 +510,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 			return true;
 		}
 	}
+	palette::NormalPalette normalPalette;
+	normalPalette.slab6();
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
@@ -515,6 +520,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	scenegraph::SceneGraphTransform transform;
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palette);
+	node.setNormalPalette(normalPalette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
@@ -565,7 +571,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			vd.z = region.getHeightInCells() - shiftedY;
 			vd.col = voxel.getColor();
 			vd.vis = priv::calculateVisibility(node->volume(), x, y, z);
-			vd.dir = priv::calculateDir(node->volume(), x, y, z, voxel);
+			if (!node->hasNormalPalette() || voxel.getNormal() == NO_NORMAL) {
+				vd.normal = priv::calculateDir(node->volume(), x, y, z, voxel);
+			} else {
+				vd.normal = voxel.getNormal();
+			}
 			voxdata.push_back(vd);
 		},
 		voxelutil::VisitorOrder::XZmY);
@@ -599,8 +609,8 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream->writeUInt8(data.z))
 		wrapBool(stream->writeUInt8(0)) // 0 as we save slab6
 		wrapBool(stream->writeUInt8((uint8_t)data.vis))
-		wrapBool(stream->writeUInt8(data.dir))
-		Log::debug("voxel z-low: %u, vis: %i. dir: %u, pal: %u", data.z, (uint8_t)data.vis, data.dir, data.col);
+		wrapBool(stream->writeUInt8(data.normal))
+		Log::debug("voxel z-low: %u, vis: %i. dir: %u, pal: %u", data.z, (uint8_t)data.vis, data.normal, data.col);
 	}
 
 	for (int x = 0u; x < xsiz_w; ++x) {
