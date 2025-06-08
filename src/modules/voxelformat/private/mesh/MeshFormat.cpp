@@ -141,7 +141,10 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			glm::vec3 c = meshTri.center();
 			convertToVoxelGrid(c);
 
-			const uint8_t normalIdx = normalPalette.getClosestMatch(meshTri.normal());
+			int normalIdx = normalPalette.getClosestMatch(meshTri.normal());
+			if (normalIdx == palette::PaletteNormalNotFound) {
+				normalIdx = NO_NORMAL;
+			}
 
 			const glm::ivec3 p(c);
 			addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
@@ -172,7 +175,10 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 			Log::trace("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 			Log::trace("normal: %f:%f:%f", normal.x, normal.y, normal.z);
 			Log::trace("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
-			const uint8_t normalIdx = normalPalette.getClosestMatch(normal);
+			int normalIdx = normalPalette.getClosestMatch(normal);
+			if (normalIdx == palette::PaletteNormalNotFound) {
+				normalIdx = NO_NORMAL;
+			}
 			for (int x = mins.x; x < maxs.x; x++) {
 				if (!region.containsPointInX(x + sideDelta.x)) {
 					continue;
@@ -331,15 +337,17 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
 		for (const voxelformat::MeshTri &meshTri : tris) {
-			voxelizeTriangle(trisMins, meshTri,
-							 [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-								 const core::RGBA color = flattenRGB(tri.colorAt(uv));
-								 const glm::vec3 &normal = tri.normal();
-								 const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
-								 const voxel::Voxel voxel =
-									 voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIndex);
-								 wrapper.setVoxel(x, y, z, voxel);
-							 });
+			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+				const core::RGBA color = flattenRGB(tri.colorAt(uv));
+				const glm::vec3 &normal = tri.normal();
+				int normalIdx = normalPalette.getClosestMatch(normal);
+				if (normalIdx == palette::PaletteNormalNotFound) {
+					normalIdx = NO_NORMAL;
+				}
+				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIdx);
+				wrapper.setVoxel(x, y, z, voxel);
+			};
+			voxelizeTriangle(trisMins, meshTri, fn);
 		}
 
 		if (palette.colorCount() == 1) {

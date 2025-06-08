@@ -176,8 +176,11 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 			}
 			sampler.setPosition(x, y, z);
 			const glm::vec3 &normal = voxelutil::calculateNormal(sampler, connectivity);
-			const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
-			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalIndex, voxel.getFlags());
+			int normalIdx = normalPalette.getClosestMatch(normal);
+			if (normalIdx == palette::PaletteNormalNotFound) {
+				normalIdx = NO_NORMAL;
+			}
+			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalIdx, voxel.getFlags());
 			wrapper.setVoxel(x, y, z, newVoxel);
 		});
 		if (fillAndHollow) {

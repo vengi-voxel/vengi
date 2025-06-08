@@ -73,7 +73,7 @@ static const core::RGBA ra2normals[]{
 };
 
 // normals from slab6
-static core::RGBA slab6normals[]{
+static const core::RGBA slab6normals[]{
 	{138, 127, 0},	 {113, 140, 1},	  {129, 102, 2},   {145, 151, 3},	{94, 121, 4},	 {158, 107, 5},
 	{117, 166, 6},	 {107, 89, 7},	  {170, 143, 8},   {82, 145, 9},	{148, 81, 10},	 {143, 177, 11},
 	{79, 99, 12},	 {183, 115, 13},  {93, 175, 14},   {119, 67, 15},	{175, 167, 16},	 {63, 130, 17},
@@ -116,7 +116,7 @@ static core::RGBA slab6normals[]{
 	{76, 174, 234},	 {132, 59, 235},  {168, 179, 236}, {63, 117, 237},	{180, 93, 238},	 {112, 186, 239},
 	{99, 75, 240},	 {181, 146, 241}, {76, 149, 242},  {149, 79, 243},	{143, 175, 244}, {85, 103, 245},
 	{172, 117, 246}, {103, 163, 247}, {121, 87, 248},  {156, 151, 249}, {93, 129, 250},	 {148, 106, 251},
-	{126, 152, 252}, {114, 112, 253}, {138, 128, 254}, {127, 127, 255},
+	{126, 152, 252}, {114, 112, 253}, {138, 128, 254}, {127, 127, 255}
 };
 
 } // namespace priv
@@ -148,11 +148,11 @@ static inline glm::vec3 toVec3(const core::RGBA &rgba) {
 	return glm::vec3(nx, ny, nz);
 }
 
-uint8_t NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
-	uint8_t closestIndex = 0;
+int NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
+	int closestIndex = PaletteNormalNotFound;
 	float maxDot = -1.0f;
 
-	for (size_t i = 0; i < _size; ++i) {
+	for (int i = 0; i < _size; ++i) {
 		const float dot = glm::dot(normal, toVec3(_normals[i]));
 
 		if (dot > maxDot) {
@@ -169,22 +169,24 @@ void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
 	markDirty();
 }
 
-void NormalPalette::loadNormalMap(const glm::vec3 *normals, uint8_t size) {
-	for (uint8_t i = 0; i < size; i++) {
+void NormalPalette::loadNormalMap(const glm::vec3 *normals, int size) {
+	size = core_min(size, NormalPaletteMaxNormals);
+	for (int i = 0; i < size; i++) {
 		_normals[i] = toRGBA(normals[i]);
 	}
-	for (uint8_t i = size; i < NormalPaletteMaxNormals; i++) {
+	for (int i = size; i < NormalPaletteMaxNormals; i++) {
 		_normals[i] = core::RGBA(0);
 	}
 	_size = size;
 	markDirty();
 }
 
-void NormalPalette::loadNormalMap(const core::RGBA *normals, uint8_t size) {
-	for (uint8_t i = 0; i < size; i++) {
+void NormalPalette::loadNormalMap(const core::RGBA *normals, int size) {
+	size = core_min(size, NormalPaletteMaxNormals);
+	for (int i = 0; i < size; i++) {
 		_normals[i] = normals[i];
 	}
-	for (uint8_t i = size; i < NormalPaletteMaxNormals; i++) {
+	for (int i = size; i < NormalPaletteMaxNormals; i++) {
 		_normals[i] = core::RGBA(0);
 	}
 	_size = size;
@@ -192,17 +194,18 @@ void NormalPalette::loadNormalMap(const core::RGBA *normals, uint8_t size) {
 }
 
 void NormalPalette::tiberianSun() {
-	loadNormalMap(priv::tsnormals, (uint8_t)lengthof(priv::tsnormals));
+	loadNormalMap(priv::tsnormals, lengthof(priv::tsnormals));
 	_name = builtIn[1];
 }
 
 void NormalPalette::redAlert2() {
-	loadNormalMap(priv::ra2normals, (uint8_t)lengthof(priv::ra2normals));
+	loadNormalMap(priv::ra2normals, lengthof(priv::ra2normals));
 	_name = builtIn[0];
 }
 
 void NormalPalette::slab6() {
-	loadNormalMap(priv::slab6normals, (uint8_t)lengthof(priv::slab6normals));
+	// NO_NORMAL isn't working here - this palette uses 256 entries
+	loadNormalMap(priv::slab6normals, lengthof(priv::slab6normals));
 	_name = builtIn[2];
 }
 

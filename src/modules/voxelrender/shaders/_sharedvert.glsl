@@ -1,6 +1,8 @@
 
+// PaletteMaxColors
 #define MATERIALCOLORS 256
-#define NORMALS 255
+// NormalPaletteMaxNormals
+#define NORMALS 256
 layout(std140) uniform u_vert {
 	vec4 u_materialcolor[MATERIALCOLORS];
 	vec4 u_normals[NORMALS];

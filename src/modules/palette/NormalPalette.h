@@ -12,7 +12,8 @@
 
 namespace palette {
 
-static const int NormalPaletteMaxNormals = 255;
+static const int NormalPaletteMaxNormals = 256;
+static const int PaletteNormalNotFound = -1;
 
 /**
  * @brief Some voxel formats are also storing normals in a palette. This is e.g.
@@ -24,13 +25,13 @@ private:
 	mutable bool _hashDirty = false;
 	core::String _name;
 	mutable uint32_t _hash = 0u;
-	uint8_t _size = 0u;
+	int _size = 0u;
 	core::RGBA _normals[NormalPaletteMaxNormals]{};
 
 public:
-	uint8_t getClosestMatch(const glm::vec3 &normal) const;
-	void loadNormalMap(const core::RGBA *normals, uint8_t size);
-	void loadNormalMap(const glm::vec3 *normals, uint8_t size);
+	int getClosestMatch(const glm::vec3 &normal) const;
+	void loadNormalMap(const core::RGBA *normals, int size);
+	void loadNormalMap(const glm::vec3 *normals, int size);
 
 	const core::RGBA &normal(uint8_t index) const;
 	glm::vec3 normal3f(uint8_t index) const;
