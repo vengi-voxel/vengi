@@ -48,12 +48,13 @@ public:
 	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
 
-	static constexpr const char *builtIn[] = {"built-in:redalert2", "built-in:tiberiansun"};
+	static constexpr const char *builtIn[] = {"built-in:redalert2", "built-in:tiberiansun", "built-in:slab6"};
 	bool isBuiltIn() const;
 	bool isTiberianSun() const;
 	bool isRedAlert2() const;
 	void tiberianSun();
 	void redAlert2();
+	void slab6();
 
 	void markDirty() override;
 	void markSave();

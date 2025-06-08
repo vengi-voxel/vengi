@@ -77,6 +77,10 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[0]);
 				command::executeCommands(cmd, &listener);
 			}
+			if (ImGui::MenuItem(_("Slab6"))) {
+				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[2]);
+				command::executeCommands(cmd, &listener);
+			}
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export"))) {
 				_app->saveDialog([&](const core::String &file,
 									 const io::FormatDescription *desc) { normalPalette.save(file.c_str()); },
