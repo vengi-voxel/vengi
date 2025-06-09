@@ -53,7 +53,7 @@ TEST_F(CollectionManagerTest, DISABLED_testOnline) {
 	for (const auto &source : _mgr->sources()) {
 		if (source.name == "Vengi") {
 			foundVengi = true;
-			_mgr->resolve(source, false);
+			_mgr->resolve(source);
 			break;
 		}
 	}

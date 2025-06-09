@@ -78,8 +78,7 @@ TEST_F(DownloaderTest, DISABLED_testResolve) {
 	source.github.commit = "master";
 	source.github.path = "data";
 	source.github.license = "https://raw.githubusercontent.com/vengi-voxel/vengi/master/LICENSE";
-	core::AtomicBool shouldQuit{false};
-	const VoxelFiles &collection = downloader.resolve(archive, source, shouldQuit);
+	const VoxelFiles &collection = downloader.resolve(archive, source);
 	ASSERT_FALSE(collection.empty());
 	const VoxelFile &voxelFile = collection.front();
 	ASSERT_EQ(voxelFile.source, "Vengi");
@@ -130,7 +129,6 @@ TEST_F(DownloaderTest, DISABLED_testConvertTreeEntryToVoxelFileGithub) {
 	source.github.license = "LICENSE";
 
 	io::ArchivePtr archive = io::openMemoryArchive();
-	core::AtomicBool shouldQuit{false};
 	const core::String path = "data/tests/test_material.vox";
 
 	core::DynamicArray<github::TreeEntry> entries;
@@ -140,7 +138,7 @@ TEST_F(DownloaderTest, DISABLED_testConvertTreeEntryToVoxelFileGithub) {
 	entries.push_back(entry1);
 
 	// TODO: here we are calling the github api because the license file is fetched with size 0
-	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
+	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive);
 	ASSERT_FALSE(collection.empty());
 	const VoxelFile &voxelFile = collection.front();
 	ASSERT_EQ(voxelFile.source, source.name);
@@ -162,7 +160,6 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGitlab) {
 	source.gitlab.license = "LICENSE";
 
 	io::ArchivePtr archive = io::openMemoryArchive();
-	core::AtomicBool shouldQuit{false};
 
 	core::DynamicArray<gitlab::TreeEntry> entries;
 	gitlab::TreeEntry entry1{"data/test.vox",
@@ -170,7 +167,7 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGitlab) {
 
 	entries.push_back(entry1);
 
-	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
+	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive);
 	ASSERT_FALSE(collection.empty());
 	const VoxelFile &voxelFile = collection.front();
 	ASSERT_EQ(voxelFile.source, source.name);

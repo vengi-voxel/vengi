@@ -115,14 +115,11 @@ static bool supportedFileExtension(const core::String &path) {
 }
 
 static core::String findThumbnailUrl(const io::ArchivePtr &archive, const core::DynamicArray<github::TreeEntry> &entries, const github::TreeEntry &current,
-									 const VoxelSource &source, core::AtomicBool &shouldQuit) {
+									 const VoxelSource &source) {
 	const core::String &pathNoExt = core::string::stripExtension(current.path);
 	for (const github::TreeEntry &entry : entries) {
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				if (shouldQuit) {
-					return core::String::Empty;
-				}
 				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
 					return github::downloadUrl(archive, source.github.repo, source.github.commit, entry.path, entry.size);
 				}
@@ -133,14 +130,11 @@ static core::String findThumbnailUrl(const io::ArchivePtr &archive, const core::
 }
 
 static core::String findThumbnailUrl(const core::DynamicArray<gitlab::TreeEntry> &entries, const gitlab::TreeEntry &current,
-									 const VoxelSource &source, core::AtomicBool &shouldQuit) {
+									 const VoxelSource &source) {
 	const core::String &pathNoExt = core::string::stripExtension(current.path);
 	for (const gitlab::TreeEntry &entry : entries) {
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				if (shouldQuit) {
-					return core::String::Empty;
-				}
 				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
 					return gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, entry.path);
 				}
@@ -151,7 +145,7 @@ static core::String findThumbnailUrl(const core::DynamicArray<gitlab::TreeEntry>
 }
 
 bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &archiveFile,
-							   core::DynamicArray<VoxelFile> &files, core::AtomicBool &shouldQuit) const {
+							   core::DynamicArray<VoxelFile> &files) const {
 	http::HttpCacheStream stream(archive, archiveFile.targetFile(), archiveFile.url);
 	io::ArchivePtr zipArchive = io::openZipArchive(&stream);
 	if (!zipArchive) {
@@ -160,9 +154,6 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 	}
 	Log::debug("Found %i files in zip archive %s", (int)zipArchive->files().size(), archiveFile.name.c_str());
 	for (const io::FilesystemEntry &f : zipArchive->files()) {
-		if (shouldQuit) {
-			return true;
-		}
 		VoxelFile subFile;
 		subFile.source = archiveFile.source;
 		subFile.name = f.name;
@@ -199,7 +190,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 				continue;
 			}
 			if (archive->write(subFile.targetFile(), *rs)) {
-				handleArchive(archive, subFile, files, shouldQuit);
+				handleArchive(archive, subFile, files);
 			} else {
 				Log::error("Failed to write file %s from archive %s", subFile.fullPath.c_str(),
 						   archiveFile.fullPath.c_str());
@@ -218,7 +209,7 @@ bool Downloader::download(const io::ArchivePtr &archive, const VoxelFile &file) 
 	return stream.valid();
 }
 
-bool Downloader::handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files,
+bool Downloader::handleFile(const io::ArchivePtr &archive, VoxelFiles &files,
 							VoxelFile &file, bool enableMeshes) const {
 	if (supportedFileExtension(file.name)) {
 		if (!enableMeshes && voxelformat::isMeshFormat(file.name, false)) {
@@ -227,21 +218,17 @@ bool Downloader::handleFile(const io::ArchivePtr &archive, core::AtomicBool &sho
 		files.push_back(file);
 		return true;
 	} else if (io::isZipArchive(file.name)) {
-		return handleArchive(archive, file, files, shouldQuit);
+		return handleArchive(archive, file, files);
 	}
 	return false;
 }
 
 core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
-														 const VoxelSource &source, const io::ArchivePtr &archive,
-														 core::AtomicBool &shouldQuit) const {
+														 const VoxelSource &source, const io::ArchivePtr &archive) const {
 	core::DynamicArray<VoxelFile> files;
 	const core::String &licenseDownloadUrl =
 		gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, source.gitlab.license);
 	for (const auto &entry : entries) {
-		if (shouldQuit) {
-			return {};
-		}
 		VoxelFile file;
 		file.source = source.name;
 		file.name = core::string::extractFilenameWithExtension(entry.path);
@@ -249,49 +236,44 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 		if (!source.gitlab.license.empty()) {
 			file.licenseUrl = licenseDownloadUrl;
 		}
-		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
+		file.thumbnailUrl = findThumbnailUrl(entries, entry, source);
 		file.url = entry.url;
 		file.fullPath = entry.path;
-		handleFile(archive, shouldQuit, files, file, false);
+		handleFile(archive, files, file, false);
 	}
 	return files;
 }
 
 core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<github::TreeEntry> &entries,
-														 const VoxelSource &source, const io::ArchivePtr &archive,
-														 core::AtomicBool &shouldQuit) const {
+														 const VoxelSource &source, const io::ArchivePtr &archive) const {
 	core::DynamicArray<VoxelFile> files;
 	const core::String &licenseDownloadUrl = source.github.license.empty() ? core::String::Empty :
 		github::downloadUrl(archive, source.github.repo, source.github.commit, source.github.license, 0);
 	const core::String cleanSource = core::string::cleanPath(source.name);
 	for (const auto &entry : entries) {
-		if (shouldQuit) {
-			return {};
-		}
 		VoxelFile file;
 		file.source = source.name;
 		file.name = core::string::extractFilenameWithExtension(entry.path);
 		file.license = source.license;
 		file.licenseUrl = licenseDownloadUrl;
-		file.thumbnailUrl = findThumbnailUrl(archive, entries, entry, source, shouldQuit);
+		file.thumbnailUrl = findThumbnailUrl(archive, entries, entry, source);
 		file.url = entry.url;
 		file.fullPath = entry.path;
-		handleFile(archive, shouldQuit, files, file, source.github.enableMeshes);
+		handleFile(archive, files, file, source.github.enableMeshes);
 	}
 	return files;
 }
 
-VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource &source,
-							   core::AtomicBool &shouldQuit) const {
+VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource &source) const {
 	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
 			github::reposGitTrees(archive, source.github.repo, source.github.commit, source.github.path);
-		return processEntries(entries, source, archive, shouldQuit);
+		return processEntries(entries, source, archive);
 	} else if (source.provider == "gitlab") {
 		const core::DynamicArray<gitlab::TreeEntry> &entries =
 			gitlab::reposGitTrees(archive, source.gitlab.repo, source.gitlab.commit, source.gitlab.path);
-		return processEntries(entries, source, archive, shouldQuit);
+		return processEntries(entries, source, archive);
 	} else if (source.provider == "single") {
 		VoxelFiles files;
 		VoxelFile file;
@@ -302,7 +284,7 @@ VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource 
 		file.url = source.single.url;
 		file.fullPath = file.name;
 		Log::info("Found single source with name %s and url %s", file.name.c_str(), file.url.c_str());
-		if (!handleFile(archive, shouldQuit, files, file, true)) {
+		if (!handleFile(archive, files, file, true)) {
 			files.push_back(file);
 		}
 		return files;

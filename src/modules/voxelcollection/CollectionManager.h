@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/SharedPtr.h"
 #include "core/collection/ConcurrentQueue.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Future.h"
@@ -22,14 +22,15 @@ class CollectionManager : public core::IComponent {
 private:
 	io::ArchivePtr _archive;
 
-	core::ConcurrentQueue<VoxelFile> _newVoxelFiles;
+	using QueuePtr = core::SharedPtr<core::ConcurrentQueue<VoxelFile>>;
+	QueuePtr _newVoxelFiles;
 	VoxelFileMap _voxelFilesMap;
 
-	core::ConcurrentQueue<image::ImagePtr> _imageQueue;
+	using ImageQueuePtr = core::SharedPtr<core::ConcurrentQueue<image::ImagePtr>>;
+	ImageQueuePtr _imageQueue;
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
 
-	core::AtomicInt _downloadProgress = 0; // 0-100
 	core::AtomicBool _shouldQuit = false;
 	int _count = 0;
 
@@ -40,7 +41,7 @@ private:
 	core::Future<VoxelFiles> _onlineResolve;
 	VoxelSources _sources;
 	core::Future<VoxelSources> _onlineSources;
-	bool download(const io::ArchivePtr &archive, VoxelFile &voxelFile);
+	static bool download(const io::ArchivePtr &archive, VoxelFile &voxelFile);
 
 public:
 	CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool);
@@ -84,7 +85,6 @@ public:
 
 	const VoxelFileMap &voxelFilesMap() const;
 	const VoxelSources &sources() const;
-	int downloadProgress() const;
 	int allEntries() const;
 
 	core::String absolutePath(const VoxelFile &voxelFile) const;

@@ -99,25 +99,21 @@ using VoxelSources = core::DynamicArray<VoxelSource>;
 
 class Downloader {
 protected:
-	bool handleArchive(const io::ArchivePtr &archive, const VoxelFile &file, VoxelFiles &files,
-					   core::AtomicBool &shouldQuit) const;
+	bool handleArchive(const io::ArchivePtr &archive, const VoxelFile &file, VoxelFiles &files) const;
 
-	bool handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files, VoxelFile &file,
-					bool enableMeshes) const;
+	bool handleFile(const io::ArchivePtr &archive, VoxelFiles &files, VoxelFile &file, bool enableMeshes) const;
 
 public:
 	VoxelSources sources();
 	VoxelSources sources(const core::String &json);
-	VoxelFiles resolve(const io::ArchivePtr &archive, const VoxelSource &source, core::AtomicBool &shouldQuit) const;
+	VoxelFiles resolve(const io::ArchivePtr &archive, const VoxelSource &source) const;
 
 	bool download(const io::ArchivePtr &archive, const VoxelFile &file) const;
 
 	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<github::TreeEntry> &entries,
-												 const VoxelSource &source, const io::ArchivePtr &archive,
-												 core::AtomicBool &shouldQuit) const;
+												 const VoxelSource &source, const io::ArchivePtr &archive) const;
 	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
-												 const VoxelSource &source, const io::ArchivePtr &archive,
-												 core::AtomicBool &shouldQuit) const;
+												 const VoxelSource &source, const io::ArchivePtr &archive) const;
 };
 
 } // namespace voxelcollection

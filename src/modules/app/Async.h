@@ -23,6 +23,6 @@ void schedule(F &&f) {
 	app::App::getInstance()->enqueue(core::forward<F>(f));
 }
 
-void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda);
+void for_parallel(int start, int end, const std::function<void(int, int)> &f);
 
 } // namespace app

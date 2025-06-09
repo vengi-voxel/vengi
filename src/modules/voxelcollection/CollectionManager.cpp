@@ -6,6 +6,7 @@
 #include "app/Async.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "http/HttpCacheStream.h"
@@ -23,6 +24,7 @@ namespace voxelcollection {
 CollectionManager::CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool)
 	: _texturePool(texturePool), _filesystem(filesystem) {
 	_archive = io::openFilesystemArchive(filesystem, "", false);
+	_newVoxelFiles = core::make_shared<QueuePtr::value_type>();
 }
 
 CollectionManager::~CollectionManager() {
@@ -108,7 +110,7 @@ bool CollectionManager::local() {
 		Log::debug("No local dir set");
 		return false;
 	}
-	_local = app::async([&, localDir]() {
+	_local = app::async([localDir, this, voxelFiles = _newVoxelFiles]() {
 		if (_shouldQuit) {
 			return;
 		}
@@ -133,7 +135,7 @@ bool CollectionManager::local() {
 			// voxelFile.licenseUrl = "";
 			// voxelFile.thumbnailUrl = "";
 			voxelFile.downloaded = true;
-			_newVoxelFiles.push(voxelFile);
+			voxelFiles->push(voxelFile);
 		}
 	});
 	return true;
@@ -168,32 +170,23 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
 	io::ArchivePtr archive = _archive;
 	if (archive->exists(targetImageFile)) {
-		app::schedule([this, voxelFile, targetImageFile, archive]() {
-			if (_shouldQuit) {
-				return;
-			}
+		app::schedule([voxelFile, targetImageFile, archive, imageQueue = _imageQueue]() {
 			core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(targetImageFile));
 			image::ImagePtr image = image::loadImage(targetImageFile, *stream);
 			if (image) {
 				image->setName(voxelFile.name);
-				_imageQueue.push(image);
+				imageQueue->push(image);
 			}
 		});
 		return;
 	}
 	if (!voxelFile.thumbnailUrl.empty()) {
-		app::schedule([=]() {
-			if (_shouldQuit) {
-				return;
-			}
+		app::schedule([imageQueue = _imageQueue, archive, targetImageFile, voxelFile]() {
 			http::HttpCacheStream stream(archive, targetImageFile, voxelFile.thumbnailUrl);
-			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
+			imageQueue->push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
-		app::schedule([this, archive, voxelFile, targetImageFile]() {
-			if (_shouldQuit) {
-				return;
-			}
+		app::schedule([archive, voxelFile, targetImageFile, imageQueue = _imageQueue]() {
 			http::HttpCacheStream stream(archive, voxelFile.targetFile(), voxelFile.url);
 			stream.close();
 			voxelformat::LoadContext loadCtx;
@@ -209,7 +202,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			} else {
 				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			}
-			this->_imageQueue.push(thumbnailImage);
+			imageQueue->push(thumbnailImage);
 		});
 	}
 }
@@ -231,7 +224,7 @@ bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 		return false;
 	}
 	image->setName(voxelFile.id());
-	_imageQueue.push(image);
+	_imageQueue->push(image);
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
 	core::ScopedPtr<io::SeekableWriteStream> writeStream(_archive->writeStream(targetImageFile));
 	if (!writeStream || !image::writePNG(image, *writeStream)) {
@@ -250,13 +243,10 @@ void CollectionManager::resolve(const VoxelSource &source, bool async) {
 		return;
 	}
 	io::ArchivePtr archive = _archive;
-	auto func = [&, archive]() {
+	auto func = [archive, voxelFiles = _newVoxelFiles, source]() {
 		Downloader downloader;
-		if (_shouldQuit) {
-			return;
-		}
-		const VoxelFiles &files = downloader.resolve(archive, source, _shouldQuit);
-		_newVoxelFiles.push(files.begin(), files.end());
+		const VoxelFiles &files = downloader.resolve(archive, source);
+		voxelFiles->push(files.begin(), files.end());
 	};
 	if (async) {
 		app::schedule(func);
@@ -290,14 +280,14 @@ void CollectionManager::update(double nowSeconds, int n) {
 	}
 
 	image::ImagePtr image;
-	if (_imageQueue.pop(image)) {
+	if (_imageQueue->pop(image)) {
 		if (image && image->isLoaded()) {
 			_texturePool->addImage(image);
 		}
 	}
 
 	VoxelFiles voxelFiles;
-	_newVoxelFiles.pop(voxelFiles, n);
+	_newVoxelFiles->pop(voxelFiles, n);
 
 	for (VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
@@ -328,28 +318,16 @@ void CollectionManager::update(double nowSeconds, int n) {
 
 void CollectionManager::downloadAll() {
 	const io::ArchivePtr archive = _archive;
-	app::schedule([this, voxelFilesMap = _voxelFilesMap, archive]() {
-		int all = 0;
-		for (const auto &e : voxelFilesMap) {
-			all += (int)e->value.files.size();
-		}
-
-		int current = 0;
+	// TODO: FOR_PARALLEL with non-blocking
+	app::schedule([voxelFilesMap = _voxelFilesMap, archive]() {
 		for (const auto &e : voxelFilesMap) {
 			for (VoxelFile &voxelFile : e->value.files) {
-				if (_shouldQuit) {
-					return;
-				}
-				++current;
 				if (voxelFile.downloaded) {
 					continue;
 				}
 				download(archive, voxelFile);
-				const float p = ((float)current / (float)all * 100.0f);
-				_downloadProgress = (int)p;
 			}
 		}
-		_downloadProgress = 0;
 	});
 }
 
@@ -368,10 +346,6 @@ bool CollectionManager::download(VoxelFile &voxelFile) {
 
 const VoxelFileMap &CollectionManager::voxelFilesMap() const {
 	return _voxelFilesMap;
-}
-
-int CollectionManager::downloadProgress() const {
-	return _downloadProgress;
 }
 
 int CollectionManager::allEntries() const {
