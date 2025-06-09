@@ -69,7 +69,7 @@ bool CaptureTool::startRecording(const char *filename, int width, int height) {
 		}
 	}
 	Log::debug("Starting avirecorder thread");
-	app::async(encodeFrame, this);
+	app::schedule([this]() { encodeFrame(this); });
 	return true;
 }
 
