@@ -57,7 +57,7 @@ static constexpr const char* SceneGraphNodeTypeStr[] {
 static_assert((int)(scenegraph::SceneGraphNodeType::Max) + 1 == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
 
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
-using SceneGraphNodeProperties = core::StringMap<core::String>;
+using SceneGraphNodeProperties = core::DynamicStringMap<core::String>;
 
 #define InvalidNodeId (-1)
 

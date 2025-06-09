@@ -82,7 +82,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 }
 
 SceneGraphNode::SceneGraphNode(SceneGraphNodeType type, const core::String &uuid)
-	: _type(type), _flags(VolumeOwned | Visible), _uuid(uuid), _properties(128) {
+	: _type(type), _flags(VolumeOwned | Visible), _uuid(uuid) {
 	if (_uuid.empty()) {
 		_uuid = core::generateUUID();
 	}
@@ -544,17 +544,11 @@ void SceneGraphNode::addProperties(const SceneGraphNodeProperties &map) {
 }
 
 bool SceneGraphNode::setProperty(const core::String &key, const char *value) {
-	if (_properties.size() >= _properties.capacity()) {
-		return false;
-	}
 	_properties.put(key, value);
 	return true;
 }
 
 bool SceneGraphNode::setProperty(const core::String &key, bool value) {
-	if (_properties.size() >= _properties.capacity()) {
-		return false;
-	}
 	_properties.put(key, core::string::toString(value));
 	return true;
 }
@@ -572,9 +566,6 @@ bool SceneGraphNode::setProperty(const core::String& key, core::RGBA value) {
 }
 
 bool SceneGraphNode::setProperty(const core::String &key, const core::String &value) {
-	if (_properties.size() >= _properties.capacity()) {
-		return false;
-	}
 	auto iter = _properties.find(key);
 	if (iter != _properties.end()) {
 		if (iter->value == value) {
