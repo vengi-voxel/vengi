@@ -46,6 +46,8 @@ private:
 		return _refCnt->decrement(1) - 1;
 	}
 public:
+	using value_type = T;
+
 	constexpr SharedPtr() : _ptr(nullptr), _refCnt(nullptr) {
 	}
 
