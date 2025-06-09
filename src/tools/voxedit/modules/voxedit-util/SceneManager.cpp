@@ -2509,7 +2509,7 @@ bool SceneManager::update(double nowSeconds) {
 				_dirty = false;
 				loadedNewScene = true;
 			}
-			_loadingFuture = std::future<scenegraph::SceneGraph>();
+			_loadingFuture = {};
 		}
 	}
 
