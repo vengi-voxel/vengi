@@ -78,6 +78,15 @@ public:
 		_conditionVariable.notify_one();
 	}
 
+	template<class COLLECTION>
+	void pushAll(const COLLECTION& collection) {
+		{
+			core::ScopedLock lock(_mutex);
+			_data.append(collection);
+		}
+		_conditionVariable.notify_one();
+	}
+
 	void push(Data const& data) {
 		{
 			core::ScopedLock lock(_mutex);
