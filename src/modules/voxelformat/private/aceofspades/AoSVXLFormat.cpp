@@ -154,18 +154,26 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 	palette::PaletteLookup palLookup(palette);
 
 	// TODO: FOR_PARALLEL
-	for (int x = 0; x < (int)mapSize; x++) {
+	voxel::RawVolume::Sampler sampler(*volume);
+	sampler.setPosition(0, (int)mapHeight - 1, 0);
+	for (int z = 0; z < (int)mapHeight; z++) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (int y = 0; y < (int)mapSize; y++) {
-			for (int z = 0; z < (int)mapHeight; z++) {
+			voxel::RawVolume::Sampler sampler3 = sampler2;
+			for (int x = 0; x < (int)mapSize; x++) {
 				if (!libvxl_map_issolid(&map, x, y, z)) {
+					sampler3.movePositiveX();
 					continue;
 				}
 				const uint32_t color = libvxl_map_get(&map, x, y, z);
 				const core::RGBA rgba = core::RGBA(vxl_red(color), vxl_green(color), vxl_blue(color));
 				const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
-				volume->setVoxel(x, (int)mapHeight - 1 - z, y, voxel::createVoxel(palette, paletteIndex));
+				sampler3.setVoxel(voxel::createVoxel(palette, paletteIndex));
+				sampler3.movePositiveX();
 			}
+			sampler2.movePositiveY();
 		}
+		sampler.moveNegativeZ();
 	}
 	libvxl_free(&map);
 	core_free(data);
