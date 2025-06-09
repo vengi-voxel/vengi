@@ -72,42 +72,42 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 		return false;
 	}
 
-	int nodesAdded = 0;
-
-	core::DynamicArray<std::future<scenegraph::SceneGraph>> futures;
-	futures.reserve(entities.size());
+	core::DynamicArray<scenegraph::SceneGraphNode*> nodes;
+	nodes.reserve(entities.size());
 	Log::info("Found %i region files", (int)entities.size());
-	for (const io::FilesystemEntry &e : entities) {
-		if (e.type != io::FilesystemEntry::Type::file) {
-			continue;
-		}
-		const core::String &regionFilename = core::string::path(baseName, "region", e.name);
-		futures.emplace_back(app::async([regionFilename, &archive, &loadctx]() {
+	app::for_parallel(0, entities.size(), [&nodes, &entities, &baseName, &archive, &loadctx](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const io::FilesystemEntry &e = entities[i];
+			if (e.type != io::FilesystemEntry::Type::file) {
+				continue;
+			}
+			const core::String &regionFilename = core::string::path(baseName, "region", e.name);
 			MCRFormat mcrFormat;
 			scenegraph::SceneGraph newSceneGraph;
 			if (!mcrFormat.load(regionFilename, archive, newSceneGraph, loadctx)) {
 				Log::debug("Could not load %s", regionFilename.c_str());
-				return core::move(newSceneGraph);
+				continue;
 			}
 			const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
-			newSceneGraph.clear();
 			if (!merged.hasVolume()) {
-				return core::move(newSceneGraph);
+				continue;
 			}
-			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(merged.volume(), true);
-			node.setPalette(merged.palette);
-			node.setNormalPalette(merged.normalPalette);
-			newSceneGraph.emplace(core::move(node));
-			return core::move(newSceneGraph);
-		}));
-	}
-	Log::debug("Scheduled %i regions", (int)futures.size());
-	int count = 0;
-	for (auto &f : futures) {
-		scenegraph::SceneGraph newSceneGraph = core::move(f.get());
-		nodesAdded += scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
-		Log::debug("... loaded %i", count++);
+			scenegraph::SceneGraphNode *node = new scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Model);
+			node->setVolume(merged.volume(), true);
+			node->setPalette(merged.palette);
+			node->setNormalPalette(merged.normalPalette);
+			nodes[i] = node;
+		}
+	});
+	Log::debug("Scheduled %i regions", (int)nodes.size());
+	int nodesAdded = 0;
+	for (scenegraph::SceneGraphNode *node : nodes) {
+		if (node == nullptr) {
+			continue;
+		}
+		sceneGraph.emplace(core::move(*node), rootNode);
+		delete node;
+		Log::debug("... loaded %i", nodesAdded++);
 	}
 
 	return nodesAdded > 0;
