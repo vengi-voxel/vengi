@@ -365,19 +365,25 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		}
 	} else {
 		Log::debug("Subdivide %i triangles", (int)tris.size());
-		core::DynamicArray<std::future<MeshTriCollection>> futures;
-		futures.reserve(tris.size());
-		for (const voxelformat::MeshTri &meshTri : tris) {
-			futures.emplace_back(app::async([meshTri]() {
+		core::DynamicArray<MeshTriCollection> meshTriCollections;
+		meshTriCollections.resize(tris.size());
+		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris] (int start, int end) {
+			for (int i = start; i < end; ++i) {
+				const voxelformat::MeshTri &meshTri = tris[i];
+				if (stopExecution()) {
+					return;
+				}
 				MeshTriCollection subdivided;
 				subdivideTri(meshTri, subdivided);
-				return subdivided;
-			}));
-		}
+				meshTriCollections[i] = core::move(subdivided);
+			}
+		});
 		MeshTriCollection subdivided;
-		for (std::future<MeshTriCollection> &future : futures) {
-			const MeshTriCollection &sub = future.get();
-			subdivided.append(sub);
+		for (const MeshTriCollection &e : meshTriCollections) {
+			if (e.empty()) {
+				continue;
+			}
+			subdivided.append(e);
 		}
 
 		if (subdivided.empty()) {
@@ -577,29 +583,30 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							const io::ArchivePtr &archive, const SaveContext &saveCtx) {
-	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
-	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
-	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithColor)->boolVal();
-	const bool withNormals = core::Var::getSafe(cfg::VoxformatWithNormals)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
-	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
-	const bool optimizeMesh = core::Var::getSafe(cfg::VoxformatOptimize)->boolVal();
-
 	const voxel::SurfaceExtractionType type =
 		(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 
-	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	Meshes meshes;
-	core::Map<int, int> meshIdxNodeMap;
-	core_trace_mutex(core::Lock, lock, "MeshFormat");
+	meshes.resize(sceneGraph.nodes().size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
-	// TODO: use a future
-	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
-		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
+	app::for_parallel(0, sceneGraph.nodes().size(), [&sceneGraph, type, &meshes] (int start, int end) {
+		const bool withNormals = core::Var::getSafe(cfg::VoxformatWithNormals)->boolVal();
+		const bool optimizeMesh = core::Var::getSafe(cfg::VoxformatOptimize)->boolVal();
+		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
+		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
+		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
+		const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
+		for (int i = start; i < end; ++i) {
+			const scenegraph::SceneGraphNode &node = sceneGraph.node(i);
+			if (!node.isAnyModelNode()) {
+				continue;
+			}
+			auto volume = sceneGraph.resolveVolume(node);
+			auto region = sceneGraph.resolveRegion(node);
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			voxel::Region regionExt = region;
 			// we are increasing the region by one voxel to ensure the inclusion of the boundary voxels in this mesh
@@ -615,29 +622,16 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				mesh->optimize();
 			}
 
-			core::ScopedLock scoped(lock);
-			meshes.emplace_back(mesh, node, applyTransform);
-		});
-	}
-	for (;;) {
-		if (stopExecution()) {
-			break;
+			meshes[i] = core::move(MeshExt(mesh, node, applyTransform));
 		}
-		lock.lock();
-		const size_t size = meshes.size();
-		lock.unlock();
-		if (size < models) {
-			app::App::getInstance()->wait(100);
-		} else {
-			break;
-		}
-	}
+	});
 	Meshes nonEmptyMeshes;
 	nonEmptyMeshes.reserve(meshes.size());
 
+	core::Map<int, int> meshIdxNodeMap;
 	// filter out empty meshes
 	for (auto iter = meshes.begin(); iter != meshes.end(); ++iter) {
-		if (iter->mesh->isEmpty()) {
+		if (!iter->mesh || iter->mesh->isEmpty()) {
 			continue;
 		}
 		nonEmptyMeshes.emplace_back(*iter);

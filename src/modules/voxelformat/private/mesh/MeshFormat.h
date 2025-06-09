@@ -53,6 +53,7 @@ protected:
 	core_trace_mutex(core::Lock, _mutex, "PosSampling");
 
 	struct MeshExt {
+		MeshExt() = default;
 		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
 		voxel::ChunkMesh *mesh;
 		core::String name;
