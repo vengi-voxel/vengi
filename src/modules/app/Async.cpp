@@ -30,9 +30,7 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 	}
 
 	for (auto &fut : futures) {
-		if (fut.valid()) {
-			fut.wait();
-		}
+		fut.wait();
 	}
 }
 
