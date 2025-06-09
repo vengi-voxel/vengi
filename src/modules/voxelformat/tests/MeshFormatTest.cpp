@@ -108,6 +108,7 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 	EXPECT_FALSE(MeshFormat::isVoxelMesh(tris));
 }
 
+// TODO: VOXELFORMAT: this test is unstable
 TEST_F(MeshFormatTest, testVoxelizeColor) {
 	class TestMesh : public MeshFormat {
 	public:
