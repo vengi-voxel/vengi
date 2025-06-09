@@ -14,6 +14,7 @@
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -240,6 +241,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			return false;
 		}
 		glm::ivec3 sPos;
+		palette::PaletteLookup palLookup(palette);
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
 				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
@@ -251,7 +253,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 						return false;
 					}
 					if (color) {
-						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.color(color));
+						const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 						v->setVoxel(sPos, voxel);
 						hasBlocks = true;
@@ -326,13 +328,14 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 		}
 
 		glm::ivec3 sPos;
+		palette::PaletteLookup palLookup(palette);
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
 				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
 					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
 					const uint8_t color = blocks[i];
 					if (color) {
-						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.color(color));
+						const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 						v->setVoxel(sPos, voxel);
 					}

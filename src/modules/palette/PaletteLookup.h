@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Color.h"
+#include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "palette/Palette.h"
 
@@ -20,14 +21,14 @@ namespace palette {
 class PaletteLookup {
 private:
 	palette::Palette _palette;
-	core::Map<core::RGBA, uint8_t, 521> _paletteMap;
+	core::DynamicMap<core::RGBA, uint8_t, 521> _paletteMap;
 public:
-	PaletteLookup(const palette::Palette &palette, int maxSize = 32768) : _palette(palette), _paletteMap(maxSize) {
+	PaletteLookup(const palette::Palette &palette) : _palette(palette) {
 		if (_palette.colorCount() <= 0) {
 			_palette.nippon();
 		}
 	}
-	PaletteLookup(int maxSize = 32768) : _paletteMap(maxSize) {
+	PaletteLookup() {
 		_palette.nippon();
 	}
 
@@ -56,9 +57,7 @@ public:
 		uint8_t paletteIndex = 0;
 		if (!_paletteMap.get(rgba, paletteIndex)) {
 			paletteIndex = _palette.getClosestMatch(rgba);
-			if (_paletteMap.size() < _paletteMap.capacity()) {
-				_paletteMap.put(rgba, paletteIndex);
-			}
+			_paletteMap.put(rgba, paletteIndex);
 		}
 		return paletteIndex;
 	}
