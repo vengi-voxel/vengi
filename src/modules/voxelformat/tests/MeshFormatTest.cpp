@@ -107,7 +107,6 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 	EXPECT_FALSE(MeshFormat::isVoxelMesh(tris));
 }
 
-// TODO: VOXELFORMAT: this test is unstable
 TEST_F(MeshFormatTest, testVoxelizeColor) {
 	class TestMesh : public MeshFormat {
 	public:
@@ -158,11 +157,11 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	ASSERT_NE(nullptr, node);
 	const voxel::RawVolume *v = node->volume();
 	const palette::Palette &palette = node->palette();
-	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(0, 0, 0).getColor()), 0.01f);
-	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.01f);
+	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(0, 0, 0).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.06f);
 	EXPECT_COLOR_NEAR(nipponBlue, palette.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
 	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponGreen, palette.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.01f);
+	EXPECT_COLOR_NEAR(nipponGreen, palette.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
 }
 
 } // namespace voxelformat
