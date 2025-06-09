@@ -46,7 +46,7 @@ struct PointNode {
 };
 
 struct Metadata {
-	core::StringMap<palette::Palette> palettes;
+	core::DynamicStringMap<palette::Palette> palettes;
 	scenegraph::SceneGraphNodeProperties properties;
 	core::DynamicArray<PointNode> points; // coordinates in vengi coordinate system
 };
