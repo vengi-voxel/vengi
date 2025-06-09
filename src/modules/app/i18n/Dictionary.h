@@ -39,10 +39,10 @@ namespace app {
 class Dictionary : public core::NonCopyable {
 private:
 	typedef core::StringMap<core::DynamicArray<core::String>> Entries;
-	Entries _entries;
+	Entries _entries{1024};
 
 	typedef core::StringMap<Entries> CtxtEntries;
-	CtxtEntries _ctxtEntries;
+	CtxtEntries _ctxtEntries{64};
 
 	core::String _charset;
 	PluralForms _pluralForms;
