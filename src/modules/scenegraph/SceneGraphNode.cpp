@@ -519,11 +519,11 @@ const SceneGraphNodeChildren &SceneGraphNode::children() const {
 	return _children;
 }
 
-const core::StringMap<core::String> &SceneGraphNode::properties() const {
+const SceneGraphNodeProperties &SceneGraphNode::properties() const {
 	return _properties;
 }
 
-core::StringMap<core::String> &SceneGraphNode::properties() {
+SceneGraphNodeProperties &SceneGraphNode::properties() {
 	return _properties;
 }
 
@@ -537,7 +537,7 @@ float SceneGraphNode::propertyf(const core::String &key) const {
 	return property(key).toFloat();
 }
 
-void SceneGraphNode::addProperties(const core::StringMap<core::String> &map) {
+void SceneGraphNode::addProperties(const SceneGraphNodeProperties &map) {
 	for (const auto &entry : map) {
 		setProperty(entry->key, entry->value);
 	}

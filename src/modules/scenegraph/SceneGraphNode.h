@@ -235,11 +235,11 @@ public:
 	void setLocked(bool locked);
 
 	const SceneGraphNodeChildren &children() const;
-	const core::StringMap<core::String> &properties() const;
-	core::StringMap<core::String> &properties();
+	const SceneGraphNodeProperties &properties() const;
+	SceneGraphNodeProperties &properties();
 	core::String property(const core::String& key) const;
 	float propertyf(const core::String& key) const;
-	void addProperties(const core::StringMap<core::String>& map);
+	void addProperties(const SceneGraphNodeProperties& map);
 
 	/**
 	 * @return @c false if no change was made to the properties. This can have the reason of exceeding the max allowed

@@ -57,7 +57,7 @@ static scenegraph::InterpolationType toInterpolationType(const core::String &typ
 
 bool VENGIFormat::saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 									 io::WriteStream &stream) {
-	const core::StringMap<core::String> &properties = node.properties();
+	const scenegraph::SceneGraphNodeProperties &properties = node.properties();
 	if (properties.empty()) {
 		return true;
 	}

@@ -77,7 +77,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	core::StringMap<core::StringMap<core::String>> ini;
+	util::IniMap ini;
 	if (!util::parseIni(*stream, ini)) {
 		Log::error("Failed to parse ini file: %s", filename.c_str());
 		return false;

@@ -36,7 +36,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 		encoded.c_str(), branch.c_str(), path.c_str());
 	http::Request request(urlPages, http::RequestType::GET);
 	io::NOPWriteStream s;
-	core::StringMap<core::String> headers;
+	http::Headers headers;
 	if (!request.execute(s, nullptr, &headers)) {
 		Log::error("Failed to download tree data for url %s", urlPages.c_str());
 		return {};

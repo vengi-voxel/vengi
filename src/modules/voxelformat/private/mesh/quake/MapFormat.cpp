@@ -249,7 +249,7 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 
 bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
 							MeshMaterialMap &materials, MeshTriCollection &tris,
-							core::StringMap<core::String> &props, const glm::vec3 &scale) const {
+							scenegraph::SceneGraphNodeProperties &props, const glm::vec3 &scale) const {
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
 		if (t == "}") {
@@ -304,7 +304,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		const core::String &t = tok.next();
 		if (t == "{") {
 			MeshTriCollection tris;
-			core::StringMap<core::String> props;
+			scenegraph::SceneGraphNodeProperties props;
 			if (!parseEntity(filename, archive, tok, materials, tris, props, scale)) {
 				Log::error("Failed to parse entity");
 				return false;

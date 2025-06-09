@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Tokenizer.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 
 namespace voxelformat {
@@ -23,7 +24,7 @@ protected:
 					MeshMaterialMap &materials, MeshTriCollection &tris, const glm::vec3 &scale) const;
 	bool parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
 					 MeshMaterialMap &materials, MeshTriCollection &tris,
-					 core::StringMap<core::String> &props, const glm::vec3 &scale) const;
+					 scenegraph::SceneGraphNodeProperties &props, const glm::vec3 &scale) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
