@@ -48,7 +48,7 @@ core::String VoxelFile::targetDir() const {
 	return core::string::sanitizeDirPath(path);
 }
 
-core::DynamicArray<VoxelSource> Downloader::sources() {
+VoxelSources Downloader::sources() {
 	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
 	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 	request.setUserAgent(userAgent);
@@ -67,8 +67,8 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 	return sources(json);
 }
 
-core::DynamicArray<VoxelSource> Downloader::sources(const core::String &json) {
-	core::DynamicArray<VoxelSource> voxelSources;
+VoxelSources Downloader::sources(const core::String &json) {
+	VoxelSources voxelSources;
 	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 	if (!jsonResponse.contains("sources")) {
 		Log::error("Unexpected json data");
