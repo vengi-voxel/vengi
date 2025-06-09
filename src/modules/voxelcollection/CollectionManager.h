@@ -57,18 +57,8 @@ public:
 	const core::String &localDir() const;
 	bool setLocalDir(const core::String &dir);
 
-	bool local();
-	bool online();
-	/**
-	 * @brief Blocks until all local files are loaded.
-	 * @sa local()
-	 */
-	void waitLocal();
-	/**
-	 * @brief Blocks until all queued online sources are loaded.
-	 * @sa online()
-	 */
-	void waitOnline();
+	bool local(bool wait = false);
+	bool online(bool wait = false);
 	void resolve(const VoxelSource &source, bool async = true);
 	bool resolved(const VoxelSource &source) const;
 
@@ -79,8 +69,6 @@ public:
 	void loadThumbnail(const VoxelFile &voxelFile);
 	bool createThumbnail(const VoxelFile &voxelFile);
 
-	void thumbnailAll();
-	void downloadAll();
 	bool download(VoxelFile &voxelFile);
 
 	const VoxelFileMap &voxelFilesMap() const;

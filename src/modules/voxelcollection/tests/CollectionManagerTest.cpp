@@ -36,16 +36,14 @@ protected:
 };
 
 TEST_F(CollectionManagerTest, DISABLED_testLocal) {
-	ASSERT_TRUE(_mgr->local());
-	_mgr->waitLocal();
+	ASSERT_TRUE(_mgr->local(true));
 	_mgr->update(0.0, 1);
 	ASSERT_GT(_mgr->allEntries(), 0);
 }
 
 TEST_F(CollectionManagerTest, DISABLED_testOnline) {
 	const size_t before = _mgr->sources().size();
-	ASSERT_TRUE(_mgr->online());
-	_mgr->waitOnline();
+	ASSERT_TRUE(_mgr->online(true));
 	_mgr->update(0.0, 1);
 
 	ASSERT_GT(_mgr->sources().size(), before);
