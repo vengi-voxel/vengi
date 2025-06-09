@@ -14,7 +14,6 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
-#include "voxelformat/private/mesh/TextureLookup.h"
 #include "voxelformat/tests/AbstractFormatTest.h"
 
 namespace voxelformat {
@@ -158,11 +157,12 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
 	ASSERT_NE(nullptr, node);
 	const voxel::RawVolume *v = node->volume();
-	EXPECT_COLOR_NEAR(nipponRed, node->palette().color(v->voxel(0, 0, 0).getColor()), 0.01f);
-	EXPECT_COLOR_NEAR(nipponRed, node->palette().color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.01f);
-	EXPECT_COLOR_NEAR(nipponBlue, node->palette().color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponRed, node->palette().color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponGreen, node->palette().color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.01f);
+	const palette::Palette &palette = node->palette();
+	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(0, 0, 0).getColor()), 0.01f);
+	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.01f);
+	EXPECT_COLOR_NEAR(nipponBlue, palette.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponGreen, palette.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.01f);
 }
 
 } // namespace voxelformat
