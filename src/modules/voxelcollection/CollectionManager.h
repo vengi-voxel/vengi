@@ -40,7 +40,6 @@ private:
 	core::Future<VoxelFiles> _onlineResolve;
 	VoxelSources _sources;
 	core::Future<VoxelSources> _onlineSources;
-	core::DynamicArray<core::Future<void>> _futures;
 	bool download(const io::ArchivePtr &archive, VoxelFile &voxelFile);
 
 public:

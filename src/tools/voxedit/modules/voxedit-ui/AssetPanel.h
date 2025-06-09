@@ -6,7 +6,6 @@
 
 #include "command/CommandHandler.h"
 #include "core/collection/ConcurrentQueue.h"
-#include "core/concurrent/Future.h"
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/CollectionManager.h"
@@ -27,7 +26,6 @@ private:
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	CollectionPanel _collectionPanel;
 	core::ConcurrentQueue<image::ImagePtr> _images;
-	core::Future<void> _future;
 
 public:
 	AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,

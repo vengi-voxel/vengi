@@ -461,7 +461,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 	if (file.empty()) {
 		return false;
 	}
-	if (_loadingFuture.valid()) {
+	if (isLoading()) {
 		Log::error("Failed to load '%s' - still loading another model", file.c_str());
 		return false;
 	}

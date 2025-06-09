@@ -96,10 +96,6 @@ void CollectionManager::shutdown() {
 	_shouldQuit = true;
 	waitLocal();
 	waitOnline();
-	for (auto &f : _futures) {
-		f.wait();
-	}
-	_futures.clear();
 }
 
 bool CollectionManager::local() {
@@ -172,7 +168,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
 	io::ArchivePtr archive = _archive;
 	if (archive->exists(targetImageFile)) {
-		_futures.emplace_back(app::async([this, voxelFile, targetImageFile, archive]() {
+		app::schedule([this, voxelFile, targetImageFile, archive]() {
 			if (_shouldQuit) {
 				return;
 			}
@@ -182,19 +178,19 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 				image->setName(voxelFile.name);
 				_imageQueue.push(image);
 			}
-		}));
+		});
 		return;
 	}
 	if (!voxelFile.thumbnailUrl.empty()) {
-		_futures.emplace_back(app::async([=]() {
+		app::schedule([=]() {
 			if (_shouldQuit) {
 				return;
 			}
 			http::HttpCacheStream stream(archive, targetImageFile, voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
-		}));
+		});
 	} else {
-		_futures.emplace_back(app::async([this, archive, voxelFile, targetImageFile]() {
+		app::schedule([this, archive, voxelFile, targetImageFile]() {
 			if (_shouldQuit) {
 				return;
 			}
@@ -214,7 +210,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			}
 			this->_imageQueue.push(thumbnailImage);
-		}));
+		});
 	}
 }
 
@@ -263,7 +259,7 @@ void CollectionManager::resolve(const VoxelSource &source, bool async) {
 		_newVoxelFiles.push(files.begin(), files.end());
 	};
 	if (async) {
-		_futures.emplace_back(app::async(func));
+		app::schedule(func);
 	} else {
 		func();
 	}
@@ -281,7 +277,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 		_shouldQuit = true;
 	}
 
-	if (_local.valid() && _local.ready()) {
+	if (_local.ready()) {
 		if (_voxelFilesMap.find(LOCAL_SOURCE) == _voxelFilesMap.end()) {
 			VoxelCollection collection{{}, nowSeconds, true};
 			_voxelFilesMap.put(LOCAL_SOURCE, collection);
@@ -332,7 +328,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 
 void CollectionManager::downloadAll() {
 	const io::ArchivePtr archive = _archive;
-	_futures.emplace_back(app::async([this, voxelFilesMap = _voxelFilesMap, archive]() {
+	app::schedule([this, voxelFilesMap = _voxelFilesMap, archive]() {
 		int all = 0;
 		for (const auto &e : voxelFilesMap) {
 			all += (int)e->value.files.size();
@@ -354,7 +350,7 @@ void CollectionManager::downloadAll() {
 			}
 		}
 		_downloadProgress = 0;
-	}));
+	});
 }
 
 bool CollectionManager::download(const io::ArchivePtr &archive, VoxelFile &voxelFile) {

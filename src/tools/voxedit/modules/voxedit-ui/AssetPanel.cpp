@@ -27,7 +27,6 @@ AssetPanel::AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
 }
 
 void AssetPanel::shutdown() {
-	_future.wait();
 	_images.clear();
 	_collectionPanel.shutdown();
 }
@@ -38,7 +37,7 @@ bool AssetPanel::init() {
 		return false;
 	}
 
-	_future = app::async([this] () {
+	app::schedule([this] () {
 		const core::String &dir = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Pictures);
 		core::DynamicArray<io::FilesystemEntry> entities;
 		_filesystem->list(dir, entities);
