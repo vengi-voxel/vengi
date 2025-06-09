@@ -8,7 +8,6 @@
 #include "core/SharedPtr.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/StringSet.h"
-#include "core/concurrent/Atomic.h"
 #include "core/concurrent/Future.h"
 #include "io/Archive.h"
 #include "io/Filesystem.h"
@@ -31,7 +30,6 @@ private:
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
 
-	core::AtomicBool _shouldQuit = false;
 	int _count = 0;
 
 	core::Future<void> _local;

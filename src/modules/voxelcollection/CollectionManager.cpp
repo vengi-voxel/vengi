@@ -84,7 +84,6 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 }
 
 void CollectionManager::shutdown() {
-	_shouldQuit = true;
 }
 
 bool CollectionManager::local(bool wait) {
@@ -138,9 +137,6 @@ bool CollectionManager::online(bool wait) {
 
 void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 	if (_texturePool->has(voxelFile.name)) {
-		return;
-	}
-	if (_shouldQuit) {
 		return;
 	}
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
@@ -237,10 +233,6 @@ bool CollectionManager::resolved(const VoxelSource &source) const {
 }
 
 void CollectionManager::update(double nowSeconds, int n) {
-	if (app::App::getInstance()->shouldQuit()) {
-		_shouldQuit = true;
-	}
-
 	if (_local.ready()) {
 		if (!_voxelFilesMap.hasKey(LOCAL_SOURCE)) {
 			VoxelCollection collection{{}, nowSeconds, true};
