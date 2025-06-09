@@ -21,7 +21,7 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 
 	const int threadCnt = core_max(2, threadPoolSize);
 	const int chunkSize = core_max((end - start + threadCnt - 1) / threadCnt, 1);
-	core::DynamicArray<std::future<void>> futures;
+	core::DynamicArray<core::Future<void>> futures;
 	futures.reserve((end - start) / chunkSize + 1);
 
 	for (int i = start; i < end; i += chunkSize) {

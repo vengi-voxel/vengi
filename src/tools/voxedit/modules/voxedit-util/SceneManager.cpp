@@ -2500,17 +2500,13 @@ bool SceneManager::update(double nowSeconds) {
 	core_trace_scoped(SceneManagerUpdate);
 	updateDelta(nowSeconds);
 	bool loadedNewScene = false;
-	if (_loadingFuture.valid()) {
-		using namespace std::chrono_literals;
-		std::future_status status = _loadingFuture.wait_for(1ms);
-		if (status == std::future_status::ready) {
-			if (loadSceneGraph(core::move(_loadingFuture.get()))) {
-				_needAutoSave = false;
-				_dirty = false;
-				loadedNewScene = true;
-			}
-			_loadingFuture = {};
+	if (_loadingFuture.ready()) {
+		if (loadSceneGraph(core::move(_loadingFuture.get()))) {
+			_needAutoSave = false;
+			_dirty = false;
+			loadedNewScene = true;
 		}
+		_loadingFuture = {};
 	}
 
 	if (_maxSuggestedVolumeSize->isDirty()) {

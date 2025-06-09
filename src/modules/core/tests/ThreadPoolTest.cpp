@@ -48,7 +48,7 @@ TEST_F(ThreadPoolTest, testMultiplePushNested) {
 	core::ThreadPool pool(3);
 	pool.init();
 	static core::AtomicInt nestedCount = 0;
-	core::DynamicArray<std::future<void>> futures;
+	core::DynamicArray<core::Future<void>> futures;
 	for (int i = 0; i < x; ++i) {
 		futures.emplace_back(pool.enqueue([this, &pool] () {
 			++_count;

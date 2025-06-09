@@ -310,7 +310,7 @@ public:
 	io::FilesystemPtr filesystem() const;
 
 	template<class F>
-	auto enqueue(F&& f) -> std::future<typename std::invoke_result<F>::type> {
+	auto enqueue(F&& f) -> core::Future<typename std::invoke_result<F>::type> {
 		return _threadPool->enqueue(core::forward<F>(f));
 	}
 

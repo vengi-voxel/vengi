@@ -64,7 +64,7 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 		return false;
 	}
 	if (_local.valid()) {
-		if (_local.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready) {
+		if (!_local.ready()) {
 			return false;
 		}
 		_local = {};
@@ -83,27 +83,21 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 }
 
 void CollectionManager::waitLocal() {
-	if (_local.valid()) {
-		Log::debug("Wait for local sources to finish");
-		_local.wait();
-	}
+	Log::debug("Wait for local sources to finish");
+	_local.wait();
 }
 
 void CollectionManager::waitOnline() {
-	if (_onlineSources.valid()) {
-		Log::debug("Wait for online sources to finish");
-		_onlineSources.wait();
-	}
+	Log::debug("Wait for online sources to finish");
+	_onlineSources.wait();
 }
 
 void CollectionManager::shutdown() {
 	_shouldQuit = true;
 	waitLocal();
 	waitOnline();
-	for (std::future<void> &f : _futures) {
-		if (f.valid()) {
-			f.wait();
-		}
+	for (auto &f : _futures) {
+		f.wait();
 	}
 	_futures.clear();
 }
@@ -287,14 +281,14 @@ void CollectionManager::update(double nowSeconds, int n) {
 		_shouldQuit = true;
 	}
 
-	if (_local.valid() && _local.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+	if (_local.valid() && _local.ready()) {
 		if (_voxelFilesMap.find(LOCAL_SOURCE) == _voxelFilesMap.end()) {
 			VoxelCollection collection{{}, nowSeconds, true};
 			_voxelFilesMap.put(LOCAL_SOURCE, collection);
 		}
 	}
 
-	if (_onlineSources.valid() && _onlineSources.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+	if (_onlineSources.valid() && _onlineSources.ready()) {
 		_sources.append(_onlineSources.get());
 		_onlineSources = {};
 	}
