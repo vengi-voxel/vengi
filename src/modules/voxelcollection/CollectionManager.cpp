@@ -242,13 +242,13 @@ void CollectionManager::update(double nowSeconds, int n) {
 	}
 
 	if (_local.ready()) {
-		if (_voxelFilesMap.find(LOCAL_SOURCE) == _voxelFilesMap.end()) {
+		if (!_voxelFilesMap.hasKey(LOCAL_SOURCE)) {
 			VoxelCollection collection{{}, nowSeconds, true};
 			_voxelFilesMap.put(LOCAL_SOURCE, collection);
 		}
 	}
 
-	if (_onlineSources.valid() && _onlineSources.ready()) {
+	if (_onlineSources.ready()) {
 		_sources.append(_onlineSources.get());
 		_onlineSources = {};
 	}
@@ -263,7 +263,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 	VoxelFiles voxelFiles;
 	_newVoxelFiles->pop(voxelFiles, n);
 
-	for (VoxelFile &voxelFile : voxelFiles) {
+	for (const VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
 		auto iter = _voxelFilesMap.find(voxelFile.source);
 		if (iter != _voxelFilesMap.end()) {
