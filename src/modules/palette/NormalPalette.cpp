@@ -121,7 +121,7 @@ static const core::RGBA slab6normals[]{
 
 } // namespace priv
 
-static inline core::RGBA toRGBA(const glm::vec3 &normal) {
+core::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
 	// Map the normal components back to [0, 1] range
 	const float rf = (normal.x + 1.0f) / 2.0f; // X component to [0, 1]
 	const float gf = (normal.y + 1.0f) / 2.0f; // Y component to [0, 1]
@@ -134,7 +134,7 @@ static inline core::RGBA toRGBA(const glm::vec3 &normal) {
 	return core::RGBA(r, g, b);
 }
 
-static inline glm::vec3 toVec3(const core::RGBA &rgba) {
+glm::vec3 NormalPalette::toVec3(const core::RGBA &rgba) {
 	// Normalize RGB values to the range [0, 1]
 	const float r = rgba.r / 255.0f;
 	const float g = rgba.g / 255.0f;

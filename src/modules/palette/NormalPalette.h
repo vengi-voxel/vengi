@@ -29,6 +29,9 @@ private:
 	core::RGBA _normals[NormalPaletteMaxNormals]{};
 
 public:
+	static core::RGBA toRGBA(const glm::vec3 &normal);
+	static glm::vec3 toVec3(const core::RGBA &rgba);
+
 	int getClosestMatch(const glm::vec3 &normal) const;
 	void loadNormalMap(const core::RGBA *normals, int size);
 	void loadNormalMap(const glm::vec3 *normals, int size);
