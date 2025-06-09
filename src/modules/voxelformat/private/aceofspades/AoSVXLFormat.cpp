@@ -171,9 +171,9 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 				sampler3.setVoxel(voxel::createVoxel(palette, paletteIndex));
 				sampler3.movePositiveX();
 			}
-			sampler2.movePositiveY();
+			sampler2.movePositiveZ();
 		}
-		sampler.moveNegativeZ();
+		sampler.moveNegativeY();
 	}
 	libvxl_free(&map);
 	core_free(data);
