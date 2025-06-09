@@ -287,13 +287,20 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 
 	voxel::RawVolume::Sampler s1(volume1);
 	voxel::RawVolume::Sampler s2(volume2);
+	s1.setPosition(r1.getLowerCorner());
+	s2.setPosition(r2.getLowerCorner());
 	for (int32_t z1 = lowerZ, z2 = lower2Z; z1 <= upperZ && z2 <= upper2Z; ++z1, ++z2) {
+		voxel::RawVolume::Sampler s1_2 = s1;
+		voxel::RawVolume::Sampler s2_2 = s2;
 		for (int32_t y1 = lowerY, y2 = lower2Y; y1 <= upperY && y2 <= upper2Y; ++y1, ++y2) {
+			voxel::RawVolume::Sampler s1_3 = s1_2;
+			voxel::RawVolume::Sampler s2_3 = s2_2;
 			for (int32_t x1 = lowerX, x2 = lower2X; x1 <= upperX && x2 <= upper2X; ++x1, ++x2) {
-				s1.setPosition(x1, y1, z1);
-				s2.setPosition(x2, y2, z2);
-				const voxel::Voxel &voxel1 = s1.voxel();
-				const voxel::Voxel &voxel2 = s2.voxel();
+				const voxel::Voxel voxel1 = s1_3.voxel();
+				const voxel::Voxel voxel2 = s2_3.voxel();
+
+				s1_3.movePositiveX();
+				s2_3.movePositiveX();
 
 				if (voxel::isAir(voxel1.getMaterial()) ^ voxel::isAir(voxel2.getMaterial())) {
 					if ((flags & ValidateFlags::IgnoreHollow) == ValidateFlags::IgnoreHollow) {
@@ -348,7 +355,11 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 					}
 				}
 			}
+			s1_2.movePositiveY();
+			s2_2.movePositiveY();
 		}
+		s1.movePositiveZ();
+		s2.movePositiveZ();
 	}
 }
 
