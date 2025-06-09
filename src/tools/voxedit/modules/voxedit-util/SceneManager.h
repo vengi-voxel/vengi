@@ -13,6 +13,7 @@
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/Future.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "memento/MementoHandler.h"
@@ -32,7 +33,6 @@
 #include "voxelgenerator/TreeContext.h"
 #include "voxelutil/Picking.h"
 #include <functional>
-#include <future>
 
 namespace voxedit {
 
@@ -68,7 +68,7 @@ protected:
 	memento::MementoHandler _mementoHandler;
 	util::Movement _movement;
 	voxel::VoxelData _copy;
-	std::future<scenegraph::SceneGraph> _loadingFuture;
+	core::Future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
 	ModifierFacade _modifierFacade;

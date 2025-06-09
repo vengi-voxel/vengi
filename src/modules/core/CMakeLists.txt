@@ -28,6 +28,7 @@ set(SRCS
 	concurrent/Lock.cpp concurrent/Lock.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 	concurrent/Thread.cpp concurrent/Thread.h
+	concurrent/Future.h
 
 	external/strnatcmp.c external/strnatcmp.h
 

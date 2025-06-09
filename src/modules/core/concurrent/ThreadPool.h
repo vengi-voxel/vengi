@@ -28,11 +28,11 @@
 #pragma once
 
 #include <thread>
-#include <future>
 #include <functional>
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Queue.h"
 #include "core/concurrent/Atomic.h"
+#include "core/concurrent/Future.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
 #include "core/Trace.h"
@@ -49,7 +49,7 @@ public:
 	 * Enqueue functors or lambdas into the thread pool
 	 */
 	template<class F>
-	auto enqueue(F&& f) -> std::future<typename std::invoke_result<F>::type>;
+	auto enqueue(F&& f) -> core::Future<typename std::invoke_result<F>::type>;
 
 	size_t size() const;
 	void init();
@@ -86,17 +86,17 @@ inline void ThreadPool::reserve(size_t n) {
 // add new work item to the pool
 template<class F>
 auto ThreadPool::enqueue(F&& f)
--> std::future<typename std::invoke_result<F>::type> {
+-> core::Future<typename std::invoke_result<F>::type> {
 	using return_type = typename std::invoke_result<F>::type;
 	if (_stop) {
-		return std::future<return_type>();
+		return core::Future<return_type>();
 	}
 
 	{
 		core::ScopedLock lock(_queueMutex);
 
 		if (_stop) {
-			return std::future<return_type>();
+			return core::Future<return_type>();
 		}
 
 		if (!_inThreadPool || (int)_activeWorkers < (int)_threads) {
@@ -104,7 +104,7 @@ auto ThreadPool::enqueue(F&& f)
 				core::make_shared<std::packaged_task<return_type()>>(
 					std::bind(core::forward<F>(f)));
 
-			std::future<return_type> res = task->get_future();
+			core::Future<return_type> res = task->get_future();
 			_tasks.emplace([task]() {(*task.get())();});
 			_queueCondition.notify_one();
 			return res;
@@ -114,7 +114,7 @@ auto ThreadPool::enqueue(F&& f)
 	// If we are in a thread pool thread, execute the task inline if no free worker is available
 	// this prevents the nested parallelism deadlock problem
 	auto task = std::packaged_task<return_type()>(std::bind(core::forward<F>(f)));
-	std::future<return_type> res = task.get_future();
+	core::Future<return_type> res = task.get_future();
 	task();
 	return res;
 }

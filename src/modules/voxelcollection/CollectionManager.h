@@ -9,12 +9,12 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "core/concurrent/Atomic.h"
+#include "core/concurrent/Future.h"
 #include "io/Archive.h"
 #include "io/Filesystem.h"
 #include "video/Texture.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/Downloader.h"
-#include <future>
 
 namespace voxelcollection {
 
@@ -33,14 +33,14 @@ private:
 	core::AtomicBool _shouldQuit = false;
 	int _count = 0;
 
-	std::future<void> _local;
+	core::Future<void> _local;
 	core::String _localDir;
 
 	core::StringSet _onlineResolvedSources;
-	std::future<VoxelFiles> _onlineResolve;
+	core::Future<VoxelFiles> _onlineResolve;
 	VoxelSources _sources;
-	std::future<VoxelSources> _onlineSources;
-	core::DynamicArray<std::future<void>> _futures;
+	core::Future<VoxelSources> _onlineSources;
+	core::DynamicArray<core::Future<void>> _futures;
 	bool download(const io::ArchivePtr &archive, VoxelFile &voxelFile);
 
 public:
