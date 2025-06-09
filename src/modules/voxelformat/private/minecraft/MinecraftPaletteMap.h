@@ -35,7 +35,7 @@ struct McBlock {
 	core::String blockId;  // e.g. "minecraft:stone"
 	core::String biomeId;  // e.g. "minecraft:badlands"
 	int8_t lit = -1;
-	core::StringMap<core::String> properties;
+	core::StringMap<core::String> properties{32};
 
 	core::String normalize() const {
 		if (biomeId.empty() && lit == -1) {
