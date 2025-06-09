@@ -481,33 +481,35 @@ AppState App::onConstruct() {
 		_dictManager.addDirectory(core::string::path(path, "po"));
 	}
 
+	if (!_systemLanguage) {
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-	int count = 0;
-	SDL_Locale **locales = SDL_GetPreferredLocales(&count);
-	for (int i = 0; i < count; ++i) {
-		Log::debug("Preferred locale: %s", locales[i]->language);
-		Language lang = Language::fromSpec(locales[i]->language, locales[i]->country);
-		if (lang) {
-			_systemLanguage = lang;
-			break;
-		}
-	}
-	SDL_free((void*)locales);
-#elif SDL_VERSION_ATLEAST(2, 0, 14)
-	SDL_Locale *locales = SDL_GetPreferredLocales();
-	if (locales) {
-		SDL_Locale *locale = locales;
-		while (locale->language) {
-			Log::debug("Preferred locale: %s", locale->language);
-			_systemLanguage = Language::fromSpec(locale->language, locale->country);
-			if (_systemLanguage) {
+		int count = 0;
+		SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+		for (int i = 0; i < count; ++i) {
+			Log::debug("Preferred locale: %s", locales[i]->language);
+			Language lang = Language::fromSpec(locales[i]->language, locales[i]->country);
+			if (lang) {
+				_systemLanguage = lang;
 				break;
 			}
-			locale++;
 		}
-		SDL_free(locales);
-	}
+		SDL_free((void*)locales);
+#elif SDL_VERSION_ATLEAST(2, 0, 14)
+		SDL_Locale *locales = SDL_GetPreferredLocales();
+		if (locales) {
+			SDL_Locale *locale = locales;
+			while (locale->language) {
+				Log::debug("Preferred locale: %s", locale->language);
+				_systemLanguage = Language::fromSpec(locale->language, locale->country);
+				if (_systemLanguage) {
+					break;
+				}
+				locale++;
+			}
+			SDL_free(locales);
+		}
 #endif
+	}
 	if (!_systemLanguage) {
 		_systemLanguage = Language::fromSpec("en", "GB");
 	}

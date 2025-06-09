@@ -4,9 +4,9 @@
 
 #include "TestApp.h"
 #include "IMGUIEx.h"
+#include "app/i18n/Language.h"
 #include "core/Color.h"
 #include "command/Command.h"
-#include "core/StringUtil.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
@@ -22,6 +22,7 @@
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "test");
+	_systemLanguage = app::Language::fromSpec("aa");
 }
 
 TestApp::~TestApp() {
