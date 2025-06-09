@@ -63,7 +63,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
 	EXPECT_TRUE(volume.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255)));
 	const io::ArchivePtr &archive = helper_archive();
-	scenegraph::SceneGraph sceneGraphsave(2);
+	scenegraph::SceneGraph sceneGraphsave;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
@@ -108,7 +108,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0u)));
 	EXPECT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255u)));
 	const io::ArchivePtr &archive = helper_archive();
-	scenegraph::SceneGraph sceneGraphsave1(2);
+	scenegraph::SceneGraph sceneGraphsave1	;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&original, false);
@@ -356,7 +356,7 @@ void AbstractFormatTest::testSaveSingleVoxel(const core::String &filename, Forma
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume original(region);
 	original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-	scenegraph::SceneGraph sceneGraphsave(2);
+	scenegraph::SceneGraph sceneGraphsave;
 	{
 		palette::Palette pal;
 		pal.tryAdd(core::RGBA(127, 127, 255, 255));
@@ -384,7 +384,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(pal, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(pal, 201)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, pal.colorCount() - 1)));
-	scenegraph::SceneGraph sceneGraphsave(3);
+	scenegraph::SceneGraph sceneGraphsave;
 	int modelNodeId;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

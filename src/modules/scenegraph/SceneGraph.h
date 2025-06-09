@@ -26,7 +26,7 @@ class RawVolume;
 namespace scenegraph {
 
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
-using SceneGraphNodes = core::Map<int, SceneGraphNode, 251>;
+using SceneGraphNodes = core::DynamicMap<int, SceneGraphNode, 251>;
 
 /**
  * @brief The internal format for the save/load methods.
@@ -51,7 +51,7 @@ protected:
 	voxel::Region calcRegion() const;
 
 public:
-	SceneGraph(int nodes = 262144);
+	SceneGraph();
 	virtual ~SceneGraph();
 
 	SceneGraph(SceneGraph&& other) noexcept;

@@ -161,7 +161,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	bigVolume.setVoxel(512, 0, 0, voxel);
 	const core::String name = "bigvolume.vox";
 	scenegraph::SceneGraph sceneGraph;
-	scenegraph::SceneGraph sceneGraphsave(2);
+	scenegraph::SceneGraph sceneGraphsave;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&bigVolume, false);

@@ -46,7 +46,7 @@ voxel::RawVolume *SceneGraph::MergeResult::volume() const {
 	return tmp;
 }
 
-SceneGraph::SceneGraph(int nodes) : _nodes(nodes), _activeAnimation(DEFAULT_ANIMATION) {
+SceneGraph::SceneGraph() : _activeAnimation(DEFAULT_ANIMATION) {
 	clear();
 }
 
@@ -744,7 +744,7 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	for (SceneGraphListener *listener : _listeners) {
 		listener->onNodeRemove(nodeId);
 	}
-	core_assert_always(_nodes.erase(iter));
+	_nodes.erase(iter);
 	if (_activeNodeId == nodeId) {
 		if (!empty(SceneGraphNodeType::Model)) {
 			// get the first model node
