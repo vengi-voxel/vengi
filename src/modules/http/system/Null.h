@@ -9,7 +9,7 @@
 
 namespace http {
 
-inline bool http_request(io::WriteStream &stream, int *statusCode, core::StringMap<core::String> *outheaders,
+inline bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 						 RequestContext &ctx) {
 	return false;
 }

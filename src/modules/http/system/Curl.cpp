@@ -11,7 +11,7 @@
 namespace http {
 
 static size_t WriteHeaderData(char *b, size_t size, size_t nitems, void *userdata) {
-	core::StringMap<core::String> *headers = (core::StringMap<core::String> *)userdata;
+	http::Headers *headers = (http::Headers *)userdata;
 	core::String str;
 
 	size_t total = size * nitems;
@@ -37,7 +37,7 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
 	return ((io::WriteStream *)userp)->write(contents, size * nmemb);
 }
 
-bool http_request(io::WriteStream &stream, int *statusCode, core::StringMap<core::String> *outheaders,
+bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 				  RequestContext &ctx) {
 	CURL *curl = curl_easy_init();
 	if (curl == nullptr) {

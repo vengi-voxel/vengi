@@ -50,7 +50,7 @@ void Request::noCache() {
 	addHeader("Cache-Control", "no-cache");
 }
 
-bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<core::String> *outheaders) {
+bool Request::execute(io::WriteStream &stream, int *statusCode, Headers *outheaders) {
 	Log::debug("Starting http request for %s", _ctx._url.c_str());
 	return http_request(stream, statusCode, outheaders, _ctx);
 }

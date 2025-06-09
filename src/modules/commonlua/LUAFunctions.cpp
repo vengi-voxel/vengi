@@ -717,7 +717,7 @@ static void clua_http_headers(lua_State *&s, int n, http::Request &request) {
 static int clua_http_requestexec(lua_State *s, http::Request &request) {
 	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream();
 	int status = 0;
-	core::StringMap<core::String> outheaders;
+	http::Headers outheaders;
 	// TODO: this should be threaded and we should just return a future
 	if (!request.execute(*outStream, &status, &outheaders)) {
 		if (!outStream->empty()) {
@@ -757,7 +757,7 @@ static int clua_http_get(lua_State *s) {
 	clua_http_headers(s, 2, request);
 	const int ret = clua_http_requestexec(s, request);
 	if (ret == 0) {
-		const core::StringMap<core::String> &headers = request.headers();
+		const http::Headers &headers = request.headers();
 		core::String headersStr;
 		for (const auto &it : headers) {
 			if (!headersStr.empty()) {
@@ -796,7 +796,7 @@ static int clua_http_post(lua_State *s) {
 	clua_http_headers(s, 3, request);
 	const int ret = clua_http_requestexec(s, request);
 	if (ret == 0) {
-		const core::StringMap<core::String> &headers = request.headers();
+		const http::Headers &headers = request.headers();
 		core::String headersStr;
 		for (const auto &it : headers) {
 			if (!headersStr.empty()) {

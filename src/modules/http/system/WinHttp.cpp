@@ -40,7 +40,7 @@ static std::string ws2s(const std::wstring &wstr) {
 	return strTo;
 }
 
-bool http_request(io::WriteStream &stream, int *statusCode, core::StringMap<core::String> *outheaders,
+bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 				  RequestContext &ctx) {
 	// Initialize WinHTTP and create a session
 	HINTERNET hSession =

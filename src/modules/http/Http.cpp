@@ -11,8 +11,7 @@ bool isValidStatusCode(int statusCode) {
 	return statusCode >= 200 && statusCode < 300;
 }
 
-bool download(const core::String &url, io::WriteStream &stream, int *statusCode,
-			  core::StringMap<core::String> *outheaders) {
+bool download(const core::String &url, io::WriteStream &stream, int *statusCode, Headers *outheaders) {
 	if (url.empty()) {
 		return false;
 	}

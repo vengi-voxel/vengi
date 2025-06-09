@@ -20,11 +20,10 @@ public:
 	void setTimeoutSecond(int timeoutSecond);
 	bool setBody(const core::String &body);
 	void addHeader(const core::String &key, const core::String &value);
-	bool execute(io::WriteStream &stream, int *statusCode = nullptr,
-				 core::StringMap<core::String> *outheaders = nullptr);
+	bool execute(io::WriteStream &stream, int *statusCode = nullptr, Headers *outheaders = nullptr);
 	void noCache();
 
-	const core::StringMap<core::String> &headers() const;
+	const Headers &headers() const;
 	const core::String &url() const;
 	const core::String &body() const;
 	RequestType type() const;
@@ -32,7 +31,7 @@ public:
 	static bool supported();
 };
 
-inline const core::StringMap<core::String> &Request::headers() const {
+inline const Headers &Request::headers() const {
 	return _ctx._headers;
 }
 

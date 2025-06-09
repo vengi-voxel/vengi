@@ -7,6 +7,8 @@
 #include "core/collection/StringMap.h"
 
 namespace http {
+	
+using Headers = core::DynamicStringMap<core::String>;
 
 enum class RequestType { GET, POST };
 
@@ -17,7 +19,7 @@ struct RequestContext {
 	core::String _url;
 	core::String _userAgent;
 	core::String _body;
-	core::StringMap<core::String> _headers;
+	Headers _headers;
 };
 
 } // namespace http

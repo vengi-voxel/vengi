@@ -15,7 +15,7 @@ namespace http {
 struct RequestResponse {
 	int statusCode;
 	io::WriteStream *stream = nullptr;
-	core::StringMap<core::String> *outheaders = nullptr;
+	Headers *outheaders = nullptr;
 };
 
 static void fetchErrorCallback(emscripten_fetch_t *fetch) {
@@ -109,7 +109,7 @@ static bool http_request_sync(RequestResponse &userdata, RequestContext &ctx) {
 	return true;
 }
 
-bool http_request(io::WriteStream &stream, int *statusCode, core::StringMap<core::String> *outheaders,
+bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 				  RequestContext &ctx) {
 	if (emscripten_is_main_browser_thread()) {
 		Log::error("http_request called from main thread - this doesn't work for emscripten");
