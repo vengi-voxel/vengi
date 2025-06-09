@@ -22,8 +22,11 @@ namespace voxelcollection {
 CollectionManager::CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool)
 	: _texturePool(texturePool), _filesystem(filesystem) {
 	_archive = io::openFilesystemArchive(filesystem, "", false);
+	// make them shared pointers so that the async tasks can still access them
+	// no matter if the CollectionManager is destroyed or not
 	_newVoxelFiles = core::make_shared<QueuePtr::value_type>();
 	_imageQueue = core::make_shared<ImageQueuePtr::value_type>();
+	_voxelSourceQueue = core::make_shared<VoxelSourceQueuePtr::value_type>();
 }
 
 CollectionManager::~CollectionManager() {
@@ -121,17 +124,11 @@ bool CollectionManager::local(bool wait) {
 	return true;
 }
 
-bool CollectionManager::online(bool wait) {
-	if (_onlineSources.valid()) {
-		return false;
-	}
-	_onlineSources = app::async([&]() {
+bool CollectionManager::online() {
+	app::schedule([queue = _voxelSourceQueue]() {
 		Downloader downloader;
-		return downloader.sources();
+		queue->pushAll(downloader.sources());
 	});
-	if (wait) {
-		_onlineSources.wait();
-	}
 	return true;
 }
 
@@ -240,10 +237,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 		}
 	}
 
-	if (_onlineSources.ready()) {
-		_sources.append(_onlineSources.get());
-		_onlineSources = {};
-	}
+	_voxelSourceQueue->popAll(_sources);
 
 	image::ImagePtr image;
 	if (_imageQueue->pop(image)) {

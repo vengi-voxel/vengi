@@ -43,7 +43,7 @@ TEST_F(CollectionManagerTest, DISABLED_testLocal) {
 
 TEST_F(CollectionManagerTest, DISABLED_testOnline) {
 	const size_t before = _mgr->sources().size();
-	ASSERT_TRUE(_mgr->online(true));
+	ASSERT_TRUE(_mgr->online());
 	_mgr->update(0.0, 1);
 
 	ASSERT_GT(_mgr->sources().size(), before);

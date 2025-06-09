@@ -37,10 +37,10 @@ bool AssetPanel::init() {
 		return false;
 	}
 
-	app::schedule([this] () {
-		const core::String &dir = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Pictures);
+	app::schedule([this, fs = _filesystem] () {
+		const core::String &dir = fs->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Pictures);
 		core::DynamicArray<io::FilesystemEntry> entities;
-		_filesystem->list(dir, entities);
+		fs->list(dir, entities);
 		for (const auto &e : entities) {
 			const core::String &fullName = core::string::path(dir, e.name);
 			if (io::isImage(fullName)) {

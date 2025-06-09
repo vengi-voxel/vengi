@@ -27,6 +27,8 @@ private:
 
 	using ImageQueuePtr = core::SharedPtr<core::ConcurrentQueue<image::ImagePtr>>;
 	ImageQueuePtr _imageQueue;
+	using VoxelSourceQueuePtr = core::SharedPtr<core::ConcurrentQueue<VoxelSource>>;
+	VoxelSourceQueuePtr _voxelSourceQueue;
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
 
@@ -36,9 +38,7 @@ private:
 	core::String _localDir;
 
 	core::StringSet _onlineResolvedSources;
-	core::Future<VoxelFiles> _onlineResolve;
 	VoxelSources _sources;
-	core::Future<VoxelSources> _onlineSources;
 	static bool download(const io::ArchivePtr &archive, VoxelFile &voxelFile);
 
 public:
@@ -56,7 +56,7 @@ public:
 	bool setLocalDir(const core::String &dir);
 
 	bool local(bool wait = false);
-	bool online(bool wait = false);
+	bool online();
 	void resolve(const VoxelSource &source, bool async = true);
 	bool resolved(const VoxelSource &source) const;
 
