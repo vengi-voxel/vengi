@@ -12,6 +12,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/SharedPtr.h"
 #include "core/concurrent/Thread.h"
+#include "core/concurrent/ThreadPool.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 
@@ -21,7 +22,6 @@
  * Foundation classes
  */
 namespace core {
-class ThreadPool;
 typedef core::SharedPtr<ThreadPool> ThreadPoolPtr;
 
 class Var;
@@ -309,7 +309,14 @@ public:
 	 */
 	io::FilesystemPtr filesystem() const;
 
-	core::ThreadPool& threadPool();
+	template<class F>
+	auto enqueue(F&& f) -> std::future<typename std::invoke_result<F>::type> {
+		return _threadPool->enqueue(core::forward<F>(f));
+	}
+
+	int threads() const {
+		return _threadPool->size();
+	}
 
 	/**
 	 * @brief Access to the global TimeProvider

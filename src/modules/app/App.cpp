@@ -1239,10 +1239,6 @@ void App::requestSuspend() {
 	_suspendRequested = true;
 }
 
-core::ThreadPool &App::threadPool() {
-	return *_threadPool.get();
-}
-
 void App::openURL(const core::String &url) {
 	SDL_OpenURL(url.c_str());
 }

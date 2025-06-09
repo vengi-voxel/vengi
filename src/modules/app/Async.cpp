@@ -12,21 +12,21 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 	if (start >= end)
 		return;
 
-	if (end - start == 1) {
+	const int threadPoolSize = app::App::getInstance()->threads();
+	if (end - start == 1 || threadPoolSize <= 1) {
 		// if we are not on the main thread, we can just call the taskLambda directly
 		taskLambda(start, end);
 		return;
 	}
 
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
-	const int threadCnt = core_max(2u, threadPool.size());
+	const int threadCnt = core_max(2, threadPoolSize);
 	const int chunkSize = core_max((end - start + threadCnt - 1) / threadCnt, 1);
 	core::DynamicArray<std::future<void>> futures;
 	futures.reserve((end - start) / chunkSize + 1);
 
 	for (int i = start; i < end; i += chunkSize) {
 		uint32_t chunk_end = core_min(i + chunkSize, end);
-		futures.emplace_back(threadPool.enqueue([i, chunk_end, &taskLambda]() { taskLambda(i, chunk_end); }));
+		futures.emplace_back(app::App::getInstance()->enqueue([i, chunk_end, &taskLambda]() { taskLambda(i, chunk_end); }));
 	}
 
 	for (auto &fut : futures) {
