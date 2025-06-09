@@ -9,7 +9,7 @@
 
 namespace video {
 
-typedef core::StringMap<Uniform> ShaderUniforms;
-typedef core::StringMap<int> ShaderAttributes;
+typedef core::DynamicStringMap<Uniform> ShaderUniforms;
+typedef core::DynamicStringMap<int> ShaderAttributes;
 
 }

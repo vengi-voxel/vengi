@@ -54,23 +54,23 @@ protected:
 	mutable bool _active = false;
 	bool _dirty = true;
 
-	typedef core::StringMap<core::String> ShaderDefines;
-	ShaderDefines _defines{128};
+	typedef core::DynamicStringMap<core::String> ShaderDefines;
+	ShaderDefines _defines;
 
-	typedef core::StringMap<int> ShaderUniformArraySizes;
-	ShaderUniformArraySizes _uniformArraySizes{128};
+	typedef core::DynamicStringMap<int> ShaderUniformArraySizes;
+	ShaderUniformArraySizes _uniformArraySizes;
 
 	ShaderUniforms _uniforms;
 
 	// can be used to validate that every uniform was set. The value type is the location index
-	mutable core::Map<int, bool, 4> _usedUniforms{128};
+	mutable core::DynamicMap<int, bool, 4> _usedUniforms;
 	bool _recordUsedUniforms = false;
 	void addUsedUniform(int location) const;
 
-	ShaderAttributes _attributes{128};
+	ShaderAttributes _attributes;
 
-	typedef core::Map<int, int> AttributeComponents;
-	AttributeComponents _attributeComponents{128};
+	typedef core::DynamicMap<int, int> AttributeComponents;
+	AttributeComponents _attributeComponents;
 
 	mutable uint32_t _time = 0u;
 
