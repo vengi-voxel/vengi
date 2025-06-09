@@ -13,9 +13,9 @@ namespace app {
 // add new work item to the pool
 // TODO: get rid of the futures here - use schedule or for_parallel - this would allow us to hide the thread pool
 // implementation and make it easier to switch to a different implementation that might also not rely on the STL
-template<class F, class... Args>
-auto async(F &&f, Args &&...args) -> std::future<typename std::invoke_result<F, Args...>::type> {
-	return app::App::getInstance()->threadPool().enqueue(core::forward<F>(f), core::forward<Args>(args)...);
+template<class F>
+auto async(F &&f) -> std::future<typename std::invoke_result<F>::type> {
+	return app::App::getInstance()->threadPool().enqueue(core::forward<F>(f));
 }
 
 // add new work item to the pool

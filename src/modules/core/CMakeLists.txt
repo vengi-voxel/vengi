@@ -26,8 +26,6 @@ set(SRCS
 	concurrent/Concurrency.h concurrent/Concurrency.cpp
 	concurrent/ConditionVariable.h concurrent/ConditionVariable.cpp
 	concurrent/Lock.cpp concurrent/Lock.h
-	concurrent/ReadWriteLock.cpp concurrent/ReadWriteLock.h
-	concurrent/Semaphore.cpp concurrent/Semaphore.h
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 	concurrent/Thread.cpp concurrent/Thread.h
 
@@ -143,14 +141,12 @@ set(TEST_SRCS
 	tests/PathTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/QueueTest.cpp
-	tests/ReadWriteLockTest.cpp
 	tests/RingBufferTest.cpp
 	tests/SharedPtrTest.cpp
 	tests/StackTest.cpp
 	tests/StringTest.cpp
 	tests/StringUtilTest.cpp
 	tests/ThreadPoolTest.cpp
-	tests/ThreadTest.cpp
 	tests/TokenizerTest.cpp
 	tests/TupleTest.cpp
 	tests/VarTest.cpp
