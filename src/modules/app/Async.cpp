@@ -8,7 +8,7 @@
 
 namespace app {
 
-void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda) {
+void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda, bool wait) {
 	if (start >= end)
 		return;
 
@@ -29,6 +29,9 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 		futures.emplace_back(app::App::getInstance()->enqueue([i, chunk_end, &taskLambda]() { taskLambda(i, chunk_end); }));
 	}
 
+	if (!wait) {
+		return;
+	}
 	for (auto &fut : futures) {
 		fut.wait();
 	}
