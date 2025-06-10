@@ -24,6 +24,9 @@ static const int PaletteColorNotFound = -1;
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
 using MaterialArray = Material[PaletteMaxColors];
 
+/**
+ * @brief A 256 color palette
+ */
 class Palette : public core::DirtyState {
 private:
 	bool _needsSave = false;
