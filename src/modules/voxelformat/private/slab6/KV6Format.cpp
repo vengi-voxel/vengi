@@ -554,7 +554,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	int32_t xoffsets[256]{};
 	uint16_t xyoffsets[256][256]{}; // our z
 
-	constexpr uint32_t MAXVOXS = 1048576;
+	constexpr uint32_t MAXVOXS = 64 * 64 * 256;
 	core::Buffer<priv::VoxtypeKV6> voxdata;
 	voxdata.reserve(MAXVOXS);
 
