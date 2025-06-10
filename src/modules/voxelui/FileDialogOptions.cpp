@@ -41,25 +41,27 @@ bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDes
 		return false;
 	}
 
-	const io::FormatDescription *formats;
-	if (mode == video::OpenFileMode::Save) {
-		if (_palette) {
-			formats = palette::palettes();
-		} else {
-			formats = voxelformat::voxelSave();
-		}
-	} else {
-		if (_palette) {
-			formats = palette::palettes();
-		} else {
-			formats = voxelformat::voxelLoad();
-		}
-	}
 	// maybe we've manually specified a file extension that is different from the
 	// given description - in that case we try to detect it.
-	const io::FormatDescription *descByName = io::getDescription(entry.name, 0, formats);
-	if (descByName != nullptr) {
-		desc = descByName;
+	if (desc == nullptr || !desc->matchesExtension(core::string::extractExtension(entry.name))) {
+		const io::FormatDescription *formats;
+		if (mode == video::OpenFileMode::Save) {
+			if (_palette) {
+				formats = palette::palettes();
+			} else {
+				formats = voxelformat::voxelSave();
+			}
+		} else {
+			if (_palette) {
+				formats = palette::palettes();
+			} else {
+				formats = voxelformat::voxelLoad();
+			}
+		}
+		const io::FormatDescription *descByName = io::getDescription(entry.name, 0, formats);
+		if (descByName != nullptr) {
+			desc = descByName;
+		}
 	}
 	if (desc == nullptr) {
 		return false;
@@ -88,6 +90,9 @@ bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc)
 	if (desc == nullptr) {
 		return false;
 	}
+	ImGui::TextUnformatted(desc->name.c_str());
+	ImGui::Separator();
+
 	if (*desc == palette::RGBPalette::format()) {
 		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
 		return true;
@@ -103,6 +108,9 @@ bool genericOptions(const io::FormatDescription *desc) {
 	if (desc == nullptr) {
 		return false;
 	}
+	ImGui::TextUnformatted(desc->name.c_str());
+	ImGui::Separator();
+
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (meshFormat) {
 		ImGui::InputVarFloat(_("Uniform scale"), cfg::VoxformatScale);
@@ -315,7 +323,6 @@ static void loadOptionsMesh() {
 
 static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
 							   const palette::PaletteCache &paletteCache) {
-	ImGui::Text(_("Loading: %s"), desc->name.c_str());
 	if (voxelformat::isRGBFormat(*desc) || voxelformat::isMeshFormat(*desc)) {
 		imguiApp()->colorReductionOptions();
 		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
