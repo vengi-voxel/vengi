@@ -315,6 +315,7 @@ static void loadOptionsMesh() {
 
 static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
 							   const palette::PaletteCache &paletteCache) {
+	ImGui::Text(_("Loading: %s"), desc->name.c_str());
 	if (voxelformat::isRGBFormat(*desc) || voxelformat::isMeshFormat(*desc)) {
 		imguiApp()->colorReductionOptions();
 		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
