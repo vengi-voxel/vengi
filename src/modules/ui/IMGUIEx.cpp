@@ -567,8 +567,8 @@ void TextCentered(const char *label, bool reset) {
 }
 
 void Headline(const char *label) {
-	ui::ScopedStyle font;
-	font.setFont(imguiApp()->bigFont());
+	ui::ScopedStyle style;
+	style.pushFontSize(imguiApp()->bigFontSize());
 	ImGui::TextUnformatted(label);
 }
 
@@ -652,7 +652,7 @@ bool CommandButton(const char *label, const char *command, const char *tooltip, 
 		}
 	}
 	ui::ScopedStyle style;
-	style.setFont(imguiApp()->defaultFont());
+	style.pushFontSize(imguiApp()->fontSize());
 	if (tooltip != nullptr) {
 		ImGui::TooltipTextUnformatted(tooltip);
 	} else {
@@ -832,7 +832,7 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 
 	{
 		ui::ScopedStyle style;
-		style.setFont(imguiApp()->bigFont());
+		style.pushFontSize(imguiApp()->bigFontSize());
 		ImGui::TextCentered(label, true);
 	}
 
@@ -861,7 +861,7 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 
 void IconDialog(const char *icon, const char *text, bool wrap) {
 	ImGui::AlignTextToFramePadding();
-	ImGui::PushFont(imguiApp()->bigFont());
+	ImGui::PushFontSize(imguiApp()->bigFontSize());
 	ImGui::TextUnformatted(icon);
 	ImGui::PopFont();
 	ImGui::SameLine();

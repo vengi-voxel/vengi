@@ -251,13 +251,6 @@ void IMGUIApp::loadFonts() {
 
 	ImFontGlyphRangesBuilder builder;
 	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-	builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
-	builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
-	builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
-	builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
-	builder.AddRanges(io.Fonts->GetGlyphRangesThai());
-	builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
-	builder.AddRanges(io.Fonts->GetGlyphRangesGreek());
 	ImVector<ImWchar> glyphRanges;
 	builder.BuildRanges(&glyphRanges);
 
@@ -266,21 +259,14 @@ void IMGUIApp::loadFonts() {
 	ImFontConfig fontCfg;
 	fontCfg.MergeMode = true;
 #ifdef IMGUI_ENABLE_FREETYPE
-	fontCfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LightHinting;
-#endif
-
-	ImFontConfig bigFontIconCfg;
-	bigFontIconCfg.MergeMode = true;
-	bigFontIconCfg.GlyphMinAdvanceX = fontSize * 2.0f;
-	bigFontIconCfg.GlyphMaxAdvanceX = bigFontIconCfg.GlyphMinAdvanceX;
-#ifdef IMGUI_ENABLE_FREETYPE
-	bigFontIconCfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LightHinting;
+	fontCfg.FontLoaderFlags = ImGuiFreeTypeLoaderFlags_LightHinting;
 #endif
 
 	ImFontConfig fontIconCfg;
 	fontIconCfg.MergeMode = true;
+	fontIconCfg.GlyphOffset = {0, 1};
 	fontIconCfg.GlyphMinAdvanceX = fontSize;
-	fontIconCfg.GlyphMaxAdvanceX = bigFontIconCfg.GlyphMinAdvanceX;
+	fontIconCfg.GlyphMaxAdvanceX = fontSize;
 
 	static const ImWchar rangesLCIcons[] = {ICON_MIN_LC, ICON_MAX_LC, 0};
 
@@ -288,34 +274,6 @@ void IMGUIApp::loadFonts() {
 															fontSize, nullptr, glyphRanges.Data);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
 											 &fontIconCfg, rangesLCIcons);
-
-	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-														fontSize * 2.0f, nullptr, glyphRanges.Data);
-
-	_bigIconFont = io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
-															fontSize * 1.5f, &bigFontIconCfg, rangesLCIcons);
-
-	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-														  fontSize * 0.8f, nullptr, glyphRanges.Data);
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
-											 &fontIconCfg, rangesLCIcons);
-
-	unsigned char *pixels;
-	int width, height;
-	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-
-	video::TextureConfig cfg;
-	cfg.format(video::TextureFormat::RGBA);
-	if (_texture == video::InvalidId) {
-		_texture = video::genTexture(cfg);
-		setObjectName(_texture, video::ObjectNameType::Texture, "imgui_texture");
-	}
-
-	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
-	video::setupTexture(_texture, cfg);
-	video::uploadTexture(_texture, cfg.type(), cfg.format(), width, height, pixels, 0, cfg.samples());
-
-	io.Fonts->TexID = (ImTextureID)(intptr_t)_texture;
 }
 
 static void *_imguiAlloc(size_t size, void *) {

@@ -60,7 +60,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 		const scenegraph::SceneGraphNodeType nodeType = node->type();
 		if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ui::ScopedStyle style;
-			style.setFont(_app->bigIconFont());
+			style.pushFontSize(imguiApp()->bigFontSize());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 			toolbar.button(ICON_LC_COPY, "nodeduplicate");
@@ -80,7 +80,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedStyle style;
-		style.setFont(_app->bigIconFont());
+		style.pushFontSize(imguiApp()->bigFontSize());
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");

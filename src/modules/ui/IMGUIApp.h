@@ -34,7 +34,6 @@ protected:
 	core::VarPtr _renderUI;
 	core::VarPtr _showMetrics;
 	core::VarPtr _uiFontSize;
-	video::Id _texture = video::InvalidId;
 	IMGUIConsole _console;
 	core::String _writePathIni;
 	core::String _writePathLog;
@@ -89,9 +88,6 @@ protected:
 	video::FileDialogOptions _fileDialogOptions {};
 
 	ImFont* _defaultFont = nullptr;
-	ImFont* _bigFont = nullptr;
-	ImFont* _smallFont = nullptr;
-	ImFont* _bigIconFont = nullptr;
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *_imguiTestEngine = nullptr;
@@ -138,6 +134,7 @@ public:
 	}
 
 	int fontSize() const;
+	int bigFontSize() const;
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
 	virtual app::AppState onRunning() override;
@@ -147,9 +144,6 @@ public:
 	const glm::vec4 &color(style::StyleColor color);
 
 	ImFont *defaultFont();
-	ImFont *bigFont();
-	ImFont *bigIconFont();
-	ImFont *smallFont();
 
 	void languageOption();
 	void colorReductionOptions();
@@ -192,16 +186,8 @@ inline ImFont *IMGUIApp::defaultFont() {
 	return _defaultFont;
 }
 
-inline ImFont *IMGUIApp::bigFont() {
-	return _bigFont;
-}
-
-inline ImFont *IMGUIApp::bigIconFont() {
-	return _bigIconFont;
-}
-
-inline ImFont *IMGUIApp::smallFont() {
-	return _smallFont;
+inline int IMGUIApp::bigFontSize() const {
+	return fontSize() * 2;
 }
 
 inline int IMGUIApp::fontSize() const {

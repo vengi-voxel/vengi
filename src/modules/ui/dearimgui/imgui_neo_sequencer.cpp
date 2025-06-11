@@ -3,6 +3,7 @@
 //
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
 #endif
 
 #include "imgui_neo_sequencer.h"
@@ -132,13 +133,13 @@ static float GetWorkTimelineWidth(ImGuiNeoSequencerInternalData &context) {
 // Dont pull frame from context, its used for dragging
 static ImRect GetCurrentFrameBB(FrameIndexType frame, ImGuiNeoSequencerInternalData &context) {
 	const ImGuiStyle &imStyle = GetStyle();
-	const float width = style.CurrentFramePointerSize * GetIO().FontGlobalScale;
+	const float width = style.CurrentFramePointerSize * GetStyle().FontScaleMain;
 	const ImVec2 cursor =
 		context.TopBarStartCursor + ImVec2{context.ValuesWidth + imStyle.FramePadding.x - width / 2.0f, 0};
 	const ImVec2 currentFrameCursor = cursor + ImVec2{GetKeyframePositionX(frame, context), 0};
 
 	float pointerHeight = style.CurrentFramePointerSize * 2.5f;
-	ImRect rect{currentFrameCursor, currentFrameCursor + ImVec2{width, pointerHeight * GetIO().FontGlobalScale}};
+	ImRect rect{currentFrameCursor, currentFrameCursor + ImVec2{width, pointerHeight * GetStyle().FontScaleMain}};
 
 	return rect;
 }

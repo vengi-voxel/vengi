@@ -54,7 +54,7 @@ public:
 		ImGui::PopID();
 		if (tooltip != nullptr && tooltip[0] != '\0') {
 			ui::ScopedStyle tooltipStyle;
-			tooltipStyle.setFont(imguiApp()->defaultFont());
+			tooltipStyle.pushFontSize(imguiApp()->fontSize());
 			ImGui::TooltipTextUnformatted(tooltip);
 		}
 		next();

@@ -19,7 +19,7 @@ public:
 	~ScopedStyle() {
 		ImGui::PopStyleVar(_n);
 		ImGui::PopStyleColor(_color);
-		resetFont();
+		resetFontSize();
 	}
 	inline void setColor(ImGuiCol idx, const ImVec4 &col) {
 		ImGui::PushStyleColor(idx, col);
@@ -46,13 +46,13 @@ public:
 		}
 		setColor(idx, core::Color::darker(c, f));
 	}
-	inline void setFont(ImFont *font) {
-		ImGui::PushFont(font);
+	inline void pushFontSize(int size) {
+		ImGui::PushFontSize(size);
 		++_font;
 	}
-	inline void resetFont() {
+	inline void resetFontSize() {
 		if (_font > 0) {
-			ImGui::PopFont();
+			ImGui::PopFontSize();
 			--_font;
 		}
 	}

@@ -500,7 +500,7 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 	if (ImGui::BeginPopupModal(title.c_str(), &showUVEditor, ImGuiWindowFlags_AlwaysAutoResize)) {
 		{
 			ui::ScopedStyle style;
-			style.setFont(_app->bigIconFont());
+			style.pushFontSize(imguiApp()->bigFontSize());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 			toolbar.button(ICON_LC_FLIP_HORIZONTAL, "texturebrushmirroru");
@@ -586,7 +586,7 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 
 void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::ScopedStyle style;
-	style.setFont(_app->bigIconFont());
+	style.pushFontSize(imguiApp()->bigFontSize());
 
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 
