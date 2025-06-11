@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"

@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include "core/collection/List.h"
 #include "core/NonCopyable.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 #include <stdint.h>
 #include <string.h>
 #include <glm/fwd.hpp>
@@ -46,8 +46,8 @@ protected:
 	typedef core::Array<Id, (int)ShaderType::Max> ShaderArray;
 	ShaderArray _shader;
 
-	typedef core::Map<int, uint64_t, 8> UniformStateMap;
-	mutable UniformStateMap _uniformStateMap{128};
+	typedef core::DynamicMap<int, uint64_t, 8> UniformStateMap;
+	mutable UniformStateMap _uniformStateMap;
 
 	Id _program = InvalidId;
 	bool _initialized = false;

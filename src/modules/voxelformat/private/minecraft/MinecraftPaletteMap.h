@@ -6,6 +6,7 @@
 
 #include "core/String.h"
 #include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/BufferView.h"
 
 namespace voxelformat {

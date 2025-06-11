@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Types.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 
 namespace video {
 

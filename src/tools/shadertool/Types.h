@@ -6,7 +6,7 @@
 
 #include "video/Types.h"
 #include "core/String.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/List.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>

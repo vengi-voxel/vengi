@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "core/String.h"
 
@@ -18,8 +17,5 @@ namespace core {
  */
 template<class VALUETYPE, size_t BUCKETSIZE = 11>
 using StringMap = core::Map<core::String, VALUETYPE, BUCKETSIZE, core::StringHash>;
-
-template<class VALUETYPE, size_t BUCKETSIZE = 11>
-using DynamicStringMap = core::DynamicMap<core::String, VALUETYPE, BUCKETSIZE, core::StringHash>;
 
 }

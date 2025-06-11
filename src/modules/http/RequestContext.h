@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 
 namespace http {
-	
+
 using Headers = core::DynamicStringMap<core::String>;
 
 enum class RequestType { GET, POST };

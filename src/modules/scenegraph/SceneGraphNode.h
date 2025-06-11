@@ -9,7 +9,7 @@
 #include "core/String.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 #include "SceneGraphKeyFrame.h"
 #include "palette/NormalPalette.h"
 
