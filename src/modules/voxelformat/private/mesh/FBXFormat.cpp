@@ -320,6 +320,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 
 	Log::debug("There are %i materials in the mesh", (int)mesh->materials.count);
 	Log::debug("Vertex colors: %s", mesh->vertex_color.exists ? "true" : "false");
+	Log::debug("Scene meter scale: %f", scene->settings.unit_meters);
+	Log::debug("Scene original meter scale: %f", scene->settings.original_unit_meters);
 
 	for (const ufbx_mesh_part &meshMaterial : mesh->material_parts) {
 		if (meshMaterial.num_triangles == 0) {
