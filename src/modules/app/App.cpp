@@ -667,8 +667,6 @@ AppState App::onInit() {
 	flags |= SDL_INIT_TIMER;
 #endif
 	SDL_Init(flags);
-	Log::debug("Initialize the threadpool");
-	_threadPool->init();
 
 	Log::debug("Initialize the log system");
 	Log::init();
@@ -703,6 +701,9 @@ AppState App::onInit() {
 			return AppState::Destroy;
 		}
 	}
+
+	Log::debug("Initialize the threadpool");
+	_threadPool->init();
 
 	metric::init(fullAppname());
 	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
