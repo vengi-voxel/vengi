@@ -591,44 +591,28 @@ void ShapeBuilder::diamond(float length1, float length2) {
 
 		math::Tri tris[8];
 		tris[0].setColor(core::Color::darker(_color, 2.0f));
-		tris[0].vertices[0] = v0;
-		tris[0].vertices[1] = v1;
-		tris[0].vertices[2] = v2;
+		tris[0].setVertices(v0, v1, v2);
 
 		tris[1].setColor(core::Color::brighter(_color, 2.0f));
-		tris[1].vertices[0] = v0;
-		tris[1].vertices[1] = v2;
-		tris[1].vertices[2] = v3;
+		tris[1].setVertices(v0, v2, v3);
 
 		tris[2].setColor(_color);
-		tris[2].vertices[0] = v0;
-		tris[2].vertices[1] = v3;
-		tris[2].vertices[2] = v4;
+		tris[2].setVertices(v0, v3, v4);
 
 		tris[3].setColor(_color);
-		tris[3].vertices[0] = v0;
-		tris[3].vertices[1] = v4;
-		tris[3].vertices[2] = v1;
+		tris[3].setVertices(v0, v4, v1);
 
 		tris[4].setColor(core::Color::darker(_color));
-		tris[4].vertices[0] = v5;
-		tris[4].vertices[1] = v2;
-		tris[4].vertices[2] = v1;
+		tris[4].setVertices(v5, v2, v1);
 
 		tris[5].setColor(core::Color::brighter(_color));
-		tris[5].vertices[0] = v5;
-		tris[5].vertices[1] = v3;
-		tris[5].vertices[2] = v2;
+		tris[5].setVertices(v5, v3, v2);
 
 		tris[6].setColor(_color);
-		tris[6].vertices[0] = v5;
-		tris[6].vertices[1] = v4;
-		tris[6].vertices[2] = v3;
+		tris[6].setVertices(v5, v4, v3);
 
 		tris[7].setColor(_color);
-		tris[7].vertices[0] = v5;
-		tris[7].vertices[1] = v1;
-		tris[7].vertices[2] = v4;
+		tris[7].setVertices(v5, v1, v4);
 
 		reserve(lengthof(tris) * 3, lengthof(tris) * 3);
 		for (int i = 0; i < lengthof(tris); ++i) {

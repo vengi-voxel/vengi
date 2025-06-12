@@ -704,11 +704,11 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 			break;
 		}
 		voxelformat::MeshTri meshTri;
-		for (int k = 0; k < 3; ++k) {
-			const int idx = indices[i + k];
-			meshTri.vertices[k] = verts[idx] * scale;
-			meshTri.uv[k] = texcoords[idx];
-		}
+		const int32_t idx0 = indices[i + 0];
+		const int32_t idx1 = indices[i + 1];
+		const int32_t idx2 = indices[i + 2];
+		meshTri.setVertices(verts[idx0] * scale, verts[idx1] * scale, verts[idx2] * scale);
+		meshTri.setUVs(texcoords[idx0], texcoords[idx1], texcoords[idx2]);
 		const int textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
 		meshTri.material = texture.material;

@@ -827,28 +827,25 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			MeshTriCollection tris;
 			tris.reserve(mesh.faces.size());
 			for (const Face3ds &face : mesh.faces) {
-				MeshTri meshTri;
-				bool faceError = false;
-				for (int i = 0; i < 3; ++i) {
-					const uint16_t idx = face.indices[i];
-					if (idx >= mesh.vertices.size()) {
-						Log::error("Invalid vertex index %d/%d", idx, (int)mesh.vertices.size());
-						faceError = true;
-						break;
-					}
-					meshTri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[idx] * scale, 1.0f);
-					if (mesh.colors.size() > idx) {
-						meshTri.color[i] = mesh.colors[idx];
-					}
-				}
-				if (faceError) {
+				const uint16_t idx0 = face.indices[0];
+				const uint16_t idx1 = face.indices[1];
+				const uint16_t idx2 = face.indices[2];
+				if (idx0 >= mesh.vertices.size() || idx1 >= mesh.vertices.size() || idx2 >= mesh.vertices.size()) {
+					Log::error("Invalid vertex indices for triangle %d:%d:%d (%d)", idx0, idx1, idx2, (int)mesh.vertices.size());
 					// try to continue and skip the broken face
 					continue;
 				}
+				MeshTri meshTri;
+				const glm::vec3 &vertex0 = rotationMatrix * glm::vec4(mesh.vertices[idx0] * scale, 1.0f);
+				const glm::vec3 &vertex1 = rotationMatrix * glm::vec4(mesh.vertices[idx1] * scale, 1.0f);
+				const glm::vec3 &vertex2 = rotationMatrix * glm::vec4(mesh.vertices[idx2] * scale, 1.0f);
+				meshTri.setVertices(vertex0, vertex1, vertex2);
+				if (mesh.colors.size() > idx0 && mesh.colors.size() > idx1 && mesh.colors.size() > idx2) {
+					meshTri.setColor(mesh.colors[idx0], mesh.colors[idx1], mesh.colors[idx2]);
+				}
+
 				if (face.indices[0] < mesh.texcoords.size() && face.indices[1] < mesh.texcoords.size() && face.indices[2] < mesh.texcoords.size()) {
-					meshTri.uv[0] = mesh.texcoords[face.indices[0]];
-					meshTri.uv[1] = mesh.texcoords[face.indices[1]];
-					meshTri.uv[2] = mesh.texcoords[face.indices[2]];
+					meshTri.setUVs(mesh.texcoords[face.indices[0]], mesh.texcoords[face.indices[1]], mesh.texcoords[face.indices[2]]);
 				}
 				if (!face.material.empty()) {
 					auto matIter = materials.find(face.material);

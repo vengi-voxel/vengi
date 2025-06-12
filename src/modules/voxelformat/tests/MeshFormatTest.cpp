@@ -23,9 +23,9 @@ class MeshFormatTest : public AbstractFormatTest {};
 TEST_F(MeshFormatTest, testSubdivide) {
 	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
-	meshTri.vertices[0] = glm::vec3(-8.77272797, -11.43335, -0.154544264);
-	meshTri.vertices[1] = glm::vec3(-8.77272701, 11.1000004, -0.154543981);
-	meshTri.vertices[2] = glm::vec3(8.77272701, 11.1000004, -0.154543981);
+	meshTri.setVertices(glm::vec3(-8.77272797, -11.43335, -0.154544264),
+						glm::vec3(-8.77272701, 11.1000004, -0.154543981),
+						glm::vec3(8.77272701, 11.1000004, -0.154543981));
 	MeshFormat::subdivideTri(meshTri, tinyTris);
 	EXPECT_EQ(1024u, tinyTris.size());
 }
@@ -42,7 +42,8 @@ TEST_F(MeshFormatTest, testColorAt) {
 	voxelformat::MeshTri meshTri;
 	meshTri.material = createMaterial(texture);
 	for (int i = 0; i < 256; ++i) {
-		meshTri.uv[0] = meshTri.uv[1] = meshTri.uv[2] = texture->uv(i, 0);
+		const glm::vec2 uv = texture->uv(i, 0);
+		meshTri.setUVs(uv, uv, uv);
 		const core::RGBA color = meshTri.colorAt(meshTri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 									   << core::Color::print(color);
@@ -54,16 +55,12 @@ TEST_F(MeshFormatTest, testCalculateAABB) {
 	voxelformat::MeshTri meshTri;
 
 	{
-		meshTri.vertices[0] = glm::vec3(0, 0, 0);
-		meshTri.vertices[1] = glm::vec3(10, 0, 0);
-		meshTri.vertices[2] = glm::vec3(10, 0, 10);
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(10, 0, 0), glm::vec3(10, 0, 10));
 		tris.push_back(meshTri);
 	}
 
 	{
-		meshTri.vertices[0] = glm::vec3(0, 0, 0);
-		meshTri.vertices[1] = glm::vec3(-10, 0, 0);
-		meshTri.vertices[2] = glm::vec3(-10, 0, -10);
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(-10, 0, 0), glm::vec3(-10, 0, -10));
 		tris.push_back(meshTri);
 	}
 
@@ -82,25 +79,19 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 	voxelformat::MeshTri meshTri;
 
 	{
-		meshTri.vertices[0] = glm::vec3(0, 0, 0);
-		meshTri.vertices[1] = glm::vec3(10, 0, 0);
-		meshTri.vertices[2] = glm::vec3(10, 0, 10);
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(10, 0, 0), glm::vec3(10, 0, 10));
 		tris.push_back(meshTri);
 	}
 
 	{
-		meshTri.vertices[0] = glm::vec3(0, 0, 0);
-		meshTri.vertices[1] = glm::vec3(-10, 0, 0);
-		meshTri.vertices[2] = glm::vec3(-10, 0, -10);
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(-10, 0, 0), glm::vec3(-10, 0, -10));
 		tris.push_back(meshTri);
 	}
 
 	EXPECT_TRUE(MeshFormat::isVoxelMesh(tris));
 
 	{
-		meshTri.vertices[0] = glm::vec3(0, 0, 0);
-		meshTri.vertices[1] = glm::vec3(-10, 1, 0);
-		meshTri.vertices[2] = glm::vec3(-10, 0, -10);
+		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(-10, 1, 0), glm::vec3(-10, 0, -10));
 		tris.push_back(meshTri);
 	}
 
@@ -146,10 +137,10 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	const int n = (int)indices.size();
 	for (int i = 0; i < n; i += 3) {
 		voxelformat::MeshTri meshTri;
-		for (int j = 0; j < 3; ++j) {
-			meshTri.vertices[j] = vertices[indices[i + j]];
-			meshTri.color[j] = core::Color::getRGBA(colors[indices[i + j]]);
-		}
+		meshTri.setVertices(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+		meshTri.setColor(core::Color::getRGBA(colors[indices[i]]),
+						 core::Color::getRGBA(colors[indices[i + 1]]),
+						 core::Color::getRGBA(colors[indices[i + 2]]));
 		tris.push_back(meshTri);
 	}
 	mesh.voxelize(sceneGraph, tris);

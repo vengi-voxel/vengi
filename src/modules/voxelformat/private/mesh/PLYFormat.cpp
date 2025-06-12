@@ -456,12 +456,12 @@ void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &
 	for (int i = 0; i < (int)faces.size(); ++i) {
 		const PLYFace &face = faces[i];
 		voxelformat::MeshTri meshTri;
-		for (int j = 0; j < 3; ++j) {
-			const PLYVertex &vertex = vertices[face.indices[j]];
-			meshTri.vertices[j] = vertex.position;
-			meshTri.uv[j] = vertex.texCoord;
-			meshTri.color[j] = vertex.color;
-		}
+		const PLYVertex &vertex0 = vertices[face.indices[0]];
+		const PLYVertex &vertex1 = vertices[face.indices[1]];
+		const PLYVertex &vertex2 = vertices[face.indices[2]];
+		meshTri.setUVs(vertex0.texCoord, vertex1.texCoord, vertex2.texCoord);
+		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
+		meshTri.setVertices(vertex0.position, vertex1.position, vertex2.position);
 		tris.push_back(meshTri);
 	}
 }

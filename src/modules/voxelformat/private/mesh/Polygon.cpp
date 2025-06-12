@@ -43,15 +43,9 @@ static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords,
 
 void Polygon::addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2) const {
 	MeshTri meshTri;
-	meshTri.vertices[0] = _vertices[idx0];
-	meshTri.vertices[1] = _vertices[idx1];
-	meshTri.vertices[2] = _vertices[idx2];
-	meshTri.uv[0] = _uvs[idx0];
-	meshTri.uv[1] = _uvs[idx1];
-	meshTri.uv[2] = _uvs[idx2];
-	meshTri.color[0] = _colors[idx0];
-	meshTri.color[1] = _colors[idx1];
-	meshTri.color[2] = _colors[idx2];
+	meshTri.setVertices(_vertices[idx0], _vertices[idx1], _vertices[idx2]);
+	meshTri.setUVs(_uvs[idx0], _uvs[idx1], _uvs[idx2]);
+	meshTri.setColor(_colors[idx0], _colors[idx1], _colors[idx2]);
 	meshTri.material = _material;
 	tris.push_back(meshTri);
 }

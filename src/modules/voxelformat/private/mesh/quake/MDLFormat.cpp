@@ -312,18 +312,32 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			for (uint32_t i = 0; i < hdr.numTris; ++i) {
 				const MDLTriangle &tri = tris[i];
 				voxelformat::MeshTri meshTri;
-				for (int j = 0; j < 3; ++j) {
-					if (idPolyModel) {
-						uint32_t idx = tri.id.indices[j];
-						const glm::vec3 &vertex = frame.vertices[idx];
-						meshTri.vertices[j] = vertex;
-						meshTri.uv[j] = texCoords[tri.id.indices[j]];
-					} else {
-						uint32_t idx = tri.ra.indices[j];
-						const glm::vec3 &vertex = frame.vertices[idx];
-						meshTri.vertices[j] = vertex;
-						meshTri.uv[j] = texCoords[tri.ra.uv[j]];
+				if (idPolyModel) {
+					uint32_t idx0 = tri.id.indices[0];
+					uint32_t idx1 = tri.id.indices[1];
+					uint32_t idx2 = tri.id.indices[2];
+					if (idx0 >= hdr.numVerts || idx1 >= hdr.numVerts || idx2 >= hdr.numVerts) {
+						Log::error("Invalid triangle indices %u %u %u in frame %s", idx0, idx1, idx2, frame.name.c_str());
+						continue;
 					}
+					const glm::vec3 &vertex0 = frame.vertices[idx0];
+					const glm::vec3 &vertex1 = frame.vertices[idx1];
+					const glm::vec3 &vertex2 = frame.vertices[idx2];
+					meshTri.setVertices(vertex0, vertex1, vertex2);
+					meshTri.setUVs(texCoords[idx0], texCoords[idx1], texCoords[idx2]);
+				} else {
+					uint32_t idx0 = tri.ra.indices[0];
+					uint32_t idx1 = tri.ra.indices[1];
+					uint32_t idx2 = tri.ra.indices[2];
+					if (idx0 >= hdr.numVerts || idx1 >= hdr.numVerts || idx2 >= hdr.numVerts) {
+						Log::error("Invalid triangle indices %u %u %u in frame %s", idx0, idx1, idx2, frame.name.c_str());
+						continue;
+					}
+					const glm::vec3 &vertex0 = frame.vertices[idx0];
+					const glm::vec3 &vertex1 = frame.vertices[idx1];
+					const glm::vec3 &vertex2 = frame.vertices[idx2];
+					meshTri.setVertices(vertex0, vertex1, vertex2);
+					meshTri.setUVs(texCoords[idx0], texCoords[idx1], texCoords[idx2]);
 				}
 				if (!meshMaterials.empty()) {
 					meshTri.material = meshMaterials.begin()->second;

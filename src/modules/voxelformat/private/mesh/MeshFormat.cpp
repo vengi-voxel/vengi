@@ -205,14 +205,6 @@ bool MeshFormat::isVoxelMesh(const MeshTriCollection &tris) {
 	for (const voxelformat::MeshTri &meshTri : tris) {
 		if (!meshTri.flat()) {
 			Log::debug("No axis aligned mesh found");
-#ifdef DEBUG
-			for (int i = 0; i < 3; ++i) {
-				const glm::vec3 &v = meshTri.vertices[i];
-				Log::debug("tri.vertices[%i]: %f:%f:%f", i, v.x, v.y, v.z);
-			}
-			const glm::vec3 &n = meshTri.normal();
-			Log::debug("tri.normal: %f:%f:%f", n.x, n.y, n.z);
-#endif
 			return false;
 		}
 	}

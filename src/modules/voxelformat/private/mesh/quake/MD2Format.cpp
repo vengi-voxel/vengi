@@ -191,10 +191,9 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		}
 
 		voxelformat::MeshTri meshTri;
-		for (int j = 0; j < 3; ++j) {
-			meshTri.vertices[j] = vertices[vertexIndices[j]] * scale;
-			meshTri.uv[j] = uvs[uvIndices[j]];
-		}
+		meshTri.setVertices(vertices[vertexIndices[0]] * scale, vertices[vertexIndices[1]] * scale,
+							vertices[vertexIndices[2]] * scale);
+		meshTri.setUVs(uvs[uvIndices[0]], uvs[uvIndices[1]], uvs[uvIndices[2]]);
 		meshTri.material = material;
 		tris.push_back(meshTri);
 	}

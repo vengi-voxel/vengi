@@ -1713,12 +1713,13 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		tris.reserve(tris.size() + maxIndices / 3);
 		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
 			voxelformat::MeshTri meshTri;
-			for (size_t i = 0; i < 3; ++i) {
-				const size_t idx = indices[i + indexOffset];
-				meshTri.vertices[i] = vertices[idx].pos * scale;
-				meshTri.uv[i] = vertices[idx].uv;
-				meshTri.color[i] = vertices[idx].color;
-			}
+			const size_t idx0 = indices[indexOffset];
+			const size_t idx1 = indices[indexOffset + 1];
+			const size_t idx2 = indices[indexOffset + 2];
+			meshTri.setUVs(vertices[idx0].uv, vertices[idx1].uv, vertices[idx2].uv);
+			meshTri.setColor(vertices[idx0].color, vertices[idx1].color, vertices[idx2].color);
+			meshTri.setVertices(vertices[idx0].pos * scale,
+							 vertices[idx1].pos * scale, vertices[idx2].pos * scale);
 			const size_t textureIdx = indices[indexOffset];
 			const GltfVertex &v = vertices[textureIdx];
 			meshTri.material = v.meshMaterial;

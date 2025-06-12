@@ -9,7 +9,8 @@
 
 namespace math {
 
-struct Tri {
+class Tri {
+public:
 	Tri() = default;
 	inline constexpr Tri(const glm::vec3 (&_vertices)[3], const core::RGBA (&_color)[3]) {
 		for (int i = 0; i < 3; ++i) {
@@ -42,6 +43,22 @@ struct Tri {
 	// set the color for all three vertices
 	void setColor(core::RGBA color);
 	void setColor(const glm::vec4 &color);
+
+	void setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3);
+	void setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3);
 };
+static_assert(sizeof(Tri) == 56, "Tri must have the expected size");
+
+inline void Tri::setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3) {
+	vertices[0] = v1;
+	vertices[1] = v2;
+	vertices[2] = v3;
+}
+
+inline void Tri::setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3) {
+	color[0] = c1;
+	color[1] = c2;
+	color[2] = c3;
+}
 
 } // namespace math

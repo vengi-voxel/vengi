@@ -404,21 +404,23 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 
 			for (size_t vi = 0; vi < numTris; vi++) {
 				voxelformat::MeshTri meshTri;
-				for (int ti = 0; ti < 3; ++ti) {
-					const uint32_t ix = triIndices[vi * 3 + ti];
-					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
-					if (mesh->vertex_color.exists) {
-						const glm::vec4 &vertexColor =
-							priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
-						meshTri.color[ti] = core::Color::getRGBA(vertexColor);
-					}
-					if (mesh->vertex_uv.exists) {
-						const ufbx_vec2 &uv = ufbx_get_vertex_vec2(&mesh->vertex_uv, ix);
-						meshTri.uv[ti] = priv::_ufbx_to_vec2(uv);
-					}
-					// TODO: VOXELFORMAT: transform here - see issue
-					// https://github.com/vengi-voxel/vengi/issues/227
-					meshTri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
+				const uint32_t idx0 = triIndices[vi * 3 + 0];
+				const uint32_t idx1 = triIndices[vi * 3 + 1];
+				const uint32_t idx2 = triIndices[vi * 3 + 2];
+				const ufbx_vec3 &vertex0 = ufbx_get_vertex_vec3(&mesh->vertex_position, idx0);
+				const ufbx_vec3 &vertex1 = ufbx_get_vertex_vec3(&mesh->vertex_position, idx1);
+				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&mesh->vertex_position, idx2);
+				// TODO: VOXELFORMAT: transform here - see issue
+				// https://github.com/vengi-voxel/vengi/issues/227
+				meshTri.setVertices(priv::_ufbx_to_vec3(vertex0) * scale, priv::_ufbx_to_vec3(vertex1) * scale,
+									priv::_ufbx_to_vec3(vertex2) * scale);
+				if (mesh->vertex_color.exists) {
+					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&mesh->vertex_color, idx0);
+					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&mesh->vertex_color, idx1);
+					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&mesh->vertex_color, idx2);
+					meshTri.setColor(core::Color::getRGBA(priv::_ufbx_to_vec4(color0)),
+									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
+									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
 				}
 				meshTri.material = mat;
 				tris.emplace_back(core::move(meshTri));

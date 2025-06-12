@@ -34,17 +34,15 @@ TEST_F(MeshTriTest, testColorAt4x4) {
 		meshTri.material = createMaterial(texture);
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
-				meshTri.uv[0] = image::Image::uv(x, y, w, h, originUpperLeft);
-				meshTri.uv[1] = image::Image::uv(x, y + 1, w, h, originUpperLeft);
-				meshTri.uv[2] = image::Image::uv(x + 1, y, w, h, originUpperLeft);
+				meshTri.setUVs(image::Image::uv(x, y, w, h, originUpperLeft),
+							  image::Image::uv(x, y + 1, w, h, originUpperLeft),
+							  image::Image::uv(x + 1, y, w, h, originUpperLeft));
 				const glm::vec2 &uv = meshTri.centerUV();
 				const core::RGBA color = meshTri.colorAt(uv, originUpperLeft);
 				const int texIndex = y * w + x;
 				ASSERT_EQ(buffer[texIndex], color)
 					<< "pixel(" << x << "/" << y << "), " << core::Color::print(buffer[texIndex]) << " vs "
-					<< core::Color::print(color) << " ti: " << texIndex << ", uv(" << uv.x << "/" << uv.y
-					<< ") triangle uvs(" << meshTri.uv[0].x << "/" << meshTri.uv[0].y << ", " << meshTri.uv[1].x << "/"
-					<< meshTri.uv[1].y << ", " << meshTri.uv[2].x << "/" << meshTri.uv[2].y << ")";
+					<< core::Color::print(color) << " ti: " << texIndex;
 			}
 		}
 	}

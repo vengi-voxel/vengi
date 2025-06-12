@@ -384,21 +384,41 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			const int faceVertices = mesh.num_face_vertices[faceNum];
 			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
 			voxelformat::MeshTri meshTri;
-			for (int i = 0; i < faceVertices; ++i) {
-				const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-				meshTri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
-				meshTri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
-				meshTri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
-				if (!attrib.colors.empty()) {
-					const float r = attrib.colors[3 * idx.vertex_index + 0];
-					const float g = attrib.colors[3 * idx.vertex_index + 1];
-					const float b = attrib.colors[3 * idx.vertex_index + 2];
-					meshTri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f));
-				}
-				if (idx.texcoord_index >= 0) {
-					meshTri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
-					meshTri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
-				}
+			const tinyobj::index_t &idx0 = mesh.indices[indexOffset + 0];
+			const tinyobj::index_t &idx1 = mesh.indices[indexOffset + 1];
+			const tinyobj::index_t &idx2 = mesh.indices[indexOffset + 2];
+			const glm::vec3 &vertex0{attrib.vertices[3 * idx0.vertex_index + 0] * scale.x,
+											attrib.vertices[3 * idx0.vertex_index + 1] * scale.y,
+											attrib.vertices[3 * idx0.vertex_index + 2] * scale.z};
+			const glm::vec3 &vertex1{attrib.vertices[3 * idx1.vertex_index + 0] * scale.x,
+											attrib.vertices[3 * idx1.vertex_index + 1] * scale.y,
+											attrib.vertices[3 * idx1.vertex_index + 2] * scale.z};
+			const glm::vec3 &vertex2{attrib.vertices[3 * idx2.vertex_index + 0] * scale.x,
+											attrib.vertices[3 * idx2.vertex_index + 1] * scale.y,
+											attrib.vertices[3 * idx2.vertex_index + 2] * scale.z};
+			meshTri.setVertices(vertex0, vertex1, vertex2);
+			if (!attrib.colors.empty()) {
+				const float r0 = attrib.colors[3 * idx0.vertex_index + 0];
+				const float g0 = attrib.colors[3 * idx0.vertex_index + 1];
+				const float b0 = attrib.colors[3 * idx0.vertex_index + 2];
+				const float r1 = attrib.colors[3 * idx1.vertex_index + 0];
+				const float g1 = attrib.colors[3 * idx1.vertex_index + 1];
+				const float b1 = attrib.colors[3 * idx1.vertex_index + 2];
+				const float r2 = attrib.colors[3 * idx2.vertex_index + 0];
+				const float g2 = attrib.colors[3 * idx2.vertex_index + 1];
+				const float b2 = attrib.colors[3 * idx2.vertex_index + 2];
+				meshTri.setColor(core::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
+								 core::Color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
+								 core::Color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
+			}
+			if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0) {
+				const glm::vec2 &uv0{attrib.texcoords[2 * idx0.texcoord_index + 0],
+										attrib.texcoords[2 * idx0.texcoord_index + 1]};
+				const glm::vec2 &uv1{attrib.texcoords[2 * idx1.texcoord_index + 0],
+										attrib.texcoords[2 * idx1.texcoord_index + 1]};
+				const glm::vec2 &uv2{attrib.texcoords[2 * idx2.texcoord_index + 0],
+										attrib.texcoords[2 * idx2.texcoord_index + 1]};
+				meshTri.setUVs(uv0, uv1, uv2);
 			}
 			if (material != nullptr) {
 				const core::String materialName = material->name.c_str();
@@ -413,7 +433,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				}
 				if (attrib.colors.empty()) {
 					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
-					meshTri.color[0] = meshTri.color[1] = meshTri.color[2] = core::Color::getRGBA(diffuseColor);
+					meshTri.setColor(diffuseColor);
 				}
 			}
 			tris.push_back(meshTri);
