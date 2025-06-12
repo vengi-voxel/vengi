@@ -80,10 +80,7 @@ bool Buffer::addAttribute(const Attribute& attribute) {
 		Log::error("The max vertex attributes are exceeded");
 		return false;
 	}
-	if (!_attributes.insert(attribute)) {
-		Log::error("Failed to add attribute");
-		return false;
-	}
+	_attributes.emplace_back(attribute);
 	_dirtyAttributes = true;
 	return true;
 }
@@ -452,7 +449,7 @@ void Buffer::shutdown() {
 
 void Buffer::clearAttributes() {
 	_dirtyAttributes = false;
-	_attributes.clear();
+	_attributes.release();
 }
 
 int Buffer::attributes() const {
