@@ -2166,11 +2166,12 @@ namespace voxelformat {
 		MCENTRY("minecraft:zombie_wall_head", 6, 0xFF),                                                                \
 	}
 
-const McPaletteArray &getPaletteArray() {
 #define MCENTRY(name, pal, alpha) {name, pal, alpha}
-	static const McColorScheme mccolors[] MCCOLORS;
+static const McColorScheme mccolors[] MCCOLORS;
 #undef MCENTRY
-	static const McPaletteArray mcPalette(mccolors, lengthof(mccolors));
+
+const McPaletteArray &getPaletteArray() {
+	static thread_local const McPaletteArray mcPalette(mccolors, lengthof(mccolors));
 	return mcPalette;
 }
 
@@ -2255,20 +2256,19 @@ int findPaletteIndex(const core::String &name, int defaultValue) {
 }
 
 const McPaletteMap &getPaletteMap() {
-// https://gitlab.com/bztsrc/mtsedit/blob/master/etc/Mineclone2.gpl
-// https://github.com/mcedit/mcedit2/tree/master/src/mceditlib/blocktypes
-// https://minecraft.wiki/w/Java_Edition_data_values
-// https://minecraft.wiki/w/Java_Edition_data_values/Pre-flattening#Block_IDs
-// https://github.com/erich666/Mineways/blob/c84d1dad8ef9c5d59008b3eabff0161aae9600d6/Win/nbt.cpp#L370
-// minetestmapper2 color.txt
-#define MCENTRY(name, pal, alpha)                                                                                      \
-	{                                                                                                                  \
-		name, {                                                                                                        \
-			pal, alpha                                                                                                 \
-		}                                                                                                              \
+	// https://gitlab.com/bztsrc/mtsedit/blob/master/etc/Mineclone2.gpl
+	// https://github.com/mcedit/mcedit2/tree/master/src/mceditlib/blocktypes
+	// https://minecraft.wiki/w/Java_Edition_data_values
+	// https://minecraft.wiki/w/Java_Edition_data_values/Pre-flattening#Block_IDs
+	// https://github.com/erich666/Mineways/blob/c84d1dad8ef9c5d59008b3eabff0161aae9600d6/Win/nbt.cpp#L370
+	// minetestmapper2 color.txt
+	static thread_local McPaletteMap mcPalette;
+	if (!mcPalette.empty()) {
+		return mcPalette;
 	}
-	static const McPaletteMap mcPalette MCCOLORS;
-#undef MCENTRY
+	for (const McColorScheme &color : getPaletteArray()) {
+		mcPalette.emplace(color.name, {color.palIdx, color.alpha});
+	}
 	return mcPalette;
 }
 
