@@ -193,7 +193,7 @@ ifneq ($(OS),Windows_NT)
 	$(Q)$(CMAKE) -E create_symlink $(BUILDDIR)/compile_commands.json compile_commands.json
 endif
 
-%-run %-memcheckxml %-memcheck %-debug %-apitrace %-perf tests-%: $(BUILDDIR)/CMakeCache.txt
+%-run %-memcheckxml %-memcheck %-debug %-apitrace %-perf %-heaptrack tests-%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 docs/Formats.md: formatprinter
