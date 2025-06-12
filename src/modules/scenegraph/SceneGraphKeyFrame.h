@@ -59,7 +59,7 @@ public:
 		return _transform;
 	}
 };
-using SceneGraphKeyFrames = core::Buffer<SceneGraphKeyFrame>;
+using SceneGraphKeyFrames = core::Buffer<SceneGraphKeyFrame, 4>;
 using SceneGraphKeyFramesMap = core::DynamicStringMap<SceneGraphKeyFrames>;
 
 }; // namespace scenegraph

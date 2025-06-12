@@ -132,7 +132,7 @@ bool convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, scenegr
 		scenegraph::SceneGraphNode &node = *iter;
 		scenegraph::SceneGraphKeyFramesMap &allKeyFrames = node.allKeyFrames();
 		for (auto e : allKeyFrames) {
-			core::Buffer<scenegraph::SceneGraphKeyFrame> &frames = e->value;
+			SceneGraphKeyFrames &frames = e->value;
 			for (scenegraph::SceneGraphKeyFrame &frame : frames) {
 				// the local matrix is still in 'fromSystem' coordinates
 				const glm::mat4x4 fromLocalMatrix = frame.transform().localMatrix();
