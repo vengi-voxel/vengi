@@ -73,7 +73,7 @@ static bool load(const core::String &filename, priv::NamedBinaryTagContext &ctx,
 	}
 
 	core::DynamicArray<scenegraph::SceneGraphNode*> nodes;
-	nodes.reserve(entities.size());
+	nodes.resize(entities.size());
 	Log::info("Found %i region files", (int)entities.size());
 	app::for_parallel(0, entities.size(), [&nodes, &entities, &baseName, &archive, &loadctx](int start, int end) {
 		for (int i = start; i < end; ++i) {
