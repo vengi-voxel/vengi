@@ -22,8 +22,6 @@ public:
 		this->material = _material;
 	}
 
-	virtual ~MeshTri() = default;
-
 	MeshMaterialPtr material;
 
 	void setUVs(const glm::vec2 &uv1, const glm::vec2 &uv2, const glm::vec2 &uv3);

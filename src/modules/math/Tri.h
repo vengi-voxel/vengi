@@ -11,20 +11,20 @@ namespace math {
 
 class Tri {
 private:
-	glm::vec3 _vertices[3]{};
-	core::RGBA _color[3]{core::RGBA(0, 0, 0), core::RGBA(0, 0, 0), core::RGBA(0, 0, 0)};
+	struct Vert {
+		glm::vec3 pos{0};
+		core::RGBA color{0, 0, 0};
+	} _vertices[3];
+	static_assert(sizeof(Vert) == 16, "Vert must have the expected size");
 
 public:
 	Tri() = default;
 	inline constexpr Tri(const glm::vec3 (&v)[3], const core::RGBA (&c)[3]) {
 		for (int i = 0; i < 3; ++i) {
-			this->_vertices[i] = v[i];
-		}
-		for (int i = 0; i < 3; ++i) {
-			this->_color[i] = c[i];
+			_vertices[i].pos = v[i];
+			_vertices[i].color = c[i];
 		}
 	}
-	virtual ~Tri() = default;
 
 	void scaleVertices(float scale);
 	void scaleVertices(const glm::vec3 &scale);
@@ -58,52 +58,50 @@ public:
 	void setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3);
 	void setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3);
 };
-static_assert(sizeof(Tri) == 56, "Tri must have the expected size");
+static_assert(sizeof(Tri) == 48, "Tri must have the expected size");
 
 inline glm::vec3 Tri::center() const {
 	return (vertex0() + vertex1() + vertex2()) / 3.0f;
 }
 
 inline core::RGBA Tri::color0() const {
-	return _color[0];
+	return _vertices[0].color;
 }
 
 inline core::RGBA Tri::color1() const {
-	return _color[1];
+	return _vertices[1].color;
 }
 
 inline core::RGBA Tri::color2() const {
-	return _color[2];
+	return _vertices[2].color;
 }
 
 inline const glm::vec3 &Tri::vertex0() const {
-	return _vertices[0];
+	return _vertices[0].pos;
 }
 
 inline const glm::vec3 &Tri::vertex1() const {
-	return _vertices[1];
+	return _vertices[1].pos;
 }
 
 inline const glm::vec3 &Tri::vertex2() const {
-	return _vertices[2];
+	return _vertices[2].pos;
 }
 
 inline void Tri::setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3) {
-	_vertices[0] = v1;
-	_vertices[1] = v2;
-	_vertices[2] = v3;
+	_vertices[0].pos = v1;
+	_vertices[1].pos = v2;
+	_vertices[2].pos = v3;
 }
 
 inline void Tri::setColor(core::RGBA rgba) {
-	_color[0] = rgba;
-	_color[1] = rgba;
-	_color[2] = rgba;
+	setColor(rgba, rgba, rgba);
 }
 
 inline void Tri::setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3) {
-	_color[0] = c1;
-	_color[1] = c2;
-	_color[2] = c3;
+	_vertices[0].color = c1;
+	_vertices[1].color = c2;
+	_vertices[2].color = c3;
 }
 
 } // namespace math

@@ -94,13 +94,13 @@ glm::vec3 Tri::calculateBarycentric(const glm::vec3 &pos) const {
 
 void Tri::scaleVertices(float scale) {
 	for (int i = 0; i < 3; ++i) {
-		_vertices[i] *= scale;
+		_vertices[i].pos *= scale;
 	}
 }
 
 void Tri::scaleVertices(const glm::vec3 &scale) {
 	for (int i = 0; i < 3; ++i) {
-		_vertices[i] *= scale;
+		_vertices[i].pos *= scale;
 	}
 }
 
