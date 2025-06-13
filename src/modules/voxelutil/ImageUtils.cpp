@@ -253,20 +253,28 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 	}
 	Log::debug("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
+	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	voxel::RawVolume::Sampler sampler(volume);
+	sampler.setPosition(0, imageHeight - 1, 0);
 	// TODO: FOR_PARALLEL
 	for (int x = 0; x < imageWidth; ++x) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);
 			if (data.a == 0) {
 				continue;
 			}
-			const uint8_t index = palette.getClosestMatch(data);
+			const uint8_t index = palLookup.findClosestIndex(data);
 			const voxel::Voxel voxel = voxel::createVoxel(palette, index);
+			voxel::RawVolume::Sampler sampler3 = sampler2;
 			for (int z = 0; z < thickness; ++z) {
-				volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+				sampler3.setVoxel(voxel);
+				sampler3.movePositiveZ();
 			}
+			sampler2.moveNegativeY();
 		}
+		sampler.movePositiveX();
 	}
 	return volume;
 }
