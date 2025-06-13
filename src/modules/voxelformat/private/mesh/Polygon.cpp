@@ -87,6 +87,7 @@ bool Polygon::toTris(MeshTriCollection &tris) const {
 	polygons.emplace_back(core::move(border));
 
 	std::vector<voxel::IndexType> indices = mapbox::earcut<voxel::IndexType>(polygons);
+	tris.reserve(tris.size() + indices.size() / 3);
 	for (size_t i = 0; i < indices.size(); i += 3) {
 		addTriangle(tris, i, i + 1, i + 2);
 	}

@@ -462,7 +462,7 @@ void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &
 		meshTri.setUVs(vertex0.texCoord, vertex1.texCoord, vertex2.texCoord);
 		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
 		meshTri.setVertices(vertex0.position, vertex1.position, vertex2.position);
-		tris.push_back(meshTri);
+		tris.emplace_back(meshTri);
 	}
 }
 

@@ -366,6 +366,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 					return;
 				}
 				MeshTriCollection subdivided;
+				subdivided.reserve(32);
 				subdivideTri(meshTri, subdivided);
 				meshTriCollections[i] = core::move(subdivided);
 			}

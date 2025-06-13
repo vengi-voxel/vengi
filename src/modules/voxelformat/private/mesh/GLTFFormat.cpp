@@ -1723,7 +1723,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			const size_t textureIdx = indices[indexOffset];
 			const GltfVertex &v = vertices[textureIdx];
 			meshTri.material = v.meshMaterial;
-			tris.push_back(meshTri);
+			tris.emplace_back(meshTri);
 		}
 	}
 
