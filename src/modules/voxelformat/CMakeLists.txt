@@ -358,6 +358,7 @@ set(BENCHMARK_FILES
 
 set(BENCHMARK_SRCS
 	benchmarks/MeshFormatBenchmark.cpp
+	benchmarks/MeshTriBenchmark.cpp
 	benchmarks/VolumeFormatBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} FILES ${BENCHMARK_FILES} SRCS ${BENCHMARK_SRCS} NOINSTALL)
