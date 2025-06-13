@@ -18,6 +18,7 @@
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/ImageUtils.h"
@@ -67,6 +68,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 
+	// TODO: FOR_PARALLEL
 	for (const auto &entity : entities) {
 		const core::String &layerFilename = entity.fullPath;
 		const image::ImagePtr &image = image::loadImage(layerFilename);
@@ -81,16 +83,22 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 		}
 		const int layer = extractLayerFromFilename(layerFilename);
 		Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
-		// TODO: FOR_PARALLEL
+		palette::PaletteLookup palLookup(palette);
+		voxel::RawVolume::Sampler sampler(volume);
+		sampler.setPosition(0, 0, layer);
 		for (int y = 0; y < imageHeight; ++y) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int x = 0; x < imageWidth; ++x) {
 				const core::RGBA &color = flattenRGB(image->colorAt(x, y));
 				if (color.a == 0) {
+					sampler2.movePositiveX();
 					continue;
 				}
-				const int palIdx = palette.getClosestMatch(color);
-				volume->setVoxel(x, y, layer, voxel::createVoxel(palette, palIdx));
+				const int palIdx = palLookup.findClosestIndex(color);
+				sampler2.setVoxel(voxel::createVoxel(palette, palIdx));
+				sampler2.movePositiveX();
 			}
+			sampler.movePositiveY();
 		}
 	}
 	if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
