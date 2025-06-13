@@ -14,6 +14,8 @@ General:
 
    - Fixed handling of invalid `jpeg` files
    - Added new normal palette from slab6
+   - Reduced overall memory usage
+   - Improved format detection for the file dialog
 
 VoxEdit:
 
