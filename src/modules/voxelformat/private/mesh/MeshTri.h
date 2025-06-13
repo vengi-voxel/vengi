@@ -17,9 +17,7 @@ public:
 	inline MeshTri(const glm::vec3 (&_vertices)[3], const glm::vec2 (&_uv)[3], const MeshMaterialPtr &_material,
 					   const core::RGBA (&_color)[3])
 		: math::Tri::Tri(_vertices, _color) {
-		for (int i = 0; i < 3; ++i) {
-			this->uv[i] = _uv[i];
-		}
+		setUVs(_uv[0], _uv[1], _uv[2]);
 		this->material = _material;
 	}
 
@@ -40,12 +38,7 @@ public:
 	[[nodiscard]] core::RGBA centerColor() const;
 	[[nodiscard]] core::RGBA blendedColor() const;
 };
-
-inline void MeshTri::setUVs(const glm::vec2 &uv1, const glm::vec2 &uv2, const glm::vec2 &uv3) {
-	uv[0] = uv1;
-	uv[1] = uv2;
-	uv[2] = uv3;
-}
+static_assert(sizeof(MeshTri) == 88, "MeshTri size unexpected");
 
 // Sierpinski gasket with keeping the middle
 template<class MESHTRI>

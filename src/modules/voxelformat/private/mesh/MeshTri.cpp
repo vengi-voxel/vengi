@@ -15,6 +15,12 @@
 
 namespace voxelformat {
 
+void MeshTri::setUVs(const glm::vec2 &uv1, const glm::vec2 &uv2, const glm::vec2 &uv3) {
+	uv[0] = uv1;
+	uv[1] = uv2;
+	uv[2] = uv3;
+}
+
 glm::vec2 MeshTri::centerUV() const {
 	return (uv[0] + uv[1] + uv[2]) / 3.0f;
 }
