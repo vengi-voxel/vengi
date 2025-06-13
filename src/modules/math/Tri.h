@@ -10,23 +10,36 @@
 namespace math {
 
 class Tri {
+private:
+	glm::vec3 _vertices[3]{};
+	core::RGBA _color[3]{core::RGBA(0, 0, 0), core::RGBA(0, 0, 0), core::RGBA(0, 0, 0)};
+
 public:
 	Tri() = default;
-	inline constexpr Tri(const glm::vec3 (&_vertices)[3], const core::RGBA (&_color)[3]) {
+	inline constexpr Tri(const glm::vec3 (&v)[3], const core::RGBA (&c)[3]) {
 		for (int i = 0; i < 3; ++i) {
-			this->vertices[i] = _vertices[i];
+			this->_vertices[i] = v[i];
 		}
 		for (int i = 0; i < 3; ++i) {
-			this->color[i] = _color[i];
+			this->_color[i] = c[i];
 		}
 	}
 	virtual ~Tri() = default;
-	glm::vec3 vertices[3]{};
-	core::RGBA color[3]{core::RGBA(0, 0, 0), core::RGBA(0, 0, 0), core::RGBA(0, 0, 0)};
+
+	void scaleVertices(float scale);
+	void scaleVertices(const glm::vec3 &scale);
 
 	glm::vec3 center() const {
-		return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
+		return (_vertices[0] + _vertices[1] + _vertices[2]) / 3.0f;
 	}
+
+	core::RGBA color0() const;
+	core::RGBA color1() const;
+	core::RGBA color2() const;
+
+	const glm::vec3 &vertex0() const;
+	const glm::vec3 &vertex1() const;
+	const glm::vec3 &vertex2() const;
 
 	glm::vec3 calculateBarycentric(const glm::vec3 &pos) const;
 	/**
@@ -49,16 +62,40 @@ public:
 };
 static_assert(sizeof(Tri) == 56, "Tri must have the expected size");
 
+inline core::RGBA Tri::color0() const {
+	return _color[0];
+}
+
+inline core::RGBA Tri::color1() const {
+	return _color[1];
+}
+
+inline core::RGBA Tri::color2() const {
+	return _color[2];
+}
+
+inline const glm::vec3 &Tri::vertex0() const {
+	return _vertices[0];
+}
+
+inline const glm::vec3 &Tri::vertex1() const {
+	return _vertices[1];
+}
+
+inline const glm::vec3 &Tri::vertex2() const {
+	return _vertices[2];
+}
+
 inline void Tri::setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3) {
-	vertices[0] = v1;
-	vertices[1] = v2;
-	vertices[2] = v3;
+	_vertices[0] = v1;
+	_vertices[1] = v2;
+	_vertices[2] = v3;
 }
 
 inline void Tri::setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3) {
-	color[0] = c1;
-	color[1] = c2;
-	color[2] = c3;
+	_color[0] = c1;
+	_color[1] = c2;
+	_color[2] = c3;
 }
 
 } // namespace math

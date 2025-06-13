@@ -16,23 +16,23 @@
 namespace voxelformat {
 
 void MeshTri::setUVs(const glm::vec2 &uv1, const glm::vec2 &uv2, const glm::vec2 &uv3) {
-	uv[0] = uv1;
-	uv[1] = uv2;
-	uv[2] = uv3;
+	_uv[0] = uv1;
+	_uv[1] = uv2;
+	_uv[2] = uv3;
 }
 
 glm::vec2 MeshTri::centerUV() const {
-	return (uv[0] + uv[1] + uv[2]) / 3.0f;
+	return (uv0() + uv1() + uv2()) / 3.0f;
 }
 
 core::RGBA MeshTri::blendedColor() const {
 	if (material) {
-		const core::RGBA c1 = material->apply(color[0]);
-		const core::RGBA c2 = material->apply(color[1]);
-		const core::RGBA c3 = material->apply(color[2]);
+		const core::RGBA c1 = material->apply(color0());
+		const core::RGBA c2 = material->apply(color1());
+		const core::RGBA c3 = material->apply(color2());
 		return core::RGBA::mix(core::RGBA::mix(c1, c2), c3);
 	}
-	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
+	return core::RGBA::mix(core::RGBA::mix(color0(), color1()), color2());
 }
 
 core::RGBA MeshTri::centerColor() const {
@@ -55,7 +55,7 @@ bool MeshTri::calcUVs(const glm::vec3 &pos, glm::vec2 &outUV) const {
 	// Check if barycentric coordinates are within [0, 1]
 	if (b.x >= 0.0f && b.x <= 1.0f && b.y >= 0.0f && b.y <= 1.0f && b.z >= 0.0f && b.z <= 1.0f) {
 		// Interpolate UVs using barycentric coordinates
-		outUV = b.x * uv[0] + b.y * uv[1] + b.z * uv[2];
+		outUV = b.x * uv0() + b.y * uv1() + b.z * uv2();
 		return true;
 	}
 

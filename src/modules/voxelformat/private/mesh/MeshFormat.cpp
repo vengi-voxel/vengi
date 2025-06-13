@@ -216,9 +216,9 @@ template<class FUNC>
 static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshTri &meshTri, FUNC &&func) {
 	const glm::vec3 voxelHalf(0.5f);
 	const glm::vec3 shiftedTrisMins = trisMins + voxelHalf;
-	const glm::vec3 &v0 = meshTri.vertices[0];
-	const glm::vec3 &v1 = meshTri.vertices[1];
-	const glm::vec3 &v2 = meshTri.vertices[2];
+	const glm::vec3 &v0 = meshTri.vertex0();
+	const glm::vec3 &v1 = meshTri.vertex1();
+	const glm::vec3 &v2 = meshTri.vertex2();
 	const glm::vec3 mins = meshTri.mins();
 	const glm::vec3 maxs = meshTri.maxs();
 	const glm::ivec3 imins(glm::floor(mins - shiftedTrisMins));

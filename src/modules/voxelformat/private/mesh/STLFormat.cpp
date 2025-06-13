@@ -45,6 +45,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tr
 						++ptr;
 					}
 					if (!strncmp(ptr, "outer loop", 10)) {
+						glm::vec3 verts[3];
 						int vi = 0;
 						while (stream.readLine(sizeof(line), line)) {
 							ptr = line;
@@ -57,15 +58,16 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tr
 							if (vi >= 3) {
 								return false;
 							}
-							glm::vec3 &vert = meshTri.vertices[vi];
+							glm::vec3 &vert = verts[vi];
+							vert.x = vert.y = vert.z = 0.0f;
 							ptr += 7; // "vertex "
 							core::string::parseReal3(&vert.x, &vert.y, &vert.z, &ptr);
-							vert *= scale;
 							++vi;
 						}
 						if (vi != 3) {
 							return false;
 						}
+						meshTri.setVertices(verts[0] * scale, verts[1] * scale, verts[2] * scale);
 						tris.push_back(meshTri);
 					}
 				}
@@ -98,19 +100,20 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, MeshTriCollection &t
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
 		voxelformat::MeshTri &meshTri = tris[fn];
 		glm::vec3 normal;
+		glm::vec3 vertices[3];
 		wrap(stream.readFloat(normal.x))
 		wrap(stream.readFloat(normal.y))
 		wrap(stream.readFloat(normal.z))
 		for (int i = 0; i < 3; ++i) {
-			wrap(stream.readFloat(meshTri.vertices[i].x))
-			wrap(stream.readFloat(meshTri.vertices[i].y))
-			wrap(stream.readFloat(meshTri.vertices[i].z))
-			meshTri.vertices[i] *= scale;
+			wrap(stream.readFloat(vertices[i].x))
+			wrap(stream.readFloat(vertices[i].y))
+			wrap(stream.readFloat(vertices[i].z))
 		}
 		if (stream.skip(2) == -1) {
 			Log::error("Failed to seek while parsing the frames");
 			return false;
 		}
+		meshTri.setVertices(vertices[0] * scale, vertices[1] * scale, vertices[2] * scale);
 	}
 
 	return true;

@@ -730,9 +730,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 
 	const glm::vec3 scale = getInputScale();
 	for (voxelformat::MeshTri &meshTri : tris) {
-		meshTri.vertices[0] *= scale;
-		meshTri.vertices[1] *= scale;
-		meshTri.vertices[2] *= scale;
+		meshTri.scaleVertices(scale);
 	}
 
 	if (!header.comment.empty()) {

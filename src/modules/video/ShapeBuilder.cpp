@@ -624,10 +624,12 @@ void ShapeBuilder::diamond(float length1, float length2) {
 void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 	const glm::vec3 &n = calcNormal ? glm::normalize(tri.normal()) : glm::zero<glm::vec3>();
 	glm::vec4 copy = _color;
-	for (int j = 0; j < 3; ++j) {
-		setColor(core::Color::fromRGBA(tri.color[j]));
-		addIndex(addVertex(tri.vertices[j], n));
-	}
+	setColor(core::Color::fromRGBA(tri.color0()));
+	addIndex(addVertex(tri.vertex0(), n));
+	setColor(core::Color::fromRGBA(tri.color1()));
+	addIndex(addVertex(tri.vertex1(), n));
+	setColor(core::Color::fromRGBA(tri.color2()));
+	addIndex(addVertex(tri.vertex2(), n));
 	setColor(copy);
 }
 
