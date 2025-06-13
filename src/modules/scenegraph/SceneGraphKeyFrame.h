@@ -6,6 +6,8 @@
 
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/StringMap.h"
 #include "scenegraph/SceneGraphTransform.h"
 
@@ -58,6 +60,6 @@ public:
 	}
 };
 using SceneGraphKeyFrames = core::Buffer<SceneGraphKeyFrame>;
-using SceneGraphKeyFramesMap = core::StringMap<SceneGraphKeyFrames>;
+using SceneGraphKeyFramesMap = core::DynamicStringMap<SceneGraphKeyFrames>;
 
 }; // namespace scenegraph

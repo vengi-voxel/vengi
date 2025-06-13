@@ -634,6 +634,7 @@ bool MCRFormat::saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::
 bool MCRFormat::saveSections(const scenegraph::SceneGraph &sceneGraph, priv::NBTList &sections, int sector) {
 #if 0
 	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+		// 16x256x16 chunks needs to be saved
 		priv::NBTCompound blockStates;
 		blockStates.put("data", 0); // parseBlockStates
 		blockStates.put("palette", 0); // parsePaletteList
