@@ -90,6 +90,7 @@ TEST_F(ImageUtilsTest, testImportAsPlane) {
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
 	EXPECT_EQ(depth, volume->depth());
+	EXPECT_EQ(3758, countVoxels(*volume));
 }
 
 TEST_F(ImageUtilsTest, testImportAsVolume) {
