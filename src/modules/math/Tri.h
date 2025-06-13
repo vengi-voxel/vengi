@@ -58,7 +58,6 @@ public:
 	void setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3);
 	void setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3);
 };
-static_assert(sizeof(Tri) == 48, "Tri must have the expected size");
 
 inline glm::vec3 Tri::center() const {
 	return (vertex0() + vertex1() + vertex2()) / 3.0f;

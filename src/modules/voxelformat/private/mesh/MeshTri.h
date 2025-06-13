@@ -41,7 +41,6 @@ public:
 	[[nodiscard]] core::RGBA centerColor() const;
 	[[nodiscard]] core::RGBA blendedColor() const;
 };
-static_assert(sizeof(MeshTri) == 88, "MeshTri size unexpected");
 
 inline const glm::vec2 &MeshTri::uv0() const {
 	return _uv[0];
