@@ -3,6 +3,7 @@
  */
 
 #include "AsepriteFormat.h"
+#include "app/Async.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -10,6 +11,7 @@
 #include "core/collection/Buffer.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
@@ -47,18 +49,26 @@ static bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &fil
 	node.setVolume(v, true);
 	node.setName(core::String::format("%s_%d", filename.c_str(), frameIndex));
 	node.setPalette(palette);
-	// TODO: FOR_PARALLEL
-	for (int x = 0; x < ase->w; ++x) {
+	app::for_parallel(0, ase->w, [&palette, ase, frame, v](int start, int end) {
+		palette::PaletteLookup palLookup(palette);
+		voxel::RawVolume::Sampler sampler(v);
+		sampler.setPosition(0, ase->h - 1, 0);
 		for (int y = 0; y < ase->h; ++y) {
-			const ase_color_t pixel = frame->pixels[x + y * ase->w];
-			if (pixel.a == 0) {
-				continue;
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int x = 0; x < ase->w; ++x) {
+				const ase_color_t pixel = frame->pixels[x + y * ase->w];
+				if (pixel.a == 0) {
+					sampler2.movePositiveX();
+					continue;
+				}
+				const core::RGBA color(pixel.r, pixel.g, pixel.b, pixel.a);
+				const int index = palLookup.findClosestIndex(color);
+				sampler2.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, index));
+				sampler2.movePositiveX();
 			}
-			const core::RGBA color(pixel.r, pixel.g, pixel.b, pixel.a);
-			const int index = palette.getClosestMatch(color);
-			v->setVoxel(x, ase->h - y - 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, index));
+			sampler.moveNegativeY();
 		}
-	}
+	});
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
