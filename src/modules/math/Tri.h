@@ -29,9 +29,7 @@ public:
 	void scaleVertices(float scale);
 	void scaleVertices(const glm::vec3 &scale);
 
-	glm::vec3 center() const {
-		return (_vertices[0] + _vertices[1] + _vertices[2]) / 3.0f;
-	}
+	glm::vec3 center() const;
 
 	core::RGBA color0() const;
 	core::RGBA color1() const;
@@ -62,6 +60,10 @@ public:
 };
 static_assert(sizeof(Tri) == 56, "Tri must have the expected size");
 
+inline glm::vec3 Tri::center() const {
+	return (vertex0() + vertex1() + vertex2()) / 3.0f;
+}
+
 inline core::RGBA Tri::color0() const {
 	return _color[0];
 }
@@ -90,6 +92,12 @@ inline void Tri::setVertices(const glm::vec3 &v1, const glm::vec3 &v2, const glm
 	_vertices[0] = v1;
 	_vertices[1] = v2;
 	_vertices[2] = v3;
+}
+
+inline void Tri::setColor(core::RGBA rgba) {
+	_color[0] = rgba;
+	_color[1] = rgba;
+	_color[2] = rgba;
 }
 
 inline void Tri::setColor(const core::RGBA &c1, const core::RGBA &c2, const core::RGBA &c3) {

@@ -22,12 +22,6 @@ bool Tri::flat() const {
 	return (int)zerocheck[0] + (int)zerocheck[1] + (int)zerocheck[2] == 2;
 }
 
-void Tri::setColor(core::RGBA rgba) {
-	_color[0] = rgba;
-	_color[1] = rgba;
-	_color[2] = rgba;
-}
-
 void Tri::setColor(const glm::vec4 &c) {
 	setColor(core::Color::getRGBA(c));
 }
