@@ -128,27 +128,28 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 	}
 
 	// TODO: PERF: FOR_PARALLEL
+	// TODO: PERF: use a sampler
 	const uint64_t mask = (1 << bits) - 1;
 	for (int y = 0; y < size.y; ++y) {
 		for (int z = 0; z < size.z; ++z) {
 			for (int x = 0; x < size.x; ++x) {
 				const uint64_t index = size.x * size.z * y + size.x * z + x;
 				const uint64_t startBit = index * bits;
-				const uint64_t start = startBit / 64;
+				const uint64_t startIdx = startBit / 64;
 				const uint64_t rshiftVal = startBit & 63;
-				const uint64_t end = startBit % 64 + bits;
+				const uint64_t endIdx = startBit % 64 + bits;
 				uint64_t id = 0;
-				if (end <= 64 && start < data->size()) {
-					id = (uint64_t)((*data)[start]) >> rshiftVal & mask;
+				if (endIdx <= 64 && startIdx < data->size()) {
+					id = (uint64_t)((*data)[startIdx]) >> rshiftVal & mask;
 				} else {
-					if (start >= data->size() || start + 1 >= data->size()) {
+					if (startIdx >= data->size() || startIdx + 1 >= data->size()) {
 						Log::error("Invalid BlockStates, out of bounds, start_state: %i, max size: %i, endnum: %i",
-								   (int)start, (int)data->size(), (int)end);
+								   (int)startIdx, (int)data->size(), (int)endIdx);
 						return false;
 					}
 					uint64_t move_num_2 = 64 - rshiftVal;
 					id =
-						(((uint64_t)(*data)[start]) >> rshiftVal | ((uint64_t)(*data)[start + 1]) << move_num_2) & mask;
+						(((uint64_t)(*data)[startIdx]) >> rshiftVal | ((uint64_t)(*data)[startIdx + 1]) << move_num_2) & mask;
 				}
 				if (id == 0) {
 					continue;
