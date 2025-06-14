@@ -41,6 +41,21 @@ union alignas(4) RGBA {
 		return rgba == other;
 	}
 
+	inline constexpr uint8_t operator[](size_t index) const {
+		switch (index) {
+		case 0:
+			return r;
+		case 1:
+			return g;
+		case 2:
+			return b;
+		case 3:
+			return a;
+		default:
+			return 0;
+		}
+	}
+
 	inline bool operator!=(uint32_t other) const {
 		return rgba != other;
 	}
