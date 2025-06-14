@@ -128,12 +128,16 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 	}
 
 	// TODO: PERF: FOR_PARALLEL
-	// TODO: PERF: use a sampler
+	voxel::RawVolume::Sampler sampler(node.volume());
+	sampler.setPosition(0, 0, 0);
 	const uint64_t mask = (1 << bits) - 1;
 	for (int y = 0; y < size.y; ++y) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (int z = 0; z < size.z; ++z) {
+			voxel::RawVolume::Sampler sampler3 = sampler2;
+			const uint64_t indexyz = size.x * size.z * y + size.x * z;
 			for (int x = 0; x < size.x; ++x) {
-				const uint64_t index = size.x * size.z * y + size.x * z + x;
+				const uint64_t index = indexyz + x;
 				const uint64_t startBit = index * bits;
 				const uint64_t startIdx = startBit / 64;
 				const uint64_t rshiftVal = startBit & 63;
@@ -152,12 +156,16 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 						(((uint64_t)(*data)[startIdx]) >> rshiftVal | ((uint64_t)(*data)[startIdx + 1]) << move_num_2) & mask;
 				}
 				if (id == 0) {
+					sampler3.movePositiveX();
 					continue;
 				}
 				const int colorIdx = mcpal[id];
-				node.volume()->setVoxel(glm::ivec3(x, y, z), voxel::createVoxel(node.palette(), colorIdx));
+				sampler3.setVoxel(voxel::createVoxel(node.palette(), colorIdx));
+				sampler3.movePositiveX();
 			}
+			sampler2.movePositiveY();
 		}
+		sampler.movePositiveZ();
 	}
 	return true;
 }
