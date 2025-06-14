@@ -21,6 +21,8 @@ namespace palette {
 class PaletteLookup {
 private:
 	palette::Palette _palette;
+	// TODO: PERF: use a k-d tree, octree, ANN or whatever to prevent the O(n) search
+	// for the closest color match
 	core::DynamicMap<core::RGBA, uint8_t, 521> _paletteMap;
 public:
 	PaletteLookup(const palette::Palette &palette) : _palette(palette) {
@@ -56,6 +58,7 @@ public:
 	uint8_t findClosestIndex(core::RGBA rgba) {
 		uint8_t paletteIndex = 0;
 		if (!_paletteMap.get(rgba, paletteIndex)) {
+			// here we are O(n) in every case where the colors are not a perfect match
 			paletteIndex = _palette.getClosestMatch(rgba);
 			_paletteMap.put(rgba, paletteIndex);
 		}

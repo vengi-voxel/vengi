@@ -447,6 +447,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 
 	Log::debug("create voxels for %i positions", (int)posMap.size());
 	// TODO: PERF: FOR_PARALLEL
+	palette::PaletteLookup palLookup(palette);
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
 			return;
@@ -456,7 +457,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba), pos.getNormal());
+		const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(rgba), pos.getNormal());
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	if (palette.colorCount() == 1) {
