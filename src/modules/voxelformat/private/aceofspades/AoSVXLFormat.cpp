@@ -153,7 +153,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 
-	auto fn = [volume, &map, &mapSize, &mapHeight, &palette](int start, int end) {
+	auto fn = [volume, &map, &mapSize, &mapHeight, &palette, this](int start, int end) {
 		palette::PaletteLookup palLookup(palette);
 		voxel::RawVolume::Sampler sampler(*volume);
 		sampler.setPosition(0, 0, start);
@@ -167,7 +167,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 						continue;
 					}
 					const uint32_t color = libvxl_map_get(&map, x, z, (int)mapHeight - 1 - y);
-					const core::RGBA rgba = core::RGBA(vxl_red(color), vxl_green(color), vxl_blue(color));
+					const core::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
 					const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
 					sampler3.setVoxel(voxel::createVoxel(palette, paletteIndex));
 					sampler3.movePositiveX();

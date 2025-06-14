@@ -40,8 +40,8 @@
 
 namespace voxelformat {
 
-static bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const palette::Palette &palette,
-					 const LoadContext &ctx, ase_t *ase, int frameIndex) {
+bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const palette::Palette &palette,
+					 const LoadContext &ctx, ase_t *ase, int frameIndex) const {
 	const ase_frame_t *frame = ase->frames + frameIndex;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	voxel::Region region(0, 0, 0, ase->w - 1, ase->h - 1, 1);
@@ -49,7 +49,7 @@ static bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &fil
 	node.setVolume(v, true);
 	node.setName(core::String::format("%s_%d", filename.c_str(), frameIndex));
 	node.setPalette(palette);
-	app::for_parallel(0, ase->w, [&palette, ase, frame, v](int start, int end) {
+	auto fn = [&palette, ase, frame, v, this](int start, int end) {
 		palette::PaletteLookup palLookup(palette);
 		voxel::RawVolume::Sampler sampler(v);
 		sampler.setPosition(0, ase->h - 1, 0);
@@ -61,18 +61,19 @@ static bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &fil
 					sampler2.movePositiveX();
 					continue;
 				}
-				const core::RGBA color(pixel.r, pixel.g, pixel.b, pixel.a);
+				const core::RGBA color = flattenRGB(pixel.r, pixel.g, pixel.b, pixel.a);
 				const int index = palLookup.findClosestIndex(color);
 				sampler2.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, index));
 				sampler2.movePositiveX();
 			}
 			sampler.moveNegativeY();
 		}
-	});
+	};
+	app::for_parallel(0, ase->w, fn);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
-static ase_t *loadAseprite(const core::String &filename, const io::ArchivePtr &archive) {
+ase_t *AsepriteFormat::loadAseprite(const core::String &filename, const io::ArchivePtr &archive) const {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open file '%s'", filename.c_str());
@@ -124,7 +125,7 @@ size_t AsepriteFormat::loadPalette(const core::String &filename, const io::Archi
 	for (int i = 0; i < asePalette.entry_count; ++i) {
 		const ase_palette_entry_t &entry = asePalette.entries[i];
 		const ase_color_t &color = entry.color;
-		palette.setColor(i, core::RGBA(color.r, color.g, color.b, color.a));
+		palette.setColor(i, flattenRGB(color.r, color.g, color.b, color.a));
 	}
 	cute_aseprite_free(ase);
 

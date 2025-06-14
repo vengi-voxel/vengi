@@ -99,7 +99,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 					// empty voxel
 					continue;
 				}
-				const core::RGBA color(r, g, b);
+				const core::RGBA color = flattenRGB(r, g, b);
 				const int index = palLookup.findClosestIndex(color);
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 				// we have to flip depth with height for our own coordinate system
@@ -108,7 +108,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		}
 	}
 	node.setName(core::string::extractFilename(filename));
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

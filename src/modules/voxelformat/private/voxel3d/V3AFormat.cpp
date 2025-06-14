@@ -140,7 +140,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 			const int g = core::string::toInt(tokens[i + 1]);
 			const int b = core::string::toInt(tokens[i + 2]);
 			const int a = core::string::toInt(tokens[i + 3]);
-			const core::RGBA rgba(r, g, b, a);
+			const core::RGBA rgba = flattenRGB(r, g, b, a);
 			const int index = palLookup.findClosestIndex(rgba);
 			const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 			// we have to flip depth with height for our own coordinate system

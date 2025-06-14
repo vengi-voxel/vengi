@@ -261,7 +261,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 					// x running fastest
 					voxel::Voxel voxel;
 					if (v[3] != 0u) {
-						const core::RGBA color(v[0], v[1], v[2], v[3]);
+						const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
 						empty = false;
 						voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
 					}
