@@ -68,7 +68,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 
-	// TODO: FOR_PARALLEL
+	// TODO: PERF: FOR_PARALLEL
 	for (const auto &entity : entities) {
 		const core::String &layerFilename = entity.fullPath;
 		const image::ImagePtr &image = image::loadImage(layerFilename);

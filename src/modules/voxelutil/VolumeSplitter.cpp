@@ -77,7 +77,7 @@ core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, con
 
 	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), maxSize);
 	Log::debug("split region: %s", region.toString().c_str());
-	// TODO: FOR_PARALLEL
+	// TODO: PERF: FOR_PARALLEL
 	for (int y = mins.y; y <= maxs.y; y += step.y) {
 		for (int z = mins.z; z <= maxs.z; z += step.z) {
 			for (int x = mins.x; x <= maxs.x; x += step.x) {

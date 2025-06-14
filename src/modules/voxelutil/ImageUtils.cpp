@@ -180,7 +180,7 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 		Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
 		const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)maxImageHeight : 1.0f;
 		float imageY = 0.0f;
-		// TODO: use a volume sampler
+		// TODO: PERF: use a volume sampler
 		for (int z = start; z < end; ++z, imageY += stepWidthY) {
 			float imageX = 0.0f;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
@@ -342,8 +342,8 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(volume);
-	// TODO: FOR_PARALLEL
-	// TODO: use a volume sampler
+	// TODO: PERF: FOR_PARALLEL
+	// TODO: PERF: use a volume sampler
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);

@@ -3,6 +3,7 @@
  */
 
 #include "AoSVXLFormat.h"
+#include "app/Async.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -151,35 +152,37 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	palette::PaletteLookup palLookup(palette);
 
-	// TODO: FOR_PARALLEL
-	voxel::RawVolume::Sampler sampler(*volume);
-	sampler.setPosition(0, (int)mapHeight - 1, 0);
-	for (int z = 0; z < (int)mapHeight; z++) {
-		voxel::RawVolume::Sampler sampler2 = sampler;
-		for (int y = 0; y < (int)mapSize; y++) {
-			voxel::RawVolume::Sampler sampler3 = sampler2;
-			for (int x = 0; x < (int)mapSize; x++) {
-				if (!libvxl_map_issolid(&map, x, y, z)) {
+	auto fn = [volume, &map, &mapSize, &mapHeight, &palette](int start, int end) {
+		palette::PaletteLookup palLookup(palette);
+		voxel::RawVolume::Sampler sampler(*volume);
+		sampler.setPosition(0, 0, start);
+		for (int z = start; z < end; z++) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int y = 0; y < (int)mapHeight; y++) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				for (int x = 0; x < (int)mapSize; x++) {
+					if (!libvxl_map_issolid(&map, x, z, (int)mapHeight - 1 - y)) {
+						sampler3.movePositiveX();
+						continue;
+					}
+					const uint32_t color = libvxl_map_get(&map, x, z, (int)mapHeight - 1 - y);
+					const core::RGBA rgba = core::RGBA(vxl_red(color), vxl_green(color), vxl_blue(color));
+					const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
+					sampler3.setVoxel(voxel::createVoxel(palette, paletteIndex));
 					sampler3.movePositiveX();
-					continue;
 				}
-				const uint32_t color = libvxl_map_get(&map, x, y, z);
-				const core::RGBA rgba = core::RGBA(vxl_red(color), vxl_green(color), vxl_blue(color));
-				const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
-				sampler3.setVoxel(voxel::createVoxel(palette, paletteIndex));
-				sampler3.movePositiveX();
+				sampler2.movePositiveY();
 			}
-			sampler2.movePositiveZ();
+			sampler.movePositiveZ();
 		}
-		sampler.moveNegativeY();
-	}
+	};
+	app::for_parallel(0, mapSize, fn);
 	libvxl_free(&map);
 	core_free(data);
 
 	node.setName(core::string::extractFilename(filename));
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

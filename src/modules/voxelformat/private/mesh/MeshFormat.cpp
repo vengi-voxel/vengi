@@ -446,7 +446,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	}
 
 	Log::debug("create voxels for %i positions", (int)posMap.size());
-	// TODO: FOR_PARALLEL
+	// TODO: PERF: FOR_PARALLEL
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
 			return;

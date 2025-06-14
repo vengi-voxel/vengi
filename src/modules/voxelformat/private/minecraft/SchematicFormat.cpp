@@ -127,7 +127,7 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 		return false;
 	}
 
-	// TODO: FOR_PARALLEL
+	// TODO: PERF: FOR_PARALLEL
 	const uint64_t mask = (1 << bits) - 1;
 	for (int y = 0; y < size.y; ++y) {
 		for (int z = 0; z < size.z; ++z) {

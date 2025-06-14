@@ -222,7 +222,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	}
 
 	const double freq = (1.0 / 64.0);
-	// TODO: FOR_PARALLEL
+	// TODO: PERF: FOR_PARALLEL
 	for (int z = 0; z < settings.size; z++) {
 		for (int x = 0; x < settings.size; x++) {
 			double samp[3];
