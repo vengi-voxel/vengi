@@ -207,4 +207,38 @@ void sortedUnion(const Type *buf1, int buf1Length, const Type *buf2, int buf2Len
 
 void *memchr_not(const void *s, int c, size_t n);
 
+template<typename T, typename Compare>
+static size_t nth_element_partition(T& arr, size_t left, size_t right, size_t pivotIndex, Compare comp) {
+	typename T::value_type pivot = arr[pivotIndex];
+	core::exchange(arr[pivotIndex], arr[right - 1]);
+
+	size_t storeIndex = left;
+	for (size_t i = left; i < right - 1; ++i) {
+		if (comp(arr[i], pivot)) {
+			core::exchange(arr[storeIndex], arr[i]);
+			storeIndex++;
+		}
+	}
+
+	core::exchange(arr[storeIndex], arr[right - 1]);
+
+	return storeIndex;
+}
+
+template<typename T, typename Compare>
+void nth_element(T &arr, size_t left, size_t right, size_t n, Compare comp) {
+	if (left >= right)
+		return;
+
+	const size_t pivotIndex = nth_element_partition(arr, left, right, left + (right - left) / 2, comp);
+	if (n == pivotIndex) {
+		return;
+	}
+	if (n < pivotIndex) {
+		nth_element(arr, left, pivotIndex, n, comp);
+	} else {
+		nth_element(arr, pivotIndex + 1, right, n, comp);
+	}
+}
+
 }
