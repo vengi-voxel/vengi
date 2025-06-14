@@ -66,4 +66,4 @@ public:
 	}
 };
 
-} // namespace voxel
+} // namespace palette
