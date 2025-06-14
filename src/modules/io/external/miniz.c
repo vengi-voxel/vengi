@@ -2281,9 +2281,6 @@ tinfl_status tinfl_decompress(tinfl_decompressor *r, const mz_uint8 *pIn_buf_nex
 
 	/* Ensure the output buffer's size is a power of 2, unless the output buffer is large enough to hold the entire
 	 * output file (in which case it doesn't matter). */
-	if ((!pOut_buf_start) || (!pOut_buf_next) || (!pIn_buf_size) || (!pOut_buf_size)) {
-		return TINFL_STATUS_BAD_PARAM;
-	}
 	if (((out_buf_size_mask + 1) & out_buf_size_mask) || (pOut_buf_next < pOut_buf_start)) {
 		*pIn_buf_size = *pOut_buf_size = 0;
 		return TINFL_STATUS_BAD_PARAM;
@@ -2829,7 +2826,9 @@ extern "C" {
 
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #ifndef __cplusplus
 #define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
 #endif
@@ -3412,9 +3411,20 @@ static mz_bool mz_zip_reader_locate_header_sig(mz_zip_archive *pZip, mz_uint32 r
 	return MZ_TRUE;
 }
 
+static mz_bool mz_zip_reader_eocd64_valid(mz_zip_archive *pZip, uint64_t offset, uint8_t *buf) {
+	if (pZip->m_pRead(pZip->m_pIO_opaque, offset, buf, MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE) ==
+		MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE) {
+		if (MZ_READ_LE32(buf + MZ_ZIP64_ECDH_SIG_OFS) == MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIG) {
+			return MZ_TRUE;
+		}
+	}
+
+	return MZ_FALSE;
+}
+
 static mz_bool mz_zip_reader_read_central_dir(mz_zip_archive *pZip, mz_uint flags) {
 	mz_uint cdir_size = 0, cdir_entries_on_this_disk = 0, num_this_disk = 0, cdir_disk_index = 0;
-	mz_uint64 cdir_ofs = 0;
+	mz_uint64 cdir_ofs = 0, eocd_ofs = 0, archive_ofs = 0;
 	mz_int64 cur_file_ofs = 0;
 	const mz_uint8 *p;
 
@@ -3440,6 +3450,7 @@ static mz_bool mz_zip_reader_read_central_dir(mz_zip_archive *pZip, mz_uint flag
 										 MZ_ZIP_END_OF_CENTRAL_DIR_HEADER_SIZE, &cur_file_ofs))
 		return mz_zip_set_error(pZip, MZ_ZIP_FAILED_FINDING_CENTRAL_DIR);
 
+	eocd_ofs = cur_file_ofs;
 	/* Read and verify the end of central directory record. */
 	if (pZip->m_pRead(pZip->m_pIO_opaque, cur_file_ofs, pBuf, MZ_ZIP_END_OF_CENTRAL_DIR_HEADER_SIZE) !=
 		MZ_ZIP_END_OF_CENTRAL_DIR_HEADER_SIZE)
@@ -3452,18 +3463,29 @@ static mz_bool mz_zip_reader_read_central_dir(mz_zip_archive *pZip, mz_uint flag
 		if (pZip->m_pRead(pZip->m_pIO_opaque, cur_file_ofs - MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE, pZip64_locator,
 						  MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE) == MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE) {
 			if (MZ_READ_LE32(pZip64_locator + MZ_ZIP64_ECDL_SIG_OFS) == MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIG) {
-				zip64_end_of_central_dir_ofs = MZ_READ_LE64(pZip64_locator + MZ_ZIP64_ECDL_REL_OFS_TO_ZIP64_ECDR_OFS);
-				if (zip64_end_of_central_dir_ofs > (pZip->m_archive_size - MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE))
-					return mz_zip_set_error(pZip, MZ_ZIP_NOT_AN_ARCHIVE);
-
-				if (pZip->m_pRead(pZip->m_pIO_opaque, zip64_end_of_central_dir_ofs, pZip64_end_of_central_dir,
-								  MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE) == MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE) {
-					if (MZ_READ_LE32(pZip64_end_of_central_dir + MZ_ZIP64_ECDH_SIG_OFS) ==
-						MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIG) {
-						pZip->m_pState->m_zip64 = MZ_TRUE;
-					}
-				}
+				pZip->m_pState->m_zip64 = MZ_TRUE;
 			}
+		}
+	}
+
+	if (pZip->m_pState->m_zip64) {
+		/* Try locating the EOCD64 right before the EOCD64 locator. This works even
+		 * when the effective start of the zip header is not yet known. */
+		if (cur_file_ofs < MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE + MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE)
+			return mz_zip_set_error(pZip, MZ_ZIP_NOT_AN_ARCHIVE);
+
+		zip64_end_of_central_dir_ofs =
+			cur_file_ofs - MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE - MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE;
+
+		if (!mz_zip_reader_eocd64_valid(pZip, zip64_end_of_central_dir_ofs, pZip64_end_of_central_dir)) {
+			/* That failed, try reading where the locator tells us to. */
+			zip64_end_of_central_dir_ofs = MZ_READ_LE64(pZip64_locator + MZ_ZIP64_ECDL_REL_OFS_TO_ZIP64_ECDR_OFS);
+
+			if (zip64_end_of_central_dir_ofs > (pZip->m_archive_size - MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE))
+				return mz_zip_set_error(pZip, MZ_ZIP_NOT_AN_ARCHIVE);
+
+			if (!mz_zip_reader_eocd64_valid(pZip, zip64_end_of_central_dir_ofs, pZip64_end_of_central_dir))
+				return mz_zip_set_error(pZip, MZ_ZIP_NOT_AN_ARCHIVE);
 		}
 	}
 
@@ -3526,6 +3548,27 @@ static mz_bool mz_zip_reader_read_central_dir(mz_zip_archive *pZip, mz_uint flag
 
 	if ((cdir_ofs + (mz_uint64)cdir_size) > pZip->m_archive_size)
 		return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
+
+	if (eocd_ofs < cdir_ofs + cdir_size)
+		return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
+
+	/* The end of central dir follows the central dir, unless the zip file has
+	 * some trailing data (e.g. it is appended to an executable file). */
+	archive_ofs = eocd_ofs - (cdir_ofs + cdir_size);
+	if (pZip->m_pState->m_zip64) {
+		if (archive_ofs < MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE + MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE)
+			return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
+
+		archive_ofs -= MZ_ZIP64_END_OF_CENTRAL_DIR_HEADER_SIZE + MZ_ZIP64_END_OF_CENTRAL_DIR_LOCATOR_SIZE;
+	}
+
+	/* Update the archive start position, but only if not specified. */
+	if ((pZip->m_zip_type == MZ_ZIP_TYPE_FILE || pZip->m_zip_type == MZ_ZIP_TYPE_CFILE ||
+		 pZip->m_zip_type == MZ_ZIP_TYPE_USER) &&
+		pZip->m_pState->m_file_archive_start_ofs == 0) {
+		pZip->m_pState->m_file_archive_start_ofs = archive_ofs;
+		pZip->m_archive_size -= archive_ofs;
+	}
 
 	pZip->m_central_directory_file_ofs = cdir_ofs;
 
@@ -3795,7 +3838,7 @@ mz_bool mz_zip_reader_init_file_v2(mz_zip_archive *pZip, const char *pFilename, 
 	if ((!pZip) || (!pFilename) || ((archive_size) && (archive_size < MZ_ZIP_END_OF_CENTRAL_DIR_HEADER_SIZE)))
 		return mz_zip_set_error(pZip, MZ_ZIP_INVALID_PARAMETER);
 
-	pFile = MZ_FOPEN(pFilename, "rb");
+	pFile = MZ_FOPEN(pFilename, (flags & MZ_ZIP_FLAG_READ_ALLOW_WRITING) ? "r+b" : "rb");
 	if (!pFile)
 		return mz_zip_set_error(pZip, MZ_ZIP_FILE_OPEN_FAILED);
 
@@ -5597,7 +5640,7 @@ mz_bool mz_zip_writer_init_from_reader_v2(mz_zip_archive *pZip, const char *pFil
 		if (pZip->m_pIO_opaque != pZip)
 			return mz_zip_set_error(pZip, MZ_ZIP_INVALID_PARAMETER);
 
-		if (pZip->m_zip_type == MZ_ZIP_TYPE_FILE) {
+		if (pZip->m_zip_type == MZ_ZIP_TYPE_FILE && !(flags & MZ_ZIP_FLAG_READ_ALLOW_WRITING)) {
 			if (!pFilename)
 				return mz_zip_set_error(pZip, MZ_ZIP_INVALID_PARAMETER);
 
@@ -5895,6 +5938,8 @@ mz_bool mz_zip_writer_add_mem_ex_v2(mz_zip_archive *pZip, const char *pArchive_n
 		time(&cur_time);
 		mz_zip_time_t_to_dos_time(cur_time, &dos_time, &dos_date);
 	}
+#else
+	(void)last_modified;
 #endif /* #ifndef MINIZ_NO_TIME */
 
 	if (!(level_and_flags & MZ_ZIP_FLAG_COMPRESSED_DATA)) {
@@ -6189,6 +6234,8 @@ mz_bool mz_zip_writer_add_read_buf_callback(mz_zip_archive *pZip, const char *pA
 	if (pFile_time) {
 		mz_zip_time_t_to_dos_time(*pFile_time, &dos_time, &dos_date);
 	}
+#else
+	(void)pFile_time;
 #endif
 
 	if (max_size <= 3)
@@ -7093,14 +7140,16 @@ mz_bool mz_zip_add_mem_to_archive_file_in_place_v2(const char *pZip_filename, co
 		created_new_archive = MZ_TRUE;
 	} else {
 		/* Append to an existing archive. */
-		if (!mz_zip_reader_init_file_v2(&zip_archive, pZip_filename,
-										level_and_flags | MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY, 0, 0)) {
+		if (!mz_zip_reader_init_file_v2(
+				&zip_archive, pZip_filename,
+				level_and_flags | MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY | MZ_ZIP_FLAG_READ_ALLOW_WRITING, 0, 0)) {
 			if (pErr)
 				*pErr = zip_archive.m_last_error;
 			return MZ_FALSE;
 		}
 
-		if (!mz_zip_writer_init_from_reader_v2(&zip_archive, pZip_filename, level_and_flags)) {
+		if (!mz_zip_writer_init_from_reader_v2(&zip_archive, pZip_filename,
+											   level_and_flags | MZ_ZIP_FLAG_READ_ALLOW_WRITING)) {
 			if (pErr)
 				*pErr = zip_archive.m_last_error;
 

@@ -1,7 +1,7 @@
 #ifndef MINIZ_EXPORT
 #define MINIZ_EXPORT
 #endif
-/* miniz.c 3.0.2 - public domain deflate/inflate, zlib-subset, ZIP reading/writing/appending, PNG writing
+/* miniz.c 3.1.0 - public domain deflate/inflate, zlib-subset, ZIP reading/writing/appending, PNG writing
    See "unlicense" statement at the end of this file.
    Rich Geldreich <richgel99@gmail.com>, last updated Oct. 13, 2013
    Implements RFC 1950: http://www.ietf.org/rfc/rfc1950.txt and RFC 1951: http://www.ietf.org/rfc/rfc1951.txt
@@ -273,10 +273,10 @@ enum {
 	MZ_DEFAULT_COMPRESSION = -1
 };
 
-#define MZ_VERSION "11.0.2"
-#define MZ_VERNUM 0xB002
+#define MZ_VERSION "11.3.0"
+#define MZ_VERNUM 0xB300
 #define MZ_VER_MAJOR 11
-#define MZ_VER_MINOR 2
+#define MZ_VER_MINOR 3
 #define MZ_VER_REVISION 0
 #define MZ_VER_SUBREVISION 0
 
@@ -535,6 +535,7 @@ typedef void *const voidpc;
 #define ZLIB_VER_MINOR MZ_VER_MINOR
 #define ZLIB_VER_REVISION MZ_VER_REVISION
 #define ZLIB_VER_SUBREVISION MZ_VER_SUBREVISION
+
 #define zlibVersion mz_version
 #define zlib_version mz_version()
 #endif /* #ifndef MINIZ_NO_ZLIB_COMPATIBLE_NAMES */
@@ -553,10 +554,10 @@ typedef void *const voidpc;
 
 /* ------------------- Types and macros */
 typedef unsigned char mz_uint8;
-typedef signed short mz_int16;
-typedef unsigned short mz_uint16;
-typedef unsigned int mz_uint32;
-typedef unsigned int mz_uint;
+typedef int16_t mz_int16;
+typedef uint16_t mz_uint16;
+typedef uint32_t mz_uint32;
+typedef uint32_t mz_uint;
 typedef int64_t mz_int64;
 typedef uint64_t mz_uint64;
 typedef int mz_bool;
@@ -652,7 +653,9 @@ extern "C" {
 
 /* Set TDEFL_LESS_MEMORY to 1 to use less memory (compression will be slightly slower, and raw/dynamic blocks will be
  * output more frequently). */
+#ifndef TDEFL_LESS_MEMORY
 #define TDEFL_LESS_MEMORY 0
+#endif
 
 /* tdefl_init() compression flags logically OR'd together (low 12 bits contain the max. number of probes per dictionary
  * search): */
@@ -754,7 +757,7 @@ enum {
 #else
 enum {
 	TDEFL_LZ_CODE_BUF_SIZE = 64 * 1024,
-	TDEFL_OUT_BUF_SIZE = (TDEFL_LZ_CODE_BUF_SIZE * 13) / 10,
+	TDEFL_OUT_BUF_SIZE = (mz_uint)((TDEFL_LZ_CODE_BUF_SIZE * 13) / 10),
 	TDEFL_MAX_HUFF_SYMBOLS = 288,
 	TDEFL_LZ_HASH_BITS = 15,
 	TDEFL_LEVEL1_HASH_SIZE_MASK = 4095,
@@ -1119,7 +1122,8 @@ typedef enum {
 	MZ_ZIP_FLAG_ASCII_FILENAME = 0x10000,
 	/*After adding a compressed file, seek back
 	to local file header and set the correct sizes*/
-	MZ_ZIP_FLAG_WRITE_HEADER_SET_SIZE = 0x20000
+	MZ_ZIP_FLAG_WRITE_HEADER_SET_SIZE = 0x20000,
+	MZ_ZIP_FLAG_READ_ALLOW_WRITING = 0x40000
 } mz_zip_flags;
 
 typedef enum {
