@@ -6,7 +6,6 @@
 
 #include "core/Color.h"
 #include "core/collection/DynamicMap.h"
-#include "core/collection/Map.h"
 #include "palette/Palette.h"
 
 namespace palette {
