@@ -59,12 +59,18 @@ public:
 	 * @sa core::ScopedPtr
 	 */
 	virtual SeekableReadStream *readStream(const core::String &filePath) = 0;
+	SeekableReadStream *readStream(const core::Path &filePath) {
+		return readStream(filePath.toString());
+	}
 	/**
 	 * The contract is that the memory ownership of the returned stream is transferred to the caller
 	 *
 	 * @sa core::ScopedPtr
 	 */
 	virtual SeekableWriteStream *writeStream(const core::String &filePath);
+	SeekableWriteStream *writeStream(const core::Path &filePath) {
+		return writeStream(filePath.toString());
+	}
 
 	virtual bool write(const core::String &filePath, io::ReadStream &stream);
 };
