@@ -9,6 +9,8 @@
 #pragma once
 
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicSet.h"
+#include "core/collection/DynamicStringMap.h"
 #include "dearimgui/imgui.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -117,10 +119,10 @@ public:
 	};
 
 	typedef core::String String;
-	typedef core::StringMap<Identifier> Identifiers;
+	typedef core::DynamicStringMap<Identifier> Identifiers;
 	typedef core::StringSet Keywords;
-	typedef core::Map<int, core::String> ErrorMarkers;
-	typedef core::Set<int> Breakpoints;
+	typedef core::DynamicMap<int, core::String> ErrorMarkers;
+	typedef core::DynamicSet<int> Breakpoints;
 	typedef core::Array<ImU32, (unsigned)PaletteIndex::Max> Palette;
 	typedef uint8_t Char;
 
