@@ -22,15 +22,6 @@ class Palette;
 namespace voxelutil {
 
 /**
- * @brief The interpolated voxel for the given position
- *
- * @param v The voxel volume to operate on.
- * @param pos The position in the voxel volume to get the interpolated voxel for.
- * @param palette The palette used for interpolation.
- */
-voxel::Voxel getInterpolated(const voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette);
-
-/**
  * @brief Checks if there is a solid voxel around the given position
  */
 bool isTouching(const voxel::RawVolume &volume, const glm::ivec3& pos, voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
@@ -117,7 +108,6 @@ voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ive
 				  const voxel::Voxel &replaceVoxel);
 
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
-bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palette);
 void clear(voxel::RawVolumeWrapper &in);
 
 /**

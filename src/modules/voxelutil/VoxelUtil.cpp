@@ -69,51 +69,6 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Co
 	return false;
 }
 
-voxel::Voxel getInterpolated(const voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, const palette::Palette &palette) {
-	voxel::RawVolumeWrapper::Sampler sampler3(volume);
-	sampler3.setPosition(pos);
-	const voxel::Voxel voxel000 = sampler3.peekVoxel0px0py0pz();
-	const voxel::Voxel voxel001 = sampler3.peekVoxel0px0py1pz();
-	const voxel::Voxel voxel010 = sampler3.peekVoxel0px1py0pz();
-	const voxel::Voxel voxel011 = sampler3.peekVoxel0px1py1pz();
-	const voxel::Voxel voxel100 = sampler3.peekVoxel1px0py0pz();
-	const voxel::Voxel voxel101 = sampler3.peekVoxel1px0py1pz();
-	const voxel::Voxel voxel110 = sampler3.peekVoxel1px1py0pz();
-	const voxel::Voxel voxel111 = sampler3.peekVoxel1px1py1pz();
-
-	const bool blocked000 = voxel::isBlocked(voxel000.getMaterial());
-	const bool blocked001 = voxel::isBlocked(voxel001.getMaterial());
-	const bool blocked010 = voxel::isBlocked(voxel010.getMaterial());
-	const bool blocked011 = voxel::isBlocked(voxel011.getMaterial());
-	const bool blocked100 = voxel::isBlocked(voxel100.getMaterial());
-	const bool blocked101 = voxel::isBlocked(voxel101.getMaterial());
-	const bool blocked110 = voxel::isBlocked(voxel110.getMaterial());
-	const bool blocked111 = voxel::isBlocked(voxel111.getMaterial());
-
-	const int blocked = (int)blocked000 + (int)blocked001 + (int)blocked010 + (int)blocked011 +
-						(int)blocked100 + (int)blocked101 + (int)blocked110 + (int)blocked111;
-	if (blocked == 0) {
-		return voxel::Voxel();
-	}
-
-	const glm::vec4 color000(blocked000 ? palette.color4(voxel000.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color001(blocked001 ? palette.color4(voxel001.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color010(blocked010 ? palette.color4(voxel010.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color011(blocked011 ? palette.color4(voxel011.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color100(blocked100 ? palette.color4(voxel100.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color101(blocked101 ? palette.color4(voxel101.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color110(blocked110 ? palette.color4(voxel110.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 color111(blocked111 ? palette.color4(voxel111.getColor()) : glm::vec4(0.0f));
-	const glm::vec4 colorSum =
-		color000 + color001 + color010 + color011 + color100 + color101 + color110 + color111;
-	const glm::vec4 colorAvg = colorSum / (float)blocked;
-	const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
-	if (idx == palette::PaletteColorNotFound) {
-		return voxel::Voxel();
-	}
-	return voxel::createVoxel(palette, idx);
-}
-
 bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 	voxel::RawVolume::Sampler sampler(v);
 	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += 1) {
@@ -127,25 +82,6 @@ bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 			}
 		}
 	}
-	return true;
-}
-
-bool fillCheckerboard(voxel::RawVolumeWrapper &volume, const palette::Palette &palette) {
-	const int black = palette.getClosestMatch(core::RGBA(0, 0, 0, 255));
-	const int white = palette.getClosestMatch(core::RGBA(255, 255, 255, 255));
-	if (black == palette::PaletteColorNotFound || white == palette::PaletteColorNotFound) {
-		return false;
-	}
-
-	const uint8_t colors[2] = {(uint8_t)black, (uint8_t)white};
-	int currentColorIndex = 0;
-
-	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) {
-		const int idx = colors[currentColorIndex];
-		volume.setVoxel(x, y, z, voxel::createVoxel(palette, idx));
-		currentColorIndex = (currentColorIndex + 1) % 2;
-	};
-	visitVolume(volume, visitor, VisitAll());
 	return true;
 }
 
