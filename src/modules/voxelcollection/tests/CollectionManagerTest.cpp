@@ -36,7 +36,7 @@ protected:
 };
 
 TEST_F(CollectionManagerTest, DISABLED_testLocal) {
-	ASSERT_TRUE(_mgr->local(true));
+	ASSERT_TRUE(_mgr->local());
 	_mgr->update(0.0, 1);
 	ASSERT_GT(_mgr->allEntries(), 0);
 }

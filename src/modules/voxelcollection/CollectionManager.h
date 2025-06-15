@@ -8,7 +8,6 @@
 #include "core/SharedPtr.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/StringSet.h"
-#include "core/concurrent/Future.h"
 #include "io/Archive.h"
 #include "io/Filesystem.h"
 #include "video/Texture.h"
@@ -34,7 +33,6 @@ private:
 
 	int _count = 0;
 
-	core::Future<void> _local;
 	core::String _localDir;
 
 	core::StringSet _onlineResolvedSources;
@@ -55,7 +53,7 @@ public:
 	const core::String &localDir() const;
 	bool setLocalDir(const core::String &dir);
 
-	bool local(bool wait = false);
+	bool local();
 	bool online();
 	void resolve(const VoxelSource &source, bool async = true);
 	bool resolved(const VoxelSource &source) const;

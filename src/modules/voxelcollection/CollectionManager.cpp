@@ -67,12 +67,6 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 	if (dir.empty()) {
 		return false;
 	}
-	if (_local.valid()) {
-		if (!_local.ready()) {
-			return false;
-		}
-		_local = {};
-	}
 	if (_localDir.empty() || dir != _localDir) {
 		Log::debug("change local dir to %s", dir.c_str());
 		_localDir = dir;
@@ -89,16 +83,14 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 void CollectionManager::shutdown() {
 }
 
-bool CollectionManager::local(bool wait) {
-	if (_local.valid()) {
-		Log::debug("Local already queued");
-		return false;
-	}
+bool CollectionManager::local() {
 	const core::String localDir = _localDir;
 	if (localDir.empty()) {
 		Log::debug("No local dir set");
 		return false;
 	}
+	_voxelFilesMap.remove(LOCAL_SOURCE);
+
 	core::DynamicArray<io::FilesystemEntry> entities;
 	Log::info("Local document scanning (%s)...", localDir.c_str());
 	_archive->list(localDir, entities, "");
@@ -120,7 +112,10 @@ bool CollectionManager::local(bool wait) {
 			voxelFile.downloaded = true;
 			voxelFiles->push(voxelFile);
 		}
-	}, wait);
+	});
+	VoxelCollection collection{{}, 0.0, true};
+	_voxelFilesMap.put(LOCAL_SOURCE, collection);
+
 	return true;
 }
 
@@ -224,19 +219,12 @@ void CollectionManager::resolve(const VoxelSource &source, bool async) {
 
 bool CollectionManager::resolved(const VoxelSource &source) const {
 	if (source.isLocal()) {
-		return _local.valid();
+		return _voxelFilesMap.hasKey(LOCAL_SOURCE);
 	}
 	return _onlineResolvedSources.has(source.name);
 }
 
 void CollectionManager::update(double nowSeconds, int n) {
-	if (_local.ready()) {
-		if (!_voxelFilesMap.hasKey(LOCAL_SOURCE)) {
-			VoxelCollection collection{{}, nowSeconds, true};
-			_voxelFilesMap.put(LOCAL_SOURCE, collection);
-		}
-	}
-
 	_voxelSourceQueue->popAll(_sources);
 
 	image::ImagePtr image;
