@@ -29,6 +29,8 @@ struct ActionButtonCommands {
 	ActionButtonCommands& setHelp(const char* help);
 };
 
+#define MAX_COMMANDS 4096
+
 /**
  * @brief A command is a string bound c++ function/method/lambda. You can bind
  * this to keys or execute on the console.
@@ -41,7 +43,7 @@ private:
 	static CommandMap _cmds core_thread_guarded_by(_lock);
 	static core::Lock _lock;
 	static size_t _sortedCommandListSize;
-	static Command* _sortedCommandList[4096];
+	static Command* _sortedCommandList[MAX_COMMANDS];
 
 	static double _delaySeconds;
 	static core::DynamicArray<core::String> _delayedTokens;

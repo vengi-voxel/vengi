@@ -12,12 +12,12 @@
 
 namespace command {
 
-Command::CommandMap Command::_cmds;
+Command::CommandMap Command::_cmds{MAX_COMMANDS};
 core_trace_mutex_static(core::Lock, Command, _lock);
 core::DynamicArray<core::String> Command::_delayedTokens;
 double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
-Command* Command::_sortedCommandList[4096] {};
+Command* Command::_sortedCommandList[MAX_COMMANDS] {};
 
 ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 	Command::getCommand(first)->setHelp(help);
@@ -28,6 +28,7 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 Command& Command::registerCommand(const core::String &name, FunctionType&& func) {
 	const Command c(name, std::forward<FunctionType>(func));
 	core::ScopedLock lock(_lock);
+	core_assert(_cmds.size() < MAX_COMMANDS);
 	_cmds.put(name, c);
 	return (Command&)_cmds.find(name)->value;
 }
@@ -45,6 +46,7 @@ ActionButtonCommands Command::registerActionButton(const core::String& name, Act
 		button.handleDown(key, seconds);
 	});
 	cPressed.setHelp(help);
+	core_assert(_cmds.size() < MAX_COMMANDS - 1);
 	_cmds.put(cPressed.name(), cPressed);
 	Command cReleased(COMMAND_RELEASED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
