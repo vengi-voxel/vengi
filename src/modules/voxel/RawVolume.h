@@ -153,6 +153,10 @@ public:
 	void clear();
 	void fill(const voxel::Voxel &voxel);
 
+	// TODO: we should not rely on this data to be a linear array.
+	//       We might add chunks to the RawVolume to reduce the memory
+	//       usage for big volumes that are empty - and in that case
+	//       the data is no longer linear.
 	inline const uint8_t *data() const {
 		return (const uint8_t *)_data;
 	}

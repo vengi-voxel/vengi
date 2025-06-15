@@ -157,7 +157,7 @@ public:
 			if (_data.size() <= i) {
 				break;
 			}
-			out.push_back(core::move(_data[i]));
+			out.emplace_back(core::move(_data[i]));
 		}
 		_data.erase(_data.begin(), n);
 		return true;
