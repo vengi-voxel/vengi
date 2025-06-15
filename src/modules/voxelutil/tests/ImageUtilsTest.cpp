@@ -93,7 +93,7 @@ TEST_F(ImageUtilsTest, testImportAsPlane) {
 	EXPECT_EQ(3758, countVoxels(*volume));
 }
 
-TEST_F(ImageUtilsTest, testImportAsVolume) {
+TEST_F(ImageUtilsTest, testImportAsVolumeBothSided) {
 	const image::ImagePtr &img = image::loadImage("test-heightmap.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	int depth = 10;
@@ -102,9 +102,10 @@ TEST_F(ImageUtilsTest, testImportAsVolume) {
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
 	EXPECT_EQ(depth * 2 + 1, volume->depth());
+	EXPECT_EQ(40, countVoxels(*volume));
 }
 
-TEST_F(ImageUtilsTest, testImportAsVolume2) {
+TEST_F(ImageUtilsTest, testImportAsVolumeSingleSided) {
 	const image::ImagePtr &img = image::loadImage("test-heightmap.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	int depth = 9;
@@ -113,6 +114,7 @@ TEST_F(ImageUtilsTest, testImportAsVolume2) {
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
 	EXPECT_EQ(depth, volume->depth());
+	EXPECT_EQ(28, countVoxels(*volume));
 }
 
 TEST_F(ImageUtilsTest, testImportHeightMaxHeightAlpha) {
