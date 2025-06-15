@@ -1,0 +1,12 @@
+{
+  "name": "vengi",
+  "version-string": "latest",
+  "dependencies": [
+    "freetype",
+    "libflac",
+    "libjpeg-turbo",
+    "libpng",
+    "sdl2",
+    "zlib"
+  ]
+}
