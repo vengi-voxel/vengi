@@ -422,7 +422,7 @@ TEST_F(LUAApiTest, testScriptNewelStair) {
 
 TEST_F(LUAApiTest, testScriptGenland) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "genland.lua");
+	runFile(sceneGraph, "genland.lua", {"0", "64"});
 }
 
 // long runtime - thus disabled
