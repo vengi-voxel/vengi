@@ -334,20 +334,21 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	}
 	Log::debug("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
-	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	voxel::RawVolumeWrapper wrapper(volume);
+	voxel::RawVolume::Sampler sampler(volume);
+	sampler.setPosition(0, region.getUpperY(), 0);
 	// TODO: PERF: FOR_PARALLEL
-	// TODO: PERF: use a volume sampler
-	for (int x = 0; x < imageWidth; ++x) {
-		for (int y = 0; y < imageHeight; ++y) {
+	palette::PaletteLookup palLookup(palette);
+	for (int y = 0; y < imageHeight; ++y) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
+		for (int x = 0; x < imageWidth; ++x) {
 			const core::RGBA data = image->colorAt(x, y);
-			if (data.a == 0) {
+			if (data.a == 0 /* AlphaThreshold */) {
+				sampler2.movePositiveX();
 				continue;
 			}
-			const glm::vec4 &color = core::Color::fromRGBA(data);
-			const uint8_t index = palLookup.findClosestIndex(color);
-			const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), index);
+			const uint8_t index = palLookup.findClosestIndex(data);
+			const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 			const core::RGBA heightdata = depthmap->colorAt(x, y);
 			const float thickness = (float)heightdata.r;
 			const float maxthickness = maxDepth;
@@ -356,16 +357,22 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 				const int heighti = (int)glm::ceil(height / 2.0f);
 				const int minZ = maxDepth - heighti;
 				const int maxZ = maxDepth + heighti;
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (int z = minZ; z <= maxZ; ++z) {
-					wrapper.setVoxel(x, region.getUpperY() - y, z, voxel);
+					sampler3.setVoxel(voxel);
+					sampler3.movePositiveZ();
 				}
 			} else {
 				const int heighti = (int)glm::ceil(height);
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (int z = region.getLowerZ(); z < region.getLowerZ() + heighti; ++z) {
-					wrapper.setVoxel(x, region.getUpperY() - y, z, voxel);
+					sampler3.setVoxel(voxel);
+					sampler3.movePositiveZ();
 				}
 			}
+			sampler2.movePositiveX();
 		}
+		sampler.moveNegativeY();
 	}
 	return volume;
 }
