@@ -39,10 +39,10 @@ using Languages = core::Buffer<Language>;
  */
 class DictionaryManager : public core::NonCopyable {
 private:
-	typedef core::Map<Language, Dictionary *, 11, Language_hash> Dictionaries;
+	typedef core::DynamicMap<Language, Dictionary *, 11, Language_hash> Dictionaries;
 	Dictionaries _dictionaries;
 
-	typedef core::DynamicArray<core::String> SearchPath;
+	typedef core::DynamicArray<core::String, 4> SearchPath;
 	SearchPath _searchPath;
 
 	core::String _charset;

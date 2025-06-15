@@ -24,8 +24,7 @@
 #include "Language.h"
 #include "core/String.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 
 namespace app {
 
@@ -295,7 +294,7 @@ static const LanguageSpec languages[] = {{"aa", 0, 0, "Afar", "ʿAfár af"},
 namespace {
 
 core::String resolve_language_alias(const core::String &name) {
-	typedef core::StringMap<core::String> Aliases;
+	typedef core::DynamicStringMap<core::String> Aliases;
 	static Aliases language_aliases;
 	if (language_aliases.empty()) {
 		// FIXME: Many of those are not useful for us, since we leave
@@ -363,7 +362,7 @@ core::String resolve_language_alias(const core::String &name) {
 } // namespace
 
 Language Language::fromSpec(const core::String &language, const core::String &country, const core::String &modifier) {
-	typedef core::StringMap<core::Buffer<const LanguageSpec *>> LanguageSpecMap;
+	typedef core::DynamicStringMap<core::Buffer<const LanguageSpec *>> LanguageSpecMap;
 	static LanguageSpecMap language_map;
 
 	if (language_map.empty()) { // Init language_map

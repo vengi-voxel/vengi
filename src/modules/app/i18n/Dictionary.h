@@ -27,9 +27,12 @@
 #include "core/NonCopyable.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/StringMap.h"
 
 namespace app {
+
+using MsgStrs = core::DynamicArray<core::String, 1>;
 
 /**
  * @brief A simple dictionary class that mimics gettext() behaviour. Each
@@ -38,11 +41,11 @@ namespace app {
  */
 class Dictionary : public core::NonCopyable {
 private:
-	typedef core::StringMap<core::DynamicArray<core::String>> Entries;
-	Entries _entries{1024};
+	typedef core::DynamicStringMap<MsgStrs> Entries;
+	Entries _entries;
 
-	typedef core::StringMap<Entries> CtxtEntries;
-	CtxtEntries _ctxtEntries{64};
+	typedef core::DynamicStringMap<Entries> CtxtEntries;
+	CtxtEntries _ctxtEntries;
 
 	core::String _charset;
 	PluralForms _pluralForms;
@@ -95,9 +98,9 @@ public:
 	 * translate().
 	 */
 	void addTranslation(const core::String &msgid, const core::String &msgid_plural,
-						const core::DynamicArray<core::String> &msgstrs);
+						const MsgStrs &msgstrs);
 	void addTranslation(const core::String &msgctxt, const core::String &msgid, const core::String &msgid_plural,
-						const core::DynamicArray<core::String> &msgstrs);
+						const MsgStrs &msgstrs);
 
 	/**
 	 * Add a translation from \a msgid to \a msgstr to the
@@ -108,7 +111,7 @@ public:
 
 	/**
 	 * Iterate over all messages, Func is of type:
-	 * void func(const core::String& msgid, const core::DynamicArray<core::String>& msgstrs)
+	 * void func(const core::String& msgid, const MsgStrs& msgstrs)
 	 */
 	template<class Func>
 	Func foreach (Func func) {
@@ -125,7 +128,7 @@ public:
 
 	/**
 	 * Iterate over all messages with a context, Func is of type:
-	 * void func(const core::String& ctxt, const core::String& msgid, const core::DynamicArray<core::String>& msgstrs)
+	 * void func(const core::String& ctxt, const core::String& msgid, const MsgStrs& msgstrs)
 	 */
 	template<class Func>
 	Func foreachCtxt(Func func) {

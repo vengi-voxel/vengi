@@ -130,7 +130,7 @@ const char *Dictionary::translateCtxtPlural(const char *msgctxt, const char *msg
 }
 
 void Dictionary::addTranslation(const core::String &msgid, const core::String &msgidPlural,
-								const core::DynamicArray<core::String> &msgstrs) {
+								const MsgStrs &msgstrs) {
 	auto iter = _entries.find(msgid);
 	if (iter == _entries.end() || iter->second.empty()) {
 		_entries.put(msgid, msgstrs);
@@ -149,7 +149,7 @@ void Dictionary::addTranslation(const core::String &msgid, const core::String &m
 }
 
 void Dictionary::addTranslation(const core::String &msgctxt, const core::String &msgid, const core::String &msgidPlural,
-								const core::DynamicArray<core::String> &msgstrs) {
+								const MsgStrs &msgstrs) {
 	auto citer = _ctxtEntries.find(msgctxt);
 	if (citer == _ctxtEntries.end()) {
 		_ctxtEntries.emplace(msgctxt, {{msgid, msgstrs}});

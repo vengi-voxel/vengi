@@ -23,7 +23,7 @@
 
 #include "PluralForms.h"
 #include "core/StringUtil.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 
 namespace app {
 
@@ -150,7 +150,7 @@ unsigned int plural6_ar(int n) {
 } // namespace
 
 PluralForms PluralForms::fromString(const core::String &str) {
-	typedef core::StringMap<PluralForms> PluralFormsMap;
+	typedef core::DynamicStringMap<PluralForms, 11> PluralFormsMap;
 	static PluralFormsMap plural_forms;
 
 	if (plural_forms.empty()) {

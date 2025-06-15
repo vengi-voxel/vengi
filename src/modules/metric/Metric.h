@@ -13,6 +13,7 @@
 #include "IMetricSender.h"
 #include "core/NonCopyable.h"
 #include "core/SharedPtr.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/StringMap.h"
 #include <stdint.h>
 
@@ -32,7 +33,7 @@ enum class Flavor {
 /**
  * @brief If the configured Flavor supports tags, they are just a key-value pair of strings
  */
-using TagMap = core::StringMap<core::String, 4>;
+using TagMap = core::DynamicStringMap<core::String, 3>;
 
 /**
  * @brief The Metric class generates and publishes metrics

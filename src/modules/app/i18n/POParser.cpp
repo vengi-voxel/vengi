@@ -141,13 +141,12 @@ bool POParser::getStringLine(io::WriteStream &out, size_t skip) {
 }
 
 core::String POParser::getString(unsigned int skip) {
-	io::BufferedReadWriteStream out;
-
 	if (skip + 1 >= static_cast<unsigned int>(_currentLine.size())) {
 		error("unexpected end of line");
 		return core::String::Empty;
 	}
 
+	io::BufferedReadWriteStream out(256);
 	if (_currentLine[skip] == ' ' && _currentLine[skip + 1] == '"') {
 		if (!getStringLine(out, skip + 1)) {
 			return core::String::Empty;
@@ -324,7 +323,7 @@ bool POParser::parse() {
 				if (_error) {
 					return false;
 				}
-				core::DynamicArray<core::String> msgstr_num;
+				MsgStrs msgstr_num;
 				bool saw_nonempty_msgstr = false;
 
 			next:
