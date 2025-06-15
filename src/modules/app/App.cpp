@@ -169,6 +169,7 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	sigaction(SIGXFSZ, &action, nullptr); // File size limit exceeded (4.2BSD)
 #endif
 #else
+	// MEMORY: uses 8MB memory to represent the stack
 	backward::SignalHandling sh;
 #endif
 
