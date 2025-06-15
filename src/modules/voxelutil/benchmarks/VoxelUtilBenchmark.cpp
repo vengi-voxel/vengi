@@ -9,6 +9,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/FillHollow.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
@@ -86,8 +87,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, FillHollow)(benchmark::State &state) {
 	in.setVoxel(in.region().getCenter(), voxel::Voxel());
 	for (auto _ : state) {
 		voxel::RawVolume copy(in);
-		voxel::RawVolumeWrapper wrapper(&copy);
-		voxelutil::fillHollow(wrapper, voxel);
+		voxelutil::fillHollow(copy, voxel);
 	}
 }
 

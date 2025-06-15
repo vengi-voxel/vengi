@@ -12,6 +12,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "voxelutil/FillHollow.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
@@ -28,8 +29,7 @@ TEST_F(VoxelUtilTest, testFillHollow3x3Center) {
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
-	voxel::RawVolumeWrapper wrapper(&v);
-	voxelutil::fillHollow(wrapper, fillVoxel);
+	voxelutil::fillHollow(v, fillVoxel);
 	EXPECT_EQ(2, v.voxel(region.getCenter()).getColor());
 }
 
@@ -43,8 +43,7 @@ TEST_F(VoxelUtilTest, testFillHollow5x5CenterNegativeOrigin) {
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
-	voxel::RawVolumeWrapper wrapper(&v);
-	voxelutil::fillHollow(wrapper, fillVoxel);
+	voxelutil::fillHollow(v, fillVoxel);
 	EXPECT_EQ(2, v.voxel(region.getCenter()).getColor());
 }
 
@@ -59,8 +58,7 @@ TEST_F(VoxelUtilTest, testFillHollowLeak) {
 	EXPECT_TRUE(v.setVoxel(1, 1, 0, voxel::Voxel())); // produce leak
 
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
-	voxel::RawVolumeWrapper wrapper(&v);
-	voxelutil::fillHollow(wrapper, fillVoxel);
+	voxelutil::fillHollow(v, fillVoxel);
 	EXPECT_EQ(0, v.voxel(region.getCenter()).getColor());
 }
 

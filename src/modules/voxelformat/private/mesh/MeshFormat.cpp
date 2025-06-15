@@ -30,6 +30,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxelutil/FillHollow.h"
 #include "voxelutil/VoxelUtil.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
@@ -422,7 +423,6 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		Log::debug("Empty volume - no positions given");
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper(node.volume());
 	palette::Palette palette;
 	const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (shouldCreatePalette) {
@@ -447,6 +447,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 
 	Log::debug("create voxels for %i positions", (int)posMap.size());
 	// TODO: PERF: FOR_PARALLEL
+	voxel::RawVolume *volume = node.volume();
 	palette::PaletteLookup palLookup(palette);
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
@@ -458,7 +459,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			continue;
 		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(rgba), pos.getNormal());
-		wrapper.setVoxel(entry->first, voxel);
+		volume->setVoxel(entry->first, voxel);
 	}
 	if (palette.colorCount() == 1) {
 		core::RGBA c = palette.color(0);
@@ -474,7 +475,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		}
 		Log::debug("fill hollows");
 		const voxel::Voxel voxel = voxel::createVoxel(palette, FillColorIndex);
-		voxelutil::fillHollow(wrapper, voxel);
+		voxelutil::fillHollow(*volume, voxel);
 	}
 }
 

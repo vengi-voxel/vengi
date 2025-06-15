@@ -2,6 +2,8 @@ set(LIB voxelutil)
 set(SRCS
 	AStarPathfinder.h
 	AStarPathfinderImpl.h
+	FillHollow.h
+	Hollow.h
 	ImageUtils.h ImageUtils.cpp
 	Raycast.h
 	Picking.h

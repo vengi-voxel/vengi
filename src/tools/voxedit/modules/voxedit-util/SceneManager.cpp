@@ -55,6 +55,8 @@
 #include "voxelrender/ImageGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
+#include "voxelutil/FillHollow.h"
+#include "voxelutil/Hollow.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"

@@ -116,17 +116,6 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
 voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel);
 
-/**
- * @brief Fills the hollow spaces in a voxel volume.
- *
- * This function iterates over the voxel volume and identifies hollows that are totally enclosed by existing voxels.
- * It then fills these hollow spaces with a specified voxel.
- *
- * @param[in,out] in The voxel volume to fill.
- * @param[in] voxel The voxel to fill the hollow spaces with.
- */
-void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
-void hollow(voxel::RawVolumeWrapper &in);
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
 bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palette);
 void clear(voxel::RawVolumeWrapper &in);

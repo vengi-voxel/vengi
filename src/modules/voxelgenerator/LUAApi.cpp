@@ -36,6 +36,8 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/Genland.h"
 #include "voxelgenerator/ShapeGenerator.h"
+#include "voxelutil/FillHollow.h"
+#include "voxelutil/Hollow.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMover.h"
