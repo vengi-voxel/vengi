@@ -152,6 +152,8 @@ public:
 	bool commandAndConquer();
 
 	bool isBuiltIn() const;
+	static bool isBuiltIn(const core::String &name);
+	static bool isLospec(const core::String &name);
 
 	void markDirty() override;
 	void markSave();

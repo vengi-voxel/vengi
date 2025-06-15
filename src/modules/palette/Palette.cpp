@@ -719,12 +719,20 @@ bool Palette::load(const char *paletteName) {
 }
 
 bool Palette::isBuiltIn() const {
+	return isBuiltIn(_name);
+}
+
+bool Palette::isBuiltIn(const core::String &name) {
 	for (int i = 0; i < lengthof(builtIn); ++i) {
-		if (_name.equals(builtIn[i])) {
+		if (name.equals(builtIn[i])) {
 			return true;
 		}
 	}
 	return false;
+}
+
+bool Palette::isLospec(const core::String &name) {
+	return core::string::startsWith(name.c_str(), "lospec:");
 }
 
 bool Palette::minecraft() {
