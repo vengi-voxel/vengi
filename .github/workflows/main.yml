@@ -82,7 +82,7 @@ jobs:
             name: mac-vengi-thumbnailer-app
             path: build/thumbnailer/vengi-thumbnailer.app
 
-    packages:
+    pkg-ubuntu:
         timeout-minutes: 45
         if: github.repository == 'vengi-voxel/vengi'
         runs-on: ubuntu-22.04
@@ -205,7 +205,7 @@ jobs:
             name: linux-appimage-voxedit
             path: "voxedit*.AppImage"
 
-    rockylinux:
+    pkg-rockylinux:
         runs-on: ubuntu-latest
         container:
           image: rockylinux/rockylinux:9
