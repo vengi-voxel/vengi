@@ -21,6 +21,10 @@ VoxEdit:
 
    - New single-non-contiguous voxel placing mode in the brushes
 
+PalConvert:
+
+   - Allow to use the built-in as well as lospec palettes from the command line, too
+
 ## 0.0.38 (2025-06-01)
 
 General:

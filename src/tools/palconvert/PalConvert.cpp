@@ -125,15 +125,22 @@ static void printHexPalette(const palette::Palette &palette) {
 bool PalConvert::handleInputFile(const core::String &infile, const core::String &outfile) {
 	Log::info("-- current input file: %s", infile.c_str());
 	palette::Palette palette;
-	const io::FilePtr &file = _filesystem->open(infile);
-	io::FileStream stream(file);
-	if (!stream.valid()) {
-		Log::error("Failed to open input file '%s'", infile.c_str());
-		return false;
-	}
-	if (!palette::loadPalette(infile, stream, palette)) {
-		Log::error("Failed to load palette from '%s'", infile.c_str());
-		return false;
+	if (palette::Palette::isBuiltIn(infile) || palette::Palette::isLospec(infile)) {
+		if (!palette.load(infile.c_str())) {
+			Log::error("Failed to load palette from '%s'", infile.c_str());
+			return false;
+		}
+	} else {
+		const io::FilePtr &file = _filesystem->open(infile);
+		io::FileStream stream(file);
+		if (!stream.valid()) {
+			Log::error("Failed to open input file '%s'", infile.c_str());
+			return false;
+		}
+		if (!palette::loadPalette(infile, stream, palette)) {
+			Log::error("Failed to load palette from '%s'", infile.c_str());
+			return false;
+		}
 	}
 
 	Log::info("Palette with %i colors loaded from '%s' with name '%s'\n", (int)palette.size(), infile.c_str(),
