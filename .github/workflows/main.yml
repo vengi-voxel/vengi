@@ -285,6 +285,16 @@ jobs:
     windows:
         timeout-minutes: 45
         runs-on: windows-2019
+        strategy:
+          fail-fast: false
+          matrix:
+            include:
+              - buildType: Release
+                sanitizers: OFF
+                artifactsPostfix:
+              - buildType: Debug
+                sanitizers: ON
+                artifactsPostfix: -debug
 
         steps:
         - uses: actions/checkout@v4
@@ -293,7 +303,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.buildType }} -DUSE_SANITIZERS=${{ matrix.sanitizers }}
             cmake --build .
 
         - name: Test
@@ -322,126 +332,36 @@ jobs:
         - name: Upload the vengi msi
           uses: actions/upload-artifact@v4
           with:
-            name: win-vengi-msi
+            name: win-vengi-msi${{ matrix.artifactsPostfix }}
             path: build/vengi.msi
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: win-voxedit
+            name: win-voxedit${{ matrix.artifactsPostfix }}
             path: build/voxedit-install/
 
         - name: Upload the tests artifacts
           uses: actions/upload-artifact@v4
           if: ${{ failure() }}
           with:
-            name: windows-release-tests
+            name: windows-tests${{ matrix.artifactsPostfix }}
             path: build/tests-*/*
 
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: win-voxconvert
+            name: win-voxconvert${{ matrix.artifactsPostfix }}
             path: build/voxconvert-install/
 
         - name: Upload the palconvert artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: win-palconvert
+            name: win-palconvert${{ matrix.artifactsPostfix }}
             path: build/palconvert-install/
 
         - name: Upload the thumbnailer artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: win-thumbnailer
+            name: win-thumbnailer${{ matrix.artifactsPostfix }}
             path: build/thumbnailer-install/
-
-    windows-debug:
-        timeout-minutes: 45
-        runs-on: windows-2019
-
-        steps:
-        - uses: actions/checkout@v4
-
-        - name: Build
-          run: |
-            mkdir build
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
-            cmake --build .
-
-        - name: Install
-          run: |
-            cd build
-            cmake --install . --component voxedit --prefix voxedit-install
-            cmake --install . --component thumbnailer --prefix thumbnailer-install
-            cmake --install . --component voxelthumb --prefix thumbnailer-install
-            cmake --install . --component palconvert --prefix palconvert-install
-            cmake --install . --component voxconvert --prefix voxconvert-install
-            cmake --install . --component voxconvertui --prefix voxconvert-install
-
-        - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-voxedit-debug
-            path: build/voxedit-install/
-
-        - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-voxconvert-debug
-            path: build/voxconvert-install/
-
-    windows-msys:
-        timeout-minutes: 45
-        if: false
-        continue-on-error: true
-        runs-on: windows-2022
-        defaults:
-          run:
-            shell: msys2 {0}
-
-        steps:
-        - uses: actions/checkout@v4
-
-        - name: Setup
-          uses: msys2/setup-msys2@v2
-          with:
-            msystem: mingw64
-            pacboy: >-
-              gcc:p
-              cmake:p
-              ccache:p
-              mbedtls:p
-              freetype:p
-              ninja:p
-              SDL2:p
-
-        - name: Build
-          run: |
-            mkdir build
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
-            cmake --build .
-
-        - name: Install
-          run: |
-            cd build
-            cmake --install . --component voxedit --prefix voxedit-install
-            cmake --install . --component thumbnailer --prefix thumbnailer-install
-            cmake --install . --component voxelthumb --prefix thumbnailer-install
-            cmake --install . --component palconvert --prefix palconvert-install
-            cmake --install . --component voxconvert --prefix voxconvert-install
-            cmake --install . --component voxconvertui --prefix voxconvert-install
-
-        - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-voxedit-msys-release
-            path: build/voxedit-install/
-
-        - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-voxconvert-msys-release
-            path: build/voxconvert-install/
