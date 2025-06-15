@@ -6,10 +6,10 @@
 
 #include "glm/geometric.hpp"
 #include "image/Image.h"
+#include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxel/Connectivity.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
@@ -24,7 +24,8 @@ namespace voxelutil {
 /**
  * @brief Checks if there is a solid voxel around the given position
  */
-bool isTouching(const voxel::RawVolume &volume, const glm::ivec3& pos, voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
+bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos,
+				voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
 
 /**
  * @brief Checks whether the given region of the volume is only filled with air
@@ -48,8 +49,8 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
  * @param groundVoxel The voxel we want to extrude on
  * @param newPlaneVoxel The voxel to put at the given position
  */
-int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel,
-			const voxel::Voxel &newPlaneVoxel, int thickness);
+int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness);
 /**
  * @return The region of the volume that was changed
  */
@@ -68,11 +69,13 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
  * @param groundVoxel The voxel to match for erasing.
  * @return The number of voxels that were erased.
  */
-int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
+int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+			   const voxel::Voxel &groundVoxel);
 /**
  * @return The region of the volume that was changed
  */
-voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
+voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+							   const voxel::Voxel &groundVoxel);
 
 /**
  * @brief Paints a plane of existing voxels in a voxel volume with a specified voxel.
@@ -105,17 +108,19 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
  * @return The region of the volume that was changed
  */
 voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
-				  const voxel::Voxel &replaceVoxel);
+								  const voxel::Voxel &replaceVoxel);
 
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
 void clear(voxel::RawVolumeWrapper &in);
 
 /**
  * @brief Remaps or converts the voxel colors to the new given palette by searching for the closest color
- * @param skipColorIndex One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
+ * @param skipColorIndex One particular palette color index that is not taken into account. This can be used to e.g.
+ * search for replacements
  * @return The region of the volume that was changed
  */
-voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette, const palette::Palette &newPalette, int skipColorIndex = -1);
+voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette,
+							 const palette::Palette &newPalette, int skipColorIndex = -1);
 
 /**
  * @brief Creates a diff between the two given volumes
