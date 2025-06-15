@@ -60,6 +60,9 @@ public:
 
 	[[nodiscard]] char separator() const;
 	[[nodiscard]] core::String toNativePath() const;
+	[[nodiscard]] core::String toString() const;
+	// TODO: remove me
+	const core::String& operator()() const { return _path; }
 
 	[[nodiscard]] core::DynamicArray<core::String> components() const;
 
@@ -105,5 +108,9 @@ public:
 
 Path operator+(const Path &lhs, const core::Path &rhs);
 Path operator+(const Path &lhs, const core::String &rhs);
+
+inline core::String Path::toString() const {
+	return _path;
+}
 
 } // namespace core
