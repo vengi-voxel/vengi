@@ -33,7 +33,7 @@ static int extractLayerFromFilename(const core::String &filename) {
 	size_t sep = name.rfind('-');
 	if (sep == core::String::npos) {
 		Log::error("Invalid image name %s", name.c_str());
-		return false;
+		return -1;
 	}
 	const int layer = name.substr(sep + 1).toInt();
 	return layer;
@@ -82,6 +82,10 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 			return false;
 		}
 		const int layer = extractLayerFromFilename(layerFilename);
+		if (layer < 0) {
+			Log::error("Failed to extract layer from filename %s", layerFilename.c_str());
+			continue;
+		}
 		Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
 		palette::PaletteLookup palLookup(palette);
 		voxel::RawVolume::Sampler sampler(volume);
