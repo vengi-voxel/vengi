@@ -214,8 +214,7 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;
-	std::stringstream f(buffer.c_str());
-	simplecpp::TokenList rawtokens(f, files, filename.c_str(), &outputList);
+	simplecpp::TokenList rawtokens(buffer.c_str(), buffer.size(), files, filename.c_str(), &outputList);
 	std::map<std::string, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
 
 	simplecpp::TokenList output(files);
