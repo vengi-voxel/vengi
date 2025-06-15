@@ -180,10 +180,13 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 		Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
 		const float scaleHeight = adoptHeight ? (float)volumeHeight / (float)maxImageHeight : 1.0f;
 		float imageY = 0.0f;
-		// TODO: PERF: use a volume sampler
+		voxel::RawVolumeWrapper::Sampler sampler(volume);
+		sampler.setPosition(mins.x, mins.y, mins.z + start);
 		for (int z = start; z < end; ++z, imageY += stepWidthY) {
 			float imageX = 0.0f;
+			voxel::RawVolumeWrapper::Sampler sampler2 = sampler;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
+				voxel::RawVolumeWrapper::Sampler sampler3 = sampler2;
 				const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
 				uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
 				if (heightValue < minHeight) {
@@ -191,29 +194,21 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 				}
 
 				if (voxel::isAir(underground.getMaterial())) {
-					const glm::ivec3 pos(x, heightValue - 1, z);
-					const glm::ivec3 regionPos = mins + pos;
-					if (!region.containsPoint(regionPos)) {
-						continue;
-					}
-					volume.setVoxel(regionPos, surface);
+					sampler3.movePositiveY(heightValue - 1);
+					sampler.setVoxel(surface);
 				} else {
 					for (int y = 0; y < heightValue; ++y) {
-						const glm::ivec3 pos(x, y, z);
-						const glm::ivec3 regionPos = mins + pos;
-						if (!region.containsPoint(regionPos)) {
-							continue;
-						}
-						voxel::Voxel voxel;
+						voxel::Voxel voxel = surface;
 						if (y < heightValue - 1) {
 							voxel = underground;
-						} else {
-							voxel = surface;
 						}
-						volume.setVoxel(regionPos, voxel);
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveY();
 					}
 				}
+				sampler2.movePositiveX();
 			}
+			sampler.movePositiveZ();
 		}
 	});
 }
