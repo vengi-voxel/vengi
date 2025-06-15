@@ -13,14 +13,14 @@
     "sdl2": "bfab0a968fd54250377f65232df5982e46ecc712",
     "tinygltf": "a5e653e46cca64bbc0ecee7ede007347a94c39b0",
     "tinyobjloader": "3bb554cf74428d7db13418b4aca1b9752a1d2be8",
-    "simplecpp": "09a816319ca6ccc89f45b4e883db07276d19c295",
+    "simplecpp": "a46cb125243f4d6e743eceeba37a485ad131d420",
     "simplexnoise": "83b576feea873a9ab4f2d3bb5da394c0b0b18e7f",
     "flextgl": "bc3d4da8fc087cba17d64e9d908ae35b7e40f4fe",
     "libvxl": "2d482be6e738f0befdbb4f63d740c51eef9970a3",
     "meshoptimizer": "5cb7f8f30cfa5d501dcd96b4b56f9c1ea98a4d3f",
     "yocto-gl": "7e35c631b5ee29f1a7ee1010c5dcf0879aa3dcf3",
-    "ufbx": "5b5494b9b6c2cdb0fc0ae873bdbf8718cdeb85af",
+    "ufbx": "a63ff0a47485328880b3300e7bcdf01413343a45",
     "natsort": "cdd8df9602e727482ae5e051cff74b7ec7ffa07a",
-    "miniz": "2fa13ca8a3cf196345001c9fe17bf42ee32c00f9",
+    "miniz": "c883286f1a6443720e7705450f59e579a4bbb8e2",
     "imgui_test_engine": "deaef0ebe8876f06e7496b94d78142480ae56902"
 }
