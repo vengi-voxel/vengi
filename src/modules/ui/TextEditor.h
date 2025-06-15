@@ -15,7 +15,6 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
-#include "core/collection/StringMap.h"
 #include "core/collection/StringSet.h"
 #include <regex>
 #include <utility>
