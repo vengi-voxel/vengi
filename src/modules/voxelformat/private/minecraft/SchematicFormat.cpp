@@ -282,16 +282,6 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 	return false;
 }
 
-static glm::ivec3 voxelPosFromIndex(int width, int depth, int idx) {
-	const int planeSize = width * depth;
-	core_assert(planeSize != 0);
-	const int y = idx / planeSize;
-	const int offset = idx - (y * planeSize);
-	const int z = offset / width;
-	const int x = offset - z * width;
-	return glm::ivec3(x, y, z);
-}
-
 bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 									 palette::Palette &palette, const priv::NamedBinaryTag &blockData) {
 	const core::Buffer<int8_t> *blocks = blockData.byteArray();
@@ -311,25 +301,35 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 		return false;
 	}
 
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	SchematicIntReader reader(blocks);
-	int index = 0;
-	int32_t palIdx = 0;
-	// TODO: PERF: use a volume sampler somehow. The index could also be a loop
-	while (reader.readInt32(palIdx) != -1) {
-		if (palIdx != 0) {
-			uint8_t currentPalIdx;
-			if (paletteEntry == 0) {
-				currentPalIdx = palIdx;
-			} else {
-				currentPalIdx = mcpal[palIdx];
+
+	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	voxel::RawVolume::Sampler sampler(volume);
+	sampler.setPosition(0, 0, 0);
+	for (int y = 0; y < height; y++) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
+		for (int z = 0; z < depth; z++) {
+			voxel::RawVolume::Sampler sampler3 = sampler2;
+			for (int x = 0; x < width; x++) {
+				int32_t palIdx = 0;
+				if (reader.readInt32(palIdx) == -1) {
+					break;
+				}
+				if (palIdx != 0) {
+					uint8_t currentPalIdx = (paletteEntry == 0) ? palIdx : mcpal[palIdx];
+					if (currentPalIdx != 0) {
+						sampler3.setVoxel(voxel::createVoxel(palette, currentPalIdx));
+					}
+				}
+				sampler3.movePositiveX();
 			}
-			if (currentPalIdx != 0) {
-				const glm::ivec3 &pos = voxelPosFromIndex(width, depth, index);
-				volume->setVoxel(pos, voxel::createVoxel(palette, currentPalIdx));
+			sampler2.movePositiveZ();
+			if (reader.eos()) {
+				break;
 			}
 		}
-		++index;
+		sampler.movePositiveY();
 	}
 
 	const int32_t x = schematic.get("x").int32();
@@ -340,7 +340,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
-	int nodeId = sceneGraph.emplace(core::move(node));
+	const int nodeId = sceneGraph.emplace(core::move(node));
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
