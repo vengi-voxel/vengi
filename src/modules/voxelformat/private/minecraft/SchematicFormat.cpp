@@ -364,10 +364,10 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	auto fn = [volume, depth, height, width, blocks, paletteEntry, &mcpal, &palette] () {
+	auto fn = [volume, depth, height, width, blocks, paletteEntry, &mcpal, &palette] (int start, int end) {
 		voxel::RawVolume::Sampler sampler(volume);
-		sampler.setPosition(0, 0, 0);
-		for (int z = 0; z < depth; ++z) {
+		sampler.setPosition(0, 0, start);
+		for (int z = start; z < end; ++z) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y = 0; y < height; ++y) {
 				voxel::RawVolume::Sampler sampler3 = sampler2;
@@ -391,7 +391,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 			sampler.movePositiveZ();
 		}
 	};
-	fn();
+	app::for_parallel(0, depth, fn);
 
 	const int32_t x = schematic.get("x").int32();
 	const int32_t y = schematic.get("y").int32();
