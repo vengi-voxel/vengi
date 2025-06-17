@@ -305,6 +305,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	// TODO: PERF: FOR_PARALLEL: maybe load all pal indices first?
 	voxel::RawVolume::Sampler sampler(volume);
 	sampler.setPosition(0, 0, 0);
 	for (int y = 0; y < height; y++) {
@@ -401,7 +402,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
-	int nodeId = sceneGraph.emplace(core::move(node));
+	const int nodeId = sceneGraph.emplace(core::move(node));
 	if (nodeId == InvalidNodeId) {
 		return false;
 	}
@@ -419,6 +420,7 @@ int SchematicFormat::loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, S
 	int paletteEntry = 0;
 	const int blockCnt = (int)blockIds.compound()->size();
 	Log::debug("Loading BlockIDs with %i entries", blockCnt);
+	// TODO: FOR_PARALLEL
 	for (int i = 0; i < blockCnt; ++i) {
 		const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
 		const core::String *value = nbt.string();
