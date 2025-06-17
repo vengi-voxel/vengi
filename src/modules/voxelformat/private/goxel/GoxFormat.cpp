@@ -254,25 +254,32 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
 		bool empty = true;
-		// TODO: PERF: use volume sampler
 		// TODO: PERF: FOR_PARALLEL
+		voxel::RawVolume::Sampler sampler(blockVolume);
+		sampler.setPosition(x, z, y);
 		for (int z1 = 0; z1 < BlockSize; ++z1) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y1 = 0; y1 < BlockSize; ++y1) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				const int stride = (z1 * BlockSize + y1) * BlockSize;
 				for (int x1 = 0; x1 < BlockSize; ++x1) {
 					// x running fastest
 					const int pxIdx = (stride + x1) * 4;
 					const uint8_t *v = &rgba[pxIdx];
 					if (v[3] == 0u) {
+						sampler3.movePositiveX();
 						continue;
 					}
 					const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
 					const uint8_t palIdx = palLookup.findClosestIndex(color);
 					voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
-					blockVolume->setVoxel(x + x1, z + z1, y + y1, voxel);
+					sampler3.setVoxel(voxel);
+					sampler3.movePositiveX();
 					empty = false;
 				}
+				sampler2.movePositiveZ();
 			}
+			sampler.movePositiveY();
 		}
 		// TODO: VOXELFORMAT: it looks like the whole node gets the same material in gox...
 		// this will remove empty blocks and the final volume might have a smaller region.
