@@ -253,22 +253,24 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		const voxel::Region blockRegion(x, z, y, x + (BlockSize - 1), z + (BlockSize - 1), y + (BlockSize - 1));
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
-		const uint8_t *v = rgba;
 		bool empty = true;
 		// TODO: PERF: use volume sampler
 		// TODO: PERF: FOR_PARALLEL
 		for (int z1 = 0; z1 < BlockSize; ++z1) {
 			for (int y1 = 0; y1 < BlockSize; ++y1) {
+				const int stride = (z1 * BlockSize + y1) * BlockSize;
 				for (int x1 = 0; x1 < BlockSize; ++x1) {
 					// x running fastest
-					voxel::Voxel voxel;
-					if (v[3] != 0u) {
-						const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
-						empty = false;
-						voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
+					const int pxIdx = (stride + x1) * 4;
+					const uint8_t *v = &rgba[pxIdx];
+					if (v[3] == 0u) {
+						continue;
 					}
+					const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
+					const uint8_t palIdx = palLookup.findClosestIndex(color);
+					voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
 					blockVolume->setVoxel(x + x1, z + z1, y + y1, voxel);
-					v += 4;
+					empty = false;
 				}
 			}
 		}
