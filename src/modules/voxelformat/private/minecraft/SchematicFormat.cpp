@@ -362,13 +362,18 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 	// * https://github.com/mcedit/mcedit2/blob/master/src/mceditlib/schematic.py#L143
 	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
 
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
+	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	// TODO: PERF: FOR_PARALLEL
-	// TODO: PERF: Use volume sampler
-	for (int x = 0; x < width; ++x) {
+	voxel::RawVolume::Sampler sampler(volume);
+	sampler.setPosition(0, 0, 0);
+	for (int z = 0; z < depth; ++z) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (int y = 0; y < height; ++y) {
-			for (int z = 0; z < depth; ++z) {
-				const int idx = (y * depth + z) * width + x;
+			voxel::RawVolume::Sampler sampler3 = sampler2;
+			const int stride = (y * depth + z) * width;
+			for (int x = 0; x < width; ++x) {
+				const int idx = stride + x;
 				const uint8_t palIdx = (*blocks.byteArray())[idx];
 				if (palIdx != 0u) {
 					uint8_t currentPalIdx;
@@ -377,10 +382,13 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 					} else {
 						currentPalIdx = mcpal[palIdx];
 					}
-					volume->setVoxel(x, y, z, voxel::createVoxel(palette, currentPalIdx));
+					sampler3.setVoxel(voxel::createVoxel(palette, currentPalIdx));
 				}
+				sampler3.movePositiveX();
 			}
+			sampler2.movePositiveY();
 		}
+		sampler.movePositiveZ();
 	}
 
 	const int32_t x = schematic.get("x").int32();
