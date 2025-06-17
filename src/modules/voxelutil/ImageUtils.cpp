@@ -335,12 +335,11 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	Log::debug("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	// TODO: PERF: FOR_PARALLEL
-	auto fn = [&palette, imageHeight, imageWidth, volume, image, depthmap, maxDepth, bothSides] () {
+	auto fn = [&palette, imageWidth, volume, image, depthmap, maxDepth, bothSides] (int start, int end) {
 		voxel::RawVolume::Sampler sampler(volume);
 		sampler.setPosition(0, volume->region().getUpperY(), 0);
 		palette::PaletteLookup palLookup(palette);
-		for (int y = 0; y < imageHeight; ++y) {
+		for (int y = start; y < end; ++y) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int x = 0; x < imageWidth; ++x) {
 				const core::RGBA data = image->colorAt(x, y);
@@ -376,7 +375,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 			sampler.moveNegativeY();
 		}
 	};
-	fn();
+	app::for_parallel(0, imageHeight, fn);
 	return volume;
 }
 
