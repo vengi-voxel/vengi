@@ -335,45 +335,48 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	Log::debug("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	voxel::RawVolume::Sampler sampler(volume);
-	sampler.setPosition(0, region.getUpperY(), 0);
 	// TODO: PERF: FOR_PARALLEL
-	palette::PaletteLookup palLookup(palette);
-	for (int y = 0; y < imageHeight; ++y) {
-		voxel::RawVolume::Sampler sampler2 = sampler;
-		for (int x = 0; x < imageWidth; ++x) {
-			const core::RGBA data = image->colorAt(x, y);
-			if (data.a == 0 /* AlphaThreshold */) {
+	auto fn = [&palette, imageHeight, imageWidth, volume, image, depthmap, maxDepth, bothSides] () {
+		voxel::RawVolume::Sampler sampler(volume);
+		sampler.setPosition(0, volume->region().getUpperY(), 0);
+		palette::PaletteLookup palLookup(palette);
+		for (int y = 0; y < imageHeight; ++y) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int x = 0; x < imageWidth; ++x) {
+				const core::RGBA data = image->colorAt(x, y);
+				if (data.a == 0 /* AlphaThreshold */) {
+					sampler2.movePositiveX();
+					continue;
+				}
+				const uint8_t index = palLookup.findClosestIndex(data);
+				const voxel::Voxel voxel = voxel::createVoxel(palette, index);
+				const core::RGBA heightdata = depthmap->colorAt(x, y);
+				const float thickness = (float)heightdata.r;
+				const float maxthickness = maxDepth;
+				const float height = thickness * maxthickness / 255.0f;
+				if (bothSides) {
+					const int heighti = (int)glm::ceil(height / 2.0f);
+					const int minZ = maxDepth - heighti;
+					const int maxZ = maxDepth + heighti;
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int z = minZ; z <= maxZ; ++z) {
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveZ();
+					}
+				} else {
+					const int heighti = (int)glm::ceil(height);
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int z = volume->region().getLowerZ(); z < volume->region().getLowerZ() + heighti; ++z) {
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveZ();
+					}
+				}
 				sampler2.movePositiveX();
-				continue;
 			}
-			const uint8_t index = palLookup.findClosestIndex(data);
-			const voxel::Voxel voxel = voxel::createVoxel(palette, index);
-			const core::RGBA heightdata = depthmap->colorAt(x, y);
-			const float thickness = (float)heightdata.r;
-			const float maxthickness = maxDepth;
-			const float height = thickness * maxthickness / 255.0f;
-			if (bothSides) {
-				const int heighti = (int)glm::ceil(height / 2.0f);
-				const int minZ = maxDepth - heighti;
-				const int maxZ = maxDepth + heighti;
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int z = minZ; z <= maxZ; ++z) {
-					sampler3.setVoxel(voxel);
-					sampler3.movePositiveZ();
-				}
-			} else {
-				const int heighti = (int)glm::ceil(height);
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int z = region.getLowerZ(); z < region.getLowerZ() + heighti; ++z) {
-					sampler3.setVoxel(voxel);
-					sampler3.movePositiveZ();
-				}
-			}
-			sampler2.movePositiveX();
+			sampler.moveNegativeY();
 		}
-		sampler.moveNegativeY();
-	}
+	};
+	fn();
 	return volume;
 }
 
