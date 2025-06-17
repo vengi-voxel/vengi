@@ -456,7 +456,8 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 
 			Log::trace("skipCount: %i voxelCount: %i", (int)skipCount, (int)voxelCount);
 
-			// TODO: PERF: use volume sampler
+			voxel::RawVolume::Sampler sampler(volume);
+			sampler.setPosition(pos.x, z, pos.z);
 			for (uint8_t j = 0u; j < voxelCount; ++j) {
 				uint8_t color;
 				wrap(stream.readUInt8(color))
@@ -464,8 +465,8 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 				wrap(stream.readUInt8(normal))
 				maxNormalIndex = core_max(maxNormalIndex, normal);
 				const voxel::Voxel v = voxel::createVoxel(palette, color, normal);
-				pos.y = z;
-				volume->setVoxel(pos, v);
+				sampler.setVoxel(v);
+				sampler.movePositiveY();
 				++z;
 			}
 
