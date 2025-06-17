@@ -3,11 +3,13 @@
  */
 
 #include "GoxFormat.h"
+#include "app/Async.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/Atomic.h"
 #include "image/Image.h"
 #include "image/ImageType.h"
 #include "io/MemoryReadStream.h"
@@ -189,7 +191,6 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *modelVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
-	palette::PaletteLookup palLookup(palette);
 	if ((stream.readUInt32(blockCount)) != 0) {
 		Log::error("Could not load gox file: Failed to read blockCount");
 		delete modelVolume;
@@ -253,34 +254,37 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		const voxel::Region blockRegion(x, z, y, x + (BlockSize - 1), z + (BlockSize - 1), y + (BlockSize - 1));
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
-		bool empty = true;
-		// TODO: PERF: FOR_PARALLEL
-		voxel::RawVolume::Sampler sampler(blockVolume);
-		sampler.setPosition(x, z, y);
-		for (int z1 = 0; z1 < BlockSize; ++z1) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int y1 = 0; y1 < BlockSize; ++y1) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				const int stride = (z1 * BlockSize + y1) * BlockSize;
-				for (int x1 = 0; x1 < BlockSize; ++x1) {
-					// x running fastest
-					const int pxIdx = (stride + x1) * 4;
-					const uint8_t *v = &rgba[pxIdx];
-					if (v[3] == 0u) {
+		core::AtomicBool empty {true};
+		auto fn = [blockVolume, rgba, &palette, x, y, z, this, &empty](int start, int end) {
+			palette::PaletteLookup palLookup(palette);
+			voxel::RawVolume::Sampler sampler(blockVolume);
+			sampler.setPosition(x, z + start, y);
+			for (int z1 = start; z1 < end; ++z1) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int y1 = 0; y1 < BlockSize; ++y1) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					const int stride = (z1 * BlockSize + y1) * BlockSize;
+					for (int x1 = 0; x1 < BlockSize; ++x1) {
+						// x running fastest
+						const int pxIdx = (stride + x1) * 4;
+						const uint8_t *v = &rgba[pxIdx];
+						if (v[3] == 0u) {
+							sampler3.movePositiveX();
+							continue;
+						}
+						const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
+						const uint8_t palIdx = palLookup.findClosestIndex(color);
+						voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
+						sampler3.setVoxel(voxel);
 						sampler3.movePositiveX();
-						continue;
+						empty = false;
 					}
-					const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
-					const uint8_t palIdx = palLookup.findClosestIndex(color);
-					voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
-					sampler3.setVoxel(voxel);
-					sampler3.movePositiveX();
-					empty = false;
+					sampler2.movePositiveZ();
 				}
-				sampler2.movePositiveZ();
+				sampler.movePositiveY();
 			}
-			sampler.movePositiveY();
-		}
+		};
+		app::for_parallel(0, BlockSize, fn);
 		// TODO: VOXELFORMAT: it looks like the whole node gets the same material in gox...
 		// this will remove empty blocks and the final volume might have a smaller region.
 		// TODO: VOXELFORMAT: we should remove this once we have sparse volumes support
