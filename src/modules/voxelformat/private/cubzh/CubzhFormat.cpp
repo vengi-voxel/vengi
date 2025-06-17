@@ -280,11 +280,15 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
 				node.setVolume(volume, true);
 				int i = 0;
+				if (width * height * depth > (int)volumeBuffer.size()) {
+					Log::error("invalid blocks chunk");
+					return false;
+				}
 				// TODO: PERF: use volume sampler
 				for (uint16_t x = 0; x < width; x++) {
 					for (uint16_t y = 0; y < height; y++) {
 						for (uint16_t z = 0; z < depth; z++) {
-							const uint8_t index = volumeBuffer[i];
+							const uint8_t index = volumeBuffer[i++];
 							if (index == emptyPaletteIndex()) {
 								continue;
 							}
@@ -553,15 +557,18 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
 				node.setVolume(volume, true);
 				int i = 0;
+				if (width * height * depth > (int)volumeBuffer.size()) {
+					Log::error("invalid blocks chunk");
+					return false;
+				}
 				// TODO: PERF: use volume sampler
 				for (uint16_t x = 0; x < width; x++) {
 					for (uint16_t y = 0; y < height; y++) {
 						for (uint16_t z = 0; z < depth; z++) {
-							const uint8_t index = volumeBuffer[i];
+							const uint8_t index = volumeBuffer[i++];
 							if (index == emptyPaletteIndex()) {
 								continue;
 							}
-							// TODO: VOXELFORMAT: what about i - no increase here
 							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 							volume->setVoxel(width - x - 1, y, z, voxel);
 						}
