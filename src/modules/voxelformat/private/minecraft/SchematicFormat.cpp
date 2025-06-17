@@ -629,41 +629,44 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 		core::Buffer<int8_t> blocks;
 		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);
 
-		for (int x = 0; x < size.x; ++x) {
+		// TODO: PERF: use a volume sampler
+		for (int z = 0; z < size.z; ++z) {
 			for (int y = 0; y < size.y; ++y) {
-				for (int z = 0; z < size.z; ++z) {
-					const int idx = (y * size.z + z) * size.x + x;
+				const int stride = (y * size.z + z) * size.x;
+				for (int x = 0; x < size.x; ++x) {
+					const int idx = stride + x;
 					const voxel::Voxel &voxel = mergedVolume->voxel(mins.x + x, mins.y + y, mins.z + z);
 					if (voxel::isAir(voxel.getMaterial())) {
 						blocks[idx] = 0;
-					} else {
-						core::RGBA c = merged.palette.color(voxel.getColor());
-						const int currentPalIdx = minecraftPalette.getClosestMatch(c);
-						const core::String &blockState = findPaletteName(currentPalIdx);
-						int8_t blockDataIdx;
-						if (blockState.empty()) {
-							Log::warn("Failed to find block state for palette index %i", currentPalIdx);
-							blockDataIdx = 0;
-							if (!paletteMap.empty()) {
-								// pick a random one
-								blockDataIdx = paletteMap.begin()->second;
-							}
-						} else {
-							auto it = paletteMap.find(blockState);
-							if (it == paletteMap.end()) {
-								blockDataIdx = paletteIndex++;
-								Log::debug("New block state: %s -> %i", blockState.c_str(), blockDataIdx);
-								paletteMap.put(blockState, blockDataIdx);
-							} else {
-								blockDataIdx = it->second;
-							}
-						}
-
-						Log::debug("Set block state %s at %i %i %i to %i", blockState.c_str(), x, y, z,
-								   (int)blockDataIdx);
-						// Store the palette index in block data
-						blocks[idx] = blockDataIdx;
+						continue;
 					}
+					core::RGBA c = merged.palette.color(voxel.getColor());
+					// TODO: PERF: use PaletteLookup
+					const int currentPalIdx = minecraftPalette.getClosestMatch(c);
+					const core::String &blockState = findPaletteName(currentPalIdx);
+					int8_t blockDataIdx;
+					if (blockState.empty()) {
+						Log::warn("Failed to find block state for palette index %i", currentPalIdx);
+						blockDataIdx = 0;
+						if (!paletteMap.empty()) {
+							// pick a random one
+							blockDataIdx = paletteMap.begin()->second;
+						}
+					} else {
+						auto it = paletteMap.find(blockState);
+						if (it == paletteMap.end()) {
+							blockDataIdx = paletteIndex++;
+							Log::debug("New block state: %s -> %i", blockState.c_str(), blockDataIdx);
+							paletteMap.put(blockState, blockDataIdx);
+						} else {
+							blockDataIdx = it->second;
+						}
+					}
+
+					Log::debug("Set block state %s at %i %i %i to %i", blockState.c_str(), x, y, z,
+								(int)blockDataIdx);
+					// Store the palette index in block data
+					blocks[idx] = blockDataIdx;
 				}
 			}
 		}
