@@ -300,17 +300,24 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 
 		const uint8_t *ogtVoxel = ogtModel->voxel_data;
-		// TODO: PERF: use a sampler
+		voxel::RawVolume::Sampler sampler(v);
+		sampler.setPosition(region.getUpperX(), 0, 0);
 		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
 					if (ogtVoxel[0] == 0) {
+						sampler3.moveNegativeX();
 						continue;
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
 					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
+					sampler3.moveNegativeX();
 				}
+				sampler2.movePositiveZ();
 			}
+			sampler.movePositiveY();
 		}
 		models.emplace_back(v, InvalidNodeId);
 	}
