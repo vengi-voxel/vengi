@@ -6,12 +6,14 @@
 #include "MinecraftPaletteMap.h"
 #include "NamedBinaryTag.h"
 #include "SchematicIntReader.h"
+#include "app/Async.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/concurrent/Atomic.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "palette/Palette.h"
@@ -127,47 +129,53 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 		return false;
 	}
 
-	// TODO: PERF: FOR_PARALLEL
-	voxel::RawVolume::Sampler sampler(node.volume());
-	sampler.setPosition(0, 0, 0);
-	const uint64_t mask = (1 << bits) - 1;
-	for (int y = 0; y < size.y; ++y) {
-		voxel::RawVolume::Sampler sampler2 = sampler;
-		for (int z = 0; z < size.z; ++z) {
-			voxel::RawVolume::Sampler sampler3 = sampler2;
-			const uint64_t indexyz = size.x * size.z * y + size.x * z;
-			for (int x = 0; x < size.x; ++x) {
-				const uint64_t index = indexyz + x;
-				const uint64_t startBit = index * bits;
-				const uint64_t startIdx = startBit / 64;
-				const uint64_t rshiftVal = startBit & 63;
-				const uint64_t endIdx = startBit % 64 + bits;
-				uint64_t id = 0;
-				if (endIdx <= 64 && startIdx < data->size()) {
-					id = (uint64_t)((*data)[startIdx]) >> rshiftVal & mask;
-				} else {
-					if (startIdx >= data->size() || startIdx + 1 >= data->size()) {
-						Log::error("Invalid BlockStates, out of bounds, start_state: %i, max size: %i, endnum: %i",
-								   (int)startIdx, (int)data->size(), (int)endIdx);
-						return false;
+	voxel::RawVolume *v = node.volume();
+	const palette::Palette &palette = node.palette();
+	core::AtomicBool success {true};
+	app::for_parallel(0, size.y, [bits, size, data, &mcpal, v, &palette, &success] (int start, int end) {
+		voxel::RawVolume::Sampler sampler(v);
+		sampler.setPosition(0, start, 0);
+		const uint64_t mask = (1 << bits) - 1;
+		for (int y = start; y < end; ++y) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int z = 0; z < size.z; ++z) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				const uint64_t indexyz = size.x * size.z * y + size.x * z;
+				for (int x = 0; x < size.x; ++x) {
+					const uint64_t index = indexyz + x;
+					const uint64_t startBit = index * bits;
+					const uint64_t startIdx = startBit / 64;
+					const uint64_t rshiftVal = startBit & 63;
+					const uint64_t endIdx = startBit % 64 + bits;
+					uint64_t id = 0;
+					if (endIdx <= 64 && startIdx < data->size()) {
+						id = (uint64_t)((*data)[startIdx]) >> rshiftVal & mask;
+					} else {
+						if (startIdx >= data->size() || startIdx + 1 >= data->size()) {
+							Log::error("Invalid BlockStates, out of bounds, start_state: %i, max size: %i, endnum: %i",
+									(int)startIdx, (int)data->size(), (int)endIdx);
+							success = false;
+							return;
+						}
+						uint64_t move_num_2 = 64 - rshiftVal;
+						id =
+							(((uint64_t)(*data)[startIdx]) >> rshiftVal | ((uint64_t)(*data)[startIdx + 1]) << move_num_2) & mask;
 					}
-					uint64_t move_num_2 = 64 - rshiftVal;
-					id =
-						(((uint64_t)(*data)[startIdx]) >> rshiftVal | ((uint64_t)(*data)[startIdx + 1]) << move_num_2) & mask;
-				}
-				if (id == 0) {
+					if (id == 0) {
+						sampler3.movePositiveX();
+						continue;
+					}
+					const int colorIdx = mcpal[id];
+					sampler3.setVoxel(voxel::createVoxel(palette, colorIdx));
 					sampler3.movePositiveX();
-					continue;
 				}
-				const int colorIdx = mcpal[id];
-				sampler3.setVoxel(voxel::createVoxel(node.palette(), colorIdx));
-				sampler3.movePositiveX();
+				sampler2.movePositiveY();
 			}
-			sampler2.movePositiveY();
+			sampler.movePositiveZ();
 		}
-		sampler.movePositiveZ();
-	}
-	return true;
+	});
+
+	return success;
 }
 
 bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
