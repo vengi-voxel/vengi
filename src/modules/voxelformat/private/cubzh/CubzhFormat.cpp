@@ -15,6 +15,7 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "voxel/RawVolume.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -561,18 +562,25 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 					Log::error("invalid blocks chunk");
 					return false;
 				}
-				// TODO: PERF: use volume sampler
+				voxel::RawVolume::Sampler sampler(volume);
+				sampler.setPosition(width - 1, 0, 0);
 				for (uint16_t x = 0; x < width; x++) {
+					voxel::RawVolume::Sampler sampler2 = sampler;
 					for (uint16_t y = 0; y < height; y++) {
+						voxel::RawVolume::Sampler sampler3 = sampler2;
 						for (uint16_t z = 0; z < depth; z++) {
 							const uint8_t index = volumeBuffer[i++];
 							if (index == emptyPaletteIndex()) {
+								sampler3.movePositiveZ();
 								continue;
 							}
 							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-							volume->setVoxel(width - x - 1, y, z, voxel);
+							sampler3.setVoxel(voxel);
+							sampler3.movePositiveZ();
 						}
+						sampler2.movePositiveY();
 					}
+					sampler.moveNegativeX();
 				}
 			}
 			break;
@@ -600,19 +608,26 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			node.setVolume(volume, true);
-			// TODO: PERF: use volume sampler
+			voxel::RawVolume::Sampler sampler(volume);
+			sampler.setPosition(width - 1, 0, 0);
 			for (uint16_t x = 0; x < width; x++) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
 				for (uint16_t y = 0; y < height; y++) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
 					for (uint16_t z = 0; z < depth; z++) {
 						uint8_t index;
 						wrap(stream.readUInt8(index))
 						if (index == emptyPaletteIndex()) {
+							sampler3.movePositiveZ();
 							continue;
 						}
 						const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-						volume->setVoxel(width - x - 1, y, z, voxel);
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveZ();
 					}
+					sampler2.movePositiveY();
 				}
+				sampler.moveNegativeX();
 			}
 			break;
 		}
