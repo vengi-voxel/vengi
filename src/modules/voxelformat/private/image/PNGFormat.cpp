@@ -13,6 +13,7 @@
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
+#include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -39,6 +40,22 @@ static int extractLayerFromFilename(const core::String &filename) {
 	return layer;
 }
 
+static bool hasSameBasename(const core::String &originalFilename, const core::String &layerFilename) {
+	core::String o = core::string::extractFilename(originalFilename);
+	size_t n = o.rfind("-");
+	if (n == core::String::npos) {
+		return false;
+	}
+	o = o.substr(0, n);
+	core::String l = core::string::extractFilename(layerFilename);
+	n = l.rfind("-");
+	if (n == core::String::npos) {
+		return false;
+	}
+	l = l.substr(0, n);
+	return core::string::iequals(l, o);
+}
+
 bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							 const io::ArchiveFiles &entities) const {
 	const core::String filename = entities.front().fullPath;
@@ -54,11 +71,24 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	int minsZ = 1000000;
 	int maxsZ = -1000000;
 
+	core::DynamicArray<const io::FilesystemEntry*> filteredEntites;
+	filteredEntites.reserve(entities.size());
 	for (const auto &entity : entities) {
 		const core::String &layerFilename = entity.fullPath;
+		if (!hasSameBasename(filename, layerFilename)) {
+			continue;
+		}
+		if (!io::isImage(layerFilename)) {
+			continue;
+		}
 		const int layer = extractLayerFromFilename(layerFilename);
+		if (layer < 0) {
+			Log::error("Failed to extract layer from filename %s", layerFilename.c_str());
+			continue;
+		}
 		minsZ = glm::min(minsZ, layer);
 		maxsZ = glm::max(maxsZ, layer);
+		filteredEntites.push_back(&entity);
 	}
 
 	voxel::Region region(0, 0, minsZ, imageWidth - 1, imageHeight - 1, maxsZ);
@@ -68,43 +98,47 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 
-	// TODO: PERF: FOR_PARALLEL
-	for (const auto &entity : entities) {
-		const core::String &layerFilename = entity.fullPath;
-		const image::ImagePtr &image = image::loadImage(layerFilename);
-		if (!image || !image->isLoaded()) {
-			Log::error("Failed to load image %s", layerFilename.c_str());
-			return false;
-		}
-		if (imageWidth != image->width() || imageHeight != image->height()) {
-			Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)",
-					   layerFilename.c_str(), image->width(), image->height(), imageWidth, imageHeight);
-			return false;
-		}
-		const int layer = extractLayerFromFilename(layerFilename);
-		if (layer < 0) {
-			Log::error("Failed to extract layer from filename %s", layerFilename.c_str());
-			continue;
-		}
-		Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
-		palette::PaletteLookup palLookup(palette);
-		voxel::RawVolume::Sampler sampler(volume);
-		sampler.setPosition(0, 0, layer);
-		for (int y = 0; y < imageHeight; ++y) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int x = 0; x < imageWidth; ++x) {
-				const core::RGBA &color = flattenRGB(image->colorAt(x, y));
-				if (color.a == 0) {
-					sampler2.movePositiveX();
-					continue;
-				}
-				const int palIdx = palLookup.findClosestIndex(color);
-				sampler2.setVoxel(voxel::createVoxel(palette, palIdx));
-				sampler2.movePositiveX();
+	auto fn = [&filteredEntites, &palette, &volume, imageHeight, imageWidth, this] (int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const auto &entity = *filteredEntites[i];
+			const core::String &layerFilename = entity.fullPath;
+			const image::ImagePtr &image = image::loadImage(layerFilename);
+			if (!image || !image->isLoaded()) {
+				Log::error("Failed to load image %s", layerFilename.c_str());
+				continue;
 			}
-			sampler.movePositiveY();
+			if (imageWidth != image->width() || imageHeight != image->height()) {
+				Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)",
+						layerFilename.c_str(), image->width(), image->height(), imageWidth, imageHeight);
+				continue;
+			}
+			const int layer = extractLayerFromFilename(layerFilename);
+			if (layer < 0) {
+				Log::error("Failed to extract layer from filename %s", layerFilename.c_str());
+				continue;
+			}
+			Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
+
+			palette::PaletteLookup palLookup(palette);
+			voxel::RawVolume::Sampler sampler(volume);
+			sampler.setPosition(0, 0, layer);
+			for (int y = 0; y < imageHeight; ++y) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int x = 0; x < imageWidth; ++x) {
+					const core::RGBA &color = flattenRGB(image->colorAt(x, y));
+					if (color.a == 0) {
+						sampler2.movePositiveX();
+						continue;
+					}
+					const int palIdx = palLookup.findClosestIndex(color);
+					sampler2.setVoxel(voxel::createVoxel(palette, palIdx));
+					sampler2.movePositiveX();
+				}
+				sampler.movePositiveY();
+			}
 		}
-	}
+	};
+	app::for_parallel(0, filteredEntites.size(), fn);
 	if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
 		Log::error("Failed to add node to scene graph");
 		return false;
