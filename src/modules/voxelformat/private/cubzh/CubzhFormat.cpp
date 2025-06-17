@@ -280,6 +280,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
 				node.setVolume(volume, true);
 				int i = 0;
+				// TODO: PERF: use volume sampler
 				for (uint16_t x = 0; x < width; x++) {
 					for (uint16_t y = 0; y < height; y++) {
 						for (uint16_t z = 0; z < depth; z++) {
@@ -318,6 +319,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			node.setVolume(volume, true);
+			// TODO: PERF: use volume sampler
 			for (uint32_t i = 0; i < voxelCount; i++) {
 				uint8_t index;
 				wrap(stream.readUInt8(index))
@@ -551,6 +553,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
 				node.setVolume(volume, true);
 				int i = 0;
+				// TODO: PERF: use volume sampler
 				for (uint16_t x = 0; x < width; x++) {
 					for (uint16_t y = 0; y < height; y++) {
 						for (uint16_t z = 0; z < depth; z++) {
@@ -558,6 +561,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 							if (index == emptyPaletteIndex()) {
 								continue;
 							}
+							// TODO: VOXELFORMAT: what about i - no increase here
 							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 							volume->setVoxel(width - x - 1, y, z, voxel);
 						}
@@ -589,6 +593,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			node.setVolume(volume, true);
+			// TODO: PERF: use volume sampler
 			for (uint16_t x = 0; x < width; x++) {
 				for (uint16_t y = 0; y < height; y++) {
 					for (uint16_t z = 0; z < depth; z++) {

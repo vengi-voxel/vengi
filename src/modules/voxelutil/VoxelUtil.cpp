@@ -407,6 +407,7 @@ voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume
 	const glm::ivec3 &r2mins = r2.getLowerCorner();
 	const glm::ivec3 &r2maxs = r2.getUpperCorner();
 	voxel::RawVolume *v = nullptr;
+	// TODO: PERF: use a sampler
 	for (int r1z = r1mins.z, r2z = r2mins.z; r1z <= r1maxs.z && r2z <= r2maxs.z; ++r1z, ++r2z) {
 		for (int r1y = r1mins.y, r2y = r2mins.y; r1y <= r1maxs.y && r2y <= r2maxs.y; ++r1y, ++r2y) {
 			for (int r1x = r1mins.x, r2x = r2mins.x; r1x <= r1maxs.x && r2x <= r2maxs.x; ++r1x, ++r2x) {

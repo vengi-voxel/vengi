@@ -493,6 +493,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	int idx = 0;
+	// TODO: PERF: use volume sampler
 	for (uint32_t x = 0; x < width; ++x) {
 		for (uint32_t y = 0; y < depth; ++y) {
 			for (int end = idx + state->xyoffsets[x][y]; idx < end; ++idx) {

@@ -114,6 +114,8 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	const voxel::Region region(0, 0, 0, (int)size.x - 1, (int)size.y - 1, (int)size.z - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	core::Array3DView<Node> view(databuf.data(), size.x, size.y, size.z);
+	// TODO: PERF: use volume sampler
+	// TODO: PERF: FOR_PARALLEL
 	for (uint16_t x = 0; x < size.x; ++x) {
 		for (uint16_t y = 0; y < size.y; ++y) {
 			for (uint16_t z = 0; z < size.z; ++z) {

@@ -243,6 +243,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(regionSize) - 1);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		node.setVolume(volume, true);
+		// TODO: PERF: use a volume sampler
 		for (int32_t z = 0; z < regionSize.z; ++z) {
 			for (int32_t y = 0; y < regionSize.y; ++y) {
 				for (int32_t x = 0; x < regionSize.x; ++x) {

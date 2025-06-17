@@ -309,6 +309,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	core::ScopedPtr<voxel::RawVolume> v(new voxel::RawVolume(region));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
+		// TODO: PERF: use a sampler
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
@@ -356,6 +357,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 				return false;
 			}
 			const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
+			// TODO: PERF: use a sampler
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
@@ -411,6 +413,7 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, RGBAMap
 
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
+		// TODO: PERF: use a sampler
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {

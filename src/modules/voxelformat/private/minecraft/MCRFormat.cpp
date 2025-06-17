@@ -242,6 +242,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 		}
 		glm::ivec3 sPos;
 		palette::PaletteLookup palLookup(palette);
+		// TODO: PERF: use a sampler
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
 				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
@@ -329,6 +330,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 
 		glm::ivec3 sPos;
 		palette::PaletteLookup palLookup(palette);
+		// TODO: PERF: use a sampler
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
 				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {

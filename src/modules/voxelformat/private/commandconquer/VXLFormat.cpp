@@ -456,6 +456,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 
 			Log::trace("skipCount: %i voxelCount: %i", (int)skipCount, (int)voxelCount);
 
+			// TODO: PERF: use volume sampler
 			for (uint8_t j = 0u; j < voxelCount; ++j) {
 				uint8_t color;
 				wrap(stream.readUInt8(color))

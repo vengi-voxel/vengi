@@ -155,6 +155,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 	node.setVolume(volume, true);
 
 	palette::PaletteLookup palLookup(palette);
+	// TODO: PERF: use volume sampler
 	for (int y = sizey - 1; y >= 0; y--) {
 		for (int z = 0; z < sizez; z++) {
 			for (int x = 0; x < sizex; x++) {

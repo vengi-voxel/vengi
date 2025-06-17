@@ -367,6 +367,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	app::for_parallel(0, settings.size, [&palette, &tempBuffer, &settings, volume] (int start, int end) {
 		palette::PaletteLookup paletteLookup(palette);
 		const core::RGBA *heightmap = tempBuffer.buf + start * settings.size;
+		// TODO: PERF: use volume sampler
 		for (int vz = start; vz < end; ++vz) {
 			for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
 				const int maxsy = glm::clamp((int)heightmap->a, 0, settings.height);

@@ -88,6 +88,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	palette::PaletteLookup palLookup(palette);
+	// TODO: PERF: use volume sampler
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {

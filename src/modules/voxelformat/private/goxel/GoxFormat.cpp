@@ -255,6 +255,8 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
 		const uint8_t *v = rgba;
 		bool empty = true;
+		// TODO: PERF: use volume sampler
+		// TODO: PERF: FOR_PARALLEL
 		for (int z1 = 0; z1 < BlockSize; ++z1) {
 			for (int y1 = 0; y1 < BlockSize; ++y1) {
 				for (int x1 = 0; x1 < BlockSize; ++x1) {

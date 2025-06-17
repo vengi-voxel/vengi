@@ -300,6 +300,7 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 
 		const uint8_t *ogtVoxel = ogtModel->voxel_data;
+		// TODO: PERF: use a sampler
 		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
 			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
 				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {

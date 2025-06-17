@@ -154,6 +154,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 			const int index = palLookup.findClosestIndex(color);
 			const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 
+			// TODO: PERF: use volume sampler
 			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {
 				const int x = (int)glm::mod((float)glm::floor((float)v / (float)(sizez * sizey)), (float)sizex);
 				const int y = (int)glm::mod((float)glm::floor((float)v / (float)(sizez)), (float)sizey);

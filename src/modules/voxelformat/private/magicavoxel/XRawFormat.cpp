@@ -240,6 +240,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	// TODO: PERF: use volume sampler
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {

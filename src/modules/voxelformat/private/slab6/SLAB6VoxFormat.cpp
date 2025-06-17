@@ -90,6 +90,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::A
 
 	stream->seek(voxelPos);
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
+	// TODO: PERF: use volume sampler
 	for (uint32_t w = 0u; w < width; ++w) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t h = 0u; h < height; ++h) {

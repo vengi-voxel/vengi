@@ -435,6 +435,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		return false;
 	}
 	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
+	// TODO: PERF: use volume sampler
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {
 			for (int32_t y = 0; y < (int)size.y; y++) {

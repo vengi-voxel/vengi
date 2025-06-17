@@ -138,12 +138,14 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 			}
 
 			const voxel::Voxel backVoxel = voxel::createVoxel(voxel::VoxelType::Generic, backIdx);
+			// TODO: PERF: use volume sampler
 			for (int steps = 0; steps <= stepsBack; steps++) {
 				volume->setVoxel(pos.x, pos.y, pos.z - steps, backVoxel);
 			}
 
 			const int stepsFront = tile.depth - 1;
 			const voxel::Voxel frontVoxel = voxel::createVoxel(voxel::VoxelType::Generic, idx);
+			// TODO: PERF: use volume sampler
 			for (int steps = 0; steps <= stepsFront; steps++) {
 				volume->setVoxel(pos.x, pos.y, pos.z + steps, frontVoxel);
 			}
