@@ -193,7 +193,9 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 }
 
 TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
-	palette::PaletteLookup palLookup;
+	palette::Palette pal;
+	pal.nippon();
+	palette::PaletteLookup palLookup(pal);
 
 	const image::ImagePtr &img = image::loadImage("test-fillplane.png");
 

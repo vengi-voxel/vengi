@@ -19,25 +19,16 @@ namespace palette {
  */
 class PaletteLookup {
 private:
-	palette::Palette _palette;
+	const palette::Palette &_palette;
 	// TODO: PERF: use a k-d tree, octree, ANN or whatever to prevent the O(n) search
 	// for the closest color match
 	core::DynamicMap<core::RGBA, uint8_t, 521> _paletteMap;
+
 public:
 	PaletteLookup(const palette::Palette &palette) : _palette(palette) {
-		if (_palette.colorCount() <= 0) {
-			_palette.nippon();
-		}
-	}
-	PaletteLookup() {
-		_palette.nippon();
 	}
 
 	inline const palette::Palette &palette() const {
-		return _palette;
-	}
-
-	inline palette::Palette &palette() {
 		return _palette;
 	}
 

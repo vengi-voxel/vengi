@@ -475,8 +475,9 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	palette::PaletteLookup palLookup;
-	palLookup.palette().quake1();
+	palette::Palette pal;
+	pal.quake1();
+	palette::PaletteLookup palLookup(pal);
 	const core::String &name = core::string::extractFilename(filename);
 	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, palLookup, name)) {
 		Log::error("Failed to voxelize %s", filename.c_str());
@@ -587,7 +588,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	bool state = false;
 
 	// make one palette for all 8 levels
-	palette::PaletteLookup palLookup;
+	palette::Palette pal;
+	pal.nippon();
+	palette::PaletteLookup palLookup(pal);
 
 	core::Buffer<Face> facesLevel;
 	for (int i = 0; i < maxLevel; ++i) {

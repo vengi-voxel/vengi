@@ -356,7 +356,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 
 	node.setVolume(cropped, true);
 	node.setVisible(visible);
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	delete modelVolume;
 	delete mirrored;

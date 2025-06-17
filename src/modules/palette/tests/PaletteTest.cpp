@@ -51,9 +51,11 @@ protected:
 };
 
 TEST_F(PaletteTest, testPaletteLookup) {
-	PaletteLookup pal;
+	palette::Palette pal;
+	pal.nippon();
+	palette::PaletteLookup palLookup(pal);
 	core::RGBA rgba{0xffffffff};
-	EXPECT_EQ(0, pal.findClosestIndex(rgba));
+	EXPECT_EQ(0, palLookup.findClosestIndex(rgba));
 }
 
 TEST_F(PaletteTest, testGimpRGBAPalette) {

@@ -354,7 +354,9 @@ int extrudePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::
 
 int fillPlane(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face) {
-	palette::PaletteLookup palLookup;
+	palette::Palette pal;
+	pal.nippon();
+	palette::PaletteLookup palLookup(pal);
 
 	const voxel::Region &region = volume.region();
 
