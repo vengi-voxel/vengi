@@ -364,32 +364,34 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	// TODO: PERF: FOR_PARALLEL
-	voxel::RawVolume::Sampler sampler(volume);
-	sampler.setPosition(0, 0, 0);
-	for (int z = 0; z < depth; ++z) {
-		voxel::RawVolume::Sampler sampler2 = sampler;
-		for (int y = 0; y < height; ++y) {
-			voxel::RawVolume::Sampler sampler3 = sampler2;
-			const int stride = (y * depth + z) * width;
-			for (int x = 0; x < width; ++x) {
-				const int idx = stride + x;
-				const uint8_t palIdx = (*blocks.byteArray())[idx];
-				if (palIdx != 0u) {
-					uint8_t currentPalIdx;
-					if (paletteEntry == 0 || palIdx > paletteEntry) {
-						currentPalIdx = palIdx;
-					} else {
-						currentPalIdx = mcpal[palIdx];
+	auto fn = [volume, depth, height, width, blocks, paletteEntry, &mcpal, &palette] () {
+		voxel::RawVolume::Sampler sampler(volume);
+		sampler.setPosition(0, 0, 0);
+		for (int z = 0; z < depth; ++z) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int y = 0; y < height; ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				const int stride = (y * depth + z) * width;
+				for (int x = 0; x < width; ++x) {
+					const int idx = stride + x;
+					const uint8_t palIdx = (*blocks.byteArray())[idx];
+					if (palIdx != 0u) {
+						uint8_t currentPalIdx;
+						if (paletteEntry == 0 || palIdx > paletteEntry) {
+							currentPalIdx = palIdx;
+						} else {
+							currentPalIdx = mcpal[palIdx];
+						}
+						sampler3.setVoxel(voxel::createVoxel(palette, currentPalIdx));
 					}
-					sampler3.setVoxel(voxel::createVoxel(palette, currentPalIdx));
+					sampler3.movePositiveX();
 				}
-				sampler3.movePositiveX();
+				sampler2.movePositiveY();
 			}
-			sampler2.movePositiveY();
+			sampler.movePositiveZ();
 		}
-		sampler.movePositiveZ();
-	}
+	};
+	fn();
 
 	const int32_t x = schematic.get("x").int32();
 	const int32_t y = schematic.get("y").int32();
