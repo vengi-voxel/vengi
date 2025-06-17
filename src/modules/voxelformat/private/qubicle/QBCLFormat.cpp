@@ -439,10 +439,11 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 						const voxel::Voxel &voxel = voxel::createVoxel(palette, palIndex);
 						const uint32_t x = (index / size.z);
 						const uint32_t z = index % size.z;
-						// TODO: PERF: use volume sampler
+						voxel::RawVolume::Sampler sampler(volume);
+						sampler.setPosition((int)x, y, (int)z);
 						for (int j = 0; j < rleLength; ++j) {
-							volume->setVoxel((int)x, y, (int)z, voxel);
-							++y;
+							sampler.setVoxel(voxel);
+							sampler.movePositiveY();
 						}
 					}
 				}
