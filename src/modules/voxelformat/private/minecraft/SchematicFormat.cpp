@@ -315,6 +315,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 	SchematicIntReader reader(blocks);
 	int index = 0;
 	int32_t palIdx = 0;
+	// TODO: PERF: use a volume sampler somehow. The index could also be a loop
 	while (reader.readInt32(palIdx) != -1) {
 		if (palIdx != 0) {
 			uint8_t currentPalIdx;
@@ -362,6 +363,8 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
 
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
+	// TODO: PERF: FOR_PARALLEL
+	// TODO: PERF: Use volume sampler
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 			for (int z = 0; z < depth; ++z) {
