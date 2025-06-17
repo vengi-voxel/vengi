@@ -240,19 +240,26 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	// TODO: PERF: use volume sampler
+	voxel::RawVolume::Sampler sampler(volume);
+	sampler.setPosition(width - 1, 0, 0);
 	for (uint32_t h = 0u; h < height; ++h) {
+		voxel::RawVolume::Sampler sampler2 = sampler;
 		for (uint32_t d = 0u; d < depth; ++d) {
+			voxel::RawVolume::Sampler sampler3 = sampler2;
 			for (uint32_t w = 0u; w < width; ++w) {
 				const int index = readVoxel(*stream, palette, paletteSize, bitsPerIndex);
 				if (index == 0 || index == ~(uint16_t)0) {
+					sampler3.moveNegativeX();
 					continue;
 				}
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 				// we have to flip depth with height for our own coordinate system
-				volume->setVoxel((int)width - 1 - (int)w, (int)h, (int)d, voxel);
+				sampler3.setVoxel(voxel);
+				sampler3.moveNegativeX();
 			}
+			sampler2.movePositiveZ();
 		}
+		sampler.movePositiveY();
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
