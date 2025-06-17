@@ -623,26 +623,31 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	minecraftPalette.minecraft();
 
 	const core::VarPtr &schematicType = core::Var::getSafe(cfg::VoxformatSchematicType);
-	core::StringMap<int8_t> paletteMap;
+	core::StringMap<int8_t> paletteMap(getPaletteArray().size());
 	int paletteIndex = 1;
 	{
 		core::Buffer<int8_t> blocks;
 		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);
 
-		// TODO: PERF: use a volume sampler
+		// TODO: PERF: FOR_PARALLEL
+		palette::PaletteLookup palLookup(minecraftPalette);
+		voxel::RawVolume::Sampler sampler(mergedVolume);
+		sampler.setPosition(mins);
 		for (int z = 0; z < size.z; ++z) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y = 0; y < size.y; ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				const int stride = (y * size.z + z) * size.x;
 				for (int x = 0; x < size.x; ++x) {
 					const int idx = stride + x;
-					const voxel::Voxel &voxel = mergedVolume->voxel(mins.x + x, mins.y + y, mins.z + z);
+					const voxel::Voxel &voxel = sampler3.voxel();
 					if (voxel::isAir(voxel.getMaterial())) {
 						blocks[idx] = 0;
+						sampler3.movePositiveX();
 						continue;
 					}
 					core::RGBA c = merged.palette.color(voxel.getColor());
-					// TODO: PERF: use PaletteLookup
-					const int currentPalIdx = minecraftPalette.getClosestMatch(c);
+					const int currentPalIdx = palLookup.findClosestIndex(c);
 					const core::String &blockState = findPaletteName(currentPalIdx);
 					int8_t blockDataIdx;
 					if (blockState.empty()) {
@@ -667,8 +672,11 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 								(int)blockDataIdx);
 					// Store the palette index in block data
 					blocks[idx] = blockDataIdx;
+					sampler3.movePositiveX();
 				}
+				sampler2.movePositiveY();
 			}
+			sampler.movePositiveZ();
 		}
 		compound.put("Blocks", priv::NamedBinaryTag(core::move(blocks)));
 		if (schematicType->strVal() == "mcedit2") {

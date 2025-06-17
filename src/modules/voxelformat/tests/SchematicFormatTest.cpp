@@ -31,12 +31,13 @@ TEST_F(SchematicFormatTest, testSaveSmallVoxel) {
 	core::String filename = "minecraft-smallvolumesavetest.schematic";
 	SCOPED_TRACE(filename.c_str());
 	int mins = 0;
-	int maxs = 1;
+	int maxs = 3;
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 
 	original.setVoxel(mins, mins, mins, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	original.setVoxel(maxs, maxs, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	original.setVoxel(region.getCenter(), voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	palette::Palette pal;
 	pal.minecraft();
