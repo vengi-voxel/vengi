@@ -9,6 +9,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
 #include "palette/Palette.h"
@@ -107,7 +108,6 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
-	sceneGraph.emplace(core::move(node));
 
 	while (stream->remaining() > 0) {
 		wrapBool(stream->readLine(64, buf))
@@ -119,8 +119,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		const voxel::Voxel voxel = voxel::createVoxel(palette, color);
 		volume->setVoxel(x, y, z, voxel);
 	}
-
-	return true;
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
 bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
