@@ -64,7 +64,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 										  voxel::FaceNames::NegativeY, voxel::FaceNames::PositiveY,
 										  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
 
-		// TODO: VOXELFORMAT: each face should be imported into a separate volume
+		// TODO: VOXELFORMAT: each face should be imported into a separate volume (and a group for each body component)
 		// and should also be placed by the scenegraph
 		// TODO: VOXELFORMAT: pivot to prepare for animation
 		for (int i = 0; i < 6; ++i) {
@@ -83,6 +83,13 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		sceneGraph.emplace(core::move(node));
 	}
 	return true;
+}
+
+// TODO: VOXELFORMAT: implement saving
+bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							const io::ArchivePtr &archive, const SaveContext &ctx) {
+	Log::error("Saving Minecraft skin format is not supported");
+	return false;
 }
 
 } // namespace voxelformat
