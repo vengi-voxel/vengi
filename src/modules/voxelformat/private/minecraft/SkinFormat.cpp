@@ -7,9 +7,11 @@
 #include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/ImageUtils.h"
+#include <glm/trigonometric.hpp>
 
 namespace voxelformat {
 
@@ -36,19 +38,50 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	// Defines a single 3D part from its 6 faces (x, y, z sizes and face coordinates)
 	struct SkinBox {
 		const char *name;
-		glm::ivec3 size;   // width, height, depth in voxels
-		glm::ivec3 pivot;  // World position (offset) of the part
+		glm::ivec3 size;		  // width, height, depth in voxels
+		glm::vec3 translation;	  // World position (offset) of the part
+		glm::vec3 rotationDegree; // Rotation in degrees around the pivot point
+		glm::vec3 pivot;
 		glm::ivec2 tex[6]; // left, right, top, bottom, front, back
 	};
 
 	// Define the skin boxes and use names that animate.lua can work with
-	const SkinBox skinParts[] = {
-		{"head", {8, 8, 8}, {0, 24, 0}, {{0, 8}, {16, 8}, {16, 0}, {8, 0}, {24, 8}, {8, 8}}},
-		{"body", {8, 12, 4}, {0, 12, 2}, {{16, 20}, {28, 20}, {28, 16}, {20, 16}, {32, 20}, {20, 20}}},
-		{"shoulder_r", {4, 12, 4}, {-4, 12, 2}, {{40, 20}, {48, 20}, {48, 16}, {44, 16}, {52, 20}, {44, 20}}},
-		{"shoulder_l", {4, 12, 4}, {8, 12, 2}, {{32, 52}, {40, 52}, {40, 48}, {36, 48}, {44, 52}, {36, 52}}},
-		{"leg_r", {4, 12, 4}, {0, 0, 2}, {{0, 20}, {8, 20}, {8, 16}, {4, 16}, {12, 20}, {4, 20}}},
-		{"leg_l", {4, 12, 4}, {4, 0, 2}, {{16, 52}, {24, 52}, {24, 48}, {20, 48}, {28, 52}, {20, 52}}}};
+	const SkinBox skinParts[] = {{"head",
+								  {8, 8, 8},
+								  {0.0f, 24.0f, 0.0f},
+								  {0, 0, 0},
+								  {0.0f, 0.0f, 0.0f},
+								  {{0, 8}, {16, 8}, {16, 0}, {8, 0}, {24, 8}, {8, 8}}},
+								 {"body",
+								  {8, 12, 4},
+								  {4.0f, 12.0f, 4.0f},
+								  {0, 0, 0},
+								  {0.5f, 0.0f, 0.5f},
+								  {{16, 20}, {28, 20}, {28, 16}, {20, 16}, {32, 20}, {20, 20}}},
+								 {"shoulder_r",
+								  {4, 12, 4},
+								  {8.0f, 21.6f, 4.0f},
+								  {45, 0, 0},
+								  {0.0f, 0.8f, 0.5f},
+								  {{40, 20}, {48, 20}, {48, 16}, {44, 16}, {52, 20}, {44, 20}}},
+								 {"shoulder_l",
+								  {4, 12, 4},
+								  {0.0f, 21.6f, 4.0f},
+								  {-45, 0, 0},
+								  {1.0f, 0.8f, 0.5f},
+								  {{32, 52}, {40, 52}, {40, 48}, {36, 48}, {44, 52}, {36, 52}}},
+								 {"leg_r",
+								  {4, 12, 4},
+								  {2.0f, 12.0f, 4.0f},
+								  {-45, 0, 0},
+								  {0.5f, 1.0f, 0.5f},
+								  {{0, 20}, {8, 20}, {8, 16}, {4, 16}, {12, 20}, {4, 20}}},
+								 {"leg_l",
+								  {4, 12, 4},
+								  {6.0f, 12.0f, 4.0f},
+								  {45, 0, 0},
+								  {0.5f, 1.0f, 0.5f},
+								  {{16, 52}, {24, 52}, {24, 48}, {20, 48}, {28, 52}, {20, 52}}}};
 
 	for (const auto &part : skinParts) {
 		const glm::ivec3 size = part.size;
@@ -67,7 +100,6 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 		// TODO: VOXELFORMAT: each face should be imported into a separate volume (and a group for each body component)
 		// and should also be placed by the scenegraph
-		// TODO: VOXELFORMAT: pivot to prepare for animation
 		// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
 		for (int i = 0; i < lengthof(skinParts); ++i) {
 			const glm::ivec2 &uv = part.tex[i];
@@ -81,7 +113,11 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			voxelutil::importFace(wrapper, wrapper.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
 								  image->uv(uvMax.x, uv.y));
 		}
-		node.volume()->region().shift(part.pivot);
+		scenegraph::SceneGraphTransform transform;
+		transform.setLocalTranslation(part.translation);
+		transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
+		node.setTransform(0, transform);
+		node.setPivot(part.pivot);
 		sceneGraph.emplace(core::move(node));
 	}
 	return true;
