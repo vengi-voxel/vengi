@@ -62,11 +62,12 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 		const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX, voxel::FaceNames::PositiveX,
 										  voxel::FaceNames::NegativeY, voxel::FaceNames::PositiveY,
-										  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
+										  voxel::FaceNames::PositiveZ, voxel::FaceNames::NegativeZ};
 
 		// TODO: VOXELFORMAT: each face should be imported into a separate volume (and a group for each body component)
 		// and should also be placed by the scenegraph
 		// TODO: VOXELFORMAT: pivot to prepare for animation
+		// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
 		for (int i = 0; i < 6; ++i) {
 			const glm::ivec2 &uv = part.tex[i];
 			const glm::ivec2 uvMin(uv.x, uv.y);
