@@ -53,6 +53,7 @@
 #include "voxelformat/private/minecraft/MCWorldFormat.h"
 #include "voxelformat/private/minecraft/MTSFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
+#include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
@@ -118,6 +119,7 @@ const io::FormatDescription *voxelLoad() {
 												 OBJFormat::format(),
 												 GLTFFormat::format(),
 												 STLFormat::format(),
+												 SkinFormat::format(),
 												 PLYFormat::format(),
 												 KVXFormat::format(),
 												 PCubesFormat::format(),
@@ -217,6 +219,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<QBCLFormat>();
 		} else if (ext == OBJFormat::format().mainExtension()) {
 			return core::make_shared<OBJFormat>();
+		} else if (ext == SkinFormat::format().mainExtension()) {
+			return core::make_shared<SkinFormat>();
 		} else if (ext == STLFormat::format().mainExtension()) {
 			return core::make_shared<STLFormat>();
 		} else if (ext == QuakeBSPFormat::formatUFOAI().mainExtension() || ext == QuakeBSPFormat::formatQuake1().mainExtension()) {

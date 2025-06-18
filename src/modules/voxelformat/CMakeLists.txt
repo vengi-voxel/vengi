@@ -80,6 +80,7 @@ set(SRCS
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
 	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
 	private/minecraft/SchematicFormat.h      private/minecraft/SchematicFormat.cpp
+	private/minecraft/SkinFormat.h           private/minecraft/SkinFormat.cpp
 	private/minecraft/MCWorldFormat.h        private/minecraft/MCWorldFormat.cpp
 	private/minecraft/MinecraftPaletteMap.h  private/minecraft/MinecraftPaletteMap.cpp
 	private/minecraft/NamedBinaryTag.h       private/minecraft/NamedBinaryTag.cpp
