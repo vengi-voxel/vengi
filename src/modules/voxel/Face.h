@@ -53,6 +53,18 @@ inline bool isVerticalFace(FaceNames face) {
 	 return face == FaceNames::PositiveY || face == FaceNames::NegativeY;
 }
 
+inline bool isZ(FaceNames face) {
+	 return face == FaceNames::PositiveZ || face == FaceNames::NegativeZ;
+}
+
+inline bool isY(FaceNames face) {
+	 return face == FaceNames::PositiveY || face == FaceNames::NegativeY;
+}
+
+inline bool isX(FaceNames face) {
+	 return face == FaceNames::PositiveX || face == FaceNames::NegativeX;
+}
+
 enum class FaceBits : uint8_t {
 	None = 0,
 	PositiveX = 1,
