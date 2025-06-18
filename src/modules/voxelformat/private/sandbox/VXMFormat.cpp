@@ -17,6 +17,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
+#include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -223,7 +224,6 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		voxel::RawVolume::Sampler sampler(sceneGraph.resolveVolume(node));
 		wrapBool(stream->writeString(node.name(), true))
 		wrapBool(stream->writeBool(node.visible()))
 
@@ -231,13 +231,16 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		voxel::Voxel prevVoxel;
 		bool firstLoop = true;
 
+		voxel::RawVolume::Sampler sampler(sceneGraph.resolveVolume(node));
+		sampler.setPosition(maxs.x, mins.y, mins.z);
 		for (uint32_t x = 0u; x < width; ++x) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (uint32_t y = 0u; y < height; ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (uint32_t z = 0u; z < depth; ++z) {
 					// this might fail - vxm uses the same size for each model - we don't
 					// in case the position is outside of the node volume, we are putting
 					// the border voxel of the volume into the file
-					sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z);
 					const voxel::Voxel &voxel = sampler.voxel();
 					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() ||
 						rleCount >= 255) {
@@ -249,8 +252,11 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 						prevVoxel = voxel;
 					}
 					++rleCount;
+					sampler3.moveNegativeX();
 				}
+				sampler2.movePositiveY();
 			}
+			sampler.movePositiveZ();
 		}
 		if (rleCount > 0) {
 			wrapBool(writeRLE(*stream, rleCount, prevVoxel, node.palette(), palette))
