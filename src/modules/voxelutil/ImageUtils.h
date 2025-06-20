@@ -5,7 +5,6 @@
 #pragma once
 
 #include "image/Image.h"
-#include "voxel/Face.h"
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -40,6 +39,5 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& depthMap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides = false);
-bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName, const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx = 0);
 
 }

@@ -21,9 +21,8 @@
 #include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/ImageUtils.h"
-#include "voxelutil/VoxelUtil.h"
+#include "voxelutil/ImportFace.h"
 
 #include "json/JSON.h"
 #include <glm/trigonometric.hpp>
@@ -449,8 +448,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 		if (face.textureIndex >= 0 && textureArray[face.textureIndex]->texture) {
 			image = textureArray[face.textureIndex]->texture;
 		}
-		voxel::RawVolumeWrapper wrapper(model.volume());
-		voxelutil::importFace(wrapper, wrapper.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
+		voxelutil::importFace(*model.volume(), model.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
 							  element.color);
 	}
 	model.volume()->translate(-region.getLowerCorner());

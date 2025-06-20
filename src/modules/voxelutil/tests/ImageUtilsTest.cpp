@@ -14,6 +14,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "voxelutil/ImportFace.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
@@ -140,12 +141,11 @@ TEST_F(ImageUtilsTest, testImportFace) {
 	ASSERT_TRUE(image && image->isLoaded());
 	voxel::Region region(0, 0, 0, image->width() - 1, image->height() - 1, 0);
 	voxel::RawVolume volume(region);
-	voxel::RawVolumeWrapper wrapper(&volume);
 	palette::Palette palette;
 	palette.nippon();
 	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
 	ASSERT_TRUE(
-		voxelutil::importFace(wrapper, region, palette, faceName, image, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
+		voxelutil::importFace(volume, region, palette, faceName, image, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
 	ASSERT_EQ(8, countVoxels(volume));
 
 	validateVoxel(volume, palette, image, 5, 7);

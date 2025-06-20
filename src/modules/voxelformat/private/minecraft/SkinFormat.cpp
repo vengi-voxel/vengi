@@ -11,6 +11,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/ImageUtils.h"
+#include "voxelutil/ImportFace.h"
 #include <glm/trigonometric.hpp>
 
 namespace voxelformat {
@@ -91,8 +92,6 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		node.setName(part.name);
 		node.setPalette(palette);
 
-		voxel::RawVolumeWrapper wrapper(node.volume());
-
 		const voxel::FaceNames order[] = {
 			voxel::FaceNames::NegativeX /* left */,	 voxel::FaceNames::PositiveX /* right */,
 			voxel::FaceNames::PositiveY /* top */,	 voxel::FaceNames::NegativeY /* bottom */,
@@ -110,7 +109,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 																	 : size.x,
 												(i == 2 || i == 3) ? size.z : size.y) -
 									 glm::ivec2(1);
-			voxelutil::importFace(wrapper, wrapper.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
+			voxelutil::importFace(*node.volume(), node.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
 								  image->uv(uvMax.x, uv.y));
 		}
 		scenegraph::SceneGraphTransform transform;
