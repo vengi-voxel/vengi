@@ -21,7 +21,6 @@
 #include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
-#include "voxelutil/ImageUtils.h"
 #include "voxelutil/ImportFace.h"
 
 #include "json/JSON.h"
