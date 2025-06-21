@@ -7,6 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/VolumeSamplerUtil.h"
 
 class RawVolumeWrapperBenchmark : public app::AbstractBenchmark {
 protected:

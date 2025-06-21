@@ -8,7 +8,7 @@
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "voxel/VolumeSampler.h"
+#include "voxel/VolumeSamplerUtil.h"
 
 namespace voxel {
 

@@ -8,6 +8,7 @@
 #include "core/collection/Vector.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -39,7 +40,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	// prepare volume
 	voxel::RawVolume volume(region);
 	voxel::RawVolumeWrapper wrapper(&volume);
-	setVoxels(wrapper, 0, 0, 0, region.getWidthInVoxels(), region.getDepthInVoxels(), &voxels.front(),
+	voxel::setVoxels(wrapper, 0, 0, 0, region.getWidthInVoxels(), region.getDepthInVoxels(), &voxels.front(),
 					  region.getHeightInVoxels());
 
 	const int expectedVoxelCount = region.getWidthInVoxels() * region.getDepthInVoxels() * region.getHeightInVoxels();

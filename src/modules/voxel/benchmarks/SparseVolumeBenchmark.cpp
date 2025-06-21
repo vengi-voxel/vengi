@@ -5,7 +5,6 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/Vector.h"
 #include "voxel/SparseVolume.h"
-#include "voxel/VolumeSampler.h"
 
 class SparseVolumeBenchmark : public app::AbstractBenchmark {
 protected:

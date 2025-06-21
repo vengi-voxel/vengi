@@ -17,7 +17,7 @@ namespace voxelutil {
  * This function iterates over the voxel volume and identifies hollows that are totally enclosed by existing voxels.
  * It then fills these hollow spaces with a specified voxel.
  *
- * @param[in,out] in The voxel volume to fill.
+ * @param[in,out] volume The voxel volume to fill.
  * @param[in] voxel The voxel to fill the hollow spaces with.
  */
 template<class VOLUME>

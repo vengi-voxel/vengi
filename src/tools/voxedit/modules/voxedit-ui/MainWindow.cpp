@@ -21,7 +21,6 @@
 #include "palette/PaletteFormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "ui/FileDialog.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"

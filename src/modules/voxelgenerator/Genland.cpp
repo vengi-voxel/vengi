@@ -29,7 +29,7 @@
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/VolumeSampler.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include "voxel/Voxel.h"
 
 namespace voxelgenerator {
