@@ -241,7 +241,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 					// this might fail - vxm uses the same size for each model - we don't
 					// in case the position is outside of the node volume, we are putting
 					// the border voxel of the volume into the file
-					const voxel::Voxel &voxel = sampler.voxel();
+					const voxel::Voxel &voxel = sampler3.voxel();
 					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() ||
 						rleCount >= 255) {
 						wrapBool(writeRLE(*stream, rleCount, prevVoxel, node.palette(), palette))
@@ -252,11 +252,11 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 						prevVoxel = voxel;
 					}
 					++rleCount;
-					sampler3.moveNegativeX();
+					sampler3.movePositiveZ();
 				}
 				sampler2.movePositiveY();
 			}
-			sampler.movePositiveZ();
+			sampler.moveNegativeX();
 		}
 		if (rleCount > 0) {
 			wrapBool(writeRLE(*stream, rleCount, prevVoxel, node.palette(), palette))
