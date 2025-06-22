@@ -10,6 +10,7 @@
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Thread.h"
+#include <SDL_log.h>
 
 namespace command {
 struct CommandExecutionListener;
@@ -96,7 +97,7 @@ protected:
 
 	static core::String removeAnsiColors(const char *message);
 	// the sdl log function callback
-	static void logOutputFunction(void *userdata, int category, int priority, const char *message);
+	static void logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message);
 	virtual void addLogLine(int category, Log::Level priority, const char *message);
 
 	void replaceLastParameter(const core::String &param);

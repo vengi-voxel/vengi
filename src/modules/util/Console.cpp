@@ -70,7 +70,7 @@ Console::~Console() {
 
 void Console::registerOutputCallbacks() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
-	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logOutputFunction, this);
+	SDL_LogSetOutputFunction(logOutputFunction, this);
 }
 
 void Console::construct() {
@@ -251,7 +251,7 @@ core::String Console::removeAnsiColors(const char* message) {
 	return core::string::removeAnsiColors(message);
 }
 
-void Console::logOutputFunction(void *userdata, int category, int priority, const char *message) {
+void Console::logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	Console* console = (Console*)userdata;
 
 	Log::Level prio = toLevel(priority);
