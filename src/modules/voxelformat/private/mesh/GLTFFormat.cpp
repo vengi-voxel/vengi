@@ -114,16 +114,6 @@ static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const
 	return core::RGBA(0, 0, 0, 255);
 }
 
-template<typename T>
-void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Buffer<uint32_t> &indices,
-					 size_t offset) {
-	indices.reserve(indices.size() + count);
-	for (size_t i = 0; i < count; i++) {
-		indices.push_back((uint32_t)((*(const T *)data) + offset));
-		data += stride;
-	}
-}
-
 static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &camera) {
 	tinygltf::Camera gltfCamera;
 	gltfCamera.name = camera.name().c_str();
@@ -1084,6 +1074,12 @@ scenegraph::SceneGraphTransform GLTFFormat::loadTransform(const tinygltf::Node &
 	return transform;
 }
 
+#define wrap(x) \
+	if ((x) == -1) { \
+		Log::error("Failed to read from index buffer"); \
+		return false; \
+	}
+
 bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 							 core::Buffer<uint32_t> &indices, size_t indicesOffset) const {
 	if (gltfPrimitive.mode != TINYGLTF_MODE_TRIANGLES) {
@@ -1099,30 +1095,63 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 	const tinygltf::BufferView &gltfBufferView = gltfModel.bufferViews[accessor->bufferView];
 	const tinygltf::Buffer &gltfBuffer = gltfModel.buffers[gltfBufferView.buffer];
 	const size_t stride = gltfBufferView.byteStride ? gltfBufferView.byteStride : size;
+	core_assert(stride > 0);
 
 	const size_t offset = accessor->byteOffset + gltfBufferView.byteOffset;
 	const uint8_t *indexBuf = gltfBuffer.data.data() + offset;
 
 	Log::debug("indicesOffset: %i", (int)indicesOffset);
 
+	indices.reserve(indices.size() + accessor->count);
+	io::MemoryReadStream stream(indexBuf, accessor->count * stride);
 	switch (accessor->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-		_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
+		for (size_t i = 0; i < accessor->count; i++) {
+			wrap(stream.seek(i * stride))
+			uint8_t idx;
+			wrap(stream.readUInt8(idx))
+			indices.push_back((uint32_t)idx + indicesOffset);
+		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_BYTE:
-		_priv::copyGltfIndices<int8_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
+		for (size_t i = 0; i < accessor->count; i++) {
+			wrap(stream.seek(i * stride))
+			int8_t idx;
+			wrap(stream.readInt8(idx))
+			indices.push_back((uint32_t)idx + indicesOffset);
+		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-		_priv::copyGltfIndices<uint16_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
+		for (size_t i = 0; i < accessor->count; i++) {
+			wrap(stream.seek(i * stride))
+			uint16_t idx;
+			wrap(stream.readUInt16(idx))
+			indices.push_back((uint32_t)idx + indicesOffset);
+		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
-		_priv::copyGltfIndices<int16_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
+		for (size_t i = 0; i < accessor->count; i++) {
+			wrap(stream.seek(i * stride))
+			int16_t idx;
+			wrap(stream.readInt16(idx))
+			indices.push_back((uint32_t)idx + indicesOffset);
+		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-		_priv::copyGltfIndices<uint32_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
+		for (size_t i = 0; i < accessor->count; i++) {
+			wrap(stream.seek(i * stride))
+			uint32_t idx;
+			wrap(stream.readUInt32(idx))
+			indices.push_back((uint32_t)idx + indicesOffset);
+		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_INT:
-		_priv::copyGltfIndices<int32_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
+		for (size_t i = 0; i < accessor->count; i++) {
+			wrap(stream.seek(i * stride))
+			int32_t idx;
+			wrap(stream.readInt32(idx))
+			indices.push_back((uint32_t)idx + indicesOffset);
+		}
 		break;
 	default:
 		Log::error("Unknown component type for indices: %i", accessor->componentType);
@@ -1130,6 +1159,8 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 	}
 	return true;
 }
+
+#undef wrap
 
 void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr &archive,
 							 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
@@ -1465,9 +1496,11 @@ bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const ti
 		const size_t stride = gltfBufferView.byteStride ? gltfBufferView.byteStride : 4;
 
 		const size_t offset = gltfFrameTimeAccessor->byteOffset + gltfBufferView.byteOffset;
-		const uint8_t *buf = gltfBuffer.data.data() + offset;
+		io::MemoryReadStream stream(gltfBuffer.data.data() + offset, gltfFrameTimeAccessor->count * stride);
 		for (size_t i = 0; i < gltfFrameTimeAccessor->count; ++i) {
-			const float seconds = *(const float *)buf;
+			stream.seek(i * stride);
+			float seconds = 0.0f;
+			stream.readFloat(seconds);
 			if (node.addKeyFrame((scenegraph::FrameIndex)(seconds * _priv::FPS)) == InvalidKeyFrame) {
 				Log::debug("Failed to add keyframe for %f seconds (%i) for node %s", seconds,
 						   (int)gltfFrameTimeAccessor->count, node.name().c_str());
@@ -1475,7 +1508,6 @@ bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const ti
 				Log::debug("Added keyframe for %f seconds (%i) for node %s", seconds, (int)gltfFrameTimeAccessor->count,
 						   node.name().c_str());
 			}
-			buf += stride;
 		}
 	}
 
