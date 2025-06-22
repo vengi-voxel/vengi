@@ -189,7 +189,6 @@ void VoxConvertUI::onRenderUI() {
 				_output = "No target file selected";
 				Log::warn("No target file selected");
 			} else {
-				io::BufferedReadWriteStream stream;
 				core::DynamicArray<core::String> arguments{"--input", _sourceFile, "--output", _targetFile};
 				// only dirty and non-default variables are set for the voxconvert call
 				core::Var::visit([&](const core::VarPtr &var) {
@@ -213,6 +212,7 @@ void VoxConvertUI::onRenderUI() {
 
 				const core::String args = core::string::join(arguments.begin(), arguments.end(), " ");
 				Log::info("%s %s", _voxconvertBinary.c_str(), args.c_str());
+				io::BufferedReadWriteStream stream;
 				const int exitCode = core::Process::exec(_voxconvertBinary, arguments, nullptr, &stream);
 				stream.seek(0);
 				stream.readString(stream.size(), _output);
