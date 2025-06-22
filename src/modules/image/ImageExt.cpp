@@ -6,7 +6,14 @@
 #include "core/collection/BufferView.h"
 
 #if __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align" // stb_image.h
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough" // stb_image.h
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-align" // stb_image.h
 #endif
 
 #define STBI_ASSERT core_assert
@@ -35,3 +42,9 @@
 #undef STB_IMAGE_IMPLEMENTATION
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 #undef STB_IMAGE_RESIZE_IMPLEMENTATION
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
