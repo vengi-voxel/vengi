@@ -305,7 +305,6 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	scenegraph::SceneGraphTransform transform;
 	glm::vec3 normalizedPivot = glm::vec3{0.5f, 0.0f, 0.5f};
 	glm::uvec3 size(0);
 	Log::debug("Found vxm%i", version);
@@ -563,8 +562,6 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		node.setPalette(palette);
 		node.setProperty("vxmversion", core::string::toString(version));
 		node.setProperty("filename", filename);
-		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
 		sceneGraph.emplace(core::move(node));
 	}
 
