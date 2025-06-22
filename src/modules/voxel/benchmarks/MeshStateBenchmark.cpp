@@ -115,7 +115,8 @@ public:
 };
 
 BENCHMARK_DEFINE_F(MeshStateBenchmark, Extract)(benchmark::State &state) {
-	palette::Palette palette = voxel::getPalette();
+	palette::Palette palette;
+	palette.nippon();
 	for (auto _ : state) {
 		bool meshDeleted = false;
 		(void)meshState.setVolume(0, &v, &palette, nullptr, true, meshDeleted);
