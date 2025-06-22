@@ -7,6 +7,7 @@
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/ShapeBuilder.h"
@@ -117,9 +118,10 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	video::ShapeBuilder b;
 	scenegraph::SceneGraph sceneGraph;
 
-	voxel::getPalette().nippon();
-	const core::RGBA nipponRed = voxel::getPalette().color(37);
-	const core::RGBA nipponBlue = voxel::getPalette().color(202);
+	palette::Palette pal;
+	pal.nippon();
+	const core::RGBA nipponRed = pal.color(37);
+	const core::RGBA nipponBlue = pal.color(202);
 	const float size = 10.0f;
 	b.setPosition({size, 0.0f, size});
 	b.setColor(core::Color::fromRGBA(nipponRed));
@@ -130,7 +132,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	// color of the tip is green
 	video::ShapeBuilder::Colors colors = b.getColors();
-	const core::RGBA nipponGreen = voxel::getPalette().color(145);
+	const core::RGBA nipponGreen = pal.color(145);
 	colors[0] = core::Color::fromRGBA(nipponGreen);
 	colors[1] = core::Color::fromRGBA(nipponBlue);
 
