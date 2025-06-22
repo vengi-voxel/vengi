@@ -261,10 +261,6 @@ static bool _ufbx_skip_fn(void *user, size_t size) {
 	return stream->skip((int64_t)size) != -1;
 }
 
-static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
-	return glm::vec2((float)v.x, (float)v.y);
-}
-
 static inline glm::vec3 _ufbx_to_vec3(const ufbx_vec3 &v) {
 	return glm::vec3((float)v.x, (float)v.y, (float)v.z);
 }
