@@ -38,6 +38,9 @@
 #define TINYGLTF_IMPLEMENTATION
 // #define TINYGLTF_NO_FS // TODO: VOXELFORMAT: use our own file abstraction
 #define JSON_HAS_CPP_11
+// #define TINYGLTF_NOEXCEPTION
+// #define TINYGLTF_NO_INCLUDE_STB_IMAGE
+// #define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
 #include "voxelformat/external/tiny_gltf.h"
 
 namespace voxelformat {
