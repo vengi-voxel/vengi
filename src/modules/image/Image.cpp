@@ -75,7 +75,11 @@ void Image::setColor(core::RGBA rgba, int x, int y) {
 	}
 	const int colSpan = _width * _colorComponents;
 	const intptr_t offset = x * _colorComponents + y * colSpan;
-	*(core::RGBA *)(_colors + offset) = rgba;
+	uint8_t* pixel = _colors + offset;
+	pixel[0] = rgba.r;
+	pixel[1] = rgba.g;
+	pixel[2] = rgba.b;
+	pixel[3] = rgba.a;
 }
 
 core::RGBA Image::colorAt(int x, int y) const {
