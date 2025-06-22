@@ -312,7 +312,7 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 						continue;
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
+					sampler3.setVoxel(voxel);
 					sampler3.moveNegativeX();
 				}
 				sampler2.movePositiveZ();
