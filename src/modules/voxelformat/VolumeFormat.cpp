@@ -119,7 +119,6 @@ const io::FormatDescription *voxelLoad() {
 												 OBJFormat::format(),
 												 GLTFFormat::format(),
 												 STLFormat::format(),
-												 SkinFormat::format(),
 												 PLYFormat::format(),
 												 KVXFormat::format(),
 												 PCubesFormat::format(),
@@ -136,6 +135,7 @@ const io::FormatDescription *voxelLoad() {
 												 SLAB6VoxFormat::format(),
 												 VMaxFormat::format(),
 												 io::format::png(),
+												 SkinFormat::format(), // let this be after png
 												 {"", {}, {}, 0u}};
 	return desc;
 }
@@ -219,7 +219,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<QBCLFormat>();
 		} else if (ext == OBJFormat::format().mainExtension()) {
 			return core::make_shared<OBJFormat>();
-		} else if (ext == SkinFormat::format().mainExtension()) {
+		} else if (ext == SkinFormat::format().mainExtension() && desc.name == SkinFormat::format().name) {
 			return core::make_shared<SkinFormat>();
 		} else if (ext == STLFormat::format().mainExtension()) {
 			return core::make_shared<STLFormat>();
