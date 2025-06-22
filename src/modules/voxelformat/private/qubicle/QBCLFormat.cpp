@@ -445,6 +445,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 							sampler.setVoxel(voxel);
 							sampler.movePositiveY();
 						}
+						y += rleLength;
 					}
 				}
 				// we've read another color value for the rle values
