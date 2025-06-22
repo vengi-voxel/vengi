@@ -316,10 +316,10 @@ bool NormalPalette::load(const char *paletteName) {
 		return load(img);
 	}
 	_size = paletteToLoad.colorCount();
-	for (uint8_t i = 0; i < _size; ++i) {
+	for (int i = 0; i < _size; ++i) {
 		_normals[i] = paletteToLoad.color(i);
 	}
-	for (uint8_t i = _size; i < NormalPaletteMaxNormals; ++i) {
+	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
 		_normals[i] = core::RGBA(0);
 	}
 	markDirty();
@@ -374,7 +374,7 @@ bool NormalPalette::save(const char *name) const {
 	}
 	palette::Palette palForSave;
 	palForSave.setSize(_size);
-	for (uint8_t i = 0; i < _size; i++) {
+	for (int i = 0; i < _size; i++) {
 		palForSave.setColor(i, _normals[i]);
 	}
 	return palette::savePalette(palForSave, name, stream);
