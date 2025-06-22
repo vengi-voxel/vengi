@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Assert.h"
 #include "core/Color.h"
 #include "core/collection/DynamicMap.h"
 #include "palette/Palette.h"
@@ -48,6 +49,7 @@ public:
 	uint8_t findClosestIndex(core::RGBA rgba) {
 		uint8_t paletteIndex = 0;
 		if (!_paletteMap.get(rgba, paletteIndex)) {
+			core_assert_always(_palette.colorCount() > 0);
 			// here we are O(n) in every case where the colors are not a perfect match
 			paletteIndex = _palette.getClosestMatch(rgba);
 			_paletteMap.put(rgba, paletteIndex);
