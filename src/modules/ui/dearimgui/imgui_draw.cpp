@@ -701,6 +701,7 @@ void ImDrawList::_SetTexture(ImTextureRef tex_ref)
     if (_CmdHeader.TexRef == tex_ref)
         return;
     _CmdHeader.TexRef = tex_ref;
+    _TextureStack.back() = tex_ref;
     _OnChangedTexture();
 }
 
@@ -2700,10 +2701,11 @@ void ImFontAtlas::ClearFonts()
     Fonts.clear_delete();
     TexIsBuilt = false;
     for (ImDrawListSharedData* shared_data : DrawListSharedDatas)
-    {
-        shared_data->Font = NULL;
-        shared_data->FontScale = shared_data->FontSize = 0.0f;
-    }
+        if (shared_data->FontAtlas == this)
+        {
+            shared_data->Font = NULL;
+            shared_data->FontScale = shared_data->FontSize = 0.0f;
+        }
 }
 
 static void ImFontAtlasBuildUpdateRendererHasTexturesFromContext(ImFontAtlas* atlas)
@@ -2867,7 +2869,7 @@ void ImFontAtlasTextureBlockPostProcess(ImFontAtlasPostProcessData* data)
 
 void ImFontAtlasTextureBlockPostProcessMultiply(ImFontAtlasPostProcessData* data, float multiply_factor)
 {
-    unsigned char* pixels = data->Pixels;
+    unsigned char* pixels = (unsigned char*)data->Pixels;
     int pitch = data->Pitch;
     if (data->Format == ImTextureFormat_Alpha8)
     {
@@ -3452,7 +3454,7 @@ void ImFontAtlasBuildRenderBitmapFromString(ImFontAtlas* atlas, int x, int y, in
     {
     case ImTextureFormat_Alpha8:
     {
-        ImU8* out_p = tex->GetPixelsAt(x, y);
+        ImU8* out_p = (ImU8*)tex->GetPixelsAt(x, y);
         for (int off_y = 0; off_y < h; off_y++, out_p += tex->Width, in_str += w)
             for (int off_x = 0; off_x < w; off_x++)
                 out_p[off_x] = (in_str[off_x] == in_marker_char) ? 0xFF : 0x00;
@@ -3460,7 +3462,7 @@ void ImFontAtlasBuildRenderBitmapFromString(ImFontAtlas* atlas, int x, int y, in
     }
     case ImTextureFormat_RGBA32:
     {
-        ImU32* out_p = (ImU32*)(void*)tex->GetPixelsAt(x, y);
+        ImU32* out_p = (ImU32*)tex->GetPixelsAt(x, y);
         for (int off_y = 0; off_y < h; off_y++, out_p += tex->Width, in_str += w)
             for (int off_x = 0; off_x < w; off_x++)
                 out_p[off_x] = (in_str[off_x] == in_marker_char) ? IM_COL32_WHITE : IM_COL32_BLACK_TRANS;
@@ -3920,10 +3922,11 @@ void ImFontAtlasUpdateDrawListsTextures(ImFontAtlas* atlas, ImTextureRef old_tex
 void ImFontAtlasUpdateDrawListsSharedData(ImFontAtlas* atlas)
 {
     for (ImDrawListSharedData* shared_data : atlas->DrawListSharedDatas)
-    {
-        shared_data->TexUvWhitePixel = atlas->TexUvWhitePixel;
-        shared_data->TexUvLines = atlas->TexUvLines;
-    }
+        if (shared_data->FontAtlas == atlas)
+        {
+            shared_data->TexUvWhitePixel = atlas->TexUvWhitePixel;
+            shared_data->TexUvLines = atlas->TexUvLines;
+        }
 }
 
 // Set current texture. This is mostly called from AddTexture() + to handle a failed resize.
@@ -5127,7 +5130,7 @@ void ImFontAtlasBakedSetFontGlyphBitmap(ImFontAtlas* atlas, ImFontBaked* baked, 
 {
     ImTextureData* tex = atlas->TexData;
     IM_ASSERT(r->x + r->w <= tex->Width && r->y + r->h <= tex->Height);
-    ImFontAtlasTextureBlockConvert(src_pixels, src_fmt, src_pitch, tex->GetPixelsAt(r->x, r->y), tex->Format, tex->GetPitch(), r->w, r->h);
+    ImFontAtlasTextureBlockConvert(src_pixels, src_fmt, src_pitch, (unsigned char*)tex->GetPixelsAt(r->x, r->y), tex->Format, tex->GetPitch(), r->w, r->h);
     ImFontAtlasPostProcessData pp_data = { atlas, baked->ContainerFont, src, baked, glyph, tex->GetPixelsAt(r->x, r->y), tex->Format, tex->GetPitch(), r->w, r->h };
     ImFontAtlasTextureBlockPostProcess(&pp_data);
     ImFontAtlasTextureBlockQueueUpload(atlas, tex, r->x, r->y, r->w, r->h);

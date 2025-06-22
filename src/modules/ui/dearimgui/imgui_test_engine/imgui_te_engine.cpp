@@ -1901,7 +1901,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
 
     // Additional yields to avoid consecutive tests who may share identifiers from missing their window/item activation.
     ctx->RunFlags |= ImGuiTestRunFlags_GuiFuncDisable;
-    ctx->Yield(2);
+    ctx->Yield(3);
 
     // Restore active func
     ctx->ActiveFunc = backup_active_func;
