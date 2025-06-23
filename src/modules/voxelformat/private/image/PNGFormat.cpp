@@ -361,6 +361,7 @@ bool PNGFormat::saveSlices(const scenegraph::SceneGraph &sceneGraph, const core:
 			image::Image image(layerFilename);
 			core::Buffer<core::RGBA> rgba;
 			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());
+			bool empty = true;
 			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
 				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 					const voxel::Voxel &v = volume->voxel(x, y, z);
@@ -370,8 +371,14 @@ bool PNGFormat::saveSlices(const scenegraph::SceneGraph &sceneGraph, const core:
 					const core::RGBA color = palette.color(v.getColor());
 					const int idx = (region.getUpperY() - y) * region.getWidthInVoxels() + (x - region.getLowerX());
 					rgba[idx] = color;
+					empty = false;
 				}
 			}
+			if (empty) {
+				// skip empty slices
+				continue;
+			}
+
 			if (!image.loadRGBA((const uint8_t *)rgba.data(), region.getWidthInVoxels(), region.getHeightInVoxels())) {
 				Log::error("Failed to load sliced rgba data %s", layerFilename.c_str());
 				return false;
