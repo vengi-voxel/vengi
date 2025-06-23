@@ -1,3 +1,4 @@
+#include "app/Async.h"
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/collection/Queue.h"
@@ -34,7 +35,7 @@ static void propagateSunlight(VOLUME &volume, LightQueue &lightQueue, LightVolum
 		}
 
 		uint8_t nextLight = node.value >= lightStep ? node.value - lightStep : 0u;
-		for (const glm::ivec3 &dir : voxel::arrayPathfinderEdges) {
+		for (const glm::ivec3 &dir : voxel::arrayPathfinderCorners) {
 			const glm::ivec3 &nextPos = node.pos + dir;
 			if (!region.containsPoint(nextPos)) {
 				continue;
@@ -87,40 +88,45 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 	propagateSunlight(volume, lightQueue, lightVolume, lightStep);
 
 	Log::debug("Applying shadows to voxels based on propagated light");
-	sampler.setPosition(region.getLowerCorner());
-	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-		typename VOLUME::Sampler sampler2 = sampler;
-		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-			typename VOLUME::Sampler sampler3 = sampler2;
-			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				const voxel::Voxel &voxel = sampler3.voxel();
-				if (voxel::isAir(voxel.getMaterial())) {
-					sampler3.movePositiveX();
-					continue;
-				}
-				uint8_t maxLight = 0u;
-				for (const glm::ivec3 &dir : voxel::arrayPathfinderEdges) {
-					const glm::ivec3 neighborPos(x + dir.x, y + dir.y, z + dir.z);
-					if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
-						maxLight = core_max(maxLight, lightVolume.value(neighborPos));
+	auto fn = [&volume, &lightVolume, &palette] (int start, int end) {
+		typename VOLUME::Sampler sampler(&volume);
+		const voxel::Region &region = volume.region();
+		sampler.setPosition(region.getLowerX(), region.getLowerY(), start);
+		for (int z = start; z < end; ++z) {
+			typename VOLUME::Sampler sampler2 = sampler;
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				typename VOLUME::Sampler sampler3 = sampler2;
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					const voxel::Voxel &voxel = sampler3.voxel();
+					if (voxel::isAir(voxel.getMaterial())) {
+						sampler3.movePositiveX();
+						continue;
 					}
-				}
-				// max lit, no change
-				// or fully surrounded by solid voxels - no need to change
-				if (maxLight == MAX_SHADOW || maxLight == 0) {
+					uint8_t maxLight = 0u;
+					for (const glm::ivec3 &dir : voxel::arrayPathfinderCorners) {
+						const glm::ivec3 neighborPos(x + dir.x, y + dir.y, z + dir.z);
+						if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
+							maxLight = core_max(maxLight, lightVolume.value(neighborPos));
+						}
+					}
+					// max lit, no change
+					// or fully surrounded by solid voxels - no need to change
+					if (maxLight == MAX_SHADOW || maxLight == 0) {
+						sampler3.movePositiveX();
+						continue;
+					}
+					const float shadowFactor = (float)maxLight / (float)MAX_SHADOW;
+					core::RGBA color = core::Color::darker(palette.color(voxel.getColor()), shadowFactor);
+					const int palIdx = palette.getClosestMatch(color, voxel.getColor(), core::Color::Distance::HSB);
+					sampler3.setVoxel(voxel::createVoxel(palette, palIdx));
 					sampler3.movePositiveX();
-					continue;
 				}
-				const float shadowFactor = (float)maxLight / (float)MAX_SHADOW;
-				core::RGBA color = core::Color::darker(palette.color(voxel.getColor()), shadowFactor);
-				const int palIdx = palette.getClosestMatch(color, voxel.getColor(), core::Color::Distance::HSB);
-				sampler3.setVoxel(voxel::createVoxel(palette, palIdx));
-				sampler3.movePositiveX();
+				sampler2.movePositiveY();
 			}
-			sampler2.movePositiveY();
+			sampler.movePositiveZ();
 		}
-		sampler.movePositiveZ();
-	}
+	};
+	app::for_parallel(region.getLowerZ(), region.getUpperZ() + 1, fn);
 }
 
 } // namespace voxelutil
