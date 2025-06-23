@@ -38,6 +38,7 @@ private:
 	bool _surfaceOnly = false;
 	bool _splitModels = false;
 	bool _printSceneGraph = false;
+	bool _printSceneToConsole = false;
 	bool _resizeModels = false;
 
 protected:

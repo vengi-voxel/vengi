@@ -17,6 +17,7 @@
 #include "core/collection/StringSet.h"
 #include "core/concurrent/Concurrency.h"
 #include "engine-git.h"
+#include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -60,6 +61,8 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
 	registerArg("--json").setDescription(
 		"Print the scene graph of the input file. Give full as argument to also get mesh details");
+	registerArg("--image").setDescription(
+		"Print the scene graph of the input file as image to the console");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the palette data into the given output file format");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
@@ -274,6 +277,7 @@ app::AppState VoxConvert::onInit() {
 	_surfaceOnly = hasArg("--surface-only");
 	_splitModels = hasArg("--split");
 	_printSceneGraph = hasArg("--json");
+	_printSceneToConsole = hasArg("--image");
 	_resizeModels = hasArg("--resize");
 
 	Log::info("Options");
@@ -313,6 +317,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	Log::info("* show scene graph:  - %s", (_printSceneGraph ? "true" : "false"));
+	Log::info("* scene graph image: - %s", (_printSceneToConsole ? "true" : "false"));
 	Log::info("* merge models:      - %s", (_mergeModels ? "true" : "false"));
 	Log::info("* scale models:      - %s", (_scaleModels ? "true" : "false"));
 	Log::info("* crop models:       - %s", (_cropModels ? "true" : "false"));
@@ -341,7 +346,7 @@ app::AppState VoxConvert::onInit() {
 				}
 			}
 		}
-	} else if (!_exportModels && !_printSceneGraph) {
+	} else if (!_exportModels && !_printSceneGraph && !_printSceneToConsole) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -411,6 +416,13 @@ app::AppState VoxConvert::onInit() {
 	}
 	if (_printSceneGraph) {
 		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
+	}
+	if (_printSceneToConsole) {
+		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
+		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, voxel::FaceNames::Front, core::RGBA(0, 0, 0, 255), -1, -1);
+		const core::String prt(image::print(image, false));
+		Log::printf("%s", prt.c_str());
 	}
 	if (hasArg("--script") && sceneGraph.empty()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

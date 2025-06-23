@@ -17,6 +17,7 @@ vengi-voxconvert --help
 * `--export-palette`: will save the palette file for the given input file.
 * `--filter <filter>`: will filter out models not mentioned in the expression. E.g. `1-2,4` will handle model 1, 2 and 4. It is the same as `1,2,4`. The first model is `0`. See the models note below.
 * `--force`: overwrite existing files
+* `--image`: print the scene voxels to the text console. Useful if you don't have a graphical user interface available but still need to visually compare voxel models.
 * `--input <file>`: allows to specify input files. You can specify more than one file
 * `--merge`: will merge a multi model volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis

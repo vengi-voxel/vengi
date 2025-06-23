@@ -28,6 +28,10 @@ PalConvert:
 
    - Allow to use the built-in as well as lospec palettes from the command line, too
 
+VoxConvert:
+
+   - Added `--image` to voxconvert to print the loaded scene to the colored text console
+
 ## 0.0.38 (2025-06-01)
 
 General:
