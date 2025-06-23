@@ -111,7 +111,6 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 				// or fully surrounded by solid voxels - no need to change
 				if (maxLight == MAX_SHADOW || maxLight == 0) {
 					sampler3.movePositiveX();
-					Log::error("skip it");
 					continue;
 				}
 				const float shadowFactor = (float)maxLight / (float)MAX_SHADOW;
