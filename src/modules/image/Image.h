@@ -59,10 +59,14 @@ public:
 				setColor(rgba, x, y);
 			}
 		}
-		_state = io::IOSTATE_LOADED;
+		markLoaded();
 		return true;
 	}
 	bool load(ImageType type, io::SeekableReadStream &stream, int length);
+
+	void markLoaded() {
+		_state = io::IOSTATE_LOADED;
+	}
 
 	/**
 	 * Loads a raw RGBA buffer

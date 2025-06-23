@@ -351,6 +351,8 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		image->resize(imgW, imgH);
 	}
 
+	image->markLoaded();
+
 	return image;
 }
 
