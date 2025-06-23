@@ -32,12 +32,9 @@ int getHeightValueFromAlpha(uint8_t alpha, bool adoptHeight, int volumeHeight, i
  */
 int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight);
 [[nodiscard]] voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness = 1);
-[[nodiscard]] voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);
 [[nodiscard]] voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness = 1);
-[[nodiscard]] voxel::RawVolume* importAsPlane(const image::Image *image, uint8_t thickness = 1);
 core::String getDefaultDepthMapFile(const core::String &imageName, const core::String &postfix = "-dm");
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& depthMap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
-[[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides = false);
 
 }

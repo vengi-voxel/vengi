@@ -3,6 +3,7 @@
  */
 
 #include "SurfaceExtractor.h"
+#include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
@@ -16,7 +17,8 @@ namespace voxel {
 SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 										   const glm::ivec3 &translate, bool mergeQuads, bool reuseVertices,
 										   bool ambientOcclusion, bool optimize) {
-	return SurfaceExtractionContext(volume, getPalette(), region, mesh, translate, SurfaceExtractionType::Cubic,
+	static palette::Palette unused;
+	return SurfaceExtractionContext(volume, unused, region, mesh, translate, SurfaceExtractionType::Cubic,
 									mergeQuads, reuseVertices, ambientOcclusion, optimize);
 }
 
@@ -28,7 +30,8 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 										   const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
-	return SurfaceExtractionContext(volume, getPalette(), region, mesh, translate, SurfaceExtractionType::Binary,
+	static palette::Palette unused;
+	return SurfaceExtractionContext(volume, unused, region, mesh, translate, SurfaceExtractionType::Binary,
 									false, false, ambientOcclusion, optimize);
 }
 

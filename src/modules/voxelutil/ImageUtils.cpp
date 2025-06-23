@@ -155,15 +155,6 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 	});
 }
 
-voxel::RawVolume *importAsPlane(const image::ImagePtr &image, uint8_t thickness) {
-	return importAsPlane(image.get(), thickness);
-}
-
-voxel::RawVolume *importAsPlane(const image::Image *image, uint8_t thickness) {
-	const palette::Palette &palette = voxel::getPalette();
-	return importAsPlane(image, palette, thickness);
-}
-
 voxel::RawVolume *importAsPlane(const image::ImagePtr &image, const palette::Palette &palette, uint8_t thickness) {
 	return importAsPlane(image.get(), palette, thickness);
 }
@@ -216,10 +207,6 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 		}
 	});
 	return volume;
-}
-
-voxel::RawVolume *importAsVolume(const image::ImagePtr &image, uint8_t maxDepth, bool bothSides) {
-	return importAsVolume(image, voxel::getPalette(), maxDepth, bothSides);
 }
 
 core::String getDefaultDepthMapFile(const core::String &imageName, const core::String &postfix) {

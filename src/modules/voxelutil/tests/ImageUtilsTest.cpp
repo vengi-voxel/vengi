@@ -86,7 +86,9 @@ TEST_F(ImageUtilsTest, testImportAsPlane) {
 	const image::ImagePtr &img = image::loadImage("test-palette-in.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	const int depth = 2;
-	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsPlane(img, 2));
+	palette::Palette palette;
+	palette.nippon();
+	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsPlane(img, palette, 2));
 	ASSERT_TRUE(volume);
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
@@ -98,7 +100,9 @@ TEST_F(ImageUtilsTest, testImportAsVolumeBothSided) {
 	const image::ImagePtr &img = image::loadImage("test-heightmap.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	int depth = 10;
-	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsVolume(img, depth, true));
+	palette::Palette palette;
+	palette.nippon();
+	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsVolume(img, palette, depth, true));
 	ASSERT_TRUE(volume);
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
@@ -110,7 +114,9 @@ TEST_F(ImageUtilsTest, testImportAsVolumeSingleSided) {
 	const image::ImagePtr &img = image::loadImage("test-heightmap.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	int depth = 9;
-	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsVolume(img, depth, false));
+	palette::Palette palette;
+	palette.nippon();
+	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsVolume(img, palette, depth, false));
 	ASSERT_TRUE(volume);
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());

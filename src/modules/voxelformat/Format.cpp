@@ -204,12 +204,13 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 
 	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (!createPalette) {
-		Log::info("Remap the palette to %s", voxel::getPalette().name().c_str());
+		const palette::Palette &defaultPalette = voxel::getPalette();
+		Log::info("Remap the palette to %s", defaultPalette.name().c_str());
 		for (const auto &e : sceneGraph.nodes()) {
 			scenegraph::SceneGraphNode &node = e->value;
 			if (node.isAnyModelNode()) {
-				node.remapToPalette(voxel::getPalette());
-				node.setPalette(voxel::getPalette());
+				node.remapToPalette(defaultPalette);
+				node.setPalette(defaultPalette);
 			}
 		}
 	}

@@ -2632,7 +2632,7 @@ void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelgenerator::tree::createTree(wrapper, ctx, random);
+	voxelgenerator::tree::createTree(wrapper, activePalette(), ctx, random);
 	modified(nodeId, wrapper.dirtyRegion());
 }
 

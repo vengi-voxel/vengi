@@ -44,6 +44,7 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &vo
 	const int32_t upperY = core_min(lowerY + VolumePrintThreshold, region.getUpperY());
 	const int32_t upperZ = core_min(lowerZ + VolumePrintThreshold, region.getUpperZ());
 	os << std::endl;
+	const palette::Palette &palette = voxel::getPalette();
 	for (int32_t z = lowerZ; z <= upperZ; ++z) {
 		os << "z " << std::setw(3) << z << std::endl;
 		for (int32_t y = upperY; y >= lowerY; --y) {
@@ -54,7 +55,7 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &vo
 				if (voxel.getMaterial() == VoxelType::Air) {
 					os << ".";
 				} else {
-					const core::RGBA rgba = voxel::getPalette().color(voxel.getColor());
+					const core::RGBA rgba = palette.color(voxel.getColor());
 					os << core::Color::print(rgba, false).c_str();
 				}
 			}

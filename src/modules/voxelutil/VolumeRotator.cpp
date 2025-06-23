@@ -27,8 +27,8 @@ namespace voxelutil {
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const palette::Palette &palette,
-							   const glm::ivec3 &angles, const glm::vec3 &normalizedPivot) {
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
+							   const glm::vec3 &normalizedPivot) {
 	// TODO: implement sampling http://www.leptonica.org/rotation.html
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);

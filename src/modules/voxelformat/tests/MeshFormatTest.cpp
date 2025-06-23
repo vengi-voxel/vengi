@@ -147,12 +147,12 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
 	ASSERT_NE(nullptr, node);
 	const voxel::RawVolume *v = node->volume();
-	const palette::Palette &palette = node->palette();
-	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(0, 0, 0).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponBlue, palette.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponRed, palette.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
-	EXPECT_COLOR_NEAR(nipponGreen, palette.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
+	const palette::Palette &nodePal = node->palette();
+	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(0, 0, 0).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, size * 2 - 1).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponBlue, nodePal.color(v->voxel(0, 0, size * 2 - 1).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponRed, nodePal.color(v->voxel(size * 2 - 1, 0, 0).getColor()), 0.06f);
+	EXPECT_COLOR_NEAR(nipponGreen, nodePal.color(v->voxel(size - 1, size - 1, size - 1).getColor()), 0.06f);
 }
 
 } // namespace voxelformat

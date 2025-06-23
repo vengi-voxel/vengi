@@ -10,11 +10,9 @@
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "core/GLM.h"
-#include "palette/Palette.h"
 
 class PathTracerTest : public app::AbstractTest {
 private:
@@ -26,7 +24,6 @@ public:
 			return false;
 		}
 		voxelformat::FormatConfig::init();
-		voxel::getPalette().nippon();
 		return true;
 	}
 };
