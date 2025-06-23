@@ -53,6 +53,7 @@ TEST(QueueTest, testResize) {
 	EXPECT_FALSE(list.try_pop(val));
 	for (int i = 0; i < 10; ++i) {
 		list.push({i, i * 10});
+		EXPECT_EQ(i + 1u, list.capacity());
 		EXPECT_EQ(i + 1u, list.size());
 	}
 	EXPECT_TRUE(list.try_pop(val));
