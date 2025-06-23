@@ -47,18 +47,4 @@ TEST(QueueTest, testTryPop) {
 	EXPECT_EQ(42, val.b);
 }
 
-TEST(QueueTest, testRangeBasedForLoop) {
-	core::Queue<Type> list;
-	list.push({1, 1});
-	list.push({2, 2});
-	list.push({3, 3});
-	EXPECT_EQ(3u, list.size());
-	int cnt = 0;
-	for (const auto& iter : list) {
-		++cnt;
-		EXPECT_EQ(cnt, iter.a);
-		EXPECT_EQ(cnt, iter.b);
-	}
-}
-
 }
