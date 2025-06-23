@@ -47,4 +47,22 @@ TEST(QueueTest, testTryPop) {
 	EXPECT_EQ(42, val.b);
 }
 
+TEST(QueueTest, testResize) {
+	core::Queue<Type, 1> list;
+	Type val;
+	EXPECT_FALSE(list.try_pop(val));
+	for (int i = 0; i < 10; ++i) {
+		list.push({i, i * 10});
+		EXPECT_EQ(i + 1u, list.size());
+	}
+	EXPECT_TRUE(list.try_pop(val));
+	EXPECT_EQ(9u, list.size());
+	EXPECT_EQ(0, val.a);
+	EXPECT_EQ(0, val.b);
+	EXPECT_TRUE(list.try_pop(val));
+	EXPECT_EQ(8u, list.size());
+	EXPECT_EQ(1, val.a);
+	EXPECT_EQ(10, val.b);
+}
+
 }

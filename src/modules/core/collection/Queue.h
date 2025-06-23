@@ -10,6 +10,7 @@
 
 namespace core {
 
+// TODO: rename to DynamicQueue
 template<class TYPE, size_t INCREASE = 32u>
 class Queue {
 private:
