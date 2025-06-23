@@ -13,6 +13,29 @@
 
 namespace voxel {
 
+FaceNames toFaceNames(const core::String &in) {
+	core::String lower = in.toLower();
+	if (lower.contains("positivex") || lower.contains("east") || lower.contains("right")) {
+		return voxel::FaceNames::PositiveX;
+	}
+	if (lower.contains("negativex") || lower.contains("west") || lower.contains("left")) {
+		return voxel::FaceNames::NegativeX;
+	}
+	if (lower.contains("positivey") || lower.contains("up")) {
+		return voxel::FaceNames::PositiveY;
+	}
+	if (lower.contains("negativey") || lower.contains("down")) {
+		return voxel::FaceNames::NegativeY;
+	}
+	if (lower.contains("positivez") || lower.contains("south") || lower.contains("back")) {
+		return voxel::FaceNames::PositiveZ;
+	}
+	if (lower.contains("negativez") || lower.contains("north") || lower.contains("front")) {
+		return voxel::FaceNames::NegativeZ;
+	}
+	return voxel::FaceNames::Max;
+}
+
 const char *faceNameString(FaceNames face) {
 	switch (face) {
 	case voxel::FaceNames::PositiveX:

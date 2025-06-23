@@ -31,6 +31,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -420,7 +421,13 @@ app::AppState VoxConvert::onInit() {
 	if (_printSceneToConsole) {
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
 		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
-		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, voxel::FaceNames::Front, core::RGBA(0, 0, 0, 255), -1, -1);
+		// TODO: scale to terminal width
+		int width = -1;
+		int height = -1;
+		const core::RGBA bgColor(0, 0, 0, 255);
+		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
+		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr);
+		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height);
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());
 	}
