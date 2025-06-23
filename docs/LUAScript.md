@@ -477,7 +477,7 @@ The global `g_algorithm` provides general purpose algorithms:
 
 * `genland(...)`: A function to generate a land mass with the given parameters. You can find the parameters in the `genland.lua` script file in the `scripts` folder.
 
-* `shadow()`: A function to generate a shadow map for the given node and applies it to the volume.
+* `shadow(lightstep = 8)`: A function to generate a shadow map for the given node and applies it to the volume.
 
 ## HTTP
 
