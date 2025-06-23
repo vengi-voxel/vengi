@@ -18,6 +18,7 @@ private:
 public:
 	CommandlineApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~CommandlineApp();
+	int terminalWidth();
 
 	virtual app::AppState onConstruct() override;
 };

@@ -11,6 +11,9 @@
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
 #endif
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
 #endif
 
 namespace app {
@@ -31,6 +34,22 @@ CommandlineApp::CommandlineApp(const io::FilesystemPtr& filesystem, const core::
 
 CommandlineApp::~CommandlineApp() {
 }
+
+int CommandlineApp::terminalWidth() {
+#if defined(_WIN32) || defined(__CYGWIN__)
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+		return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	}
+#else
+	struct winsize w;
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+		return w.ws_col;
+	}
+#endif
+	return -1; // fallback or error
+}
+
 
 AppState CommandlineApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
