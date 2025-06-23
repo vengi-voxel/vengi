@@ -129,7 +129,7 @@ static int genericPngOptions(const core::VarPtr &imageTypeVar) {
 	static_assert(voxelformat::PNGFormat::ImageType::Plane == 0, "Plane must be at index 0");
 	const int currentImageType = imageTypeVar->intVal();
 
-	if (ImGui::BeginCombo(_("Import type"), imageTypes[currentImageType])) {
+	if (ImGui::BeginCombo(_("Image mode"), imageTypes[currentImageType])) {
 		for (int i = 0; i < lengthof(imageTypes); ++i) {
 			const char *imageType = imageTypes[i];
 			if (imageType == nullptr) {
