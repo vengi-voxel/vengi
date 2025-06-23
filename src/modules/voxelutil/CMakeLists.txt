@@ -6,8 +6,8 @@ set(SRCS
 	Hollow.h
 	ImageUtils.h ImageUtils.cpp
 	ImportFace.h
-	Raycast.h
 	Picking.h
+	Raycast.h
 	VolumeMerger.h VolumeMerger.cpp
 	VolumeMover.h
 	VolumeRescaler.h
