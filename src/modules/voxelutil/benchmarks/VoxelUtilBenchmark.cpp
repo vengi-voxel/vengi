@@ -10,6 +10,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/FillHollow.h"
+#include "voxelutil/Shadow.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
@@ -152,6 +153,21 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, CopyViaRawVolumeSameDim)(benchmark::State
 	}
 }
 
+BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Shadow)(benchmark::State &state) {
+	voxel::RawVolume in(voxel::Region{0, 20});
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	voxel::RawVolumeWrapper wrapper(&in);
+	int n = voxelutil::extrudePlane(wrapper, in.region().getLowerCenter(), voxel::FaceNames::PositiveY, voxel::Voxel(),
+									voxel, 1);
+	core_assert(n == in.region().getWidthInVoxels() * in.region().getDepthInVoxels());
+	in.setVoxel(in.region().getCenter(), voxel);
+	palette::Palette palette;
+	palette.nippon();
+	for (auto _ : state) {
+		voxelutil::shadow(in, palette);
+	}
+}
+
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleDown);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, ScaleUp);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Crop);
@@ -159,6 +175,7 @@ BENCHMARK_REGISTER_F(VoxelUtilBenchmark, FillHollow);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Move);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Merge);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, MergeSameDim);
+BENCHMARK_REGISTER_F(VoxelUtilBenchmark, Shadow);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegion);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyViaRawVolume);
 BENCHMARK_REGISTER_F(VoxelUtilBenchmark, CopyIntoRegionSameDim);

@@ -8,6 +8,7 @@ set(SRCS
 	ImportFace.h
 	Picking.h
 	Raycast.h
+	Shadow.h
 	VolumeMerger.h VolumeMerger.cpp
 	VolumeMover.h
 	VolumeRescaler.h
