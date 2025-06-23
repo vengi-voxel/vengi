@@ -38,6 +38,7 @@
 #include "video/Camera.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/VoxelNormalUtil.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -170,14 +171,14 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 		if (fillAndHollow) {
 			voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
 		}
-		voxel::RawVolumeWrapper::Sampler sampler(wrapper);
 		const palette::NormalPalette &normalPalette = node->normalPalette();
 		voxelutil::visitSurfaceVolume(*node->volume(), [&] (int x, int y, int z, const voxel::Voxel &voxel) {
 			if (!recalcAll && voxel.getNormal() != NO_NORMAL) {
 				return;
 			}
+			voxel::RawVolume::Sampler sampler(wrapper.volume());
 			sampler.setPosition(x, y, z);
-			const glm::vec3 &normal = voxelutil::calculateNormal(sampler, connectivity);
+			const glm::vec3 &normal = voxel::calculateNormal(sampler, connectivity);
 			int normalIdx = normalPalette.getClosestMatch(normal);
 			if (normalIdx == palette::PaletteNormalNotFound) {
 				normalIdx = NO_NORMAL;

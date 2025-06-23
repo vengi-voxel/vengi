@@ -5,9 +5,6 @@
 #include "VoxelUtil.h"
 #include "core/GLM.h"
 #include "core/Log.h"
-#include "core/collection/Array3DView.h"
-#include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include <glm/geometric.hpp>
 #include "math/Axis.h"
