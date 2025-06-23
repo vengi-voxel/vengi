@@ -358,12 +358,16 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 			}
 			const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
 			// TODO: PERF: use a sampler
-			for (uint32_t j = 0; j < count; ++j) {
-				const uint32_t x = (index + j) % size.x;
-				const uint32_t y = (index + j) / size.x;
-				if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
+			if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
+				for (uint32_t j = 0; j < count; ++j) {
+					const uint32_t x = (index + j) % size.x;
+					const uint32_t y = (index + j) / size.x;
 					v->setVoxel((int)z, (int)y, (int)x, voxel);
-				} else {
+				}
+			} else {
+				for (uint32_t j = 0; j < count; ++j) {
+					const uint32_t x = (index + j) % size.x;
+					const uint32_t y = (index + j) / size.x;
 					v->setVoxel((int)x, (int)y, (int)z, voxel);
 				}
 			}
