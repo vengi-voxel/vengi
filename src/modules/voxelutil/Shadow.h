@@ -55,33 +55,34 @@ static void propagateSunlight(VOLUME &volume, LightQueue &lightQueue, LightVolum
 
 template<class VOLUME>
 void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep = 8) {
-	const voxel::Region &region = volume.region();
-	typename VOLUME::Sampler sampler(&volume);
-	voxel::Region lightVolumeRegion = region;
+	voxel::Region lightVolumeRegion = volume.region();
 	lightVolumeRegion.grow(1);
 	LightVolume lightVolume(lightVolumeRegion, 0);
 	LightQueue lightQueue;
-	lightQueue.reserve(region.getWidthInVoxels() * region.getDepthInVoxels());
+	lightQueue.reserve(lightVolumeRegion.getWidthInVoxels() * lightVolumeRegion.getDepthInVoxels());
 
-	Log::debug("Seeding top layer with sunlight");
-	sampler.setPosition(lightVolumeRegion.getLowerX(), lightVolumeRegion.getUpperY(), lightVolumeRegion.getLowerZ());
-	for (int z = lightVolumeRegion.getLowerZ(); z <= lightVolumeRegion.getUpperZ(); ++z) {
-		typename VOLUME::Sampler sampler2 = sampler;
-		for (int x = lightVolumeRegion.getLowerX(); x <= lightVolumeRegion.getUpperX(); ++x) {
-			typename VOLUME::Sampler sampler3 = sampler2;
-			for (int y = lightVolumeRegion.getUpperY(); y >= lightVolumeRegion.getLowerY(); --y) {
-				const voxel::Voxel &voxel = sampler3.voxel();
-				if (!voxel::isAir(voxel.getMaterial())) {
-					// Stop sunlight when we hit first solid voxel from top
-					break;
+	{
+		Log::debug("Seeding top layer with sunlight");
+		typename VOLUME::Sampler sampler(&volume);
+		sampler.setPosition(lightVolumeRegion.getLowerX(), lightVolumeRegion.getUpperY(), lightVolumeRegion.getLowerZ());
+		for (int z = lightVolumeRegion.getLowerZ(); z <= lightVolumeRegion.getUpperZ(); ++z) {
+			typename VOLUME::Sampler sampler2 = sampler;
+			for (int x = lightVolumeRegion.getLowerX(); x <= lightVolumeRegion.getUpperX(); ++x) {
+				typename VOLUME::Sampler sampler3 = sampler2;
+				for (int y = lightVolumeRegion.getUpperY(); y >= lightVolumeRegion.getLowerY(); --y) {
+					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!voxel::isAir(voxel.getMaterial())) {
+						// Stop sunlight when we hit first solid voxel from top
+						break;
+					}
+					lightVolume.setValue(x, y, z, MAX_SHADOW);
+					lightQueue.push({glm::ivec3(x, y, z), MAX_SHADOW});
+					sampler3.moveNegativeY();
 				}
-				lightVolume.setValue(x, y, z, MAX_SHADOW);
-				lightQueue.push({glm::ivec3(x, y, z), MAX_SHADOW});
-				sampler3.moveNegativeY();
+				sampler2.movePositiveX();
 			}
-			sampler2.movePositiveX();
+			sampler.movePositiveZ();
 		}
-		sampler.movePositiveZ();
 	}
 
 	Log::debug("Propagating sunlight through the volume");
@@ -126,7 +127,7 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 			sampler.movePositiveZ();
 		}
 	};
-	app::for_parallel(region.getLowerZ(), region.getUpperZ() + 1, fn);
+	app::for_parallel(volume.region().getLowerZ(), volume.region().getUpperZ() + 1, fn);
 }
 
 } // namespace voxelutil
