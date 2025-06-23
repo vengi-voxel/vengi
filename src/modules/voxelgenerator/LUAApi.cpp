@@ -81,7 +81,7 @@ public:
 		update();
 	}
 
-	scenegraph::SceneGraphNode *node() {
+	scenegraph::SceneGraphNode *node() const {
 		return _node;
 	}
 
