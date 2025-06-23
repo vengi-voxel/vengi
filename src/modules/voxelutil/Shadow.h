@@ -64,7 +64,7 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 	LightQueue lightQueue;
 	lightQueue.reserve(region.getWidthInVoxels() * region.getDepthInVoxels());
 
-	Log::debug	("Seeding top layer with sunlight");
+	Log::debug("Seeding top layer with sunlight");
 	sampler.setPosition(lightVolumeRegion.getLowerX(), lightVolumeRegion.getUpperY(), lightVolumeRegion.getLowerZ());
 	for (int z = lightVolumeRegion.getLowerZ(); z <= lightVolumeRegion.getUpperZ(); ++z) {
 		typename VOLUME::Sampler sampler2 = sampler;

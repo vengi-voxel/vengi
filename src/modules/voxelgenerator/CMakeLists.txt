@@ -41,6 +41,7 @@ set(LUA_SRCS
 	scripts/replacecolor.lua
 	scripts/replacepalette.lua
 	scripts/resize.lua
+	scripts/shadow.lua
 	scripts/similarcolor.lua
 	scripts/slice.lua
 	scripts/smooth.lua

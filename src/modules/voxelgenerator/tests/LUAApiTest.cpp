@@ -425,6 +425,11 @@ TEST_F(LUAApiTest, testScriptGenland) {
 	runFile(sceneGraph, "genland.lua", {"0", "64"});
 }
 
+TEST_F(LUAApiTest, testScriptShadow) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "shadow.lua");
+}
+
 // long runtime - thus disabled
 TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesRainbowTowers) {
 	scenegraph::SceneGraph sceneGraph;

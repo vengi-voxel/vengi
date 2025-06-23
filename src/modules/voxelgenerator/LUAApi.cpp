@@ -39,6 +39,7 @@
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/Hollow.h"
 #include "voxelutil/ImageUtils.h"
+#include "voxelutil/Shadow.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeResizer.h"
@@ -1117,6 +1118,13 @@ static int luaVoxel_genland(lua_State *s) {
 	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(newNodeId));
 }
 
+static int luaVoxel_shadow(lua_State *s) {
+	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int lightStep = (int)luaL_optinteger(s, 2, 8);
+	voxelutil::shadow(*volume, volume->node()->palette(), lightStep);
+	return 0;
+}
+
 static int luaVoxel_region_new(lua_State* s) {
 	const int minsx = (int)luaL_checkinteger(s, 1);
 	const int minsy = (int)luaL_checkinteger(s, 2);
@@ -1951,6 +1959,7 @@ static void prepareState(lua_State* s) {
 
 	static const luaL_Reg algorithmFuncs[] = {
 		{"genland", luaVoxel_genland},
+		{"shadow", luaVoxel_shadow},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, algorithmFuncs, luaVoxel_metaalgorithm(), "g_algorithm");

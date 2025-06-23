@@ -16,6 +16,9 @@ General:
    - Added new normal palette from slab6
    - Reduced overall memory usage
    - Improved format detection for the file dialog
+   - New lua script `shadow` to generate shadows for a scene
+   - General performance improvements
+   - Minecraft skin loading via png
 
 VoxEdit:
 
