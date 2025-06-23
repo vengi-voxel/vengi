@@ -54,7 +54,13 @@ struct LoadContext {
 		monitor(name, cur, max);
 	}
 };
+
 struct SaveContext {
+	/**
+	 * @brief A basic image rendering helper.
+	 */
+	static image::ImagePtr renderToImageThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
+														 const voxelformat::ThumbnailContext &ctx);
 	ProgressMonitor monitor = nullptr;
 	inline void progress(const char *name, int cur, int max) const {
 		if (monitor == nullptr) {

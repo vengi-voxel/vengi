@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "image/Image.h"
@@ -21,6 +22,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -57,10 +59,35 @@ float Format::floatProperty(const scenegraph::SceneGraphNode *node, const core::
 	return core::string::toFloat(node->property(name));
 }
 
+// default thumbnail creator - not a real rendering just the rgba values without blooming or anything fancy
+image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
+														   const voxelformat::ThumbnailContext &ctx) {
+	scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
+	voxel::FaceNames frontFace = voxel::FaceNames::Front;
+	if (ctx.useWorldPosition) {
+		const glm::vec3 &center = sceneGraph.region().calcCenterf();
+		const glm::vec3 &dir = center - ctx.worldPosition;
+		// Determine dominant direction
+		glm::vec3 absDir = glm::abs(dir);
+		if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
+			frontFace = dir.x > 0.0f ? voxel::FaceNames::NegativeX : voxel::FaceNames::PositiveX;
+		} else if (absDir.y >= absDir.x && absDir.y >= absDir.z) {
+			frontFace = dir.y > 0.0f ? voxel::FaceNames::NegativeY : voxel::FaceNames::PositiveY;
+		} else {
+			frontFace = dir.z > 0.0f ? voxel::FaceNames::NegativeZ : voxel::FaceNames::PositiveZ;
+		}
+	}
+	const core::RGBA background = core::Color::getRGBA(ctx.clearColor);
+	const int imgW = ctx.outputSize.x;
+	const int imgH = ctx.outputSize.y;
+	return voxelutil::renderToImage(v, merged.palette, frontFace, background, imgW, imgH);
+}
+
 image::ImagePtr Format::createThumbnail(const scenegraph::SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator,
 										const ThumbnailContext &ctx) {
 	if (thumbnailCreator == nullptr) {
-		return image::ImagePtr();
+		return SaveContext::renderToImageThumbnailCreator(sceneGraph, ctx);
 	}
 
 	return thumbnailCreator(sceneGraph, ctx);

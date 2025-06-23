@@ -6,16 +6,20 @@
 #include "app/Async.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "math/Axis.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
@@ -306,6 +310,48 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	};
 	app::for_parallel(0, imageHeight, fn);
 	return volume;
+}
+
+image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
+							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH) {
+	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
+	const voxel::Region &region = volume->region();
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	int width = 1;
+	int height = 1;
+	if (voxel::isY(frontFace)) {
+		width = dim.x;
+		height = dim.z;
+	} else if (voxel::isX(frontFace)) {
+		width = dim.z;
+		height = dim.y;
+	} else if (voxel::isZ(frontFace)) {
+		width = dim.x;
+		height = dim.y;
+	}
+	image->resize(width, height);
+	for (int x = 0; x < width; ++x) {
+		for (int y = 0; y < height; ++y) {
+			image->setColor(background, x, y);
+		}
+	}
+	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height] (int x, int y, int z, const voxel::Voxel& voxel) {
+		const core::RGBA rgba = palette.color(voxel.getColor());
+		// TODO: shade the color
+		if (voxel::isY(frontFace)) {
+			image->setColor(rgba, x - region.getLowerX(), height - 1 - (z - region.getLowerZ()));
+		} else if (voxel::isX(frontFace)) {
+			image->setColor(rgba, z - region.getLowerZ(), height - 1 - (y - region.getLowerY()));
+		} else if (voxel::isZ(frontFace)) {
+			image->setColor(rgba, x - region.getLowerX(), height - 1 - (y - region.getLowerY()));
+		}
+	}, VisitorOrder::Max, true);
+
+	if (imgW > 0 && imgW != width && imgH > 0 && imgH != height) {
+		image->resize(imgW, imgH);
+	}
+
+	return image;
 }
 
 } // namespace voxelutil

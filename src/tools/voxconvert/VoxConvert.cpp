@@ -555,7 +555,6 @@ app::AppState VoxConvert::onInit() {
 		} else {
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
-			saveCtx.thumbnailCreator = nullptr; // TODO:
 			const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem());
 			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, archive, saveCtx)) {
 				Log::error("Failed to write to output file '%s'", outfile.c_str());

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "image/Image.h"
+#include "voxel/Face.h"
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -36,5 +37,11 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight);
 core::String getDefaultDepthMapFile(const core::String &imageName, const core::String &postfix = "-dm");
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& depthMap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
+/**
+ * @brief Put a pixel perfect render of the volume into an image
+ * @note If the given width and height of the resulting image is not equal to the volume dimensions for the given axis, then
+ * the image is scaled
+ */
+[[nodiscard]] image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette, voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH);
 
 }

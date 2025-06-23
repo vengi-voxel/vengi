@@ -274,8 +274,13 @@ size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 
 bool PNGFormat::saveThumbnail(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							   const io::ArchivePtr &archive, const SaveContext &savectx) const {
+	Log::debug("Create thumbnail for %s", filename.c_str());
 	ThumbnailContext ctx;
-	ctx.outputSize = glm::ivec2(128);
+	// if we are using the default thumbnailer, we want it to be pixel perfect - and here we
+	// use the internal knowledge that -1 simply prevents a scaling of the resulting image.
+	if (savectx.thumbnailCreator == nullptr) {
+		ctx.outputSize = {-1, -1};
+	}
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
 	if (!image) {
 		Log::error("Failed to create thumbnail for %s", filename.c_str());
