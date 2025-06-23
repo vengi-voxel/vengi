@@ -47,7 +47,7 @@ public:
 		_data[idx] = value;
 	}
 
-	void setValue(const glm::ivec3 &pos, const T &value) {
+	inline void setValue(const glm::ivec3 &pos, const T &value) {
 		setValue(pos.x, pos.y, pos.z, value);
 	}
 
@@ -62,7 +62,7 @@ public:
 		return _data[idx];
 	}
 
-	T value(const glm::ivec3 &pos) const {
+	inline T value(const glm::ivec3 &pos) const {
 		return value(pos.x, pos.y, pos.z);
 	}
 };
