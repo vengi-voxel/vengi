@@ -122,8 +122,9 @@ bool genericOptions(const io::FormatDescription *desc) {
 	return false;
 }
 
-static int genericPngOptions(const core::VarPtr &imageTypeVar) {
-	const char *imageTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
+static int genericPngOptions(bool load, const core::VarPtr &imageTypeVar) {
+	const char *imageTypes[] = {_("Plane"), _("Heightmap"), _("Volume"), _("Thumbnail")};
+	static_assert(voxelformat::PNGFormat::ImageType::Thumbnail == 3, "Thumbnail must be at index 3");
 	static_assert(voxelformat::PNGFormat::ImageType::Volume == 2, "Volume must be at index 2");
 	static_assert(voxelformat::PNGFormat::ImageType::Heightmap == 1, "Heightmap must be at index 1");
 	static_assert(voxelformat::PNGFormat::ImageType::Plane == 0, "Plane must be at index 0");
@@ -131,6 +132,10 @@ static int genericPngOptions(const core::VarPtr &imageTypeVar) {
 
 	if (ImGui::BeginCombo(_("Image mode"), imageTypes[currentImageType])) {
 		for (int i = 0; i < lengthof(imageTypes); ++i) {
+			if (i == voxelformat::PNGFormat::ImageType::Thumbnail && load) {
+				// Thumbnails are only available for saving
+				continue;
+			}
 			const char *imageType = imageTypes[i];
 			if (imageType == nullptr) {
 				continue;
@@ -150,7 +155,7 @@ static int genericPngOptions(const core::VarPtr &imageTypeVar) {
 
 static void saveOptionsPng(const io::FilesystemEntry &entry) {
 	const core::VarPtr &imageTypeVar = core::Var::getSafe(cfg::VoxformatImageSaveType);
-	const int currentImageType = genericPngOptions(imageTypeVar);
+	const int currentImageType = genericPngOptions(false, imageTypeVar);
 
 	if (currentImageType == voxelformat::PNGFormat::ImageType::Plane) {
 		ImGui::SeparatorText(_("Layer information"));
@@ -259,7 +264,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 static void loadOptionsPng(const io::FilesystemEntry &entry) {
 	const core::VarPtr &imageTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
-	const int currentImageType = genericPngOptions(imageTypeVar);
+	const int currentImageType = genericPngOptions(true, imageTypeVar);
 
 	if (currentImageType == voxelformat::PNGFormat::ImageType::Volume) {
 		ImGui::InputVarInt(_("Max depth"), cfg::VoxformatImageVolumeMaxDepth);

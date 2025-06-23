@@ -121,7 +121,7 @@ bool FormatConfig::init() {
 				   _("0 = plane, 1 = heightmap, 2 = volume"),
 				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
 	core::Var::get(cfg::VoxformatImageSaveType, PNGFormat::ImageType::Plane, core::CV_NOPERSIST,
-				   _("0 = plane, 1 = heightmap, 2 = volume"),
+				   _("0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"),
 				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
 	static_assert(PNGFormat::ImageType::Plane == 0, "Plane must be 0");
 	static_assert(PNGFormat::ImageType::Volume == 2, "Volume must be 2");

@@ -272,6 +272,27 @@ size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	return palette.colorCount();
 }
 
+bool PNGFormat::saveThumbnail(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							   const io::ArchivePtr &archive, const SaveContext &savectx) const {
+	ThumbnailContext ctx;
+	ctx.outputSize = glm::ivec2(128);
+	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
+	if (!image) {
+		Log::error("Failed to create thumbnail for %s", filename.c_str());
+		return false;
+	}
+	core::ScopedPtr<io::SeekableWriteStream> writeStream(archive->writeStream(filename));
+	if (!writeStream) {
+		Log::error("Failed to open write stream for %s", filename.c_str());
+		return false;
+	}
+	if (!image->writePNG(*writeStream)) {
+		Log::error("Failed to write slice image %s", filename.c_str());
+		return false;
+	}
+	return true;
+}
+
 bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
 	const int type = core::Var::getSafe(cfg::VoxformatImageSaveType)->intVal();
@@ -280,6 +301,9 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	if (type == ImageType::Volume) {
 		return saveVolumes(sceneGraph, filename, archive);
+	}
+	if (type == ImageType::Thumbnail) {
+		return saveThumbnail(sceneGraph, filename, archive, ctx);
 	}
 
 	return saveSlices(sceneGraph, filename, archive);
