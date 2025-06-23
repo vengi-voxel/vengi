@@ -377,7 +377,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	return palStr;
 }
 
-int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx) const {
+int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx, core::Color::Distance distance) const {
 	if (size() == 0) {
 		return PaletteColorNotFound;
 	}
@@ -409,7 +409,7 @@ int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx) const {
 		if (_colors[i].a == 0) {
 			continue;
 		}
-		const float val = core::Color::getDistance(_colors[i], rgba, core::Color::Distance::Approximation);
+		const float val = core::Color::getDistance(_colors[i], rgba, distance);
 		if (val < minDistance) {
 			minDistance = val;
 			minIndex = (int)i;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Color.h"
 #include "core/DirtyState.h"
 #include "core/Optional.h"
 #include "core/RGBA.h"
@@ -166,7 +167,7 @@ public:
 	 * e.g. search for replacements
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
-	int getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx = -1) const;
+	int getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx = -1, core::Color::Distance distance = core::Color::Distance::Approximation) const;
 	uint8_t findReplacement(uint8_t paletteColorIdx) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
