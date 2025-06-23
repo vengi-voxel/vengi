@@ -43,11 +43,9 @@ static void propagateSunlight(VOLUME &volume, LightQueue &lightQueue, LightVolum
 			if (!voxel::isAir(v.getMaterial())) {
 				continue;
 			}
-
 			if (lightVolume.value(nextPos) >= nextLight) {
 				continue;
 			}
-
 			lightVolume.setValue(nextPos, nextLight);
 			lightQueue.push({nextPos, nextLight});
 		}

@@ -11,6 +11,10 @@
 namespace core {
 
 // TODO: rename to DynamicQueue
+/**
+ * A queue class based on a ring buffer implementation.
+ * @ingroup Collections
+ */
 template<class TYPE, size_t INCREASE = 32u>
 class Queue {
 private:
