@@ -18,6 +18,7 @@ set(SRCS
 	RawVolumeMoveWrapper.h
 	Region.h Region.cpp
 	SparseVolume.h SparseVolume.cpp
+	VolumeData.h
 	VolumeSampler.h
 	VolumeSamplerUtil.h
 	VoxelVertex.h
