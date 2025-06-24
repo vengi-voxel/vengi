@@ -425,7 +425,8 @@ app::AppState VoxConvert::onInit() {
 		int height = -1;
 		const core::RGBA bgColor(0, 0, 0, 255);
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
-		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr);
+		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
+		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
 		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false);
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());

@@ -34,7 +34,7 @@ enum class FaceNames : uint8_t {
 	Right = PositiveX
 };
 
-FaceNames toFaceNames(const core::String &in);
+FaceNames toFaceNames(const core::String &in, FaceNames defaultFace = FaceNames::Max);
 const char *faceNameString(FaceNames face);
 math::Axis faceToAxis(FaceNames face);
 
