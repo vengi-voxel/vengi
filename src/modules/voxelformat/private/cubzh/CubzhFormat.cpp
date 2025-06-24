@@ -330,20 +330,26 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			node.setVolume(volume, true);
-			// TODO: PERF: use volume sampler
-			for (uint32_t i = 0; i < voxelCount; i++) {
-				uint8_t index;
-				wrap(stream.readUInt8(index))
-				if (index == emptyPaletteIndex()) {
-					continue;
+			voxel::RawVolume::Sampler sampler(volume);
+			sampler.setPosition(width - 1, 0, 0);
+			for (uint16_t x = 0; x < width; x++) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (uint16_t y = 0; y < height; y++) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (uint16_t z = 0; z < depth; z++) {
+						uint8_t index;
+						wrap(stream.readUInt8(index))
+						if (index == emptyPaletteIndex()) {
+							sampler3.movePositiveZ();
+							continue;
+						}
+						const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveZ();
+					}
+					sampler2.movePositiveY();
 				}
-
-				const uint32_t z = i / (width * height);
-				const uint32_t y = (i - (uint32_t)(z * (width * height))) / width;
-				const uint32_t x = i - (uint32_t)(z * (width * height)) - (uint32_t)(y * width);
-
-				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-				volume->setVoxel(width - x - 1, y, z, voxel);
+				sampler.moveNegativeX();
 			}
 			break;
 		}
