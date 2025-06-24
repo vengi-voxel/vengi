@@ -42,6 +42,8 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
  * @note If the given width and height of the resulting image is not equal to the volume dimensions for the given axis, then
  * the image is scaled
  */
-[[nodiscard]] image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette, voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH);
-
+[[nodiscard]] image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
+											voxel::FaceNames frontFace = voxel::FaceNames::Front,
+											core::RGBA background = {}, int imgW = -1, int imgH = -1,
+											bool upScale = true);
 }

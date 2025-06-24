@@ -421,13 +421,12 @@ app::AppState VoxConvert::onInit() {
 	if (_printSceneToConsole) {
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
 		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
-		// TODO: scale to terminal width
-		int width = -1;
+		int width = terminalWidth();
 		int height = -1;
 		const core::RGBA bgColor(0, 0, 0, 255);
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr);
-		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height);
+		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false);
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());
 	}

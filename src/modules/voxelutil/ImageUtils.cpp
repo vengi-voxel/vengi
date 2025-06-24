@@ -313,7 +313,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 }
 
 image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH) {
+							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH, bool upScale) {
 	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
@@ -347,8 +347,19 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		}
 	}, VisitorOrder::Max, true);
 
-	if (imgW > 0 && imgW != width && imgH > 0 && imgH != height) {
-		image->resize(imgW, imgH);
+	if ((imgW > 0 && imgW != width) || (imgH > 0 && imgH != height)) {
+		if (imgW <= 0) {
+			const float factor = (float)imgH / (float)height;
+			imgW = (int)glm::round((float)width * factor);
+		}
+		if (imgH <= 0) {
+			const float factor = (float)imgW / (float)width;
+			imgH = (int)glm::round((float)height * factor);
+		}
+		const bool wouldUpscale = imgW > width || imgH > height;
+		if (upScale || !wouldUpscale) {
+			image->resize(imgW, imgH);
+		}
 	}
 
 	image->markLoaded();
