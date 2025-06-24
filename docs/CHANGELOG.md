@@ -30,7 +30,8 @@ PalConvert:
 
 VoxConvert:
 
-   - Added `--image` to voxconvert to print the loaded scene to the colored text console
+   - Added `--image` to voxconvert to print the loaded scene to the colored text console ([showcase](https://asciinema.org/a/724333))
+   - Thumbnails for formats that support them can now be generated and added to the files
 
 ## 0.0.38 (2025-06-01)
 
