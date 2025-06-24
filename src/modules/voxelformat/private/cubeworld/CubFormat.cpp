@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/PaletteLookup.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelformat {
 
@@ -88,25 +89,32 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	palette::PaletteLookup palLookup(palette);
-	// TODO: PERF: use volume sampler
-	for (uint32_t h = 0u; h < height; ++h) {
-		for (uint32_t d = 0u; d < depth; ++d) {
-			for (uint32_t w = 0u; w < width; ++w) {
+	voxel::RawVolume::Sampler sampler(volume);
+	sampler.setPosition(0, 0, 0);
+	// we have to flip depth with height for our own coordinate system
+	for (uint32_t h = 0u; h < height; ++h) { // y
+		voxel::RawVolume::Sampler sampler2 = sampler;
+		for (uint32_t d = 0u; d < depth; ++d) { // z
+			voxel::RawVolume::Sampler sampler3 = sampler2;
+			for (uint32_t w = 0u; w < width; ++w) { // x
 				uint8_t r, g, b;
 				wrap(stream->readUInt8(r))
 				wrap(stream->readUInt8(g))
 				wrap(stream->readUInt8(b))
 				if (r == 0u && g == 0u && b == 0u) {
 					// empty voxel
+					sampler3.movePositiveX();
 					continue;
 				}
 				const core::RGBA color = flattenRGB(r, g, b);
 				const int index = palLookup.findClosestIndex(color);
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-				// we have to flip depth with height for our own coordinate system
-				volume->setVoxel((int)w, (int)h, (int)d, voxel);
+				sampler3.setVoxel(voxel);
+				sampler3.movePositiveX();
 			}
+			sampler2.movePositiveZ();
 		}
+		sampler.movePositiveY();
 	}
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
