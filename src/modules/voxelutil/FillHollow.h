@@ -38,6 +38,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
 		SkipEmpty());
 
+	// TODO: PERF: use volume samplers
 	for (int x = 0; x < width; ++x) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(x, 0, z);
