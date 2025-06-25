@@ -13,6 +13,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include "json/JSON.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -243,9 +244,12 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(regionSize) - 1);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		node.setVolume(volume, true);
-		// TODO: PERF: use a volume sampler
+		voxel::RawVolume::Sampler sampler(volume);
+		sampler.setPosition(region.getLowerCorner());
 		for (int32_t z = 0; z < regionSize.z; ++z) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int32_t y = 0; y < regionSize.y; ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (int32_t x = 0; x < regionSize.x; ++x) {
 					AnimaToonVoxel v;
 					if (readStream.readUInt8((uint8_t &)v.state) != 0) {
@@ -261,13 +265,17 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 						return false;
 					}
 					if (v.rgba == 0) {
+						sampler3.movePositiveX();
 						continue;
 					}
 					const uint8_t color = palette.getClosestMatch(v.rgba);
 					const voxel::Voxel voxel = voxel::createVoxel(palette, color);
-					volume->setVoxel(x, y, z, voxel);
+					sampler3.setVoxel(voxel);
+					sampler3.movePositiveX();
 				}
+				sampler2.movePositiveY();
 			}
+			sampler.movePositiveZ();
 		}
 		modelNodeIds.push_back(sceneGraph.emplace(core::move(node), parent));
 	}
