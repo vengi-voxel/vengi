@@ -13,9 +13,6 @@ namespace voxelutil {
 
 namespace priv {
 
-const glm::ivec3 neighbours[6] = {glm::ivec3(0, 0, -1), glm::ivec3(0, 0, +1), glm::ivec3(0, -1, 0),
-								  glm::ivec3(0, +1, 0), glm::ivec3(-1, 0, 0), glm::ivec3(+1, 0, 0)};
-
 // special voxel to mark already visited voxels
 const uint8_t visitedFlag = 1u;
 const voxel::Voxel visited(voxel::VoxelType::Air, 1, visitedFlag);
@@ -38,8 +35,8 @@ static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object
 	object.setVoxel(position, voxel);
 	volume.setVoxelUnsafe(position, priv::visited);
 
-	for (int i = 0; i < 6; ++i) {
-		const glm::ivec3 p = position + priv::neighbours[i];
+	for (int i = 0; i < lengthof(voxel::arrayPathfinderFaces); ++i) {
+		const glm::ivec3 p = position + voxel::arrayPathfinderFaces[i];
 		processNeighbours(volume, object, p);
 	}
 }
