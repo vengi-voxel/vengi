@@ -372,7 +372,12 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 				meshTriCollections[i] = core::move(subdivided);
 			}
 		});
+		int cnt = 0;
+		for (const MeshTriCollection &e : meshTriCollections) {
+			cnt += e.size();
+		}
 		MeshTriCollection subdivided;
+		subdivided.reserve(cnt);
 		for (const MeshTriCollection &e : meshTriCollections) {
 			if (e.empty()) {
 				continue;
