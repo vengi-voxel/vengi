@@ -86,11 +86,6 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 	for (const auto &part : skinParts) {
 		const glm::ivec3 size = part.size;
-		voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(region), true);
-		node.setName(part.name);
-		node.setPalette(palette);
 
 		const voxel::FaceNames order[] = {
 			voxel::FaceNames::NegativeX /* left */,	 voxel::FaceNames::PositiveX /* right */,
@@ -109,15 +104,20 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 																	 : size.x,
 												(i == 2 || i == 3) ? size.z : size.y) -
 									 glm::ivec2(1);
+			voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+			node.setVolume(new voxel::RawVolume(region), true);
+			node.setName(part.name);
+			node.setPalette(palette);
 			voxelutil::importFace(*node.volume(), node.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
 								  image->uv(uvMax.x, uv.y));
+			scenegraph::SceneGraphTransform transform;
+			transform.setLocalTranslation(part.translation);
+			transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
+			node.setTransform(0, transform);
+			node.setPivot(part.pivot);
+			sceneGraph.emplace(core::move(node));
 		}
-		scenegraph::SceneGraphTransform transform;
-		transform.setLocalTranslation(part.translation);
-		transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
-		node.setTransform(0, transform);
-		node.setPivot(part.pivot);
-		sceneGraph.emplace(core::move(node));
 	}
 	return true;
 }
