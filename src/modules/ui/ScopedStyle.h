@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "IMGUIApp.h"
 #include "core/Color.h"
-#include "dearimgui/imgui.h"
 
 namespace ui {
 
@@ -47,12 +47,12 @@ public:
 		setColor(idx, core::Color::darker(c, f));
 	}
 	inline void pushFontSize(int size) {
-		ImGui::PushFontSize(size);
+		ImGui::PushFont(imguiApp()->defaultFont(), size);
 		++_font;
 	}
 	inline void resetFontSize() {
 		if (_font > 0) {
-			ImGui::PopFontSize();
+			ImGui::PopFont();
 			--_font;
 		}
 	}

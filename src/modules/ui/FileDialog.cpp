@@ -686,7 +686,7 @@ bool FileDialog::popupAlreadyExists() {
 	const core::String title = makeTitle(_("File already exists"), FILE_ALREADY_EXISTS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
-		ImGui::PushFontSize(imguiApp()->bigFontSize());
+		ImGui::PushFont(imguiApp()->defaultFont(), imguiApp()->bigFontSize());
 		ImGui::TextUnformatted(ICON_LC_TRIANGLE_ALERT);
 		ImGui::PopFont();
 		ImGui::SameLine();
