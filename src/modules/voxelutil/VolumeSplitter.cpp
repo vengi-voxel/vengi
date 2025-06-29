@@ -3,6 +3,7 @@
  */
 
 #include "VolumeSplitter.h"
+#include "app/Async.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -74,25 +75,32 @@ core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, con
 
 	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), maxSize);
 	Log::debug("split region: %s", region.toString().c_str());
-	// TODO: PERF: FOR_PARALLEL
-	for (int y = mins.y; y <= maxs.y; y += step.y) {
-		for (int z = mins.z; z <= maxs.z; z += step.z) {
-			for (int x = mins.x; x <= maxs.x; x += step.x) {
-				const glm::ivec3 innerMins(x, y, z);
-				const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
-				const voxel::Region innerRegion(innerMins, innerMaxs);
-				bool onlyAir = true;
-				voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, &onlyAir);
-				if (onlyAir && !createEmpty) {
-					Log::debug("- skip empty %s", innerRegion.toString().c_str());
-					delete copy;
-					continue;
+	const glm::ivec3 steps = (region.getDimensionsInVoxels() + (step - 1)) / step;
+	rawVolumes.resize(steps.x * steps.y * steps.z);
+	auto fn = [step, maxs, volume, maxSize, mins, createEmpty, steps, &rawVolumes](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			int idx = i * steps.x * steps.z;
+			const int y = i * step.y;
+			for (int z = mins.z; z <= maxs.z; z += step.z) {
+				for (int x = mins.x; x <= maxs.x; x += step.x) {
+					const glm::ivec3 innerMins(x, y, z);
+					const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
+					const voxel::Region innerRegion(innerMins, innerMaxs);
+					bool onlyAir = true;
+					voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, &onlyAir);
+					if (onlyAir && !createEmpty) {
+						Log::debug("- skip empty %s", innerRegion.toString().c_str());
+						delete copy;
+						++idx;
+						continue;
+					}
+					core_assert((int)rawVolumes.capacity() > idx);
+					rawVolumes[idx++] = copy;
 				}
-				rawVolumes.push_back(copy);
 			}
 		}
-	}
-
+	};
+	app::for_parallel(0, steps.y, fn);
 	return rawVolumes;
 }
 
