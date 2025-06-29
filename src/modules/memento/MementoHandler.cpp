@@ -602,6 +602,8 @@ bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph &sceneGr
 	if (!markAllAnimations(sceneGraph.animations())) {
 		return false;
 	}
+	// TODO: PERF: this is blocking the ui for large scenes or big volumes
+	//             allocate undo state slots and fill them with for_parallel
 	for (const auto &n : sceneGraph.nodes()) {
 		markInitialNodeState(sceneGraph, n->second);
 	}
