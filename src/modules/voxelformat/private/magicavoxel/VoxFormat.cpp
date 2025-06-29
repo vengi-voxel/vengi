@@ -3,6 +3,7 @@
  */
 
 #include "VoxFormat.h"
+#include "app/Async.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -106,20 +107,23 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(shift);
 
-	const uint8_t *ogtVoxel = ogtModel->voxel_data;
-	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
-		for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
-			for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
-				if (ogtVoxel[0] == 0) {
-					continue;
+	auto fn = [ogtModel, v, &palette, ogtMat, shift](int start, int end) {
+		const uint8_t *ogtVoxel = ogtModel->voxel_data + start * ogtModel->size_x * ogtModel->size_y;
+		for (int k = start; k < end; ++k) {
+			for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
+				for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
+					if (ogtVoxel[0] == 0) {
+						continue;
+					}
+					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
+					const glm::ivec3 &ogtPos = calcTransform(ogtMat, glm::vec3(i, j, k));
+					const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
+					v->setVoxel(pos - shift, voxel);
 				}
-				const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-				const glm::ivec3 &ogtPos = calcTransform(ogtMat, glm::vec3(i, j, k));
-				const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
-				v->setVoxel(pos - shift, voxel);
 			}
 		}
-	}
+	};
+	app::for_parallel(0, ogtModel->size_z, fn);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	loadKeyFrames(sceneGraph, node, ogtInstance, scene);
