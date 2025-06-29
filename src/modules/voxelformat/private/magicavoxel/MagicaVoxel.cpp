@@ -3,6 +3,7 @@
  */
 
 #include "MagicaVoxel.h"
+#include "app/Async.h"
 #include "core/Color.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
@@ -63,7 +64,7 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 	const ogt_vox_anim_transform &transformAnim = ogtInstance.transform_anim;
 	uint32_t numKeyframes = transformAnim.num_keyframes;
 	Log::debug("Load %d keyframes", numKeyframes);
-	kf.reserve(numKeyframes);
+	kf.resize(numKeyframes);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
 		const ogt_vox_keyframe_transform &keyFrameTransform = transformAnim.keyframes[keyFrameIdx];
@@ -75,7 +76,7 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 		sceneGraphKeyFrame.longRotation = false;
 		scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
 		transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
-		kf.push_back(sceneGraphKeyFrame);
+		kf[keyFrameIdx] = core::move(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
 }
@@ -250,6 +251,22 @@ MVModelToNode::~MVModelToNode() {
 	delete volume;
 }
 
+MVModelToNode::MVModelToNode(MVModelToNode &&other) noexcept : volume(other.volume), nodeId(other.nodeId) {
+	other.volume = nullptr;
+	other.nodeId = InvalidNodeId;
+}
+
+MVModelToNode &MVModelToNode::operator=(MVModelToNode &&other) noexcept {
+	if (this != &other) {
+		delete volume;
+		volume = other.volume;
+		nodeId = other.nodeId;
+		other.volume = nullptr;
+		other.nodeId = InvalidNodeId;
+	}
+	return *this;
+}
+
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
 	const char *name = instance.name;
 	if (name == nullptr) {
@@ -288,39 +305,42 @@ bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance
 
 core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const palette::Palette &palette) {
 	core::DynamicArray<MVModelToNode> models;
-	models.reserve(scene->num_models);
-	for (uint32_t i = 0; i < scene->num_models; ++i) {
-		const ogt_vox_model *ogtModel = scene->models[i];
-		if (ogtModel == nullptr) {
-			models.emplace_back(nullptr, InvalidNodeId);
-			continue;
-		}
-		voxel::Region region(glm::ivec3(0),
-							 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
-		voxel::RawVolume *v = new voxel::RawVolume(region);
-
-		const uint8_t *ogtVoxel = ogtModel->voxel_data;
-		voxel::RawVolume::Sampler sampler(v);
-		sampler.setPosition(region.getUpperX(), 0, 0);
-		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
-					if (ogtVoxel[0] == 0) {
-						sampler3.moveNegativeX();
-						continue;
-					}
-					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					sampler3.setVoxel(voxel);
-					sampler3.moveNegativeX();
-				}
-				sampler2.movePositiveZ();
+	models.resize(scene->num_models);
+	auto fn =[&scene, &palette, &models](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const ogt_vox_model *ogtModel = scene->models[i];
+			if (ogtModel == nullptr) {
+				models[i] = MVModelToNode(nullptr, InvalidNodeId);
+				continue;
 			}
-			sampler.movePositiveY();
+			voxel::Region region(glm::ivec3(0),
+								glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
+			voxel::RawVolume *v = new voxel::RawVolume(region);
+
+			const uint8_t *ogtVoxel = ogtModel->voxel_data;
+			voxel::RawVolume::Sampler sampler(v);
+			sampler.setPosition(region.getUpperX(), 0, 0);
+			for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
+						if (ogtVoxel[0] == 0) {
+							sampler3.moveNegativeX();
+							continue;
+						}
+						const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
+						sampler3.setVoxel(voxel);
+						sampler3.moveNegativeX();
+					}
+					sampler2.movePositiveZ();
+				}
+				sampler.movePositiveY();
+			}
+			models[i] = MVModelToNode(v, InvalidNodeId);
 		}
-		models.emplace_back(v, InvalidNodeId);
-	}
+	};
+	app::for_parallel(0, scene->num_models, fn);
 	return models;
 }
 

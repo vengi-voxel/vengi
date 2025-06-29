@@ -11,6 +11,7 @@
 #include "core/collection/Map.h"
 #include "core/GLM.h"
 #include <glm/mat4x4.hpp>
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/external/ogt_vox.h"
 
 #define MAGICAVOXEL_USE_REFERENCES 0
@@ -101,6 +102,9 @@ struct MVModelToNode {
 	~MVModelToNode();
 	inline MVModelToNode(voxel::RawVolume *_volume, int _nodeId) : volume(_volume), nodeId(_nodeId) {
 	}
+	MVModelToNode(MVModelToNode &&other) noexcept;
+	MVModelToNode &operator=(MVModelToNode &&other) noexcept;
+
 	voxel::RawVolume *volume;
 	int nodeId;
 };
