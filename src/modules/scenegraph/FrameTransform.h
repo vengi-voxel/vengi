@@ -9,6 +9,9 @@
 
 namespace scenegraph {
 
+// TODO: PERF: this should get cached in the SceneGraph for one frameIdx
+//             see SceneGraph::transformForFrame() - this method is called a lot
+//             if your scenegraph is large
 struct FrameTransform {
 	glm::mat4 matrix;
 
@@ -17,6 +20,7 @@ struct FrameTransform {
 	}
 
 	glm::vec3 translation() const;
+	// TODO: PERF: cache this scale value, as the decompose() method isn't really cheap
 	glm::vec3 scale() const;
 	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
 };
