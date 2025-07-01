@@ -24,6 +24,7 @@
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
+#include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
@@ -351,6 +352,11 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 	}
 }
 
+static void loadOptionsMinecraftSkin(const io::FilesystemEntry &entry) {
+	ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatSkinApplyTransform);
+	ImGui::CheckboxVar(_("Add groups"), cfg::VoxformatSkinAddGroups);
+}
+
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
 				 const palette::PaletteCache &paletteCache) {
 	if (desc == nullptr) {
@@ -364,6 +370,10 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == io::format::png()) {
 		loadOptionsPng(entry);
+	}
+
+	if (*desc == voxelformat::SkinFormat::format()) {
+		loadOptionsMinecraftSkin(entry);
 	}
 
 	loadOptionsGeneric(desc, entry, paletteCache);
