@@ -108,12 +108,11 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		for (int i = 0; i < lengthof(order); ++i) {
 			const glm::ivec2 &uv = part.tex[i];
 			const glm::ivec2 uvMin(uv.x, uv.y);
-			const glm::ivec2 uvMax = uvMin +
-									 glm::ivec2((i == 2 || i == 3)	 ? size.x
-												: (i == 0 || i == 1) ? size.z
-																	 : size.x,
-												(i == 2 || i == 3) ? size.z : size.y) -
-									 glm::ivec2(1);
+			const bool isY = voxel::isY((voxel::FaceNames)i);
+			const bool isX = voxel::isX((voxel::FaceNames)i);
+			const int uvMaxX = isY ? size.x : (isX ? size.z : size.x);
+			const int uvMaxY = isY ? size.z : size.y;
+			const glm::ivec2 uvMax = uvMin + glm::ivec2(uvMaxX, uvMaxY) - glm::ivec2(1);
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(new voxel::RawVolume(region), true);
 			if (addGroup) {
@@ -122,12 +121,14 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 				node.setName(core::String::format("%s_%s", part.name, voxel::faceNameString(order[i])));
 			}
 			node.setPalette(palette);
-			voxelutil::importFace(*node.volume(), node.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
-								  image->uv(uvMax.x, uv.y));
+			const glm::vec2 uv0(image->uv(uv.x, uvMax.y));
+			const glm::vec2 uv1(image->uv(uvMax.x, uv.y));
+			voxelutil::importFace(*node.volume(), region, palette, order[i], image, uv0, uv1);
 			scenegraph::SceneGraphTransform transform;
 			if (applyTransform) {
 				transform.setLocalTranslation(part.translation);
-				transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
+				const glm::quat orientation(glm::radians(part.rotationDegree));
+				transform.setLocalOrientation(orientation);
 				node.setPivot(part.pivot);
 			} else {
 				const glm::vec3 regionSize(region.getDimensionsInVoxels());
