@@ -116,7 +116,11 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 									 glm::ivec2(1);
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(new voxel::RawVolume(region), true);
-			node.setName(part.name);
+			if (addGroup) {
+				node.setName(voxel::faceNameString(order[i]));
+			} else {
+				node.setName(core::String::format("%s_%s", part.name, voxel::faceNameString(order[i])));
+			}
 			node.setPalette(palette);
 			voxelutil::importFace(*node.volume(), node.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
 								  image->uv(uvMax.x, uv.y));
