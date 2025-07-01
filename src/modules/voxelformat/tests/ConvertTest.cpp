@@ -473,4 +473,12 @@ TEST_F(ConvertTest, DISABLED_testVengiToGLTF) {
 	testLoadSaveAndLoadSceneGraph("bat_anim.vengi", src, "convert-bat_anim.gltf", target, flags);
 }
 
+TEST_F(ConvertTest, testVengiToVox) {
+	VENGIFormat src;
+	VoxFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color | voxel::ValidateFlags::Scale |
+									   voxel::ValidateFlags::SceneGraphModels;
+	testConvert("minecraft-skin.vengi", src, "minecraft-skin.vox", target, flags);
+}
+
 } // namespace voxelformat

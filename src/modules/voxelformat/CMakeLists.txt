@@ -231,6 +231,7 @@ set(TEST_FILES
 	tests/kvx_save.qb
 	tests/particubes.pcubes
 	tests/testrooms.node
+	tests/minecraft-skin.vengi
 	tests/r.0.-2.mca
 	tests/r.0.-2.qb
 	tests/ufoai.bsp

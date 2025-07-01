@@ -438,7 +438,7 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		// it's intended that includingRegion is false here!
 		volumeComparator(*node1.volume(), node1.palette(), *node2.volume(), node2.palette(), flags, maxDelta);
 		if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
-			ASSERT_EQ(node1.pivot(), node2.pivot()) << "Pivot failed";
+			EXPECT_EQ(node1.pivot(), node2.pivot()) << "Pivot failed";
 		}
 		keyFrameComparator(node1.keyFrames(), node2.keyFrames(), flags);
 	}
