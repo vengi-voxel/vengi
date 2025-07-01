@@ -4,6 +4,7 @@
 
 #include "SkinFormat.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -46,6 +47,8 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		glm::ivec2 tex[6]; // left, right, top, bottom, front, back
 	};
 
+	bool applyTransform = core::Var::getSafe(cfg::VoxformatSkinApplyTransform)->boolVal();
+
 	// Define the skin boxes and use names that animate.lua can work with
 	const SkinBox skinParts[] = {{"head",
 								  {8, 8, 8},
@@ -84,18 +87,19 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 								  {0.5f, 1.0f, 0.5f},
 								  {{16, 52}, {24, 52}, {24, 48}, {20, 48}, {28, 52}, {20, 52}}}};
 
+	const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX /* left */,  voxel::FaceNames::PositiveX /* right */,
+									  voxel::FaceNames::PositiveY /* top */,   voxel::FaceNames::NegativeY /* bottom */,
+									  voxel::FaceNames::PositiveZ /* front */, voxel::FaceNames::NegativeZ /* back */};
+	static_assert(lengthof(SkinBox::tex) == lengthof(order),
+				  "SkinBox::tex and order must have the same number of elements");
+
 	for (const auto &part : skinParts) {
 		const glm::ivec3 size = part.size;
-
-		const voxel::FaceNames order[] = {
-			voxel::FaceNames::NegativeX /* left */,	 voxel::FaceNames::PositiveX /* right */,
-			voxel::FaceNames::PositiveY /* top */,	 voxel::FaceNames::NegativeY /* bottom */,
-			voxel::FaceNames::PositiveZ /* front */, voxel::FaceNames::NegativeZ /* back */};
 
 		// TODO: VOXELFORMAT: each face should be imported into a separate volume (and a group for each body component)
 		// and should also be placed by the scenegraph
 		// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
-		for (int i = 0; i < lengthof(skinParts); ++i) {
+		for (int i = 0; i < lengthof(order); ++i) {
 			const glm::ivec2 &uv = part.tex[i];
 			const glm::ivec2 uvMin(uv.x, uv.y);
 			const glm::ivec2 uvMax = uvMin +
@@ -112,10 +116,15 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			voxelutil::importFace(*node.volume(), node.region(), palette, order[i], image, image->uv(uv.x, uvMax.y),
 								  image->uv(uvMax.x, uv.y));
 			scenegraph::SceneGraphTransform transform;
-			transform.setLocalTranslation(part.translation);
-			transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
+			if (applyTransform) {
+				transform.setLocalTranslation(part.translation);
+				transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
+				node.setPivot(part.pivot);
+			} else {
+				const glm::vec3 size = region.getDimensionsInVoxels();
+				transform.setLocalTranslation(part.translation - part.pivot * size);
+			}
 			node.setTransform(0, transform);
-			node.setPivot(part.pivot);
 			sceneGraph.emplace(core::move(node));
 		}
 	}

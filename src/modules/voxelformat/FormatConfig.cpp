@@ -132,7 +132,8 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type >= 1 && type <= 3;
 				   });
-
+	core::Var::get(cfg::VoxformatSkinApplyTransform, "false", core::CV_NOPERSIST, _("Apply transforms to Minecraft skins"),
+				   core::Var::boolValidator);
 	return true;
 }
 
