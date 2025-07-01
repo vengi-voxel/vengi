@@ -978,6 +978,17 @@ const jsonData = {
       "mimetype": "application/x-portable-network-graphics",
       "animation": false,
       "save": true
+    },
+    {
+      "name": "Minecraft skin",
+      "extensions": [
+        "mcskin",
+        "png"
+      ],
+      "magics": [],
+      "mimetype": "application/x-minecraft-skin",
+      "animation": false,
+      "save": false
     }
   ]
 }

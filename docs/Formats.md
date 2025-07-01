@@ -26,6 +26,7 @@
 | Minecraft mcworld          | mcworld     | X       |        |            |         |            |
 | Minecraft region           | mca         | X       |        |            | X       |            |
 | Minecraft schematic        | schematic   | X       | X      |            | X       |            |
+| Minecraft skin             | mcskin      | X       |        |            | X       |            |
 | Nicks Voxel Model          | nvm         | X       |        |            |         |            |
 | Particubes                 | pcubes      | X       | X      | X          | X       |            |
 | Portable Network Graphics  | png         | X       | X      |            |         |            |

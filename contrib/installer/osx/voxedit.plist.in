@@ -1031,6 +1031,25 @@
         <key>NSDocumentClass</key>
         <string>AppDocument</string>
       </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Minecraft skin</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-minecraft-skin</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>mcskin</string>
+          <string>png</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
     </array>
   </dict>
 </plist>

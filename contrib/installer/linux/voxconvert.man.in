@@ -323,6 +323,8 @@ Minecraft region (*.mca, *.mcr)
 .TP
 Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
 .TP
+Minecraft skin (*.mcskin, *.png)
+.TP
 Nicks Voxel Model (*.nvm)
 .TP
 Particubes (*.pcubes, *.particubes)

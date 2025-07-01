@@ -365,4 +365,9 @@
 			<match type="byte" offset="3" value="\x47"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-minecraft-skin">
+		<comment>Minecraft skin</comment>
+		<glob pattern="*.mcskin"/>
+		<glob pattern="*.png"/>
+	</mime-type>
 </mime-info>

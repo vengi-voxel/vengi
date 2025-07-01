@@ -208,6 +208,9 @@
 		<RegistryKey Root="HKCR" Key=".png">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".mcskin">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 	</CPackWiXFragment>
 	<CPackWiXFragment Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe">
 		<Environment Id="PATH" Name="PATH" Value="[INSTALL_ROOT]" Permanent="yes" Part="last" Action="set" System="yes" />
@@ -810,6 +813,15 @@
 		<RegistryValue Root="HKCR" Key=".png\OpenWithProgids" Name="vengi-voxedit.png" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.png" Description="Portable Network Graphics" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="png" ContentType="application/x-portable-network-graphics">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mcskin" Value="vengi-voxedit.mcskin" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mcskin" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".mcskin\OpenWithProgids" Name="vengi-voxedit.mcskin" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.mcskin" Description="Minecraft skin" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="mcskin" ContentType="application/x-minecraft-skin">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
