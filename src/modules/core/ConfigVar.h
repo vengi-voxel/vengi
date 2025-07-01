@@ -116,5 +116,6 @@ constexpr const char *VoxformatTexturePath = "voxformat_texturepath";
 constexpr const char *VoxformatSchematicType = "voxformat_schematictype";
 constexpr const char *VoxformatBinvoxVersion = "voxformat_binvoxversion";
 constexpr const char *VoxformatSkinApplyTransform = "voxformat_skinapplytransform";
+constexpr const char *VoxformatSkinAddGroups = "voxformat_skinaddgroups";
 
 }

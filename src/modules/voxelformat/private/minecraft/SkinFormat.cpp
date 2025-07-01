@@ -47,7 +47,9 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		glm::ivec2 tex[6]; // left, right, top, bottom, front, back
 	};
 
-	bool applyTransform = core::Var::getSafe(cfg::VoxformatSkinApplyTransform)->boolVal();
+	// TODO: VOXELFORMAT: FileDialogOptions are missing
+	const bool applyTransform = core::Var::getSafe(cfg::VoxformatSkinApplyTransform)->boolVal();
+	const bool addGroup = core::Var::getSafe(cfg::VoxformatSkinAddGroups)->boolVal();
 
 	// Define the skin boxes and use names that animate.lua can work with
 	const SkinBox skinParts[] = {{"head",
@@ -95,9 +97,15 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 
 	for (const auto &part : skinParts) {
 		const glm::ivec3 size = part.size;
+		const voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
 
-		// TODO: VOXELFORMAT: each face should be imported into a separate volume (and a group for each body component)
-		// and should also be placed by the scenegraph
+		int parentId = 0;
+		if (addGroup) {
+			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+			groupNode.setName(part.name);
+			groupNode.setPalette(palette);
+			parentId = sceneGraph.emplace(core::move(groupNode));
+		}
 		// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
 		for (int i = 0; i < lengthof(order); ++i) {
 			const glm::ivec2 &uv = part.tex[i];
@@ -108,7 +116,6 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 																	 : size.x,
 												(i == 2 || i == 3) ? size.z : size.y) -
 									 glm::ivec2(1);
-			voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(new voxel::RawVolume(region), true);
 			node.setName(part.name);
@@ -125,7 +132,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 				transform.setLocalTranslation(part.translation - part.pivot * size);
 			}
 			node.setTransform(0, transform);
-			sceneGraph.emplace(core::move(node));
+			sceneGraph.emplace(core::move(node), parentId);
 		}
 	}
 	return true;

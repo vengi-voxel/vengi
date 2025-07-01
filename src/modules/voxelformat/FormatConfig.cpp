@@ -134,6 +134,8 @@ bool FormatConfig::init() {
 				   });
 	core::Var::get(cfg::VoxformatSkinApplyTransform, "false", core::CV_NOPERSIST, _("Apply transforms to Minecraft skins"),
 				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatSkinAddGroups, "false", core::CV_NOPERSIST, _("Add groups for body parts of Minecraft skins"),
+				   core::Var::boolValidator);
 	return true;
 }
 
