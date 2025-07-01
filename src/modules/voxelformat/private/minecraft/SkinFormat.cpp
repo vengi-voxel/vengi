@@ -10,7 +10,6 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/ImportFace.h"
 #include <glm/trigonometric.hpp>
@@ -44,10 +43,9 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		glm::vec3 translation;	  // World position (offset) of the part
 		glm::vec3 rotationDegree; // Rotation in degrees around the pivot point
 		glm::vec3 pivot;
-		glm::ivec2 tex[6]; // left, right, top, bottom, front, back
+		glm::ivec2 tex[(int)voxel::FaceNames::Max]; // left, right, top, bottom, front, back
 	};
 
-	// TODO: VOXELFORMAT: FileDialogOptions are missing
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatSkinApplyTransform)->boolVal();
 	const bool addGroup = core::Var::getSafe(cfg::VoxformatSkinAddGroups)->boolVal();
 
@@ -128,8 +126,8 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 				transform.setLocalOrientation(glm::quat(glm::radians(part.rotationDegree)));
 				node.setPivot(part.pivot);
 			} else {
-				const glm::vec3 size = region.getDimensionsInVoxels();
-				transform.setLocalTranslation(part.translation - part.pivot * size);
+				const glm::vec3 regionSize(region.getDimensionsInVoxels());
+				transform.setLocalTranslation(part.translation - part.pivot * regionSize);
 			}
 			node.setTransform(0, transform);
 			sceneGraph.emplace(core::move(node), parentId);
