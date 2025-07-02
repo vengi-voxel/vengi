@@ -6,6 +6,7 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "image/Image.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -13,6 +14,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/ImportFace.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/trigonometric.hpp>
 
 namespace voxelformat {
@@ -103,15 +105,18 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 	sceneGraph.emplace(core::move(node), parentId);
 }
 
-static void importPart(const image::ImagePtr &image, const SkinBox &part, voxel::FaceNames faceName,
-					   scenegraph::SceneGraphNode &node) {
-	int idx = 0;
+static int getFaceIndex(voxel::FaceNames faceName) {
 	for (int i = 0; i < lengthof(order); ++i) {
 		if (order[i] == faceName) {
-			idx = i;
-			break;
+			return i;
 		}
 	}
+	return 0;
+}
+
+static void importPart(const image::ImagePtr &image, const SkinBox &part, voxel::FaceNames faceName,
+					   scenegraph::SceneGraphNode &node) {
+	int idx = getFaceIndex(faceName);
 	// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
 	const glm::ivec2 &uv = part.tex[idx];
 	const glm::ivec2 uvMin(uv.x, uv.y);
@@ -202,29 +207,45 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 	image::ImagePtr image = image::createEmptyImage("Minecraft Skin");
 	image->resize(64, 64);
+	for (int y = 0; y < image->height(); ++y) {
+		for (int x = 0; x < image->width(); ++x) {
+			image->setColor(core::RGBA(0, 0, 0, 0), x, y);
+		}
+	}
 
 	const bool mergedFaces = sceneGraph.findNodeByName(skinParts[0].name) != nullptr;
 	for (const auto &part : skinParts) {
 		for (int i = 0; i < lengthof(order); ++i) {
+			const voxel::FaceNames faceName = order[i];
 			const core::String name =
-				mergedFaces ? part.name : core::String::format("%s_%s", part.name, voxel::faceNameString(order[i]));
-			if (const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(name)) {
-				if (!node->isAnyModelNode()) {
-					Log::error("Node %s is not a model node", name.c_str());
-					continue;
-				}
-				const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
-				const voxel::FaceNames faceName = order[i];
-				// TODO: VOXELFORMAT: visit face of the node->volume() to set the pixels in the image
-				const glm::ivec3 size = part.size;
-				const glm::ivec2 uvMin(part.tex[0].x, part.tex[0].y);
-				const glm::ivec2 uvMax = uvMin + glm::ivec2(size.x, size.y) - glm::ivec2(1);
-				for (int y = uvMin.y; y <= uvMax.y; ++y) {
-					for (int x = uvMin.x; x <= uvMax.x; ++x) {
-						image->setColor(core::RGBA(255, 255, 255, 255), x, y);
-					}
-				}
+				mergedFaces ? part.name : core::String::format("%s_%s", part.name, voxel::faceNameString(faceName));
+			const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(name);
+			if (!node) {
+				Log::error("Node %s not found in scene graph", name.c_str());
+				continue;
 			}
+			if (!node->isAnyModelNode()) {
+				Log::error("Node %s is not a model node", name.c_str());
+				continue;
+			}
+			const palette::Palette &palette = node->palette();
+			const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
+			auto fn = [&image, &part, palette, i, node](int x, int y, int z, const voxel::Voxel &voxel) {
+				const core::RGBA &color = palette.color(voxel.getColor());
+				const int px = part.tex[i].x + (x - node->region().getLowerX());
+				const int py = part.tex[i].y + node->region().getHeightInCells() - (y - node->region().getLowerY());
+				if (px < 0 || px >= image->width() || py < 0 || py >= image->height()) {
+					Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i", px, py, image->width(),
+							   image->height());
+					return;
+				}
+				if (color.a == 0) {
+					// don't set transparent pixels
+					return;
+				}
+				image->setColor(core::RGBA(color.r, color.g, color.b, color.a), px, py);
+			};
+			voxelutil::visitFace(*v, node->region(), faceName, fn);
 		}
 	}
 	return image->writePNG(*stream);

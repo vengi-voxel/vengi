@@ -150,6 +150,7 @@ set(TEST_SRCS
 	tests/QuakeBSPFormatTest.cpp
 	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
+	tests/SkinFormatTest.cpp
 	tests/SLABSharedTest.cpp
 	tests/SLAB6VoxFormatTest.cpp
 	tests/SMFormatTest.cpp
