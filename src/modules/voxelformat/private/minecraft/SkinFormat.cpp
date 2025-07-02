@@ -70,16 +70,33 @@ static const voxel::FaceNames order[] = {
 	voxel::FaceNames::PositiveZ /* front */, voxel::FaceNames::NegativeZ /* back */};
 
 static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int parentId,
-					bool applyTransform, const SkinBox &part) {
+					bool applyTransform, voxel::FaceNames faceNameOffset, const SkinBox &part) {
 	scenegraph::SceneGraphTransform transform;
+	glm::vec3 translation = part.translation;
+	if (faceNameOffset != voxel::FaceNames::Max) {
+		// offset the translation by the face name offset to prevent z-fighting
+		const bool isX = voxel::isX(faceNameOffset);
+		const bool isY = voxel::isY(faceNameOffset);
+		const bool isZ = voxel::isZ(faceNameOffset);
+		const bool isNegative = voxel::isNegativeFace(faceNameOffset);
+		const float offset = applyTransform ? 0.1f : 0.02f;
+		const float offsetSign = isNegative ? -offset : offset;
+		if (isX) {
+			translation.x += offsetSign;
+		} else if (isY) {
+			translation.y += offsetSign;
+		} else if (isZ) {
+			translation.z += offsetSign;
+		}
+	}
 	if (applyTransform) {
-		transform.setLocalTranslation(part.translation);
+		transform.setLocalTranslation(translation);
 		const glm::quat orientation(glm::radians(part.rotationDegree));
 		transform.setLocalOrientation(orientation);
 		node.setPivot(part.pivot);
 	} else {
 		const glm::vec3 regionSize(node.region().getDimensionsInVoxels());
-		transform.setLocalTranslation(part.translation - part.pivot * regionSize);
+		transform.setLocalTranslation(translation - part.pivot * regionSize);
 	}
 	node.setTransform(0, transform);
 	sceneGraph.emplace(core::move(node), parentId);
@@ -87,7 +104,15 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 
 static void importPart(const image::ImagePtr &image, const SkinBox &part, voxel::FaceNames faceName,
 					   scenegraph::SceneGraphNode &node) {
-	const glm::ivec2 &uv = part.tex[(int)faceName];
+	int idx = 0;
+	for (int i = 0; i < lengthof(order); ++i) {
+		if (order[i] == faceName) {
+			idx = i;
+			break;
+		}
+	}
+	// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
+	const glm::ivec2 &uv = part.tex[idx];
 	const glm::ivec2 uvMin(uv.x, uv.y);
 	const bool isY = voxel::isY(faceName);
 	const bool isX = voxel::isX(faceName);
@@ -98,7 +123,7 @@ static void importPart(const image::ImagePtr &image, const SkinBox &part, voxel:
 	const glm::vec2 uv0(image->uv(uv.x, uvMax.y));
 	const glm::vec2 uv1(image->uv(uvMax.x, uv.y));
 	const palette::Palette &palette = node.palette();
-	voxelutil::importFace(*node.volume(), node.region(), palette, order[(int)faceName], image, uv0, uv1);
+	voxelutil::importFace(*node.volume(), node.region(), palette, faceName, image, uv0, uv1);
 }
 
 bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
@@ -139,16 +164,15 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			groupNode.setPalette(palette);
 			parentId = sceneGraph.emplace(core::move(groupNode));
 		}
-		// TODO: VOXELFORMAT: back side is somehow flipped - maybe even the uvs are wrong
 		if (mergeFaces) {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(new voxel::RawVolume(region), true);
 			node.setName(part.name);
 			node.setPalette(palette);
 			for (int i = 0; i < lengthof(order); ++i) {
-				importPart(image, part, (voxel::FaceNames)i, node);
+				importPart(image, part, order[i], node);
 			}
-			addNode(sceneGraph, node, parentId, applyTransform, part);
+			addNode(sceneGraph, node, parentId, applyTransform, voxel::FaceNames::Max, part);
 		} else {
 			for (int i = 0; i < lengthof(order); ++i) {
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -160,8 +184,9 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 				}
 				node.setPalette(palette);
 
-				importPart(image, part, (voxel::FaceNames)i, node);
-				addNode(sceneGraph, node, parentId, applyTransform, part);
+				const voxel::FaceNames faceName = order[i];
+				importPart(image, part, faceName, node);
+				addNode(sceneGraph, node, parentId, applyTransform, faceName, part);
 			}
 		}
 	}
