@@ -93,6 +93,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `palformat_rgb6bit`           | Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files               | true/false   |
 | `voxel_meshmode`              | Set to 1 to use the marching cubes algorithm to produce the mesh                         | 0/1          |
 | `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    | true/false   |
+| `voxformat_binvoxversion`     | Save in version 1, 2 or the unofficial version 3                                         | 1/2/3        |
 | `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    | true/false   |
 | `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. | true/false   |
 | `voxformat_emptypaletteindex` | By default this is `-1` which means that no color is skipped. Pick 0-255 to remove that palette index from the final saved file. **NOTE**: this only works for formats that don't force the empty voxel to be `0` or `255` (or any other index) already |
@@ -101,6 +102,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files                        | true/false   |
 | `voxformat_imageheightmapminheight`                  | The minimum height of the heightmap when importing an image as heightmap           | 0            |
 | `voxformat_imageimporttype`                          | 0 = plane, 1 = heightmap, 2 = volume                                               | 0            |
+| `voxformat_imagesavetype`                            | 0 = plane, 1 = heightmap, 3 = thumbnail                                            | 0            |
 | `voxformat_imagevolumemaxdepth`                      | The maximum depth of the volume when importing an image as volume                  | 1            |
 | `voxformat_imagevolumebothsides`                     | Import the image as volume for both sides                                          | true/false   |
 | `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 | true/false   |
@@ -115,10 +117,14 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 | true/false   |
 | `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats | 1            |
 | `voxformat_rgbweightedaverage`| If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution | true/false   |
+| `voxformat_savevisibleonly`   | Save only visible nodes                                                                  | true/false |
 | `voxformat_scale`             | Scale the vertices for voxelization on all axis by the given factor                      | 1.0          |
 | `voxformat_scale_x`           | Scale the vertices for voxelization on X axis by the given factor                        | 1.0          |
 | `voxformat_scale_y`           | Scale the vertices for voxelization on Y axis by the given factor                        | 1.0          |
 | `voxformat_scale_z`           | Scale the vertices for voxelization on Z axis by the given factor                        | 1.0          |
+| `voxformat_schematictype`     | The type of schematic format to use when saving schematics                               | mcedit2, worldedit, schematica |
+| `voxformat_skinaddgroups`     | Add groups for body parts of Minecraft skins                                             | true/false   |
+| `voxformat_skinapplytransform`| Apply transforms to Minecraft skins                                                      | true/false   |
 | `voxformat_texturepath`       | Additional search path for textures when importing mesh formats                          |              |
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 | true/false   |
 | `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   | true/false   |

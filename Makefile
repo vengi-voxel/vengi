@@ -266,3 +266,9 @@ emscripten-%: $(BUILDDIR)/CMakeCache.txt build/emsdk/emsdk_env.sh
 
 run-emscripten-%: emscripten-%
 	$(Q)$(EMRUN) build/emscripten/$(subst run-emscripten-,,$@)/vengi-$(subst run-emscripten-,,$@).html
+
+find-undocumented-cvars:
+	$(Q)for i in $$(cat ./src/modules/core/ConfigVar.h | grep Voxformat | awk -F '"' '{ print $$2 }'); do \
+		grep -q $$i docs/Configuration.md; \
+		if [ $$? -ne 0 ]; then echo $$i; fi; \
+	done
