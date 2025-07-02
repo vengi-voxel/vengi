@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Face.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/ImportFace.h"
 #include <glm/trigonometric.hpp>
@@ -160,7 +161,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		int parentId = 0;
 		if (addGroup) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
-			groupNode.setName(part.name);
+			groupNode.setName(core::String::format("Group %s", part.name));
 			groupNode.setPalette(palette);
 			parentId = sceneGraph.emplace(core::move(groupNode));
 		}
@@ -177,11 +178,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			for (int i = 0; i < lengthof(order); ++i) {
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 				node.setVolume(new voxel::RawVolume(region), true);
-				if (addGroup) {
-					node.setName(voxel::faceNameString(order[i]));
-				} else {
-					node.setName(core::String::format("%s_%s", part.name, voxel::faceNameString(order[i])));
-				}
+				node.setName(core::String::format("%s_%s", part.name, voxel::faceNameString(order[i])));
 				node.setPalette(palette);
 
 				const voxel::FaceNames faceName = order[i];
@@ -196,8 +193,45 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 // TODO: VOXELFORMAT: implement saving
 bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							const io::ArchivePtr &archive, const SaveContext &ctx) {
+#if 0
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+
+	image::ImagePtr image = image::createEmptyImage("Minecraft Skin");
+	image->resize(64, 64);
+
+	const bool mergedFaces = sceneGraph.findNodeByName(skinParts[0].name) != nullptr;
+	for (const auto &part : skinParts) {
+		for (int i = 0; i < lengthof(order); ++i) {
+			const core::String name =
+				mergedFaces ? part.name : core::String::format("%s_%s", part.name, voxel::faceNameString(order[i]));
+			if (const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(name)) {
+				if (!node->isAnyModelNode()) {
+					Log::error("Node %s is not a model node", name.c_str());
+					continue;
+				}
+				const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
+				const voxel::FaceNames faceName = order[i];
+				// TODO: VOXELFORMAT: visit face of the node->volume() to set the pixels in the image
+				const glm::ivec3 size = part.size;
+				const glm::ivec2 uvMin(part.tex[0].x, part.tex[0].y);
+				const glm::ivec2 uvMax = uvMin + glm::ivec2(size.x, size.y) - glm::ivec2(1);
+				for (int y = uvMin.y; y <= uvMax.y; ++y) {
+					for (int x = uvMin.x; x <= uvMax.x; ++x) {
+						image->setColor(core::RGBA(255, 255, 255, 255), x, y);
+					}
+				}
+			}
+		}
+	}
+	return image->writePNG(*stream);
+#else
 	Log::error("Saving Minecraft skin format is not supported");
 	return false;
+#endif
 }
 
 } // namespace voxelformat
