@@ -74,6 +74,16 @@ There are other png save options available
 * `voxformat_imagesavetype 1` - export as heightmap (top view) with color in rgb and height in alpha channel
 * `voxformat_imagesavetype 3` - thumbnail view (this is producing different results between `vengi-voxconvert` and `vengi-voxedit`)
 
+## Generate from heightmap
+
+Just specify the heightmap as input file like this:
+
+`./vengi-voxconvert --input heightmap.png --output outfile.vox -set voxformat_imageimporttype 1`
+
+It's assumed that the given image is a gray scale image - but only the red channel is used anyway.
+
+If you want to colorize the surface of your heightmap import, you can just provide a heightmap that is no grayscale and the height is taken from the alpha channel of the image - the rgb channels of the image to determine the surface color.
+
 ## Convert all obj files in a zip
 
 `./vengi-voxconvert --input input.zip --wildcard "*.obj" --output output.vengi`
@@ -158,16 +168,6 @@ Voxelize an obj and save as magicavoxel (including colors):
 > See the [supported formats](../Formats.md) for a few more details.
 
 If you also need normals you can specify the used palette with the cvar `normalpalette` - similar to the `palette` cvar given in the example above.
-
-## Generate from heightmap
-
-Just specify the heightmap as input file like this:
-
-`./vengi-voxconvert --input heightmap.png --output outfile.vox -set voxformat_imageimporttype 1`
-
-It's assumed that the given image is a gray scale image - but only the red channel is used anyway.
-
-If you want to colorize the surface of your heightmap import, you can just provide a heightmap that is no grayscale and the height is taken from the alpha channel of the image - the rgb channels of the image to determine the surface color.
 
 ## Rotate the voxels
 
