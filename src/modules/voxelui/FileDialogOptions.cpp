@@ -182,10 +182,10 @@ static void saveOptionsMesh(const io::FormatDescription *desc) {
 	ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
 	if (*desc == voxelformat::GLTFFormat::format()) {
 		ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness",
-						   cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
-		ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
+						   cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness);
+		ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxformatGLTF_KHR_materials_specular);
 	}
-	ImGui::CheckboxVar(_("Export materials"), cfg::VoxFormatWithMaterials);
+	ImGui::CheckboxVar(_("Export materials"), cfg::VoxformatWithMaterials);
 
 	// TODO: cfg::VoxelMeshMode
 }
