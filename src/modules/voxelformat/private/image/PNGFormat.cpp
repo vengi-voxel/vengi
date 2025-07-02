@@ -362,6 +362,7 @@ bool PNGFormat::saveHeightmaps(const scenegraph::SceneGraph &sceneGraph, const c
 			Log::error("Failed to write image %s", name.c_str());
 			return false;
 		}
+		Log::debug("Saved heightmap image %s", name.c_str());
 	}
 	return true;
 }

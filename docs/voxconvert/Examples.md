@@ -56,11 +56,23 @@ The `--input` with e.g. `infile.png` will pick the depth map next to the image p
 
 > There is also a [lua script](../LUAScript.md) available called `imageasvolume` that can do the same.
 
+There are other image import types available:
+
+* `voxformat_imageimporttype 0` - import planes/slices in the z direction - or just as plane if not more than one slice was found
+* `voxformat_imageimporttype 1` - import as heightmap (top view) with color in rgb and height in red channel - also see `voxformat_imageheightmapminheight` - if the color components are not 4 or the image is grayscale, we just import with a fixed color.
+* `voxformat_imageimporttype 2` - import as volume with depth map (default) - also see `voxformat_imagevolumemaxdepth` and `voxformat_imagevolumebothsides`
+
 ## Slice a volume into png images
 
-`./vengi-voxconvert --input yourfile.vox --merge --output output.png `
+`./vengi-voxconvert --input yourfile.vox --merge --output output.png -set voxformat_imagesavetype 0`
 
 This imports `yourfile.vox` - merges all the nodes into one and then export the png slices.
+
+There are other png save options available
+
+* `voxformat_imagesavetype 0` - planes/slices in the z direction
+* `voxformat_imagesavetype 1` - export as heightmap (top view) with color in rgb and height in alpha channel
+* `voxformat_imagesavetype 3` - thumbnail view (this is producing different results between `vengi-voxconvert` and `vengi-voxedit`)
 
 ## Convert all obj files in a zip
 
