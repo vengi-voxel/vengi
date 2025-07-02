@@ -355,6 +355,7 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 static void loadOptionsMinecraftSkin(const io::FilesystemEntry &entry) {
 	ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatSkinApplyTransform);
 	ImGui::CheckboxVar(_("Add groups"), cfg::VoxformatSkinAddGroups);
+	ImGui::CheckboxVar(_("Merge faces"), cfg::VoxformatSkinMergeFaces);
 }
 
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
