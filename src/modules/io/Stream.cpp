@@ -350,13 +350,16 @@ bool ReadStream::readLine(core::String &str) {
 }
 
 bool ReadStream::readString(int length, char *strbuff, bool terminated) {
+	if (!terminated) {
+		return read(strbuff, length) == length;
+	}
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {
 			return false;
 		}
 		strbuff[i] = (char)chr;
-		if (terminated && chr == '\0') {
+		if (chr == '\0') {
 			break;
 		}
 	}
@@ -366,12 +369,18 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 bool ReadStream::readString(int length, core::String &str, bool terminated) {
 	str.clear();
 	str.reserve(length);
+	if (!terminated) {
+		int val = read(str.c_str(), length);
+		str += (char)'\0';
+		str.updateSize();
+		return val == length;
+	}
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {
 			return false;
 		}
-		if (terminated && chr == '\0') {
+		if (chr == '\0') {
 			break;
 		}
 		str += (char)chr;
