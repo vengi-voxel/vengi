@@ -371,8 +371,10 @@ bool ReadStream::readString(int length, core::String &str, bool terminated) {
 	str.reserve(length);
 	if (!terminated) {
 		int val = read(str.c_str(), length);
-		str += (char)'\0';
-		str.updateSize();
+		if (val == -1) {
+			return false;
+		}
+		str = core::String(str.c_str(), val);
 		return val == length;
 	}
 	for (int i = 0; i < length; ++i) {
