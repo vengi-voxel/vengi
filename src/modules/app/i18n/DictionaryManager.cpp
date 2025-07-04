@@ -28,6 +28,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/FilesystemEntry.h"
 
@@ -112,7 +113,9 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 			} else {
 				Log::debug("Parsing po file %s", pofile.c_str());
 				io::FileStream stream(in);
-				POParser::parse(pofile, stream, *dict);
+				io::BufferedReadWriteStream pofileStream(stream, stream.size());
+				pofileStream.seek(0, SEEK_SET);
+				POParser::parse(pofile, pofileStream, *dict);
 			}
 		} else {
 			Log::debug("no matching .po file found for language: %s", language.getName().c_str());
