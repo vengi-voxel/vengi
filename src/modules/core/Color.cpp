@@ -170,6 +170,7 @@ struct ColorBox {
 
 static int medianCutFindMedian(const core::Buffer<RGBA> &colors, int axis) {
 	core::Buffer<int> values;
+	values.reserve(colors.size());
 	for (const core::RGBA &color : colors) {
 		if (axis == 0) {
 			values.push_back(color.r);
@@ -194,6 +195,8 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
 
 	int median = medianCutFindMedian(box.pixels, longestAxis);
 	ColorBox box1, box2;
+	box1.pixels.reserve(box.pixels.size());
+	box2.pixels.reserve(box.pixels.size());
 	for (const core::RGBA &color : box.pixels) {
 		if (longestAxis == 0) {
 			if (color.r < median) {
