@@ -44,10 +44,8 @@ bool WriteStream::writeStringFormat(bool terminate, const char *fmt, ...) {
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
 	const size_t length = SDL_strlen(text);
-	for (size_t i = 0u; i < length; i++) {
-		if (!writeUInt8(uint8_t(text[i]))) {
-			return false;
-		}
+	if (write(text, length) == -1) {
+		return false;
 	}
 	if (!terminate) {
 		return true;
@@ -106,10 +104,8 @@ bool WriteStream::writeUInt8(uint8_t val) {
 
 bool WriteStream::writeString(const core::String &string, bool terminate) {
 	const size_t length = string.size();
-	for (size_t i = 0u; i < length; i++) {
-		if (!writeUInt8(uint8_t(string[i]))) {
-			return false;
-		}
+	if (write(string.c_str(), length) == -1) {
+		return false;
 	}
 	if (!terminate) {
 		return true;
@@ -144,13 +140,7 @@ bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
 	if (!writeUInt16(length)) {
 		return false;
 	}
-	for (uint16_t i = 0u; i < length; ++i) {
-		uint8_t chr = str[i];
-		if (!writeUInt8(chr)) {
-			return false;
-		}
-	}
-	return true;
+	return writeString(str, false);
 }
 
 bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
@@ -158,13 +148,7 @@ bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
 	if (!writeUInt16BE(length)) {
 		return false;
 	}
-	for (uint16_t i = 0u; i < length; ++i) {
-		uint8_t chr = str[i];
-		if (!writeUInt8(chr)) {
-			return false;
-		}
-	}
-	return true;
+	return writeString(str, false);
 }
 
 bool WriteStream::writePascalStringUInt8(const core::String &str) {
@@ -172,13 +156,7 @@ bool WriteStream::writePascalStringUInt8(const core::String &str) {
 	if (!writeUInt8(length)) {
 		return false;
 	}
-	for (uint8_t i = 0u; i < length; ++i) {
-		uint8_t chr = str[i];
-		if (!writeUInt8(chr)) {
-			return false;
-		}
-	}
-	return true;
+	return writeString(str, false);
 }
 
 
@@ -187,13 +165,7 @@ bool WriteStream::writePascalStringUInt32LE(const core::String &str) {
 	if (!writeUInt32(length)) {
 		return false;
 	}
-	for (uint32_t i = 0u; i < length; ++i) {
-		uint8_t chr = str[i];
-		if (!writeUInt8(chr)) {
-			return false;
-		}
-	}
-	return true;
+	return writeString(str, false);
 }
 
 bool WriteStream::writePascalStringUInt32BE(const core::String &str) {
@@ -201,13 +173,7 @@ bool WriteStream::writePascalStringUInt32BE(const core::String &str) {
 	if (!writeUInt32BE(length)) {
 		return false;
 	}
-	for (uint32_t i = 0u; i < length; ++i) {
-		uint8_t chr = str[i];
-		if (!writeUInt8(chr)) {
-			return false;
-		}
-	}
-	return true;
+	return writeString(str, false);
 }
 
 bool WriteStream::writeInt16(int16_t word) {
