@@ -6,6 +6,7 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "image/Image.h"
+#include "math/Axis.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -69,7 +70,7 @@ static const SkinBox skinParts[] = {{"head",
 
 static const voxel::FaceNames order[] = {
 	voxel::FaceNames::NegativeX /* left */,	 voxel::FaceNames::PositiveX /* right */,
-	voxel::FaceNames::PositiveY /* top */,	 voxel::FaceNames::NegativeY /* bottom */,
+	voxel::FaceNames::NegativeY /* bottom */,voxel::FaceNames::PositiveY /* top */,
 	voxel::FaceNames::PositiveZ /* front */, voxel::FaceNames::NegativeZ /* back */};
 
 static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int parentId,
@@ -112,6 +113,35 @@ static int getFaceIndex(voxel::FaceNames faceName) {
 		}
 	}
 	return 0;
+}
+
+// we have special needs for the visitor order here - to be independent from other use-cases for the
+// face visitor, we define our own order here
+static voxelutil::VisitorOrder visitorOrderForFace(voxel::FaceNames face) {
+	voxelutil::VisitorOrder visitorOrder;
+	switch (face) {
+	case voxel::FaceNames::Front:
+		visitorOrder = voxelutil::VisitorOrder::mYmXZ;
+		break;
+	case voxel::FaceNames::Back:
+		visitorOrder = voxelutil::VisitorOrder::mYXmZ;
+		break;
+	case voxel::FaceNames::Right:
+		visitorOrder = voxelutil::VisitorOrder::mYmZmX;
+		break;
+	case voxel::FaceNames::Left:
+		visitorOrder = voxelutil::VisitorOrder::mYZX;
+		break;
+	case voxel::FaceNames::Up:
+		visitorOrder = voxelutil::VisitorOrder::mZmXmY;
+		break;
+	case voxel::FaceNames::Down:
+		visitorOrder = voxelutil::VisitorOrder::ZmXY;
+		break;
+	default:
+		return voxelutil::VisitorOrder::Max;
+	}
+	return visitorOrder;
 }
 
 static void importPart(const image::ImagePtr &image, const SkinBox &part, voxel::FaceNames faceName,
@@ -195,10 +225,8 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	return true;
 }
 
-// TODO: VOXELFORMAT: implement saving
 bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							const io::ArchivePtr &archive, const SaveContext &ctx) {
-#if 0
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -229,30 +257,37 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				continue;
 			}
 			const palette::Palette &palette = node->palette();
+			const math::Axis axis = voxel::faceToAxis(faceName);
+			const int axisIdx = math::getIndexForAxis(axis);
+			const glm::ivec3 &mins = node->region().getLowerCorner();
+			const glm::ivec3 &dim = node->region().getDimensionsInCells();
+			const int idx1 = (axisIdx + 1) % 3;
+			const int idx2 = (axisIdx + 2) % 3;
+			if (isZ(faceName)) {
+				Log::error("foo");
+			}
 			const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
-			auto fn = [&image, &part, palette, i, node](int x, int y, int z, const voxel::Voxel &voxel) {
+			auto fn = [&image, &part, palette, i, mins, dim, idx1, idx2](int x, int y, int z,
+																		 const voxel::Voxel &voxel) {
 				const core::RGBA &color = palette.color(voxel.getColor());
-				const int px = part.tex[i].x + (x - node->region().getLowerX());
-				const int py = part.tex[i].y + node->region().getHeightInCells() - (y - node->region().getLowerY());
+				if (color.a == 0) {
+					return;
+				}
+				const glm::ivec3 pos(x, y, z);
+				const int px = part.tex[i].x + (pos[idx1] - mins[idx1]);
+				const int py = part.tex[i].y + dim[idx2] - (pos[idx2] - mins[idx2]);
 				if (px < 0 || px >= image->width() || py < 0 || py >= image->height()) {
 					Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i", px, py, image->width(),
 							   image->height());
 					return;
 				}
-				if (color.a == 0) {
-					// don't set transparent pixels
-					return;
-				}
-				image->setColor(core::RGBA(color.r, color.g, color.b, color.a), px, py);
+				image->setColor(color, px, py);
 			};
-			voxelutil::visitFace(*v, node->region(), faceName, fn);
+			const voxelutil::VisitorOrder visitorOrder = visitorOrderForFace(faceName);
+			voxelutil::visitFace(*v, node->region(), faceName, fn, visitorOrder, false);
 		}
 	}
 	return image->writePNG(*stream);
-#else
-	Log::error("Saving Minecraft skin format is not supported");
-	return false;
-#endif
 }
 
 } // namespace voxelformat
