@@ -205,15 +205,19 @@ inline ::std::ostream& operator<<(::std::ostream& os, const VisitorOrder& state)
 		"XZmY",
 		"YXZ",
 		"YZX",
+		"YmXZ",
 		"mYZX",
 		"YZmX",
 		"mYmXZ",
 		"mYXmZ",
 		"mYmZmX",
+		"mYmXmZ",
 		"mZmXmY",
+		"ZmXmY",
 		"ZmXY",
 		"YXmZ",
-		"ZXmY"
+		"ZXmY",
+		"mZXY"
 	};
 	static_assert(lengthof(strings) == (int)VisitorOrder::Max, "Array size mismatch");
 	return os << "order[" << strings[(int)state] << " - " << (int)state << "]";
