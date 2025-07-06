@@ -23,6 +23,9 @@ enum class FaceNames : uint8_t {
 	Down = NegativeY,
 	Up = PositiveY,
 
+	Bottom = NegativeY,
+	Top = PositiveY,
+
 	North = NegativeZ,
 	South = PositiveZ,
 	West = NegativeX,
