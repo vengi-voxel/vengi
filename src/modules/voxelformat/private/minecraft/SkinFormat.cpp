@@ -263,9 +263,6 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			const glm::ivec3 &dim = node->region().getDimensionsInCells();
 			const int idx1 = (axisIdx + 1) % 3;
 			const int idx2 = (axisIdx + 2) % 3;
-			if (isZ(faceName)) {
-				Log::error("foo");
-			}
 			const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
 			auto fn = [&image, &part, palette, i, mins, dim, idx1, idx2](int x, int y, int z,
 																		 const voxel::Voxel &voxel) {

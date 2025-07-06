@@ -10,6 +10,10 @@ namespace voxelformat {
 
 /**
  * @brief Load the minecraft skin data png into separate volumes
+ *
+ * https://assets.mojang.com/SkinTemplates/steve.png
+ * https://assets.mojang.com/SkinTemplates/alex.png
+ * https://minecraft.wiki/w/Skin
  */
 class SkinFormat : public RGBAFormat {
 public:
