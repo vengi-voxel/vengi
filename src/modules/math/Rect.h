@@ -16,47 +16,47 @@ private:
 	glm::tvec2<TYPE> _mins;
 	glm::tvec2<TYPE> _maxs;
 public:
-	Rect() :
+	constexpr Rect() :
 			_mins(glm::tvec2<TYPE>((TYPE)0)),
 			_maxs(glm::tvec2<TYPE>((TYPE)0)) {
 	}
 
-	Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
+	constexpr Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
 			_mins(minX, minZ), _maxs(maxX, maxZ) {
 	}
 
-	Rect(const glm::tvec2<TYPE>& mins, const glm::tvec2<TYPE>& maxs) :
+	constexpr Rect(const glm::tvec2<TYPE>& mins, const glm::tvec2<TYPE>& maxs) :
 			_mins(mins), _maxs(maxs) {
 	}
 
-	static const Rect<TYPE>& getMaxRect() {
-		static constexpr TYPE lowest = std::numeric_limits<TYPE>::lowest() / 2.0f;
-		static constexpr TYPE max = (std::numeric_limits<TYPE>::max)() / 2.0f;
-		static const Rect<TYPE> maxRect(lowest, lowest, max, max);
+	static constexpr Rect<TYPE> getMaxRect() {
+		constexpr TYPE lowest = std::numeric_limits<TYPE>::lowest() / (TYPE)2;
+		constexpr TYPE max = (std::numeric_limits<TYPE>::max)() / (TYPE)2;
+		constexpr Rect<TYPE> maxRect(lowest, lowest, max, max);
 		return maxRect;
 	}
 
-	inline TYPE getMaxZ() const {
+	inline constexpr TYPE getMaxZ() const {
 		return _maxs.y;
 	}
 
-	inline TYPE getMinX() const {
+	inline constexpr TYPE getMinX() const {
 		return _mins.x;
 	}
 
-	inline TYPE getMaxX() const {
+	inline constexpr TYPE getMaxX() const {
 		return _maxs.x;
 	}
 
-	inline TYPE getMinZ() const {
+	inline constexpr TYPE getMinZ() const {
 		return _mins.y;
 	}
 
-	inline bool operator==(const Rect& other) const {
+	inline constexpr bool operator==(const Rect& other) const {
 		return _mins == other._mins && _maxs == other._maxs;
 	}
 
-	inline bool intersectsWith(const Rect& other) const {
+	inline constexpr bool intersectsWith(const Rect& other) const {
 		if (getMaxX() <= other.getMinX() || getMinX() >= other.getMaxX()) {
 			return false;
 		}
@@ -66,7 +66,13 @@ public:
 		return true;
 	}
 
-	inline void offset(TYPE dx, TYPE dz) {
+	inline constexpr Rect<TYPE> offset(TYPE dx, TYPE dz) const {
+		Rect<TYPE> rect(*this);
+		rect.offset(dx, dz);
+		return rect;
+	}
+
+	inline constexpr void offset(TYPE dx, TYPE dz) {
 		if (getMaxRect() == *this) {
 			return;
 		}
@@ -76,7 +82,7 @@ public:
 		_maxs.y += dz;
 	}
 
-	inline bool contains(const Rect& rect) const {
+	inline constexpr bool contains(const Rect& rect) const {
 		if (rect.getMaxX() > getMaxX()) {
 			return false;
 		}
@@ -92,7 +98,7 @@ public:
 		return true;
 	}
 
-	inline bool contains(const glm::tvec2<TYPE>& point) const {
+	inline constexpr bool contains(const glm::tvec2<TYPE>& point) const {
 		if (point.x > getMaxX()) {
 			return false;
 		}
@@ -147,6 +153,14 @@ public:
 
 	inline glm::tvec2<TYPE> lowerLeft() const {
 		return glm::tvec2<TYPE>(getMinX(), getMaxZ());
+	}
+
+	inline constexpr TYPE width() const {
+		return getMaxX() - getMinX();
+	}
+
+	inline constexpr TYPE height() const {
+		return getMaxZ() - getMinZ();
 	}
 
 	inline glm::tvec2<TYPE> size() const {
