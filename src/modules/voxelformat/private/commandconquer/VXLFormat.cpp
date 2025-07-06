@@ -67,10 +67,13 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 static int calculateSpanLength(const voxel::RawVolume *v, int x, int y, int z) {
 	const voxel::Region &region = v->region();
 	int length = 0;
+	voxel::RawVolume::Sampler sampler(*v);
+	sampler.setPosition(x, y, z);
 	for (; y <= region.getUpperY(); ++y) {
-		if (voxel::isAir(v->voxel(x, y, z).getMaterial())) {
+		if (voxel::isAir(sampler.voxel().getMaterial())) {
 			break;
 		}
+		sampler.movePositiveY();
 		++length;
 	}
 	return length;
@@ -78,10 +81,13 @@ static int calculateSpanLength(const voxel::RawVolume *v, int x, int y, int z) {
 
 static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 	const voxel::Region &region = v->region();
+	voxel::RawVolume::Sampler sampler(*v);
+	sampler.setPosition(x, region.getLowerY(), z);
 	for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-		if (!voxel::isAir(v->voxel(x, y, z).getMaterial())) {
+		if (!voxel::isAir(sampler.voxel().getMaterial())) {
 			return false;
 		}
+		sampler.movePositiveY();
 	}
 	return true;
 }
