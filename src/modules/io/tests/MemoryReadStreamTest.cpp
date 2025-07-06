@@ -46,20 +46,19 @@ TEST_F(MemoryReadStreamTest, testEOS) {
 }
 
 TEST_F(MemoryReadStreamTest, testReadString) {
-	const core::String input = "name=foo\nbgcolor=bar\nvoxels=baz\n\r\n\n";
+	const core::String input = "name=foo\n";
 	io::MemoryReadStream stream(input.c_str(), input.size());
-	core::String line;
-	ASSERT_TRUE(stream.readLine(line));
-	ASSERT_EQ("name=foo", line);
-	ASSERT_TRUE(stream.readLine(line));
-	ASSERT_EQ("bgcolor=bar", line);
-	ASSERT_TRUE(stream.readLine(line));
-	ASSERT_EQ("voxels=baz", line);
-	ASSERT_TRUE(stream.readLine(line));
-	ASSERT_EQ("", line);
-	ASSERT_TRUE(stream.readLine(line));
-	ASSERT_EQ("", line);
-	ASSERT_FALSE(stream.readLine(line));
+	core::String str;
+	ASSERT_TRUE(stream.readString(9, str, true));
+	ASSERT_EQ("name=foo\n", str);
+	ASSERT_TRUE(stream.eos());
+	stream.seek(0, SEEK_SET);
+	ASSERT_TRUE(stream.readString(4, str, false));
+	ASSERT_EQ("name", str);
+	ASSERT_FALSE(stream.eos());
+	ASSERT_TRUE(stream.readString(3, str, false));
+	ASSERT_EQ("=fo", str);
+	ASSERT_FALSE(stream.eos());
 }
 
 } // namespace io

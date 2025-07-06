@@ -351,6 +351,9 @@ bool ReadStream::readLine(core::String &str) {
 
 bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 	if (!terminated) {
+		if (length <= 0) {
+			return true;
+		}
 		return read(strbuff, length) == length;
 	}
 	for (int i = 0; i < length; ++i) {
@@ -370,6 +373,9 @@ bool ReadStream::readString(int length, core::String &str, bool terminated) {
 	str.clear();
 	str.reserve(length);
 	if (!terminated) {
+		if (length <= 0) {
+			return true;
+		}
 		int val = read(str.c_str(), length);
 		if (val == -1) {
 			return false;

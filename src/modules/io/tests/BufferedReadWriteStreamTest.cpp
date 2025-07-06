@@ -206,6 +206,50 @@ TEST(BufferedReadWriteStreamTest, testString) {
 	EXPECT_STREQ("foobar", buf);
 }
 
+TEST(BufferedReadWriteStreamTest, testPascalString8) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writePascalStringUInt8("foobar"));
+	EXPECT_EQ(stream.size(), (int64_t)(sizeof(uint8_t) + 6));
+	stream.writeString("ignore", true);
+	stream.seek(0);
+	core::String buf;
+	EXPECT_TRUE(stream.readPascalStringUInt8(buf));
+	EXPECT_EQ("foobar", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testPascalString16LE) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writePascalStringUInt16LE("foobar"));
+	EXPECT_EQ(stream.size(), (int64_t)(sizeof(uint16_t) + 6));
+	stream.writeString("ignore", true);
+	stream.seek(0);
+	core::String buf;
+	EXPECT_TRUE(stream.readPascalStringUInt16LE(buf));
+	EXPECT_EQ("foobar", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testPascalString16LEEmpty) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writePascalStringUInt16LE(""));
+	EXPECT_EQ(stream.size(), (int64_t)(sizeof(uint16_t)));
+	stream.writeString("ignore", true);
+	stream.seek(0);
+	core::String buf;
+	EXPECT_TRUE(stream.readPascalStringUInt16LE(buf));
+	EXPECT_EQ("", buf);
+}
+
+TEST(BufferedReadWriteStreamTest, testPascalString32LE) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writePascalStringUInt32LE("foobar"));
+	EXPECT_EQ(stream.size(), (int64_t)(sizeof(uint32_t) + 6));
+	stream.writeString("ignore", true);
+	stream.seek(0);
+	core::String buf;
+	EXPECT_TRUE(stream.readPascalStringUInt32LE(buf));
+	EXPECT_EQ("foobar", buf);
+}
+
 TEST(BufferedReadWriteStreamTest, testEmptyString) {
 	BufferedReadWriteStream stream;
 	const char *foobar = "";
