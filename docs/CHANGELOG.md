@@ -18,7 +18,7 @@ General:
    - Improved format detection for the file dialog
    - New lua script `shadow` to generate shadows for a scene
    - General performance improvements
-   - Minecraft skin loading via png
+   - Minecraft skin loading and saving
 
 VoxEdit:
 

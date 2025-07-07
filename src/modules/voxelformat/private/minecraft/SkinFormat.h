@@ -17,6 +17,8 @@ namespace voxelformat {
  */
 class SkinFormat : public RGBAFormat {
 public:
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
+							   const LoadContext &ctx) override;
 	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const palette::Palette &palette, const LoadContext &ctx) override;
 
