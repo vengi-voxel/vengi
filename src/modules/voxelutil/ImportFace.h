@@ -9,12 +9,14 @@
 #include "palette/Palette.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
 template<class VOLUME>
 bool importFace(VOLUME &volume, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName,
-				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx = 0) {
+				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1,
+				uint8_t replacementPalIdx = 0) {
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	const math::Axis axis = faceToAxis(faceName);
@@ -69,6 +71,65 @@ bool importFace(VOLUME &volume, const voxel::Region &region, const palette::Pale
 			}
 		});
 	return true;
+}
+
+// we have to flip some positions to project the texture correctly
+static glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &region, voxel::FaceNames face) {
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	if (face != voxel::FaceNames::Up && face != voxel::FaceNames::Down) {
+		y = mins.y + dim.y - (y - mins.y);
+	}
+	switch (face) {
+	case voxel::FaceNames::Down:
+	case voxel::FaceNames::Front:
+		return glm::ivec3(mins.x + dim.x - (x - mins.x), y, z);
+	case voxel::FaceNames::Right:
+		return glm::ivec3(x, y, mins.z + dim.z - (z - mins.z));
+	case voxel::FaceNames::Up:
+		return glm::ivec3(mins.x + dim.x - (x - mins.x), y, mins.z + dim.z - (z - mins.z));
+	default:
+		break;
+	}
+	return glm::ivec3(x, y, z);
+}
+
+template<class VOLUME>
+void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, voxel::FaceNames faceName,
+						const image::ImagePtr &image, glm::vec2 uv0 = {0.0f, 0.0f}, glm::vec2 uv1 = {1.0f, 1.0f},
+						bool projectOntoSurface = false) {
+	// TODO: Move into ImportFace.h
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::vec3 &size = region.getDimensionsInVoxels();
+	const math::Axis axis = faceToAxis(faceName);
+	const int axisIdx0 = math::getIndexForAxis(axis);
+	const int axisIdx1 = axis == math::Axis::Y ? (axisIdx0 + 2) % 3 : (axisIdx0 + 1) % 3;
+	const int axisIdx2 = axis == math::Axis::Y ? (axisIdx0 + 1) % 3 : (axisIdx0 + 2) % 3;
+	const int axisIdxUV1 = (axisIdx1 + 0) % 2;
+	const int axisIdxUV2 = (axisIdx1 + 1) % 2;
+	const palette::Palette &palette = wrapper.node().palette();
+
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const glm::ivec3 uvPos = getUVPosForFace(x, y, z, region, faceName);
+		const float axis1Factor = ((float)(uvPos[axisIdx1] - mins[axisIdx1]) + 0.5f) / size[axisIdx1];
+		const float axis2Factor = ((float)(uvPos[axisIdx2] - mins[axisIdx2]) + 0.5f) / size[axisIdx2];
+		glm::vec2 uv;
+		uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
+		uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
+		const core::RGBA color = image->colorAt(uv, image::TextureWrap::Repeat, image::TextureWrap::Repeat, true);
+		if (color.a == 0) {
+			return;
+		}
+		int palIdx = palette.getClosestMatch(color);
+		if (palIdx == palette::PaletteColorNotFound) {
+			palIdx = 0;
+		}
+		const glm::ivec3 pos(x, y, z);
+		wrapper.setVoxel(pos.x, pos.y, pos.z, voxel::createVoxel(palette, palIdx));
+	};
+
+	const int cnt = voxelutil::visitFace(wrapper, region, faceName, visitor, projectOntoSurface);
+	Log::debug("Visited %i voxels for face %s", cnt, voxel::faceNameString(faceName));
 }
 
 } // namespace voxelutil
