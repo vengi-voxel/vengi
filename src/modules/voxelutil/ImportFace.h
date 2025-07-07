@@ -74,7 +74,7 @@ bool importFace(VOLUME &volume, const voxel::Region &region, const palette::Pale
 }
 
 // we have to flip some positions to project the texture correctly
-static glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &region, voxel::FaceNames face) {
+inline glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &region, voxel::FaceNames face) {
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 	if (face != voxel::FaceNames::Up && face != voxel::FaceNames::Down) {
@@ -94,6 +94,9 @@ static glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &regi
 	return glm::ivec3(x, y, z);
 }
 
+/**
+ * @note UV coordinates have their origin in the upper left corner
+ */
 template<class VOLUME>
 void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, voxel::FaceNames faceName,
 						const image::ImagePtr &image, glm::vec2 uv0 = {0.0f, 0.0f}, glm::vec2 uv1 = {1.0f, 1.0f},
