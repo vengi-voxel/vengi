@@ -115,13 +115,13 @@ static constexpr SkinBox skinBoxes[] = {
 	{"leg_l", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left, false}};
 
 static constexpr SkinBox skinBoxesSlim[] = {
-	{"head", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, head, false},
-	{"hat", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, hat, true},
-	{"body", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body, false},
+	skinBoxes[0],
+	skinBoxes[1],
+	skinBoxes[2],
 	{"shoulder_r", {3, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_slim_right, false},
 	{"shoulder_l", {3, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_slim_left, false},
-	{"leg_r", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right, false},
-	{"leg_l", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left, false}};
+	skinBoxes[5],
+	skinBoxes[6]};
 
 static const voxel::FaceNames order[] = {voxel::FaceNames::Top,	  voxel::FaceNames::Bottom, voxel::FaceNames::Right,
 										 voxel::FaceNames::Front, voxel::FaceNames::Left,	voxel::FaceNames::Back};
@@ -181,9 +181,10 @@ static void visitSkinFace(const voxel::RawVolume *v, const scenegraph::SceneGrap
 			const int px = rect.getMinX() + pixelIndex % rect.width();
 			const int py = rect.getMinZ() + pixelIndex / rect.width();
 			++pixelIndex;
+			// TODO: VOXELFORMAT: this error triggers for slim skins (shoulder_l face indices 2 and 4)
 			if (px < 0 || px >= image->width() || py < 0 || py >= image->height()) {
-				Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i", px, py, image->width(),
-						   image->height());
+				Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i (%s:%i at %i:%i:%i)", px, py,
+						   image->width(), image->height(), box.name, faceIndex, x, y, z);
 				return;
 			}
 			func(x, y, z, voxel, image, px, py);
