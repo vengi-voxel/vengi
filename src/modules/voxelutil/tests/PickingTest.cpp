@@ -5,6 +5,7 @@
 #include "voxelutil/Picking.h"
 #include "app/tests/AbstractTest.h"
 #include "core/GLM.h"
+#include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
 
 namespace voxelutil {
@@ -21,6 +22,7 @@ TEST_F(PickingTest, testPicking) {
 	ASSERT_EQ(glm::ivec3(0), result.hitVoxel)
 		<< "Expected to hit the voxel at (0, 0, 0) - but got " << result.hitVoxel.x << ", " << result.hitVoxel.y << ", "
 		<< result.hitVoxel.z;
+	ASSERT_TRUE(result.validPreviousPosition);
 	ASSERT_EQ(glm::ivec3(0, 1, 0), result.previousPosition)
 		<< "Expected to get a previous position of (0, 1, 0) - but got " << result.previousPosition.x << ", "
 		<< result.previousPosition.y << ", " << result.previousPosition.z;
