@@ -15,6 +15,7 @@
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/trigonometric.hpp>
@@ -85,21 +86,21 @@ static constexpr Part arm_left(shiftPart(leg_left, 32, 32));
 static constexpr Part leg_right(shiftPart(leg_left, 16, 32));
 
 static constexpr Part arm_slim_right = {{
-    {44, 16, 47, 20}, // top
-    {47, 16, 50, 20}, // bottom
-    {41, 20, 44, 32}, // right
-    {44, 20, 47, 32}, // front
-    {47, 20, 50, 32}, // left
-    {50, 20, 53, 32}  // back
+	{44, 16, 47, 20}, // top
+	{47, 16, 50, 20}, // bottom
+	{41, 20, 44, 32}, // right
+	{44, 20, 47, 32}, // front
+	{47, 20, 50, 32}, // left
+	{50, 20, 53, 32}  // back
 }};
 
 static constexpr Part arm_slim_left = {{
-    {36, 48, 39, 52}, // top
-    {39, 48, 42, 52}, // bottom
-    {33, 52, 36, 64}, // right
-    {36, 52, 39, 64}, // front
-    {39, 52, 42, 64}, // left
-    {42, 52, 45, 64}  // back
+	{36, 48, 39, 52}, // top
+	{39, 48, 42, 52}, // bottom
+	{33, 52, 36, 64}, // right
+	{36, 52, 39, 64}, // front
+	{39, 52, 42, 64}, // left
+	{42, 52, 45, 64}  // back
 }};
 
 // Define the skin boxes and use names that animate.lua can work with
@@ -232,7 +233,7 @@ static void importPart(const image::ImagePtr &image, const SkinBox &box, int fac
 }
 
 size_t SkinFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
-							const LoadContext &ctx) {
+							   const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -349,6 +350,7 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		}
 	}
 
+	// TODO: VOXELFORMAT: support slim skins
 	const bool mergedFaces = sceneGraph.findNodeByName(skinBoxes[0].name) != nullptr;
 	for (const SkinBox &skinBox : skinBoxes) {
 		for (int faceIndex = 0; faceIndex < lengthof(order); ++faceIndex) {
@@ -370,6 +372,9 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 			auto writeToImage = [&palette](int x, int y, int z, const voxel::Voxel &voxel, const image::ImagePtr &img,
 										   int px, int py) {
+				if (voxel::isAir(voxel.getMaterial())) {
+					return;
+				}
 				const core::RGBA &color = palette.color(voxel.getColor());
 				if (color.a == 0) {
 					return;
