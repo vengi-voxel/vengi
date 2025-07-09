@@ -49,6 +49,39 @@ enum class VisitorOrder {
 	mZmXY,
 	Max
 };
+static const char *VisitorOrderStr[] = {
+	"XYZ",
+	"ZYX",
+	"ZXY",
+	"XmZY",
+	"mXZY",
+	"mXmZY",
+	"mXZmY",
+	"XmZmY",
+	"mXmZmY",
+	"XZY",
+	"XZmY",
+	"YXZ",
+	"YZX",
+	"YmXZ",
+	"mYZX",
+	"YZmX",
+	"mYmXZ",
+	"mYXmZ",
+	"mYmZmX",
+	"mYmXmZ",
+	"mZmXmY",
+	"ZmXmY",
+	"ZmXY",
+	"YXmZ",
+	"ZXmY",
+	"mZXY",
+	"mYZmX",
+	"mYXZ",
+	"mZXmY",
+	"mZmXY"
+};
+static_assert(lengthof(VisitorOrderStr) == (int)VisitorOrder::Max, "Array size mismatch");
 
 /**
  * @brief Will skip air voxels on volume

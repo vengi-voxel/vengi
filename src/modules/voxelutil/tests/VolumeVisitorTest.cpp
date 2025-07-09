@@ -191,40 +191,7 @@ TEST_P(VolumeVisitorOrderTest, testVisitor) {
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const VisitorOrder& state) {
-	static const char *strings[] = {
-		"XYZ",
-		"ZYX",
-		"ZXY",
-		"XmZY",
-		"mXZY",
-		"mXmZY",
-		"mXZmY",
-		"XmZmY",
-		"mXmZmY",
-		"XZY",
-		"XZmY",
-		"YXZ",
-		"YZX",
-		"YmXZ",
-		"mYZX",
-		"YZmX",
-		"mYmXZ",
-		"mYXmZ",
-		"mYmZmX",
-		"mYmXmZ",
-		"mZmXmY",
-		"ZmXmY",
-		"ZmXY",
-		"YXmZ",
-		"ZXmY",
-		"mZXY",
-		"mYZmX",
-		"mYXZ",
-		"mZXmY",
-		"mZmXY"
-	};
-	static_assert(lengthof(strings) == (int)VisitorOrder::Max, "Array size mismatch");
-	return os << "order[" << strings[(int)state] << " - " << (int)state << "]";
+	return os << "order[" << VisitorOrderStr[(int)state] << " - " << (int)state << "]";
 }
 
 INSTANTIATE_TEST_SUITE_P(VisitorOrder, VolumeVisitorOrderTest,
