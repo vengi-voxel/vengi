@@ -44,14 +44,14 @@ struct SkinBox {
 // |         |  Top    |  Bottom |         |
 // |  Right  |  Front  |  Left   | Back    |
 
-// |  HEAD     |  HAT     |
-// | LEG_R | BODY | ARM_R |
-// |       |      |       |
-// |   | LEG_L | ARM_L |  |
+// |  HEAD           |  HAT            |
+// | LEG_R   | BODY        | ARM_R     |
+// | LEG_R_E | BODY_E      | ARM_R_E   |
+// | LEG_L_E | LEG_L | ARM_L | ARM_L_E |
 
 static constexpr Part shiftPart(const Part &part, int offsetX, int offsetY) {
 	Part shiftedPart;
-	for (int i = 0; i < 6; ++i) {
+	for (int i = 0; i < lengthof(Part::rects); ++i) {
 		shiftedPart.rects[i] = part[i].offset(offsetX, offsetY);
 	}
 	return shiftedPart;
@@ -108,8 +108,16 @@ static constexpr Part arm_right(shiftPart(leg_right, 40, 0));
 static constexpr Part arm_left(shiftPart(leg_right, 32, 32));
 static constexpr Part leg_left(shiftPart(leg_right, 16, 32));
 
-static constexpr Part arm_slim_right(slimPart(shiftPart(leg_right, 40, 0)));
-static constexpr Part arm_slim_left(slimPart(shiftPart(leg_right, 32, 32)));
+static constexpr Part body_ex(shiftPart(body, 0, 16));
+static constexpr Part arm_right_ex(shiftPart(arm_right, 0, 16));
+static constexpr Part leg_right_ex(shiftPart(leg_right, 0, 16));
+static constexpr Part arm_left_ex(shiftPart(arm_left, 16, 0));
+static constexpr Part leg_left_ex(shiftPart(leg_left, -16, 0));
+
+static constexpr Part arm_slim_right(slimPart(arm_right));
+static constexpr Part arm_slim_left(slimPart(arm_left));
+static constexpr Part arm_slim_right_ex(slimPart(arm_right_ex));
+static constexpr Part arm_slim_left_ex(slimPart(arm_left_ex));
 
 // Define the skin boxes and use names that animate.lua can work with
 static constexpr SkinBox skinBoxes[] = {
@@ -119,7 +127,13 @@ static constexpr SkinBox skinBoxes[] = {
 	{"shoulder_r", {4, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_right, false},
 	{"shoulder_l", {4, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_left, false},
 	{"leg_r", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right, false},
-	{"leg_l", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left, false}};
+	{"leg_l", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left, false},
+	{"body_ex", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body_ex, true},
+	{"shoulder_r_ex", {4, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_right_ex, true},
+	{"shoulder_l_ex", {4, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_left_ex, true},
+	{"leg_r_ex", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right_ex, true},
+	{"leg_l_ex", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left_ex, true}
+};
 
 static constexpr SkinBox skinBoxesSlim[] = {
 	skinBoxes[0],
@@ -128,7 +142,13 @@ static constexpr SkinBox skinBoxesSlim[] = {
 	{"shoulder_r", {3, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_slim_right, false},
 	{"shoulder_l", {3, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_slim_left, false},
 	skinBoxes[5],
-	skinBoxes[6]};
+	skinBoxes[6],
+	skinBoxes[7],
+	{"shoulder_r_ex", {3, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_slim_right_ex, true},
+	{"shoulder_l_ex", {3, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_slim_left_ex, true},
+	skinBoxes[10],
+	skinBoxes[11]
+};
 
 static const voxel::FaceNames order[] = {voxel::FaceNames::Top,	  voxel::FaceNames::Bottom, voxel::FaceNames::Right,
 										 voxel::FaceNames::Front, voxel::FaceNames::Left,	voxel::FaceNames::Back};
@@ -145,7 +165,7 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 		const bool isNegative = voxel::isNegativeFace(faceNameOffset);
 		float offset = applyTransform ? 0.1f : 0.02f;
 		if (skinBox.extension) {
-			offset *= 2.0f; // double the offset for extensions
+			offset = 0.5f;
 		}
 		const float offsetSign = isNegative ? -offset : offset;
 		if (isX) {
