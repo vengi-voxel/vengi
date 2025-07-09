@@ -5,7 +5,6 @@
 #include "SkinFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "image/Image.h"
 #include "math/Rect.h"
@@ -25,6 +24,10 @@ namespace voxelformat {
 using UV = math::Rect<int>;
 struct Part {
 	UV rects[6]; // top, bottom, right, front, left, back
+
+	constexpr const UV &operator[](size_t idx) const {
+		return rects[idx];
+	}
 };
 
 // Defines a single 3D part from its 6 faces (x, y, z sizes and face coordinates)
@@ -49,9 +52,28 @@ struct SkinBox {
 static constexpr Part shiftPart(const Part &part, int offsetX, int offsetY) {
 	Part shiftedPart;
 	for (int i = 0; i < 6; ++i) {
-		shiftedPart.rects[i] = part.rects[i].offset(offsetX, offsetY);
+		shiftedPart.rects[i] = part[i].offset(offsetX, offsetY);
 	}
 	return shiftedPart;
+}
+
+// slim
+// |    | 3 | 3 |    |
+// | 4  | 3 | 4  | 3 |
+
+// standard
+// |    |  4  |  4  |    |
+// | 4  |  4  |  4  | 4  |
+
+static constexpr Part slimPart(const Part &part) {
+	Part p = part;
+	p.rects[0] = UV(part[0].getMinX() - 0, part[0].getMinZ(), part[0].getMaxX() - 1, part[0].getMaxZ());
+	p.rects[1] = UV(part[1].getMinX() - 1, part[1].getMinZ(), part[1].getMaxX() - 2, part[1].getMaxZ());
+	// 2 is unchanged
+	p.rects[3] = UV(part[3].getMinX() - 0, part[3].getMinZ(), part[3].getMaxX() - 1, part[3].getMaxZ());
+	p.rects[4] = UV(part[4].getMinX() - 1, part[4].getMinZ(), part[4].getMaxX() - 1, part[4].getMaxZ());
+	p.rects[5] = UV(part[5].getMinX() - 1, part[5].getMinZ(), part[5].getMaxX() - 2, part[5].getMaxZ());
+	return p;
 }
 
 static constexpr Part head = {{
@@ -86,23 +108,8 @@ static constexpr Part arm_right(shiftPart(leg_right, 40, 0));
 static constexpr Part arm_left(shiftPart(leg_right, 32, 32));
 static constexpr Part leg_left(shiftPart(leg_right, 16, 32));
 
-static constexpr Part arm_slim_right = {{
-	{44, 16, 47, 20}, // top
-	{47, 16, 50, 20}, // bottom
-	{41, 20, 44, 32}, // right
-	{44, 20, 47, 32}, // front
-	{47, 20, 50, 32}, // left
-	{50, 20, 53, 32}  // back
-}};
-
-static constexpr Part arm_slim_left = {{
-	{36, 48, 39, 52}, // top
-	{39, 48, 42, 52}, // bottom
-	{33, 52, 36, 64}, // right
-	{36, 52, 39, 64}, // front
-	{39, 52, 42, 64}, // left
-	{42, 52, 45, 64}  // back
-}};
+static constexpr Part arm_slim_right(slimPart(shiftPart(leg_right, 40, 0)));
+static constexpr Part arm_slim_left(slimPart(shiftPart(leg_right, 32, 32)));
 
 // Define the skin boxes and use names that animate.lua can work with
 static constexpr SkinBox skinBoxes[] = {
@@ -162,9 +169,21 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 	sceneGraph.emplace(core::move(node), parentId);
 }
 
+// check the image for importing the skin
 static bool isSlim(const image::ImagePtr &image) {
 	core::RGBA pixel = image->colorAt(54, 20);
 	return pixel.a == 0;
+}
+
+// check the volume region for exporting the skin
+static bool isSlim(const SkinBox &skinBox, const voxel::RawVolume *v) {
+	const core::String name = skinBox.name;
+	if (name == "shoulder_r" || name == "shoulder_l") {
+		if (v->region().getWidthInVoxels() == 3) {
+			return true; // slim shoulder
+		}
+	}
+	return false;
 }
 
 // we have special needs for the visitor order here - to be independent from other use-cases for the
@@ -200,24 +219,24 @@ template<class FUNC>
 static void visitSkinFace(const voxel::RawVolume *v, const image::ImagePtr &image, const SkinBox &box, int faceIndex,
 						  voxel::FaceNames faceName, FUNC &&func) {
 	const voxelutil::VisitorOrder visitorOrder = visitorOrderForFace(faceName);
-	const UV &rect = box.part.rects[faceIndex];
+	const UV &rect = box.part[faceIndex];
 	int pixelIndex = 0;
 	auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		const int px = rect.getMinX() + (pixelIndex % rect.width());
 		const int py = rect.getMinZ() + (pixelIndex / rect.width());
 		++pixelIndex;
-		// TODO: VOXELFORMAT: this error triggers for slim skins (shoulder_l face indices 2 and 4)
 		if (px < 0 || px >= image->width() || py < 0 || py >= image->height()) {
-			Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i (%s:%i at %i:%i:%i)", px, py,
-					   image->width(), image->height(), box.name, faceIndex, x, y, z);
+			Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i (%s:%i at %i:%i:%i) %s", px, py,
+					   image->width(), image->height(), box.name, faceIndex, x, y, z, v->region().toString().c_str());
 			return;
 		}
 		func(x, y, z, voxel, image, px, py);
 	};
 	voxelutil::visitFace(*v, faceName, visitor, visitorOrder, false);
 	if (pixelIndex != rect.width() * rect.height()) {
-		Log::error("Pixel index %i does not match expected size %i for face %s in box %s", pixelIndex,
-				   rect.width() * rect.height(), voxel::faceNameString(faceName), box.name);
+		Log::error("Pixel index %i does not match expected size %i for face %s in box %s (%s)", pixelIndex,
+				   rect.width() * rect.height(), voxel::faceNameString(faceName), box.name,
+				   voxelutil::VisitorOrderStr[(int)visitorOrder]);
 	}
 };
 
@@ -355,9 +374,9 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		}
 	}
 
-	// TODO: VOXELFORMAT: support slim skins
 	const bool mergedFaces = sceneGraph.findNodeByName(skinBoxes[0].name) != nullptr;
-	for (const SkinBox &skinBox : skinBoxes) {
+	for (int n = 0; n < lengthof(skinBoxes); ++n) {
+		const SkinBox &skinBox = skinBoxes[n];
 		for (int faceIndex = 0; faceIndex < lengthof(order); ++faceIndex) {
 			const voxel::FaceNames faceName = order[faceIndex];
 			const core::String name =
@@ -387,7 +406,12 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				img->setColor(color, px, py);
 			};
 
-			visitSkinFace(v, image, skinBox, faceIndex, faceName, writeToImage);
+			const SkinBox *skinBoxPtr = &skinBox;
+			if (isSlim(skinBox, v)) {
+				// use the slim part for the skin box
+				skinBoxPtr = &skinBoxesSlim[n];
+			}
+			visitSkinFace(v, image, *skinBoxPtr, faceIndex, faceName, writeToImage);
 		}
 	}
 	return image->writePNG(*stream);
