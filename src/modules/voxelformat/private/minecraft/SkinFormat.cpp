@@ -35,6 +35,7 @@ struct SkinBox {
 	glm::vec3 rotationDegree; // Rotation in degrees around the pivot point
 	glm::vec3 pivot;
 	Part part;
+	bool extension;
 };
 
 // |         |  Top    |  Bottom |         |
@@ -63,7 +64,7 @@ static constexpr Part head = {{
 }};
 
 static constexpr Part hat(shiftPart(head, 32, 0));
-static constexpr Part leg_left = {{
+static constexpr Part leg_right = {{
 	{4, 16, 8, 20},	 // top
 	{8, 16, 12, 20}, // bottom
 	{0, 20, 4, 32},	 // right
@@ -81,9 +82,9 @@ static constexpr Part body = {{
 	{32, 20, 40, 32}  // back
 }};
 
-static constexpr Part arm_right(shiftPart(leg_left, 40, 0));
-static constexpr Part arm_left(shiftPart(leg_left, 32, 32));
-static constexpr Part leg_right(shiftPart(leg_left, 16, 32));
+static constexpr Part arm_right(shiftPart(leg_right, 40, 0));
+static constexpr Part arm_left(shiftPart(leg_right, 32, 32));
+static constexpr Part leg_left(shiftPart(leg_right, 16, 32));
 
 static constexpr Part arm_slim_right = {{
 	{44, 16, 47, 20}, // top
@@ -105,37 +106,40 @@ static constexpr Part arm_slim_left = {{
 
 // Define the skin boxes and use names that animate.lua can work with
 static constexpr SkinBox skinBoxes[] = {
-	{"head", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, head},
-	{"hat", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, hat},
-	{"body", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body},
-	{"shoulder_r", {4, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_right},
-	{"shoulder_l", {4, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_left},
-	{"leg_r", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right},
-	{"leg_l", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left}};
+	{"head", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, head, false},
+	{"hat", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, hat, true},
+	{"body", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body, false},
+	{"shoulder_r", {4, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_right, false},
+	{"shoulder_l", {4, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_left, false},
+	{"leg_r", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right, false},
+	{"leg_l", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left, false}};
 
 static constexpr SkinBox skinBoxesSlim[] = {
-	{"head", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, head},
-	{"hat", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, hat},
-	{"body", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body},
-	{"shoulder_r", {3, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_slim_right},
-	{"shoulder_l", {3, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_slim_left},
-	{"leg_r", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right},
-	{"leg_l", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left}};
+	{"head", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, head, false},
+	{"hat", {8, 8, 8}, {0.0f, 24.0f, 0.0f}, {0, 0, 0}, {0.0f, 0.0f, 0.0f}, hat, true},
+	{"body", {8, 12, 4}, {4.0f, 12.0f, 4.0f}, {0, 0, 0}, {0.5f, 0.0f, 0.5f}, body, false},
+	{"shoulder_r", {3, 12, 4}, {8.0f, 21.6f, 4.0f}, {45, 0, 0}, {0.0f, 0.8f, 0.5f}, arm_slim_right, false},
+	{"shoulder_l", {3, 12, 4}, {0.0f, 21.6f, 4.0f}, {-45, 0, 0}, {1.0f, 0.8f, 0.5f}, arm_slim_left, false},
+	{"leg_r", {4, 12, 4}, {6.0f, 12.0f, 4.0f}, {-45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_right, false},
+	{"leg_l", {4, 12, 4}, {2.0f, 12.0f, 4.0f}, {45, 0, 0}, {0.5f, 1.0f, 0.5f}, leg_left, false}};
 
 static const voxel::FaceNames order[] = {voxel::FaceNames::Top,	  voxel::FaceNames::Bottom, voxel::FaceNames::Right,
 										 voxel::FaceNames::Front, voxel::FaceNames::Left,	voxel::FaceNames::Back};
 
 static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int parentId,
-					bool applyTransform, voxel::FaceNames faceNameOffset, const SkinBox &part) {
+					bool applyTransform, voxel::FaceNames faceNameOffset, const SkinBox &skinBox) {
 	scenegraph::SceneGraphTransform transform;
-	glm::vec3 translation = part.translation;
+	glm::vec3 translation = skinBox.translation;
 	if (faceNameOffset != voxel::FaceNames::Max) {
 		// offset the translation by the face name offset to prevent z-fighting
 		const bool isX = voxel::isX(faceNameOffset);
 		const bool isY = voxel::isY(faceNameOffset);
 		const bool isZ = voxel::isZ(faceNameOffset);
 		const bool isNegative = voxel::isNegativeFace(faceNameOffset);
-		const float offset = applyTransform ? 0.1f : 0.02f;
+		float offset = applyTransform ? 0.1f : 0.02f;
+		if (skinBox.extension) {
+			offset *= 2.0f; // double the offset for extensions
+		}
 		const float offsetSign = isNegative ? -offset : offset;
 		if (isX) {
 			translation.x += offsetSign;
@@ -147,12 +151,12 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 	}
 	if (applyTransform) {
 		transform.setLocalTranslation(translation);
-		const glm::quat orientation(glm::radians(part.rotationDegree));
+		const glm::quat orientation(glm::radians(skinBox.rotationDegree));
 		transform.setLocalOrientation(orientation);
-		node.setPivot(part.pivot);
+		node.setPivot(skinBox.pivot);
 	} else {
 		const glm::vec3 regionSize(node.region().getDimensionsInVoxels());
-		transform.setLocalTranslation(translation - part.pivot * regionSize);
+		transform.setLocalTranslation(translation - skinBox.pivot * regionSize);
 	}
 	node.setTransform(0, transform);
 	sceneGraph.emplace(core::move(node), parentId);
