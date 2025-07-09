@@ -175,21 +175,23 @@ static void visitSkinFace(const voxel::RawVolume *v, const scenegraph::SceneGrap
 	const voxelutil::VisitorOrder visitorOrder = visitorOrderForFace(faceName);
 	const UV &rect = box.part.rects[faceIndex];
 	int pixelIndex = 0;
-	voxelutil::visitFace(
-		*v, node->region(), faceName,
-		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const int px = rect.getMinX() + pixelIndex % rect.width();
-			const int py = rect.getMinZ() + pixelIndex / rect.width();
-			++pixelIndex;
-			// TODO: VOXELFORMAT: this error triggers for slim skins (shoulder_l face indices 2 and 4)
-			if (px < 0 || px >= image->width() || py < 0 || py >= image->height()) {
-				Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i (%s:%i at %i:%i:%i)", px, py,
-						   image->width(), image->height(), box.name, faceIndex, x, y, z);
-				return;
-			}
-			func(x, y, z, voxel, image, px, py);
-		},
-		visitorOrder, false);
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const int px = rect.getMinX() + (pixelIndex % rect.width());
+		const int py = rect.getMinZ() + (pixelIndex / rect.width());
+		++pixelIndex;
+		// TODO: VOXELFORMAT: this error triggers for slim skins (shoulder_l face indices 2 and 4)
+		if (px < 0 || px >= image->width() || py < 0 || py >= image->height()) {
+			Log::error("Pixel (%i, %i) is out of bounds for image size %ix%i (%s:%i at %i:%i:%i)", px, py,
+					   image->width(), image->height(), box.name, faceIndex, x, y, z);
+			return;
+		}
+		func(x, y, z, voxel, image, px, py);
+	};
+	voxelutil::visitFace(*v, node->region(), faceName, visitor, visitorOrder, false);
+	if (pixelIndex != rect.width() * rect.height()) {
+		Log::error("Pixel index %i does not match expected size %i for face %s in box %s", pixelIndex,
+				   rect.width() * rect.height(), voxel::faceNameString(faceName), box.name);
+	}
 };
 
 // we have special needs for the visitor order here - to be independent from other use-cases for the
