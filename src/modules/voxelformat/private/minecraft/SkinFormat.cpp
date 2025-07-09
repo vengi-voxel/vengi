@@ -197,9 +197,8 @@ static voxelutil::VisitorOrder visitorOrderForFace(voxel::FaceNames face) {
 }
 
 template<class FUNC>
-static void visitSkinFace(const voxel::RawVolume *v, const scenegraph::SceneGraphNode *node,
-						  const image::ImagePtr &image, const SkinBox &box, int faceIndex, voxel::FaceNames faceName,
-						  FUNC &&func) {
+static void visitSkinFace(const voxel::RawVolume *v, const image::ImagePtr &image, const SkinBox &box, int faceIndex,
+						  voxel::FaceNames faceName, FUNC &&func) {
 	const voxelutil::VisitorOrder visitorOrder = visitorOrderForFace(faceName);
 	const UV &rect = box.part.rects[faceIndex];
 	int pixelIndex = 0;
@@ -215,7 +214,7 @@ static void visitSkinFace(const voxel::RawVolume *v, const scenegraph::SceneGrap
 		}
 		func(x, y, z, voxel, image, px, py);
 	};
-	voxelutil::visitFace(*v, node->region(), faceName, visitor, visitorOrder, false);
+	voxelutil::visitFace(*v, faceName, visitor, visitorOrder, false);
 	if (pixelIndex != rect.width() * rect.height()) {
 		Log::error("Pixel index %i does not match expected size %i for face %s in box %s", pixelIndex,
 				   rect.width() * rect.height(), voxel::faceNameString(faceName), box.name);
@@ -235,7 +234,7 @@ static void importPart(const image::ImagePtr &image, const SkinBox &box, int fac
 		v->setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
 	};
 
-	visitSkinFace(node.volume(), &node, image, box, faceIndex, faceName, readFromImage);
+	visitSkinFace(node.volume(), image, box, faceIndex, faceName, readFromImage);
 }
 
 size_t SkinFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
@@ -388,7 +387,7 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				img->setColor(color, px, py);
 			};
 
-			visitSkinFace(v, node, image, skinBox, faceIndex, faceName, writeToImage);
+			visitSkinFace(v, image, skinBox, faceIndex, faceName, writeToImage);
 		}
 	}
 	return image->writePNG(*stream);
