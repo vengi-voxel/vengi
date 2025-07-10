@@ -209,15 +209,23 @@ INSTANTIATE_TEST_SUITE_P(VisitorOrder, VolumeVisitorOrderTest,
 						VisitorOrder::XZmY,
 						VisitorOrder::YXZ,
 						VisitorOrder::YZX,
+						VisitorOrder::YmXZ,
 						VisitorOrder::mYZX,
 						VisitorOrder::YZmX,
 						VisitorOrder::mYmXZ,
 						VisitorOrder::mYXmZ,
 						VisitorOrder::mYmZmX,
+						VisitorOrder::mYmXmZ,
 						VisitorOrder::mZmXmY,
+						VisitorOrder::ZmXmY,
 						VisitorOrder::ZmXY,
 						VisitorOrder::YXmZ,
-						VisitorOrder::ZXmY
+						VisitorOrder::ZXmY,
+						VisitorOrder::mZXY,
+						VisitorOrder::mYZmX,
+						VisitorOrder::mYXZ,
+						VisitorOrder::mZXmY,
+						VisitorOrder::mZmXY
 				));
 
 } // namespace voxelutil
