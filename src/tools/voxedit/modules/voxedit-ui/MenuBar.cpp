@@ -31,7 +31,7 @@ void MenuBar::viewportOptions() {
 
 	ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
-	if (core::Var::getSafe(cfg::VoxEditViewMode)->intVal() == (int)ViewMode::CommandAndConquer) {
+	if (viewModeNormalPalette(core::Var::getSafe(cfg::VoxEditViewMode)->intVal())) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
 	}
 	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, _("Checkerboard"), cfg::RenderCheckerBoard);
@@ -45,9 +45,14 @@ void MenuBar::init() {
 }
 
 void MenuBar::viewModeOption() {
-	const core::Array<core::String, (int)ViewMode::Max> viewModes = {
-		getViewModeString(ViewMode::Default), getViewModeString(ViewMode::Simple), getViewModeString(ViewMode::All),
-		getViewModeString(ViewMode::CommandAndConquer)};
+	const core::Array<core::String, (int)ViewMode::MinecraftSkin + 1> viewModes = {
+		getViewModeString(ViewMode::Default),			// Default
+		getViewModeString(ViewMode::Simple),			// Simple
+		getViewModeString(ViewMode::All),				// All
+		getViewModeString(ViewMode::CommandAndConquer), // CommandAndConquer
+		getViewModeString(ViewMode::MinecraftSkin)		// MinecraftSkin
+	};
+	static_assert(viewModes.size() == (size_t)ViewMode::Max, "Unexpected viewmode array size");
 	ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
 }
 

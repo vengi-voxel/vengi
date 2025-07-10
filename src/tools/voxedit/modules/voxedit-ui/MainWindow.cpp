@@ -15,7 +15,6 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
-#include "ui/dearimgui/imgui_internal.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
@@ -26,6 +25,7 @@
 #include "ui/IconsLucide.h"
 #include "ui/PopupAbout.h"
 #include "ui/ScopedStyle.h"
+#include "ui/dearimgui/imgui_internal.h"
 #include "util/TextProcessor.h"
 #include "util/VersionCheck.h"
 #include "video/Texture.h"
@@ -194,17 +194,17 @@ void MainWindow::shutdownViewports() {
 bool MainWindow::initViewports() {
 	shutdownViewports();
 
-	if (_viewMode->intVal() == (int)ViewMode::Simple) {
-		_viewports.resize(2);
-		_viewports[0] = new Viewport(_app, _sceneMgr, 0, voxelrender::RenderMode::Scene, false);
-		_viewports[1] = new Viewport(_app, _sceneMgr, 1, voxelrender::RenderMode::Edit, false);
-	} else {
+	if (viewModeAllViewports(_viewMode->intVal())) {
 		_viewports.resize(_numViewports->intVal());
 		bool sceneMode = true;
 		for (int i = 0; i < _numViewports->intVal(); ++i) {
 			_viewports[i] = new Viewport(_app, _sceneMgr, i, sceneMode ? voxelrender::RenderMode::Scene : voxelrender::RenderMode::Edit, true);
 			sceneMode = false;
 		}
+	} else {
+		_viewports.resize(2);
+		_viewports[0] = new Viewport(_app, _sceneMgr, 0, voxelrender::RenderMode::Scene, false);
+		_viewports[1] = new Viewport(_app, _sceneMgr, 1, voxelrender::RenderMode::Edit, false);
 	}
 	bool success = true;
 	for (size_t i = 0; i < _viewports.size(); ++i) {
@@ -398,7 +398,7 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 void MainWindow::leftWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
-	if (_viewMode->intVal() == (int)ViewMode::CommandAndConquer) {
+	if (viewModeNormalPalette(_viewMode->intVal())) {
 		_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
 	}
 	_brushPanel.update(TITLE_BRUSHPANEL, _lastSceneMode, listener);
@@ -437,12 +437,14 @@ void MainWindow::mainWidget() {
 		_viewports[i]->update(&listener);
 	}
 #if ENABLE_RENDER_PANEL
-	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
+	if (viewModeRenderPanel(_viewMode->intVal())) {
+		_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
+	}
 #endif
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
-	if (isSceneMode()) {
+	if (viewModeAnimations(_viewMode->intVal()) && isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
 }
@@ -485,24 +487,34 @@ void MainWindow::rightWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
-	_assetPanel.update(TITLE_ASSET, listener);
-	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
-	if (_viewMode->intVal() != (int)ViewMode::Simple) {
+	if (viewModeAssetPanel(_viewMode->intVal())) {
+		_assetPanel.update(TITLE_ASSET, listener);
+	}
+	if (viewModeAnimations(_viewMode->intVal())) {
+		_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
+	}
+	if (viewModeMementoPanel(_viewMode->intVal())) {
 		_mementoPanel.update(TITLE_MEMENTO, listener);
-		if (_lastHoveredViewport != nullptr) {
-			_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
-		}
+	}
+	if (viewModeCameraPanel(_viewMode->intVal()) && _lastHoveredViewport != nullptr) {
+		_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 	}
 	// _sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
 #if ENABLE_RENDER_PANEL
-	_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
+	if (viewModeRenderPanel(_viewMode->intVal())) {
+		_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
+	}
 #endif
-	if (_viewMode->intVal() != (int)ViewMode::Simple) {
+	if (viewModeTreePanel(_viewMode->intVal())) {
 		_treePanel.update(TITLE_TREES);
+	}
+	if (viewModeLSystemPanel(_viewMode->intVal())) {
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
+	}
+	if (viewModeScriptPanel(_viewMode->intVal())) {
 		_scriptPanel.update(TITLE_SCRIPT, listener);
 	}
 }
@@ -589,8 +601,7 @@ void MainWindow::popupMinecraftMapping() {
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(name.c_str());
 				ImGui::TableNextColumn();
-				ImGui::ColorButton(name.c_str(), ImColor(color.rgba),
-								   ImGuiColorEditFlags_NoInputs);
+				ImGui::ColorButton(name.c_str(), ImColor(color.rgba), ImGuiColorEditFlags_NoInputs);
 			}
 			ImGui::EndTable();
 		}
@@ -1006,7 +1017,7 @@ QuitDisallowReason MainWindow::allowToQuit() {
 }
 
 void MainWindow::updateViewMode() {
-	if (_viewMode->intVal() == (int)ViewMode::CommandAndConquer) {
+	if (viewModePaletteFormat6Bit(_viewMode->intVal())) {
 		core::Var::getSafe(cfg::PalformatRGB6Bit)->setVal(true);
 	} else {
 		core::Var::getSafe(cfg::RenderNormals)->setVal(false);

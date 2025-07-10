@@ -12,7 +12,7 @@ namespace voxedit {
 
 void TreePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create tree")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (core::Var::getSafe(cfg::VoxEditViewMode)->intVal() == (int)ViewMode::Simple) {
+		if (!viewModeTreePanel(core::Var::getSafe(cfg::VoxEditViewMode)->intVal())) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));

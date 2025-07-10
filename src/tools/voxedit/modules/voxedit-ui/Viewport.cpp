@@ -359,7 +359,7 @@ bool Viewport::isSceneMode() const {
 }
 
 void Viewport::toggleScene() {
-	if (_viewMode->intVal() == (int)ViewMode::Simple) {
+	if (!viewModeAllViewports(_viewMode->intVal())) {
 		return;
 	}
 	if (isSceneMode()) {
@@ -472,7 +472,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 }
 
 void Viewport::menuBarRenderModeToggle() {
-	if (_viewMode->intVal() == (int)ViewMode::Simple) {
+	if (!viewModeAllViewports(_viewMode->intVal())) {
 		return;
 	}
 	bool sceneMode = isSceneMode();

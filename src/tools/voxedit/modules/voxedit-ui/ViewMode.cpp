@@ -4,8 +4,35 @@
 
 #include "ViewMode.h"
 #include "app/I18N.h"
+#include "core/ArrayLength.h"
 
 namespace voxedit {
+
+static const uint64_t ALL_FLAGS = ((uint64_t)-1) & ~VIEWMODE_FLAG_PALFORMAT6BIT;
+static const uint64_t DEFAULT_FLAGS = ALL_FLAGS & ~VIEWMODE_FLAG_NORMALPALETTE;
+static const uint64_t SIMLPE_FLAGS =
+	DEFAULT_FLAGS & ~(VIEWMODE_FLAG_ALL_VIEWPORTS | VIEWMODE_FLAG_MEMENTOPANEL | VIEWMODE_FLAG_CAMERAPANEL |
+					  VIEWMODE_FLAG_TREEPANEL | VIEWMODE_FLAG_LSYSTEMPANEL | VIEWMODE_FLAG_SCRIPTPANEL);
+static const uint64_t COMMANDANDCONQUER_FLAGS =
+	DEFAULT_FLAGS | VIEWMODE_FLAG_NORMALPALETTE | VIEWMODE_FLAG_PALFORMAT6BIT;
+static const uint64_t MINECRAFTSKIN_FLAGS =
+	SIMLPE_FLAGS & ~(VIEWMODE_FLAG_ASSETPANEL | VIEWMODE_FLAG_ANIMATIONS | VIEWMODE_FLAG_RENDERPANEL);
+
+static const uint64_t flags[] = {
+	DEFAULT_FLAGS,			 // Default
+	SIMLPE_FLAGS,			 // Simple
+	ALL_FLAGS,				 // All
+	COMMANDANDCONQUER_FLAGS, // CommandAndConquer
+	MINECRAFTSKIN_FLAGS		 // MinecraftSkin
+};
+static_assert(lengthof(flags) == (int)ViewMode::Max, "Viewmode flags don't match existing viewmodes");
+
+uint64_t viewModeFlags(ViewMode viewMode) {
+	if (viewMode == ViewMode::Max) {
+		return 0u;
+	}
+	return flags[(int)viewMode];
+}
 
 const char *getViewModeString(ViewMode viewMode) {
 	switch (viewMode) {
@@ -15,6 +42,8 @@ const char *getViewModeString(ViewMode viewMode) {
 		return _("All");
 	case ViewMode::CommandAndConquer:
 		return _("Command & Conquer");
+	case ViewMode::MinecraftSkin:
+		return _("Minecraft skin");
 	case ViewMode::Max:
 	case ViewMode::Default:
 		break;
