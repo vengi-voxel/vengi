@@ -23,6 +23,7 @@ General:
 VoxEdit:
 
    - New single-non-contiguous voxel placing mode in the brushes
+   - Added new view modes for Minecraft skins and Ace Of Spades
 
 PalConvert:
 
