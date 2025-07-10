@@ -173,7 +173,7 @@ class VolumeVisitorParamTest : public app::AbstractTest, public ::testing::WithP
 class VolumeVisitorOrderTest : public VolumeVisitorParamTest {};
 
 TEST_P(VolumeVisitorOrderTest, testVisitor) {
-	const voxel::Region region(0, 200);
+	const voxel::Region region(-1, 4);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel));
