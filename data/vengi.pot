@@ -619,10 +619,22 @@ msgstr ""
 msgid "0 = plane, 1 = heightmap, 2 = volume"
 msgstr ""
 
+msgid "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"
+msgstr ""
+
 msgid "The type of schematic format to use when saving schematics"
 msgstr ""
 
 msgid "Save in version 1, 2 or the unofficial version 3"
+msgstr ""
+
+msgid "Apply transforms to Minecraft skins"
+msgstr ""
+
+msgid "Add groups for body parts of Minecraft skins"
+msgstr ""
+
+msgid "Merge face parts into single volume for Minecraft skins"
 msgstr ""
 
 msgid "Back"
@@ -670,10 +682,13 @@ msgstr ""
 msgid "Plane"
 msgstr ""
 
+msgid "Thumbnail"
+msgstr ""
+
 msgid "Volume"
 msgstr ""
 
-msgid "Import type"
+msgid "Image mode"
 msgstr ""
 
 msgid "Layer information"
@@ -812,6 +827,12 @@ msgid "Map colors to palette"
 msgstr ""
 
 msgid "Max image size"
+msgstr ""
+
+msgid "Add groups"
+msgstr ""
+
+msgid "Merge faces"
 msgstr ""
 
 msgid "Script parameters"
@@ -1285,9 +1306,6 @@ msgstr ""
 msgid "Local directory"
 msgstr ""
 
-msgid "Thumbnail"
-msgstr ""
-
 msgid "Loading..."
 msgstr ""
 
@@ -1461,8 +1479,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
-"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Tip of the day"
@@ -1822,6 +1840,9 @@ msgid "Tiberian Sun"
 msgstr ""
 
 msgid "Red Alert 2"
+msgstr ""
+
+msgid "Slab6"
 msgstr ""
 
 msgid "Export"
@@ -2387,6 +2408,12 @@ msgid "Simple"
 msgstr ""
 
 msgid "Command & Conquer"
+msgstr ""
+
+msgid "Minecraft Skin"
+msgstr ""
+
+msgid "Ace Of Spades"
 msgstr ""
 
 #, c-format

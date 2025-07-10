@@ -649,10 +649,22 @@ msgstr ""
 msgid "0 = plane, 1 = heightmap, 2 = volume"
 msgstr ""
 
+msgid "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"
+msgstr ""
+
 msgid "The type of schematic format to use when saving schematics"
 msgstr ""
 
 msgid "Save in version 1, 2 or the unofficial version 3"
+msgstr ""
+
+msgid "Apply transforms to Minecraft skins"
+msgstr "Transformationen bei Minecraft Skins anwenden"
+
+msgid "Add groups for body parts of Minecraft skins"
+msgstr ""
+
+msgid "Merge face parts into single volume for Minecraft skins"
 msgstr ""
 
 msgid "Back"
@@ -700,14 +712,17 @@ msgstr "Höhenkarte"
 msgid "Plane"
 msgstr "Ebene"
 
+msgid "Thumbnail"
+msgstr "Miniaturansicht"
+
 msgid "Volume"
 msgstr "Volumen"
 
-msgid "Import type"
-msgstr "Importart"
+msgid "Image mode"
+msgstr "Bildmodus"
 
 msgid "Layer information"
-msgstr ""
+msgstr "Ebeneninformationen"
 
 msgid ""
 "This is saving several images as layers per object.\n"
@@ -843,6 +858,12 @@ msgstr "Mappe Farben auf Palette"
 
 msgid "Max image size"
 msgstr "Maximale Bildgröße"
+
+msgid "Add groups"
+msgstr "Gruppen hinzufügen"
+
+msgid "Merge faces"
+msgstr "Seiten zusammenführen"
 
 msgid "Script parameters"
 msgstr "Skriptparameter"
@@ -1325,9 +1346,6 @@ msgstr "Format"
 msgid "Local directory"
 msgstr "Lokales Verzeichnis"
 
-msgid "Thumbnail"
-msgstr "Miniaturansicht"
-
 msgid "Loading..."
 msgstr "Laden..."
 
@@ -1533,8 +1551,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
-"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
@@ -1911,6 +1929,9 @@ msgstr "Tiberian Sun"
 
 msgid "Red Alert 2"
 msgstr "Red Alert 2"
+
+msgid "Slab6"
+msgstr ""
 
 msgid "Export"
 msgstr "Exportieren"
@@ -2500,6 +2521,12 @@ msgstr "Einfach"
 msgid "Command & Conquer"
 msgstr "Command & Conquer"
 
+msgid "Minecraft Skin"
+msgstr "Minecraft Skin"
+
+msgid "Ace Of Spades"
+msgstr "Ace Of Spades"
+
 #, c-format
 msgid "Slice at %s: %i"
 msgstr ""
@@ -3021,6 +3048,9 @@ msgstr ""
 
 msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
+
+#~ msgid "Import type"
+#~ msgstr "Importart"
 
 #~ msgid "Log to the system log"
 #~ msgstr "In das Systemprotokoll schreiben"
