@@ -361,6 +361,9 @@ void MainWindow::afterLoad() {
 }
 
 void MainWindow::checkPossibleVolumeSplit() {
+	if (viewModeNoSplit(_viewMode->intVal())) {
+		return;
+	}
 	_popupVolumeSplit = _sceneMgr->exceedsMaxSuggestedVolumeSize();
 }
 

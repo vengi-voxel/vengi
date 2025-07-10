@@ -8,7 +8,7 @@
 
 namespace voxedit {
 
-static const uint64_t ALL_FLAGS = ((uint64_t)-1) & ~VIEWMODE_FLAG_PALFORMAT6BIT;
+static const uint64_t ALL_FLAGS = ((uint64_t)-1) & ~(VIEWMODE_FLAG_PALFORMAT6BIT | VIEWMODE_FLAG_NOSPLIT);
 static const uint64_t DEFAULT_FLAGS = ALL_FLAGS & ~VIEWMODE_FLAG_NORMALPALETTE;
 static const uint64_t SIMLPE_FLAGS =
 	DEFAULT_FLAGS & ~(VIEWMODE_FLAG_ALL_VIEWPORTS | VIEWMODE_FLAG_MEMENTOPANEL | VIEWMODE_FLAG_CAMERAPANEL |
@@ -17,13 +17,15 @@ static const uint64_t COMMANDANDCONQUER_FLAGS =
 	DEFAULT_FLAGS | VIEWMODE_FLAG_NORMALPALETTE | VIEWMODE_FLAG_PALFORMAT6BIT;
 static const uint64_t MINECRAFTSKIN_FLAGS =
 	SIMLPE_FLAGS & ~(VIEWMODE_FLAG_ASSETPANEL | VIEWMODE_FLAG_ANIMATIONS | VIEWMODE_FLAG_RENDERPANEL);
+static const uint64_t ACEOFSPADES_FLAGS = (DEFAULT_FLAGS & ~(VIEWMODE_FLAG_ANIMATIONS)) | VIEWMODE_FLAG_NOSPLIT;
 
 static const uint64_t flags[] = {
 	DEFAULT_FLAGS,			 // Default
 	SIMLPE_FLAGS,			 // Simple
 	ALL_FLAGS,				 // All
 	COMMANDANDCONQUER_FLAGS, // CommandAndConquer
-	MINECRAFTSKIN_FLAGS		 // MinecraftSkin
+	MINECRAFTSKIN_FLAGS,	 // MinecraftSkin
+	ACEOFSPADES_FLAGS		 // AceOfSpades
 };
 static_assert(lengthof(flags) == (int)ViewMode::Max, "Viewmode flags don't match existing viewmodes");
 
@@ -43,7 +45,9 @@ const char *getViewModeString(ViewMode viewMode) {
 	case ViewMode::CommandAndConquer:
 		return _("Command & Conquer");
 	case ViewMode::MinecraftSkin:
-		return _("Minecraft skin");
+		return _("Minecraft Skin");
+	case ViewMode::AceOfSpades:
+		return _("Ace Of Spades");
 	case ViewMode::Max:
 	case ViewMode::Default:
 		break;

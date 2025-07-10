@@ -45,12 +45,13 @@ void MenuBar::init() {
 }
 
 void MenuBar::viewModeOption() {
-	const core::Array<core::String, (int)ViewMode::MinecraftSkin + 1> viewModes = {
+	const core::Array<core::String, (int)ViewMode::AceOfSpades + 1> viewModes = {
 		getViewModeString(ViewMode::Default),			// Default
 		getViewModeString(ViewMode::Simple),			// Simple
 		getViewModeString(ViewMode::All),				// All
 		getViewModeString(ViewMode::CommandAndConquer), // CommandAndConquer
-		getViewModeString(ViewMode::MinecraftSkin)		// MinecraftSkin
+		getViewModeString(ViewMode::MinecraftSkin),	// MinecraftSkin
+		getViewModeString(ViewMode::AceOfSpades)		// AceOfSpades
 	};
 	static_assert(viewModes.size() == (size_t)ViewMode::Max, "Unexpected viewmode array size");
 	ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);

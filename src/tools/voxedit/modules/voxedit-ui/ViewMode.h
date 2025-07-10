@@ -8,7 +8,7 @@
 
 namespace voxedit {
 
-enum class ViewMode : uint8_t { Default, Simple, All, CommandAndConquer, MinecraftSkin, Max };
+enum class ViewMode : uint8_t { Default, Simple, All, CommandAndConquer, MinecraftSkin, AceOfSpades, Max };
 
 #define VIEWMODE_FLAG_PALFORMAT6BIT (1 << 0)
 #define VIEWMODE_FLAG_ALL_VIEWPORTS (1 << 1)
@@ -21,6 +21,7 @@ enum class ViewMode : uint8_t { Default, Simple, All, CommandAndConquer, Minecra
 #define VIEWMODE_FLAG_ASSETPANEL    (1 << 8)
 #define VIEWMODE_FLAG_RENDERPANEL   (1 << 9)
 #define VIEWMODE_FLAG_ANIMATIONS    (1 << 10)
+#define VIEWMODE_FLAG_NOSPLIT       (1 << 11)
 
 uint64_t viewModeFlags(ViewMode viewMode);
 
@@ -77,6 +78,11 @@ inline bool viewModeRenderPanel(T viewMode) {
 template<typename T>
 inline bool viewModeAnimations(T viewMode) {
 	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_ANIMATIONS) != 0u;
+}
+
+template<typename T>
+inline bool viewModeNoSplit(T viewMode) {
+	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_NOSPLIT) != 0u;
 }
 
 const char *getViewModeString(ViewMode viewMode);
