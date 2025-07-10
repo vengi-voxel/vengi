@@ -363,6 +363,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 			}
 			addNode(sceneGraph, node, parentId, applyTransform, voxel::FaceNames::Max, skinBox);
 		} else {
+			// TODO: VOXELFORMAT: it would improve the editing experience if we only make the volume region 1 voxel thick
 			for (int faceIndex = 0; faceIndex < lengthof(order); ++faceIndex) {
 				const voxel::FaceNames faceName = order[faceIndex];
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
