@@ -5,6 +5,7 @@
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "Panel.h"
+#include "ScopedStyle.h"
 #include "Style.h"
 #include "app/i18n/Language.h"
 #include "core/ConfigVar.h"
@@ -248,32 +249,24 @@ app::AppState IMGUIApp::onConstruct() {
 void IMGUIApp::loadFonts() {
 	ImGuiIO &io = ImGui::GetIO();
 	io.Fonts->Clear();
-
-	ImFontGlyphRangesBuilder builder;
-	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-	ImVector<ImWchar> glyphRanges;
-	builder.BuildRanges(&glyphRanges);
-
-	const float fontSize = _uiFontSize->floatVal();
-
-	ImFontConfig fontCfg;
-	fontCfg.MergeMode = true;
-#ifdef IMGUI_ENABLE_FREETYPE
-	fontCfg.FontLoaderFlags = ImGuiFreeTypeLoaderFlags_LightHinting;
-#endif
+	// const float fontScale = ImGui::GetStyle().FontScaleDpi;
+	// const float fontSize = _uiFontSize->floatVal();
+	// const float fontScaledSize = fontSize * fontScale;
 
 	ImFontConfig fontIconCfg;
 	fontIconCfg.MergeMode = true;
-	fontIconCfg.GlyphOffset = {0, 1};
-	fontIconCfg.GlyphMinAdvanceX = fontSize;
-	fontIconCfg.GlyphMaxAdvanceX = fontSize;
+	// fontIconCfg.PixelSnapH = true;
+	// fontIconCfg.GlyphOffset = {0.0f, 1.0f * fontScale};
+	// fontIconCfg.GlyphMinAdvanceX = fontScaledSize;
+	// fontIconCfg.GlyphMaxAdvanceX = fontScaledSize;
+	// fontIconCfg.SizePixels = fontScaledSize;
+#ifdef IMGUI_ENABLE_FREETYPE
+	fontIconCfg.FontLoaderFlags = ImGuiFreeTypeLoaderFlags_LightHinting;
+#endif
 
-	static const ImWchar rangesLCIcons[] = {ICON_MIN_LC, ICON_MAX_LC, 0};
-
-	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-															fontSize, nullptr, glyphRanges.Data);
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
-											 &fontIconCfg, rangesLCIcons);
+	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size);
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, 0.0f,
+											&fontIconCfg);
 }
 
 static void *_imguiAlloc(size_t size, void *) {
@@ -310,6 +303,8 @@ app::AppState IMGUIApp::onInit() {
 
 	ImGuiIO &io = ImGui::GetIO();
 	io.ConfigDragClickToInputText = true;
+	io.ConfigDpiScaleFonts = true;
+	io.ConfigDpiScaleViewports = true;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode() && core::Var::getSafe(cfg::UIMultiMonitor)->boolVal()) {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -334,6 +329,9 @@ app::AppState IMGUIApp::onInit() {
 	io.DisplaySize = _windowDimension;
 
 	setColorTheme();
+	loadFonts();
+	_uiFontSize->markClean();
+	_languageVar->markClean();
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
@@ -367,6 +365,7 @@ void IMGUIApp::setColorTheme() {
 	ImGuiStyle &style = ImGui::GetStyle();
 	style = ImGuiStyle();
 	style.TreeLinesFlags = ImGuiTreeNodeFlags_DrawLinesFull;
+	style.FontSizeBase = _uiFontSize->floatVal();
 
 	switch (_uistyle->intVal()) {
 	case ImGui::StyleCorporateGrey:
@@ -388,9 +387,13 @@ void IMGUIApp::setColorTheme() {
 	}
 	ImGui::StyleColorsNeoSequencer();
 	ImGui::StyleImGuizmo();
-	if (core::Var::getSafe(cfg::ClientWindowHighDPI)->boolVal()) {
-		style.ScaleAllSizes(_dpiScale);
-	}
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	const float mainScale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+#else
+	const float mainScale = ImGui_ImplSDL2_GetContentScaleForDisplay(0);
+#endif
+	style.ScaleAllSizes(mainScale);
+	style.FontScaleDpi = mainScale;
 }
 
 const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
@@ -651,21 +654,17 @@ app::AppState IMGUIApp::onRunning() {
 		static_assert(ImGuiLocKey_COUNT == 13, "Please update ImGui translations");
 	}
 
-	const float dpiScale = ImGui::GetMainViewport()->DpiScale;
-	if (_languageVar->isDirty() || _uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
-		if (dpiScale > 0.0f) {
-			Log::debug("Dpi: %f", dpiScale);
-			_dpiScale = dpiScale;
-			setColorTheme();
-		}
-		loadFonts();
-		_uiFontSize->markClean();
-		_languageVar->markClean();
-	}
-
 	if (_uistyle->isDirty()) {
 		setColorTheme();
 		_uistyle->markClean();
+	}
+
+	const float dpiScale = ImGui::GetStyle().FontScaleDpi;
+	if (_languageVar->isDirty() || _uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
+		loadFonts();
+		_dpiScale = dpiScale;
+		_uiFontSize->markClean();
+		_languageVar->markClean();
 	}
 
 	// if the monitor list is empty we currently don't have any monitor available (e.g. switched off)
@@ -690,6 +689,8 @@ app::AppState IMGUIApp::onRunning() {
 	const bool renderUI = _renderUI->boolVal();
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
+		ScopedStyle fontSize;
+		fontSize.pushFontSize(_uiFontSize->floatVal());
 		onRenderUI();
 		if (_showConsole) {
 			_console.render(_lastExecutedCommand);

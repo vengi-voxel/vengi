@@ -47,7 +47,7 @@ public:
 		setColor(idx, core::Color::darker(c, f));
 	}
 	inline void pushFontSize(int size) {
-		ImGui::PushFont(imguiApp()->defaultFont(), size);
+		ImGui::PushFont(nullptr, size);
 		++_font;
 	}
 	inline void resetFontSize() {

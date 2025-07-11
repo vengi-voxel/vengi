@@ -861,7 +861,7 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 
 void IconDialog(const char *icon, const char *text, bool wrap) {
 	ImGui::AlignTextToFramePadding();
-	ImGui::PushFont(imguiApp()->defaultFont(), imguiApp()->bigFontSize());
+	ImGui::PushFont(nullptr, imguiApp()->bigFontSize());
 	ImGui::TextUnformatted(icon);
 	ImGui::PopFont();
 	ImGui::SameLine();

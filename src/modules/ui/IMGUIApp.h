@@ -87,8 +87,6 @@ protected:
 	video::FileDialogSelectionCallback _fileDialogCallback {};
 	video::FileDialogOptions _fileDialogOptions {};
 
-	ImFont* _defaultFont = nullptr;
-
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *_imguiTestEngine = nullptr;
 	int _startedFromCommandlineFrameDelay = 3;
@@ -143,8 +141,6 @@ public:
 	virtual app::AppState onCleanup() override;
 	const glm::vec4 &color(style::StyleColor color);
 
-	ImFont *defaultFont();
-
 	void languageOption();
 	void colorReductionOptions();
 	bool keyMapOption();
@@ -180,10 +176,6 @@ inline void IMGUIApp::showCvarDialog() {
 
 inline void IMGUIApp::showCommandDialog() {
 	_showCommandDialog = true;
-}
-
-inline ImFont *IMGUIApp::defaultFont() {
-	return _defaultFont;
 }
 
 inline int IMGUIApp::bigFontSize() const {
