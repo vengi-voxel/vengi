@@ -118,9 +118,6 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 					continue;
 				}
 				volumes[i] = readCompressedNBT(memStream, i, palette);
-				if (volumes[i] == nullptr) {
-					Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)offsets[i].offset);
-				}
 			}
 		};
 		app::for_parallel(0, SECTOR_INTS, fn);
@@ -209,7 +206,7 @@ voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) const {
 
 voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPos) const {
 	if (volumes.empty()) {
-		Log::error("No volumes found at %i:%i", xPos, zPos);
+		Log::debug("No volumes found at %i:%i", xPos, zPos);
 		return nullptr;
 	}
 	// TODO: VOXELFORMAT: only merge connected y chunks - don't fill empty chunks - just a waste of memory
