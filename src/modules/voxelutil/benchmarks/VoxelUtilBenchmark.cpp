@@ -159,7 +159,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Shadow)(benchmark::State &state) {
 	voxel::RawVolumeWrapper wrapper(&in);
 	int n = voxelutil::extrudePlane(wrapper, in.region().getLowerCenter(), voxel::FaceNames::PositiveY, voxel::Voxel(),
 									voxel, 1);
-	core_assert(n == in.region().getWidthInVoxels() * in.region().getDepthInVoxels());
+	core_assert_always(n == in.region().getWidthInVoxels() * in.region().getDepthInVoxels());
 	in.setVoxel(in.region().getCenter(), voxel);
 	palette::Palette palette;
 	palette.nippon();
