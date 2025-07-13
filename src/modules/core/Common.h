@@ -83,6 +83,14 @@
 #endif
 #endif
 
+#if defined(__clang__) || defined(__GNUC__)
+#define CORE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
+#elif defined(_MSC_VER)
+#define CORE_NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
+#else
+#define CORE_NO_SANITIZE_ADDRESS
+#endif
+
 namespace core {
 
 template<typename T>

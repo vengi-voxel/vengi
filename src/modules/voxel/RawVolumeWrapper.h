@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
@@ -29,7 +30,7 @@ public:
 	public:
 		VOLUMESAMPLERUSING;
 
-		inline bool setVoxel(const Voxel& voxel) {
+		CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const Voxel& voxel) {
 			if (_currentPositionInvalid) {
 				return false;
 			}
@@ -154,15 +155,15 @@ public:
 		_region.cropTo(region);
 	}
 
-	inline const Voxel& voxel(const glm::ivec3& pos) const {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS const Voxel& voxel(const glm::ivec3& pos) const {
 		return _volume->voxel(pos.x, pos.y, pos.z);
 	}
 
-	inline const Voxel& voxel(int x, int y, int z) const {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS const Voxel& voxel(int x, int y, int z) const {
 		return _volume->voxel(x, y, z);
 	}
 
-	inline bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 

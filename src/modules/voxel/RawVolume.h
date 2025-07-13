@@ -25,7 +25,7 @@ public:
 	public:
 		VOLUMESAMPLERUSING;
 
-		inline bool setVoxel(const Voxel &voxel) {
+		CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const Voxel &voxel) {
 			if (_currentPositionInvalid) {
 				return false;
 			}
@@ -134,7 +134,7 @@ public:
 	 * @param pos The 3D position of the voxel
 	 * @return The voxel value
 	 */
-	inline const Voxel &voxel(const glm::ivec3 &pos) const;
+	CORE_NO_SANITIZE_ADDRESS inline const Voxel &voxel(const glm::ivec3 &pos) const;
 
 	/**
 	 * Sets the value used for voxels which are outside the volume
@@ -143,12 +143,12 @@ public:
 	/**
 	 * Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	 */
-	bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
+	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
 	/**
 	 * Sets the voxel at the position given by a 3D vector
 	 */
-	bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
-	void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
+	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
+	CORE_NO_SANITIZE_ADDRESS void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
 
 	void clear();
 	void fill(const voxel::Voxel &voxel);
