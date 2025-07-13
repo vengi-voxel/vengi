@@ -83,6 +83,7 @@
 #endif
 #endif
 
+#ifdef NDEBUG
 #if defined(__clang__) || defined(__GNUC__)
 #define CORE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize("address")))
 #elif defined(_MSC_VER)
@@ -90,6 +91,9 @@
 #else
 #define CORE_NO_SANITIZE_ADDRESS
 #endif
+#else
+#define CORE_NO_SANITIZE_ADDRESS
+#endif // NDEBUG
 
 namespace core {
 
