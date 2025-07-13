@@ -237,32 +237,40 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			delete v;
 			return false;
 		}
-		palette::PaletteLookup palLookup(palette);
-		voxel::RawVolume::Sampler sampler(v);
-		sampler.setPosition(0, 0, 0);
-		for (int y = 0; y < MAX_SIZE; ++y) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int z = 0; z < MAX_SIZE; ++z) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int x = 0; x < MAX_SIZE; ++x) {
-					const int color = getVoxel(dataVersion, data, x, y, z);
-					if (color < 0) {
-						Log::error("Failed to load voxel at position %i:%i:%i (dataversion: %i)", x, y,
-								   z, dataVersion);
-						delete v;
-						return false;
+		bool error = false;
+		auto fn = [&] (int start, int end) {
+			palette::PaletteLookup palLookup(palette);
+			voxel::RawVolume::Sampler sampler(v);
+			sampler.setPosition(0, start, 0);
+			for (int y = start; y < end; ++y) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int z = 0; z < MAX_SIZE; ++z) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int x = 0; x < MAX_SIZE; ++x) {
+						const int color = getVoxel(dataVersion, data, x, y, z);
+						if (color < 0) {
+							Log::error("Failed to load voxel at position %i:%i:%i (dataversion: %i)", x, y,
+									z, dataVersion);
+							delete v;
+							error = true;
+							return;
+						}
+						if (color) {
+							const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
+							const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
+							sampler3.setVoxel(voxel);
+							hasBlocks = true;
+						}
+						sampler3.movePositiveX();
 					}
-					if (color) {
-						const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
-						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
-						sampler3.setVoxel(voxel);
-						hasBlocks = true;
-					}
-					sampler3.movePositiveX();
+					sampler2.movePositiveZ();
 				}
-				sampler2.movePositiveZ();
+				sampler.movePositiveY();
 			}
-			sampler.movePositiveY();
+		};
+		app::for_parallel(0, MAX_SIZE, fn);
+		if (error) {
+			return false;
 		}
 	} else if (hasData) {
 		if (data.type() != priv::TagType::LONG_ARRAY) {
@@ -330,27 +338,30 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			}
 		}
 
-		palette::PaletteLookup palLookup(palette);
-		voxel::RawVolume::Sampler sampler(v);
-		sampler.setPosition(0, 0, 0);
-		for (int y = 0; y < MAX_SIZE; ++y) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int z = 0; z < MAX_SIZE; ++z) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int x = 0; x < MAX_SIZE; ++x) {
-					const uint16_t i = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
-					const uint8_t color = blocks[i];
-					if (color) {
-						const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
-						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
-						sampler3.setVoxel(voxel);
+		auto fn = [&] (int start, int end) {
+			palette::PaletteLookup palLookup(palette);
+			voxel::RawVolume::Sampler sampler(v);
+			sampler.setPosition(0, start, 0);
+			for (int y = start; y < end; ++y) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int z = 0; z < MAX_SIZE; ++z) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int x = 0; x < MAX_SIZE; ++x) {
+						const uint16_t i = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
+						const uint8_t color = blocks[i];
+						if (color) {
+							const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
+							const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
+							sampler3.setVoxel(voxel);
+						}
+						sampler3.movePositiveX();
 					}
-					sampler3.movePositiveX();
+					sampler2.movePositiveZ();
 				}
-				sampler2.movePositiveZ();
+				sampler.movePositiveY();
 			}
-			sampler.movePositiveY();
-		}
+		};
+		app::for_parallel(0, MAX_SIZE, fn);
 	}
 
 	if (hasBlocks) {
