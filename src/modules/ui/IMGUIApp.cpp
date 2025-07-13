@@ -530,6 +530,7 @@ void IMGUIApp::renderCvarDialog() {
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(var->name().c_str());
 				ImGui::TableNextColumn();
+				ImGui::PushID(var->name().c_str());
 				const bool readOnly = var->getFlags() & core::CV_READONLY;
 				ImGui::BeginDisabled(readOnly);
 				const core::String type = "##" + var->name();
@@ -557,6 +558,7 @@ void IMGUIApp::renderCvarDialog() {
 					}
 					ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				}
+				ImGui::PopID();
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(var->help() ? var->help() : "");
 			});
