@@ -161,7 +161,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	}
 	ImGui::TooltipTextUnformatted(_("Replace all voxels in the stamp with the selected color"));
 
-	const float buttonWidth = (float)_app->fontSize() * 4;
+	const float buttonWidth = ImGui::GetFontSize() * 4.0f;
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotateonaxis");
 		ImGui::AxisCommandButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
@@ -378,7 +378,7 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	}
 	ImGui::TooltipTextUnformatted(_("Thickness"));
 
-	const float buttonWidth = (float)_app->fontSize() * 4;
+	const float buttonWidth = ImGui::GetFontSize() * 4.0f;
 	ImGui::AxisCommandButton(math::Axis::X, _("X"), "textbrushaxis x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 	ImGui::TooltipTextUnformatted(_("Print text along the x axis"));
 	ImGui::SameLine();

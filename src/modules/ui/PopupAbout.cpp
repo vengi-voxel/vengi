@@ -26,8 +26,8 @@ void metricOption() {
 }
 
 void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvailable) {
-	int popupWidth = 600;
-	int popupHeight = 400;
+	int popupWidth = ImGui::GetFontSize() * 30;
+	int popupHeight = ImGui::GetFontSize() * 20;
 	ImGui::SetNextWindowSize(ImVec2(popupWidth, popupHeight), ImGuiCond_Appearing);
 	const core::String title = Panel::makeTitle(_("About"), POPUP_TITLE_ABOUT);
 	if (ImGui::BeginPopupModal(title.c_str())) {

@@ -289,7 +289,7 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 		const float x = ImGui::GetCursorPosX();
 		ImGui::TextUnformatted(icon);
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(x + 2.0f * ImGui::GetStyle().ItemInnerSpacing.x + 1.5f * (float)imguiApp()->fontSize());
+		ImGui::SetCursorPosX(x + 2.0f * ImGui::GetStyle().ItemInnerSpacing.x + 1.5f * ImGui::GetFontSize());
 	}
 	const ImVec2 size(width, 0);
 	if (ImGui::Selectable(bookmarkTitle.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
@@ -480,7 +480,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				const float x = ImGui::GetCursorPosX();
 				ImGui::TextUnformatted(icon);
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
+				ImGui::SetCursorPosX(x + 1.5f * ImGui::GetFontSize());
 				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick)) {
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 						if (entry.isDirectory()) {

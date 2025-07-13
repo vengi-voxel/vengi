@@ -96,7 +96,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		toolbar.button(ICON_LC_PAINT_BUCKET, "fill");
 	}
 
-	const float buttonWidth = (float)_app->fontSize() * 4;
+	const float buttonWidth = ImGui::GetFontSize() * 4;
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotatevolumeonaxis");
 		ImGui::AxisCommandButton(math::Axis::X, _("X"), "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
