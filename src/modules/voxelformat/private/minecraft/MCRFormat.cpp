@@ -405,8 +405,8 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const priv::NamedBinaryTag &blockStates = section.get("block_states");
 		if (!blockStates.valid()) {
-			Log::error("Could not find 'block_states'");
-			return error(volumes);
+			Log::debug("Could not find 'block_states'");
+			continue;
 		}
 		const priv::NamedBinaryTag &ylvl = section.get("Y");
 		if (!ylvl.valid()) {
