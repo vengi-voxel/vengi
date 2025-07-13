@@ -97,7 +97,7 @@ private:
 	voxel::RawVolume *error(SectionVolumes &volumes) const;
 	voxel::RawVolume *finalize(SectionVolumes &volumes, int xPos, int zPos) const;
 
-	static int getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
+	static int getVoxel(int dataVersion, const priv::NamedBinaryTag &data, int x, int y, int z);
 
 	// shared across versions
 	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette,

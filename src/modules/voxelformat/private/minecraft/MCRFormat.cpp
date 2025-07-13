@@ -183,8 +183,8 @@ voxel::RawVolume *MCRFormat::readCompressedNBT(io::SeekableReadStream &stream, i
 	return parseLevelCompound(dataVersion, root, sector, palette);
 }
 
-int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos) {
-	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
+int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, int x, int y, int z) {
+	const uint32_t i = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
 	if (i >= data.byteArray()->size()) {
 		Log::error("Byte array index out of bounds: %u/%i", i, (int)data.byteArray()->size());
 		return -1;
@@ -237,27 +237,32 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			delete v;
 			return false;
 		}
-		glm::ivec3 sPos;
 		palette::PaletteLookup palLookup(palette);
-		// TODO: PERF: use a sampler
-		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
-			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
-				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
-					const int color = getVoxel(dataVersion, data, sPos);
+		voxel::RawVolume::Sampler sampler(v);
+		sampler.setPosition(0, 0, 0);
+		for (int y = 0; y < MAX_SIZE; ++y) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int z = 0; z < MAX_SIZE; ++z) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				for (int x = 0; x < MAX_SIZE; ++x) {
+					const int color = getVoxel(dataVersion, data, x, y, z);
 					if (color < 0) {
-						Log::error("Failed to load voxel at position %i:%i:%i (dataversion: %i)", sPos.x, sPos.y,
-								   sPos.z, dataVersion);
+						Log::error("Failed to load voxel at position %i:%i:%i (dataversion: %i)", x, y,
+								   z, dataVersion);
 						delete v;
 						return false;
 					}
 					if (color) {
 						const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
-						v->setVoxel(sPos, voxel);
+						sampler3.setVoxel(voxel);
 						hasBlocks = true;
 					}
+					sampler3.movePositiveX();
 				}
+				sampler2.movePositiveZ();
 			}
+			sampler.movePositiveY();
 		}
 	} else if (hasData) {
 		if (data.type() != priv::TagType::LONG_ARRAY) {
@@ -325,21 +330,26 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			}
 		}
 
-		glm::ivec3 sPos;
 		palette::PaletteLookup palLookup(palette);
-		// TODO: PERF: use a sampler
-		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
-			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
-				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
-					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
+		voxel::RawVolume::Sampler sampler(v);
+		sampler.setPosition(0, 0, 0);
+		for (int y = 0; y < MAX_SIZE; ++y) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int z = 0; z < MAX_SIZE; ++z) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				for (int x = 0; x < MAX_SIZE; ++x) {
+					const uint16_t i = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
 					const uint8_t color = blocks[i];
 					if (color) {
 						const uint8_t palColIdx = palLookup.findClosestIndex(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
-						v->setVoxel(sPos, voxel);
+						sampler3.setVoxel(voxel);
 					}
+					sampler3.movePositiveX();
 				}
+				sampler2.movePositiveZ();
 			}
+			sampler.movePositiveY();
 		}
 	}
 
