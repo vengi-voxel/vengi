@@ -19,7 +19,7 @@ private:
 	int _arrayDepth = 0;
 
 public:
-	AVMTStream(io::SeekableReadStream &stream) : Super(stream, {}, " (){},;\n\t") {
+	AVMTStream(io::SeekableReadStream &stream) : Super(stream, {}, " (){},;\n\r\t") {
 	}
 
 	core::String next() override {

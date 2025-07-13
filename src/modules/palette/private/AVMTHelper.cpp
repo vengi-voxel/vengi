@@ -80,7 +80,7 @@ bool parseMaterials(io::SeekableReadStream &stream, core::DynamicArray<AVMTMater
 		}
 	}
 
-	return true;
+	return !materials.empty();
 }
 
 } // namespace palette
