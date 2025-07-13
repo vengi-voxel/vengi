@@ -8,6 +8,7 @@
 #include <glm/vec4.hpp>
 #include <glm/fwd.hpp>
 #include <glm/common.hpp>
+#include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/Buffer.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -382,7 +383,7 @@ inline bool Region::isOnBorderZ(const int z) const {
  * @param fY The 'y' position of the point to test.
  * @param fZ The 'z' position of the point to test.
  */
-inline bool Region::containsPoint(float fX, float fY, float fZ) const {
+CORE_FORCE_INLINE bool Region::containsPoint(float fX, float fY, float fZ) const {
 	return (fX <= _maxs.x) && (fY <= _maxs.y) && (fZ <= _maxs.z) && (fX >= _mins.x) && (fY >= _mins.y) &&
 		   (fZ >= _mins.z);
 }
@@ -394,7 +395,7 @@ inline bool Region::containsPoint(float fX, float fY, float fZ) const {
  * @param iY The 'y' position of the point to test.
  * @param iZ The 'z' position of the point to test.
  */
-inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ) const {
+CORE_FORCE_INLINE bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ) const {
 	return (iX <= _maxs.x) && (iY <= _maxs.y) && (iZ <= _maxs.z) && (iX >= _mins.x) && (iY >= _mins.y) &&
 		   (iZ >= _mins.z);
 }
@@ -404,7 +405,7 @@ inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ) const {
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
  */
-inline bool Region::containsPointInX(float pos) const {
+CORE_FORCE_INLINE bool Region::containsPointInX(float pos) const {
 	return (pos <= _maxs.x) && (pos >= _mins.x);
 }
 
@@ -413,7 +414,7 @@ inline bool Region::containsPointInX(float pos) const {
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
  */
-inline bool Region::containsPointInX(int32_t pos) const {
+CORE_FORCE_INLINE bool Region::containsPointInX(int32_t pos) const {
 	return (pos <= _maxs.x) && (pos >= _mins.x);
 }
 
@@ -422,7 +423,7 @@ inline bool Region::containsPointInX(int32_t pos) const {
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
  */
-inline bool Region::containsPointInY(float pos) const {
+CORE_FORCE_INLINE bool Region::containsPointInY(float pos) const {
 	return (pos <= _maxs.y) && (pos >= _mins.y);
 }
 
@@ -431,7 +432,7 @@ inline bool Region::containsPointInY(float pos) const {
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
  */
-inline bool Region::containsPointInY(int32_t pos) const {
+CORE_FORCE_INLINE bool Region::containsPointInY(int32_t pos) const {
 	return (pos <= _maxs.y) && (pos >= _mins.y);
 }
 
@@ -440,7 +441,7 @@ inline bool Region::containsPointInY(int32_t pos) const {
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
  */
-inline bool Region::containsPointInZ(float pos) const {
+CORE_FORCE_INLINE bool Region::containsPointInZ(float pos) const {
 	return (pos <= _maxs.z) && (pos >= _mins.z);
 }
 
@@ -449,7 +450,7 @@ inline bool Region::containsPointInZ(float pos) const {
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
  */
-inline bool Region::containsPointInZ(int32_t pos) const {
+CORE_FORCE_INLINE bool Region::containsPointInZ(int32_t pos) const {
 	return (pos <= _maxs.z) && (pos >= _mins.z);
 }
 
@@ -458,12 +459,12 @@ inline bool Region::containsPointInZ(int32_t pos) const {
  * that a region is considered to be inside of itself.
  * @param reg The region to test.
  */
-inline bool Region::containsRegion(const Region& reg) const {
+CORE_FORCE_INLINE bool Region::containsRegion(const Region& reg) const {
 	return (reg._maxs.x <= _maxs.x) && (reg._maxs.y <= _maxs.y) && (reg._maxs.z <= _maxs.z) && (reg._mins.x >= _mins.x)
 			&& (reg._mins.y >= _mins.y) && (reg._mins.z >= _mins.z);
 }
 
-inline bool Region::isValid() const {
+CORE_FORCE_INLINE bool Region::isValid() const {
 	return _maxs.x >= _mins.x && _maxs.y >= _mins.y && _maxs.z >= _mins.z;
 }
 
