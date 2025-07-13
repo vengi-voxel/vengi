@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "core/ArrayLength.h"
+#include "core/Common.h"
 #include "core/RGBA.h"
 
 namespace palette {
@@ -43,60 +44,60 @@ static_assert(lengthof(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string 
 
 class Voxel {
 public:
-	constexpr inline Voxel()
+	CORE_FORCE_INLINE constexpr Voxel()
 		: _material(VoxelType::Air), _flags(0), _unused(0), _colorIndex(0), _normalIndex(NO_NORMAL), _unused2(0) {
 	}
 
-	constexpr inline Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u)
+	CORE_FORCE_INLINE constexpr Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u)
 		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _unused2(0) {
 	}
 
 	/**
 	 * @brief Compares by the material type
 	 */
-	inline bool operator==(const Voxel& rhs) const {
+	CORE_FORCE_INLINE bool operator==(const Voxel& rhs) const {
 		return _material == rhs._material;
 	}
 
 	/**
 	 * @brief Compares by the material type
 	 */
-	inline bool operator!=(const Voxel& rhs) const {
+	CORE_FORCE_INLINE bool operator!=(const Voxel& rhs) const {
 		return !(*this == rhs);
 	}
 
-	inline bool isSame(const Voxel& other) const {
+	CORE_FORCE_INLINE bool isSame(const Voxel& other) const {
 		return _material == other._material && _colorIndex == other._colorIndex && _normalIndex == other._normalIndex;
 	}
 
 	/**
 	 * @brief Compares by the material type
 	 */
-	inline bool isSameType(const Voxel& other) const {
+	CORE_FORCE_INLINE bool isSameType(const Voxel& other) const {
 		return _material == other._material;
 	}
 
-	inline uint8_t getColor() const {
+	CORE_FORCE_INLINE uint8_t getColor() const {
 		return _colorIndex;
 	}
 
-	inline uint8_t getNormal() const {
+	CORE_FORCE_INLINE uint8_t getNormal() const {
 		return _normalIndex;
 	}
 
-	inline void setColor(uint8_t colorIndex) {
+	CORE_FORCE_INLINE void setColor(uint8_t colorIndex) {
 		_colorIndex = colorIndex;
 	}
 
-	inline VoxelType getMaterial() const {
+	CORE_FORCE_INLINE VoxelType getMaterial() const {
 		return _material;
 	}
 
-	inline void setMaterial(VoxelType material) {
+	CORE_FORCE_INLINE void setMaterial(VoxelType material) {
 		_material = material;
 	}
 
-	inline uint8_t getFlags() const {
+	CORE_FORCE_INLINE uint8_t getFlags() const {
 		return _flags;
 	}
 
@@ -117,22 +118,22 @@ public:
 };
 static_assert(sizeof(Voxel) == 4, "Voxel size is expected to be 4 bytes");
 
-constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = 0u, uint8_t flags = 0u) {
+CORE_NO_SANITIZE_ADDRESS constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = 0u, uint8_t flags = 0u) {
 	return Voxel(type, colorIndex, normalIndex, flags);
 }
 
 voxel::Voxel createVoxelFromColor(const palette::Palette &pal, core::RGBA color);
-voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = 0u, uint8_t flags = 0u);
+CORE_NO_SANITIZE_ADDRESS voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = 0u, uint8_t flags = 0u);
 
-inline bool isBlocked(VoxelType material) {
+CORE_FORCE_INLINE bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;
 }
 
-inline bool isAir(VoxelType material) {
+CORE_FORCE_INLINE bool isAir(VoxelType material) {
 	return material == VoxelType::Air;
 }
 
-inline bool isTransparent(VoxelType material) {
+CORE_FORCE_INLINE bool isTransparent(VoxelType material) {
 	return material == VoxelType::Transparent;
 }
 
