@@ -49,6 +49,9 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					} else {
 						ImGui::TextUnformatted(_("You are using the latest version."));
 					}
+#ifndef NDEBUG
+					ImGui::TextUnformatted(_("Debug build with reduced performance"));
+#endif
 					metricOption();
 
 					ImGui::Dummy(ImVec2(1, 10));
