@@ -7,6 +7,7 @@
 #include "app/Async.h"
 #include "core/collection/Buffer.h"
 #include "core/concurrent/Atomic.h"
+#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "palette/Palette.h"
 #include "core/Trace.h"
@@ -81,6 +82,7 @@ int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalett
 		typename Volume2::Sampler sourceSampler(source);
 		typename Volume1::Sampler destSampler(destination);
 		const int relX = destReg.getLowerX();
+		palette::PaletteLookup palLookup(destinationPalette);
 		sourceSampler.setPosition(sourceReg.getLowerX(), sourceReg.getLowerY(), start);
 		for (int32_t z = start; z < end; ++z) {
 			const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
@@ -96,7 +98,7 @@ int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalett
 						destSampler.movePositiveX();
 						continue;
 					}
-					int idx = destinationPalette.getClosestMatch(sourcePalette.color(srcVoxel.getColor()));
+					int idx = palLookup.findClosestIndex(sourcePalette.color(srcVoxel.getColor()));
 					if (idx == palette::PaletteColorNotFound) {
 						idx = 0;
 					}
