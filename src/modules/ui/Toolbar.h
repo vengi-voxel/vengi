@@ -66,18 +66,15 @@ public:
 	}
 
 	template<class FUNC>
-	void custom(FUNC func) {
-		newline();
+	void button(FUNC func, bool applyStyle = true) {
 		ui::ScopedStyle style;
-		applyIconStyle(style);
-		func(_size);
-		next();
-	}
-
-	template<class FUNC>
-	void customNoStyle(FUNC func) {
+		if (applyStyle) {
+			applyIconStyle(style);
+		}
 		newline();
+		ImGui::PushID(_id.c_str());
 		func(_size);
+		ImGui::PopID();
 		next();
 	}
 };

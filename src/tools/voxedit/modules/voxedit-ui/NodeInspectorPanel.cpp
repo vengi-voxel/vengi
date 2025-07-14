@@ -44,12 +44,12 @@ void NodeInspectorPanel::modelRegions(command::CommandExecutionListener &listene
 
 		for (glm::ivec3 maxs : _validRegionSizes) {
 			const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
-			toolbar.customNoStyle([&](const ImVec2 &) {
+			toolbar.button([&](const ImVec2 &) {
 				if (ImGui::Button(title.c_str())) {
 					voxel::Region newRegion(glm::ivec3(0), maxs - 1);
 					_sceneMgr->nodeResize(node.id(), newRegion);
 				}
-			});
+			}, false);
 		}
 	}
 }

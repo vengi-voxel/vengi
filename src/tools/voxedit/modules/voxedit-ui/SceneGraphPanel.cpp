@@ -312,7 +312,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			_sceneMgr->nodeRemove(sceneGraph.activeNode(), true);
 		});
 
-		toolbar.custom([onlyOneModel, &listener, this] (const ImVec2 &buttonSize) {
+		toolbar.button([onlyOneModel, &listener, this] (const ImVec2 &buttonSize) {
 			if (ImGui::DisabledButton(ICON_LC_PLAY, onlyOneModel, buttonSize)) {
 				if (_sceneMgr->animateActive()) {
 					command::executeCommands("animate 0", &listener);
