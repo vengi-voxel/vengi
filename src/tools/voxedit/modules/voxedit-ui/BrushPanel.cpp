@@ -501,8 +501,7 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 		{
 			ui::ScopedStyle style;
 			style.pushFontSize(imguiApp()->bigFontSize());
-			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-			ui::Toolbar toolbar("toolbar", buttonSize, &listener);
+			ui::Toolbar toolbar("toolbar", &listener);
 			toolbar.button(ICON_LC_FLIP_HORIZONTAL, "texturebrushmirroru");
 			toolbar.button(ICON_LC_FLIP_VERTICAL, "texturebrushmirrorv");
 			toolbar.button(ICON_LC_X, "texturebrushresetuv");
@@ -588,12 +587,10 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::ScopedStyle style;
 	style.pushFontSize(imguiApp()->bigFontSize());
 
-	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-
 	voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
 
-	ui::Toolbar toolbarBrush("brushes", buttonSize, &listener);
+	ui::Toolbar toolbarBrush("brushes", &listener);
 	for (int i = 0; i < (int)BrushType::Max; ++i) {
 		core::String cmd = core::String::format("brush%s", BrushTypeStr[i]).toLower();
 		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
@@ -609,7 +606,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 
 	const ModifierType supported = modifier.checkModifierType();
 	if (core::countSetBits(core::enumVal(supported)) > 1) {
-		ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
+		ui::Toolbar toolbarModifiers("modifiers", &listener);
 		if ((supported & ModifierType::Select) != ModifierType::None) {
 			toolbarModifiers.button(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, "actionselect", !modifier.isMode(ModifierType::Select));
 		}

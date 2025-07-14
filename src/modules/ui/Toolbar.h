@@ -28,6 +28,9 @@ protected:
 	void last();
 public:
 	Toolbar(const core::String &id, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
+	Toolbar(const core::String &id, command::CommandExecutionListener *listener = nullptr)
+		: Toolbar(id, ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight()), listener) {
+	}
 	~Toolbar();
 
 	bool button(const char *icon, const char *command, bool darken = false);
@@ -66,14 +69,14 @@ public:
 		newline();
 		ui::ScopedStyle style;
 		style.setFramePadding(ImVec2(0.0f, 0.0f));
-		func();
+		func(_size);
 		next();
 	}
 
 	template<class FUNC>
 	void customNoStyle(FUNC func) {
 		newline();
-		func();
+		func(_size);
 		next();
 	}
 };

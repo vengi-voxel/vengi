@@ -16,8 +16,7 @@
 namespace voxedit {
 
 void CameraPanel::addToolbar(command::CommandExecutionListener &listener, video::Camera &camera) {
-	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-	ui::Toolbar toolbar("toolbar", buttonSize, &listener);
+	ui::Toolbar toolbar("toolbar", &listener);
 	toolbar.button(ICON_LC_X, "resetcamera");
 	toolbar.button(ICON_LC_SQUARE_PLUS, _("Add new camera"), [&]() {
 		scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
