@@ -14,8 +14,11 @@ private:
 	int _n = 0;
 	int _font = 0;
 	int _color = 0;
+	const float _dpiScale;
 
 public:
+	ScopedStyle() : _dpiScale(ImGui::GetStyle().FontScaleDpi) {
+	}
 	~ScopedStyle() {
 		ImGui::PopStyleVar(_n);
 		ImGui::PopStyleColor(_color);
@@ -65,67 +68,67 @@ public:
 		++_n;
 	}
 	inline void setWindowRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setWindowBorderSize(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, val * _dpiScale);
 		++_n;
 	}
 	inline void setChildRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setChildBorderSize(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, val * _dpiScale);
 		++_n;
 	}
 	inline void setPopupRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setPopupBorderSize(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, val * _dpiScale);
 		++_n;
 	}
 	inline void setFrameRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setFrameBorderSize(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, val * _dpiScale);
 		++_n;
 	}
 	inline void setIndentSpacing(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, val * _dpiScale);
 		++_n;
 	}
 	inline void setScrollbarSize(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarSize, val * _dpiScale);
 		++_n;
 	}
 	inline void setScrollbarRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setGrabMinSize(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, val * _dpiScale);
 		++_n;
 	}
 	inline void setGrabRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setTabRounding(float val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, val * _dpiScale);
 		++_n;
 	}
 	inline void setWindowPadding(const ImVec2 &val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(val.x * _dpiScale, val.y * _dpiScale));
 		++_n;
 	}
 	inline void setWindowMinSize(const ImVec2 &val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(val.x * _dpiScale, val.y * _dpiScale));
 		++_n;
 	}
 	inline void setWindowTitleAlign(const ImVec2 &val) {
@@ -133,19 +136,19 @@ public:
 		++_n;
 	}
 	inline void setFramePadding(const ImVec2 &val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(val.x * _dpiScale, val.y * _dpiScale));
 		++_n;
 	}
 	inline void setItemSpacing(const ImVec2 &val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(val.x * _dpiScale, val.y * _dpiScale));
 		++_n;
 	}
 	inline void setItemInnerSpacing(const ImVec2 &val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(val.x * _dpiScale, val.y * _dpiScale));
 		++_n;
 	}
 	inline void setCellPadding(const ImVec2 &val) {
-		ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, val);
+		ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(val.x * _dpiScale, val.y * _dpiScale));
 		++_n;
 	}
 	inline void setButtonTextAlign(const ImVec2 &val) {
@@ -161,7 +164,7 @@ public:
 class ScopedStyleCompact : public ScopedStyle {
 public:
 	ScopedStyleCompact() {
-	    ImGuiStyle& style = ImGui::GetStyle();
+		ImGuiStyle &style = ImGui::GetStyle();
 		setFramePadding(ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
 		setItemSpacing(ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
 	}
