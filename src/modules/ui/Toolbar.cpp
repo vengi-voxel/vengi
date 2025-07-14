@@ -53,10 +53,14 @@ void Toolbar::last() {
 	ImGui::Dummy(ImVec2(0, 0));
 }
 
+void Toolbar::applyIconStyle(ui::ScopedStyle &style) {
+	// style.setFramePadding(ImVec2(0.0f, 0.0f));
+}
+
 bool Toolbar::button(const char *icon, const char *command, bool darken) {
 	newline();
 	ui::ScopedStyle style;
-	// style.setFramePadding(ImVec2(0.0f, 0.0f));
+	applyIconStyle(style);
 	if (darken) {
 		style.darker(ImGuiCol_Text);
 	}

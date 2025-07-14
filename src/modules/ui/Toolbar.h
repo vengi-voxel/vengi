@@ -26,6 +26,7 @@ protected:
 	void next();
 	void newline();
 	void last();
+	void applyIconStyle(ui::ScopedStyle &style);
 public:
 	Toolbar(const core::String &id, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
 	Toolbar(const core::String &id, command::CommandExecutionListener *listener = nullptr)
@@ -43,7 +44,7 @@ public:
 	bool button(const char *icon, const char *tooltip, FUNC func, bool highlight = false) {
 		newline();
 		ui::ScopedStyle style;
-		style.setFramePadding(ImVec2(0.0f, 0.0f));
+		applyIconStyle(style);
 		if (highlight) {
 			style.highlight(ImGuiCol_Text);
 		}
@@ -68,7 +69,7 @@ public:
 	void custom(FUNC func) {
 		newline();
 		ui::ScopedStyle style;
-		style.setFramePadding(ImVec2(0.0f, 0.0f));
+		applyIconStyle(style);
 		func(_size);
 		next();
 	}
