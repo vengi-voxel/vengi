@@ -73,33 +73,6 @@ void StyleColorsCorporateGrey() {
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-
-	style.PopupRounding = 3;
-
-	style.WindowPadding = ImVec2(4, 4);
-	style.FramePadding = ImVec2(6, 4);
-	style.ItemSpacing = ImVec2(6, 2);
-	style.ItemInnerSpacing = ImVec2(4, 4);
-	style.ScrollbarSize = 18;
-
-	style.WindowBorderSize = 1;
-	style.ChildBorderSize = 1;
-	style.PopupBorderSize = 1;
-	style.FrameBorderSize = 2;
-
-	style.WindowRounding = 3;
-	style.ChildRounding = 3;
-	style.FrameRounding = 3;
-	style.ScrollbarRounding = 2;
-	style.GrabRounding = 3;
-
-	style.TabBorderSize = 2;
-	style.TabRounding = 3;
-
-	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
 }
 
 void StyleColorsNeoSequencer() {

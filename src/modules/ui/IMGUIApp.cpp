@@ -385,6 +385,34 @@ void IMGUIApp::setColorTheme() {
 		ImGui::StyleColorsCorporateGrey();
 		break;
 	}
+
+	style.PopupRounding = 3;
+
+	style.WindowPadding = ImVec2(4, 4);
+	style.FramePadding = ImVec2(6, 4);
+	style.ItemSpacing = ImVec2(6, 2);
+	style.ItemInnerSpacing = ImVec2(4, 4);
+	style.ScrollbarSize = 18;
+
+	style.WindowBorderSize = 1;
+	style.ChildBorderSize = 1;
+	style.PopupBorderSize = 1;
+	style.FrameBorderSize = 2;
+
+	style.WindowRounding = 3;
+	style.ChildRounding = 3;
+	style.FrameRounding = 3;
+	style.ScrollbarRounding = 2;
+	style.GrabRounding = 3;
+
+	style.TabBorderSize = 2;
+	style.TabRounding = 3;
+
+	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+
 	ImGui::StyleColorsNeoSequencer();
 	ImGui::StyleImGuizmo();
 #if SDL_VERSION_ATLEAST(3, 2, 0)
