@@ -14,7 +14,7 @@ set(SRCS
 	VolumeRescaler.h
 	VolumeRotator.h VolumeRotator.cpp
 	VolumeResizer.h VolumeResizer.cpp
-	VolumeCropper.h
+	VolumeCropper.h VolumeCropper.cpp
 	VolumeSplitter.h VolumeSplitter.cpp
 	VolumeVisitor.h
 	VoxelUtil.h VoxelUtil.cpp
