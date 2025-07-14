@@ -21,8 +21,7 @@ protected:
 	const ImVec2 _size;
 	command::CommandExecutionListener *_listener;
 	const core::String _id;
-	float windowWidth() const;
-	void setCursor();
+	int _windowWidth;
 	void next();
 	void newline();
 	void last();

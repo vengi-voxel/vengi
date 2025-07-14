@@ -9,52 +9,38 @@
 namespace ui {
 
 Toolbar::Toolbar(const core::String &name, const ImVec2 &size, command::CommandExecutionListener *listener)
-	: _nextId(0), _pos(ImGui::GetCursorScreenPos()), _startingPosX(_pos.x), _size(size), _listener(listener), _id(name) {
+	: _nextId(0), _pos(ImGui::GetCursorScreenPos()), _startingPosX(_pos.x), _size(size), _listener(listener), _id(name),
+	  _windowWidth(ImGui::GetContentRegionAvail().x) {
 }
 
 Toolbar::~Toolbar() {
 	last();
 }
 
-float Toolbar::windowWidth() const {
-	const ImVec2 available = ImGui::GetContentRegionAvail();
-	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
-	return contentRegionWidth;
-}
-
-void Toolbar::setCursor() {
-	ImGui::SetCursorScreenPos(_pos);
-}
-
 void Toolbar::next() {
 	++_nextId;
-	_pos.x += _size.x;
-	setCursor();
+	ImGui::SameLine();
+	_pos = ImGui::GetCursorScreenPos();
 }
 
 void Toolbar::newline() {
-	const float w = windowWidth();
-	const float wmax = ImGui::GetWindowPos().x + w;
+	const float wmax = ImGui::GetWindowPos().x + _windowWidth;
 	if (_pos.x > _startingPosX && _pos.x + _size.x > wmax) {
-		_pos.x = _startingPosX;
-		_pos.y += _size.y;
-		setCursor();
+		ImGui::NewLine();
+		_pos = ImGui::GetCursorScreenPos();
 	}
 }
 
 void Toolbar::last() {
-	const float w = windowWidth();
-	const float wmax = ImGui::GetWindowPos().x + w;
-	if ((_pos.x > _startingPosX && _pos.x <= wmax) || w < _startingPosX + _size.x) {
-		_pos.y += _size.y;
-		_pos.x = _startingPosX;
-		setCursor();
-	}
+	newline();
 	ImGui::Dummy(ImVec2(0, 0));
 }
 
 void Toolbar::applyIconStyle(ui::ScopedStyle &style) {
-	// style.setFramePadding(ImVec2(0.0f, 0.0f));
+	style.setFramePadding(ImVec2(1.0f, 1.0f));
+	style.setButtonTextAlign(ImVec2(0.5f, 0.5f));
+	style.setItemSpacing(ImVec2(1.0f, 1.0f));
+	ImGui::AlignTextToFramePadding();
 }
 
 bool Toolbar::button(const char *icon, const char *command, bool darken) {

@@ -179,7 +179,7 @@ inline void IMGUIApp::showCommandDialog() {
 }
 
 inline int IMGUIApp::bigFontSize() const {
-	return fontSize() * 2;
+	return fontSize() * 1.6f;
 }
 
 inline int IMGUIApp::fontSize() const {
