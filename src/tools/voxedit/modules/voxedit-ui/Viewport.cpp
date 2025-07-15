@@ -94,6 +94,8 @@ bool Viewport::init() {
 }
 
 void Viewport::resize(const glm::ivec2 &frameBufferSize) {
+	// TODO: PERF: delay the resize a few frames to avoid performance issues while
+	//             the user is resizing the window
 	const glm::vec2 &windowSize = _app->windowDimension();
 	const glm::vec2 &windowFrameBufferSize = _app->frameBufferDimension();
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
