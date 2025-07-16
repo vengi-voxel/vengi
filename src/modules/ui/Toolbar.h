@@ -24,7 +24,6 @@ protected:
 	int _windowWidth;
 	void next();
 	void newline();
-	void last();
 	void applyIconStyle(ui::ScopedStyle &style);
 public:
 	Toolbar(const core::String &id, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
@@ -34,10 +33,6 @@ public:
 	~Toolbar();
 
 	bool button(const char *icon, const char *command, bool highlight = false);
-
-	void end() {
-		last();
-	}
 
 	template<class FUNC>
 	bool button(const char *icon, const char *tooltip, FUNC func, bool highlight = false) {
@@ -76,6 +71,10 @@ public:
 		ImGui::PopID();
 		next();
 	}
+
+	// Call this at the end of the toolbar to ensure the last button is handled correctly
+	// this is also called in the destructor
+	void end();
 };
 
 } // namespace ui

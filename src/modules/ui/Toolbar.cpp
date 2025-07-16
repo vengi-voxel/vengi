@@ -14,7 +14,7 @@ Toolbar::Toolbar(const core::String &name, const ImVec2 &size, command::CommandE
 }
 
 Toolbar::~Toolbar() {
-	last();
+	end();
 }
 
 void Toolbar::next() {
@@ -31,7 +31,7 @@ void Toolbar::newline() {
 	}
 }
 
-void Toolbar::last() {
+void Toolbar::end() {
 	newline();
 	ImGui::Dummy(ImVec2(0, 0));
 }
