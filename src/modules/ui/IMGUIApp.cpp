@@ -389,24 +389,24 @@ void IMGUIApp::setColorTheme() {
 	style.PopupRounding = 3;
 
 	style.WindowPadding = ImVec2(4, 4);
-	style.FramePadding = ImVec2(6, 4);
-	style.ItemSpacing = ImVec2(6, 2);
-	style.ItemInnerSpacing = ImVec2(4, 4);
-	style.ScrollbarSize = 18;
+	style.FramePadding = ImVec2(3, 3);
+	style.ItemSpacing = ImVec2(3, 2);
+	style.ItemInnerSpacing = ImVec2(1, 1);
+	style.ScrollbarSize = 10;
 
 	style.WindowBorderSize = 1;
 	style.ChildBorderSize = 1;
 	style.PopupBorderSize = 1;
-	style.FrameBorderSize = 2;
+	style.FrameBorderSize = 1;
 
-	style.WindowRounding = 3;
-	style.ChildRounding = 3;
-	style.FrameRounding = 3;
+	style.WindowRounding = 2;
+	style.ChildRounding = 2;
+	style.FrameRounding = 2;
 	style.ScrollbarRounding = 2;
-	style.GrabRounding = 3;
+	style.GrabRounding = 2;
 
-	style.TabBorderSize = 2;
-	style.TabRounding = 3;
+	style.TabBorderSize = 1;
+	style.TabRounding = 0;
 
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		style.WindowRounding = 0.0f;
