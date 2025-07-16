@@ -93,9 +93,17 @@ bool Viewport::init() {
 	return true;
 }
 
+// delay the resize a few frames to avoid performance issues while
+// the user is resizing the window
+void Viewport::delayResize(const glm::ivec2 &frameBufferSize) {
+	if (_resizeRequestSize == frameBufferSize) {
+		return;
+	}
+	_resizeRequestSize = frameBufferSize;
+	_resizeRequestSeconds = _nowSeconds + 0.2;
+}
+
 void Viewport::resize(const glm::ivec2 &frameBufferSize) {
-	// TODO: PERF: delay the resize a few frames to avoid performance issues while
-	//             the user is resizing the window
 	const glm::vec2 &windowSize = _app->windowDimension();
 	const glm::vec2 &windowFrameBufferSize = _app->frameBufferDimension();
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
@@ -617,7 +625,12 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (_renderContext.frameBuffer.dimension() == frameBufferSize) {
 		return true;
 	}
-	resize(frameBufferSize);
+	if (_resizeRequestSeconds > 0.0 && _resizeRequestSeconds < _nowSeconds) {
+		resize(frameBufferSize);
+		_resizeRequestSeconds = 0.0;
+		return true;
+	}
+	delayResize(frameBufferSize);
 	return true;
 }
 

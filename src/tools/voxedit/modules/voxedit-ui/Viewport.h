@@ -74,6 +74,8 @@ private:
 	int _mouseX = 0;
 	int _mouseY = 0;
 	double _nowSeconds = 0.0;
+	double _resizeRequestSeconds = 1.0;
+	glm::ivec2 _resizeRequestSize{0, 0};
 
 	struct Bounds {
 		glm::vec3 mins{0};
@@ -151,6 +153,7 @@ private:
 	void menuBarMementoOptions(command::CommandExecutionListener *listener);
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void resize(const glm::ivec2 &frameBufferSize);
+	void delayResize(const glm::ivec2 &frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
 	void setRenderMode(voxelrender::RenderMode renderMode);
