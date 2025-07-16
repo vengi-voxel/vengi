@@ -189,14 +189,17 @@ static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	const float bright = 0.85f;
 	switch (axis) {
 	case math::Axis::X:
+		// TODO: COLORS: this is not style dependent
 		style.setColor(ImGuiCol_Text, glm::vec4(1.0f, bright, bright, 1.0f));
 		style.setButtonColor(color(style::ColorAxisX));
 		break;
 	case math::Axis::Y:
+		// TODO: COLORS: this is not style dependent
 		style.setColor(ImGuiCol_Text, glm::vec4(bright, 1.0f, bright, 1.0f));
 		style.setButtonColor(color(style::ColorAxisY));
 		break;
 	case math::Axis::Z:
+		// TODO: COLORS: this is not style dependent
 		style.setColor(ImGuiCol_Text, glm::vec4(bright, bright, 1.0f, 1.0f));
 		style.setButtonColor(color(style::ColorAxisZ));
 		break;
