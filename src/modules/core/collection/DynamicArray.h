@@ -122,6 +122,10 @@ public:
 		_increase = increase;
 	}
 
+	size_t increase() const {
+		return _increase;
+	}
+
 	DynamicArray &operator=(const DynamicArray &other) {
 		if (&other == this) {
 			return *this;
