@@ -21,7 +21,8 @@ enum StyleColor {
 	ColorAxisX,
 	ColorAxisY,
 	ColorAxisZ,
-	ColorSliceRegion
+	ColorSliceRegion,
+	ColorActiveBrush,
 };
 
 const glm::vec4 &color(StyleColor color);

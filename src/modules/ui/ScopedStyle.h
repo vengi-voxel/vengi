@@ -38,16 +38,18 @@ public:
 	inline void brighter(ImGuiCol idx, float f = 1.0f) {
 		setColor(idx, core::Color::brighter(ImGui::GetStyle().Colors[idx], f));
 	}
+	inline ImVec4 highlight(const ImVec4 &c, float f = 1.0f) {
+		if (c.x < 0.1f && c.y < 0.1f && c.z < 0.1f) {
+			return core::Color::brighter(c, f);
+		}
+		return core::Color::darker(c, f);
+	}
 	/**
 	 * Does either make the color brighter or darker depending on the current color
 	 */
 	inline void highlight(ImGuiCol idx, float f = 1.0f) {
-		const glm::vec4 &c = ImGui::GetStyle().Colors[idx];
-		if (c.x < 0.1f && c.y < 0.1f && c.z < 0.1f) {
-			setColor(idx, core::Color::brighter(c, f));
-			return;
-		}
-		setColor(idx, core::Color::darker(c, f));
+		const ImVec4 &c = highlight(ImGui::GetStyle().Colors[idx], f);
+		setColor(idx, c);
 	}
 	inline void pushFontSize(int size) {
 		ImGui::PushFont(nullptr, size);
@@ -58,6 +60,13 @@ public:
 			ImGui::PopFont();
 			--_font;
 		}
+	}
+	void setButtonColor(const ImVec4 &col) {
+		ImGui::PushStyleColor(ImGuiCol_Button, col);
+		const ImVec4 hc = highlight(col, 1.5f);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hc);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, hc);
+		_color += 3;
 	}
 	inline void setAlpha(float alpha) {
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);

@@ -430,6 +430,9 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	case style::ColorAxisX:
 		return core::Color::LightRed();
 	case style::ColorAxisY:
+		if (style == ImGui::StyleLight) {
+			return core::Color::DarkGreen();
+		}
 		return core::Color::LightGreen();
 	case style::ColorAxisZ:
 		return core::Color::LightBlue();
@@ -464,6 +467,11 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		return core::Color::White();
 	case style::ColorBone:
 		return core::Color::LightGray();
+	case style::ColorActiveBrush:
+		if (style == ImGui::StyleLight) {
+			return core::Color::Green();
+		}
+		return core::Color::DarkGreen();
 	}
 	return core::Color::White();
 }

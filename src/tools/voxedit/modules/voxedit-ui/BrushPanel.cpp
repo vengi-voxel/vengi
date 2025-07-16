@@ -598,7 +598,12 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 		if (tooltip.empty()) {
 			tooltip = BrushTypeStr[i];
 		}
-		toolbarBrush.button(BrushTypeIcons[i], tooltip.c_str(), func, (int)brushType != i);
+		const bool currentBrush = (int)brushType == i;
+		ui::ScopedStyle styleButton;
+		if (currentBrush) {
+			styleButton.setButtonColor(style::color(style::ColorActiveBrush));
+		}
+		toolbarBrush.button(BrushTypeIcons[i], tooltip.c_str(), func, !currentBrush);
 	}
 	toolbarBrush.end();
 
