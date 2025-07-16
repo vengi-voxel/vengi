@@ -33,7 +33,7 @@ public:
 	}
 	~Toolbar();
 
-	bool button(const char *icon, const char *command, bool darken = false);
+	bool button(const char *icon, const char *command, bool highlight = false);
 
 	void end() {
 		last();

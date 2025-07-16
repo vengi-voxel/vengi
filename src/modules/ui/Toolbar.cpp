@@ -43,12 +43,12 @@ void Toolbar::applyIconStyle(ui::ScopedStyle &style) {
 	ImGui::AlignTextToFramePadding();
 }
 
-bool Toolbar::button(const char *icon, const char *command, bool darken) {
+bool Toolbar::button(const char *icon, const char *command, bool highlight) {
 	newline();
 	ui::ScopedStyle style;
 	applyIconStyle(style);
-	if (darken) {
-		style.darker(ImGuiCol_Text);
+	if (highlight) {
+		style.highlight(ImGuiCol_Text);
 	}
 	ImGui::PushID(_id.c_str());
 	char label[64];
