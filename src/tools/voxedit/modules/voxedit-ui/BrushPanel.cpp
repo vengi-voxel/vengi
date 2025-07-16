@@ -69,7 +69,7 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 	cmd += math::getCharForAxis(type);
 	{
 		ui::ScopedStyle style;
-		ImGui::AxisStyleText(style, type, false);
+		ImGui::AxisStyleText(style, type);
 		if (ImGui::RadioButton(title, brush.mirrorAxis() == type)) {
 			command::executeCommands(cmd, &listener);
 			return true;

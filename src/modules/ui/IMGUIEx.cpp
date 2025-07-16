@@ -6,6 +6,7 @@
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "ScopedStyle.h"
+#include "Style.h"
 #include "app/App.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
@@ -189,37 +190,31 @@ static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X:
 		style.setColor(ImGuiCol_Text, glm::vec4(1.0f, bright, bright, 1.0f));
-		style.setColor(ImGuiCol_Button, core::Color::DarkRed());
-		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkRed());
-		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkRed());
+		style.setButtonColor(color(style::ColorAxisX));
 		break;
 	case math::Axis::Y:
 		style.setColor(ImGuiCol_Text, glm::vec4(bright, 1.0f, bright, 1.0f));
-		style.setColor(ImGuiCol_Button, core::Color::DarkGreen());
-		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkGreen());
-		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkGreen());
+		style.setButtonColor(color(style::ColorAxisY));
 		break;
 	case math::Axis::Z:
 		style.setColor(ImGuiCol_Text, glm::vec4(bright, bright, 1.0f, 1.0f));
-		style.setColor(ImGuiCol_Button, core::Color::DarkBlue());
-		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkBlue());
-		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkBlue());
+		style.setButtonColor(color(style::ColorAxisZ));
 		break;
 	default:
 		break;
 	}
 }
 
-void AxisStyleText(ui::ScopedStyle &style, math::Axis axis, bool dark) {
+void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X:
-		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkRed() : core::Color::Red());
+		style.setColor(ImGuiCol_Text, color(style::ColorAxisX));
 		break;
 	case math::Axis::Y:
-		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkGreen() : core::Color::Green());
+		style.setColor(ImGuiCol_Text, color(style::ColorAxisY));
 		break;
 	case math::Axis::Z:
-		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkBlue() : core::Color::Blue());
+		style.setColor(ImGuiCol_Text, color(style::ColorAxisZ));
 		break;
 	default:
 		break;
@@ -249,7 +244,7 @@ bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
 
 bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value) {
 	ui::ScopedStyle style;
-	ImGui::AxisStyleText(style, axis, false);
+	ImGui::AxisStyleText(style, axis);
 	int intvalue = (int)core::enumVal(*value);
 	if (ImGui::CheckboxFlags(name, &intvalue, (int)axis)) {
 		*value = (math::Axis)intvalue;
