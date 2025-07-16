@@ -518,7 +518,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	}
 }
 
-void Viewport::update(command::CommandExecutionListener *listener) {
+void Viewport::update(double nowSeconds, command::CommandExecutionListener *listener) {
 	core_trace_scoped(ViewportPanel);
 	_camera.setFarPlane(_viewDistance->floatVal());
 
@@ -526,6 +526,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	_hovered = false;
 	_visible = false;
 	_cameraManipulated = false;
+	_nowSeconds = nowSeconds;
 
 	ui::ScopedStyle style;
 	style.setWindowRounding(0.0f);

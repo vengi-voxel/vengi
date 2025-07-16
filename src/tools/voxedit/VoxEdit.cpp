@@ -501,7 +501,7 @@ void VoxEdit::onRenderUI() {
 	if (_sceneMgr->update(_nowSeconds)) {
 		_mainWindow->onNewScene();
 	}
-	_mainWindow->update();
+	_mainWindow->update(_nowSeconds);
 }
 
 app::AppState VoxEdit::onRunning() {

@@ -73,6 +73,7 @@ private:
 
 	int _mouseX = 0;
 	int _mouseY = 0;
+	double _nowSeconds = 0.0;
 
 	struct Bounds {
 		glm::vec3 mins{0};
@@ -171,7 +172,7 @@ public:
 	/**
 	 * Update the ui
 	 */
-	void update(command::CommandExecutionListener *listener);
+	void update(double nowSeconds, command::CommandExecutionListener *listener);
 	bool init();
 	void shutdown();
 

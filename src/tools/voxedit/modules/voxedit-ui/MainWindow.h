@@ -113,7 +113,7 @@ private:
 	bool initViewports();
 
 	void leftWidget();
-	void mainWidget();
+	void mainWidget(double nowSeconds);
 	void rightWidget();
 
 	void configureMainBottomWidgetDock(ImGuiID dockId);
@@ -176,7 +176,7 @@ public:
 	 */
 	void onNewScene();
 	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
-	void update();
+	void update(double nowSeconds);
 	QuitDisallowReason allowToQuit();
 	Viewport* hoveredViewport();
 	/**

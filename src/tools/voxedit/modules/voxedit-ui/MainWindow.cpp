@@ -428,7 +428,7 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
 }
 
-void MainWindow::mainWidget() {
+void MainWindow::mainWidget(double nowSeconds) {
 	// main
 	Viewport *viewport = hoveredViewport();
 	if (viewport != nullptr) {
@@ -437,7 +437,7 @@ void MainWindow::mainWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	ImGuizmo::BeginFrame();
 	for (size_t i = 0; i < _viewports.size(); ++i) {
-		_viewports[i]->update(&listener);
+		_viewports[i]->update(nowSeconds, &listener);
 	}
 #if ENABLE_RENDER_PANEL
 	if (viewModeRenderPanel(_viewMode->intVal())) {
@@ -1027,7 +1027,7 @@ void MainWindow::updateViewMode() {
 	}
 }
 
-void MainWindow::update() {
+void MainWindow::update(double nowSeconds) {
 	core_trace_scoped(MainWindow);
 	if (_viewMode->isDirty() || _numViewports->isDirty()) {
 		if (!initViewports()) {
@@ -1092,7 +1092,7 @@ void MainWindow::update() {
 	ImGui::DockSpace(dockIdMain);
 
 	leftWidget();
-	mainWidget();
+	mainWidget(nowSeconds);
 	rightWidget();
 
 	registerPopups();
