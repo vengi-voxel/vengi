@@ -1406,94 +1406,6 @@ msgstr ""
 msgid "Pop"
 msgstr ""
 
-msgid ""
-"Switch between scene and edit mode (not in simple UI mode) by pressing the "
-"<cmd:togglescene> key."
-msgstr ""
-
-msgid "Use the file dialog options for format specific options."
-msgstr ""
-
-msgid ""
-"You can record a video of your rotating model in the viewport by using the "
-"'View' menu and the 'Video' option. Make sure to set the camera rotation "
-"speed to e.g. 1."
-msgstr ""
-
-msgid ""
-"When saving to a foreign format you might lose scene details if the format "
-"doesn't support particular features. Make sure to use the vengi format for "
-"highest compatibility."
-msgstr ""
-
-msgid ""
-"Change the color reduction mode to improve the quality of the palette "
-"especially for importing RGBA or mesh based formats."
-msgstr ""
-
-msgid "Drag a model from the assets panel to the stamp brush to use it."
-msgstr ""
-
-msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
-msgstr ""
-
-msgid ""
-"The editor shows the last executed console command in the status bar. You "
-"can use these commands and bind them to keys."
-msgstr ""
-
-msgid ""
-"You can use wasd style scene movement by switching the 'Camera movement' to "
-"'Eye' in the 'View' menu of the viewport."
-msgstr ""
-
-msgid ""
-"In order to use the path modifier, you have to place the reference position "
-"on top of another voxel and place the end of the path on another existing "
-"and connected voxel."
-msgstr ""
-
-msgid ""
-"When importing meshes, you can switch between different voxelization methods "
-"in the options menu."
-msgstr ""
-
-msgid ""
-"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by "
-"using the erase modifier."
-msgstr ""
-
-msgid "Switch between different color themes in the options menu."
-msgstr ""
-
-msgid ""
-"Please activate anonymous usage metrics in the options or the about dialog."
-msgstr ""
-
-msgid ""
-"You can change your default key bindings to Magicavoxel, Blender, Qubicle or "
-"Vengi own style. Check the bindings window in the options menu."
-msgstr ""
-
-msgid "You can save your viewport as AVI video or as screenshot."
-msgstr ""
-
-msgid "Press <cmd:pickcolor> to pick a color from the scene."
-msgstr ""
-
-msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
-msgstr ""
-
-msgid "Use CTRL+TAB to switch between the panels of the application."
-msgstr ""
-
-msgid ""
-"It's possible to have multiple viewports and align them next to each other "
-"to get a left, top and so on view of the scene at the same time."
-msgstr ""
-
 msgid "Tip of the day"
 msgstr ""
 
@@ -2248,6 +2160,123 @@ msgstr ""
 
 #, c-format
 msgid "Command: %s (%s)"
+msgstr ""
+
+msgid ""
+"Switch between scene and edit mode (not in simple UI mode) by pressing the "
+"<cmd:togglescene> key."
+msgstr ""
+
+msgid "Use the file dialog options for format specific options."
+msgstr ""
+
+msgid ""
+"You can record a video of your rotating model in the viewport by using the "
+"'View' menu and the 'Video' option. Make sure to set the camera rotation "
+"speed to e.g. 1."
+msgstr ""
+
+msgid ""
+"When saving to a foreign format you might lose scene details if the format "
+"doesn't support particular features. Make sure to use the vengi format for "
+"highest compatibility."
+msgstr ""
+
+msgid ""
+"Change the color reduction mode to improve the quality of the palette "
+"especially for importing RGBA or mesh based formats."
+msgstr ""
+
+msgid "Drag a model from the assets panel to the stamp brush to use it."
+msgstr ""
+
+msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
+msgstr ""
+
+msgid ""
+"The editor shows the last executed console command in the status bar. You "
+"can use these commands and bind them to keys."
+msgstr ""
+
+msgid ""
+"You can use wasd style scene movement by switching the 'Camera movement' to "
+"'Eye' in the 'View' menu of the viewport."
+msgstr ""
+
+msgid ""
+"In order to use the path modifier, you have to place the reference position "
+"on top of another voxel and place the end of the path on another existing "
+"and connected voxel."
+msgstr ""
+
+msgid ""
+"When importing meshes, you can switch between different voxelization methods "
+"in the options menu."
+msgstr ""
+
+msgid ""
+"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by "
+"using the erase modifier."
+msgstr ""
+
+msgid "Switch between different color themes in the options menu."
+msgstr ""
+
+msgid ""
+"Please activate anonymous usage metrics in the options or the about dialog."
+msgstr ""
+
+msgid ""
+"You can change your default key bindings to Magicavoxel, Blender, Qubicle or "
+"Vengi own style. Check the bindings window in the options menu."
+msgstr ""
+
+msgid "You can save your viewport as AVI video or as screenshot."
+msgstr ""
+
+msgid "Press <cmd:pickcolor> to pick a color from the scene."
+msgstr ""
+
+msgid ""
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
+msgstr ""
+
+msgid "Use ctrl+tab to switch between the panels of the application."
+msgstr ""
+
+msgid ""
+"It's possible to have multiple viewports and align them next to each other "
+"to get a left, top and so on view of the scene at the same time."
+msgstr ""
+
+msgid ""
+"Import/Export minecraft skins by using the 'Minecraft skin' option in the "
+"file menu - or by renaming the png the mcskin."
+msgstr ""
+
+msgid ""
+"Extend the editor features by providing your own scripts. Check the "
+"scripting documentation for more information."
+msgstr ""
+
+msgid ""
+"You can use the asset panel to import models from local or remote locations."
+msgstr ""
+
+msgid ""
+"The palette panel is able to directly import lospec palettes by the lospec "
+"palette identifier."
+msgstr ""
+
+msgid ""
+"Check the status bar to see the last executed console command of the last "
+"action."
+msgstr ""
+
+msgid ""
+"Switch between different ui modes (Ace Of Spades, Command&Conquer, "
+"Minecraft, ...) in the options menu to enable/disable various features."
 msgstr ""
 
 msgid "Action"

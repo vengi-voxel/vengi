@@ -23,6 +23,12 @@ static const char *tips[]{
 	N_("Press <cmd:pickcolor> to pick a color from the scene."),
 	N_("Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."),
 	N_("Use ctrl+tab to switch between the panels of the application."),
-	N_("It's possible to have multiple viewports and align them next to each other to get a left, top and so on view of the scene at the same time.")
+	N_("It's possible to have multiple viewports and align them next to each other to get a left, top and so on view of the scene at the same time."),
+	N_("Import/Export minecraft skins by using the 'Minecraft skin' option in the file menu - or by renaming the png the mcskin."),
+	N_("Extend the editor features by providing your own scripts. Check the scripting documentation for more information."),
+	N_("You can use the asset panel to import models from local or remote locations."),
+	N_("The palette panel is able to directly import lospec palettes by the lospec palette identifier."),
+	N_("Check the status bar to see the last executed console command of the last action."),
+	N_("Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features.")
 	// clang-format on
 };
