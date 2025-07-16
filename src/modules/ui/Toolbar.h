@@ -24,6 +24,7 @@ protected:
 	int _windowWidth;
 	void next();
 	void newline();
+	void applyDisabledStyle(ui::ScopedStyle &style);
 	void applyIconStyle(ui::ScopedStyle &style);
 public:
 	Toolbar(const core::String &id, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
@@ -32,15 +33,15 @@ public:
 	}
 	~Toolbar();
 
-	bool button(const char *icon, const char *command, bool highlight = false);
+	bool button(const char *icon, const char *command, bool disable = false);
 
 	template<class FUNC>
-	bool button(const char *icon, const char *tooltip, FUNC func, bool highlight = false) {
+	bool button(const char *icon, const char *tooltip, FUNC func, bool disable = false) {
 		newline();
 		ui::ScopedStyle style;
 		applyIconStyle(style);
-		if (highlight) {
-			style.highlight(ImGuiCol_Text);
+		if (disable) {
+			applyDisabledStyle(style);
 		}
 		ImGui::PushID(_id.c_str());
 		char label[64];

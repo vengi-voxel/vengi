@@ -43,12 +43,16 @@ void Toolbar::applyIconStyle(ui::ScopedStyle &style) {
 	ImGui::AlignTextToFramePadding();
 }
 
-bool Toolbar::button(const char *icon, const char *command, bool highlight) {
+void Toolbar::applyDisabledStyle(ui::ScopedStyle &style) {
+	style.highlight(ImGuiCol_Text);
+}
+
+bool Toolbar::button(const char *icon, const char *command, bool disable) {
 	newline();
 	ui::ScopedStyle style;
 	applyIconStyle(style);
-	if (highlight) {
-		style.highlight(ImGuiCol_Text);
+	if (disable) {
+		applyDisabledStyle(style);
 	}
 	ImGui::PushID(_id.c_str());
 	char label[64];
