@@ -140,6 +140,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	_tipOfTheDayList.push_back(_("You can save your viewport as AVI video or as screenshot."));
 	_tipOfTheDayList.push_back(_("Press <cmd:pickcolor> to pick a color from the scene."));
 	_tipOfTheDayList.push_back(_("Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."));
+	core_assert(_tipOfTheDayList.size() <= _tipOfTheDayList.increase());
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)_tipOfTheDayList.size());
 }
