@@ -101,14 +101,20 @@ void Viewport::delayResize(const glm::ivec2 &frameBufferSize) {
 	}
 	_resizeRequestSize = frameBufferSize;
 	_resizeRequestSeconds = _nowSeconds + 0.2;
+
+	resizeCamera(frameBufferSize);
 }
 
-void Viewport::resize(const glm::ivec2 &frameBufferSize) {
+void Viewport::resizeCamera(const glm::ivec2 &frameBufferSize) {
 	const glm::vec2 &windowSize = _app->windowDimension();
 	const glm::vec2 &windowFrameBufferSize = _app->frameBufferDimension();
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
 	const glm::ivec2 cameraSize((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y);
 	_camera.setSize(cameraSize);
+}
+
+void Viewport::resize(const glm::ivec2 &frameBufferSize) {
+	resizeCamera(frameBufferSize);
 	_renderContext.resize(frameBufferSize);
 }
 

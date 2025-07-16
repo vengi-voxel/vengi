@@ -153,6 +153,7 @@ private:
 	void menuBarMementoOptions(command::CommandExecutionListener *listener);
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void resize(const glm::ivec2 &frameBufferSize);
+	void resizeCamera(const glm::ivec2 &frameBufferSize);
 	void delayResize(const glm::ivec2 &frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
