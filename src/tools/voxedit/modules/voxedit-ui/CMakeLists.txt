@@ -23,6 +23,7 @@ set(SRCS
 	ScriptPanel.h ScriptPanel.cpp
 	BrushPanel.h BrushPanel.cpp
 	StatusBar.h StatusBar.cpp
+	TipOfTheDay.h
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
 	ViewMode.h ViewMode.cpp
