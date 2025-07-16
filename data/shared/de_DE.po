@@ -461,6 +461,9 @@ msgstr "Eine neue Version ist verfügbar!"
 msgid "You are using the latest version."
 msgstr "Sie verwenden die neueste Version."
 
+msgid "Debug build with reduced performance"
+msgstr ""
+
 msgid "Bug reports"
 msgstr "Fehlerberichte"
 
@@ -1556,6 +1559,14 @@ msgid ""
 msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
+
+msgid "Use CTRL+TAB to switch between the panels of the application."
+msgstr ""
+
+msgid ""
+"It's possible to have multiple viewports and align them next to each other "
+"to get a left, top and so on view of the scene at the same time."
+msgstr ""
 
 msgid "Tip of the day"
 msgstr "Tipp des Tages"
