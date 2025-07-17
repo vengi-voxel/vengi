@@ -1019,6 +1019,7 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 	for (const auto &e : colorSet) {
 		colors.push_back(e->first);
 	}
+	colorSet.clear();
 	palette.setName(image->name());
 	palette.quantize(colors.data(), colors.size());
 	palette.markDirty();
