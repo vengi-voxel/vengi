@@ -542,6 +542,8 @@ void TextWrappedUnformatted(const char *text) {
 
 bool TooltipTextUnformatted(const char *text) {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
+		ui::ScopedStyle tooltipStyle;
+		tooltipStyle.pushFontSize(imguiApp()->fontSize());
 		ImGui::BeginTooltip();
 		ImGui::TextUnformatted(text);
 		ImGui::EndTooltip();
@@ -661,8 +663,6 @@ bool CommandButton(const char *label, const char *command, const char *tooltip, 
 			return true;
 		}
 	}
-	ui::ScopedStyle style;
-	style.pushFontSize(imguiApp()->fontSize());
 	if (tooltip != nullptr) {
 		ImGui::TooltipTextUnformatted(tooltip);
 	} else {
