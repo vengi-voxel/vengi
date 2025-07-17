@@ -165,13 +165,10 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotateonaxis");
 		ImGui::AxisCommandButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
 		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "stampbrushrotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
 		ImGui::SameLine();
 		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "stampbrushrotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
 		ImGui::PopID();
 	}
 
@@ -380,13 +377,10 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 
 	const float buttonWidth = ImGui::GetFontSize() * 4.0f;
 	ImGui::AxisCommandButton(math::Axis::X, _("X"), "textbrushaxis x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-	ImGui::TooltipTextUnformatted(_("Print text along the x axis"));
 	ImGui::SameLine();
 	ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "textbrushaxis y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-	ImGui::TooltipTextUnformatted(_("Print text along the y axis"));
 	ImGui::SameLine();
 	ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "textbrushaxis z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-	ImGui::TooltipTextUnformatted(_("Print text along the z axis"));
 
 	addMirrorPlanes(listener, modifier.textBrush());
 	ImGui::Separator();

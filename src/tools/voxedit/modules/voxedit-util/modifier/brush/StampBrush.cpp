@@ -48,7 +48,7 @@ void StampBrush::construct() {
 		_volume = voxelutil::rotateAxis(_volume, axis);
 		_volume->translate(-_volume->region().getLowerCorner());
 		markDirty();
-	}).setHelp(_("Rotate stamp volume around the given axis"));
+	}).setHelp(_("Rotate stamp volume around the given axis by 90 degrees"));
 
 	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
 		Modifier &modifier = _sceneMgr->modifier();
