@@ -168,7 +168,7 @@ public:
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
 	int getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx = -1, core::Color::Distance distance = core::Color::Distance::Approximation) const;
-	uint8_t findReplacement(uint8_t paletteColorIdx) const;
+	uint8_t findReplacement(uint8_t paletteColorIdx, core::Color::Distance distance = core::Color::Distance::Approximation) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to match the color to another already existing color in the palette.

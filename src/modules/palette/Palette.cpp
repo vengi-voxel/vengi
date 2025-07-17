@@ -418,7 +418,7 @@ int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx, core::Col
 	return minIndex;
 }
 
-uint8_t Palette::findReplacement(uint8_t paletteColorIdx) const {
+uint8_t Palette::findReplacement(uint8_t paletteColorIdx, core::Color::Distance distance) const {
 	if (size() == 0) {
 		return paletteColorIdx;
 	}
@@ -445,23 +445,38 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx) const {
 	float minDistance = FLT_MAX;
 	int minIndex = paletteColorIdx;
 
-	float hue;
-	float saturation;
-	float brightness;
-	const glm::vec4 color = core::Color::fromRGBA(rgba);
-	core::Color::getHSB(color, hue, saturation, brightness);
+	if (distance == core::Color::Distance::HSB) {
+		float hue;
+		float saturation;
+		float brightness;
+		core::Color::getHSB(rgba, hue, saturation, brightness);
 
-	for (int i = 0; i < _colorCount; ++i) {
-		if (i == skip) {
-			continue;
+		for (int i = 0; i < _colorCount; ++i) {
+			if (i == skip) {
+				continue;
+			}
+			if (_colors[i].a == 0) {
+				continue;
+			}
+			const float val = core::Color::getDistance(_colors[i], hue, saturation, brightness);
+			if (val < minDistance) {
+				minDistance = val;
+				minIndex = (int)i;
+			}
 		}
-		if (_colors[i].a == 0) {
-			continue;
-		}
-		const float val = core::Color::getDistance(_colors[i], hue, saturation, brightness);
-		if (val < minDistance) {
-			minDistance = val;
-			minIndex = (int)i;
+	} else {
+		for (int i = 0; i < _colorCount; ++i) {
+			if (i == skip) {
+				continue;
+			}
+			if (_colors[i].a == 0) {
+				continue;
+			}
+			const float val = core::Color::getDistance(_colors[i], rgba, distance);
+			if (val < minDistance) {
+				minDistance = val;
+				minIndex = (int)i;
+			}
 		}
 	}
 	return minIndex;
