@@ -226,15 +226,27 @@ void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 
 bool AxisCommandButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip, float width,
 					   command::CommandExecutionListener *listener) {
-	ui::ScopedStyle style;
-	ImGui::AxisStyleButton(style, axis);
-	char buf[16];
-	if (icon != nullptr) {
-		core::String::formatBuf(buf, sizeof(buf), "%s %s", icon, name);
-	} else {
-		core::String::formatBuf(buf, sizeof(buf), "%s", name);
+	{
+		ui::ScopedStyle style;
+		ImGui::AxisStyleButton(style, axis);
+		char buf[16];
+		if (icon != nullptr) {
+			core::String::formatBuf(buf, sizeof(buf), "%s %s", icon, name);
+		} else {
+			core::String::formatBuf(buf, sizeof(buf), "%s", name);
+		}
+		if (ImGui::Button(buf, ImVec2(width, 0))) {
+			if (command::executeCommands(command, listener) > 0) {
+				return true;
+			}
+		}
 	}
-	return ImGui::CommandButton(buf, command, tooltip, ImVec2(width, 0), listener);
+	if (tooltip != nullptr) {
+		ImGui::TooltipTextUnformatted(tooltip);
+	} else {
+		TooltipCommand(command);
+	}
+	return false;
 }
 
 bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
