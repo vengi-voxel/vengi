@@ -185,7 +185,6 @@ public:
 	static const char *getDefaultPaletteName();
 	static core::String extractPaletteName(const core::String &file);
 	static bool createPalette(const image::ImagePtr &image, palette::Palette &palette);
-	static bool convertImageToPalettePng(const image::ImagePtr &image, const char *paletteFile);
 };
 
 inline PaletteView &Palette::view() {

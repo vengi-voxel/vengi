@@ -1195,33 +1195,6 @@ void Palette::emitToVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	}
 }
 
-bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char *paletteFile) {
-	if (!image || !image->isLoaded() || paletteFile == nullptr) {
-		return false;
-	}
-	if (!core::string::endsWith(paletteFile, ".png")) {
-		Log::error("Failed to save palette as png - invalid file extension");
-		return false;
-	}
-	Palette palette;
-	if (!createPalette(image, palette)) {
-		return false;
-	}
-	const image::ImagePtr &paletteImg = image::createEmptyImage("**palette**");
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr file = filesystem->open(paletteFile, io::FileMode::SysWrite);
-	io::FileStream stream(file);
-	if (!stream.valid()) {
-		Log::error("Failed to open file %s for saving the palette as png", paletteFile);
-		return false;
-	}
-	core::RGBA colors[PaletteMaxColors];
-	for (int i = 0; i < PaletteMaxColors; i++) {
-		colors[i] = palette.color(i);
-	}
-	return paletteImg->writePNG(stream, (const uint8_t *)colors, (int)palette.size(), 1, 4);
-}
-
 const core::String &Palette::colorName(uint8_t paletteColorIdx) const {
 	if (!_names.hasValue()) {
 		return core::String::Empty;
