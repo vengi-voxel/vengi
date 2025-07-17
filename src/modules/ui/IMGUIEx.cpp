@@ -186,23 +186,25 @@ bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
 }
 
 static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
-	const float bright = 0.85f;
 	switch (axis) {
-	case math::Axis::X:
-		// TODO: COLORS: this is not style dependent
-		style.setColor(ImGuiCol_Text, glm::vec4(1.0f, bright, bright, 1.0f));
-		style.setButtonColor(color(style::ColorAxisX));
+	case math::Axis::X: {
+		const glm::vec4 &c = color(style::ColorAxisX);
+		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		style.setButtonColor(c);
 		break;
-	case math::Axis::Y:
-		// TODO: COLORS: this is not style dependent
-		style.setColor(ImGuiCol_Text, glm::vec4(bright, 1.0f, bright, 1.0f));
-		style.setButtonColor(color(style::ColorAxisY));
+	}
+	case math::Axis::Y: {
+		const glm::vec4 &c = color(style::ColorAxisY);
+		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		style.setButtonColor(c);
 		break;
-	case math::Axis::Z:
-		// TODO: COLORS: this is not style dependent
-		style.setColor(ImGuiCol_Text, glm::vec4(bright, bright, 1.0f, 1.0f));
-		style.setButtonColor(color(style::ColorAxisZ));
+	}
+	case math::Axis::Z: {
+		const glm::vec4 &c = color(style::ColorAxisZ);
+		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		style.setButtonColor(c);
 		break;
+	}
 	default:
 		break;
 	}

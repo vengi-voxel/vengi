@@ -1064,6 +1064,14 @@ core::RGBA Color::darker(const core::RGBA &color, float f) {
 	return result;
 }
 
+const glm::vec4 &Color::contrastTextColor(const glm::vec4 &background) {
+	// Compute luminance using the Rec. 709 formula
+	float luminance = 0.2126f * background.r + 0.7152f * background.g + 0.0722f * background.b;
+
+	// Use white text on dark backgrounds, black text on light backgrounds
+	return (luminance < 0.5f) ? core::Color::White() : core::Color::Black();
+}
+
 glm::vec4 Color::darker(const glm::vec4 &color, float f) {
 	f = (float)SDL_pow(scaleFactor, f);
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);

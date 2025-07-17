@@ -428,14 +428,20 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	const int style = _uistyle->intVal();
 	switch (color) {
 	case style::ColorAxisX:
-		return core::Color::LightRed();
+		if (style == ImGui::StyleLight) {
+			return core::Color::LightRed();
+		}
+		return core::Color::DarkRed();
 	case style::ColorAxisY:
 		if (style == ImGui::StyleLight) {
-			return core::Color::DarkGreen();
+			return core::Color::LightGreen();
 		}
-		return core::Color::LightGreen();
+		return core::Color::DarkGreen();
 	case style::ColorAxisZ:
-		return core::Color::LightBlue();
+		if (style == ImGui::StyleLight) {
+			return core::Color::LightBlue();
+		}
+		return core::Color::DarkBlue();
 	case style::ColorLockedNode:
 		return core::Color::Red();
 	case style::ColorInactiveNode:
