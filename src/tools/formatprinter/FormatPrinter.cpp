@@ -176,6 +176,11 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf("(Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), kvx (Build engine), kv6 (SLAB6),\n");
 		Log::printf("binvox and others. It can also export to mesh formats like obj, gltf, stl and ply with\n");
 		Log::printf("a number of options.\n");
+	} else if (app == "palconvert") {
+		Log::printf("\\fB@NAME@\\fR [\\fIoption\\fR] --input infile --output outfile\n");
+		Log::printf(".SH DESCRIPTION\n");
+		Log::printf("\\fB@COMMANDLINE@\\fP is a command line application that can convert several palette\n");
+		Log::printf("formats into others.\n");
 	}
 	Log::printf("\n");
 
@@ -209,6 +214,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--filter-property name:foo", "Model filter by property. For example 'name:foo'.");
 		addManPageOption("--force|-f", "Overwrite existing files.");
 		addManPageOption("--input|-i infile", "Specify the input file to read from.");
+		addManPageOption("--image", "Print the voxel scene to the console");
 		addManPageOption("--json", "Dump the scene graph of the input file. Use \\fBfull\\fR as parameter to also print mesh details");
 		addManPageOption("--merge|-m", "Merge models into one volume.");
 		addManPageOption("--mirror axis", "Mirror by the given axis (x, y or z)");
@@ -376,7 +382,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 			}
 			meshExtsStr += e;
 		}
-		Log::printf("Voxelization is supported, too (%s). The following cvars can be modified here:\n", meshExtsStr.c_str()	);
+		Log::printf("Voxelization is supported, too (%s). The following cvars can be modified here:\n", meshExtsStr.c_str());
 		Log::printf("\n");
 		Log::printf(".PP\n");
 		Log::printf("\\fBvoxformat_fillhollow\\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.\n");
@@ -391,9 +397,13 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf(".PP\n");
 		Log::printf("\\fBvoxformat_voxelizemode\\fP: 0 = high quality, 1 = faster and less memory\n");
 		Log::printf("\n");
+	} else if (app == "palconvert") {
+		Log::printf(".SH OPTIONS\n");
+		addManPageOption("--input|-i infile", "Specify the input file to read from.");
+		addManPageOption("--output|-o outfile", "Specify the output file to write to.");
 	}
 
-	printManPageFormats(save);
+	printManPageFormats(app, save);
 
 	Log::printf(".SH HOMEPAGE\n");
 	Log::printf("https://github.com/vengi-voxel/vengi\n");
@@ -405,15 +415,35 @@ void FormatPrinter::printManPage(const core::String &app) {
 	Log::printf("If you find a bug, please report it at https://github.com/vengi-voxel/vengi/issues\n");
 }
 
-void FormatPrinter::printManPageFormats(bool save) {
-	core::DynamicArray<io::FormatDescription> formatDescriptions;
-	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-		formatDescriptions.push_back(*desc);
+void FormatPrinter::printManPageFormats(const core::String& app, bool save) {
+	core::DynamicArray<io::FormatDescription> loadDescriptions;
+	core::DynamicArray<io::FormatDescription> saveDescriptions;
+	if (app == "palconvert") {
+		for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
+			if ((desc->flags & FORMAT_FLAG_NO_LOAD) != 0) {
+				continue;
+			}
+			loadDescriptions.push_back(*desc);
+		}
+		for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
+			if ((desc->flags & FORMAT_FLAG_SAVE) == 0) {
+				continue;
+			}
+			saveDescriptions.push_back(*desc);
+		}
+	} else {
+		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+			loadDescriptions.push_back(*desc);
+		}
+		for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+			saveDescriptions.push_back(*desc);
+		}
 	}
-	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+	saveDescriptions.sort(core::Greater<io::FormatDescription>());
+	loadDescriptions.sort(core::Greater<io::FormatDescription>());
 
 	Log::printf(".SH LOAD\n");
-	for (const io::FormatDescription &desc : formatDescriptions) {
+	for (const io::FormatDescription &desc : loadDescriptions) {
 		Log::printf(".TP\n");
 		Log::printf("%s (", desc.name.c_str());
 		int ext = 0;
@@ -431,8 +461,9 @@ void FormatPrinter::printManPageFormats(bool save) {
 	if (!save) {
 		return;
 	}
+
 	Log::printf(".SH SAVE\n");
-	for (const io::FormatDescription &desc : formatDescriptions) {
+	for (const io::FormatDescription &desc : saveDescriptions) {
 		if (!voxelSaveSupported(desc)) {
 			continue;
 		}
@@ -490,7 +521,7 @@ void FormatPrinter::printMarkdownTables() {
 	Log::printf("| Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations |\n");
 	Log::printf("| :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- |\n");
 	core::DynamicArray<io::FormatDescription> formatDescriptions;
-	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = voxelformat::voxelFormats(); desc->valid(); ++desc) {
 		formatDescriptions.push_back(*desc);
 	}
 	formatDescriptions.sort(core::Greater<io::FormatDescription>());
@@ -502,8 +533,9 @@ void FormatPrinter::printMarkdownTables() {
 		const bool palette = desc.flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED;
 		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 		const bool save = voxelSaveSupported(desc);
+		const bool load = !(desc.flags & FORMAT_FLAG_NO_LOAD);
 		Log::printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s |\n", desc.name.c_str(),
-			   desc.mainExtension().c_str(), "X", save ? "X" : " ", screenshot ? "X" : " ", palette ? "X" : " ",
+			   desc.mainExtension().c_str(), load ? "X" : " ", save ? "X" : " ", screenshot ? "X" : " ", palette ? "X" : " ",
 			   animation ? "X" : " ");
 	}
 	Log::printf("\n");
@@ -767,7 +799,7 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 		}
 		Log::printf("\"voxels\": [");
 		int i = 0;
-		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const io::FormatDescription *desc = voxelformat::voxelFormats(); desc->valid(); ++desc) {
 			if (i != 0) {
 				Log::printf(",");
 			}
@@ -787,6 +819,11 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 				Log::printf("\"animation\": true,");
 			} else {
 				Log::printf("\"animation\": false,");
+			}
+			if (desc->flags & FORMAT_FLAG_NO_LOAD) {
+				Log::printf("\"load\": false,");
+			} else {
+				Log::printf("\"load\": true,");
 			}
 			if (voxelSaveSupported(*desc)) {
 				Log::printf("\"save\": true");

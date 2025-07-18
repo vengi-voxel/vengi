@@ -17,7 +17,7 @@ private:
 	void printMimeInfo();
 	void printMarkdownTables();
 	void addManPageOption(const core::String &option, const core::String &description);
-	void printManPageFormats(bool save);
+	void printManPageFormats(const core::String& app, bool save);
 	void printManPage(const core::String &app);
 	void printApplicationPlist();
 	void printInstallerWix();
