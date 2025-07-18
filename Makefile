@@ -208,7 +208,7 @@ tools/html/data.js: formatprinter
 
 contrib/installer/linux/x-voxel.xml: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --mimeinfo > $@
-	$(Q)contrib/installer/linux/mimetypes.sh
+	$(Q)contrib/installer/linux/mimetypes.py
 
 contrib/installer/osx/%.plist.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --plist > $@

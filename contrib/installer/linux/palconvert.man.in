@@ -45,6 +45,34 @@ Specify the input file to read from.
 \fB\--output|-o outfile\fR
 Specify the output file to write to.
 
+.SH LOAD
+.TP
+Adobe Color Bock (*.acb)
+.TP
+Adobe Swatch Exchange (*.ase)
+.TP
+Avoyd Material (*.avmt)
+.TP
+CSV Palette (*.csv)
+.TP
+Gimp Palette (*.gpl)
+.TP
+JASC Palette (*.pal)
+.TP
+Paint.NET Palette (*.txt)
+.TP
+Photoshop Palette (*.aco, *.8bco)
+.TP
+Pixelorama (*.json)
+.TP
+Portable Network Graphics (*.png)
+.TP
+Qubicle Palette (*.qsm)
+.TP
+RGB Palette (*.pal)
+.TP
+Tiberian Sun Palette (*.vpl)
+
 .SH HOMEPAGE
 https://github.com/vengi-voxel/vengi
 

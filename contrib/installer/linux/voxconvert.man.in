@@ -65,6 +65,10 @@ Overwrite existing files.
 Specify the input file to read from.
 
 .TP
+\fB\--image\fR
+Print the voxel scene to the console
+
+.TP
 \fB\--json\fR
 Dump the scene graph of the input file. Use \fBfull\fR as parameter to also print mesh details
 
@@ -256,7 +260,7 @@ Config vars to control the meshing:
 .PP
 \fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
 
-Voxelization is supported, too (3ds, bbmodel, bsp, escn, fbx, gltf, map, md2, mdl, obj, ply, stl). The following cvars can be modified here:
+Voxelization is supported, too (3ds, bbmodel, bsp, fbx, gltf, map, md2, mdl, obj, ply, stl). The following cvars can be modified here:
 
 .PP
 \fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.
@@ -302,8 +306,6 @@ Cubzh World (*.b64)
 FBX (*.fbx)
 .TP
 GL Transmission Format (*.gltf, *.glb, *.vrm)
-.TP
-Godot Scene (*.escn)
 .TP
 Goxel (*.gox)
 .TP

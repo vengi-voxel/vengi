@@ -56,8 +56,6 @@ FBX (*.fbx)
 .TP
 GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
-Godot Scene (*.escn)
-.TP
 Goxel (*.gox)
 .TP
 KenShape (*.kenshape)

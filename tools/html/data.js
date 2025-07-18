@@ -219,6 +219,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-vengi",
       "animation": true,
+      "load": true,
       "save": true
     },
     {
@@ -230,6 +231,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-aseprite",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -240,6 +242,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-qubicle-binary",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -251,6 +254,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-benvoxel",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -266,6 +270,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-magicavoxel",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -281,6 +286,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-qubicle-binary-tree",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -296,6 +302,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-qubicle-project",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -311,6 +318,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-sandbox-voxedit-tilemap",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -321,6 +329,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-sandbox-voxedit-collection",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -372,6 +381,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-sandbox-voxedit-model",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -387,6 +397,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-sandbox-voxedit-block",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -398,6 +409,7 @@ const jsonData = {
       "mimetype": "application/x-blockbench",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -445,6 +457,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-sandbox-voxedit-hierarchy",
       "animation": true,
+      "load": true,
       "save": true
     },
     {
@@ -460,6 +473,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-binvox",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -476,6 +490,7 @@ const jsonData = {
       "mimetype": "application/x-godot-scene",
       "mesh": true,
       "animation": false,
+      "load": false,
       "save": true
     },
     {
@@ -491,6 +506,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-goxel",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -501,6 +517,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-cubeworld",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -511,6 +528,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-luanti-minetest",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -522,6 +540,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-region",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -532,6 +551,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-level-dat",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -542,6 +562,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-mcworld",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -555,6 +576,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-schematic",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -566,6 +588,7 @@ const jsonData = {
       "mimetype": "application/x-quake-map",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -582,6 +605,7 @@ const jsonData = {
       "mimetype": "application/x-ufo-alien-invasion",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -598,6 +622,7 @@ const jsonData = {
       "mimetype": "application/x-quake-1",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -618,6 +643,7 @@ const jsonData = {
       "mimetype": "application/x-quake-1-model",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -634,6 +660,7 @@ const jsonData = {
       "mimetype": "application/x-quake-2-model",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -645,6 +672,7 @@ const jsonData = {
       "mimetype": "application/x-fbx",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -655,6 +683,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-kenshape",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -666,6 +695,7 @@ const jsonData = {
       "mimetype": "application/x-autodesk-3d-studio",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -676,6 +706,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-sproxel-csv",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -691,6 +722,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-magicavoxel-xraw",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -703,6 +735,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-starmade-blueprint",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -713,6 +746,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-starmade-template",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -723,6 +757,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-animatoon",
       "animation": true,
+      "load": true,
       "save": false
     },
     {
@@ -738,6 +773,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-voxelbuilder",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -749,6 +785,7 @@ const jsonData = {
       "mimetype": "application/x-wavefront-object",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -762,6 +799,7 @@ const jsonData = {
       "mimetype": "application/x-gl-transmission-format",
       "mesh": true,
       "animation": true,
+      "load": true,
       "save": true
     },
     {
@@ -773,6 +811,7 @@ const jsonData = {
       "mimetype": "application/x-standard-triangle-language",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -784,6 +823,7 @@ const jsonData = {
       "mimetype": "application/x-polygon-file-format",
       "mesh": true,
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -794,6 +834,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-build-engine",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -810,6 +851,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-particubes",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -825,6 +867,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-cubzh",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -835,6 +878,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-cubzh-world",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -846,6 +890,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-voxel3d",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -856,6 +901,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-rooms-xyz-thing",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -871,6 +917,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-aceofspades",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -886,6 +933,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-tiberian-sun",
       "animation": true,
+      "load": true,
       "save": true
     },
     {
@@ -896,6 +944,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-aceofspades-vxl",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -911,6 +960,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-qubicle-exchange",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -926,6 +976,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-chronovox",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -941,6 +992,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-nicks-voxel-model",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -951,6 +1003,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-slab6-vox",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -962,6 +1015,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-voxelmax",
       "animation": false,
+      "load": true,
       "save": false
     },
     {
@@ -977,6 +1031,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-portable-network-graphics",
       "animation": false,
+      "load": true,
       "save": true
     },
     {
@@ -988,6 +1043,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-skin",
       "animation": false,
+      "load": true,
       "save": true
     }
   ]

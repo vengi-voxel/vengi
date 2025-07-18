@@ -535,8 +535,8 @@ void FormatPrinter::printMarkdownTables() {
 		const bool save = voxelSaveSupported(desc);
 		const bool load = !(desc.flags & FORMAT_FLAG_NO_LOAD);
 		Log::printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s |\n", desc.name.c_str(),
-			   desc.mainExtension().c_str(), load ? "X" : " ", save ? "X" : " ", screenshot ? "X" : " ", palette ? "X" : " ",
-			   animation ? "X" : " ");
+					desc.mainExtension().c_str(), load ? "X" : " ", save ? "X" : " ", screenshot ? "X" : " ",
+					palette ? "X" : " ", animation ? "X" : " ");
 	}
 	Log::printf("\n");
 	Log::printf("## Mesh formats\n");
@@ -550,8 +550,9 @@ void FormatPrinter::printMarkdownTables() {
 		core::String spec;
 		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 		const bool save = voxelSaveSupported(desc);
-		Log::printf("| %-26s | %-9s | %-7s | %-9s | %-10s |\n", desc.name.c_str(), desc.mainExtension().c_str(), "X",
-			   save ? "X" : " ", animation ? "X" : " ");
+		const bool load = !(desc.flags & FORMAT_FLAG_NO_LOAD);
+		Log::printf("| %-26s | %-9s | %-7s | %-9s | %-10s |\n", desc.name.c_str(), desc.mainExtension().c_str(),
+					load ? "X" : " ", save ? "X" : " ", animation ? "X" : " ");
 	}
 	Log::printf("\nPoint cloud support for `ply` and `gtlf` is implemented, too.\n");
 	Log::printf("\n");
