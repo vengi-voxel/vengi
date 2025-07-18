@@ -677,7 +677,7 @@ bool Palette::load(const char *paletteName) {
 		return false;
 	}
 
-	if (isLospec(paletteName) == 0) {
+	if (isLospec(paletteName)) {
 		const core::String lospecId = paletteName + 7;
 		const core::String gimpPalette = lospecId + GimpPalette::format().mainExtension(true);
 		return loadLospec(lospecId, gimpPalette);
