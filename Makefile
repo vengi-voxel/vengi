@@ -219,6 +219,8 @@ contrib/installer/linux/%.man.in: formatprinter
 manpages: contrib/installer/linux/voxconvert.man.in contrib/installer/linux/palconvert.man.in contrib/installer/linux/thumbnailer.man.in contrib/installer/linux/application.man.in
 plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit.plist.in
 formats: manpages plists tools/html/data.js contrib/installer/linux/x-voxel.xml docs/Formats.md contrib/installer/windows/wixpatch.xml
+metainfo:
+	$(Q)contrib/installer/linux/metainfo.py contrib/installer/linux/io.github.vengi_voxel.vengi.voxedit.metainfo.xml docs/CHANGELOG.md
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)

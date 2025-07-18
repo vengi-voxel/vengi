@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component type="desktop">
-  <!--Created with jdAppdataEdit 5.0-->
   <id>io.github.vengi_voxel.vengi.voxedit</id>
   <name>vengi VoxEdit</name>
   <summary>voxel editor</summary>
@@ -28,6 +27,24 @@
     <category>Utility</category>
   </categories>
   <releases>
+    <release version="v0.0.38" date="2025-06-01" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.38</url>
+    </release>
+    <release version="v0.0.37" date="2025-05-12" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.37</url>
+    </release>
+    <release version="v0.0.36" date="2025-04-21" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.36</url>
+    </release>
+    <release version="v0.0.35" date="2025-02-09" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.35</url>
+    </release>
+    <release version="v0.0.34" date="2024-11-14" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.34</url>
+    </release>
+    <release version="v0.0.33" date="2024-08-05" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.33</url>
+    </release>
     <release version="v0.0.32" date="2024-05-29" type="stable">
       <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.32</url>
     </release>
@@ -127,8 +144,8 @@
   </releases>
   <url type="homepage">https://vengi-voxel.github.io/vengi/</url>
   <url type="bugtracker">https://github.com/vengi-voxel/vengi/issues</url>
-  <url type="donation">https://www.paypal.me/MartinGerhardy</url>
-  <content_rating type="oars-1.1"/>
+  <url type="donation">https://github.com/sponsors/mgerhardy</url>
+  <content_rating type="oars-1.1" />
   <launchable type="desktop-id">vengi-voxedit.desktop</launchable>
   <provides>
     <id>io.github.mgerhardy.vengi.voxedit</id>
