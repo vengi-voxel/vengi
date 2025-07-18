@@ -92,10 +92,10 @@ IMGUI_API bool AxisCommandButton(math::Axis axis, const char *name, const char *
 IMGUI_API bool InputAxisInt(math::Axis axis, const char *name, int* value, int step = 1);
 IMGUI_API bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value);
 
-IMGUI_API bool CancelButton();
-IMGUI_API bool OkButton();
-IMGUI_API bool YesButton();
-IMGUI_API bool NoButton();
+IMGUI_API bool CancelButton(const ImVec2 &size = ImVec2(0, 0));
+IMGUI_API bool OkButton(const ImVec2 &size = ImVec2(0, 0));
+IMGUI_API bool YesButton(const ImVec2 &size = ImVec2(0, 0));
+IMGUI_API bool NoButton(const ImVec2 &size = ImVec2(0, 0));
 
 template<class Collection>
 bool ComboItems(const char *label, int *currentItem, const Collection &items) {

@@ -706,20 +706,20 @@ bool CommandMenuItem(const char *label, const char *command, bool enabled, comma
 	return CommandIconMenuItem(nullptr, label, command, enabled, listener);
 }
 
-bool CancelButton() {
-	return IconButton(ICON_LC_X, _("Cancel"));
+bool CancelButton(const ImVec2 &size) {
+	return IconButton(ICON_LC_X, _("Cancel"), size);
 }
 
-bool OkButton() {
-	return IconButton(ICON_LC_CHECK, _("Ok"));
+bool OkButton(const ImVec2 &size) {
+	return IconButton(ICON_LC_CHECK, _("Ok"), size);
 }
 
-bool YesButton() {
-	return IconButton(ICON_LC_CHECK, _("Yes"));
+bool YesButton(const ImVec2 &size) {
+	return IconButton(ICON_LC_CHECK, _("Yes"), size);
 }
 
-bool NoButton() {
-	return IconButton(ICON_LC_X, _("No"));
+bool NoButton(const ImVec2 &size) {
+	return IconButton(ICON_LC_X, _("No"), size);
 }
 
 bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
