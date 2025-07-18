@@ -988,7 +988,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-minecraft-skin",
       "animation": false,
-      "save": false
+      "save": true
     }
   ]
 }

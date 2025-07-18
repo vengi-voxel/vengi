@@ -417,6 +417,8 @@ Magicavoxel XRAW (*.xraw)
 .TP
 Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
 .TP
+Minecraft skin (*.mcskin, *.png)
+.TP
 Particubes (*.pcubes, *.particubes)
 .TP
 Polygon File Format (*.ply)

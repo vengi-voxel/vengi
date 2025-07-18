@@ -221,6 +221,7 @@ plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit
 formats: manpages plists tools/html/data.js contrib/installer/linux/x-voxel.xml docs/Formats.md contrib/installer/windows/wixpatch.xml
 metainfo:
 	$(Q)contrib/installer/linux/metainfo.py contrib/installer/linux/io.github.vengi_voxel.vengi.voxedit.metainfo.xml docs/CHANGELOG.md
+prepare-release: formats metainfo
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)
