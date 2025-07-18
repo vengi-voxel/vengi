@@ -863,12 +863,6 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 		buttonText = _("Save");
 	}
 
-	const ImVec2 cancelTextSize = ImGui::CalcTextSize(_("Cancel"));
-	const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
-	const ImVec2 iconSize = ImGui::CalcTextSize(ICON_LC_X " ");
-	const ImVec2 available = ImGui::GetContentRegionAvail();
-	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
-	ImGui::SetCursorPosX(contentRegionWidth - cancelTextSize.x - chooseTextSize.x - iconSize.x - 40.0f);
 	if (ImGui::CancelButton()) {
 		resetState();
 		return true;
