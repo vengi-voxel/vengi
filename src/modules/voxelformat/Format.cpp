@@ -297,7 +297,7 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 					Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
 							   "them. We need to find a replacement for %i",
 							   palette::PaletteMaxColors, emptyIndex);
-					uint8_t replacement = palette.findReplacement(emptyIndex);
+					uint8_t replacement = palette.findReplacement(emptyIndex, core::Color::Distance::HSB);
 					Log::debug("Looking for a similar color in the palette: %d", replacement);
 					if (replacement != emptyIndex) {
 						Log::debug("Replace %i with %i", emptyIndex, replacement);

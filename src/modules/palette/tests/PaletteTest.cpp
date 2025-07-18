@@ -5,6 +5,7 @@
 #include "palette/Palette.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
+#include "core/Color.h"
 #include "core/ConfigVar.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"
@@ -148,6 +149,19 @@ TEST_F(PaletteTest, testReduce) {
 	pal.nippon();
 	pal.reduce(16);
 	EXPECT_LE(pal.colorCount(), 16);
+}
+
+TEST_F(PaletteTest, testFindReplacement) {
+	Palette pal;
+	pal.nippon();
+	const int r1 = pal.findReplacement(0, core::Color::Distance::Approximation);
+	const int r2 = pal.findReplacement(0, core::Color::Distance::HSB);
+	EXPECT_NE(r1, 0);
+	EXPECT_NE(r2, 0);
+	const float delta = core::Color::getDistance(pal.color(r1), pal.color(r2), core::Color::Distance::HSB);
+	EXPECT_LT(delta, 0.025f) << "The replacement for the first color " << core::Color::print(pal.color(0))
+							 << " should be similar for both distance methods " << core::Color::print(pal.color(r1))
+							 << " vs " << core::Color::print(pal.color(r2));
 }
 
 TEST_F(PaletteTest, testSaveBuiltInPalette) {
