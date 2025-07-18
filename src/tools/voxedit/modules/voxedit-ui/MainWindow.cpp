@@ -543,7 +543,7 @@ void MainWindow::popupTipOfTheDay() {
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		const char *tip = getTip();
 		ImGui::IconDialog(ICON_LC_LIGHTBULB, tip, true);
-		float height = (ImGui::GetFontSize() * 8.0f) - ImGui::GetCursorPosY();
+		float height = ImGui::Height(8.0f) - ImGui::GetCursorPosY();
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
 		}
