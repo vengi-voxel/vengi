@@ -77,9 +77,7 @@
 
 namespace voxelformat {
 
-const io::FormatDescription *voxelLoad() {
-	// this is the list of supported voxel volume formats that
-	// have importers implemented
+const io::FormatDescription *voxelFormats() {
 	static const io::FormatDescription desc[] = {VENGIFormat::format(),
 												 AsepriteFormat::format(),
 												 QBFormat::format(),
@@ -140,10 +138,26 @@ const io::FormatDescription *voxelLoad() {
 	return desc;
 }
 
+const io::FormatDescription *voxelLoad() {
+	// this is the list of supported voxel volume formats that
+	// have importers implemented
+	static core::DynamicArray<io::FormatDescription> desc;
+	if (desc.empty()) {
+		for (const io::FormatDescription *d = voxelFormats(); d->valid(); ++d) {
+			if (d->flags & FORMAT_FLAG_NO_LOAD) {
+				continue;
+			}
+			desc.push_back(*d);
+		}
+		desc.push_back({"", {}, {}, 0u});
+	}
+	return desc.data();
+}
+
 const io::FormatDescription *voxelSave() {
 	static core::DynamicArray<io::FormatDescription> desc;
 	if (desc.empty()) {
-		for (const io::FormatDescription *d = voxelformat::voxelLoad(); d->valid(); ++d) {
+		for (const io::FormatDescription *d = voxelFormats(); d->valid(); ++d) {
 			if (d->flags & FORMAT_FLAG_SAVE) {
 				desc.push_back(*d);
 			}

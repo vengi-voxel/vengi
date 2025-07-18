@@ -16,6 +16,7 @@ class Palette;
 
 namespace voxelformat {
 
+const io::FormatDescription *voxelFormats();
 const io::FormatDescription *voxelLoad();
 const io::FormatDescription *voxelSave();
 

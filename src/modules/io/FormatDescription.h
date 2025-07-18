@@ -22,6 +22,7 @@ using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION
 #define FORMAT_FLAG_GROUP (1 << 1)
 // we also have saving implemented
 #define FORMAT_FLAG_SAVE (1 << 2)
+#define FORMAT_FLAG_NO_LOAD (1 << 3)
 
 // the format has a built-in renderer shot of the creating software
 #define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 8)
