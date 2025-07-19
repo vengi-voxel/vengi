@@ -153,7 +153,7 @@ void FormatPrinter::addManPageOption(const core::String &option, const core::Str
 
 void FormatPrinter::printManPage(const core::String &app) {
 	const bool save = app == "voxconvert";
-	const bool commandLineApp = app == "thumbnailer" || app == "voxconvert";
+	const bool commandLineApp = app == "thumbnailer" || app == "voxconvert" || app == "palconvert";
 	Log::printf(".\\\" This man page was written by Martin Gerhardy in @COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@. It is provided\n");
 	Log::printf(".\\\" under the GNU General Public License 3 or (at your option) any later version.\n");
 	Log::printf(".TH @COMMANDLINE@ \"1\" \"@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@\" \"@COMMANDLINE@\"\n");
@@ -399,6 +399,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf("\n");
 	} else if (app == "palconvert") {
 		Log::printf(".SH OPTIONS\n");
+		addManPageOption("--force|-f", "Overwrite existing files.");
 		addManPageOption("--input|-i infile", "Specify the input file to read from.");
 		addManPageOption("--output|-o outfile", "Specify the output file to write to.");
 	}
