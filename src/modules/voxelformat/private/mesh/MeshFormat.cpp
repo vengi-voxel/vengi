@@ -254,8 +254,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 	const bool axisAligned = isVoxelMesh(tris);
 
-	glm::vec3 trisMins;
-	glm::vec3 trisMaxs;
+	glm::vec3 trisMins{0};
+	glm::vec3 trisMaxs{0};
 	core_assert_always(calculateAABB(tris, trisMins, trisMaxs));
 	Log::debug("mins: %f:%f:%f, maxs: %f:%f:%f", trisMins.x, trisMins.y, trisMins.z, trisMaxs.x, trisMaxs.y,
 			   trisMaxs.z);

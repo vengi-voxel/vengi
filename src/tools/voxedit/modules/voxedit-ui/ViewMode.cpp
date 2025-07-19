@@ -19,7 +19,7 @@ static const uint64_t MINECRAFTSKIN_FLAGS =
 	SIMLPE_FLAGS & ~(VIEWMODE_FLAG_ASSETPANEL | VIEWMODE_FLAG_ANIMATIONS | VIEWMODE_FLAG_RENDERPANEL);
 static const uint64_t ACEOFSPADES_FLAGS = (DEFAULT_FLAGS & ~(VIEWMODE_FLAG_ANIMATIONS)) | VIEWMODE_FLAG_NOSPLIT;
 
-static const uint64_t flags[] = {
+static const uint64_t s_viewModeFlags[] = {
 	DEFAULT_FLAGS,			 // Default
 	SIMLPE_FLAGS,			 // Simple
 	ALL_FLAGS,				 // All
@@ -27,13 +27,13 @@ static const uint64_t flags[] = {
 	MINECRAFTSKIN_FLAGS,	 // MinecraftSkin
 	ACEOFSPADES_FLAGS		 // AceOfSpades
 };
-static_assert(lengthof(flags) == (int)ViewMode::Max, "Viewmode flags don't match existing viewmodes");
+static_assert(lengthof(s_viewModeFlags) == (int)ViewMode::Max, "Viewmode flags don't match existing viewmodes");
 
 uint64_t viewModeFlags(ViewMode viewMode) {
 	if (viewMode == ViewMode::Max) {
 		return 0u;
 	}
-	return flags[(int)viewMode];
+	return s_viewModeFlags[(int)viewMode];
 }
 
 const char *getViewModeString(ViewMode viewMode) {

@@ -16,7 +16,7 @@ class PlaneBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 	voxel::Voxel _hitVoxel;
-	glm::ivec3 _initialPlanePos;
+	glm::ivec3 _initialPlanePos{0};
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
