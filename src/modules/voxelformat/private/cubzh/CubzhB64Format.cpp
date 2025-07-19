@@ -274,7 +274,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 					core::String base64;
 					// itemDetailsCell table
 					wrapBool(stream.readPascalStringUInt16LE(base64))
-					// TODO
+					// TODO: VOXELFORMAT:
 				} else if (CHECK_ID(fieldId, "pm")) {
 					// Disabled = 0
 					// Trigger = 1
@@ -282,7 +282,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 					// Static = 3
 					// StaticPerBlock = 4 (default)
 					// Dynamic = 5
-					// TODO
+					// TODO: VOXELFORMAT:
 					wrap(stream.readUInt8(physicMode))
 					wrap(stream.readUInt8(physicMode))
 					wrap(stream.readUInt8(physicMode))

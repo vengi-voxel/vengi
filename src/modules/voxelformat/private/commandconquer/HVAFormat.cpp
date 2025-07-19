@@ -84,8 +84,8 @@ bool HVAFormat::loadHVA(const core::String &filename, const io::ArchivePtr &arch
 			// if there is no hva file, we still don't show an error
 			return true;
 		}
-		wrapBool(readHVAHeader(*stream, file.header));
-		wrapBool(readHVAFrames(*stream, mdl, file));
+		wrapBool(readHVAHeader(*stream, file.header))
+		wrapBool(readHVAFrames(*stream, mdl, file))
 	}
 	Log::debug("load %u frames", file.header.numFrames);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < file.header.numFrames; ++keyFrameIdx) {

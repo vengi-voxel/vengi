@@ -1093,7 +1093,7 @@ bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const
 		return false;
 	}
 	const core::String basename = core::string::extractFilename(filename);
-	// TODO
+	// TODO: VOXELFORMAT: animation settings are not correct
 	int fps = 12;
 	int loopStart = 0;
 	int loopEnd = 0;
