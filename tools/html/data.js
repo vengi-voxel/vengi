@@ -10,7 +10,9 @@ const jsonData = {
           "type": "string",
           "value": "8BCB"
         }
-      ]
+      ],
+      "load": true,
+      "save": true
     },
     {
       "name": "Adobe Swatch Exchange",
@@ -22,28 +24,36 @@ const jsonData = {
           "type": "string",
           "value": "ASEF"
         }
-      ]
+      ],
+      "load": true,
+      "save": true
     },
     {
       "name": "Avoyd Material",
       "extensions": [
         "avmt"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "CSV Palette",
       "extensions": [
         "csv"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "Gimp Palette",
       "extensions": [
         "gpl"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "JASC Palette",
@@ -55,14 +65,18 @@ const jsonData = {
           "type": "string",
           "value": "JASC"
         }
-      ]
+      ],
+      "load": true,
+      "save": true
     },
     {
       "name": "Paint.NET Palette",
       "extensions": [
         "txt"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "Photoshop Palette",
@@ -70,35 +84,45 @@ const jsonData = {
         "aco",
         "8bco"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "Pixelorama",
       "extensions": [
         "json"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "Qubicle Palette",
       "extensions": [
         "qsm"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": false
     },
     {
       "name": "RGB Palette",
       "extensions": [
         "pal"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": true
     },
     {
       "name": "Tiberian Sun Palette",
       "extensions": [
         "vpl"
       ],
-      "magics": []
+      "magics": [],
+      "load": true,
+      "save": false
     },
     {
       "name": "Portable Network Graphics",
@@ -110,7 +134,9 @@ const jsonData = {
           "type": "bytes",
           "value": "0x89504E47"
         }
-      ]
+      ],
+      "load": true,
+      "save": true
     }
   ],
   "images": [

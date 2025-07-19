@@ -768,7 +768,17 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 			printJsonStringArray(desc->exts);
 			Log::printf("],\"magics\": [");
 			printJsonMagicArray(desc->magics);
-			Log::printf("]");
+			Log::printf("],");
+			if (desc->flags & FORMAT_FLAG_NO_LOAD) {
+				Log::printf("\"load\": false,");
+			} else {
+				Log::printf("\"load\": true,");
+			}
+			if (desc->flags & FORMAT_FLAG_SAVE) {
+				Log::printf("\"save\": true");
+			} else {
+				Log::printf("\"save\": false");
+			}
 			Log::printf("}");
 			++i;
 		}
