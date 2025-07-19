@@ -402,6 +402,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--force|-f", "Overwrite existing files.");
 		addManPageOption("--input|-i infile", "Specify the input file to read from.");
 		addManPageOption("--output|-o outfile", "Specify the output file to write to.");
+		addManPageOption("--type|-t type", "Specify the output type (ansi, json, hex)");
 	}
 
 	printManPageFormats(app, save);

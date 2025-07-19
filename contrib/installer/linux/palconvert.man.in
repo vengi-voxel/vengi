@@ -45,6 +45,10 @@ Specify the input file to read from.
 \fB\--output|-o outfile\fR
 Specify the output file to write to.
 
+.TP
+\fB\--type|-t type\fR
+Specify the output type (ansi, json, hex)
+
 .SH LOAD
 .TP
 Adobe Color Bock (*.acb)
