@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/RGBA.h"
-#include "palette/Palette.h"
+#include "palette/PaletteView.h"
 
 namespace voxelformat {
 

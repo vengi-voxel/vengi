@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -150,9 +151,8 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 		++lineCnt;
 	} while (stream->readLine(line));
 	node.setName(core::string::extractFilename(filename));
-	node.setPalette(palLookup.palette());
-	sceneGraph.emplace(core::move(node));
-	return true;
+	node.setPalette(palette);
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
 #undef wrap

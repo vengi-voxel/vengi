@@ -8,7 +8,6 @@
 #include "core/RGBA.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/collection/StringMap.h"
 #include "io/BufferedReadWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

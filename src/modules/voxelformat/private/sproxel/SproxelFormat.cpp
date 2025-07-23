@@ -9,6 +9,7 @@
 #include "core/Tokenizer.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/PaletteLookup.h"
 #include "voxelformat/Format.h"
@@ -194,7 +195,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 	}
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palLookup.palette());
-	return sceneGraph.emplace(core::move(node)) > 0;
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
 bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
@@ -245,4 +246,4 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 #undef wrap
 #undef wrapBool
 
-}; // namespace voxelformat
+} // namespace voxelformat

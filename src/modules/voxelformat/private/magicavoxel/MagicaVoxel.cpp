@@ -233,7 +233,7 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 			camNode.setTransform(keyFrameIdx, transform);
 			camNode.setFieldOfView(c.fov);
 			camNode.setFarPlane((float)c.radius);
-			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO:
+			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO: VOXELFORMAT:
 			if (c.mode == ogt_cam_mode_perspective) {
 				camNode.setPerspective();
 			} else if (c.mode == ogt_cam_mode_orthographic) {

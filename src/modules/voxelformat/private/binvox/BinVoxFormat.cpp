@@ -77,7 +77,7 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 		}
 		if (value != 0u) {
 			const voxel::Voxel voxel = voxel::createVoxel(palette, value);
-			// TODO: PERF: use volume sampler
+			// TODO: PERF: use volume sampler - see VXMFormat.cpp
 			// The y-coordinate runs fastest, then the z-coordinate, then the x-coordinate.
 			for (uint32_t i = index; i < endIndex; ++i) {
 				const int32_t iy = (int32_t)(i % state._w);

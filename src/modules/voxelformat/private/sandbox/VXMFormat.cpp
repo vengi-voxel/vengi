@@ -545,7 +545,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			const voxel::Voxel voxel = voxel::createVoxel(palette, matIdx);
 
 			// left to right, bottom to top, front to back
-			// TODO: PERF: use volume sampler
+			// TODO: PERF: use volume sampler - see BinVoxFormat.cpp
 			for (int i = idx; i < idx + length; i++) {
 				const int x = i / (int)(size.y * size.z);
 				const int y = (i / (int)size.z) % (int)size.y;

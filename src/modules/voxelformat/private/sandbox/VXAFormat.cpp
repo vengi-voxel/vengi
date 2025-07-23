@@ -128,7 +128,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 				keyFrame.interpolation = vxa_priv::interpolationTypes[interpolation];
 			}
 			if (channel == 3) {
-				/* bool slerp =*/stream.readBool(); // TODO:
+				/* bool slerp =*/stream.readBool(); // TODO: VOXELFORMAT: animation
 			}
 
 			float val;
@@ -361,8 +361,8 @@ bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 		wrapBool(stream.writeFloat(transform.localOrientation().y))
 		wrapBool(stream.writeFloat(transform.localOrientation().z))
 		wrapBool(stream.writeFloat(transform.localOrientation().w))
-		wrapBool(stream.writeFloat(transform.worldScale().x)) // TODO: vxa only support uniform scales
-		wrapBool(stream.writeFloat(transform.localScale().x)) // TODO: vxa only support uniform scales
+		wrapBool(stream.writeFloat(transform.worldScale().x)) // TODO: VOXELFORMAT: vxa only support uniform scales
+		wrapBool(stream.writeFloat(transform.localScale().x)) // TODO: VOXELFORMAT: vxa only support uniform scales
 	}
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));

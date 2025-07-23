@@ -384,7 +384,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
 			ogt_cam.radius = (int)camera.farPlane();
 			ogt_cam.fov = camera.fieldOfView();
-			ogt_cam.frustum = camera.propertyf("frustum"); // TODO:
+			ogt_cam.frustum = camera.propertyf("frustum"); // TODO: VOXELFORMAT:
 			ctx.cameras.push_back(ogt_cam);
 		}
 		for (int childId : node.children()) {

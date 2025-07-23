@@ -81,7 +81,7 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 		wrap(stream->readUInt32BE(x))
 		wrap(stream->readUInt32BE(y))
 		wrap(stream->readUInt32BE(z))
-		// TODO the following bytes are handled differently since version > 3
+		// TODO: VOXELFORMAT: the following bytes are handled differently since version > 3
 		uint8_t type;
 		wrap(stream->readUInt8(type))
 #if 0
