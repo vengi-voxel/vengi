@@ -225,6 +225,16 @@
 				"license": "sources/voxels/README.md",
 				"path": "sources/voxels"
 			}
+		},
+		{
+			"name": "AoS Repository soudanieldias",
+			"license": "unknown",
+			"github": {
+				"repo": "soudanieldias/aos-repository",
+				"commit": "main",
+				"license": "LICENSE",
+				"path": "maps"
+			}
 		}
 	]
 }
