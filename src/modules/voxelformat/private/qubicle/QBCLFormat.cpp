@@ -15,10 +15,11 @@
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
-#include "scenegraph/SceneGraph.h"
-#include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -632,13 +633,13 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	wrapBool(readNodes(filename, *stream, sceneGraph, -1, palCopy, header))
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
-	rootNode.setProperty("Title", header.title);
-	rootNode.setProperty("Description", header.desc);
-	rootNode.setProperty("Metadata", header.metadata);
-	rootNode.setProperty("Author", header.author);
-	rootNode.setProperty("Company", header.company);
-	rootNode.setProperty("Website", header.website);
-	rootNode.setProperty("Copyright", header.copyright);
+	rootNode.setProperty(scenegraph::PropTitle, header.title);
+	rootNode.setProperty(scenegraph::PropDescription, header.desc);
+	rootNode.setProperty(scenegraph::PropMetadata, header.metadata);
+	rootNode.setProperty(scenegraph::PropAuthor, header.author);
+	rootNode.setProperty(scenegraph::PropCompany, header.company);
+	rootNode.setProperty(scenegraph::PropWebsite, header.website);
+	rootNode.setProperty(scenegraph::PropCopyright, header.copyright);
 
 	return true;
 }

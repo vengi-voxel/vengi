@@ -11,6 +11,7 @@
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "json/JSON.h"
@@ -93,8 +94,8 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	node.setPalette(palette);
 
 	node.setName(json::toStr(json, "title"));
-	node.setProperty("Version", json::toStr(json, "version"));
-	node.setProperty("Author", json::toStr(json, "author"));
+	node.setProperty(scenegraph::PropVersion, json::toStr(json, "version"));
+	node.setProperty(scenegraph::PropAuthor, json::toStr(json, "author"));
 	auto size = json["size"];
 	const int w = size.value("x", 1) - 1;
 	const int h = size.value("y", 1) - 1;

@@ -22,7 +22,7 @@ void NodePropertiesPanel::shutdown() {
 
 bool NodePropertiesPanel::handleCameraProperty(const scenegraph::SceneGraphNodeCamera &node, const core::String &key,
 											   const core::String &value) {
-	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
+	if (key == scenegraph::PropCamMode) {
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 
 		if (ImGui::BeginCombo("##cammode", scenegraph::SceneGraphNodeCamera::Modes[currentMode])) {

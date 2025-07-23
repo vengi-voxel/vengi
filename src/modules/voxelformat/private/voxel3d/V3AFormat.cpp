@@ -12,6 +12,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 
 namespace voxelformat {
 
@@ -60,7 +61,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 				Log::error("Unsupported VERSION: %s", line.c_str());
 				return false;
 			}
-			node.setProperty("version", line);
+			node.setProperty(scenegraph::PropVersion, line);
 			continue;
 		}
 		if (core::string::startsWith(line, "TYPE")) {

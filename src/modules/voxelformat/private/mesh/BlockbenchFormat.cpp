@@ -17,6 +17,7 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "util/Version.h"
 #include "voxel/Face.h"
@@ -726,7 +727,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
-	rootNode.setProperty("version", meta.formatVersion);
+	rootNode.setProperty(scenegraph::PropVersion, meta.formatVersion);
 	rootNode.setProperty("model_format", meta.modelFormat);
 
 	return true;

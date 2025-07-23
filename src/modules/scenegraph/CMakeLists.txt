@@ -8,6 +8,7 @@ set(SRCS
 	SceneGraphAnimation.h
 	SceneGraphKeyFrame.h
 	SceneGraphNode.h SceneGraphNode.cpp
+	SceneGraphNodeProperties.h
 	SceneGraphTransform.h SceneGraphTransform.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
 	SceneUtil.h SceneUtil.cpp

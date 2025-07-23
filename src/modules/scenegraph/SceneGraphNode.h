@@ -12,6 +12,7 @@
 #include "core/collection/DynamicStringMap.h"
 #include "SceneGraphKeyFrame.h"
 #include "palette/NormalPalette.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 
 namespace voxel {
 class RawVolume;
@@ -309,20 +310,13 @@ public:
 	SceneGraphNodeCamera(const core::String &uuid = "");
 
 	static constexpr const char *Modes[] = {"orthographic", "perspective"};
-	static constexpr const char *PropMode = "cam_mode";
-	static constexpr const char *PropNearPlane = "cam_nearplane";
-	static constexpr const char *PropFarPlane = "cam_farplane";
-	static constexpr const char *PropWidth = "cam_width";
-	static constexpr const char *PropHeight = "cam_height";
-	static constexpr const char *PropAspect = "cam_aspect";
-	static constexpr const char *PropFov = "cam_fov";
 
 	static bool isFloatProperty(const core::String &key) {
-		 return key == PropNearPlane || key == PropFarPlane || key == PropAspect;
+		 return key == PropCamNearPlane || key == PropCamFarPlane || key == PropCamAspect;
 	}
 
 	static bool isIntProperty(const core::String &key) {
-		 return key == PropHeight || key == PropWidth || key == PropFov;
+		 return key == PropCamHeight || key == PropCamWidth || key == PropCamFov;
 	}
 
 	/**

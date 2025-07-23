@@ -23,6 +23,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
@@ -1846,13 +1847,13 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 	scenegraph::SceneGraphNode &root = sceneGraph.node(parentNodeId);
 	if (!gltfModel.asset.generator.empty()) {
-		root.setProperty("Generator", gltfModel.asset.generator.c_str());
+		root.setProperty(scenegraph::PropGenerator, gltfModel.asset.generator.c_str());
 	}
 	if (!gltfModel.asset.copyright.empty()) {
-		root.setProperty("Copyright", gltfModel.asset.copyright.c_str());
+		root.setProperty(scenegraph::PropCopyright, gltfModel.asset.copyright.c_str());
 	}
 	if (!gltfModel.asset.version.empty()) {
-		root.setProperty("Version", gltfModel.asset.version.c_str());
+		root.setProperty(scenegraph::PropVersion, gltfModel.asset.version.c_str());
 	}
 
 	for (const tinygltf::Scene &gltfScene : gltfModel.scenes) {

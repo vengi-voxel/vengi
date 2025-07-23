@@ -463,7 +463,7 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key,
 											  const core::String &value) {
 	const core::String &id = core::String::format("##%i-%s", node.id(), key.c_str());
-	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
+	if (key == scenegraph::PropCamMode) {
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 
 		if (ImGui::BeginCombo(id.c_str(), scenegraph::SceneGraphNodeCamera::Modes[currentMode])) {

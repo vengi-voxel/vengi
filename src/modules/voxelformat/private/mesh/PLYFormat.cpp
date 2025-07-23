@@ -14,6 +14,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
@@ -735,7 +736,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 
 	if (!header.comment.empty()) {
 		scenegraph::SceneGraphNode &root = sceneGraph.node(0);
-		root.setProperty("comment", header.comment);
+		root.setProperty(scenegraph::PropDescription, header.comment);
 	}
 
 	return voxelizeNode(filename, sceneGraph, tris);

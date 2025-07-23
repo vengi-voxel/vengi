@@ -20,6 +20,7 @@
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -518,12 +519,12 @@ void SchematicFormat::parseMetadata(const priv::NamedBinaryTag &schematic, scene
 			node.setName(*str);
 		}
 		if (const core::String *str = metadata.get("Author").string()) {
-			node.setProperty("Author", *str);
+			node.setProperty(scenegraph::PropAuthor, *str);
 		}
 	}
 	const int version = schematic.get("Version").int32(-1);
 	if (version != -1) {
-		node.setProperty("Version", core::string::toString(version));
+		node.setProperty(scenegraph::PropVersion, core::string::toString(version));
 	}
 	core_assert_msg(node.id() != -1, "The node should already be part of the scene graph");
 	for (const auto &e : *schematic.compound()) {
