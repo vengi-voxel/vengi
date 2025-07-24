@@ -8,6 +8,14 @@
 
 namespace util {
 
+core::String getIniSectionValue(const IniSectionMap &values, const core::String &key, const core::String &defaultValue) {
+	auto it = values.find(key);
+	if (it != values.end()) {
+		return it->second;
+	}
+	return defaultValue;
+}
+
 bool parseIniSection(io::SeekableReadStream &stream, IniSectionMap &values) {
 	core::String line;
 	while (stream.readLine(line)) {

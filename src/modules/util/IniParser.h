@@ -20,5 +20,6 @@ using IniMap = core::StringMap<IniSectionMap>;
  */
 bool parseIniSection(io::SeekableReadStream &stream, IniSectionMap &values);
 bool parseIni(io::SeekableReadStream &stream, IniMap &ini);
+core::String getIniSectionValue(const IniSectionMap &values, const core::String &key, const core::String &defaultValue);
 
 } // namespace util
