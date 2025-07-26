@@ -7,11 +7,14 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
+#include "util/IniParser.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #define libvxl_assert core_assert_msg
@@ -183,8 +186,93 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
-	sceneGraph.emplace(core::move(node));
-	return true;
+	loadMetadataTxt(node, filename, archive);
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+}
+
+void AoSVXLFormat::loadMetadataTxt(scenegraph::SceneGraphNode &node, const core::String &filename,
+								   const io::ArchivePtr &archive) const {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename + ".txt"));
+	if (!stream) {
+		Log::debug("No metadata file found for %s", filename.c_str());
+		return;
+	}
+	loadMetadataTxt(node, filename, stream);
+}
+
+// Helper to extract Python-style quoted string content, e.g. "hello world" or 'foo'
+core::String extractQuotedString(const core::String &s) {
+	core::String str = s.trim();
+	if ((core::string::startsWith(str, "\"") && core::string::endsWith(str, "\"")) ||
+		(core::string::startsWith(str, "'") && core::string::endsWith(str, "'"))) {
+		return str.substr(1, str.size() - 2);
+	}
+	return str;
+}
+
+void AoSVXLFormat::loadMetadataTxt(scenegraph::SceneGraphNode &node, const core::String &filename,
+								   io::SeekableReadStream *stream) const {
+	core::StringMap<core::String> values;
+	core::String currentLine;
+	core::String key;
+	core::String value;
+	bool inMultiline = false;
+	core::String multilineValue;
+
+	while (!stream->eos()) {
+		core::String line;
+		if (!stream->readLine(line)) {
+			break;
+		}
+		line = line.trim();
+		if (line.empty())
+			continue;
+
+		if (inMultiline) {
+			// continue collecting multiline value
+			if (core::string::endsWith(line, ")")) {
+				inMultiline = false;
+				multilineValue += extractQuotedString(line.substr(0, line.size() - 1).trim());
+				values.put(key, multilineValue.trim());
+				multilineValue.clear();
+			} else {
+				multilineValue += extractQuotedString(line);
+			}
+			continue;
+		}
+
+		// Regular key = value line
+		const size_t equalIdx = line.find("=");
+		if (equalIdx == core::String::npos) {
+			Log::debug("Invalid line (no '='): %s", line.c_str());
+			continue;
+		}
+		key = line.substr(0, equalIdx).trim();
+		value = line.substr(equalIdx + 1).trim();
+
+		// handle multiline value
+		if (core::string::startsWith(value, "(")) {
+			inMultiline = true;
+			value = value.substr(1).trim(); // strip '('
+			if (core::string::endsWith(value, ")")) {
+				inMultiline = false;
+				value = value.substr(0, value.size() - 1).trim(); // strip ')'
+				values.put(key, extractQuotedString(value));
+			} else {
+				multilineValue = extractQuotedString(value);
+			}
+		} else {
+			// TODO: load the python dict for e.g. extensions to be able to save them afterwards
+			// single-line quoted value
+			values.put(key, extractQuotedString(value));
+		}
+	}
+
+	// Now set properties
+	node.setProperty(scenegraph::PropTitle, util::getIniSectionValue(values, "name", ""));
+	node.setProperty(scenegraph::PropAuthor, util::getIniSectionValue(values, "author", ""));
+	node.setProperty(scenegraph::PropVersion, util::getIniSectionValue(values, "version", ""));
+	node.setProperty(scenegraph::PropDescription, util::getIniSectionValue(values, "description", ""));
 }
 
 size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,

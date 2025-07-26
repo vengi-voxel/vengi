@@ -5,12 +5,27 @@
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "AbstractFormatTest.h"
 #include "io/Archive.h"
+#include "io/MemoryReadStream.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
 class AoSVXLFormatTest : public AbstractFormatTest {
 protected:
+	class AoSVXLFormatEx : public AoSVXLFormat {
+	public:
+		void loadMetadata(scenegraph::SceneGraphNode &node, const core::String &metadata) {
+			io::MemoryReadStream stream(metadata.c_str(), metadata.size());
+			AoSVXLFormat::loadMetadataTxt(node, "test", &stream);
+		}
+	};
+
+	void loadMetadata(scenegraph::SceneGraphNode &node, const core::String &metadata) {
+		AoSVXLFormatEx f;
+		f.loadMetadata(node, metadata);
+	}
+
 	bool onInitApp() override {
 		if (!AbstractFormatTest::onInitApp()) {
 			return false;
@@ -23,6 +38,60 @@ protected:
 
 TEST_F(AoSVXLFormatTest, testLoad) {
 	testLoad("aceofspades.vxl", 1);
+}
+
+TEST_F(AoSVXLFormatTest, testLoadMetadataMultiline) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	loadMetadata(node, R"(name = 'name with spaces'
+version = '1.0'
+author = 'test_author'
+description = ("Multiline description "
+               "with a dot at the end.")
+)");
+	EXPECT_EQ(node.property(scenegraph::PropTitle), "name with spaces");
+	EXPECT_EQ(node.property(scenegraph::PropVersion), "1.0");
+	EXPECT_EQ(node.property(scenegraph::PropAuthor), "test_author");
+	EXPECT_EQ(node.property(scenegraph::PropDescription), "Multiline description with a dot at the end.");
+}
+
+TEST_F(AoSVXLFormatTest, testLoadMetadata) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	loadMetadata(node, R"(name = "name with spaces"
+version = '2.0'
+author = 'test author'
+description = "description and spaces."
+)");
+	EXPECT_EQ(node.property(scenegraph::PropTitle), "name with spaces");
+	EXPECT_EQ(node.property(scenegraph::PropVersion), "2.0");
+	EXPECT_EQ(node.property(scenegraph::PropAuthor), "test author");
+	EXPECT_EQ(node.property(scenegraph::PropDescription), "description and spaces.");
+}
+
+TEST_F(AoSVXLFormatTest, testLoadMetadataWithScript) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	loadMetadata(node, R"(name = 'name'
+
+version = '1.0'
+
+author = 'someone'
+
+description = 'description!'
+
+extensions = { 'water_damage' : 200}
+
+
+
+# script
+
+from pyspades.constants import *
+
+import random
+
+)");
+	EXPECT_EQ(node.property(scenegraph::PropTitle), "name");
+	EXPECT_EQ(node.property(scenegraph::PropVersion), "1.0");
+	EXPECT_EQ(node.property(scenegraph::PropAuthor), "someone");
+	EXPECT_EQ(node.property(scenegraph::PropDescription), "description!");
 }
 
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
