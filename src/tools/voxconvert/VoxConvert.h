@@ -13,7 +13,7 @@
  *
  * @ingroup Tools
  */
-class VoxConvert: public app::CommandlineApp {
+class VoxConvert : public app::CommandlineApp {
 private:
 	using Super = app::CommandlineApp;
 	core::VarPtr _mergeQuads;
@@ -48,22 +48,28 @@ protected:
 	bool handleInputFile(const core::String &infile, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						 bool multipleInputs);
 
+	void applyFilters(scenegraph::SceneGraph &sceneGraph, const core::DynamicArray<core::String> &infiles,
+					  const core::DynamicArray<core::String> &outfiles);
+	void applyScripts(scenegraph::SceneGraph &sceneGraph);
 	void usage() const override;
 	void printUsageHeader() const override;
-	void mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
-	void rotate(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
-	void scale(scenegraph::SceneGraph& sceneGraph);
-	void resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
-	void script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color);
-	void translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph);
-	void crop(scenegraph::SceneGraph& sceneGraph);
-	void removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph);
-	void filterModels(scenegraph::SceneGraph& sceneGraph);
-	void filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, const core::String &property, const core::String &value);
-	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext);
-	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
+	void mirror(const core::String &axisStr, scenegraph::SceneGraph &sceneGraph);
+	void rotate(const core::String &axisStr, scenegraph::SceneGraph &sceneGraph);
+	void scale(scenegraph::SceneGraph &sceneGraph);
+	void resize(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGraph);
+	void script(const core::String &scriptParameters, scenegraph::SceneGraph &sceneGraph, uint8_t color);
+	void translate(const glm::ivec3 &pos, scenegraph::SceneGraph &sceneGraph);
+	void crop(scenegraph::SceneGraph &sceneGraph);
+	void removeNonSurfaceVoxels(scenegraph::SceneGraph &sceneGraph);
+	void filterModels(scenegraph::SceneGraph &sceneGraph);
+	void filterModelsByProperty(scenegraph::SceneGraph &sceneGraph, const core::String &property,
+								const core::String &value);
+	void exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGraph, const core::String &inputfile,
+									   const core::String &ext);
+	void split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGraph);
+
 public:
-	VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;

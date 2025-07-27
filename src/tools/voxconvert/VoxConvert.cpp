@@ -62,8 +62,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
 	registerArg("--json").setDescription(
 		"Print the scene graph of the input file. Give full as argument to also get mesh details");
-	registerArg("--image").setDescription(
-		"Print the scene graph of the input file as image to the console");
+	registerArg("--image").setDescription("Print the scene graph of the input file as image to the console");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the palette data into the given output file format");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
@@ -84,8 +83,7 @@ app::AppState VoxConvert::onConstruct() {
 			"Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size");
-	registerArg("--script")
-		.setDescription("Apply the given lua script to the output volume");
+	registerArg("--script").setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor")
 		.setDefaultValue("1")
 		.setDescription("Set the palette index that is given to the color script parameters of the main function");
@@ -191,10 +189,10 @@ app::AppState VoxConvert::onInit() {
 	if (hasArg("--print-formats")) {
 		Log::printf("{\"voxels\":[");
 		io::format::printJson(voxelformat::voxelLoad(), {{"thumbnail_embedded", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-													  {"palette_embedded", VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-													  {"mesh", VOX_FORMAT_FLAG_MESH},
-													  {"animation", VOX_FORMAT_FLAG_ANIMATION},
-													  {"save", FORMAT_FLAG_SAVE}});
+														 {"palette_embedded", VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+														 {"mesh", VOX_FORMAT_FLAG_MESH},
+														 {"animation", VOX_FORMAT_FLAG_ANIMATION},
+														 {"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"images\":[");
 		io::format::printJson(io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"palettes\":[");
@@ -427,7 +425,8 @@ app::AppState VoxConvert::onInit() {
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
 		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
-		const image::ImagePtr &image = voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false);
+		const image::ImagePtr &image =
+			voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false);
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());
 	}
@@ -448,31 +447,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	// STEP 1: apply the filter
-	const bool applyFilter = hasArg("--filter");
-	if (applyFilter) {
-		if (infiles.size() == 1u) {
-			filterModels(sceneGraph);
-		} else {
-			Log::warn("Don't apply model filters for multiple input files");
-		}
-	}
-
-	const bool applyFilterProperty = hasArg("--filter-property");
-	if (applyFilterProperty) {
-		if (infiles.size() == 1u) {
-			const core::String &property = getArgVal("--filter-property");
-			core::String key = property;
-			core::String value;
-			const size_t colonPos = property.find(":");
-			if (colonPos != core::String::npos) {
-				key = property.substr(0, colonPos);
-				value = property.substr(colonPos + 1);
-			}
-			filterModelsByProperty(sceneGraph, key, value);
-		} else {
-			Log::warn("Don't apply model property filters for multiple input files");
-		}
-	}
+	applyFilters(sceneGraph, infiles, outfiles);
 
 	if (_exportModels) {
 		if (infiles.size() > 1) {
@@ -532,19 +507,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	// STEP 8: apply scripts
-	{
-		int argn = 0;
-		for (;;) {
-			core::String val = getArgVal("--script", "", &argn);
-			if (val.empty()) {
-				break;
-			}
-			if (!val.empty()) {
-				const core::String &color = getArgVal("--scriptcolor");
-				script(val, sceneGraph, color.toInt());
-			}
-		}
-	}
+	applyScripts(sceneGraph);
 
 	// STEP 9: crop the models
 	if (_cropModels) {
@@ -583,6 +546,49 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 	return state;
+}
+
+void VoxConvert::applyFilters(scenegraph::SceneGraph &sceneGraph, const core::DynamicArray<core::String> &infiles,
+							  const core::DynamicArray<core::String> &outfiles) {
+	const bool applyFilter = hasArg("--filter");
+	if (applyFilter) {
+		if (infiles.size() == 1u) {
+			filterModels(sceneGraph);
+		} else {
+			Log::warn("Don't apply model filters for multiple input files");
+		}
+	}
+
+	const bool applyFilterProperty = hasArg("--filter-property");
+	if (applyFilterProperty) {
+		if (infiles.size() == 1u) {
+			const core::String &property = getArgVal("--filter-property");
+			core::String key = property;
+			core::String value;
+			const size_t colonPos = property.find(":");
+			if (colonPos != core::String::npos) {
+				key = property.substr(0, colonPos);
+				value = property.substr(colonPos + 1);
+			}
+			filterModelsByProperty(sceneGraph, key, value);
+		} else {
+			Log::warn("Don't apply model property filters for multiple input files");
+		}
+	}
+}
+
+void VoxConvert::applyScripts(scenegraph::SceneGraph &sceneGraph) {
+	int argn = 0;
+	for (;;) {
+		core::String val = getArgVal("--script", "", &argn);
+		if (val.empty()) {
+			break;
+		}
+		if (!val.empty()) {
+			const core::String &color = getArgVal("--scriptcolor");
+			script(val, sceneGraph, color.toInt());
+		}
+	}
 }
 
 core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, const core::String &modelName,
