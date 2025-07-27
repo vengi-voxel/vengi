@@ -38,6 +38,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
+#include "voxelformat/FormatThumbnail.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelutil/ImageUtils.h"
@@ -171,6 +172,10 @@ void VoxConvert::usage() const {
 	}
 
 	usageFooter();
+}
+
+static void printProgress(const char *name, int cur, int max) {
+	Log::trace("%s: %i/%i", name, cur, max);
 }
 
 app::AppState VoxConvert::onInit() {
@@ -350,6 +355,12 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	static image::ImagePtr thumbnail;
+	if (infiles.size() == 1) {
+		voxelformat::LoadContext loadCtx;
+		loadCtx.monitor = printProgress;
+		thumbnail = voxelformat::loadScreenshot(infiles[0], io::openFilesystemArchive(filesystem()), loadCtx);
+	}
 	const io::ArchivePtr &fsArchive = io::openFilesystemArchive(filesystem());
 	scenegraph::SceneGraph sceneGraph;
 	for (const core::String &infile : infiles) {
@@ -537,8 +548,15 @@ app::AppState VoxConvert::onInit() {
 		} else {
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
-			const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem());
-			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, archive, saveCtx)) {
+			if (thumbnail && thumbnail->isLoaded()) {
+				auto fn = [](const scenegraph::SceneGraph &, const voxelformat::ThumbnailContext &ctx) {
+					thumbnail->resize(ctx.outputSize.x, ctx.outputSize.y);
+					return thumbnail;
+				};
+				saveCtx.thumbnailCreator = fn;
+				Log::info("Using thumbnail with size %i x %i", thumbnail->width(), thumbnail->height());
+			}
+			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, fsArchive, saveCtx)) {
 				Log::error("Failed to write to output file '%s'", outfile.c_str());
 				return app::AppState::InitFailure;
 			}
@@ -603,10 +621,6 @@ core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, 
 		name = core::String::format("%s-%i.%s", modelName.c_str(), id, ext.c_str());
 	}
 	return core::string::path(core::string::extractDir(inputfile), core::string::sanitizeFilename(name));
-}
-
-static void printProgress(const char *name, int cur, int max) {
-	// Log::info("%s: %i/%i", name, cur, max);
 }
 
 bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePtr &archive,
