@@ -1071,7 +1071,6 @@ scenegraph::SceneGraphTransform GLTFFormat::loadTransform(const tinygltf::Node &
 													(float)gltfNode.translation[2]));
 		}
 	}
-	transform.setLocalScale(transform.localScale() / getInputScale());
 	return transform;
 }
 
