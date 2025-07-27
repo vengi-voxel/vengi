@@ -25,6 +25,8 @@ protected:
 						const palette::Palette &palette, const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+	bool saveMetadataTxt(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						 const io::ArchivePtr &archive) const;
 	glm::ivec3 maxSize() const override;
 
 public:

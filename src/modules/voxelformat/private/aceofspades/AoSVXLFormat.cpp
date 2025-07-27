@@ -186,7 +186,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
-	loadMetadataTxt(node, filename, archive);
+	loadMetadataTxt(sceneGraph.node(sceneGraph.root().id()), filename, archive);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
@@ -379,6 +379,29 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 	return glm::ivec3(512, 256, 512);
 }
 
+bool AoSVXLFormat::saveMetadataTxt(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+								   const io::ArchivePtr &archive) const {
+	const core::String &metadataFilename = core::string::replaceExtension(filename, ".txt");
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(metadataFilename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", metadataFilename.c_str());
+		return false;
+	}
+
+	const scenegraph::SceneGraphNode &node = sceneGraph.root();
+	const core::String title = node.property(scenegraph::PropTitle);
+	stream->writeStringFormat(false, "name = '%s'\n", title.c_str());
+	const core::String author = node.property(scenegraph::PropAuthor);
+	stream->writeStringFormat(false, "author = '%s'\n", author.c_str());
+	const core::String version = node.property(scenegraph::PropVersion);
+	stream->writeStringFormat(false, "version = '%s'\n", version.c_str());
+	const core::String description = node.property(scenegraph::PropDescription);
+	stream->writeStringFormat(false, "description = '%s'\n", description.c_str());
+	// TODO: VOXELFORMAT: save extensions
+	// TODO: VOXELFORMAT: save script
+	return true;
+}
+
 bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							  const io::ArchivePtr &archive, const SaveContext &ctx) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -435,6 +458,9 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	}
 	libvxl_stream_free(&s);
 	libvxl_free(&map);
+
+	saveMetadataTxt(sceneGraph, filename, archive);
+
 	return true;
 }
 
