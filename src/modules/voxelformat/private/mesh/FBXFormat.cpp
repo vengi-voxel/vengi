@@ -9,11 +9,14 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/Archive.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
@@ -52,6 +55,20 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 	return false;
 }
 
+void FBXFormat::writeTransformToProperties(io::SeekableWriteStream &stream,
+										   const scenegraph::SceneGraphTransform &transform) {
+	const glm::vec3 &lclTranslation = transform.localTranslation();
+	stream.writeStringFormat(false, "\t\tProperty: \"Lcl Translation\", \"Lcl Translation\", \"\",%f,%f,%f\n",
+							 lclTranslation.x, lclTranslation.y, lclTranslation.z);
+	const glm::quat &lclRotationQuat = transform.localOrientation();
+	const glm::vec3 lclRotationEulerDegrees(glm::degrees(glm::eulerAngles(lclRotationQuat)));
+	stream.writeStringFormat(false, "\t\tProperty: \"Lcl Rotation\", \"Lcl Rotation\", \"\",%f,%f,%f\n",
+							 lclRotationEulerDegrees.x, lclRotationEulerDegrees.y, lclRotationEulerDegrees.z);
+	const glm::vec3 &lclScaling = transform.localScale();
+	stream.writeStringFormat(false, "\t\tProperty: \"Lcl Scaling\", \"Lcl Scaling\", \"\",%f,%f,%f\n", lclScaling.x,
+							 lclScaling.y, lclScaling.z);
+}
+
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
 bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 								const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
@@ -66,6 +83,10 @@ bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filena
 			++meshCount;
 		}
 	}
+
+	stream.writeLine("; FBX 6.1.0 project file");
+	stream.writeLine("; ----------------------------------------------------");
+
 	// TODO: VOXELFORMAT: support keyframes (takes)
 	stream.writeStringFormat(false, R"(FBXHeaderExtension:  {
 	FBXHeaderVersion: 1003
@@ -96,9 +117,10 @@ Objects: {
 
 	Log::debug("Exporting %i models", meshCount);
 
-	// TODO: VOXELFORMAT: maybe also export Model: "Model::Camera", "Camera"
-	// TODO: VOXELFORMAT: are connections and relations needed?
 	// https://github.com/libgdx/fbx-conv/blob/master/samples/blender/cube.fbx
+
+	uint32_t objectIndex = 0;
+	core::DynamicArray<core::String> connections;
 
 	for (const MeshExt &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
@@ -113,6 +135,11 @@ Objects: {
 				Log::error("Unexpected indices amount");
 				return false;
 			}
+			const voxel::NormalArray &normals = mesh->getNormalVector();
+			const bool exportNormals = !normals.empty();
+			if (exportNormals) {
+				Log::debug("Export normals for mesh %i", i);
+			}
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			const palette::Palette &palette = graphNode.palette();
 			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
@@ -121,11 +148,21 @@ Objects: {
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 			const char *objectName = meshExt.name.c_str();
 			if (objectName[0] == '\0') {
-				objectName = "Noname";
+				objectName = graphNode.uuid().c_str();
 			}
 
-			stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", objectName);
-			wrapBool(stream.writeString("\t\tVersion: 232\n", false))
+			const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
+			connections.push_back(modelName);
+			stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", modelName.c_str());
+			wrapBool(stream.writeLine("\t\tVersion: 232"))
+			wrapBool(stream.writeLine("\t\tCulling: \"CullingOff\""))
+			wrapBool(stream.writeLine("\t\tProperties60:  {"))
+			stream.writeStringFormat(false, "\t\t\tProperty: \"Show\", \"bool\", \"\",%u\n",
+									 graphNode.visible() ? 1 : 0);
+			// scenegraph::KeyFrameIndex keyFrameIndex = 0;
+			// writeTransformToProperties(stream, graphNode.transform(keyFrameIndex));
+			wrapBool(stream.writeLine("\t\t}"))
+			// TODO: VOXELFORMAT: add more properties like Color, Lcl Translation, Lcl Rotation, Lcl Scaling ...
 			wrapBool(stream.writeString("\t\tVertices: ", false))
 			for (int j = 0; j < nv; ++j) {
 				const voxel::VoxelVertex &v = vertices[j];
@@ -147,25 +184,43 @@ Objects: {
 			wrapBool(stream.writeString("\t\tPolygonVertexIndex: ", false))
 
 			for (int j = 0; j < ni; j += 3) {
-				const uint32_t one = indices[j + 0] + 1;
-				const uint32_t two = indices[j + 1] + 1;
-				const uint32_t three = indices[j + 2] + 1;
+				const uint32_t one = indices[j + 0];
+				const uint32_t two = indices[j + 1];
+				const uint32_t three = indices[j + 2];
 				if (j > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
-				stream.writeStringFormat(false, "%i,%i,-%i", (int)one, (int)two, (int)(three + 1));
+				stream.writeStringFormat(false, "%u,%u,-%u", one, two, (three + 1u));
 			}
 			wrapBool(stream.writeString("\n", false))
-			wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
+			wrapBool(stream.writeLine("\t\tGeometryVersion: 124"))
 
-			// TODO: VOXELFORMAT: LayerElementNormal
+			if (exportNormals) {
+				stream.writeString("\t\tLayerElementNormal: 0 {\n"
+								   "\t\t\tVersion: 101\n"
+								   "\t\t\tName: \"\"\n"
+								   "\t\t\tMappingInformationType: \"ByVertice\"\n"
+								   "\t\t\tReferenceInformationType: \"Direct\"\n",
+								   false);
+
+				wrapBool(stream.writeString("\t\t\tNormals: ", false))
+				for (size_t j = 0; j < normals.size(); j++) {
+					const uint32_t index = indices[j];
+					const glm::vec3 &norm = normals[index];
+					if (j > 0) {
+						wrapBool(stream.writeString(",", false))
+					}
+					stream.writeStringFormat(false, "%f,%f,%f", norm.x, norm.y, norm.z);
+				}
+				wrapBool(stream.writeLine("\n\t\t}"))
+			}
 
 			if (withTexCoords) {
-				wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
-				wrapBool(stream.writeString("\t\t\tVersion: 101\n", false))
-				stream.writeStringFormat(false, "\t\t\tName: \"%sUV\"\n", objectName);
-				wrapBool(stream.writeString("\t\t\tMappingInformationType: \"ByPolygonVertex\"\n", false))
-				wrapBool(stream.writeString("\t\t\tReferenceInformationType: \"Direct\"\n", false))
+				wrapBool(stream.writeLine("\t\tLayerElementUV: 0 {"))
+				wrapBool(stream.writeLine("\t\t\tVersion: 101"))
+				wrapBool(stream.writeLine("\t\t\tName: \"\""))
+				wrapBool(stream.writeLine("\t\t\tMappingInformationType: \"ByPolygonVertex\""))
+				wrapBool(stream.writeLine("\t\t\tReferenceInformationType: \"Direct\""))
 				wrapBool(stream.writeString("\t\t\tUV: ", false))
 
 				for (int j = 0; j < ni; j++) {
@@ -182,7 +237,7 @@ Objects: {
 
 				wrapBool(stream.writeString("\t\tLayerElementTexture: 0 {\n"
 											"\t\t\tVersion: 101\n"
-											"\t\t\tName: \"\"\n" // TODO
+											"\t\t\tName: \"\"\n"
 											"\t\t\tMappingInformationType: \"AllSame\"\n"
 											"\t\t\tReferenceInformationType: \"Direct\"\n"
 											"\t\t\tBlendMode: \"Translucent\"\n"
@@ -193,14 +248,13 @@ Objects: {
 			}
 
 			if (withColor) {
-				stream.writeStringFormat(false,
-										 "\t\tLayerElementColor: 0 {\n"
-										 "\t\t\tVersion: 101\n"
-										 "\t\t\tName: \"%sColors\"\n"
-										 "\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
-										 "\t\t\tReferenceInformationType: \"Direct\"\n"
-										 "\t\t\tColors: ",
-										 objectName);
+				wrapBool(stream.writeString("\t\tLayerElementColor: 0 {\n"
+											"\t\t\tVersion: 101\n"
+											"\t\t\tName: \"\"\n"
+											"\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
+											"\t\t\tReferenceInformationType: \"Direct\"\n"
+											"\t\t\tColors: ",
+											false))
 				for (int j = 0; j < ni; j++) {
 					const uint32_t index = indices[j];
 					const voxel::VoxelVertex &v = vertices[index];
@@ -208,28 +262,83 @@ Objects: {
 					if (j > 0) {
 						wrapBool(stream.writeString(",", false))
 					}
-					stream.writeStringFormat(false, "%.05f,%.05f,%.05f,%.05f", color.r, color.g, color.b, color.a);
+					stream.writeStringFormat(false, "%f,%f,%f,%f", color.r, color.g, color.b, color.a);
 				}
 				// close LayerElementColor
-				wrapBool(stream.writeString("\n\t\t}\n", false))
-				// TODO: VOXELFORMAT: ColorIndex needed or only for IndexToDirect?
 
-				wrapBool(stream.writeString("\t\tLayer: 0 {\n"
-											"\t\t\tVersion: 100\n"
-											"\t\t\tLayerElement: {\n"
-											"\t\t\t\tTypedIndex: 0\n"
-											"\t\t\t\tType: \"LayerElementColor\"\n"
-											"\t\t\t}\n"
-											"\t\t}\n",
-											false))
+				wrapBool(stream.writeLine("\n\t\t}"))
+				// TODO: VOXELFORMAT: ColorIndex needed or only for IndexToDirect?
 			}
 
+			wrapBool(stream.writeString("\t\tLayer: 0 {\n"
+										"\t\t\tVersion: 100\n",
+										false))
+
+			if (withColor) {
+				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
+											"\t\t\t\tTypedIndex: 0\n"
+											"\t\t\t\tType: \"LayerElementColor\"\n"
+											"\t\t\t}\n",
+											false))
+			}
+			if (withTexCoords) {
+				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
+											"\t\t\t\tTypedIndex: 0\n"
+											"\t\t\t\tType: \"LayerElementUV\"\n"
+											"\t\t\t}\n",
+											false))
+				// TODO: VOXELFORMAT: LayerElementTexture
+			}
+			if (exportNormals) {
+				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
+											"\t\t\t\tTypedIndex: 0\n"
+											"\t\t\t\tType: \"LayerElementNormal\"\n"
+											"\t\t\t}\n",
+											false))
+			}
+			wrapBool(stream.writeLine("\t\t}"))
+
 			// close the model
-			wrapBool(stream.writeString("\t}\n", false))
+			wrapBool(stream.writeLine("\t}"))
+			++objectIndex;
 		}
 	}
+
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &graphNode = e->second;
+		if (!graphNode.isCameraNode()) {
+			continue;
+		}
+		const char *objectName = graphNode.name().c_str();
+		if (objectName[0] == '\0') {
+			objectName = graphNode.uuid().c_str();
+		}
+		const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
+		connections.push_back(modelName);
+		stream.writeStringFormat(false, "\tModel: \"%s\", \"Camera\" {\n", modelName.c_str());
+		wrapBool(stream.writeLine("\t\tVersion: 232"))
+		wrapBool(stream.writeLine("\t\tProperties60:  {"))
+		scenegraph::KeyFrameIndex keyFrameIndex = 0;
+		writeTransformToProperties(stream, graphNode.transform(keyFrameIndex));
+		stream.writeStringFormat(false, "\t\t\tProperty: \"Show\", \"bool\", \"\",%u\n", graphNode.visible() ? 1 : 0);
+		// TODO: VOXELFORMAT:
+		// Property: "NearPlane", "double", "",0.100000
+		// Property: "FarPlane", "double", "",99.999994
+		// Property: "CameraProjectionType", "enum", "",0
+		wrapBool(stream.writeLine("\t\t}"))
+		// close the model
+		wrapBool(stream.writeLine("\t}"))
+		++objectIndex;
+	}
+
 	// close objects
-	wrapBool(stream.writeString("}\n", false))
+	wrapBool(stream.writeLine("}"))
+
+	wrapBool(stream.writeLine("Connections:  {"))
+	for (const core::String &connection : connections) {
+		stream.writeStringFormat(false, "\tConnect: \"OO\", \"%s\", \"Model::Scene\"\n", connection.c_str());
+	}
+	wrapBool(stream.writeLine("}"))
 	return true;
 }
 

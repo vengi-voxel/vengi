@@ -10,6 +10,10 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.2.0 (2025-XX-XX)
 
+General:
+
+   - Added missing ascii `fbx` header
+
 VoxConvert:
 
    - Transfer existing thumbnails between formats (if supported)

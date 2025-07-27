@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "scenegraph/SceneGraphTransform.h"
 
 struct ufbx_node;
 struct ufbx_scene;
@@ -24,6 +25,7 @@ private:
 	bool saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						  const scenegraph::SceneGraph &sceneGraph);
+	void writeTransformToProperties(io::SeekableWriteStream &stream, const scenegraph::SceneGraphTransform &transform);
 	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						 const scenegraph::SceneGraph &sceneGraph);
