@@ -1083,10 +1083,6 @@ scenegraph::SceneGraphTransform GLTFFormat::loadTransform(const tinygltf::Node &
 
 bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 							 core::Buffer<uint32_t> &indices, size_t indicesOffset) const {
-	if (gltfPrimitive.mode != TINYGLTF_MODE_TRIANGLES) {
-		Log::warn("Unexpected primitive mode: %i", gltfPrimitive.mode);
-		return false;
-	}
 	const tinygltf::Accessor *accessor = getAccessor(gltfModel, gltfPrimitive.indices);
 	if (accessor == nullptr) {
 		Log::warn("Could not get accessor for indices");
@@ -1157,6 +1153,12 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 	default:
 		Log::error("Unknown component type for indices: %i", accessor->componentType);
 		break;
+	}
+
+	if (gltfPrimitive.mode != TINYGLTF_MODE_TRIANGLES) {
+		// TODO: VOXELFORMAT: convert the index buffer for fan or strip mode
+		Log::warn("Unexpected primitive mode: %i", gltfPrimitive.mode);
+		return false;
 	}
 	return true;
 }
@@ -1719,6 +1721,32 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 				const size_t indicedEnd = vertices.size();
 				for (size_t i = 0; i < indicedEnd; ++i) {
 					indices.push_back((uint32_t)i);
+				}
+			} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_FAN) {
+				if (vertices.size() < 3) {
+					Log::warn("Not enough vertices for triangle fan");
+					return false;
+				}
+				for (size_t i = 1; i < vertices.size() - 1; ++i) {
+					indices.push_back((uint32_t)0);
+					indices.push_back((uint32_t)i);
+					indices.push_back((uint32_t)(i + 1));
+				}
+			} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_STRIP) {
+				if (vertices.size() < 3) {
+					Log::warn("Not enough vertices for triangle strip");
+					return false;
+				}
+				for (size_t i = 0; i < vertices.size() - 2; ++i) {
+					if (i % 2 == 0) {
+						indices.push_back((uint32_t)i);
+						indices.push_back((uint32_t)(i + 1));
+						indices.push_back((uint32_t)(i + 2));
+					} else {
+						indices.push_back((uint32_t)(i + 2));
+						indices.push_back((uint32_t)(i + 1));
+						indices.push_back((uint32_t)i);
+					}
 				}
 			} else {
 				Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
