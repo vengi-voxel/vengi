@@ -278,7 +278,7 @@ public:
 	 * @param terminate If this is @c true the extra null byte is written to the stream
 	 * @return @c false if not everything was written
 	 */
-	bool writeString(const core::String &string, bool terminate = true);
+	bool writeString(const core::String &string, bool terminate);
 	bool writeLine(const core::String &string, const char *lineEnding = "\n");
 
 	/**
