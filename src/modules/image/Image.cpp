@@ -442,6 +442,9 @@ glm::vec2 Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
 }
 
 bool Image::resize(int w, int h) {
+	if (_width == w && _height == h) {
+		return true;
+	}
 	uint8_t *res = (uint8_t *)core_malloc(w * h * _colorComponents);
 	if (_colors) {
 		if (stbir_resize(_colors, _width, _height, _colorComponents * _width, res, w, h, _colorComponents * w,
