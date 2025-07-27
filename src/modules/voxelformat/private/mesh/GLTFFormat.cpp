@@ -1098,15 +1098,18 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 
 	Log::debug("indicesOffset: %i", (int)indicesOffset);
 
-	indices.reserve(indices.size() + accessor->count);
+	// Temporary raw indices buffer
+	core::Buffer<uint32_t> rawIndices;
+	rawIndices.reserve(accessor->count);
 	io::MemoryReadStream stream(indexBuf, accessor->count * stride);
+
 	switch (accessor->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 		for (size_t i = 0; i < accessor->count; i++) {
 			wrap(stream.seek(i * stride))
 			uint8_t idx;
 			wrap(stream.readUInt8(idx))
-			indices.push_back((uint32_t)idx + indicesOffset);
+			rawIndices.push_back((uint32_t)idx + indicesOffset);
 		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_BYTE:
@@ -1114,7 +1117,7 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 			wrap(stream.seek(i * stride))
 			int8_t idx;
 			wrap(stream.readInt8(idx))
-			indices.push_back((uint32_t)idx + indicesOffset);
+			rawIndices.push_back((uint32_t)idx + indicesOffset);
 		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
@@ -1122,7 +1125,7 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 			wrap(stream.seek(i * stride))
 			uint16_t idx;
 			wrap(stream.readUInt16(idx))
-			indices.push_back((uint32_t)idx + indicesOffset);
+			rawIndices.push_back((uint32_t)idx + indicesOffset);
 		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
@@ -1130,7 +1133,7 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 			wrap(stream.seek(i * stride))
 			int16_t idx;
 			wrap(stream.readInt16(idx))
-			indices.push_back((uint32_t)idx + indicesOffset);
+			rawIndices.push_back((uint32_t)idx + indicesOffset);
 		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
@@ -1138,7 +1141,7 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 			wrap(stream.seek(i * stride))
 			uint32_t idx;
 			wrap(stream.readUInt32(idx))
-			indices.push_back((uint32_t)idx + indicesOffset);
+			rawIndices.push_back(idx + indicesOffset);
 		}
 		break;
 	case TINYGLTF_COMPONENT_TYPE_INT:
@@ -1146,19 +1149,52 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 			wrap(stream.seek(i * stride))
 			int32_t idx;
 			wrap(stream.readInt32(idx))
-			indices.push_back((uint32_t)idx + indicesOffset);
+			rawIndices.push_back((uint32_t)idx + indicesOffset);
 		}
 		break;
 	default:
 		Log::error("Unknown component type for indices: %i", accessor->componentType);
-		break;
-	}
-
-	if (gltfPrimitive.mode != TINYGLTF_MODE_TRIANGLES) {
-		// TODO: VOXELFORMAT: convert the index buffer for fan or strip mode
-		Log::warn("Unexpected primitive mode: %i", gltfPrimitive.mode);
 		return false;
 	}
+
+	// Convert to triangles depending on primitive mode
+	switch (gltfPrimitive.mode) {
+	case TINYGLTF_MODE_TRIANGLES:
+		indices.insert(indices.end(), rawIndices.begin(), rawIndices.end());
+		break;
+	case TINYGLTF_MODE_TRIANGLE_FAN:
+		if (rawIndices.size() < 3) {
+			Log::warn("Not enough indices for triangle fan");
+			return false;
+		}
+		for (size_t i = 1; i < rawIndices.size() - 1; ++i) {
+			indices.push_back(rawIndices[0]);
+			indices.push_back(rawIndices[i]);
+			indices.push_back(rawIndices[i + 1]);
+		}
+		break;
+	case TINYGLTF_MODE_TRIANGLE_STRIP:
+		if (rawIndices.size() < 3) {
+			Log::warn("Not enough indices for triangle strip");
+			return false;
+		}
+		for (size_t i = 0; i < rawIndices.size() - 2; ++i) {
+			if (i % 2 == 0) {
+				indices.push_back(rawIndices[i]);
+				indices.push_back(rawIndices[i + 1]);
+				indices.push_back(rawIndices[i + 2]);
+			} else {
+				indices.push_back(rawIndices[i + 2]);
+				indices.push_back(rawIndices[i + 1]);
+				indices.push_back(rawIndices[i]);
+			}
+		}
+		break;
+	default:
+		Log::warn("Unsupported primitive mode: %i", gltfPrimitive.mode);
+		return false;
+	}
+
 	return true;
 }
 
