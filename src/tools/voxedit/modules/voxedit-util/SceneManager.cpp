@@ -1508,7 +1508,7 @@ void SceneManager::rotate(math::Axis axis) {
 				transform.rotate(axis);
 			}
 		}
-		sceneGraph().updateTransforms();
+		_sceneGraph.updateTransforms();
 		const int idx1 = (math::getIndexForAxis(axis) + 1) % 3;
 		const int idx2 = (idx1 + 1) % 3;
 		core::exchange(pivot[idx1], pivot[idx2]);
@@ -2884,7 +2884,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 
 bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
 	nodeSetPivot(node, pivot);
-	sceneGraph().updateTransforms();
+	_sceneGraph.updateTransforms();
 	markDirty();
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	return true;
@@ -3188,7 +3188,7 @@ bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegra
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 	transform.setLocalMatrix(glm::mat4(1.0f));
-	sceneGraph().updateTransforms();
+	_sceneGraph.updateTransforms();
 	markDirty();
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	return true;
