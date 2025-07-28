@@ -12,6 +12,7 @@
 #include "FrameTransform.h"
 #include "core/DirtyState.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicMap.h"
 #include "math/AABB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
@@ -43,9 +44,11 @@ protected:
 	core::String _activeAnimation;
 	mutable voxel::Region _region;
 	mutable bool _regionDirty = true;
+	mutable bool _invalidateFrameTransformCaches = false;
 	mutable FrameIndex _cachedMaxFrame = -1;
 	const core::String _emptyUUID;
 	core::Buffer<SceneGraphListener*> _listeners;
+	mutable core::DynamicMap<int, FrameTransform> _frameTransforms;
 
 	void updateTransforms_r(SceneGraphNode &node);
 	voxel::Region calcRegion() const;

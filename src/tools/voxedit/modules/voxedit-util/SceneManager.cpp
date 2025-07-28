@@ -97,7 +97,7 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
 						   const SelectionManagerPtr &selectionManager)
-	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
+	: _clipper(_sceneGraph), _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifierFacade(this, modifierRenderer, selectionManager), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
 	  _selectionManager(selectionManager) {
@@ -2541,7 +2541,12 @@ bool SceneManager::update(double nowSeconds) {
 	video::Camera *camera = activeCamera();
 	if (camera != nullptr) {
 		if (camera->rotationType() == video::CameraRotationType::Eye) {
-			const glm::vec3& moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
+			glm::vec3 moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
+			const glm::vec3 &camPos = camera->worldPosition();
+			if (_enableClipping) {
+				scenegraph::FrameIndex frameIdx = _currentFrameIdx;
+				moveDelta = _clipper.clipDelta(frameIdx, camPos, moveDelta, camera->orientation());
+			}
 			camera->move(moveDelta);
 		}
 	}

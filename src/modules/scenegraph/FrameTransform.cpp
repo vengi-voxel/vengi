@@ -14,6 +14,7 @@
 namespace scenegraph {
 
 glm::vec3 FrameTransform::calcModelSpace(const glm::vec3 &worldPos) const {
+	// TODO: PERF: cache the inverse
 	const glm::mat4 &invModel = glm::inverse(worldMatrix());
 	const glm::vec3 modelSpacePos(invModel * glm::vec4(worldPos, 1.0f));
 	return modelSpacePos;

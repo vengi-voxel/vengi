@@ -3,13 +3,9 @@
  */
 
 #include "Viewport.h"
-#include "Gizmo.h"
 #include "DragAndDropPayload.h"
+#include "Gizmo.h"
 #include "ViewMode.h"
-#include "math/Axis.h"
-#include "scenegraph/SceneGraphAnimation.h"
-#include "scenegraph/SceneGraphKeyFrame.h"
-#include "ui/IconsLucide.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -17,11 +13,16 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "image/Image.h"
+#include "imgui.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "math/Axis.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
 #include "ui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
@@ -36,10 +37,10 @@
 #include "voxel/Voxel.h"
 #include "voxelrender/SceneGraphRenderer.h"
 
+#include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vector_relational.hpp>
-#include <glm/ext/quaternion_common.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -48,7 +49,7 @@
 
 namespace voxedit {
 
-static bool s_hideAxis[3] {false, false, false};
+static bool s_hideAxis[3]{false, false, false};
 
 core::String Viewport::viewportId(int id, bool printable) {
 	if (printable)
@@ -171,7 +172,8 @@ void Viewport::dragAndDrop(float headerSize) {
 					ModifierFacade &modifier = _sceneMgr->modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
 					modifier.start();
-					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
+					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type,
+												   SceneModifiedFlags flags) {
 						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
 							_sceneMgr->modified(nodeId, region, flags);
 						}
@@ -214,7 +216,7 @@ void Viewport::renderCursorDetails() const {
 	const glm::ivec3 &cursorPos = modifier.cursorPosition();
 	if (sliceActive) {
 		ImGui::TooltipText(_("Slice at %s: %i"), math::getCharForAxis(_sliceAxis),
-							cursorPos[math::getIndexForAxis(_sliceAxis)]);
+						   cursorPos[math::getIndexForAxis(_sliceAxis)]);
 	}
 	if (cursorDetailsLevel == 1) {
 		ImGui::TooltipText("%i:%i:%i", cursorPos.x, cursorPos.y, cursorPos.z);
@@ -229,8 +231,8 @@ void Viewport::renderCursorDetails() const {
 			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i"), mins.x, mins.y, mins.z, size.x,
 							   size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
 		} else {
-			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i"), mins.x, mins.y,
-							   mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
+			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i"), mins.x,
+							   mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
 							   cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
 		}
 	}
@@ -464,6 +466,12 @@ void Viewport::menuBarFreeCameraOptions() {
 		}
 		ImGui::EndCombo();
 	}
+	ImGui::BeginDisabled(camera().rotationType() != video::CameraRotationType::Eye);
+	bool clipping = _sceneMgr->clipping();
+	if (ImGui::Checkbox(_("Clipping"), &clipping)) {
+		_sceneMgr->setClipping(clipping);
+	}
+	ImGui::EndDisabled();
 }
 
 void Viewport::menuBarCameraOptions(command::CommandExecutionListener *listener) {
@@ -554,7 +562,8 @@ void Viewport::update(double nowSeconds, command::CommandExecutionListener *list
 
 	core::String name;
 	if (_detailedTitle) {
-		name = core::String::format("%s %s%s", _(voxelrender::SceneCameraModeStr[(int)_camMode]), modeStr, _uiId.c_str());
+		name =
+			core::String::format("%s %s%s", _(voxelrender::SceneCameraModeStr[(int)_camMode]), modeStr, _uiId.c_str());
 	} else {
 		name = core::String::format("%s%s", modeStr, _uiId.c_str());
 	}
@@ -816,7 +825,7 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 }
 
 static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-													  scenegraph::KeyFrameIndex keyFrameIdx) {
+								   scenegraph::KeyFrameIndex keyFrameIdx) {
 	const int parentId = node.parent();
 	if (parentId == InvalidNodeId || keyFrameIdx == InvalidKeyFrame) {
 		return glm::mat4(1.0f);
@@ -874,7 +883,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 			if (_pivotMode->boolVal()) {
 				const glm::vec3 size = node.region().getDimensionsInVoxels();
 				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-				const glm::vec3 deltaTranslation = -glm::conjugate(transform.worldOrientation()) * glm::vec3(deltaMatrix[3]);
+				const glm::vec3 deltaTranslation =
+					-glm::conjugate(transform.worldOrientation()) * glm::vec3(deltaMatrix[3]);
 				// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?
 				//       https://github.com/vengi-voxel/vengi/issues/611
 				const glm::vec3 deltaPivot = deltaTranslation / size;

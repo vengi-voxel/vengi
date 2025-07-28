@@ -157,7 +157,9 @@ public:
 
 	// normalized pivot of [0-1] to be somewhere inside the volume region
 	bool setPivot(const glm::vec3 &pivot);
+	// normalized pivot of [0-1] to be somewhere inside the volume region
 	const glm::vec3 &pivot() const;
+	// world pivot of the node, which is the pivot applied to the world matrix and the region mins
 	glm::vec3 worldPivot() const;
 
 	/**

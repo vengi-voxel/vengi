@@ -21,6 +21,7 @@
 #include "modifier/ModifierFacade.h"
 #include "modifier/SceneModifiedFlags.h"
 #include "modifier/SelectionManager.h"
+#include "scenegraph/Clipper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "util/Movement.h"
@@ -65,6 +66,7 @@ class SceneManager : public core::DeltaFrameSeconds {
 
 protected:
 	scenegraph::SceneGraph _sceneGraph;
+	scenegraph::Clipper _clipper;
 	memento::MementoHandler _mementoHandler;
 	util::Movement _movement;
 	voxel::VoxelData _copy;
@@ -92,8 +94,9 @@ protected:
 	// this is basically the same as the dirty state, but we stop
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
-
 	bool _traceViaMouse = true;
+	// camera clipping
+	bool _enableClipping = false;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
@@ -107,9 +110,9 @@ protected:
 
 	// model animation speed
 	double _animationSpeed = 0.0;
-	bool _animationResetCamera = false;
 	double _nextFrameSwitch = 0.0;
 	int _currentAnimationNodeId = InvalidNodeId;
+	bool _animationResetCamera = false;
 
 	// timeline animation
 	scenegraph::FrameIndex _currentFrameIdx = 0;
@@ -248,6 +251,9 @@ public:
 
 	bool cameraRotate() const;
 	bool cameraPan() const;
+
+	bool clipping() const;
+	void setClipping(bool enabled);
 
 	scenegraph::FrameIndex currentFrame() const;
 	void setCurrentFrame(scenegraph::FrameIndex frameIdx);
@@ -547,6 +553,14 @@ public:
 	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
+
+inline bool SceneManager::clipping() const {
+	return _enableClipping;
+}
+
+inline void SceneManager::setClipping(bool enabled) {
+	_enableClipping = enabled;
+}
 
 inline const voxel::VoxelData& SceneManager::clipBoardData() const {
 	return _copy;
