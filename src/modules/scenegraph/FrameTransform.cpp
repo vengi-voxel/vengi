@@ -13,10 +13,15 @@
 namespace scenegraph {
 
 glm::vec3 FrameTransform::scale() const {
+	if (_scaleCalculated) {
+		return _scale;
+	}
 	glm::vec3 sc;
 	glm::quat orientation;
 	glm::vec3 translation;
 	decompose(sc, orientation, translation);
+	_scale = sc;
+	_scaleCalculated = true;
 	return sc;
 }
 
