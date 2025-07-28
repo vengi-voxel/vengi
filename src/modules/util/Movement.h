@@ -65,4 +65,4 @@ inline bool Movement::backward() const {
 	return _moveBackward.pressed();
 }
 
-}
+} // namespace util

@@ -399,7 +399,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 	// https://github.com/vengi-voxel/vengi/issues/420
 	FrameTransform parentTransform;
 	if (node.parent() == InvalidNodeId) {
-		parentTransform.matrix = glm::mat4(1.0f);
+		parentTransform.setWorldMatrix(glm::mat4(1.0f));
 	} else {
 		parentTransform = transformForFrame(this->node(node.parent()), animation, frameIdx);
 	}
@@ -408,16 +408,16 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 	KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
 	if (node.keyFrames().size() == 1) {
 		const SceneGraphKeyFrame *kf = node.keyFrame(0);
-		transform.matrix = parentTransform.matrix * kf->transform().localMatrix();
+		transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
 	} else if (node.hasKeyFrameForFrame(frameIdx, &keyFrameIdx)) {
 		const SceneGraphKeyFrame *kf = node.keyFrame(keyFrameIdx);
-		transform.matrix = parentTransform.matrix * kf->transform().localMatrix();
+		transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
 	} else {
 		const KeyFrameIndex start = node.previousKeyFrameForFrame(frameIdx);
 		const KeyFrameIndex end = node.nextKeyFrameForFrame(frameIdx);
 		if (start == end) {
 			const SceneGraphKeyFrame *kf = node.keyFrame(start);
-			transform.matrix = parentTransform.matrix * kf->transform().localMatrix();
+			transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
 		} else {
 			const SceneGraphKeyFrame *source = node.keyFrame(start);
 			const SceneGraphKeyFrame *target = node.keyFrame(end);
@@ -429,7 +429,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 			const glm::vec3 translation = glm::mix(source->transform().localTranslation(), target->transform().localTranslation(), lerpFactor);
 			const glm::quat orientation = glm::slerp(source->transform().localOrientation(), target->transform().localOrientation(), lerpFactor);
 			const glm::vec3 scale = glm::mix(source->transform().localScale(), target->transform().localScale(), lerpFactor);
-			transform.matrix = parentTransform.matrix * (glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale));
+			transform.setWorldMatrix(parentTransform.worldMatrix() * (glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale)));
 		}
 	}
 	return transform;

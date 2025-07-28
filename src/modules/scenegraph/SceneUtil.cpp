@@ -50,7 +50,7 @@ math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::v
 		const glm::vec3 pivot = calculateWorldPivot(transform, normalizedPivot, region.getDimensionsInVoxels());
 		const glm::vec3 extents = calculateExtents(region.getDimensionsInVoxels());
 		const glm::vec3 center = calculateCenter(transform, pivot, region.calcCenterf());
-		const glm::mat3x3 &matrix = transform.matrix;
+		const glm::mat3x3 &matrix = transform.worldMatrix();
 		return math::OBB<float>(center, extents, matrix);
 	}
 	return math::OBB<float>(glm::floor(region.getLowerCornerf()),

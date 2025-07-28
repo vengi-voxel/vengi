@@ -8,8 +8,8 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
-#include <glm/gtx/norm.hpp>
 #include <glm/gtx/functions.hpp>
+#include <glm/gtx/norm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 namespace util {
@@ -40,7 +40,7 @@ void Movement::update(double nowSeconds) {
 	updateDelta(nowSeconds);
 }
 
-glm::vec3 Movement::calculateDelta(const glm::quat& rot, double speed) {
+glm::vec3 Movement::calculateDelta(const glm::quat &rot, double speed) {
 	glm::vec3 delta(0.0f);
 	if (left()) {
 		delta += rot * (glm::left() * (float)speed);
@@ -60,11 +60,11 @@ glm::vec3 Movement::moveDelta(double speed, float orientation) {
 		return glm::zero<glm::vec3>();
 	}
 
-	const glm::quat& rot = glm::angleAxis(orientation, glm::up());
+	const glm::quat &rot = glm::angleAxis(orientation, glm::up());
 	speed *= _deltaSeconds;
-	const glm::vec3& delta = calculateDelta(rot, speed);
+	const glm::vec3 &delta = calculateDelta(rot, speed);
 	_deltaSeconds = 0.0;
 	return delta;
 }
 
-}
+} // namespace util

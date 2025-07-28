@@ -15,6 +15,9 @@ namespace scenegraph {
 struct FrameTransform {
 	glm::mat4 matrix;
 
+	void setWorldMatrix(const glm::mat4 &m) {
+		matrix = m;
+	}
 	inline const glm::mat4 &worldMatrix() const {
 		return matrix;
 	}

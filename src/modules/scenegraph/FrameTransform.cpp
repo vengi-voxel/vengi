@@ -40,7 +40,7 @@ glm::vec3 calculateExtents(const glm::vec3 &dimensions) {
 }
 
 glm::vec3 calculateCenter(const FrameTransform &transform, const glm::vec3 &worldPivot, const glm::vec3 &regionCenter) {
-	return transform.matrix * glm::vec4(regionCenter - worldPivot, 1.0f);
+	return transform.worldMatrix() * glm::vec4(regionCenter - worldPivot, 1.0f);
 }
 
 } // namespace scenegraph
