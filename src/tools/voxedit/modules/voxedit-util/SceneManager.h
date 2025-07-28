@@ -97,6 +97,7 @@ protected:
 	bool _traceViaMouse = true;
 	// camera clipping
 	bool _enableClipping = false;
+	bool _enableGravity = false;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
@@ -254,6 +255,9 @@ public:
 
 	bool clipping() const;
 	void setClipping(bool enabled);
+
+	bool gravity() const;
+	void setGravity(bool enabled);
 
 	scenegraph::FrameIndex currentFrame() const;
 	void setCurrentFrame(scenegraph::FrameIndex frameIdx);
@@ -560,6 +564,17 @@ inline bool SceneManager::clipping() const {
 
 inline void SceneManager::setClipping(bool enabled) {
 	_enableClipping = enabled;
+	if (!_enableClipping) {
+		setGravity(false);
+	}
+}
+
+inline bool SceneManager::gravity() const {
+	return _enableGravity;
+}
+
+inline void SceneManager::setGravity(bool enabled) {
+	_enableGravity = enabled;
 }
 
 inline const voxel::VoxelData& SceneManager::clipBoardData() const {

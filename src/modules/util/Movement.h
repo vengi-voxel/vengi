@@ -23,7 +23,7 @@ protected:
 	command::ActionButton _moveBackward;
 	command::ActionButton _moveForward;
 
-	glm::vec3 calculateDelta(const glm::quat& rot, double speed);
+	glm::vec3 calculateDelta(double speed);
 
 public:
 	virtual ~Movement() {}
@@ -40,9 +40,11 @@ public:
 	bool moving() const;
 
 	/**
+	 * @brief Calculate the movement without rotation in @c glm::forward(), @c glm::up(), @c glm::right() direction
+	 * @param speed The speed to move in the given direction
 	 * @note update() must have been called with proper delta milliseconds.
 	 */
-	glm::vec3 moveDelta(double speed, float orientation = 0.0f);
+	glm::vec3 moveDelta(double speed);
 };
 
 inline bool Movement::moving() const {

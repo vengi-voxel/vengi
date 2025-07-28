@@ -471,6 +471,14 @@ void Viewport::menuBarFreeCameraOptions() {
 	if (ImGui::Checkbox(_("Clipping"), &clipping)) {
 		_sceneMgr->setClipping(clipping);
 	}
+
+	ImGui::BeginDisabled(!clipping);
+	bool gravity = _sceneMgr->gravity();
+	if (ImGui::Checkbox(_("Gravity"), &gravity)) {
+		_sceneMgr->setGravity(gravity);
+	}
+	ImGui::EndDisabled();
+
 	ImGui::EndDisabled();
 }
 

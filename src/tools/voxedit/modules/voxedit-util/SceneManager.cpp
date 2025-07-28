@@ -2542,10 +2542,18 @@ bool SceneManager::update(double nowSeconds) {
 	if (camera != nullptr) {
 		if (camera->rotationType() == video::CameraRotationType::Eye) {
 			glm::vec3 moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
-			const glm::vec3 &camPos = camera->worldPosition();
 			if (_enableClipping) {
 				scenegraph::FrameIndex frameIdx = _currentFrameIdx;
-				moveDelta = _clipper.clipDelta(frameIdx, camPos, moveDelta, camera->orientation());
+				const glm::vec3 &camPos = camera->worldPosition();
+				const glm::mat4 &orientation = camera->orientation();
+				if (_enableGravity) {
+					if (camera->worldPosition().y > _sceneGraph.region().getLowerY()) {
+						const glm::vec3 gravity{0.0f, -9.81f * (float)deltaSeconds(), 0.0f};
+						const glm::vec3 gravityDelta = orientation * glm::vec4(gravity, 0.0f);
+						moveDelta += gravityDelta;
+					}
+				}
+				moveDelta = _clipper.clipDelta(frameIdx, camPos, moveDelta, orientation);
 			}
 			camera->move(moveDelta);
 		}

@@ -8,9 +8,9 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
+#include <glm/gtc/constants.hpp>
 #include <glm/gtx/functions.hpp>
 #include <glm/gtx/norm.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 namespace util {
 
@@ -40,31 +40,26 @@ void Movement::update(double nowSeconds) {
 	updateDelta(nowSeconds);
 }
 
-glm::vec3 Movement::calculateDelta(const glm::quat &rot, double speed) {
+glm::vec3 Movement::calculateDelta(double speed) {
 	glm::vec3 delta(0.0f);
 	if (left()) {
-		delta += rot * (glm::left() * (float)speed);
+		delta += (glm::left() * (float)speed);
 	} else if (right()) {
-		delta += rot * (glm::right() * (float)speed);
+		delta += (glm::right() * (float)speed);
 	}
 	if (forward()) {
-		delta += rot * (glm::forward() * (float)speed);
+		delta += (glm::forward() * (float)speed);
 	} else if (backward()) {
-		delta += rot * (glm::backward() * (float)speed);
+		delta += (glm::backward() * (float)speed);
 	}
 	return delta;
 }
 
-glm::vec3 Movement::moveDelta(double speed, float orientation) {
+glm::vec3 Movement::moveDelta(double speed) {
 	if (_deltaSeconds <= 0.0) {
 		return glm::zero<glm::vec3>();
 	}
-
-	const glm::quat &rot = glm::angleAxis(orientation, glm::up());
-	speed *= _deltaSeconds;
-	const glm::vec3 &delta = calculateDelta(rot, speed);
-	_deltaSeconds = 0.0;
-	return delta;
+	return calculateDelta(speed * _deltaSeconds);
 }
 
 } // namespace util
