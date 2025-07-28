@@ -7,6 +7,10 @@
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
 
+namespace voxel{
+class Region;
+}
+
 namespace scenegraph {
 
 // TODO: PERF: this should get cached in the SceneGraph for one frameIdx
@@ -44,6 +48,8 @@ public:
 	 * @param[in] pivot The pivot in object space (see @c calcPivot() for details)
 	 */
 	glm::vec3 calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const;
+	glm::vec3 calcModelSpace(const glm::vec3 &worldPos) const;
+	bool isInside(const glm::vec3 &worldPos, const voxel::Region &region, const glm::vec3 &normalizedPivot) const;
 };
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions);
