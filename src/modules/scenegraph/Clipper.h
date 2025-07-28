@@ -14,14 +14,19 @@ namespace scenegraph {
  */
 class Clipper {
 private:
-	scenegraph::SceneGraph &_sceneGraph;
 	// Define bounding box size for one voxel
 	glm::vec3 _boxSize{1.0f};
+
 public:
-	Clipper(scenegraph::SceneGraph &sceneGraph) : _sceneGraph(sceneGraph) {
+	glm::vec3 clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx,
+						const glm::vec3 &worldPosition, const glm::vec3 &delta, const glm::mat3 &cameraOrientation);
+
+	const glm::vec3 &boxSize() const {
+		return _boxSize;
 	}
-	glm::vec3 clipDelta(scenegraph::FrameIndex frameIdx, const glm::vec3 &worldPosition, const glm::vec3 &delta,
-						const glm::mat3 &cameraOrientation);
+	void setBoxSize(const glm::vec3 &boxSize) {
+		_boxSize = boxSize;
+	}
 };
 
 } // namespace scenegraph

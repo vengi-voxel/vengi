@@ -5,13 +5,13 @@
 #include "SceneManager.h"
 
 #include "app/Async.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/GLM.h"
-#include "app/I18N.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -31,24 +31,24 @@
 #include "memento/MementoHandler.h"
 #include "metric/MetricFacade.h"
 #include "palette/NormalPalette.h"
+#include "palette/Palette.h"
 #include "palette/PaletteCompleter.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "scenegraph/SceneGraphUtil.h"
+#include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/VoxelNormalUtil.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
+#include "voxel/VoxelNormalUtil.h"
 #include "voxelfont/VoxelFont.h"
 #include "voxelformat/Format.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "scenegraph/SceneGraphUtil.h"
-#include "scenegraph/SceneUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelgenerator/LUAApi.h"
@@ -58,6 +58,7 @@
 #include "voxelrender/SceneGraphRenderer.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/Hollow.h"
+#include "voxelutil/ImageUtils.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
@@ -67,16 +68,15 @@
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include "voxelutil/ImageUtils.h"
 
-#include "Config.h"
 #include "Clipboard.h"
+#include "Config.h"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
-#include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace voxedit {
 
@@ -97,7 +97,7 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
 						   const SelectionManagerPtr &selectionManager)
-	: _clipper(_sceneGraph), _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
+	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifierFacade(this, modifierRenderer, selectionManager), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
 	  _selectionManager(selectionManager) {
@@ -2553,7 +2553,7 @@ bool SceneManager::update(double nowSeconds) {
 						moveDelta += gravityDelta;
 					}
 				}
-				moveDelta = _clipper.clipDelta(frameIdx, camPos, moveDelta, orientation);
+				moveDelta = _clipper.clipDelta(_sceneGraph, frameIdx, camPos, moveDelta, orientation);
 			}
 			camera->move(moveDelta);
 		}

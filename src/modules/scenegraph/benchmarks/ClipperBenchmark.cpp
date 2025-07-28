@@ -13,7 +13,7 @@ class ClipperBenchmark : public app::AbstractBenchmark {
 protected:
 	scenegraph::SceneGraph _sceneGraph;
 	voxel::RawVolume _v{{-10, 10}};
-	scenegraph::Clipper _clipper{_sceneGraph};
+	scenegraph::Clipper _clipper;
 
 public:
 	void SetUp(::benchmark::State &state) override {
@@ -34,7 +34,7 @@ BENCHMARK_DEFINE_F(ClipperBenchmark, ClipNoFrame)(benchmark::State &state) {
 		const glm::vec3 worldPos(0.0f, 0.0f, 0.0f);
 		const glm::vec3 dir(1.0f, 0.0f, 0.0f);
 		const glm::mat3 noRot(1.0f);
-		benchmark::DoNotOptimize(_clipper.clipDelta(InvalidFrame, worldPos, dir, noRot));
+		benchmark::DoNotOptimize(_clipper.clipDelta(_sceneGraph, InvalidFrame, worldPos, dir, noRot));
 	}
 }
 
@@ -43,7 +43,7 @@ BENCHMARK_DEFINE_F(ClipperBenchmark, ClipFrame)(benchmark::State &state) {
 		const glm::vec3 worldPos(0.0f, 0.0f, 0.0f);
 		const glm::vec3 dir(1.0f, 0.0f, 0.0f);
 		const glm::mat3 noRot(1.0f);
-		benchmark::DoNotOptimize(_clipper.clipDelta(0, worldPos, dir, noRot));
+		benchmark::DoNotOptimize(_clipper.clipDelta(_sceneGraph, 0, worldPos, dir, noRot));
 	}
 }
 

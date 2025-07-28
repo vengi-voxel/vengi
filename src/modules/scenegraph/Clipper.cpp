@@ -19,7 +19,8 @@ namespace scenegraph {
  * @param delta The intended movement vector in camera local space.
  * @return The clipped movement delta that does not intersect solid voxels.
  */
-glm::vec3 Clipper::clipDelta(scenegraph::FrameIndex frameIdx, const glm::vec3 &worldPosition, const glm::vec3 &delta,
+glm::vec3 Clipper::clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx,
+							 const glm::vec3 &worldPosition, const glm::vec3 &delta,
 							 const glm::mat3 &cameraOrientation) {
 	if (glm::all(glm::epsilonEqual(delta, glm::zero<glm::vec3>(), 0.0001f))) {
 		return delta;
@@ -40,19 +41,19 @@ glm::vec3 Clipper::clipDelta(scenegraph::FrameIndex frameIdx, const glm::vec3 &w
 		maxVoxel = glm::ceil(maxCorner);
 	}
 
-	for (const auto &e : _sceneGraph.nodes()) {
+	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->second;
 		if (!node.visible() || !node.isAnyModelNode()) {
 			continue;
 		}
-		const voxel::RawVolume *volume = _sceneGraph.resolveVolume(node);
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
 		if (!volume) {
 			continue;
 		}
 
 		if (frameIdx != InvalidFrame) {
 			// Convert corners to voxel-space
-			const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(node, frameIdx);
+			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 			minVoxel = glm::floor(transform.calcModelSpace(minCorner));
 			maxVoxel = glm::ceil(transform.calcModelSpace(maxCorner));
 		}
