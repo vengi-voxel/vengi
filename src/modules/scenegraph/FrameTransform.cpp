@@ -12,6 +12,14 @@
 
 namespace scenegraph {
 
+glm::vec3 FrameTransform::calcPivot(const glm::vec3 &dimensions, const glm::vec3 &normalizedPivot) const {
+	return scale() * normalizedPivot * dimensions;
+}
+
+glm::vec3 FrameTransform::calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const {
+	return matrix * glm::vec4(pos - pivot, 1.0f);
+}
+
 glm::vec3 FrameTransform::scale() const {
 	if (_scaleCalculated) {
 		return _scale;
@@ -33,11 +41,6 @@ void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::ve
 	glm::vec3 skew;
 	glm::vec4 perspective;
 	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
-}
-
-glm::vec3 calculateWorldPivot(const FrameTransform &transform, const glm::vec3 &normalizedPivot,
-							  const glm::vec3 &dimensions) {
-	return transform.scale() * normalizedPivot * dimensions;
 }
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions) {

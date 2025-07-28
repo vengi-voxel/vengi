@@ -183,10 +183,10 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	} else {
 		meshState->setCullFace(idx, video::Face::Back);
 	}
+	const glm::vec3 pivot = transform.calcPivot(region.getDimensionsInVoxels(), node.pivot());
+	const glm::vec3 mins = transform.calcPosition(region.getLowerCornerf(), pivot);
+	const glm::vec3 maxs = transform.calcPosition(region.getUpperCornerf(), pivot);
 	const glm::mat4 &worldMatrix = transform.worldMatrix();
-	const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-	const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCornerf() - pivot, 1.0f);
-	const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCornerf() - pivot, 1.0f);
 	meshState->setModelMatrix(idx, worldMatrix, pivot, mins, maxs);
 }
 

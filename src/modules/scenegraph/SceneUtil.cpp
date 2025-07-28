@@ -47,7 +47,7 @@ math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::v
 					   const scenegraph::FrameTransform &transform) {
 	core_assert(region.isValid());
 	if (sceneMode) {
-		const glm::vec3 pivot = calculateWorldPivot(transform, normalizedPivot, region.getDimensionsInVoxels());
+		const glm::vec3 pivot = transform.calcPivot(normalizedPivot, region.getDimensionsInVoxels());
 		const glm::vec3 extents = calculateExtents(region.getDimensionsInVoxels());
 		const glm::vec3 center = calculateCenter(transform, pivot, region.calcCenterf());
 		const glm::mat3x3 &matrix = transform.worldMatrix();
