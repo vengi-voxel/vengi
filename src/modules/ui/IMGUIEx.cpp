@@ -177,6 +177,10 @@ bool InputVec2(const char *label, glm::vec2 &vec, const char *format, ImGuiInput
 	return InputFloat2(label, glm::value_ptr(vec), format, flags);
 }
 
+bool InputVec3(const char *label, const glm::vec3 &vec) {
+	return InputVec3(label, const_cast<glm::vec3 &>(vec), "%.3f", ImGuiInputTextFlags_ReadOnly);
+}
+
 bool InputVec3(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags) {
 	return InputFloat3(label, glm::value_ptr(vec), format, flags);
 }
@@ -286,6 +290,10 @@ bool AxisButtonZ(const ImVec2& size_arg, ImGuiButtonFlags flags) {
 	ui::ScopedStyle style;
 	AxisStyleButton(style, math::Axis::Z);
 	return ImGui::ButtonEx(_("Z"), size_arg, flags);
+}
+
+bool InputXYZ(const char *label, const glm::vec3 &vec) {
+	return InputXYZ(label, const_cast<glm::vec3 &>(vec), "%.3f", ImGuiInputTextFlags_ReadOnly);
 }
 
 bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags) {
