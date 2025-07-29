@@ -15,24 +15,24 @@
 namespace voxelrender {
 
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
-	scenegraph::SceneGraphNodeCamera node;
+	scenegraph::SceneGraphNodeCamera cameraNode;
 	scenegraph::SceneGraphTransform transform;
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	transform.setWorldMatrix(camera.viewMatrix());
-	node.setAspectRatio(camera.aspect());
-	node.setWidth(camera.size().x);
-	node.setHeight(camera.size().y);
-	node.setTransform(keyFrameIdx, transform);
-	node.setFarPlane(camera.farPlane());
-	node.setNearPlane(camera.nearPlane());
+	cameraNode.setAspectRatio(camera.aspect());
+	cameraNode.setWidth(camera.size().x);
+	cameraNode.setHeight(camera.size().y);
+	cameraNode.setTransform(keyFrameIdx, transform);
+	cameraNode.setFarPlane(camera.farPlane());
+	cameraNode.setNearPlane(camera.nearPlane());
 	if (camera.mode() == video::CameraMode::Orthogonal) {
-		node.setOrthographic();
+		cameraNode.setOrthographic();
 	} else {
-		node.setPerspective();
+		cameraNode.setPerspective();
 	}
-	node.setFieldOfView((int)camera.fieldOfView());
-	node.setName("new camera");
-	return node;
+	cameraNode.setFieldOfView((int)camera.fieldOfView());
+	cameraNode.setName("new camera");
+	return cameraNode;
 }
 
 void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
