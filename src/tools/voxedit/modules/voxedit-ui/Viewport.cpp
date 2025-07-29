@@ -786,7 +786,7 @@ uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const 
 
 glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	if (!isSceneMode()) {
+	if (!isSceneMode() && node.isAnyModelNode()) {
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		return glm::translate(region.getLowerCornerf());
 	}
@@ -808,7 +808,7 @@ void Viewport::updateBounds(const scenegraph::SceneGraphNode &node) {
 
 const float *Viewport::gizmoBounds(const scenegraph::SceneGraphNode &node) {
 	const float *boundsPtr = nullptr;
-	if (isSceneMode() && (_gizmoOperations->uintVal() & GizmoOperation_Bounds) != 0) {
+	if (isSceneMode() && node.isModelNode() && (_gizmoOperations->uintVal() & GizmoOperation_Bounds) != 0) {
 		if (!ImGuizmo::IsUsing()) {
 			updateBounds(node);
 		}
