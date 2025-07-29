@@ -362,6 +362,18 @@ int SceneGraph::nextModelNode(int nodeId) const {
 	return InvalidNodeId;
 }
 
+scenegraph::SceneGraphNodeCamera *SceneGraph::activeCameraNode() const {
+	int nodeId = activeNode();
+	if (nodeId == InvalidNodeId) {
+		return nullptr;
+	}
+	scenegraph::SceneGraphNode &n = node(nodeId);
+	if (n.isCameraNode()) {
+		return &toCameraNode(n);
+	}
+	return nullptr;
+}
+
 math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	const FrameTransform &transform = transformForFrame(node, frameIdx);
 	math::AABB<float> aabb;

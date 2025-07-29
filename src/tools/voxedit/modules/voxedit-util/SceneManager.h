@@ -251,6 +251,8 @@ public:
 	bool cameraRotate() const;
 	bool cameraPan() const;
 
+	scenegraph::SceneGraphNodeCamera *activeCameraNode();
+
 	bool clipping() const;
 	void setClipping(bool enabled);
 
@@ -307,6 +309,7 @@ public:
 	 * @brief Add a new model node as children to the current active node
 	 */
 	int addModelChild(const core::String &name, int width, int height, int depth, const core::String &uuid = "");
+	int addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::String &uuid = "");
 
 	/**
 	 * @brief Merge two nodes and extend the smaller one
@@ -434,6 +437,7 @@ private:
 	void nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
 
 	void onNewNodeAdded(int newNodeId, bool isChildren = false);
+	bool nodeRemoveChildrenByType(scenegraph::SceneGraphNode &node, scenegraph::SceneGraphNodeType type);
 	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
 	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,

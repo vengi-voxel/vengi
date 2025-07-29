@@ -720,6 +720,10 @@ int SceneManager::activeNode() const {
 	return _sceneGraph.activeNode();
 }
 
+scenegraph::SceneGraphNodeCamera *SceneManager::activeCameraNode() {
+	return _sceneGraph.activeCameraNode();
+}
+
 palette::Palette &SceneManager::activePalette() const {
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
@@ -2344,6 +2348,19 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
 	}
 }
 
+int SceneManager::addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::String &uuid) {
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Point, uuid);
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldTranslation(position);
+	transform.setWorldOrientation(orientation);
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	newNode.setTransform(keyFrameIdx, transform);
+	newNode.setName(name);
+	const int parentId = activeNode();
+	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
+	return nodeId;
+}
+
 int SceneManager::addModelChild(const core::String& name, int width, int height, int depth, const core::String &uuid) {
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	if (!region.isValid()) {
@@ -3234,6 +3251,24 @@ bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 		return nodeRename(*node, name);
 	}
 	return false;
+}
+
+bool SceneManager::nodeRemoveChildrenByType(scenegraph::SceneGraphNode &node, scenegraph::SceneGraphNodeType type) {
+	core::Buffer<int> removeChildren;
+	for (int childId : node.children()) {
+		const scenegraph::SceneGraphNode &childNode = _sceneGraph.node(childId);
+		if (childNode.type() == type) {
+			removeChildren.push_back(childId);
+		}
+	}
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "noderemovebytype");
+	for (int childId : removeChildren) {
+		if (!nodeRemove(childId, true)) {
+			Log::error("Failed to remove child node %i", childId);
+			return false;
+		}
+	}
+	return true;
 }
 
 bool SceneManager::nodeRename(scenegraph::SceneGraphNode &node, const core::String &name) {

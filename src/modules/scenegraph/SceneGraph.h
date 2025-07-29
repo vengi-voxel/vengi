@@ -68,6 +68,9 @@ public:
 
 	int activeNode() const;
 	bool setActiveNode(int nodeId);
+
+	scenegraph::SceneGraphNodeCamera *activeCameraNode() const;
+
 	/**
 	 * @brief Returns the first valid palette from any of the nodes
 	 */

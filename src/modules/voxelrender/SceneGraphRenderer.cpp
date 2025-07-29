@@ -6,7 +6,6 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/Trace.h"
-#include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
