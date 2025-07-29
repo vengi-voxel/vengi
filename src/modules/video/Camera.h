@@ -95,6 +95,22 @@ protected:
 	glm::vec3 _target{0.0f};
 	float _distance = 100.0f;
 	bool _orthoAligned = false;
+	bool _lerp = false;
+	struct LerpTarget {
+		CameraRotationType rotationType;
+		glm::vec3 target;
+		glm::vec3 worldPos;
+		glm::vec3 panOffset;
+		glm::quat quat;
+		glm::vec3 fromWorldPos;
+		glm::vec3 fromPanOffset;
+		glm::quat fromQuat;
+		glm::vec3 fromTarget;
+		double seconds;
+		float distance;
+		float fromDistance;
+	};
+	LerpTarget _lerpTarget;
 
 	void updateFrustumPlanes();
 	void updateFrustumVertices();
@@ -161,6 +177,7 @@ public:
 
 	/**
 	 * @sa eye()
+	 * @note Does not include panning offset
 	 */
 	const glm::vec3& worldPosition() const;
 	void setWorldPosition(const glm::vec3& worldPos);

@@ -8,6 +8,7 @@
 #include "core/GLMConst.h"
 #include <glm/gtc/epsilon.hpp>
 #include "core/Var.h"
+#include "glm/common.hpp"
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "math/Ray.h"
@@ -81,6 +82,7 @@ void Camera::pan(int x, int y) {
 	_panOffset += r;
 	_panOffset += u;
 	_dirty |= DIRTY_POSITION;
+	_lerp = false;
 }
 
 glm::vec3 Camera::forward() const {
@@ -115,20 +117,25 @@ glm::vec3 Camera::direction() const {
 	return glm::vec3(glm::column(inverseViewMatrix(), 2));
 }
 
-void Camera::lerp(const Camera& target) {
-	// TODO: implement me
-	setMode(target.mode());
-	setTarget(target.target());
-	setFieldOfView(target.fieldOfView());
-	setFarPlane(target.farPlane());
-	setNearPlane(target.nearPlane());
-	setTargetDistance(target.targetDistance());
-	setWorldPosition(target.worldPosition());
-	setOrientation(target.quaternion());
-	setSize(target.size());
-
-	_orthoZoom = 1.0f;
-	_dirty = DIRTY_ALL;
+void Camera::lerp(const Camera& targetCam) {
+	_lerp = true;
+	core_assert(!targetCam.dirty());
+	_lerpTarget = {targetCam.rotationType(),
+				   targetCam.target(),
+				   targetCam.worldPosition(),
+				   targetCam._panOffset,
+				   targetCam.orientation(),
+				   worldPosition(),
+				   _panOffset,
+				   quaternion(),
+				   target(),
+				   0.0,
+				   targetCam.targetDistance(),
+				   targetDistance()};
+	setRotationType(targetCam.rotationType());
+	setTarget(targetCam.target());
+	setMode(targetCam.mode());
+	setType(targetCam.type());
 }
 
 void Camera::setOmega(const glm::vec3& omega) {
@@ -152,6 +159,7 @@ void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 	core_assert(!glm::any(glm::isnan(_quat)));
 	core_assert(!glm::any(glm::isinf(_quat)));
 	_dirty |= DIRTY_ORIENTATION;
+	_lerp = false;
 }
 
 void Camera::setOrientation(const glm::quat& quat) {
@@ -159,6 +167,7 @@ void Camera::setOrientation(const glm::quat& quat) {
 	core_assert(!glm::any(glm::isnan(_quat)));
 	core_assert(!glm::any(glm::isinf(_quat)));
 	_dirty |= DIRTY_ORIENTATION;
+	_lerp = false;
 }
 
 void Camera::rotate(const glm::quat& rotation) {
@@ -166,6 +175,7 @@ void Camera::rotate(const glm::quat& rotation) {
 	core_assert(!glm::any(glm::isinf(rotation)));
 	_quat = glm::normalize(rotation * _quat);
 	_dirty |= DIRTY_ORIENTATION;
+	_lerp = false;
 }
 
 void Camera::setSize(const glm::ivec2& windowSize) {
@@ -189,6 +199,7 @@ bool Camera::move(const glm::vec3& delta) {
 		_distance = glm::max(4.0f, glm::distance(_worldPos, _target));
 		_dirty |= DIRTY_TARGET;
 	}
+	_lerp = false;
 	return true;
 }
 
@@ -239,10 +250,12 @@ void Camera::setPitch(float radians) {
 }
 
 inline void Camera::slerp(const glm::quat& quat, float factor) {
+	core_assert(!glm::any(glm::isnan(quat)));
+	core_assert(!glm::any(glm::isinf(quat)));
 	_quat = glm::mix(_quat, quat, factor);
 	_dirty |= DIRTY_ORIENTATION;
-	core_assert(!glm::any(glm::isnan(_quat)));
-	core_assert(!glm::any(glm::isinf(_quat)));
+	core_assert_msg(!glm::any(glm::isnan(_quat)), "Factor: %f", factor);
+	core_assert_msg(!glm::any(glm::isinf(_quat)), "Factor: %f", factor);
 }
 
 void Camera::slerp(const glm::vec3& radians, float factor) {
@@ -340,7 +353,26 @@ void Camera::zoom(float value) {
 
 void Camera::update(double deltaFrameSeconds) {
 	if (deltaFrameSeconds > 0.0) {
-		rotate(_omega * (float)deltaFrameSeconds);
+		if (_lerp) {
+			_lerpTarget.seconds += deltaFrameSeconds;
+			const float t = glm::clamp(0.0, 1.0, _lerpTarget.seconds);
+			_quat = glm::mix(_lerpTarget.fromQuat, _lerpTarget.quat, t);
+			_dirty |= DIRTY_ORIENTATION;
+			if (_lerpTarget.rotationType == CameraRotationType::Target) {
+				_target = glm::mix(_lerpTarget.fromTarget, _lerpTarget.target, t);
+				_distance = glm::mix(_lerpTarget.fromDistance, _lerpTarget.distance, t);
+				_dirty |= DIRTY_TARGET;
+			} else {
+				_worldPos = glm::mix(_lerpTarget.fromWorldPos, _lerpTarget.worldPos, t);
+			}
+			_panOffset = glm::mix(_lerpTarget.fromPanOffset, _lerpTarget.panOffset, t);
+			_dirty |= DIRTY_POSITION;
+			if (_lerpTarget.seconds > 1.0) {
+				_lerp = false;
+			}
+		} else {
+			rotate(_omega * (float)deltaFrameSeconds);
+		}
 	}
 	updateTarget();
 	updateOrientation();
