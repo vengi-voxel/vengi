@@ -12,6 +12,7 @@
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/RawVolume.h"
 #include "core/Endian.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL

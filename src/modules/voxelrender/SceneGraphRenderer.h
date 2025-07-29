@@ -10,6 +10,7 @@
 #include "core/collection/Buffer.h"
 #include "render/CameraFrustum.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "video/Camera.h"
 #include "voxel/RawVolume.h"
 

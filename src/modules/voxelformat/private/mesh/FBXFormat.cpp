@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"

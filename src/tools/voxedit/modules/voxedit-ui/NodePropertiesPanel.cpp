@@ -6,6 +6,7 @@
 #include "command/CommandHandler.h"
 #include "imgui.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"

@@ -26,6 +26,7 @@ class RawVolume;
 
 namespace scenegraph {
 
+class SceneGraphNodeCamera;
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 using SceneGraphNodes = core::DynamicMap<int, SceneGraphNode, 251>;
 

@@ -8,6 +8,7 @@
 #include "core/Var.h"
 #include "scenegraph/Clipper.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
 #include "video/Camera.h"
 

@@ -7,8 +7,15 @@
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "ui/Panel.h"
+
+#include <glm/vec3.hpp>
+
+namespace scenegraph {
+class SceneGraphNode;
+class SceneGraphNodeCamera;
+} // namespace scenegraph
 
 namespace voxedit {
 

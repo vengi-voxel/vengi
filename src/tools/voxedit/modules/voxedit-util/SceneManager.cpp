@@ -2017,7 +2017,7 @@ void SceneManager::construct() {
 	}).setHelp(_("Paste clipboard to current selection or reference position"));
 
 	command::Command::registerCommand("pastecursor", [&] (const command::CmdArgs& args) {
-		paste(_modifierFacade.cursorPosition());
+		paste(cursorPosition());
 	}).setHelp(_("Paste clipboard to current cursor position"));
 
 	command::Command::registerCommand("pastenewnode", [&] (const command::CmdArgs& args) {
@@ -2141,9 +2141,8 @@ void SceneManager::construct() {
 		}
 		// resolve the voxel via cursor position. This allows to use also get the proper
 		// result if we moved the cursor via keys (and thus might have skipped tracing)
-		const glm::ivec3& cursorPos = _modifierFacade.cursorPosition();
 		if (const voxel::RawVolume *v = activeVolume()) {
-			const voxel::Voxel& voxel = v->voxel(cursorPos);
+			const voxel::Voxel& voxel = v->voxel(cursorPosition());
 			_modifierFacade.setCursorVoxel(voxel);
 		}
 	}).setHelp(_("Pick the current selected color from current cursor voxel"));

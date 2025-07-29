@@ -446,9 +446,9 @@ void Viewport::menuBarCaptureOptions() {
 }
 
 void Viewport::menuBarFreeCameraOptions() {
-	glm::vec3 omega = _camera.omega();
+	glm::vec3 omega = camera().omega();
 	if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
-		_camera.setOmega(omega);
+		camera().setOmega(omega);
 	}
 
 	const char *camRotTypes[] = {_("Reference Point"), _("Eye")};

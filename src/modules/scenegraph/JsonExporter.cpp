@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "palette/Material.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"

@@ -12,6 +12,7 @@
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -367,7 +368,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		}
 	} else if (node.isCameraNode()) {
 		Log::debug("Add camera node");
-		const scenegraph::SceneGraphNodeCamera &camera = toCameraNode(node);
+		const scenegraph::SceneGraphNodeCamera &camera = scenegraph::toCameraNode(node);
 		const scenegraph::SceneGraphTransform &transform = camera.transform(0);
 		{
 			ogt_vox_cam ogt_cam;

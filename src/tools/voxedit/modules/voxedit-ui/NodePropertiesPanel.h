@@ -5,8 +5,13 @@
 #pragma once
 
 #include "command/CommandHandler.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "core/SharedPtr.h"
 #include "ui/Panel.h"
+
+namespace scenegraph {
+class SceneGraphNode;
+class SceneGraphNodeCamera;
+}
 
 namespace voxedit {
 

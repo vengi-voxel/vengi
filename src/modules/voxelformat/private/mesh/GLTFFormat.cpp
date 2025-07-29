@@ -23,6 +23,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
@@ -849,7 +850,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	gltfModel.scenes.emplace_back(core::move(gltfScene));
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
-		tinygltf::Camera gltfCamera = _priv::processCamera(toCameraNode(*iter));
+		tinygltf::Camera gltfCamera = _priv::processCamera(scenegraph::toCameraNode(*iter));
 		if (!_priv::validateCamera(gltfCamera)) {
 			continue;
 		}

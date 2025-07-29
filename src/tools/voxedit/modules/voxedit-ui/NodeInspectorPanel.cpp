@@ -9,6 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeCamera.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
