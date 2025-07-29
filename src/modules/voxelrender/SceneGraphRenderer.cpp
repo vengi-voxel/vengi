@@ -16,9 +16,10 @@ namespace voxelrender {
 
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 	scenegraph::SceneGraphNodeCamera cameraNode;
-	scenegraph::SceneGraphTransform transform;
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	transform.setWorldMatrix(camera.viewMatrix());
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldTranslation(camera.eye());
+	transform.setWorldOrientation(camera.orientation());
 	cameraNode.setTransform(keyFrameIdx, transform);
 
 	cameraNode.setAspectRatio(camera.aspect());
@@ -86,7 +87,6 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 	const scenegraph::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
 	camera.setWorldPosition(transform.worldTranslation());
 	camera.setOrientation(transform.worldOrientation());
-	camera.setRotationType(video::CameraRotationType::Target);
 	const int fovDegree = cameraNode.fieldOfView();
 	if (fovDegree > 0) {
 		camera.setFieldOfView((float)fovDegree);
