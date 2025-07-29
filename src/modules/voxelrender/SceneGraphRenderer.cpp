@@ -19,10 +19,11 @@ scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 	scenegraph::SceneGraphTransform transform;
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	transform.setWorldMatrix(camera.viewMatrix());
+	cameraNode.setTransform(keyFrameIdx, transform);
+
 	cameraNode.setAspectRatio(camera.aspect());
 	cameraNode.setWidth(camera.size().x);
 	cameraNode.setHeight(camera.size().y);
-	cameraNode.setTransform(keyFrameIdx, transform);
 	cameraNode.setFarPlane(camera.farPlane());
 	cameraNode.setNearPlane(camera.nearPlane());
 	if (camera.mode() == video::CameraMode::Orthogonal) {
