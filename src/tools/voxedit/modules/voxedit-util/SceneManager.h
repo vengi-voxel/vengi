@@ -21,10 +21,9 @@
 #include "modifier/ModifierFacade.h"
 #include "modifier/SceneModifiedFlags.h"
 #include "modifier/SelectionManager.h"
-#include "scenegraph/Clipper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
-#include "util/Movement.h"
+#include "voxedit-util/CameraMovement.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -66,9 +65,8 @@ class SceneManager : public core::DeltaFrameSeconds {
 
 protected:
 	scenegraph::SceneGraph _sceneGraph;
-	scenegraph::Clipper _clipper;
+	CameraMovement _camMovement;
 	memento::MementoHandler _mementoHandler;
-	util::Movement _movement;
 	voxel::VoxelData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
@@ -86,7 +84,6 @@ protected:
 
 	core::VarPtr _autoSaveSecondsDelay;
 	core::VarPtr _gridSize;
-	core::VarPtr _movementSpeed;
 	core::VarPtr _transformUpdateChildren;
 	core::VarPtr _maxSuggestedVolumeSize;
 
@@ -198,7 +195,8 @@ protected:
 
 	/**
 	 * we assume that this is going hand in hand with transform states
-	 * see @c MementoType::SceneGraphAnimation resp. @c MementoHandler::markAddedAnimation() and @c MementoHandler::markRemovedAnimation()
+	 * see @c MementoType::SceneGraphAnimation resp. @c MementoHandler::markAddedAnimation() and @c
+	 * MementoHandler::markRemovedAnimation()
 	 */
 	bool mementoAnimations(const memento::MementoState &s);
 	bool mementoStateExecute(const memento::MementoState &s, bool isRedo);
@@ -297,7 +295,8 @@ public:
 	 */
 	bool loadPalette(const core::String &paletteName, bool searchBestColors, bool save);
 
-	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false, bool fillAndHollow = false);
+	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
+						  bool fillAndHollow = false);
 
 	/**
 	 * @brief Create a new procgen tree
@@ -419,7 +418,7 @@ public:
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
 	scenegraph::SceneGraphNode *sceneGraphNodeByUUID(const core::String &uuid);
 
-	const voxel::VoxelData& clipBoardData() const;
+	const voxel::VoxelData &clipBoardData() const;
 
 	// component access
 	const ModifierFacade &modifier() const;
@@ -472,7 +471,8 @@ private:
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material, float value);
+	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material,
+						 float value);
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const core::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
@@ -484,7 +484,8 @@ public:
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
-	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, scenegraph::InterpolationType interpolation);
+	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx,
+										 scenegraph::InterpolationType interpolation);
 	bool nodeUpdatePivotGroup(const glm::vec3 &pivot);
 	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
 	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
@@ -577,7 +578,7 @@ inline void SceneManager::setGravity(bool enabled) {
 	_enableGravity = enabled;
 }
 
-inline const voxel::VoxelData& SceneManager::clipBoardData() const {
+inline const voxel::VoxelData &SceneManager::clipBoardData() const {
 	return _copy;
 }
 

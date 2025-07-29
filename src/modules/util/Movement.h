@@ -23,10 +23,11 @@ protected:
 	command::ActionButton _moveBackward;
 	command::ActionButton _moveForward;
 
-	glm::vec3 calculateDelta(double speed);
+	glm::vec3 calculateDelta(double speed) const;
 
 public:
-	virtual ~Movement() {}
+	virtual ~Movement() {
+	}
 	void construct() override;
 	bool init() override;
 	void update(double nowSeconds);
@@ -44,7 +45,8 @@ public:
 	 * @param speed The speed to move in the given direction
 	 * @note update() must have been called with proper delta milliseconds.
 	 */
-	glm::vec3 moveDelta(double speed);
+	glm::vec3 moveDelta(double speed) const;
+	glm::vec3 gravityDelta(double speed, const glm::mat4 &orientation, float y, float lowestY) const;
 };
 
 inline bool Movement::moving() const {

@@ -11,6 +11,7 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtx/functions.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace util {
 
@@ -40,7 +41,7 @@ void Movement::update(double nowSeconds) {
 	updateDelta(nowSeconds);
 }
 
-glm::vec3 Movement::calculateDelta(double speed) {
+glm::vec3 Movement::calculateDelta(double speed) const {
 	glm::vec3 delta(0.0f);
 	if (left()) {
 		delta += (glm::left() * (float)speed);
@@ -55,7 +56,16 @@ glm::vec3 Movement::calculateDelta(double speed) {
 	return delta;
 }
 
-glm::vec3 Movement::moveDelta(double speed) {
+glm::vec3 Movement::gravityDelta(double speed, const glm::mat4 &orientation, float y, float lowestY) const {
+	if (y <= lowestY) {
+		return {0.0f, 0.0f, 0.0f};
+	}
+	glm::vec3 gravity{0.0f, -9.81 * _deltaSeconds, 0.0f};
+	const glm::vec3 gravityDelta = orientation * glm::vec4(gravity, 0.0f);
+	return gravityDelta;
+}
+
+glm::vec3 Movement::moveDelta(double speed) const {
 	if (_deltaSeconds <= 0.0) {
 		return glm::zero<glm::vec3>();
 	}

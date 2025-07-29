@@ -19,7 +19,8 @@ private:
 
 public:
 	glm::vec3 clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx,
-						const glm::vec3 &worldPosition, const glm::vec3 &delta, const glm::mat3 &cameraOrientation);
+						const glm::vec3 &worldPosition, const glm::vec3 &delta,
+						const glm::mat3 &cameraOrientation) const;
 
 	const glm::vec3 &boxSize() const {
 		return _boxSize;

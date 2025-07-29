@@ -21,7 +21,7 @@ namespace scenegraph {
  */
 glm::vec3 Clipper::clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx,
 							 const glm::vec3 &worldPosition, const glm::vec3 &delta,
-							 const glm::mat3 &cameraOrientation) {
+							 const glm::mat3 &cameraOrientation) const {
 	if (glm::all(glm::epsilonEqual(delta, glm::zero<glm::vec3>(), 0.0001f))) {
 		return delta;
 	}

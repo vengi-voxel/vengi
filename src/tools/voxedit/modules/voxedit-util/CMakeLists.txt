@@ -25,6 +25,7 @@ set(SRCS
 
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
+	CameraMovement.h CameraMovement.cpp
 	Config.h
 
 	LUAApiListener.h LUAApiListener.cpp

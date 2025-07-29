@@ -1593,10 +1593,9 @@ void SceneManager::construct() {
 	_modifierFacade.construct();
 	_mementoHandler.construct();
 	_sceneRenderer->construct();
-	_movement.construct();
+	_camMovement.construct();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
-	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"));
 	_maxSuggestedVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize);
 
@@ -2396,7 +2395,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
-	if (!_movement.init()) {
+	if (!_camMovement.init()) {
 		Log::error("Failed to initialize the movement controller");
 		return false;
 	}
@@ -2484,15 +2483,7 @@ void SceneManager::animate(double nowSeconds) {
 }
 
 void SceneManager::zoom(video::Camera& camera, float level) const {
-	if (camera.rotationType() == video::CameraRotationType::Target) {
-		camera.zoom(level);
-	} else {
-		// see Movement class
-		const glm::quat& rot = glm::angleAxis(0.0f, glm::up());
-		float speed = level * _movementSpeed->floatVal();
-		speed *= (float)deltaSeconds();
-		camera.move(rot * glm::vec3(0.0f, 0.0f, speed));
-	}
+	_camMovement.zoom(camera, level, deltaSeconds());
 }
 
 bool SceneManager::isLoading() const {
@@ -2519,7 +2510,6 @@ bool SceneManager::update(double nowSeconds) {
 		_maxSuggestedVolumeSize->markClean();
 	}
 
-	_movement.update(nowSeconds);
 	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);
 	if (state == voxelgenerator::ScriptState::Error) {
 		_sceneGraph.unregisterListener(&_luaApiListener);
@@ -2539,26 +2529,7 @@ bool SceneManager::update(double nowSeconds) {
 		_mementoHandler.endGroup();
 	}
 	video::Camera *camera = activeCamera();
-	if (camera != nullptr) {
-		if (camera->rotationType() == video::CameraRotationType::Eye) {
-			glm::vec3 moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
-			if (_enableClipping) {
-				scenegraph::FrameIndex frameIdx = _currentFrameIdx;
-				const glm::vec3 &camPos = camera->worldPosition();
-				const glm::mat4 &orientation = camera->orientation();
-				if (_enableGravity) {
-					if (camera->worldPosition().y > _sceneGraph.region().getLowerY()) {
-						const glm::vec3 gravity{0.0f, -9.81f * (float)deltaSeconds(), 0.0f};
-						const glm::vec3 gravityDelta = orientation * glm::vec4(gravity, 0.0f);
-						moveDelta += gravityDelta;
-					}
-				}
-				moveDelta = _clipper.clipDelta(_sceneGraph, frameIdx, camPos, moveDelta, orientation);
-			}
-			camera->move(moveDelta);
-		}
-	}
-
+	_camMovement.update(_nowSeconds, camera, _sceneGraph, _enableClipping, _enableGravity, currentFrame());
 	_modifierFacade.update(nowSeconds, camera);
 
 	updateDirtyRendererStates();
@@ -2612,7 +2583,7 @@ void SceneManager::shutdown() {
 	}
 	_sceneGraph.clear();
 
-	_movement.shutdown();
+	_camMovement.shutdown();
 	_modifierFacade.shutdown();
 	_mementoHandler.shutdown();
 

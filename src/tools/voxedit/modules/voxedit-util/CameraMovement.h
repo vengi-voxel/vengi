@@ -1,0 +1,33 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#include "core/IComponent.h"
+#include "core/Var.h"
+#include "scenegraph/Clipper.h"
+#include "scenegraph/SceneGraph.h"
+#include "util/Movement.h"
+#include "video/Camera.h"
+
+namespace voxedit {
+
+class CameraMovement : public core::IComponent {
+private:
+	core::VarPtr _movementSpeed;
+	scenegraph::Clipper _clipper;
+	util::Movement _movement;
+	void moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, bool clipping,
+							 bool gravity, scenegraph::FrameIndex frameIdx) const;
+
+public:
+	void construct() override;
+	bool init() override;
+	void shutdown() override;
+	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, bool clipping,
+				bool gravity, scenegraph::FrameIndex frameIdx);
+	void zoom(video::Camera &camera, float level, double deltaSeconds) const;
+};
+
+} // namespace voxedit
