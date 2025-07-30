@@ -2335,6 +2335,32 @@ void SceneManager::construct() {
 			nodeUnreference(*node);
 		}
 	}).setHelp(_("Unreference from model and allow to edit the voxels for this node"));
+
+	command::Command::registerCommand("cam_activate", [&] (const command::CmdArgs& args) {
+		video::Camera *camera = activeCamera();
+		if (camera == nullptr) {
+			Log::error("No active camera found");
+			return;
+		}
+		const scenegraph::SceneGraphNodeCamera *cameraNode;
+		if (args.empty()) {
+			cameraNode = _sceneGraph.activeCameraNode();
+		} else {
+			const int nodeId = core::string::toInt(args[0]);
+			const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+			if (!node.isCameraNode()) {
+				Log::error("The node %i (%s) is not a camera node", nodeId, node.name().c_str());
+				return;
+			}
+			cameraNode = &scenegraph::toCameraNode(node);
+		}
+		if (cameraNode == nullptr) {
+			Log::error("No active camera node found");
+			return;
+		}
+		video::Camera nodeCamera = voxelrender::toCamera(camera->size(), *cameraNode);
+		camera->lerp(nodeCamera);
+	}).setHelp(_("Interpolate to the camera node position and orientation"));
 }
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
@@ -3587,16 +3613,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 		return true;
 	}
 	Log::debug("Activate node %i", nodeId);
-	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
-		video::Camera *camera = activeCamera();
-		if (camera == nullptr) {
-			return false;
-		}
-		const scenegraph::SceneGraphNodeCamera& cameraNode = scenegraph::toCameraNode(node);
-		video::Camera nodeCamera = voxelrender::toCamera(camera->size(), cameraNode);
-		camera->lerp(nodeCamera);
-	}
+	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	// a node switch will disable the locked axis as the positions might have changed anyway
 	modifier().setLockedAxis(math::Axis::X | math::Axis::Y | math::Axis::Z, true);
 	_sceneGraph.setActiveNode(nodeId);

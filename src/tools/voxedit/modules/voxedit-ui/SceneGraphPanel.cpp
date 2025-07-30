@@ -63,6 +63,8 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 			commandNodeMenu(ICON_LC_SAVE, _("Save"), "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			ImGui::CommandIconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model"), "modelunref", true, &listener);
+		} else if (nodeType == scenegraph::SceneGraphNodeType::Camera) {
+			commandNodeMenu(ICON_LC_CAMERA, _("Use this camera"), "cam_activate", nodeId, true, &listener);
 		}
 		ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save all"), "modelssave", validModels > 1, &listener);
 
