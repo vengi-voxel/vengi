@@ -2353,11 +2353,16 @@ int SceneManager::addPointChild(const core::String& name, const glm::ivec3& posi
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(position);
 	transform.setWorldOrientation(orientation);
+	// TODO: SCENEGRAPH: setting the world translation and orientation here is maybe bugged due to https://github.com/vengi-voxel/vengi/issues/494
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	newNode.setTransform(keyFrameIdx, transform);
 	newNode.setName(name);
 	const int parentId = activeNode();
 	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
+	if (nodeId == InvalidNodeId) {
+		Log::error("Failed to add point child node '%s' at position %i:%i:%i", name.c_str(), position.x, position.y, position.z);
+		return InvalidNodeId;
+	}
 	return nodeId;
 }
 
