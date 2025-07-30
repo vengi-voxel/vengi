@@ -29,6 +29,10 @@ public:
 	double deltaSeconds() const {
 		return _deltaSeconds;
 	}
+
+	double nowSeconds() const {
+		return _nowSeconds;
+	}
 };
 
 } // namespace core
