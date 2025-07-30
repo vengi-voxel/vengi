@@ -63,12 +63,12 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 
 void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
 									  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
-									  const scenegraph::SceneGraphNode &modelNode) {
-	const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
+									  const scenegraph::SceneGraphNode &node) {
+	const core::String &label = core::String::format("%s###node-%i", node.name().c_str(), node.id());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
-		for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
+		for (scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
 			int32_t oldFrameIdx = kf.frameIdx;
 			ImGui::NeoKeyframe(&kf.frameIdx);
 			if (kf.frameIdx < 0) {
@@ -85,15 +85,15 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 				ImGui::EndTooltip();
 			}
 		}
-		if (activeNode != _lastActivedNodeId && modelNode.id() == activeNode) {
+		if (activeNode != _lastActivedNodeId && node.id() == activeNode) {
 			// TODO: UI: doesn't work - see issue https://github.com/vengi-voxel/vengi/issues/437
 			ImGui::SetScrollHereY();
 			_lastActivedNodeId = activeNode;
 		}
 		if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
-			_sceneMgr->nodeActivate(modelNode.id());
-			_lastActivedNodeId = modelNode.id();
-		} else if (activeNode == modelNode.id()) {
+			_sceneMgr->nodeActivate(node.id());
+			_lastActivedNodeId = node.id();
+		} else if (activeNode == node.id()) {
 			ImGui::SetSelectedTimeline(label.c_str());
 		}
 		uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
@@ -102,7 +102,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			selectedFrames.resize(selectionCount);
 			ImGui::GetNeoKeyframeSelection(selectedFrames.data());
 			for (uint32_t i = 0; i < selectionCount; ++i) {
-				selectionBuffer.push_back(Selection{selectedFrames[i], modelNode.id()});
+				selectionBuffer.push_back(Selection{selectedFrames[i], node.id()});
 			}
 		}
 		ImGui::EndNeoTimeLine();
@@ -133,7 +133,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
-			if (!node.isAnyModelNode()) {
+			if (!node.isAnyModelNode() && !node.isCameraNode() && !node.isPointNode()) {
 				continue;
 			}
 			timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);

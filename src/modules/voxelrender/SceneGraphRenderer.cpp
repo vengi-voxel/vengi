@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "voxel/RawVolume.h"
@@ -68,7 +69,8 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 	camera.lookAt(center);
 }
 
-video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode) {
+static video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode,
+							  const glm::vec3 &worldPos, const glm::quat &orientation) {
 	video::Camera camera;
 	// width, height and aspect of the cameraNode are not taken into account here
 	camera.setSize(glm::max(glm::ivec2(1, 1), size));
@@ -83,16 +85,25 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 		camera.setFarPlane(fplane);
 		camera.setNearPlane(nplane);
 	}
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	const scenegraph::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
-	camera.setWorldPosition(transform.worldTranslation());
-	camera.setOrientation(transform.worldOrientation());
+	camera.setWorldPosition(worldPos);
+	camera.setOrientation(orientation);
 	const int fovDegree = cameraNode.fieldOfView();
 	if (fovDegree > 0) {
 		camera.setFieldOfView((float)fovDegree);
 	}
 	camera.update(0.0);
 	return camera;
+}
+
+video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNodeCamera &cameraNode, scenegraph::FrameIndex frameIdx) {
+	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(cameraNode, frameIdx);
+	return toCamera(size, cameraNode, transform.translation(), glm::quat(transform.worldMatrix()));
+}
+
+video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode) {
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
+	return toCamera(size, cameraNode, transform.worldTranslation(), transform.worldOrientation());
 }
 
 SceneGraphRenderer::SceneGraphRenderer() {
@@ -233,7 +244,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				continue;
 			}
 			const glm::ivec2 size(cameraNode.width(), cameraNode.height());
-			_cameras.emplace_back(toCamera(size, cameraNode));
+			_cameras.emplace_back(toCamera(size, sceneGraph, cameraNode, frame));
 			continue;
 		} else if (!node.isModelNode()) {
 			continue;
