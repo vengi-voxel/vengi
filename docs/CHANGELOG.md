@@ -14,6 +14,11 @@ General:
 
    - Added missing ascii `fbx` header
 
+VoxEdit:
+
+   - Allow to animate point and camera nodes, too
+   - Allow to follow an animated camera to fly through a scene
+
 VoxConvert:
 
    - Transfer existing thumbnails between formats (if supported)

@@ -84,6 +84,7 @@ bool Viewport::init() {
 	_autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
+	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -314,6 +315,9 @@ void Viewport::renderViewport() {
 	ImVec2 cursorPos = ImGui::GetCursorPos();
 	const float headerSize = cursorPos.y;
 	if (setupFrameBuffer(contentSize)) {
+		if (_animationPlaying->boolVal() && _sceneMgr->activeCameraNode()) {
+			_camera = voxelrender::toCamera(_camera.size(), _sceneMgr->sceneGraph(), *_sceneMgr->activeCameraNode(), _sceneMgr->currentFrame());
+		}
 		_camera.update(_app->deltaFrameSeconds());
 
 		renderToFrameBuffer();

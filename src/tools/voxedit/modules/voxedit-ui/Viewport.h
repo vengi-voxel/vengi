@@ -102,6 +102,7 @@ private:
 	core::VarPtr _autoKeyFrame;
 	core::VarPtr _localSpace;
 	core::VarPtr _renderNormals;
+	core::VarPtr _animationPlaying;
 
 	bool wantGizmo() const;
 	/**
