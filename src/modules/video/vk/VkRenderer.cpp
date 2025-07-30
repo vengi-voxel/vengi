@@ -408,6 +408,9 @@ bool bindImage(Id handle, AccessMode mode, ImageFormat format) {
 	return false;
 }
 
+void waitShader(MemoryBarrierType wait) {
+}
+
 bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
 	return false;
 }

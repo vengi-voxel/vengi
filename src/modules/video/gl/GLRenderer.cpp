@@ -1710,6 +1710,17 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	return true;
 }
 
+void waitShader(MemoryBarrierType wait) {
+	video_trace_scoped(WaitShader);
+	if (wait == MemoryBarrierType::None || glMemoryBarrier == nullptr) {
+		return;
+	}
+	const GLenum glBarrier = _priv::MemoryBarrierTypes[core::enumVal(wait)];
+	core_assert(glMemoryBarrier != nullptr);
+	glMemoryBarrier(glBarrier);
+	video::checkError();
+}
+
 bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
 	video_trace_scoped(RunShader);
 	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
@@ -1729,11 +1740,7 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	core_assert(glDispatchCompute != nullptr);
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
 	video::checkError();
-	if (wait != MemoryBarrierType::None && glMemoryBarrier != nullptr) {
-		core_assert(glMemoryBarrier != nullptr);
-		glMemoryBarrier(_priv::MemoryBarrierTypes[core::enumVal(wait)]);
-		video::checkError();
-	}
+	waitShader(wait);
 	return false;
 }
 

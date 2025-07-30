@@ -160,6 +160,10 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name);
  */
 bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
 /**
+ * @brief Wait for the execution of a compute shader
+ */
+void waitShader(MemoryBarrierType wait);
+/**
  * @brief Fetch all uniforms in a shader
  */
 int fetchUniforms(Id program, ShaderUniforms &uniforms, const core::String &name = "unknown-shader");
