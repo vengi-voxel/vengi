@@ -273,8 +273,16 @@ public:
 	core::String getSuggestedFilename(const core::String &extension = "") const;
 	const voxel::Voxel &hitCursorVoxel() const;
 
+	/**
+	 * @brief The cursor position is in model space - it's a coordinate in the volume, not taking the transform into
+	 * account (but the region)
+	 */
 	const glm::ivec3 &cursorPosition() const;
 
+	/**
+	 * @brief The reference position is in model space - it's a coordinate in the volume, not taking the transform into
+	 * account (but the region)
+	 */
 	const glm::ivec3 &referencePosition() const;
 
 	void modified(int nodeId, const voxel::Region &modifiedRegion, SceneModifiedFlags flags = SceneModifiedFlags::All,
