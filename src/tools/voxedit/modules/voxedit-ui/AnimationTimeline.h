@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "core/SharedPtr.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -23,7 +24,7 @@ class AnimationTimeline : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
-	bool _play = false;
+	core::VarPtr _animationPlaying;
 	// modifications on the keyframes would result in incorrect selection in neo-sequencer - so let's ensure to reset
 	// the selection after a modification
 	bool _clearSelection = false;

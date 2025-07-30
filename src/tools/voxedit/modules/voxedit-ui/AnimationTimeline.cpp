@@ -9,22 +9,23 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
-	if (ImGui::DisabledIconButton(ICON_LC_PLUS, _("Add"), _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_PLUS, _("Add"), _animationPlaying->boolVal())) {
 		_sceneMgr->nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Add a new keyframe to the current active node"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_PLUS, _("Add all"), _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_PLUS, _("Add all"), _animationPlaying->boolVal())) {
 		_sceneMgr->nodeAllAddKeyFrames(currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Add a new keyframe to all nodes"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_MINUS, _("Delete"), _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_MINUS, _("Delete"), _animationPlaying->boolVal())) {
 		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Delete the current keyframe of the active nodes"));
@@ -36,13 +37,13 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	ImGui::TooltipTextUnformatted(_("Crop frames"));
 	ImGui::SameLine();
 
-	if (_play) {
+	if (_animationPlaying->boolVal()) {
 		if (ImGui::Button(ICON_LC_CIRCLE_STOP)) {
-			_play = false;
+			_animationPlaying->setVal(false);
 		}
 	} else {
 		if (ImGui::DisabledButton(ICON_LC_PLAY, maxFrame <= 0)) {
-			_play = true;
+			_animationPlaying->setVal(true);
 			_frameTimeSeconds = 0.0;
 			if (!_loop && currentFrame >= maxFrame) {
 				_sceneMgr->setCurrentFrame(0);
@@ -112,6 +113,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 bool AnimationTimeline::init() {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	_lastActivedNodeId = sceneGraph.activeNode();
+	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
 	return true;
 }
 
@@ -198,10 +200,10 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 		_endFrame = core_max(64, maxFrame + 1);
 	}
 
-	if (_play) {
+	if (_animationPlaying->boolVal()) {
 		_frameTimeSeconds += deltaFrameSeconds;
 		if (maxFrame <= 0) {
-			_play = false;
+			_animationPlaying->setVal(false);
 		} else {
 			const double targetFrameDuration = 1.0 / _fps;
 			if (_frameTimeSeconds > targetFrameDuration) {
@@ -211,10 +213,10 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 						currentFrame = 0;
 					} else {
 						currentFrame = maxFrame;
-						_play = false;
+						_animationPlaying->setVal(false);
 					}
 				}
-				if (_play) {
+				if (_animationPlaying->boolVal()) {
 					_sceneMgr->setCurrentFrame(currentFrame);
 					_frameTimeSeconds -= targetFrameDuration;
 				} else {

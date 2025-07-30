@@ -1599,8 +1599,9 @@ void SceneManager::construct() {
 	_sceneRenderer->construct();
 	_camMovement.construct();
 
+	core::Var::get(cfg::VoxEditAnimationPlaying, "false", core::CV_NOPERSIST, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
-	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"));
+	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
 	_maxSuggestedVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize);
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
