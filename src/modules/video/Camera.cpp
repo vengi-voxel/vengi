@@ -351,25 +351,29 @@ void Camera::zoom(float value) {
 	*target = glm::clamp(*target, minZoom, maxZoom);
 }
 
+void Camera::updateLerp(double deltaFrameSeconds) {
+	_lerpTarget.seconds += deltaFrameSeconds;
+	const float t = glm::clamp(0.0, 1.0, _lerpTarget.seconds);
+	_quat = glm::mix(_lerpTarget.fromQuat, _lerpTarget.quat, t);
+	_dirty |= DIRTY_ORIENTATION;
+	if (_lerpTarget.rotationType == CameraRotationType::Target) {
+		_target = glm::mix(_lerpTarget.fromTarget, _lerpTarget.target, t);
+		_distance = glm::mix(_lerpTarget.fromDistance, _lerpTarget.distance, t);
+		_dirty |= DIRTY_TARGET;
+	} else {
+		_worldPos = glm::mix(_lerpTarget.fromWorldPos, _lerpTarget.worldPos, t);
+	}
+	_panOffset = glm::mix(_lerpTarget.fromPanOffset, _lerpTarget.panOffset, t);
+	_dirty |= DIRTY_POSITION;
+	if (_lerpTarget.seconds > 1.0) {
+		_lerp = false;
+	}
+}
+
 void Camera::update(double deltaFrameSeconds) {
 	if (deltaFrameSeconds > 0.0) {
 		if (_lerp) {
-			_lerpTarget.seconds += deltaFrameSeconds;
-			const float t = glm::clamp(0.0, 1.0, _lerpTarget.seconds);
-			_quat = glm::mix(_lerpTarget.fromQuat, _lerpTarget.quat, t);
-			_dirty |= DIRTY_ORIENTATION;
-			if (_lerpTarget.rotationType == CameraRotationType::Target) {
-				_target = glm::mix(_lerpTarget.fromTarget, _lerpTarget.target, t);
-				_distance = glm::mix(_lerpTarget.fromDistance, _lerpTarget.distance, t);
-				_dirty |= DIRTY_TARGET;
-			} else {
-				_worldPos = glm::mix(_lerpTarget.fromWorldPos, _lerpTarget.worldPos, t);
-			}
-			_panOffset = glm::mix(_lerpTarget.fromPanOffset, _lerpTarget.panOffset, t);
-			_dirty |= DIRTY_POSITION;
-			if (_lerpTarget.seconds > 1.0) {
-				_lerp = false;
-			}
+			updateLerp(deltaFrameSeconds);
 		} else {
 			rotate(_omega * (float)deltaFrameSeconds);
 		}

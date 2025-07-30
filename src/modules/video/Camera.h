@@ -118,6 +118,7 @@ protected:
 	void updateOrientation();
 	void updateProjectionMatrix();
 	void updateTarget();
+	void updateLerp(double deltaFrameSeconds);
 
 	math::Frustum _frustum;
 public:
@@ -179,8 +180,9 @@ public:
 	 * @sa eye()
 	 * @note Does not include panning offset
 	 */
-	const glm::vec3& worldPosition() const;
-	void setWorldPosition(const glm::vec3& worldPos);
+	const glm::vec3 &worldPosition() const;
+	const glm::vec3 &panOffset() const;
+	void setWorldPosition(const glm::vec3 &worldPos);
 	bool move(const glm::vec3& delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
@@ -403,6 +405,10 @@ inline void Camera::setFieldOfView(float angles) {
 
 inline const glm::vec3& Camera::worldPosition() const {
 	return _worldPos;
+}
+
+inline const glm::vec3& Camera::panOffset() const {
+	return _panOffset;
 }
 
 inline void Camera::setTargetDistance(float distance) {
