@@ -34,6 +34,9 @@ enum class SelectionState {
 
 struct ImGuiNeoSequencerInternalData {
 	~ImGuiNeoSequencerInternalData() {
+		for (ImGuiNeoTimelineKeyframes &keyframes : SelectionData) {
+			keyframes.KeyframesToDelete.clear();
+		}
 		SelectionData.clear_destruct();
 	}
 	ImVec2 TopLeftCursor = {0, 0};	   // Cursor on top of whole widget
