@@ -244,7 +244,10 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				continue;
 			}
 			const glm::ivec2 size(cameraNode.width(), cameraNode.height());
+			// TODO: we need the node id here, to colorize the camera frustum rendering according to the node color
 			_cameras.emplace_back(toCamera(size, sceneGraph, cameraNode, frame));
+			// TODO: see https://github.com/vengi-voxel/vengi/issues/254 - if the node is the current active node, we
+			// should lerp to the camera
 			continue;
 		} else if (!node.isModelNode()) {
 			continue;
