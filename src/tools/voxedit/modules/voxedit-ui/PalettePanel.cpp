@@ -378,7 +378,16 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::CommandIconMenuItem(ICON_LC_RULER_DIMENSION_LINE, _("Contrast stretching"), "palette_contraststretching", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCALE, _("White balancing"), "palette_whitebalancing", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_REPLACE_ALL, _("Apply to all nodes"), "palette_applyall", true, &listener);
+			if (ImGui::BeginIconMenu(ICON_LC_LIGHTBULB, _("Intensity"))) {
+				ImGui::SliderFloat("##intensity", &_intensityChange, -1.0f, 1.0f);
+				const core::String &paletteChangeCmd = core::String::format("palette_changeintensity %f", _intensityChange);
+				if (ImGui::CommandMenuItem(_("Apply"), paletteChangeCmd.c_str(), true, &listener)) {
+					_intensityChange = 0.0f;
+				}
+				ImGui::EndMenu();
+			}
 			// TODO: add color quantisation to parts of the palette
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
@@ -391,13 +400,6 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 }
 
 void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	ImGui::SliderFloat(ICON_LC_SLIDERS_HORIZONTAL, &_intensityChange, -1.0f, 1.0f);
-	ImGui::SameLine();
-	const core::String &paletteChangeCmd = core::String::format("palette_changeintensity %f", _intensityChange);
-	if (ImGui::CommandButton(_("Apply"), paletteChangeCmd.c_str(), nullptr, ImVec2(0.0f, 0.0f), &listener)) {
-		_intensityChange = 0.0f;
-	}
-
 	palette::Palette &palette = node.palette();
 	if (ImGui::ColorEdit4(_("Color closest match"), glm::value_ptr(_closestColor),
 						  ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs)) {
