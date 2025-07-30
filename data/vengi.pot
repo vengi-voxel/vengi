@@ -238,9 +238,6 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-msgid "Cancel"
-msgstr ""
-
 msgid "Error: You must select a folder!"
 msgstr ""
 
@@ -393,6 +390,9 @@ msgid "Y"
 msgstr ""
 
 msgid "Z"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "Ok"
@@ -1065,7 +1065,7 @@ msgstr ""
 msgid "Add all"
 msgstr ""
 
-msgid "Add a new keyframe to all model nodes"
+msgid "Add a new keyframe to all nodes"
 msgstr ""
 
 msgid "Delete the current keyframe of the active nodes"
@@ -1141,15 +1141,6 @@ msgid "Replace all voxels in the stamp with the selected color"
 msgstr ""
 
 msgid "Rotate on axis"
-msgstr ""
-
-msgid "Rotate by 90 degree on the x axis"
-msgstr ""
-
-msgid "Rotate by 90 degree on the y axis"
-msgstr ""
-
-msgid "Rotate by 90 degree on the z axis"
 msgstr ""
 
 msgid "Reduce size"
@@ -1228,15 +1219,6 @@ msgid "Horizontal spacing"
 msgstr ""
 
 msgid "Thickness"
-msgstr ""
-
-msgid "Print text along the x axis"
-msgstr ""
-
-msgid "Print text along the y axis"
-msgstr ""
-
-msgid "Print text along the z axis"
 msgstr ""
 
 msgid "Font"
@@ -1902,6 +1884,9 @@ msgstr ""
 msgid "Apply to all nodes"
 msgstr ""
 
+msgid "Intensity"
+msgstr ""
+
 msgid "Color closest match"
 msgstr ""
 
@@ -2238,8 +2223,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."
@@ -2280,6 +2265,15 @@ msgid ""
 msgstr ""
 
 msgid "Action"
+msgstr ""
+
+msgid "Rotate by 90 degree on the x axis"
+msgstr ""
+
+msgid "Rotate by 90 degree on the y axis"
+msgstr ""
+
+msgid "Rotate by 90 degree on the z axis"
 msgstr ""
 
 msgid "Flip on axis"
@@ -2525,6 +2519,12 @@ msgid "Reference Point"
 msgstr ""
 
 msgid "Camera movement"
+msgstr ""
+
+msgid "Clipping"
+msgstr ""
+
+msgid "Gravity"
 msgstr ""
 
 msgid "Reset camera"
@@ -2883,7 +2883,7 @@ msgstr ""
 msgid "Toggle continuously placing the stamp voxels"
 msgstr ""
 
-msgid "Rotate stamp volume around the given axis"
+msgid "Rotate stamp volume around the given axis by 90 degrees"
 msgstr ""
 
 msgid "Use the current selection as new stamp"
