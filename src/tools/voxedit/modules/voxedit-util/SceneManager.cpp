@@ -3624,16 +3624,19 @@ bool SceneManager::nodeActivate(int nodeId) {
 			break;
 		}
 	}
-	const voxel::Region& region = node.region();
-	_dirtyRenderer |= DirtyRendererGridRenderer;
-	if (!region.containsPoint(referencePosition())) {
-		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
-		setReferencePosition(glm::ivec3(pivot));
+
+	if (node.isModelNode()) {
+		const voxel::Region& region = node.region();
+		_dirtyRenderer |= DirtyRendererGridRenderer;
+		if (!region.containsPoint(referencePosition())) {
+			const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
+			setReferencePosition(glm::ivec3(pivot));
+		}
+		if (!region.containsPoint(cursorPosition())) {
+			setCursorPosition(region.getCenter(), voxel::FaceNames::Max);
+		}
+		resetLastTrace();
 	}
-	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(node.region().getCenter(), voxel::FaceNames::Max);
-	}
-	resetLastTrace();
 	return true;
 }
 
