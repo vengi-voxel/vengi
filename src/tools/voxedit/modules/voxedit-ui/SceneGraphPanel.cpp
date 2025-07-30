@@ -86,18 +86,22 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 	}
 }
 
+// see filterTypes array
 bool SceneGraphPanel::isFiltered(const scenegraph::SceneGraphNode &node) const {
 	if (_filterType != 0) {
 		if (_filterType == 1 && !node.isModelNode()) {
 			return true;
 		}
-		if (_filterType == 2 && node.type() != scenegraph::SceneGraphNodeType::Group) {
+		if (_filterType == 2 && !node.isGroupNode()) {
 			return true;
 		}
-		if (_filterType == 3 && node.type() != scenegraph::SceneGraphNodeType::Camera) {
+		if (_filterType == 3 && !node.isCameraNode()) {
 			return true;
 		}
 		if (_filterType == 4 && !node.isReferenceNode()) {
+			return true;
+		}
+		if (_filterType == 5 && !node.isPointNode()) {
 			return true;
 		}
 	}
@@ -333,7 +337,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			ImGui::SetNextItemWidth(ImGui::CalcTextWidth("#") * 12.0f);
 			ImGui::InputText(_("Filter"), &_filterName);
 			ImGui::SameLine();
-			const char *filterTypes[] = {_("All"), _("Models"), _("Groups"), _("Cameras"), _("References")};
+			const char *filterTypes[] = {_("All"), _("Models"), _("Groups"), _("Cameras"), _("References"), _("Points")};
+			static_assert(lengthof(filterTypes) == 6, "Filter types array size mismatch - see SceneGraphPanel::isFiltered");
 			const float modeMaxWidth = ImGui::CalcComboWidth(filterTypes[_filterType]);
 			ImGui::SetNextItemWidth(modeMaxWidth);
 			if (ImGui::BeginCombo("##filtertype", filterTypes[_filterType])) {
