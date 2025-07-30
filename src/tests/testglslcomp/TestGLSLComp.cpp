@@ -7,6 +7,7 @@
 #include "video/Camera.h"
 #include "video/ScopedViewPort.h"
 #include "core/Log.h"
+#include "video/Types.h"
 
 TestGLSLComp::TestGLSLComp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -57,7 +58,7 @@ app::AppState TestGLSLComp::onCleanup() {
 
 void TestGLSLComp::doRender() {
 	_testShader.activate();
-	_testShader.run(glm::uvec3(_texture->width(), _texture->height(), 1), true);
+	_testShader.run(glm::uvec3(_texture->width(), _texture->height(), 1), video::MemoryBarrierType::ShaderImageAccess);
 
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);

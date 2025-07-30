@@ -286,6 +286,14 @@ enum class FrameBufferAttachment {
 	Max
 };
 
+enum class MemoryBarrierType {
+	None,
+	ShaderImageAccess,
+	All,
+
+	Max
+};
+
 enum class ShaderType {
 	Vertex,
 	Fragment,

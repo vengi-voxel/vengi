@@ -158,7 +158,7 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name);
 /**
  * @brief Execute a compute shader
  */
-bool runShader(Id program, const glm::uvec3 &workGroups, bool wait = false);
+bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
 /**
  * @brief Fetch all uniforms in a shader
  */

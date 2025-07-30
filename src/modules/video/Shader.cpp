@@ -516,7 +516,7 @@ bool Shader::createProgramFromShaders() {
 	return video::linkShader(_program, vert, frag, geom, _name);
 }
 
-bool Shader::run(const glm::uvec3& workGroups, bool wait) {
+bool Shader::run(const glm::uvec3& workGroups, MemoryBarrierType wait) {
 	const Id comp = getShader(ShaderType::Compute);
 	if (comp == InvalidId) {
 		return false;

@@ -58,6 +58,13 @@ static const GLenum ShaderTypes[] {
 };
 static_assert(core::enumVal(ShaderType::Max) == lengthof(ShaderTypes), "Array sizes don't match Max");
 
+static const GLenum MemoryBarrierTypes[] {
+	0,
+	GL_SHADER_IMAGE_ACCESS_BARRIER_BIT,
+	GL_ALL_BARRIER_BITS
+};
+static_assert(core::enumVal(MemoryBarrierType::Max) == lengthof(MemoryBarrierTypes), "Array sizes don't match Max");
+
 static const GLenum StencilOps[] {
 	GL_KEEP,
 	GL_ZERO,
