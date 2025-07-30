@@ -2358,7 +2358,7 @@ void SceneManager::construct() {
 			Log::error("No active camera node found");
 			return;
 		}
-		video::Camera nodeCamera = voxelrender::toCamera(camera->size(), *cameraNode);
+		video::Camera nodeCamera = voxelrender::toCamera(_camera->size(), sceneGraph(), *cameraNode, currentFrame());
 		camera->lerp(nodeCamera);
 	}).setHelp(_("Interpolate to the camera node position and orientation"));
 }

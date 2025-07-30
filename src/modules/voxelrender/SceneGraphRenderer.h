@@ -23,6 +23,7 @@ namespace voxelrender {
  * @see voxelformat::toCameraNode()
  */
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
+video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNodeCamera &cameraNode, scenegraph::FrameIndex frameIdx);
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
 enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
 // I18N: These are not translated, because they are also the values of configuration variables
