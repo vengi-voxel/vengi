@@ -183,11 +183,11 @@ void String::resize(size_t bytes, char c) {
 		_data._size = bytes;
 	} else {
 		const size_t oldSize = _data._size;
-		_data._size = bytes;
 		for (size_t i = oldSize; i < bytes; ++i) {
 			_data._str[i] = c;
 		}
 		_data._str[bytes] = '\0';
+		updateSize();
 	}
 }
 

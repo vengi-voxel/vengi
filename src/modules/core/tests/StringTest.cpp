@@ -39,6 +39,11 @@ TEST_F(StringTest, testResize) {
 	EXPECT_EQ(256u, str.size());
 	EXPECT_EQ('a', str[0]);
 	EXPECT_EQ('a', str[255]);
+	str.resize(512);
+	EXPECT_EQ(256u, str.size());
+	EXPECT_EQ('a', str[0]);
+	EXPECT_EQ('a', str[255]);
+	EXPECT_EQ('\0', str[256]);
 	str.resize(0);
 	EXPECT_EQ(0u, str.size());
 	EXPECT_EQ("", str);
