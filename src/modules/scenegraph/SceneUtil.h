@@ -10,11 +10,11 @@
 
 namespace scenegraph {
 
-math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::vec3 &normalizedPivot,
+math::OBBF toOBB(bool sceneMode, const voxel::Region &region, const glm::vec3 &normalizedPivot,
 					   const scenegraph::FrameTransform &transform);
 math::AABB<float> toAABB(const voxel::Region &region);
-math::AABB<float> toAABB(const math::OBB<float> &obb);
+math::AABB<float> toAABB(const math::OBBF &obb);
 voxel::Region toRegion(const math::AABB<float> &aabb);
-voxel::Region toRegion(const math::OBB<float> &obb);
+voxel::Region toRegion(const math::OBBF &obb);
 
 } // namespace scenegraph

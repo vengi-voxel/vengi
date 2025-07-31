@@ -141,7 +141,7 @@ public:
 	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
 
 	void aabb(const glm::vec3& mins, const glm::vec3& maxs, float thickness = 1.0f);
-	void obb(const math::OBB<float>& obb);
+	void obb(const math::OBBF& obb);
 	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f, float thickness = 1.0f);
 	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f, float thickness = 1.0f);
 	/**

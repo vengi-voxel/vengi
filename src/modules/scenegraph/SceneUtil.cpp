@@ -6,7 +6,7 @@
 
 namespace scenegraph {
 
-voxel::Region toRegion(const math::OBB<float> &obb) {
+voxel::Region toRegion(const math::OBBF &obb) {
 	return toRegion(toAABB(obb));
 }
 
@@ -14,7 +14,7 @@ voxel::Region toRegion(const math::AABB<float> &aabb) {
 	return voxel::Region(glm::floor(aabb.getLowerCorner()), glm::ceil(aabb.getUpperCorner() - 1.0f));
 }
 
-math::AABB<float> toAABB(const math::OBB<float> &obb) {
+math::AABB<float> toAABB(const math::OBBF &obb) {
 	const glm::vec3 &origin = obb.origin();
 	const glm::mat3 &rotation = obb.rotation();
 	const glm::vec3 &extends = obb.extents();
@@ -43,7 +43,7 @@ math::AABB<float> toAABB(const voxel::Region &region) {
 	return math::AABB<float>(1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 }
 
-math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::vec3 &normalizedPivot,
+math::OBBF toOBB(bool sceneMode, const voxel::Region &region, const glm::vec3 &normalizedPivot,
 					   const scenegraph::FrameTransform &transform) {
 	core_assert(region.isValid());
 	if (sceneMode) {
@@ -51,9 +51,9 @@ math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::v
 		const glm::vec3 extents = calculateExtents(region.getDimensionsInVoxels());
 		const glm::vec3 center = calculateCenter(transform, pivot, region.calcCenterf());
 		const glm::mat3x3 &matrix = transform.worldMatrix();
-		return math::OBB<float>(center, extents, matrix);
+		return math::OBBF(center, extents, matrix);
 	}
-	return math::OBB<float>(glm::floor(region.getLowerCornerf()),
+	return math::OBBF(glm::floor(region.getLowerCornerf()),
 							glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
 }
 

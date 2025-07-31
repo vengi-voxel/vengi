@@ -185,7 +185,7 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 	}
 }
 
-void ShapeBuilder::obb(const math::OBB<float>& obb) {
+void ShapeBuilder::obb(const math::OBBF& obb) {
 	setPrimitive(Primitive::Lines);
 	reserve(8, 24);
 

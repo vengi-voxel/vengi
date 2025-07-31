@@ -110,4 +110,6 @@ public:
 	}
 };
 
+using OBBF = OBB<float>;
+
 } // namespace math

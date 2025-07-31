@@ -379,7 +379,7 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 	math::AABB<float> aabb;
 	if (node.isAnyModelNode()) {
 		const voxel::Region &nregion = resolveRegion(node);
-		const math::OBB<float> &obb = toOBB(true, nregion, node.pivot(), transform);
+		const math::OBBF &obb = toOBB(true, nregion, node.pivot(), transform);
 		aabb = toAABB(obb);
 	} else {
 		aabb = math::AABB<float>(transform.translation(), transform.translation() + 1.0f);
@@ -535,11 +535,15 @@ voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisibl
 	return r;
 }
 
-voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const {
-	const auto& transform = transformForFrame(node, keyFrameIdx);
+math::OBBF SceneGraph::sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	const auto& transform = transformForFrame(node, frameIdx);
 	const voxel::Region &region = resolveRegion(node);
-	const auto &obb = toOBB(true, region, node.pivot(), transform);
-	return toRegion(obb);
+	const math::OBBF &obb = toOBB(true, region, node.pivot(), transform);
+	return obb;
+}
+
+voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	return toRegion(sceneOBB(node, frameIdx));
 }
 
 void SceneGraph::fixErrors() {

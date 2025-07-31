@@ -14,6 +14,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "math/AABB.h"
+#include "math/OBB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -223,7 +224,8 @@ public:
 	 * @sa region()
 	 */
 	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0, bool onlyVisible = false) const;
-	voxel::Region sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx = 0) const;
+	voxel::Region sceneRegion(const SceneGraphNode &node, FrameIndex frameIdx = 0) const;
+	math::OBBF sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const;
 
 	class MergeResult {
 	private:
