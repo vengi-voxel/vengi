@@ -80,6 +80,10 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new point"))) {
 			scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
 			pointNode.setName("new point");
+			scenegraph::SceneGraphTransform transform;
+			transform.setLocalTranslation(_sceneMgr->referencePosition());
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			pointNode.setTransform(keyFrameIdx, transform);
 			_sceneMgr->moveNodeToSceneGraph(pointNode, nodeId);
 		}
 		ImGui::EndPopup();
