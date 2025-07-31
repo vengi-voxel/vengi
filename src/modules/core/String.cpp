@@ -176,8 +176,23 @@ void String::replaceAllChars(char in, char out) {
 	}
 }
 
+void String::resize(size_t bytes, char c) {
+	checkBufferSize(bytes + 1);
+	if (bytes <= _data._size) {
+		_data._str[bytes] = '\0';
+		_data._size = bytes;
+	} else {
+		const size_t oldSize = _data._size;
+		_data._size = bytes;
+		for (size_t i = oldSize; i < bytes; ++i) {
+			_data._str[i] = c;
+		}
+		_data._str[bytes] = '\0';
+	}
+}
+
 void String::reserve(size_t bytes) {
-	checkBufferSize(bytes);
+	checkBufferSize(bytes + 1);
 }
 
 void String::clear() {

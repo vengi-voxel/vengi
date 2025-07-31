@@ -42,6 +42,7 @@ public:
 	String(String &&str) noexcept;
 	~String();
 
+	void resize(size_t bytes, char c = '\0');
 	void reserve(size_t bytes);
 	void replaceAllChars(char in, char out);
 	String trim() const;

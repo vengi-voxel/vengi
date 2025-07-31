@@ -27,6 +27,26 @@ TEST_F(StringTest, testAppendWithLen) {
 	EXPECT_STREQ("abcdef", str.c_str());
 }
 
+TEST_F(StringTest, testResize) {
+	String str;
+	str.resize(6, 'a');
+	EXPECT_EQ("aaaaaa", str);
+	EXPECT_EQ(6u, str.size());
+	str.resize(3);
+	EXPECT_EQ("aaa", str);
+	EXPECT_EQ(3u, str.size());
+	str.resize(256, 'a');
+	EXPECT_EQ(256u, str.size());
+	EXPECT_EQ('a', str[0]);
+	EXPECT_EQ('a', str[255]);
+	str.resize(0);
+	EXPECT_EQ(0u, str.size());
+	EXPECT_EQ("", str);
+	str.resize(1, 'b');
+	EXPECT_EQ(1u, str.size());
+	EXPECT_EQ("b", str);
+}
+
 TEST_F(StringTest, testCopyCtor) {
 	const String str("/foo/bar");
 	const String str2(str);
