@@ -32,7 +32,7 @@ void StatusBar::update(const char *id, float height, const core::String &lastExe
 		ImGui::InputVarInt(_("Grid size"), cfg::VoxEditGridsize);
 		ImGui::SameLine();
 		if (lastExecutedCommand.empty()) {
-			ImGui::TextUnformatted(_("Command: -"));
+			ImGui::Text(_("Command: %s"), "-");
 		} else {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
 			const core::String& keybindingStr = app->getKeyBindingsString(lastExecutedCommand.c_str());

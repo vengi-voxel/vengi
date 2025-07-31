@@ -129,7 +129,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, _("Cut"), nullptr, false, _textEditor.HasSelection())) {
 					_textEditor.Cut();
 				}
-				if (ImGui::MenuItem(_("Delete"), nullptr, nullptr, _textEditor.HasSelection())) {
+				if (ImGui::IconMenuItem(ICON_LC_DELETE, _("Delete"), nullptr, false, _textEditor.HasSelection())) {
 					_textEditor.Delete();
 				}
 				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste"), nullptr, false,

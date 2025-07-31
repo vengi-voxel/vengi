@@ -2142,9 +2142,6 @@ msgstr ""
 msgid "Grid size"
 msgstr ""
 
-msgid "Command: -"
-msgstr ""
-
 #, c-format
 msgid "Command: %s"
 msgstr ""
