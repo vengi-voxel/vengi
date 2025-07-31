@@ -11,6 +11,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/VoxelVertex.h"
 
 namespace voxel {
 
@@ -215,7 +216,7 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 
 			const palette::Palette &pal = palette(resolveIdx(idx));
 			const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
-			voxel::ChunkMesh mesh(65536, 65536, true);
+			voxel::ChunkMesh mesh(262144, 524288, true);
 			voxel::SurfaceExtractionContext ctx = voxel::createContext(type, v, extractRegion.region, pal, mesh, mins);
 			voxel::extractSurface(ctx);
 			results[i] = {mins, idx, core::move(mesh)};

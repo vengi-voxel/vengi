@@ -78,7 +78,9 @@ private:
 	size_t _compressedIndexSize = 0u;
 	glm::ivec3 _offset{0};
 	glm::vec3 _lastCameraPos{0.0f};
-	bool _mayGetResized;
+	bool _mayGetResized; // just for development purposes
+	int _initialVertices;
+	int _initialIndices;
 };
 
 inline const uint8_t* Mesh::compressedIndices() const {

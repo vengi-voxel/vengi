@@ -17,7 +17,8 @@
 
 namespace voxel {
 
-Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGetResized) {
+Mesh::Mesh(int vertices, int indices, bool mayGetResized)
+	: _mayGetResized(mayGetResized), _initialVertices(vertices), _initialIndices(indices) {
 	if (vertices > 0) {
 		_vecVertices.reserve(vertices);
 	}
@@ -174,6 +175,10 @@ void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
 			(int)_vecIndices.size(), (int)_vecIndices.capacity());
 	}
 
+	if (_vecIndices.capacity() < _vecIndices.size() + 3) {
+		_vecIndices.reserve(_vecIndices.capacity() + _initialIndices);
+	}
+
 	_vecIndices.push_back(index0);
 	_vecIndices.push_back(index1);
 	_vecIndices.push_back(index2);
@@ -190,6 +195,9 @@ IndexType Mesh::addVertex(const VoxelVertex &vertex) {
 			(int)_vecVertices.size(), (int)_vecVertices.capacity());
 	}
 
+	if (_vecVertices.capacity() < _vecVertices.size() + 1) {
+		_vecVertices.reserve(_vecVertices.capacity() + _initialVertices);
+	}
 	_vecVertices.push_back(vertex);
 	return (IndexType)_vecVertices.size() - 1;
 }
