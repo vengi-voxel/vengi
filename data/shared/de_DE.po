@@ -2118,6 +2118,9 @@ msgstr "Referenz zentrieren"
 msgid "Convert to model"
 msgstr "In Modell umwandeln"
 
+msgid "Use this camera"
+msgstr "Benutze diese Kamera"
+
 msgid "Save all"
 msgstr "Alle speichern"
 
@@ -2164,6 +2167,9 @@ msgstr "Kameras"
 
 msgid "Groups"
 msgstr "Gruppen"
+
+msgid "Points"
+msgstr "Punkte"
 
 msgid "References"
 msgstr "Referenzknoten"
@@ -2270,6 +2276,11 @@ msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
 msgstr ""
 "Sie können die Kamera einfach durch Drücken von <cmd:resetcamera> "
 "zurücksetzen."
+
+msgid ""
+"You can animation a camera and then move around in the scene when hitting "
+"the play button in the animation timeline."
+msgstr ""
 
 msgid ""
 "The editor shows the last executed console command in the status bar. You "
@@ -2602,9 +2613,6 @@ msgstr "Perspektive"
 msgid "Lines"
 msgstr "Linien"
 
-msgid "Points"
-msgstr "Punkte"
-
 msgid "Solid"
 msgstr "Voll"
 
@@ -2676,15 +2684,15 @@ msgstr "Szenenmodus"
 msgid "Create a reference node"
 msgstr "Referenzknoten erstellen"
 
-msgid "Delay in second between autosaves - 0 disables autosaves"
-msgstr ""
-"Verzögerung in Sekunden zwischen den automatischen Speicherungen - 0 "
-"deaktiviert automatische Speicherungen"
-
 msgid "Update the children of a node when the transform of the node changes"
 msgstr ""
 "Aktualisiere die Kinder eines Knotens, wenn sich die Transformation des "
 "Knotens ändert"
+
+msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr ""
+"Verzögerung in Sekunden zwischen den automatischen Speicherungen - 0 "
+"deaktiviert automatische Speicherungen"
 
 msgid "Resize the volume to the current selection"
 msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
@@ -2958,6 +2966,9 @@ msgid "Unreference from model and allow to edit the voxels for this node"
 msgstr ""
 "Entfernt die Referenz zum Modell und ermöglicht das Bearbeiten der Voxel für "
 "diesen Knoten"
+
+msgid "Interpolate to the camera node position and orientation"
+msgstr ""
 
 msgid "Change the modifier type to 'select'"
 msgstr "Ändert den Modifier-Typ auf 'Auswählen'"
