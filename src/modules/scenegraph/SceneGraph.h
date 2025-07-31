@@ -46,7 +46,6 @@ protected:
 	core::String _activeAnimation;
 	mutable voxel::Region _region;
 	mutable bool _regionDirty = true;
-	mutable bool _invalidateFrameTransformCaches = false;
 	mutable FrameIndex _cachedMaxFrame = -1;
 	const core::String _emptyUUID;
 	core::Buffer<SceneGraphListener*> _listeners;
@@ -145,7 +144,6 @@ public:
 	 * keyframes.
 	 */
 	FrameTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
-	FrameTransform transformForFrame(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx) const;
 
 	/**
 	 * Calculate the region for the whole scene having the transform for the given frame applied

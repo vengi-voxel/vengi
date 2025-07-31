@@ -401,15 +401,6 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 }
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
-	return transformForFrame(node, _activeAnimation, frameIdx);
-}
-
-FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const core::String &animation,
-											 FrameIndex frameIdx) const {
-	if (_invalidateFrameTransformCaches) {
-		// TODO: PERF: cache this for node id and frameIdx
-		_invalidateFrameTransformCaches = false;
-	}
 	// TODO: SCENEGRAPH: ik solver https://github.com/vengi-voxel/vengi/issues/182
 	// and https://github.com/vengi-voxel/vengi/issues/265
 	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
@@ -418,7 +409,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 	if (node.parent() == InvalidNodeId) {
 		parentTransform.setWorldMatrix(glm::mat4(1.0f));
 	} else {
-		parentTransform = transformForFrame(this->node(node.parent()), animation, frameIdx);
+		parentTransform = transformForFrame(this->node(node.parent()), frameIdx);
 	}
 
 	FrameTransform transform;
@@ -462,7 +453,6 @@ void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 }
 
 void SceneGraph::updateTransforms() {
-	_invalidateFrameTransformCaches = true;
 	const core::String animId = _activeAnimation;
 	for (const core::String &animation : animations()) {
 		core_assert_always(setAnimation(animation));
