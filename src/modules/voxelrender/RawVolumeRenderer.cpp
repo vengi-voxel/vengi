@@ -6,6 +6,7 @@
 #include "ShaderAttribute.h"
 #include "VoxelShaderConstants.h"
 #include "app/App.h"
+#include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -647,13 +648,15 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	core_trace_scoped(RawVolumeRendererRender);
 
 	bool visible = false;
-	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-		updateCulling(meshState, idx, camera);
-		if (!isVisible(meshState, idx)) {
-			continue;
+	app::for_parallel(0, voxel::MAX_VOLUMES, [&](int start, int end) {
+		for (int idx = start; idx < end; ++idx) {
+			updateCulling(meshState, idx, camera);
+			if (!isVisible(meshState, idx)) {
+				continue;
+			}
+			visible = true;
 		}
-		visible = true;
-	}
+	});
 	if (!visible) {
 		return;
 	}
