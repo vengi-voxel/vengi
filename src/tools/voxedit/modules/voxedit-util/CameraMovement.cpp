@@ -9,9 +9,9 @@
 
 namespace voxedit {
 
-// TODO: add a player mode where you can jump - specify the height of the player, the jump height, the velocity, etc.
+// TODO: https://github.com/vengi-voxel/vengi/issues/634 add a player mode where you can
+//       jump - specify the height of the player, the jump height, the velocity, etc.
 //       it should be possible to walk a scene in a first person perspective
-// TODO: add camera waypoint mode: https://github.com/vengi-voxel/vengi/issues/254
 void CameraMovement::construct() {
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
 	_movement.construct();
