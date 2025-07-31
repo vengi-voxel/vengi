@@ -637,6 +637,7 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 				continue;
 			}
 			if (mesh->sort(camera.worldPosition())) {
+				// TODO: PERF: delay the update of the buffer and use app::for_parallel to sort all meshes in parallel
 				updateBufferForVolume(meshState, bufferIndex, voxel::MeshType_Transparency);
 			}
 		}
