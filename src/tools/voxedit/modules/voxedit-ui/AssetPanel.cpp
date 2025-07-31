@@ -57,7 +57,7 @@ void AssetPanel::update(const char *id, command::CommandExecutionListener &liste
 	const core::String title = makeTitle(ICON_LC_LIST, _("Assets"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(AssetPanel);
-		if (ImGui::BeginTabBar("##assetpaneltabs", ImGuiTabBarFlags_FittingPolicyResizeDown | ImGuiTabBarFlags_FittingPolicyScroll)) {
+		if (ImGui::BeginTabBar("##assetpaneltabs", ImGuiTabBarFlags_FittingPolicyShrink | ImGuiTabBarFlags_FittingPolicyScroll)) {
 			if (ImGui::BeginTabItem(_("Models"))) {
 				_collectionPanel.update();
 				ImGui::EndTabItem();
