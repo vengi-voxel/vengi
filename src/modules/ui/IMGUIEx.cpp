@@ -398,7 +398,9 @@ bool InputFloat(const char *label, float &v, const char *format, ImGuiInputTextF
 	if (ImGui::GetCurrentTable()) {
 		ImGui::TableNextColumn();
 		ImGui::SetNextItemWidth(-1);
-		ImGui::InputFloat(label, &v, 0.0f, 0.0f, format, flags);
+		ImGui::PushID(ImGui::GetCurrentTable()->CurrentRow);
+		ImGui::InputFloat("##input", &v, 0.0f, 0.0f, format, flags);
+		ImGui::PopID();
 		bool modified = ImGui::IsItemDeactivatedAfterEdit();
 		ImGui::TableNextColumn();
 		ImGui::TextUnformatted(label);
