@@ -22,6 +22,7 @@ void CameraPanel::addToolbar(command::CommandExecutionListener &listener, video:
 		scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 		_sceneMgr->moveNodeToSceneGraph(cameraNode);
 	});
+	toolbar.button(ICON_LC_EYE, "cam_activate", _sceneMgr->activeCameraNode() == nullptr);
 }
 
 void CameraPanel::update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener) {
