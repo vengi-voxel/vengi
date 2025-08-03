@@ -38,37 +38,50 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
 		SkipEmpty());
 
-	// TODO: PERF: use volume samplers
+	typename VOLUME::Sampler sampler(&volume);
+	sampler.setPosition(region.getLowerCorner());
 	for (int x = 0; x < width; ++x) {
+		typename VOLUME::Sampler sampler2 = sampler;
+		typename VOLUME::Sampler sampler3 = sampler;
+		sampler3.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int z = 1; z < depth - 1; ++z) {
-			const glm::ivec3 v1(x, 0, z);
-			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
+			sampler2.movePositiveZ();
+			sampler3.movePositiveZ();
+			const voxel::VoxelType m1 = sampler2.voxel().getMaterial();
 			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
+				const glm::ivec3 v1(x, 0, z);
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
-			const glm::ivec3 v2(x, height - 1, z);
-			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
+			const voxel::VoxelType m2 = sampler3.voxel().getMaterial();
 			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
+				const glm::ivec3 v2(x, height - 1, z);
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
 		}
+		sampler2 = sampler;
+		sampler3 = sampler;
+		sampler3.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int y = 0; y < height; ++y) {
-			const glm::ivec3 v1(x, y, 0);
-			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
+			const voxel::VoxelType m1 = sampler2.voxel().getMaterial();
 			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
+				const glm::ivec3 v1(x, y, 0);
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
-			const glm::ivec3 v2(x, y, depth - 1);
-			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
+			const voxel::VoxelType m2 = sampler3.voxel().getMaterial();
 			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
+				const glm::ivec3 v2(x, y, depth - 1);
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
+			sampler2.movePositiveY();
+			sampler3.movePositiveY();
 		}
+		sampler.movePositiveX();
 	}
+	// TODO: PERF: use volume samplers
 	for (int y = 1; y < height - 1; ++y) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(0, y, z);
