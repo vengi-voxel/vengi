@@ -16,6 +16,7 @@ set(SRCS
 	collection/Functions.h
 	collection/List.h
 	collection/Map.h collection/Map.cpp
+	collection/ParallelMap.h
 	collection/Set.h
 	collection/Stack.h
 	collection/StringMap.h

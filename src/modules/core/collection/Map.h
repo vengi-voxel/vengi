@@ -69,9 +69,10 @@ public:
 		const KEYTYPE &first;
 		const VALUETYPE &second;
 	};
-private:
+protected:
 	core::PoolAllocator<KeyValue, uint32_t> _allocator;
-	core::Array<KeyValue *, BUCKETSIZE> _buckets;
+	using Buckets = core::Array<KeyValue *, BUCKETSIZE>;
+	Buckets _buckets;
 	HASHER _hasher;
 public:
 	Map(std::initializer_list<KeyValue> other, int maxSize = 4096) {
