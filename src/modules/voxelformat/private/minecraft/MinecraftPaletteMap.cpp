@@ -85,6 +85,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:acacia_planks", 162, 0xFF),                                                                 \
 		MCENTRY("minecraft:acacia_pressure_plate", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:acacia_sapling", 59, 0xFF),                                                                 \
+		MCENTRY("minecraft:acacia_shelf", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:acacia_sign", 162, 0xFF),                                                                   \
 		MCENTRY("minecraft:acacia_slab", 162, 0xFF),                                                                   \
 		MCENTRY("minecraft:acacia_stairs", 162, 0xFF),                                                                 \
@@ -121,6 +122,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:bamboo_planks", 19, 0xFF),                                                                  \
 		MCENTRY("minecraft:bamboo_pressure_plate", 19, 0xFF),                                                          \
 		MCENTRY("minecraft:bamboo_sapling", 6, 0xFF),                                                                  \
+		MCENTRY("minecraft:bamboo_shelf", 19, 0xFF),                                                                   \
 		MCENTRY("minecraft:bamboo_sign", 19, 0xFF),                                                                    \
 		MCENTRY("minecraft:bamboo_slab", 19, 0xFF),                                                                    \
 		MCENTRY("minecraft:bamboo_stairs", 19, 0xFF),                                                                  \
@@ -148,6 +150,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:birch_planks", 100, 0xFF),                                                                  \
 		MCENTRY("minecraft:birch_pressure_plate", 100, 0xFF),                                                          \
 		MCENTRY("minecraft:birch_sapling", 219, 0xFF),                                                                 \
+		MCENTRY("minecraft:birch_shelf", 100, 0xFF),                                                                   \
 		MCENTRY("minecraft:birch_sign", 100, 0xFF),                                                                    \
 		MCENTRY("minecraft:birch_slab", 100, 0xFF),                                                                    \
 		MCENTRY("minecraft:birch_stairs", 100, 0xFF),                                                                  \
@@ -160,7 +163,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:black_candle", 112, 0xFF),                                                                  \
 		MCENTRY("minecraft:black_candle_cake", 112, 0xFF),                                                             \
 		MCENTRY("minecraft:black_candle_cake,lit=false", 112, 0xFF),                                                   \
+		MCENTRY("minecraft:black_candle_cake,lit=true", 112, 0xFF),                                                    \
 		MCENTRY("minecraft:black_candle,lit=false", 112, 0xFF),                                                        \
+		MCENTRY("minecraft:black_candle,lit=true", 112, 0xFF),                                                         \
 		MCENTRY("minecraft:black_carpet", 112, 0xFF),                                                                  \
 		MCENTRY("minecraft:black_concrete", 112, 0xFF),                                                                \
 		MCENTRY("minecraft:black_concrete_powder", 112, 0xFF),                                                         \
@@ -177,12 +182,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:black_wool", 112, 0xFF),                                                                    \
 		MCENTRY("minecraft:blast_furnace", 7, 0xFF),                                                                   \
 		MCENTRY("minecraft:blast_furnace,lit=false", 7, 0xFF),                                                         \
+		MCENTRY("minecraft:blast_furnace,lit=true", 7, 0xFF),                                                          \
 		MCENTRY("minecraft:blue_banner", 22, 0xFF),                                                                    \
 		MCENTRY("minecraft:blue_bed", 22, 0xFF),                                                                       \
 		MCENTRY("minecraft:blue_candle", 22, 0xFF),                                                                    \
 		MCENTRY("minecraft:blue_candle_cake", 22, 0xFF),                                                               \
 		MCENTRY("minecraft:blue_candle_cake,lit=false", 22, 0xFF),                                                     \
+		MCENTRY("minecraft:blue_candle_cake,lit=true", 22, 0xFF),                                                      \
 		MCENTRY("minecraft:blue_candle,lit=false", 22, 0xFF),                                                          \
+		MCENTRY("minecraft:blue_candle,lit=true", 22, 0xFF),                                                           \
 		MCENTRY("minecraft:blue_carpet", 22, 0xFF),                                                                    \
 		MCENTRY("minecraft:blue_concrete", 22, 0xFF),                                                                  \
 		MCENTRY("minecraft:blue_concrete_powder", 22, 0xFF),                                                           \
@@ -211,7 +219,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:brown_candle", 140, 0xFF),                                                                  \
 		MCENTRY("minecraft:brown_candle_cake", 140, 0xFF),                                                             \
 		MCENTRY("minecraft:brown_candle_cake,lit=false", 140, 0xFF),                                                   \
+		MCENTRY("minecraft:brown_candle_cake,lit=true", 140, 0xFF),                                                    \
 		MCENTRY("minecraft:brown_candle,lit=false", 140, 0xFF),                                                        \
+		MCENTRY("minecraft:brown_candle,lit=true", 140, 0xFF),                                                         \
 		MCENTRY("minecraft:brown_carpet", 140, 0xFF),                                                                  \
 		MCENTRY("minecraft:brown_concrete", 140, 0xFF),                                                                \
 		MCENTRY("minecraft:brown_concrete_powder", 140, 0xFF),                                                         \
@@ -238,10 +248,13 @@ namespace voxelformat {
 		MCENTRY("minecraft:calibrated_sculk_sensor", 174, 0xFF),                                                       \
 		MCENTRY("minecraft:campfire", 169, 0xFF),                                                                      \
 		MCENTRY("minecraft:campfire,lit=false", 169, 0xFF),                                                            \
+		MCENTRY("minecraft:campfire,lit=true", 169, 0xFF),                                                             \
 		MCENTRY("minecraft:candle", 27, 0xFF),                                                                         \
 		MCENTRY("minecraft:candle_cake", 156, 0xFF),                                                                   \
 		MCENTRY("minecraft:candle_cake,lit=false", 156, 0xFF),                                                         \
+		MCENTRY("minecraft:candle_cake,lit=true", 156, 0xFF),                                                          \
 		MCENTRY("minecraft:candle,lit=false", 27, 0xFF),                                                               \
+		MCENTRY("minecraft:candle,lit=true", 27, 0xFF),                                                                \
 		MCENTRY("minecraft:carrots", 141, 0xFF),                                                                       \
 		MCENTRY("minecraft:cartography_table", 164, 0xFF),                                                             \
 		MCENTRY("minecraft:carved_pumpkin", 175, 0xFF),                                                                \
@@ -261,6 +274,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:cherry_planks", 159, 0xFF),                                                                 \
 		MCENTRY("minecraft:cherry_pressure_plate", 159, 0xFF),                                                         \
 		MCENTRY("minecraft:cherry_sapling", 198, 0xFF),                                                                \
+		MCENTRY("minecraft:cherry_shelf", 159, 0xFF),                                                                  \
 		MCENTRY("minecraft:cherry_sign", 159, 0xFF),                                                                   \
 		MCENTRY("minecraft:cherry_slab", 159, 0xFF),                                                                   \
 		MCENTRY("minecraft:cherry_stairs", 159, 0xFF),                                                                 \
@@ -307,7 +321,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:copper_block", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_bulb,lit=false", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:copper_bulb,lit=true", 162, 0xFF),                                                          \
+		MCENTRY("minecraft:copper_chest", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_door", 162, 0xFF),                                                                   \
+		MCENTRY("minecraft:copper_golem_statue", 162, 0xFF),                                                           \
 		MCENTRY("minecraft:copper_grate", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_ore", 190, 0xFF),                                                                    \
 		MCENTRY("minecraft:copper_trapdoor", 162, 0xFF),                                                               \
@@ -333,6 +349,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:crimson_planks", 87, 0xFF),                                                                 \
 		MCENTRY("minecraft:crimson_pressure_plate", 87, 0xFF),                                                         \
 		MCENTRY("minecraft:crimson_roots", 217, 0xFF),                                                                 \
+		MCENTRY("minecraft:crimson_shelf", 87, 0xFF),                                                                  \
 		MCENTRY("minecraft:crimson_sign", 87, 0xFF),                                                                   \
 		MCENTRY("minecraft:crimson_slab", 87, 0xFF),                                                                   \
 		MCENTRY("minecraft:crimson_stairs", 87, 0xFF),                                                                 \
@@ -353,7 +370,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:cyan_candle", 218, 0xFF),                                                                   \
 		MCENTRY("minecraft:cyan_candle_cake", 218, 0xFF),                                                              \
 		MCENTRY("minecraft:cyan_candle_cake,lit=false", 218, 0xFF),                                                    \
+		MCENTRY("minecraft:cyan_candle_cake,lit=true", 218, 0xFF),                                                     \
 		MCENTRY("minecraft:cyan_candle,lit=false", 218, 0xFF),                                                         \
+		MCENTRY("minecraft:cyan_candle,lit=true", 218, 0xFF),                                                          \
 		MCENTRY("minecraft:cyan_carpet", 218, 0xFF),                                                                   \
 		MCENTRY("minecraft:cyan_concrete", 218, 0xFF),                                                                 \
 		MCENTRY("minecraft:cyan_concrete_powder", 218, 0xFF),                                                          \
@@ -441,6 +460,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:dark_oak_planks", 191, 0xFF),                                                               \
 		MCENTRY("minecraft:dark_oak_pressure_plate", 191, 0xFF),                                                       \
 		MCENTRY("minecraft:dark_oak_sapling", 59, 0xFF),                                                               \
+		MCENTRY("minecraft:dark_oak_shelf", 191, 0xFF),                                                                \
 		MCENTRY("minecraft:dark_oak_sign", 191, 0xFF),                                                                 \
 		MCENTRY("minecraft:dark_oak_slab", 191, 0xFF),                                                                 \
 		MCENTRY("minecraft:dark_oak_stairs", 191, 0xFF),                                                               \
@@ -489,6 +509,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:deepslate_lapis_ore", 215, 0xFF),                                                           \
 		MCENTRY("minecraft:deepslate_redstone_ore", 87, 0xFF),                                                         \
 		MCENTRY("minecraft:deepslate_redstone_ore,lit=false", 87, 0xFF),                                               \
+		MCENTRY("minecraft:deepslate_redstone_ore,lit=true", 115, 0xFF),                                               \
 		MCENTRY("minecraft:deepslate_tiles", 118, 0xFF),                                                               \
 		MCENTRY("minecraft:deepslate_tile_slab", 118, 0xFF),                                                           \
 		MCENTRY("minecraft:deepslate_tile_stairs", 118, 0xFF),                                                         \
@@ -584,12 +605,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:exposed_copper", 73, 0xFF),                                                                 \
 		MCENTRY("minecraft:exposed_copper_bulb,lit=false", 73, 0xFF),                                                  \
 		MCENTRY("minecraft:exposed_copper_bulb,lit=true", 162, 0xFF),                                                  \
+		MCENTRY("minecraft:exposed_copper_chest", 73, 0xFF),                                                           \
 		MCENTRY("minecraft:exposed_copper_door", 73, 0xFF),                                                            \
+		MCENTRY("minecraft:exposed_copper_golem_statue", 73, 0xFF),                                                    \
 		MCENTRY("minecraft:exposed_copper_grate", 73, 0xFF),                                                           \
 		MCENTRY("minecraft:exposed_copper_trapdoor", 73, 0xFF),                                                        \
 		MCENTRY("minecraft:exposed_cut_copper", 73, 0xFF),                                                             \
 		MCENTRY("minecraft:exposed_cut_copper_slab", 73, 0xFF),                                                        \
 		MCENTRY("minecraft:exposed_cut_copper_stairs", 73, 0xFF),                                                      \
+		MCENTRY("minecraft:exposed_lightning_rod", 73, 0xFF),                                                          \
 		MCENTRY("minecraft:farmland", 60, 0xFF),                                                                       \
 		MCENTRY("minecraft:fern", 106, 0xFF),                                                                          \
 		MCENTRY("minecraft:fern,biome=minecraft:badlands", 183, 0xFF),                                                 \
@@ -673,6 +697,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:frosted_ice", 174, 0xFF),                                                                   \
 		MCENTRY("minecraft:furnace", 61, 0xFF),                                                                        \
 		MCENTRY("minecraft:furnace,lit=false", 61, 0xFF),                                                              \
+		MCENTRY("minecraft:furnace,lit=true", 61, 0xFF),                                                               \
 		MCENTRY("minecraft:gilded_blackstone", 255, 0xFF),                                                             \
 		MCENTRY("minecraft:glass", 102, 0xFF),                                                                         \
 		MCENTRY("minecraft:glass_pane", 102, 0xFF),                                                                    \
@@ -824,7 +849,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:gray_candle", 145, 0xFF),                                                                   \
 		MCENTRY("minecraft:gray_candle_cake", 145, 0xFF),                                                              \
 		MCENTRY("minecraft:gray_candle_cake,lit=false", 145, 0xFF),                                                    \
+		MCENTRY("minecraft:gray_candle_cake,lit=true", 145, 0xFF),                                                     \
 		MCENTRY("minecraft:gray_candle,lit=false", 145, 0xFF),                                                         \
+		MCENTRY("minecraft:gray_candle,lit=true", 145, 0xFF),                                                          \
 		MCENTRY("minecraft:gray_carpet", 145, 0xFF),                                                                   \
 		MCENTRY("minecraft:gray_concrete", 145, 0xFF),                                                                 \
 		MCENTRY("minecraft:gray_concrete_powder", 145, 0xFF),                                                          \
@@ -840,7 +867,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:green_candle", 6, 0xFF),                                                                    \
 		MCENTRY("minecraft:green_candle_cake", 6, 0xFF),                                                               \
 		MCENTRY("minecraft:green_candle_cake,lit=false", 6, 0xFF),                                                     \
+		MCENTRY("minecraft:green_candle_cake,lit=true", 6, 0xFF),                                                      \
 		MCENTRY("minecraft:green_candle,lit=false", 6, 0xFF),                                                          \
+		MCENTRY("minecraft:green_candle,lit=true", 6, 0xFF),                                                           \
 		MCENTRY("minecraft:green_carpet", 6, 0xFF),                                                                    \
 		MCENTRY("minecraft:green_concrete", 6, 0xFF),                                                                  \
 		MCENTRY("minecraft:green_concrete_powder", 6, 0xFF),                                                           \
@@ -954,6 +983,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:jungle_planks", 195, 0xFF),                                                                 \
 		MCENTRY("minecraft:jungle_pressure_plate", 195, 0xFF),                                                         \
 		MCENTRY("minecraft:jungle_sapling", 6, 0xFF),                                                                  \
+		MCENTRY("minecraft:jungle_shelf", 195, 0xFF),                                                                  \
 		MCENTRY("minecraft:jungle_sign", 195, 0xFF),                                                                   \
 		MCENTRY("minecraft:jungle_slab", 195, 0xFF),                                                                   \
 		MCENTRY("minecraft:jungle_stairs", 195, 0xFF),                                                                 \
@@ -1045,7 +1075,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:light_blue_candle", 8, 0xFF),                                                               \
 		MCENTRY("minecraft:light_blue_candle_cake", 8, 0xFF),                                                          \
 		MCENTRY("minecraft:light_blue_candle_cake,lit=false", 8, 0xFF),                                                \
+		MCENTRY("minecraft:light_blue_candle_cake,lit=true", 8, 0xFF),                                                 \
 		MCENTRY("minecraft:light_blue_candle,lit=false", 8, 0xFF),                                                     \
+		MCENTRY("minecraft:light_blue_candle,lit=true", 8, 0xFF),                                                      \
 		MCENTRY("minecraft:light_blue_carpet", 8, 0xFF),                                                               \
 		MCENTRY("minecraft:light_blue_concrete", 8, 0xFF),                                                             \
 		MCENTRY("minecraft:light_blue_concrete_powder", 8, 0xFF),                                                      \
@@ -1061,7 +1093,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:light_gray_candle", 137, 0xFF),                                                             \
 		MCENTRY("minecraft:light_gray_candle_cake", 137, 0xFF),                                                        \
 		MCENTRY("minecraft:light_gray_candle_cake,lit=false", 137, 0xFF),                                              \
+		MCENTRY("minecraft:light_gray_candle_cake,lit=true", 137, 0xFF),                                               \
 		MCENTRY("minecraft:light_gray_candle,lit=false", 137, 0xFF),                                                   \
+		MCENTRY("minecraft:light_gray_candle,lit=true", 137, 0xFF),                                                    \
 		MCENTRY("minecraft:light_gray_carpet", 137, 0xFF),                                                             \
 		MCENTRY("minecraft:light_gray_concrete", 137, 0xFF),                                                           \
 		MCENTRY("minecraft:light_gray_concrete_powder", 137, 0xFF),                                                    \
@@ -1072,7 +1106,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:light_gray_terracotta", 73, 0xFF),                                                          \
 		MCENTRY("minecraft:light_gray_wall_banner", 137, 0xFF),                                                        \
 		MCENTRY("minecraft:light_gray_wool", 137, 0xFF),                                                               \
-		MCENTRY("minecraft:lightning_rod", 190, 0xFF),                                                                 \
+		MCENTRY("minecraft:lightning_rod", 162, 0xFF),                                                                 \
 		MCENTRY("minecraft:light_weighted_pressure_plate", 147, 0xFF),                                                 \
 		MCENTRY("minecraft:lilac", 202, 0xFF),                                                                         \
 		MCENTRY("minecraft:lily_of_the_valley", 156, 0xFF),                                                            \
@@ -1082,7 +1116,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:lime_candle", 18, 0xFF),                                                                    \
 		MCENTRY("minecraft:lime_candle_cake", 18, 0xFF),                                                               \
 		MCENTRY("minecraft:lime_candle_cake,lit=false", 18, 0xFF),                                                     \
+		MCENTRY("minecraft:lime_candle_cake,lit=true", 18, 0xFF),                                                      \
 		MCENTRY("minecraft:lime_candle,lit=false", 18, 0xFF),                                                          \
+		MCENTRY("minecraft:lime_candle,lit=true", 18, 0xFF),                                                           \
 		MCENTRY("minecraft:lime_carpet", 18, 0xFF),                                                                    \
 		MCENTRY("minecraft:lime_concrete", 18, 0xFF),                                                                  \
 		MCENTRY("minecraft:lime_concrete_powder", 18, 0xFF),                                                           \
@@ -1103,7 +1139,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:magenta_candle", 213, 0xFF),                                                                \
 		MCENTRY("minecraft:magenta_candle_cake", 213, 0xFF),                                                           \
 		MCENTRY("minecraft:magenta_candle_cake,lit=false", 213, 0xFF),                                                 \
+		MCENTRY("minecraft:magenta_candle_cake,lit=true", 213, 0xFF),                                                  \
 		MCENTRY("minecraft:magenta_candle,lit=false", 213, 0xFF),                                                      \
+		MCENTRY("minecraft:magenta_candle,lit=true", 213, 0xFF),                                                       \
 		MCENTRY("minecraft:magenta_carpet", 213, 0xFF),                                                                \
 		MCENTRY("minecraft:magenta_concrete", 213, 0xFF),                                                              \
 		MCENTRY("minecraft:magenta_concrete_powder", 213, 0xFF),                                                       \
@@ -1192,6 +1230,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:mangrove_pressure_plate", 217, 0xFF),                                                       \
 		MCENTRY("minecraft:mangrove_propagule", 59, 0xFF),                                                             \
 		MCENTRY("minecraft:mangrove_roots", 17, 0xFF),                                                                 \
+		MCENTRY("minecraft:mangrove_shelf", 217, 0xFF),                                                                \
 		MCENTRY("minecraft:mangrove_sign", 217, 0xFF),                                                                 \
 		MCENTRY("minecraft:mangrove_slab", 217, 0xFF),                                                                 \
 		MCENTRY("minecraft:mangrove_stairs", 217, 0xFF),                                                               \
@@ -1311,6 +1350,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:oak_planks", 53, 0xFF),                                                                     \
 		MCENTRY("minecraft:oak_pressure_plate", 53, 0xFF),                                                             \
 		MCENTRY("minecraft:oak_sapling", 106, 0xFF),                                                                   \
+		MCENTRY("minecraft:oak_shelf", 53, 0xFF),                                                                      \
 		MCENTRY("minecraft:oak_sign", 53, 0xFF),                                                                       \
 		MCENTRY("minecraft:oak_slab", 53, 0xFF),                                                                       \
 		MCENTRY("minecraft:oak_stairs", 53, 0xFF),                                                                     \
@@ -1327,7 +1367,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:orange_candle", 76, 0xFF),                                                                  \
 		MCENTRY("minecraft:orange_candle_cake", 76, 0xFF),                                                             \
 		MCENTRY("minecraft:orange_candle_cake,lit=false", 76, 0xFF),                                                   \
+		MCENTRY("minecraft:orange_candle_cake,lit=true", 76, 0xFF),                                                    \
 		MCENTRY("minecraft:orange_candle,lit=false", 76, 0xFF),                                                        \
+		MCENTRY("minecraft:orange_candle,lit=true", 76, 0xFF),                                                         \
 		MCENTRY("minecraft:orange_carpet", 76, 0xFF),                                                                  \
 		MCENTRY("minecraft:orange_concrete", 76, 0xFF),                                                                \
 		MCENTRY("minecraft:orange_concrete_powder", 76, 0xFF),                                                         \
@@ -1344,12 +1386,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:oxidized_copper", 48, 0xFF),                                                                \
 		MCENTRY("minecraft:oxidized_copper_bulb,lit=false", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:oxidized_copper_bulb,lit=true", 162, 0xFF),                                                 \
+		MCENTRY("minecraft:oxidized_copper_chest", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:oxidized_copper_door", 48, 0xFF),                                                           \
+		MCENTRY("minecraft:oxidized_copper_golem_statue", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:oxidized_copper_grate", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:oxidized_copper_trapdoor", 48, 0xFF),                                                       \
 		MCENTRY("minecraft:oxidized_cut_copper", 48, 0xFF),                                                            \
 		MCENTRY("minecraft:oxidized_cut_copper_slab", 48, 0xFF),                                                       \
 		MCENTRY("minecraft:oxidized_cut_copper_stairs", 48, 0xFF),                                                     \
+		MCENTRY("minecraft:oxidized_lightning_rod", 48, 0xFF),                                                         \
 		MCENTRY("minecraft:packed_ice", 79, 0xFF),                                                                     \
 		MCENTRY("minecraft:packed_mud", 89, 0xFF),                                                                     \
 		MCENTRY("minecraft:pale_hanging_moss", 101, 0xFF),                                                             \
@@ -1365,6 +1410,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:pale_oak_planks", 167, 0xFF),                                                               \
 		MCENTRY("minecraft:pale_oak_pressure_plate", 167, 0xFF),                                                       \
 		MCENTRY("minecraft:pale_oak_sapling", 23, 0xFF),                                                               \
+		MCENTRY("minecraft:pale_oak_shelf", 167, 0xFF),                                                                \
 		MCENTRY("minecraft:pale_oak_sign", 167, 0xFF),                                                                 \
 		MCENTRY("minecraft:pale_oak_slab", 167, 0xFF),                                                                 \
 		MCENTRY("minecraft:pale_oak_stairs", 167, 0xFF),                                                               \
@@ -1382,7 +1428,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:pink_candle", 213, 0xFF),                                                                   \
 		MCENTRY("minecraft:pink_candle_cake", 213, 0xFF),                                                              \
 		MCENTRY("minecraft:pink_candle_cake,lit=false", 213, 0xFF),                                                    \
+		MCENTRY("minecraft:pink_candle_cake,lit=true", 213, 0xFF),                                                     \
 		MCENTRY("minecraft:pink_candle,lit=false", 213, 0xFF),                                                         \
+		MCENTRY("minecraft:pink_candle,lit=true", 213, 0xFF),                                                          \
 		MCENTRY("minecraft:pink_carpet", 213, 0xFF),                                                                   \
 		MCENTRY("minecraft:pink_concrete", 213, 0xFF),                                                                 \
 		MCENTRY("minecraft:pink_concrete_powder", 213, 0xFF),                                                          \
@@ -1553,7 +1601,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:purple_candle", 211, 0xFF),                                                                 \
 		MCENTRY("minecraft:purple_candle_cake", 211, 0xFF),                                                            \
 		MCENTRY("minecraft:purple_candle_cake,lit=false", 211, 0xFF),                                                  \
+		MCENTRY("minecraft:purple_candle_cake,lit=true", 211, 0xFF),                                                   \
 		MCENTRY("minecraft:purple_candle,lit=false", 211, 0xFF),                                                       \
+		MCENTRY("minecraft:purple_candle,lit=true", 211, 0xFF),                                                        \
 		MCENTRY("minecraft:purple_carpet", 211, 0xFF),                                                                 \
 		MCENTRY("minecraft:purple_concrete", 211, 0xFF),                                                               \
 		MCENTRY("minecraft:purple_concrete_powder", 211, 0xFF),                                                        \
@@ -1583,7 +1633,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:red_candle", 115, 0xFF),                                                                    \
 		MCENTRY("minecraft:red_candle_cake", 115, 0xFF),                                                               \
 		MCENTRY("minecraft:red_candle_cake,lit=false", 115, 0xFF),                                                     \
+		MCENTRY("minecraft:red_candle_cake,lit=true", 115, 0xFF),                                                      \
 		MCENTRY("minecraft:red_candle,lit=false", 115, 0xFF),                                                          \
+		MCENTRY("minecraft:red_candle,lit=true", 115, 0xFF),                                                           \
 		MCENTRY("minecraft:red_carpet", 115, 0xFF),                                                                    \
 		MCENTRY("minecraft:red_concrete", 115, 0xFF),                                                                  \
 		MCENTRY("minecraft:red_concrete_powder", 115, 0xFF),                                                           \
@@ -1606,12 +1658,16 @@ namespace voxelformat {
 		MCENTRY("minecraft:redstone_block", 152, 0xFF),                                                                \
 		MCENTRY("minecraft:redstone_lamp", 124, 0xFF),                                                                 \
 		MCENTRY("minecraft:redstone_lamp,lit=false", 124, 0xFF),                                                       \
+		MCENTRY("minecraft:redstone_lamp,lit=true", 124, 0xFF),                                                        \
 		MCENTRY("minecraft:redstone_ore", 61, 0xFF),                                                                   \
 		MCENTRY("minecraft:redstone_ore,lit=false", 61, 0xFF),                                                         \
+		MCENTRY("minecraft:redstone_ore,lit=true", 26, 0xFF),                                                          \
 		MCENTRY("minecraft:redstone_torch", 127, 0xFF),                                                                \
 		MCENTRY("minecraft:redstone_torch,lit=false", 127, 0xFF),                                                      \
+		MCENTRY("minecraft:redstone_torch,lit=true", 127, 0xFF),                                                       \
 		MCENTRY("minecraft:redstone_wall_torch", 127, 0xFF),                                                           \
 		MCENTRY("minecraft:redstone_wall_torch,lit=false", 127, 0xFF),                                                 \
+		MCENTRY("minecraft:redstone_wall_torch,lit=true", 127, 0xFF),                                                  \
 		MCENTRY("minecraft:redstone_wire", 55, 0xFF),                                                                  \
 		MCENTRY("minecraft:red_terracotta", 108, 0xFF),                                                                \
 		MCENTRY("minecraft:red_tulip", 187, 0xFF),                                                                     \
@@ -1720,6 +1776,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:smithing_table", 130, 0xFF),                                                                \
 		MCENTRY("minecraft:smoker", 69, 0xFF),                                                                         \
 		MCENTRY("minecraft:smoker,lit=false", 69, 0xFF),                                                               \
+		MCENTRY("minecraft:smoker,lit=true", 69, 0xFF),                                                                \
 		MCENTRY("minecraft:smooth_basalt", 7, 0xFF),                                                                   \
 		MCENTRY("minecraft:smooth_quartz", 155, 0xFF),                                                                 \
 		MCENTRY("minecraft:smooth_quartz_slab", 155, 0xFF),                                                            \
@@ -1737,6 +1794,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:snow_block", 78, 0xFF),                                                                     \
 		MCENTRY("minecraft:soul_campfire", 57, 0xFF),                                                                  \
 		MCENTRY("minecraft:soul_campfire,lit=false", 57, 0xFF),                                                        \
+		MCENTRY("minecraft:soul_campfire,lit=true", 57, 0xFF),                                                         \
 		MCENTRY("minecraft:soul_fire", 57, 0xFF),                                                                      \
 		MCENTRY("minecraft:soul_lantern", 174, 0xFF),                                                                  \
 		MCENTRY("minecraft:soul_sand", 88, 0xFF),                                                                      \
@@ -1756,6 +1814,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:spruce_planks", 47, 0xFF),                                                                  \
 		MCENTRY("minecraft:spruce_pressure_plate", 47, 0xFF),                                                          \
 		MCENTRY("minecraft:spruce_sapling", 130, 0xFF),                                                                \
+		MCENTRY("minecraft:spruce_shelf", 47, 0xFF),                                                                   \
 		MCENTRY("minecraft:spruce_sign", 47, 0xFF),                                                                    \
 		MCENTRY("minecraft:spruce_slab", 47, 0xFF),                                                                    \
 		MCENTRY("minecraft:spruce_stairs", 47, 0xFF),                                                                  \
@@ -2048,6 +2107,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:warped_planks", 210, 0xFF),                                                                 \
 		MCENTRY("minecraft:warped_pressure_plate", 210, 0xFF),                                                         \
 		MCENTRY("minecraft:warped_roots", 220, 0xFF),                                                                  \
+		MCENTRY("minecraft:warped_shelf", 210, 0xFF),                                                                  \
 		MCENTRY("minecraft:warped_sign", 210, 0xFF),                                                                   \
 		MCENTRY("minecraft:warped_slab", 210, 0xFF),                                                                   \
 		MCENTRY("minecraft:warped_stairs", 210, 0xFF),                                                                 \
@@ -2128,7 +2188,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:waxed_copper_block", 162, 0xFF),                                                            \
 		MCENTRY("minecraft:waxed_copper_bulb,lit=false", 162, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_copper_bulb,lit=true", 162, 0xFF),                                                    \
+		MCENTRY("minecraft:waxed_copper_chest", 162, 0xFF),                                                            \
 		MCENTRY("minecraft:waxed_copper_door", 162, 0xFF),                                                             \
+		MCENTRY("minecraft:waxed_copper_golem_statue", 162, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_copper_grate", 162, 0xFF),                                                            \
 		MCENTRY("minecraft:waxed_copper_trapdoor", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:waxed_cut_copper", 162, 0xFF),                                                              \
@@ -2138,42 +2200,55 @@ namespace voxelformat {
 		MCENTRY("minecraft:waxed_exposed_copper", 73, 0xFF),                                                           \
 		MCENTRY("minecraft:waxed_exposed_copper_bulb,lit=false", 73, 0xFF),                                            \
 		MCENTRY("minecraft:waxed_exposed_copper_bulb,lit=true", 162, 0xFF),                                            \
+		MCENTRY("minecraft:waxed_exposed_copper_chest", 73, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_exposed_copper_door", 73, 0xFF),                                                      \
+		MCENTRY("minecraft:waxed_exposed_copper_golem_statue", 73, 0xFF),                                              \
 		MCENTRY("minecraft:waxed_exposed_copper_grate", 73, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_exposed_copper_trapdoor", 73, 0xFF),                                                  \
 		MCENTRY("minecraft:waxed_exposed_cut_copper", 73, 0xFF),                                                       \
 		MCENTRY("minecraft:waxed_exposed_cut_copper_slab", 73, 0xFF),                                                  \
 		MCENTRY("minecraft:waxed_exposed_cut_copper_stairs", 73, 0xFF),                                                \
+		MCENTRY("minecraft:waxed_exposed_lightning_rod", 73, 0xFF),                                                    \
+		MCENTRY("minecraft:waxed_lightning_rod", 162, 0xFF),                                                           \
 		MCENTRY("minecraft:waxed_oxidized_chiseled_copper", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:waxed_oxidized_copper", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:waxed_oxidized_copper_bulb,lit=false", 48, 0xFF),                                           \
 		MCENTRY("minecraft:waxed_oxidized_copper_bulb,lit=true", 162, 0xFF),                                           \
+		MCENTRY("minecraft:waxed_oxidized_copper_chest", 48, 0xFF),                                                    \
 		MCENTRY("minecraft:waxed_oxidized_copper_door", 48, 0xFF),                                                     \
+		MCENTRY("minecraft:waxed_oxidized_copper_golem_statue", 48, 0xFF),                                             \
 		MCENTRY("minecraft:waxed_oxidized_copper_grate", 48, 0xFF),                                                    \
 		MCENTRY("minecraft:waxed_oxidized_copper_trapdoor", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:waxed_oxidized_cut_copper", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:waxed_oxidized_cut_copper_slab", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:waxed_oxidized_cut_copper_stairs", 48, 0xFF),                                               \
+		MCENTRY("minecraft:waxed_oxidized_lightning_rod", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_weathered_chiseled_copper", 48, 0xFF),                                                \
 		MCENTRY("minecraft:waxed_weathered_copper", 48, 0xFF),                                                         \
 		MCENTRY("minecraft:waxed_weathered_copper_bulb,lit=false", 48, 0xFF),                                          \
 		MCENTRY("minecraft:waxed_weathered_copper_bulb,lit=true", 162, 0xFF),                                          \
+		MCENTRY("minecraft:waxed_weathered_copper_chest", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_weathered_copper_door", 48, 0xFF),                                                    \
+		MCENTRY("minecraft:waxed_weathered_copper_golem_statue", 48, 0xFF),                                            \
 		MCENTRY("minecraft:waxed_weathered_copper_grate", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_weathered_copper_trapdoor", 48, 0xFF),                                                \
 		MCENTRY("minecraft:waxed_weathered_cut_copper", 48, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_weathered_cut_copper_slab", 48, 0xFF),                                                \
 		MCENTRY("minecraft:waxed_weathered_cut_copper_stairs", 48, 0xFF),                                              \
+		MCENTRY("minecraft:waxed_weathered_lightning_rod", 48, 0xFF),                                                  \
 		MCENTRY("minecraft:weathered_chiseled_copper", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:weathered_copper", 48, 0xFF),                                                               \
 		MCENTRY("minecraft:weathered_copper_bulb,lit=false", 48, 0xFF),                                                \
 		MCENTRY("minecraft:weathered_copper_bulb,lit=true", 162, 0xFF),                                                \
+		MCENTRY("minecraft:weathered_copper_chest", 48, 0xFF),                                                         \
 		MCENTRY("minecraft:weathered_copper_door", 48, 0xFF),                                                          \
+		MCENTRY("minecraft:weathered_copper_golem_statue", 48, 0xFF),                                                  \
 		MCENTRY("minecraft:weathered_copper_grate", 48, 0xFF),                                                         \
 		MCENTRY("minecraft:weathered_copper_trapdoor", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:weathered_cut_copper", 48, 0xFF),                                                           \
 		MCENTRY("minecraft:weathered_cut_copper_slab", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:weathered_cut_copper_stairs", 48, 0xFF),                                                    \
+		MCENTRY("minecraft:weathered_lightning_rod", 48, 0xFF),                                                        \
 		MCENTRY("minecraft:weeping_vines", 75, 0xFF),                                                                  \
 		MCENTRY("minecraft:weeping_vines_plant", 75, 0xFF),                                                            \
 		MCENTRY("minecraft:wet_sponge", 63, 0xFF),                                                                     \
@@ -2183,7 +2258,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:white_candle", 95, 0xFF),                                                                   \
 		MCENTRY("minecraft:white_candle_cake", 95, 0xFF),                                                              \
 		MCENTRY("minecraft:white_candle_cake,lit=false", 95, 0xFF),                                                    \
+		MCENTRY("minecraft:white_candle_cake,lit=true", 95, 0xFF),                                                     \
 		MCENTRY("minecraft:white_candle,lit=false", 95, 0xFF),                                                         \
+		MCENTRY("minecraft:white_candle,lit=true", 95, 0xFF),                                                          \
 		MCENTRY("minecraft:white_carpet", 176, 0xFF),                                                                  \
 		MCENTRY("minecraft:white_concrete", 42, 0xFF),                                                                 \
 		MCENTRY("minecraft:white_concrete_powder", 42, 0xFF),                                                          \
@@ -2204,7 +2281,9 @@ namespace voxelformat {
 		MCENTRY("minecraft:yellow_candle", 27, 0xFF),                                                                  \
 		MCENTRY("minecraft:yellow_candle_cake", 27, 0xFF),                                                             \
 		MCENTRY("minecraft:yellow_candle_cake,lit=false", 27, 0xFF),                                                   \
+		MCENTRY("minecraft:yellow_candle_cake,lit=true", 27, 0xFF),                                                    \
 		MCENTRY("minecraft:yellow_candle,lit=false", 27, 0xFF),                                                        \
+		MCENTRY("minecraft:yellow_candle,lit=true", 27, 0xFF),                                                         \
 		MCENTRY("minecraft:yellow_carpet", 27, 0xFF),                                                                  \
 		MCENTRY("minecraft:yellow_concrete", 27, 0xFF),                                                                \
 		MCENTRY("minecraft:yellow_concrete_powder", 27, 0xFF),                                                         \
