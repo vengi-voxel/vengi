@@ -28,76 +28,80 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	const int depth = region.getDepthInVoxels();
 	const int size = width * height * depth;
 	const glm::ivec3 mins = volume.region().getLowerCorner();
-	core::Buffer<glm::ivec3> positions;
-	positions.reserve(size);
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
 
-	visitVolume(
-		volume, region, 1, 1, 1,
-		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
-		SkipEmpty());
+	auto fn = [&volume, &visited, region, depth, width, height]() {
+		typename VOLUME::Sampler sampler(&volume);
+		sampler.setPosition(region.getLowerX() + 0, region.getLowerY(), region.getLowerZ());
+		for (int x = 0; x < width; ++x) {
+			typename VOLUME::Sampler samplerMinY = sampler;
+			typename VOLUME::Sampler samplerMaxY = sampler;
+			samplerMaxY.movePositiveY(region.getHeightInCells());
+			for (int z = 1; z < depth - 1; ++z) {
+				samplerMinY.movePositiveZ();
+				samplerMaxY.movePositiveZ();
+				const voxel::VoxelType m1 = samplerMinY.voxel().getMaterial();
+				if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
+					visited.set(x, 0, z, true);
+				}
+				const voxel::VoxelType m2 = samplerMaxY.voxel().getMaterial();
+				if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
+					visited.set(x, height - 1, z, true);
+				}
+			}
+			typename VOLUME::Sampler samplerMinZ = sampler;
+			typename VOLUME::Sampler samplerMaxZ = sampler;
+			samplerMaxZ.movePositiveZ(region.getDepthInCells());
+			for (int y = 0; y < height; ++y) {
+				const voxel::VoxelType m1 = samplerMinZ.voxel().getMaterial();
+				if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
+					visited.set(x, y, 0, true);
+				}
+				const voxel::VoxelType m2 = samplerMaxZ.voxel().getMaterial();
+				if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
+					visited.set(x, y, depth - 1, true);
+				}
+				samplerMinZ.movePositiveY();
+				samplerMaxZ.movePositiveY();
+			}
+			sampler.movePositiveX();
+		}
+	};
+	fn();
 
-	typename VOLUME::Sampler sampler(&volume);
-	sampler.setPosition(region.getLowerCorner());
-	for (int x = 0; x < width; ++x) {
-		typename VOLUME::Sampler sampler2 = sampler;
-		typename VOLUME::Sampler sampler3 = sampler;
-		sampler3.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
-		for (int z = 1; z < depth - 1; ++z) {
-			sampler2.movePositiveZ();
-			sampler3.movePositiveZ();
-			const voxel::VoxelType m1 = sampler2.voxel().getMaterial();
-			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
-				const glm::ivec3 v1(x, 0, z);
-				positions.push_back(v1);
-				visited.set(v1, true);
-			}
-			const voxel::VoxelType m2 = sampler3.voxel().getMaterial();
-			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
-				const glm::ivec3 v2(x, height - 1, z);
-				positions.push_back(v2);
-				visited.set(v2, true);
-			}
-		}
-		sampler2 = sampler;
-		sampler3 = sampler;
-		sampler3.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
-		for (int y = 0; y < height; ++y) {
-			const voxel::VoxelType m1 = sampler2.voxel().getMaterial();
-			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
-				const glm::ivec3 v1(x, y, 0);
-				positions.push_back(v1);
-				visited.set(v1, true);
-			}
-			const voxel::VoxelType m2 = sampler3.voxel().getMaterial();
-			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
-				const glm::ivec3 v2(x, y, depth - 1);
-				positions.push_back(v2);
-				visited.set(v2, true);
-			}
-			sampler2.movePositiveY();
-			sampler3.movePositiveY();
-		}
-		sampler.movePositiveX();
-	}
 	// TODO: PERF: use volume samplers
 	for (int y = 1; y < height - 1; ++y) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(0, y, z);
 			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
 			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
-				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(width - 1, y, z);
 			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
 			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
-				positions.push_back(v2);
 				visited.set(v2, true);
 			}
 		}
 	}
+
+	core::Buffer<glm::ivec3> positions;
+	positions.reserve(size);
+	for (int x = 0; x < width; ++x) {
+		for (int y = 0; y < height; ++y) {
+			for (int z = 0; z < depth; ++z) {
+				if (visited.get(x, y, z)) {
+					positions.emplace_back(x, y, z);
+				}
+			}
+		}
+	}
+
+	visitVolume(
+		volume, region, 1, 1, 1,
+		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
+		SkipEmpty());
 
 	while (!positions.empty()) {
 		const glm::ivec3 v = positions.back();

@@ -17,7 +17,21 @@
 
 namespace voxelutil {
 
-class VoxelUtilTest : public app::AbstractTest {};
+class VoxelUtilTest : public app::AbstractTest {
+protected:
+	int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
+		int cnt = 0;
+		voxelutil::visitVolume(
+			volume,
+			[&](int, int, int, const voxel::Voxel &v) {
+				if (v.isSame(voxel)) {
+					++cnt;
+				}
+			},
+			voxelutil::VisitAll());
+		return cnt;
+	}
+};
 
 TEST_F(VoxelUtilTest, testFillHollow3x3Center) {
 	voxel::Region region(0, 2);
@@ -26,11 +40,15 @@ TEST_F(VoxelUtilTest, testFillHollow3x3Center) {
 	voxelutil::visitVolume(
 		v, [&](int x, int y, int z, const voxel::Voxel &) { EXPECT_TRUE(v.setVoxel(x, y, z, borderVoxel)); },
 		VisitAll());
+	EXPECT_EQ(countVoxels(v, borderVoxel), region.voxels());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
+	EXPECT_EQ(countVoxels(v, borderVoxel), region.voxels() - 1);
 
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxelutil::fillHollow(v, fillVoxel);
-	EXPECT_EQ(2, v.voxel(region.getCenter()).getColor());
+	EXPECT_EQ(fillVoxel.getColor(), v.voxel(region.getCenter()).getColor());
+	EXPECT_EQ(countVoxels(v, borderVoxel), region.voxels() - 1);
+	EXPECT_EQ(countVoxels(v, fillVoxel), 1);
 }
 
 TEST_F(VoxelUtilTest, testFillHollow5x5CenterNegativeOrigin) {
@@ -91,7 +109,8 @@ TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
 	v.setVoxel(2, 0, 1, groundVoxel);
 	EXPECT_EQ(9, voxelutil::overridePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, newPlaneVoxel));
 	int n = 0;
-	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) { n += voxel.getColor() == 3; }));
+	EXPECT_EQ(9,
+			  voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) { n += voxel.getColor() == 3; }));
 	EXPECT_EQ(9, n);
 }
 
@@ -141,9 +160,13 @@ TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 	v.setVoxel(1, 0, 0, fillVoxel1); // first group and selected for the paint call
 	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
 	v.setVoxel(2, 0, 1, fillVoxel1); // second group
-	EXPECT_EQ(2, voxelutil::paintPlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1, fillVoxel2));
+	EXPECT_EQ(2,
+			  voxelutil::paintPlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1, fillVoxel2));
 	int voxel2counter = 0;
-	EXPECT_EQ(4, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) {if (voxel.getColor() == fillVoxel2.getColor()) voxel2counter++;}));
+	EXPECT_EQ(4, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) {
+				  if (voxel.getColor() == fillVoxel2.getColor())
+					  voxel2counter++;
+			  }));
 	EXPECT_EQ(3, voxel2counter);
 }
 
@@ -218,7 +241,8 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 		const core::RGBA voxelColor = palLookup.palette().color(voxel.getColor());
 		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor, core::Color::Distance::HSB), 0.0f)
 			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
-			<< ") at " << x << "\n" << v;
+			<< ") at " << x << "\n"
+			<< v;
 	}
 
 	const int plane2Voxels =
@@ -231,7 +255,8 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 		const core::RGBA voxelColor = palLookup.palette().color(voxel.getColor());
 		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor, core::Color::Distance::HSB), 0.0f)
 			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
-			<< ") at " << x << "\n" << v;
+			<< ") at " << x << "\n"
+			<< v;
 	}
 }
 
