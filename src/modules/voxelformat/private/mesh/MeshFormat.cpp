@@ -452,21 +452,25 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	}
 
 	Log::debug("create voxels for %i positions", (int)posMap.size());
-	// TODO: PERF: FOR_PARALLEL
 	voxel::RawVolume *volume = node.volume();
 	palette::PaletteLookup palLookup(palette);
-	for (const auto &entry : posMap) {
+	auto fn = [&palette, volume, &palLookup, this](const glm::ivec3 &pos, const PosSampling &posSampling) {
 		if (stopExecution()) {
 			return;
 		}
-		const PosSampling &pos = entry->second;
-		const core::RGBA rgba = pos.getColor(_flattenFactor, _weightedAverage);
+		const core::RGBA rgba = posSampling.getColor(_flattenFactor, _weightedAverage);
 		if (rgba.a <= AlphaThreshold) {
-			continue;
+			return;
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(rgba), pos.getNormal());
-		volume->setVoxel(entry->first, voxel);
-	}
+		uint8_t colorIndex;
+		{
+			core::ScopedLock lock(_mutex);
+			colorIndex = palLookup.findClosestIndex(rgba);
+		}
+		const voxel::Voxel voxel = voxel::createVoxel(palette, colorIndex, posSampling.getNormal());
+		volume->setVoxel(pos, voxel);
+	};
+	posMap.for_parallel(fn);
 	if (palette.colorCount() == 1) {
 		core::RGBA c = palette.color(0);
 		if (c.a == 0) {

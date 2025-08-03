@@ -8,7 +8,7 @@
 #include "PosSampling.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/Map.h"
+#include "core/collection/ParallelMap.h"
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
 #include "palette/NormalPalette.h"
@@ -23,7 +23,7 @@ struct PointCloudVertex {
 };
 using PointCloud = core::Buffer<PointCloudVertex>;
 using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
-using PosMap = core::Map<glm::ivec3, PosSampling, 67, glm::hash<glm::ivec3>>;
+using PosMap = core::ParallelMap<glm::ivec3, PosSampling, 67, glm::hash<glm::ivec3>>;
 
 /**
  * @brief Convert the volume data into a mesh
