@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/Async.h"
 #include "core/collection/Array3DView.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -31,10 +32,10 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
 
-	auto fn = [&volume, &visited, region, depth, width, height]() {
+	auto fnWidth = [&volume, &visited, region, depth, height](int start, int end) {
 		typename VOLUME::Sampler sampler(&volume);
-		sampler.setPosition(region.getLowerX() + 0, region.getLowerY(), region.getLowerZ());
-		for (int x = 0; x < width; ++x) {
+		sampler.setPosition(region.getLowerX() + start, region.getLowerY(), region.getLowerZ());
+		for (int x = start; x < end; ++x) {
 			typename VOLUME::Sampler samplerMinY = sampler;
 			typename VOLUME::Sampler samplerMaxY = sampler;
 			samplerMaxY.movePositiveY(region.getHeightInCells());
@@ -68,23 +69,26 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 			sampler.movePositiveX();
 		}
 	};
-	fn();
+	app::for_parallel(0, width, fnWidth);
 
-	// TODO: PERF: use volume samplers
-	for (int y = 1; y < height - 1; ++y) {
-		for (int z = 1; z < depth - 1; ++z) {
-			const glm::ivec3 v1(0, y, z);
-			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
-			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
-				visited.set(v1, true);
-			}
-			const glm::ivec3 v2(width - 1, y, z);
-			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
-			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
-				visited.set(v2, true);
+	auto fnHeight = [&volume, &visited, region, width, depth, &mins](int start, int end) {
+		// TODO: PERF: use volume samplers
+		for (int y = start; y < end; ++y) {
+			for (int z = 1; z < depth - 1; ++z) {
+				const glm::ivec3 v1(0, y, z);
+				const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
+				if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
+					visited.set(v1, true);
+				}
+				const glm::ivec3 v2(width - 1, y, z);
+				const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
+				if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
+					visited.set(v2, true);
+				}
 			}
 		}
-	}
+	};
+	app::for_parallel(1, height - 1, fnHeight);
 
 	core::Buffer<glm::ivec3> positions;
 	positions.reserve(size);
