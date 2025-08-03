@@ -73,7 +73,7 @@ public:
 	Buffer(const Buffer& other) {
 		checkBufferSize(other._size);
 		_size = other._size;
-		if (other._buffer != nullptr) {
+		if (other._buffer != nullptr && _buffer != nullptr) {
 			core_memcpy(_buffer, other._buffer, _size * sizeof(TYPE));
 		}
 	}
