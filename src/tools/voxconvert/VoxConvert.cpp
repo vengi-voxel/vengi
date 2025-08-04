@@ -153,7 +153,11 @@ void VoxConvert::usage() const {
 	}
 	Log::info("Scripts:");
 	voxelgenerator::LUAApi scriptApi(filesystem());
-	for (const voxelgenerator::LUAScript &script : scriptApi.listScripts()) {
+	core::DynamicArray<voxelgenerator::LUAScript> scripts = scriptApi.listScripts();
+	for (voxelgenerator::LUAScript &script : scripts) {
+		scriptApi.reloadScriptParameters(script);
+	}
+	for (const voxelgenerator::LUAScript &script : scripts) {
 		Log::info(" * %s%s", script.filename.c_str(), script.valid ? "" : " (invalid)");
 		if (!script.valid) {
 			continue;
