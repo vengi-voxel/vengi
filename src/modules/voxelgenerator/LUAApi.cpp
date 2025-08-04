@@ -2255,11 +2255,10 @@ void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::St
 	s.parameters.clear();
 	s.enumValues.clear();
 
-	lua::LUA lua;
-	if (!prepare(lua, luaScript)) {
+	if (!prepare(_lua, luaScript)) {
 		return;
 	}
-	argumentInfo(lua, s.parameterDescription);
+	argumentInfo(_lua, s.parameterDescription);
 	const int parameterCount = (int)s.parameterDescription.size();
 	s.parameters.resize(parameterCount);
 	s.enumValues.resize(parameterCount);
@@ -2268,7 +2267,7 @@ void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::St
 		s.parameters[i] = p.defaultValue;
 		s.enumValues[i] = p.enumValues;
 	}
-	s.desc = description(lua);
+	s.desc = description(_lua);
 	s.cached = true;
 	s.valid = true;
 }
