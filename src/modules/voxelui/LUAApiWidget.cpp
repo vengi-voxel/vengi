@@ -188,44 +188,24 @@ void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelg
 	if (script.cached) {
 		return;
 	}
-	reloadScriptParameters(luaApi, script, luaApi.load(script.filename));
+	luaApi.reloadScriptParameters(script);
 }
 
 void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &s, const core::String &luaScript) {
 	_activeScript = luaScript;
-	s.valid = false;
-	s.parameterDescription.clear();
-	s.parameters.clear();
-	s.enumValues.clear();
-
-	lua::LUA lua;
-	if (!luaApi.prepare(lua, luaScript)) {
-		return;
-	}
-	luaApi.argumentInfo(lua, s.parameterDescription);
-	const int parameterCount = (int)s.parameterDescription.size();
-	s.parameters.resize(parameterCount);
-	s.enumValues.resize(parameterCount);
-	for (int i = 0; i < parameterCount; ++i) {
-		const voxelgenerator::LUAParameterDescription &p = s.parameterDescription[i];
-		s.parameters[i] = p.defaultValue;
-		s.enumValues[i] = p.enumValues;
-	}
-	s.desc = luaApi.description(lua);
-	s.cached = true;
-	s.valid = true;
+	luaApi.reloadScriptParameters(s, luaScript);
 }
 
 void LUAApiWidget::reloadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 	if (voxelgenerator::LUAScript *s = cs()) {
 		s->cached = false;
-		reloadScriptParameters(luaApi, *s);
+		luaApi.reloadScriptParameters(*s);
 	}
 }
 
 void LUAApiWidget::loadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 	if (voxelgenerator::LUAScript *s = cs()) {
-		reloadScriptParameters(luaApi, *s);
+		luaApi.reloadScriptParameters(*s);
 	}
 }
 

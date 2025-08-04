@@ -2245,6 +2245,34 @@ core::DynamicArray<LUAScript> LUAApi::listScripts() const {
 	return scripts;
 }
 
+void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s) {
+	reloadScriptParameters(s, load(s.filename));
+}
+
+void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::String &luaScript) {
+	s.valid = false;
+	s.parameterDescription.clear();
+	s.parameters.clear();
+	s.enumValues.clear();
+
+	lua::LUA lua;
+	if (!prepare(lua, luaScript)) {
+		return;
+	}
+	argumentInfo(lua, s.parameterDescription);
+	const int parameterCount = (int)s.parameterDescription.size();
+	s.parameters.resize(parameterCount);
+	s.enumValues.resize(parameterCount);
+	for (int i = 0; i < parameterCount; ++i) {
+		const voxelgenerator::LUAParameterDescription &p = s.parameterDescription[i];
+		s.parameters[i] = p.defaultValue;
+		s.enumValues[i] = p.enumValues;
+	}
+	s.desc = description(lua);
+	s.cached = true;
+	s.valid = true;
+}
+
 bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
 						const voxel::Region &region, const voxel::Voxel &voxel,
 						const core::DynamicArray<core::String> &args) {
