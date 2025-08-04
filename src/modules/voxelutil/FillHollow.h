@@ -92,10 +92,11 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 
 	core::Buffer<glm::ivec3> positions;
 	positions.reserve(size);
-	for (int x = 0; x < width; ++x) {
+	const bool *data = visitedData.data();
+	for (int z = 0; z < depth; ++z) {
 		for (int y = 0; y < height; ++y) {
-			for (int z = 0; z < depth; ++z) {
-				if (visited.get(x, y, z)) {
+			for (int x = 0; x < width; ++x) {
+				if (*data++) {
 					positions.emplace_back(x, y, z);
 				}
 			}
