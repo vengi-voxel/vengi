@@ -103,11 +103,26 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 		}
 	}
 
-	visitVolume(
-		volume, region, 1, 1, 1,
-		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
-		SkipEmpty());
-
+	{
+		typename VOLUME::Sampler sampler(&volume);
+		sampler.setPosition(region.getLowerCorner());
+		for (int z = 0; z < depth; ++z) {
+			typename VOLUME::Sampler sampler2 = sampler;
+			for (int y = 0; y < height; ++y) {
+				typename VOLUME::Sampler sampler3 = sampler2;
+				for (int x = 0; x < width; ++x) {
+					if (voxel::isAir(sampler3.voxel().getMaterial())) {
+						sampler3.movePositiveX();
+						continue;
+					}
+					visited.set(x, y, z, true);
+					sampler3.movePositiveX();
+				}
+				sampler2.movePositiveY();
+			}
+			sampler.movePositiveZ();
+		}
+	}
 	while (!positions.empty()) {
 		const glm::ivec3 v = positions.back();
 		positions.erase(positions.size() - 1);
@@ -144,12 +159,25 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 		}
 	}
 
-	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) {
-		if (!visited.get(x - mins.x, y - mins.y, z - mins.z)) {
-			volume.setVoxel(x, y, z, voxel);
+	{
+		const bool *dataFinal = visitedData.data();
+		typename VOLUME::Sampler sampler(&volume);
+		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getLowerZ());
+		for (int z = 0; z < depth; ++z) {
+			typename VOLUME::Sampler sampler2 = sampler;
+			for (int y = 0; y < height; ++y) {
+				typename VOLUME::Sampler sampler3 = sampler2;
+				for (int x = 0; x < width; ++x) {
+					if (!*dataFinal++) {
+						sampler3.setVoxel(voxel);
+					}
+					sampler3.movePositiveX();
+				}
+				sampler2.movePositiveY();
+			}
+			sampler.movePositiveZ();
 		}
-	};
-	visitVolume(volume, region, 1, 1, 1, visitor, VisitAll());
+	}
 }
 
 } // namespace voxelutil
