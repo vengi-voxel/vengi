@@ -205,6 +205,7 @@ void LUAApiWidget::reloadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 
 void LUAApiWidget::loadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 	if (voxelgenerator::LUAScript *s = cs()) {
+		// TODO: s->cached is not handled here
 		luaApi.reloadScriptParameters(*s);
 	}
 }

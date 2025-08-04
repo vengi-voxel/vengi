@@ -162,14 +162,7 @@ void VoxConvert::usage() const {
 		if (!script.valid) {
 			continue;
 		}
-		core::DynamicArray<voxelgenerator::LUAParameterDescription> params;
-		if (!scriptApi.argumentInfo(scriptApi.load(script.filename), params)) {
-			continue;
-		}
-		if (params.empty()) {
-			continue;
-		}
-		for (const voxelgenerator::LUAParameterDescription &param : params) {
+		for (const voxelgenerator::LUAParameterDescription &param : script.parameterDescription) {
 			Log::info("   * %s: %s (default: '%s')", param.name.c_str(), param.description.c_str(),
 					  param.defaultValue.c_str());
 		}
@@ -760,10 +753,6 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 			Log::error("Failed to load %s", tokens[0].c_str());
 		} else {
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
-			core::DynamicArray<voxelgenerator::LUAParameterDescription> argsInfo;
-			if (!script.argumentInfo(luaScript, argsInfo)) {
-				Log::warn("Failed to get argument details");
-			}
 			core::DynamicArray<core::String> args(tokens.size() - 1);
 			for (size_t i = 1; i < tokens.size(); ++i) {
 				args[i - 1] = tokens[i];
