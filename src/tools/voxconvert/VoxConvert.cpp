@@ -158,7 +158,7 @@ void VoxConvert::usage() const {
 		scriptApi.reloadScriptParameters(script);
 	}
 	for (const voxelgenerator::LUAScript &script : scripts) {
-		Log::info(" * %s%s", script.filename.c_str(), script.valid ? "" : " (invalid)");
+		Log::info(" * %s%s %s", script.filename.c_str(), script.valid ? "" : " (invalid)", script.desc.c_str());
 		if (!script.valid) {
 			continue;
 		}
