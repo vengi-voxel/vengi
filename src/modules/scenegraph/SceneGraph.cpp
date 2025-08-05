@@ -911,8 +911,11 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 		}
 		// TODO: SCENEGRAPH: this puts higher priority on the first model nodes
 		//                   use quantization to increase the spectrum of colors
-		for (auto iter = beginAllModels(); iter != end(); ++iter) {
-			const SceneGraphNode &node = *iter;
+		for (const auto &e : nodes()) {
+			const SceneGraphNode &node = e->second;
+			if (!node.isAnyModelNode()) {
+				continue;
+			}
 			core::Array<bool, palette::PaletteMaxColors> used;
 			if (removeUnused) {
 				used.fill(false);
