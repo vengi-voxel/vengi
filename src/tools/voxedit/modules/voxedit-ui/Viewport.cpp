@@ -529,8 +529,8 @@ void Viewport::menuBarRenderModeToggle() {
 
 void Viewport::menuBarMementoOptions(command::CommandExecutionListener *listener) {
 	const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
-	ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), listener);
-	ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), listener);
+	ImGui::CommandIconMenuItem(ICON_LC_UNDO, _("Undo"), "undo", mementoHandler.canUndo(), listener);
+	ImGui::CommandIconMenuItem(ICON_LC_REDO, _("Redo"), "redo", mementoHandler.canRedo(), listener);
 	const int activeNode = _sceneMgr->sceneGraph().activeNode();
 	if (!mementoHandler.recordVolumeStates(_sceneMgr->volume(activeNode))) {
 		ImGui::TextUnformatted(ICON_LC_TRIANGLE_ALERT);

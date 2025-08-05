@@ -100,11 +100,11 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
 			const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
-			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_UNDO, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_REDO, _("Redo"), "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
-			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", hasSelection, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", hasSelection, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", hasSelection, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at reference"), "paste",
 									   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at cursor"), "pastecursor",

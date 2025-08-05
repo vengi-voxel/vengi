@@ -121,10 +121,10 @@ bool ScriptPanel::updateEditor(const char *id) {
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_PENCIL, _("Edit"))) {
-				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), nullptr, false, _textEditor.CanUndo())) {
+				if (ImGui::IconMenuItem(ICON_LC_UNDO, _("Undo"), nullptr, false, _textEditor.CanUndo())) {
 					_textEditor.Undo();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), nullptr, false, _textEditor.CanRedo())) {
+				if (ImGui::IconMenuItem(ICON_LC_REDO, _("Redo"), nullptr, false, _textEditor.CanRedo())) {
 					_textEditor.Redo();
 				}
 
