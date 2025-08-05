@@ -39,12 +39,12 @@ public:
 
 private:
 	int _currentScript = -1;
-	voxelgenerator::LUAScript *cs();
 	bool updateScriptParameters(voxelgenerator::LUAScript &script, const palette::Palette &palette);
 	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script);
 
 public:
 	void clear();
+	voxelgenerator::LUAScript *currentScriptPointer();
 	const voxelgenerator::LUAScript &currentScript() const;
 	const voxelgenerator::LUAScript &script(int idx) const;
 	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script, const core::String &luaScript);
@@ -61,7 +61,7 @@ inline const voxelgenerator::LUAScript &LUAApiWidget::currentScript() const {
 	return script(_currentScript);
 }
 
-inline voxelgenerator::LUAScript *LUAApiWidget::cs() {
+inline voxelgenerator::LUAScript *LUAApiWidget::currentScriptPointer() {
 	if (_currentScript < 0 || _currentScript >= (int)_scripts.size()) {
 		return nullptr;
 	}

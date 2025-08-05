@@ -174,7 +174,7 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 
 	ImGui::TextWrappedUnformatted(script.desc.c_str());
 
-	if (voxelgenerator::LUAScript *s = cs()) {
+	if (voxelgenerator::LUAScript *s = currentScriptPointer()) {
 		updateScriptParameters(*s, palette);
 	}
 
@@ -197,14 +197,14 @@ void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelg
 }
 
 void LUAApiWidget::reloadCurrentScript(voxelgenerator::LUAApi &luaApi) {
-	if (voxelgenerator::LUAScript *s = cs()) {
+	if (voxelgenerator::LUAScript *s = currentScriptPointer()) {
 		s->cached = false;
 		luaApi.reloadScriptParameters(*s);
 	}
 }
 
 void LUAApiWidget::loadCurrentScript(voxelgenerator::LUAApi &luaApi) {
-	if (voxelgenerator::LUAScript *s = cs()) {
+	if (voxelgenerator::LUAScript *s = currentScriptPointer()) {
 		// TODO: s->cached is not handled here
 		luaApi.reloadScriptParameters(*s);
 	}
