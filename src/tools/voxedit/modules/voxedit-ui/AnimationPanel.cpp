@@ -61,7 +61,7 @@ void AnimationPanel::popupCreateAnimation() {
 		if (ImGui::OkButton() || renamed) {
 			if (_copyExistingAnimation) {
 				if (!_sceneMgr->duplicateAnimation(_selectedAnimation, _newAnimation)) {
-					Log::error("Failed to add animation %s", _newAnimation.c_str());
+					Log::error("Failed to duplicate animation %s (%s)", _selectedAnimation.c_str(), _newAnimation.c_str());
 				} else {
 					_newAnimation = "";
 				}
