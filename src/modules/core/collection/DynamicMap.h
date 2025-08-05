@@ -68,7 +68,7 @@ public:
 		const KEYTYPE &first;
 		const VALUETYPE &second;
 	};
-private:
+protected:
 	core::Array<KeyValue *, BUCKETSIZE> _buckets;
 	HASHER _hasher;
 	size_t _size = 0;
