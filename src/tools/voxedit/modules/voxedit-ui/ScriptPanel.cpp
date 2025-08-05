@@ -37,37 +37,44 @@ struct ScriptPanelExecutorContext : public voxelui::LUAApiExecutorContext {
 void ScriptPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ScriptPanel);
 	const core::String title = makeTitle(ICON_LC_CODE, _("Scripts"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
-		priv::ScriptPanelExecutorContext ctx(_sceneMgr, listener);
-		bool validScript = _luaApiWidget.updateScriptExecutionPanel(luaApi, _sceneMgr->activePalette(), ctx,
-																	voxelui::LUAAPI_WIDGET_FLAG_RUN);
-		if (ImGui::Button(_("New"))) {
-			const core::String savePath = _app->filesystem()->homeWritePath("scripts");
-			_app->filesystem()->sysCreateDir(savePath);
-			_app->saveDialog([&](const core::String &file, const io::FormatDescription *desc) {
-				if (_app->filesystem()->sysWrite(file, _luaApiWidget._activeScript)) {
-					_luaApiWidget.clear();
+		if (ImGui::BeginMenuBar()) {
+			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
+				if (ImGui::IconMenuItem(ICON_LC_SQUARE, _("New"))) {
+					const core::String savePath = _app->filesystem()->homeWritePath("scripts");
+					_app->filesystem()->sysCreateDir(savePath);
+					_app->saveDialog([&](const core::String &file, const io::FormatDescription *desc) {
+						if (_app->filesystem()->sysWrite(file, _luaApiWidget._activeScript)) {
+							_luaApiWidget.clear();
+						}
+					}, {}, io::format::lua(), core::string::path(savePath, "new_script.lua"));
 				}
-			}, {}, io::format::lua(), core::string::path(savePath, "new_script.lua"));
-		}
-		ImGui::TooltipTextUnformatted(_("Create a new lua script"));
+				ImGui::TooltipTextUnformatted(_("Create a new lua script"));
 
-		if (validScript) {
-			ImGui::SameLine();
-			if (ImGui::Button(_("Edit script"))) {
-				_scriptEditor = true;
-				_activeScriptFilename = _luaApiWidget.currentScript().filename;
-				_textEditor.SetText(_luaApiWidget._activeScript.c_str());
+				if (_validScript) {
+					if (ImGui::IconMenuItem(ICON_LC_FILE_INPUT, _("Edit script"))) {
+						_scriptEditor = true;
+						_activeScriptFilename = _luaApiWidget.currentScript().filename;
+						_textEditor.SetText(_luaApiWidget._activeScript.c_str());
+					}
+					ImGui::TooltipTextUnformatted(_("Edit the selected lua script"));
+					if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
+						_luaApiWidget.reloadCurrentScript(luaApi);
+					}
+				}
+				ImGui::EndMenu();
 			}
-			ImGui::TooltipTextUnformatted(_("Edit the selected lua script"));
-			ImGui::SameLine();
-			if (ImGui::IconButton(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
-				_luaApiWidget.reloadCurrentScript(luaApi);
+			if (ImGui::BeginIconMenu(ICON_LC_LIGHTBULB, _("Help"))) {
+				ImGui::URLIconButton(ICON_LC_BOOK, _("Scripting manual"), "https://vengi-voxel.github.io/vengi/LUAScript/");
+				ImGui::EndMenu();
 			}
+			ImGui::EndMenuBar();
 		}
 
-		ImGui::URLIconButton(ICON_LC_BOOK, _("Scripting manual"), "https://vengi-voxel.github.io/vengi/LUAScript/");
+		priv::ScriptPanelExecutorContext ctx(_sceneMgr, listener);
+		_validScript = _luaApiWidget.updateScriptExecutionPanel(luaApi, _sceneMgr->activePalette(), ctx,
+																	voxelui::LUAAPI_WIDGET_FLAG_RUN);
 	}
 	ImGui::End();
 }
