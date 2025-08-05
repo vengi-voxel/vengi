@@ -538,18 +538,19 @@ voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, FrameIndex fra
 
 void SceneGraph::fixErrors() {
 	Log::warn("Attempt to fix errors in the scene graph");
-	for (const auto &entry : _nodes) {
-		entry->value.fixErrors();
-	}
+	_nodes.for_parallel([](const SceneGraphNodes::key_type &key, SceneGraphNode &value) {
+		value.fixErrors();
+	});
 	updateTransforms();
 }
 
 bool SceneGraph::validate() const {
-	for (const auto &entry : _nodes) {
-		if (!entry->value.validate()) {
-			return false;
+	bool valid = true;
+	_nodes.for_parallel([&] (const SceneGraphNodes::key_type &key, const SceneGraphNode &value) {
+		if (!value.validate()) {
+			valid = false;
 		}
-	}
+	});
 	return true;
 }
 

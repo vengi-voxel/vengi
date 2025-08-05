@@ -12,7 +12,7 @@
 #include "FrameTransform.h"
 #include "core/DirtyState.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicMap.h"
+#include "core/collection/DynamicParallelMap.h"
 #include "math/AABB.h"
 #include "math/OBB.h"
 #include "palette/NormalPalette.h"
@@ -29,7 +29,7 @@ namespace scenegraph {
 
 class SceneGraphNodeCamera;
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
-using SceneGraphNodes = core::DynamicMap<int, SceneGraphNode, 251>;
+using SceneGraphNodes = core::DynamicParallelMap<int, SceneGraphNode, 251>;
 
 /**
  * @brief The internal format for the save/load methods.
