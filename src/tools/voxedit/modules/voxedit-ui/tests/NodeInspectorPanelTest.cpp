@@ -40,7 +40,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
-		ctx->ItemClick("2x2x2##regionsize");
+		ctx->ItemClick("toolbar/2x2x2##regionsize");
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
 		IM_CHECK(model != nullptr);

@@ -15,7 +15,6 @@ void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemInputValue("##camera_props/Position/$$0", 0.0f);
 		ctx->ItemInputValue("##camera_props/Position/$$1", 1.0f);
 		ctx->ItemInputValue("##camera_props/Position/$$2", 2.0f);
-		ctx->ItemInputValue("##camera_props/FOV", 45.0f);
 		ctx->ItemClick("toolbar/###button1");
 		const size_t afterCamera = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Camera);
 		IM_CHECK_EQ(beforeCamera + 1, afterCamera);
