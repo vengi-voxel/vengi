@@ -52,7 +52,7 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 				}
 				ImGui::TooltipTextUnformatted(_("Create a new lua script"));
 
-				if (_validScript) {
+				if (_luaApiWidget.currentScript().valid) {
 					if (ImGui::IconMenuItem(ICON_LC_FILE_INPUT, _("Edit script"))) {
 						_scriptEditor = true;
 						_activeScriptFilename = _luaApiWidget.currentScript().filename;
@@ -73,7 +73,7 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 		}
 
 		priv::ScriptPanelExecutorContext ctx(_sceneMgr, listener);
-		_validScript = _luaApiWidget.updateScriptExecutionPanel(luaApi, _sceneMgr->activePalette(), ctx,
+		_luaApiWidget.updateScriptExecutionPanel(luaApi, _sceneMgr->activePalette(), ctx,
 																	voxelui::LUAAPI_WIDGET_FLAG_RUN);
 	}
 	ImGui::End();

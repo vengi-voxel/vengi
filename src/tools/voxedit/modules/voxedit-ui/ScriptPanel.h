@@ -29,7 +29,6 @@ private:
 	SceneManagerPtr _sceneMgr;
 	voxelui::LUAApiWidget _luaApiWidget;
 	bool _scriptEditor = false;
-	bool _validScript = false;
 	core::String _activeScriptFilename;
 	voxelgenerator::LUAScript _luaScript;
 
