@@ -187,7 +187,7 @@ void String::resize(size_t bytes, char c) {
 			_data._str[i] = c;
 		}
 		_data._str[bytes] = '\0';
-		updateSize();
+		_data._size = bytes;
 	}
 }
 
