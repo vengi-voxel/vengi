@@ -109,21 +109,23 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 		previewValue = _("Unknown");
 	}
 
+	bool changed = false;
 	if (ImGui::BeginCombo(label, previewValue, ImGuiComboFlags_None)) {
 		for (int i = 0; i < itemCount; ++i) {
 			const bool selected = i == *currentItem;
 			const char *text = items[i].c_str();
 			if (ImGui::Selectable(text, selected)) {
 				*currentItem = i;
+				changed = true;
+				Log::error("changed");
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
 			}
 		}
 		ImGui::EndCombo();
-		return true;
 	}
-	return false;
+	return changed;
 }
 
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
