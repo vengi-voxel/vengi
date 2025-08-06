@@ -2255,7 +2255,7 @@ void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::St
 	s.parameters.clear();
 	s.enumValues.clear();
 
-	if (!prepare(_lua, luaScript)) {
+	if (luaScript.empty() || !prepare(_lua, luaScript)) {
 		return;
 	}
 	argumentInfo(_lua, s.parameterDescription);

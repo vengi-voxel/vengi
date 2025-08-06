@@ -148,9 +148,7 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 	}
 
 	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
-		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
-			loadCurrentScript(luaApi);
-		}
+		loadCurrentScript(luaApi);
 	}
 	ImGui::TooltipTextUnformatted(_("LUA scripts for manipulating the voxel volumes"));
 
@@ -185,28 +183,27 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 }
 
 void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script) {
-	if (script.cached) {
-		return;
-	}
-	luaApi.reloadScriptParameters(script);
+	reloadScriptParameters(luaApi, script, luaApi.load(script.filename));
 }
 
 void LUAApiWidget::reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &s, const core::String &luaScript) {
 	_activeScript = luaScript;
-	luaApi.reloadScriptParameters(s, luaScript);
+	if (s.cached) {
+		return;
+	}
+	luaApi.reloadScriptParameters(s, _activeScript);
 }
 
 void LUAApiWidget::reloadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 	if (voxelgenerator::LUAScript *s = currentScriptPointer()) {
 		s->cached = false;
-		luaApi.reloadScriptParameters(*s);
+		reloadScriptParameters(luaApi, *s);
 	}
 }
 
 void LUAApiWidget::loadCurrentScript(voxelgenerator::LUAApi &luaApi) {
 	if (voxelgenerator::LUAScript *s = currentScriptPointer()) {
-		// TODO: s->cached is not handled here
-		luaApi.reloadScriptParameters(*s);
+		reloadScriptParameters(luaApi, *s);
 	}
 }
 
