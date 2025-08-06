@@ -117,7 +117,6 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 			if (ImGui::Selectable(text, selected)) {
 				*currentItem = i;
 				changed = true;
-				Log::error("changed");
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
