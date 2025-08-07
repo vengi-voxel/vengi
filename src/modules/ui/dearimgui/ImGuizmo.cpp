@@ -966,7 +966,8 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mWidth = width;
       gContext.mHeight = height;
       gContext.mXMax = gContext.mX + gContext.mWidth;
-      gContext.mYMax = gContext.mY + gContext.mXMax;
+      // mgerhardy - cherry-picked https://github.com/CedricGuillemet/ImGuizmo/pull/366
+      gContext.mYMax = gContext.mY + gContext.mHeight;
       gContext.mDisplayRatio = width / height;
    }
 
