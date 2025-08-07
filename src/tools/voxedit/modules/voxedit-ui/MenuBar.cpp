@@ -17,6 +17,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelui/FileDialogOptions.h"
 
 namespace voxedit {
 
@@ -125,10 +126,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				viewModeOption();
 				_app->languageOption();
 
-				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
-					_("Cubes"), _("Marching cubes"), _("Binary")};
-				static_assert(3 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
-				ImGui::ComboVar(_("Mesh mode"), cfg::VoxelMeshMode, meshModes);
+				voxelui::meshModeOption();
 				ImGui::InputVarInt(_("Model animation speed"), cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt(_("Autosave delay in seconds"), cfg::VoxEditAutoSaveSeconds);
 				ImGui::InputVarInt(_("Viewports"), cfg::VoxEditViewports, 1, 1);

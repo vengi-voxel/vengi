@@ -34,5 +34,6 @@ bool genericOptions(const io::FormatDescription *desc);
 bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry);
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
 				 const palette::PaletteCache &paletteCache);
+void meshModeOption();
 
 } // namespace voxelui

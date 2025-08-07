@@ -17,6 +17,7 @@
 #include "ui/IMGUIEx.h"
 #include "video/FileDialogOptions.h"
 #include "video/OpenFileMode.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
@@ -101,7 +102,7 @@ bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc)
 	if (mode == video::OpenFileMode::Save && *desc == palette::GimpPalette::format()) {
 		ImGui::CheckboxVar(_("Gimp Aseprite Alpha extension"), cfg::PalformatGimpRGBA);
 	}
-	// TODO: add quantized palette options cfg::CoreColorReduction
+	imguiApp()->colorReductionOptions();
 	return false;
 }
 
@@ -187,7 +188,7 @@ static void saveOptionsMesh(const io::FormatDescription *desc) {
 	}
 	ImGui::CheckboxVar(_("Export materials"), cfg::VoxformatWithMaterials);
 
-	// TODO: cfg::VoxelMeshMode
+	voxelui::meshModeOption();
 }
 
 bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry) {
@@ -315,7 +316,7 @@ static void loadOptionsMesh() {
 			}
 			const bool selected = i == currentVoxelizationMode;
 			if (ImGui::Selectable(type, selected)) {
-				voxelizationVar->setVal(core::string::toString(i));
+				voxelizationVar->setVal(i);
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
@@ -379,6 +380,13 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	loadOptionsGeneric(desc, entry, paletteCache);
 	return true;
+}
+
+void meshModeOption() {
+	static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
+		_("Cubes"), _("Marching cubes"), _("Binary")};
+	static_assert(3 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
+	ImGui::ComboVar(_("Mesh mode"), cfg::VoxelMeshMode, meshModes);
 }
 
 } // namespace voxelui
