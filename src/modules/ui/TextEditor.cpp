@@ -1749,7 +1749,7 @@ void TextEditor::Paste() {
 		return;
 
 	auto clipText = ImGui::GetClipboardText();
-	if (clipText != nullptr && strlen(clipText) > 0) {
+	if (clipText != nullptr && clipText[0] != '\0') {
 		UndoRecord u;
 		u.mBefore = _state;
 
