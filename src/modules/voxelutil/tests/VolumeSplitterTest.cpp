@@ -63,6 +63,38 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	EXPECT_EQ(expectedVoxelCount, foundVoxelsAfterSplitAndMerge);
 }
 
+TEST_F(VolumeSplitterTest, testSplitEmpty) {
+	const voxel::Region region(0, 31);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	core::Vector<voxel::Voxel, 32> voxels;
+	voxels.assign(voxel, region.getHeightInVoxels());
+
+	// prepare volume
+	voxel::RawVolume volume(region);
+	voxel::RawVolumeWrapper wrapper(&volume);
+	voxel::setVoxels(wrapper, 0, 0, 0, region.getWidthInVoxels(), region.getDepthInVoxels(), &voxels.front(),
+					  region.getHeightInVoxels());
+
+	const int expectedVoxelCount = region.getWidthInVoxels() * region.getDepthInVoxels() * region.getHeightInVoxels();
+	const int foundVoxels = countVoxels(volume, voxel);
+	EXPECT_EQ(expectedVoxelCount, foundVoxels);
+
+	// perform split
+	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, glm::ivec3(16), true);
+	EXPECT_EQ(8u, rawVolumes.size());
+
+	// merge volumes
+	core::ScopedPtr<voxel::RawVolume> merged(voxelutil::merge(rawVolumes));
+	for (voxel::RawVolume *v : rawVolumes) {
+		delete v;
+	}
+	rawVolumes.clear();
+
+	// count voxels
+	const int foundVoxelsAfterSplitAndMerge = countVoxels(*merged, voxel);
+	EXPECT_EQ(expectedVoxelCount, foundVoxelsAfterSplitAndMerge);
+}
+
 TEST_F(VolumeSplitterTest, testSplitObjects) {
 	const voxel::Region region(0, 31);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);

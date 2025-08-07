@@ -87,7 +87,7 @@ core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, con
 					const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
 					const voxel::Region innerRegion(innerMins, innerMaxs);
 					bool onlyAir = true;
-					voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, &onlyAir);
+					voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, createEmpty ? nullptr : &onlyAir);
 					if (onlyAir && !createEmpty) {
 						Log::debug("- skip empty %s", innerRegion.toString().c_str());
 						delete copy;
