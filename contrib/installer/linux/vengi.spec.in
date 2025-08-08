@@ -2,7 +2,7 @@ Name: @ROOT_PROJECT_NAME@
 Summary: Voxel tools for artists and developers
 Version: @CMAKE_PROJECT_VERSION@
 Release: 1
-URL: https://vengi-voxel.de/
+URL: @CMAKE_PROJECT_HOMEPAGE_URL@
 License: MIT
 Group: Applications/Multimedia
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot

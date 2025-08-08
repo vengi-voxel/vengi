@@ -10,6 +10,7 @@
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
+#include "engine-config.h"
 #include <ctype.h>
 
 FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
@@ -408,7 +409,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 	printManPageFormats(app, save);
 
 	Log::printf(".SH HOMEPAGE\n");
-	Log::printf("https://github.com/vengi-voxel/vengi\n");
+	Log::printf(PROJECT_HOMEPAGE_URL "\n");
 	Log::printf("\n");
 	Log::printf(".SH COPYRIGHT\n");
 	Log::printf("Copyright \\[co] 2015\\-@COPYRIGHT_YEAR@ by Martin Gerhardy.\n");

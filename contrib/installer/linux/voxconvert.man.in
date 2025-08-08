@@ -458,7 +458,7 @@ Voxel3D (*.v3a, *.v3b)
 Wavefront Object (*.obj)
 
 .SH HOMEPAGE
-https://github.com/vengi-voxel/vengi
+@CMAKE_PROJECT_HOMEPAGE_URL@
 
 .SH COPYRIGHT
 Copyright \[co] 2015\-@COPYRIGHT_YEAR@ by Martin Gerhardy.
