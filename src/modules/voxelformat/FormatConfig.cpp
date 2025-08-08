@@ -86,6 +86,8 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type >= -1 && type <= 255;
 				   });
+	core::Var::get(cfg::VoxformatVXLLoadHVA, "true", core::CV_NOPERSIST, _("Load the hva for animations"),
+				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVOXCreateGroups, "true", core::CV_NOPERSIST, _("Merge compounds on load"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST, _("Merge compounds on load"),

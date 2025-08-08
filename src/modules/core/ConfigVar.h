@@ -103,6 +103,7 @@ constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
 constexpr const char *VoxformatQBTMergeCompounds = "voxformat_qbtmergecompounds";
 constexpr const char *VoxformatVOXCreateLayers = "voxformat_voxcreatelayers";
 constexpr const char *VoxformatVOXCreateGroups = "voxformat_voxcreategroups";
+constexpr const char *VoxformatVXLLoadHVA = "voxformat_vxllodhva";
 constexpr const char *VoxformatQBSaveLeftHanded = "voxformat_qbsavelefthanded";
 constexpr const char *VoxformatQBSaveCompressed = "voxformat_qbsavecompressed";
 constexpr const char *VoxformatGLTF_KHR_materials_pbrSpecularGlossiness = "voxformat_gltf_khr_materials_pbrspecularglossiness";

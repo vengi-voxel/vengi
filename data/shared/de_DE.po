@@ -612,6 +612,9 @@ msgstr ""
 msgid "The index of the empty color in the palette"
 msgstr ""
 
+msgid "Load the hva for animations"
+msgstr ""
+
 msgid "Toggle between left and right handed"
 msgstr ""
 
@@ -867,6 +870,21 @@ msgstr "Gruppen hinzufügen"
 
 msgid "Merge faces"
 msgstr "Seiten zusammenführen"
+
+msgid "Load HVA"
+msgstr "HVA laden"
+
+msgid "Binary"
+msgstr ""
+
+msgid "Cubes"
+msgstr "Würfel"
+
+msgid "Marching cubes"
+msgstr "Marching Cubes"
+
+msgid "Mesh mode"
+msgstr "Mesh-Modus"
 
 msgid "Script parameters"
 msgstr "Skriptparameter"
@@ -1659,18 +1677,6 @@ msgstr "Farbauswahl"
 
 msgid "Color wheel"
 msgstr "Farbrad"
-
-msgid "Binary"
-msgstr ""
-
-msgid "Cubes"
-msgstr "Würfel"
-
-msgid "Marching cubes"
-msgstr "Marching Cubes"
-
-msgid "Mesh mode"
-msgstr "Mesh-Modus"
 
 msgid "Model animation speed"
 msgstr "Modellanimationsgeschwindigkeit"

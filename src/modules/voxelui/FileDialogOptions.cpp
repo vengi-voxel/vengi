@@ -20,6 +20,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
+#include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
@@ -376,6 +377,10 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::SkinFormat::format()) {
 		loadOptionsMinecraftSkin(entry);
+	}
+
+	if (*desc == voxelformat::VXLFormat::format()) {
+		ImGui::CheckboxVar(_("Load HVA"), cfg::VoxformatVXLLoadHVA);
 	}
 
 	loadOptionsGeneric(desc, entry, paletteCache);

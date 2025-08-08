@@ -5,9 +5,11 @@
 #include "VXLFormat.h"
 #include "core/Assert.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
@@ -689,7 +691,8 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	const core::String &basename = core::string::stripExtension(filename);
 
-	if (archive->exists(basename + ".hva")) {
+	const bool loadHVA = core::Var::getSafe(cfg::VoxformatVXLLoadHVA)->boolVal();
+	if (loadHVA && archive->exists(basename + ".hva")) {
 		HVAFormat hva;
 		wrapBool(hva.loadHVA(basename + ".hva", archive, mdl, sceneGraph))
 	}
