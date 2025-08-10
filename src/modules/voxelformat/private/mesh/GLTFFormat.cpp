@@ -1395,10 +1395,10 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr
 	} else {
 		Log::debug("Invalid texture index given %i", gltfTextureInfo.index);
 	}
-	palette::Material &paletteMaterial = meshMaterial->material;
-	paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness,
+	palette::Material &material = meshMaterial->material;
+	material.setValue(palette::MaterialProperty::MaterialRoughness,
 							 gltfMaterial.pbrMetallicRoughness.roughnessFactor);
-	paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal,
+	material.setValue(palette::MaterialProperty::MaterialMetal,
 							 gltfMaterial.pbrMetallicRoughness.metallicFactor);
 	// TODO: MATERIAL: load baseColor
 	// const glm::vec4 color = glm::make_vec4(&gltfMaterial.pbrMetallicRoughness.baseColorFactor[0]);
@@ -1406,13 +1406,13 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr
 	// meshMaterial->baseColorFactor = gltfMaterial.pbrMetallicRoughness.baseColorFactor[0];
 	// TODO: MATERIAL: load emissiveTexture
 	// TODO: MATERIAL: maybe load it as average - there is no 1:1 mapping here
-	paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, gltfMaterial.emissiveFactor[0]);
+	material.setValue(palette::MaterialProperty::MaterialEmit, gltfMaterial.emissiveFactor[0]);
 
 	// load extensions - some of these rely on values loaded before - that's why they must be loaded last
-	load_KHR_materials_emissive_strength(paletteMaterial, gltfMaterial);
-	load_KHR_materials_pbrSpecularGlossiness(paletteMaterial, gltfMaterial);
-	load_KHR_materials_specular(paletteMaterial, gltfMaterial);
-	load_KHR_materials_ior(paletteMaterial, gltfMaterial);
+	load_KHR_materials_emissive_strength(material, gltfMaterial);
+	load_KHR_materials_pbrSpecularGlossiness(material, gltfMaterial);
+	load_KHR_materials_specular(material, gltfMaterial);
+	load_KHR_materials_ior(material, gltfMaterial);
 
 	return true;
 }
