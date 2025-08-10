@@ -22,7 +22,7 @@ struct PointCloudVertex {
 	core::RGBA color{0, 0, 0, 255};
 };
 using PointCloud = core::Buffer<PointCloudVertex>;
-using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
+using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri, 4096>;
 using PosMap = core::ParallelMap<glm::ivec3, PosSampling, 67, glm::hash<glm::ivec3>>;
 
 /**
