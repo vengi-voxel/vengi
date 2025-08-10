@@ -60,9 +60,22 @@ TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 	testLoad(sceneGraph, "glTF/lantern/Lantern.gltf", 3u);
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
+	EXPECT_EQ("LanternPole_Body", node->name());
 	const voxel::RawVolume *v = node->volume();
 	ASSERT_NE(nullptr, v);
+	const voxel::Region &region = v->region();
+	EXPECT_EQ(-9, region.getLowerX());
+	EXPECT_EQ(-14, region.getLowerY());
+	EXPECT_EQ(-4, region.getLowerZ());
+	EXPECT_EQ(8, region.getUpperX());
+	EXPECT_EQ(13, region.getUpperY());
+	EXPECT_EQ(3, region.getUpperZ());
 	EXPECT_EQ(286, voxel::countVoxels(*v));
+	// TODO:
+	// EXPECT_EQ(89, v->voxel(-8, 9, 0).getColor());
+	// const core::RGBA expected(69, 58, 46, 255);
+	// const core::RGBA is = node->palette().color(v->voxel(-8, 9, 0).getColor());
+	// voxel::colorComparator(expected, is, 10);
 }
 
 // TODO: MATERIAL: materials are not yet properly loaded back from gltf

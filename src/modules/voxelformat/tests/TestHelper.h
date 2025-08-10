@@ -70,10 +70,12 @@ CORE_ENUM_BIT_OPERATIONS(ValidateFlags);
 
 int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel);
 int countVoxels(const voxel::RawVolume &volume);
-void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, voxel::ValidateFlags flags, float maxDelta = 0.001f);
+void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, voxel::ValidateFlags flags, float maxDelta);
 void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palette &pal2, int maxDelta = 4);
 void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
 void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
+void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, core::RGBA c1, core::RGBA c2, uint8_t palIdx, float maxDelta = 0.001f);
+void colorComparator(core::RGBA c1, core::RGBA c2, int maxDelta = 1);
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);

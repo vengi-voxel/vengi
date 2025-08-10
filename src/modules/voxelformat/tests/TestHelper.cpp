@@ -144,19 +144,30 @@ int countVoxels(const voxel::RawVolume &volume) {
 	return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 }
 
+void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, core::RGBA c1, core::RGBA c2, uint8_t palIdx, float maxDelta) {
+	if (c1 != c2) {
+		const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
+		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << (int)palIdx << ", color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+									<< "\nPalette 1:\n"
+									<< palette::Palette::print(pal1) << "\nPalette 2:\n"
+									<< palette::Palette::print(pal2);
+	}
+}
+
+void colorComparator(core::RGBA c1, core::RGBA c2, int maxDelta) {
+	EXPECT_NEAR(c1.r, c2.r, maxDelta);
+	EXPECT_NEAR(c1.g, c2.g, maxDelta);
+	EXPECT_NEAR(c1.b, c2.b, maxDelta);
+	EXPECT_NEAR(c1.a, c2.a, maxDelta);
+}
+
 void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
 		const core::RGBA &c1 = pal1.color(i);
 		const core::RGBA &c2 = pal2.color(i);
-		if (c1 != c2) {
-			const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
-									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
-									   << "\nPalette 1:\n"
-									   << palette::Palette::print(pal1) << "\nPalette 2:\n"
-									   << palette::Palette::print(pal2);
-		}
+		colorComparator(pal1, pal2, c1, c2, (uint8_t)i, maxDelta);
 	}
 }
 
@@ -165,10 +176,7 @@ void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palett
 	for (int i = 0; i < pal1.colorCount(); ++i) {
 		const core::RGBA &c1 = pal1.color(i);
 		const core::RGBA &c2 = pal2.color(i);
-		EXPECT_NEAR(c1.r, c2.r, maxDelta);
-		EXPECT_NEAR(c1.g, c2.g, maxDelta);
-		EXPECT_NEAR(c1.b, c2.b, maxDelta);
-		EXPECT_NEAR(c1.a, c2.a, maxDelta);
+		colorComparator(c1, c2, maxDelta);
 	}
 }
 
