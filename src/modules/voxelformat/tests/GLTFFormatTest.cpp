@@ -7,6 +7,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -57,6 +58,11 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "glTF/lantern/Lantern.gltf", 3u);
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const voxel::RawVolume *v = node->volume();
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(286, voxel::countVoxels(*v));
 }
 
 // TODO: MATERIAL: materials are not yet properly loaded back from gltf
