@@ -108,20 +108,15 @@ private:
 		glm::vec3 pos{0.0f};
 		glm::vec2 uv{0.0f};
 		core::RGBA color{0};
-		MeshMaterialPtr meshMaterial;
-	};
-	struct GltfMaterialData {
-		GltfMaterialData();
-		core::String texCoordAttribute;
-		MeshMaterialPtr meshMaterial;
+		MeshMaterialIndex materialIdx;
 	};
 	void loadTexture(const core::String &filename, const io::ArchivePtr &archive, const tinygltf::Model &gltfModel,
-					 GltfMaterialData &materialData, const tinygltf::TextureInfo &gltfTextureInfo,
+					 MeshMaterialPtr &meshMaterial, const tinygltf::TextureInfo &gltfTextureInfo,
 					 int textureIndex) const;
 	bool loadMaterial(const core::String &filename, const io::ArchivePtr &archive, const tinygltf::Model &gltfModel,
-					  const tinygltf::Material &gltfMaterial, GltfMaterialData &materialData) const;
+					  const tinygltf::Material &gltfMaterial, MeshMaterialPtr &meshMaterial) const;
 	bool loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel,
-						const core::DynamicArray<GltfMaterialData> &materials, const tinygltf::Primitive &gltfPrimitive,
+						const MeshMaterialArray &meshMaterialArray, const tinygltf::Primitive &gltfPrimitive,
 						core::DynamicArray<GltfVertex> &vertices) const;
 
 	bool loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
@@ -130,7 +125,7 @@ private:
 	bool loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 						scenegraph::SceneGraphNode &node) const;
 	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &gltfModel,
-					const core::DynamicArray<GltfMaterialData> &materials, int gltfNodeIdx, int parentNodeId) const;
+					const MeshMaterialArray &meshMaterialArray, int gltfNodeIdx, int parentNodeId) const;
 	bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
 					 core::Buffer<uint32_t> &indices, size_t indicesOffset) const;
 	scenegraph::SceneGraphTransform loadTransform(const tinygltf::Node &gltfNode) const;

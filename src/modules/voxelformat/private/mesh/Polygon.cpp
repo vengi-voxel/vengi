@@ -3,7 +3,6 @@
  */
 
 #include "Polygon.h"
-#include "core/collection/DynamicArray.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
@@ -12,8 +11,8 @@
 
 namespace voxelformat {
 
-Polygon &Polygon::setMaterial(const MeshMaterialPtr &material) {
-	_material = material;
+Polygon &Polygon::setMaterialIndex(MeshMaterialIndex materialIdx) {
+	_materialIdx = materialIdx;
 	return *this;
 }
 
@@ -22,13 +21,6 @@ Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::
 	_uvs.push_back(uv);
 	_colors.push_back(color);
 	return *this;
-}
-
-glm::vec2 Polygon::uv(int x, int y) const {
-	if (_material && _material->texture) {
-		return _material->texture->uv(x, y);
-	}
-	return {0.0f, 0.0f};
 }
 
 static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords,
@@ -46,7 +38,7 @@ void Polygon::addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2)
 	meshTri.setVertices(_vertices[idx0], _vertices[idx1], _vertices[idx2]);
 	meshTri.setUVs(_uvs[idx0], _uvs[idx1], _uvs[idx2]);
 	meshTri.setColor(_colors[idx0], _colors[idx1], _colors[idx2]);
-	meshTri.material = _material;
+	meshTri.materialIdx = _materialIdx;
 	tris.push_back(meshTri);
 }
 

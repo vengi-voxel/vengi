@@ -97,8 +97,6 @@ public:
 	// map via uuid
 	using ElementMap = core::StringMap<Element>;
 
-	using Materials = core::DynamicArray<MeshMaterialPtr>;
-
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
 		return f;
@@ -106,10 +104,10 @@ public:
 
 private:
 	bool addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
-				 const Materials &materials, int parent) const;
-	bool generateCube(const Node &node, const Element &element, const Materials &materials,
+				 const MeshMaterialArray &meshMaterialArray, int parent) const;
+	bool generateCube(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
-	bool generateMesh(const Node &node, const Element &element, const Materials &materials,
+	bool generateMesh(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
 
 protected:

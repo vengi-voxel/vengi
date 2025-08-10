@@ -63,7 +63,7 @@ static core::String extractBaseDir(const core::String &filename) {
 
 bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream,
 										const BspHeader &header, core::DynamicArray<Texture> &textures,
-										MeshMaterialMap &meshMaterials) {
+										MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray) {
 	core::Buffer<Quake1Texinfo> miptex;
 
 	struct TextureLump {
@@ -141,7 +141,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 
 		auto meshMaterialIter = meshMaterials.find(texture.name);
 		if (meshMaterialIter != meshMaterials.end()) {
-			texture.material = meshMaterialIter->second;
+			texture.materialIdx = meshMaterialIter->second;
 			continue;
 		}
 
@@ -169,8 +169,9 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		}
 		if (tex->loadRGBA((const uint8_t *)buffer.data(), width, height)) {
 			Log::debug("Use image %s", texture.name);
-			texture.material = createMaterial(tex);
-			meshMaterials.put(texture.name, texture.material);
+			meshMaterialArray.push_back(createMaterial(tex));
+			texture.materialIdx = meshMaterialArray.size() - 1;
+			meshMaterials.put(texture.name, texture.materialIdx);
 		} else {
 			Log::warn("Failed to load %s", texture.name);
 		}
@@ -180,7 +181,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 
 bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,
 												  const BspHeader &header, core::DynamicArray<Texture> &textures,
-												  MeshMaterialMap &meshMaterials) {
+												  MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray) {
 	const int32_t textureCount = validateLump(header.lumps[_priv::ufoaiTexinfoLump], sizeof(BspTexture));
 	if (textureCount <= 0) {
 		Log::error("Invalid bsp file with no textures in lump");
@@ -213,7 +214,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 		auto meshMaterialIter = meshMaterials.find(texture.name);
 		if (meshMaterialIter != meshMaterials.end()) {
 			Log::debug("texture for material '%s' is already loaded", texture.name);
-			texture.material = meshMaterialIter->second;
+			texture.materialIdx = meshMaterialIter->second;
 			continue;
 		}
 
@@ -223,8 +224,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 		const image::ImagePtr &tex = image::loadImage(textureName);
 		if (tex->isLoaded()) {
 			Log::debug("Use image %s", textureName.c_str());
-			texture.material = createMaterial(tex);
-			meshMaterials.put(textureName, texture.material);
+			meshMaterialArray.push_back(createMaterial(tex));
+			texture.materialIdx = meshMaterialArray.size() - 1;
+			meshMaterials.put(textureName, texture.materialIdx);
 		} else {
 			Log::warn("Failed to load %s", textureName.c_str());
 		}
@@ -450,8 +452,9 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
 								   scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
 	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
 	core::DynamicArray<Texture> textures;
-	if (!loadQuake1Textures(filename, stream, header, textures, meshMaterials)) {
+	if (!loadQuake1Textures(filename, stream, header, textures, meshMaterials, meshMaterialArray)) {
 		Log::error("Failed to load textures");
 		return false;
 	}
@@ -476,7 +479,7 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 	}
 
 	const core::String &name = core::string::extractFilename(filename);
-	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name)) {
+	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name, meshMaterialArray)) {
 		Log::error("Failed to voxelize %s", filename.c_str());
 		return false;
 	}
@@ -541,8 +544,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 											 scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
 	Log::debug("Load textures");
 	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
 	core::DynamicArray<Texture> textures;
-	if (!loadUFOAlienInvasionTextures(filename, stream, header, textures, meshMaterials)) {
+	if (!loadUFOAlienInvasionTextures(filename, stream, header, textures, meshMaterials, meshMaterialArray)) {
 		Log::error("Failed to load textures");
 		return false;
 	}
@@ -594,7 +598,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 		}
 		Log::debug("Voxelize level %i", i);
 		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph,
-					 core::String::format("Level %i", i + 1))) {
+					 core::String::format("Level %i", i + 1), meshMaterialArray)) {
 			state = true;
 		}
 	}
@@ -605,7 +609,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::Buffer<Face> &faces,
 							  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
 							  const core::Buffer<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
-							  const core::String &name) {
+							  const core::String &name, const MeshMaterialArray &meshMaterialArray) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
@@ -655,15 +659,20 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 			const glm::vec3 tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
 
 			const glm::vec3 vertex(vert->x, vert->y, vert->z);
-			if (texture.material && texture.material->texture) {
-				/* texture coordinates */
-				float s = glm::dot(vertex, sdir) + texture.distS;
-				s /= (float)texture.material->texture->width();
+			if (texture.materialIdx > 0 && texture.materialIdx < (int)meshMaterialArray.size()) {
+				const MeshMaterialPtr &material = meshMaterialArray[texture.materialIdx];
+				if (material->texture) {
+					/* texture coordinates */
+					float s = glm::dot(vertex, sdir) + texture.distS;
+					s /= (float)material->texture->width();
 
-				float t = glm::dot(vertex, tdir) + texture.distT;
-				t /= (float)texture.material->texture->height();
+					float t = glm::dot(vertex, tdir) + texture.distT;
+					t /= (float)material->texture->height();
 
-				texcoords[offset] = glm::vec2(s, t);
+					texcoords[offset] = glm::vec2(s, t);
+				} else {
+					texcoords[offset] = glm::vec2(0, 0);
+				}
 			} else {
 				texcoords[offset] = glm::vec2(0, 0);
 			}
@@ -706,11 +715,11 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		meshTri.setUVs(texcoords[idx0], texcoords[idx1], texcoords[idx2]);
 		const int textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
-		meshTri.material = texture.material;
+		meshTri.materialIdx = texture.materialIdx;
 		tris.push_back(meshTri);
 	}
 
-	return voxelizeNode(name, sceneGraph, tris) > 0;
+	return voxelizeNode(name, sceneGraph, tris, meshMaterialArray) > 0;
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,

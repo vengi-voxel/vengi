@@ -804,6 +804,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
 	for (const Node3ds &node : nodes) {
 		Log::debug("Import %i meshes for node %s", (int)node.meshes.size(), node.name.c_str());
 		for (const auto &entry : node.materials) {
@@ -816,8 +817,8 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			}
 			material->transparency = material3ds.transparency;
 			material->material.setValue(palette::MaterialProperty::MaterialSpecular, material3ds.shininess);
-			// TODO: MATERIAL: convert to MeshMaterial
-			meshMaterials.put(material->name, material);
+			meshMaterialArray.push_back(material);
+			meshMaterials.put(material->name, meshMaterialArray.size() - 1);
 		}
 	}
 	const glm::vec3 scale = getInputScale();
@@ -851,7 +852,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				if (!face.material.empty()) {
 					auto matIter = meshMaterials.find(face.material);
 					if (matIter != meshMaterials.end()) {
-						meshTri.material = matIter->second;
+						meshTri.materialIdx = matIter->second;
 					} else {
 						Log::warn("Failed to look up material '%s'", face.material.c_str());
 					}
@@ -868,7 +869,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				nodeName = mesh.name;
 			}
 			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)tris.size());
-			const int nodeId = voxelizeNode(nodeName, sceneGraph, tris, parent);
+			const int nodeId = voxelizeNode(nodeName, sceneGraph, tris, meshMaterialArray, parent);
 			if (nodeId == InvalidNodeId) {
 				return false;
 			}

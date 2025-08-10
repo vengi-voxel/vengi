@@ -146,7 +146,7 @@ static bool isSupportModelFormat(const core::String &modelFormat) {
 }
 
 static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-					  const nlohmann::json &elementJson, const BlockbenchFormat::Materials &materials,
+					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
 					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("vertices") == elementJson.end()) {
 		Log::error("Element is missing vertices in json file: %s", filename.c_str());
@@ -195,10 +195,10 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 		}
 
 		const int materialIdx = priv::toNumber(faceData, "texture", -1);
-		const bool materialIdxValid = materialIdx >= 0 && materialIdx < (int)materials.size();
+		const bool materialIdxValid = materialIdx >= 0 && materialIdx < (int)meshMaterialArray.size();
 		Polygon polygon;
 		if (materialIdxValid) {
-			polygon.setMaterial(materials[materialIdx]);
+			polygon.setMaterialIndex(meshMaterialArray[materialIdx]);
 		}
 		for (const auto &vertex : faceVertices) {
 			const std::string &vertexName = vertex;
@@ -215,17 +215,21 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 			const glm::vec3 pos(vertexIter.value()[0], vertexIter.value()[1], vertexIter.value()[2]);
 			const int x = uvIter.value()[0];
 			const int y = uvIter.value()[1];
-			const glm::vec2 &uvCoords = polygon.uv(x, y);
+			glm::vec2 uvCoords;
+			if (materialIdxValid) {
+				uvCoords = meshMaterialArray[materialIdx]->texture ? meshMaterialArray[materialIdx]->texture->uv(x, y) : glm::vec2(0.0f);
+			} else {
+				uvCoords = glm::vec2(0.0f);
+			}
 			polygon.addVertex(pos, uvCoords);
 		}
 		polygon.toTris(element.mesh.tris);
 	}
-
 	return true;
 }
 
 static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-					  const nlohmann::json &elementJson, const BlockbenchFormat::Materials &materials,
+					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
 					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
 		Log::error("Element is missing from or to in json file: %s", filename.c_str());
@@ -286,9 +290,9 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 		}
 
 		int materialIdx = -1;
-		if (!materials.empty()) {
+		if (!meshMaterialArray.empty()) {
 			materialIdx = priv::toNumber(faceData, "texture", -1);
-			if (materialIdx >= (int)materials.size()) {
+			if (materialIdx >= (int)meshMaterialArray.size()) {
 				Log::error("Invalid material index: %d", materialIdx);
 				return false;
 			}
@@ -296,9 +300,9 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 
 		Log::debug("faceName: %s, materialIdx: %d", faceName.c_str(), materialIdx);
 		int uvs[4]{uv[0], uv[1], uv[2], uv[3]};
-		if (materialIdx >= 0 && materials[materialIdx]->texture) {
-			const glm::vec2 uv0 = materials[materialIdx]->texture->uv(uvs[0], uvs[1]);
-			const glm::vec2 uv1 = materials[materialIdx]->texture->uv(uvs[2] - 1, uvs[3] - 1);
+		if (materialIdx >= 0 && meshMaterialArray[materialIdx]->texture) {
+			const glm::vec2 uv0 = meshMaterialArray[materialIdx]->texture->uv(uvs[0], uvs[1]);
+			const glm::vec2 uv1 = meshMaterialArray[materialIdx]->texture->uv(uvs[2] - 1, uvs[3] - 1);
 			element.cube.faces[(int)faceType].uvs[0] = uv0;
 			element.cube.faces[(int)faceType].uvs[1] = uv1;
 		}
@@ -308,7 +312,7 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 }
 
 static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-						  const nlohmann::json &elementsJson, const BlockbenchFormat::Materials &textureArray,
+						  const nlohmann::json &elementsJson, const MeshMaterialArray &meshMaterialArray,
 						  BlockbenchFormat::ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
 		BlockbenchFormat::Element element;
@@ -326,11 +330,11 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		}
 
 		if (element.type == BlockbenchFormat::ElementType::Cube) {
-			if (!parseCube(scale, filename, meta, elementJson, textureArray, element)) {
+			if (!parseCube(scale, filename, meta, elementJson, meshMaterialArray, element)) {
 				return false;
 			}
 		} else if (element.type == BlockbenchFormat::ElementType::Mesh) {
-			if (!parseMesh(scale, filename, meta, elementJson, textureArray, element)) {
+			if (!parseMesh(scale, filename, meta, elementJson, meshMaterialArray, element)) {
 				return false;
 			}
 		}
@@ -389,10 +393,10 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 } // namespace priv
 
-bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const Materials &textureArray,
+bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Mesh &mesh = element.mesh;
-	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, mesh.tris, parent);
+	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, mesh.tris, meshMaterialArray, parent);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
 	}
@@ -405,7 +409,7 @@ bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, co
 	return true;
 }
 
-bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const Materials &textureArray,
+bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Cube &cube = element.cube;
 
@@ -445,8 +449,8 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 		const CubeFace &face = cube.faces[(int)order[i]];
 		const voxel::FaceNames faceName = order[i];
 		image::ImagePtr image;
-		if (face.textureIndex >= 0 && textureArray[face.textureIndex]->texture) {
-			image = textureArray[face.textureIndex]->texture;
+		if (face.textureIndex >= 0 && meshMaterialArray[face.textureIndex]->texture) {
+			image = meshMaterialArray[face.textureIndex]->texture;
 		}
 		voxelutil::importFace(*model.volume(), model.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
 							  element.color);
@@ -456,7 +460,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 }
 
 bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
-							   const Materials &textureArray, int parent) const {
+							   const MeshMaterialArray &meshMaterialArray, int parent) const {
 	Log::debug("node: %s with %i children", node.name.c_str(), (int)node.children.size());
 	for (const core::String &uuid : node.referenced) {
 		auto elementIter = elementMap.find(uuid);
@@ -466,11 +470,11 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 		}
 		const Element &element = elementIter->value;
 		if (element.type == ElementType::Cube) {
-			if (!generateCube(node, element, textureArray, sceneGraph, parent)) {
+			if (!generateCube(node, element, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
 		} else if (element.type == ElementType::Mesh) {
-			if (!generateMesh(node, element, textureArray, sceneGraph, parent)) {
+			if (!generateMesh(node, element, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
 		} else {
@@ -489,7 +493,7 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 			Log::error("Failed to add node: %s", child.name.c_str());
 			return false;
 		}
-		if (!addNode(child, elementMap, sceneGraph, textureArray, groupParent)) {
+		if (!addNode(child, elementMap, sceneGraph, meshMaterialArray, groupParent)) {
 			return false;
 		}
 	}
@@ -643,8 +647,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	Materials materials;
-	materials.reserve(textures.size());
+	MeshMaterialArray meshMaterialArray;
+	meshMaterialArray.reserve(textures.size());
 
 	for (const auto &texture : textures) {
 		const core::String &name = json::toStr(texture, "name");
@@ -679,8 +683,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			io::BufferedReadWriteStream bufferedStream(base64Stream, data.size());
 			const image::ImagePtr &image = image::loadImage(name, bufferedStream);
 			if (image->isLoaded()) {
-				materials.emplace_back(createMaterial(image));
+				meshMaterialArray.emplace_back(createMaterial(image));
 			}
+			// TODO: VOXELFORMAT: this will destroy the material indices...
 		}
 	}
 
@@ -692,7 +697,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	const glm::vec3 scale = getInputScale();
 	ElementMap elementMap;
-	if (!priv::parseElements(scale, filename, meta, elementsJson, materials, elementMap, sceneGraph)) {
+	if (!priv::parseElements(scale, filename, meta, elementsJson, meshMaterialArray, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -716,7 +721,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		}
 	}
 
-	if (!addNode(root, elementMap, sceneGraph, materials, 0)) {
+	if (!addNode(root, elementMap, sceneGraph, meshMaterialArray, 0)) {
 		Log::error("Failed to add node");
 		return false;
 	}

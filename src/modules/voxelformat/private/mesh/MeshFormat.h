@@ -127,17 +127,18 @@ protected:
 	 * @see voxelizeGroups()
 	 */
 	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
-					 const MeshTriCollection &tris, int parent = 0, bool resetOrigin = true) const;
+					 const MeshTriCollection &tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
+					 bool resetOrigin = true) const;
 	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris,
-					 int parent = 0, bool resetOrigin = true) const {
-		return voxelizeNode("", name, sceneGraph, tris, parent, resetOrigin);
+					 const MeshMaterialArray &meshMaterialArray, int parent = 0, bool resetOrigin = true) const {
+		return voxelizeNode("", name, sceneGraph, tris, meshMaterialArray, parent, resetOrigin);
 	}
 
 	/**
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
 	void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
-					 const MeshMaterialPtr &material) const;
+					 MeshMaterialIndex material) const;
 
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at
@@ -148,7 +149,7 @@ protected:
 	 * @sa voxelizeTris()
 	 */
 	void transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
-					   const palette::NormalPalette &normalPalette) const;
+					   const MeshMaterialArray &meshMaterialArray, const palette::NormalPalette &normalPalette) const;
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
 	 * aligned aligned triangles. This is usually the case for meshes that were exported from voxels.
@@ -159,6 +160,7 @@ protected:
 	 * @sa voxelizeTris()
 	 */
 	void transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
+								  const MeshMaterialArray &meshMaterialArray,
 								  const palette::NormalPalette &normalPalette) const;
 	/**
 	 * @brief Convert the given @c PosMap into a volume
@@ -168,7 +170,7 @@ protected:
 	 * @param[in] fillHollow Fill the inner parts of a voxel volume
 	 * @param[out] node The node to create the volume in
 	 */
-	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const;
+	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, const MeshMaterialArray &meshMaterialArray, bool fillHollow) const;
 
 public:
 	MeshFormat();

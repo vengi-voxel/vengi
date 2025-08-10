@@ -145,7 +145,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		}
 	}
 
-	return voxelizeNode(filename, sceneGraph, tris) > 0;
+	return voxelizeNode(filename, sceneGraph, tris, {}) > 0;
 }
 
 #undef wrap

@@ -6,7 +6,6 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
@@ -80,6 +79,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
 	stream->seek(startOffset + hdr.offsetSkins);
 	for (uint32_t i = 0; i < hdr.numSkins; ++i) {
 		core::String skinname;
@@ -94,10 +94,11 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 		const core::String &imageName = lookupTexture(filename, skinname, archive);
 		const image::ImagePtr &image = image::loadImage(imageName);
-		meshMaterials.put(skinname, createMaterial(image));
+		meshMaterialArray.push_back(createMaterial(image));
+		meshMaterials.put(skinname, meshMaterialArray.size() - 1);
 	}
 
-	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, meshMaterials)) {
+	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, meshMaterials, meshMaterialArray)) {
 		Log::error("Failed to load frame");
 		return false;
 	}
@@ -107,7 +108,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
 						  const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
-						  const MeshMaterialMap &meshMaterials) {
+						  const MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray) {
 	if (frameIndex >= hdr.numFrames) {
 		Log::error("Invalid frame index");
 		return false;
@@ -170,7 +171,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 	Log::debug("Reading %i triangles", hdr.numTris);
-	MeshMaterialPtr material = !meshMaterials.empty() ? meshMaterials.begin()->second : MeshMaterialPtr();
+	MeshMaterialIndex materialIdx = !meshMaterials.empty() ? meshMaterials.begin()->second : -1;
 	for (uint32_t i = 0; i < hdr.numTris; ++i) {
 		glm::u16vec3 vertexIndices;
 		wrap(stream.readUInt16(vertexIndices.x))
@@ -194,11 +195,11 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		meshTri.setVertices(vertices[vertexIndices[0]] * scale, vertices[vertexIndices[1]] * scale,
 							vertices[vertexIndices[2]] * scale);
 		meshTri.setUVs(uvs[uvIndices[0]], uvs[uvIndices[1]], uvs[uvIndices[2]]);
-		meshTri.material = material;
+		meshTri.materialIdx = materialIdx;
 		tris.push_back(meshTri);
 	}
 
-	return voxelizeNode(filename, sceneGraph, tris) != InvalidNodeId;
+	return voxelizeNode(filename, sceneGraph, tris, meshMaterialArray) != InvalidNodeId;
 }
 
 #undef wrap

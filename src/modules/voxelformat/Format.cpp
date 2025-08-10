@@ -370,7 +370,7 @@ int Format::createPalette(const RGBAMap &colors, palette::Palette &palette) cons
 	return palette.colorCount();
 }
 
-int Format::createPalette(const RGBAMaterialMap &colors, palette::Palette &palette) const {
+int Format::createPalette(const RGBAMaterialMap &colors,  palette::Palette &palette) const {
 	if (colors.empty()) {
 		Log::debug("No colors to create a palette from");
 		palette = voxel::getPalette();

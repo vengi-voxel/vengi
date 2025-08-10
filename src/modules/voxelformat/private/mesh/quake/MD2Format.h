@@ -54,7 +54,7 @@ private:
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	bool loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
 				   const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
-				   const MeshMaterialMap &meshMaterials);
+				   const MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray);
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,

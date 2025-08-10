@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/SharedPtr.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "image/Image.h"
 #include "palette/Material.h"
@@ -24,6 +25,7 @@ public:
 	core::RGBA emitColor{0, 0, 0, 0};
 	float baseColorFactor = 0.0f;
 	float transparency = 0.0f;
+	int16_t uvIndex = 0; // the index of the texture coordinate set used by this material
 
 	int width() const;
 	int height() const;
@@ -38,6 +40,8 @@ MeshMaterialPtr createMaterial(const core::String &name);
 MeshMaterialPtr cloneMaterial(const MeshMaterialPtr &material);
 MeshMaterialPtr cloneMaterial(const MeshMaterial &material);
 
-using MeshMaterialMap = core::StringMap<MeshMaterialPtr>;
+using MeshMaterialIndex = int16_t;
+using MeshMaterialMap = core::StringMap<MeshMaterialIndex>;
+using MeshMaterialArray = core::DynamicArray<MeshMaterialPtr>;
 
 } // namespace voxelformat

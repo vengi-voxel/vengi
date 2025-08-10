@@ -300,7 +300,8 @@ void OBJFormat::voxelizePointShape(tinyobj::attrib_t &attrib, tinyobj::shape_t &
 
 bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::attrib_t &attrib,
 								  const tinyobj::material_t *materials, const glm::vec3 &scale,
-								  scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials) const {
+								  scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials,
+								  const MeshMaterialArray &meshMaterialArray) const {
 	int indexOffset = 0;
 	MeshTriCollection tris;
 	const tinyobj::mesh_t &mesh = shape.mesh;
@@ -352,7 +353,7 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::
 			if (!materialName.empty()) {
 				auto meshMaterialIter = meshMaterials.find(materialName);
 				if (meshMaterialIter != meshMaterials.end()) {
-					meshTri.material = meshMaterialIter->second;
+					meshTri.materialIdx = meshMaterialIter->second;
 				} else {
 					Log::warn("Failed to look up texture %s", materialName.c_str());
 					meshMaterials.put(materialName, MeshMaterialPtr());
@@ -367,7 +368,7 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::
 
 		indexOffset += faceVertices;
 	}
-	const int nodeId = voxelizeNode(shape.name.c_str(), sceneGraph, tris);
+	const int nodeId = voxelizeNode(shape.name.c_str(), sceneGraph, tris, meshMaterialArray);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to voxelize shape %s", shape.name.c_str());
 		return false;
@@ -423,6 +424,8 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
+	meshMaterialArray.reserve(materials.size());
 	Log::debug("%i materials", (int)materials.size());
 
 	for (tinyobj::material_t &material : materials) {
@@ -469,14 +472,15 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				Log::warn("Failed to load image %s from %s", materialName.c_str(), material.name.c_str());
 			}
 		}
-		meshMaterials.put(meshMaterial->name, meshMaterial);
+		meshMaterialArray.push_back(meshMaterial);
+		meshMaterials.put(meshMaterial->name, meshMaterialArray.size() - 1);
 	}
 
 	const glm::vec3 &scale = getInputScale();
 	for (tinyobj::shape_t &shape : shapes) {
 		// TODO: VOXELFORMAT: shape.lines
 		if (!shape.mesh.num_face_vertices.empty()) {
-			if (!voxelizeMeshShape(shape, attrib, materials.data(), scale, sceneGraph, meshMaterials)) {
+			if (!voxelizeMeshShape(shape, attrib, materials.data(), scale, sceneGraph, meshMaterials, meshMaterialArray)) {
 				Log::error("Failed to voxelize shape %s", shape.name.c_str());
 			}
 		}

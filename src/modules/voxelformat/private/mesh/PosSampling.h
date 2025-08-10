@@ -18,15 +18,15 @@ namespace voxelformat {
  * during voxelization
  */
 struct PosSamplingEntry {
-	inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal, const MeshMaterialPtr &_material)
-		: area(_area), normal(_normal), color(_color), material(_material) {
+	inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal, MeshMaterialIndex _materialIdx)
+		: area(_area), normal(_normal), color(_color), materialIdx(_materialIdx) {
 	}
 	PosSamplingEntry() : area(0) {
 	}
 	uint32_t area : 24;
 	uint8_t normal = 0u;
 	core::RGBA color;
-	MeshMaterialPtr material;
+	MeshMaterialIndex materialIdx;
 };
 
 /**
@@ -38,14 +38,14 @@ private:
 	core::Array<PosSamplingEntry, MaxTriangleColorContributions> entries;
 
 public:
-	PosSampling(uint32_t area, core::RGBA color, uint8_t normal, const MeshMaterialPtr &material) {
+	PosSampling(uint32_t area, core::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx) {
 		entries[0].area = area;
 		entries[0].color = color;
 		entries[0].normal = normal;
-		entries[0].material = material;
+		entries[0].materialIdx = materialIdx;
 	}
 
-	bool add(uint32_t area, core::RGBA color, uint8_t normal, const MeshMaterialPtr &material);
+	bool add(uint32_t area, core::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx);
 	/**
 	 * @brief Computes the color based on the position sampling entries.
 	 *
@@ -64,7 +64,7 @@ public:
 	 */
 	core::RGBA getColor(uint8_t flattenFactor, bool weightedAverage) const;
 	uint8_t getNormal() const;
-	const MeshMaterialPtr &getMaterial() const;
+	MeshMaterialIndex getMaterialIndex() const;
 };
 
 } // namespace voxelformat

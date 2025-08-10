@@ -31,14 +31,16 @@ TEST_F(MeshTriTest, testColorAt4x4) {
 		const bool originUpperLeft = s == 0;
 		SCOPED_TRACE(s);
 		voxelformat::MeshTri meshTri;
-		meshTri.material = createMaterial(texture);
+		MeshMaterialArray meshMaterialArray;
+		meshMaterialArray.emplace_back(createMaterial(texture));
+		meshTri.materialIdx = meshMaterialArray.size() - 1;
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
 				meshTri.setUVs(image::Image::uv(x, y, w, h, originUpperLeft),
 							  image::Image::uv(x, y + 1, w, h, originUpperLeft),
 							  image::Image::uv(x + 1, y, w, h, originUpperLeft));
 				const glm::vec2 &uv = meshTri.centerUV();
-				const core::RGBA color = colorAt(meshTri, uv, originUpperLeft);
+				const core::RGBA color = colorAt(meshTri, meshMaterialArray, uv, originUpperLeft);
 				const int texIndex = y * w + x;
 				ASSERT_EQ(buffer[texIndex], color)
 					<< "pixel(" << x << "/" << y << "), " << core::Color::print(buffer[texIndex]) << " vs "

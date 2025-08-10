@@ -10,6 +10,7 @@
 #include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 class MeshFormatBenchmark : public app::AbstractBenchmark {
 private:
@@ -26,18 +27,18 @@ protected:
 			Super::voxelizePointCloud("benchmark", sceneGraph, vertices);
 		}
 
-		void transformTris(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap) const {
+		void transformTris(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap, const voxelformat::MeshMaterialArray &meshMaterialArray) const {
 			palette::NormalPalette normalPalette;
 			normalPalette.redAlert2();
 			voxel::Region region{-1000, 1000};
-			Super::transformTris(region, tris, posMap, normalPalette);
+			Super::transformTris(region, tris, posMap, meshMaterialArray, normalPalette);
 		}
 
-		void transformTrisAxisAligned(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap) const {
+		void transformTrisAxisAligned(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap, const voxelformat::MeshMaterialArray &meshMaterialArray) const {
 			palette::NormalPalette normalPalette;
 			normalPalette.redAlert2();
 			voxel::Region region{-1000, 1000};
-			Super::transformTrisAxisAligned(region, tris, posMap, normalPalette);
+			Super::transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
 		}
 
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &,
@@ -89,7 +90,7 @@ BENCHMARK_DEFINE_F(MeshFormatBenchmark, transformTris)(benchmark::State &state) 
 	for (auto _ : state) {
 		MeshFormatEx f;
 		voxelformat::PosMap posMap;
-		f.transformTris(tris, posMap);
+		f.transformTris(tris, posMap, {});
 	}
 }
 
@@ -99,7 +100,7 @@ BENCHMARK_DEFINE_F(MeshFormatBenchmark, transformTrisAxisAligned)(benchmark::Sta
 	for (auto _ : state) {
 		MeshFormatEx f;
 		voxelformat::PosMap posMap;
-		f.transformTrisAxisAligned(tris, posMap);
+		f.transformTrisAxisAligned(tris, posMap, {});
 	}
 }
 

@@ -170,9 +170,6 @@ static bool validateCamera(const tinygltf::Camera &camera) {
 
 } // namespace _priv
 
-GLTFFormat::GltfMaterialData::GltfMaterialData() : meshMaterial(core::make_shared<MeshMaterial>("")) {
-}
-
 void GLTFFormat::createPointMesh(tinygltf::Model &gltfModel, const scenegraph::SceneGraphNode &node) const {
 	tinygltf::Mesh gltfMesh;
 	gltfMesh.name = node.name().c_str();
@@ -1202,11 +1199,9 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 #undef wrap
 
 void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr &archive,
-							 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
+							 const tinygltf::Model &gltfModel, MeshMaterialPtr &meshMaterial,
 							 const tinygltf::TextureInfo &gltfTextureInfo, const int textureIndex) const {
-	int texCoordIndex = 0;
 	const tinygltf::Texture &gltfTexture = gltfModel.textures[textureIndex];
-	MeshMaterialPtr &meshMaterial = materialData.meshMaterial;
 	if (gltfTexture.source >= 0 && gltfTexture.source < (int)gltfModel.images.size()) {
 		if (gltfTexture.sampler >= 0 && gltfTexture.sampler < (int)gltfModel.samplers.size()) {
 			const tinygltf::Sampler &gltfTextureSampler = gltfModel.samplers[gltfTexture.sampler];
@@ -1251,7 +1246,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 								(size_t)(gltfImage.width * gltfImage.height * gltfImage.component));
 					meshMaterial->texture->loadRGBA(gltfImage.image.data(), gltfImage.width, gltfImage.height);
 					Log::debug("Use image %s", name.c_str());
-					texCoordIndex = gltfTextureInfo.texCoord;
+					meshMaterial->uvIndex = gltfTextureInfo.texCoord;
 				} else {
 					Log::warn("Failed to load image with %i components", gltfImage.component);
 				}
@@ -1266,7 +1261,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 				meshMaterial->texture = image::loadImage(name);
 				if (meshMaterial->texture->isLoaded()) {
 					Log::debug("Use image %s", name.c_str());
-					texCoordIndex = gltfTextureInfo.texCoord;
+					meshMaterial->uvIndex = gltfTextureInfo.texCoord;
 				} else {
 					Log::warn("Failed to load %s", name.c_str());
 				}
@@ -1275,9 +1270,6 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 	} else {
 		Log::debug("Invalid image index given %i", gltfTexture.source);
 	}
-
-	materialData.texCoordAttribute = core::String::format("TEXCOORD_%i", texCoordIndex);
-	Log::debug("Texcoords: %s", materialData.texCoordAttribute.c_str());
 }
 
 void GLTFFormat::load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const {
@@ -1395,12 +1387,11 @@ void GLTFFormat::load_KHR_materials_emissive_strength(palette::Material &materia
 
 bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr &archive,
 							  const tinygltf::Model &gltfModel, const tinygltf::Material &gltfMaterial,
-							  GltfMaterialData &materialData) const {
-	MeshMaterialPtr &meshMaterial = materialData.meshMaterial;
-	meshMaterial->name = gltfMaterial.name.c_str();
+							  MeshMaterialPtr &meshMaterial) const {
+	meshMaterial = core::make_shared<MeshMaterial>(gltfMaterial.name.c_str());
 	const tinygltf::TextureInfo &gltfTextureInfo = gltfMaterial.pbrMetallicRoughness.baseColorTexture;
 	if (gltfTextureInfo.index != -1 && gltfTextureInfo.index < (int)gltfModel.textures.size()) {
-		loadTexture(filename, archive, gltfModel, materialData, gltfTextureInfo, gltfTextureInfo.index);
+		loadTexture(filename, archive, gltfModel, meshMaterial, gltfTextureInfo, gltfTextureInfo.index);
 	} else {
 		Log::debug("Invalid texture index given %i", gltfTextureInfo.index);
 	}
@@ -1427,16 +1418,17 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr
 }
 
 bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel,
-								const core::DynamicArray<GltfMaterialData> &materials,
+								const MeshMaterialArray &meshMaterialArray,
 								const tinygltf::Primitive &gltfPrimitive,
 								core::DynamicArray<GltfVertex> &vertices) const {
-	GltfMaterialData gltfMaterial;
-	if (gltfPrimitive.material >= 0 && gltfPrimitive.material < (int)materials.size()) {
-		gltfMaterial = materials[gltfPrimitive.material];
+	MeshMaterialPtr gltfMaterial;
+	if (gltfPrimitive.material >= 0 && gltfPrimitive.material < (int)meshMaterialArray.size()) {
+		gltfMaterial = meshMaterialArray[gltfPrimitive.material];
 	}
 	int foundPositions = 0;
 	bool foundColor = false;
 	size_t verticesOffset = vertices.size();
+	const core::String texCoordAttribute = gltfMaterial ? core::String::format("TEXCOORD_%i", gltfMaterial->uvIndex) : "_NOT_FOUND";
 	for (auto &attrIter : gltfPrimitive.attributes) {
 		const std::string &attrType = attrIter.first;
 		const tinygltf::Accessor *gltfAttributeAccessor = getAccessor(gltfModel, attrIter.second);
@@ -1469,10 +1461,10 @@ bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Mo
 				posStream.readFloat(pos.y);
 				posStream.readFloat(pos.z);
 				vertices[verticesOffset + i].pos = pos;
-				vertices[verticesOffset + i].meshMaterial = gltfMaterial.meshMaterial;
+				vertices[verticesOffset + i].materialIdx = gltfPrimitive.material;
 				buf += stride;
 			}
-		} else if (attrType == gltfMaterial.texCoordAttribute.c_str()) {
+		} else if (attrType == texCoordAttribute.c_str()) {
 			if (gltfAttributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type (%i) for %s", gltfAttributeAccessor->componentType, attrType.c_str());
 				continue;
@@ -1639,7 +1631,7 @@ bool GLTFFormat::loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygl
 }
 
 bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-							const tinygltf::Model &gltfModel, const core::DynamicArray<GltfMaterialData> &materials,
+							const tinygltf::Model &gltfModel, const MeshMaterialArray &meshMaterialArray,
 							int gltfNodeIdx, int parentNodeId) const {
 	const tinygltf::Node &gltfNode = gltfModel.nodes[gltfNodeIdx];
 	Log::debug("Found node with name '%s'", gltfNode.name.c_str());
@@ -1653,7 +1645,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		if (gltfNode.camera < 0 || gltfNode.camera >= (int)gltfModel.cameras.size()) {
 			Log::debug("Skip invalid camera node %i", gltfNode.camera);
 			for (int childId : gltfNode.children) {
-				loadNode_r(filename, sceneGraph, gltfModel, materials, childId, parentNodeId);
+				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, parentNodeId);
 			}
 			return true;
 		}
@@ -1683,7 +1675,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		}
 		const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
 		for (int childId : gltfNode.children) {
-			loadNode_r(filename, sceneGraph, gltfModel, materials, childId, cameraId);
+			loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, cameraId);
 		}
 		return true;
 	}
@@ -1703,7 +1695,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			groupId = parentNodeId;
 		}
 		for (int childId : gltfNode.children) {
-			loadNode_r(filename, sceneGraph, gltfModel, materials, childId, groupId);
+			loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, groupId);
 		}
 		return true;
 	}
@@ -1719,7 +1711,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
 		core::Buffer<uint32_t> indices;
 		core::DynamicArray<GltfVertex> vertices;
-		if (!loadAttributes(filename, gltfModel, materials, primitive, vertices)) {
+		if (!loadAttributes(filename, gltfModel, meshMaterialArray, primitive, vertices)) {
 			Log::warn("Failed to load vertices");
 			continue;
 		}
@@ -1750,7 +1742,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			}
 
 			for (int childId : gltfNode.children) {
-				loadNode_r(filename, sceneGraph, gltfModel, materials, childId, nodeId);
+				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, nodeId);
 			}
 		} else if (primitive.indices == -1) {
 			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
@@ -1797,7 +1789,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			Log::debug("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
 					   gltfNode.mesh);
 			for (int childId : gltfNode.children) {
-				loadNode_r(filename, sceneGraph, gltfModel, materials, childId, parentNodeId);
+				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, parentNodeId);
 			}
 			return true;
 		}
@@ -1822,12 +1814,12 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 							 vertices[idx1].pos * scale, vertices[idx2].pos * scale);
 			const size_t textureIdx = indices[indexOffset];
 			const GltfVertex &v = vertices[textureIdx];
-			meshTri.material = v.meshMaterial;
+			meshTri.materialIdx = v.materialIdx;
 			tris.emplace_back(meshTri);
 		}
 	}
 
-	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, tris, parentNodeId, false);
+	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, tris, meshMaterialArray, parentNodeId, false);
 	if (nodeId == InvalidNodeId) {
 		// ignore this node
 		return true;
@@ -1841,7 +1833,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	}
 
 	for (int childId : gltfNode.children) {
-		loadNode_r(filename, sceneGraph, gltfModel, materials, childId, nodeId);
+		loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, nodeId);
 	}
 	return true;
 }
@@ -1902,11 +1894,11 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	Log::debug("Lights: %i", (int)gltfModel.lights.size());
 	const int parentNodeId = sceneGraph.root().id();
 
-	core::DynamicArray<GltfMaterialData> materials;
-	materials.resize(gltfModel.materials.size());
+	MeshMaterialArray meshMaterialArray;
+	meshMaterialArray.resize(gltfModel.materials.size());
 	for (size_t i = 0; i < gltfModel.materials.size(); ++i) {
 		const tinygltf::Material &gltfMaterial = gltfModel.materials[i];
-		loadMaterial(filename, archive, gltfModel, gltfMaterial, materials[i]);
+		loadMaterial(filename, archive, gltfModel, gltfMaterial, meshMaterialArray[i]);
 	}
 
 	scenegraph::SceneGraphNode &root = sceneGraph.node(parentNodeId);
@@ -1923,7 +1915,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	for (const tinygltf::Scene &gltfScene : gltfModel.scenes) {
 		Log::debug("Found %i nodes in scene %s", (int)gltfScene.nodes.size(), gltfScene.name.c_str());
 		for (int gltfNodeIdx : gltfScene.nodes) {
-			loadNode_r(filename, sceneGraph, gltfModel, materials, gltfNodeIdx, parentNodeId);
+			loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, gltfNodeIdx, parentNodeId);
 		}
 	}
 	return true;

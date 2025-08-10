@@ -107,6 +107,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	// skins
 	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
 	for (uint32_t i = 0; i < hdr.numSkins; ++i) {
 		uint32_t group;
 		wrap(stream->readUInt32(group))
@@ -138,7 +139,8 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				return false;
 			}
 
-			meshMaterials.put(core::string::toString(j), createMaterial(image));
+			meshMaterialArray.push_back(createMaterial(image));
+			meshMaterials.put(core::string::toString(j), meshMaterialArray.size() - 1);
 		}
 	}
 
@@ -340,11 +342,11 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 					meshTri.setUVs(texCoords[idx0], texCoords[idx1], texCoords[idx2]);
 				}
 				if (!meshMaterials.empty()) {
-					meshTri.material = meshMaterials.begin()->second;
+					meshTri.materialIdx = meshMaterials.begin()->second;
 				}
 				triangles.emplace_back(meshTri);
 			}
-			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles);
+			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles, meshMaterialArray);
 			if (!first && nodeId != -1) {
 				sceneGraph.node(nodeId).setVisible(false);
 			}

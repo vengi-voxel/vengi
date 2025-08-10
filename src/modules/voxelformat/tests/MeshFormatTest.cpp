@@ -40,12 +40,14 @@ TEST_F(MeshFormatTest, testColorAt) {
 	palette::Palette pal;
 	pal.nippon();
 
+	MeshMaterialArray meshMaterialArray;
 	voxelformat::MeshTri meshTri;
-	meshTri.material = createMaterial(texture);
+	meshMaterialArray.emplace_back(createMaterial(texture));
+	meshTri.materialIdx = meshMaterialArray.size() - 1;
 	for (int i = 0; i < 256; ++i) {
 		const glm::vec2 uv = texture->uv(i, 0);
 		meshTri.setUVs(uv, uv, uv);
-		const core::RGBA color = colorAt(meshTri, meshTri.centerUV());
+		const core::RGBA color = colorAt(meshTri, meshMaterialArray, meshTri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 									   << core::Color::print(color);
 	}
@@ -107,7 +109,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 			return false;
 		}
 		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris) {
-			voxelizeNode("test", sceneGraph, tris);
+			voxelizeNode("test", sceneGraph, tris, {});
 			sceneGraph.updateTransforms();
 		}
 	};

@@ -523,6 +523,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	core::Buffer<uint32_t> triIndices(numTriIndices);
 
 	MeshTriCollection tris;
+	MeshMaterialArray meshMaterialArray;
 	tris.reserve(numTriIndices);
 
 	Log::debug("There are %i materials in the mesh", (int)mesh->materials.count);
@@ -604,6 +605,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		} else {
 			Log::debug("No material assigned for mesh");
 		}
+		meshMaterialArray.push_back(mat);
 
 		for (size_t fi = 0; fi < meshMaterial.num_faces; fi++) {
 			const ufbx_face face = mesh->faces[meshMaterial.face_indices[fi]];
@@ -629,13 +631,13 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
 				}
-				meshTri.material = mat;
+				meshTri.materialIdx = meshMaterialArray.size() - 1;
 				tris.emplace_back(core::move(meshTri));
 			}
 		}
 	}
 	const core::String &name = priv::_ufbx_to_string(node->name);
-	const int nodeId = voxelizeNode(name, sceneGraph, tris, parent, false);
+	const int nodeId = voxelizeNode(name, sceneGraph, tris, meshMaterialArray, parent, false);
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());
 		return nodeId;

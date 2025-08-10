@@ -22,23 +22,23 @@ uint8_t PosSampling::getNormal() const {
 	return normal;
 }
 
-const MeshMaterialPtr &PosSampling::getMaterial() const {
+MeshMaterialIndex PosSampling::getMaterialIndex() const {
 	if (entries[1].area == 0) {
-		return entries[0].material;
+		return entries[0].materialIdx;
 	}
 	uint32_t area = 0;
-	const MeshMaterialPtr *material = nullptr;
+	MeshMaterialIndex materialIdx = -1;
 	for (const PosSamplingEntry &pe : entries) {
 		if (pe.area > area) {
 			area = pe.area;
-			material = &pe.material;
+			materialIdx = pe.materialIdx;
 		}
 	}
-	return *material;
+	return materialIdx;
 
 }
 
-bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, const MeshMaterialPtr &material) {
+bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx) {
 	// TODO: VOXELFORMAT: why?
 	if (entries[0].color == color) {
 		return false;
@@ -64,7 +64,7 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, const Mes
 			entries[i].area = area;
 			entries[i].color = color;
 			entries[i].normal = normal;
-			entries[i].material = material;
+			entries[i].materialIdx = materialIdx;
 			return true;
 		}
 	}
@@ -77,7 +77,7 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, const Mes
 			entries[i].area = area;
 			entries[i].color = color;
 			entries[i].normal = normal;
-			entries[i].material = material;
+			entries[i].materialIdx = materialIdx;
 			return true;
 		}
 		if (smallestArea > entries[i].area) {
@@ -90,7 +90,7 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, const Mes
 		entries[index].area = area;
 		entries[index].color = color;
 		entries[index].normal = normal;
-		entries[index].material = material;
+		entries[index].materialIdx = materialIdx;
 		return true;
 	}
 #endif
