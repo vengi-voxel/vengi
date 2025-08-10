@@ -83,7 +83,7 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 	const uint32_t version = 7300;
 	stream.writeUInt32(version); // version
 	uint32_t sentinelLength = 25;
-	if (version < 7500) {
+	if constexpr (version < 7500) {
 		sentinelLength = 13;
 	}
 
