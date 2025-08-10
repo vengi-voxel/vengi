@@ -13,10 +13,11 @@ namespace voxelformat {
 class MeshTri : public math::Tri {
 private:
 	glm::vec2 _uv[3]{};
+
 public:
 	MeshTri() = default;
 	inline MeshTri(const glm::vec3 (&v)[3], const glm::vec2 (&uv)[3], const MeshMaterialPtr &_material,
-					   const core::RGBA (&c)[3])
+				   const core::RGBA (&c)[3])
 		: math::Tri::Tri(v, c) {
 		setUVs(uv[0], uv[1], uv[2]);
 		this->material = _material;
@@ -36,10 +37,6 @@ public:
 	 * this case.
 	 */
 	[[nodiscard]] bool calcUVs(const glm::vec3 &pos, glm::vec2 &uv) const;
-	[[nodiscard]] core::RGBA colorAt(const glm::vec2 &uv, bool originUpperLeft = false) const;
-	[[nodiscard]] core::RGBA extracted() const;
-	[[nodiscard]] core::RGBA centerColor() const;
-	[[nodiscard]] core::RGBA blendedColor() const;
 };
 
 inline const glm::vec2 &MeshTri::uv0() const {
@@ -59,7 +56,8 @@ template<class MESHTRI>
 inline void subdivide(const MESHTRI &in, MESHTRI out[4]) {
 	const glm::vec3 midv[]{glm::mix(in.vertex0(), in.vertex1(), 0.5f), glm::mix(in.vertex1(), in.vertex2(), 0.5f),
 						   glm::mix(in.vertex2(), in.vertex0(), 0.5f)};
-	const glm::vec2 miduv[]{glm::mix(in.uv0(), in.uv1(), 0.5f), glm::mix(in.uv1(), in.uv2(), 0.5f), glm::mix(in.uv2(), in.uv0(), 0.5f)};
+	const glm::vec2 miduv[]{glm::mix(in.uv0(), in.uv1(), 0.5f), glm::mix(in.uv1(), in.uv2(), 0.5f),
+							glm::mix(in.uv2(), in.uv0(), 0.5f)};
 	const core::RGBA midc[]{core::RGBA::mix(in.color0(), in.color1()), core::RGBA::mix(in.color1(), in.color2()),
 							core::RGBA::mix(in.color2(), in.color0())};
 
@@ -73,6 +71,24 @@ inline void subdivide(const MESHTRI &in, MESHTRI out[4]) {
 	// keep the middle
 	out[3] =
 		MESHTRI{{midv[0], midv[1], midv[2]}, {miduv[0], miduv[1], miduv[2]}, in.material, {midc[0], midc[1], midc[2]}};
+}
+
+inline core::RGBA colorAt(const MeshTri &tri, const glm::vec2 &uv, bool originUpperLeft = false) {
+	core::RGBA rgba;
+	if (tri.material && tri.material->colorAt(rgba, uv, originUpperLeft)) {
+		return rgba;
+	}
+
+	const auto mixColors = [](const core::RGBA &a, const core::RGBA &b, const core::RGBA &c) {
+		return core::RGBA::mix(core::RGBA::mix(a, b), c);
+	};
+
+	if (tri.material) {
+		return mixColors(tri.material->apply(tri.color0()), tri.material->apply(tri.color1()),
+						 tri.material->apply(tri.color2()));
+	}
+
+	return mixColors(tri.color0(), tri.color1(), tri.color2());
 }
 
 } // namespace voxelformat

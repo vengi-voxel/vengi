@@ -45,7 +45,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 	for (int i = 0; i < 256; ++i) {
 		const glm::vec2 uv = texture->uv(i, 0);
 		meshTri.setUVs(uv, uv, uv);
-		const core::RGBA color = meshTri.colorAt(meshTri.centerUV());
+		const core::RGBA color = colorAt(meshTri, meshTri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 									   << core::Color::print(color);
 	}

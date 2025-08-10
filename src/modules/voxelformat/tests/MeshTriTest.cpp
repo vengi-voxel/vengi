@@ -38,7 +38,7 @@ TEST_F(MeshTriTest, testColorAt4x4) {
 							  image::Image::uv(x, y + 1, w, h, originUpperLeft),
 							  image::Image::uv(x + 1, y, w, h, originUpperLeft));
 				const glm::vec2 &uv = meshTri.centerUV();
-				const core::RGBA color = meshTri.colorAt(uv, originUpperLeft);
+				const core::RGBA color = colorAt(meshTri, uv, originUpperLeft);
 				const int texIndex = y * w + x;
 				ASSERT_EQ(buffer[texIndex], color)
 					<< "pixel(" << x << "/" << y << "), " << core::Color::print(buffer[texIndex]) << " vs "

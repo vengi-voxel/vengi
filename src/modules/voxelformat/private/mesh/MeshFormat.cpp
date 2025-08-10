@@ -134,7 +134,8 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			if (stopExecution()) {
 				return;
 			}
-			const core::RGBA rgba = meshTri.centerColor();
+			const glm::vec2 &uv = meshTri.centerUV();
+			const core::RGBA rgba = colorAt(meshTri, uv);
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
@@ -163,7 +164,8 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 			if (stopExecution()) {
 				break;
 			}
-			const core::RGBA rgba = meshTri.centerColor();
+			const glm::vec2 &uv = meshTri.centerUV();
+			const core::RGBA rgba = colorAt(meshTri, uv);
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
@@ -314,12 +316,13 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 				voxelizeTriangle(
 					trisMins, meshTri,
 					[this, &colorMaterials](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-						const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
+						const core::RGBA rgba = flattenRGB(colorAt(tri, uv));
 						colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
 					});
 #else
-				const core::RGBA rgba = flattenRGB(triangle.centerColor());
-				colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
+				const glm::vec2 &uv = meshTri.centerUV();
+				const core::RGBA rgba = flattenRGB(colorAt(meshTri, uv));
+				colorMaterials.put(rgba, meshTri.material ? &meshTri.material->material : nullptr);
 #endif
 			}
 			createPalette(colorMaterials, palette);
@@ -331,7 +334,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		palette::PaletteLookup palLookup(palette);
 		for (const voxelformat::MeshTri &meshTri : tris) {
 			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-				const core::RGBA color = flattenRGB(tri.colorAt(uv));
+				const core::RGBA color = flattenRGB(colorAt(tri, uv));
 				const glm::vec3 &normal = tri.normal();
 				int normalIdx = normalPalette.getClosestMatch(normal);
 				if (normalIdx == palette::PaletteNormalNotFound) {

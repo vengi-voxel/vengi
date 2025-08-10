@@ -25,29 +25,6 @@ glm::vec2 MeshTri::centerUV() const {
 	return (uv0() + uv1() + uv2()) / 3.0f;
 }
 
-core::RGBA MeshTri::blendedColor() const {
-	if (material) {
-		const core::RGBA c1 = material->apply(color0());
-		const core::RGBA c2 = material->apply(color1());
-		const core::RGBA c3 = material->apply(color2());
-		return core::RGBA::mix(core::RGBA::mix(c1, c2), c3);
-	}
-	return core::RGBA::mix(core::RGBA::mix(color0(), color1()), color2());
-}
-
-core::RGBA MeshTri::centerColor() const {
-	const glm::vec2 &c = centerUV();
-	return colorAt(c);
-}
-
-core::RGBA MeshTri::colorAt(const glm::vec2 &inputuv, bool originUpperLeft) const {
-	core::RGBA rgba;
-	if (!material || !material->colorAt(rgba, inputuv, originUpperLeft)) {
-		rgba = blendedColor();
-	}
-	return rgba;
-}
-
 // https://en.wikipedia.org/wiki/Barycentric_coordinate_system
 bool MeshTri::calcUVs(const glm::vec3 &pos, glm::vec2 &outUV) const {
 	const glm::vec3 &b = calculateBarycentric(pos);
