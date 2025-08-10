@@ -12,6 +12,7 @@
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/Archive.h"
+#include "io/Stream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -45,13 +46,113 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	return saveMeshesAscii(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
 }
 
+bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+								  const core::String &filename, io::SeekableWriteStream &stream, uint32_t sentinelLength) {
+	const int64_t endOffsetPos = stream.pos();
+	stream.writeUInt32(0); // Placeholder for EndOffset
+
+	// TODO: VOXELFORMAT: write the node name and properties - this is not yet implemented
+
+	// Write children recursively
+	const scenegraph::SceneGraphNodeChildren &children = node.children();
+	for (int childId : children) {
+		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+		if (!saveRecursiveNode(sceneGraph, child, filename, stream, sentinelLength)) {
+			return false;
+		}
+	}
+
+	for (uint32_t i = 0; i < sentinelLength; ++i) {
+		stream.writeUInt8(0x00);
+	}
+
+	const int64_t endOffset = stream.pos();
+	stream.seek(endOffsetPos);
+	stream.writeUInt32((uint32_t)endOffset);
+	stream.seek(endOffset);
+
+	return true;
+}
+
 bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 								 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 								 const scenegraph::SceneGraph &sceneGraph) {
 	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
-	stream.writeUInt8(0x1A);  // unknown
-	stream.writeUInt8(0x00);  // unknown
-	stream.writeUInt32(7300); // version
+	stream.writeUInt8(0x1A); // unknown
+	stream.writeUInt8(0x00); // unknown
+	const uint32_t version = 7300;
+	stream.writeUInt32(version); // version
+	uint32_t sentinelLength = 25;
+	if (version < 7500) {
+		sentinelLength = 13;
+	}
+
+	const scenegraph::SceneGraphNode &root = sceneGraph.root();
+	const scenegraph::SceneGraphNodeChildren &children = root.children();
+	for (int child : children) {
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
+		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream, sentinelLength))
+	}
+
+	for (uint32_t i = 0; i < sentinelLength; ++i) {
+		stream.writeUInt8(0x0);
+	}
+	// write footer
+	stream.writeUInt8(0xfa);
+	stream.writeUInt8(0xbc);
+	stream.writeUInt8(0xab);
+	stream.writeUInt8(0x09);
+	stream.writeUInt8(0xd0);
+	stream.writeUInt8(0xc8);
+	stream.writeUInt8(0xd4);
+	stream.writeUInt8(0x66);
+	stream.writeUInt8(0xb1);
+	stream.writeUInt8(0x76);
+	stream.writeUInt8(0xfb);
+	stream.writeUInt8(0x83);
+	stream.writeUInt8(0x1c);
+	stream.writeUInt8(0xf7);
+	stream.writeUInt8(0x26);
+	stream.writeUInt8(0x7e);
+	stream.writeUInt8(0x00);
+	stream.writeUInt8(0x00);
+	stream.writeUInt8(0x00);
+	stream.writeUInt8(0x00);
+
+	// Padding for 16 byte alignment
+	const int offset = (int)stream.pos();
+	int pad = ((offset + 15) & ~15) - offset;
+	if (pad == 0) {
+		pad = 16;
+	}
+	for (int i = 0; i < pad; ++i) {
+		stream.writeUInt8(0x00);
+	}
+
+	// Write the FBX version
+	stream.writeUInt32(version);
+
+	// Write some footer magic (120 zero bytes)
+	for (int i = 0; i < 120; ++i) {
+		stream.writeUInt8(0x00);
+	}
+	stream.writeUInt8(0xf8);
+	stream.writeUInt8(0x5a);
+	stream.writeUInt8(0x8c);
+	stream.writeUInt8(0x6a);
+	stream.writeUInt8(0xde);
+	stream.writeUInt8(0xf5);
+	stream.writeUInt8(0xd9);
+	stream.writeUInt8(0x7e);
+	stream.writeUInt8(0xec);
+	stream.writeUInt8(0xe9);
+	stream.writeUInt8(0x0c);
+	stream.writeUInt8(0xe3);
+	stream.writeUInt8(0x75);
+	stream.writeUInt8(0x8f);
+	stream.writeUInt8(0x29);
+	stream.writeUInt8(0x0b);
+
 	// TODO: VOXELFORMAT: implement me https://code.blender.org/2013/08/fbx-binary-file-format-specification/
 	return false;
 }

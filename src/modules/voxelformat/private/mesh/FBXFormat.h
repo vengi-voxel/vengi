@@ -37,6 +37,8 @@ private:
 					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					  int parent) const;
+	bool saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+						   const core::String &filename, io::SeekableWriteStream &stream, uint32_t sentinelLength);
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
