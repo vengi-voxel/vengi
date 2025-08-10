@@ -12,21 +12,21 @@
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/StdStreamBuf.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include "palette/Palette.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
 
 #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <array> // needed by tiny_obj_loader.h
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/external/tiny_obj_loader.h"
+#include <array> // needed by tiny_obj_loader.h
 
 namespace voxelformat {
 
@@ -152,7 +152,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				objectName = "Noname";
 			}
 			stream->writeStringFormat(false, "o %s\n", objectName);
-			stream->writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
+			stream->writeStringFormat(false, "mtllib %s\n",
+									  core::string::extractFilenameWithExtension(mtlname).c_str());
 			if (!stream->writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
 				Log::error("Failed to write obj usemtl %s\n", hashId.c_str());
 				return false;
@@ -203,19 +204,19 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					if (withTexCoords) {
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
-													 uvi + 1, (int)one, (int)two, uvi + 2, (int)two, (int)three,
-													 uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
+													  uvi + 1, (int)one, (int)two, uvi + 2, (int)two, (int)three,
+													  uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
 						} else {
 							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two,
-													 uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
+													  uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
 						}
 					} else {
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two,
-													 (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
+													  (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
 						} else {
 							stream->writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three,
-													 (int)four);
+													  (int)four);
 						}
 					}
 				}
@@ -238,17 +239,18 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					if (withTexCoords) {
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
-													 texcoordOffset + j + 1, (int)one, (int)two, texcoordOffset + j + 2,
-													 (int)two, (int)three, texcoordOffset + j + 3, (int)three);
+													  texcoordOffset + j + 1, (int)one, (int)two,
+													  texcoordOffset + j + 2, (int)two, (int)three,
+													  texcoordOffset + j + 3, (int)three);
 						} else {
 							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + j + 1,
-													 (int)two, texcoordOffset + j + 2, (int)three,
-													 texcoordOffset + j + 3);
+													  (int)two, texcoordOffset + j + 2, (int)three,
+													  texcoordOffset + j + 3);
 						}
 					} else {
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three,
-													 (int)one, (int)two, (int)three);
+													  (int)one, (int)two, (int)three);
 						} else {
 							stream->writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
 						}
@@ -277,6 +279,105 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 }
 
 #undef wrapBool
+
+void OBJFormat::voxelizePointShape(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
+						  core::Buffer<PointCloudVertex> &pointCloud) {
+	pointCloud.resize(shape.points.indices.size());
+	for (int i = 0; i < (int)shape.points.indices.size(); ++i) {
+		const tinyobj::index_t &idx0 = shape.points.indices[i];
+		const glm::vec3 &vertex0{attrib.vertices[3 * idx0.vertex_index + 0], attrib.vertices[3 * idx0.vertex_index + 1],
+								 attrib.vertices[3 * idx0.vertex_index + 2]};
+		pointCloud[i].position = vertex0;
+
+		if (!attrib.colors.empty()) {
+			const float r0 = attrib.colors[3 * idx0.vertex_index + 0];
+			const float g0 = attrib.colors[3 * idx0.vertex_index + 1];
+			const float b0 = attrib.colors[3 * idx0.vertex_index + 2];
+			pointCloud[i].color = core::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f));
+		}
+	}
+}
+
+bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::attrib_t &attrib,
+								  const tinyobj::material_t *materials, const glm::vec3 &scale,
+								  scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials) const {
+	int indexOffset = 0;
+	MeshTriCollection tris;
+	const tinyobj::mesh_t &mesh = shape.mesh;
+	tris.reserve(mesh.num_face_vertices.size());
+	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
+		const int materialIndex = mesh.material_ids[faceNum];
+		const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
+		const int faceVertices = mesh.num_face_vertices[faceNum];
+		core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
+		voxelformat::MeshTri meshTri;
+		const tinyobj::index_t &idx0 = mesh.indices[indexOffset + 0];
+		const tinyobj::index_t &idx1 = mesh.indices[indexOffset + 1];
+		const tinyobj::index_t &idx2 = mesh.indices[indexOffset + 2];
+		const glm::vec3 &vertex0{attrib.vertices[3 * idx0.vertex_index + 0] * scale.x,
+								 attrib.vertices[3 * idx0.vertex_index + 1] * scale.y,
+								 attrib.vertices[3 * idx0.vertex_index + 2] * scale.z};
+		const glm::vec3 &vertex1{attrib.vertices[3 * idx1.vertex_index + 0] * scale.x,
+								 attrib.vertices[3 * idx1.vertex_index + 1] * scale.y,
+								 attrib.vertices[3 * idx1.vertex_index + 2] * scale.z};
+		const glm::vec3 &vertex2{attrib.vertices[3 * idx2.vertex_index + 0] * scale.x,
+								 attrib.vertices[3 * idx2.vertex_index + 1] * scale.y,
+								 attrib.vertices[3 * idx2.vertex_index + 2] * scale.z};
+		meshTri.setVertices(vertex0, vertex1, vertex2);
+		if (!attrib.colors.empty()) {
+			const float r0 = attrib.colors[3 * idx0.vertex_index + 0];
+			const float g0 = attrib.colors[3 * idx0.vertex_index + 1];
+			const float b0 = attrib.colors[3 * idx0.vertex_index + 2];
+			const float r1 = attrib.colors[3 * idx1.vertex_index + 0];
+			const float g1 = attrib.colors[3 * idx1.vertex_index + 1];
+			const float b1 = attrib.colors[3 * idx1.vertex_index + 2];
+			const float r2 = attrib.colors[3 * idx2.vertex_index + 0];
+			const float g2 = attrib.colors[3 * idx2.vertex_index + 1];
+			const float b2 = attrib.colors[3 * idx2.vertex_index + 2];
+			meshTri.setColor(core::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
+							 core::Color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
+							 core::Color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
+		}
+		if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0) {
+			const glm::vec2 &uv0{attrib.texcoords[2 * idx0.texcoord_index + 0],
+								 attrib.texcoords[2 * idx0.texcoord_index + 1]};
+			const glm::vec2 &uv1{attrib.texcoords[2 * idx1.texcoord_index + 0],
+								 attrib.texcoords[2 * idx1.texcoord_index + 1]};
+			const glm::vec2 &uv2{attrib.texcoords[2 * idx2.texcoord_index + 0],
+								 attrib.texcoords[2 * idx2.texcoord_index + 1]};
+			meshTri.setUVs(uv0, uv1, uv2);
+		}
+		if (material != nullptr) {
+			const core::String materialName = material->name.c_str();
+			if (!materialName.empty()) {
+				auto meshMaterialIter = meshMaterials.find(materialName);
+				if (meshMaterialIter != meshMaterials.end()) {
+					meshTri.material = meshMaterialIter->second;
+				} else {
+					Log::warn("Failed to look up texture %s", materialName.c_str());
+					meshMaterials.put(materialName, MeshMaterialPtr());
+				}
+			}
+			if (attrib.colors.empty()) {
+				const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
+				meshTri.setColor(diffuseColor);
+			}
+		}
+		tris.push_back(meshTri);
+
+		indexOffset += faceVertices;
+	}
+	const int nodeId = voxelizeNode(shape.name.c_str(), sceneGraph, tris);
+	if (nodeId == InvalidNodeId) {
+		Log::error("Failed to voxelize shape %s", shape.name.c_str());
+		return false;
+	}
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+	for (const tinyobj::tag_t &tag : mesh.tags) {
+		node.setProperty(tag.name.c_str(), "");
+	}
+	return true;
+}
 
 bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
@@ -373,81 +474,18 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	const glm::vec3 &scale = getInputScale();
 	for (tinyobj::shape_t &shape : shapes) {
-		int indexOffset = 0;
-		// TODO: VOXELFORMAT: shape.lines, shape.points
-		const tinyobj::mesh_t &mesh = shape.mesh;
-		MeshTriCollection tris;
-		tris.reserve(mesh.num_face_vertices.size());
-		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
-			const int materialIndex = mesh.material_ids[faceNum];
-			const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
-			const int faceVertices = mesh.num_face_vertices[faceNum];
-			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
-			voxelformat::MeshTri meshTri;
-			const tinyobj::index_t &idx0 = mesh.indices[indexOffset + 0];
-			const tinyobj::index_t &idx1 = mesh.indices[indexOffset + 1];
-			const tinyobj::index_t &idx2 = mesh.indices[indexOffset + 2];
-			const glm::vec3 &vertex0{attrib.vertices[3 * idx0.vertex_index + 0] * scale.x,
-											attrib.vertices[3 * idx0.vertex_index + 1] * scale.y,
-											attrib.vertices[3 * idx0.vertex_index + 2] * scale.z};
-			const glm::vec3 &vertex1{attrib.vertices[3 * idx1.vertex_index + 0] * scale.x,
-											attrib.vertices[3 * idx1.vertex_index + 1] * scale.y,
-											attrib.vertices[3 * idx1.vertex_index + 2] * scale.z};
-			const glm::vec3 &vertex2{attrib.vertices[3 * idx2.vertex_index + 0] * scale.x,
-											attrib.vertices[3 * idx2.vertex_index + 1] * scale.y,
-											attrib.vertices[3 * idx2.vertex_index + 2] * scale.z};
-			meshTri.setVertices(vertex0, vertex1, vertex2);
-			if (!attrib.colors.empty()) {
-				const float r0 = attrib.colors[3 * idx0.vertex_index + 0];
-				const float g0 = attrib.colors[3 * idx0.vertex_index + 1];
-				const float b0 = attrib.colors[3 * idx0.vertex_index + 2];
-				const float r1 = attrib.colors[3 * idx1.vertex_index + 0];
-				const float g1 = attrib.colors[3 * idx1.vertex_index + 1];
-				const float b1 = attrib.colors[3 * idx1.vertex_index + 2];
-				const float r2 = attrib.colors[3 * idx2.vertex_index + 0];
-				const float g2 = attrib.colors[3 * idx2.vertex_index + 1];
-				const float b2 = attrib.colors[3 * idx2.vertex_index + 2];
-				meshTri.setColor(core::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
-								 core::Color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
-								 core::Color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
+		// TODO: VOXELFORMAT: shape.lines
+		if (!shape.mesh.num_face_vertices.empty()) {
+			if (!voxelizeMeshShape(shape, attrib, materials.data(), scale, sceneGraph, meshMaterials)) {
+				Log::error("Failed to voxelize shape %s", shape.name.c_str());
 			}
-			if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0) {
-				const glm::vec2 &uv0{attrib.texcoords[2 * idx0.texcoord_index + 0],
-										attrib.texcoords[2 * idx0.texcoord_index + 1]};
-				const glm::vec2 &uv1{attrib.texcoords[2 * idx1.texcoord_index + 0],
-										attrib.texcoords[2 * idx1.texcoord_index + 1]};
-				const glm::vec2 &uv2{attrib.texcoords[2 * idx2.texcoord_index + 0],
-										attrib.texcoords[2 * idx2.texcoord_index + 1]};
-				meshTri.setUVs(uv0, uv1, uv2);
-			}
-			if (material != nullptr) {
-				const core::String materialName = material->name.c_str();
-				if (!materialName.empty()) {
-					auto meshMaterialIter = meshMaterials.find(materialName);
-					if (meshMaterialIter != meshMaterials.end()) {
-						meshTri.material = meshMaterialIter->second;
-					} else {
-						Log::warn("Failed to look up texture %s", materialName.c_str());
-						meshMaterials.put(materialName, MeshMaterialPtr());
-					}
-				}
-				if (attrib.colors.empty()) {
-					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
-					meshTri.setColor(diffuseColor);
-				}
-			}
-			tris.push_back(meshTri);
-
-			indexOffset += faceVertices;
 		}
-		const int nodeId = voxelizeNode(shape.name.c_str(), sceneGraph, tris);
-		if (nodeId == InvalidNodeId) {
-			Log::error("Failed to voxelize shape %s", shape.name.c_str());
-			return false;
-		}
-		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-		for (const tinyobj::tag_t &tag : mesh.tags) {
-			node.setProperty(tag.name.c_str(), "");
+		if (!shape.points.indices.empty()) {
+			core::Buffer<PointCloudVertex> pointCloud;
+			voxelizePointShape(attrib, shape, pointCloud);
+			if (!voxelizePointCloud(filename, sceneGraph, pointCloud)) {
+				Log::error("Failed to voxelize point cloud from shape %s", shape.name.c_str());
+			}
 		}
 	}
 	return !sceneGraph.empty();

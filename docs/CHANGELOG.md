@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Added missing ascii `fbx` header
+   - Support `obj` point clouds
 
 VoxEdit:
 
