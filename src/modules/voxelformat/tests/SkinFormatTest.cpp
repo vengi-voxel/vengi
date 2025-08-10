@@ -17,9 +17,9 @@ struct Params {
 	voxel::ValidateFlags flags;
 };
 
-class Param : public AbstractFormatTest, public ::testing::WithParamInterface<Params> {};
+class LoadSave : public AbstractFormatTest, public ::testing::WithParamInterface<Params> {};
 
-TEST_P(Param, loadSave) {
+TEST_P(LoadSave, exec) {
 	SkinFormat src;
 	SkinFormat target;
 	const Params &params = GetParam();
@@ -31,7 +31,7 @@ TEST_P(Param, loadSave) {
 
 INSTANTIATE_TEST_SUITE_P(
 	SkinFormatTest,
-	Param,
+	LoadSave,
 	::testing::Values(
 		Params{true, true, false, voxel::ValidateFlags::All},
 		Params{false, true, false, voxel::ValidateFlags::All},
@@ -40,25 +40,25 @@ INSTANTIATE_TEST_SUITE_P(
 		Params{false, true, true, voxel::ValidateFlags::Transform | voxel::ValidateFlags::SceneGraphModels},
 		Params{false, false, true, voxel::ValidateFlags::Transform | voxel::ValidateFlags::SceneGraphModels}
 	),
-    [](const testing::TestParamInfo<Params>& nfo) {
-      std::string name;
-	  if (nfo.param.groups) {
-		name += "groups";
-	  } else {
-		name += "nogroups";
-	  }
-	  if (nfo.param.transform) {
-		name += "_transform";
-	  } else {
-		name += "_notransform";
-	  }
-	  if (nfo.param.mergeFaces) {
-		name += "_mergefaces";
-	  } else {
-		name += "_nomergefaces";
-	  }
-      return name;
-    }
+	[](const testing::TestParamInfo<Params>& nfo) {
+		std::string name;
+		if (nfo.param.groups) {
+			name += "groups";
+		} else {
+			name += "nogroups";
+		}
+		if (nfo.param.transform) {
+			name += "_transform";
+		} else {
+			name += "_notransform";
+		}
+		if (nfo.param.mergeFaces) {
+			name += "_mergefaces";
+		} else {
+			name += "_nomergefaces";
+		}
+		return name;
+	}
 );
 
 } // namespace voxelformat

@@ -6,6 +6,7 @@
 #include "AbstractFormatTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "util/VarUtil.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
 
@@ -55,7 +56,17 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
 }
 
-TEST_F(GLTFFormatTest, testVoxelizeLantern) {
+// TODO: MATERIAL: materials are not yet properly loaded back from gltf
+TEST_F(GLTFFormatTest, DISABLED_testMaterial) {
+	scenegraph::SceneGraph sceneGraph;
+	testMaterial(sceneGraph, "test_material.gltf");
+}
+
+class VoxelizeLantern : public AbstractFormatTest, public ::testing::WithParamInterface<bool> {};
+
+TEST_P(VoxelizeLantern, exec) {
+	bool params = GetParam();
+	util::ScopedVarChange var(cfg::VoxelCreatePalette, params);
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "glTF/lantern/Lantern.gltf", 3u);
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -71,17 +82,23 @@ TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 	EXPECT_EQ(13, region.getUpperY());
 	EXPECT_EQ(3, region.getUpperZ());
 	EXPECT_EQ(286, voxel::countVoxels(*v));
-	// TODO:
+	// TODO: VOXELFORMAT: https://github.com/vengi-voxel/vengi/issues/620
 	// EXPECT_EQ(89, v->voxel(-8, 9, 0).getColor());
-	// const core::RGBA expected(69, 58, 46, 255);
-	// const core::RGBA is = node->palette().color(v->voxel(-8, 9, 0).getColor());
-	// voxel::colorComparator(expected, is, 10);
+	const core::RGBA expected(69, 58, 46, 255);
+	const core::RGBA is = node->palette().color(v->voxel(-8, 9, 0).getColor());
+	voxel::colorComparatorDistance(expected, is, 0.01f);
 }
 
-// TODO: MATERIAL: materials are not yet properly loaded back from gltf
-TEST_F(GLTFFormatTest, DISABLED_testMaterial) {
-	scenegraph::SceneGraph sceneGraph;
-	testMaterial(sceneGraph, "test_material.gltf");
-}
+INSTANTIATE_TEST_SUITE_P(
+	GLTFFormatTest,
+	VoxelizeLantern,
+	::testing::Values(true, false),
+	[](const testing::TestParamInfo<bool>& nfo) {
+		if (nfo.param) {
+			return "createpalette";
+		}
+		return "nocreatepalette";
+	}
+);
 
 } // namespace voxelformat

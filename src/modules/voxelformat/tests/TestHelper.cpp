@@ -156,10 +156,22 @@ void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2,
 }
 
 void colorComparator(core::RGBA c1, core::RGBA c2, int maxDelta) {
-	EXPECT_NEAR(c1.r, c2.r, maxDelta);
-	EXPECT_NEAR(c1.g, c2.g, maxDelta);
-	EXPECT_NEAR(c1.b, c2.b, maxDelta);
-	EXPECT_NEAR(c1.a, c2.a, maxDelta);
+	EXPECT_NEAR(c1.r, c2.r, maxDelta) << "color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.g, c2.g, maxDelta) << "color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.b, c2.b, maxDelta) << "color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.a, c2.a, maxDelta) << "color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "]";
+}
+
+void colorComparatorDistance(core::RGBA c1, core::RGBA c2, float maxDelta) {
+	if (c1 != c2) {
+		const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
+		ASSERT_LT(delta, maxDelta) << "Color differ: color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]";
+	}
 }
 
 void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
