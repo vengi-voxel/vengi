@@ -123,7 +123,7 @@ static bool skipFace(const core::String &texture) {
 }
 
 bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-						   MeshMaterialMap &materials, MeshTriCollection &tris,
+						   MeshMaterialMap &meshMaterials, MeshTriCollection &tris,
 						   const glm::vec3 &scale) const {
 	QBrush qbrush;
 	while (tok.hasNext()) {
@@ -205,13 +205,13 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 	}
 
 	for (const QFace &qface : qbrush.faces) {
-		auto iter = materials.find(qface.texture);
+		auto iter = meshMaterials.find(qface.texture);
 		MeshMaterialPtr material;
-		if (iter == materials.end()) {
+		if (iter == meshMaterials.end()) {
 			const core::String &imageName = lookupTexture(filename, qface.texture, archive);
 			const image::ImagePtr &image = image::loadImage(imageName);
 			material = createMaterial(image);
-			materials.put(qface.texture, material);
+			meshMaterials.put(qface.texture, material);
 		} else {
 			material = iter->value;
 		}
@@ -248,7 +248,7 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 }
 
 bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-							MeshMaterialMap &materials, MeshTriCollection &tris,
+							MeshMaterialMap &meshMaterials, MeshTriCollection &tris,
 							scenegraph::SceneGraphNodeProperties &props, const glm::vec3 &scale) const {
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
@@ -260,7 +260,7 @@ bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &
 		}
 		if (t == "{") {
 			Log::debug("Found brush");
-			if (!parseBrush(filename, archive, tok, materials, tris, scale)) {
+			if (!parseBrush(filename, archive, tok, meshMaterials, tris, scale)) {
 				Log::error("Failed to parse brush");
 				return false;
 			}
@@ -298,14 +298,14 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	cfg.skipComments = true;
 	Log::debug("Tokenizing");
 	core::Tokenizer tok(cfg, map, " \t\r");
-	MeshMaterialMap materials;
+	MeshMaterialMap meshMaterials;
 	int entity = 0;
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
 		if (t == "{") {
 			MeshTriCollection tris;
 			scenegraph::SceneGraphNodeProperties props;
-			if (!parseEntity(filename, archive, tok, materials, tris, props, scale)) {
+			if (!parseEntity(filename, archive, tok, meshMaterials, tris, props, scale)) {
 				Log::error("Failed to parse entity");
 				return false;
 			}

@@ -803,7 +803,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	// TODO: SCENEGRAPH: Use scenegraph::convertCoordinateSystem()
 	const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	MeshMaterialMap materials;
+	MeshMaterialMap meshMaterials;
 	for (const Node3ds &node : nodes) {
 		Log::debug("Import %i meshes for node %s", (int)node.meshes.size(), node.name.c_str());
 		for (const auto &entry : node.materials) {
@@ -817,7 +817,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			material->transparency = material3ds.transparency;
 			material->material.setValue(palette::MaterialProperty::MaterialSpecular, material3ds.shininess);
 			// TODO: MATERIAL: convert to MeshMaterial
-			materials.put(material->name, material);
+			meshMaterials.put(material->name, material);
 		}
 	}
 	const glm::vec3 scale = getInputScale();
@@ -849,8 +849,8 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 					meshTri.setUVs(mesh.texcoords[face.indices[0]], mesh.texcoords[face.indices[1]], mesh.texcoords[face.indices[2]]);
 				}
 				if (!face.material.empty()) {
-					auto matIter = materials.find(face.material);
-					if (matIter != materials.end()) {
+					auto matIter = meshMaterials.find(face.material);
+					if (matIter != meshMaterials.end()) {
 						meshTri.material = matIter->second;
 					} else {
 						Log::warn("Failed to look up material '%s'", face.material.c_str());
