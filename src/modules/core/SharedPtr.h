@@ -13,6 +13,13 @@
 
 namespace core {
 
+namespace priv {
+struct SharedPtrControlBlock {
+	void *_ptr;
+	core::AtomicInt _refCnt{1};
+};
+}
+
 template<class T>
 class SharedPtr {
 private:
@@ -22,35 +29,28 @@ private:
 		int b;
 	};
 
-	// ControlBlock holds ref count + object storage
-	struct ControlBlock {
-		core::AtomicInt refCnt;
-		typename std::aligned_storage<sizeof(T), alignof(T)>::type object;
-	};
-
-	ControlBlock* _ctrl;
+	priv::SharedPtrControlBlock *_ctrl;
 
 	int count() const {
 		if (_ctrl == nullptr) {
 			return 0;
 		}
-		return _ctrl->refCnt;
+		return _ctrl->_refCnt;
 	}
 
 	void increase() {
 		if (_ctrl == nullptr) {
 			return;
 		}
-		_ctrl->refCnt.increment(1);
+		_ctrl->_refCnt.increment(1);
 	}
 
 	int decrease() {
 		if (_ctrl == nullptr) {
 			return -1;
 		}
-		return _ctrl->refCnt.decrement(1) - 1;
+		return _ctrl->_refCnt.decrement(1) - 1;
 	}
-
 public:
 	using value_type = T;
 
@@ -70,29 +70,30 @@ public:
 
 	template <class U>
 	SharedPtr(const SharedPtr<U> &obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
-		_ctrl(reinterpret_cast<ControlBlock*>(obj._ctrl)) {
+			_ctrl(obj._ctrl) {
 		increase();
 	}
 
 	template <class U>
 	SharedPtr(SharedPtr<U> &&obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
-		_ctrl(reinterpret_cast<ControlBlock*>(obj._ctrl)) {
+			_ctrl(obj._ctrl) {
 		obj._ctrl = nullptr;
 	}
 
 	template<typename ... Args>
 	static SharedPtr<T> create(Args&&... args) {
-		void *mem = core_malloc(sizeof(ControlBlock));
-		ControlBlock *ctrl = static_cast<ControlBlock *>(mem);
-		new (&ctrl->refCnt) core::AtomicInt(1);
-		new (&ctrl->object) T(core::forward<Args>(args)...);
+		const size_t alignment = alignof(T);
+		const size_t size = sizeof(T) + (alignment - 1) + sizeof(priv::SharedPtrControlBlock);
+		void *ptr = core_malloc(size);
 		SharedPtr<T> d;
-		d._ctrl = ctrl;
+		d._ctrl = new (ptr) priv::SharedPtrControlBlock();
+		const uintptr_t aligned = ((uintptr_t)ptr + sizeof(priv::SharedPtrControlBlock) + alignment - 1) & ~(uintptr_t)(alignment - 1);
+		d._ctrl->_ptr = new ((void*)(uint8_t*)aligned) T(core::forward<Args>(args)...);
 		return d;
 	}
 
 	SharedPtr &operator=(const SharedPtr &obj) {
-		if (&obj == this) {
+		if (&obj == this || _ctrl == obj._ctrl) {
 			return *this;
 		}
 		release();
@@ -102,29 +103,11 @@ public:
 	}
 
 	SharedPtr &operator=(SharedPtr &&obj) noexcept {
-		if (&obj == this) {
+		if (&obj == this || _ctrl == obj._ctrl) {
 			return *this;
 		}
 		release();
 		_ctrl = obj._ctrl;
-		obj._ctrl = nullptr;
-		return *this;
-	}
-
-	// templated copy assignment for convertible types
-	template <class U, typename = typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type>
-	SharedPtr &operator=(const SharedPtr<U> &obj) {
-		release();
-		_ctrl = reinterpret_cast<ControlBlock*>(obj._ctrl);
-		increase();
-		return *this;
-	}
-
-	// templated move assignment for convertible types
-	template <class U, typename = typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type>
-	SharedPtr &operator=(SharedPtr<U> &&obj) {
-		release();
-		_ctrl = reinterpret_cast<ControlBlock*>(obj._ctrl);
 		obj._ctrl = nullptr;
 		return *this;
 	}
@@ -134,22 +117,22 @@ public:
 	}
 
 	core::AtomicInt* refCnt() const {
-		return _ctrl ? &_ctrl->refCnt : nullptr;
+		return _ctrl ? &_ctrl->_refCnt : nullptr;
 	}
 
 	void release() {
 		if (decrease() == 0) {
 			if (_ctrl != nullptr) {
-				reinterpret_cast<T*>(&_ctrl->object)->~T();
-				_ctrl->~ControlBlock();
-				core_free(_ctrl);
+				((T*)_ctrl->_ptr)->~T();
+				_ctrl->~SharedPtrControlBlock();
 			}
+			core_free((void*)_ctrl);
 		}
 		_ctrl = nullptr;
 	}
 
 	inline T *get() const {
-		return _ctrl ? reinterpret_cast<T*>(&_ctrl->object) : nullptr;
+		return _ctrl ? (T*)_ctrl->_ptr : nullptr;
 	}
 
 	inline T *operator->() const {
@@ -161,46 +144,46 @@ public:
 	}
 
 	inline operator bool() const {
-		return get() != nullptr;
+		return *this != nullptr;
 	}
 
 	inline bool operator==(const SharedPtr &rhs) const {
-		return get() == rhs.get();
+		return _ctrl == rhs._ctrl;
 	}
 
 	inline bool operator!=(const SharedPtr &rhs) const {
-		return get() != rhs.get();
+		return _ctrl != rhs._ctrl;
 	}
 
 	inline bool operator<(const SharedPtr &rhs) const {
-		return get() < rhs.get();
+		return _ctrl < rhs._ctrl;
 	}
 
 	inline bool operator>(const SharedPtr &rhs) const {
-		return get() > rhs.get();
+		return _ctrl > rhs._ctrl;
 	}
 
 	inline bool operator<=(const SharedPtr &rhs) const {
-		return get() <= rhs.get();
+		return _ctrl <= rhs._ctrl;
 	}
 
 	inline bool operator>=(const SharedPtr &rhs) const {
-		return get() >= rhs.get();
+		return _ctrl >= rhs._ctrl;
 	}
 
 	inline bool operator==(decltype(nullptr)) const {
-		return get() == nullptr;
+		return nullptr == _ctrl;
 	}
 
 	inline bool operator!=(decltype(nullptr)) const {
-		return get() != nullptr;
+		return nullptr != _ctrl;
 	}
 };
-static_assert(sizeof(SharedPtr<int>) == sizeof(void *), "SharedPtr size unexpected");
+static_assert(sizeof(SharedPtr<void>) == sizeof(void*), "SharedPtr size must be equal to pointer size");
 
 template<class T, typename ... Args>
 static SharedPtr<T> make_shared(Args&&... args) {
 	return SharedPtr<T>::create(core::forward<Args>(args)...);
 }
 
-} // namespace core
+}
