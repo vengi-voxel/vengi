@@ -21,7 +21,7 @@ namespace voxelformat {
 class AsepriteFormat : public RGBASinglePaletteFormat {
 protected:
 	bool addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const palette::Palette &palette,
-				  const LoadContext &ctx, ase_t *ase, int frameIndex) const;
+				  const LoadContext &ctx, const ase_t *ase, int frameIndex, math::Axis axis, int offset) const;
 	ase_t *loadAseprite(const core::String &filename, const io::ArchivePtr &archive) const;
 	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const palette::Palette &palette, const LoadContext &ctx) override;

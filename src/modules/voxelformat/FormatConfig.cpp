@@ -7,6 +7,7 @@
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "math/Axis.h"
 #include "palette/FormatConfig.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/private/image/PNGFormat.h"
@@ -125,6 +126,13 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatImageSaveType, PNGFormat::ImageType::Plane, core::CV_NOPERSIST,
 				   _("0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"),
 				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
+	core::Var::get(cfg::VoxformatImageSliceOffsetAxis, "y", core::CV_NOPERSIST,
+				   _("The axis to offset the slices when importing images as volumes or heightmaps"),
+				   [](const core::String &var) {
+					   return math::toAxis(var) != math::Axis::None;
+				   });
+	core::Var::get(cfg::VoxformatImageSliceOffset, "0", core::CV_NOPERSIST,
+				   _("The offset of the slices when importing images as volumes or heightmaps"));
 	static_assert(PNGFormat::ImageType::Plane == 0, "Plane must be 0");
 	static_assert(PNGFormat::ImageType::Volume == 2, "Volume must be 2");
 	core::Var::get(cfg::VoxformatSchematicType, "mcedit2", core::CV_NOPERSIST,

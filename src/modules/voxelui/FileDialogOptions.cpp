@@ -21,6 +21,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
+#include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
@@ -265,6 +266,23 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	return true;
 }
 
+static void loadOptionsAseprite(const io::FilesystemEntry &entry) {
+	ImGui::InputVarInt(_("Slice offset"), cfg::VoxformatImageSliceOffset);
+	const core::VarPtr &sliceOffsetAxis = core::Var::getSafe(cfg::VoxformatImageSliceOffsetAxis);
+	if (ImGui::BeginCombo(_("Slice offset axis"), sliceOffsetAxis->strVal().c_str())) {
+		const math::Axis array  [] {
+			math::Axis::X, math::Axis::Y, math::Axis::Z
+		};
+		const math::Axis currentAxis = math::toAxis(sliceOffsetAxis->strVal());
+		for (const math::Axis axis : array) {
+			if (ImGui::Selectable(math::getCharForAxis(axis), axis == currentAxis)) {
+				sliceOffsetAxis->setVal(math::getCharForAxis(axis));
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
 static void loadOptionsPng(const io::FilesystemEntry &entry) {
 	const core::VarPtr &imageTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
 	const int currentImageType = genericPngOptions(true, imageTypeVar);
@@ -373,6 +391,10 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == io::format::png()) {
 		loadOptionsPng(entry);
+	}
+
+	if (*desc == voxelformat::AsepriteFormat::format()) {
+		loadOptionsAseprite(entry);
 	}
 
 	if (*desc == voxelformat::SkinFormat::format()) {

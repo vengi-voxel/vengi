@@ -4,12 +4,15 @@
 
 #include "AsepriteFormat.h"
 #include "app/Async.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "io/Stream.h"
+#include "math/Axis.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
@@ -41,7 +44,7 @@
 namespace voxelformat {
 
 bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const palette::Palette &palette,
-					 const LoadContext &ctx, ase_t *ase, int frameIndex) const {
+					 const LoadContext &ctx, const ase_t *ase, int frameIndex, math::Axis axis, int offset) const {
 	const ase_frame_t *frame = ase->frames + frameIndex;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	voxel::Region region(0, 0, 0, ase->w - 1, ase->h - 1, 1);
@@ -70,6 +73,10 @@ bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::St
 		}
 	};
 	app::for_parallel(0, ase->w, fn);
+	glm::ivec3 sliceOffset(0);
+	sliceOffset[math::getIndexForAxis(axis)] = offset;
+	sliceOffset *= frameIndex;
+	node.volume()->translate(sliceOffset);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
@@ -102,8 +109,10 @@ bool AsepriteFormat::loadGroupsRGBA(const core::String &filename, const io::Arch
 		return false;
 	}
 	const core::String filenameNoPath = core::string::extractFilename(filename);
+	const int offset = core::Var::getSafe(cfg::VoxformatImageSliceOffset)->intVal();
+	const math::Axis axis = math::toAxis(core::Var::getSafe(cfg::VoxformatImageSliceOffsetAxis)->strVal());
 	for (int i = 0; i < ase->frame_count; ++i) {
-		if (!addFrame(sceneGraph, filenameNoPath, palette, ctx, ase, i)) {
+		if (!addFrame(sceneGraph, filenameNoPath, palette, ctx, ase, i, axis, offset)) {
 			Log::error("Failed to add frame %d from Aseprite file '%s'", i, filename.c_str());
 			cute_aseprite_free(ase);
 			return false;
