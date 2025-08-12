@@ -103,6 +103,8 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_imageheightmapminheight`                  | The minimum height of the heightmap when importing an image as heightmap           | 0            |
 | `voxformat_imageimporttype`                          | 0 = plane, 1 = heightmap, 2 = volume                                               | 0            |
 | `voxformat_imagesavetype`                            | 0 = plane, 1 = heightmap, 3 = thumbnail                                            | 0            |
+| `voxformat_imagesliceoffsetaxis`                     | The axis to offset the slices when importing images as volumes or heightmaps       | x/y/z        |
+| `voxformat_imagesliceoffset`                         | The offset of the slices when importing images as volumes or heightmaps            | 0            |
 | `voxformat_imagevolumemaxdepth`                      | The maximum depth of the volume when importing an image as volume                  | 1            |
 | `voxformat_imagevolumebothsides`                     | Import the image as volume for both sides                                          | true/false   |
 | `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 | true/false   |
@@ -131,6 +133,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   | true/false   |
 | `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   | true/false   |
 | `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         | 0/1          |
+| `voxformat_vxllodhva`         | Load the HVA file for VXL animations                                                     | true/false   |
 | `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     | 2/4          |
 | `voxformat_withcolor`         | Export vertex colors                                                                     | true/false   |
 | `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 | true/false   |
