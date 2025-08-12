@@ -992,12 +992,20 @@ core::String Palette::extractPaletteName(const core::String &file) {
 	return nameWithExtension;
 }
 
-bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &palette) {
+bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &palette, int imageWidth, int imageHeight) {
 	if (!image || !image->isLoaded()) {
 		return false;
 	}
-	const int imageWidth = image->width();
-	const int imageHeight = image->height();
+	if (imageWidth <= 0 || imageHeight <= 0) {
+		imageWidth = image->width();
+		imageHeight = image->height();
+	}
+	if (imageWidth >= image->width()) {
+		imageWidth = image->width();
+	}
+	if (imageHeight >= image->height()) {
+		imageHeight = image->height();
+	}
 	const int maxSize = core::Var::getSafe(cfg::PalformatMaxSize)->intVal();
 	if (imageWidth * imageHeight > maxSize * maxSize) {
 		Log::error(
