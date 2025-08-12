@@ -409,7 +409,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 	printManPageFormats(app, save);
 
 	Log::printf(".SH HOMEPAGE\n");
-	Log::printf(PROJECT_HOMEPAGE_URL "\n");
+	Log::printf("@CMAKE_PROJECT_HOMEPAGE_URL@\n");
 	Log::printf("\n");
 	Log::printf(".SH COPYRIGHT\n");
 	Log::printf("Copyright \\[co] 2015\\-@COPYRIGHT_YEAR@ by Martin Gerhardy.\n");
