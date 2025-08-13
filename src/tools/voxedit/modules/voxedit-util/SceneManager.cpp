@@ -359,14 +359,14 @@ bool SceneManager::saveModels(const core::String& dir) {
 	return state;
 }
 
-bool SceneManager::save(const io::FileDescription& file, bool autosave) {
+bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 	if (_sceneGraph.empty()) {
-		Log::warn("No volumes for saving found");
+		Log::debug("No volumes for saving found");
 		return false;
 	}
 
 	if (file.empty()) {
-		Log::warn("No filename given for saving");
+		Log::debug("No filename given for saving");
 		return false;
 	}
 	voxelformat::SaveContext saveCtx;
@@ -383,7 +383,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 		_needAutoSave = false;
 		return true;
 	}
-	Log::warn("Failed to save to desired format");
+	Log::warn("Failed to save to desired format (%s)", file.c_str());
 	return false;
 }
 
