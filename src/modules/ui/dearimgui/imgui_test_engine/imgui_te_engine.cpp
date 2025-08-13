@@ -197,6 +197,7 @@ void ImGuiTestEngine_BindImGuiContext(ImGuiTestEngine* engine, ImGuiContext* ui_
         GImGuiTestEngine = engine;
     IM_ASSERT(ui_ctx->TestEngine == nullptr);
     ui_ctx->TestEngine = engine;
+    engine->UiContextHasHooks = false;
 }
 
 void    ImGuiTestEngine_UnbindImGuiContext(ImGuiTestEngine* engine, ImGuiContext* ui_ctx)
@@ -230,6 +231,7 @@ void    ImGuiTestEngine_UnbindImGuiContext(ImGuiTestEngine* engine, ImGuiContext
 // Create test context (not bound to any dear imgui context yet)
 ImGuiTestEngine*    ImGuiTestEngine_CreateContext()
 {
+    IMGUI_CHECKVERSION(); // <--- If you get a crash here: mismatching config, check that both imgui and imgui_test_engine are using same defines (e.g. using the same imconfig file)
     ImGuiTestEngine* engine = IM_NEW(ImGuiTestEngine)();
     return engine;
 }
@@ -2177,6 +2179,7 @@ static void ImGuiTestEngineHook_ItemAdd_GatherTask(ImGuiContext* ui_ctx, ImGuiTe
 void ImGuiTestEngineHook_ItemAdd(ImGuiContext* ui_ctx, ImGuiID id, const ImRect& bb, const ImGuiLastItemData* item_data)
 {
     ImGuiTestEngine* engine = (ImGuiTestEngine*)ui_ctx->TestEngine;
+    engine->UiContextHasHooks = true;
 
     IM_ASSERT(id != 0);
     ImGuiContext& g = *ui_ctx;

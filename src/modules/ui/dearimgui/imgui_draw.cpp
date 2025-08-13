@@ -1,4 +1,4 @@
-// dear imgui, v1.92.2 WIP
+// dear imgui, v1.92.2b
 // (drawing and font code)
 
 /*
@@ -4378,6 +4378,7 @@ ImTextureRect* ImFontAtlasPackGetRectSafe(ImFontAtlas* atlas, ImFontAtlasRectId 
     if (atlas->Builder == NULL)
         ImFontAtlasBuildInit(atlas);
     ImFontAtlasBuilder* builder = (ImFontAtlasBuilder*)atlas->Builder;
+    IM_MSVC_WARNING_SUPPRESS(28182); // Static Analysis false positive "warning C28182: Dereferencing NULL pointer 'builder'"
     if (index_idx >= builder->RectsIndex.Size)
         return NULL;
     ImFontAtlasRectEntry* index_entry = &builder->RectsIndex[index_idx];

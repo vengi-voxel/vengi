@@ -936,6 +936,9 @@ static void ItemInfoErrorLog(ImGuiTestContext* ctx, ImGuiTestRef ref, ImGuiID fu
     if (flags & ImGuiTestOpFlags_NoError)
         return;
 
+    if (ctx->Engine->UiContextHasHooks == false)
+        IM_ERRORF_NOHDR("%s", "IMGUI DOES NOT SEEM COMPILED WITH '#define IMGUI_ENABLE_TEST_ENGINE'!\nMAKE SURE THAT BOTH 'imgui' AND 'imgui_test_engine' ARE USING THE SAME 'imconfig' FILE.");
+
     // Prefixing the string with / ignore the reference/current ID
     Str256 msg;
     if (ref.Path && ref.Path[0] == '/' && ctx->RefStr[0] != 0)
