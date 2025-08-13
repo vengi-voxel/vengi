@@ -442,7 +442,7 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 			return false;
 		}
 	}
-	core::Buffer<PointCloudVertex> pointCloud;
+	PointCloud pointCloud;
 	pointCloud.resize(vertices.size());
 	for (int i = 0; i < (int)vertices.size(); ++i) {
 		pointCloud[i].position = vertices[i].position;

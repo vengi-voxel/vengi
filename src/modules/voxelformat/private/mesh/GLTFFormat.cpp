@@ -1725,7 +1725,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 				node.setTransform(0, transform);
 				nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
 			} else {
-				core::Buffer<PointCloudVertex> pointCloud;
+				PointCloud pointCloud;
 				pointCloud.resize(vertices.size());
 				for (int i = 0; i < (int)vertices.size(); ++i) {
 					pointCloud[i].position = vertices[i].pos;

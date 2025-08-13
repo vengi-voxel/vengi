@@ -533,7 +533,7 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 }
 
 bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-									const core::Buffer<PointCloudVertex> &vertices) const {
+									const PointCloud &vertices) const {
 	glm::vec3 mins{std::numeric_limits<float>::max()};
 	glm::vec3 maxs{std::numeric_limits<float>::min()};
 	const glm::vec3 scale = getInputScale();

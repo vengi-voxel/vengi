@@ -30,7 +30,7 @@ private:
 
 protected:
 	void voxelizePointShape(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
-							core::Buffer<PointCloudVertex> &pointCloud);
+							PointCloud &pointCloud);
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	bool voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::attrib_t &attrib,
