@@ -9,6 +9,14 @@
 
 namespace io {
 
+FilesystemEntry::Type FilesystemEntry::linkTargetType() const {
+	if (!isLink()) {
+		return Type::unknown;
+	}
+	FilesystemEntry target = createFilesystemEntry(fullPath);
+	return target.type;
+}
+
 bool FilesystemEntry::setExtension(const core::String &ext) {
 	if (!isFile()) {
 		return false;

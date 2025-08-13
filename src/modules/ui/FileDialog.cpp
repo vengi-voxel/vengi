@@ -133,7 +133,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		if (hide(_entities[i].fullPath)) {
 			continue;
 		}
-		if (_entities[i].type == io::FilesystemEntry::Type::dir) {
+		if (_entities[i].isDirectory()) {
 			_filteredEntities.push_back(&_entities[i]);
 			continue;
 		} else if (type == video::OpenFileMode::Directory) {
@@ -498,7 +498,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 						_selectedEntry = entry;
 					}
 				}
-				if (entry.type == io::FilesystemEntry::Type::dir) {
+				if (entry.isDirectory()) {
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 						_dragAndDropName = core::string::path(_currentPath, entry.name);
 						ImGui::TextUnformatted(_dragAndDropName.c_str());

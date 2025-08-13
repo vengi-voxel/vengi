@@ -9,6 +9,9 @@
 
 namespace io {
 
+/**
+ * @brief If the entry type is a link, the name is the symlink name, the fullPath is the target of the symlink.
+ */
 struct FilesystemEntry {
 	core::String name;
 	core::String fullPath;
@@ -25,16 +28,24 @@ struct FilesystemEntry {
 	bool setExtension(const core::String &ext);
 
 	inline bool isFile() const {
+		if (type == Type::link) {
+			return linkTargetType() == Type::file;
+		}
 		return type == Type::file;
 	}
 
 	inline bool isDirectory() const {
+		if (type == Type::link) {
+			return linkTargetType() == Type::dir;
+		}
 		return type == Type::dir;
 	}
 
 	inline bool isLink() const {
 		return type == Type::link;
 	}
+
+	Type linkTargetType() const;
 };
 
 FilesystemEntry createFilesystemEntry(const core::String &filename);

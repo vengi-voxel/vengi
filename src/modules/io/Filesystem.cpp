@@ -249,7 +249,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 	for (FilesystemEntry entry : entries) {
 		normalizePath(entry.name);
 		entry.fullPath = core::string::path(directory, entry.name);
-		if (entry.type == FilesystemEntry::Type::link) {
+		if (entry.isLink()) {
 			core::String symlink = fs_readlink(entry.fullPath.c_str());
 			normalizePath(symlink);
 			if (symlink.empty()) {
@@ -264,7 +264,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 			}
 
 			entry.fullPath = sysIsRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
-		} else if (entry.type == FilesystemEntry::Type::dir && depth > 0) {
+		} else if (entry.isDirectory() && depth > 0) {
 			_list(entry.fullPath, entities, filter, depth - 1);
 		} else {
 			if (!filter.empty()) {
