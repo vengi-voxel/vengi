@@ -14,6 +14,9 @@ General:
 
    - Added missing ascii `fbx` header
    - Support `obj` point clouds
+   - Added cvars `voxformat_imagesliceoffsetaxis` and `voxformat_imagesliceoffset` to import spritestacks via Aseprite `asprite` files
+   - Fixed symlink handling on linux
+   - Reduced memory usage for the voxelizer
 
 VoxEdit:
 
