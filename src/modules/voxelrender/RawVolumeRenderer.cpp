@@ -511,7 +511,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 		}
 		glm::mat4 model(1.0f);
 		if (renderContext.applyTransforms()) {
-			model = glm::translate(meshState->model(idx), -meshState->pivot(idx));
+			model = meshState->model(idx);
 		}
 		_shapeRenderer.render(_state[idx]._normalPreviewBufferIndex, camera, model);
 	}
@@ -536,7 +536,6 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		updatePalette(meshState, bufferIndex);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = meshState->model(idx);
-		_voxelShaderVertData.pivot = meshState->pivot(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
@@ -598,7 +597,6 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		updatePalette(meshState, idx);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = meshState->model(idx);
-		_voxelShaderVertData.pivot = meshState->pivot(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
@@ -688,7 +686,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 							if (indices > 0u) {
 								video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
 								var.model = meshState->model(idx);
-								var.pivot = meshState->pivot(idx);
 								_shadowMapUniformBlock.update(var);
 								_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
 								video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));

@@ -165,10 +165,10 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm:
 	}
 	_meshState->extractAllPending();
 	if (_meshState->volume(0) != nullptr) {
-		_meshState->setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+		_meshState->setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
 	if (_meshState->volume(1) != nullptr) {
-		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f));
+		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
 	_volumeRenderer.update(_meshState);
 	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false/*, model*/);

@@ -51,12 +51,7 @@ const glm::mat4 &MeshState::model(int idx) const {
 	return _volumeData[idx]._model;
 }
 
-const glm::vec3 &MeshState::pivot(int idx) const {
-	return _volumeData[idx]._pivot;
-}
-
-bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
-									   const glm::vec3 &maxs) {
+bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		Log::error("Given id %i is out of bounds", idx);
 		return false;
@@ -67,7 +62,6 @@ bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 
 	}
 	VolumeData &state = _volumeData[idx];
 	state._model = model;
-	state._pivot = pivot;
 	state._mins = mins;
 	state._maxs = maxs;
 	return true;

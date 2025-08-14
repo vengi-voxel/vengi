@@ -51,7 +51,6 @@ private:
 		video::Face _cullFace = video::Face::Back;
 		int _reference = -1;
 		glm::mat4 _model{1.0f};
-		glm::vec3 _pivot{0.0f};
 		glm::vec3 _mins{0.0f};
 		glm::vec3 _maxs{0.0f};
 		/**
@@ -148,10 +147,8 @@ public:
 	 * @note Used for sorting (for transparency)
 	 */
 	glm::vec3 centerPos(int idx, bool applyModel) const;
-	const glm::vec3 &pivot(int idx) const;
 	const glm::mat4 &model(int idx) const;
-	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
-						const glm::vec3 &maxs);
+	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs);
 
 	/**
 	 * @return @c true if the mesh mode was changed and the consumer should be aware that all meshes should get cleaned

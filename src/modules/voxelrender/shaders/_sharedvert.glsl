@@ -9,8 +9,10 @@ layout(std140) uniform u_vert {
 	vec4 u_glowcolor[MATERIALCOLORS];
 	mat4 u_viewprojection;
 	mat4 u_model;
-	vec3 u_pivot;
 	int u_gray;
+	int u_padding1;
+	int u_padding2;
+	int u_padding3;
 };
 
 $out vec3 v_pos;

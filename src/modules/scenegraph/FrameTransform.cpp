@@ -21,7 +21,7 @@ glm::vec3 FrameTransform::calcModelSpace(const glm::vec3 &worldPos) const {
 }
 
 glm::vec3 FrameTransform::calcPivot(const glm::vec3 &dimensions, const glm::vec3 &normalizedPivot) const {
-	return scale() * normalizedPivot * dimensions;
+	return normalizedPivot * dimensions;
 }
 
 glm::vec3 FrameTransform::calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const {
