@@ -20,10 +20,6 @@ glm::vec3 FrameTransform::calcModelSpace(const glm::vec3 &worldPos) const {
 	return modelSpacePos;
 }
 
-glm::vec3 FrameTransform::calcPivot(const glm::vec3 &dimensions, const glm::vec3 &normalizedPivot) const {
-	return normalizedPivot * dimensions;
-}
-
 glm::vec3 FrameTransform::calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const {
 	return matrix * glm::vec4(pos - pivot, 1.0f);
 }
@@ -57,10 +53,6 @@ void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::ve
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions) {
 	return dimensions / 2.0f;
-}
-
-glm::vec3 calculateCenter(const FrameTransform &transform, const glm::vec3 &worldPivot, const glm::vec3 &regionCenter) {
-	return transform.worldMatrix() * glm::vec4(regionCenter - worldPivot, 1.0f);
 }
 
 } // namespace scenegraph

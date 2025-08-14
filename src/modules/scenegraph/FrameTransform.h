@@ -38,12 +38,6 @@ public:
 	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
 
 	/**
-	 * @brief Calulate the pivot in object space
-	 * @param[in] dimensions The dimensions of the object
-	 * @param[in] normalizedPivot The pivot in the normalized range (usually [0, 1])
-	 */
-	glm::vec3 calcPivot(const glm::vec3 &dimensions, const glm::vec3 &normalizedPivot) const;
-	/**
 	 * @brief Calculate the transformed position for the given input
 	 * @param[in] pos The position in object space
 	 * @param[in] pivot The pivot in object space (see @c calcPivot() for details)
@@ -53,6 +47,5 @@ public:
 };
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions);
-glm::vec3 calculateCenter(const FrameTransform &transform, const glm::vec3 &worldPivot, const glm::vec3 &regionCenter);
 
 } // namespace scenegraph
