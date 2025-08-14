@@ -31,6 +31,7 @@ public:
 	inline const glm::mat4 &worldMatrix() const {
 		return matrix;
 	}
+	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
 
 	glm::vec3 translation() const;
 	glm::vec3 scale() const;
