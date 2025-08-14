@@ -20,18 +20,6 @@ glm::vec3 FrameTransform::calcModelSpace(const glm::vec3 &worldPos) const {
 	return modelSpacePos;
 }
 
-bool FrameTransform::isInside(const glm::vec3 &worldPos, const voxel::Region &region,
-							  const glm::vec3 &normalizedPivot) const {
-	const glm::vec3 pivot = calcPivot(region.getDimensionsInVoxels(), normalizedPivot);
-	const glm::vec3 mins = calcPosition(region.getLowerCornerf(), pivot);
-	const glm::vec3 maxs = calcPosition(region.getUpperCornerf(), pivot);
-	if (worldPos.x < mins.x || worldPos.x > maxs.x || worldPos.y < mins.y || worldPos.y > maxs.y ||
-		worldPos.z < mins.z || worldPos.z > maxs.z) {
-		return false;
-	}
-	return true;
-}
-
 glm::vec3 FrameTransform::calcPivot(const glm::vec3 &dimensions, const glm::vec3 &normalizedPivot) const {
 	return scale() * normalizedPivot * dimensions;
 }
