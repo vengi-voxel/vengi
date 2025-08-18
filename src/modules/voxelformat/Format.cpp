@@ -233,13 +233,12 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 	if (!createPalette) {
 		const palette::Palette &defaultPalette = voxel::getPalette();
 		Log::info("Remap the palette to %s", defaultPalette.name().c_str());
-		for (const auto &e : sceneGraph.nodes()) {
-			scenegraph::SceneGraphNode &node = e->value;
+		sceneGraph.nodes().for_parallel([&defaultPalette] (const scenegraph::SceneGraphNodes::key_type &k, scenegraph::SceneGraphNodes::value_type &node) {
 			if (node.isAnyModelNode()) {
 				node.remapToPalette(defaultPalette);
 				node.setPalette(defaultPalette);
 			}
-		}
+		});
 	}
 
 	sceneGraph.updateTransforms();
