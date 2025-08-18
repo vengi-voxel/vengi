@@ -57,6 +57,8 @@ nav:
   - Thumbnailer:
       - thumbnailer/Index.md
       - thumbnailer/Examples.md
+  - Blog:
+      - blog/devlog_24_08.md
   - Developers:
       - Dependencies.md
       - Compilation.md
