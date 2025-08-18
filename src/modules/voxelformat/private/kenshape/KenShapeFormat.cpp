@@ -104,8 +104,8 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	Log::debug("size: w(%d) h(%d)", w, h);
 	Log::debug("alignment: %d", alignment);
 	Log::debug("depthMultiplier: %d", depthMultiplier);
-	Log::debug("version: %s", node.property("Version").c_str());
-	Log::debug("author: %s", node.property("Author").c_str());
+	Log::debug("version: %s", node.property(scenegraph::PropVersion).c_str());
+	Log::debug("author: %s", node.property(scenegraph::PropAuthor).c_str());
 	Log::debug("title: %s", node.name().c_str());
 
 	voxel::Region region(0, 0, -maxDepth, w, h, maxDepth - 1);

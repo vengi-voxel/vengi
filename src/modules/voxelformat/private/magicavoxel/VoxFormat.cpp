@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -385,7 +386,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
 			ogt_cam.radius = (int)camera.farPlane();
 			ogt_cam.fov = camera.fieldOfView();
-			ogt_cam.frustum = camera.propertyf("frustum"); // TODO: VOXELFORMAT:
+			ogt_cam.frustum = camera.propertyf(scenegraph::PropCamFrustum); // TODO: VOXELFORMAT:
 			ctx.cameras.push_back(ogt_cam);
 		}
 		for (int childId : node.children()) {

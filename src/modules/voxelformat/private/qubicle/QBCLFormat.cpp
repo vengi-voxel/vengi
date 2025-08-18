@@ -322,13 +322,13 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	}
 
 	const scenegraph::SceneGraphNode &rootNode = sceneGraph.root();
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Title")))
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Description")))
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Metadata")))
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Author")))
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Company")))
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Website")))
-	wrapSave(stream->writePascalStringUInt32LE(rootNode.property("Copyright")))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropTitle)))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropDescription)))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropMetadata)))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropAuthor)))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropCompany)))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropWebsite)))
+	wrapSave(stream->writePascalStringUInt32LE(rootNode.property(scenegraph::PropCopyright)))
 	wrapSave(stream->writeUInt64(0)) // timestamp1
 	wrapSave(stream->writeUInt64(0)) // timestamp2
 	return saveNode(*stream, sceneGraph, sceneGraph.root());

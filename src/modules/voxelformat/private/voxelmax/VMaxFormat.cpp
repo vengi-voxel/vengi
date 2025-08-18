@@ -213,7 +213,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
 		if (!obj.pid.empty()) {
-			node.setProperty("parent-uuid", obj.pid);
+			node.setProperty(scenegraph::PropParentUUID, obj.pid);
 		}
 		node.setVisible(!obj.s);
 		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
@@ -459,7 +459,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	if (!obj.pid.empty()) {
-		node.setProperty("parent-uuid", obj.pid);
+		node.setProperty(scenegraph::PropParentUUID, obj.pid);
 	}
 	node.setVisible(!obj.h);
 	node.setVolume(merged.volume(), true);

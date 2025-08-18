@@ -22,5 +22,8 @@ static constexpr const char *PropCamWidth = "cam_width";
 static constexpr const char *PropCamHeight = "cam_height";
 static constexpr const char *PropCamAspect = "cam_aspect";
 static constexpr const char *PropCamFov = "cam_fov";
+static constexpr const char *PropCamFrustum = "frustum";
+static constexpr const char *PropParent = "parent";
+static constexpr const char *PropParentUUID = "parent-uuid";
 
 } // namespace scenegraph

@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
 
@@ -53,7 +54,7 @@ static bool readString(io::SeekableReadStream &stream, core::String &str, bool r
 static void updateParents(scenegraph::SceneGraph &sceneGraph) {
 	for (scenegraph::SceneGraph::iterator iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		const core::String &parent = node.property("parent");
+		const core::String &parent = node.property(scenegraph::PropParent);
 		if (parent.empty()) {
 			Log::debug("no parent for node %s", node.name().c_str());
 			continue;
@@ -178,7 +179,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		node.setTransform(keyFrameIdx, transform);
 
 		if (!parent.empty()) {
-			node.setProperty("parent", parent);
+			node.setProperty(scenegraph::PropParent, parent);
 		}
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));

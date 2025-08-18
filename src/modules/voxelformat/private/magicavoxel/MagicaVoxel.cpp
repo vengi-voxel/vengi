@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/RawVolume.h"
 #include "core/Endian.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -234,7 +235,7 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 			camNode.setTransform(keyFrameIdx, transform);
 			camNode.setFieldOfView(c.fov);
 			camNode.setFarPlane((float)c.radius);
-			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO: VOXELFORMAT:
+			camNode.setProperty(scenegraph::PropCamFrustum, core::String::format("%f", c.frustum)); // TODO: VOXELFORMAT:
 			if (c.mode == ogt_cam_mode_perspective) {
 				camNode.setPerspective();
 			} else if (c.mode == ogt_cam_mode_orthographic) {

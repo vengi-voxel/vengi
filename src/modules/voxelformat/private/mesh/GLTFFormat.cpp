@@ -751,7 +751,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	// Define the asset. The version is required
 	gltfModel.asset.generator = generator.c_str();
 	gltfModel.asset.version = "2.0";
-	gltfModel.asset.copyright = sceneGraph.root().property("Copyright").c_str();
+	gltfModel.asset.copyright = sceneGraph.root().property(scenegraph::PropCopyright).c_str();
 	gltfModel.accessors.reserve(modelNodes * 4 + sceneGraph.animations().size() * 4);
 
 	Stack stack;
