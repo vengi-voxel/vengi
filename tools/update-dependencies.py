@@ -271,6 +271,13 @@ def update_glm():
         [(f"glm", "contrib/libs/glm/glm")]
     )
 
+def update_opengametools():
+    update_target(
+        "opengametools",
+        "https://github.com/jpaver/opengametools.git",
+        [(f"src/ogt_vox.h", "src/modules/voxelformat/external/ogt_vox.h"),]
+    )
+
 def update_sdl2():
     update_target(
         "sdl2",
@@ -438,7 +445,8 @@ def main():
         update_yocto,
         update_ufbx,
         update_natsort,
-        update_miniz
+        update_miniz,
+        update_opengametools
     ]
 
     # Filter updates based on the provided filter

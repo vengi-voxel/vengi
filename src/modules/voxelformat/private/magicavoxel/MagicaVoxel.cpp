@@ -23,6 +23,7 @@
 #define OGT_VOX_BIGENDIAN_SWAP32 core_swap32le
 #define OGT_VOX_IMPLEMENTATION
 #define ogt_assert(x, msg) core_assert_msg(x, "%s", msg)
+#define ogt_assert_warn(x, msg) if (!(x)) { Log::warn("%s", msg); }
 #include "voxelformat/external/ogt_vox.h"
 
 namespace voxelformat {

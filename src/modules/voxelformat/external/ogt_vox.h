@@ -95,6 +95,9 @@
     instance has a transform that determines its position and orientation within the scene,
     but it also has an index that specifies which model the instance uses for its shape. It
     is expected that there is a many-to-one mapping of instances to models.
+    Instances can overlap. For file version 200 (or perhaps higher) lower instance numbers are
+    more important and would overwrite existing voxels on merging, for version < 200 the higher
+    numbers are more important.
 
     An ogt_vox_layer is used to conceptually group instances. Each instance indexes the
     layer that it belongs to, but the layer itself has its own name and hidden/shown state.
@@ -173,6 +176,7 @@
     eg.
         #include "my_assert.h"
         #define ogt_assert(condition, message_str)    my_assert(condition, message_str)
+        #define ogt_assert_warn(condition, message_str)      my_assert(condition, message_str)
 
         #define OGT_VOX_IMPLEMENTATION
         #include "path/to/ogt_vox.h"
@@ -229,6 +233,8 @@
 
     // denotes an invalid group index. Usually this is only applicable to the scene's root group's parent.
     static const uint32_t k_invalid_group_index = UINT32_MAX;
+    // denotes an invalid layer index. Can happen for instances and groups at least.
+    static const uint32_t k_invalid_layer_index = UINT32_MAX;
 
     // color
     typedef struct ogt_vox_rgba
@@ -338,10 +344,10 @@
         uint32_t     camera_id;
         ogt_cam_mode mode;
         float        focus[3];    // the target position
-        float        angle[3];    // rotation in degree
-        float        radius;
-        float        frustum;
-        int          fov;         // angle in degree
+        float        angle[3];    // rotation in degree - pitch (-180 to +180), yaw (0 to 360), roll (0 to 360)
+        float        radius;      // distance of camera position from target position, also controls frustum in MV for orthographic/isometric modes
+        float        frustum;     // 'height' of near plane of frustum, either orthographic height in voxels or tan( fov/2.0f )
+        int          fov;         // angle in degrees for height of field of view, ensure to set frustum as only used when changed in MV UI
     } ogt_vox_cam;
 
     typedef struct ogt_vox_sun
@@ -424,21 +430,24 @@
     // the scene parsed from a .vox file.
     typedef struct ogt_vox_scene
     {
-        uint32_t                num_models;     // number of models within the scene.
-        uint32_t                num_instances;  // number of instances in the scene (on anim frame 0)
-        uint32_t                num_layers;     // number of layers in the scene
-        uint32_t                num_groups;     // number of groups in the scene
-        uint32_t                num_color_names;// number of color names in the scene
-        const char**            color_names;    // array of color names. size is num_color_names
-        const ogt_vox_model**   models;         // array of models. size is num_models
-        const ogt_vox_instance* instances;      // array of instances. size is num_instances
-        const ogt_vox_layer*    layers;         // array of layers. size is num_layers
-        const ogt_vox_group*    groups;         // array of groups. size is num_groups
-        ogt_vox_palette         palette;        // the palette for this scene
-        ogt_vox_matl_array      materials;      // the extended materials for this scene
-        uint32_t                num_cameras;    // number of cameras for this scene
-        const ogt_vox_cam*      cameras;        // the cameras for this scene
-        ogt_vox_sun*            sun;            // sun - primary light at infinity
+        uint32_t                file_version;     // version of the .vox file format.
+        uint32_t                num_models;       // number of models within the scene.
+        uint32_t                num_instances;    // number of instances in the scene (on anim frame 0)
+        uint32_t                num_layers;       // number of layers in the scene
+        uint32_t                num_groups;       // number of groups in the scene
+        uint32_t                num_color_names;  // number of color names in the scene
+        const char**            color_names;      // array of color names. size is num_color_names
+        const ogt_vox_model**   models;           // array of models. size is num_models
+        const ogt_vox_instance* instances;        // array of instances. size is num_instances
+        const ogt_vox_layer*    layers;           // array of layers. size is num_layers
+        const ogt_vox_group*    groups;           // array of groups. size is num_groups
+        ogt_vox_palette         palette;          // the palette for this scene
+        ogt_vox_matl_array      materials;        // the extended materials for this scene
+        uint32_t                num_cameras;      // number of cameras for this scene
+        const ogt_vox_cam*      cameras;          // the cameras for this scene
+        ogt_vox_sun*            sun;              // sun - primary light at infinity
+        uint32_t                anim_range_start; // the start frame of the animation range for this scene (META chunk since 0.99.7.2)
+        uint32_t                anim_range_end;   // the end frame of the animation range for this scene (META chunk since 0.99.7.2)
     } ogt_vox_scene;
 
     // allocate memory function interface. pass in size, and get a pointer to memory with at least that size available.
@@ -514,6 +523,9 @@
     #include <assert.h>
     #define ogt_assert(x, msg_str)      do { assert((x) && (msg_str)); } while(0)
 #endif
+#ifndef ogt_assert_warn
+    #define ogt_assert_warn(x, msg_str) ogt_assert(x, msg_str)
+#endif
     #include <stdlib.h>
     #include <string.h>
     #include <stdio.h>
@@ -538,6 +550,7 @@
     static const uint32_t CHUNK_ID_rOBJ = MAKE_VOX_CHUNK_ID('r','O','B','J');
     static const uint32_t CHUNK_ID_rCAM = MAKE_VOX_CHUNK_ID('r','C','A','M');
     static const uint32_t CHUNK_ID_NOTE = MAKE_VOX_CHUNK_ID('N','O','T','E');
+    static const uint32_t CHUNK_ID_META = MAKE_VOX_CHUNK_ID('M','E','T','A');
 
     static const uint32_t NAME_MAX_LEN     = 256;       // max name len = 255 plus 1 for null terminator
     static const uint32_t CHUNK_HEADER_LEN = 12;        // 4 bytes for each of: chunk_id, chunk_size, chunk_child_size
@@ -1279,7 +1292,7 @@
             }
             default:
             {
-                ogt_assert(0, "unhandled node type");
+                ogt_assert_warn(0, "unhandled node type");
             }
         }
     }
@@ -1479,6 +1492,8 @@
         bool                         found_index_map_chunk = false;
         ogt_vox_sun                  sun;
         bool                         found_sun = false;
+        uint32_t                     anim_range_start = 0;
+        uint32_t                     anim_range_end = 30;
 
         // size some of our arrays to prevent resizing during the parsing for smallish cases.
         model_ptrs.reserve(64);
@@ -1572,8 +1587,9 @@
                             uint8_t y = packed_voxel_data[i * 4 + 1];
                             uint8_t z = packed_voxel_data[i * 4 + 2];
                             uint8_t color_index = packed_voxel_data[i * 4 + 3];
-                            ogt_assert(x < size_x && y < size_y && z < size_z, "invalid data in XYZI chunk");
-                            if(x < size_x && y < size_y && z < size_z ) {
+                            const bool inside_region = x < size_x && y < size_y && z < size_z;
+                            ogt_assert_warn(inside_region, "invalid data in XYZI chunk");
+                            if (inside_region) {
                                 voxel_data[(x * k_stride_x) + (y * k_stride_y) + (z * k_stride_z)] = color_index;
                             }
                         }
@@ -1613,8 +1629,8 @@
                     _vox_file_read_uint32(fp, &reserved_id);
                     _vox_file_read_uint32(fp, &layer_id);
                     _vox_file_read_uint32(fp, &num_frames);
-                    // ogt_assert(reserved_id == UINT32_MAX, "unexpected values for reserved_id in nTRN chunk");
-                    ogt_assert(num_frames > 0, "must have at least 1 frame in nTRN chunk");
+                    ogt_assert_warn(reserved_id == UINT32_MAX, "unexpected values for reserved_id in nTRN chunk");
+                    ogt_assert_warn(num_frames > 0, "must have at least 1 frame in nTRN chunk");
 
                     // make space in misc_data array for the number of transforms we'll need for this node
                     ogt_vox_keyframe_transform* keyframes = misc_data.alloc_many<ogt_vox_keyframe_transform>(num_frames);
@@ -1728,7 +1744,7 @@
                     _vox_file_read_int32(fp, &layer_id);
                     _vox_file_read_dict(&dict, fp);
                     _vox_file_read_int32(fp, &reserved_id);
-                    ogt_assert(reserved_id == -1, "unexpected value for reserved_id in LAYR chunk");
+                    ogt_assert_warn(reserved_id == -1, "unexpected value for reserved_id in LAYR chunk");
 
                     layers.grow_to_fit_index(layer_id);
                     layers[layer_id].name   = NULL;
@@ -1926,6 +1942,25 @@
                     _vox_file_seek_forwards(fp, remaining);
                     break;
                 }
+                case CHUNK_ID_META:
+                {
+                    _vox_file_read_dict(&dict, fp);
+                    const char* anim_range_string = _vox_dict_get_value_as_string(&dict, "_anim_range", NULL);
+                    if (anim_range_string) {
+                        // parse the animation range string, which is of the form "start_frame end_frame"
+                        int start_frame, end_frame;
+                        if (_vox_str_scanf(anim_range_string, "%d %d", &start_frame, &end_frame) == 2) {
+                            if (start_frame < 0 || end_frame < start_frame) {
+                                ogt_assert(false, "invalid animation range in META chunk");
+                            } else {
+                                // set the animation range
+                                anim_range_start = (uint32_t)start_frame;
+                                anim_range_end = (uint32_t)end_frame;
+                            }
+                        }
+                    }
+                    break;
+                }
                 case CHUNK_ID_NOTE:
                 {
                     uint32_t num_names;
@@ -2032,8 +2067,8 @@
 
             if (g_progress_callback_func) {
                 // we indicate progress as 0.8f * amount of buffer read + 0.2f at end after processing
-                if (!g_progress_callback_func(0.8f*(float)(fp->offset)/(float)(fp->buffer_size), g_progress_callback_user_data))
-                {
+                const float progress = 0.8f * (float)(fp->offset) / (float)(fp->buffer_size);
+                if (!g_progress_callback_func(progress, g_progress_callback_user_data)) {
                     return 0;
                 }
             }
@@ -2388,6 +2423,10 @@
             }
         }
 
+        scene->anim_range_start = anim_range_start;
+        scene->anim_range_end = anim_range_end;
+        scene->file_version = file_version;
+
         if (g_progress_callback_func) {
             // we indicate progress as complete, but don't check for cancel as finished
             g_progress_callback_func(1.0f, g_progress_callback_user_data);
@@ -2455,10 +2494,10 @@
                 is_negative = f[i] < 0.0f ? true : false;
             }
             else {
-                ogt_assert(f[i] == 0.0f, "rotation vector should contain only 0.0f, 1.0f, or -1.0f");
+                ogt_assert_warn(f[i] == 0.0f, "rotation vector should contain only 0.0f, 1.0f, or -1.0f");
             }
         }
-        ogt_assert(out_index != 3, "rotation vector was all zeroes but it should be a cardinal axis vector");
+        ogt_assert_warn(out_index != 3, "rotation vector was all zeroes but it should be a cardinal axis vector");
         return is_negative;
     }
 
@@ -2471,7 +2510,7 @@
         bool row0_negative = _vox_get_vec3_rotation_bits(row0, row0_index);
         bool row1_negative = _vox_get_vec3_rotation_bits(row1, row1_index);
         bool row2_negative = _vox_get_vec3_rotation_bits(row2, row2_index);
-        ogt_assert(((1 << row0_index) | (1 << row1_index) | (1 << row2_index)) == 7, "non orthogonal rows found in transform"); // check that rows are orthogonal. There must be a non-zero entry in column 0, 1 and 2 across these 3 rows.
+        ogt_assert_warn(((1 << row0_index) | (1 << row1_index) | (1 << row2_index)) == 7, "non orthogonal rows found in transform"); // check that rows are orthogonal. There must be a non-zero entry in column 0, 1 and 2 across these 3 rows.
         return (row0_index) | (row1_index << 2) | (row0_negative ? 1 << 4 : 0) | (row1_negative ? 1 << 5 : 0) | (row2_negative ? 1 << 6 : 0);
     }
 
@@ -2590,7 +2629,8 @@
 
         // write file header and file version
         _vox_file_write_uint32(fp, CHUNK_ID_VOX_);
-        _vox_file_write_uint32(fp, 150);
+        uint32_t version = scene->file_version > 0u ? scene->file_version : 150u; // default to 150 if not specified
+        _vox_file_write_uint32(fp, version);
 
         // write the main chunk
         _vox_file_write_uint32(fp, CHUNK_ID_MAIN);
@@ -2599,6 +2639,25 @@
 
         // we need to know how to patch up the main chunk size after we've written everything
         const uint32_t offset_post_main_chunk = _vox_file_get_offset(fp);
+
+        // write out the META chunk
+        if (version >= 200u) {
+            char anim_range[64] = "";
+            _vox_sprintf(anim_range, sizeof(anim_range), "%d %d", (int)scene->anim_range_start, (int)scene->anim_range_end);
+
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
+            // write the META header
+            _vox_file_write_uint32(fp, CHUNK_ID_META);
+            _vox_file_write_uint32(fp, 0); // chunk_size will get patched up later
+            _vox_file_write_uint32(fp, 0);
+
+            _vox_file_write_uint32(fp, 1);  // num key values
+            _vox_file_write_dict_key_value(fp, "_anim_range", anim_range);
+
+            // compute and patch up the chunk size in the chunk header
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
+        }
 
         // write out all model chunks
         for (uint32_t i = 0; i < scene->num_models; i++) {
@@ -2810,7 +2869,6 @@
 
         // write out the sun chunk
         if (scene->sun) {
-
             ogt_vox_sun* sun = scene->sun;
             char sun_intensity[32] = "";
             char sun_area[32] = "";
@@ -3011,7 +3069,7 @@
         // check that the buffer is not larger than the maximum file size, return nothing if would overflow
         if (fp->data.count > UINT32_MAX ||  (fp->data.count - offset_post_main_chunk) > UINT32_MAX)
         {
-            ogt_assert(0, "Generated file size exceeded 4GiB, which is too large for Magicavoxel to parse.");
+            ogt_assert_warn(0, "Generated file size exceeded 4GiB, which is too large for Magicavoxel to parse.");
             *buffer_size = 0;
             return NULL;  // note: fp will be freed in dtor on exit
         }
