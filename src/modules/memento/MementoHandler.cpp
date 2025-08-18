@@ -11,11 +11,13 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "palette/NormalPalette.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -602,11 +604,10 @@ bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph &sceneGr
 	if (!markAllAnimations(sceneGraph.animations())) {
 		return false;
 	}
-	// TODO: PERF: this is blocking the ui for large scenes or big volumes
-	//             allocate undo state slots and fill them with for_parallel
-	for (const auto &n : sceneGraph.nodes()) {
-		markInitialNodeState(sceneGraph, n->second);
-	}
+	sceneGraph.nodes().for_parallel(
+		[&](const scenegraph::SceneGraphNodes::key_type &n, const scenegraph::SceneGraphNodes::value_type &v) {
+			markInitialNodeState(sceneGraph, v);
+		});
 	return true;
 }
 
@@ -756,6 +757,7 @@ void MementoHandler::cutFromGroupStatePosition() {
 }
 
 void MementoHandler::addState(MementoState &&state) {
+	core::ScopedLock lock(_mutex);
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
 		_groups.back().states.emplace_back(state);

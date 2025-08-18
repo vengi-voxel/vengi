@@ -8,6 +8,7 @@
 #include "core/Optional.h"
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
+#include "core/concurrent/Lock.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -183,6 +184,7 @@ private:
 	uint8_t _groupStatePosition = 0u;
 	int _locked = 0;
 	voxel::Region _maxUndoRegion = voxel::Region::InvalidRegion;
+	core_trace_mutex(core::Lock, _mutex, "MementoHandler");
 
 	void cutFromGroupStatePosition();
 	void addState(MementoState &&state);
