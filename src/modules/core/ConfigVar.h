@@ -25,6 +25,8 @@ constexpr const char *UILastFilterOpen = "ui_lastfilteropen";
 constexpr const char *UIStyle = "ui_style";
 // filedialog
 constexpr const char *UIFileDialogShowHidden = "ui_filedialogshowhidden";
+constexpr const char *UIFileDialogLastFile = "ui_filedialoglastfile";
+constexpr const char *UIFileDialogLastFiles = "ui_filedialoglastfiles";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 constexpr const char *UIMultiMonitor = "ui_multimonitor";
 constexpr const char *UIBookmarks = "ui_bookmarks";

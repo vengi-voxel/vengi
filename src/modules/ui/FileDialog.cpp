@@ -269,22 +269,22 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 	if (path.empty()) {
 		return false;
 	}
-	core::String bookmarkTitle;
+	core::String quickAccessTitle;
 	if (title == nullptr) {
-		bookmarkTitle = path;
-		if (bookmarkTitle.size() > 1u) {
-			if (bookmarkTitle.last() == '/') {
-				bookmarkTitle.erase(bookmarkTitle.size() - 1);
+		quickAccessTitle = path;
+		if (quickAccessTitle.size() > 1u) {
+			if (quickAccessTitle.last() == '/') {
+				quickAccessTitle.erase(quickAccessTitle.size() - 1);
 			}
-			const size_t pos = bookmarkTitle.rfind("/");
+			const size_t pos = quickAccessTitle.rfind("/");
 			if (pos != core::String::npos) {
-				bookmarkTitle = bookmarkTitle.substr(pos + 1);
+				quickAccessTitle = quickAccessTitle.substr(pos + 1);
 			}
 		}
 	} else {
-		bookmarkTitle = title;
+		quickAccessTitle = title;
 	}
-	bookmarkTitle += core::String::format("###%i", index);
+	quickAccessTitle += core::String::format("###%i", index);
 	if (icon != nullptr) {
 		const float x = ImGui::GetCursorPosX();
 		ImGui::TextUnformatted(icon);
@@ -292,7 +292,7 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 		ImGui::SetCursorPosX(x + 2.0f * ImGui::GetStyle().ItemInnerSpacing.x + 1.5f * ImGui::GetFontSize());
 	}
 	const ImVec2 size(width, 0);
-	if (ImGui::Selectable(bookmarkTitle.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+	if (ImGui::Selectable(quickAccessTitle.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 		setCurrentPath(type, path);
 	}
 	ImGui::TooltipTextUnformatted(path.c_str());

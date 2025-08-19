@@ -46,8 +46,6 @@ class MainWindow : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
-	core::VarPtr _lastOpenedFile;
-	core::VarPtr _lastOpenedFiles;
 	core::VarPtr _viewMode;
 	core::VarPtr _numViewports;
 	core::VarPtr _tipOfTheDay;
@@ -73,7 +71,6 @@ private:
 
 	core::String _currentNodeName;
 
-	LastOpenedFiles _lastOpenedFilesRingBuffer;
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;
 	video::TexturePoolPtr _texturePool;
@@ -101,11 +98,6 @@ private:
 	CameraPanel _cameraPanel;
 	SceneDebugPanel _sceneDebugPanel;
 
-	/**
-	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
-	 */
-	void loadLastOpenedFiles(const core::String &string);
-	void addLastOpenedFile(const core::String &file);
 	bool isSceneMode() const;
 
 	void shutdownViewports();

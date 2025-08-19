@@ -139,31 +139,6 @@ const char *MainWindow::getTip() const {
 	return buf;
 }
 
-void MainWindow::loadLastOpenedFiles(const core::String &string) {
-	core::DynamicArray<core::String> tokens;
-	core::string::splitString(string, tokens, ";");
-	for (const core::String &s : tokens) {
-		_lastOpenedFilesRingBuffer.push_back(s);
-	}
-}
-
-void MainWindow::addLastOpenedFile(const core::String &file) {
-	for (const core::String &s : _lastOpenedFilesRingBuffer) {
-		if (s == file) {
-			return;
-		}
-	}
-	_lastOpenedFilesRingBuffer.push_back(file);
-	core::String str;
-	for (const core::String &s : _lastOpenedFilesRingBuffer) {
-		if (!str.empty()) {
-			str.append(";");
-		}
-		str.append(s);
-	}
-	_lastOpenedFiles->setVal(str);
-}
-
 void MainWindow::shutdownViewports() {
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		delete _viewports[i];
@@ -250,10 +225,6 @@ bool MainWindow::init() {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
 						   (size_t)TEMPLATEMODELS[i].imageSize);
 	}
-
-	_lastOpenedFile = core::Var::getSafe(cfg::VoxEditLastFile);
-	_lastOpenedFiles = core::Var::getSafe(cfg::VoxEditLastFiles);
-	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
 	voxel::Region region = _modelNodeSettings.region();
 	if (!region.isValid()) {
@@ -1021,11 +992,6 @@ void MainWindow::update(double nowSeconds) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
-	if (_lastOpenedFile->isDirty()) {
-		_lastOpenedFile->markClean();
-		addLastOpenedFile(_lastOpenedFile->strVal());
-	}
-
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight));
 	ImGui::SetNextWindowViewport(viewport->ID);
@@ -1042,13 +1008,7 @@ void MainWindow::update(double nowSeconds) {
 			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
 		}
 
-		core::String windowTitle = core::string::extractFilenameWithExtension(_lastOpenedFile->strVal());
-		if (windowTitle.empty()) {
-			windowTitle = _app->fullAppname();
-		} else {
-			windowTitle.append(" - ");
-			windowTitle.append(_app->fullAppname());
-		}
+		core::String windowTitle = _app->windowTitle();
 		windowTitle.append("###app");
 		static bool keepRunning = true;
 		if (!ImGui::Begin(windowTitle.c_str(), &keepRunning, windowFlags)) {
@@ -1064,7 +1024,6 @@ void MainWindow::update(double nowSeconds) {
 
 	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
 
-	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
 	command::CommandExecutionListener &listener = _app->commandListener();
 	if (_menuBar.update(_app, listener)) {
 		ImGui::DockBuilderRemoveNode(dockIdMain);

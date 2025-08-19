@@ -7,8 +7,6 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
-#include "core/StringUtil.h"
-#include "engine-config.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IMGUIStyle.h"
@@ -72,7 +70,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, _("Load"), "load", true, &listener);
 			if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, _("Recently opened"))) {
 				int recentlyOpened = 0;
-				for (const core::String &f : _lastOpenedFiles) {
+				for (const core::String &f : _app->lastOpenedFiles()) {
 					if (f.empty()) {
 						break;
 					}

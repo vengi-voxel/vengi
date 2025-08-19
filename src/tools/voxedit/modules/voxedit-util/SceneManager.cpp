@@ -378,7 +378,7 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 			_lastFilename = file;
 			const core::String &ext = core::string::extractExtension(file.name);
 			metric::count("save", 1, {{"type", ext.toLower()}});
-			core::Var::get(cfg::VoxEditLastFile)->setVal(file.name);
+			core::Var::get(cfg::UIFileDialogLastFile)->setVal(file.name);
 		}
 		_needAutoSave = false;
 		return true;
@@ -477,7 +477,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(file.name, &file.desc);
-	core::Var::get(cfg::VoxEditLastFile)->setVal(file.name);
+	core::Var::get(cfg::UIFileDialogLastFile)->setVal(file.name);
 	return true;
 }
 

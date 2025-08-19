@@ -238,12 +238,26 @@ app::AppState IMGUIApp::onConstruct() {
 
 	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", _("Which keybinding to use"));
 	core_assert(!_uiKeyMap->isDirty());
+	_lastOpenedFiles = core::Var::get(cfg::UIFileDialogLastFiles, "");
+	loadLastOpenedFiles(_lastOpenedFiles->strVal());
+	_lastOpenedFile = core::Var::get(cfg::UIFileDialogLastFile, "");
 
 	command::Command::registerCommand("ui_showtextures",
 									  [&](const command::CmdArgs &args) { _showTexturesDialog = true; });
 	command::Command::registerCommand("ui_close", [&](const command::CmdArgs &args) { _closeModalPopup = true; });
 
 	return state;
+}
+
+core::String IMGUIApp::windowTitle() const {
+	core::String windowTitle = core::string::extractFilenameWithExtension(_lastOpenedFile->strVal());
+	if (windowTitle.empty()) {
+		windowTitle = fullAppname();
+	} else {
+		windowTitle.append(" - ");
+		windowTitle.append(fullAppname());
+	}
+	return windowTitle;
 }
 
 void IMGUIApp::loadFonts() {
@@ -640,6 +654,32 @@ static void localizeRegisterEntry(ImGuiLocKey key, const char* text) {
 	ImGui::LocalizeRegisterEntries(&entry, 1);
 }
 
+void IMGUIApp::loadLastOpenedFiles(const core::String &string) {
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString(string, tokens, ";");
+	_lastOpenedFilesRingBuffer.clear();
+	for (const core::String &s : tokens) {
+		_lastOpenedFilesRingBuffer.push_back(s);
+	}
+}
+
+void IMGUIApp::addLastOpenedFile(const core::String &file) {
+	for (const core::String &s : _lastOpenedFilesRingBuffer) {
+		if (s == file) {
+			return;
+		}
+	}
+	_lastOpenedFilesRingBuffer.push_back(file);
+	core::String str;
+	for (const core::String &s : _lastOpenedFilesRingBuffer) {
+		if (!str.empty()) {
+			str.append(";");
+		}
+		str.append(s);
+	}
+	_lastOpenedFiles->setVal(str);
+}
+
 app::AppState IMGUIApp::onRunning() {
 	core_trace_scoped(IMGUIAppOnRunning);
 	app::AppState state = Super::onRunning();
@@ -650,6 +690,16 @@ app::AppState IMGUIApp::onRunning() {
 	video::clear(video::ClearFlag::Color);
 
 	_console.update(_deltaFrameSeconds);
+
+	if (_lastOpenedFile->isDirty()) {
+		addLastOpenedFile(_lastOpenedFile->strVal());
+		_lastOpenedFile->markClean();
+	}
+
+	if (_lastOpenedFiles->isDirty()) {
+		loadLastOpenedFiles(_lastOpenedFiles->strVal());
+		_lastOpenedFiles->markClean();
+	}
 
 	if (_uiKeyMap->isDirty() || _resetKeybindings) {
 		_keybindingHandler.clear();

@@ -9,6 +9,7 @@
 #include "core/TimedValue.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/RingBuffer.h"
 #include "io/FilesystemEntry.h"
 #include "ui/Panel.h"
 #include "video/FileDialogOptions.h"
@@ -21,6 +22,8 @@ struct FormatDescription;
 }
 
 namespace ui {
+
+using LastOpenedFiles = core::RingBuffer<core::String, 10>;
 
 #define FILE_ALREADY_EXISTS_POPUP "###fileoverwritepopup"
 #define FILE_NOT_WRITEABLE_POPUP "###filenotwriteable"

@@ -116,8 +116,6 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGridsize, "1", _("The size of the voxel grid"), core::Var::minMaxValidator<1, 64>);
 	core::Var::get(cfg::VoxEditPlaneSize, "100", _("The size of the plane"), core::Var::minMaxValidator<1, 1000>);
 	core::Var::get(cfg::VoxEditShowPlane, "true", _("Show the plane"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditLastFile, "");
-	core::Var::get(cfg::VoxEditLastFiles, "");
 	core::Var::get(cfg::VoxEditGrayInactive, "false", _("Render the inactive nodes in gray scale mode"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditHideInactive, "false", _("Hide the inactive nodes"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditViewdistance, "5000");

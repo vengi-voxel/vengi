@@ -40,6 +40,8 @@ protected:
 	core::VarPtr _lastDirectory;
 	core::VarPtr _uistyle;
 	core::VarPtr _languageVar;
+	core::VarPtr _lastOpenedFiles;
+	core::VarPtr _lastOpenedFile;
 
 	/**
 	 * The current keymap as index to the registered keymaps from the
@@ -86,6 +88,7 @@ protected:
 	video::OpenFileMode _fileDialogMode = video::OpenFileMode::Directory;
 	video::FileDialogSelectionCallback _fileDialogCallback {};
 	video::FileDialogOptions _fileDialogOptions {};
+	ui::LastOpenedFiles _lastOpenedFilesRingBuffer;
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *_imguiTestEngine = nullptr;
@@ -99,6 +102,11 @@ protected:
 
 	core::Buffer<Panel*> _panels;
 	FileDialog _fileDialog;
+
+	/**
+	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
+	 */
+	void loadLastOpenedFiles(const core::String &string);
 
 	void setColorTheme();
 	/**
@@ -144,6 +152,9 @@ public:
 	void languageOption();
 	void colorReductionOptions();
 	bool keyMapOption();
+	const ui::LastOpenedFiles& lastOpenedFiles() const;
+	void addLastOpenedFile(const core::String &file);
+	core::String windowTitle() const;
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *imguiTestEngine() const {
@@ -161,6 +172,10 @@ public:
 	void showCommandDialog();
 	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
+
+inline const ui::LastOpenedFiles& IMGUIApp::lastOpenedFiles() const {
+	return _lastOpenedFilesRingBuffer;
+}
 
 inline void IMGUIApp::showBindingsDialog() {
 	_showBindingsDialog = true;
