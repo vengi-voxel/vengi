@@ -739,7 +739,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		root.setProperty(scenegraph::PropDescription, header.comment);
 	}
 
-	return voxelizeNode(filename, sceneGraph, tris, {});
+	return voxelizeNode(filename, sceneGraph, core::move(tris), {});
 }
 
 bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,

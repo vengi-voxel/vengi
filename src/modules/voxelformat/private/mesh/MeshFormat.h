@@ -6,6 +6,7 @@
 
 #include "MeshTri.h"
 #include "PosSampling.h"
+#include "core/Common.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/ParallelMap.h"
@@ -22,7 +23,7 @@ struct PointCloudVertex {
 	core::RGBA color{0, 0, 0, 255};
 };
 using PointCloud = core::Buffer<PointCloudVertex, 4096>;
-using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri, 4096>;
+using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
 using PosMap = core::ParallelMap<glm::ivec3, PosSampling, 67, glm::hash<glm::ivec3>>;
 
 /**
@@ -127,11 +128,11 @@ protected:
 	 * @see voxelizeGroups()
 	 */
 	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
-					 const MeshTriCollection &tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
+					 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
 					 bool resetOrigin = true) const;
-	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris,
+	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, MeshTriCollection &&tris,
 					 const MeshMaterialArray &meshMaterialArray, int parent = 0, bool resetOrigin = true) const {
-		return voxelizeNode("", name, sceneGraph, tris, meshMaterialArray, parent, resetOrigin);
+		return voxelizeNode("", name, sceneGraph, core::move(tris), meshMaterialArray, parent, resetOrigin);
 	}
 
 	/**

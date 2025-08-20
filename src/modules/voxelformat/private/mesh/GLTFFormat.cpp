@@ -1819,7 +1819,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		}
 	}
 
-	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, tris, meshMaterialArray, parentNodeId, false);
+	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray, parentNodeId, false);
 	if (nodeId == InvalidNodeId) {
 		// ignore this node
 		return true;

@@ -346,7 +346,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				}
 				triangles.emplace_back(meshTri);
 			}
-			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles, meshMaterialArray);
+			const int nodeId = voxelizeNode(frame.name, sceneGraph, core::move(triangles), meshMaterialArray);
 			if (!first && nodeId != -1) {
 				sceneGraph.node(nodeId).setVisible(false);
 			}

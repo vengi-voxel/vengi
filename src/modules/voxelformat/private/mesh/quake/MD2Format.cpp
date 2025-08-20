@@ -199,7 +199,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		tris.push_back(meshTri);
 	}
 
-	return voxelizeNode(filename, sceneGraph, tris, meshMaterialArray) != InvalidNodeId;
+	return voxelizeNode(filename, sceneGraph, core::move(tris), meshMaterialArray) != InvalidNodeId;
 }
 
 #undef wrap

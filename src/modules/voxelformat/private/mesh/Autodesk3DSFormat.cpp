@@ -869,7 +869,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				nodeName = mesh.name;
 			}
 			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)tris.size());
-			const int nodeId = voxelizeNode(nodeName, sceneGraph, tris, meshMaterialArray, parent);
+			const int nodeId = voxelizeNode(nodeName, sceneGraph, core::move(tris), meshMaterialArray, parent);
 			if (nodeId == InvalidNodeId) {
 				return false;
 			}

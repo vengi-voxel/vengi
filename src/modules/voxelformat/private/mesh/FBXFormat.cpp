@@ -637,7 +637,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		}
 	}
 	const core::String &name = priv::_ufbx_to_string(node->name);
-	const int nodeId = voxelizeNode(name, sceneGraph, tris, meshMaterialArray, parent, false);
+	const int nodeId = voxelizeNode(name, sceneGraph, core::move(tris), meshMaterialArray, parent, false);
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());
 		return nodeId;

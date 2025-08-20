@@ -107,7 +107,7 @@ private:
 				 const MeshMaterialArray &meshMaterialArray, int parent) const;
 	bool generateCube(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
-	bool generateMesh(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
+	bool generateMesh(const Node &node, Element &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
 
 protected:

@@ -393,10 +393,10 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 } // namespace priv
 
-bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
+bool BlockbenchFormat::generateMesh(const Node &node, Element &element, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
-	const Mesh &mesh = element.mesh;
-	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, mesh.tris, meshMaterialArray, parent);
+	Mesh &mesh = element.mesh;
+	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, core::move(mesh.tris), meshMaterialArray, parent);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
 	}
@@ -468,7 +468,7 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 			Log::warn("Could not find node with uuid: %s", uuid.c_str());
 			continue;
 		}
-		const Element &element = elementIter->value;
+		Element &element = elementIter->value;
 		if (element.type == ElementType::Cube) {
 			if (!generateCube(node, element, meshMaterialArray, sceneGraph, parent)) {
 				return false;

@@ -719,7 +719,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		tris.push_back(meshTri);
 	}
 
-	return voxelizeNode(name, sceneGraph, tris, meshMaterialArray) > 0;
+	return voxelizeNode(name, sceneGraph, core::move(tris), meshMaterialArray) > 0;
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,

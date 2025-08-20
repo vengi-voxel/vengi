@@ -14,6 +14,7 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
+#include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
 #include "palette/NormalPalette.h"
@@ -250,7 +251,7 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 }
 
 int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
-							 const MeshTriCollection &tris, const MeshMaterialArray &meshMaterialArray, int parent, bool resetOrigin) const {
+							 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent, bool resetOrigin) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
 		return InvalidNodeId;
@@ -291,7 +292,6 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		return InvalidNodeId;
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
-	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 	palette::NormalPalette normalPalette;
 	const core::VarPtr &normalPaletteVar = core::Var::getSafe(cfg::NormalPalette);
@@ -311,8 +311,11 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
 		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
+		tris.release();
+		node.setVolume(new voxel::RawVolume(region), true);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
 	} else if (voxelizeMode == VoxelizeMode::Fast) {
+		node.setVolume(new voxel::RawVolume(region), true);
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::Palette palette;
 
@@ -354,6 +357,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			};
 			voxelizeTriangle(trisMins, meshTri, fn);
 		}
+		tris.release();
 
 		if (palette.colorCount() == 1) {
 			core::RGBA c = palette.color(0);
@@ -371,31 +375,33 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	} else {
 		Log::debug("Subdivide %i triangles", (int)tris.size());
 		core::DynamicArray<MeshTriCollection> meshTriCollections;
-		meshTriCollections.resize(tris.size());
-		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris] (int start, int end) {
+		meshTriCollections.resize(app::for_parallel_size(0, tris.size()));
+		core::AtomicInt currentIdx(0);
+		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
+			MeshTriCollection &subdivided = meshTriCollections[currentIdx.increment()];
 			for (int i = start; i < end; ++i) {
 				const voxelformat::MeshTri &meshTri = tris[i];
 				if (stopExecution()) {
 					return;
 				}
-				MeshTriCollection subdivided;
-				subdivided.reserve(32);
 				subdivideTri(meshTri, subdivided);
-				meshTriCollections[i] = core::move(subdivided);
 			}
 		});
+		tris.release();
 		int cnt = 0;
 		for (const MeshTriCollection &e : meshTriCollections) {
 			cnt += e.size();
 		}
 		MeshTriCollection subdivided;
 		subdivided.reserve(cnt);
-		for (const MeshTriCollection &e : meshTriCollections) {
+		for (MeshTriCollection &e : meshTriCollections) {
 			if (e.empty()) {
 				continue;
 			}
-			subdivided.append(e);
+			subdivided.append(core::move(e));
+			e.release();
 		}
+		meshTriCollections.release();
 
 		if (subdivided.empty()) {
 			Log::warn("Empty volume - could not subdivide");
@@ -404,6 +410,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		PosMap posMap((int)subdivided.size() * 3);
 		transformTris(region, subdivided, posMap, meshMaterialArray, normalPalette);
+		subdivided.release();
+		node.setVolume(new voxel::RawVolume(region), true);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
 	}
 
