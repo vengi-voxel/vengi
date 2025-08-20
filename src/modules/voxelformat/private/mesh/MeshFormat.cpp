@@ -377,25 +377,28 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			voxelutil::fillHollow(wrapper, voxel);
 		}
 	} else {
-		Log::debug("Subdivide %i triangles", (int)tris.size());
+		const size_t parallel = app::for_parallel_size(0, tris.size());
+		Log::debug("Subdivide %i triangles (%i parallel)", (int)tris.size(), (int)parallel);
 		core::DynamicArray<MeshTriCollection> meshTriCollections;
-		meshTriCollections.resize(app::for_parallel_size(0, tris.size()));
+		meshTriCollections.resize(parallel);
 		core::AtomicInt currentIdx(0);
 		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
 			MeshTriCollection &subdivided = meshTriCollections[currentIdx.increment()];
+			subdivided.reserve(end - start);
 			for (int i = start; i < end; ++i) {
-				const voxelformat::MeshTri &meshTri = tris[i];
 				if (stopExecution()) {
 					return;
 				}
-				subdivideTri(meshTri, subdivided);
+				subdivideTri(tris[i], subdivided);
 			}
 		});
+		Log::debug("Subdivision done");
 		tris.release();
-		int cnt = 0;
+		size_t cnt = 0;
 		for (const MeshTriCollection &e : meshTriCollections) {
 			cnt += e.size();
 		}
+
 		MeshTriCollection subdivided;
 		subdivided.reserve(cnt);
 		for (MeshTriCollection &e : meshTriCollections) {
