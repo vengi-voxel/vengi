@@ -61,13 +61,6 @@ public:
 		core::String version = "1.0";
 		core::String comment;
 	};
-
-	struct PLYVertex {
-		glm::vec3 position{0.0f};
-		glm::vec3 normal{0.0f};
-		glm::vec2 texCoord{0.0f};
-		core::RGBA color{0, 0, 0, 255};
-	};
 	struct PLYFace {
 		int indices[3]{0, 0, 0};
 	};
@@ -84,27 +77,27 @@ protected:
 	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::Buffer<PLYFace> &faces,
 						 core::DynamicArray<PLYPolygon> &polygons) const;
 	bool parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
-							core::Buffer<PLYVertex> &vertices) const;
+							core::Buffer<MeshVertex> &vertices) const;
 	void triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-							 const core::Buffer<PLYVertex> &vertices, core::Buffer<PLYFace> &faces) const;
+							 const core::Buffer<MeshVertex> &vertices, core::Buffer<PLYFace> &faces) const;
 	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, core::Buffer<PLYFace> &faces,
 						  core::DynamicArray<PLYPolygon> &polygons, const Header &header) const;
 	bool parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
-							 core::Buffer<PLYVertex> &vertices, const Header &header) const;
+							 core::Buffer<MeshVertex> &vertices, const Header &header) const;
 
 	bool parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const Header &header,
-							   core::Buffer<PLYVertex> &vertices) const;
+							   core::Buffer<MeshVertex> &vertices) const;
 	bool parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, const Header &header,
-							  core::Buffer<PLYVertex> &vertices) const;
+							  core::Buffer<MeshVertex> &vertices) const;
 	bool parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header) const;
 
 	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						 MeshTriCollection &tris) const;
-	void convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &vertices,
+	void convertToTris(MeshTriCollection &tris, core::Buffer<MeshVertex> &vertices,
 					   core::Buffer<PLYFace> &faces) const;
 	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,

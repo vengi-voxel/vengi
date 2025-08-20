@@ -104,12 +104,6 @@ private:
 					   tinygltf::Animation &gltfAnimation);
 
 	// importing (voxelization)
-	struct GltfVertex {
-		glm::vec3 pos{0.0f};
-		glm::vec2 uv{0.0f};
-		core::RGBA color{0};
-		MeshMaterialIndex materialIdx;
-	};
 	void loadTexture(const core::String &filename, const io::ArchivePtr &archive, const tinygltf::Model &gltfModel,
 					 MeshMaterialPtr &meshMaterial, const tinygltf::TextureInfo &gltfTextureInfo,
 					 int textureIndex) const;
@@ -117,7 +111,7 @@ private:
 					  const tinygltf::Material &gltfMaterial, MeshMaterialPtr &meshMaterial) const;
 	bool loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel,
 						const MeshMaterialArray &meshMaterialArray, const tinygltf::Primitive &gltfPrimitive,
-						core::DynamicArray<GltfVertex> &vertices) const;
+						core::DynamicArray<MeshVertex> &vertices) const;
 
 	bool loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
 							  const tinygltf::AnimationChannel &gltfAnimChannel,

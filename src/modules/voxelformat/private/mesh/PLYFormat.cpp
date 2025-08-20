@@ -328,7 +328,7 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 }
 
 bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
-								   core::Buffer<PLYVertex> &vertices) const {
+								   core::Buffer<MeshVertex> &vertices) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -342,19 +342,20 @@ bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStrea
 			Log::error("Invalid ply vertex: %s", line.c_str());
 			return false;
 		}
-		PLYVertex vertex;
+		MeshVertex vertex;
+		vertex.color = core::RGBA(0, 0, 0, 255);
 		for (size_t i = 0; i < element.properties.size(); ++i) {
 			const Property &prop = element.properties[i];
 			Log::trace("%s: %s", prop.name.c_str(), tokens[i].c_str());
 			switch (prop.use) {
 			case PropertyUse::x:
-				vertex.position.x = core::string::toFloat(tokens[i]);
+				vertex.pos.x = core::string::toFloat(tokens[i]);
 				break;
 			case PropertyUse::y:
-				vertex.position.y = core::string::toFloat(tokens[i]);
+				vertex.pos.y = core::string::toFloat(tokens[i]);
 				break;
 			case PropertyUse::z:
-				vertex.position.z = core::string::toFloat(tokens[i]);
+				vertex.pos.z = core::string::toFloat(tokens[i]);
 				break;
 			case PropertyUse::nx:
 				vertex.normal.x = core::string::toFloat(tokens[i]);
@@ -378,10 +379,10 @@ bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStrea
 				vertex.color.a = core::string::toInt(tokens[i]);
 				break;
 			case PropertyUse::s:
-				vertex.texCoord.x = core::string::toFloat(tokens[i]);
+				vertex.uv.x = core::string::toFloat(tokens[i]);
 				break;
 			case PropertyUse::t:
-				vertex.texCoord.y = core::string::toFloat(tokens[i]);
+				vertex.uv.y = core::string::toFloat(tokens[i]);
 				break;
 			case PropertyUse::Max:
 				break;
@@ -394,7 +395,7 @@ bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStrea
 
 bool PLYFormat::parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
 									  scenegraph::SceneGraph &sceneGraph, const Header &header,
-									  core::Buffer<PLYVertex> &vertices) const {
+									  core::Buffer<MeshVertex> &vertices) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
@@ -412,7 +413,7 @@ bool PLYFormat::parsePointCloudBinary(const core::String &filename, io::Seekable
 
 bool PLYFormat::parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 									 scenegraph::SceneGraph &sceneGraph, const Header &header,
-									 core::Buffer<PLYVertex> &vertices) const {
+									 core::Buffer<MeshVertex> &vertices) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name != "vertex") {
@@ -432,7 +433,7 @@ bool PLYFormat::parsePointCloudAscii(const core::String &filename, io::SeekableR
 bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 								const Header &header) const {
-	core::Buffer<PLYVertex> vertices;
+	core::Buffer<MeshVertex> vertices;
 	if (header.format == PlyFormatType::Ascii) {
 		if (!parsePointCloudAscii(filename, stream, sceneGraph, header, vertices)) {
 			return false;
@@ -445,24 +446,24 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	PointCloud pointCloud;
 	pointCloud.resize(vertices.size());
 	for (int i = 0; i < (int)vertices.size(); ++i) {
-		pointCloud[i].position = vertices[i].position;
+		pointCloud[i].position = vertices[i].pos;
 		pointCloud[i].color = vertices[i].color;
 	}
 	return voxelizePointCloud(filename, sceneGraph, pointCloud);
 }
 
-void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &vertices,
+void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<MeshVertex> &vertices,
 							  core::Buffer<PLYFace> &faces) const {
 	tris.reserve(tris.size() + faces.size());
 	for (int i = 0; i < (int)faces.size(); ++i) {
 		const PLYFace &face = faces[i];
 		voxelformat::MeshTri meshTri;
-		const PLYVertex &vertex0 = vertices[face.indices[0]];
-		const PLYVertex &vertex1 = vertices[face.indices[1]];
-		const PLYVertex &vertex2 = vertices[face.indices[2]];
-		meshTri.setUVs(vertex0.texCoord, vertex1.texCoord, vertex2.texCoord);
+		const MeshVertex &vertex0 = vertices[face.indices[0]];
+		const MeshVertex &vertex1 = vertices[face.indices[1]];
+		const MeshVertex &vertex2 = vertices[face.indices[2]];
+		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
 		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
-		meshTri.setVertices(vertex0.position, vertex1.position, vertex2.position);
+		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
 		tris.emplace_back(meshTri);
 	}
 }
@@ -472,7 +473,7 @@ void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<PLYVertex> &
  * @param[in] polygons The indices of the polygon
  */
 void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-									const core::Buffer<PLYVertex> &vertices,
+									const core::Buffer<MeshVertex> &vertices,
 									core::Buffer<PLYFace> &faces) const {
 	if (polygons.empty()) {
 		Log::debug("No polygons to triangulate");
@@ -488,8 +489,8 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 		for (size_t k = 0; k < nPolygons; ++k) {
 			const int i0 = p.indices[k % nPolygons];
 			const int i0_2 = p.indices[(k + 1) % nPolygons];
-			const glm::vec3 &point1 = vertices[i0].position;
-			const glm::vec3 &point2 = vertices[i0_2].position;
+			const glm::vec3 &point1 = vertices[i0].pos;
+			const glm::vec3 &point2 = vertices[i0_2].pos;
 			const glm::vec3 a(point1 - point2);
 			const glm::vec3 b(point1 + point2);
 			norm += glm::dot(a, b);
@@ -517,7 +518,7 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 		std::vector<Points> polygon;
 
 		for (size_t k = 0; k < nPolygons; k++) {
-			const glm::vec3 &polypoint = vertices[p.indices[k]].position;
+			const glm::vec3 &polypoint = vertices[p.indices[k]].pos;
 			const glm::vec3 loc(glm::dot(polypoint, axis_u), glm::dot(polypoint, axis_v), glm::dot(polypoint, axis_w));
 			polyline.push_back({loc.x, loc.y});
 		}
@@ -586,23 +587,23 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 }
 
 bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
-									core::Buffer<PLYVertex> &vertices, const Header &header) const {
+									core::Buffer<MeshVertex> &vertices, const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	vertices.reserve(element.count);
 	Log::debug("loading %i vertices", element.count);
 	for (int i = 0; i < element.count; ++i) {
-		PLYVertex vertex;
+		MeshVertex vertex;
 		for (size_t j = 0; j < element.properties.size(); ++j) {
 			const Property &prop = element.properties[j];
 			switch (prop.use) {
 			case PropertyUse::x:
-				vertex.position.x = read<float>(es, prop.type);
+				vertex.pos.x = read<float>(es, prop.type);
 				break;
 			case PropertyUse::y:
-				vertex.position.y = read<float>(es, prop.type);
+				vertex.pos.y = read<float>(es, prop.type);
 				break;
 			case PropertyUse::z:
-				vertex.position.z = read<float>(es, prop.type);
+				vertex.pos.z = read<float>(es, prop.type);
 				break;
 			case PropertyUse::nx:
 				vertex.normal.x = read<float>(es, prop.type);
@@ -626,10 +627,10 @@ bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStre
 				vertex.color.a = readColor(es, prop.type);
 				break;
 			case PropertyUse::s:
-				vertex.texCoord.x = read<float>(es, prop.type);
+				vertex.uv.x = read<float>(es, prop.type);
 				break;
 			case PropertyUse::t:
-				vertex.texCoord.y = read<float>(es, prop.type);
+				vertex.uv.y = read<float>(es, prop.type);
 				break;
 			case PropertyUse::Max:
 				break;
@@ -657,7 +658,7 @@ bool PLYFormat::skipElementBinary(const Element &element, io::SeekableReadStream
 bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 								MeshTriCollection &tris) const {
-	core::Buffer<PLYVertex> vertices;
+	core::Buffer<MeshVertex> vertices;
 	core::Buffer<PLYFace> faces;
 	core::DynamicArray<PLYPolygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
@@ -688,7 +689,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 							   MeshTriCollection &tris) const {
-	core::Buffer<PLYVertex> vertices;
+	core::Buffer<MeshVertex> vertices;
 	core::Buffer<PLYFace> faces;
 	core::DynamicArray<PLYPolygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {

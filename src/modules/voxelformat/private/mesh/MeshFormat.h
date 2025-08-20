@@ -76,6 +76,14 @@ protected:
 	static MeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
 	static glm::vec3 getInputScale();
 
+	struct MeshVertex {
+		glm::vec3 pos{0.0f};
+		glm::vec2 uv{0.0f};
+		core::RGBA color{0};
+		glm::vec3 normal{0.0f};
+		MeshMaterialIndex materialIdx;
+	};
+
 	/**
 	 * @brief Voxelizes the input mesh
 	 *

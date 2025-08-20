@@ -1420,7 +1420,7 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr
 bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel,
 								const MeshMaterialArray &meshMaterialArray,
 								const tinygltf::Primitive &gltfPrimitive,
-								core::DynamicArray<GltfVertex> &vertices) const {
+								core::DynamicArray<MeshVertex> &vertices) const {
 	MeshMaterialPtr gltfMaterial;
 	if (gltfPrimitive.material >= 0 && gltfPrimitive.material < (int)meshMaterialArray.size()) {
 		gltfMaterial = meshMaterialArray[gltfPrimitive.material];
@@ -1710,7 +1710,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
 		core::Buffer<uint32_t> indices;
-		core::DynamicArray<GltfVertex> vertices;
+		core::DynamicArray<MeshVertex> vertices;
 		if (!loadAttributes(filename, gltfModel, meshMaterialArray, primitive, vertices)) {
 			Log::warn("Failed to load vertices");
 			continue;
@@ -1813,7 +1813,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			meshTri.setVertices(vertices[idx0].pos * scale,
 							 vertices[idx1].pos * scale, vertices[idx2].pos * scale);
 			const size_t textureIdx = indices[indexOffset];
-			const GltfVertex &v = vertices[textureIdx];
+			const MeshVertex &v = vertices[textureIdx];
 			meshTri.materialIdx = v.materialIdx;
 			tris.emplace_back(meshTri);
 		}
