@@ -279,10 +279,15 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		return InvalidNodeId;
 	}
 
+	const int voxelizeMode = core::Var::getSafe(cfg::VoxformatVoxelizeMode)->intVal();
 	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
 	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
 				  vdim.x, vdim.y, vdim.z);
+		if (voxelizeMode != VoxelizeMode::Fast) {
+			Log::warn("Another option when using very large meshes is to use the fast voxelization mode (%s)",
+					  cfg::VoxformatVoxelizeMode);
+		}
 	}
 
 	const size_t bytes = voxel::RawVolume::size(region);
@@ -304,7 +309,6 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	// TODO: VOXELFORMAT: auto generate the normal palette from the input tris?
 	node.setNormalPalette(normalPalette);
 
-	const int voxelizeMode = core::Var::getSafe(cfg::VoxformatVoxelizeMode)->intVal();
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	if (axisAligned) {
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
