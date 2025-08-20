@@ -283,6 +283,13 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
 				  vdim.x, vdim.y, vdim.z);
 	}
+
+	const size_t bytes = voxel::RawVolume::size(region);
+	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
+		const core::String &neededMem = core::string::humanSize(bytes);
+		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", vdim.x, vdim.y, vdim.z, neededMem.c_str());
+		return InvalidNodeId;
+	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
