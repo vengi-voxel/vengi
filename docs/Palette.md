@@ -27,10 +27,13 @@ This would try to download a palette with the id `paletteid` from [lospec.com](h
 
 There are several color or palette related cvars available:
 
-* `voxformat_createpalette`: Allows you to disable the palette creation and use the palette specified via `palette` cvar
-* `core_colorreduction`: Allows you to specify a color reduction value when e.g. importing RGB(A) based voxel or mesh formats. Possible values are: `Octree`, `Wu`, `MedianCut`, `KMeans`, `NeuQuant`.
+* `voxformat_createpalette`
+* `core_colorreduction`
+* `palformat_maxsize`
+* `palformat_gimprgba`
+* `palformat_rgb6bit`
 
-You can find the detailed description and more cvars by using e.g. the [voxconvert](voxconvert/Index.md) `--help` parameter
+You can find the detailed description and more cvars by using e.g. the [voxconvert](voxconvert/Index.md) `--help` parameter or checking the [Configuration](Configuration.md) documentation.
 
 ## Normals
 
@@ -42,6 +45,7 @@ There are several built-in palettes available that can also be used as an identi
 
 * `built-in:redalert2`
 * `built-in:tiberiansun`
+* `built-in:slab6`
 
 You can also specify a filename to a support palette format to load it.
 
