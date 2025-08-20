@@ -68,20 +68,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("New"), "new", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, _("Load"), "load", true, &listener);
-			if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, _("Recently opened"))) {
-				int recentlyOpened = 0;
-				for (const core::String &f : _app->lastOpenedFiles()) {
-					if (f.empty()) {
-						break;
-					}
-					const core::String &item = core::String::format("%s##%i", f.c_str(), recentlyOpened);
-					if (ImGui::MenuItem(item.c_str())) {
-						command::executeCommands("load \"" + f + "\"", &listener);
-					}
-					++recentlyOpened;
-				}
-				ImGui::EndMenu();
-			}
+			_app->lastOpenedMenu();
 
 			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save"), "save", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save as"), "saveas", true, &listener);

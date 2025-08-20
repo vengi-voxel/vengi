@@ -155,6 +155,7 @@ public:
 	const ui::LastOpenedFiles& lastOpenedFiles() const;
 	void addLastOpenedFile(const core::String &file);
 	core::String windowTitle() const;
+	void lastOpenedMenu(const char *loadCommand = "load");
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *imguiTestEngine() const {

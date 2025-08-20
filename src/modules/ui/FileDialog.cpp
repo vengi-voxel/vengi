@@ -318,7 +318,7 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 	bookmarks->setVal(newBookmarks);
 }
 
-void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks, int height) {
+bool FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks, int height) {
 	ScopedStyle style;
 	style.setItemSpacing(ImVec2(10.0f, 10.0f));
 	const float width = ImGui::Size(30.0f);
@@ -360,6 +360,27 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 		}
 	}
 
+	bool openFileFromRecent = false;
+	if (ImGui::TreeNode(_("Recent"))) {
+		for (const core::String &file : _app->lastOpenedFiles()) {
+			if (file.empty()) {
+				continue;
+			}
+			const core::String basename = core::string::extractFilenameWithExtension(file);
+			const float x = ImGui::GetCursorPosX();
+			ImGui::TextUnformatted(ICON_LC_FILE);
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(x + 2.0f * ImGui::GetStyle().ItemInnerSpacing.x + 1.5f * ImGui::GetFontSize());
+			const ImVec2 size(width, 0);
+			if (ImGui::Selectable(basename.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+				openFileFromRecent = true;
+				_selectedEntry = io::createFilesystemEntry(file);
+			}
+			ImGui::TooltipTextUnformatted(file.c_str());
+		}
+		ImGui::TreePop();
+	}
+
 	if (ImGui::TreeNode(_("Bookmarks"))) {
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::FileDialogDirectoryPayload)) {
@@ -390,6 +411,8 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	}
 
 	ImGui::EndChild();
+
+	return openFileFromRecent;
 }
 
 void FileDialog::setCurrentPath(video::OpenFileMode type, const core::String& path) {
@@ -813,10 +836,11 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			showFileDialog = false;
 			return false;
 		}
+		bool openSelectedEntry = false;
 		currentPathPanel(type);
-		quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
+		openSelectedEntry |= quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
 		ImGui::SameLine();
-		bool doubleClickedFile = entitiesPanel(type, 20 * itemHeight);
+		openSelectedEntry |= entitiesPanel(type, 20 * itemHeight);
 		if (type != video::OpenFileMode::Open) {
 			if (ImGui::Button(_("New folder"))) {
 				ImGui::OpenPopup(NEW_FOLDER_POPUP);
@@ -844,7 +868,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			return true;
 		}
 		filter(type);
-		if (buttons(entityPath, type, doubleClickedFile)) {
+		if (buttons(entityPath, type, openSelectedEntry)) {
 			*formatDesc = _currentFilterFormat;
 			ImGui::EndPopup();
 			return true;
@@ -855,7 +879,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 	return false;
 }
 
-bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, bool doubleClickedFile) {
+bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, bool openSelectedEntry) {
 	const char *buttonText = _("Choose");
 	if (type == video::OpenFileMode::Open) {
 		buttonText = _("Open");
@@ -869,7 +893,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 	}
 	ImGui::SameLine();
 	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
-	if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
+	if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || openSelectedEntry) {
 		if (type == video::OpenFileMode::Directory) {
 			if (_selectedEntry.name.empty()) {
 				_error = TimedString(_("Error: You must select a folder!"), timeProvider->tickNow(), 1500UL);

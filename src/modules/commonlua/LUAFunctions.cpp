@@ -546,7 +546,8 @@ void clua_quatregister(lua_State* s) {
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
 }
 
-#if 0
+#define ISSUE_602 0
+#if ISSUE_602
 struct SleepState {
 	uint64_t wakeupTime;
 };
@@ -573,8 +574,8 @@ static int clua_syssleep(lua_State *s) {
 		app->wait(ms);
 		return 0;
 	}
-#if 0
-	// TODO: implement me
+#if ISSUE_602
+	// TODO: implement me: https://github.com/vengi-voxel/vengi/issues/602
 	const core::TimeProviderPtr &timeProvider = app->timeProvider();
 	const uint64_t currentMillis = timeProvider->systemMillis();
 

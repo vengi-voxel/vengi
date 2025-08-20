@@ -680,6 +680,24 @@ void IMGUIApp::addLastOpenedFile(const core::String &file) {
 	_lastOpenedFiles->setVal(str);
 }
 
+void IMGUIApp::lastOpenedMenu(const char *loadCommand) {
+	if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, _("Recently opened"))) {
+		int recentlyOpened = 0;
+		for (const core::String &f : lastOpenedFiles()) {
+			if (f.empty()) {
+				break;
+			}
+			const core::String &item = core::String::format("%s##%i", f.c_str(), recentlyOpened);
+			if (ImGui::MenuItem(item.c_str())) {
+				// TODO: this doesn't show the file dialog options
+				command::executeCommands(core::String::format("%s \"%s\"", loadCommand, f.c_str()), &_lastExecutedCommand);
+			}
+			++recentlyOpened;
+		}
+		ImGui::EndMenu();
+	}
+}
+
 app::AppState IMGUIApp::onRunning() {
 	core_trace_scoped(IMGUIAppOnRunning);
 	app::AppState state = Super::onRunning();
