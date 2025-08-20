@@ -35,6 +35,8 @@ export VOXFORMAT_SCALE=2.0
 * Windows: `C:/Users/bob/AppData/Roaming/vengi/voxconvert/voxconvert.vars`
 * Mac: `/Users/bob/Library/Application Support/vengi/voxconvert/voxconvert.vars`
 
+These folders not only contain the configuration file, but also the logs and other files that are created by the application. `log.txt` and `crash.txt` are the most important files that you can attach to a bug report.
+
 ## Search paths
 
 You can get a list of search paths by calling the particular application with the `--help` parameter on the command line. This will print a list of search paths. You can even add your own paths by setting the cvar `core_path`.

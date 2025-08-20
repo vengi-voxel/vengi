@@ -47,3 +47,15 @@ Probably not - but vengi offers [translation](Translation.md) support. So if nob
 ## Which platforms are supported?
 
 Windows, Linux, MacOS and web
+
+## How to run the `vengi-voxconvert` command line tool on Windows
+
+Open a terminal and navigate to the folder where you extracted the files. You can use `cmd.exe` or `PowerShell`.
+
+To run the tool, use the command `vengi-voxconvert.exe` followed by the parameters you want to use.
+
+If you just double click it from the explorer, it will open a console window and close it immediately after the tool has finished.
+
+## It doesn't work on my system
+
+Please fill a bug report on the [vengi github](https://github.com/vengi-voxel/vengi/) page. Please include as much information as possible, like your operating system, the version of vengi you are using and the steps to reproduce the issue. There are usually also files called `log.txt` and `crash.txt` in your [vengi data folder](Configuration.md#configuration-file) that you can attach to the issue.
