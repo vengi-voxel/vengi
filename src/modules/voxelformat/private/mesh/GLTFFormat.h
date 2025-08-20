@@ -118,6 +118,11 @@ private:
 							  scenegraph::SceneGraphNode &node) const;
 	bool loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 						scenegraph::SceneGraphNode &node) const;
+	int loadPointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+					   const tinygltf::Model &gltfModel, const MeshMaterialArray &meshMaterialArray, int gltfNodeIdx,
+					   int parentNodeId) const;
+	int loadMesh(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &gltfModel,
+				 const MeshMaterialArray &meshMaterialArray, int gltfNodeIdx, int parentNodeId) const;
 	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &gltfModel,
 					const MeshMaterialArray &meshMaterialArray, int gltfNodeIdx, int parentNodeId) const;
 	bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,

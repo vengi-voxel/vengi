@@ -487,7 +487,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		if (!shape.points.indices.empty()) {
 			PointCloud pointCloud;
 			voxelizePointShape(attrib, shape, pointCloud);
-			if (!voxelizePointCloud(filename, sceneGraph, pointCloud)) {
+			if (voxelizePointCloud(filename, sceneGraph, pointCloud) == InvalidNodeId) {
 				Log::error("Failed to voxelize point cloud from shape %s", shape.name.c_str());
 			}
 		}

@@ -1630,6 +1630,138 @@ bool GLTFFormat::loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygl
 	return frames > 0;
 }
 
+int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+						 const tinygltf::Model &gltfModel, const MeshMaterialArray &meshMaterialArray, int gltfNodeIdx,
+						 int parentNodeId) const {
+	const tinygltf::Node &gltfNode = gltfModel.nodes[gltfNodeIdx];
+	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];
+	MeshTriCollection tris;
+	const glm::vec3 &scale = getInputScale();
+	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
+		if (primitive.mode == TINYGLTF_MODE_POINTS) {
+			continue;
+		}
+		core::DynamicArray<MeshVertex> vertices;
+		if (!loadAttributes(filename, gltfModel, meshMaterialArray, primitive, vertices)) {
+			Log::warn("Failed to load vertices");
+			continue;
+		}
+		core::Buffer<uint32_t> indices;
+		if (primitive.indices == -1) {
+			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
+				const size_t indicedEnd = vertices.size();
+				indices.reserve(vertices.size());
+				for (size_t i = 0; i < indicedEnd; ++i) {
+					indices.push_back((uint32_t)i);
+				}
+			} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_FAN) {
+				if (vertices.size() < 3) {
+					Log::warn("Not enough vertices for triangle fan");
+					return InvalidNodeId;
+				}
+				indices.reserve(vertices.size() * 3);
+				for (size_t i = 1; i < vertices.size() - 1; ++i) {
+					indices.push_back((uint32_t)0);
+					indices.push_back((uint32_t)i);
+					indices.push_back((uint32_t)(i + 1));
+				}
+			} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_STRIP) {
+				if (vertices.size() < 3) {
+					Log::warn("Not enough vertices for triangle strip");
+					return InvalidNodeId;
+				}
+				indices.reserve(vertices.size() * 3);
+				for (size_t i = 0; i < vertices.size() - 2; ++i) {
+					if (i % 2 == 0) {
+						indices.push_back((uint32_t)i);
+						indices.push_back((uint32_t)(i + 1));
+						indices.push_back((uint32_t)(i + 2));
+					} else {
+						indices.push_back((uint32_t)(i + 2));
+						indices.push_back((uint32_t)(i + 1));
+						indices.push_back((uint32_t)i);
+					}
+				}
+			} else {
+				Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
+				return InvalidNodeId;
+			}
+		} else {
+			if (!loadIndices(gltfModel, primitive, indices, 0)) {
+				Log::warn("Failed to load indices");
+				return InvalidNodeId;
+			}
+		}
+		// skip empty meshes
+		if (indices.empty() || vertices.empty()) {
+			Log::debug("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+					gltfNode.mesh);
+			continue;
+		}
+		Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+				gltfNode.mesh);
+
+		if (indices.size() % 3 != 0) {
+			Log::error("Unexpected amount of indices %i", (int)indices.size());
+			return InvalidNodeId;
+		}
+
+		const size_t maxIndices = indices.size();
+		tris.reserve(tris.size() + maxIndices / 3);
+		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
+			voxelformat::MeshTri meshTri;
+			const size_t idx0 = indices[indexOffset];
+			const size_t idx1 = indices[indexOffset + 1];
+			const size_t idx2 = indices[indexOffset + 2];
+			meshTri.setUVs(vertices[idx0].uv, vertices[idx1].uv, vertices[idx2].uv);
+			meshTri.setColor(vertices[idx0].color, vertices[idx1].color, vertices[idx2].color);
+			meshTri.setVertices(vertices[idx0].pos * scale,
+							vertices[idx1].pos * scale, vertices[idx2].pos * scale);
+			const size_t textureIdx = indices[indexOffset];
+			const MeshVertex &v = vertices[textureIdx];
+			meshTri.materialIdx = v.materialIdx;
+			tris.emplace_back(meshTri);
+		}
+	}
+
+	return voxelizeNode(gltfNode.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray, parentNodeId, false);
+}
+
+int GLTFFormat::loadPointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+								const tinygltf::Model &gltfModel, const MeshMaterialArray &meshMaterialArray,
+								int gltfNodeIdx, int parentNodeId) const {
+	const tinygltf::Node &gltfNode = gltfModel.nodes[gltfNodeIdx];
+	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];
+	core::DynamicArray<MeshVertex> vertices;
+	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
+		if (primitive.mode != TINYGLTF_MODE_POINTS) {
+			continue;
+		}
+		if (!loadAttributes(filename, gltfModel, meshMaterialArray, primitive, vertices)) {
+			Log::warn("Failed to load vertices");
+		}
+	}
+	if (vertices.empty()) {
+		return InvalidNodeId;
+	}
+	if (vertices.size() == 1) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
+		node.setName(gltfNode.name.c_str());
+		scenegraph::SceneGraphTransform transform;
+		transform.setLocalTranslation(vertices[0].pos);
+		node.setTransform(0, transform);
+		return sceneGraph.emplace(core::move(node), parentNodeId);
+	}
+	PointCloud pointCloud;
+	pointCloud.resize(vertices.size());
+	for (int i = 0; i < (int)vertices.size(); ++i) {
+		pointCloud[i].position = vertices[i].pos;
+		pointCloud[i].color = vertices[i].color;
+	}
+	vertices.release();
+	return voxelizePointCloud(filename, sceneGraph, pointCloud);
+}
+
 bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 							const tinygltf::Model &gltfModel, const MeshMaterialArray &meshMaterialArray,
 							int gltfNodeIdx, int parentNodeId) const {
@@ -1681,7 +1813,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)gltfModel.meshes.size()) {
-		int groupId = -1;
+		int groupId = InvalidNodeId;
 		if (!sceneGraph.root().children().empty()) {
 			const scenegraph::SceneGraphTransform &transform = loadTransform(gltfNode);
 			Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
@@ -1691,7 +1823,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			node.setTransform(keyFrameIdx, transform);
 			groupId = sceneGraph.emplace(core::move(node), parentNodeId);
 		}
-		if (groupId == -1) {
+		if (groupId == InvalidNodeId) {
 			groupId = parentNodeId;
 		}
 		for (int childId : gltfNode.children) {
@@ -1702,149 +1834,27 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 
 	Log::debug("Mesh node %i", gltfNodeIdx);
 
-	const glm::vec3 &scale = getInputScale();
-	MeshTriCollection tris;
-
 	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];
 	Log::debug("Primitives: %i in mesh %i", (int)gltfMesh.primitives.size(), gltfNode.mesh);
 
-	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
-		core::DynamicArray<MeshVertex> vertices;
-		if (!loadAttributes(filename, gltfModel, meshMaterialArray, primitive, vertices)) {
-			Log::warn("Failed to load vertices");
-			continue;
-		}
-		if (primitive.mode == TINYGLTF_MODE_POINTS) {
-			int nodeId = InvalidNodeId;
-			if (vertices.size() == 1) {
-				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
-				node.setName(gltfNode.name.c_str());
-				scenegraph::SceneGraphTransform transform;
-				transform.setLocalTranslation(vertices[0].pos);
-				node.setTransform(0, transform);
-				nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
-			} else {
-				PointCloud pointCloud;
-				pointCloud.resize(vertices.size());
-				for (int i = 0; i < (int)vertices.size(); ++i) {
-					pointCloud[i].position = vertices[i].pos;
-					pointCloud[i].color = vertices[i].color;
-				}
-				vertices.release();
-				voxelizePointCloud(filename, sceneGraph, pointCloud);
-			}
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			if (!loadAnimations(sceneGraph, gltfModel, gltfNodeIdx, node)) {
-				Log::debug("No animation found or loaded for node %s", node.name().c_str());
-				scenegraph::SceneGraphTransform transform = loadTransform(gltfNode);
-				scenegraph::KeyFrameIndex keyFrameIdx = 0;
-				node.setTransform(keyFrameIdx, transform);
-			}
-
-			for (int childId : gltfNode.children) {
-				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, nodeId);
-			}
-			continue;
-		} else {
-			core::Buffer<uint32_t> indices;
-			if (primitive.indices == -1) {
-				if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
-					const size_t indicedEnd = vertices.size();
-					indices.reserve(vertices.size());
-					for (size_t i = 0; i < indicedEnd; ++i) {
-						indices.push_back((uint32_t)i);
-					}
-				} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_FAN) {
-					if (vertices.size() < 3) {
-						Log::warn("Not enough vertices for triangle fan");
-						return false;
-					}
-					indices.reserve(vertices.size() * 3);
-					for (size_t i = 1; i < vertices.size() - 1; ++i) {
-						indices.push_back((uint32_t)0);
-						indices.push_back((uint32_t)i);
-						indices.push_back((uint32_t)(i + 1));
-					}
-				} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_STRIP) {
-					if (vertices.size() < 3) {
-						Log::warn("Not enough vertices for triangle strip");
-						return false;
-					}
-					indices.reserve(vertices.size() * 3);
-					for (size_t i = 0; i < vertices.size() - 2; ++i) {
-						if (i % 2 == 0) {
-							indices.push_back((uint32_t)i);
-							indices.push_back((uint32_t)(i + 1));
-							indices.push_back((uint32_t)(i + 2));
-						} else {
-							indices.push_back((uint32_t)(i + 2));
-							indices.push_back((uint32_t)(i + 1));
-							indices.push_back((uint32_t)i);
-						}
-					}
-				} else {
-					Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
-					return false;
-				}
-			} else {
-				if (!loadIndices(gltfModel, primitive, indices, 0)) {
-					Log::warn("Failed to load indices");
-					return false;
-				}
-			}
-			// skip empty meshes
-			if (indices.empty() || vertices.empty()) {
-				Log::debug("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
-						gltfNode.mesh);
-				for (int childId : gltfNode.children) {
-					loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, parentNodeId);
-				}
-				return true;
-			}
-			Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
-					gltfNode.mesh);
-
-			if (indices.size() % 3 != 0) {
-				Log::error("Unexpected amount of indices %i", (int)indices.size());
-				return false;
-			}
-
-			const size_t maxIndices = indices.size();
-			tris.reserve(tris.size() + maxIndices / 3);
-			for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-				voxelformat::MeshTri meshTri;
-				const size_t idx0 = indices[indexOffset];
-				const size_t idx1 = indices[indexOffset + 1];
-				const size_t idx2 = indices[indexOffset + 2];
-				meshTri.setUVs(vertices[idx0].uv, vertices[idx1].uv, vertices[idx2].uv);
-				meshTri.setColor(vertices[idx0].color, vertices[idx1].color, vertices[idx2].color);
-				meshTri.setVertices(vertices[idx0].pos * scale,
-								vertices[idx1].pos * scale, vertices[idx2].pos * scale);
-				const size_t textureIdx = indices[indexOffset];
-				const MeshVertex &v = vertices[textureIdx];
-				meshTri.materialIdx = v.materialIdx;
-				tris.emplace_back(meshTri);
-			}
-			indices.release();
-			vertices.release();
-		}
+	int nodeId = loadPointCloud(filename, sceneGraph, gltfModel, meshMaterialArray, gltfNodeIdx, parentNodeId);
+	const int meshNodeId = loadMesh(filename, sceneGraph, gltfModel, meshMaterialArray, gltfNodeIdx, nodeId == InvalidNodeId ? parentNodeId : nodeId);
+	if (meshNodeId != InvalidNodeId) {
+		nodeId = meshNodeId;
 	}
-
-	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray, parentNodeId, false);
-	if (nodeId == InvalidNodeId) {
-		// ignore this node
-		return true;
-	}
-	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-	if (!loadAnimations(sceneGraph, gltfModel, gltfNodeIdx, node)) {
-		Log::debug("No animation found or loaded for node %s", node.name().c_str());
-		scenegraph::SceneGraphTransform transform = loadTransform(gltfNode);
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
+	if (nodeId != InvalidNodeId) {
+		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		if (!loadAnimations(sceneGraph, gltfModel, gltfNodeIdx, node)) {
+			Log::debug("No animation found or loaded for node %s", node.name().c_str());
+			scenegraph::SceneGraphTransform transform = loadTransform(gltfNode);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			node.setTransform(keyFrameIdx, transform);
+		}
 	}
 
 	for (int childId : gltfNode.children) {
-		loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, nodeId);
+		loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId,
+				   nodeId == InvalidNodeId ? parentNodeId : nodeId);
 	}
 	return true;
 }

@@ -104,9 +104,9 @@ protected:
 	 * @param filename The name of the file from which the point cloud was loaded.
 	 * @param sceneGraph The scene graph to which the new node will be added.
 	 * @param vertices The collection of point cloud vertices to be voxelized.
-	 * @return True if the node was successfully added to the scene graph, false otherwise.
+	 * @return The node id of the newly created node in the scene graph, or InvalidNodeId if voxelization failed.
 	 */
-	bool voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+	int voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 							const PointCloud &vertices) const;
 
 	/**

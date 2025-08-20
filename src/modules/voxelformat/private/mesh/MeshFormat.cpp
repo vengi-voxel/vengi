@@ -551,7 +551,7 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 	return retVal;
 }
 
-bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 									const PointCloud &vertices) const {
 	glm::vec3 mins{std::numeric_limits<float>::max()};
 	glm::vec3 maxs{std::numeric_limits<float>::min()};
@@ -601,7 +601,7 @@ bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sc
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	return sceneGraph.emplace(core::move(node));
 }
 
 bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &, scenegraph::SceneGraph &,
