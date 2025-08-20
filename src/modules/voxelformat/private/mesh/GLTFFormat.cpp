@@ -1709,7 +1709,6 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	Log::debug("Primitives: %i in mesh %i", (int)gltfMesh.primitives.size(), gltfNode.mesh);
 
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
-		core::Buffer<uint32_t> indices;
 		core::DynamicArray<MeshVertex> vertices;
 		if (!loadAttributes(filename, gltfModel, meshMaterialArray, primitive, vertices)) {
 			Log::warn("Failed to load vertices");
@@ -1731,6 +1730,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 					pointCloud[i].position = vertices[i].pos;
 					pointCloud[i].color = vertices[i].color;
 				}
+				vertices.release();
 				voxelizePointCloud(filename, sceneGraph, pointCloud);
 			}
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -1744,78 +1744,89 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			for (int childId : gltfNode.children) {
 				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, nodeId);
 			}
-		} else if (primitive.indices == -1) {
-			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
-				const size_t indicedEnd = vertices.size();
-				for (size_t i = 0; i < indicedEnd; ++i) {
-					indices.push_back((uint32_t)i);
-				}
-			} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_FAN) {
-				if (vertices.size() < 3) {
-					Log::warn("Not enough vertices for triangle fan");
-					return false;
-				}
-				for (size_t i = 1; i < vertices.size() - 1; ++i) {
-					indices.push_back((uint32_t)0);
-					indices.push_back((uint32_t)i);
-					indices.push_back((uint32_t)(i + 1));
-				}
-			} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_STRIP) {
-				if (vertices.size() < 3) {
-					Log::warn("Not enough vertices for triangle strip");
-					return false;
-				}
-				for (size_t i = 0; i < vertices.size() - 2; ++i) {
-					if (i % 2 == 0) {
-						indices.push_back((uint32_t)i);
-						indices.push_back((uint32_t)(i + 1));
-						indices.push_back((uint32_t)(i + 2));
-					} else {
-						indices.push_back((uint32_t)(i + 2));
-						indices.push_back((uint32_t)(i + 1));
+			continue;
+		} else {
+			core::Buffer<uint32_t> indices;
+			if (primitive.indices == -1) {
+				if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
+					const size_t indicedEnd = vertices.size();
+					indices.reserve(vertices.size());
+					for (size_t i = 0; i < indicedEnd; ++i) {
 						indices.push_back((uint32_t)i);
 					}
+				} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_FAN) {
+					if (vertices.size() < 3) {
+						Log::warn("Not enough vertices for triangle fan");
+						return false;
+					}
+					indices.reserve(vertices.size() * 3);
+					for (size_t i = 1; i < vertices.size() - 1; ++i) {
+						indices.push_back((uint32_t)0);
+						indices.push_back((uint32_t)i);
+						indices.push_back((uint32_t)(i + 1));
+					}
+				} else if (primitive.mode == TINYGLTF_MODE_TRIANGLE_STRIP) {
+					if (vertices.size() < 3) {
+						Log::warn("Not enough vertices for triangle strip");
+						return false;
+					}
+					indices.reserve(vertices.size() * 3);
+					for (size_t i = 0; i < vertices.size() - 2; ++i) {
+						if (i % 2 == 0) {
+							indices.push_back((uint32_t)i);
+							indices.push_back((uint32_t)(i + 1));
+							indices.push_back((uint32_t)(i + 2));
+						} else {
+							indices.push_back((uint32_t)(i + 2));
+							indices.push_back((uint32_t)(i + 1));
+							indices.push_back((uint32_t)i);
+						}
+					}
+				} else {
+					Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
+					return false;
 				}
 			} else {
-				Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
+				if (!loadIndices(gltfModel, primitive, indices, 0)) {
+					Log::warn("Failed to load indices");
+					return false;
+				}
+			}
+			// skip empty meshes
+			if (indices.empty() || vertices.empty()) {
+				Log::debug("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+						gltfNode.mesh);
+				for (int childId : gltfNode.children) {
+					loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, parentNodeId);
+				}
+				return true;
+			}
+			Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+					gltfNode.mesh);
+
+			if (indices.size() % 3 != 0) {
+				Log::error("Unexpected amount of indices %i", (int)indices.size());
 				return false;
 			}
-		} else if (!loadIndices(gltfModel, primitive, indices, 0)) {
-			Log::warn("Failed to load indices");
-			return false;
-		}
-		// skip empty meshes
-		if (indices.empty() || vertices.empty()) {
-			Log::debug("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
-					   gltfNode.mesh);
-			for (int childId : gltfNode.children) {
-				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, parentNodeId);
+
+			const size_t maxIndices = indices.size();
+			tris.reserve(tris.size() + maxIndices / 3);
+			for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
+				voxelformat::MeshTri meshTri;
+				const size_t idx0 = indices[indexOffset];
+				const size_t idx1 = indices[indexOffset + 1];
+				const size_t idx2 = indices[indexOffset + 2];
+				meshTri.setUVs(vertices[idx0].uv, vertices[idx1].uv, vertices[idx2].uv);
+				meshTri.setColor(vertices[idx0].color, vertices[idx1].color, vertices[idx2].color);
+				meshTri.setVertices(vertices[idx0].pos * scale,
+								vertices[idx1].pos * scale, vertices[idx2].pos * scale);
+				const size_t textureIdx = indices[indexOffset];
+				const MeshVertex &v = vertices[textureIdx];
+				meshTri.materialIdx = v.materialIdx;
+				tris.emplace_back(meshTri);
 			}
-			return true;
-		}
-		Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
-				   gltfNode.mesh);
-
-		if (indices.size() % 3 != 0) {
-			Log::error("Unexpected amount of indices %i", (int)indices.size());
-			return false;
-		}
-
-		const size_t maxIndices = indices.size();
-		tris.reserve(tris.size() + maxIndices / 3);
-		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-			voxelformat::MeshTri meshTri;
-			const size_t idx0 = indices[indexOffset];
-			const size_t idx1 = indices[indexOffset + 1];
-			const size_t idx2 = indices[indexOffset + 2];
-			meshTri.setUVs(vertices[idx0].uv, vertices[idx1].uv, vertices[idx2].uv);
-			meshTri.setColor(vertices[idx0].color, vertices[idx1].color, vertices[idx2].color);
-			meshTri.setVertices(vertices[idx0].pos * scale,
-							 vertices[idx1].pos * scale, vertices[idx2].pos * scale);
-			const size_t textureIdx = indices[indexOffset];
-			const MeshVertex &v = vertices[textureIdx];
-			meshTri.materialIdx = v.materialIdx;
-			tris.emplace_back(meshTri);
+			indices.release();
+			vertices.release();
 		}
 	}
 
