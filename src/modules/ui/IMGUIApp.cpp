@@ -659,11 +659,17 @@ void IMGUIApp::loadLastOpenedFiles(const core::String &string) {
 	core::string::splitString(string, tokens, ";");
 	_lastOpenedFilesRingBuffer.clear();
 	for (const core::String &s : tokens) {
+		if (s.empty()) {
+			continue;
+		}
 		_lastOpenedFilesRingBuffer.push_back(s);
 	}
 }
 
 void IMGUIApp::addLastOpenedFile(const core::String &file) {
+	if (file.empty()) {
+		return;
+	}
 	for (const core::String &s : _lastOpenedFilesRingBuffer) {
 		if (s == file) {
 			return;
