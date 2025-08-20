@@ -6,6 +6,9 @@ site_dir: build/docs
 repo_url: https://github.com/vengi-voxel/vengi
 repo_name: GitHub
 
+extra_css:
+  - css/vengi.css
+
 theme:
   custom_dir: docs/theme
   name: material
