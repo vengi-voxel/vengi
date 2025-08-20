@@ -24,5 +24,6 @@ void schedule(F &&f) {
 }
 
 void for_parallel(int start, int end, const std::function<void(int, int)> &f, bool wait = true);
+int for_parallel_size(int start, int end);
 
 } // namespace app

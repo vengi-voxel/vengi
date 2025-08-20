@@ -8,6 +8,19 @@
 
 namespace app {
 
+int for_parallel_size(int start, int end) {
+	if (start >= end) {
+		return 0;
+	}
+	const int threadPoolSize = app::App::getInstance()->threads();
+	if (end - start == 1 || threadPoolSize <= 1) {
+		return 1;
+	}
+	const int threadCnt = core_max(2, threadPoolSize);
+	const int chunkSize = core_max((end - start + threadCnt - 1) / threadCnt, 1);
+	return (end - start) / chunkSize + 1;
+}
+
 void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda, bool wait) {
 	if (start >= end)
 		return;
@@ -21,8 +34,9 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 
 	const int threadCnt = core_max(2, threadPoolSize);
 	const int chunkSize = core_max((end - start + threadCnt - 1) / threadCnt, 1);
+	const int taskCnt = (end - start) / chunkSize + 1;
 	core::DynamicArray<core::Future<void>> futures;
-	futures.reserve((end - start) / chunkSize + 1);
+	futures.reserve(taskCnt);
 
 	for (int i = start; i < end; i += chunkSize) {
 		uint32_t chunk_end = core_min(i + chunkSize, end);
