@@ -319,8 +319,6 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		node.setVolume(new voxel::RawVolume(region), true);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);
 	} else if (voxelizeMode == VoxelizeMode::Fast) {
-		node.setVolume(new voxel::RawVolume(region), true);
-		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::Palette palette;
 
 		const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
@@ -348,6 +346,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
+		node.setVolume(new voxel::RawVolume(region), true);
+		voxel::RawVolumeWrapper wrapper(node.volume());
 		for (const voxelformat::MeshTri &meshTri : tris) {
 			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
