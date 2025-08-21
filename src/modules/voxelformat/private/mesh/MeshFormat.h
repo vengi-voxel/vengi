@@ -14,6 +14,7 @@
 #include "io/Archive.h"
 #include "palette/NormalPalette.h"
 #include "voxel/ChunkMesh.h"
+#include "voxel/Mesh.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -107,7 +108,7 @@ protected:
 	 * @return The node id of the newly created node in the scene graph, or InvalidNodeId if voxelization failed.
 	 */
 	int voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-							const PointCloud &vertices) const;
+							PointCloud &&vertices) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index
@@ -142,6 +143,9 @@ protected:
 					 const MeshMaterialArray &meshMaterialArray, int parent = 0, bool resetOrigin = true) const {
 		return voxelizeNode("", name, sceneGraph, core::move(tris), meshMaterialArray, parent, resetOrigin);
 	}
+
+	size_t simplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) const;
+	void simplifyPointCloud(PointCloud &vertices) const;
 
 	/**
 	 * @brief A map with positions and colors that can get averaged from the input triangles

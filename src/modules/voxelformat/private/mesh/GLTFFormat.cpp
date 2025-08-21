@@ -27,7 +27,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
-#include "voxel/VoxelVertex.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
 #include "voxelutil/VoxelUtil.h"
@@ -1706,8 +1706,9 @@ int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &s
 			return InvalidNodeId;
 		}
 
-		const size_t maxIndices = indices.size();
+		const size_t maxIndices = simplify(indices, vertices);
 		tris.reserve(tris.size() + maxIndices / 3);
+
 		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
 			voxelformat::MeshTri meshTri;
 			const size_t idx0 = indices[indexOffset];
@@ -1752,6 +1753,7 @@ int GLTFFormat::loadPointCloud(const core::String &filename, scenegraph::SceneGr
 		node.setTransform(0, transform);
 		return sceneGraph.emplace(core::move(node), parentNodeId);
 	}
+
 	PointCloud pointCloud;
 	pointCloud.resize(vertices.size());
 	for (int i = 0; i < (int)vertices.size(); ++i) {
@@ -1759,7 +1761,7 @@ int GLTFFormat::loadPointCloud(const core::String &filename, scenegraph::SceneGr
 		pointCloud[i].color = vertices[i].color;
 	}
 	vertices.release();
-	return voxelizePointCloud(filename, sceneGraph, pointCloud);
+	return voxelizePointCloud(filename, sceneGraph, core::move(pointCloud));
 }
 
 bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,

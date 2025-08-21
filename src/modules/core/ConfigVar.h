@@ -123,5 +123,6 @@ constexpr const char *VoxformatBinvoxVersion = "voxformat_binvoxversion";
 constexpr const char *VoxformatSkinApplyTransform = "voxformat_skinapplytransform";
 constexpr const char *VoxformatSkinAddGroups = "voxformat_skinaddgroups";
 constexpr const char *VoxformatSkinMergeFaces = "voxformat_skinmergefaces";
+constexpr const char *VoxformatMeshSimplify = "voxformat_mesh_simplify";
 
 }

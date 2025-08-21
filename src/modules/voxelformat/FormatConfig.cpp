@@ -148,6 +148,8 @@ bool FormatConfig::init() {
 				   _("Add groups for body parts of Minecraft skins"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatSkinMergeFaces, "false", core::CV_NOPERSIST,
 				   _("Merge face parts into single volume for Minecraft skins"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatMeshSimplify, "true", core::CV_NOPERSIST,
+				   _("Simplify the mesh when voxelizing a mesh format"), core::Var::boolValidator);
 	return true;
 }
 

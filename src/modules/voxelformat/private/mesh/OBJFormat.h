@@ -29,7 +29,7 @@ private:
 	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const;
 
 protected:
-	void voxelizePointShape(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
+	void loadPointCloud(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
 							PointCloud &pointCloud);
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;

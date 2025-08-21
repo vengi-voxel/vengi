@@ -22,9 +22,9 @@ protected:
 		using Super = voxelformat::MeshFormat;
 
 	public:
-		void voxelizePointCloud(const voxelformat::PointCloud &vertices) {
+		void voxelizePointCloud(voxelformat::PointCloud &&vertices) {
 			scenegraph::SceneGraph sceneGraph;
-			Super::voxelizePointCloud("benchmark", sceneGraph, vertices);
+			Super::voxelizePointCloud("benchmark", sceneGraph, core::move(vertices));
 		}
 
 		void transformTris(const voxelformat::MeshTriCollection &tris, voxelformat::PosMap &posMap, const voxelformat::MeshMaterialArray &meshMaterialArray) const {
@@ -76,11 +76,11 @@ BENCHMARK_DEFINE_F(MeshFormatBenchmark, FBX)(benchmark::State &state) {
 }
 
 BENCHMARK_DEFINE_F(MeshFormatBenchmark, voxelizePointCloud)(benchmark::State &state) {
-	voxelformat::PointCloud vertices;
-	vertices.resize(10000);
 	for (auto _ : state) {
 		MeshFormatEx f;
-		f.voxelizePointCloud(vertices);
+		voxelformat::PointCloud vertices;
+		vertices.resize(10000);
+		f.voxelizePointCloud(core::move(vertices));
 	}
 }
 

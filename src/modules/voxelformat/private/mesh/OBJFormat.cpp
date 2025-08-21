@@ -280,7 +280,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 #undef wrapBool
 
-void OBJFormat::voxelizePointShape(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
+void OBJFormat::loadPointCloud(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
 						  PointCloud &pointCloud) {
 	pointCloud.resize(shape.points.indices.size());
 	for (int i = 0; i < (int)shape.points.indices.size(); ++i) {
@@ -486,8 +486,8 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		}
 		if (!shape.points.indices.empty()) {
 			PointCloud pointCloud;
-			voxelizePointShape(attrib, shape, pointCloud);
-			if (voxelizePointCloud(filename, sceneGraph, pointCloud) == InvalidNodeId) {
+			loadPointCloud(attrib, shape, pointCloud);
+			if (voxelizePointCloud(filename, sceneGraph, core::move(pointCloud)) == InvalidNodeId) {
 				Log::error("Failed to voxelize point cloud from shape %s", shape.name.c_str());
 			}
 		}

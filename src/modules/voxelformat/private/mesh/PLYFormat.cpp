@@ -449,7 +449,7 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 		pointCloud[i].position = vertices[i].pos;
 		pointCloud[i].color = vertices[i].color;
 	}
-	return voxelizePointCloud(filename, sceneGraph, pointCloud) != InvalidNodeId;
+	return voxelizePointCloud(filename, sceneGraph, core::move(pointCloud)) != InvalidNodeId;
 }
 
 void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<MeshVertex> &vertices,

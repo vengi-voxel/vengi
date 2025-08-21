@@ -17,6 +17,7 @@
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
+#include "meshoptimizer.h"
 #include "palette/NormalPalette.h"
 #include "palette/NormalPaletteLookup.h"
 #include "palette/PaletteLookup.h"
@@ -559,7 +560,7 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 }
 
 int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-									const PointCloud &vertices) const {
+									PointCloud &&vertices) const {
 	glm::vec3 mins{std::numeric_limits<float>::max()};
 	glm::vec3 maxs{std::numeric_limits<float>::min()};
 	const glm::vec3 scale = getInputScale();
@@ -568,9 +569,19 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 		mins = glm::min(mins, v.position);
 		maxs = glm::max(maxs, v.position);
 	}
-
 	const int pointSize = core_max(1, core::Var::getSafe(cfg::VoxformatPointCloudSize)->intVal());
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
+
+	const size_t bytes = voxel::RawVolume::size(region);
+	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
+		const core::String &neededMem = core::string::humanSize(bytes);
+		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", region.getDimensionsInVoxels().x,
+				  region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z, neededMem.c_str());
+		return InvalidNodeId;
+	}
+
+	simplifyPointCloud(vertices);
+
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	const palette::Palette &palette = voxel::getPalette();
 	auto fn = [&vertices, &palette, pointSize, v](int start, int end) {
@@ -603,12 +614,34 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 		}
 	};
 	app::for_parallel(0, vertices.size(), fn);
+	vertices.release();
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node));
+}
+
+size_t MeshFormat::simplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) const {
+	if (!core::Var::getSafe(cfg::VoxformatMeshSimplify)->boolVal()) {
+		return indices.size();
+	}
+	voxel::IndexArray simplifiedIndices;
+	simplifiedIndices.resize(indices.size());
+	const float targetError = 1e-2f;
+	float resultError = 0;
+	const size_t maxIndices = meshopt_simplifySloppy(simplifiedIndices.data(), indices.data(), indices.size(),
+													 &vertices.data()->pos[0], vertices.size(), sizeof(MeshVertex),
+													 simplifiedIndices.size(), targetError, &resultError);
+	Log::debug("Simplified mesh - reducing indices from %i to %i: result error %f", (int)indices.size(),
+			   (int)maxIndices, resultError);
+	indices = core::move(simplifiedIndices);
+	return maxIndices;
+}
+
+void MeshFormat::simplifyPointCloud(PointCloud &vertices) const {
+	// TODO: VOXELFORMAT: meshopt_simplifyPoints
 }
 
 bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &, scenegraph::SceneGraph &,

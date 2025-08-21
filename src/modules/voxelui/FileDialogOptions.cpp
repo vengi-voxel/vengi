@@ -309,6 +309,7 @@ static void loadOptionsMesh() {
 	ImGui::InputVarString(_("Texture search path"), cfg::VoxformatTexturePath);
 	ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
 	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
+	ImGui::CheckboxVar(_("Simplify"), cfg::VoxformatMeshSimplify);
 
 	const core::VarPtr &normalPaletteVar = core::Var::getSafe(cfg::NormalPalette);
 	if (ImGui::BeginCombo(_("Normal palette"), normalPaletteVar->strVal().c_str(), 0)) {
