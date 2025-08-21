@@ -318,7 +318,7 @@ const Voxel &RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 		const int32_t iLocalYPos = y - _region.getLowerY();
 		const int32_t iLocalZPos = z - _region.getLowerZ();
 
-		return _data[iLocalXPos + iLocalYPos * width() + iLocalZPos * width() * height()];
+		return _data[iLocalXPos + iLocalYPos * width() + iLocalZPos * _region.stride()];
 	}
 	return _borderVoxel;
 }
@@ -341,6 +341,17 @@ bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel) {
 	return setVoxel(glm::ivec3(x, y, z), voxel);
 }
 
+bool RawVolume::setVoxel(int idx, const Voxel &voxel) {
+	if (idx < 0 || idx >= _region.stride() * depth()) {
+		return false; // Index out of bounds
+	}
+	if (_data[idx].isSame(voxel)) {
+		return false;
+	}
+	_data[idx] = voxel;
+	return true;
+}
+
 /**
  * @param pos the 3D position of the voxel
  * @param voxel the value to which the voxel will be set
@@ -356,7 +367,7 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	}
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
-	const int index = localPos.x + localPos.y * width() + localPos.z * width() * height();
+	const int index = localPos.x + localPos.y * width() + localPos.z * _region.stride();
 	if (_data[index].isSame(voxel)) {
 		return false;
 	}
@@ -367,7 +378,7 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
-	const int index = localPos.x + localPos.y * width() + localPos.z * width() * height();
+	const int index = localPos.x + localPos.y * width() + localPos.z * _region.stride();
 	_data[index] = voxel;
 }
 
@@ -397,7 +408,7 @@ void RawVolume::clear() {
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {
-	const size_t size = width() * height() * depth();
+	const size_t size = _region.stride() * depth();
 	for (size_t i = 0; i < size; ++i) {
 		_data[i] = voxel;
 	}

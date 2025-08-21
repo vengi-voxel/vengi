@@ -227,4 +227,16 @@ TEST_F(RegionTest, testSubtract) {
 	}
 }
 
+TEST_F(RegionTest, testIndex) {
+	voxel::Region region(1, 3);
+	EXPECT_EQ(0, region.index(1, 1, 1));
+	EXPECT_EQ(1, region.index(2, 1, 1));
+	EXPECT_EQ(2, region.index(3, 1, 1));
+	EXPECT_EQ(3, region.index(1, 2, 1));
+	EXPECT_EQ(4, region.index(2, 2, 1));
+	EXPECT_EQ(5, region.index(3, 2, 1));
+	EXPECT_EQ(6, region.index(1, 3, 1));
+	EXPECT_EQ(26, region.index(3, 3, 3));
+}
+
 } // namespace voxel
