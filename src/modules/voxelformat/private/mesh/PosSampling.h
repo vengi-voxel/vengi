@@ -19,15 +19,15 @@ namespace voxelformat {
  */
 struct PosSamplingEntry {
 	inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal, MeshMaterialIndex _materialIdx)
-		: area(_area), normal(_normal), color(_color), materialIdx(_materialIdx) {
+		: area(_area), color(_color), normal(_normal), materialIdx(_materialIdx) {
 	}
-	PosSamplingEntry() : area(0) {
-	}
-	uint32_t area : 24;
-	uint8_t normal = 0u;
+	PosSamplingEntry() = default;
+	uint32_t area = 0u;
 	core::RGBA color;
-	MeshMaterialIndex materialIdx;
+	uint8_t normal = 0u;
+	MeshMaterialIndex materialIdx = 0u;
 };
+// static_assert(sizeof(PosSamplingEntry) == 12, "");
 
 /**
  * @brief Weighted color entry for a position for averaging the voxel color value over all positions that were found
