@@ -108,9 +108,9 @@ protected:
 	 * @return The node id of the newly created node in the scene graph, or InvalidNodeId if voxelization failed.
 	 */
 	int voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-							PointCloud &&vertices) const;
-	void convertToTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
-					   voxel::IndexArray &indices) const;
+						   PointCloud &&vertices) const;
+	void convertToScaledTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
+							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
 

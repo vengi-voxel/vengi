@@ -583,7 +583,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 	}
 
 	triangulatePolygons(polygons, vertices, indices);
-	convertToTris(tris, vertices, indices);
+	convertToScaledTris(tris, vertices, indices);
 
 	return true;
 }
@@ -614,7 +614,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 	}
 
 	triangulatePolygons(polygons, vertices, indices);
-	convertToTris(tris, vertices, indices);
+	convertToScaledTris(tris, vertices, indices);
 
 	return true;
 }
@@ -630,11 +630,6 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		if (!parseMeshBinary(filename, stream, sceneGraph, ctx, header, tris)) {
 			return false;
 		}
-	}
-
-	const glm::vec3 scale = getInputScale();
-	for (voxelformat::MeshTri &meshTri : tris) {
-		meshTri.scaleVertices(scale);
 	}
 
 	if (!header.comment.empty()) {

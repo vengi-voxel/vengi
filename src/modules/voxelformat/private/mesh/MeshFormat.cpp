@@ -635,8 +635,9 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 	}
 }
 
-void MeshFormat::convertToTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
+void MeshFormat::convertToScaledTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
 							  voxel::IndexArray &indices) const {
+	const glm::vec3 scale = getInputScale();
 	const size_t maxIndices = simplify(indices, vertices);
 	tris.reserve(tris.size() + indices.size());
 	for (size_t i = 0; i < maxIndices; i += 3) {
@@ -647,7 +648,8 @@ void MeshFormat::convertToTris(MeshTriCollection &tris, const core::DynamicArray
 		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
 		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
 		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
-		tris.emplace_back(meshTri);
+		meshTri.scaleVertices(scale);
+		tris.emplace_back(core::move(meshTri));
 	}
 }
 
