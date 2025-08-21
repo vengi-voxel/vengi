@@ -24,7 +24,7 @@ struct PointCloudVertex {
 };
 using PointCloud = core::Buffer<PointCloudVertex, 4096>;
 using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
-using PosMap = core::ParallelMap<glm::ivec3, PosSampling, 67, glm::hash<glm::ivec3>>;
+using PosMap = core::ParallelMap<glm::ivec3, PosSampling, 3541, glm::hash<glm::ivec3>>;
 
 /**
  * @brief Convert the volume data into a mesh
