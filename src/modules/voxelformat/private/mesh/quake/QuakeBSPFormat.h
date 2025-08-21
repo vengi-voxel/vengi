@@ -154,7 +154,7 @@ private:
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 
 public:
-	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes,
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
 					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords) override {
 		return false;

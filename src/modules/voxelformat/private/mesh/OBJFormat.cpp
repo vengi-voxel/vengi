@@ -98,7 +98,7 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 	return true;
 }
 
-bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
+bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const ChunkMeshes &meshes,
 						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));

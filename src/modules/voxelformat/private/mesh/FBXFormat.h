@@ -22,11 +22,11 @@ namespace voxelformat {
  */
 class FBXFormat : public MeshFormat {
 private:
-	bool saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+	bool saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						  const scenegraph::SceneGraph &sceneGraph);
 	void writeTransformToProperties(io::SeekableWriteStream &stream, const scenegraph::SceneGraphTransform &transform);
-	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+	bool saveMeshesAscii(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						 const scenegraph::SceneGraph &sceneGraph);
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
@@ -42,7 +42,7 @@ private:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-					const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
 
 	static const io::FormatDescription &format() {

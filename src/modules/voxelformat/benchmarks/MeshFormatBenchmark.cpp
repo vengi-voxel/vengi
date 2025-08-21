@@ -41,7 +41,7 @@ protected:
 			Super::transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
 		}
 
-		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &,
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
 						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}

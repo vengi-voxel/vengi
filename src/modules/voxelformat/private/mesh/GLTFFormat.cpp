@@ -724,7 +724,7 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 }
 
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-							const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+							const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
@@ -773,7 +773,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 		int meshExtIdx = 0;
 		core_assert_always(meshIdxNodeMap.get(nodeId, meshExtIdx));
-		const MeshExt &meshExt = meshes[meshExtIdx];
+		const ChunkMeshExt &meshExt = meshes[meshExtIdx];
 
 		int texcoordIndex = 0;
 		if (node.isAnyModelNode()) {

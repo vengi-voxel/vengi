@@ -16,6 +16,7 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxelformat {
 
@@ -54,9 +55,9 @@ protected:
 	bool _weightedAverage = true;
 	core_trace_mutex(core::Lock, _mutex, "PosSampling");
 
-	struct MeshExt {
-		MeshExt() = default;
-		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
+	struct ChunkMeshExt {
+		ChunkMeshExt() = default;
+		ChunkMeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
 		voxel::ChunkMesh *mesh;
 		core::String name;
 		bool applyTransform = false;
@@ -68,13 +69,13 @@ protected:
 		void visitByMaterial(int materialIndex, const std::function<void(const voxel::Mesh &, voxel::IndexType,
 																		voxel::IndexType, voxel::IndexType)> &callback) const;
 	};
-	using Meshes = core::DynamicArray<MeshExt>;
+	using ChunkMeshes = core::DynamicArray<ChunkMeshExt>;
 	virtual bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-							const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+							const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 
-	static MeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
+	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
 	static glm::vec3 getInputScale();
 
 	struct MeshVertex {
@@ -83,6 +84,14 @@ protected:
 		core::RGBA color{0};
 		glm::vec3 normal{0.0f};
 		MeshMaterialIndex materialIdx;
+	};
+	struct Mesh {
+		core::DynamicArray<MeshVertex> vertices;
+		voxel::IndexArray indices;
+		core::DynamicArray<voxel::IndexArray> polygons;
+		MeshMaterialArray materials;
+
+		void clearAfterTriangulation();
 	};
 
 	/**
@@ -113,6 +122,7 @@ protected:
 							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
+	bool voxelizeMesh(const core::String &filename, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index

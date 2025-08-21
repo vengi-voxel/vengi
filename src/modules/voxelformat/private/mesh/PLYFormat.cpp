@@ -277,8 +277,8 @@ bool PLYFormat::parseHeader(io::SeekableReadStream &stream, Header &header) {
 	return true;
 }
 
-bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream,
-								voxel::IndexArray &indices, core::DynamicArray<voxel::IndexArray> &polygons) const {
+bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream, voxel::IndexArray &indices,
+								core::DynamicArray<voxel::IndexArray> &polygons) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -444,9 +444,8 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	return voxelizePointCloud(filename, sceneGraph, core::move(pointCloud)) != InvalidNodeId;
 }
 
-bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
-								 voxel::IndexArray &indices, core::DynamicArray<voxel::IndexArray> &polygons,
-								 const Header &header) const {
+bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream, voxel::IndexArray &indices,
+								 core::DynamicArray<voxel::IndexArray> &polygons, const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	Log::debug("loading %i faces", element.count);
 	indices.reserve(element.count * 6);
@@ -557,20 +556,15 @@ bool PLYFormat::skipElementBinary(const Element &element, io::SeekableReadStream
 	return true;
 }
 
-bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
-								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-								MeshTriCollection &tris) const {
-	core::DynamicArray<MeshVertex> vertices;
-	voxel::IndexArray indices;
-	core::DynamicArray<voxel::IndexArray> polygons;
+bool PLYFormat::parseMeshBinary(io::SeekableReadStream &stream, const Header &header, Mesh &mesh) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
-			if (!parseVerticesBinary(element, stream, vertices, header)) {
+			if (!parseVerticesBinary(element, stream, mesh.vertices, header)) {
 				return false;
 			}
 		} else if (element.name == "face") {
-			if (!parseFacesBinary(element, stream, indices, polygons, header)) {
+			if (!parseFacesBinary(element, stream, mesh.indices, mesh.polygons, header)) {
 				return false;
 			}
 		} else {
@@ -582,26 +576,18 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 		}
 	}
 
-	triangulatePolygons(polygons, vertices, indices);
-	convertToScaledTris(tris, vertices, indices);
-
 	return true;
 }
 
-bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-							   MeshTriCollection &tris) const {
-	core::DynamicArray<MeshVertex> vertices;
-	voxel::IndexArray indices;
-	core::DynamicArray<voxel::IndexArray> polygons;
+bool PLYFormat::parseMeshAscii(io::SeekableReadStream &stream, const Header &header, Mesh &mesh) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
-			if (!parseVerticesAscii(element, stream, vertices)) {
+			if (!parseVerticesAscii(element, stream, mesh.vertices)) {
 				return false;
 			}
 		} else if (element.name == "face") {
-			if (!parseFacesAscii(element, stream, indices, polygons)) {
+			if (!parseFacesAscii(element, stream, mesh.indices, mesh.polygons)) {
 				return false;
 			}
 		} else {
@@ -613,21 +599,18 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 		}
 	}
 
-	triangulatePolygons(polygons, vertices, indices);
-	convertToScaledTris(tris, vertices, indices);
-
 	return true;
 }
 
 bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &stream,
-						  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header) {
-	MeshTriCollection tris;
+						  scenegraph::SceneGraph &sceneGraph, const Header &header) {
+	Mesh mesh;
 	if (header.format == PlyFormatType::Ascii) {
-		if (!parseMeshAscii(filename, stream, sceneGraph, ctx, header, tris)) {
+		if (!parseMeshAscii(stream, header, mesh)) {
 			return false;
 		}
 	} else if (header.format == PlyFormatType::BinaryLittleEndian || header.format == PlyFormatType::BinaryBigEndian) {
-		if (!parseMeshBinary(filename, stream, sceneGraph, ctx, header, tris)) {
+		if (!parseMeshBinary(stream, header, mesh)) {
 			return false;
 		}
 	}
@@ -636,8 +619,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		scenegraph::SceneGraphNode &root = sceneGraph.node(0);
 		root.setProperty(scenegraph::PropDescription, header.comment);
 	}
-
-	return voxelizeNode(filename, sceneGraph, core::move(tris), {});
+	return voxelizeMesh(filename, sceneGraph, core::move(mesh));
 }
 
 bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
@@ -666,15 +648,15 @@ bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return parsePointCloud(filename, *stream, sceneGraph, ctx, header);
 	}
 
-	return parseMesh(filename, *stream, sceneGraph, ctx, header);
+	return parseMesh(filename, *stream, sceneGraph, header);
 }
 
 #undef wrapBool
 #undef wrap
 
-bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
-						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
-						   bool quad, bool withColor, bool withTexCoords) {
+bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
+						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());

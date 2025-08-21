@@ -92,7 +92,7 @@ static bool saveMaterial(const scenegraph::SceneGraphNode &node, io::SeekableWri
 
 bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 								const scenegraph::SceneGraphNode &node, io::SeekableWriteStream &stream,
-								const Meshes &meshes, int &subResourceId, WriterStage stage) const {
+								const ChunkMeshes &meshes, int &subResourceId, WriterStage stage) const {
 	if (stopExecution()) {
 		return false;
 	}
@@ -110,7 +110,7 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 				return false;
 			}
 
-			const MeshExt &meshExt = meshes[iter->value];
+			const ChunkMeshExt &meshExt = meshes[iter->value];
 			Log::debug("Exporting model %s (%i) (%i meshes total)", meshExt.name.c_str(), node.id(),
 					   (int)meshIdxNodeMap.size());
 			wrapBool(stream.writeStringFormat(false, "[sub_resource type=\"ArrayMesh\" id=\"%i\"]\n", node.id()))
@@ -223,7 +223,7 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 }
 
 bool GodotSceneFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-								  const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+								  const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 								  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {

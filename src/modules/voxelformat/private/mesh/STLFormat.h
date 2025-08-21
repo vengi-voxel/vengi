@@ -36,7 +36,7 @@ namespace voxelformat {
  */
 class STLFormat : public MeshFormat {
 private:
-	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1,
+	bool writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt &meshExt, const voxel::VoxelVertex &v1,
 					 const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale);
 
 	bool parseBinary(io::SeekableReadStream &stream, MeshTriCollection &tris);
@@ -46,7 +46,7 @@ private:
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 
 public:
-	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes,
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
 					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords) override;
 

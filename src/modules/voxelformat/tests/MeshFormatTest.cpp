@@ -104,7 +104,7 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 TEST_F(MeshFormatTest, testVoxelizeColor) {
 	class TestMesh : public MeshFormat {
 	public:
-		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &,
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
 						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}

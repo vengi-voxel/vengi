@@ -35,7 +35,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
+bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const ChunkMeshes &meshes,
 						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -74,7 +74,7 @@ bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 	return true;
 }
 
-bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 								 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 								 const scenegraph::SceneGraph &sceneGraph) {
 	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
@@ -172,11 +172,11 @@ void FBXFormat::writeTransformToProperties(io::SeekableWriteStream &stream,
 }
 
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
-bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+bool FBXFormat::saveMeshesAscii(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 								const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 								const scenegraph::SceneGraph &sceneGraph) {
 	int meshCount = 0;
-	for (const MeshExt &meshExt : meshes) {
+	for (const ChunkMeshExt &meshExt : meshes) {
 		for (int i = 0; i < 2; ++i) {
 			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
 			if (mesh->isEmpty()) {
@@ -224,7 +224,7 @@ Objects: {
 	uint32_t objectIndex = 0;
 	core::DynamicArray<core::String> connections;
 
-	for (const MeshExt &meshExt : meshes) {
+	for (const ChunkMeshExt &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
 			if (mesh->isEmpty()) {

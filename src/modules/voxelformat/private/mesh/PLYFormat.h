@@ -86,20 +86,16 @@ protected:
 	bool parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header) const;
 
-	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
-						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-						 MeshTriCollection &tris) const;
-	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
-						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-						MeshTriCollection &tris) const;
+	bool parseMeshBinary(io::SeekableReadStream &stream, const Header &header, Mesh &mesh) const;
+	bool parseMeshAscii(io::SeekableReadStream &stream, const Header &header, Mesh &mesh) const;
 	bool parseMesh(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   const LoadContext &ctx, const Header &header);
+				   const Header &header);
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 
 public:
-	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes,
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
 					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords) override;
 

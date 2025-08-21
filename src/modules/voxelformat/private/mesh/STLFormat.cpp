@@ -150,7 +150,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 #undef wrap
 
-bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1,
+bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt &meshExt, const voxel::VoxelVertex &v1,
 							const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {
 	glm::vec3 pos;
 	if (meshExt.applyTransform) {
@@ -171,7 +171,7 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &mesh
 	return true;
 }
 
-bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
+bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const ChunkMeshes &meshes,
 						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));

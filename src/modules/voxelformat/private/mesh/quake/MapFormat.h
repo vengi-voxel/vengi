@@ -28,7 +28,7 @@ protected:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-					const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 					bool withTexCoords = true) override {
 		return false;

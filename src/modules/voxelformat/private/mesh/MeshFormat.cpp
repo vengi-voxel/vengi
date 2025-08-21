@@ -47,13 +47,13 @@ MeshFormat::MeshFormat() {
 	_weightedAverage = core::Var::getSafe(cfg::VoxformatRGBWeightedAverage)->boolVal();
 }
 
-MeshFormat::MeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sceneGraph, MeshFormat::Meshes &meshes,
+MeshFormat::ChunkMeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sceneGraph, MeshFormat::ChunkMeshes &meshes,
 										   int nodeId) {
 	if (!sceneGraph.hasNode(nodeId)) {
 		return nullptr;
 	}
 	const int parent = sceneGraph.node(nodeId).parent();
-	for (MeshExt &me : meshes) {
+	for (ChunkMeshExt &me : meshes) {
 		if (me.nodeId == parent) {
 			return &me;
 		}
@@ -524,12 +524,12 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	}
 }
 
-MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGraphNode &node, bool _applyTransform)
+MeshFormat::ChunkMeshExt::ChunkMeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGraphNode &node, bool _applyTransform)
 	: mesh(_mesh), name(node.name()), applyTransform(_applyTransform), size(node.region().getDimensionsInVoxels()),
 	  pivot(node.pivot()), nodeId(node.id()) {
 }
 
-void MeshFormat::MeshExt::visitByMaterial(
+void MeshFormat::ChunkMeshExt::visitByMaterial(
 	int materialIndex,
 	const std::function<void(const voxel::Mesh &, voxel::IndexType, voxel::IndexType, voxel::IndexType)> &callback)
 	const {
@@ -635,22 +635,31 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 	}
 }
 
-void MeshFormat::convertToScaledTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
-							  voxel::IndexArray &indices) const {
-	const glm::vec3 scale = getInputScale();
-	const size_t maxIndices = simplify(indices, vertices);
-	tris.reserve(tris.size() + indices.size());
+void MeshFormat::Mesh::clearAfterTriangulation() {
+	indices.release();
+	vertices.release();
+	polygons.release();
+}
+
+bool MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const {
+	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
+	const glm::vec3 &scale = getInputScale();
+	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
+	MeshTriCollection tris;
+	tris.reserve(maxIndices);
 	for (size_t i = 0; i < maxIndices; i += 3) {
 		voxelformat::MeshTri meshTri;
-		const MeshVertex &vertex0 = vertices[indices[i + 0]];
-		const MeshVertex &vertex1 = vertices[indices[i + 1]];
-		const MeshVertex &vertex2 = vertices[indices[i + 2]];
+		const MeshVertex &vertex0 = mesh.vertices[mesh.indices[i + 0]];
+		const MeshVertex &vertex1 = mesh.vertices[mesh.indices[i + 1]];
+		const MeshVertex &vertex2 = mesh.vertices[mesh.indices[i + 2]];
 		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
 		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
 		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
 		meshTri.scaleVertices(scale);
 		tris.emplace_back(core::move(meshTri));
 	}
+	mesh.clearAfterTriangulation();
+	return voxelizeNode(name, sceneGraph, core::move(tris), mesh.materials);
 }
 
 int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
@@ -752,7 +761,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const voxel::SurfaceExtractionType type =
 		(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 
-	Meshes meshes;
+	ChunkMeshes meshes;
 	meshes.resize(sceneGraph.nodes().size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
@@ -785,10 +794,10 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				mesh->optimize();
 			}
 
-			meshes[i] = core::move(MeshExt(mesh, node, applyTransform));
+			meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));
 		}
 	});
-	Meshes nonEmptyMeshes;
+	ChunkMeshes nonEmptyMeshes;
 	nonEmptyMeshes.reserve(meshes.size());
 
 	core::Map<int, int> meshIdxNodeMap;
@@ -809,7 +818,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, archive, {1.0f, 1.0f, 1.0f},
 						   type == voxel::SurfaceExtractionType::Cubic ? quads : false, withColor, withTexCoords);
 	}
-	for (MeshExt &meshext : meshes) {
+	for (ChunkMeshExt &meshext : meshes) {
 		delete meshext.mesh;
 	}
 	return state;
