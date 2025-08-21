@@ -280,11 +280,11 @@ bool PLYFormat::parseHeader(io::SeekableReadStream &stream, Header &header) {
 }
 
 bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream,
-								core::Buffer<PLYFace> &faces, core::DynamicArray<PLYPolygon> &polygons) const {
+								voxel::IndexArray &indices, core::DynamicArray<PLYPolygon> &polygons) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
-	faces.reserve(element.count);
+	indices.reserve(element.count * 6);
 	for (int idx = 0; idx < element.count; ++idx) {
 		core::String line;
 		wrapBool(stream.readLine(line))
@@ -294,30 +294,24 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 			Log::error("Invalid ply face: %s", line.c_str());
 			return false;
 		}
-		const int indices = core::string::toInt(tokens[0]);
-		if (indices == 3) {
-			PLYFace face;
-			face.indices[0] = core::string::toInt(tokens[1]);
-			face.indices[1] = core::string::toInt(tokens[2]);
-			face.indices[2] = core::string::toInt(tokens[3]);
-			faces.push_back(face);
-		} else if (indices == 4) {
+		const int indexCnt = core::string::toInt(tokens[0]);
+		if (indexCnt == 3) {
+			indices.push_back(core::string::toInt(tokens[1]));
+			indices.push_back(core::string::toInt(tokens[2]));
+			indices.push_back(core::string::toInt(tokens[3]));
+		} else if (indexCnt == 4) {
 			// triangle fan
-			PLYFace face1;
-			face1.indices[0] = core::string::toInt(tokens[1]);
-			face1.indices[1] = core::string::toInt(tokens[2]);
-			face1.indices[2] = core::string::toInt(tokens[3]);
-			faces.push_back(face1);
+			indices.push_back(core::string::toInt(tokens[1]));
+			indices.push_back(core::string::toInt(tokens[2]));
+			indices.push_back(core::string::toInt(tokens[3]));
 
-			PLYFace face2;
-			face2.indices[0] = core::string::toInt(tokens[1]);
-			face2.indices[1] = core::string::toInt(tokens[3]);
-			face2.indices[2] = core::string::toInt(tokens[4]);
-			faces.push_back(face2);
+			indices.push_back(core::string::toInt(tokens[1]));
+			indices.push_back(core::string::toInt(tokens[3]));
+			indices.push_back(core::string::toInt(tokens[4]));
 		} else {
 			PLYPolygon polygon;
-			polygon.indices.reserve(indices);
-			for (int64_t i = 0; i < indices; ++i) {
+			polygon.indices.reserve(indexCnt);
+			for (int64_t i = 0; i < indexCnt; ++i) {
 				const int polygonIdx = core::string::toInt(tokens[i + 1]);
 				polygon.indices.push_back(polygonIdx);
 			}
@@ -328,7 +322,7 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 }
 
 bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
-								   core::Buffer<MeshVertex> &vertices) const {
+								   core::DynamicArray<MeshVertex> &vertices) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -395,7 +389,7 @@ bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStrea
 
 bool PLYFormat::parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
 									  scenegraph::SceneGraph &sceneGraph, const Header &header,
-									  core::Buffer<MeshVertex> &vertices) const {
+									  core::DynamicArray<MeshVertex> &vertices) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
@@ -413,7 +407,7 @@ bool PLYFormat::parsePointCloudBinary(const core::String &filename, io::Seekable
 
 bool PLYFormat::parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 									 scenegraph::SceneGraph &sceneGraph, const Header &header,
-									 core::Buffer<MeshVertex> &vertices) const {
+									 core::DynamicArray<MeshVertex> &vertices) const {
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name != "vertex") {
@@ -433,7 +427,7 @@ bool PLYFormat::parsePointCloudAscii(const core::String &filename, io::SeekableR
 bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 								const Header &header) const {
-	core::Buffer<MeshVertex> vertices;
+	core::DynamicArray<MeshVertex> vertices;
 	if (header.format == PlyFormatType::Ascii) {
 		if (!parsePointCloudAscii(filename, stream, sceneGraph, header, vertices)) {
 			return false;
@@ -452,15 +446,15 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	return voxelizePointCloud(filename, sceneGraph, core::move(pointCloud)) != InvalidNodeId;
 }
 
-void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<MeshVertex> &vertices,
-							  core::Buffer<PLYFace> &faces) const {
-	tris.reserve(tris.size() + faces.size());
-	for (int i = 0; i < (int)faces.size(); ++i) {
-		const PLYFace &face = faces[i];
+void PLYFormat::convertToTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
+							  voxel::IndexArray &indices) const {
+	const size_t maxIndices = simplify(indices, vertices);
+	tris.reserve(tris.size() + indices.size());
+	for (size_t i = 0; i < maxIndices; i += 3) {
 		voxelformat::MeshTri meshTri;
-		const MeshVertex &vertex0 = vertices[face.indices[0]];
-		const MeshVertex &vertex1 = vertices[face.indices[1]];
-		const MeshVertex &vertex2 = vertices[face.indices[2]];
+		const MeshVertex &vertex0 = vertices[indices[i + 0]];
+		const MeshVertex &vertex1 = vertices[indices[i + 1]];
+		const MeshVertex &vertex2 = vertices[indices[i + 2]];
 		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
 		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
 		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
@@ -473,8 +467,8 @@ void PLYFormat::convertToTris(MeshTriCollection &tris, core::Buffer<MeshVertex> 
  * @param[in] polygons The indices of the polygon
  */
 void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-									const core::Buffer<MeshVertex> &vertices,
-									core::Buffer<PLYFace> &faces) const {
+									const core::DynamicArray<MeshVertex> &vertices,
+									voxel::IndexArray &indices) const {
 	if (polygons.empty()) {
 		Log::debug("No polygons to triangulate");
 		return;
@@ -525,26 +519,28 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 
 		polygon.push_back(polyline);
 
-		std::vector<voxel::IndexType> indices = mapbox::earcut<voxel::IndexType>(polygon);
-		core_assert((int)indices.size() % 3 == 0);
+		std::vector<voxel::IndexType> indicesEarCut = mapbox::earcut<voxel::IndexType>(polygon);
+		core_assert((int)indicesEarCut.size() % 3 == 0);
 		Log::debug("triangulated %i tris", (int)indices.size() / 3);
 
-		for (size_t k = 0; k < indices.size() / 3; k++) {
-			const int idx0 = indices[3 * k + 0];
-			const int idx1 = indices[3 * k + 1];
-			const int idx2 = indices[3 * k + 2];
+		for (size_t k = 0; k < indicesEarCut.size() / 3; k++) {
+			const int idx0 = indicesEarCut[3 * k + 0];
+			const int idx1 = indicesEarCut[3 * k + 1];
+			const int idx2 = indicesEarCut[3 * k + 2];
 
-			faces.push_back(PLYFace{idx0, idx1, idx2});
+			indices.push_back(idx0);
+			indices.push_back(idx1);
+			indices.push_back(idx2);
 		}
 	}
 }
 
 bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
-								 core::Buffer<PLYFace> &faces, core::DynamicArray<PLYPolygon> &polygons,
+								 voxel::IndexArray &indices, core::DynamicArray<PLYPolygon> &polygons,
 								 const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	Log::debug("loading %i faces", element.count);
-	faces.reserve(element.count);
+	indices.reserve(element.count * 6);
 	for (int i = 0; i < element.count; ++i) {
 		for (size_t j = 0; j < element.properties.size(); ++j) {
 			const Property &prop = element.properties[j];
@@ -552,30 +548,27 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 				Log::error("Invalid ply face property: %s", prop.name.c_str());
 				return false;
 			}
-			const int64_t indices = read<int64_t>(es, prop.countType);
-			if (indices == 3) {
-				PLYFace face;
-				face.indices[0] = read<int>(es, prop.type);
-				face.indices[1] = read<int>(es, prop.type);
-				face.indices[2] = read<int>(es, prop.type);
-				faces.push_back(face);
-			} else if (indices == 4) {
+			const int64_t indexCnt = read<int64_t>(es, prop.countType);
+			if (indexCnt == 3) {
+				indices.push_back(read<int>(es, prop.type));
+				indices.push_back(read<int>(es, prop.type));
+				indices.push_back(read<int>(es, prop.type));
+			} else if (indexCnt == 4) {
 				// triangle fan
-				PLYFace face1;
-				face1.indices[0] = read<int>(es, prop.type);
-				face1.indices[1] = read<int>(es, prop.type);
-				face1.indices[2] = read<int>(es, prop.type);
-				faces.push_back(face1);
+				const int idx0 = read<int>(es, prop.type);
+				const int idx1 = read<int>(es, prop.type);
+				const int idx2 = read<int>(es, prop.type);
+				indices.push_back(idx0);
+				indices.push_back(idx1);
+				indices.push_back(idx2);
 
-				PLYFace face2;
-				face2.indices[0] = face1.indices[0];
-				face2.indices[1] = face1.indices[2];
-				face2.indices[2] = read<int>(es, prop.type);
-				faces.push_back(face2);
+				indices.push_back(idx0);
+				indices.push_back(idx2);
+				indices.push_back(read<int>(es, prop.type));
 			} else {
 				PLYPolygon polygon;
-				polygon.indices.reserve(indices);
-				for (int64_t k = 0; k < indices; ++k) {
+				polygon.indices.reserve(indexCnt);
+				for (int64_t k = 0; k < indexCnt; ++k) {
 					const int idx = read<int>(es, prop.type);
 					polygon.indices.push_back(idx);
 				}
@@ -587,7 +580,7 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 }
 
 bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
-									core::Buffer<MeshVertex> &vertices, const Header &header) const {
+									core::DynamicArray<MeshVertex> &vertices, const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	vertices.reserve(element.count);
 	Log::debug("loading %i vertices", element.count);
@@ -658,8 +651,8 @@ bool PLYFormat::skipElementBinary(const Element &element, io::SeekableReadStream
 bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 								MeshTriCollection &tris) const {
-	core::Buffer<MeshVertex> vertices;
-	core::Buffer<PLYFace> faces;
+	core::DynamicArray<MeshVertex> vertices;
+	voxel::IndexArray indices;
 	core::DynamicArray<PLYPolygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
@@ -668,7 +661,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 				return false;
 			}
 		} else if (element.name == "face") {
-			if (!parseFacesBinary(element, stream, faces, polygons, header)) {
+			if (!parseFacesBinary(element, stream, indices, polygons, header)) {
 				return false;
 			}
 		} else {
@@ -680,8 +673,8 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 		}
 	}
 
-	triangulatePolygons(polygons, vertices, faces);
-	convertToTris(tris, vertices, faces);
+	triangulatePolygons(polygons, vertices, indices);
+	convertToTris(tris, vertices, indices);
 
 	return true;
 }
@@ -689,8 +682,8 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 							   MeshTriCollection &tris) const {
-	core::Buffer<MeshVertex> vertices;
-	core::Buffer<PLYFace> faces;
+	core::DynamicArray<MeshVertex> vertices;
+	voxel::IndexArray indices;
 	core::DynamicArray<PLYPolygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
@@ -699,7 +692,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 				return false;
 			}
 		} else if (element.name == "face") {
-			if (!parseFacesAscii(element, stream, faces, polygons)) {
+			if (!parseFacesAscii(element, stream, indices, polygons)) {
 				return false;
 			}
 		} else {
@@ -711,8 +704,8 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 		}
 	}
 
-	triangulatePolygons(polygons, vertices, faces);
-	convertToTris(tris, vertices, faces);
+	triangulatePolygons(polygons, vertices, indices);
+	convertToTris(tris, vertices, indices);
 
 	return true;
 }
