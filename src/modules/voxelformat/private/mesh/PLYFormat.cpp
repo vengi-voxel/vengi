@@ -18,8 +18,6 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include "voxelformat/external/earcut.hpp"
-#include <array>
 
 namespace voxelformat {
 
@@ -280,7 +278,7 @@ bool PLYFormat::parseHeader(io::SeekableReadStream &stream, Header &header) {
 }
 
 bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream,
-								voxel::IndexArray &indices, core::DynamicArray<PLYPolygon> &polygons) const {
+								voxel::IndexArray &indices, core::DynamicArray<voxel::IndexArray> &polygons) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -309,13 +307,13 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 			indices.push_back(core::string::toInt(tokens[3]));
 			indices.push_back(core::string::toInt(tokens[4]));
 		} else {
-			PLYPolygon polygon;
-			polygon.indices.reserve(indexCnt);
+			voxel::IndexArray polygon;
+			polygon.reserve(indexCnt);
 			for (int64_t i = 0; i < indexCnt; ++i) {
 				const int polygonIdx = core::string::toInt(tokens[i + 1]);
-				polygon.indices.push_back(polygonIdx);
+				polygon.push_back(polygonIdx);
 			}
-			polygons.push_back(polygon);
+			polygons.emplace_back(core::move(polygon));
 		}
 	}
 	return true;
@@ -446,97 +444,8 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	return voxelizePointCloud(filename, sceneGraph, core::move(pointCloud)) != InvalidNodeId;
 }
 
-void PLYFormat::convertToTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
-							  voxel::IndexArray &indices) const {
-	const size_t maxIndices = simplify(indices, vertices);
-	tris.reserve(tris.size() + indices.size());
-	for (size_t i = 0; i < maxIndices; i += 3) {
-		voxelformat::MeshTri meshTri;
-		const MeshVertex &vertex0 = vertices[indices[i + 0]];
-		const MeshVertex &vertex1 = vertices[indices[i + 1]];
-		const MeshVertex &vertex2 = vertices[indices[i + 2]];
-		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
-		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
-		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
-		tris.emplace_back(meshTri);
-	}
-}
-
-/**
- * @param[out] faces The triangulated faces
- * @param[in] polygons The indices of the polygon
- */
-void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-									const core::DynamicArray<MeshVertex> &vertices,
-									voxel::IndexArray &indices) const {
-	if (polygons.empty()) {
-		Log::debug("No polygons to triangulate");
-		return;
-	}
-
-	Log::debug("triangulate %i polygons", (int)polygons.size());
-
-	// this code was taken from tinyobjloader
-	for (const PLYPolygon &p : polygons) {
-		const size_t nPolygons = p.indices.size();
-		glm::vec3 norm(0.0f);
-		for (size_t k = 0; k < nPolygons; ++k) {
-			const int i0 = p.indices[k % nPolygons];
-			const int i0_2 = p.indices[(k + 1) % nPolygons];
-			const glm::vec3 &point1 = vertices[i0].pos;
-			const glm::vec3 &point2 = vertices[i0_2].pos;
-			const glm::vec3 a(point1 - point2);
-			const glm::vec3 b(point1 + point2);
-			norm += glm::dot(a, b);
-		}
-		const float len = glm::length(norm);
-		if (len <= 0.0f) {
-			continue;
-		}
-		const float invLength = -1.0f / len;
-		norm *= invLength;
-
-		const glm::vec3 &axis_w = norm;
-		glm::vec3 a;
-		if (glm::abs(axis_w.x) > 0.9999999f) {
-			a = glm::vec3(0.0f, 1.0f, 0.0f);
-		} else {
-			a = glm::vec3(1.0f, 0.0f, 0.0f);
-		}
-		const glm::vec3 axis_v = glm::normalize(glm::cross(axis_w, a));
-		const glm::vec3 axis_u = glm::cross(axis_w, axis_v);
-		// TODO: VOXELFORMAT: reduce code duplication with Polygon class
-		using Point = std::array<float, 2>;
-		using Points = std::vector<Point>;
-		Points polyline;
-		std::vector<Points> polygon;
-
-		for (size_t k = 0; k < nPolygons; k++) {
-			const glm::vec3 &polypoint = vertices[p.indices[k]].pos;
-			const glm::vec3 loc(glm::dot(polypoint, axis_u), glm::dot(polypoint, axis_v), glm::dot(polypoint, axis_w));
-			polyline.push_back({loc.x, loc.y});
-		}
-
-		polygon.push_back(polyline);
-
-		std::vector<voxel::IndexType> indicesEarCut = mapbox::earcut<voxel::IndexType>(polygon);
-		core_assert((int)indicesEarCut.size() % 3 == 0);
-		Log::debug("triangulated %i tris", (int)indices.size() / 3);
-
-		for (size_t k = 0; k < indicesEarCut.size() / 3; k++) {
-			const int idx0 = indicesEarCut[3 * k + 0];
-			const int idx1 = indicesEarCut[3 * k + 1];
-			const int idx2 = indicesEarCut[3 * k + 2];
-
-			indices.push_back(idx0);
-			indices.push_back(idx1);
-			indices.push_back(idx2);
-		}
-	}
-}
-
 bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
-								 voxel::IndexArray &indices, core::DynamicArray<PLYPolygon> &polygons,
+								 voxel::IndexArray &indices, core::DynamicArray<voxel::IndexArray> &polygons,
 								 const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	Log::debug("loading %i faces", element.count);
@@ -566,13 +475,13 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 				indices.push_back(idx2);
 				indices.push_back(read<int>(es, prop.type));
 			} else {
-				PLYPolygon polygon;
-				polygon.indices.reserve(indexCnt);
+				voxel::IndexArray polygon;
+				polygon.reserve(indexCnt);
 				for (int64_t k = 0; k < indexCnt; ++k) {
 					const int idx = read<int>(es, prop.type);
-					polygon.indices.push_back(idx);
+					polygon.push_back(idx);
 				}
-				polygons.push_back(polygon);
+				polygons.emplace_back(core::move(polygon));
 			}
 		}
 	}
@@ -653,7 +562,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 								MeshTriCollection &tris) const {
 	core::DynamicArray<MeshVertex> vertices;
 	voxel::IndexArray indices;
-	core::DynamicArray<PLYPolygon> polygons;
+	core::DynamicArray<voxel::IndexArray> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
@@ -684,7 +593,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 							   MeshTriCollection &tris) const {
 	core::DynamicArray<MeshVertex> vertices;
 	voxel::IndexArray indices;
-	core::DynamicArray<PLYPolygon> polygons;
+	core::DynamicArray<voxel::IndexArray> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {

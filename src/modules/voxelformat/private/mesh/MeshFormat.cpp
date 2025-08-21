@@ -31,9 +31,12 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/VoxelUtil.h"
+#include "voxelformat/external/earcut.hpp"
+#include <array>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -557,6 +560,95 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 	const bool retVal = voxelizeGroups(filename, archive, sceneGraph, ctx);
 	sceneGraph.updateTransforms();
 	return retVal;
+}
+
+/**
+ * @param[out] faces The triangulated faces
+ * @param[in] polygons The indices of the polygon
+ */
+void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
+									const core::DynamicArray<MeshVertex> &vertices,
+									voxel::IndexArray &indices) const {
+	if (polygons.empty()) {
+		Log::debug("No polygons to triangulate");
+		return;
+	}
+
+	Log::debug("triangulate %i polygons", (int)polygons.size());
+
+	// this code was taken from tinyobjloader
+	for (const voxel::IndexArray &p : polygons) {
+		const size_t nPolygons = p.size();
+		glm::vec3 norm(0.0f);
+		for (size_t k = 0; k < nPolygons; ++k) {
+			const int i0 = p[k % nPolygons];
+			const int i0_2 = p[(k + 1) % nPolygons];
+			const glm::vec3 &point1 = vertices[i0].pos;
+			const glm::vec3 &point2 = vertices[i0_2].pos;
+			const glm::vec3 a(point1 - point2);
+			const glm::vec3 b(point1 + point2);
+			norm += glm::dot(a, b);
+		}
+		const float len = glm::length(norm);
+		if (len <= 0.0f) {
+			continue;
+		}
+		const float invLength = -1.0f / len;
+		norm *= invLength;
+
+		const glm::vec3 &axis_w = norm;
+		glm::vec3 a;
+		if (glm::abs(axis_w.x) > 0.9999999f) {
+			a = glm::vec3(0.0f, 1.0f, 0.0f);
+		} else {
+			a = glm::vec3(1.0f, 0.0f, 0.0f);
+		}
+		const glm::vec3 axis_v = glm::normalize(glm::cross(axis_w, a));
+		const glm::vec3 axis_u = glm::cross(axis_w, axis_v);
+		// TODO: VOXELFORMAT: reduce code duplication with Polygon class
+		using Point = std::array<float, 2>;
+		using Points = std::vector<Point>;
+		Points polyline;
+		std::vector<Points> polygon;
+
+		for (size_t k = 0; k < nPolygons; k++) {
+			const glm::vec3 &polypoint = vertices[p[k]].pos;
+			const glm::vec3 loc(glm::dot(polypoint, axis_u), glm::dot(polypoint, axis_v), glm::dot(polypoint, axis_w));
+			polyline.push_back({loc.x, loc.y});
+		}
+
+		polygon.push_back(polyline);
+
+		std::vector<voxel::IndexType> indicesEarCut = mapbox::earcut<voxel::IndexType>(polygon);
+		core_assert((int)indicesEarCut.size() % 3 == 0);
+		Log::debug("triangulated %i tris", (int)indices.size() / 3);
+
+		for (size_t k = 0; k < indicesEarCut.size() / 3; k++) {
+			const int idx0 = indicesEarCut[3 * k + 0];
+			const int idx1 = indicesEarCut[3 * k + 1];
+			const int idx2 = indicesEarCut[3 * k + 2];
+
+			indices.push_back(idx0);
+			indices.push_back(idx1);
+			indices.push_back(idx2);
+		}
+	}
+}
+
+void MeshFormat::convertToTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
+							  voxel::IndexArray &indices) const {
+	const size_t maxIndices = simplify(indices, vertices);
+	tris.reserve(tris.size() + indices.size());
+	for (size_t i = 0; i < maxIndices; i += 3) {
+		voxelformat::MeshTri meshTri;
+		const MeshVertex &vertex0 = vertices[indices[i + 0]];
+		const MeshVertex &vertex1 = vertices[indices[i + 1]];
+		const MeshVertex &vertex2 = vertices[indices[i + 2]];
+		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
+		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
+		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
+		tris.emplace_back(meshTri);
+	}
 }
 
 int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,

@@ -61,9 +61,6 @@ public:
 		core::String version = "1.0";
 		core::String comment;
 	};
-	struct PLYPolygon {
-		voxel::IndexArray indices;
-	};
 
 protected:
 	static bool skipElementBinary(const Element &element, io::SeekableReadStream &stream, const Header &header);
@@ -72,13 +69,11 @@ protected:
 	static PropertyUse use(const core::String &in);
 	static bool parseHeader(io::SeekableReadStream &stream, Header &header);
 	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, voxel::IndexArray &indices,
-						 core::DynamicArray<PLYPolygon> &polygons) const;
+						 core::DynamicArray<voxel::IndexArray> &polygons) const;
 	bool parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
 							core::DynamicArray<MeshVertex> &vertices) const;
-	void triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
-							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
 	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, voxel::IndexArray &indices,
-						  core::DynamicArray<PLYPolygon> &polygons, const Header &header) const;
+						  core::DynamicArray<voxel::IndexArray> &polygons, const Header &header) const;
 	bool parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
 							 core::DynamicArray<MeshVertex> &vertices, const Header &header) const;
 
@@ -94,8 +89,6 @@ protected:
 	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						 MeshTriCollection &tris) const;
-	void convertToTris(MeshTriCollection &tris, const core::DynamicArray<MeshVertex> &vertices,
-					   voxel::IndexArray &indices) const;
 	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						MeshTriCollection &tris) const;
