@@ -112,15 +112,16 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return {u, v};
 }
 
-void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
 							 MeshMaterialIndex materialIdx) const {
 	if (rgba.a <= AlphaThreshold) {
 		return;
 	}
 	core::ScopedLock lock(_mutex);
-	auto iter = posMap.find(pos);
+	const int idx = region.index(pos);
+	auto iter = posMap.find(idx);
 	if (iter == posMap.end()) {
-		posMap.emplace(pos, {area, rgba, normalIdx, materialIdx});
+		posMap.emplace(idx, {area, rgba, normalIdx, materialIdx});
 	} else {
 		PosSampling &posSampling = iter->value;
 		posSampling.add(area, rgba, normalIdx, materialIdx);
@@ -132,7 +133,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 							   const palette::NormalPalette &normalPalette) const {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
 	palette::NormalPaletteLookup normalLookup(normalPalette);
-	auto fn = [&tris, &normalLookup, &posMap, &meshMaterialArray, this](int start, int end) {
+	auto fn = [&tris, &region, &normalLookup, &posMap, &meshMaterialArray, this](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			if (stopExecution()) {
 				return;
@@ -153,7 +154,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			}
 
 			const glm::ivec3 p(c);
-			addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.materialIdx);
+			addToPosMap(posMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
 		}
 	};
 	app::for_parallel(0, tris.size(), fn);
@@ -201,7 +202,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 							continue;
 						}
 						const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
-						addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.materialIdx);
+						addToPosMap(posMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
 					}
 				}
 			}
@@ -485,7 +486,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	Log::debug("create voxels for %i positions", (int)posMap.size());
 	voxel::RawVolume *volume = node.volume();
 	palette::PaletteLookup palLookup(palette);
-	auto fn = [&palette, volume, &palLookup, this](const glm::ivec3 &pos, const PosSampling &posSampling) {
+	auto fn = [&palette, volume, &palLookup, this](int idx, const PosSampling &posSampling) {
 		if (stopExecution()) {
 			return;
 		}
@@ -499,7 +500,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			colorIndex = palLookup.findClosestIndex(rgba);
 		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette, colorIndex, posSampling.getNormal());
-		volume->setVoxel(pos, voxel);
+		volume->setVoxel(idx, voxel);
 	};
 	posMap.for_parallel(fn);
 	if (palette.colorCount() == 1) {

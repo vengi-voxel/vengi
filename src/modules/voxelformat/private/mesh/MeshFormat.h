@@ -24,7 +24,7 @@ struct PointCloudVertex {
 };
 using PointCloud = core::Buffer<PointCloudVertex, 4096>;
 using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
-using PosMap = core::ParallelMap<glm::ivec3, PosSampling, 3541, glm::hash<glm::ivec3>>;
+using PosMap = core::ParallelMap<int, PosSampling, 3541>;
 
 /**
  * @brief Convert the volume data into a mesh
@@ -146,7 +146,7 @@ protected:
 	/**
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
-	void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+	void addToPosMap(PosMap &posMap, const voxel::Region &region, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
 					 MeshMaterialIndex material) const;
 
 	/**
