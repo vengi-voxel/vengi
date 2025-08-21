@@ -18,9 +18,8 @@ namespace priv {
 static constexpr const size_t BinaryHeaderSize = 80;
 }
 
-bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tris) {
+bool STLFormat::parseAscii(io::SeekableReadStream &stream, Mesh &mesh) {
 	char line[512];
-	const glm::vec3 &scale = getInputScale();
 	stream.seek(0);
 	while (stream.readLine(sizeof(line), line)) {
 		if (!strncmp(line, "solid", 5)) {
@@ -33,10 +32,9 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tr
 					break;
 				}
 				if (!strncmp(ptr, "facet normal ", 13)) {
-					voxelformat::MeshTri meshTri;
-					glm::vec3 norm;
+					glm::vec3 faceNormal;
 					ptr += 13;
-					core::string::parseReal3(&norm.x, &norm.y, &norm.z, &ptr);
+					core::string::parseReal3(&faceNormal.x, &faceNormal.y, &faceNormal.z, &ptr);
 					if (!stream.readLine(sizeof(line), line)) {
 						return false;
 					}
@@ -45,7 +43,6 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tr
 						++ptr;
 					}
 					if (!strncmp(ptr, "outer loop", 10)) {
-						glm::vec3 verts[3];
 						int vi = 0;
 						while (stream.readLine(sizeof(line), line)) {
 							ptr = line;
@@ -58,17 +55,17 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tr
 							if (vi >= 3) {
 								return false;
 							}
-							glm::vec3 &vert = verts[vi];
-							vert.x = vert.y = vert.z = 0.0f;
+							MeshVertex vert;
 							ptr += 7; // "vertex "
-							core::string::parseReal3(&vert.x, &vert.y, &vert.z, &ptr);
+							core::string::parseReal3(&vert.pos.x, &vert.pos.y, &vert.pos.z, &ptr);
+							// vert.normal = faceNormal;
 							++vi;
+							mesh.indices.push_back(mesh.vertices.size());
+							mesh.vertices.emplace_back(core::move(vert));
 						}
 						if (vi != 3) {
 							return false;
 						}
-						meshTri.setVertices(verts[0] * scale, verts[1] * scale, verts[2] * scale);
-						tris.push_back(meshTri);
 					}
 				}
 			}
@@ -83,8 +80,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tr
 		return false;                                                                                                  \
 	}
 
-bool STLFormat::parseBinary(io::SeekableReadStream &stream, MeshTriCollection &tris) {
-	const glm::vec3 &scale = getInputScale();
+bool STLFormat::parseBinary(io::SeekableReadStream &stream, Mesh &mesh) {
 	if (stream.seek(priv::BinaryHeaderSize) == -1) {
 		Log::error("Failed to seek after the binary stl header");
 		return false;
@@ -96,24 +92,26 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, MeshTriCollection &t
 		Log::error("No faces in stl file");
 		return false;
 	}
-	tris.resize(numFaces);
+	mesh.indices.reserve(3 * numFaces);
+	mesh.vertices.reserve(3 * numFaces);
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
-		voxelformat::MeshTri &meshTri = tris[fn];
-		glm::vec3 normal;
-		glm::vec3 vertices[3];
-		wrap(stream.readFloat(normal.x))
-		wrap(stream.readFloat(normal.y))
-		wrap(stream.readFloat(normal.z))
+		glm::vec3 faceNormal;
+		wrap(stream.readFloat(faceNormal.x))
+		wrap(stream.readFloat(faceNormal.y))
+		wrap(stream.readFloat(faceNormal.z))
 		for (int i = 0; i < 3; ++i) {
-			wrap(stream.readFloat(vertices[i].x))
-			wrap(stream.readFloat(vertices[i].y))
-			wrap(stream.readFloat(vertices[i].z))
+			MeshVertex vert;
+			wrap(stream.readFloat(vert.pos.x))
+			wrap(stream.readFloat(vert.pos.y))
+			wrap(stream.readFloat(vert.pos.z))
+			// vert.normal = faceNormal;
+			mesh.indices.push_back(mesh.vertices.size());
+			mesh.vertices.emplace_back(core::move(vert));
 		}
 		if (stream.skip(2) == -1) {
 			Log::error("Failed to seek while parsing the frames");
 			return false;
 		}
-		meshTri.setVertices(vertices[0] * scale, vertices[1] * scale, vertices[2] * scale);
 	}
 
 	return true;
@@ -130,22 +128,21 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	wrap(stream->readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
 
-	MeshTriCollection tris;
+	Mesh mesh;
 	if (ascii) {
 		Log::debug("found ascii format");
-		if (!parseAscii(*stream, tris)) {
+		if (!parseAscii(*stream, mesh)) {
 			Log::error("Failed to parse ascii stl file %s", filename.c_str());
 			return false;
 		}
 	} else {
 		Log::debug("found binary format");
-		if (!parseBinary(*stream, tris)) {
+		if (!parseBinary(*stream, mesh)) {
 			Log::error("Failed to parse binary stl file %s", filename.c_str());
 			return false;
 		}
 	}
-
-	return voxelizeNode(filename, sceneGraph, core::move(tris), {}) > 0;
+	return voxelizeMesh(filename, sceneGraph, core::move(mesh));
 }
 
 #undef wrap

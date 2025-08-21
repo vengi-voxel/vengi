@@ -122,7 +122,7 @@ protected:
 							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
-	bool voxelizeMesh(const core::String &filename, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const;
+	bool voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index

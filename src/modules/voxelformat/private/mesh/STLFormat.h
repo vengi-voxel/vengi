@@ -39,8 +39,8 @@ private:
 	bool writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt &meshExt, const voxel::VoxelVertex &v1,
 					 const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale);
 
-	bool parseBinary(io::SeekableReadStream &stream, MeshTriCollection &tris);
-	bool parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tris);
+	bool parseBinary(io::SeekableReadStream &stream, Mesh &mesh);
+	bool parseAscii(io::SeekableReadStream &stream, Mesh &mesh);
 
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;

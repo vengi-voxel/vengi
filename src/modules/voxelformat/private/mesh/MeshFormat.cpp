@@ -170,10 +170,10 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 	palette::NormalPaletteLookup normalLookup(normalPalette);
 	auto fn = [&tris, &normalLookup, region, &posMap, &meshMaterialArray, this](int start, int end) {
 		for (int i = start; i < end; ++i) {
-			const voxelformat::MeshTri &meshTri = tris[i];
 			if (stopExecution()) {
 				break;
 			}
+			const voxelformat::MeshTri &meshTri = tris[i];
 			const glm::vec2 &uv = meshTri.centerUV();
 			const core::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
 			if (rgba.a <= AlphaThreshold) {
@@ -503,7 +503,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			colorIndex = palLookup.findClosestIndex(rgba);
 		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette, colorIndex, posSampling.getNormal());
-		volume->setVoxel(idx, voxel);
+		core_assert_always(volume->setVoxel(idx, voxel));
 	};
 	posMap.for_parallel(fn);
 	if (palette.colorCount() == 1) {
@@ -653,7 +653,10 @@ bool MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &
 		const MeshVertex &vertex1 = mesh.vertices[mesh.indices[i + 1]];
 		const MeshVertex &vertex2 = mesh.vertices[mesh.indices[i + 2]];
 		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
-		meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
+		// not all formats provide a color value
+		if (vertex0.color.a > 0 && vertex1.color.a > 0 && vertex2.color.a > 0) {
+			meshTri.setColor(vertex0.color, vertex1.color, vertex2.color);
+		}
 		meshTri.setVertices(vertex0.pos, vertex1.pos, vertex2.pos);
 		meshTri.scaleVertices(scale);
 		tris.emplace_back(core::move(meshTri));
