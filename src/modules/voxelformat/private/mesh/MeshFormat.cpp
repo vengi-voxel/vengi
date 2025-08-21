@@ -28,7 +28,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"
-#include "voxel/VolumeSampler.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
@@ -314,8 +313,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	node.setNormalPalette(normalPalette);
 
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	const int maxVoxels = vdim.x * vdim.y * vdim.z;
 	if (axisAligned) {
-		const int maxVoxels = vdim.x * vdim.y * vdim.z;
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
 		transformTrisAxisAligned(region, tris, posMap, meshMaterialArray, normalPalette);
@@ -420,7 +419,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			return InvalidNodeId;
 		}
 
-		PosMap posMap((int)subdivided.size() * 3);
+		PosMap posMap(maxVoxels);
 		transformTris(region, subdivided, posMap, meshMaterialArray, normalPalette);
 		subdivided.release();
 		node.setVolume(new voxel::RawVolume(region), true);
