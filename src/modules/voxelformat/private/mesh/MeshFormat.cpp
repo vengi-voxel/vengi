@@ -18,6 +18,7 @@
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
 #include "palette/NormalPalette.h"
+#include "palette/NormalPaletteLookup.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -130,12 +131,13 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 							   const MeshMaterialArray &meshMaterialArray,
 							   const palette::NormalPalette &normalPalette) const {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
-	auto fn = [&tris, &normalPalette, &posMap, &meshMaterialArray, this](int start, int end) {
+	palette::NormalPaletteLookup normalLookup(normalPalette);
+	auto fn = [&tris, &normalLookup, &posMap, &meshMaterialArray, this](int start, int end) {
 		for (int i = start; i < end; ++i) {
-			const voxelformat::MeshTri &meshTri = tris[i];
 			if (stopExecution()) {
 				return;
 			}
+			const voxelformat::MeshTri &meshTri = tris[i];
 			const glm::vec2 &uv = meshTri.centerUV();
 			const core::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
 			if (rgba.a <= AlphaThreshold) {
@@ -145,7 +147,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			glm::vec3 c = meshTri.center();
 			convertToVoxelGrid(c);
 
-			int normalIdx = normalPalette.getClosestMatch(meshTri.normal());
+			int normalIdx = normalLookup.getClosestMatch(meshTri.normal());
 			if (normalIdx == palette::PaletteNormalNotFound) {
 				normalIdx = NO_NORMAL;
 			}
@@ -161,7 +163,8 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 										  const MeshMaterialArray &meshMaterialArray,
 										  const palette::NormalPalette &normalPalette) const {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
-	auto fn = [&tris, &normalPalette, region, &posMap, &meshMaterialArray, this](int start, int end) {
+	palette::NormalPaletteLookup normalLookup(normalPalette);
+	auto fn = [&tris, &normalLookup, region, &posMap, &meshMaterialArray, this](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			const voxelformat::MeshTri &meshTri = tris[i];
 			if (stopExecution()) {
@@ -181,7 +184,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 			Log::trace("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 			Log::trace("normal: %f:%f:%f", normal.x, normal.y, normal.z);
 			Log::trace("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
-			int normalIdx = normalPalette.getClosestMatch(normal);
+			int normalIdx = normalLookup.getClosestMatch(normal);
 			if (normalIdx == palette::PaletteNormalNotFound) {
 				normalIdx = NO_NORMAL;
 			}
@@ -348,11 +351,12 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		palette::PaletteLookup palLookup(palette);
 		node.setVolume(new voxel::RawVolume(region), true);
 		voxel::RawVolumeWrapper wrapper(node.volume());
+		palette::NormalPaletteLookup normalLookup(normalPalette);
 		for (const voxelformat::MeshTri &meshTri : tris) {
 			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
 				const glm::vec3 &normal = tri.normal();
-				int normalIdx = normalPalette.getClosestMatch(normal);
+				int normalIdx = normalLookup.getClosestMatch(normal);
 				if (normalIdx == palette::PaletteNormalNotFound) {
 					normalIdx = NO_NORMAL;
 				}
