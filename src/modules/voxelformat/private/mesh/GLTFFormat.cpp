@@ -1079,7 +1079,7 @@ scenegraph::SceneGraphTransform GLTFFormat::loadTransform(const tinygltf::Node &
 	}
 
 bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-							 core::Buffer<uint32_t> &indices, size_t indicesOffset) const {
+							 voxel::IndexArray &indices, size_t indicesOffset) const {
 	const tinygltf::Accessor *accessor = getAccessor(gltfModel, gltfPrimitive.indices);
 	if (accessor == nullptr) {
 		Log::warn("Could not get accessor for indices");
@@ -1097,7 +1097,7 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 	Log::debug("indicesOffset: %i", (int)indicesOffset);
 
 	// Temporary raw indices buffer
-	core::Buffer<uint32_t> rawIndices;
+	voxel::IndexArray rawIndices;
 	rawIndices.reserve(accessor->count);
 	io::MemoryReadStream stream(indexBuf, accessor->count * stride);
 
@@ -1646,7 +1646,7 @@ int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &s
 			Log::warn("Failed to load vertices");
 			continue;
 		}
-		core::Buffer<uint32_t> indices;
+		voxel::IndexArray indices;
 		if (primitive.indices == -1) {
 			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
 				const size_t indicedEnd = vertices.size();

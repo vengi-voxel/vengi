@@ -65,7 +65,7 @@ public:
 		int indices[3]{0, 0, 0};
 	};
 	struct PLYPolygon {
-		core::Buffer<int> indices;
+		voxel::IndexArray indices;
 	};
 
 protected:

@@ -627,8 +627,8 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	}
 	core::Buffer<glm::vec2> texcoords(vertexCount);
 	core::Buffer<glm::vec3> verts(vertexCount);
-	core::Buffer<int32_t> textureIndices(vertexCount);
-	core::Buffer<int32_t> indices(indexCount);
+	core::Buffer<int16_t> textureIndices(vertexCount);
+	voxel::IndexArray indices(indexCount);
 
 	int offset = 0;
 	for (Face &face : faces) {
@@ -713,7 +713,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		const int32_t idx2 = indices[i + 2];
 		meshTri.setVertices(verts[idx0] * scale, verts[idx1] * scale, verts[idx2] * scale);
 		meshTri.setUVs(texcoords[idx0], texcoords[idx1], texcoords[idx2]);
-		const int textureIdx = textureIndices[indices[i]];
+		const uint32_t textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
 		meshTri.materialIdx = texture.materialIdx;
 		tris.push_back(meshTri);

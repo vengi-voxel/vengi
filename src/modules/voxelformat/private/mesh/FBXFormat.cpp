@@ -520,7 +520,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	core_assert(mesh != nullptr);
 
 	const size_t numTriIndices = mesh->max_face_triangles * 3;
-	core::Buffer<uint32_t> triIndices(numTriIndices);
+	voxel::IndexArray triIndices(numTriIndices);
 
 	MeshTriCollection tris;
 	MeshMaterialArray meshMaterialArray;

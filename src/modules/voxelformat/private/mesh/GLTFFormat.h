@@ -126,7 +126,7 @@ private:
 	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &gltfModel,
 					const MeshMaterialArray &meshMaterialArray, int gltfNodeIdx, int parentNodeId) const;
 	bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
-					 core::Buffer<uint32_t> &indices, size_t indicesOffset) const;
+					 voxel::IndexArray &indices, size_t indicesOffset) const;
 	scenegraph::SceneGraphTransform loadTransform(const tinygltf::Node &gltfNode) const;
 	size_t accessorSize(const tinygltf::Accessor &gltfAccessor) const;
 	const tinygltf::Accessor *getAccessor(const tinygltf::Model &gltfModel, int id) const;
