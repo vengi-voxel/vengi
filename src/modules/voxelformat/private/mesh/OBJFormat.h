@@ -29,12 +29,11 @@ private:
 	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const;
 
 protected:
-	void loadPointCloud(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
-							PointCloud &pointCloud);
+	void loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &tinyShape, PointCloud &pointCloud);
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
-	bool voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::attrib_t &attrib,
-						   const tinyobj::material_t *materials, const glm::vec3 &scale,
+	bool voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyobj::attrib_t &tinyAttrib,
+						   const tinyobj::material_t *tinyMaterials, const glm::vec3 &scale,
 						   scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials,
 						   const MeshMaterialArray &meshMaterialArray) const;
 

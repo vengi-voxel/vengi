@@ -98,9 +98,9 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 	return true;
 }
 
-bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const ChunkMeshes &meshes,
-						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
-						   bool quad, bool withColor, bool withTexCoords) {
+bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
+						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -280,76 +280,76 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 #undef wrapBool
 
-void OBJFormat::loadPointCloud(tinyobj::attrib_t &attrib, tinyobj::shape_t &shape,
-						  PointCloud &pointCloud) {
-	pointCloud.resize(shape.points.indices.size());
-	for (int i = 0; i < (int)shape.points.indices.size(); ++i) {
-		const tinyobj::index_t &idx0 = shape.points.indices[i];
-		const glm::vec3 &vertex0{attrib.vertices[3 * idx0.vertex_index + 0], attrib.vertices[3 * idx0.vertex_index + 1],
-								 attrib.vertices[3 * idx0.vertex_index + 2]};
+void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &tinyShape, PointCloud &pointCloud) {
+	pointCloud.resize(tinyShape.points.indices.size());
+	for (int i = 0; i < (int)tinyShape.points.indices.size(); ++i) {
+		const tinyobj::index_t &idx0 = tinyShape.points.indices[i];
+		const glm::vec3 &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0],
+								 tinyAttrib.vertices[3 * idx0.vertex_index + 1],
+								 tinyAttrib.vertices[3 * idx0.vertex_index + 2]};
 		pointCloud[i].position = vertex0;
 
-		if (!attrib.colors.empty()) {
-			const float r0 = attrib.colors[3 * idx0.vertex_index + 0];
-			const float g0 = attrib.colors[3 * idx0.vertex_index + 1];
-			const float b0 = attrib.colors[3 * idx0.vertex_index + 2];
+		if (!tinyAttrib.colors.empty()) {
+			const float r0 = tinyAttrib.colors[3 * idx0.vertex_index + 0];
+			const float g0 = tinyAttrib.colors[3 * idx0.vertex_index + 1];
+			const float b0 = tinyAttrib.colors[3 * idx0.vertex_index + 2];
 			pointCloud[i].color = core::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f));
 		}
 	}
 }
 
-bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::attrib_t &attrib,
-								  const tinyobj::material_t *materials, const glm::vec3 &scale,
+bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyobj::attrib_t &tinyAttrib,
+								  const tinyobj::material_t *tinyMaterials, const glm::vec3 &scale,
 								  scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials,
 								  const MeshMaterialArray &meshMaterialArray) const {
 	int indexOffset = 0;
 	MeshTriCollection tris;
-	const tinyobj::mesh_t &mesh = shape.mesh;
-	tris.reserve(mesh.num_face_vertices.size());
-	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
-		const int materialIndex = mesh.material_ids[faceNum];
-		const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
-		const int faceVertices = mesh.num_face_vertices[faceNum];
+	const tinyobj::mesh_t &tinyMesh = tinyShape.mesh;
+	tris.reserve(tinyMesh.num_face_vertices.size());
+	for (size_t faceNum = 0; faceNum < tinyMesh.num_face_vertices.size(); ++faceNum) {
+		const int materialIndex = tinyMesh.material_ids[faceNum];
+		const tinyobj::material_t *tinyMaterial = materialIndex < 0 ? nullptr : &tinyMaterials[materialIndex];
+		const int faceVertices = tinyMesh.num_face_vertices[faceNum];
 		core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
 		voxelformat::MeshTri meshTri;
-		const tinyobj::index_t &idx0 = mesh.indices[indexOffset + 0];
-		const tinyobj::index_t &idx1 = mesh.indices[indexOffset + 1];
-		const tinyobj::index_t &idx2 = mesh.indices[indexOffset + 2];
-		const glm::vec3 &vertex0{attrib.vertices[3 * idx0.vertex_index + 0] * scale.x,
-								 attrib.vertices[3 * idx0.vertex_index + 1] * scale.y,
-								 attrib.vertices[3 * idx0.vertex_index + 2] * scale.z};
-		const glm::vec3 &vertex1{attrib.vertices[3 * idx1.vertex_index + 0] * scale.x,
-								 attrib.vertices[3 * idx1.vertex_index + 1] * scale.y,
-								 attrib.vertices[3 * idx1.vertex_index + 2] * scale.z};
-		const glm::vec3 &vertex2{attrib.vertices[3 * idx2.vertex_index + 0] * scale.x,
-								 attrib.vertices[3 * idx2.vertex_index + 1] * scale.y,
-								 attrib.vertices[3 * idx2.vertex_index + 2] * scale.z};
+		const tinyobj::index_t &idx0 = tinyMesh.indices[indexOffset + 0];
+		const tinyobj::index_t &idx1 = tinyMesh.indices[indexOffset + 1];
+		const tinyobj::index_t &idx2 = tinyMesh.indices[indexOffset + 2];
+		const glm::vec3 &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0] * scale.x,
+								 tinyAttrib.vertices[3 * idx0.vertex_index + 1] * scale.y,
+								 tinyAttrib.vertices[3 * idx0.vertex_index + 2] * scale.z};
+		const glm::vec3 &vertex1{tinyAttrib.vertices[3 * idx1.vertex_index + 0] * scale.x,
+								 tinyAttrib.vertices[3 * idx1.vertex_index + 1] * scale.y,
+								 tinyAttrib.vertices[3 * idx1.vertex_index + 2] * scale.z};
+		const glm::vec3 &vertex2{tinyAttrib.vertices[3 * idx2.vertex_index + 0] * scale.x,
+								 tinyAttrib.vertices[3 * idx2.vertex_index + 1] * scale.y,
+								 tinyAttrib.vertices[3 * idx2.vertex_index + 2] * scale.z};
 		meshTri.setVertices(vertex0, vertex1, vertex2);
-		if (!attrib.colors.empty()) {
-			const float r0 = attrib.colors[3 * idx0.vertex_index + 0];
-			const float g0 = attrib.colors[3 * idx0.vertex_index + 1];
-			const float b0 = attrib.colors[3 * idx0.vertex_index + 2];
-			const float r1 = attrib.colors[3 * idx1.vertex_index + 0];
-			const float g1 = attrib.colors[3 * idx1.vertex_index + 1];
-			const float b1 = attrib.colors[3 * idx1.vertex_index + 2];
-			const float r2 = attrib.colors[3 * idx2.vertex_index + 0];
-			const float g2 = attrib.colors[3 * idx2.vertex_index + 1];
-			const float b2 = attrib.colors[3 * idx2.vertex_index + 2];
+		if (!tinyAttrib.colors.empty()) {
+			const float r0 = tinyAttrib.colors[3 * idx0.vertex_index + 0];
+			const float g0 = tinyAttrib.colors[3 * idx0.vertex_index + 1];
+			const float b0 = tinyAttrib.colors[3 * idx0.vertex_index + 2];
+			const float r1 = tinyAttrib.colors[3 * idx1.vertex_index + 0];
+			const float g1 = tinyAttrib.colors[3 * idx1.vertex_index + 1];
+			const float b1 = tinyAttrib.colors[3 * idx1.vertex_index + 2];
+			const float r2 = tinyAttrib.colors[3 * idx2.vertex_index + 0];
+			const float g2 = tinyAttrib.colors[3 * idx2.vertex_index + 1];
+			const float b2 = tinyAttrib.colors[3 * idx2.vertex_index + 2];
 			meshTri.setColor(core::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
 							 core::Color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
 							 core::Color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
 		}
 		if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0) {
-			const glm::vec2 &uv0{attrib.texcoords[2 * idx0.texcoord_index + 0],
-								 attrib.texcoords[2 * idx0.texcoord_index + 1]};
-			const glm::vec2 &uv1{attrib.texcoords[2 * idx1.texcoord_index + 0],
-								 attrib.texcoords[2 * idx1.texcoord_index + 1]};
-			const glm::vec2 &uv2{attrib.texcoords[2 * idx2.texcoord_index + 0],
-								 attrib.texcoords[2 * idx2.texcoord_index + 1]};
+			const glm::vec2 &uv0{tinyAttrib.texcoords[2 * idx0.texcoord_index + 0],
+								 tinyAttrib.texcoords[2 * idx0.texcoord_index + 1]};
+			const glm::vec2 &uv1{tinyAttrib.texcoords[2 * idx1.texcoord_index + 0],
+								 tinyAttrib.texcoords[2 * idx1.texcoord_index + 1]};
+			const glm::vec2 &uv2{tinyAttrib.texcoords[2 * idx2.texcoord_index + 0],
+								 tinyAttrib.texcoords[2 * idx2.texcoord_index + 1]};
 			meshTri.setUVs(uv0, uv1, uv2);
 		}
-		if (material != nullptr) {
-			const core::String materialName = material->name.c_str();
+		if (tinyMaterial != nullptr) {
+			const core::String materialName = tinyMaterial->name.c_str();
 			if (!materialName.empty()) {
 				auto meshMaterialIter = meshMaterials.find(materialName);
 				if (meshMaterialIter != meshMaterials.end()) {
@@ -359,8 +359,9 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::
 					meshMaterials.put(materialName, MeshMaterialPtr());
 				}
 			}
-			if (attrib.colors.empty()) {
-				const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
+			if (tinyAttrib.colors.empty()) {
+				const glm::vec4 diffuseColor(tinyMaterial->diffuse[0], tinyMaterial->diffuse[1],
+											 tinyMaterial->diffuse[2], 1.0f);
 				meshTri.setColor(diffuseColor);
 			}
 		}
@@ -368,14 +369,14 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &shape, const tinyobj::
 
 		indexOffset += faceVertices;
 	}
-	const int nodeId = voxelizeNode(shape.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray);
+	const int nodeId = voxelizeNode(tinyShape.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray);
 	if (nodeId == InvalidNodeId) {
-		Log::error("Failed to voxelize shape %s", shape.name.c_str());
+		Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 		return false;
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-	for (const tinyobj::tag_t &tag : mesh.tags) {
-		node.setProperty(tag.name.c_str(), "");
+	for (const tinyobj::tag_t &tinyTag : tinyMesh.tags) {
+		node.setProperty(tinyTag.name.c_str(), "");
 	}
 	return true;
 }
@@ -387,59 +388,59 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn;
-	std::string err;
+	tinyobj::attrib_t tinyAttrib;
+	std::vector<tinyobj::shape_t> tinyShapes;
+	std::vector<tinyobj::material_t> tinyMaterials;
+	std::string tinyWarn;
+	std::string tinyErr;
 	const core::String &mtlbasedir = core::string::extractDir(filename);
 	io::StdIStreamBuf stdStreamBuf(*stream);
 	std::istream inputStream(&stdStreamBuf);
 	// TODO: VOXELFORMAT: use the archive
-	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
+	tinyobj::MaterialFileReader tinyMatFileReader(mtlbasedir.c_str());
 	Log::debug("Load obj %s", filename.c_str());
-	const bool ret =
-		tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &inputStream, &matFileReader, true, false);
-	if (!warn.empty()) {
+	const bool ret = tinyobj::LoadObj(&tinyAttrib, &tinyShapes, &tinyMaterials, &tinyWarn, &tinyErr, &inputStream,
+									  &tinyMatFileReader, true, false);
+	if (!tinyWarn.empty()) {
 		core::DynamicArray<core::String> lines;
-		core::string::splitString(warn.c_str(), lines, "\n");
+		core::string::splitString(tinyWarn.c_str(), lines, "\n");
 		for (const core::String &str : lines) {
 			Log::warn("%s", str.c_str());
 		}
 	}
-	if (!err.empty()) {
+	if (!tinyErr.empty()) {
 		core::DynamicArray<core::String> lines;
-		core::string::splitString(err.c_str(), lines, "\n");
+		core::string::splitString(tinyErr.c_str(), lines, "\n");
 		for (const core::String &str : lines) {
 			Log::error("%s", str.c_str());
 		}
 	}
 	if (!ret) {
-		Log::error("Failed to load obj '%s': %s", filename.c_str(), err.c_str());
+		Log::error("Failed to load obj '%s': %s", filename.c_str(), tinyErr.c_str());
 		return false;
 	}
-	if (shapes.size() == 0) {
+	if (tinyShapes.size() == 0) {
 		Log::error("No shapes found in the model");
 		return false;
 	}
 
 	MeshMaterialMap meshMaterials;
 	MeshMaterialArray meshMaterialArray;
-	meshMaterialArray.reserve(materials.size());
-	Log::debug("%i materials", (int)materials.size());
+	meshMaterialArray.reserve(tinyMaterials.size());
+	Log::debug("%i materials", (int)tinyMaterials.size());
 
-	for (tinyobj::material_t &material : materials) {
-		core::String materialName = material.name.c_str();
-		Log::debug("material: '%s'", material.name.c_str());
-		Log::debug("- emissive_texname '%s'", material.emissive_texname.c_str());
-		Log::debug("- ambient_texname '%s'", material.ambient_texname.c_str());
-		Log::debug("- diffuse_texname '%s'", material.diffuse_texname.c_str());
-		Log::debug("- specular_texname '%s'", material.specular_texname.c_str());
-		Log::debug("- specular_highlight_texname '%s'", material.specular_highlight_texname.c_str());
-		Log::debug("- bump_texname '%s'", material.bump_texname.c_str());
-		Log::debug("- displacement_texname '%s'", material.displacement_texname.c_str());
-		Log::debug("- alpha_texname '%s'", material.alpha_texname.c_str());
-		Log::debug("- reflection_texname '%s'", material.reflection_texname.c_str());
+	for (tinyobj::material_t &tinyMaterial : tinyMaterials) {
+		core::String materialName = tinyMaterial.name.c_str();
+		Log::debug("material: '%s'", tinyMaterial.name.c_str());
+		Log::debug("- emissive_texname '%s'", tinyMaterial.emissive_texname.c_str());
+		Log::debug("- ambient_texname '%s'", tinyMaterial.ambient_texname.c_str());
+		Log::debug("- diffuse_texname '%s'", tinyMaterial.diffuse_texname.c_str());
+		Log::debug("- specular_texname '%s'", tinyMaterial.specular_texname.c_str());
+		Log::debug("- specular_highlight_texname '%s'", tinyMaterial.specular_highlight_texname.c_str());
+		Log::debug("- bump_texname '%s'", tinyMaterial.bump_texname.c_str());
+		Log::debug("- displacement_texname '%s'", tinyMaterial.displacement_texname.c_str());
+		Log::debug("- alpha_texname '%s'", tinyMaterial.alpha_texname.c_str());
+		Log::debug("- reflection_texname '%s'", tinyMaterial.reflection_texname.c_str());
 		// TODO: MATERIAL: material.diffuse_texopt.scale
 		if (materialName.empty()) {
 			continue;
@@ -452,24 +453,25 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 		MeshMaterialPtr meshMaterial = createMaterial(materialName);
 		palette::Material &paletteMaterial = meshMaterial->material;
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, material.ior);
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness, material.roughness);
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal, material.metallic);
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, tinyMaterial.ior);
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness, tinyMaterial.roughness);
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal, tinyMaterial.metallic);
 		// TODO: MATERIAL: should be average these values?
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, material.emission[0]);
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, tinyMaterial.emission[0]);
 		// TODO: MATERIAL: is this maybe shininess? (Ns) material specular exponent is multiplied by the texture value
 		// see https://www.fileformat.info/format/material/
-		paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, material.specular[0]);
-		meshMaterial->transparency = 1.0f - material.dissolve;
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, tinyMaterial.specular[0]);
+		meshMaterial->transparency = 1.0f - tinyMaterial.dissolve;
 
-		if (!material.diffuse_texname.empty()) {
-			const core::String &diffuseTextureName = lookupTexture(filename, material.diffuse_texname.c_str(), archive);
+		if (!tinyMaterial.diffuse_texname.empty()) {
+			const core::String &diffuseTextureName =
+				lookupTexture(filename, tinyMaterial.diffuse_texname.c_str(), archive);
 			image::ImagePtr diffuseTexture = image::loadImage(diffuseTextureName);
 			if (diffuseTexture->isLoaded()) {
 				Log::debug("Use image %s", diffuseTextureName.c_str());
 				meshMaterial->texture = diffuseTexture;
 			} else {
-				Log::warn("Failed to load image %s from %s", materialName.c_str(), material.name.c_str());
+				Log::warn("Failed to load image %s from %s", materialName.c_str(), tinyMaterial.name.c_str());
 			}
 		}
 		meshMaterialArray.push_back(meshMaterial);
@@ -477,18 +479,19 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	const glm::vec3 &scale = getInputScale();
-	for (tinyobj::shape_t &shape : shapes) {
+	for (tinyobj::shape_t &tinyShape : tinyShapes) {
 		// TODO: VOXELFORMAT: shape.lines
-		if (!shape.mesh.num_face_vertices.empty()) {
-			if (!voxelizeMeshShape(shape, attrib, materials.data(), scale, sceneGraph, meshMaterials, meshMaterialArray)) {
-				Log::error("Failed to voxelize shape %s", shape.name.c_str());
+		if (!tinyShape.mesh.num_face_vertices.empty()) {
+			if (!voxelizeMeshShape(tinyShape, tinyAttrib, tinyMaterials.data(), scale, sceneGraph, meshMaterials,
+								   meshMaterialArray)) {
+				Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 			}
 		}
-		if (!shape.points.indices.empty()) {
+		if (!tinyShape.points.indices.empty()) {
 			PointCloud pointCloud;
-			loadPointCloud(attrib, shape, pointCloud);
+			loadPointCloud(tinyAttrib, tinyShape, pointCloud);
 			if (voxelizePointCloud(filename, sceneGraph, core::move(pointCloud)) == InvalidNodeId) {
-				Log::error("Failed to voxelize point cloud from shape %s", shape.name.c_str());
+				Log::error("Failed to voxelize point cloud from shape %s", tinyShape.name.c_str());
 			}
 		}
 	}
