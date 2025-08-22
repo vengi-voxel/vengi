@@ -164,14 +164,16 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 
 	const glm::vec3 &scale = getInputScale();
 
-	MeshTriCollection tris;
-	tris.reserve(hdr.numTris);
 	if (stream.seek(startOffset + hdr.offsetTris) == -1) {
 		Log::error("Failed to seek to triangles");
 		return false;
 	}
 	Log::debug("Reading %i triangles", hdr.numTris);
 	MeshMaterialIndex materialIdx = !meshMaterials.empty() ? meshMaterials.begin()->second : -1;
+	Mesh mesh;
+	mesh.indices.reserve(hdr.numTris * 3);
+	mesh.vertices.reserve(hdr.numVerts);
+	mesh.materials = meshMaterialArray;
 	for (uint32_t i = 0; i < hdr.numTris; ++i) {
 		glm::u16vec3 vertexIndices;
 		wrap(stream.readUInt16(vertexIndices.x))
@@ -196,10 +198,10 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 							vertices[vertexIndices[2]] * scale);
 		meshTri.setUVs(uvs[uvIndices[0]], uvs[uvIndices[1]], uvs[uvIndices[2]]);
 		meshTri.materialIdx = materialIdx;
-		tris.push_back(meshTri);
+		mesh.addTriangle(meshTri);
 	}
 
-	return voxelizeNode(filename, sceneGraph, core::move(tris), meshMaterialArray) != InvalidNodeId;
+	return voxelizeMesh(filename, sceneGraph, core::move(mesh)) != InvalidNodeId;
 }
 
 #undef wrap
