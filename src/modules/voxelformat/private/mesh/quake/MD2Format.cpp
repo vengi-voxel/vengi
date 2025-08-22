@@ -78,7 +78,6 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
-	MeshMaterialMap meshMaterials;
 	MeshMaterialArray meshMaterialArray;
 	stream->seek(startOffset + hdr.offsetSkins);
 	for (uint32_t i = 0; i < hdr.numSkins; ++i) {
@@ -95,10 +94,9 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		const core::String &imageName = lookupTexture(filename, skinname, archive);
 		const image::ImagePtr &image = image::loadImage(imageName);
 		meshMaterialArray.push_back(createMaterial(image));
-		meshMaterials.put(skinname, meshMaterialArray.size() - 1);
 	}
 
-	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, meshMaterials, meshMaterialArray)) {
+	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, meshMaterialArray)) {
 		Log::error("Failed to load frame");
 		return false;
 	}
@@ -108,7 +106,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
 						  const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
-						  const MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray) {
+						  const MeshMaterialArray &meshMaterialArray) {
 	if (frameIndex >= hdr.numFrames) {
 		Log::error("Invalid frame index");
 		return false;
@@ -169,7 +167,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 	Log::debug("Reading %i triangles", hdr.numTris);
-	MeshMaterialIndex materialIdx = !meshMaterials.empty() ? meshMaterials.begin()->second : -1;
+	MeshMaterialIndex materialIdx = !meshMaterialArray.empty() ? 0 : -1;
 	Mesh mesh;
 	mesh.indices.reserve(hdr.numTris * 3);
 	mesh.vertices.reserve(hdr.numVerts);
