@@ -21,10 +21,9 @@ protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	bool parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-					MeshMaterialMap &materials, MeshMaterialArray &meshMaterialArray, MeshTriCollection &tris, const glm::vec3 &scale) const;
+					MeshMaterialMap &materials, Mesh &mesh) const;
 	bool parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-					 MeshMaterialMap &materials, MeshMaterialArray &meshMaterialArray, MeshTriCollection &tris,
-					 scenegraph::SceneGraphNodeProperties &props, const glm::vec3 &scale) const;
+					 MeshMaterialMap &materials, Mesh &mesh, scenegraph::SceneGraphNodeProperties &props) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,

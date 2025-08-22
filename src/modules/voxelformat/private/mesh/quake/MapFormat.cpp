@@ -123,8 +123,7 @@ static bool skipFace(const core::String &texture) {
 }
 
 bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-						   MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray, MeshTriCollection &tris,
-						   const glm::vec3 &scale) const {
+						   MeshMaterialMap &meshMaterials, Mesh &mesh) const {
 	QBrush qbrush;
 	while (tok.hasNext()) {
 		core::String t = tok.next();
@@ -210,8 +209,8 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		if (iter == meshMaterials.end()) {
 			const core::String &imageName = lookupTexture(filename, qface.texture, archive);
 			const image::ImagePtr &image = image::loadImage(imageName);
-			meshMaterialArray.push_back(createMaterial(image));
-			materialIdx = meshMaterialArray.size() - 1;
+			mesh.materials.push_back(createMaterial(image));
+			materialIdx = mesh.materials.size() - 1;
 			meshMaterials.put(qface.texture, materialIdx);
 		} else {
 			materialIdx = iter->value;
@@ -239,18 +238,17 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 			const float vRotated = uv.x * sinTheta + uv.y * cosTheta;
 
 			// Store the vertex
-			const glm::vec3 converted(point.x * scale.x, point.z * scale.y, point.y * scale.z);
-			polygon.addVertex(converted, glm::vec2(uRotated, vRotated));
+			polygon.addVertex(point, glm::vec2(uRotated, vRotated));
 		}
 
-		polygon.toTris(tris);
+		polygon.toTris(mesh);
 	}
 	return true;
 }
 
 bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-							MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray, MeshTriCollection &tris,
-							scenegraph::SceneGraphNodeProperties &props, const glm::vec3 &scale) const {
+							MeshMaterialMap &meshMaterials, Mesh &mesh,
+							scenegraph::SceneGraphNodeProperties &props) const {
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
 		if (t == "}") {
@@ -261,7 +259,7 @@ bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &
 		}
 		if (t == "{") {
 			Log::debug("Found brush");
-			if (!parseBrush(filename, archive, tok, meshMaterials, meshMaterialArray, tris, scale)) {
+			if (!parseBrush(filename, archive, tok, meshMaterials, mesh)) {
 				Log::error("Failed to parse brush");
 				return false;
 			}
@@ -293,31 +291,28 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
-	const glm::vec3 &scale = getInputScale();
-
 	core::TokenizerConfig cfg;
 	cfg.skipComments = true;
 	Log::debug("Tokenizing");
 	core::Tokenizer tok(cfg, map, " \t\r");
-	MeshMaterialMap meshMaterials;
-	MeshMaterialArray meshMaterialArray;
 	int entity = 0;
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
 		if (t == "{") {
-			MeshTriCollection tris;
+			Mesh mesh;
+			MeshMaterialMap meshMaterials;
 			scenegraph::SceneGraphNodeProperties props;
-			if (!parseEntity(filename, archive, tok, meshMaterials, meshMaterialArray, tris, props, scale)) {
+			if (!parseEntity(filename, archive, tok, meshMaterials, mesh, props)) {
 				Log::error("Failed to parse entity");
 				return false;
 			}
-			if (tris.empty()) {
+			if (mesh.vertices.empty()) {
 				continue;
 			}
 			core::String classname;
 			props.get("classname", classname);
 			const core::String name = core::String::format("%s brush %i", classname.c_str(), entity);
-			const int nodeId = voxelizeNode(name, sceneGraph, core::move(tris), meshMaterialArray);
+			const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
 			if (nodeId == InvalidNodeId) {
 				Log::error("Voxelization failed");
 				return false;
