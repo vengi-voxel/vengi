@@ -635,7 +635,7 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 	}
 }
 
-int MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent) const {
+int MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin) const {
 	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
 	const glm::vec3 &scale = getInputScale();
 	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
@@ -661,7 +661,7 @@ int MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &s
 		tris.emplace_back(core::move(meshTri));
 	}
 	mesh.clearAfterTriangulation();
-	return voxelizeNode(name, sceneGraph, core::move(tris), mesh.materials, parent);
+	return voxelizeNode(name, sceneGraph, core::move(tris), mesh.materials, parent, resetOrigin);
 }
 
 int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,

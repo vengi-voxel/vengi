@@ -1635,8 +1635,7 @@ int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &s
 						 int parentNodeId) const {
 	const tinygltf::Node &gltfNode = gltfModel.nodes[gltfNodeIdx];
 	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];
-	MeshTriCollection tris;
-	const glm::vec3 &scale = getInputScale();
+	Mesh mesh;
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
 		if (primitive.mode == TINYGLTF_MODE_POINTS) {
 			continue;
@@ -1706,26 +1705,16 @@ int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &s
 			return InvalidNodeId;
 		}
 
-		const size_t maxIndices = simplify(indices, vertices);
-		tris.reserve(tris.size() + maxIndices / 3);
-
-		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-			voxelformat::MeshTri meshTri;
-			const size_t idx0 = indices[indexOffset];
-			const size_t idx1 = indices[indexOffset + 1];
-			const size_t idx2 = indices[indexOffset + 2];
-			meshTri.setUVs(vertices[idx0].uv, vertices[idx1].uv, vertices[idx2].uv);
-			meshTri.setColor(vertices[idx0].color, vertices[idx1].color, vertices[idx2].color);
-			meshTri.setVertices(vertices[idx0].pos * scale,
-							vertices[idx1].pos * scale, vertices[idx2].pos * scale);
-			const size_t textureIdx = indices[indexOffset];
-			const MeshVertex &v = vertices[textureIdx];
-			meshTri.materialIdx = v.materialIdx;
-			tris.emplace_back(meshTri);
+		const uint32_t indicesOffset = (uint32_t)mesh.vertices.size();
+		mesh.vertices.append(vertices);
+		mesh.indices.reserve(mesh.indices.size() + indices.size());
+		for (size_t i = 0; i < indices.size(); ++i) {
+			mesh.indices.push_back(indices[i] + indicesOffset);
 		}
 	}
+	mesh.materials = meshMaterialArray;
 
-	return voxelizeNode(gltfNode.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray, parentNodeId, false);
+	return voxelizeMesh(gltfNode.name.c_str(), sceneGraph, core::move(mesh), parentNodeId, false);
 }
 
 int GLTFFormat::loadPointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
