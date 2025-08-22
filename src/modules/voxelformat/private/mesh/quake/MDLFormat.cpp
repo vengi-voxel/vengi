@@ -106,8 +106,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	// skins
-	MeshMaterialMap meshMaterials;
-	MeshMaterialArray meshMaterialArray;
+	MeshMaterialArray materials;
 	for (uint32_t i = 0; i < hdr.numSkins; ++i) {
 		uint32_t group;
 		wrap(stream->readUInt32(group))
@@ -139,10 +138,10 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				return false;
 			}
 
-			meshMaterialArray.push_back(createMaterial(image));
-			meshMaterials.put(core::string::toString(j), meshMaterialArray.size() - 1);
+			materials.push_back(createMaterial(image));
 		}
 	}
+	Log::debug("Loaded %i materials", (int)materials.size());
 
 	/* To get uv coordinates (ranging from 0.0 to 1.0), you have to add 0.5 to the uv coordinates and then
 	 * divide the result by hdr.skinwidth for u and hdr.skinheight for v */
@@ -310,43 +309,53 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	for (uint32_t p = 0; p < poses.size(); ++p) {
 		const MDLPose &pose = poses[p];
 		for (const MDLFrame &frame : pose.frames) {
-			MeshTriCollection triangles;
+			Mesh mesh;
 			for (uint32_t i = 0; i < hdr.numTris; ++i) {
 				const MDLTriangle &tri = tris[i];
-				voxelformat::MeshTri meshTri;
+				uint32_t idx0;
+				uint32_t idx1;
+				uint32_t idx2;
 				if (idPolyModel) {
-					uint32_t idx0 = tri.id.indices[0];
-					uint32_t idx1 = tri.id.indices[1];
-					uint32_t idx2 = tri.id.indices[2];
-					if (idx0 >= hdr.numVerts || idx1 >= hdr.numVerts || idx2 >= hdr.numVerts) {
-						Log::error("Invalid triangle indices %u %u %u in frame %s", idx0, idx1, idx2, frame.name.c_str());
-						continue;
-					}
-					const glm::vec3 &vertex0 = frame.vertices[idx0];
-					const glm::vec3 &vertex1 = frame.vertices[idx1];
-					const glm::vec3 &vertex2 = frame.vertices[idx2];
-					meshTri.setVertices(vertex0, vertex1, vertex2);
-					meshTri.setUVs(texCoords[idx0], texCoords[idx1], texCoords[idx2]);
+					idx0 = tri.id.indices.x;
+					idx1 = tri.id.indices.y;
+					idx2 = tri.id.indices.z;
 				} else {
-					uint32_t idx0 = tri.ra.indices[0];
-					uint32_t idx1 = tri.ra.indices[1];
-					uint32_t idx2 = tri.ra.indices[2];
-					if (idx0 >= hdr.numVerts || idx1 >= hdr.numVerts || idx2 >= hdr.numVerts) {
-						Log::error("Invalid triangle indices %u %u %u in frame %s", idx0, idx1, idx2, frame.name.c_str());
-						continue;
-					}
-					const glm::vec3 &vertex0 = frame.vertices[idx0];
-					const glm::vec3 &vertex1 = frame.vertices[idx1];
-					const glm::vec3 &vertex2 = frame.vertices[idx2];
-					meshTri.setVertices(vertex0, vertex1, vertex2);
-					meshTri.setUVs(texCoords[idx0], texCoords[idx1], texCoords[idx2]);
+					idx0 = tri.ra.indices.x;
+					idx1 = tri.ra.indices.y;
+					idx2 = tri.ra.indices.z;
 				}
-				if (!meshMaterials.empty()) {
-					meshTri.materialIdx = meshMaterials.begin()->second;
+				if (idx0 >= hdr.numVerts || idx1 >= hdr.numVerts || idx2 >= hdr.numVerts) {
+					Log::error("Invalid triangle indices %u %u %u in frame %s", idx0, idx1, idx2, frame.name.c_str());
+					continue;
 				}
-				triangles.emplace_back(meshTri);
+
+				MeshVertex vert0;
+				vert0.pos = frame.vertices[idx0];
+				vert0.uv = texCoords[idx0];
+
+				MeshVertex vert1;
+				vert1.pos = frame.vertices[idx1];
+				vert1.uv = texCoords[idx1];
+
+				MeshVertex vert2;
+				vert2.pos = frame.vertices[idx2];
+				vert2.uv = texCoords[idx2];
+
+				if (!materials.empty()) {
+					vert0.materialIdx = 0;
+					vert1.materialIdx = 0;
+					vert2.materialIdx = 0;
+				}
+
+				mesh.indices.push_back(mesh.vertices.size());
+				mesh.vertices.push_back(vert0);
+				mesh.indices.push_back(mesh.vertices.size());
+				mesh.vertices.push_back(vert1);
+				mesh.indices.push_back(mesh.vertices.size());
+				mesh.vertices.push_back(vert2);
 			}
-			const int nodeId = voxelizeNode(frame.name, sceneGraph, core::move(triangles), meshMaterialArray);
+			mesh.materials = materials;
+			const int nodeId = voxelizeMesh(frame.name, sceneGraph, core::move(mesh));
 			if (!first && nodeId != -1) {
 				sceneGraph.node(nodeId).setVisible(false);
 			}

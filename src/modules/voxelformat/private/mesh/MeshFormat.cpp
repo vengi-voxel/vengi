@@ -641,7 +641,7 @@ void MeshFormat::Mesh::clearAfterTriangulation() {
 	polygons.release();
 }
 
-bool MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const {
+int MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const {
 	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
 	const glm::vec3 &scale = getInputScale();
 	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
@@ -652,6 +652,11 @@ bool MeshFormat::voxelizeMesh(const core::String &name, scenegraph::SceneGraph &
 		const MeshVertex &vertex0 = mesh.vertices[mesh.indices[i + 0]];
 		const MeshVertex &vertex1 = mesh.vertices[mesh.indices[i + 1]];
 		const MeshVertex &vertex2 = mesh.vertices[mesh.indices[i + 2]];
+		if (vertex0.materialIdx != vertex1.materialIdx ||
+			vertex0.materialIdx != vertex2.materialIdx) {
+			Log::warn("Different materials for triangle vertices is not supported, falling back to first vertex material");
+		}
+		meshTri.materialIdx = vertex0.materialIdx;
 		meshTri.setUVs(vertex0.uv, vertex1.uv, vertex2.uv);
 		// not all formats provide a color value
 		if (vertex0.color.a > 0 && vertex1.color.a > 0 && vertex2.color.a > 0) {
