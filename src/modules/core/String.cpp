@@ -101,6 +101,7 @@ String::String(const String &str) :
 
 String::String(const char *str, size_t len) {
 	copyBuf(str, len);
+	updateSize();
 }
 
 String::String(String &&str) noexcept {
