@@ -1,0 +1,39 @@
+/**
+ * @file
+ */
+
+#include "Mesh.h"
+
+namespace voxelformat {
+
+void Mesh::clearAfterTriangulation() {
+	indices.release();
+	vertices.release();
+	polygons.release();
+}
+
+void Mesh::addTriangle(const voxelformat::MeshTri &tri) {
+	MeshVertex vertex0;
+	vertex0.pos = tri.vertex0();
+	vertex0.uv = tri.uv0();
+	vertex0.color = tri.color0();
+	vertex0.materialIdx = tri.materialIdx;
+	MeshVertex vertex1;
+	vertex1.pos = tri.vertex1();
+	vertex1.uv = tri.uv1();
+	vertex1.color = tri.color1();
+	vertex1.materialIdx = tri.materialIdx;
+	MeshVertex vertex2;
+	vertex2.pos = tri.vertex2();
+	vertex2.uv = tri.uv2();
+	vertex2.color = tri.color2();
+	vertex2.materialIdx = tri.materialIdx;
+	indices.push_back((voxel::IndexType)vertices.size());
+	vertices.push_back(vertex0);
+	indices.push_back((voxel::IndexType)vertices.size());
+	vertices.push_back(vertex1);
+	indices.push_back((voxel::IndexType)vertices.size());
+	vertices.push_back(vertex2);
+}
+
+} // namespace voxelformat

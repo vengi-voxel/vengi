@@ -16,6 +16,7 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/private/mesh/Mesh.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxelformat {
@@ -77,32 +78,6 @@ protected:
 
 	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
 	static glm::vec3 getInputScale();
-
-	struct MeshVertex {
-		glm::vec3 pos{0.0f};
-		glm::vec2 uv{0.0f};
-		core::RGBA color{0};
-		glm::vec3 normal{0.0f};
-		MeshMaterialIndex materialIdx;
-	};
-	struct Mesh {
-		core::DynamicArray<MeshVertex> vertices;
-		voxel::IndexArray indices;
-		/**
-		 * @c MeshVertex instances have a @c MeshMaterialIndex pointing into this array
-		 */
-		MeshMaterialArray materials;
-		/**
-		 * polygons are just indices into the vertices array
-		 * they must be triangulated before they are voxelized.
-		 * @sa triangulatePolygons()
-		 */
-		core::DynamicArray<voxel::IndexArray> polygons;
-
-		void clearAfterTriangulation();
-		// helper function to add a triangle to the mesh - better add it directly
-		void addTriangle(const voxelformat::MeshTri& tri);
-	};
 
 	/**
 	 * @brief Voxelizes the input mesh

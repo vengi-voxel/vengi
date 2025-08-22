@@ -73,9 +73,10 @@ set(SRCS
 	private/mesh/quake/MDLFormat.h           private/mesh/quake/MDLFormat.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
+	private/mesh/Mesh.h                      private/mesh/Mesh.cpp
+	private/mesh/MeshTri.h                   private/mesh/MeshTri.cpp
 	private/mesh/Polygon.h                   private/mesh/Polygon.cpp
 	private/mesh/PosSampling.h               private/mesh/PosSampling.cpp
-	private/mesh/MeshTri.h                   private/mesh/MeshTri.cpp
 	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
 	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp

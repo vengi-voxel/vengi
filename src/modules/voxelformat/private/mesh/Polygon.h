@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "MeshFormat.h"
-#include "MeshMaterial.h"
 #include "core/collection/Buffer.h"
+#include "voxelformat/private/mesh/Mesh.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -24,6 +25,7 @@ public:
 	Polygon &setMaterialIndex(MeshMaterialIndex materialIdx);
 	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color = core::RGBA(0, 0, 0));
 	bool toTris(MeshTriCollection &tris) const;
+	bool toTris(Mesh &mesh) const;
 
 	glm::vec3 center() const;
 	size_t size() const;

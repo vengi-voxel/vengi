@@ -6,8 +6,8 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
-#include <glm/geometric.hpp>
 #include <array>
+#include <glm/geometric.hpp>
 
 namespace voxelformat {
 
@@ -23,9 +23,8 @@ Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::
 	return *this;
 }
 
-static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords,
-						  core::Buffer<glm::vec2> &pointsProjected, const glm::vec3 &normal,
-						  const glm::vec3 &axis, const glm::vec3 &origin) {
+static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords, core::Buffer<glm::vec2> &pointsProjected,
+						  const glm::vec3 &normal, const glm::vec3 &axis, const glm::vec3 &origin) {
 	const glm::vec3 &perpendicularAxis = glm::cross(normal, axis);
 	for (const glm::vec3 &vc : vertexCoords) {
 		const glm::vec3 &dir = vc - origin;
@@ -40,6 +39,19 @@ void Polygon::addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2)
 	meshTri.setColor(_colors[idx0], _colors[idx1], _colors[idx2]);
 	meshTri.materialIdx = _materialIdx;
 	tris.push_back(meshTri);
+}
+
+bool Polygon::toTris(Mesh &mesh) const {
+	MeshTriCollection tris;
+	if (!toTris(tris)) {
+		return false;
+	}
+	mesh.indices.reserve(mesh.indices.size() + tris.size() * 3);
+	mesh.vertices.reserve(mesh.vertices.size() + tris.size() * 3);
+	for (const MeshTri &tri : tris) {
+		mesh.addTriangle(tri);
+	}
+	return true;
 }
 
 bool Polygon::toTris(MeshTriCollection &tris) const {
