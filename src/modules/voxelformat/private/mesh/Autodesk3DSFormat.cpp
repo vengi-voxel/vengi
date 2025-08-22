@@ -825,29 +825,31 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	Log::debug("Import %i nodes", (int)nodes.size());
 	for (const Node3ds &node : nodes) {
 		Log::debug("Import %i meshes for node '%s'", (int)node.meshes.size(), node.name.c_str());
-		for (const Mesh3ds &mesh : node.meshes) {
-			MeshTriCollection tris;
-			tris.reserve(mesh.faces.size());
-			for (const Face3ds &face : mesh.faces) {
+		for (const Mesh3ds &mesh3ds : node.meshes) {
+			Mesh mesh;
+			mesh.indices.reserve(mesh3ds.faces.size() * 3);
+			mesh.vertices.reserve(mesh3ds.vertices.size() * 3);
+			mesh.materials = meshMaterialArray;
+			for (const Face3ds &face : mesh3ds.faces) {
 				const uint16_t idx0 = face.indices[0];
 				const uint16_t idx1 = face.indices[1];
 				const uint16_t idx2 = face.indices[2];
-				if (idx0 >= mesh.vertices.size() || idx1 >= mesh.vertices.size() || idx2 >= mesh.vertices.size()) {
-					Log::error("Invalid vertex indices for triangle %d:%d:%d (%d)", idx0, idx1, idx2, (int)mesh.vertices.size());
+				if (idx0 >= mesh3ds.vertices.size() || idx1 >= mesh3ds.vertices.size() || idx2 >= mesh3ds.vertices.size()) {
+					Log::error("Invalid vertex indices for triangle %d:%d:%d (%d)", idx0, idx1, idx2, (int)mesh3ds.vertices.size());
 					// try to continue and skip the broken face
 					continue;
 				}
 				MeshTri meshTri;
-				const glm::vec3 &vertex0 = rotationMatrix * glm::vec4(mesh.vertices[idx0] * scale, 1.0f);
-				const glm::vec3 &vertex1 = rotationMatrix * glm::vec4(mesh.vertices[idx1] * scale, 1.0f);
-				const glm::vec3 &vertex2 = rotationMatrix * glm::vec4(mesh.vertices[idx2] * scale, 1.0f);
+				const glm::vec3 &vertex0 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx0] * scale, 1.0f);
+				const glm::vec3 &vertex1 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx1] * scale, 1.0f);
+				const glm::vec3 &vertex2 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx2] * scale, 1.0f);
 				meshTri.setVertices(vertex0, vertex1, vertex2);
-				if (mesh.colors.size() > idx0 && mesh.colors.size() > idx1 && mesh.colors.size() > idx2) {
-					meshTri.setColor(mesh.colors[idx0], mesh.colors[idx1], mesh.colors[idx2]);
+				if (mesh3ds.colors.size() > idx0 && mesh3ds.colors.size() > idx1 && mesh3ds.colors.size() > idx2) {
+					meshTri.setColor(mesh3ds.colors[idx0], mesh3ds.colors[idx1], mesh3ds.colors[idx2]);
 				}
 
-				if (face.indices[0] < mesh.texcoords.size() && face.indices[1] < mesh.texcoords.size() && face.indices[2] < mesh.texcoords.size()) {
-					meshTri.setUVs(mesh.texcoords[face.indices[0]], mesh.texcoords[face.indices[1]], mesh.texcoords[face.indices[2]]);
+				if (face.indices[0] < mesh3ds.texcoords.size() && face.indices[1] < mesh3ds.texcoords.size() && face.indices[2] < mesh3ds.texcoords.size()) {
+					meshTri.setUVs(mesh3ds.texcoords[face.indices[0]], mesh3ds.texcoords[face.indices[1]], mesh3ds.texcoords[face.indices[2]]);
 				}
 				if (!face.material.empty()) {
 					auto matIter = meshMaterials.find(face.material);
@@ -857,7 +859,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 						Log::warn("Failed to look up material '%s'", face.material.c_str());
 					}
 				}
-				tris.emplace_back(meshTri);
+				mesh.addTriangle(meshTri);
 			}
 			// TODO: VOXELFORMAT: node parent (looks like there is no hierarchy in 3ds)
 			int parent = 0;
@@ -866,10 +868,10 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				nodeName = node.name;
 			}
 			if (nodeName.empty()) {
-				nodeName = mesh.name;
+				nodeName = mesh3ds.name;
 			}
-			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)tris.size());
-			const int nodeId = voxelizeNode(nodeName, sceneGraph, core::move(tris), meshMaterialArray, parent);
+			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)mesh3ds.faces.size());
+			const int nodeId = voxelizeMesh(nodeName, sceneGraph, core::move(mesh), parent);
 			if (nodeId == InvalidNodeId) {
 				return false;
 			}
