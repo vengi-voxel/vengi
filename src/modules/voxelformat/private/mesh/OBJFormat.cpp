@@ -299,13 +299,13 @@ void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &
 }
 
 bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyobj::attrib_t &tinyAttrib,
-								  const tinyobj::material_t *tinyMaterials, const glm::vec3 &scale,
-								  scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials,
-								  const MeshMaterialArray &meshMaterialArray) const {
+								  const tinyobj::material_t *tinyMaterials, scenegraph::SceneGraph &sceneGraph,
+								  MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray) const {
 	int indexOffset = 0;
-	MeshTriCollection tris;
+	Mesh mesh;
 	const tinyobj::mesh_t &tinyMesh = tinyShape.mesh;
-	tris.reserve(tinyMesh.num_face_vertices.size());
+	mesh.vertices.reserve(tinyMesh.num_face_vertices.size());
+	mesh.indices.reserve(tinyMesh.indices.size());
 	for (size_t faceNum = 0; faceNum < tinyMesh.num_face_vertices.size(); ++faceNum) {
 		const int materialIndex = tinyMesh.material_ids[faceNum];
 		const tinyobj::material_t *tinyMaterial = materialIndex < 0 ? nullptr : &tinyMaterials[materialIndex];
@@ -315,15 +315,15 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 		const tinyobj::index_t &idx0 = tinyMesh.indices[indexOffset + 0];
 		const tinyobj::index_t &idx1 = tinyMesh.indices[indexOffset + 1];
 		const tinyobj::index_t &idx2 = tinyMesh.indices[indexOffset + 2];
-		const glm::vec3 &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0] * scale.x,
-								 tinyAttrib.vertices[3 * idx0.vertex_index + 1] * scale.y,
-								 tinyAttrib.vertices[3 * idx0.vertex_index + 2] * scale.z};
-		const glm::vec3 &vertex1{tinyAttrib.vertices[3 * idx1.vertex_index + 0] * scale.x,
-								 tinyAttrib.vertices[3 * idx1.vertex_index + 1] * scale.y,
-								 tinyAttrib.vertices[3 * idx1.vertex_index + 2] * scale.z};
-		const glm::vec3 &vertex2{tinyAttrib.vertices[3 * idx2.vertex_index + 0] * scale.x,
-								 tinyAttrib.vertices[3 * idx2.vertex_index + 1] * scale.y,
-								 tinyAttrib.vertices[3 * idx2.vertex_index + 2] * scale.z};
+		const glm::vec3 &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0],
+								 tinyAttrib.vertices[3 * idx0.vertex_index + 1],
+								 tinyAttrib.vertices[3 * idx0.vertex_index + 2]};
+		const glm::vec3 &vertex1{tinyAttrib.vertices[3 * idx1.vertex_index + 0],
+								 tinyAttrib.vertices[3 * idx1.vertex_index + 1],
+								 tinyAttrib.vertices[3 * idx1.vertex_index + 2]};
+		const glm::vec3 &vertex2{tinyAttrib.vertices[3 * idx2.vertex_index + 0],
+								 tinyAttrib.vertices[3 * idx2.vertex_index + 1],
+								 tinyAttrib.vertices[3 * idx2.vertex_index + 2]};
 		meshTri.setVertices(vertex0, vertex1, vertex2);
 		if (!tinyAttrib.colors.empty()) {
 			const float r0 = tinyAttrib.colors[3 * idx0.vertex_index + 0];
@@ -365,11 +365,12 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 				meshTri.setColor(diffuseColor);
 			}
 		}
-		tris.push_back(meshTri);
+		mesh.addTriangle(meshTri);
 
 		indexOffset += faceVertices;
 	}
-	const int nodeId = voxelizeNode(tinyShape.name.c_str(), sceneGraph, core::move(tris), meshMaterialArray);
+	mesh.materials = meshMaterialArray;
+	const int nodeId = voxelizeMesh(tinyShape.name.c_str(), sceneGraph, core::move(mesh));
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 		return false;
@@ -478,11 +479,10 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		meshMaterials.put(meshMaterial->name, meshMaterialArray.size() - 1);
 	}
 
-	const glm::vec3 &scale = getInputScale();
 	for (tinyobj::shape_t &tinyShape : tinyShapes) {
 		// TODO: VOXELFORMAT: shape.lines
 		if (!tinyShape.mesh.num_face_vertices.empty()) {
-			if (!voxelizeMeshShape(tinyShape, tinyAttrib, tinyMaterials.data(), scale, sceneGraph, meshMaterials,
+			if (!voxelizeMeshShape(tinyShape, tinyAttrib, tinyMaterials.data(), sceneGraph, meshMaterials,
 								   meshMaterialArray)) {
 				Log::error("Failed to voxelize shape %s", tinyShape.name.c_str());
 			}

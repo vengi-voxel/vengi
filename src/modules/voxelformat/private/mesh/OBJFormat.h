@@ -33,9 +33,8 @@ protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	bool voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyobj::attrib_t &tinyAttrib,
-						   const tinyobj::material_t *tinyMaterials, const glm::vec3 &scale,
-						   scenegraph::SceneGraph &sceneGraph, MeshMaterialMap &meshMaterials,
-						   const MeshMaterialArray &meshMaterialArray) const;
+						   const tinyobj::material_t *tinyMaterials, scenegraph::SceneGraph &sceneGraph,
+						   MeshMaterialMap &meshMaterials, const MeshMaterialArray &meshMaterialArray) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
