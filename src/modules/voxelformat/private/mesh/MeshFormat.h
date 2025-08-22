@@ -88,10 +88,20 @@ protected:
 	struct Mesh {
 		core::DynamicArray<MeshVertex> vertices;
 		voxel::IndexArray indices;
-		core::DynamicArray<voxel::IndexArray> polygons;
+		/**
+		 * @c MeshVertex instances have a @c MeshMaterialIndex pointing into this array
+		 */
 		MeshMaterialArray materials;
+		/**
+		 * polygons are just indices into the vertices array
+		 * they must be triangulated before they are voxelized.
+		 * @sa triangulatePolygons()
+		 */
+		core::DynamicArray<voxel::IndexArray> polygons;
 
 		void clearAfterTriangulation();
+		// helper function to add a triangle to the mesh - better add it directly
+		void addTriangle(const voxelformat::MeshTri& tri);
 	};
 
 	/**
@@ -122,7 +132,7 @@ protected:
 							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
-	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) const;
+	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index
