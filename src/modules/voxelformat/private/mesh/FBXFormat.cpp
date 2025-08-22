@@ -35,9 +35,9 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const ChunkMeshes &meshes,
-						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
-						   bool quad, bool withColor, bool withTexCoords) {
+bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
+						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
+						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -47,7 +47,8 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 }
 
 bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-								  const core::String &filename, io::SeekableWriteStream &stream, uint32_t sentinelLength) {
+								  const core::String &filename, io::SeekableWriteStream &stream,
+								  uint32_t sentinelLength) {
 	const int64_t endOffsetPos = stream.pos();
 	stream.writeUInt32(0); // Placeholder for EndOffset
 
@@ -74,9 +75,9 @@ bool FBXFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 	return true;
 }
 
-bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-								 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
-								 const scenegraph::SceneGraph &sceneGraph) {
+bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename,
+								 io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
+								 bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
 	stream.writeUInt8(0x1A); // unknown
 	stream.writeUInt8(0x00); // unknown
@@ -172,9 +173,9 @@ void FBXFormat::writeTransformToProperties(io::SeekableWriteStream &stream,
 }
 
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
-bool FBXFormat::saveMeshesAscii(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-								const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
-								const scenegraph::SceneGraph &sceneGraph) {
+bool FBXFormat::saveMeshesAscii(const ChunkMeshes &meshes, const core::String &filename,
+								io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
+								bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	int meshCount = 0;
 	for (const ChunkMeshExt &meshExt : meshes) {
 		for (int i = 0; i < 2; ++i) {
@@ -488,9 +489,9 @@ static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
 	return glm::quat((float)v.x, (float)v.y, (float)v.z, (float)v.w);
 }
 
-static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *scene,
-									  const ufbx_node *node, const glm::vec3 &scale) {
-	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(scene->anim, node, 1.0);
+static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *ufbxScene,
+									  const ufbx_node *ufbxNode, const glm::vec3 &scale) {
+	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(ufbxScene->anim, ufbxNode, 1.0);
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
 	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale));
@@ -510,49 +511,49 @@ static core::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
 
 } // namespace priv
 
-int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
+int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						   const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	Log::debug("Add model node");
 	const glm::vec3 &scale = getInputScale();
-	ufbx_vec2 defaultUV;
-	core_memset(&defaultUV, 0, sizeof(defaultUV));
-	const ufbx_mesh *mesh = node->mesh;
-	core_assert(mesh != nullptr);
+	ufbx_vec2 ufbxDefaultUV;
+	core_memset(&ufbxDefaultUV, 0, sizeof(ufbxDefaultUV));
+	const ufbx_mesh *ufbxMesh = ufbxNode->mesh;
+	core_assert(ufbxMesh != nullptr);
 
-	const size_t numTriIndices = mesh->max_face_triangles * 3;
+	const size_t numTriIndices = ufbxMesh->max_face_triangles * 3;
 	voxel::IndexArray triIndices(numTriIndices);
 
 	MeshTriCollection tris;
 	MeshMaterialArray meshMaterialArray;
 	tris.reserve(numTriIndices);
 
-	Log::debug("There are %i materials in the mesh", (int)mesh->materials.count);
-	Log::debug("Vertex colors: %s", mesh->vertex_color.exists ? "true" : "false");
-	Log::debug("Scene meter scale: %f", scene->settings.unit_meters);
-	Log::debug("Scene original meter scale: %f", scene->settings.original_unit_meters);
+	Log::debug("There are %i materials in the mesh", (int)ufbxMesh->materials.count);
+	Log::debug("Vertex colors: %s", ufbxMesh->vertex_color.exists ? "true" : "false");
+	Log::debug("Scene meter scale: %f", ufbxScene->settings.unit_meters);
+	Log::debug("Scene original meter scale: %f", ufbxScene->settings.original_unit_meters);
 
-	for (const ufbx_mesh_part &meshMaterial : mesh->material_parts) {
-		if (meshMaterial.num_triangles == 0) {
+	for (const ufbx_mesh_part &ufbxMeshPart : ufbxMesh->material_parts) {
+		if (ufbxMeshPart.num_triangles == 0) {
 			continue;
 		}
-		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces,
-				   mesh->materials[meshMaterial.index] ? "yes" : "no");
+		Log::debug("Faces: %i - material: %s", (int)ufbxMeshPart.num_faces,
+				   ufbxMesh->materials[ufbxMeshPart.index] ? "yes" : "no");
 
 		MeshMaterialPtr mat = createMaterial("default");
 
-		if (const ufbx_material *fbxmaterial = mesh->materials[meshMaterial.index]) {
-			const core::String &matname = priv::_ufbx_to_string(fbxmaterial->name);
+		if (const ufbx_material *ufbxMaterial = ufbxMesh->materials[ufbxMeshPart.index]) {
+			const core::String &matname = priv::_ufbx_to_string(ufbxMaterial->name);
 			if (matname.empty()) {
 				continue;
 			}
 			mat = createMaterial(matname);
-			const ufbx_texture *texture = fbxmaterial->fbx.diffuse_color.texture;
-			if (texture == nullptr) {
-				texture = fbxmaterial->pbr.base_color.texture;
+			const ufbx_texture *ufbxTexture = ufbxMaterial->fbx.diffuse_color.texture;
+			if (ufbxTexture == nullptr) {
+				ufbxTexture = ufbxMaterial->pbr.base_color.texture;
 			}
 
-			if (texture) {
-				const core::String &fbxTextureFilename = priv::_ufbx_to_string(texture->relative_filename);
+			if (ufbxTexture) {
+				const core::String &fbxTextureFilename = priv::_ufbx_to_string(ufbxTexture->relative_filename);
 				const core::String &textureName = lookupTexture(filename, fbxTextureFilename, archive);
 				if (!textureName.empty()) {
 					const image::ImagePtr &tex = image::loadImage(textureName);
@@ -564,42 +565,42 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					Log::debug("Failed to load image %s for material %s", fbxTextureFilename.c_str(), matname.c_str());
 				}
 			}
-			if (fbxmaterial->features.pbr.enabled) {
-				if (fbxmaterial->pbr.base_factor.has_value) {
-					mat->baseColorFactor = (float)fbxmaterial->pbr.base_factor.value_real;
+			if (ufbxMaterial->features.pbr.enabled) {
+				if (ufbxMaterial->pbr.base_factor.has_value) {
+					mat->baseColorFactor = (float)ufbxMaterial->pbr.base_factor.value_real;
 				}
-				if (fbxmaterial->pbr.base_color.has_value) {
-					mat->baseColor = priv::_ufbx_to_rgba(fbxmaterial->pbr.base_color);
+				if (ufbxMaterial->pbr.base_color.has_value) {
+					mat->baseColor = priv::_ufbx_to_rgba(ufbxMaterial->pbr.base_color);
 				}
-				if (fbxmaterial->pbr.metalness.has_value) {
+				if (ufbxMaterial->pbr.metalness.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialMetal,
-										   fbxmaterial->pbr.metalness.value_real);
+										   ufbxMaterial->pbr.metalness.value_real);
 				}
-				if (fbxmaterial->pbr.roughness.has_value) {
+				if (ufbxMaterial->pbr.roughness.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialRoughness,
-										   fbxmaterial->pbr.roughness.value_real);
+										   ufbxMaterial->pbr.roughness.value_real);
 				}
-				if (fbxmaterial->pbr.specular_ior.has_value) {
+				if (ufbxMaterial->pbr.specular_ior.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialIndexOfRefraction,
-										   fbxmaterial->pbr.specular_ior.value_real);
+										   ufbxMaterial->pbr.specular_ior.value_real);
 				}
-				if (fbxmaterial->pbr.opacity.has_value) {
-					mat->transparency = 1.0f - fbxmaterial->pbr.opacity.value_real;
+				if (ufbxMaterial->pbr.opacity.has_value) {
+					mat->transparency = 1.0f - ufbxMaterial->pbr.opacity.value_real;
 				}
-				if (fbxmaterial->pbr.glossiness.has_value) {
+				if (ufbxMaterial->pbr.glossiness.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialPhase,
-										   fbxmaterial->pbr.glossiness.value_real);
+										   ufbxMaterial->pbr.glossiness.value_real);
 				}
-				if (fbxmaterial->pbr.specular_factor.has_value) {
+				if (ufbxMaterial->pbr.specular_factor.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialSpecular,
-										   fbxmaterial->pbr.specular_factor.value_real);
+										   ufbxMaterial->pbr.specular_factor.value_real);
 				}
-				if (fbxmaterial->pbr.emission_factor.has_value) {
+				if (ufbxMaterial->pbr.emission_factor.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialEmit,
-										   fbxmaterial->pbr.emission_factor.value_real);
+										   ufbxMaterial->pbr.emission_factor.value_real);
 				}
-				if (fbxmaterial->pbr.emission_color.has_value) {
-					mat->emitColor = priv::_ufbx_to_rgba(fbxmaterial->pbr.emission_color);
+				if (ufbxMaterial->pbr.emission_color.has_value) {
+					mat->emitColor = priv::_ufbx_to_rgba(ufbxMaterial->pbr.emission_color);
 				}
 			}
 		} else {
@@ -607,26 +608,26 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		}
 		meshMaterialArray.push_back(mat);
 
-		for (size_t fi = 0; fi < meshMaterial.num_faces; fi++) {
-			const ufbx_face face = mesh->faces[meshMaterial.face_indices[fi]];
-			const size_t numTris = ufbx_triangulate_face(triIndices.data(), numTriIndices, mesh, face);
+		for (size_t fi = 0; fi < ufbxMeshPart.num_faces; fi++) {
+			const ufbx_face ufbxFace = ufbxMesh->faces[ufbxMeshPart.face_indices[fi]];
+			const size_t numTris = ufbx_triangulate_face(triIndices.data(), numTriIndices, ufbxMesh, ufbxFace);
 
 			for (size_t vi = 0; vi < numTris; vi++) {
 				voxelformat::MeshTri meshTri;
 				const uint32_t idx0 = triIndices[vi * 3 + 0];
 				const uint32_t idx1 = triIndices[vi * 3 + 1];
 				const uint32_t idx2 = triIndices[vi * 3 + 2];
-				const ufbx_vec3 &vertex0 = ufbx_get_vertex_vec3(&mesh->vertex_position, idx0);
-				const ufbx_vec3 &vertex1 = ufbx_get_vertex_vec3(&mesh->vertex_position, idx1);
-				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&mesh->vertex_position, idx2);
+				const ufbx_vec3 &vertex0 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx0);
+				const ufbx_vec3 &vertex1 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx1);
+				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx2);
 				// TODO: VOXELFORMAT: transform here - see issue
 				// https://github.com/vengi-voxel/vengi/issues/227
 				meshTri.setVertices(priv::_ufbx_to_vec3(vertex0) * scale, priv::_ufbx_to_vec3(vertex1) * scale,
 									priv::_ufbx_to_vec3(vertex2) * scale);
-				if (mesh->vertex_color.exists) {
-					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&mesh->vertex_color, idx0);
-					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&mesh->vertex_color, idx1);
-					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&mesh->vertex_color, idx2);
+				if (ufbxMesh->vertex_color.exists) {
+					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx0);
+					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx1);
+					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx2);
 					meshTri.setColor(core::Color::getRGBA(priv::_ufbx_to_vec4(color0)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
@@ -636,7 +637,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			}
 		}
 	}
-	const core::String &name = priv::_ufbx_to_string(node->name);
+	const core::String &name = priv::_ufbx_to_string(ufbxNode->name);
 	const int nodeId = voxelizeNode(name, sceneGraph, core::move(tris), meshMaterialArray, parent, false);
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());
@@ -646,55 +647,55 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
-	priv::_ufbx_to_transform(transform, scene, node, scale);
-	for (const auto &prop : node->props.props) {
-		if ((prop.flags & UFBX_PROP_FLAG_NO_VALUE) != 0) {
+	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, scale);
+	for (const ufbx_prop &ufbxProp : ufbxNode->props.props) {
+		if ((ufbxProp.flags & UFBX_PROP_FLAG_NO_VALUE) != 0) {
 			continue;
 		}
-		sceneGraphNode.setProperty(priv::_ufbx_to_string(prop.name), priv::_ufbx_to_string(prop.value_str));
+		sceneGraphNode.setProperty(priv::_ufbx_to_string(ufbxProp.name), priv::_ufbx_to_string(ufbxProp.value_str));
 	}
 	sceneGraphNode.setTransform(keyFrameIdx, transform);
-	sceneGraphNode.setVisible(node->visible);
+	sceneGraphNode.setVisible(ufbxNode->visible);
 	// TODO: VOXELFORMAT: animations - see ufbx_evaluate_transform
 	return nodeId;
 }
 
-int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
+int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, scenegraph::SceneGraph &sceneGraph,
 							 int parent) const {
 	Log::debug("Add camera node");
-	const ufbx_camera *camera = node->camera;
-	core_assert(camera != nullptr);
+	const ufbx_camera *ufbxCamera = ufbxNode->camera;
+	core_assert(ufbxCamera != nullptr);
 
 	scenegraph::SceneGraphNodeCamera camNode;
-	camNode.setName(priv::_ufbx_to_string(node->name));
-	camNode.setAspectRatio((float)camera->aspect_ratio);
-	camNode.setNearPlane((float)camera->near_plane);
-	camNode.setFarPlane((float)camera->far_plane);
-	if (camera->projection_mode == UFBX_PROJECTION_MODE_PERSPECTIVE) {
+	camNode.setName(priv::_ufbx_to_string(ufbxNode->name));
+	camNode.setAspectRatio((float)ufbxCamera->aspect_ratio);
+	camNode.setNearPlane((float)ufbxCamera->near_plane);
+	camNode.setFarPlane((float)ufbxCamera->far_plane);
+	if (ufbxCamera->projection_mode == UFBX_PROJECTION_MODE_PERSPECTIVE) {
 		camNode.setPerspective();
-		camNode.setFieldOfView((int)camera->field_of_view_deg.x);
-	} else if (camera->projection_mode == UFBX_PROJECTION_MODE_ORTHOGRAPHIC) {
+		camNode.setFieldOfView((int)ufbxCamera->field_of_view_deg.x);
+	} else if (ufbxCamera->projection_mode == UFBX_PROJECTION_MODE_ORTHOGRAPHIC) {
 		camNode.setOrthographic();
-		camNode.setWidth((int)camera->orthographic_size.x);
-		camNode.setHeight((int)camera->orthographic_size.y);
+		camNode.setWidth((int)ufbxCamera->orthographic_size.x);
+		camNode.setHeight((int)ufbxCamera->orthographic_size.y);
 	}
 	scenegraph::SceneGraphTransform transform;
-	priv::_ufbx_to_transform(transform, scene, node, glm::vec3(1.0f));
+	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, glm::vec3(1.0f));
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	camNode.setTransform(keyFrameIdx, transform);
 	return sceneGraph.emplace(core::move(camNode), parent);
 }
 
-int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
+int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	int nodeId = parent;
-	if (node->mesh != nullptr) {
-		nodeId = addMeshNode(scene, node, filename, archive, sceneGraph, parent);
-	} else if (node->camera != nullptr) {
-		nodeId = addCameraNode(scene, node, sceneGraph, parent);
-	} else if (node->light != nullptr) {
+	if (ufbxNode->mesh != nullptr) {
+		nodeId = addMeshNode(ufbxScene, ufbxNode, filename, archive, sceneGraph, parent);
+	} else if (ufbxNode->camera != nullptr) {
+		nodeId = addCameraNode(ufbxScene, ufbxNode, sceneGraph, parent);
+	} else if (ufbxNode->light != nullptr) {
 		Log::debug("Skip light node");
-	} else if (ufbx_as_bone(node->attrib) != nullptr) {
+	} else if (ufbx_as_bone(ufbxNode->attrib) != nullptr) {
 		Log::debug("Skip bone node");
 	} else {
 		Log::debug("Skip unknown node");
@@ -703,10 +704,10 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 		Log::error("Failed to add node with parent %i", parent);
 		return nodeId;
 	}
-	for (const ufbx_node *c : node->children) {
-		const int newNodeId = addNode_r(scene, c, filename, archive, sceneGraph, nodeId);
+	for (const ufbx_node *ufbxChildNode : ufbxNode->children) {
+		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId);
 		if (newNodeId < 0) {
-			const core::String name = priv::_ufbx_to_string(node->name);
+			const core::String name = priv::_ufbx_to_string(ufbxNode->name);
 			Log::error("Failed to add child node '%s'", name.c_str());
 			return newNodeId;
 		}
@@ -721,66 +722,66 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	ufbx_stream ufbxstream;
-	core_memset(&ufbxstream, 0, sizeof(ufbxstream));
-	ufbxstream.user = stream;
-	ufbxstream.read_fn = priv::_ufbx_read_fn;
-	ufbxstream.skip_fn = priv::_ufbx_skip_fn;
+	ufbx_stream ufbxStream;
+	core_memset(&ufbxStream, 0, sizeof(ufbxStream));
+	ufbxStream.user = stream;
+	ufbxStream.read_fn = priv::_ufbx_read_fn;
+	ufbxStream.skip_fn = priv::_ufbx_skip_fn;
 
-	ufbx_load_opts ufbxopts;
-	core_memset(&ufbxopts, 0, sizeof(ufbxopts));
+	ufbx_load_opts ufbxOpts;
+	core_memset(&ufbxOpts, 0, sizeof(ufbxOpts));
 
-	ufbxopts.temp_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
-	ufbxopts.temp_allocator.allocator.free_fn = priv::_ufbx_free;
-	ufbxopts.temp_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
+	ufbxOpts.temp_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
+	ufbxOpts.temp_allocator.allocator.free_fn = priv::_ufbx_free;
+	ufbxOpts.temp_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
 
-	ufbxopts.result_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
-	ufbxopts.result_allocator.allocator.free_fn = priv::_ufbx_free;
-	ufbxopts.result_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
+	ufbxOpts.result_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
+	ufbxOpts.result_allocator.allocator.free_fn = priv::_ufbx_free;
+	ufbxOpts.result_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
 
-	ufbxopts.path_separator = '/';
+	ufbxOpts.path_separator = '/';
 
-	ufbxopts.raw_filename.data = filename.c_str();
-	ufbxopts.raw_filename.size = filename.size();
+	ufbxOpts.raw_filename.data = filename.c_str();
+	ufbxOpts.raw_filename.size = filename.size();
 
 	// TODO: VOXELFORMAT: see issue https://github.com/vengi-voxel/vengi/issues/227
-	ufbxopts.target_axes = ufbx_axes_right_handed_y_up;
-	ufbxopts.target_unit_meters = 1.0f;
-	ufbxopts.target_light_axes = ufbxopts.target_axes;
-	ufbxopts.target_camera_axes = ufbxopts.target_axes;
-	ufbxopts.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
-	ufbxopts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK;
-	ufbxopts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_IGNORE;
-	ufbxopts.pivot_handling = UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT;
-	ufbxopts.generate_missing_normals = true;
+	ufbxOpts.target_axes = ufbx_axes_right_handed_y_up;
+	ufbxOpts.target_unit_meters = 1.0f;
+	ufbxOpts.target_light_axes = ufbxOpts.target_axes;
+	ufbxOpts.target_camera_axes = ufbxOpts.target_axes;
+	ufbxOpts.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
+	ufbxOpts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK;
+	ufbxOpts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_IGNORE;
+	ufbxOpts.pivot_handling = UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT;
+	ufbxOpts.generate_missing_normals = true;
 
-	ufbx_error ufbxerror;
+	ufbx_error ufbxError;
 
-	ufbx_scene *ufbxscene = ufbx_load_stream(&ufbxstream, &ufbxopts, &ufbxerror);
-	if (!ufbxscene) {
-		Log::error("Failed to load fbx scene: %s", ufbxerror.description.data);
+	ufbx_scene *ufbxScene = ufbx_load_stream(&ufbxStream, &ufbxOpts, &ufbxError);
+	if (!ufbxScene) {
+		Log::error("Failed to load fbx scene: %s", ufbxError.description.data);
 		return false;
 	}
-	if (ufbxerror.type != UFBX_ERROR_NONE) {
+	if (ufbxError.type != UFBX_ERROR_NONE) {
 		char err[4096];
-		ufbx_format_error(err, sizeof(err), &ufbxerror);
+		ufbx_format_error(err, sizeof(err), &ufbxError);
 		Log::error("Error while loading fbx: %s", err);
 	}
 
-	Log::debug("right: %i, up: %i, front: %i", ufbxscene->settings.axes.right, ufbxscene->settings.axes.up,
-			   ufbxscene->settings.axes.front);
+	Log::debug("right: %i, up: %i, front: %i", ufbxScene->settings.axes.right, ufbxScene->settings.axes.up,
+			   ufbxScene->settings.axes.front);
 
-	const ufbx_node *root = ufbxscene->root_node;
-	for (const ufbx_node *c : root->children) {
-		if (addNode_r(ufbxscene, c, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
-			const core::String name = priv::_ufbx_to_string(c->name);
+	const ufbx_node *ufbxRoot = ufbxScene->root_node;
+	for (const ufbx_node *ufbxChildNode : ufbxRoot->children) {
+		if (addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
+			const core::String name = priv::_ufbx_to_string(ufbxChildNode->name);
 			Log::error("Failed to add root child node '%s'", name.c_str());
-			ufbx_free_scene(ufbxscene);
+			ufbx_free_scene(ufbxScene);
 			return false;
 		}
 	}
 
-	ufbx_free_scene(ufbxscene);
+	ufbx_free_scene(ufbxScene);
 	return !sceneGraph.empty();
 }
 
