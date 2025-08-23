@@ -107,7 +107,10 @@ protected:
 							 voxel::IndexArray &indices) const;
 	void triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
 							 const core::DynamicArray<MeshVertex> &vertices, voxel::IndexArray &indices) const;
-	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0, bool resetOrigin = true) const;
+	int voxelizeMesh(const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0, bool resetOrigin = true) const {
+		return voxelizeMesh("", name, sceneGraph, core::move(mesh), parent, resetOrigin);
+	}
+	int voxelizeMesh(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent = 0, bool resetOrigin = true) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index
