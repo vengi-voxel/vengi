@@ -700,9 +700,10 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 
 	Log::debug("Voxelize bsp with %i vertices", vertexCount);
 
-	const glm::vec3 &scale = getInputScale();
-	MeshTriCollection tris;
-	tris.reserve(numIndices / 3);
+	Mesh mesh;
+	mesh.materials = meshMaterialArray;
+	mesh.indices.reserve(numIndices);
+	mesh.vertices.reserve(vertexCount);
 	for (int i = 0; i < numIndices; i += 3) {
 		if (stopExecution()) {
 			break;
@@ -711,15 +712,15 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		const int32_t idx0 = indices[i + 0];
 		const int32_t idx1 = indices[i + 1];
 		const int32_t idx2 = indices[i + 2];
-		meshTri.setVertices(verts[idx0] * scale, verts[idx1] * scale, verts[idx2] * scale);
+		meshTri.setVertices(verts[idx0], verts[idx1], verts[idx2]);
 		meshTri.setUVs(texcoords[idx0], texcoords[idx1], texcoords[idx2]);
 		const uint32_t textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
 		meshTri.materialIdx = texture.materialIdx;
-		tris.push_back(meshTri);
+		mesh.addTriangle(meshTri);
 	}
 
-	return voxelizeNode(name, sceneGraph, core::move(tris), meshMaterialArray) > 0;
+	return voxelizeMesh(name, sceneGraph, core::move(mesh)) > 0;
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
