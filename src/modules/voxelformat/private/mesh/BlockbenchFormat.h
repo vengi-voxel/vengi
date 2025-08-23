@@ -31,22 +31,22 @@ namespace voxelformat {
  */
 class BlockbenchFormat : public MeshFormat {
 public:
-	struct CubeFace {
+	struct BBCubeFace {
 		glm::vec2 uvs[2]{{0.0f, 1.0f}, {0.0f, 1.0f}};
 		int textureIndex = -1;
 	};
 
-	struct Cube {
-		CubeFace faces[(int)voxel::FaceNames::Max];
+	struct BBCube {
+		BBCubeFace faces[(int)voxel::FaceNames::Max];
 		glm::vec3 from{0.0f};
 		glm::vec3 to{0.0f};
 	};
 
-	struct Mesh {
+	struct BBMesh {
 		MeshTriCollection tris;
 	};
 
-	struct Node {
+	struct BBNode {
 		core::String uuid;
 		core::String name;
 		// in degrees
@@ -58,14 +58,14 @@ public:
 		bool mirror_uv = false;
 		int color = 0;
 		// group nodes
-		core::DynamicArray<Node> children;
+		core::DynamicArray<BBNode> children;
 		// elements (volumes) by uuid
 		core::DynamicArray<core::String> referenced;
 	};
 
-	enum class ElementType { Cube, Mesh, Max };
+	enum class BBElementType { Cube, Mesh, Max };
 
-	struct Element {
+	struct BBElement {
 		core::String uuid;
 		core::String name;
 		// in degrees
@@ -76,12 +76,12 @@ public:
 		bool locked = false;
 		bool box_uv = false;
 		int color = 0;
-		Cube cube;
-		Mesh mesh;
-		ElementType type = ElementType::Max;
+		BBCube cube;
+		BBMesh mesh;
+		BBElementType type = BBElementType::Max;
 	};
 
-	struct Meta {
+	struct BBMeta {
 		// 1654934558
 		uint64_t creationTimestamp = 0;
 		bool box_uv = false;
@@ -95,7 +95,7 @@ public:
 	};
 
 	// map via uuid
-	using ElementMap = core::StringMap<Element>;
+	using BBElementMap = core::StringMap<BBElement>;
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
@@ -103,11 +103,11 @@ public:
 	}
 
 private:
-	bool addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
+	bool addNode(const BBNode &node, const BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
 				 const MeshMaterialArray &meshMaterialArray, int parent) const;
-	bool generateCube(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
+	bool generateCube(const BBNode &node, const BBElement &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
-	bool generateMesh(const Node &node, Element &element, const MeshMaterialArray &meshMaterialArray,
+	bool generateMesh(const BBNode &node, BBElement &element, const MeshMaterialArray &meshMaterialArray,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
 
 protected:

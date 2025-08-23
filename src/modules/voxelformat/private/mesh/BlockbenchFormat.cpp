@@ -130,24 +130,24 @@ static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::
 	return toVec3(*iter, defaultValue);
 }
 
-static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const char *key) {
+static BlockbenchFormat::BBElementType toType(const nlohmann::json &json, const char *key) {
 	const core::String &type = json::toStr(json, key);
 	if (type == "cube") {
-		return BlockbenchFormat::ElementType::Cube;
+		return BlockbenchFormat::BBElementType::Cube;
 	} else if (type == "mesh") {
-		return BlockbenchFormat::ElementType::Mesh;
+		return BlockbenchFormat::BBElementType::Mesh;
 	}
 	Log::debug("Unsupported element type: %s", type.c_str());
-	return BlockbenchFormat::ElementType::Max;
+	return BlockbenchFormat::BBElementType::Max;
 }
 
 static bool isSupportModelFormat(const core::String &modelFormat) {
 	return modelFormat != "skin";
 }
 
-static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
+static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
 					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
-					  BlockbenchFormat::Element &element) {
+					  BlockbenchFormat::BBElement &element) {
 	if (elementJson.find("vertices") == elementJson.end()) {
 		Log::error("Element is missing vertices in json file: %s", filename.c_str());
 		return false;
@@ -228,9 +228,9 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 	return true;
 }
 
-static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
+static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
 					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
-					  BlockbenchFormat::Element &element) {
+					  BlockbenchFormat::BBElement &element) {
 	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
 		Log::error("Element is missing from or to in json file: %s", filename.c_str());
 		return false;
@@ -311,11 +311,11 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 	return true;
 }
 
-static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
+static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
 						  const nlohmann::json &elementsJson, const MeshMaterialArray &meshMaterialArray,
-						  BlockbenchFormat::ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
+						  BlockbenchFormat::BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
-		BlockbenchFormat::Element element;
+		BlockbenchFormat::BBElement element;
 		element.uuid = json::toStr(elementJson, "uuid");
 		element.name = json::toStr(elementJson, "name");
 		element.origin = scale * priv::toVec3(elementJson, "origin");
@@ -325,15 +325,15 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		element.box_uv = elementJson.value("box_uv", false);
 		element.color = priv::toNumber(elementJson, "color", 0);
 		element.type = priv::toType(elementJson, "type");
-		if (element.type == BlockbenchFormat::ElementType::Max) {
-			element.type = BlockbenchFormat::ElementType::Cube;
+		if (element.type == BlockbenchFormat::BBElementType::Max) {
+			element.type = BlockbenchFormat::BBElementType::Cube;
 		}
 
-		if (element.type == BlockbenchFormat::ElementType::Cube) {
+		if (element.type == BlockbenchFormat::BBElementType::Cube) {
 			if (!parseCube(scale, filename, meta, elementJson, meshMaterialArray, element)) {
 				return false;
 			}
-		} else if (element.type == BlockbenchFormat::ElementType::Mesh) {
+		} else if (element.type == BlockbenchFormat::BBElementType::Mesh) {
 			if (!parseMesh(scale, filename, meta, elementJson, meshMaterialArray, element)) {
 				return false;
 			}
@@ -346,8 +346,8 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 	return true;
 }
 
-static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-						  const nlohmann::json &entryJson, BlockbenchFormat::Node &node) {
+static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
+						  const nlohmann::json &entryJson, BlockbenchFormat::BBNode &node) {
 	node.name = json::toStr(entryJson, "name");
 	node.uuid = json::toStr(entryJson, "uuid");
 	node.locked = entryJson.value("locked", false);
@@ -382,7 +382,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 			Log::error("Child entry is not an object in json file: %s", filename.c_str());
 			return false;
 		}
-		BlockbenchFormat::Node childNode;
+		BlockbenchFormat::BBNode childNode;
 		if (!parseOutliner(scale, filename, meta, *iter, childNode)) {
 			return false;
 		}
@@ -393,9 +393,9 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 } // namespace priv
 
-bool BlockbenchFormat::generateMesh(const Node &node, Element &element, const MeshMaterialArray &meshMaterialArray,
+bool BlockbenchFormat::generateMesh(const BBNode &node, BBElement &element, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
-	Mesh &mesh = element.mesh;
+	BBMesh &mesh = element.mesh;
 	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, core::move(mesh.tris), meshMaterialArray, parent);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
@@ -409,9 +409,9 @@ bool BlockbenchFormat::generateMesh(const Node &node, Element &element, const Me
 	return true;
 }
 
-bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const MeshMaterialArray &meshMaterialArray,
+bool BlockbenchFormat::generateCube(const BBNode &node, const BBElement &element, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
-	const Cube &cube = element.cube;
+	const BBCube &cube = element.cube;
 
 	// TODO: VOXELFORMAT: is this (from > to) used to flip the uv coordinates or for culling?
 	glm::vec3 mins = glm::min(element.cube.from, element.cube.to);
@@ -446,7 +446,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 									  voxel::FaceNames::NegativeY, voxel::FaceNames::PositiveY,
 									  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
 	for (int i = 0; i < lengthof(order); ++i) {
-		const CubeFace &face = cube.faces[(int)order[i]];
+		const BBCubeFace &face = cube.faces[(int)order[i]];
 		const voxel::FaceNames faceName = order[i];
 		image::ImagePtr image;
 		if (face.textureIndex >= 0 && meshMaterialArray[face.textureIndex]->texture) {
@@ -459,7 +459,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;
 }
 
-bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
+bool BlockbenchFormat::addNode(const BBNode &node, const BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
 							   const MeshMaterialArray &meshMaterialArray, int parent) const {
 	Log::debug("node: %s with %i children", node.name.c_str(), (int)node.children.size());
 	for (const core::String &uuid : node.referenced) {
@@ -468,12 +468,12 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 			Log::warn("Could not find node with uuid: %s", uuid.c_str());
 			continue;
 		}
-		Element &element = elementIter->value;
-		if (element.type == ElementType::Cube) {
+		BBElement &element = elementIter->value;
+		if (element.type == BBElementType::Cube) {
 			if (!generateCube(node, element, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
-		} else if (element.type == ElementType::Mesh) {
+		} else if (element.type == BBElementType::Mesh) {
 			if (!generateMesh(node, element, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
@@ -481,7 +481,7 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 			Log::warn("Unsupported element type: %i", (int)element.type);
 		}
 	}
-	for (const Node &child : node.children) {
+	for (const BBNode &child : node.children) {
 		scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group, child.uuid);
 		group.setName(child.name);
 		group.setVisible(child.visible);
@@ -500,7 +500,7 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 	return true;
 }
 
-static bool parseAnimations(const core::String &filename, const BlockbenchFormat::Meta &meta, nlohmann::json &json,
+static bool parseAnimations(const core::String &filename, const BlockbenchFormat::BBMeta &meta, nlohmann::json &json,
 							scenegraph::SceneGraph &sceneGraph) {
 	// no animations found
 	if (json.find("animations") == json.end()) {
@@ -619,7 +619,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	Meta meta;
+	BBMeta meta;
 	meta.formatVersion = json::toStr(metaJson, "format_version");
 	meta.version = util::parseVersion(meta.formatVersion);
 	meta.modelFormat = json::toStr(metaJson, "model_format");
@@ -696,7 +696,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 
 	const glm::vec3 scale = getInputScale();
-	ElementMap elementMap;
+	BBElementMap elementMap;
 	if (!priv::parseElements(scale, filename, meta, elementsJson, meshMaterialArray, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
@@ -708,7 +708,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	Node root;
+	BBNode root;
 	for (const auto &entry : outlinerJson) {
 		if (entry.is_object()) {
 			if (!priv::parseOutliner(scale, filename, meta, entry, root)) {
