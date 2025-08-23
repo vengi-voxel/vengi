@@ -145,9 +145,9 @@ static bool isSupportModelFormat(const core::String &modelFormat) {
 	return modelFormat != "skin";
 }
 
-static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
+static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
-					  BlockbenchFormat::BBElement &element) {
+					  BlockbenchFormat::BBElement &bbElement) {
 	if (elementJson.find("vertices") == elementJson.end()) {
 		Log::error("Element is missing vertices in json file: %s", filename.c_str());
 		return false;
@@ -223,14 +223,14 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 			}
 			polygon.addVertex(pos, uvCoords);
 		}
-		polygon.toTris(element.mesh.tris);
+		polygon.toTris(bbElement.mesh.tris);
 	}
 	return true;
 }
 
-static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
+static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
-					  BlockbenchFormat::BBElement &element) {
+					  BlockbenchFormat::BBElement &bbElement) {
 	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
 		Log::error("Element is missing from or to in json file: %s", filename.c_str());
 		return false;
@@ -243,8 +243,8 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 		return false;
 	}
 
-	element.cube.from = scale * priv::toVec3(elementJson, "from");
-	element.cube.to = scale * priv::toVec3(elementJson, "to");
+	bbElement.cube.from = scale * priv::toVec3(elementJson, "from");
+	bbElement.cube.to = scale * priv::toVec3(elementJson, "to");
 
 	if (elementJson.find("faces") == elementJson.end()) {
 		Log::error("Element is missing faces in json file: %s", filename.c_str());
@@ -303,61 +303,61 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 		if (materialIdx >= 0 && meshMaterialArray[materialIdx]->texture) {
 			const glm::vec2 uv0 = meshMaterialArray[materialIdx]->texture->uv(uvs[0], uvs[1]);
 			const glm::vec2 uv1 = meshMaterialArray[materialIdx]->texture->uv(uvs[2] - 1, uvs[3] - 1);
-			element.cube.faces[(int)faceType].uvs[0] = uv0;
-			element.cube.faces[(int)faceType].uvs[1] = uv1;
+			bbElement.cube.faces[(int)faceType].uvs[0] = uv0;
+			bbElement.cube.faces[(int)faceType].uvs[1] = uv1;
 		}
-		element.cube.faces[(int)faceType].textureIndex = materialIdx;
+		bbElement.cube.faces[(int)faceType].textureIndex = materialIdx;
 	}
 	return true;
 }
 
-static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
+static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 						  const nlohmann::json &elementsJson, const MeshMaterialArray &meshMaterialArray,
-						  BlockbenchFormat::BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
+						  BlockbenchFormat::BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
-		BlockbenchFormat::BBElement element;
-		element.uuid = json::toStr(elementJson, "uuid");
-		element.name = json::toStr(elementJson, "name");
-		element.origin = scale * priv::toVec3(elementJson, "origin");
-		element.rotation = priv::toVec3(elementJson, "rotation");
-		element.rescale = elementJson.value("rescale", false);
-		element.locked = elementJson.value("locked", false);
-		element.box_uv = elementJson.value("box_uv", false);
-		element.color = priv::toNumber(elementJson, "color", 0);
-		element.type = priv::toType(elementJson, "type");
-		if (element.type == BlockbenchFormat::BBElementType::Max) {
-			element.type = BlockbenchFormat::BBElementType::Cube;
+		BlockbenchFormat::BBElement bbElement;
+		bbElement.uuid = json::toStr(elementJson, "uuid");
+		bbElement.name = json::toStr(elementJson, "name");
+		bbElement.origin = scale * priv::toVec3(elementJson, "origin");
+		bbElement.rotation = priv::toVec3(elementJson, "rotation");
+		bbElement.rescale = elementJson.value("rescale", false);
+		bbElement.locked = elementJson.value("locked", false);
+		bbElement.box_uv = elementJson.value("box_uv", false);
+		bbElement.color = priv::toNumber(elementJson, "color", 0);
+		bbElement.type = priv::toType(elementJson, "type");
+		if (bbElement.type == BlockbenchFormat::BBElementType::Max) {
+			bbElement.type = BlockbenchFormat::BBElementType::Cube;
 		}
 
-		if (element.type == BlockbenchFormat::BBElementType::Cube) {
-			if (!parseCube(scale, filename, meta, elementJson, meshMaterialArray, element)) {
+		if (bbElement.type == BlockbenchFormat::BBElementType::Cube) {
+			if (!parseCube(scale, filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
 				return false;
 			}
-		} else if (element.type == BlockbenchFormat::BBElementType::Mesh) {
-			if (!parseMesh(scale, filename, meta, elementJson, meshMaterialArray, element)) {
+		} else if (bbElement.type == BlockbenchFormat::BBElementType::Mesh) {
+			if (!parseMesh(scale, filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
 				return false;
 			}
 		}
 
 		// make a copy here, the element is moved into the map
-		const core::String uuidCopy = element.uuid;
-		elementMap.emplace(uuidCopy, core::move(element));
+		const core::String uuidCopy = bbElement.uuid;
+		bbElementMap.emplace(uuidCopy, core::move(bbElement));
 	}
 	return true;
 }
 
-static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &meta,
-						  const nlohmann::json &entryJson, BlockbenchFormat::BBNode &node) {
-	node.name = json::toStr(entryJson, "name");
-	node.uuid = json::toStr(entryJson, "uuid");
-	node.locked = entryJson.value("locked", false);
-	node.visible = entryJson.value("visibility", true);
-	node.mirror_uv = entryJson.value("mirror_uv", false);
-	node.origin = scale * priv::toVec3(entryJson, "origin");
-	node.rotation = priv::toVec3(entryJson, "rotation");
-	node.color = priv::toNumber(entryJson, "color", 0);
+static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
+						  const nlohmann::json &entryJson, BlockbenchFormat::BBNode &bbNode) {
+	bbNode.name = json::toStr(entryJson, "name");
+	bbNode.uuid = json::toStr(entryJson, "uuid");
+	bbNode.locked = entryJson.value("locked", false);
+	bbNode.visible = entryJson.value("visibility", true);
+	bbNode.mirror_uv = entryJson.value("mirror_uv", false);
+	bbNode.origin = scale * priv::toVec3(entryJson, "origin");
+	bbNode.rotation = priv::toVec3(entryJson, "rotation");
+	bbNode.color = priv::toNumber(entryJson, "color", 0);
 
-	Log::debug("Node name: %s (%i references)", node.name.c_str(), (int)node.referenced.size());
+	Log::debug("Node name: %s (%i references)", bbNode.name.c_str(), (int)bbNode.referenced.size());
 
 	auto childrenIter = entryJson.find("children");
 	if (childrenIter == entryJson.end()) {
@@ -375,47 +375,47 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 	for (auto iter = childrenJson.begin(); iter != childrenJson.end(); ++iter) {
 		if (iter->is_string()) {
 			core::String uuid = json::toStr(*iter);
-			node.referenced.emplace_back(uuid);
+			bbNode.referenced.emplace_back(uuid);
 			continue;
 		}
 		if (!iter->is_object()) {
 			Log::error("Child entry is not an object in json file: %s", filename.c_str());
 			return false;
 		}
-		BlockbenchFormat::BBNode childNode;
-		if (!parseOutliner(scale, filename, meta, *iter, childNode)) {
+		BlockbenchFormat::BBNode bbChildNode;
+		if (!parseOutliner(scale, filename, bbMeta, *iter, bbChildNode)) {
 			return false;
 		}
-		node.children.emplace_back(core::move(childNode));
+		bbNode.children.emplace_back(core::move(bbChildNode));
 	}
 	return true;
 }
 
 } // namespace priv
 
-bool BlockbenchFormat::generateMesh(const BBNode &node, BBElement &element, const MeshMaterialArray &meshMaterialArray,
+bool BlockbenchFormat::generateMesh(const BBNode &bbNode, BBElement &bbElement, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
-	BBMesh &mesh = element.mesh;
-	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, core::move(mesh.tris), meshMaterialArray, parent);
+	BBMesh &bbMesh = bbElement.mesh;
+	const int nodeIdx = voxelizeNode(bbElement.uuid, bbElement.name, sceneGraph, core::move(bbMesh.tris), meshMaterialArray, parent);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
 	}
 	scenegraph::SceneGraphNode &model = sceneGraph.node(nodeIdx);
-	model.setLocked(node.locked);
-	model.setVisible(node.visible);
+	model.setLocked(bbNode.locked);
+	model.setVisible(bbNode.visible);
 	sceneGraph.updateTransforms();
-	model.setRotation(glm::quat(glm::radians(element.rotation)), true);
-	model.setTranslation(element.origin, true);
+	model.setRotation(glm::quat(glm::radians(bbElement.rotation)), true);
+	model.setTranslation(bbElement.origin, true);
 	return true;
 }
 
-bool BlockbenchFormat::generateCube(const BBNode &node, const BBElement &element, const MeshMaterialArray &meshMaterialArray,
+bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbElement, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
-	const BBCube &cube = element.cube;
+	const BBCube &cube = bbElement.cube;
 
 	// TODO: VOXELFORMAT: is this (from > to) used to flip the uv coordinates or for culling?
-	glm::vec3 mins = glm::min(element.cube.from, element.cube.to);
-	glm::vec3 maxs = glm::max(element.cube.from, element.cube.to);
+	glm::vec3 mins = glm::min(bbElement.cube.from, bbElement.cube.to);
+	glm::vec3 maxs = glm::max(bbElement.cube.from, bbElement.cube.to);
 
 	glm::vec3 size = maxs - mins;
 	// even a plane is one voxel for us
@@ -427,21 +427,21 @@ bool BlockbenchFormat::generateCube(const BBNode &node, const BBElement &element
 	maxs = mins + size - 1.0f;
 	voxel::Region region(mins, maxs);
 	if (!region.isValid()) {
-		Log::error("Invalid region for element: %s (node: %s): %f:%f:%f/%f:%f:%f", element.name.c_str(), node.name.c_str(), mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		Log::error("Invalid region for element: %s (node: %s): %f:%f:%f/%f:%f:%f", bbElement.name.c_str(), bbNode.name.c_str(), mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		return false;
 	}
-	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model, element.uuid);
+	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model, bbElement.uuid);
 	region.shift(-region.getLowerCorner());
 	model.setVolume(new voxel::RawVolume(region), true);
-	model.setName(element.name);
-	model.setLocked(node.locked);
-	model.setVisible(node.visible);
-	model.setRotation(glm::quat(glm::radians(element.rotation)), true);
+	model.setName(bbElement.name);
+	model.setLocked(bbNode.locked);
+	model.setVisible(bbNode.visible);
+	model.setRotation(glm::quat(glm::radians(bbElement.rotation)), true);
 	// TODO: VOXELFORMAT: pivot or translation is still wrong and group rotations are not correctly applied yet
-	const glm::vec3 pivot = (element.origin - element.cube.from) / size;
+	const glm::vec3 pivot = (bbElement.origin - bbElement.cube.from) / size;
 	model.setPivot(pivot);
 	const glm::vec3 regionsize = region.getDimensionsInVoxels();
-	model.setTranslation(element.cube.from + pivot * regionsize, true);
+	model.setTranslation(bbElement.cube.from + pivot * regionsize, true);
 	const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX, voxel::FaceNames::PositiveX,
 									  voxel::FaceNames::NegativeY, voxel::FaceNames::PositiveY,
 									  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
@@ -453,54 +453,54 @@ bool BlockbenchFormat::generateCube(const BBNode &node, const BBElement &element
 			image = meshMaterialArray[face.textureIndex]->texture;
 		}
 		voxelutil::importFace(*model.volume(), model.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
-							  element.color);
+							  bbElement.color);
 	}
 	model.volume()->translate(-region.getLowerCorner());
 	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;
 }
 
-bool BlockbenchFormat::addNode(const BBNode &node, const BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
+bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph,
 							   const MeshMaterialArray &meshMaterialArray, int parent) const {
-	Log::debug("node: %s with %i children", node.name.c_str(), (int)node.children.size());
-	for (const core::String &uuid : node.referenced) {
-		auto elementIter = elementMap.find(uuid);
-		if (elementIter == elementMap.end()) {
+	Log::debug("node: %s with %i children", bbNode.name.c_str(), (int)bbNode.children.size());
+	for (const core::String &uuid : bbNode.referenced) {
+		auto elementIter = bbElementMap.find(uuid);
+		if (elementIter == bbElementMap.end()) {
 			Log::warn("Could not find node with uuid: %s", uuid.c_str());
 			continue;
 		}
-		BBElement &element = elementIter->value;
-		if (element.type == BBElementType::Cube) {
-			if (!generateCube(node, element, meshMaterialArray, sceneGraph, parent)) {
+		BBElement &bbElement = elementIter->value;
+		if (bbElement.type == BBElementType::Cube) {
+			if (!generateCube(bbNode, bbElement, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
-		} else if (element.type == BBElementType::Mesh) {
-			if (!generateMesh(node, element, meshMaterialArray, sceneGraph, parent)) {
+		} else if (bbElement.type == BBElementType::Mesh) {
+			if (!generateMesh(bbNode, bbElement, meshMaterialArray, sceneGraph, parent)) {
 				return false;
 			}
 		} else {
-			Log::warn("Unsupported element type: %i", (int)element.type);
+			Log::warn("Unsupported element type: %i", (int)bbElement.type);
 		}
 	}
-	for (const BBNode &child : node.children) {
-		scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group, child.uuid);
-		group.setName(child.name);
-		group.setVisible(child.visible);
-		group.setLocked(child.locked);
-		group.setRotation(glm::quat(glm::radians(child.rotation)), true);
-		group.setTranslation(child.origin, true);
+	for (const BBNode &bbChild : bbNode.children) {
+		scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group, bbChild.uuid);
+		group.setName(bbChild.name);
+		group.setVisible(bbChild.visible);
+		group.setLocked(bbChild.locked);
+		group.setRotation(glm::quat(glm::radians(bbChild.rotation)), true);
+		group.setTranslation(bbChild.origin, true);
 		int groupParent = sceneGraph.emplace(core::move(group), parent);
 		if (groupParent == InvalidNodeId) {
-			Log::error("Failed to add node: %s", child.name.c_str());
+			Log::error("Failed to add node: %s", bbChild.name.c_str());
 			return false;
 		}
-		if (!addNode(child, elementMap, sceneGraph, meshMaterialArray, groupParent)) {
+		if (!addNode(bbChild, bbElementMap, sceneGraph, meshMaterialArray, groupParent)) {
 			return false;
 		}
 	}
 	return true;
 }
 
-static bool parseAnimations(const core::String &filename, const BlockbenchFormat::BBMeta &meta, nlohmann::json &json,
+static bool parseAnimations(const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta, nlohmann::json &json,
 							scenegraph::SceneGraph &sceneGraph) {
 	// no animations found
 	if (json.find("animations") == json.end()) {
@@ -619,25 +619,25 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	BBMeta meta;
-	meta.formatVersion = json::toStr(metaJson, "format_version");
-	meta.version = util::parseVersion(meta.formatVersion);
-	meta.modelFormat = json::toStr(metaJson, "model_format");
-	if (!priv::isSupportModelFormat(meta.modelFormat)) {
-		Log::error("Unsupported model format: %s", meta.modelFormat.c_str());
+	BBMeta bbMeta;
+	bbMeta.formatVersion = json::toStr(metaJson, "format_version");
+	bbMeta.version = util::parseVersion(bbMeta.formatVersion);
+	bbMeta.modelFormat = json::toStr(metaJson, "model_format");
+	if (!priv::isSupportModelFormat(bbMeta.modelFormat)) {
+		Log::error("Unsupported model format: %s", bbMeta.modelFormat.c_str());
 		return false;
 	}
-	meta.creationTimestamp = priv::toNumber(metaJson, "creation_time", (uint64_t)0);
-	meta.box_uv = metaJson.value("box_uv", false);
-	meta.name = json::toStr(json, "name", core::string::extractFilename(filename));
-	meta.model_identifier = json::toStr(json, "model_identifier");
+	bbMeta.creationTimestamp = priv::toNumber(metaJson, "creation_time", (uint64_t)0);
+	bbMeta.box_uv = metaJson.value("box_uv", false);
+	bbMeta.name = json::toStr(json, "name", core::string::extractFilename(filename));
+	bbMeta.model_identifier = json::toStr(json, "model_identifier");
 
 	auto resolutionJsonIter = json.find("resolution");
 	if (resolutionJsonIter != json.end()) {
 		const nlohmann::json &resolutionJson = *resolutionJsonIter;
 		if (resolutionJson.is_object()) {
-			meta.resolution.x = priv::toNumber(resolutionJson, "width", 0);
-			meta.resolution.y = priv::toNumber(resolutionJson, "height", 0);
+			bbMeta.resolution.x = priv::toNumber(resolutionJson, "width", 0);
+			bbMeta.resolution.y = priv::toNumber(resolutionJson, "height", 0);
 		}
 	}
 
@@ -696,8 +696,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 
 	const glm::vec3 scale = getInputScale();
-	BBElementMap elementMap;
-	if (!priv::parseElements(scale, filename, meta, elementsJson, meshMaterialArray, elementMap, sceneGraph)) {
+	BBElementMap bbElementMap;
+	if (!priv::parseElements(scale, filename, bbMeta, elementsJson, meshMaterialArray, bbElementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -708,32 +708,32 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	BBNode root;
+	BBNode bbRoot;
 	for (const auto &entry : outlinerJson) {
 		if (entry.is_object()) {
-			if (!priv::parseOutliner(scale, filename, meta, entry, root)) {
+			if (!priv::parseOutliner(scale, filename, bbMeta, entry, bbRoot)) {
 				Log::error("Failed to parse outliner");
 				return false;
 			}
 		} else if (entry.is_string()) {
 			core::String uuid = json::toStr(entry);
-			root.referenced.emplace_back(uuid);
+			bbRoot.referenced.emplace_back(uuid);
 		}
 	}
 
-	if (!addNode(root, elementMap, sceneGraph, meshMaterialArray, 0)) {
+	if (!addNode(bbRoot, bbElementMap, sceneGraph, meshMaterialArray, 0)) {
 		Log::error("Failed to add node");
 		return false;
 	}
 
-	if (!parseAnimations(filename, meta, json, sceneGraph)) {
+	if (!parseAnimations(filename, bbMeta, json, sceneGraph)) {
 		Log::error("Failed to parse animations");
 		// don't abort because we can still load the model without animations
 	}
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
-	rootNode.setProperty(scenegraph::PropVersion, meta.formatVersion);
-	rootNode.setProperty("model_format", meta.modelFormat);
+	rootNode.setProperty(scenegraph::PropVersion, bbMeta.formatVersion);
+	rootNode.setProperty("model_format", bbMeta.modelFormat);
 
 	return true;
 }
