@@ -42,10 +42,6 @@ public:
 		glm::vec3 to{0.0f};
 	};
 
-	struct BBMesh {
-		MeshTriCollection tris;
-	};
-
 	struct BBNode {
 		core::String uuid;
 		core::String name;
@@ -77,7 +73,7 @@ public:
 		bool box_uv = false;
 		int color = 0;
 		BBCube cube;
-		BBMesh mesh;
+		Mesh mesh;
 		BBElementType type = BBElementType::Max;
 	};
 

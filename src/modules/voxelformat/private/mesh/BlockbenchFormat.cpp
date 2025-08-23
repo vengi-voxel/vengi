@@ -223,7 +223,7 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 			}
 			polygon.addVertex(pos, uvCoords);
 		}
-		polygon.toTris(bbElement.mesh.tris);
+		polygon.toTris(bbElement.mesh);
 	}
 	return true;
 }
@@ -395,8 +395,9 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 bool BlockbenchFormat::generateMesh(const BBNode &bbNode, BBElement &bbElement, const MeshMaterialArray &meshMaterialArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
-	BBMesh &bbMesh = bbElement.mesh;
-	const int nodeIdx = voxelizeNode(bbElement.uuid, bbElement.name, sceneGraph, core::move(bbMesh.tris), meshMaterialArray, parent);
+	Mesh &mesh = bbElement.mesh;
+	mesh.materials = meshMaterialArray;
+	const int nodeIdx = voxelizeMesh(bbElement.uuid, bbElement.name, sceneGraph, core::move(mesh), parent);
 	if (nodeIdx == InvalidNodeId) {
 		return false;
 	}
