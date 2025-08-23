@@ -48,7 +48,31 @@ public:
 	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes
 	 */
 	static bool isVoxelMesh(const MeshTriCollection &tris);
+private:
 
+	/**
+	 * @brief Voxelizes a mesh node and adds it to the scene graph.
+	 *
+	 * This function takes a collection of mesh triangles and voxelizes them into a volume. The resulting
+	 * volume is then added as a node to the scene graph. The function supports different voxelization modes
+	 * and can handle both axis-aligned and non-axis-aligned meshes. It also supports optional palette creation
+	 * and filling of hollow spaces within the volume. Some of the functionality depends on @c core::Var
+	 * settings.
+	 *
+	 * @param uuid The unique identifier for the new node.
+	 * @param name The name of the new node.
+	 * @param sceneGraph The scene graph to which the new node will be added.
+	 * @param tris The collection of mesh triangles to be voxelized.
+	 * @param parent The parent node ID in the scene graph. If no parent, pass 0 to attach it to the root node.
+	 * @param resetOrigin If true, the origin of the volume will be reset to the lower corner of the region.
+	 * @return The id of the newly created node in the scene graph, or InvalidNodeId if voxelization failed.
+	 *
+	 * @see voxelformat::MeshTri
+	 * @see voxelizeGroups()
+	 */
+	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
+					 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
+					 bool resetOrigin = true) const;
 protected:
 	/**
 	 * @brief Color flatten factor - see @c PosSampling::getColor()
@@ -117,30 +141,6 @@ protected:
 	 * @sa image::Image::uv()
 	 */
 	static glm::vec2 paletteUV(int colorIndex);
-
-	/**
-	 * @brief Voxelizes a mesh node and adds it to the scene graph.
-	 *
-	 * This function takes a collection of mesh triangles and voxelizes them into a volume. The resulting
-	 * volume is then added as a node to the scene graph. The function supports different voxelization modes
-	 * and can handle both axis-aligned and non-axis-aligned meshes. It also supports optional palette creation
-	 * and filling of hollow spaces within the volume. Some of the functionality depends on @c core::Var
-	 * settings.
-	 *
-	 * @param uuid The unique identifier for the new node.
-	 * @param name The name of the new node.
-	 * @param sceneGraph The scene graph to which the new node will be added.
-	 * @param tris The collection of mesh triangles to be voxelized.
-	 * @param parent The parent node ID in the scene graph. If no parent, pass 0 to attach it to the root node.
-	 * @param resetOrigin If true, the origin of the volume will be reset to the lower corner of the region.
-	 * @return The id of the newly created node in the scene graph, or InvalidNodeId if voxelization failed.
-	 *
-	 * @see voxelformat::MeshTri
-	 * @see voxelizeGroups()
-	 */
-	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
-					 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
-					 bool resetOrigin = true) const;
 
 	size_t simplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) const;
 	void simplifyPointCloud(PointCloud &vertices) const;
