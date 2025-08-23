@@ -741,7 +741,9 @@ size_t MeshFormat::simplify(voxel::IndexArray &indices, const core::DynamicArray
 													 simplifiedIndices.size(), targetError, &resultError);
 	Log::debug("Simplified mesh - reducing indices from %i to %i: result error %f", (int)indices.size(),
 			   (int)maxIndices, resultError);
-	indices = core::move(simplifiedIndices);
+	if (maxIndices < indices.size()) {
+		indices = core::move(simplifiedIndices);
+	}
 	return maxIndices;
 }
 
