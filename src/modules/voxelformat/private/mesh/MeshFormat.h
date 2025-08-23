@@ -141,10 +141,6 @@ protected:
 	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
 					 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
 					 bool resetOrigin = true) const;
-	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, MeshTriCollection &&tris,
-					 const MeshMaterialArray &meshMaterialArray, int parent = 0, bool resetOrigin = true) const {
-		return voxelizeNode("", name, sceneGraph, core::move(tris), meshMaterialArray, parent, resetOrigin);
-	}
 
 	size_t simplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) const;
 	void simplifyPointCloud(PointCloud &vertices) const;
