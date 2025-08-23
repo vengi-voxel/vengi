@@ -108,15 +108,14 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}
-		void voxelize(scenegraph::SceneGraph &sceneGraph, MeshTriCollection &&tris) {
-			voxelizeNode("test", sceneGraph, core::move(tris), {});
+		void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
+			voxelizeMesh("test", sceneGraph, core::move(mesh));
 			sceneGraph.updateTransforms();
 		}
 	};
 
-	TestMesh mesh;
-	MeshTriCollection tris;
-
+	TestMesh testMesh;
+	Mesh mesh;
 	video::ShapeBuilder b;
 	scenegraph::SceneGraph sceneGraph;
 
@@ -145,9 +144,9 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 		meshTri.setColor(core::Color::getRGBA(colors[indices[i]]),
 						 core::Color::getRGBA(colors[indices[i + 1]]),
 						 core::Color::getRGBA(colors[indices[i + 2]]));
-		tris.push_back(meshTri);
+		mesh.addTriangle(meshTri);
 	}
-	mesh.voxelize(sceneGraph, core::move(tris));
+	testMesh.voxelize(sceneGraph, core::move(mesh));
 	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
 	ASSERT_NE(nullptr, node);
 	const voxel::RawVolume *v = node->volume();
