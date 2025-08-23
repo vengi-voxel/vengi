@@ -514,7 +514,6 @@ static core::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
 int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						   const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	Log::debug("Add model node");
-	const glm::vec3 &scale = getInputScale();
 	ufbx_vec2 ufbxDefaultUV;
 	core_memset(&ufbxDefaultUV, 0, sizeof(ufbxDefaultUV));
 	const ufbx_mesh *ufbxMesh = ufbxNode->mesh;
@@ -523,9 +522,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 	const size_t numTriIndices = ufbxMesh->max_face_triangles * 3;
 	voxel::IndexArray triIndices(numTriIndices);
 
-	MeshTriCollection tris;
-	MeshMaterialArray meshMaterialArray;
-	tris.reserve(numTriIndices);
+	Mesh mesh;
+	mesh.vertices.reserve(numTriIndices);
+	mesh.indices.reserve(numTriIndices);
 
 	Log::debug("There are %i materials in the mesh", (int)ufbxMesh->materials.count);
 	Log::debug("Vertex colors: %s", ufbxMesh->vertex_color.exists ? "true" : "false");
@@ -606,7 +605,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		} else {
 			Log::debug("No material assigned for mesh");
 		}
-		meshMaterialArray.push_back(mat);
+		mesh.materials.push_back(mat);
 
 		for (size_t fi = 0; fi < ufbxMeshPart.num_faces; fi++) {
 			const ufbx_face ufbxFace = ufbxMesh->faces[ufbxMeshPart.face_indices[fi]];
@@ -622,8 +621,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx2);
 				// TODO: VOXELFORMAT: transform here - see issue
 				// https://github.com/vengi-voxel/vengi/issues/227
-				meshTri.setVertices(priv::_ufbx_to_vec3(vertex0) * scale, priv::_ufbx_to_vec3(vertex1) * scale,
-									priv::_ufbx_to_vec3(vertex2) * scale);
+				meshTri.setVertices(priv::_ufbx_to_vec3(vertex0), priv::_ufbx_to_vec3(vertex1),
+									priv::_ufbx_to_vec3(vertex2));
 				if (ufbxMesh->vertex_color.exists) {
 					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx0);
 					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx1);
@@ -632,13 +631,13 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
 				}
-				meshTri.materialIdx = meshMaterialArray.size() - 1;
-				tris.emplace_back(core::move(meshTri));
+				meshTri.materialIdx = mesh.materials.size() - 1;
+				mesh.addTriangle(meshTri);
 			}
 		}
 	}
 	const core::String &name = priv::_ufbx_to_string(ufbxNode->name);
-	const int nodeId = voxelizeNode(name, sceneGraph, core::move(tris), meshMaterialArray, parent, false);
+	const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh), parent, false);
 	if (nodeId < 0) {
 		Log::error("Failed to voxelize node %s", name.c_str());
 		return nodeId;
@@ -647,7 +646,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 	scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
-	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, scale);
+	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, getInputScale());
 	for (const ufbx_prop &ufbxProp : ufbxNode->props.props) {
 		if ((ufbxProp.flags & UFBX_PROP_FLAG_NO_VALUE) != 0) {
 			continue;
