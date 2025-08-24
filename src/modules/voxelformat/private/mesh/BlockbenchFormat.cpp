@@ -145,7 +145,7 @@ static bool isSupportModelFormat(const core::String &modelFormat) {
 	return modelFormat != "skin";
 }
 
-static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
+static bool parseMesh(const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 					  const nlohmann::json &elementJson, const MeshMaterialArray &meshMaterialArray,
 					  BlockbenchFormat::BBElement &bbElement) {
 	if (elementJson.find("vertices") == elementJson.end()) {
@@ -334,7 +334,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 				return false;
 			}
 		} else if (bbElement.type == BlockbenchFormat::BBElementType::Mesh) {
-			if (!parseMesh(scale, filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
+			if (!parseMesh(filename, bbMeta, elementJson, meshMaterialArray, bbElement)) {
 				return false;
 			}
 		}
