@@ -220,6 +220,7 @@ public:
 		}
 
 		if (entry == nullptr) {
+			// TODO: PERF: MEM: this allocates a lot of small memory chunks - use a better allocator
 			entry = new KeyValue(key, core::forward<VALUETYPE>(value));
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
@@ -243,6 +244,7 @@ public:
 		}
 
 		if (entry == nullptr) {
+			// TODO: PERF: MEM: this allocates a lot of small memory chunks - use a better allocator
 			entry = new KeyValue(key, value);
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
