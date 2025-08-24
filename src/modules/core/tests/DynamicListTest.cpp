@@ -19,19 +19,21 @@ struct Type {
 TEST(DynamicListTest, testInsert) {
 	core::DynamicList<Type> list;
 	EXPECT_TRUE(list.insert({1, 1}));
-	EXPECT_EQ(1u, list.count());
+	EXPECT_EQ(1u, list.size());
 	EXPECT_TRUE(list.insert({2, 2}));
-	EXPECT_EQ(2u, list.count());
+	EXPECT_EQ(2u, list.size());
 	EXPECT_TRUE(list.insert({3, 3}));
-	EXPECT_EQ(3u, list.count());
+	EXPECT_EQ(3u, list.size());
 }
 
 TEST(DynamicListTest, testInsertRemove) {
 	core::DynamicList<Type> list;
 	EXPECT_TRUE(list.insert({1, 1}));
-	EXPECT_EQ(1u, list.count());
+	EXPECT_EQ(1u, list.size());
 	EXPECT_TRUE(list.remove({1, 1}));
-	EXPECT_EQ(0u, list.count());
+	EXPECT_EQ(0u, list.size());
+	EXPECT_TRUE(list.insert({1, 1}));
+	EXPECT_EQ(1u, list.size());
 }
 
 TEST(DynamicListTest, testClear) {
@@ -39,10 +41,10 @@ TEST(DynamicListTest, testClear) {
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
-	EXPECT_EQ(16u, list.count());
+	EXPECT_EQ(16u, list.size());
 	EXPECT_FALSE(list.empty());
 	list.clear();
-	EXPECT_EQ(0u, list.count());
+	EXPECT_EQ(0u, list.size());
 	EXPECT_TRUE(list.empty());
 }
 
@@ -59,7 +61,7 @@ TEST(DynamicListTest, testIterate) {
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
-	EXPECT_EQ(16u, list.count());
+	EXPECT_EQ(16u, list.size());
 	int cnt = 0;
 	for (auto iter = list.begin(); iter != list.end(); ++iter) {
 		++cnt;
@@ -72,7 +74,7 @@ TEST(DynamicListTest, testIterateRangeBased) {
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
-	EXPECT_EQ(16u, list.count());
+	EXPECT_EQ(16u, list.size());
 	int cnt = 0;
 	for (auto iter : list) {
 		EXPECT_EQ(cnt, iter.a);
@@ -93,7 +95,7 @@ TEST(DynamicListTest, testErase) {
 	}
 	EXPECT_EQ(4, iter->value.a);
 	auto newIter = list.erase(iter);
-	EXPECT_EQ(15u, list.count());
+	EXPECT_EQ(15u, list.size());
 	EXPECT_EQ(5, newIter->value.a);
 }
 
