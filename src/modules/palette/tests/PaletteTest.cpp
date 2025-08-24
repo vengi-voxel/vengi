@@ -55,8 +55,16 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	palette::Palette pal;
 	pal.nippon();
 	palette::PaletteLookup palLookup(pal);
-	core::RGBA rgba{0xffffffff};
-	EXPECT_EQ(0, palLookup.findClosestIndex(rgba));
+	const core::RGBA white(255, 255, 255, 255);
+	EXPECT_EQ(0u, palLookup.findClosestIndex(white));
+	const core::RGBA red(255, 0, 0, 255);
+	EXPECT_EQ(37u, palLookup.findClosestIndex(red));
+	const core::RGBA green(0, 255, 0, 255);
+	EXPECT_EQ(149u, palLookup.findClosestIndex(green));
+	const core::RGBA blue(0, 0, 255, 255);
+	EXPECT_EQ(197u, palLookup.findClosestIndex(blue));
+	const core::RGBA black(0, 0, 0, 255);
+	EXPECT_EQ(255u, palLookup.findClosestIndex(black));
 }
 
 TEST_F(PaletteTest, testGimpRGBAPalette) {
