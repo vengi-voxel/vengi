@@ -328,7 +328,7 @@ bool ReadStream::readFormat(const char *fmt, ...) {
 }
 
 bool ReadStream::readLine(core::String &str) {
-	str.clear();
+	str.reset();
 	for (;;) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {
@@ -370,7 +370,7 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 }
 
 bool ReadStream::readString(int length, core::String &str, bool terminated) {
-	str.clear();
+	str.reset();
 	str.reserve(length);
 	if (!terminated) {
 		if (length <= 0) {
@@ -448,7 +448,7 @@ bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
 	if (characters == 0u) {
 		return true;
 	}
-	str.clear();
+	str.reset();
 	core::Buffer<uint16_t> utf16str;
 	utf16str.reserve(characters);
 	for (uint32_t i = 0; i < characters; ++i) {
