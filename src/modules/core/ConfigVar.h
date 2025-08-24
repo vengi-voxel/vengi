@@ -99,6 +99,7 @@ constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
 constexpr const char *VoxformatPointCloudSize = "voxformat_pointcloudsize";
 constexpr const char *VoxformatTransform = "voxformat_transform_mesh";
 constexpr const char *VoxformatOptimize = "voxformat_optimize";
+constexpr const char *VoxformatMeshSimplify = "voxformat_mesh_simplify";
 constexpr const char *VoxformatFillHollow = "voxformat_fillhollow";
 constexpr const char *VoxformatVoxelizeMode = "voxformat_voxelizemode";
 constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
@@ -123,6 +124,5 @@ constexpr const char *VoxformatBinvoxVersion = "voxformat_binvoxversion";
 constexpr const char *VoxformatSkinApplyTransform = "voxformat_skinapplytransform";
 constexpr const char *VoxformatSkinAddGroups = "voxformat_skinaddgroups";
 constexpr const char *VoxformatSkinMergeFaces = "voxformat_skinmergefaces";
-constexpr const char *VoxformatMeshSimplify = "voxformat_mesh_simplify";
 
 }
