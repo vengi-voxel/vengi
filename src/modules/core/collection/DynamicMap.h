@@ -72,6 +72,17 @@ protected:
 	core::Array<KeyValue *, BUCKETSIZE> _buckets;
 	HASHER _hasher;
 	size_t _size = 0;
+
+	template<typename... Args>
+	KeyValue *allocateNode(Args &&...args) {
+		// TODO: PERF: MEM: this allocates a lot of small memory chunks - use a better allocator
+		return new KeyValue(core::forward<Args>(args)...);
+	}
+
+	void freeNode(KeyValue *node) {
+		delete node;
+	}
+
 public:
 	DynamicMap(std::initializer_list<KeyValue> other) {
 		_buckets.fill(nullptr);
@@ -220,8 +231,7 @@ public:
 		}
 
 		if (entry == nullptr) {
-			// TODO: PERF: MEM: this allocates a lot of small memory chunks - use a better allocator
-			entry = new KeyValue(key, core::forward<VALUETYPE>(value));
+			entry = allocateNode(key, core::forward<VALUETYPE>(value));
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
 			} else {
@@ -244,8 +254,7 @@ public:
 		}
 
 		if (entry == nullptr) {
-			// TODO: PERF: MEM: this allocates a lot of small memory chunks - use a better allocator
-			entry = new KeyValue(key, value);
+			entry = allocateNode(key, value);
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
 			} else {
@@ -310,7 +319,7 @@ public:
 			prev->next = entry->next;
 		}
 
-		delete entry;
+		freeNode(entry);
 		--_size;
 		return true;
 	}
