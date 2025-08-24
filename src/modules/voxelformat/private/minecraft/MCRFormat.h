@@ -6,20 +6,14 @@
 
 #include "voxelformat/Format.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicMap.h"
 #include "palette/Palette.h"
+#include "NamedBinaryTag.h"
 
 namespace io {
 class ZipReadStream;
 }
 
 namespace voxelformat {
-
-namespace priv {
-class NamedBinaryTag;
-using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::StringHash>;
-using NBTList = core::DynamicArray<NamedBinaryTag>;
-} // namespace priv
 
 /**
  * A minecraft chunk contains the terrain and entity information about a grid of the size 16x256x16
