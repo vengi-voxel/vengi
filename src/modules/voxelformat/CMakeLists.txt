@@ -259,6 +259,7 @@ set(TEST_FILES
 	"tests/glTF/lantern/Lantern.gltf"
 	"tests/glTF/lantern/Lantern_normal.png"
 	"tests/glTF/lantern/Lantern_roughnessMetallic.png"
+	"tests/gun.3ds"
 	"tests/hmec.hva"
 	"tests/hmec.vxl"
 	"tests/Isanth_Type-Zero_Bc.sment"
