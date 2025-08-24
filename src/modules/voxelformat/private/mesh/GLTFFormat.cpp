@@ -41,8 +41,10 @@
 // #define TINYGLTF_NO_FS // TODO: VOXELFORMAT: use our own file abstraction
 #define JSON_HAS_CPP_11
 // #define TINYGLTF_NOEXCEPTION
-// #define TINYGLTF_NO_INCLUDE_STB_IMAGE
-// #define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
 #include "voxelformat/external/tiny_gltf.h"
 
 namespace voxelformat {
@@ -166,6 +168,27 @@ static bool validateCamera(const tinygltf::Camera &camera) {
 		return true;
 	}
 	return false;
+}
+
+static bool loadImageData(tinygltf::Image *tinyImage, const int image_idx, std::string *err, std::string *warn,
+						  int req_width, int req_height, const unsigned char *bytes, int size, void *user_data) {
+	io::MemoryReadStream stream(bytes, size);
+	const image::ImagePtr &img = image::loadImage(tinyImage->name.c_str(), stream);
+	if (!img->isLoaded()) {
+		Log::error("Failed to load image: '%s'", tinyImage->name.c_str());
+		return false;
+	}
+	tinyImage->width = img->width();
+	tinyImage->height = img->height();
+	Log::debug("Loaded image '%s' with size %dx%d and %d components", tinyImage->name.c_str(), img->width(),
+			   img->height(), img->components());
+	tinyImage->component = img->components();
+	tinyImage->bits = 8;
+	tinyImage->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+	tinyImage->image.resize(img->width() * img->height() * img->components());
+	tinyImage->as_is = false;
+	std::copy(img->data(), img->data() + img->width() * img->height() * img->components(), tinyImage->image.data());
+	return true;
 }
 
 } // namespace _priv
@@ -641,7 +664,7 @@ int GLTFFormat::saveTexture(tinygltf::Model &gltfModel, const palette::Palette &
 	gltfPaletteImage.width = palette::PaletteMaxColors;
 	gltfPaletteImage.height = 1;
 	gltfPaletteImage.component = 4;
-	gltfPaletteImage.bits = 32;
+	gltfPaletteImage.bits = 8;
 	gltfPaletteImage.uri += pal64.c_str();
 	gltfModel.images.emplace_back(core::move(gltfPaletteImage));
 
@@ -1872,6 +1895,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 	const core::String filePath = core::string::extractDir(filename);
 	tinygltf::TinyGLTF gltfLoader;
+	gltfLoader.SetImageLoader(_priv::loadImageData, nullptr);
 	tinygltf::Model gltfModel;
 	if (magic == FourCC('g', 'l', 'T', 'F')) {
 		Log::debug("Detected binary gltf stream");
