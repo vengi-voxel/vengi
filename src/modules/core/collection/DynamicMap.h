@@ -6,6 +6,8 @@
 
 #include "core/Common.h"
 #include "core/collection/Array.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicList.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <initializer_list>
@@ -69,18 +71,52 @@ public:
 		const VALUETYPE &second;
 	};
 protected:
+	struct Block {
+		KeyValue *_nodes;
+		size_t _used = 0;
+
+		Block(size_t count) : _nodes(static_cast<KeyValue *>(core_malloc(sizeof(KeyValue) * count))) {
+		}
+
+		Block(const Block&) = delete;
+		Block &operator=(const Block&) = delete;
+		Block(Block &&) = delete;
+		Block &operator=(Block &&) = delete;
+
+		~Block() {
+			core_free(_nodes);
+			_nodes = nullptr;
+			_used = 0;
+		}
+	};
+
 	core::Array<KeyValue *, BUCKETSIZE> _buckets;
 	HASHER _hasher;
 	size_t _size = 0;
 
+	core::DynamicList<Block> _blocks;
+	core::DynamicArray<KeyValue *> _freeList;
+	static constexpr size_t BLOCK_SIZE = 256;
+
 	template<typename... Args>
 	KeyValue *allocateNode(Args &&...args) {
-		// TODO: PERF: MEM: this allocates a lot of small memory chunks - use a better allocator
-		return new KeyValue(core::forward<Args>(args)...);
+		if (!_freeList.empty()) {
+			KeyValue *node = _freeList.back();
+			_freeList.pop();
+			return ::new (node) KeyValue(core::forward<Args>(args)...);
+		}
+
+		if (_blocks.empty() || _blocks.back()->_used >= BLOCK_SIZE) {
+			_blocks.emplace(BLOCK_SIZE);
+		}
+
+		KeyValue *node = &_blocks.back()->_nodes[_blocks.back()->_used++];
+		return ::new (node) KeyValue(core::forward<Args>(args)...);
 	}
 
 	void freeNode(KeyValue *node) {
-		delete node;
+		node->~KeyValue();
+		_freeList.push_back(node);
 	}
 
 public:
@@ -99,8 +135,11 @@ public:
 			put(i->key, i->value);
 		}
 	}
-	DynamicMap(DynamicMap&& other) noexcept : _buckets(other._buckets), _hasher(other._hasher), _size(other._size) {
+	DynamicMap(DynamicMap &&other) noexcept
+		: _buckets(other._buckets), _hasher(other._hasher), _size(other._size), _blocks(core::move(other._blocks)),
+		  _freeList(core::move(other._freeList)) {
 		other._buckets.fill(nullptr);
+		other._size = 0;
 	}
 	~DynamicMap() {
 		clear();
@@ -111,6 +150,9 @@ public:
 			_buckets = other._buckets;
 			_hasher = other._hasher;
 			_size = other._size;
+			other._size = 0;
+			_blocks = core::move(other._blocks);
+			_freeList = core::move(other._freeList);
 			other._buckets.fill(nullptr);
 		}
 		return *this;
@@ -118,7 +160,6 @@ public:
 
 	DynamicMap& operator=(const DynamicMap& other) {
 		clear();
-		_buckets.fill(nullptr);
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
 		}
@@ -281,15 +322,9 @@ public:
 	}
 
 	void clear() {
-		for (size_t i = 0u; i < BUCKETSIZE; ++i) {
-			KeyValue *entry = _buckets[i];
-			while (entry != nullptr) {
-				KeyValue *prev = entry;
-				entry = entry->next;
-				delete prev;
-			}
-			_buckets[i] = nullptr;
-		}
+		_buckets.fill(nullptr);
+		_freeList.clear();
+		_blocks.clear();
 		_size = 0;
 	}
 

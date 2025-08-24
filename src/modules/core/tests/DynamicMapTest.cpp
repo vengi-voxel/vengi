@@ -136,6 +136,21 @@ TEST(DynamicMapTest, testCopy) {
 	map2.clear();
 }
 
+TEST(DynamicMapTest, testMove) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map2;
+	{
+		core::DynamicStringMap<core::SharedPtr<core::String>> map;
+		map.put("foobar", core::make_shared<core::String>("barfoo"));
+		EXPECT_NE(map.end(), map.find("foobar"));
+		map2 = core::move(map);
+		EXPECT_EQ(map.end(), map.find("foobar"));
+		map.clear();
+	}
+	EXPECT_NE(map2.end(), map2.find("foobar"));
+	EXPECT_EQ(map2.end(), map2.find("foobar2"));
+	map2.clear();
+}
+
 TEST(DynamicMapTest, testErase) {
 	core::DynamicStringMap<core::SharedPtr<core::String>> map;
 	map.put("foobar", core::make_shared<core::String>("barfoo"));
