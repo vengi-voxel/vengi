@@ -145,6 +145,21 @@ public:
 		_first = _last = nullptr;
 	}
 
+	template<typename... _Args>
+	void emplace(_Args&&... args) {
+		Node* node = _allocator.alloc(core::forward<_Args>(args)...);
+		if (node == nullptr) {
+			return;
+		}
+		if (_last == nullptr) {
+			core_assert(_first == nullptr);
+			_first = _last = node;
+		} else {
+			_last->next = node;
+			_last = node;
+		}
+	}
+
 	bool insert(const TYPE& value) {
 		Node* node = _allocator.alloc(value);
 		if (node == nullptr) {
