@@ -36,7 +36,7 @@ Nodes are composed of data chunks that each start with a FourCC code.
 ### Magic Number and Version
 
 * **Magic Number**: `0x56454E47` (`'VENG'`)
-* **Version**: 4-byte unsigned integer (current version: `3` - already part of the compressed data)
+* **Version**: 4-byte unsigned integer (current version: `4` - already part of the compressed data)
 * **Root node**: The scene graph root node
 
 ### Scene Graph Nodes
@@ -155,6 +155,6 @@ Animations are stored in the `ANIM` chunk:
     * **Frame Index**: 4-byte unsigned integer
     * **Long Rotation**: 1-byte boolean
     * **Interpolation Type**: String (16-bit length prefix, followed by UTF-8 encoded string)
-    * **Local Matrix**: Sixteen 4-byte floats (4x4 matrix in row-major order)
+    * **Local Matrix**: Sixteen 4-byte floats (4x4 matrix in column-major order)
 
 The end of the animation chunk is marked by the `ENDA` FourCC.
