@@ -160,8 +160,6 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		uvs.push_back(glm::vec2((float)uv.x / (float)hdr.skinWidth, 1.0f - (float)uv.y / (float)hdr.skinHeight));
 	}
 
-	const glm::vec3 &scale = getInputScale();
-
 	if (stream.seek(startOffset + hdr.offsetTris) == -1) {
 		Log::error("Failed to seek to triangles");
 		return false;
@@ -192,8 +190,8 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		}
 
 		voxelformat::MeshTri meshTri;
-		meshTri.setVertices(vertices[vertexIndices[0]] * scale, vertices[vertexIndices[1]] * scale,
-							vertices[vertexIndices[2]] * scale);
+		meshTri.setVertices(vertices[vertexIndices[0]], vertices[vertexIndices[1]],
+							vertices[vertexIndices[2]]);
 		meshTri.setUVs(uvs[uvIndices[0]], uvs[uvIndices[1]], uvs[uvIndices[2]]);
 		meshTri.materialIdx = materialIdx;
 		mesh.addTriangle(meshTri);

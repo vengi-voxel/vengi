@@ -821,7 +821,6 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			meshMaterials.put(material->name, meshMaterialArray.size() - 1);
 		}
 	}
-	const glm::vec3 scale = getInputScale();
 	Log::debug("Import %i nodes", (int)nodes.size());
 	for (const Node3ds &node : nodes) {
 		Log::debug("Import %i meshes for node '%s'", (int)node.meshes.size(), node.name.c_str());
@@ -840,9 +839,9 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 					continue;
 				}
 				MeshTri meshTri;
-				const glm::vec3 &vertex0 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx0] * scale, 1.0f);
-				const glm::vec3 &vertex1 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx1] * scale, 1.0f);
-				const glm::vec3 &vertex2 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx2] * scale, 1.0f);
+				const glm::vec3 &vertex0 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx0], 1.0f);
+				const glm::vec3 &vertex1 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx1], 1.0f);
+				const glm::vec3 &vertex2 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx2], 1.0f);
 				meshTri.setVertices(vertex0, vertex1, vertex2);
 				if (mesh3ds.colors.size() > idx0 && mesh3ds.colors.size() > idx1 && mesh3ds.colors.size() > idx2) {
 					meshTri.setColor(mesh3ds.colors[idx0], mesh3ds.colors[idx1], mesh3ds.colors[idx2]);
