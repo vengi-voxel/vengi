@@ -11,6 +11,7 @@ set(SRCS
 	collection/ConcurrentSet.h
 	collection/DynamicArray.h
 	collection/DynamicParallelMap.h
+	collection/DynamicList.h
 	collection/DynamicMap.h
 	collection/DynamicStack.h
 	collection/DynamicStringMap.h
@@ -134,6 +135,7 @@ set(TEST_SRCS
 	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
+	tests/DynamicListTest.cpp
 	tests/DynamicStackTest.cpp
 	tests/HashTest.cpp
 	tests/ListTest.cpp
