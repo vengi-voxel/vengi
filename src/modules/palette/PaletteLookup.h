@@ -6,7 +6,7 @@
 
 #include "core/Assert.h"
 #include "core/Color.h"
-#include "core/collection/DynamicMap.h"
+#include "core/collection/Buffer.h"
 #include "palette/Palette.h"
 
 namespace palette {
@@ -20,13 +20,29 @@ namespace palette {
  */
 class PaletteLookup {
 private:
+	static constexpr int Q_BITS = 4;											 // 4 bits per channel
+	static constexpr int Q_LEVELS = 1 << Q_BITS;								 // 16
+	static constexpr int CACHE_SIZE = Q_LEVELS * Q_LEVELS * Q_LEVELS * Q_LEVELS; // 16^4 = 65536
+
 	const palette::Palette &_palette;
-	// TODO: PERF: use a k-d tree, octree, ANN or whatever to prevent the O(n) search
-	// for the closest color match
-	core::DynamicMap<core::RGBA, uint8_t, 521> _paletteMap;
+	core::Buffer<uint16_t> _cache; // Fixed-size lookup
+
+	static inline uint16_t quantizeChannel(uint8_t value) {
+		return value >> (8 - Q_BITS); // shift to keep top Q_BITS
+	}
+
+	static inline size_t computeIndex(core::RGBA rgba) {
+		uint16_t r = quantizeChannel(rgba.r);
+		uint16_t g = quantizeChannel(rgba.g);
+		uint16_t b = quantizeChannel(rgba.b);
+		uint16_t a = quantizeChannel(rgba.a);
+		return ((r << (3 * Q_BITS)) | (g << (2 * Q_BITS)) | (b << Q_BITS) | a);
+	}
 
 public:
 	PaletteLookup(const palette::Palette &palette) : _palette(palette) {
+		_cache.resize(CACHE_SIZE);
+		_cache.fill(PaletteColorNotFound);
 	}
 
 	inline const palette::Palette &palette() const {
@@ -47,14 +63,13 @@ public:
 	 * @sa core::Color::getClosestMatch()
 	 */
 	uint8_t findClosestIndex(core::RGBA rgba) {
-		uint8_t paletteIndex = 0;
-		if (!_paletteMap.get(rgba, paletteIndex)) {
+		size_t idx = computeIndex(rgba);
+		uint16_t &cached = _cache[idx];
+		if (cached == (uint16_t)PaletteColorNotFound) {
 			core_assert_always(_palette.colorCount() > 0);
-			// here we are O(n) in every case where the colors are not a perfect match
-			paletteIndex = _palette.getClosestMatch(rgba);
-			_paletteMap.put(rgba, paletteIndex);
+			cached = _palette.getClosestMatch(rgba);
 		}
-		return paletteIndex;
+		return cached;
 	}
 };
 
