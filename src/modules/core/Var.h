@@ -75,7 +75,7 @@ protected:
 	};
 
 	core::String _defaultValue;
-	core::DynamicArray<Value> _history;
+	core::DynamicArray<Value, 16u> _history;
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty = false;
 	ValidatorFunc _validator = nullptr;

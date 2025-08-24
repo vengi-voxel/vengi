@@ -266,8 +266,8 @@ bool Var::setVal(const core::String& value) {
 		if ((_flags & (CV_NOPERSIST | CV_READONLY)) == 0u) {
 			_visitFlags |= NEEDS_SAVING;
 		}
-		if (_history.size() > 16) {
-			_history.erase(0, 8);
+		if (_history.size() >= _history.increase()) {
+			_history.erase(0, _history.increase() / 2);
 			_currentHistoryPos = (uint32_t)_history.size() - 1;
 		}
 	}
