@@ -25,6 +25,7 @@
 
 #include "Iconv.h"
 #include "core/NonCopyable.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 
 namespace app {
@@ -46,6 +47,7 @@ private:
 	core::String _currentLine;
 
 	IConv _conv;
+	io::BufferedReadWriteStream _out{256};
 
 	POParser(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy = true);
 	~POParser();

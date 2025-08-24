@@ -22,6 +22,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #include "Dictionary.h"
+#include "core/Common.h"
 #include "core/Log.h"
 
 namespace app {
@@ -130,38 +131,38 @@ const char *Dictionary::translateCtxtPlural(const char *msgctxt, const char *msg
 }
 
 void Dictionary::addTranslation(const core::String &msgid, const core::String &msgidPlural,
-								const MsgStrs &msgstrs) {
+								MsgStrs &&msgstrs) {
 	auto iter = _entries.find(msgid);
 	if (iter == _entries.end() || iter->second.empty()) {
-		_entries.put(msgid, msgstrs);
+		_entries.emplace(msgid, core::forward<MsgStrs>(msgstrs));
 	} else {
 		Log::warn("collision in add_translation: '%s', '%s'", msgid.c_str(), msgidPlural.c_str());
 	}
 }
 
-void Dictionary::addTranslation(const core::String &msgid, const core::String &msgstr) {
+void Dictionary::addTranslation(core::String &&msgid, core::String &&msgstr) {
 	auto iter = _entries.find(msgid);
 	if (iter == _entries.end() || iter->second.empty()) {
-		_entries.put(msgid, {msgstr});
+		_entries.emplace(msgid, {msgstr});
 	} else if (iter->second[0] != msgstr) {
 		Log::warn("collision in add_translation: '%s', '%s'", msgid.c_str(), msgstr.c_str());
 	}
 }
 
 void Dictionary::addTranslation(const core::String &msgctxt, const core::String &msgid, const core::String &msgidPlural,
-								const MsgStrs &msgstrs) {
+								MsgStrs &&msgstrs) {
 	auto citer = _ctxtEntries.find(msgctxt);
 	if (citer == _ctxtEntries.end()) {
-		_ctxtEntries.emplace(msgctxt, {{msgid, msgstrs}});
+		_ctxtEntries.emplace(msgctxt, {{msgid, core::forward<MsgStrs>(msgstrs)}});
 	} else if (citer->value.find(msgid) == citer->value.end()) {
-		citer->value.put(msgid, msgstrs);
+		citer->value.emplace(msgid, core::forward<MsgStrs>(msgstrs));
 	} else {
 		Log::warn("collision in add_translation: '%s', '%s', '%s'", msgctxt.c_str(), msgid.c_str(),
 				  msgidPlural.c_str());
 	}
 }
 
-void Dictionary::addTranslation(const core::String &msgctxt, const core::String &msgid, const core::String &msgstr) {
+void Dictionary::addTranslation(core::String &&msgctxt, core::String &&msgid, core::String &&msgstr) {
 	auto citer = _ctxtEntries.find(msgctxt);
 	if (citer == _ctxtEntries.end()) {
 		_ctxtEntries.emplace(msgctxt, {{msgid, {msgstr}}});

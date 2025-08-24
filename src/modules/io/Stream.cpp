@@ -664,7 +664,8 @@ bool SeekableReadStream::readLine(core::String &str) {
 	if (n == 0) {
 		return false;
 	}
-	str.clear();
+	str.reset();
+	str.reserve(n < 100 ? n : 100);
 	for (int64_t i = 0; i < n; ++i) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {

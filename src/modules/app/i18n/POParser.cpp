@@ -41,6 +41,7 @@ bool POParser::parse(const core::String &filename, io::SeekableReadStream &in, D
 
 POParser::POParser(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy)
 	: _filename(filename), _in(in), _dict(dict), _useFuzzy(useFuzzy) {
+	_currentLine.reserve(1024);
 }
 
 POParser::~POParser() {
@@ -146,9 +147,9 @@ core::String POParser::getString(unsigned int skip) {
 		return core::String::Empty;
 	}
 
-	io::BufferedReadWriteStream out(256);
+	_out.reset();
 	if (_currentLine[skip] == ' ' && _currentLine[skip + 1] == '"') {
-		if (!getStringLine(out, skip + 1)) {
+		if (!getStringLine(_out, skip + 1)) {
 			return core::String::Empty;
 		}
 	} else {
@@ -161,7 +162,7 @@ core::String POParser::getString(unsigned int skip) {
 				error("unexpected end of line");
 				return core::String::Empty;
 			} else if (_currentLine[skip] == '\"') {
-				if (!getStringLine(out, skip)) {
+				if (!getStringLine(_out, skip)) {
 					return core::String::Empty;
 				}
 				break;
@@ -186,7 +187,7 @@ next:
 				}
 			}
 
-			if (!getStringLine(out, i)) {
+			if (!getStringLine(_out, i)) {
 				return core::String::Empty;
 			}
 			goto next;
@@ -196,9 +197,9 @@ next:
 			break;
 		}
 	}
-	out.seek(0);
+	_out.seek(0);
 	core::String str;
-	out.readString(out.size(), str, false);
+	_out.readString(_out.size(), str, false);
 	return str;
 }
 
@@ -221,7 +222,7 @@ bool POParser::parseHeader(const core::String &header) {
 			// from_charset = line.substr(len);
 			const size_t len = strlen("Content-Type: text/plain; charset=");
 			if (line.compare(0, len, "Content-Type: text/plain; charset=") == 0) {
-				fromCharset = line.substr(len).toUpper();
+				fromCharset = core::move(line.substr(len).toUpper());
 			} else {
 				warning("malformed Content-Type header");
 			}
@@ -319,7 +320,7 @@ bool POParser::parse() {
 			}
 
 			if (prefix("msgid_plural")) {
-				core::String msgid_plural = getString(12);
+				const core::String &msgid_plural = getString(12);
 				if (_error) {
 					return false;
 				}
@@ -334,7 +335,7 @@ bool POParser::parse() {
 				} else if (prefix("msgstr[") && _currentLine.size() > 8 && isdigit(_currentLine[7]) &&
 						   _currentLine[8] == ']') {
 					unsigned int number = static_cast<unsigned int>(_currentLine[7] - '0');
-					core::String msgstr = getString(9);
+					const core::String &msgstr = getString(9);
 					if (_error) {
 						return false;
 					}
@@ -347,7 +348,7 @@ bool POParser::parse() {
 						msgstr_num.resize(number + 1);
 					}
 
-					msgstr_num[number] = _conv.convert(msgstr);
+					msgstr_num[number] = core::move(_conv.isValid() ? _conv.convert(msgstr) : msgstr);
 					goto next;
 				} else {
 					return error("expected 'msgstr[N]'");
@@ -366,9 +367,9 @@ bool POParser::parse() {
 						}
 
 						if (hasMsgctxt) {
-							_dict.addTranslation(msgctxt, msgid, msgid_plural, msgstr_num);
+							_dict.addTranslation(msgctxt, msgid, msgid_plural, core::move(msgstr_num));
 						} else {
-							_dict.addTranslation(msgid, msgid_plural, msgstr_num);
+							_dict.addTranslation(msgid, msgid_plural, core::move(msgstr_num));
 						}
 					}
 				}
@@ -385,9 +386,9 @@ bool POParser::parse() {
 				} else if (!msgstr.empty()) {
 					if (_useFuzzy || !fuzzy) {
 						if (hasMsgctxt) {
-							_dict.addTranslation(msgctxt, msgid, _conv.convert(msgstr));
+							_dict.addTranslation(core::move(msgctxt), core::move(msgid), core::move(_conv.isValid() ? _conv.convert(msgstr) : msgstr));
 						} else {
-							_dict.addTranslation(msgid, _conv.convert(msgstr));
+							_dict.addTranslation(core::move(msgid), core::move(_conv.isValid() ? _conv.convert(msgstr) : msgstr));
 						}
 					}
 				}

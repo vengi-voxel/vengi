@@ -83,6 +83,8 @@ public:
 	bool equals(const char *str) const;
 	bool empty() const;
 	void clear();
+	// reset size and string, but keep the allocated buffer
+	void reset();
 	void insert(size_t index, const char *str);
 	void insert(size_t index, const char *str, size_t len);
 

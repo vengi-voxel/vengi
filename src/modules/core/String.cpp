@@ -196,6 +196,11 @@ void String::reserve(size_t bytes) {
 	checkBufferSize(bytes + 1);
 }
 
+void String::reset() {
+	_data._size = 0u;
+	_data._str[0] = '\0';
+}
+
 void String::clear() {
 	_data._size = 0u;
 	if (onStack()) {

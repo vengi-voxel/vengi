@@ -51,6 +51,7 @@ bool IConv::setCharsets(const core::String &from_charset_, const core::String &t
 	} else {
 		_cd = SDL_iconv_open(_toCharset.c_str(), _fromCharset.c_str());
 		if (_cd == (SDL_iconv_t)-1) {
+			_cd = nullptr;
 			return false;
 		}
 	}

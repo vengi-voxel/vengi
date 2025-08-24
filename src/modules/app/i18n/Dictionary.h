@@ -28,7 +28,6 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
-#include "core/collection/StringMap.h"
 
 namespace app {
 
@@ -98,16 +97,16 @@ public:
 	 * translate().
 	 */
 	void addTranslation(const core::String &msgid, const core::String &msgid_plural,
-						const MsgStrs &msgstrs);
+						MsgStrs &&msgstrs);
 	void addTranslation(const core::String &msgctxt, const core::String &msgid, const core::String &msgid_plural,
-						const MsgStrs &msgstrs);
+						MsgStrs &&msgstrs);
 
 	/**
 	 * Add a translation from \a msgid to \a msgstr to the
 	 * dictionary
 	 */
-	void addTranslation(const core::String &msgid, const core::String &msgstr);
-	void addTranslation(const core::String &msgctxt, const core::String &msgid, const core::String &msgstr);
+	void addTranslation(core::String &&msgid, core::String &&msgstr);
+	void addTranslation(core::String &&msgctxt, core::String &&msgid, core::String &&msgstr);
 
 	/**
 	 * Iterate over all messages, Func is of type:
