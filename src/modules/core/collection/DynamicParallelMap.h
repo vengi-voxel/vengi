@@ -25,7 +25,7 @@ protected:
 	using Super::_buckets;
 
 public:
-	using Super::DynamicMap;
+	using typename Super::DynamicMap;
 	void for_parallel(const std::function<void(const KEYTYPE &, VALUETYPE &)> &fn) const {
 		auto func = [this, &fn](int start, int end) {
 			for (int i = start; i < end; ++i) {

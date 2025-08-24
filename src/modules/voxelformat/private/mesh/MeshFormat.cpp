@@ -563,7 +563,7 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 }
 
 /**
- * @param[out] faces The triangulated faces
+ * @param[out] indices The indices of the triangles
  * @param[in] polygons The indices of the polygon
  */
 void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray> &polygons,
