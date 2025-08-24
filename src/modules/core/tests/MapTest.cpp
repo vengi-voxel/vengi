@@ -131,26 +131,26 @@ TEST(HashMapTest, testIterateRangeBased) {
 
 TEST(HashMapTest, testStringSharedPtr) {
 	core::StringMap<core::SharedPtr<core::String>, 4> map;
-	auto foobar = core::SharedPtr<core::String>::create("foobar");
+	auto foobar = core::make_shared<core::String>("foobar");
 	map.put("foobar", foobar);
-	map.put("barfoo", core::SharedPtr<core::String>::create("barfoo"));
-	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
+	map.put("barfoo", core::make_shared<core::String>("barfoo"));
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
 	for (auto iter = map.begin(); iter != map.end(); ++iter) {
 	}
 	map.clear();
-	foobar = core::SharedPtr<core::String>();
+	foobar = {};
 }
 
 TEST(HashMapTest, testCopy) {
 	core::StringMap<core::SharedPtr<core::String>> map;
-	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
 	auto map2 = map;
 	map2.clear();
 }
 
 TEST(HashMapTest, testErase) {
 	core::StringMap<core::SharedPtr<core::String>> map;
-	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
 	EXPECT_EQ(1u, map.size());
 	auto iter = map.find("foobar");
 	EXPECT_NE(iter, map.end());
@@ -160,7 +160,7 @@ TEST(HashMapTest, testErase) {
 
 TEST(HashMapTest, testAssign) {
 	core::StringMap<core::SharedPtr<core::String>> map;
-	map.put("foobar", core::SharedPtr<core::String>::create("barfoo"));
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
 	core::StringMap<core::SharedPtr<core::String>> map2;
 	map2 = map;
 	EXPECT_EQ(1u, map.size());

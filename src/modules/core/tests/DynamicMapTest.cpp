@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include "core/collection/DynamicMap.h"
 #include "core/SharedPtr.h"
+#include "core/collection/DynamicStringMap.h"
 
 namespace core {
 
@@ -114,6 +115,47 @@ TEST(DynamicMapTest, testIterateRangeBased) {
 		++cnt;
 	}
 	EXPECT_EQ(16, cnt);
+}
+
+TEST(DynamicMapTest, testStringSharedPtr) {
+	core::DynamicStringMap<core::SharedPtr<core::String>, 4> map;
+	auto foobar = core::make_shared<core::String>("foobar");
+	map.put("foobar", foobar);
+	map.put("barfoo", core::make_shared<core::String>("barfoo"));
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
+	for (auto iter = map.begin(); iter != map.end(); ++iter) {
+	}
+	map.clear();
+	foobar = {};
+}
+
+TEST(DynamicMapTest, testCopy) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
+	auto map2 = map;
+	map2.clear();
+}
+
+TEST(DynamicMapTest, testErase) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
+	EXPECT_EQ(1u, map.size());
+	auto iter = map.find("foobar");
+	EXPECT_NE(iter, map.end());
+	map.erase(iter);
+	EXPECT_EQ(0u, map.size());
+}
+
+TEST(DynamicMapTest, testAssign) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
+	core::DynamicStringMap<core::SharedPtr<core::String>> map2;
+	map2 = map;
+	EXPECT_EQ(1u, map.size());
+	EXPECT_EQ(1u, map2.size());
+	map2.clear();
+	EXPECT_EQ(1u, map.size());
+	EXPECT_EQ(0u, map2.size());
 }
 
 }
