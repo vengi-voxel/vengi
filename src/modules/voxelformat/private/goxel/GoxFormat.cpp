@@ -574,7 +574,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		loadChunk_ValidateCRC(*stream);
 	}
 
-	RGBAMap colors;
+	core::RGBABuffer colors;
 	for (image::ImagePtr &img : state.images) {
 		for (int x = 0; x < img->width(); ++x) {
 			for (int y = 0; y < img->height(); ++y) {

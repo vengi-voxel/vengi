@@ -10,7 +10,7 @@
 namespace palette {
 
 bool QuantizedPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
-	RGBAMap colors;
+	core::RGBABuffer colors;
 	if (!load(filename, stream, colors)) {
 		return false;
 	}

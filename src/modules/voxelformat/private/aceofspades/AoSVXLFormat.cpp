@@ -355,7 +355,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 		return 0;
 	}
 
-	RGBAMap colors;
+	core::RGBABuffer colors;
 	for (int x = 0; x < (int)mapSize; x++) {
 		for (int y = 0; y < (int)mapSize; y++) {
 			for (int z = 0; z < (int)mapHeight; z++) {

@@ -386,7 +386,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	return true;
 }
 
-bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, RGBAMap &colors) {
+bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, core::RGBABuffer &colors) {
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
 	if (stream.skip(nameLength) == -1) {
@@ -489,7 +489,7 @@ size_t QBFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 		Log::error("Max allowed matrices exceeded: %u", numMatrices);
 		return 0;
 	}
-	RGBAMap colors;
+	core::RGBABuffer colors;
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);
 		if (!readPalette(state, *stream, colors)) {

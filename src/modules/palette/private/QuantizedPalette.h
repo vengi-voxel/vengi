@@ -5,7 +5,7 @@
 #pragma once
 
 #include "PaletteFormat.h"
-#include "core/collection/DynamicMap.h"
+#include "core/RGBABuffer.h"
 
 namespace palette {
 
@@ -15,10 +15,8 @@ namespace palette {
  */
 class QuantizedPalette : public PaletteFormat {
 public:
-	using RGBAMap = core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher>;
-
 	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) override final;
-	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, RGBAMap &colors) = 0;
+	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, core::RGBABuffer &colors) = 0;
 };
 
 } // namespace palette

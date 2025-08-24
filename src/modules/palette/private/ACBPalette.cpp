@@ -46,7 +46,7 @@ bool ACBPalette::save(const palette::Palette &palette, const core::String &filen
 }
 #undef wrapBool
 
-bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stream, RGBAMap &colors) {
+bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stream, core::RGBABuffer &colors) {
 	uint32_t magic;
 	if (stream.readUInt32(magic) == -1) {
 		Log::error("ACBPalette: Failed to read magic");

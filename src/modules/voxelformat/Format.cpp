@@ -358,7 +358,7 @@ core::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const 
 	return core::Color::flattenRGB(r, g, b, a, _flattenFactor);
 }
 
-int Format::createPalette(const RGBAMap &colors, palette::Palette &palette) const {
+int Format::createPalette(const core::RGBABuffer &colors, palette::Palette &palette) const {
 	const size_t colorCount = (int)colors.size();
 	core::Buffer<core::RGBA, 1024> colorBuffer;
 	colorBuffer.reserve(colorCount);
