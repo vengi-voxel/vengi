@@ -36,7 +36,7 @@ enum class TagType : uint8_t {
 };
 
 using NBTList = core::DynamicArray<NamedBinaryTag>;
-using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::StringHash>;
+using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::StringHash, core::privdynamicmap::EqualCompare, 4>;
 
 union TagData {
 	NBTCompound *_compound;
@@ -92,6 +92,7 @@ union TagData {
 	}
 	void copy(TagType type, const TagData &data);
 };
+static_assert(sizeof(TagData) == sizeof(int64_t), "TagData is too large");
 
 struct NamedBinaryTagContext {
 	io::ReadStream *stream = nullptr;
