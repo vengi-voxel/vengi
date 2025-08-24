@@ -20,9 +20,9 @@ namespace palette {
  */
 class PaletteLookup {
 private:
-	static constexpr int Q_BITS = 4;											 // 4 bits per channel
-	static constexpr int Q_LEVELS = 1 << Q_BITS;								 // 16
-	static constexpr int CACHE_SIZE = Q_LEVELS * Q_LEVELS * Q_LEVELS * Q_LEVELS; // 16^4 = 65536
+	static constexpr int Q_BITS = 5;											 // 5 bits per channel
+	static constexpr int Q_LEVELS = 1 << Q_BITS;								 // 32
+	static constexpr int CACHE_SIZE = Q_LEVELS * Q_LEVELS * Q_LEVELS * Q_LEVELS; // 32^4 = 1048576
 
 	const palette::Palette &_palette;
 	core::Buffer<uint16_t> _cache; // Fixed-size lookup
