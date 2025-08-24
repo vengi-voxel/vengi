@@ -358,9 +358,9 @@ core::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const 
 	return core::Color::flattenRGB(r, g, b, a, _flattenFactor);
 }
 
-int Format::createPalette(const core::RGBABuffer &colors, palette::Palette &palette) const {
+int Format::createPalette(const palette::RGBABuffer &colors, palette::Palette &palette) const {
 	const size_t colorCount = (int)colors.size();
-	core::Buffer<core::RGBA, 1024> colorBuffer;
+	core::Buffer<core::RGBA> colorBuffer;
 	colorBuffer.reserve(colorCount);
 	for (const auto &e : colors) {
 		colorBuffer.push_back(e->first);
@@ -369,7 +369,7 @@ int Format::createPalette(const core::RGBABuffer &colors, palette::Palette &pale
 	return palette.colorCount();
 }
 
-int Format::createPalette(const RGBAMaterialMap &colors,  palette::Palette &palette) const {
+int Format::createPalette(const palette::RGBAMaterialMap &colors, palette::Palette &palette) const {
 	if (colors.empty()) {
 		Log::debug("No colors to create a palette from");
 		palette = voxel::getPalette();
@@ -389,7 +389,7 @@ int Format::createPalette(const RGBAMaterialMap &colors,  palette::Palette &pale
 		return palette.colorCount();
 	}
 	Log::warn("Too many colors to assign the materials");
-	core::Buffer<core::RGBA, 1024> colorBuffer;
+	core::Buffer<core::RGBA> colorBuffer;
 	colorBuffer.reserve(colorCount);
 	for (const auto &e : colors) {
 		colorBuffer.push_back(e->first);

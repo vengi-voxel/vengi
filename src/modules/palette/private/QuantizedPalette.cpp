@@ -10,12 +10,12 @@
 namespace palette {
 
 bool QuantizedPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
-	core::RGBABuffer colors;
+	palette::RGBABuffer colors;
 	if (!load(filename, stream, colors)) {
 		return false;
 	}
 	const size_t colorCount = (int)colors.size();
-	core::Buffer<core::RGBA, 1024> colorBuffer;
+	core::Buffer<core::RGBA> colorBuffer;
 	colorBuffer.reserve(colorCount);
 	for (const auto &e : colors) {
 		colorBuffer.push_back(e->first);

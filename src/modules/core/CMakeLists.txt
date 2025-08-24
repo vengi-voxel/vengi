@@ -64,7 +64,6 @@ set(SRCS
 	PoolAllocator.h
 	Process.cpp Process.h
 	RGBA.h RGBA.cpp
-	RGBABuffer.h
 	SharedPtr.h
 	Singleton.h
 	StandardLib.h

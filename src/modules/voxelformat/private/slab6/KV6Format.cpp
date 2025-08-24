@@ -223,7 +223,7 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 	// SPal not found, most likely slab5
 	stream->seek(headerSize);
 
-	core::RGBABuffer colors;
+	palette::RGBABuffer colors;
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
 		wrapBool(priv::readBGRColor(*stream, color));

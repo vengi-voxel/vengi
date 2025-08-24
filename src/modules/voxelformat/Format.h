@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include "core/RGBABuffer.h"
-#include "core/collection/DynamicMap.h"
+#include "palette/RGBABuffer.h"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
@@ -33,9 +32,6 @@ class SceneGraphNode;
 } // namespace scenegraph
 
 namespace voxelformat {
-
-// TODO: PERF: MEM: this is doing a lot of small memory allocations - use a better allocator or quantize the colors directly into the palette
-using RGBAMaterialMap = core::DynamicMap<core::RGBA, const palette::Material *, 1031, core::RGBAHasher>;
 
 typedef void (*ProgressMonitor)(const char *name, int cur, int max);
 
@@ -117,11 +113,11 @@ protected:
 	 * @brief This can be used for rgb color formats to create a palette. Just read
 	 * all the colors and add then add them to the palette.
 	 *
-	 * @sa core::RGBABuffer
+	 * @sa palette::RGBABuffer
 	 * @sa palette::Palette::createPalette()
 	 */
-	int createPalette(const core::RGBABuffer &colors, palette::Palette &palette) const;
-	int createPalette(const RGBAMaterialMap &colors, palette::Palette &palette) const;
+	int createPalette(const palette::RGBABuffer &colors, palette::Palette &palette) const;
+	int createPalette(const palette::RGBAMaterialMap &colors, palette::Palette &palette) const;
 
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops

@@ -32,6 +32,7 @@ set(SRCS
 	Palette.h Palette.cpp
 	PaletteLookup.h
 	PaletteCompleter.h
+	RGBABuffer.h
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image)
 

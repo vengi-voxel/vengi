@@ -330,7 +330,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 		if (shouldCreatePalette) {
-			RGBAMaterialMap colorMaterials;
+			palette::RGBAMaterialMap colorMaterials;
 			Log::debug("create palette");
 			for (const voxelformat::MeshTri &meshTri : tris) {
 #if 1
@@ -466,7 +466,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	palette::Palette palette;
 	const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (shouldCreatePalette) {
-		RGBAMaterialMap colorMaterials;
+		palette::RGBAMaterialMap colorMaterials;
 		Log::debug("create palette");
 		for (const auto &entry : posMap) {
 			if (stopExecution()) {

@@ -20,7 +20,7 @@ namespace palette {
  */
 class ACBPalette : public QuantizedPalette {
 public:
-	bool load(const core::String &filename, io::SeekableReadStream &stream, core::RGBABuffer &colors) override;
+	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::RGBABuffer &colors) override;
 	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
 
 	static const io::FormatDescription &format() {

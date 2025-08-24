@@ -155,7 +155,7 @@ size_t VBXFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		return 0;
 	}
 
-	core::RGBABuffer colors;
+	palette::RGBABuffer colors;
 	Log::debug("create palette");
 
 	auto data = ini.find("data");

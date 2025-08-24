@@ -160,7 +160,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	} else {
 		// we have to create a palette from the colors
 		Log::debug("Palette size exceeds the max allowed size: %i (we have to quantize the colors)", paletteSize);
-		core::RGBABuffer colors;
+		palette::RGBABuffer colors;
 		for (uint32_t i = 0u; i < paletteSize; ++i) {
 			const core::RGBA rgba = flattenRGB(readColor(*stream));
 			colors.put(rgba, true);

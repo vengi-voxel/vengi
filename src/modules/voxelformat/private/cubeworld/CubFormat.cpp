@@ -42,7 +42,7 @@ size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		return 0;
 	}
 
-	core::RGBABuffer colors;
+	palette::RGBABuffer colors;
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {

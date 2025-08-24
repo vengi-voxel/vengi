@@ -86,7 +86,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 	const int32_t depth = core::string::toInt(tok.tokens()[2]);
 	glm::ivec3 size(width, height, depth);
 
-	core::RGBABuffer colors;
+	palette::RGBABuffer colors;
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {

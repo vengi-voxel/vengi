@@ -6,8 +6,9 @@
 
 #include "core/RGBA.h"
 #include "core/collection/DynamicSet.h"
+#include "palette/Material.h"
 
-namespace core {
+namespace palette {
 
 /**
  * see @c Format::createPalette()
@@ -17,5 +18,7 @@ namespace core {
  * the colors later on)
  */
 using RGBABuffer = core::DynamicSet<core::RGBA, 1031, core::RGBAHasher>;
+// TODO: PERF: MEM: this is doing a lot of small memory allocations - use a better allocator or quantize the colors directly into the palette
+using RGBAMaterialMap = core::DynamicMap<core::RGBA, const palette::Material *, 1031, core::RGBAHasher>;
 
 }

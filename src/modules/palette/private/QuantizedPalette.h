@@ -5,7 +5,7 @@
 #pragma once
 
 #include "PaletteFormat.h"
-#include "core/RGBABuffer.h"
+#include "palette/RGBABuffer.h"
 
 namespace palette {
 
@@ -16,7 +16,7 @@ namespace palette {
 class QuantizedPalette : public PaletteFormat {
 public:
 	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) override final;
-	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, core::RGBABuffer &colors) = 0;
+	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, palette::RGBABuffer &colors) = 0;
 };
 
 } // namespace palette
