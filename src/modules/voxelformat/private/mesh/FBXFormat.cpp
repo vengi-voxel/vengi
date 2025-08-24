@@ -605,7 +605,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		} else {
 			Log::debug("No material assigned for mesh");
 		}
-		mesh.materials.push_back(mat);
+		mesh.materials.emplace_back(core::move(mat));
 
 		for (size_t fi = 0; fi < ufbxMeshPart.num_faces; fi++) {
 			const ufbx_face ufbxFace = ufbxMesh->faces[ufbxMeshPart.face_indices[fi]];
@@ -620,7 +620,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				const ufbx_vec3 &vertex1 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx1);
 				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx2);
 				// TODO: VOXELFORMAT: transform here - see issue
-				// https://github.com/vengi-voxel/vengi/issues/227
+				// https://github.com/vengi-voxel/vengi/issues/447
 				meshTri.setVertices(priv::_ufbx_to_vec3(vertex0), priv::_ufbx_to_vec3(vertex1),
 									priv::_ufbx_to_vec3(vertex2));
 				if (ufbxMesh->vertex_color.exists) {
