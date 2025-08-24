@@ -44,7 +44,8 @@ struct SharedPtrHasher {
  * @sa Map
  * @ingroup Collections
  */
-template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE = 11, typename HASHER = privdynamicmap::DefaultHasher, typename COMPARE = privdynamicmap::EqualCompare>
+template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE = 11, typename HASHER = privdynamicmap::DefaultHasher,
+		 typename COMPARE = privdynamicmap::EqualCompare, size_t BLOCK_SIZE = 256>
 class DynamicMap {
 public:
 	using value_type = VALUETYPE;
@@ -96,7 +97,6 @@ protected:
 
 	core::DynamicList<Block> _blocks;
 	core::DynamicArray<KeyValue *> _freeList;
-	static constexpr size_t BLOCK_SIZE = 256;
 
 	template<typename... Args>
 	KeyValue *allocateNode(Args &&...args) {
@@ -359,5 +359,4 @@ public:
 		return true;
 	}
 };
-
 }
