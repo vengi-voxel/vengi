@@ -827,7 +827,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 		for (const Mesh3ds &mesh3ds : node.meshes) {
 			Mesh mesh;
 			mesh.indices.reserve(mesh3ds.faces.size() * 3);
-			mesh.vertices.reserve(mesh3ds.vertices.size() * 3);
+			mesh.vertices.reserve(mesh3ds.vertices.size());
 			mesh.materials = meshMaterialArray;
 			for (const Face3ds &face : mesh3ds.faces) {
 				const uint16_t idx0 = face.indices[0];
