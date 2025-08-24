@@ -640,7 +640,7 @@ int MeshFormat::voxelizeMesh(const core::String &uuid, const core::String &name,
 	const glm::vec3 &scale = getInputScale();
 	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
 	MeshTriCollection tris;
-	tris.reserve(maxIndices);
+	tris.reserve(maxIndices / 3);
 	for (size_t i = 0; i < maxIndices; i += 3) {
 		voxelformat::MeshTri meshTri;
 		const MeshVertex &vertex0 = mesh.vertices[mesh.indices[i + 0]];
