@@ -47,7 +47,7 @@ if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 endif()
 
 foreach(_FLAG
-	-Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto -ftime-trace)
+	-Wreturn-type -Wwrite-strings -Wno-unused-parameter -fdiagnostics-color=auto -ftime-trace -Wno-cast-align)
 	string(REPLACE "=" "_" _NAME ${_FLAG})
 	string(REPLACE "-" "_" _NAME ${_NAME})
 	check_c_compiler_flag(${_FLAG} HAVE_FLAG${_NAME})
