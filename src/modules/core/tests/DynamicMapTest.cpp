@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include "core/collection/DynamicMap.h"
 #include "core/SharedPtr.h"
+#include "core/StringUtil.h"
 #include "core/collection/DynamicStringMap.h"
 
 namespace core {
@@ -134,6 +135,24 @@ TEST(DynamicMapTest, testCopy) {
 	map.put("foobar", core::make_shared<core::String>("barfoo"));
 	auto map2 = map;
 	map2.clear();
+}
+
+TEST(DynamicMapTest, testCopyBlocks) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	for (int i = 0; i < 1024; ++i) {
+		map.put(core::string::toString(i), core::make_shared<core::String>("barfoo"));
+	}
+	auto map2 = map;
+	map2.clear();
+}
+
+TEST(DynamicMapTest, testCopyBlocksMove) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	for (int i = 0; i < 1024; ++i) {
+		map.put(core::string::toString(i), core::make_shared<core::String>("barfoo"));
+	}
+	core::DynamicStringMap<core::SharedPtr<core::String>> map2;
+	map2 = core::move(map);
 }
 
 TEST(DynamicMapTest, testMove) {
