@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include <initializer_list>
+#include <stddef.h>
 
 namespace core {
 
