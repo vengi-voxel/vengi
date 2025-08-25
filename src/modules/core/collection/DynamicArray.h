@@ -83,7 +83,7 @@ private:
 public:
 	using value_type = TYPE;
 
-	DynamicArray() {
+	constexpr DynamicArray() {
 	}
 
 	DynamicArray(std::initializer_list<TYPE> other) {
