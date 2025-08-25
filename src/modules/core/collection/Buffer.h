@@ -82,6 +82,8 @@ public:
 			_capacity(other._capacity), _size(other._size) {
 		_buffer = other._buffer;
 		other._buffer = nullptr;
+		other._size = 0u;
+		other._capacity = 0u;
 	}
 
 	~Buffer() {
@@ -107,6 +109,8 @@ public:
 		_size = other._size;
 		_buffer = other._buffer;
 		other._buffer = nullptr;
+		other._size = 0u;
+		other._capacity = 0u;
 		return *this;
 	}
 
