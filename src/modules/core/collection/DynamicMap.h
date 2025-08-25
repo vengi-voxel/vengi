@@ -85,6 +85,9 @@ protected:
 		Block &operator=(Block &&) = delete;
 
 		~Block() {
+			for (size_t i = 0; i < _used; ++i) {
+				_nodes[i].~KeyValue();
+			}
 			core_free(_nodes);
 			_nodes = nullptr;
 			_used = 0;
