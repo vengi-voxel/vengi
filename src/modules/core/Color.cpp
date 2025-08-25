@@ -166,6 +166,10 @@ Color::ColorReductionType Color::toColorReductionType(const char *str) {
 struct ColorBox {
 	RGBA min, max;
 	core::Buffer<RGBA> pixels;
+
+	ColorBox() = default;
+	ColorBox(const RGBA &min, const RGBA &max, core::Buffer<RGBA> &&pixels) : min(min), max(max), pixels(pixels) {
+	}
 };
 
 static int medianCutFindMedian(const core::Buffer<RGBA> &colors, int axis) {
@@ -248,11 +252,14 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
 }
 
 static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
-	core::Buffer<RGBA> pixels;
-	pixels.append(inputBuf, inputBufColors);
-
 	core::DynamicArray<ColorBox> boxes;
-	boxes.emplace_back(ColorBox{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
+	{
+		core::RGBA white{0, 0, 0, 255};
+		core::RGBA black{255, 255, 255, 255};
+		core::Buffer<RGBA> pixels;
+		pixels.append(inputBuf, inputBufColors);
+		boxes.emplace_back(white, black, core::move(pixels));
+	}
 
 	while (boxes.size() < maxTargetBufColors) {
 		size_t maxSize = 0;
@@ -550,12 +557,15 @@ static int quantizeNeuQuant(RGBA *targetBuf, size_t maxTargetBufColors, const RG
 }
 
 static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
-	core::Buffer<RGBA> pixels;
-	pixels.append(inputBuf, inputBufColors);
-
 	// Initialize the set of boxes with the full color range
 	core::DynamicArray<ColorBox> boxes;
-	boxes.emplace_back(ColorBox{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
+	{
+		core::Buffer<RGBA> pixels;
+		pixels.append(inputBuf, inputBufColors);
+		core::RGBA white{0, 0, 0, 255};
+		core::RGBA black{255, 255, 255, 255};
+		boxes.emplace_back(white, black, core::move(pixels));
+	}
 
 	// Iterate until we reach the desired number of boxes
 	while (boxes.size() < maxTargetBufColors) {
