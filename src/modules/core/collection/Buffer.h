@@ -65,6 +65,15 @@ public:
 		_size = amount;
 	}
 
+	Buffer(size_t amount, int value) {
+		if (amount == 0u) {
+			return;
+		}
+		checkBufferSize(amount);
+		core_memset(_buffer, value, _capacity * sizeof(TYPE));
+		_size = amount;
+	}
+
 	Buffer(std::initializer_list<TYPE> other) {
 		reserve(other.size());
 		insert(end(), other.begin(), other.end());
