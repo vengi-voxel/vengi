@@ -16,7 +16,8 @@ General:
    - Support `obj` point clouds
    - Added cvars `voxformat_imagesliceoffsetaxis` and `voxformat_imagesliceoffset` to import spritestacks via Aseprite `asprite` files
    - Fixed symlink handling on linux
-   - Reduced memory usage for the voxelizer
+   - Reduced memory usage
+   - Optimized palette color mappings
    - Added `meshoptimizer` simplification support for mesh imports (cvar `voxformat_mesh_simplify`)
 
 VoxEdit:
