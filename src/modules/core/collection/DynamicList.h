@@ -71,12 +71,18 @@ public:
 	}
 
 	~DynamicList() {
+		release();
+	}
+
+	void release() {
 		clear();
-		while (_freeList) {
-			Node *n = _freeList;
-			_freeList = _freeList->next;
-			delete n;
+		Node *entry = _freeList;
+		while (entry != nullptr) {
+			Node *next = entry->next;
+			delete entry;
+			entry = next;
 		}
+		_freeList = nullptr;
 	}
 
 	DynamicList& operator=(const DynamicList& other) {
@@ -91,7 +97,7 @@ public:
 	}
 	DynamicList &operator=(DynamicList &&other) {
 		if (this != &other) {
-			clear();
+			release();
 			_first = other._first;
 			_last = other._last;
 			_freeList = other._freeList;
