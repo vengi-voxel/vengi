@@ -10,9 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
-#include "vox_character.h"
 #include "vox_glasses.h"
-#include "8ontop.h"
 
 namespace voxelformat {
 
@@ -63,6 +61,9 @@ TEST_F(VoxFormatTest, testLoadMaterials) {
 	}
 }
 
+// only compile these tests in debug mode as they are quite big and lto is not a fan of that in terms of run times
+#ifdef DEBUG
+#include "vox_character.h"
 TEST_F(VoxFormatTest, testLoadCharacter) {
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
 		character_0::create(),	character_1::create(),	character_2::create(),	character_3::create(),
@@ -81,20 +82,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	}
 }
 
-TEST_F(VoxFormatTest, testLoadGlasses) {
-	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
-	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "vox_glasses.vox", lengthof(volumes));
-	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	auto iter = sceneGraph.beginModel();
-	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
-		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *(*iter).volume();
-		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.011f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
-	}
-}
-
+#include "8ontop.h"
 TEST_F(VoxFormatTest, testLoad8OnTop) {
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
 		eightontop_0::create(),	 eightontop_1::create(),  eightontop_2::create(),  eightontop_3::create(),
@@ -124,6 +112,21 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *(*iter).volume();
 		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.02f);
+		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
+	}
+}
+#endif
+
+TEST_F(VoxFormatTest, testLoadGlasses) {
+	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "vox_glasses.vox", lengthof(volumes));
+	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
+	auto iter = sceneGraph.beginModel();
+	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
+		const voxel::RawVolume &v1 = *volumes[i].get();
+		const voxel::RawVolume &v2 = *(*iter).volume();
+		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.011f);
 		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
 	}
 }
