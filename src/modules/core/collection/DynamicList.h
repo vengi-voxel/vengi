@@ -19,13 +19,25 @@ template<class TYPE>
 class DynamicList {
 private:
 	struct Node {
+		alignas(TYPE) unsigned char valueStorage[sizeof(TYPE)]; // storage for TYPE
+		Node *next = nullptr;
+
+		// Accessor for value
+		TYPE* valuePtr() { return reinterpret_cast<TYPE*>(valueStorage); }
+		const TYPE* valuePtr() const { return reinterpret_cast<const TYPE*>(valueStorage); }
+
+		// Construct value in-place
 		template<typename ..._Args>
-		inline Node(_Args&&... args) :
-				value(core::forward<_Args>(args)...), next(nullptr) {
+		inline void construct(_Args&&... args) {
+			new (valueStorage) TYPE(core::forward<_Args>(args)...);
 		}
-		TYPE value;
-		Node *next;
+
+		// Destroy value explicitly
+		inline void destroy() {
+			valuePtr()->~TYPE();
+		}
 	};
+
 	Node *_first = nullptr;
 	Node *_last = nullptr;
 	// for node recycling
@@ -37,16 +49,18 @@ private:
 		if (_freeList) {
 			Node *node = _freeList;
 			_freeList = _freeList->next;
-			new (&node->value) TYPE(core::forward<_Args>(args)...);
+			node->construct(core::forward<_Args>(args)...);
 			node->next = nullptr;
 			return node;
 		}
-		return new Node(core::forward<_Args>(args)...);
+		Node *node = new Node();
+		node->construct(core::forward<_Args>(args)...);
+		return node;
 	}
 
 	// Recycle node back into free list
 	void recycleNode(Node *node) {
-		node->value.~TYPE();
+		node->destroy();
 		node->next = _freeList;
 		_freeList = node;
 	}
@@ -124,10 +138,10 @@ public:
 		}
 
 		inline TYPE& operator*() {
-			return _node->value;
+			return *_node->valuePtr();
 		}
 		inline const TYPE& operator*() const {
-			return _node->value;
+			return *_node->valuePtr();
 		}
 
 		iterator& operator++() {
@@ -213,11 +227,11 @@ public:
 	}
 
 	const TYPE* back() const {
-		return _last ? &_last->value : nullptr;
+		return _last ? _last->valuePtr() : nullptr;
 	}
 
 	TYPE* back() {
-		return _last ? &_last->value : nullptr;
+		return _last ? _last->valuePtr() : nullptr;
 	}
 
 	/**
@@ -229,7 +243,7 @@ public:
 			return false;
 		}
 
-		if (_first->value == value) {
+		if (*_first->valuePtr() == value) {
 			Node *next = _first->next;
 			recycleNode(_first);
 			_first = next;
@@ -243,7 +257,7 @@ public:
 		Node* prev = _first;
 		Node* entry = _first->next;
 		while (entry != nullptr) {
-			if (entry->value == value) {
+			if (*entry->valuePtr() == value) {
 				prev->next = entry->next;
 				if (entry == _last) {
 					_last = prev;

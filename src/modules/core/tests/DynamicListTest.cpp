@@ -114,13 +114,13 @@ TEST(DynamicListTest, testErase) {
 	}
 	auto iter = list.begin();
 	for (int i = 0; i < 4; ++i) {
-		EXPECT_EQ(i, iter->value.a);
+		EXPECT_EQ(i, iter->valuePtr()->a);
 		++iter;
 	}
-	EXPECT_EQ(4, iter->value.a);
+	EXPECT_EQ(4, iter->valuePtr()->a);
 	auto newIter = list.erase(iter);
 	EXPECT_EQ(15u, list.size());
-	EXPECT_EQ(5, newIter->value.a);
+	EXPECT_EQ(5, newIter->valuePtr()->a);
 }
 
 }
