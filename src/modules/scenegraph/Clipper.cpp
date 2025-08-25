@@ -35,7 +35,8 @@ glm::vec3 Clipper::clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegrap
 	const glm::vec3 minCorner = intermediatePos - boxHalfExtents;
 	const glm::vec3 maxCorner = intermediatePos + boxHalfExtents;
 
-	glm::ivec3 minVoxel, maxVoxel;
+	glm::ivec3 minVoxel(0);
+	glm::ivec3 maxVoxel(0);
 	if (frameIdx == InvalidFrame) {
 		minVoxel = glm::floor(minCorner);
 		maxVoxel = glm::ceil(maxCorner);
