@@ -7,17 +7,17 @@
 
 namespace core {
 
-struct Type {
+struct QueueTestType {
 	int a;
 	int b;
 
-	inline bool operator==(const Type& rhs) const {
+	inline bool operator==(const QueueTestType& rhs) const {
 		return a == rhs.a && b == rhs.b;
 	}
 };
 
 TEST(QueueTest, testPush) {
-	core::Queue<Type> list;
+	core::Queue<QueueTestType> list;
 	list.push({1, 1});
 	EXPECT_EQ(1u, list.size());
 	list.push({2, 2});
@@ -27,18 +27,18 @@ TEST(QueueTest, testPush) {
 }
 
 TEST(QueueTest, testPop) {
-	core::Queue<Type> list;
+	core::Queue<QueueTestType> list;
 	list.push({1, 42});
 	EXPECT_EQ(1u, list.size());
-	Type t = list.pop();
+	QueueTestType t = list.pop();
 	EXPECT_EQ(0u, list.size());
 	EXPECT_EQ(1, t.a);
 	EXPECT_EQ(42, t.b);
 }
 
 TEST(QueueTest, testTryPop) {
-	core::Queue<Type> list;
-	Type val;
+	core::Queue<QueueTestType> list;
+	QueueTestType val;
 	EXPECT_FALSE(list.try_pop(val));
 	list.push({1, 42});
 	EXPECT_TRUE(list.try_pop(val));
@@ -48,8 +48,8 @@ TEST(QueueTest, testTryPop) {
 }
 
 TEST(QueueTest, testResize) {
-	core::Queue<Type, 1> list;
-	Type val;
+	core::Queue<QueueTestType, 1> list;
+	QueueTestType val;
 	EXPECT_FALSE(list.try_pop(val));
 	for (int i = 0; i < 10; ++i) {
 		list.push({i, i * 10});

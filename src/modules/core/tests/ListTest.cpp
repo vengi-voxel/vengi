@@ -7,17 +7,17 @@
 
 namespace core {
 
-struct Type {
+struct ListTestType {
 	int a;
 	int b;
 
-	inline bool operator==(const Type& rhs) const {
+	inline bool operator==(const ListTestType& rhs) const {
 		return a == rhs.a && b == rhs.b;
 	}
 };
 
 TEST(ListTest, testInsert) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	EXPECT_TRUE(list.insert({1, 1}));
 	EXPECT_EQ(1u, list.size());
 	EXPECT_TRUE(list.insert({2, 2}));
@@ -27,7 +27,7 @@ TEST(ListTest, testInsert) {
 }
 
 TEST(ListTest, testInsertRemove) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	EXPECT_TRUE(list.insert({1, 1}));
 	EXPECT_EQ(1u, list.size());
 	EXPECT_TRUE(list.remove({1, 1}));
@@ -35,7 +35,7 @@ TEST(ListTest, testInsertRemove) {
 }
 
 TEST(ListTest, testClear) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
@@ -47,7 +47,7 @@ TEST(ListTest, testClear) {
 }
 
 TEST(ListTest, testIterator) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	EXPECT_EQ(list.begin(), list.end());
 	EXPECT_TRUE(list.insert({1, 1}));
 	EXPECT_NE(list.begin(), list.end());
@@ -55,7 +55,7 @@ TEST(ListTest, testIterator) {
 }
 
 TEST(ListTest, testIterate) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
@@ -68,7 +68,7 @@ TEST(ListTest, testIterate) {
 }
 
 TEST(ListTest, testIterateRangeBased) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
@@ -82,7 +82,7 @@ TEST(ListTest, testIterateRangeBased) {
 }
 
 TEST(ListTest, testErase) {
-	core::List<Type> list;
+	core::List<ListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}

@@ -7,17 +7,17 @@
 
 namespace core {
 
-struct Type {
+struct DynamicListTestType {
 	int a;
 	int b;
 
-	inline bool operator==(const Type& rhs) const {
+	inline bool operator==(const DynamicListTestType& rhs) const {
 		return a == rhs.a && b == rhs.b;
 	}
 };
 
 TEST(DynamicListTest, testInsert) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	EXPECT_TRUE(list.insert({1, 1}));
 	EXPECT_EQ(1u, list.size());
 	EXPECT_TRUE(list.insert({2, 2}));
@@ -27,7 +27,7 @@ TEST(DynamicListTest, testInsert) {
 }
 
 TEST(DynamicListTest, testInsertRemove) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	EXPECT_TRUE(list.insert({1, 1}));
 	EXPECT_EQ(1u, list.size());
 	EXPECT_TRUE(list.remove({1, 1}));
@@ -37,7 +37,7 @@ TEST(DynamicListTest, testInsertRemove) {
 }
 
 TEST(DynamicListTest, testClear) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
@@ -49,7 +49,7 @@ TEST(DynamicListTest, testClear) {
 }
 
 TEST(DynamicListTest, testIterator) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	EXPECT_EQ(list.begin(), list.end());
 	EXPECT_TRUE(list.insert({1, 1}));
 	EXPECT_NE(list.begin(), list.end());
@@ -57,7 +57,7 @@ TEST(DynamicListTest, testIterator) {
 }
 
 TEST(DynamicListTest, testIterate) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
@@ -70,7 +70,7 @@ TEST(DynamicListTest, testIterate) {
 }
 
 TEST(DynamicListTest, testIterateRangeBased) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
@@ -84,7 +84,7 @@ TEST(DynamicListTest, testIterateRangeBased) {
 }
 
 TEST(DynamicListTest, testErase) {
-	core::DynamicList<Type> list;
+	core::DynamicList<DynamicListTestType> list;
 	for (int i = 0; i < 16; ++i) {
 		EXPECT_TRUE(list.insert({i, i}));
 	}
