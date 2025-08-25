@@ -61,36 +61,35 @@ bool NamedBinaryTagContext::readInt64(int64_t &val) {
 }
 
 NamedBinaryTag::NamedBinaryTag(core::String &&val) : _tagType(TagType::STRING) {
-	_tagData._string = new core::String(core::move(val));
+	_tagData._string = core::move(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(const core::String &val) : _tagType(TagType::STRING) {
-	_tagData._string = new core::String(val);
+	_tagData._string = val;
 }
 
 NamedBinaryTag::NamedBinaryTag(core::Buffer<int8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
-	_tagData._byteArray = new core::Buffer<int8_t>(core::move(val));
+	_tagData._byteArray = core::move(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(core::Buffer<uint8_t> &&val) : _tagType(TagType::BYTE_ARRAY) {
-	_tagData._byteArray = new core::Buffer<int8_t>();
-	_tagData._byteArray->append(val);
+	_tagData._byteArray.append(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(core::Buffer<int32_t> &&val) : _tagType(TagType::INT_ARRAY) {
-	_tagData._intArray = new core::Buffer<int32_t>(core::move(val));
+	_tagData._intArray = core::move(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(core::Buffer<int64_t> &&val) : _tagType(TagType::LONG_ARRAY) {
-	_tagData._longArray = new core::Buffer<int64_t>(core::move(val));
+	_tagData._longArray = core::move(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(NBTList &&val) : _tagType(TagType::LIST) {
-	_tagData._list = new NBTList(core::move(val));
+	_tagData._list = core::move(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(NBTCompound &&val) : _tagType(TagType::COMPOUND) {
-	_tagData._compound = new NBTCompound(core::move(val));
+	_tagData._compound = core::move(val);
 }
 
 NamedBinaryTag::NamedBinaryTag(const NamedBinaryTag &val) {
@@ -99,25 +98,24 @@ NamedBinaryTag::NamedBinaryTag(const NamedBinaryTag &val) {
 }
 
 void TagData::copy(TagType type, const TagData &data) {
-	core_assert(_compound == nullptr);
 	switch (type) {
 	case TagType::COMPOUND:
-		_compound = new NBTCompound(*data._compound);
+		_compound = data._compound;
 		break;
 	case TagType::BYTE_ARRAY:
-		_byteArray = new core::Buffer<int8_t>(*data._byteArray);
+		_byteArray = data._byteArray;
 		break;
 	case TagType::INT_ARRAY:
-		_intArray = new core::Buffer<int32_t>(*data._intArray);
+		_intArray = data._intArray;
 		break;
 	case TagType::LONG_ARRAY:
-		_longArray = new core::Buffer<int64_t>(*data._longArray);
+		_longArray = data._longArray;
 		break;
 	case TagType::LIST:
-		_list = new NBTList(*data._list);
+		_list = data._list;
 		break;
 	case TagType::STRING:
-		_string = new core::String(*data._string);
+		_string = data._string;
 		break;
 	default:
 		*this = data;
@@ -125,38 +123,11 @@ void TagData::copy(TagType type, const TagData &data) {
 	}
 }
 
-NamedBinaryTag::NamedBinaryTag(NamedBinaryTag &&other) noexcept : _tagData(other._tagData), _tagType(other._tagType) {
+NamedBinaryTag::NamedBinaryTag(NamedBinaryTag &&other) noexcept : _tagData(core::move(other._tagData)), _tagType(other._tagType) {
 	other._tagType = TagType::MAX;
-	other._tagData._compound = nullptr;
 }
 
 NamedBinaryTag::~NamedBinaryTag() {
-	switch (_tagType) {
-	case TagType::COMPOUND:
-		delete _tagData._compound;
-		break;
-	case TagType::BYTE_ARRAY:
-		delete _tagData._byteArray;
-		break;
-	case TagType::INT_ARRAY:
-		delete _tagData._intArray;
-		break;
-	case TagType::LONG_ARRAY:
-		delete _tagData._longArray;
-		break;
-	case TagType::LIST:
-		delete _tagData._list;
-		break;
-	case TagType::STRING:
-		delete _tagData._string;
-		break;
-	case TagType::MAX:
-		break;
-	default:
-		core_assert(isPrimitiveType(_tagType));
-		break;
-	}
-	_tagData._compound = nullptr;
 }
 
 void NamedBinaryTag::dump_r(io::WriteStream &stream, const char *name, const NamedBinaryTag &tag, int level) {
@@ -190,22 +161,22 @@ void NamedBinaryTag::dump_r(io::WriteStream &stream, const char *name, const Nam
 	}
 	switch (tag.type()) {
 	case TagType::BYTE:
-		stream.writeStringFormat(false, " = %i", tag._tagData._byte);
+		stream.writeStringFormat(false, " = %i", tag._tagData._val._byte);
 		break;
 	case TagType::SHORT:
-		stream.writeStringFormat(false, " = %i", tag._tagData._short);
+		stream.writeStringFormat(false, " = %i", tag._tagData._val._short);
 		break;
 	case TagType::FLOAT:
-		stream.writeStringFormat(false, " = %f", tag._tagData._float);
+		stream.writeStringFormat(false, " = %f", tag._tagData._val._float);
 		break;
 	case TagType::DOUBLE:
-		stream.writeStringFormat(false, " = %f", tag._tagData._double);
+		stream.writeStringFormat(false, " = %f", tag._tagData._val._double);
 		break;
 	case TagType::INT:
-		stream.writeStringFormat(false, " = %i", tag._tagData._int);
+		stream.writeStringFormat(false, " = %i", tag._tagData._val._int);
 		break;
 	case TagType::LONG:
-		stream.writeStringFormat(false, " = %li", (long int)tag._tagData._long);
+		stream.writeStringFormat(false, " = %li", (long int)tag._tagData._val._long);
 		break;
 	case TagType::STRING:
 		stream.writeStringFormat(false, " = %s", tag.string()->c_str());
@@ -546,22 +517,22 @@ NamedBinaryTag &NamedBinaryTag::operator=(const NamedBinaryTag &val) {
 	} else if (_tagType == val._tagType) {
 		switch (_tagType) {
 		case TagType::STRING:
-			*_tagData._string = *val._tagData._string;
+			_tagData._string = val._tagData._string;
 			break;
 		case TagType::BYTE_ARRAY:
-			*_tagData._byteArray = *val._tagData._byteArray;
+			_tagData._byteArray = val._tagData._byteArray;
 			break;
 		case TagType::INT_ARRAY:
-			*_tagData._intArray = *val._tagData._intArray;
+			_tagData._intArray = val._tagData._intArray;
 			break;
 		case TagType::LONG_ARRAY:
-			*_tagData._longArray = *val._tagData._longArray;
+			_tagData._longArray = val._tagData._longArray;
 			break;
 		case TagType::LIST:
-			*_tagData._list = *val._tagData._list;
+			_tagData._list = val._tagData._list;
 			break;
 		case TagType::COMPOUND:
-			*_tagData._compound = *val._tagData._compound;
+			_tagData._compound = val._tagData._compound;
 			break;
 		default:
 			core_assert(isPrimitiveType(_tagType));

@@ -36,63 +36,64 @@ enum class TagType : uint8_t {
 };
 
 using NBTList = core::DynamicArray<NamedBinaryTag>;
-using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::StringHash, core::privdynamicmap::EqualCompare, 4>;
+using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 7, core::StringHash, core::privdynamicmap::EqualCompare, 4>;
 
-union TagData {
-	NBTCompound *_compound;
-	core::Buffer<int8_t> *_byteArray;
-	core::Buffer<int32_t> *_intArray;
-	core::Buffer<int64_t> *_longArray;
-	NBTList *_list;
-	core::String *_string;
-	float _float;
-	double _double;
-	int8_t _byte;
-	int16_t _short;
-	int32_t _int;
-	int64_t _long;
+struct TagData {
+	NBTCompound _compound;
+	core::Buffer<int8_t> _byteArray;
+	core::Buffer<int32_t> _intArray;
+	core::Buffer<int64_t> _longArray;
+	NBTList _list;
+	core::String _string;
+	union val {
+		float _float;
+		double _double;
+		int8_t _byte;
+		int16_t _short;
+		int32_t _int;
+		int64_t _long;
+	} _val;
 
-	constexpr TagData() : _compound(nullptr) {
+	TagData() {
 	}
 	inline explicit operator int8_t() const {
-		return _byte;
+		return _val._byte;
 	}
 	inline explicit operator int16_t() const {
-		return _short;
+		return _val._short;
 	}
 	inline explicit operator int32_t() const {
-		return _int;
+		return _val._int;
 	}
 	inline explicit operator int64_t() const {
-		return _long;
+		return _val._long;
 	}
 	inline explicit operator float() const {
-		return _float;
+		return _val._float;
 	}
 	inline explicit operator double() const {
-		return _double;
+		return _val._double;
 	}
 	operator const core::String &() const {
-		return *_string;
+		return _string;
 	}
 	operator const NBTCompound &() const {
-		return *_compound;
+		return _compound;
 	}
 	operator const core::Buffer<int8_t> &() const {
-		return *_byteArray;
+		return _byteArray;
 	}
 	operator const core::Buffer<int32_t> &() const {
-		return *_intArray;
+		return _intArray;
 	}
 	operator const core::Buffer<int64_t> &() const {
-		return *_longArray;
+		return _longArray;
 	}
 	operator const NBTList &() const {
-		return *_list;
+		return _list;
 	}
 	void copy(TagType type, const TagData &data);
 };
-static_assert(sizeof(TagData) == sizeof(int64_t), "TagData is too large");
 
 struct NamedBinaryTagContext {
 	io::ReadStream *stream = nullptr;
@@ -137,31 +138,31 @@ private:
 	static void dump_r(io::WriteStream &stream, const char *name, const NamedBinaryTag &tag, int level);
 
 public:
-	constexpr NamedBinaryTag() {
+	NamedBinaryTag() {
 	}
 
-	constexpr NamedBinaryTag(int8_t val) : _tagType(TagType::BYTE) {
-		_tagData._byte = val;
+	NamedBinaryTag(int8_t val) : _tagType(TagType::BYTE) {
+		_tagData._val._byte = val;
 	}
 
-	constexpr NamedBinaryTag(int16_t val) : _tagType(TagType::SHORT) {
-		_tagData._short = val;
+	NamedBinaryTag(int16_t val) : _tagType(TagType::SHORT) {
+		_tagData._val._short = val;
 	}
 
-	constexpr NamedBinaryTag(int32_t val) : _tagType(TagType::INT) {
-		_tagData._int = val;
+	NamedBinaryTag(int32_t val) : _tagType(TagType::INT) {
+		_tagData._val._int = val;
 	}
 
-	constexpr NamedBinaryTag(int64_t val) : _tagType(TagType::LONG) {
-		_tagData._long = val;
+	NamedBinaryTag(int64_t val) : _tagType(TagType::LONG) {
+		_tagData._val._long = val;
 	}
 
-	constexpr NamedBinaryTag(float val) : _tagType(TagType::FLOAT) {
-		_tagData._float = val;
+	NamedBinaryTag(float val) : _tagType(TagType::FLOAT) {
+		_tagData._val._float = val;
 	}
 
-	constexpr NamedBinaryTag(double val) : _tagType(TagType::DOUBLE) {
-		_tagData._double = val;
+	NamedBinaryTag(double val) : _tagType(TagType::DOUBLE) {
+		_tagData._val._double = val;
 	}
 
 	NamedBinaryTag(core::String &&val);
@@ -199,84 +200,84 @@ public:
 		if (_tagType != TagType::LIST) {
 			return nullptr;
 		}
-		return _tagData._list;
+		return &_tagData._list;
 	}
 
 	inline int64_t int64(int64_t defaultVal = 0) const {
 		if (_tagType != TagType::LONG) {
 			return defaultVal;
 		}
-		return _tagData._long;
+		return _tagData._val._long;
 	}
 
 	inline int32_t int32(int32_t defaultVal = 0) const {
 		if (_tagType != TagType::INT) {
 			return defaultVal;
 		}
-		return _tagData._int;
+		return _tagData._val._int;
 	}
 
 	inline int16_t int16(int16_t defaultVal = 0) const {
 		if (_tagType != TagType::SHORT) {
 			return defaultVal;
 		}
-		return _tagData._short;
+		return _tagData._val._short;
 	}
 
 	inline float float32(float defaultVal = 0.0f) const {
 		if (_tagType != TagType::FLOAT) {
 			return defaultVal;
 		}
-		return _tagData._float;
+		return _tagData._val._float;
 	}
 
 	inline double float64(double defaultVal = 0.0f) const {
 		if (_tagType != TagType::DOUBLE) {
 			return defaultVal;
 		}
-		return _tagData._double;
+		return _tagData._val._double;
 	}
 
 	inline int8_t int8(int8_t defaultVal = 0) const {
 		if (_tagType != TagType::BYTE) {
 			return defaultVal;
 		}
-		return _tagData._byte;
+		return _tagData._val._byte;
 	}
 
 	inline const core::String* string() const {
 		if (_tagType != TagType::STRING) {
 			return nullptr;
 		}
-		return _tagData._string;
+		return &_tagData._string;
 	}
 
 	inline const core::Buffer<int8_t> *byteArray() const {
 		if (_tagType != TagType::BYTE_ARRAY) {
 			return nullptr;
 		}
-		return _tagData._byteArray;
+		return &_tagData._byteArray;
 	}
 
 	inline const core::Buffer<int32_t> *intArray() const {
 		if (_tagType != TagType::INT_ARRAY) {
 			return nullptr;
 		}
-		return _tagData._intArray;
+		return &_tagData._intArray;
 	}
 
 	inline const core::Buffer<int64_t> *longArray() const {
 		if (_tagType != TagType::LONG_ARRAY) {
 			return nullptr;
 		}
-		return _tagData._longArray;
+		return &_tagData._longArray;
 	}
 
 	inline const NBTCompound* compound() const {
 		if (_tagType != TagType::COMPOUND) {
 			return nullptr;
 		}
-		return _tagData._compound;
+		return &_tagData._compound;
 	}
 
 	const NamedBinaryTag &get(const core::String &name) const {
@@ -284,8 +285,8 @@ public:
 		if (_tagType != TagType::COMPOUND) {
 			return INVALID;
 		}
-		auto iter = _tagData._compound->find(name);
-		if (iter == _tagData._compound->end()) {
+		auto iter = _tagData._compound.find(name);
+		if (iter == _tagData._compound.end()) {
 			return INVALID;
 		}
 		return iter->second;
