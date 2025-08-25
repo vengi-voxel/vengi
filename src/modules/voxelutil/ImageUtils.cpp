@@ -62,7 +62,8 @@ int getHeightValueFromAlpha(uint8_t alpha, bool adoptHeight, int volumeHeight, i
 void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Palette &palette,
 							const image::ImagePtr &image, const voxel::Voxel &underground, uint8_t minHeight,
 							bool adoptHeight) {
-	auto fn = [&palette, &volume, &image, adoptHeight, minHeight, underground](int start, int end) {
+	palette::PaletteLookup palLookup(palette);
+	auto fn = [&palLookup, &volume, &image, adoptHeight, minHeight, underground](int start, int end) {
 		const voxel::Region &region = volume.region();
 		const int volumeHeight = region.getHeightInVoxels();
 		const int volumeWidth = region.getWidthInVoxels();
@@ -72,7 +73,6 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 		const int imageHeight = image->height();
 		const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 		const float stepWidthX = (float)imageWidth / (float)volumeWidth;
-		palette::PaletteLookup palLookup(palette);
 		float imageY = start * stepWidthY;
 
 		voxel::RawVolumeWrapper::Sampler sampler(volume);
@@ -187,8 +187,8 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
-	app::for_parallel(0, imageWidth, [&image, &palette, &volume, imageHeight, thickness] (int start, int end) {
-		palette::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
+	app::for_parallel(0, imageWidth, [&image, &palLookup, &palette, &volume, imageHeight, thickness] (int start, int end) {
 		voxel::RawVolume::Sampler sampler(volume);
 		sampler.setPosition(start, imageHeight - 1, 0);
 		for (int x = start; x < end; ++x) {
@@ -268,10 +268,10 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	Log::debug("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	auto fn = [&palette, imageWidth, volume, image, depthmap, maxDepth, bothSides] (int start, int end) {
+	palette::PaletteLookup palLookup(palette);
+	auto fn = [&palLookup, &palette, imageWidth, volume, image, depthmap, maxDepth, bothSides] (int start, int end) {
 		voxel::RawVolume::Sampler sampler(volume);
 		sampler.setPosition(0, volume->region().getUpperY(), 0);
-		palette::PaletteLookup palLookup(palette);
 		for (int y = start; y < end; ++y) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int x = 0; x < imageWidth; ++x) {

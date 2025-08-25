@@ -98,7 +98,8 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 
-	auto fn = [&filteredEntites, &palette, &volume, imageHeight, imageWidth, this] (int start, int end) {
+	palette::PaletteLookup palLookup(palette);
+	auto fn = [&filteredEntites, &palLookup, &palette, &volume, imageHeight, imageWidth, this] (int start, int end) {
 		for (int i = start; i < end; ++i) {
 			const auto &entity = *filteredEntites[i];
 			const core::String &layerFilename = entity.fullPath;
@@ -119,7 +120,6 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 			}
 			Log::debug("Import layer %i of image %s", layer, layerFilename.c_str());
 
-			palette::PaletteLookup palLookup(palette);
 			voxel::RawVolume::Sampler sampler(volume);
 			sampler.setPosition(0, 0, layer);
 			for (int y = 0; y < imageHeight; ++y) {

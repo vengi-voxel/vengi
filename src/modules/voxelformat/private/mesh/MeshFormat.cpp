@@ -689,8 +689,8 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	const palette::Palette &palette = voxel::getPalette();
-	auto fn = [&vertices, &palette, pointSize, v](int start, int end) {
-		palette::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
+	auto fn = [&vertices, &palLookup, &palette, pointSize, v](int start, int end) {
 		for (int i = start; i < end; ++i) {
 			if (stopExecution()) {
 				return;

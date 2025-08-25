@@ -256,8 +256,8 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
 		core::AtomicBool empty {true};
-		auto fn = [blockVolume, rgba, &palette, x, y, z, this, &empty](int start, int end) {
-			palette::PaletteLookup palLookup(palette);
+		palette::PaletteLookup palLookup(palette);
+		auto fn = [blockVolume, rgba, &palLookup, &palette, x, y, z, this, &empty](int start, int end) {
 			voxel::RawVolume::Sampler sampler(blockVolume);
 			sampler.setPosition(x, z + start, y);
 			for (int z1 = start; z1 < end; ++z1) {

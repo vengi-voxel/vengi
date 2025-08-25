@@ -364,8 +364,8 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 
 	const voxel::Region region(0, 0, 0, settings.size - 1, settings.height - 1, settings.size - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	app::for_parallel(0, settings.size, [&palette, &tempBuffer, &settings, volume] (int start, int end) {
-		palette::PaletteLookup paletteLookup(palette);
+	palette::PaletteLookup paletteLookup(palette);
+	app::for_parallel(0, settings.size, [&paletteLookup, &tempBuffer, &settings, volume] (int start, int end) {
 		const core::RGBA *heightmap = tempBuffer.buf + start * settings.size;
 		// TODO: PERF: use volume sampler
 		for (int vz = start; vz < end; ++vz) {

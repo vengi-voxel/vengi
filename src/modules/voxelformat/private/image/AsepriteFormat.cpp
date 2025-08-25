@@ -52,8 +52,8 @@ bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::St
 	node.setVolume(v, true);
 	node.setName(core::String::format("%s_%d", filename.c_str(), frameIndex));
 	node.setPalette(palette);
-	auto fn = [&palette, ase, frame, v, this](int start, int end) {
-		palette::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
+	auto fn = [&palLookup, ase, frame, v, this](int start, int end) {
 		voxel::RawVolume::Sampler sampler(v);
 		sampler.setPosition(0, ase->h - 1, 0);
 		for (int y = 0; y < ase->h; ++y) {

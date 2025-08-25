@@ -238,8 +238,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			return false;
 		}
 		bool error = false;
+		palette::PaletteLookup palLookup(palette);
 		auto fn = [&] (int start, int end) {
-			palette::PaletteLookup palLookup(palette);
 			voxel::RawVolume::Sampler sampler(v);
 			sampler.setPosition(0, start, 0);
 			for (int y = start; y < end; ++y) {
@@ -338,8 +338,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 			}
 		}
 
+		palette::PaletteLookup palLookup(palette);
 		auto fn = [&] (int start, int end) {
-			palette::PaletteLookup palLookup(palette);
 			voxel::RawVolume::Sampler sampler(v);
 			sampler.setPosition(0, start, 0);
 			for (int y = start; y < end; ++y) {
