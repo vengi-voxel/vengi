@@ -18,7 +18,7 @@ private:
 	core::Buffer<glm::vec2> _uvs;
 	core::Buffer<glm::vec3> _vertices;
 	core::Buffer<core::RGBA> _colors;
-	MeshMaterialIndex _materialIdx;
+	MeshMaterialIndex _materialIdx = -1;
 	void addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2) const;
 
 public:

@@ -14,7 +14,7 @@ struct MeshVertex {
 	glm::vec2 uv{0.0f};
 	core::RGBA color{0};
 	glm::vec3 normal{0.0f};
-	MeshMaterialIndex materialIdx;
+	MeshMaterialIndex materialIdx = -1;
 };
 struct Mesh {
 	core::DynamicArray<MeshVertex> vertices;
