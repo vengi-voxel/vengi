@@ -5,6 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "palette/tests/TestHelper.h"
 #include "math/tests/TestMathHelper.h"
@@ -705,6 +706,25 @@ TEST_F(SceneGraphTest, testSceneRegion) {
 	EXPECT_EQ(13, maxs.x);
 	EXPECT_EQ(14, maxs.y);
 	EXPECT_EQ(15, maxs.z);
+}
+
+TEST_F(SceneGraphTest, testSetAnimation) {
+	SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	EXPECT_TRUE(node.addAnimation("Test"));
+	EXPECT_TRUE(node.addAnimation("Test2"));
+	EXPECT_FALSE(node.addAnimation("Test"));
+	EXPECT_TRUE(node.removeAnimation("Test2"));
+	EXPECT_FALSE(node.removeAnimation("Test2"));
+	EXPECT_TRUE(node.setAnimation("Test"));
+	EXPECT_TRUE(node.setAnimation("Test2"));
+	EXPECT_TRUE(node.removeAnimation("Test2"));
+}
+
+TEST_F(SceneGraphTest, testSceneGraphKeyFramesMap) {
+	SceneGraphKeyFramesMap keyFramesMap;
+	SceneGraphKeyFrames frames;
+	frames.emplace_back(SceneGraphKeyFrame{});
+	keyFramesMap.emplace("Test", core::move(frames));
 }
 
 } // namespace scenegraph
