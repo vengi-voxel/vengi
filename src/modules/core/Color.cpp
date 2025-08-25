@@ -168,7 +168,7 @@ struct ColorBox {
 	core::Buffer<RGBA> pixels;
 
 	ColorBox() = default;
-	ColorBox(const RGBA &min, const RGBA &max, core::Buffer<RGBA> &&pixels) : min(min), max(max), pixels(pixels) {
+	ColorBox(const RGBA &_min, const RGBA &_max, core::Buffer<RGBA> &&_pixels) : min(_min), max(_max), pixels(_pixels) {
 	}
 };
 
