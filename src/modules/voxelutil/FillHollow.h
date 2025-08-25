@@ -71,7 +71,7 @@ void fillHollow(VOLUME &volume, const voxel::Voxel &voxel) {
 	};
 	app::for_parallel(0, width, fnWidth);
 
-	auto fnHeight = [&volume, &visited, region, width, depth, &mins](int start, int end) {
+	auto fnHeight = [&volume, &visited, width, depth, &mins](int start, int end) {
 		// TODO: PERF: use volume samplers
 		for (int y = start; y < end; ++y) {
 			for (int z = 1; z < depth - 1; ++z) {

@@ -16,10 +16,10 @@ namespace core {
  * @ingroup Collections
  */
 template<typename KEYTYPE, typename VALUETYPE, size_t BUCKETSIZE = 11, typename HASHER = privdynamicmap::DefaultHasher,
-		 typename COMPARE = privdynamicmap::EqualCompare>
-class DynamicParallelMap : public DynamicMap<KEYTYPE, VALUETYPE, BUCKETSIZE, HASHER, COMPARE> {
+		 typename COMPARE = privdynamicmap::EqualCompare, size_t BLOCK_SIZE = 256>
+class DynamicParallelMap : public DynamicMap<KEYTYPE, VALUETYPE, BUCKETSIZE, HASHER, COMPARE, BLOCK_SIZE> {
 private:
-	using Super = DynamicMap<KEYTYPE, VALUETYPE, BUCKETSIZE, HASHER, COMPARE>;
+	using Super = DynamicMap<KEYTYPE, VALUETYPE, BUCKETSIZE, HASHER, COMPARE, BLOCK_SIZE>;
 
 protected:
 	using Super::_buckets;
