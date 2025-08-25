@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include "core/collection/DynamicMap.h"
 #include "core/SharedPtr.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicStringMap.h"
 
@@ -192,4 +193,32 @@ TEST(DynamicMapTest, testAssign) {
 	EXPECT_EQ(0u, map2.size());
 }
 
+TEST(DynamicMapTest, testAssignEmpty) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	map.put("foobar", core::make_shared<core::String>("barfoo"));
+	map = {};
+}
+
+TEST(DynamicMapTest, testMoveAndFreeSlots) {
+	core::DynamicStringMap<core::SharedPtr<core::String>> map;
+	for (int i = 0; i < 16; ++i) {
+		map.put(core::String::format("foobar%i", i), core::make_shared<core::String>("barfoo"));
+	}
+	EXPECT_TRUE(map.remove("foobar0"));
+	map.put("foobar32", core::make_shared<core::String>("barfoo"));
+	EXPECT_EQ(16u, map.size());
+	EXPECT_FALSE(map.empty());
+	core::DynamicStringMap<core::SharedPtr<core::String>> copy(map);
+	map.clear();
+	EXPECT_EQ(0u, map.size());
+	EXPECT_TRUE(map.empty());
+	map = copy;
+	EXPECT_EQ(16u, map.size());
+	EXPECT_FALSE(map.empty());
+	map.clear();
+	map = {};
+	map = core::move(copy);
+	EXPECT_EQ(16u, map.size());
+	EXPECT_FALSE(map.empty());
+}
 }
