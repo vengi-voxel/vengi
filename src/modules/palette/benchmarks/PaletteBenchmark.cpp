@@ -25,7 +25,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, getClosestMatch)(benchmark::State &state) {
 	palette.nippon();
 	for (auto _ : state) {
 		palette::PaletteLookup palLookup(palette);
-		benchmark::DoNotOptimize(palette.getClosestMatch(13));
+		benchmark::DoNotOptimize(palette.getClosestMatch(core::RGBA(13, 39, 26, 255)));
 	}
 }
 

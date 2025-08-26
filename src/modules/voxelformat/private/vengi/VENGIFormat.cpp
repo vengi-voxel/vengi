@@ -159,6 +159,7 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt8(indices[i]))
 	}
+	// TODO: VOXELFORMAT: save the color names, too
 
 	wrapBool(stream.writeUInt32(palette.colorCount()))
 	for (int i = 0; i < palette.colorCount(); ++i) {
