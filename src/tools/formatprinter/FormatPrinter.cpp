@@ -6,9 +6,13 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Set.h"
 #include "io/FormatDescription.h"
+#include "palette/FormatConfig.h"
 #include "palette/PaletteFormatDescription.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "engine-config.h"
 #include <ctype.h>
@@ -29,7 +33,13 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--plist").setDescription("Generate the plist file for voxel formats");
 	registerArg("--wix").setDescription("Generate the wix file for msi installers");
 	registerArg("--magic").setDescription("Generate the magic file");
-	return Super::onConstruct();
+	app::AppState state = Super::onConstruct();
+
+	core::Var::visit([this](const core::VarPtr &var) {
+		_varsAtStartup.insert(var->name());
+	});
+
+	return state;
 }
 
 template<class T>
@@ -152,6 +162,24 @@ void FormatPrinter::addManPageOption(const core::String &option, const core::Str
 	Log::printf("%s\n\n", description.c_str());
 }
 
+void FormatPrinter::printManPageVars() {
+	core::DynamicArray<core::String> formatVars;
+	core::Var::visit([this, &formatVars](const core::VarPtr &var) {
+		if (!_varsAtStartup.hasKey(var->name())) {
+			formatVars.push_back(var->name());
+		}
+	});
+	formatVars.sort(core::Greater<core::String>());
+
+	Log::printf(".SH CONFIG VARS\n");
+	Log::printf("\n");
+	for (const core::String &var : formatVars) {
+		Log::printf(".PP\n");
+		Log::printf("\\fB%s\\fP: %s\n", var.c_str(), core::Var::getSafe(var)->help());
+	}
+	Log::printf("\n");
+}
+
 void FormatPrinter::printManPage(const core::String &app) {
 	const bool save = app == "voxconvert";
 	const bool commandLineApp = app == "thumbnailer" || app == "voxconvert" || app == "palconvert";
@@ -206,6 +234,9 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--turntable|-t", "Render in different angles (16 by default)");
 		addManPageOption("--fallback|-f", "Create a fallback thumbnail if an error occurs");
 		addManPageOption("--use-scene-camera|-c", "Use a camera that is available in the scene. Not all formats are supporting this feature.");
+		palette::FormatConfig::init();
+		voxelformat::FormatConfig::init();
+		printManPageVars();
 	} else if (app == "voxconvert") {
 		Log::printf(".SH OPTIONS\n");
 		addManPageOption("--crop", "Crop the models to the smallest possible size.");
@@ -231,6 +262,10 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--surface-only", "Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.");
 		addManPageOption("--translate|-t x:y:z", "Translate the models by x (right), y (up), z (back).");
 		addManPageOption("--wildcard|-w", "Allow to specify input file filter if --input is a directory.");
+
+		palette::FormatConfig::init();
+		voxelformat::FormatConfig::init();
+		printManPageVars();
 
 		Log::printf(".SH ORDER OF EXECUTION\n");
 		Log::printf("\n");
@@ -268,6 +303,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf("Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for\n");
 		Log::printf("voxconvert.\n");
 		Log::printf("\n");
+
 		Log::printf(".SH EXAMPLES\n");
 		Log::printf("\n");
 		Log::printf(".SS Level of detail (LOD)\n");
@@ -324,47 +360,6 @@ void FormatPrinter::printManPage(const core::String &app) {
 		Log::printf("\n");
 		Log::printf("\\fB@NAME@ --input infile.vengi --output outfile.obj\\fP\n");
 		Log::printf("\n");
-		Log::printf("Config vars to control the meshing:\n");
-		Log::printf("\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_ambientocclusion\\fP: Don't export extra quads for ambient occlusion voxels\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_colorasfloat\\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\\fP: Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_gltf_khr_materials_specular\\fP: Apply KHR_materials_specular extension on saving gltf files\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_mergequads\\fP: Merge similar quads to optimize the mesh\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_reusevertices\\fP: Reuse vertices or always create new ones\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale\\fP: Scale the vertices on all axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale_x\\fP: Scale the vertices on X axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale_y\\fP: Scale the vertices on Y axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale_z\\fP: Scale the vertices on Z axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_quads\\fP: Export to quads\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_withcolor\\fP: Export vertex colors\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_withnormals\\fP: Export smoothed normals for cubic surface meshes (marching cubes always uses normals)\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_withtexcoords\\fP: Export texture coordinates\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_transform_mesh\\fP: Apply the keyframe transforms to the mesh\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_createpalette\\fP: Setting this to false will use use the palette configured by \\fBpalette\\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_rgbflattenfactor\\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_rgbweightedaverage\\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxel_meshmode\\fP: Set to 1 to use the marching cubes algorithm to produce the mesh\n");
-		Log::printf("\n");
 		core::DynamicArray<core::String> meshExts;
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			if (voxelformat::isMeshFormat(*desc)) {
@@ -383,20 +378,6 @@ void FormatPrinter::printManPage(const core::String &app) {
 			}
 			meshExtsStr += e;
 		}
-		Log::printf("Voxelization is supported, too (%s). The following cvars can be modified here:\n", meshExtsStr.c_str());
-		Log::printf("\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_fillhollow\\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale\\fP: Scale the vertices on all axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale_x\\fP: Scale the vertices on X axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale_y\\fP: Scale the vertices on Y axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_scale_z\\fP: Scale the vertices on Z axis by the given factor\n");
-		Log::printf(".PP\n");
-		Log::printf("\\fBvoxformat_voxelizemode\\fP: 0 = high quality, 1 = faster and less memory\n");
 		Log::printf("\n");
 	} else if (app == "palconvert") {
 		Log::printf(".SH OPTIONS\n");
@@ -404,6 +385,8 @@ void FormatPrinter::printManPage(const core::String &app) {
 		addManPageOption("--input|-i infile", "Specify the input file to read from.");
 		addManPageOption("--output|-o outfile", "Specify the output file to write to.");
 		addManPageOption("--type|-t type", "Specify the output type (ansi, json, hex)");
+		palette::FormatConfig::init();
+		printManPageVars();
 	}
 
 	printManPageFormats(app, save);

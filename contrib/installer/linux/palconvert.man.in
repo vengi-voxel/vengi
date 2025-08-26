@@ -49,6 +49,21 @@ Specify the output file to write to.
 \fB\--type|-t type\fR
 Specify the output type (ansi, json, hex)
 
+.SH CONFIG VARS
+
+.PP
+\fBcore_colorreduction\fP: Controls the algorithm that is used to perform the color reduction
+.PP
+\fBnormalpalette\fP: The normal palette to use for voxelization
+.PP
+\fBpalette\fP: This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)
+.PP
+\fBpalformat_gimprgba\fP: Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)
+.PP
+\fBpalformat_maxsize\fP: The maximum size of an image in x and y direction to quantize to a palette
+.PP
+\fBpalformat_rgb6bit\fP: Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files
+
 .SH LOAD
 .TP
 Adobe Color Bock (*.acb)

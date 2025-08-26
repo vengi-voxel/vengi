@@ -128,6 +128,117 @@ Translate the models by x (right), y (up), z (back).
 \fB\--wildcard|-w\fR
 Allow to specify input file filter if --input is a directory.
 
+.SH CONFIG VARS
+
+.PP
+\fBcore_colorreduction\fP: Controls the algorithm that is used to perform the color reduction
+.PP
+\fBnormalpalette\fP: The normal palette to use for voxelization
+.PP
+\fBpalette\fP: This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)
+.PP
+\fBpalformat_gimprgba\fP: Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)
+.PP
+\fBpalformat_maxsize\fP: The maximum size of an image in x and y direction to quantize to a palette
+.PP
+\fBpalformat_rgb6bit\fP: Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files
+.PP
+\fBvoxel_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher
+.PP
+\fBvoxformat_ambientocclusion\fP: Extra vertices for ambient occlusion
+.PP
+\fBvoxformat_binvoxversion\fP: Save in version 1, 2 or the unofficial version 3
+.PP
+\fBvoxformat_colorasfloat\fP: Export with vertex colors as float values (if vertex colors are exported)
+.PP
+\fBvoxformat_createpalette\fP: Create own palette from textures or colors or remap the existing palette colors to a new palette
+.PP
+\fBvoxformat_emptypaletteindex\fP: The index of the empty color in the palette
+.PP
+\fBvoxformat_fillhollow\fP: Fill the hollows when voxelizing a mesh format
+.PP
+\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness when saving into the gltf format
+.PP
+\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular when saving into the gltf format
+.PP
+\fBvoxformat_imageheightmapminheight\fP: The minimum height of the heightmap when importing an image as heightmap
+.PP
+\fBvoxformat_imageimporttype\fP: 0 = plane, 1 = heightmap, 2 = volume
+.PP
+\fBvoxformat_imagesavetype\fP: 0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail
+.PP
+\fBvoxformat_imagesliceoffset\fP: The offset of the slices when importing images as volumes or heightmaps
+.PP
+\fBvoxformat_imagesliceoffsetaxis\fP: The axis to offset the slices when importing images as volumes or heightmaps
+.PP
+\fBvoxformat_imagevolumebothsides\fP: Import the image as volume for both sides
+.PP
+\fBvoxformat_imagevolumemaxdepth\fP: The maximum depth of the volume when importing an image as volume
+.PP
+\fBvoxformat_merge\fP: Merge all objects into one
+.PP
+\fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
+.PP
+\fBvoxformat_mesh_simplify\fP: Simplify the mesh when voxelizing a mesh format
+.PP
+\fBvoxformat_optimize\fP: Apply mesh optimization steps to meshes
+.PP
+\fBvoxformat_pointcloudsize\fP: Specify the side length for the voxels when loading a point cloud
+.PP
+\fBvoxformat_qbsavecompressed\fP: Save RLE compressed
+.PP
+\fBvoxformat_qbsavelefthanded\fP: Toggle between left and right handed
+.PP
+\fBvoxformat_qbtmergecompounds\fP: Merge compounds on load
+.PP
+\fBvoxformat_qbtpalettemode\fP: Use palette mode in qubicle qbt export
+.PP
+\fBvoxformat_quads\fP: Export as quads. If this false, triangles will be used.
+.PP
+\fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
+.PP
+\fBvoxformat_rgbflattenfactor\fP: The RGB color flatten factor for importing color and mesh formats
+.PP
+\fBvoxformat_rgbweightedaverage\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution - otherwise only the biggest triangle counts
+.PP
+\fBvoxformat_savevisibleonly\fP: Save only visible nodes
+.PP
+\fBvoxformat_scale\fP: Scale the vertices for voxelization on all axis by the given factor
+.PP
+\fBvoxformat_scale_x\fP: Scale the vertices for voxelization X axis by the given factor
+.PP
+\fBvoxformat_scale_y\fP: Scale the vertices for voxelization Y axis by the given factor
+.PP
+\fBvoxformat_scale_z\fP: Scale the vertices for voxelization Z axis by the given factor
+.PP
+\fBvoxformat_schematictype\fP: The type of schematic format to use when saving schematics
+.PP
+\fBvoxformat_skinaddgroups\fP: Add groups for body parts of Minecraft skins
+.PP
+\fBvoxformat_skinapplytransform\fP: Transformationen bei Minecraft Skins anwenden
+.PP
+\fBvoxformat_skinmergefaces\fP: Merge face parts into single volume for Minecraft skins
+.PP
+\fBvoxformat_texturepath\fP: Register an additional search path for texture lookups
+.PP
+\fBvoxformat_transform_mesh\fP: Apply the scene graph transform to mesh exports
+.PP
+\fBvoxformat_voxcreategroups\fP: Merge compounds on load
+.PP
+\fBvoxformat_voxcreatelayers\fP: Merge compounds on load
+.PP
+\fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
+.PP
+\fBvoxformat_vxllodhva\fP: Load the hva for animations
+.PP
+\fBvoxformat_withcolor\fP: Export with vertex colors
+.PP
+\fBvoxformat_withmaterials\fP: Try to export material properties if the formats support it
+.PP
+\fBvoxformat_withnormals\fP: Export smoothed normals for cubic meshes
+.PP
+\fBvoxformat_withtexcoords\fP: Export with uv coordinates of the palette image
+
 .SH ORDER OF EXECUTION
 
 .TP
@@ -219,61 +330,6 @@ You can export your volume model into a obj or ply.
 
 \fB@NAME@ --input infile.vengi --output outfile.obj\fP
 
-Config vars to control the meshing:
-
-.PP
-\fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
-.PP
-\fBvoxformat_colorasfloat\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)
-.PP
-\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files
-.PP
-\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular extension on saving gltf files
-.PP
-\fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
-.PP
-\fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
-.PP
-\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
-.PP
-\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
-.PP
-\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
-.PP
-\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
-.PP
-\fBvoxformat_quads\fP: Export to quads
-.PP
-\fBvoxformat_withcolor\fP: Export vertex colors
-.PP
-\fBvoxformat_withnormals\fP: Export smoothed normals for cubic surface meshes (marching cubes always uses normals)
-.PP
-\fBvoxformat_withtexcoords\fP: Export texture coordinates
-.PP
-\fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
-.PP
-\fBvoxformat_createpalette\fP: Setting this to false will use use the palette configured by \fBpalette\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
-.PP
-\fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
-.PP
-\fBvoxformat_rgbweightedaverage\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution
-.PP
-\fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
-
-Voxelization is supported, too (3ds, bbmodel, bsp, fbx, gltf, map, md2, mdl, obj, ply, stl). The following cvars can be modified here:
-
-.PP
-\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.
-.PP
-\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
-.PP
-\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
-.PP
-\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
-.PP
-\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
-.PP
-\fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 
 .SH LOAD
 .TP
