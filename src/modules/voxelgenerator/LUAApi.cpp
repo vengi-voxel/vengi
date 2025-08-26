@@ -615,11 +615,10 @@ static int luaVoxel_import_imageasplane(lua_State *s) {
 	}
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v);
+	node.setVolume(v, true);
 	node.setName(image->name());
 	int newNodeId = sceneGraph->emplace(core::move(node));
 	if (newNodeId == InvalidNodeId) {
-		delete v;
 		return clua_error(s, "Failed to add plane node to scene graph");
 	}
 	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(newNodeId));
@@ -1112,7 +1111,6 @@ static int luaVoxel_genland(lua_State *s) {
 	node.setProperty("Generator", "Genland by Tom Dobrowolski");
 	int newNodeId = sceneGraph->emplace(core::move(node));
 	if (newNodeId == InvalidNodeId) {
-		delete v;
 		return clua_error(s, "Failed to add generated land node to scene graph");
 	}
 	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(newNodeId));

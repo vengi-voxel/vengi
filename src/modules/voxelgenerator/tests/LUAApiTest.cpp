@@ -197,6 +197,20 @@ TEST_F(LUAApiTest, testSceneGraph) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testImageAsPlane) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local pal = g_palette.new()
+			pal:load("built-in:minecraft")
+			local stream = g_io.sysopen("test-heightmap.png")
+			local image = g_import.image("test-heightmap.png", stream)
+			g_import.imageAsPlane(image, pal)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testKeyFrames) {
 	const core::String script = R"(
 		function main(node, region, color)
