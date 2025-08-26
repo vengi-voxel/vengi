@@ -1252,9 +1252,9 @@ static int luaVoxel_scenegraph_get_node_by_uuid(lua_State* s) {
 }
 
 static int luaVoxel_scenegraph_get_node_by_id(lua_State* s) {
-	int nodeId = (int)luaL_optinteger(s, 1, -1);
+	int nodeId = (int)luaL_optinteger(s, 1, InvalidNodeId);
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		nodeId = sceneGraph->activeNode();
 	}
 	if (!sceneGraph->hasNode(nodeId)) {
