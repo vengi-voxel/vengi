@@ -60,7 +60,11 @@ core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, Visitor
 
 		voxel::RawVolume object(copy.region());
 		processNeighbours(copy, object, position);
-		rawVolumes.push_back(voxelutil::cropVolume(&object));
+		if (voxel::RawVolume *v = voxelutil::cropVolume(&object)) {
+			rawVolumes.push_back(v);
+		} else {
+			rawVolumes.push_back(new voxel::RawVolume(object));
+		}
 	}, VisitAll(), order);
 
 	return rawVolumes;

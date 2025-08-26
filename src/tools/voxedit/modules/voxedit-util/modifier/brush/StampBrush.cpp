@@ -145,6 +145,9 @@ void StampBrush::setSize(const glm::ivec3 &size) {
 
 void StampBrush::setVolume(const voxel::RawVolume &volume, const palette::Palette &palette) {
 	_volume = voxelutil::cropVolume(&volume);
+	if (!_volume) {
+		_volume = new voxel::RawVolume(volume);
+	}
 	if (_volume) {
 		if (glm::any(glm::greaterThan(_volume->region().getDimensionsInVoxels(), glm::ivec3(MaxSize)))) {
 			Log::warn("Stamp size exceeds the max allowed size of 32x32x32");

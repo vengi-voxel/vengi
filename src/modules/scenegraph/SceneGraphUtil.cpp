@@ -249,9 +249,10 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 			}
 			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);
 			if (crop) {
-				voxel::RawVolume *cv = voxelutil::cropVolume(v);
-				delete v;
-				v = cv;
+				if (voxel::RawVolume *cv = voxelutil::cropVolume(v)) {
+					delete v;
+					v = cv;
+				}
 			}
 			copyNode(node, newNode, false);
 			newNode.setVolume(v, true);

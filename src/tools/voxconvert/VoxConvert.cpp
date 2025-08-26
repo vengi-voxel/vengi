@@ -719,7 +719,9 @@ void VoxConvert::crop(scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Crop volumes");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		node.setVolume(voxelutil::cropVolume(node.volume()), true);
+		if (voxel::RawVolume *v = voxelutil::cropVolume(node.volume())) {
+			node.setVolume(v, true);
+		}
 	}
 }
 

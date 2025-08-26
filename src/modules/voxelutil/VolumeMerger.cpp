@@ -28,6 +28,9 @@ voxel::RawVolume* merge(const core::Buffer<const voxel::RawVolume*>& volumes) {
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
 	for (const voxel::RawVolume* v : volumes) {
 		const voxel::Region& sr = v->region();
+		if (v->isEmpty(sr)) {
+			continue;
+		}
 		voxelutil::mergeVolumes(merged, v, sr, sr);
 	}
 	return merged;

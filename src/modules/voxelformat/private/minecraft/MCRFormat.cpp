@@ -209,15 +209,16 @@ voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPo
 		Log::debug("No volumes found at %i:%i", xPos, zPos);
 		return nullptr;
 	}
-	// TODO: VOXELFORMAT: only merge connected y chunks - don't fill empty chunks - just a waste of memory
 	voxel::RawVolume *merged = voxelutil::merge(volumes);
 	for (voxel::RawVolume *v : volumes) {
 		delete v;
 	}
 	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
-	voxel::RawVolume *cropped = voxelutil::cropVolume(merged);
-	delete merged;
-	return cropped;
+	if (voxel::RawVolume *cropped = voxelutil::cropVolume(merged)) {
+		delete merged;
+		return cropped;
+	}
+	return merged;
 }
 
 bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,

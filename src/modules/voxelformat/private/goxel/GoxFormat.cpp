@@ -352,19 +352,23 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	}
 
 	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(modelVolume, math::Axis::X);
-	voxel::RawVolume *cropped = voxelutil::cropVolume(mirrored);
-	const glm::ivec3 mins = cropped->region().getLowerCorner();
-	cropped->translate(-mins);
+	delete modelVolume;
+	if (voxel::RawVolume *cropped = voxelutil::cropVolume(mirrored)) {
+		delete mirrored;
+		const glm::ivec3 mins = cropped->region().getLowerCorner();
+		cropped->translate(-mins);
 
-	scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	transform.setWorldTranslation(mins);
+		scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		transform.setWorldTranslation(mins);
 
-	node.setVolume(cropped, true);
+		node.setVolume(cropped, true);
+	} else {
+		node.setVolume(mirrored, true);
+		mirrored = nullptr;
+	}
 	node.setVisible(visible);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
-	delete modelVolume;
-	delete mirrored;
 	return true;
 }
 

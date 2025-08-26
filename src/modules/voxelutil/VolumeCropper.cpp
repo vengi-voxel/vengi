@@ -17,6 +17,9 @@ namespace voxelutil {
 	if (!newRegion.isValid()) {
 		return nullptr;
 	}
+	if (newRegion == volume->region()) {
+		return nullptr;
+	}
 	voxel::RawVolume *newVolume = new voxel::RawVolume(newRegion);
 	voxelutil::mergeVolumes(newVolume, volume, newRegion, voxel::Region(mins, maxs));
 	return newVolume;
