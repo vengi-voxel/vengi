@@ -523,6 +523,16 @@ end
 
 * `imageAsPlane(image, palette, [thickness])`: Imports the given image as plane into the current scene graph and returns the node.
 
+```lua
+function main(node, region, color)
+	local pal = g_palette.new()
+	pal:load("built-in:nippon")
+	local stream = g_io.sysopen("yourimage.png")
+	local image = g_import.image("somename", stream)
+	g_import.imageAsPlane(image, pal)
+end
+```
+
 ## Image
 
 Images are loaded by the `g_import` global.
@@ -597,9 +607,9 @@ When using e.g. the `g_http` requests, you get stream objects as return values.
 
 `g_io` can open files for reading and writing and will return a stream instance.
 
-* `sysopen(path, mode)`: Can be used to open either an absolute path or a path relative to the current working directory. Modes are `r` and `w`
+* `sysopen(path, mode)`: Can be used to open either an absolute path or a path relative to the current working directory. Modes are `r` and `w`, default is `r`.
 
-* `open(path, mode)`: Will open the file in the home path of the user to read and write files. Modes are `r` and `w`
+* `open(path, mode)`: Will open the file in the home path of the user to read and write files. Modes are `r` and `w`, default is `r`.
 
 ## Cvar
 
