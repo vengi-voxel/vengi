@@ -312,7 +312,7 @@ You can create new palettes with the `g_palette` global by calling e.g.
 
 ```lua
 local pal = g_palette.new()
-pal.load("built-in:minecraft")
+pal:load("built-in:minecraft")
 ```
 
 ## Noise
@@ -521,7 +521,7 @@ end
 
 * `scene(filename, stream)`: Imports the scene from the given stream into the existing scene (`g_scenegraph`).
 
-* `imageAsPlane(filename, image)`: Imports the given image as plane into the current scene graph and returns the node.
+* `imageAsPlane(image, palette, [thickness])`: Imports the given image as plane into the current scene graph and returns the node.
 
 ## Image
 
