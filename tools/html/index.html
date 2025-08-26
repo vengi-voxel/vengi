@@ -5,132 +5,338 @@
     <meta charset="UTF-8" />
     <title>Vengi Voxel Tools</title>
     <link rel="icon" type="image/png" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style type="text/css">
-        body {
+        * {
             margin: 0;
-            background-color: #343434;
-            color: #fff;
-            line-height: 1.3;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        table, th, td {
-            border: 1px solid #aaa;
-            border-collapse: collapse;
-            padding: 15px;
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            line-height: 1.6;
         }
 
-        .header {
-            color: #ccc;
-            text-align: left;
-            padding-left: 20px;
-            font-family: "Arial Black", Gadget, sans-serif;
-            font-size: 60px;
-            margin-top: 0px;
+        header {
+            background-color: #2b2b2b;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        .header-item {
-            font-size: 30px;
-            padding-left: 10px;
-            font-family: Arial, Helvetica, sans-serif;
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
         }
 
-        .voxedit-item {
-            font-size: 24px;
-            padding-left: 10px;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        .link {
+        nav a {
+            margin: 8px 12px;
             text-decoration: none;
             color: #aaa;
+            transition: color 0.3s;
         }
 
-        .voxedit-link {
-            margin-top: 40px;
+        nav a:hover {
+            color: #00d1b2;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background-color: #2b2b2b;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #00d1b2;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: slideIn 1s forwards;
+        }
+
+        .feature-card:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .feature-card:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+
+        .feature-card:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .feature-card:nth-child(4) {
+            animation-delay: 0.8s;
+        }
+
+        .feature-card h2 {
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+            color: #00d1b2;
+        }
+
+        .feature-card p {
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .feature-card a {
+            color: #00d1b2;
             text-decoration: none;
-            color: #999;
-            cursor: pointer;
-            display: block;
+            font-weight: bold;
+            transition: color 0.3s;
         }
 
-        .main {
-            width: 980px;
-            margin: 0 auto;
+        .feature-card a:hover {
+            color: #00ffc8;
         }
 
-        .spacer {
-            width: 1024px;
-            height: 1px;
-            display: block;
-            clear: both;
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 20px 0;
+            opacity: 1;
+            /* fallback default visible */
         }
 
-        br {
-            display: block;
-            margin: 10px 0;
+        @supports (animation: name) {
+            img {
+                opacity: 0;
+                transform: scale(0.95);
+                animation: popIn 0.8s ease-out forwards 0.7s;
+            }
         }
 
-        #images{
-            text-align:center;
-            margin:50px auto;
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.95rem;
+            background-color: #2b2b2b;
+            border-radius: 6px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out 0.9s forwards;
         }
 
-        #images a {
-            margin:0px 20px;
-            display:inline-block;
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            transition: background-color 0.3s;
+        }
+
+        th {
+            background-color: #3c3c3c;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #252525;
+        }
+
+        tr:hover {
+            background-color: #333;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #666;
+            border-top: 1px solid #333;
+            opacity: 0;
+            animation: fadeIn 0.8s 1.1s ease-out forwards;
+        }
+
+        @media (max-width:768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav {
+                margin-top: 10px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
+
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Vengi Voxel Tools" />
     <meta property="og:description" content="Voxel tools for artists and developers" />
-    <meta property="og:url" content="None" />
     <meta property="og:image" content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
-    <meta property="og:image:type" content="image/png" />
 
     <meta name="keywords" content="voxel,voxelart,voxeleditor,magicavoxel,cubzh,qubicle,sandbox,minecraft,quake,starmade,cubeworld,goxel,aceofspades,binvox,cnc,gltf,animation" />
-    <meta name="viewport" content="width=device-width">
     <meta name="description" content="Voxel tools for artists and developers">
-
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:site" content="@MartinGerhardy" />
-    <meta name="twitter:title" content="Vengi Voxel Tools" />
-    <meta name="twitter:description" content="Voxel tools for artists and developers" />
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
 </head>
 
 <body>
-    <script src="data.js"></script>
-    <script src="script.js"></script>
-    <div class="main">
-        <div class="header">
-            <span class="header-item"><a class="link" href="https://github.com/vengi-voxel/vengi">github</a></span>
-            <span class="header-item"><a class="link" href="https://mastodon.social/@mgerhardy">mastodon</a></span>
-            <span class="header-item"><a class="link" href="https://vengi-voxel.de/discord">discord</a></span>
+    <header>
+        <div class="logo">vengi Voxel Tools</div>
+        <nav>
+            <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
+            <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
+            <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
+            <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
+            <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
+            <a href="https://vengi-voxel.de/discord">Discord</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Welcome to vengi</h1>
+
+        <p>A powerful set of tools for creating, editing, and managing voxel art. From advanced editing with animation
+            support to format or palette batch conversions, vengi has you covered.</p>
+
+        <p>And the best it's free and opensource and works on Linux, Mac and Windows (and in the browser).</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <i data-lucide="pen-tool" class="icon"></i>
+                <h2><a href="https://vengi-voxel.github.io/vengi/voxedit/Index/">VoxEdit</a></h2>
+                <p>Full-featured voxel editor with keyframe animation, multiple viewports, scripting API, and
+                    customizable UI.</p>
+            </div>
+            <div class="feature-card">
+                <i data-lucide="terminal" class="icon"></i>
+                <h2><a href="https://vengi-voxel.github.io/vengi/voxconvert/Index/">VoxConvert</a></h2>
+                <p>Command-line converter for batch processing, format conversions, scaling, rotations, and automated
+                    tasks.</p>
+            </div>
+            <div class="feature-card">
+                <i data-lucide="image" class="icon"></i>
+                <h2><a href="https://vengi-voxel.github.io/vengi/thumbnailer/Index/">Thumbnailer</a></h2>
+                <p>Generate voxel previews directly in your file manager for easy navigation and project management.</p>
+            </div>
+            <div class="feature-card">
+                <i data-lucide="palette" class="icon"></i>
+                <h2><a href="https://vengi-voxel.github.io/vengi/palconvert/Index/">PalConvert</a></h2>
+                <p>Convert and optimize color palettes for voxel assets with advanced dithering and format
+                    compatibility.</p>
+            </div>
         </div>
 
-        <div>
-            <h1>Welcome to vengi</h1>
-            <br />
-            This is a collection of voxel tools. It includes a voxel editor with animation support
-            and loading/saving into a lot of voxel volume formats. There are other tools like e.g. a thumbnailer for
-            your filemanager and a command line tool to convert or modify between several voxel formats.
-            <br />
-            Find out more about the project at <a class="link" href="https://github.com/vengi-voxel/vengi">github</a>.
-            <br />
-            Join our <a class="link" href="https://vengi-voxel.de/discord">discord server</a> to get support or submit your feature requests or bugs.
-            <br />
-            <img src="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" width="600"/>
-            <br />
-            <h1>Formats</h1>
-            <div id="formats">
-            </div>
-            <script>
-                jsonToTable(jsonData.palettes, 'Palettes', 'formats');
-                jsonToTable(jsonData.images, 'Images', 'formats');
-                jsonToTable(jsonData.voxels, 'Voxels', 'formats');
-            </script>
-        </div>
-    </div>
+        <img src="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" alt="vengi Voxel Editor Screenshot" />
+
+        <h1>Supported Formats</h1>
+        <div id="formats"></div>
+    </main>
+
+    <footer>&copy; 2025 Vengi Voxel Tools. All rights reserved.</footer>
+
+    <script src="data.js"></script>
+    <script>
+        lucide.createIcons();
+
+        function jsonToTable(data, category, id) {
+            const table = document.createElement('table');
+            const header = table.createTHead().insertRow();
+            const headers = Object.keys(data[0]).filter(key => key !== 'magics');
+            headers.forEach(text => header.insertCell().textContent = text);
+
+            const body = table.createTBody();
+            data.forEach(item => {
+                const row = body.insertRow();
+                headers.forEach(h => row.insertCell().textContent = item[h]);
+            });
+
+            const heading = document.createElement('h2');
+            heading.textContent = category;
+
+            const container = document.getElementById(id);
+            if (container) {
+                container.appendChild(heading);
+                container.appendChild(table);
+            }
+        }
+
+        jsonToTable(jsonData.palettes, 'Palettes', 'formats');
+        jsonToTable(jsonData.images, 'Images', 'formats');
+        jsonToTable(jsonData.voxels, 'Voxels', 'formats');
+    </script>
 </body>
 
 </html>
