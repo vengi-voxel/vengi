@@ -47,7 +47,7 @@ uint8_t PaletteLookup::findClosestIndex(core::RGBA rgba) {
 	if (oldValue == (uint16_t)PaletteColorNotFound) {
 		core_assert_always(_palette.colorCount() > 0);
 		uint16_t newValue = _palette.getClosestMatch(rgba);
-		InterlockedExchange16(reinterpret_cast<volatile SHORT *>(&_cache[idx]), newValue);
+		InterlockedExchange16(reinterpret_cast<volatile int16_t *>(&_cache[idx]), newValue);
 	}
 #elif defined(__GNUC__) || defined(__clang__)
 	uint16_t oldValue = __atomic_load_n(&_cache[idx], __ATOMIC_RELAXED);
