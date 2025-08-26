@@ -325,7 +325,7 @@ static bool saveMetadataBinary(const scenegraph::SceneGraph &sceneGraph, const s
 					return false;
 				}
 			}
-			// TODO: VOXELFORMAT: You can't give names or descriptions to palette colors in vengi yet
+			// TODO: VOXELFORMAT: save palette color names, too
 			if (!stream.writeBool(false)) {
 				Log::error("Failed to write description flag for palette %s", name.c_str());
 				return false;

@@ -12,7 +12,7 @@ A VENGI file consists of the following main sections:
 
 1. **Magic Number**: A 4-byte identifier `VENG`.
 2. **Zip data**: zlib header (0x78, 0xDA)
-    * **Version**: A 4-byte version number. The current supported version is `4`.
+    * **Version**: A 4-byte version number. The current supported version is `5`.
     * **Scene Graph Data**: Contains information about the scene graph nodes.
 
 ## Node Structure
@@ -109,6 +109,7 @@ for(x = mins.x; x <= maxs.x; ++x)
 Palette colors are stored in the `PALC` chunk (or in `PALI` - see below):
 
 * **FourCC**: `PALC`
+* **Palette Name**: String (16-bit length prefix, followed by UTF-8 encoded string)
 * **Color Count**: 4-byte unsigned integer
 * **Colors**: For each color:
     * **ABGR**: 4-byte unsigned integer
@@ -116,6 +117,8 @@ Palette colors are stored in the `PALC` chunk (or in `PALI` - see below):
     * **ABGR**: 4-byte unsigned integer (always 0)
 * **Indices**: For each color:
     * **Index**: 1-byte unsigned integer
+* **Color Names**: For each color:
+	* **Name**: String (16-bit length prefix, followed by UTF-8 encoded string)
 * **Material Count**: 4-byte unsigned integer
 * **Materials**: For each material:
     * **Type**: 4-byte unsigned integer

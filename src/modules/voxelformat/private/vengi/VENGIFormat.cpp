@@ -148,6 +148,7 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 										const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
 	wrapBool(stream.writeUInt32(FourCC('P', 'A', 'L', 'C')))
 	const palette::Palette &palette = node.palette();
+	wrapBool(stream.writePascalStringUInt16LE(palette.name()))
 	wrapBool(stream.writeUInt32(palette.colorCount()))
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt32(palette.color(i).rgba))
@@ -159,7 +160,9 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt8(indices[i]))
 	}
-	// TODO: VOXELFORMAT: save the color names, too
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		wrapBool(stream.writePascalStringUInt16LE(palette.colorName(i)))
+	}
 
 	wrapBool(stream.writeUInt32(palette.colorCount()))
 	for (int i = 0; i < palette.colorCount(); ++i) {
@@ -279,6 +282,11 @@ bool VENGIFormat::loadNodePaletteNormals(scenegraph::SceneGraph &sceneGraph, sce
 bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 										uint32_t version, io::ReadStream &stream) {
 	palette::Palette palette;
+	if (version >= 5) {
+		core::String name;
+		wrapBool(stream.readPascalStringUInt16LE(name))
+		palette.setName(name);
+	}
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount))
 	Log::debug("Load node palette with %u color", colorCount);
@@ -295,6 +303,14 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt8(indices[i]))
 	}
+	if (version >= 5) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
+			core::String colorName;
+			wrapBool(stream.readPascalStringUInt16LE(colorName))
+			palette.setColorName(i, colorName);
+		}
+	}
+
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		palette.setColor(i, colors[i]);
 	}
@@ -497,7 +513,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(*stream, stream->size());
-	wrapBool(zipStream.writeUInt32(4))
+	wrapBool(zipStream.writeUInt32(5))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -520,7 +536,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ZipReadStream zipStream(*stream, stream->size());
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 4) {
+	if (version > 5) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}
