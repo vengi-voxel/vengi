@@ -1,4 +1,4 @@
-# Devlog 08/2024
+# Devlog 08/2025
 
 I am starting to write a devlog to keep track of the development progress and changes in the vengi project as well as other projects I've been working on. This will help document the evolution of the codebase and provide insights into the development process. I usually don't write devlogs and this is the first time I am doing it, so please bear with me.
 
