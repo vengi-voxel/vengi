@@ -2394,7 +2394,7 @@ const McPaletteMap &getPaletteMap() {
 	// https://minecraft.wiki/w/Java_Edition_data_values/Pre-flattening#Block_IDs
 	// https://github.com/erich666/Mineways/blob/c84d1dad8ef9c5d59008b3eabff0161aae9600d6/Win/nbt.cpp#L370
 	// minetestmapper2 color.txt
-	static thread_local McPaletteMap mcPalette;
+	static thread_local McPaletteMap mcPalette(lengthof(mccolors));
 	if (!mcPalette.empty()) {
 		return mcPalette;
 	}
