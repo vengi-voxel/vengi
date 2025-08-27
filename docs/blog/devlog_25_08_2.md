@@ -1,6 +1,6 @@
 # Memory consumption improvements
 
-The linux perf framework is a great tool to analyze performance and memory consumption of applications. I've reduced the overall memory consumption in the last few days. Let me show you a small change that along reduced the memory by 3MB when loading minecraft files.
+The linux perf framework is a great tool to analyze performance and memory consumption of applications. I've reduced the overall memory consumption in the last few days. Let me show you a small change that alone reduced the memory by 3MB when loading minecraft files.
 
 ![heaptrack1](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/vengi-heaptrack1_2025-08-27.png)
 
