@@ -442,6 +442,10 @@ public:
 
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
+	/**
+	 * @brief When updating the pivot of a node, we want to keep it in its current position - but only modify the pivot
+	 * to achieve this, we componsate the pivot change by updating the local translation
+	 */
 	void nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
 
 	void onNewNodeAdded(int newNodeId, bool isChildren = false);

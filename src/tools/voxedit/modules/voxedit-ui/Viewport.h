@@ -125,6 +125,10 @@ private:
 	 * @sa renderGizmo()
 	 */
 	bool runGizmo(const video::Camera &camera);
+	void manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix);
+	void manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+								 scenegraph::KeyFrameIndex &keyFrameIdx, const glm::mat4 &worldMatrix);
+	void manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const glm::mat4 &worldMatrix);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
 	/**
 	 * @return @c true if the the gizmo was used in edit mode.

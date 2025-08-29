@@ -853,6 +853,44 @@ static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, con
 	return glm::mat4(1.0f);
 }
 
+// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?
+//       https://github.com/vengi-voxel/vengi/issues/611
+//       The issue can also be in SceneManager::nodeSetPivot() and how to compensate the local matrix
+//       translation to keep the node visually at the same position
+void Viewport::manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix) {
+	// TODO: use the scenegraph to resolve the region for reference nodes?
+	const glm::vec3 size = node.region().getDimensionsInVoxels();
+	// TODO: extracting just the translation part here is not correct if we have rotation in the deltaMatrix
+	const glm::vec3 deltaTranslation(deltaMatrix[3]);
+	const glm::vec3 pivot = deltaTranslation / size;
+	// here we also compensate the pivot change in the local matrix by translating the local matrix
+	// in the opposite direction - otherwise the node would jump around when we modify the pivot
+	_sceneMgr->nodeUpdatePivot(node.id(), node.pivot() + pivot);
+}
+
+void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+									   scenegraph::KeyFrameIndex &keyFrameIdx, const glm::mat4 &worldMatrix) {
+	const bool autoKeyFrame = _autoKeyFrame->boolVal();
+	// check if a new keyframe should get generated automatically
+	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
+	if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
+		if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
+			const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+			core_assert(newKeyFrameIdx != keyFrameIdx);
+			core_assert(newKeyFrameIdx != InvalidKeyFrame);
+			keyFrameIdx = newKeyFrameIdx;
+		}
+	}
+	const glm::mat4 &worldParentMatrix = parentWorldMatrix(sceneGraph, node, keyFrameIdx);
+	const glm::mat4 &newLocalMatrix = glm::inverse(worldParentMatrix) * worldMatrix;
+	_sceneMgr->nodeUpdateTransform(node.id(), newLocalMatrix, keyFrameIdx, true);
+}
+
+void Viewport::manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const glm::mat4 &worldMatrix) {
+	const glm::ivec3 shift = glm::vec3(worldMatrix[3]) - node.region().getLowerCornerf();
+	_sceneMgr->nodeShift(node.id(), shift);
+}
+
 bool Viewport::runGizmo(const video::Camera &camera) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	int activeNode = sceneGraph.activeNode();
@@ -890,42 +928,21 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 			activeNode = newNode;
 		}
 	}
-	if (manipulated) {
-		if (sceneMode) {
-			if (_pivotMode->boolVal()) {
-				const glm::vec3 size = node.region().getDimensionsInVoxels();
-				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-				const glm::vec3 deltaTranslation =
-					-glm::conjugate(transform.worldOrientation()) * glm::vec3(deltaMatrix[3]);
-				// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?
-				//       https://github.com/vengi-voxel/vengi/issues/611
-				const glm::vec3 deltaPivot = deltaTranslation / size;
-				const glm::vec3 pivot = glm::clamp(node.pivot() + deltaPivot, glm::vec3(-5.0f), glm::vec3(5.0f));
-				_sceneMgr->nodeUpdatePivot(activeNode, pivot);
-			} else {
-				const bool autoKeyFrame = _autoKeyFrame->boolVal();
-				// check if a new keyframe should get generated automatically
-				const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
-				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
-					if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
-						const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
-						core_assert(newKeyFrameIdx != keyFrameIdx);
-						core_assert(newKeyFrameIdx != InvalidKeyFrame);
-						keyFrameIdx = newKeyFrameIdx;
-					}
-				}
-				const glm::mat4 &worldParentMatrix = parentWorldMatrix(sceneGraph, node, keyFrameIdx);
-				const glm::mat4 &newLocalMatrix = glm::inverse(worldParentMatrix) * worldMatrix;
-				_sceneMgr->nodeUpdateTransform(activeNode, newLocalMatrix, keyFrameIdx, true);
-			}
-		} else {
-			const glm::ivec3 shift = glm::vec3(worldMatrix[3]) - node.region().getLowerCornerf();
-			_sceneMgr->nodeShift(activeNode, shift);
-			// only true in edit mode
-			return true;
-		}
+	if (!manipulated) {
+		return false;
 	}
-	return false;
+	if (sceneMode) {
+		if (_pivotMode->boolVal()) {
+			manipulatePivot(node, deltaMatrix);
+		} else {
+			manipulateNodeTransform(sceneGraph, node, keyFrameIdx, worldMatrix);
+		}
+		return false;
+	}
+
+	manipulateNodeVolumeRegion(node, worldMatrix);
+	// only true in edit mode
+	return true;
 }
 
 void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) {
