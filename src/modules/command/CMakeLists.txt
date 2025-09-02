@@ -10,6 +10,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io)
 set(TEST_SRCS
 	tests/CommandTest.cpp
 	tests/CommandHandlerTest.cpp
+	tests/TestHelper.h
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

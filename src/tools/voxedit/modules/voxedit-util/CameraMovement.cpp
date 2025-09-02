@@ -3,6 +3,7 @@
  */
 
 #include "CameraMovement.h"
+#include "app/I18N.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "voxedit-util/Config.h"
@@ -14,6 +15,10 @@ namespace voxedit {
 //       it should be possible to walk a scene in a first person perspective
 void CameraMovement::construct() {
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
+	_clipping = core::Var::get(cfg::VoxEditClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
+							   core::Var::boolValidator);
+	_gravity =
+		core::Var::get(cfg::VoxEditGravity, "false", core::CV_NOPERSIST, _("Enable gravity"), core::Var::boolValidator);
 	_movement.construct();
 }
 
@@ -29,14 +34,13 @@ void CameraMovement::shutdown() {
 	_movement.shutdown();
 }
 
-void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, bool clipping,
-										 bool gravity, scenegraph::FrameIndex frameIdx) const {
+void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx) const {
 	const float speed = _movementSpeed->floatVal();
 	glm::vec3 moveDelta = _movement.moveDelta(speed);
-	if (clipping) {
+	if (_clipping->boolVal()) {
 		const glm::vec3 &camPos = camera->worldPosition();
 		const glm::mat4 &orientation = camera->orientation();
-		if (gravity) {
+		if (_gravity->boolVal()) {
 			const float lowestY = sceneGraph.region().getLowerY() + _clipper.boxSize().y;
 			const float currentY = camPos.y;
 			moveDelta += _movement.gravityDelta(speed, orientation, currentY, lowestY);
@@ -47,14 +51,13 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 }
 
 void CameraMovement::update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
-							bool clipping, bool gravity, scenegraph::FrameIndex frameIdx) {
-	_movement.update(nowSeconds);
+							scenegraph::FrameIndex frameIdx) {
 	if (camera == nullptr) {
 		return;
 	}
 
 	if (camera->rotationType() == video::CameraRotationType::Eye) {
-		moveCameraInEyeMode(camera, sceneGraph, clipping, gravity, frameIdx);
+		moveCameraInEyeMode(camera, sceneGraph, frameIdx);
 	}
 }
 

@@ -2577,7 +2577,7 @@ bool SceneManager::update(double nowSeconds) {
 		_mementoHandler.endGroup();
 	}
 	video::Camera *camera = activeCamera();
-	_camMovement.update(_nowSeconds, camera, _sceneGraph, _enableClipping, _enableGravity, currentFrame());
+	_camMovement.update(_nowSeconds, camera, _sceneGraph, currentFrame());
 	_modifierFacade.update(nowSeconds, camera);
 
 	updateDirtyRendererStates();

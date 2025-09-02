@@ -15,19 +15,21 @@
 namespace voxedit {
 
 class CameraMovement : public core::IComponent {
-private:
+protected:
 	core::VarPtr _movementSpeed;
+	core::VarPtr _gravity;
+	core::VarPtr _clipping;
 	scenegraph::Clipper _clipper;
 	util::Movement _movement;
-	void moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, bool clipping,
-							 bool gravity, scenegraph::FrameIndex frameIdx) const;
+	void moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
+							 scenegraph::FrameIndex frameIdx) const;
 
 public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
-	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, bool clipping,
-				bool gravity, scenegraph::FrameIndex frameIdx);
+	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
+				scenegraph::FrameIndex frameIdx);
 	void zoom(video::Camera &camera, float level, double deltaSeconds) const;
 };
 

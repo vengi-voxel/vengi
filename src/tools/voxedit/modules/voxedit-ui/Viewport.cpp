@@ -471,16 +471,10 @@ void Viewport::menuBarFreeCameraOptions() {
 		ImGui::EndCombo();
 	}
 	ImGui::BeginDisabled(camera().rotationType() != video::CameraRotationType::Eye);
-	bool clipping = _sceneMgr->clipping();
-	if (ImGui::Checkbox(_("Clipping"), &clipping)) {
-		_sceneMgr->setClipping(clipping);
-	}
-
-	ImGui::BeginDisabled(!clipping);
-	bool gravity = _sceneMgr->gravity();
-	if (ImGui::Checkbox(_("Gravity"), &gravity)) {
-		_sceneMgr->setGravity(gravity);
-	}
+	const core::VarPtr &clipping = core::Var::getSafe(cfg::VoxEditClipping);
+	ImGui::CheckboxVar(_("Clipping"), clipping);
+	ImGui::BeginDisabled(!clipping->boolVal());
+	ImGui::CheckboxVar(_("Gravity"), cfg::VoxEditGravity);
 	ImGui::EndDisabled();
 
 	ImGui::EndDisabled();

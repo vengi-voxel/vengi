@@ -92,9 +92,6 @@ protected:
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
 	bool _traceViaMouse = true;
-	// camera clipping
-	bool _enableClipping = false;
-	bool _enableGravity = false;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
@@ -574,25 +571,6 @@ public:
 	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
-
-inline bool SceneManager::clipping() const {
-	return _enableClipping;
-}
-
-inline void SceneManager::setClipping(bool enabled) {
-	_enableClipping = enabled;
-	if (!_enableClipping) {
-		setGravity(false);
-	}
-}
-
-inline bool SceneManager::gravity() const {
-	return _enableGravity;
-}
-
-inline void SceneManager::setGravity(bool enabled) {
-	_enableGravity = enabled;
-}
 
 inline const voxel::VoxelData &SceneManager::clipBoardData() const {
 	return _copy;
