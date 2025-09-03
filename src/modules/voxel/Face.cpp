@@ -56,6 +56,26 @@ const char *faceNameString(FaceNames face) {
 	return "Unknown";
 }
 
+glm::vec3 faceNormal(FaceNames face) {
+	switch (face) {
+	case FaceNames::PositiveX:
+		return glm::vec3(1.0f, 0.0f, 0.0f);
+	case FaceNames::NegativeX:
+		return glm::vec3(-1.0f, 0.0f, 0.0f);
+	case FaceNames::PositiveY:
+		return glm::vec3(0.0f, 1.0f, 0.0f);
+	case FaceNames::NegativeY:
+		return glm::vec3(0.0f, -1.0f, 0.0f);
+	case FaceNames::PositiveZ:
+		return glm::vec3(0.0f, 0.0f, 1.0f);
+	case FaceNames::NegativeZ:
+		return glm::vec3(0.0f, 0.0f, -1.0f);
+	default:
+		break;
+	}
+	return glm::vec3(0.0f, 0.0f, 0.0f);
+}
+
 math::Axis faceToAxis(FaceNames face) {
 	switch (face) {
 	case FaceNames::PositiveX:

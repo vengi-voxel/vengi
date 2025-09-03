@@ -40,6 +40,7 @@ enum class FaceNames : uint8_t {
 FaceNames toFaceNames(const core::String &in, FaceNames defaultFace = FaceNames::Max);
 const char *faceNameString(FaceNames face);
 math::Axis faceToAxis(FaceNames face);
+glm::vec3 faceNormal(FaceNames face);
 
 inline bool isHorizontalFace(FaceNames face) {
 	return face == FaceNames::PositiveX || face == FaceNames::PositiveZ || face == FaceNames::NegativeX || face == FaceNames::NegativeZ;
