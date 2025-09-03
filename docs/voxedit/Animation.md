@@ -4,7 +4,7 @@
 
 ## Videos
 
-* [youtu.be/5aC3-QumPcw](https://youtu.be/5aC3-QumPcw) (animation scripting via lua - see [scripts](../LUAScript.md)
+* [youtu.be/5aC3-QumPcw](https://youtu.be/5aC3-QumPcw) (animation scripting via lua - see [scripts](../LUAScript.md))
 * [youtu.be/NL5aEO_an1w](https://youtu.be/NL5aEO_an1w) (loading the `hmec` animation from command & conquer)
 * [youtu.be/vXTOkH3HwIo](https://youtu.be/vXTOkH3HwIo) (showing the animation of a windmill)
 * [youtu.be/mynzgoaoxXo](https://youtu.be/mynzgoaoxXo) (export as gltf with animations and re-import into vengi)
