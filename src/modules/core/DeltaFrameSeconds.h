@@ -18,11 +18,7 @@ public:
 	}
 
 	void updateDelta(double nowSeconds) {
-		if (_deltaSeconds < 0.0) {
-			_deltaSeconds = 0.0;
-		} else {
-			_deltaSeconds = nowSeconds - _nowSeconds;
-		}
+		_deltaSeconds = nowSeconds - _nowSeconds;
 		_nowSeconds = nowSeconds;
 	}
 
