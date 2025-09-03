@@ -14,7 +14,7 @@ A few of the collection classes also got chunk allocators as well as free lists 
 
 # Memory leaks
 
-Two memory leaks were also fixed in the error handling code of the `genland` and the `importAsPlane` lua bindings. While investigating them I've also found that there were not unit tests for `importAsPlane`. This is now fixed, too and the [scripting docs](../LUAScript.md) also got updated.
+Two memory leaks were also fixed in the error handling code of the `genland` and the `importAsPlane` lua bindings. While investigating them I've also found that there were no unit tests for `importAsPlane`. This is now fixed, too and the [scripting docs](../LUAScript.md) also got updated.
 
 # Google benchmark - hotspot
 
