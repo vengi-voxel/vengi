@@ -52,6 +52,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 
 void CameraMovement::update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 							scenegraph::FrameIndex frameIdx) {
+	_movement.update(nowSeconds);
 	if (camera == nullptr) {
 		return;
 	}
