@@ -12,6 +12,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
 #include "util/VarUtil.h"
+#include "video/Camera.h"
 #include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -50,7 +51,7 @@ protected:
 	}
 };
 
-TEST_F(CameraMovementTest, DISABLED_test) {
+TEST_F(CameraMovementTest, test) {
 	CameraMovementExt m;
 	m.construct();
 	ASSERT_TRUE(m.init());
@@ -58,6 +59,7 @@ TEST_F(CameraMovementTest, DISABLED_test) {
 	scenegraph::SceneGraph sceneGraph;
 	prepareSceneGraph(sceneGraph);
 	video::Camera camera;
+	camera.setRotationType(video::CameraRotationType::Eye);
 	camera.setSize({800, 600});
 	const glm::vec3 worldPos{0.0f, 10.0f, 0.0f};
 	camera.setWorldPosition(worldPos);
@@ -66,9 +68,9 @@ TEST_F(CameraMovementTest, DISABLED_test) {
 	EXPECT_FLOAT_EQ(eyeY, worldPos.y);
 
 	{
-		command::ScopedButtonCommand jump("left", 10, 0.0);
+		command::ScopedButtonCommand move("move_left", 10, 0.0);
 		const scenegraph::FrameIndex frameIdx = 0;
-		m.update(0.0, &camera, sceneGraph, frameIdx);
+		m.update(0.0001, &camera, sceneGraph, frameIdx);
 		EXPECT_TRUE(camera.dirty());
 		camera.update(0.0);
 	}
