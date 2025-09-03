@@ -1,4 +1,4 @@
-// dear imgui, v1.92.2b
+// dear imgui, v1.92.3 WIP
 // (headers)
 
 // Help:
@@ -28,8 +28,8 @@
 
 // Library Version
 // (Integer encoded as XYYZZ for use in #if preprocessor conditionals, e.g. '#if IMGUI_VERSION_NUM >= 12345')
-#define IMGUI_VERSION       "1.92.2b"
-#define IMGUI_VERSION_NUM   19222
+#define IMGUI_VERSION       "1.92.3 WIP"
+#define IMGUI_VERSION_NUM   19225
 #define IMGUI_HAS_TABLE             // Added BeginTable() - from IMGUI_VERSION_NUM >= 18000
 #define IMGUI_HAS_TEXTURES          // Added ImGuiBackendFlags_RendererHasTextures - from IMGUI_VERSION_NUM >= 19198
 #define IMGUI_HAS_VIEWPORT          // In 'docking' WIP branch.
@@ -102,8 +102,10 @@ Index of this file:
 #define IMGUI_CHECKVERSION()        ImGui::DebugCheckVersionAndDataLayout(IMGUI_VERSION, sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4), sizeof(ImDrawVert), sizeof(ImDrawIdx))
 
 // Helper Macros - IM_FMTARGS, IM_FMTLIST: Apply printf-style warnings to our formatting functions.
-// (MSVC provides an equivalent mechanism via SAL Annotations but it would require the macros in a different
-//  location. e.g. #include <sal.h> + void myprintf(_Printf_format_string_ const char* format, ...))
+// (MSVC provides an equivalent mechanism via SAL Annotations but it requires the macros in a different
+//  location. e.g. #include <sal.h> + void myprintf(_Printf_format_string_ const char* format, ...),
+//  and only works when using Code Analysis, rather than just normal compiling).
+// (see https://github.com/ocornut/imgui/issues/8871 for a patch to enable this for MSVC's Code Analysis)
 #if !defined(IMGUI_USE_STB_SPRINTF) && defined(__MINGW32__) && !defined(__clang__)
 #define IM_FMTARGS(FMT)             __attribute__((format(gnu_printf, FMT, FMT+1)))
 #define IM_FMTLIST(FMT)             __attribute__((format(gnu_printf, FMT, 0)))
@@ -251,6 +253,7 @@ typedef int ImGuiInputFlags;        // -> enum ImGuiInputFlags_      // Flags: f
 typedef int ImGuiInputTextFlags;    // -> enum ImGuiInputTextFlags_  // Flags: for InputText(), InputTextMultiline()
 typedef int ImGuiItemFlags;         // -> enum ImGuiItemFlags_       // Flags: for PushItemFlag(), shared by all items
 typedef int ImGuiKeyChord;          // -> ImGuiKey | ImGuiMod_XXX    // Flags: for IsKeyChordPressed(), Shortcut() etc. an ImGuiKey optionally OR-ed with one or more ImGuiMod_XXX values.
+typedef int ImGuiListClipperFlags;  // -> enum ImGuiListClipperFlags_// Flags: for ImGuiListClipper
 typedef int ImGuiPopupFlags;        // -> enum ImGuiPopupFlags_      // Flags: for OpenPopup*(), BeginPopupContext*(), IsPopupOpen()
 typedef int ImGuiMultiSelectFlags;  // -> enum ImGuiMultiSelectFlags_// Flags: for BeginMultiSelect()
 typedef int ImGuiSelectableFlags;   // -> enum ImGuiSelectableFlags_ // Flags: for Selectable()
@@ -1881,6 +1884,7 @@ enum ImGuiStyleVar_
     ImGuiStyleVar_CellPadding,              // ImVec2    CellPadding
     ImGuiStyleVar_ScrollbarSize,            // float     ScrollbarSize
     ImGuiStyleVar_ScrollbarRounding,        // float     ScrollbarRounding
+    ImGuiStyleVar_ScrollbarPadding,         // float     ScrollbarPadding
     ImGuiStyleVar_GrabMinSize,              // float     GrabMinSize
     ImGuiStyleVar_GrabRounding,             // float     GrabRounding
     ImGuiStyleVar_ImageBorderSize,          // float     ImageBorderSize
@@ -2348,6 +2352,7 @@ struct ImGuiStyle
     float       ColumnsMinSpacing;          // Minimum horizontal spacing between two columns. Preferably > (FramePadding.x + 1).
     float       ScrollbarSize;              // Width of the vertical scrollbar, Height of the horizontal scrollbar.
     float       ScrollbarRounding;          // Radius of grab corners for scrollbar.
+    float       ScrollbarPadding;           // Padding of scrollbar grab within its frame (same for both axises).
     float       GrabMinSize;                // Minimum width/height of a grab box for slider/scrollbar.
     float       GrabRounding;               // Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
     float       LogSliderDeadzone;          // The size in pixels of the dead-zone around zero on logarithmic sliders that cross zero.
@@ -2901,6 +2906,13 @@ struct ImGuiStorage
 #endif
 };
 
+// Flags for ImGuiListClipper (currently not fully exposed in function calls: a future refactor will likely add this to ImGuiListClipper::Begin function equivalent)
+enum ImGuiListClipperFlags_
+{
+    ImGuiListClipperFlags_None                  = 0,
+    ImGuiListClipperFlags_NoSetTableRowCounters = 1 << 0,   // [Internal] Disabled modifying table row counters. Avoid assumption that 1 clipper item == 1 table row.
+};
+
 // Helper: Manually clip large list of items.
 // If you have lots evenly spaced items and you have random access to the list, you can perform coarse
 // clipping based on visibility to only submit items that are in view.
@@ -2931,6 +2943,7 @@ struct ImGuiListClipper
     double          StartPosY;          // [Internal] Cursor position at the time of Begin() or after table frozen rows are all processed
     double          StartSeekOffsetY;   // [Internal] Account for frozen rows in a table and initial loss of precision in very large windows.
     void*           TempData;           // [Internal] Internal data
+    ImGuiListClipperFlags Flags;        // [Internal] Flags, currently not yet well exposed.
 
     // items_count: Use INT_MAX if you don't know how many items you have (in which case the cursor won't be advanced in the final step, and you can call SeekCursorForItem() manually if you need)
     // items_height: Use -1.0f to be calculated automatically on first step. Otherwise pass in the distance between your items, typically GetTextLineHeightWithSpacing() or GetFrameHeightWithSpacing().
@@ -3437,7 +3450,7 @@ struct ImDrawList
 
     // Advanced: Miscellaneous
     IMGUI_API void  AddDrawCmd();                                               // This is useful if you need to forcefully create a new draw call (to allow for dependent rendering / blending). Otherwise primitives are merged into the same draw-call as much as possible
-    IMGUI_API ImDrawList* CloneOutput() const;                                  // Create a clone of the CmdBuffer/IdxBuffer/VtxBuffer.
+    IMGUI_API ImDrawList* CloneOutput() const;                                  // Create a clone of the CmdBuffer/IdxBuffer/VtxBuffer. For multi-threaded rendering, consider using `imgui_threaded_rendering` from https://github.com/ocornut/imgui_club instead.
 
     // Advanced: Channels
     // - Use to split render into layers. By switching channels to can render out-of-order (e.g. submit FG primitives before BG primitives)
@@ -3942,7 +3955,7 @@ struct ImFont
     // 'max_width' stops rendering after a certain width (could be turned into a 2d size). FLT_MAX to disable.
     // 'wrap_width' enable automatic word-wrapping across multiple lines to fit into given width. 0.0f to disable.
     IMGUI_API ImFontBaked*      GetFontBaked(float font_size, float density = -1.0f);  // Get or create baked data for given size
-    IMGUI_API ImVec2            CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end = NULL, const char** remaining = NULL); // utf8
+    IMGUI_API ImVec2            CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end = NULL, const char** out_remaining = NULL);
     IMGUI_API const char*       CalcWordWrapPosition(float size, const char* text, const char* text_end, float wrap_width);
     IMGUI_API void              RenderChar(ImDrawList* draw_list, float size, const ImVec2& pos, ImU32 col, ImWchar c, const ImVec4* cpu_fine_clip = NULL);
     IMGUI_API void              RenderText(ImDrawList* draw_list, float size, const ImVec2& pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width = 0.0f, bool cpu_fine_clip = false);

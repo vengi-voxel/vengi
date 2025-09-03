@@ -1,4 +1,4 @@
-// dear imgui, v1.92.2b
+// dear imgui, v1.92.3 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend Dear ImGui features but we don't provide any guarantee of forward compatibility.
@@ -346,6 +346,7 @@ extern IMGUI_API ImGuiContext* GImGui;  // Current implicit context pointer
 #define IM_PRIu64   "llu"
 #define IM_PRIX64   "llX"
 #endif
+#define IM_TEXTUREID_TO_U64(_TEXID) ((ImU64)(intptr_t)(_TEXID))
 
 //-----------------------------------------------------------------------------
 // [SECTION] Generic helpers
@@ -377,6 +378,7 @@ extern IMGUI_API ImGuiContext* GImGui;  // Current implicit context pointer
 // Helpers: Hashing
 IMGUI_API ImGuiID       ImHashData(const void* data, size_t data_size, ImGuiID seed = 0);
 IMGUI_API ImGuiID       ImHashStr(const char* data, size_t data_size = 0, ImGuiID seed = 0);
+IMGUI_API const char*   ImHashSkipUncontributingPrefix(const char* label);
 
 // Helpers: Sorting
 #ifndef ImQsort
@@ -601,6 +603,7 @@ struct IMGUI_API ImRect
     void        Floor()                             { Min.x = IM_TRUNC(Min.x); Min.y = IM_TRUNC(Min.y); Max.x = IM_TRUNC(Max.x); Max.y = IM_TRUNC(Max.y); }
     bool        IsInverted() const                  { return Min.x > Max.x || Min.y > Max.y; }
     ImVec4      ToVec4() const                      { return ImVec4(Min.x, Min.y, Max.x, Max.y); }
+    const ImVec4& AsVec4() const                    { return *(const ImVec4*)&Min.x; }
 };
 
 // Helper: ImBitArray
@@ -2287,10 +2290,10 @@ struct ImGuiStackLevelInfo
     ImGuiID                 ID;
     ImS8                    QueryFrameCount;            // >= 1: Query in progress
     bool                    QuerySuccess;               // Obtained result from DebugHookIdInfo()
-    ImGuiDataType           DataType : 8;
-    char                    Desc[57];                   // Arbitrarily sized buffer to hold a result (FIXME: could replace Results[] with a chunk stream?) FIXME: Now that we added CTRL+C this should be fixed.
+    ImS8                    DataType;                   // ImGuiDataType
+    int                     DescOffset;                 // -1 or offset into parent's ResultPathsBuf
 
-    ImGuiStackLevelInfo()   { memset(this, 0, sizeof(*this)); }
+    ImGuiStackLevelInfo()   { memset(this, 0, sizeof(*this)); DescOffset = -1; }
 };
 
 // State for ID Stack tool queries
@@ -2300,11 +2303,13 @@ struct ImGuiIDStackTool
     int                     StackLevel;                 // -1: query stack and resize Results, >= 0: individual stack level
     ImGuiID                 QueryId;                    // ID to query details for
     ImVector<ImGuiStackLevelInfo> Results;
-    bool                    CopyToClipboardOnCtrlC;
+    bool                    OptHexEncodeNonAsciiChars;
+    bool                    OptCopyToClipboardOnCtrlC;
     float                   CopyToClipboardLastTime;
-    ImGuiTextBuffer         ResultPathBuf;
+    ImGuiTextBuffer         ResultPathsBuf;
+    ImGuiTextBuffer         ResultTempBuf;
 
-    ImGuiIDStackTool()      { memset(this, 0, sizeof(*this)); CopyToClipboardLastTime = -FLT_MAX; }
+    ImGuiIDStackTool()      { memset(this, 0, sizeof(*this)); OptHexEncodeNonAsciiChars = true; CopyToClipboardLastTime = -FLT_MAX; }
 };
 
 //-----------------------------------------------------------------------------
@@ -4030,12 +4035,12 @@ inline bool operator==(const ImTextureRef& lhs, const ImTextureRef& rhs)    { re
 inline bool operator!=(const ImTextureRef& lhs, const ImTextureRef& rhs)    { return lhs._TexID != rhs._TexID || lhs._TexData != rhs._TexData; }
 
 // Refer to ImFontAtlasPackGetRect() to better understand how this works.
-#define ImFontAtlasRectId_IndexMask_        (0x000FFFFF)    // 20-bits: index to access builder->RectsIndex[].
+#define ImFontAtlasRectId_IndexMask_        (0x0007FFFF)    // 20-bits signed: index to access builder->RectsIndex[].
 #define ImFontAtlasRectId_GenerationMask_   (0x3FF00000)    // 10-bits: entry generation, so each ID is unique and get can safely detected old identifiers.
 #define ImFontAtlasRectId_GenerationShift_  (20)
-inline int               ImFontAtlasRectId_GetIndex(ImFontAtlasRectId id)       { return id & ImFontAtlasRectId_IndexMask_; }
-inline int               ImFontAtlasRectId_GetGeneration(ImFontAtlasRectId id)  { return (id & ImFontAtlasRectId_GenerationMask_) >> ImFontAtlasRectId_GenerationShift_; }
-inline ImFontAtlasRectId ImFontAtlasRectId_Make(int index_idx, int gen_idx)     { IM_ASSERT(index_idx < ImFontAtlasRectId_IndexMask_ && gen_idx < (ImFontAtlasRectId_GenerationMask_ >> ImFontAtlasRectId_GenerationShift_)); return (ImFontAtlasRectId)(index_idx | (gen_idx << ImFontAtlasRectId_GenerationShift_)); }
+inline int               ImFontAtlasRectId_GetIndex(ImFontAtlasRectId id)       { return (id & ImFontAtlasRectId_IndexMask_); }
+inline unsigned int      ImFontAtlasRectId_GetGeneration(ImFontAtlasRectId id)  { return (unsigned int)(id & ImFontAtlasRectId_GenerationMask_) >> ImFontAtlasRectId_GenerationShift_; }
+inline ImFontAtlasRectId ImFontAtlasRectId_Make(int index_idx, int gen_idx)     { IM_ASSERT(index_idx >= 0 && index_idx <= ImFontAtlasRectId_IndexMask_ && gen_idx <= (ImFontAtlasRectId_GenerationMask_ >> ImFontAtlasRectId_GenerationShift_)); return (ImFontAtlasRectId)(index_idx | (gen_idx << ImFontAtlasRectId_GenerationShift_)); }
 
 // Packed rectangle lookup entry (we need an indirection to allow removing/reordering rectangles)
 // User are returned ImFontAtlasRectId values which are meant to be persistent.
@@ -4045,7 +4050,7 @@ inline ImFontAtlasRectId ImFontAtlasRectId_Make(int index_idx, int gen_idx)     
 struct ImFontAtlasRectEntry
 {
     int                 TargetIndex : 20;   // When Used: ImFontAtlasRectId -> into Rects[]. When unused: index to next unused RectsIndex[] slot to consume free-list.
-    int                 Generation : 10;    // Increased each time the entry is reused for a new rectangle.
+    unsigned int        Generation : 10;    // Increased each time the entry is reused for a new rectangle.
     unsigned int        IsUsed : 1;
 };
 

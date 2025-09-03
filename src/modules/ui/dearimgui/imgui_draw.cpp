@@ -1,4 +1,4 @@
-// dear imgui, v1.92.2b
+// dear imgui, v1.92.3 WIP
 // (drawing and font code)
 
 /*
@@ -484,9 +484,10 @@ void ImDrawList::_ClearFreeMemory()
     _Splitter.ClearFreeMemory();
 }
 
+// Note: For multi-threaded rendering, consider using `imgui_threaded_rendering` from https://github.com/ocornut/imgui_club
 ImDrawList* ImDrawList::CloneOutput() const
 {
-    ImDrawList* dst = IM_NEW(ImDrawList(_Data));
+    ImDrawList* dst = IM_NEW(ImDrawList(NULL));
     dst->CmdBuffer = CmdBuffer;
     dst->IdxBuffer = IdxBuffer;
     dst->VtxBuffer = VtxBuffer;
@@ -3031,7 +3032,7 @@ ImFont* ImFontAtlas::AddFont(const ImFontConfig* font_cfg_in)
     else
     {
         IM_ASSERT(Fonts.Size > 0 && "Cannot use MergeMode for the first font"); // When using MergeMode make sure that a font has already been added before. You can use ImGui::GetIO().Fonts->AddFontDefault() to add the default imgui font.
-        font = Fonts.back();
+        font = font_cfg_in->DstFont ? font_cfg_in->DstFont : Fonts.back();
     }
 
     // Add to list
@@ -3102,6 +3103,7 @@ static const char* GetDefaultCompressedFontDataTTF(int* out_size);
 #endif
 
 // Load embedded ProggyClean.ttf at size 13, disable oversampling
+// If you want a similar font which may be better scaled, consider using ProggyVector from the same author!
 ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* font_cfg_template)
 {
 #ifndef IMGUI_DISABLE_DEFAULT_FONT
@@ -3120,9 +3122,7 @@ ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* font_cfg_template)
 
     int ttf_compressed_size = 0;
     const char* ttf_compressed = GetDefaultCompressedFontDataTTF(&ttf_compressed_size);
-    const ImWchar* glyph_ranges = font_cfg.GlyphRanges != NULL ? font_cfg.GlyphRanges : GetGlyphRangesDefault();
-    ImFont* font = AddFontFromMemoryCompressedTTF(ttf_compressed, ttf_compressed_size, font_cfg.SizePixels, &font_cfg, glyph_ranges);
-    return font;
+    return AddFontFromMemoryCompressedTTF(ttf_compressed, ttf_compressed_size, font_cfg.SizePixels, &font_cfg);
 #else
     IM_ASSERT(0 && "AddFontDefault() disabled in this build.");
     IM_UNUSED(font_cfg_template);
@@ -4299,6 +4299,8 @@ void ImFontAtlasPackDiscardRect(ImFontAtlas* atlas, ImFontAtlasRectId id)
     index_entry->IsUsed = false;
     index_entry->TargetIndex = builder->RectsIndexFreeListStart;
     index_entry->Generation++;
+    if (index_entry->Generation == 0)
+        index_entry->Generation++; // Keep non-zero on overflow
 
     const int pack_padding = atlas->TexGlyphPadding;
     builder->RectsIndexFreeListStart = index_idx;
@@ -4522,16 +4524,16 @@ void ImFontAtlasDebugLogTextureRequests(ImFontAtlas* atlas)
         if (tex->Status == ImTextureStatus_WantCreate)
             IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: create %dx%d\n", tex->UniqueID, tex->Width, tex->Height);
         else if (tex->Status == ImTextureStatus_WantDestroy)
-            IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: destroy %dx%d, texid=0x%" IM_PRIX64 ", backend_data=%p\n", tex->UniqueID, tex->Width, tex->Height, tex->TexID, tex->BackendUserData);
+            IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: destroy %dx%d, texid=0x%" IM_PRIX64 ", backend_data=%p\n", tex->UniqueID, tex->Width, tex->Height, IM_TEXTUREID_TO_U64(tex->TexID), tex->BackendUserData);
         else if (tex->Status == ImTextureStatus_WantUpdates)
         {
-            IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: update %d regions, texid=0x%" IM_PRIX64 ", backend_data=0x%" IM_PRIX64 "\n", tex->UniqueID, tex->Updates.Size, tex->TexID, (ImU64)(intptr_t)tex->BackendUserData);
+            IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: update %d regions, texid=0x%" IM_PRIX64 ", backend_data=0x%" IM_PRIX64 "\n", tex->UniqueID, tex->Updates.Size, IM_TEXTUREID_TO_U64(tex->TexID), (ImU64)(intptr_t)tex->BackendUserData);
             for (const ImTextureRect& r : tex->Updates)
             {
                 IM_UNUSED(r);
                 IM_ASSERT(r.x >= 0 && r.y >= 0);
                 IM_ASSERT(r.x + r.w <= tex->Width && r.y + r.h <= tex->Height); // In theory should subtract PackPadding but it's currently part of atlas and mid-frame change would wreck assert.
-                //IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: update (% 4d..%-4d)->(% 4d..%-4d), texid=0x%" IM_PRIX64 ", backend_data=0x%" IM_PRIX64 "\n", tex->UniqueID, r.x, r.y, r.x + r.w, r.y + r.h, tex->TexID, (ImU64)(intptr_t)tex->BackendUserData);
+                //IMGUI_DEBUG_LOG_FONT("[font] Texture #%03d: update (% 4d..%-4d)->(% 4d..%-4d), texid=0x%" IM_PRIX64 ", backend_data=0x%" IM_PRIX64 "\n", tex->UniqueID, r.x, r.y, r.x + r.w, r.y + r.h, IM_TEXTUREID_TO_U64(tex->TexID), (ImU64)(intptr_t)tex->BackendUserData);
             }
         }
     }
@@ -5462,7 +5464,7 @@ const char* ImFont::CalcWordWrapPosition(float size, const char* text, const cha
     return s;
 }
 
-ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end, const char** remaining)
+ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end, const char** out_remaining)
 {
     if (!text_end)
         text_end = text_begin + ImStrlen(text_begin); // FIXME-OPT: Need to avoid this.
@@ -5540,8 +5542,8 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
     if (line_width > 0 || text_size.y == 0.0f)
         text_size.y += line_height;
 
-    if (remaining)
-        *remaining = s;
+    if (out_remaining != NULL)
+        *out_remaining = s;
 
     return text_size;
 }
@@ -5840,8 +5842,9 @@ void ImGui::RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir d
 
 void ImGui::RenderBullet(ImDrawList* draw_list, ImVec2 pos, ImU32 col)
 {
-    // FIXME-OPT: This should be baked in font.
-    draw_list->AddCircleFilled(pos, draw_list->_Data->FontSize * 0.20f, col, 8);
+    // FIXME-OPT: This should be baked in font now that it's easier.
+    float font_size = draw_list->_Data->FontSize;
+    draw_list->AddCircleFilled(pos, font_size * 0.20f, col, (font_size < 22) ? 8 : (font_size < 40) ? 12 : 0); // Hardcode optimal/nice tessellation threshold
 }
 
 void ImGui::RenderCheckMark(ImDrawList* draw_list, ImVec2 pos, ImU32 col, float sz)
@@ -6143,6 +6146,7 @@ static unsigned int stb_decompress(unsigned char *output, const unsigned char *i
 // Copyright (c) 2004, 2005 Tristan Grimmer
 // MIT license (see License.txt in http://www.proggyfonts.net/index.php?menu=download)
 // Download and more information at http://www.proggyfonts.net or http://upperboundsinteractive.com/fonts.php
+// If you want a similar font which may be better scaled, consider using ProggyVector from the same author!
 //-----------------------------------------------------------------------------
 
 #ifndef IMGUI_DISABLE_DEFAULT_FONT

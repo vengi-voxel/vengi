@@ -188,6 +188,7 @@ struct IMGUI_API ImGuiTestGenericVars
     ImGuiWindowFlags        WindowFlags;
     ImGuiTableFlags         TableFlags;
     ImGuiPopupFlags         PopupFlags;
+    ImGuiInputTextFlags     InputTextFlags;
     ImGuiTestGenericItemStatus  Status;
     bool                    ShowWindow1, ShowWindow2;
     bool                    UseClipper;
@@ -401,6 +402,9 @@ struct IMGUI_API ImGuiTestContext
     void        ScrollToY(ImGuiTestRef ref, float scroll_y) { ScrollTo(ref, ImGuiAxis_Y, scroll_y); }
     void        ScrollToTop(ImGuiTestRef ref);
     void        ScrollToBottom(ImGuiTestRef ref);
+    void        ScrollToPos(ImGuiTestRef window_ref, float pos_v, ImGuiAxis axis, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
+    void        ScrollToPosX(ImGuiTestRef window_ref, float pos_x);
+    void        ScrollToPosY(ImGuiTestRef window_ref, float pos_y);
     void        ScrollToItem(ImGuiTestRef ref, ImGuiAxis axis, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
     void        ScrollToItemX(ImGuiTestRef ref);
     void        ScrollToItemY(ImGuiTestRef ref);
