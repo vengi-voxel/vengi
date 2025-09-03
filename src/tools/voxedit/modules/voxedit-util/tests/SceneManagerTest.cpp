@@ -45,6 +45,14 @@ public:
 	void clearLastFilename() {
 		_lastFilename.clear();
 	}
+
+	const voxelutil::PickResult& getPickResult() const {
+		return _result;
+	}
+
+	bool testMouseRayTrace(bool force, const glm::mat4 &invModel) {
+		return mouseRayTrace(force, invModel);
+	}
 };
 
 class SceneManagerTest : public app::AbstractTest {
@@ -623,6 +631,77 @@ TEST_F(SceneManagerTest, testRemoveColors) {
 	EXPECT_TRUE(_sceneMgr->nodeRemoveColor(nodeId, targetVoxel.getColor()));
 	EXPECT_NE(targetVoxel.getColor(), v->voxel(0, 0, 0).getColor());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, 0, 0).getMaterial()));
+}
+
+TEST_F(SceneManagerTest, testMouseRayTrace) {
+	const voxel::Region region{-10, 10};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "raycast_test", region));
+
+	const glm::ivec3 targetPos(0, 0, 0);
+	ASSERT_TRUE(testSetVoxel(targetPos, 1));
+
+	// Create and set up a camera for the raycast
+	video::Camera camera;
+	camera.setNearPlane(0.1f);
+	camera.setFarPlane(20.0f);
+	camera.setFieldOfView(45.0f);
+	camera.setSize(glm::ivec2(800, 600));
+
+	// Position camera to look directly at the origin from positive Z
+	const glm::vec3 cameraPos(0.0f, 0.0f, 10.0f);
+	const glm::vec3 lookAt(0.0f, 0.0f, 0.0f);
+	const glm::vec3 up(0.0f, 1.0f, 0.0f);
+	camera.setWorldPosition(cameraPos);
+	camera.lookAt(lookAt, up);
+	camera.update(0.0);
+
+	// Set this camera as the active camera
+	_sceneMgr->setActiveCamera(&camera);
+	ASSERT_NE(nullptr, _sceneMgr->activeCamera());
+
+	// Set mouse position to center of screen
+	_sceneMgr->setMousePos(camera.size().x / 2, camera.size().y / 2);
+
+	// Perform the raycast with identity transformation matrix
+	const glm::mat4 invModel(1.0f);
+	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+
+	// Check the raycast result - we should at least get a result
+	const voxelutil::PickResult& result = sceneMgr()->getPickResult();
+	EXPECT_TRUE(result.firstValidPosition) << "Should have a valid first position";
+
+	// If we hit something, validate it's reasonable
+	if (result.didHit) {
+		EXPECT_TRUE(result.validPreviousPosition) << "Should have a valid previous position";
+		EXPECT_NE(voxel::FaceNames::Max, result.hitFace) << "Should detect which face was hit";
+		// The hit position should be within our volume region
+		EXPECT_TRUE(region.containsPoint(result.hitVoxel)) << "Hit voxel should be within volume region";
+	}
+
+	// Test raycast against empty space by pointing camera away from any voxels
+	const glm::vec3 emptyCameraPos(0.0f, 0.0f, -10.0f); // Point away from voxels
+	const glm::vec3 emptyLookAt(0.0f, 0.0f, -20.0f);
+	camera.setWorldPosition(emptyCameraPos);
+	camera.lookAt(emptyLookAt, up);
+	camera.update(0.0);
+
+	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+
+	// Test force parameter by calling twice with same mouse position
+	_sceneMgr->setMousePos(400, 300);
+	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(false, invModel));
+	EXPECT_FALSE(sceneMgr()->testMouseRayTrace(false, invModel)) << "Without force, should not re-execute if mouse hasn't moved";
+	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel)) << "Force should always re-execute";
+
+	// Test different mouse positions
+	_sceneMgr->setMousePos(100, 100); // Top-left corner
+	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+
+	_sceneMgr->setMousePos(700, 500); // Bottom-right corner
+	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+
+	// Clean up
+	_sceneMgr->setActiveCamera(nullptr);
 }
 
 } // namespace voxedit
