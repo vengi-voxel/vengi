@@ -25,6 +25,7 @@ set(TEST_SRCS
 	tests/AStarPathfinderTest.cpp
 	tests/ImageUtilsTest.cpp
 	tests/PickingTest.cpp
+	tests/RaycastTest.cpp
 	tests/VolumeMergerTest.cpp
 	tests/VolumeRescalerTest.cpp
 	tests/VolumeResizerTest.cpp

@@ -103,10 +103,16 @@ typedef RaycastResults::RaycastResult RaycastResult;
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& start, const glm::vec3& end, Callback&& callback) {
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
+	// The doRaycast function is assuming that it is iterating over the areas defined between
+	// voxels. We actually want to define the areas as being centered on voxels (as this is
+	// what the CubicSurfaceExtractor generates). We add 0.5 here to adjust for this.
+	const float offset = 0.5f;
+	const glm::vec3 v3dStart = start + offset;
+	const glm::vec3 v3dEnd = end + offset;
 	const float x1 = v3dStart.x;
 	const float y1 = v3dStart.y;
 	const float z1 = v3dStart.z;

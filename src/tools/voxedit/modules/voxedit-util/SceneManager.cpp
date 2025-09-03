@@ -2860,7 +2860,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	const math::Axis lockedAxis = _modifierFacade.lockedAxis();
 	// TODO: we could optionally limit the raycast to the selection
 
-	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+	voxelutil::raycastWithDirection(v, ray.origin - 0.5f, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
 			_result.firstValidPosition = true;
