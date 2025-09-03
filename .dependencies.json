@@ -1,7 +1,7 @@
 {
     "emscripten-browser-file": "b6a8355dd6b3d3e41f10713b8a3af0222369ad5e",
     "SOIL2": "111822e01ab3796eec1fffd9d2fbcdd3adeaf09f",
-    "stb": "f58f558c120e9b32c217290b80bad1a0729fbb2c",
+    "stb": "fede005abaf93d9d7f3a679d1999b2db341b360f",
     "googletest": "a05c0915074bcd1b82f232e081da9bb6c205c28d",
     "benchmark": "7697796fe5a70edbc3394d0593ef82afeebb7ddf",
     "imguizmo": "eb90849e6f0e24279357026c689e5eb5cd15723b",
