@@ -43,6 +43,24 @@ enum class MementoType {
 	Max
 };
 
+// Forward declaration
+struct MementoState;
+
+/**
+ * @brief Interface for listening to memento state changes
+ * Implementations can be notified when new memento states are created
+ */
+class IMementoStateListener {
+public:
+	virtual ~IMementoStateListener() = default;
+
+	/**
+	 * @brief Called when a new memento state is added
+	 * @param state The newly added memento state
+	 */
+	virtual void onMementoStateAdded(const MementoState &state) = 0;
+};
+
 /**
  * @brief Holds the data of a memento state
  *
@@ -108,6 +126,15 @@ public:
 	 * the whole volume is going to added to the memento data.
 	 */
 	static MementoData fromVolume(const voxel::RawVolume *volume, const voxel::Region &region);
+
+	/**
+	 * @brief Creates MementoData from compressed buffer data (for network deserialization)
+	 * @param[in] buffer The compressed buffer data
+	 * @param[in] bufferSize The size of the compressed buffer
+	 * @param[in] dataRegion The region the compressed data represents
+	 * @param[in] volumeRegion The volume region
+	 */
+	static MementoData fromBuffer(const uint8_t *buffer, size_t bufferSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
 };
 
 struct MementoState {
@@ -186,6 +213,9 @@ private:
 	voxel::Region _maxUndoRegion = voxel::Region::InvalidRegion;
 	core_trace_mutex(core::Lock, _mutex, "MementoHandler");
 
+	// Network notification listeners
+	core::DynamicArray<IMementoStateListener*> _listeners;
+
 	void cutFromGroupStatePosition();
 	void addState(MementoState &&state);
 	/**
@@ -232,6 +262,18 @@ public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
+
+	/**
+	 * @brief Add a listener for memento state changes
+	 * @param listener The listener to add (must remain valid until removed)
+	 */
+	void addListener(IMementoStateListener *listener);
+
+	/**
+	 * @brief Remove a listener for memento state changes
+	 * @param listener The listener to remove
+	 */
+	void removeListener(IMementoStateListener *listener);
 
 	/**
 	 * @brief Allow to set the max region to record volume states for

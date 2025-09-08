@@ -239,6 +239,16 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	return {outStream.release(), size, mementoRegion, volume->region()};
 }
 
+MementoData MementoData::fromBuffer(const uint8_t *buffer, size_t bufferSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion) {
+	if (buffer == nullptr || bufferSize == 0) {
+		return MementoData();
+	}
+	// Copy the buffer data since MementoData takes ownership
+	uint8_t *copiedBuffer = (uint8_t *)core_malloc(bufferSize);
+	core_memcpy(copiedBuffer, buffer, bufferSize);
+	return {copiedBuffer, bufferSize, dataRegion, volumeRegion};
+}
+
 bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData) {
 	if (mementoData._buffer == nullptr) {
 		return false;
@@ -274,6 +284,28 @@ bool MementoHandler::init() {
 void MementoHandler::shutdown() {
 	_groupState = 0;
 	clearStates();
+	_listeners.clear();
+}
+
+void MementoHandler::addListener(IMementoStateListener *listener) {
+	if (listener != nullptr) {
+		// Check if already added
+		for (const auto *existing : _listeners) {
+			if (existing == listener) {
+				return;
+			}
+		}
+		_listeners.push_back(listener);
+	}
+}
+
+void MementoHandler::removeListener(IMementoStateListener *listener) {
+	for (auto it = _listeners.begin(); it != _listeners.end(); ++it) {
+		if (*it == listener) {
+			_listeners.erase(it);
+			break;
+		}
+	}
 }
 
 void MementoHandler::lock() {
@@ -761,6 +793,10 @@ void MementoHandler::addState(MementoState &&state) {
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
 		_groups.back().states.emplace_back(state);
+		// Notify listeners
+		for (auto *listener : _listeners) {
+			listener->onMementoStateAdded(_groups.back().states.back());
+		}
 		return;
 	}
 	MementoStateGroup group;
@@ -769,6 +805,11 @@ void MementoHandler::addState(MementoState &&state) {
 	cutFromGroupStatePosition();
 	_groups.emplace_back(core::move(group));
 	_groupStatePosition = stateSize() - 1;
+
+	// Notify listeners
+	for (auto *listener : _listeners) {
+		listener->onMementoStateAdded(_groups.back().states.back());
+	}
 }
 
 void MementoHandler::setMaxUndoRegion(const voxel::Region &region) {
