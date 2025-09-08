@@ -1,5 +1,6 @@
 set(SRCS
 	MementoHandler.h MementoHandler.cpp
+	IMementoStateListener.h
 )
 
 set(LIB memento)

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "IMementoStateListener.h"
 #include "core/IComponent.h"
 #include "core/Optional.h"
 #include "core/String.h"
@@ -41,24 +42,6 @@ enum class MementoType {
 	SceneGraphAnimation,
 
 	Max
-};
-
-// Forward declaration
-struct MementoState;
-
-/**
- * @brief Interface for listening to memento state changes
- * Implementations can be notified when new memento states are created
- */
-class IMementoStateListener {
-public:
-	virtual ~IMementoStateListener() = default;
-
-	/**
-	 * @brief Called when a new memento state is added
-	 * @param state The newly added memento state
-	 */
-	virtual void onMementoStateAdded(const MementoState &state) = 0;
 };
 
 /**
@@ -134,7 +117,8 @@ public:
 	 * @param[in] dataRegion The region the compressed data represents
 	 * @param[in] volumeRegion The volume region
 	 */
-	static MementoData fromBuffer(const uint8_t *buffer, size_t bufferSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
+	static MementoData fromBuffer(const uint8_t *buffer, size_t bufferSize, const voxel::Region &dataRegion,
+								  const voxel::Region &volumeRegion);
 };
 
 struct MementoState {
@@ -214,7 +198,7 @@ private:
 	core_trace_mutex(core::Lock, _mutex, "MementoHandler");
 
 	// Network notification listeners
-	core::DynamicArray<IMementoStateListener*> _listeners;
+	core::DynamicArray<IMementoStateListener *> _listeners;
 
 	void cutFromGroupStatePosition();
 	void addState(MementoState &&state);
