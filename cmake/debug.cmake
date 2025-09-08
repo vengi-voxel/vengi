@@ -18,6 +18,7 @@ function(engine_add_debuggger TARGET)
 			COMMAND ${GDB_EXECUTABLE} -ex run --args $<TARGET_FILE:${TARGET}>
 			COMMENT "Starting debugger session for ${TARGET}"
 			WORKING_DIRECTORY $<TARGET_FILE_DIR:${TARGET}>
+			USES_TERMINAL
 		)
 	elseif (${DEBUGGER} MATCHES "lldb")
 		add_custom_target(${TARGET}-debug)
@@ -26,6 +27,7 @@ function(engine_add_debuggger TARGET)
 			COMMAND CG_CONTEXT_SHOW_BACKTRACE=1 ${LLDB_EXECUTABLE} -b -o run $<TARGET_FILE:${TARGET}>
 			COMMENT "Starting debugger session for ${TARGET}"
 			WORKING_DIRECTORY $<TARGET_FILE_DIR:${TARGET}>
+			USES_TERMINAL
 		)
 	endif()
 endfunction()
