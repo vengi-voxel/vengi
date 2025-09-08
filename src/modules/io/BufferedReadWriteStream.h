@@ -36,6 +36,12 @@ public:
 	BufferedReadWriteStream(int64_t size = 0);
 	virtual ~BufferedReadWriteStream();
 
+	BufferedReadWriteStream(BufferedReadWriteStream&& other) noexcept;
+	BufferedReadWriteStream& operator=(BufferedReadWriteStream&& other) noexcept;
+
+	BufferedReadWriteStream(const BufferedReadWriteStream&) = delete;
+	BufferedReadWriteStream& operator=(const BufferedReadWriteStream&) = delete;
+
 	void reset();
 
 	// get the raw data pointer for the buffer

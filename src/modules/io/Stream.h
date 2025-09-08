@@ -200,6 +200,11 @@ public:
 	 * @note doesn't advance the stream position
 	 * @return -1 on error - 0 on success
 	 */
+	int peekInt32(int32_t &val);
+	/**
+	 * @note doesn't advance the stream position
+	 * @return -1 on error - 0 on success
+	 */
 	int peekUInt16(uint16_t &val);
 	/**
 	 * @note doesn't advance the stream position

@@ -34,6 +34,38 @@ BufferedReadWriteStream::~BufferedReadWriteStream() {
 	core_free(_buffer);
 }
 
+BufferedReadWriteStream::BufferedReadWriteStream(BufferedReadWriteStream&& other) noexcept
+	: _buffer(other._buffer)
+	, _pos(other._pos)
+	, _capacity(other._capacity)
+	, _size(other._size) {
+	// Reset the source object to a valid but empty state
+	other._buffer = nullptr;
+	other._pos = 0;
+	other._capacity = 0;
+	other._size = 0;
+}
+
+BufferedReadWriteStream& BufferedReadWriteStream::operator=(BufferedReadWriteStream&& other) noexcept {
+	if (this != &other) {
+		// Free current resources
+		core_free(_buffer);
+
+		// Move resources from other
+		_buffer = other._buffer;
+		_pos = other._pos;
+		_capacity = other._capacity;
+		_size = other._size;
+
+		// Reset the source object to a valid but empty state
+		other._buffer = nullptr;
+		other._pos = 0;
+		other._capacity = 0;
+		other._size = 0;
+	}
+	return *this;
+}
+
 void BufferedReadWriteStream::reset() {
 	_size = 0u;
 	_pos = 0u;

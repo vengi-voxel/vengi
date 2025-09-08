@@ -724,6 +724,14 @@ int SeekableReadStream::peekUInt32(uint32_t &val) {
 	return retVal;
 }
 
+int SeekableReadStream::peekInt32(int32_t &val) {
+	const int retVal = readInt32(val);
+	if (retVal == 0) {
+		seek(-4, SEEK_CUR);
+	}
+	return retVal;
+}
+
 int SeekableReadStream::peekUInt16(uint16_t &val) {
 	const int retVal = readUInt16(val);
 	if (retVal == 0) {
