@@ -152,4 +152,19 @@ int64_t BufferedReadWriteStream::size() const {
 	return _size;
 }
 
+void BufferedReadWriteStream::trim() {
+	if (_pos <= 0) {
+		return;
+	}
+	if (_pos >= _size) {
+		_size = 0;
+		_pos = 0;
+		return;
+	}
+	const int64_t remaining = _size - _pos;
+	memmove(_buffer, &_buffer[_pos], remaining);
+	_size = remaining;
+	_pos = 0;
+}
+
 } // namespace io

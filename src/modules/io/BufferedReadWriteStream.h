@@ -51,6 +51,10 @@ public:
 	int write(const void *buf, size_t size) override;
 	int read(void *buf, size_t size) override;
 	/**
+	 * @brief Remove the first few already read bytes from the stream by moving the memory
+	 */
+	void trim();
+	/**
 	 * @param[in] position This is the number of bytes to offset
 	 * @param[in] whence @c SEEK_SET offset is used as absolute position from the beginning of the stream.
 	 * @c SEEK_CUR offset is taken as relative offset from the current position.
