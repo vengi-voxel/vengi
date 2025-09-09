@@ -592,6 +592,26 @@ AppState App::onConstruct() {
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
 	core::Var::get(cfg::AppVersion, "");
+	// username for network sessions
+	core::String defaultUsername = "Unknown";
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+	const char *username = SDL_getenv("USERNAME");
+	if (username == nullptr) {
+		username = SDL_getenv("USER");
+	}
+#else
+	const char *username = SDL_getenv("USER");
+	if (username == nullptr) {
+		username = SDL_getenv("LOGNAME");
+	}
+#endif
+
+	if (username != nullptr && *username != '\0') {
+		defaultUsername = username;
+	}
+
+	core::Var::get(cfg::AppUserName, defaultUsername.c_str());
 
 	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
 	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
