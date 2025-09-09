@@ -52,6 +52,10 @@ void FileStream::close() {
 	_file = {};
 }
 
+bool FileStream::eos() const {
+	return _rwops == nullptr || _pos >= _size;
+}
+
 bool FileStream::valid() const {
 	return _file && _file->validHandle();
 }

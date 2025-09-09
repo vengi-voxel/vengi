@@ -45,6 +45,7 @@ public:
 	bool valid() const;
 	int64_t size() const override;
 	int64_t pos() const override;
+	bool eos() const override;
 	int read(void *dataPtr, size_t dataSize) override;
 	int write(const void *dataPtr, size_t dataSize) override;
 	int64_t seek(int64_t position, int whence = SEEK_SET) override;

@@ -351,6 +351,7 @@ public:
 	virtual int64_t size() const override = 0;
 	virtual int64_t pos() const override = 0;
 	virtual int64_t seek(int64_t position, int whence = SEEK_SET) override = 0;
+	virtual bool eos() const override = 0;
 };
 
 class NOPWriteStream : public io::SeekableWriteStream {

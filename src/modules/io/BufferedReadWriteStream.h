@@ -65,6 +65,9 @@ public:
 	int64_t pos() const override;
 	int64_t size() const override;
 	int64_t capacity() const;
+	bool eos() const override {
+		return _pos >= _size;
+	}
 };
 
 inline int64_t BufferedReadWriteStream::capacity() const {
