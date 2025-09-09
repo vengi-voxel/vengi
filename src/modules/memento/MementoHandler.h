@@ -113,16 +113,6 @@ public:
 	 * the whole volume is going to added to the memento data.
 	 */
 	static MementoData fromVolume(const voxel::RawVolume *volume, const voxel::Region &region);
-
-	/**
-	 * @brief Creates MementoData from compressed buffer data (for network deserialization)
-	 * @param[in] buffer The compressed buffer data
-	 * @param[in] bufferSize The size of the compressed buffer
-	 * @param[in] dataRegion The region the compressed data represents
-	 * @param[in] volumeRegion The volume region
-	 */
-	static MementoData fromBuffer(const uint8_t *buffer, size_t bufferSize, const voxel::Region &dataRegion,
-								  const voxel::Region &volumeRegion);
 };
 
 struct MementoState {

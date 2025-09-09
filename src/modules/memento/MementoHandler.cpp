@@ -239,16 +239,6 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	return {outStream.release(), size, mementoRegion, volume->region()};
 }
 
-MementoData MementoData::fromBuffer(const uint8_t *buffer, size_t bufferSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion) {
-	if (buffer == nullptr || bufferSize == 0) {
-		return MementoData();
-	}
-	// Copy the buffer data since MementoData takes ownership
-	uint8_t *copiedBuffer = (uint8_t *)core_malloc(bufferSize);
-	core_memcpy(copiedBuffer, buffer, bufferSize);
-	return {copiedBuffer, bufferSize, dataRegion, volumeRegion};
-}
-
 bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData) {
 	if (mementoData._buffer == nullptr) {
 		return false;
