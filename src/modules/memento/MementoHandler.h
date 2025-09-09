@@ -97,6 +97,10 @@ public:
 		return _buffer != nullptr;
 	}
 
+	const uint8_t *buffer() const {
+		return _buffer;
+	}
+
 	/**
 	 * @brief Converts the given @c mementoData back into a voxels
 	 * @note Inserts the voxels from the memento data into the given volume at the given region.
@@ -232,10 +236,10 @@ protected:
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
 	bool markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-				  const voxel::RawVolume *volume, MementoType type, const voxel::Region &region);
+				  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion);
 	bool markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
 				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
-				  MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
+				  MementoType type, const voxel::Region &modifiedRegion, const glm::vec3 &pivot,
 				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
 				  const palette::NormalPalette &normalPalette, const scenegraph::SceneGraphNodeProperties &properties);
 
