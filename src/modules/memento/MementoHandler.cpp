@@ -53,9 +53,9 @@ MementoState::MementoState(MementoType _type, const MementoState &other)
 MementoState::MementoState(MementoState &&other) noexcept {
 	type = other.type;
 	data = core::move(other.data);
-	parentUUID = other.parentUUID;
-	nodeUUID = other.nodeUUID;
-	referenceUUID = other.referenceUUID;
+	parentUUID = core::move(other.parentUUID);
+	nodeUUID = core::move(other.nodeUUID);
+	referenceUUID = core::move(other.referenceUUID);
 	nodeType = other.nodeType;
 	keyFrames = core::move(other.keyFrames);
 	properties = core::move(other.properties);
@@ -72,9 +72,9 @@ MementoState &MementoState::operator=(MementoState &&other) noexcept {
 	}
 	type = other.type;
 	data = core::move(other.data);
-	parentUUID = other.parentUUID;
-	nodeUUID = other.nodeUUID;
-	referenceUUID = other.referenceUUID;
+	parentUUID = core::move(other.parentUUID);
+	nodeUUID = core::move(other.nodeUUID);
+	referenceUUID = core::move(other.referenceUUID);
 	nodeType = other.nodeType;
 	keyFrames = core::move(other.keyFrames);
 	properties = core::move(other.properties);
