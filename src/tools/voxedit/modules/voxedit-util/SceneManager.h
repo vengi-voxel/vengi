@@ -154,7 +154,6 @@ protected:
 
 protected:
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);
-	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph);
 	int activeNode() const;
 
 	void animate(double nowSeconds);
@@ -314,7 +313,8 @@ public:
 	 * @brief Add a new model node as children to the current active node
 	 */
 	int addModelChild(const core::String &name, int width, int height, int depth, const core::String &uuid = "");
-	int addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::String &uuid = "");
+	int addPointChild(const core::String &name, const glm::ivec3 &position, const glm::quat &orientation,
+					  const core::String &uuid = "");
 
 	/**
 	 * @brief Merge two nodes and extend the smaller one
@@ -352,6 +352,7 @@ public:
 	bool load(const io::FileDescription &file);
 	bool load(const io::FileDescription &file, const uint8_t *data, size_t size);
 	bool isLoading() const;
+	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph);
 
 	bool undo(int n = 1);
 	bool redo(int n = 1);
@@ -490,6 +491,7 @@ private:
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
 public:
+	void nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume);
 	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeUpdateTransformGroup(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,

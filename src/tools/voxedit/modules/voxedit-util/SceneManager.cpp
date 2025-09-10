@@ -3010,6 +3010,16 @@ bool SceneManager::nodeUpdateTransformGroup(const glm::vec3 &angles, const glm::
 	return true;
 }
 
+void SceneManager::nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume) {
+	if (!node.isAnyModelNode()) {
+		return;
+	}
+	if (voxel::RawVolume *v = node.volume()) {
+		v->copyInto(volume);
+		modified(node.id(), volume.region());
+	}
+}
+
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
