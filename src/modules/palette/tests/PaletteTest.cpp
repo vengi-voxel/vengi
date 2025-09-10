@@ -175,7 +175,7 @@ TEST_F(PaletteTest, testFindReplacement) {
 TEST_F(PaletteTest, testSaveBuiltInPalette) {
 	Palette pal;
 	pal.load(pal.getDefaultPaletteName());
-	EXPECT_EQ("nippon", pal.name());
+	EXPECT_EQ("built-in:nippon", pal.name());
 }
 
 // disabled because it requires network access

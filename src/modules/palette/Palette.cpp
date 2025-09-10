@@ -786,7 +786,7 @@ bool Palette::minecraft() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = core_swap32le(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette), "minecraft");
+	return load((const uint8_t *)palette, sizeof(palette), "built-in:minecraft");
 }
 
 bool Palette::magicaVoxel() {
@@ -825,7 +825,7 @@ bool Palette::magicaVoxel() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = core_swap32le(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette), "magicavoxel");
+	return load((const uint8_t *)palette, sizeof(palette), "built-in:magicavoxel");
 }
 
 bool Palette::commandAndConquer() {
@@ -863,7 +863,7 @@ bool Palette::commandAndConquer() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = core_swap32be(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette), "commandandconquer");
+	return load((const uint8_t *)palette, sizeof(palette), "built-in:commandandconquer");
 }
 
 bool Palette::starMade() {
@@ -901,7 +901,7 @@ bool Palette::starMade() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = core_swap32be(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette), "starmade");
+	return load((const uint8_t *)palette, sizeof(palette), "built-in:starmade");
 }
 
 bool Palette::quake1() {
@@ -939,7 +939,7 @@ bool Palette::quake1() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = core_swap32be(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette), "quake1");
+	return load((const uint8_t *)palette, sizeof(palette), "built-in:quake1");
 }
 
 bool Palette::nippon() {
@@ -977,7 +977,7 @@ bool Palette::nippon() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = core_swap32le(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette), "nippon");
+	return load((const uint8_t *)palette, sizeof(palette), "built-in:nippon");
 }
 
 core::String Palette::extractPaletteName(const core::String &file) {
