@@ -192,6 +192,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writeUInt32(FourCC('N', 'O', 'D', 'E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
+	wrapBool(stream.writePascalStringUInt16LE(node.uuid()))
 	wrapBool(stream.writeInt32(node.id()))
 	wrapBool(stream.writeInt32(node.reference()))
 	wrapBool(stream.writeBool(node.visible()))
@@ -425,10 +426,15 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		Log::error("Could not load node type %s", type.c_str());
 		return false;
 	}
+	core::String uuid;
+	if (version >= 6) {
+		wrapBool(stream.readPascalStringUInt16LE(uuid))
+	}
 	Log::debug("Load node with name '%s' of type %s", name.c_str(), type.c_str());
-	int nodeId = nodeType == scenegraph::SceneGraphNodeType::Root ? sceneGraph.root().id() : InvalidNodeId;
+	const bool isRootNode = nodeType == scenegraph::SceneGraphNodeType::Root;
+	int nodeId = isRootNode ? sceneGraph.root().id() : InvalidNodeId;
 	if (nodeId == InvalidNodeId) {
-		scenegraph::SceneGraphNode node(nodeType);
+		scenegraph::SceneGraphNode node(nodeType, uuid);
 		node.setName(name);
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 			// dummy volume - will be replaced later
@@ -439,6 +445,9 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 			Log::error("Failed to add new node");
 			return false;
 		}
+	}
+	if (isRootNode) {
+		sceneGraph.setRootUUID(uuid);
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 
@@ -513,7 +522,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(*stream, stream->size());
-	wrapBool(zipStream.writeUInt32(5))
+	wrapBool(zipStream.writeUInt32(6))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -536,7 +545,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ZipReadStream zipStream(*stream, stream->size());
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 5) {
+	if (version > 6) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}

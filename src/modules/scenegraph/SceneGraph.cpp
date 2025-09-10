@@ -600,6 +600,17 @@ SceneGraphNode *SceneGraph::first() {
 	return nullptr;
 }
 
+void SceneGraph::setRootUUID(const core::String &uuid) {
+	if (uuid.empty()) {
+		return;
+	}
+	auto iter = _nodes.find(0);
+	if (iter == _nodes.end()) {
+		return;
+	}
+	iter->value._uuid = uuid;
+}
+
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	const SceneGraphNodeType type = node.type();
 	core_assert_msg((int)type < (int)SceneGraphNodeType::Max, "%i", (int)type);

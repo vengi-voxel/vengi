@@ -86,6 +86,7 @@ public:
 
 	void fixErrors();
 	bool validate() const;
+	void setRootUUID(const core::String &uuid);
 
 	/**
 	 * @brief Merge the palettes of all scene graph model nodes
