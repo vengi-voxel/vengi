@@ -35,4 +35,14 @@ public:
 	}
 };
 
+using StreamArchivePtr = core::SharedPtr<StreamArchive>;
+
+inline StreamArchivePtr openStreamArchive(io::SeekableReadStream *stream) {
+	return core::make_shared<StreamArchive>(stream);
+}
+
+inline StreamArchivePtr openStreamArchive(io::SeekableWriteStream *stream) {
+	return core::make_shared<StreamArchive>(stream);
+}
+
 } // namespace io
