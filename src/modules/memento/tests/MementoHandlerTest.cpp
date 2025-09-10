@@ -662,7 +662,7 @@ TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
 	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
-	EXPECT_EQ("nippon", node->palette().name());
+	EXPECT_EQ("built-in:nippon", node->palette().name());
 	const int colorCount = node->palette().colorCount();
 	palette::Palette palette;
 	palette.commandAndConquer();
@@ -671,7 +671,7 @@ TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	MementoState state = firstState(_mementoHandler.undo());
 	ASSERT_EQ(state.palette.colorCount(), colorCount);
-	EXPECT_EQ(state.palette.name(), "nippon");
+	EXPECT_EQ(state.palette.name(), "built-in:nippon");
 }
 
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
