@@ -511,7 +511,7 @@ void MainWindow::newSceneTemplates() {
 void MainWindow::popupTipOfTheDay() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Tip of the day"), POPUP_TITLE_TIPOFTHEDAY);
-	if (ImGui::BeginPopupModal(title.c_str())) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		const char *tip = getTip();
 		ImGui::IconDialog(ICON_LC_LIGHTBULB, tip, true);
 		float height = ImGui::Height(8.0f) - ImGui::GetCursorPosY();
@@ -535,7 +535,7 @@ void MainWindow::popupTipOfTheDay() {
 void MainWindow::popupMinecraftMapping() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Minecraft mapping"), POPUP_TITLE_MINECRAFTMAPPING);
-	if (ImGui::BeginPopupModal(title.c_str())) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP,
 						  _("The voxel editor uses a different mapping than Minecraft.\n\nHere you can see which block "
 							"type is mapped to which color"),
@@ -572,7 +572,7 @@ void MainWindow::popupMinecraftMapping() {
 void MainWindow::popupWelcome() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Welcome"), POPUP_TITLE_WELCOME);
-	if (ImGui::BeginPopupModal(title.c_str())) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_LIGHTBULB, _("Welcome to VoxEdit!"));
 		ImGui::TextWrappedUnformatted(_("The mission: Create a free, open-source and multi-platform voxel "
 						   "editor with animation support for artists and developers."));
@@ -596,7 +596,7 @@ void MainWindow::popupWelcome() {
 void MainWindow::popupModelUnreference() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Unreference Model"), POPUP_TITLE_MODEL_UNREFERENCE);
-	if (ImGui::BeginPopupModal(title.c_str())) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"), true);
 		if (ImGui::YesButton()) {
 			command::Command::execute("modelunref");
@@ -613,7 +613,7 @@ void MainWindow::popupModelUnreference() {
 
 void MainWindow::popupNewScene() {
 	const core::String title = makeTitle(_("New Scene"), POPUP_TITLE_NEW_SCENE);
-	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		if (ImGui::CollapsingHeader(_("Templates"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			newSceneTemplates();
 		}
@@ -662,7 +662,7 @@ void MainWindow::popupNewScene() {
 void MainWindow::popupFailedSave() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Failed to save"), POPUP_TITLE_FAILED_TO_SAVE);
-	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("Failed to save the model!"));
 		if (ImGui::OkButton()) {
 			ImGui::CloseCurrentPopup();
@@ -674,7 +674,7 @@ void MainWindow::popupFailedSave() {
 
 void MainWindow::popupUnsavedChanges() {
 	const core::String title = makeTitle(_("Unsaved Changes"), POPUP_TITLE_UNSAVED_SCENE);
-	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Unsaved changes - are you sure to quit?"));
 		if (ImGui::OkButton()) {
 			_forceQuit = true;
@@ -692,7 +692,7 @@ void MainWindow::popupUnsavedChanges() {
 
 void MainWindow::popupUnsavedDiscard() {
 	const core::String title = makeTitle(_("Unsaved Modifications"), POPUP_TITLE_UNSAVED);
-	if (ImGui::BeginPopupModal(title.c_str())) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("There are unsaved modifications.\nDo you wish to discard them?"));
 		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();
@@ -715,7 +715,7 @@ void MainWindow::popupUnsavedDiscard() {
 
 void MainWindow::popupSceneSettings() {
 	const core::String title = makeTitle(_("Scene settings"), POPUP_TITLE_SCENE_SETTINGS);
-	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::TextUnformatted(_("Scene settings"));
 		ImGui::Separator();
 
@@ -733,7 +733,7 @@ void MainWindow::popupSceneSettings() {
 void MainWindow::popupVolumeSplit() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 50, 0));
 	const core::String title = makeTitle(_("Volume split"), POPUP_TITLE_VOLUME_SPLIT);
-	if (ImGui::BeginPopupModal(title.c_str())) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"), true);
 		if (ImGui::YesButton()) {
@@ -751,7 +751,7 @@ void MainWindow::popupVolumeSplit() {
 
 void MainWindow::popupModelNodeSettings() {
 	const core::String title = makeTitle(_("Model settings"), POPUP_TITLE_MODEL_NODE_SETTINGS);
-	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		ImGui::TextUnformatted(_("Name"));
 		ImGui::Separator();
 		ImGui::InputText("##modelsettingsname", &_modelNodeSettings.name);
