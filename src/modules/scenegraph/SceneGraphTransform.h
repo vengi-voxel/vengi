@@ -53,6 +53,10 @@ public:
 		return _dirty != 0u;
 	}
 
+	void markClean() {
+		_dirty = 0u;
+	}
+
 	void markDirtyParent() {
 		_dirty = DIRTY_PARENT;
 	}
