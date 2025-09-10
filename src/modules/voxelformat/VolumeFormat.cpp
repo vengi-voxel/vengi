@@ -132,8 +132,8 @@ const io::FormatDescription *voxelFormats() {
 												 CSMFormat::format(),
 												 CSMFormat::formatNVM(),
 												 SLAB6VoxFormat::format(),
-												 SpriteStackFormat::format(),
 												 VMaxFormat::format(),
+												 SpriteStackFormat::format(),
 												 io::format::png(),
 												 SkinFormat::format(), // let this be after png
 												 {"", {}, {}, 0u}};
