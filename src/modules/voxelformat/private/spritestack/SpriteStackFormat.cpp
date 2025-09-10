@@ -114,7 +114,7 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 	voxel::Region region(0, 0, 0, info.width - 1, info.height - 1, info.slices - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	palette::PaletteLookup palLookup(palette);
-	node.setVolume(volume);
+	node.setVolume(volume, true);
 	node.setPalette(palette);
 	Log::error("Region width: %d, height: %d, depth: %d", region.getWidthInVoxels(), region.getHeightInVoxels(),
 			   region.getDepthInVoxels());
