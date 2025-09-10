@@ -21,6 +21,7 @@ set(SRCS
 	VolumeData.h
 	VolumeSampler.h
 	VolumeSamplerUtil.h
+	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 	VoxelData.h VoxelData.cpp
