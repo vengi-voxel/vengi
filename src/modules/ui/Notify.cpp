@@ -160,7 +160,7 @@ int RenderNotifications(ImGuiToasts &notifications) {
 
 		// PushStyleColor(ImGuiCol_Text, text_color);
 		ImGui::SetNextWindowBgAlpha(opacity);
-		const ImVec2 windowPos(vpSize.x - NOTIFY_PADDING_X, vpSize.y - NOTIFY_PADDING_Y - height);
+		const ImVec2 windowPos(ImGui::GetMainViewport()->Pos.x + vpSize.x - NOTIFY_PADDING_X, ImGui::GetMainViewport()->Pos.y + vpSize.y - NOTIFY_PADDING_Y - height);
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
 		if (ImGui::Begin(windowName, nullptr, NOTIFY_TOAST_FLAGS)) {
 			// We want to support multi-line text, this will wrap the text after 1/3 of the screen width
