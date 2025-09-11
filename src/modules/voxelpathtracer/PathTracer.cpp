@@ -18,7 +18,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#include "yocto_scene.h"
+#include "PathTracerState.h"
 
 #define PATHTRACER_TEXTURES 0
 
@@ -80,6 +80,9 @@ public:
 
 } // namespace priv
 
+PathTracer::PathTracer() : _state(new PathTracerState()) {
+}
+
 PathTracer::~PathTracer() {
 	stop();
 }
@@ -140,19 +143,19 @@ bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegr
 		shape->triangles.push_back(vidx);
 	}
 	// const glm::vec3 &mins = mesh.getOffset();
-	_state.scene.shapes.reserve(palette.colorCount());
+	_state->scene.shapes.reserve(palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		yocto::shape_data &shape = shapes[i];
 		if (shape.triangles.empty()) {
 			continue;
 		}
-		_state.scene.shapes.push_back(shape);
+		_state->scene.shapes.push_back(shape);
 
 		yocto::instance_data instance_data;
 		// instance_data.frame = yocto::translation_frame(priv::toVec3f(mins));
-		instance_data.material = _state.scene.materials.size() + i;
-		instance_data.shape = (int)_state.scene.shapes.size() - 1;
-		_state.scene.instances.push_back(instance_data);
+		instance_data.material = _state->scene.materials.size() + i;
+		instance_data.shape = (int)_state->scene.shapes.size() - 1;
+		_state->scene.instances.push_back(instance_data);
 	}
 
 	return true;
@@ -163,7 +166,7 @@ void PathTracer::addCamera(const scenegraph::SceneGraphNodeCamera &node) {
 }
 
 void PathTracer::addCamera(const char *name, const video::Camera &cam) {
-	yocto::scene_data &scene = _state.scene;
+	yocto::scene_data &scene = _state->scene;
 	scene.camera_names.emplace_back(name);
 	yocto::camera_data &camera = scene.cameras.emplace_back();
 
@@ -282,8 +285,8 @@ static int addPaletteTexture(yocto::scene_data &scene, const palette::Palette &p
 #endif
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
-	_state.scene = {};
-	_state.lights = {};
+	_state->scene = {};
+	_state->lights = {};
 
 	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 	voxel::ChunkMesh mesh(65536, 65536, true);
@@ -316,11 +319,11 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		}
 
 #if PATHTRACER_TEXTURES
-		const int paletteTextureIdx = addPaletteTexture(_state.scene, palette);
-		const int emissiveTextureIdx = addEmissiveTexture(_state.scene, palette);
+		const int paletteTextureIdx = addPaletteTexture(_state->scene, palette);
+		const int emissiveTextureIdx = addEmissiveTexture(_state->scene, palette);
 #endif
 		for (int i = 0; i < palette.colorCount(); ++i) {
-			setupMaterial(_state.scene, palette, i);
+			setupMaterial(_state->scene, palette, i);
 		}
 	}
 
@@ -333,10 +336,10 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		addCamera(scenegraph::toCameraNode(node));
 	}
 
-	if (_state.scene.cameras.size() <= 1) {
-		yocto::add_camera(_state.scene);
+	if (_state->scene.cameras.size() <= 1) {
+		yocto::add_camera(_state->scene);
 	}
-	yocto::add_sky(_state.scene);
+	yocto::add_sky(_state->scene);
 
 	return true;
 }
@@ -344,11 +347,11 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
 	Log::debug("Create scene");
 	createScene(sceneGraph, camera);
-	_state.bvh = yocto::make_trace_bvh(_state.scene, _state.params);
-	_state.lights = yocto::make_trace_lights(_state.scene, _state.params);
-	_state.state = yocto::make_trace_state(_state.scene, _state.params);
-	yocto::trace_start(_state.context, _state.state, _state.scene, _state.bvh, _state.lights, _state.params);
-	_state.started = true;
+	_state->bvh = yocto::make_trace_bvh(_state->scene, _state->params);
+	_state->lights = yocto::make_trace_lights(_state->scene, _state->params);
+	_state->state = yocto::make_trace_state(_state->scene, _state->params);
+	yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
+	_state->started = true;
 	Log::debug("Started pathtracer");
 	return true;
 }
@@ -363,39 +366,39 @@ bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph, const video::
 }
 
 bool PathTracer::stop() {
-	yocto::trace_cancel(_state.context);
-	_state.started = false;
+	yocto::trace_cancel(_state->context);
+	_state->started = false;
 	return true;
 }
 
 bool PathTracer::started() const {
-	return _state.started;
+	return _state->started;
 }
 
 bool PathTracer::update(int *currentSample) {
-	if (!_state.started) {
+	if (!_state->started) {
 		if (currentSample) {
 			*currentSample = 0;
 		}
 		return true;
 	}
-	if (yocto::trace_done(_state.context)) {
-		if (_state.state.samples >= _state.params.samples) {
-			_state.started = false;
+	if (yocto::trace_done(_state->context)) {
+		if (_state->state.samples >= _state->params.samples) {
+			_state->started = false;
 			return true;
 		}
 		if (currentSample) {
-			*currentSample = _state.state.samples;
+			*currentSample = _state->state.samples;
 		}
-		Log::debug("PathTracer sample: %i", _state.state.samples);
-		yocto::trace_start(_state.context, _state.state, _state.scene, _state.bvh, _state.lights, _state.params);
+		Log::debug("PathTracer sample: %i", _state->state.samples);
+		yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
 	}
 	return false;
 }
 
 image::ImagePtr PathTracer::image() {
 	yocto::image_data image;
-	image = yocto::get_image(_state.state);
+	image = yocto::get_image(_state->state);
 
 	priv::YoctoImageReadStream stream(image);
 	image::ImagePtr i = image::createEmptyImage("pathtracer");

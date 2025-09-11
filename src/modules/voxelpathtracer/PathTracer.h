@@ -6,8 +6,6 @@
 
 #include "core/GLM.h"
 #include "core/SharedPtr.h"
-#include <yocto_scene.h>
-#include <yocto_trace.h>
 
 namespace video {
 class Camera;
@@ -34,22 +32,11 @@ class SceneGraphNodeCamera;
 
 namespace voxelpathtracer {
 
-struct PathTracerState {
-	yocto::trace_context context;
-	yocto::scene_data scene;
-	yocto::trace_bvh bvh;
-	yocto::trace_params params;
-	yocto::trace_lights lights;
-	yocto::trace_state state;
-	bool started = false;
-
-	PathTracerState() : context(yocto::make_trace_context({})) {
-	}
-};
+struct PathTracerState;
 
 class PathTracer {
 private:
-	PathTracerState _state;
+	PathTracerState *_state;
 
 	void addCamera(const scenegraph::SceneGraphNodeCamera &node);
 	void addCamera(const char *name, const video::Camera &cam);
@@ -59,9 +46,10 @@ private:
 	bool createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera);
 
 public:
+	PathTracer();
 	~PathTracer();
 	PathTracerState &state() {
-		return _state;
+		return *_state;
 	}
 	bool start(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera = nullptr);
 	bool restart(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera = nullptr);

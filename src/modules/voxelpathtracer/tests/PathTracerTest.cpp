@@ -3,6 +3,7 @@
  */
 
 #include "voxelpathtracer/PathTracer.h"
+#include "voxelpathtracer/PathTracerState.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "image/Image.h"

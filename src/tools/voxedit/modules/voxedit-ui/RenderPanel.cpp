@@ -12,6 +12,7 @@
 #include "video/Texture.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelpathtracer/PathTracer.h"
+#include "voxelpathtracer/PathTracerState.h"
 
 namespace voxedit {
 
