@@ -271,7 +271,7 @@ void MementoHandler::shutdown() {
 	_listeners.clear();
 }
 
-void MementoHandler::addListener(IMementoStateListener *listener) {
+void MementoHandler::registerListener(IMementoStateListener *listener) {
 	if (listener != nullptr) {
 		// Check if already added
 		for (const auto *existing : _listeners) {
@@ -283,7 +283,7 @@ void MementoHandler::addListener(IMementoStateListener *listener) {
 	}
 }
 
-void MementoHandler::removeListener(IMementoStateListener *listener) {
+void MementoHandler::unregisterListener(IMementoStateListener *listener) {
 	for (auto it = _listeners.begin(); it != _listeners.end(); ++it) {
 		if (*it == listener) {
 			_listeners.erase(it);
@@ -781,7 +781,6 @@ void MementoHandler::addState(MementoState &&state) {
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
 		_groups.back().states.emplace_back(state);
-		// Notify listeners
 		for (auto *listener : _listeners) {
 			listener->onMementoStateAdded(_groups.back().states.back());
 		}
@@ -794,7 +793,6 @@ void MementoHandler::addState(MementoState &&state) {
 	_groups.emplace_back(core::move(group));
 	_groupStatePosition = stateSize() - 1;
 
-	// Notify listeners
 	for (auto *listener : _listeners) {
 		listener->onMementoStateAdded(_groups.back().states.back());
 	}

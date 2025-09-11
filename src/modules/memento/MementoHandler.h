@@ -245,13 +245,13 @@ public:
 	 * @brief Add a listener for memento state changes
 	 * @param listener The listener to add (must remain valid until removed)
 	 */
-	void addListener(IMementoStateListener *listener);
+	void registerListener(IMementoStateListener *listener);
 
 	/**
 	 * @brief Remove a listener for memento state changes
 	 * @param listener The listener to remove
 	 */
-	void removeListener(IMementoStateListener *listener);
+	void unregisterListener(IMementoStateListener *listener);
 
 	/**
 	 * @brief Allow to set the max region to record volume states for
