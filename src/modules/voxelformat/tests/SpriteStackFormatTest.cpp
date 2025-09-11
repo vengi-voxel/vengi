@@ -18,7 +18,7 @@ TEST_F(SpriteStackFormatTest, testLoad) {
 	const voxel::RawVolume *v = node->volume();
 	ASSERT_NE(v, nullptr);
 	const palette::Palette &palette = node->palette();
-	ASSERT_EQ(palette.colorCount(), 2u) << palette;
+	ASSERT_EQ(palette.colorCount(), 2) << palette;
 	EXPECT_EQ(core::RGBA(0, 0, 0, 0), palette.color(0));
 	EXPECT_EQ(core::RGBA(0xa4, 0x2d, 0x27, 0xff), palette.color(1));
 }
