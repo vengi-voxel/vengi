@@ -685,20 +685,21 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	camera.lookAt(emptyLookAt, up);
 	camera.update(0.0);
 
-	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+	SceneManagerEx *sm = sceneMgr();
+	EXPECT_TRUE(sm->testMouseRayTrace(true, invModel));
 
 	// Test force parameter by calling twice with same mouse position
-	_sceneMgr->setMousePos(400, 300);
-	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(false, invModel));
-	EXPECT_FALSE(sceneMgr()->testMouseRayTrace(false, invModel)) << "Without force, should not re-execute if mouse hasn't moved";
-	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel)) << "Force should always re-execute";
+	sm->setMousePos(300, 300);
+	EXPECT_TRUE(sm->testMouseRayTrace(false, invModel));
+	EXPECT_FALSE(sm->testMouseRayTrace(false, invModel)) << "Without force, should not re-execute if mouse hasn't moved";
+	EXPECT_TRUE(sm->testMouseRayTrace(true, invModel)) << "Force should always re-execute";
 
 	// Test different mouse positions
 	_sceneMgr->setMousePos(100, 100); // Top-left corner
-	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+	EXPECT_TRUE(sm->testMouseRayTrace(true, invModel));
 
 	_sceneMgr->setMousePos(700, 500); // Bottom-right corner
-	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
+	EXPECT_TRUE(sm->testMouseRayTrace(true, invModel));
 
 	// Clean up
 	_sceneMgr->setActiveCamera(nullptr);

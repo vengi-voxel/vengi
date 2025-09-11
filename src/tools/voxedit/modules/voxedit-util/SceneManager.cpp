@@ -2824,7 +2824,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	// if the trace is not forced, and the mouse cursor position did not change, don't
 	// re-execute the trace.
 	if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
-		return true;
+		return false;
 	}
 	const video::Camera *camera = activeCamera();
 	if (camera == nullptr) {
