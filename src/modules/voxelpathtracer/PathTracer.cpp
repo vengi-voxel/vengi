@@ -85,6 +85,7 @@ PathTracer::PathTracer() : _state(new PathTracerState()) {
 
 PathTracer::~PathTracer() {
 	stop();
+	delete _state;
 }
 
 bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,

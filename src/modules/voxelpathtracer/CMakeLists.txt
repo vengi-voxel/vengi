@@ -1,6 +1,7 @@
 set(LIB voxelpathtracer)
 set(SRCS
 	PathTracer.cpp PathTracer.h
+	PathTracerState.h
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES yocto voxelrender image)
