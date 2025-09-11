@@ -421,6 +421,13 @@ void MementoHandler::undoModification(MementoState &s) {
 			if (prevS.nodeUUID != s.nodeUUID) {
 				continue;
 			}
+			// TODO: MEMENTO: MEMENTO_PARTIAL_REGION - we need to handle partial regions here
+			//       the idea is to use the previous volume data and copy only the region that was modified
+			//       into the current volume - this would save a lot of memory - but the issue here is that
+			//       the previous state might also be a partial region - so we would need to merge multiple
+			//       previous states to get the full region back - but walking backward from initial state to
+			//       the previous state while only copying the modified regions would be needed in order to
+			//       restore the full previous state (the initial state is the full volume state)
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 				core_assert(prevS.hasVolumeData() || !prevS.referenceUUID.empty());
 				s.data = prevS.data;
