@@ -3635,6 +3635,10 @@ void    ImGuiTestContext::ComboClick(ImGuiTestRef ref)
 
     Str128f combo_item_buf = Str128f("//%s/**/%s", popup->Name, p + 1);
     ItemClick(combo_item_buf.c_str());
+
+    // For if Combo Selectables uses ImGuiSelectableFlags_NoAutoClosePopups
+    if (GetWindowByRef("//$FOCUSED") == popup)
+        KeyPress(ImGuiKey_Enter);
 }
 
 void    ImGuiTestContext::ComboClickAll(ImGuiTestRef ref_parent)
@@ -3653,6 +3657,10 @@ void    ImGuiTestContext::ComboClickAll(ImGuiTestRef ref_parent)
             ItemClick(ref_parent);
         ItemClick(item.ID);
     }
+
+    // For if Combo Selectables uses ImGuiSelectableFlags_NoAutoClosePopups
+    if (GetWindowByRef("//$FOCUSED") == popup)
+        KeyPress(ImGuiKey_Enter);
 }
 
 static ImGuiTableColumn* HelperTableFindColumnByName(ImGuiTable* table, const char* name)
