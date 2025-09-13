@@ -64,22 +64,6 @@ protected:
 		const auto selectionManager = core::make_shared<SelectionManager>();
 		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
 													  modifierRenderer, selectionManager);
-		core::Var::get(cfg::VoxEditShowgrid, "true");
-		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
-		core::Var::get(cfg::VoxEditRendershadow, "true");
-		core::Var::get(cfg::VoxEditGridsize, "1");
-		core::Var::get(cfg::VoxEditPlaneSize, "0");
-		core::Var::get(cfg::VoxEditShowPlane, "false");
-		core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128");
-		core::Var::get(cfg::VoxEditMaxSuggestedVolumeSizePreview, "32");
-		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
-		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		core::Var::get(cfg::VoxEditShowaabb, "");
-		core::Var::get(cfg::VoxEditShowBones, "");
-		core::Var::get(cfg::VoxEditGrayInactive, "");
-		core::Var::get(cfg::VoxEditHideInactive, "");
-		core::Var::get(cfg::VoxEditLastPalette, "");
-		core::Var::get(cfg::VoxEditModificationDismissMillis, "0");
 		_sceneMgr->construct();
 		ASSERT_TRUE(_sceneMgr->init());
 
