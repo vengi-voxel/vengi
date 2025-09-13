@@ -35,8 +35,6 @@
 #include <algorithm>
 #include <cassert>
 #include <deque>
-#include <memory>
-#include <stdexcept>
 #include <string>
 
 #include "yocto_geometry.h"

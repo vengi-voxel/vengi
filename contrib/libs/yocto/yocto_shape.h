@@ -976,7 +976,10 @@ inline pair<vector<vec2i>, vector<T>> subdivide_lines(
     const vector<vec2i>& lines, const vector<T>& vertices, int level) {
   if (level < 1) return {lines, vertices};
   auto tess = pair{lines, vertices};
-  for (auto idx : range(level)) tess = subdivide_lines(tess.first, tess.second);
+  for (auto idx : range(level)) {
+    (void)idx;
+    tess = subdivide_lines(tess.first, tess.second);
+  }
   return tess;
 }
 // Subdivide triangle by splitting each triangle in four, creating new
@@ -986,8 +989,10 @@ inline pair<vector<vec3i>, vector<T>> subdivide_triangles(
     const vector<vec3i>& triangles, const vector<T>& vertices, int level) {
   if (level < 1) return {triangles, vertices};
   auto tess = pair{triangles, vertices};
-  for (auto idx : range(level))
+  for (auto idx : range(level)) {
+	(void)idx;
     tess = subdivide_triangles(tess.first, tess.second);
+  }
   return tess;
 }
 // Subdivide quads by splitting each quads in four, creating new
@@ -997,7 +1002,10 @@ inline pair<vector<vec4i>, vector<T>> subdivide_quads(
     const vector<vec4i>& quads, const vector<T>& vertices, int level) {
   if (level < 1) return {quads, vertices};
   auto tess = pair{quads, vertices};
-  for (auto idx : range(level)) tess = subdivide_quads(tess.first, tess.second);
+  for (auto idx : range(level)) {
+    (void)idx;
+    tess = subdivide_quads(tess.first, tess.second);
+  }
   return tess;
 }
 // Subdivide beziers by splitting each segment in two.
@@ -1006,8 +1014,10 @@ inline pair<vector<vec4i>, vector<T>> subdivide_beziers(
     const vector<vec4i>& beziers, const vector<T>& vertices, int level) {
   if (level < 1) return {beziers, vertices};
   auto tess = pair{beziers, vertices};
-  for (auto idx : range(level))
+  for (auto idx : range(level)) {
+    (void)idx;
     tess = subdivide_beziers(tess.first, tess.second);
+  }
   return tess;
 }
 // Subdivide quads using Carmull-Clark subdivision rules.
@@ -1017,8 +1027,10 @@ inline pair<vector<vec4i>, vector<T>> subdivide_catmullclark(
     bool lock_boundary) {
   if (level < 1) return {quads, vertices};
   auto tess = pair{quads, vertices};
-  for (auto idx : range(level))
+  for (auto idx : range(level)) {
+    (void)idx;
     tess = subdivide_catmullclark(tess.first, tess.second, lock_boundary);
+  }
   return tess;
 }
 

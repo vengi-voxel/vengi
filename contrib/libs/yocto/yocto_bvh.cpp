@@ -38,7 +38,6 @@
 #include <climits>
 #include <cstring>
 #include <future>
-#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>

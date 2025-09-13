@@ -41,7 +41,6 @@
 // -----------------------------------------------------------------------------
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "yocto_color.h"
