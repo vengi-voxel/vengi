@@ -1604,7 +1604,6 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditColorWheel, "false", _("Use the color wheel in the palette color editing"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowColorPicker, "false", _("Always show the color picker below the palette"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
-	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
 	core::Var::get(cfg::VoxEditRegionSizes, "", _("Show fixed region sizes in the volume inspector"), core::Var::ivec3ListValidator<1, 256>);
 	core::Var::get(cfg::VoxEditLocalSpace, "true", _("Use local space for transforms"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowgrid, "true", _("Show the grid"), core::Var::boolValidator);
@@ -1619,7 +1618,7 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditShowPlane, "true", _("Show the plane"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGrayInactive, "false", _("Render the inactive nodes in gray scale mode"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditHideInactive, "false", _("Hide the inactive nodes"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditViewdistance, "5000");
+	core::Var::get(cfg::VoxEditViewdistance, "5000", _("Far plane for the camera"));
 	core::Var::get(cfg::VoxEditShowaxis, "true", _("Show the axis"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditCursorDetails, "1", _("Print cursor details in edit mode"), core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", _("Automatically create keyframes when changing transforms"), core::Var::boolValidator);
