@@ -199,7 +199,11 @@ private:
 	MementoStates _groups;
 	int _groupState = 0;
 	uint8_t _groupStatePosition = 0u;
+	/**
+	 * we lock the memento state handler for new states while we are performing an undo or redo step
+	 */
 	int _locked = 0;
+	// TODO:MEMENTO: MEMENTO_PARTIAL_REGION: supporting partial regions would make this obsolete
 	voxel::Region _maxUndoRegion = voxel::Region::InvalidRegion;
 	core_trace_mutex(core::Lock, _mutex, "MementoHandler");
 
@@ -207,11 +211,11 @@ private:
 	core::DynamicArray<IMementoStateListener *> _listeners;
 
 	void cutFromGroupStatePosition();
-	void addState(MementoState &&state);
+	bool addState(MementoState &&state);
 	/**
 	 * @return @c true if it's allowed to create an undo state
 	 */
-	bool markUndoPreamble();
+	bool locked();
 
 	// we should not all this method directly - must be part of a group
 	bool markAllAnimations(const core::DynamicArray<core::String> &animations);
@@ -271,7 +275,7 @@ public:
 	void setMaxUndoRegion(const voxel::Region &region);
 	const voxel::Region &maxUndoRegion() const;
 	/**
-	 * @brief Checks if the given volume states are recorded
+	 * @brief Checks if the given volume states are recorded or whether the region is too big and is not recorded
 	 */
 	bool recordVolumeStates(const voxel::RawVolume *volume) const;
 

@@ -22,6 +22,12 @@ public:
 	 * @param state The newly added memento state
 	 */
 	virtual void onMementoStateAdded(const MementoState &state) = 0;
+	/**
+	 * @brief Called when a memento state is skipped (not added) due to locked state (might happen during undo/redo
+	 * operations)
+	 * @param state The memento state that was skipped
+	 */
+	virtual void onMementoStateSkipped(const MementoState &state) = 0;
 };
 
 } // namespace memento

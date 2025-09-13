@@ -24,7 +24,7 @@
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
 
-// TODO: MEMENTO: this doesn't yet work but would save a lot of memory and would allow us
+// TODO: MEMENTO: MEMENTO_PARTIAL_REGION: this doesn't yet work but would save a lot of memory and would allow us
 //       to re-enable the undo/redo functionality for huge volumes
 #define MEMENTO_PARTIAL_REGION 0
 
@@ -580,7 +580,7 @@ MementoStateGroup MementoHandler::redo() {
 
 bool MementoHandler::markAllAnimations(const core::DynamicArray<core::String> &animations) {
 	Log::debug("Add all (%i) animations from the scenegraph to the memento state", (int)animations.size());
-	if (!markUndoPreamble()) {
+	if (!locked()) {
 		return false;
 	}
 	MementoState state(MementoType::SceneGraphAnimation, animations);
@@ -641,12 +641,13 @@ bool MementoHandler::markInitialNodeState(const scenegraph::SceneGraph &sceneGra
 
 bool MementoHandler::markModification(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 									  const voxel::Region &modifiedRegion) {
-	const int nodeId = node.id();
-	const core::String &name = node.name();
 	const voxel::RawVolume *volume = node.volume();
+	// Modification without volume isn't possible - so skip it here already
 	if (!recordVolumeStates(volume)) {
 		return false;
 	}
+	const int nodeId = node.id();
+	const core::String &name = node.name();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
 	return markUndo(sceneGraph, node, volume, MementoType::Modification, modifiedRegion);
 }
@@ -714,17 +715,10 @@ bool MementoHandler::markAnimationRemoved(const scenegraph::SceneGraph &sceneGra
 	return true;
 }
 
-bool MementoHandler::markUndoPreamble() {
+bool MementoHandler::locked() {
 	if (_locked > 0) {
 		Log::debug("Don't add memento state - we are currently in locked mode");
 		return false;
-	}
-	if (!_groups.empty()) {
-		// if we mark something as new memento state, we can throw away
-		// every other state that follows the new one (everything after
-		// the current state position)
-		const size_t n = _groups.size() - (_groupStatePosition + 1);
-		_groups.erase_back(n);
 	}
 	return true;
 }
@@ -754,9 +748,6 @@ bool MementoHandler::markUndo(const core::String &parentId, const core::String &
 							  const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &allKeyFrames,
 							  const palette::Palette &palette, const palette::NormalPalette &normalPalette,
 							  const scenegraph::SceneGraphNodeProperties &properties) {
-	if (!markUndoPreamble()) {
-		return false;
-	}
 	Log::debug("New memento state for node %s with name '%s'", nodeId.c_str(), name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	if (/*TODO: MEMENTO (type != MementoType::SceneNodeAdded && type != MementoType::Modification) ||*/
@@ -766,8 +757,7 @@ bool MementoHandler::markUndo(const core::String &parentId, const core::String &
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
 	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, pivot, allKeyFrames, palette,
 					   normalPalette, properties);
-	addState(core::move(state));
-	return true;
+	return addState(core::move(state));
 }
 
 void MementoHandler::cutFromGroupStatePosition() {
@@ -776,7 +766,20 @@ void MementoHandler::cutFromGroupStatePosition() {
 	_groups.erase_back(cutOff);
 }
 
-void MementoHandler::addState(MementoState &&state) {
+bool MementoHandler::addState(MementoState &&state) {
+	if (!locked()) {
+		for (auto *listener : _listeners) {
+			listener->onMementoStateSkipped(state);
+		}
+		return false;
+	}
+	if (!_groups.empty()) {
+		// if we mark something as new memento state, we can throw away
+		// every other state that follows the new one (everything after
+		// the current state position)
+		const size_t n = _groups.size() - (_groupStatePosition + 1);
+		_groups.erase_back(n);
+	}
 	core::ScopedLock lock(_mutex);
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
@@ -784,7 +787,7 @@ void MementoHandler::addState(MementoState &&state) {
 		for (auto *listener : _listeners) {
 			listener->onMementoStateAdded(_groups.back().states.back());
 		}
-		return;
+		return true;
 	}
 	MementoStateGroup group;
 	group.name = "single";
@@ -796,6 +799,7 @@ void MementoHandler::addState(MementoState &&state) {
 	for (auto *listener : _listeners) {
 		listener->onMementoStateAdded(_groups.back().states.back());
 	}
+	return true;
 }
 
 void MementoHandler::setMaxUndoRegion(const voxel::Region &region) {
@@ -807,6 +811,7 @@ const voxel::Region &MementoHandler::maxUndoRegion() const {
 }
 
 bool MementoHandler::recordVolumeStates(const voxel::RawVolume *volume) const {
+	// TODO: MEMENTO: MEMENTO_PARTIAL_REGION: we need to handle partial regions here and remove this check
 	// the max region is not set, we accept everything
 	if (!_maxUndoRegion.isValid()) {
 		return true;
