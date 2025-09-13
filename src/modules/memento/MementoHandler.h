@@ -115,6 +115,11 @@ public:
 	static MementoData fromVolume(const voxel::RawVolume *volume, const voxel::Region &region);
 };
 
+/**
+ * @brief This is a memento record of a scene graph node state
+ * Not all fields are set with meaningful values - this depends on the
+ * @c SceneGraphNodeType and the @c MementoType
+ */
 struct MementoState {
 	MementoType type;
 	// data is not always included in a state - as this is the volume and would consume a lot of memory
@@ -127,11 +132,14 @@ struct MementoState {
 
 	scenegraph::SceneGraphNodeType nodeType;
 	scenegraph::SceneGraphKeyFramesMap keyFrames;
+	// properties of the scene graph node
 	scenegraph::SceneGraphNodeProperties properties;
+	// name of the scene graph node
 	core::String name;
 	glm::vec3 pivot;
 	palette::Palette palette;
 	palette::NormalPalette normalPalette;
+	// e.g. used for animations in the scene graph
 	core::Optional<core::DynamicArray<core::String>> stringList;
 
 	MementoState();
@@ -171,6 +179,10 @@ struct MementoState {
 	}
 };
 
+/**
+ * @brief A group of @c MementoState that should all be handled in one step.
+ * @see @c ScopedMementoGroup
+ */
 struct MementoStateGroup {
 	core::String name;
 	core::DynamicArray<MementoState> states;
@@ -302,7 +314,13 @@ public:
 	bool markAnimationAdded(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
 	bool markAnimationRemoved(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
 
+	/**
+	 * @brief This returns the state we are moving to
+	 */
 	MementoStateGroup undo();
+	/**
+	 * @brief This returns the state we are moving to
+	 */
 	MementoStateGroup redo();
 	bool canUndo() const;
 	bool canRedo() const;
