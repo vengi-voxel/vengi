@@ -20,12 +20,14 @@ General:
    - Optimized palette color mappings
    - Added `meshoptimizer` simplification support for mesh imports (cvar `voxformat_mesh_simplify`)
    - Improved split-by-objects for hollowed objects
+   - Bump `vengi` format version
 
 VoxEdit:
 
    - Allow to animate point and camera nodes, too
    - Allow to follow an animated camera to fly through a scene
    - Fixed `resetcamera` when transforms are applied in edit mode
+   - Shared voxel editing with client/server collaboration mode
 
 VoxConvert:
 

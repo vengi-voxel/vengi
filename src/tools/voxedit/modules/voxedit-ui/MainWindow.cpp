@@ -119,9 +119,9 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
-	  _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
-	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr),
-	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer) {
+	  _networkPanel(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
+	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline),
+	  _cameraPanel(app, _sceneMgr), _sceneDebugPanel(app, _sceneMgr, sceneRenderer) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));
 }
@@ -220,6 +220,7 @@ bool MainWindow::init() {
 	_animationTimeline.init();
 	_animationPanel.init();
 	_menuBar.init();
+	_networkPanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
@@ -424,6 +425,7 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_NETWORK, dockId);
 }
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
@@ -472,6 +474,9 @@ void MainWindow::rightWidget() {
 	}
 	if (viewModeScriptPanel(_viewMode->intVal())) {
 		_scriptPanel.update(TITLE_SCRIPT, listener);
+	}
+	if (viewModeNetworkPanel(_viewMode->intVal())) {
+		_networkPanel.update(TITLE_NETWORK, listener);
 	}
 }
 

@@ -15,6 +15,7 @@ set(SRCS
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
 	MementoPanel.h MementoPanel.cpp
+	NetworkPanel.cpp NetworkPanel.h
 	NormalPalettePanel.h NormalPalettePanel.cpp
 	PalettePanel.h PalettePanel.cpp
 	RenderPanel.h RenderPanel.cpp
@@ -44,6 +45,7 @@ if (USE_IMGUITESTENGINE)
 		tests/LSystemPanelTest.cpp
 		tests/MainWindowTest.cpp
 		tests/MementoPanelTest.cpp
+		tests/NetworkPanelTest.cpp
 		tests/NormalPalettePanelTest.cpp
 		tests/PalettePanelTest.cpp
 		tests/RenderPanelTest.cpp

@@ -101,8 +101,9 @@ SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::
 						   const SelectionManagerPtr &selectionManager)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifierFacade(this, modifierRenderer, selectionManager), _luaApi(filesystem),
-	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
-	  _selectionManager(selectionManager) {
+	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem), _selectionManager(selectionManager),
+	  _client(this) {
+	server().setState(&_sceneGraph);
 }
 
 SceneManager::~SceneManager() {
@@ -1600,6 +1601,8 @@ void SceneManager::construct() {
 	_mementoHandler.construct();
 	_sceneRenderer->construct();
 	_camMovement.construct();
+	_server.construct();
+	_client.construct();
 
 	core::Var::get(cfg::VoxEditColorWheel, "false", _("Use the color wheel in the palette color editing"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowColorPicker, "false", _("Always show the color picker below the palette"), core::Var::boolValidator);
@@ -2475,6 +2478,14 @@ bool SceneManager::init() {
 		return true;
 	}
 
+	if (!_server.init()) {
+		Log::error("Failed to initialize the server");
+		return false;
+	}
+	if (!_client.init()) {
+		Log::error("Failed to initialize the client");
+		return false;
+	}
 	if (!_mementoHandler.init()) {
 		Log::error("Failed to initialize the memento handler");
 		return false;
@@ -2582,9 +2593,35 @@ bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
 }
 
+void SceneManager::stopLocalServer() {
+	disconnectFromServer();
+	server().stop();
+}
+
+void SceneManager::startLocalServer(int port, const core::String &iface) {
+	_mementoHandler.registerListener(&_client);
+	client().disconnect();
+	server().start(port, iface);
+	client().connect("localhost", port, true);
+}
+
+void SceneManager::connectToServer(const core::String &host, int port) {
+	_mementoHandler.registerListener(&_client);
+	server().stop();
+	client().disconnect();
+	client().connect(host, port, false);
+}
+
+void SceneManager::disconnectFromServer() {
+	_mementoHandler.unregisterListener(&_client);
+	client().disconnect();
+}
+
 bool SceneManager::update(double nowSeconds) {
 	core_trace_scoped(SceneManagerUpdate);
 	updateDelta(nowSeconds);
+	_server.update(nowSeconds);
+	_client.update(nowSeconds);
 	bool loadedNewScene = false;
 	if (_loadingFuture.ready()) {
 		if (loadSceneGraph(core::move(_loadingFuture.get()))) {
@@ -2677,7 +2714,10 @@ void SceneManager::shutdown() {
 
 	_camMovement.shutdown();
 	_modifierFacade.shutdown();
+	_mementoHandler.unregisterListener(&_client);
 	_mementoHandler.shutdown();
+	_server.shutdown();
+	_client.shutdown();
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");

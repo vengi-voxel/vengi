@@ -15,6 +15,7 @@
 #include "voxedit-ui/AssetPanel.h"
 #include "voxedit-ui/CameraPanel.h"
 #include "voxedit-ui/MementoPanel.h"
+#include "voxedit-ui/NetworkPanel.h"
 #include "voxedit-ui/NodeInspectorPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/NodePropertiesPanel.h"
@@ -91,6 +92,7 @@ private:
 	PalettePanel _palettePanel;
 	NormalPalettePanel _normalPalettePanel;
 	MenuBar _menuBar;
+	NetworkPanel _networkPanel;
 	StatusBar _statusBar;
 	ScriptPanel _scriptPanel;
 	AnimationTimeline _animationTimeline;

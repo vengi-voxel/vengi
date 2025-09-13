@@ -1,0 +1,112 @@
+/**
+ * @file
+ */
+
+#include "Server.h"
+#include "core/Log.h"
+#include "voxedit-util/network/ProtocolVersion.h"
+#include "voxedit-util/network/ServerNetwork.h"
+#include "voxedit-util/network/protocol/SceneStateMessage.h"
+#include "voxedit-util/network/protocol/SceneStateRequestMessage.h"
+
+namespace voxedit {
+namespace network {
+
+Server::Server() : _network(this) {
+	_network.addListener(this);
+}
+
+Server::~Server() {
+	shutdown();
+}
+
+bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
+						 const core::String &username, bool localServer) {
+	if (protocolVersion != PROTOCOL_VERSION) {
+		Log::error("Client %u has incompatible protocol version %u (expected 1)", clientId, protocolVersion);
+		return false;
+	}
+
+	Log::info("Client %u connected with application version %s and username %s", clientId, applicationVersion.c_str(),
+			  username.c_str());
+
+	if (RemoteClient *c = _network.client(clientId)) {
+		c->name = username;
+	} else {
+		Log::error("Client %u not found", clientId);
+		return false;
+	}
+
+	if (localServer) {
+		return true;
+	}
+
+	// if this is the first client, we request to get the scene state
+	if (_network.clientCount() == 1) {
+		Log::info("Requesting scene state from client %u", clientId);
+		SceneStateRequestMessage msg;
+		if (!_network.sendToClient(clientId, msg)) {
+			Log::error("Failed to request scene state from client %u", clientId);
+			return false;
+		}
+	} else if (_sceneGraph) {
+		Log::info("Sending scene state to client %u", clientId);
+		SceneStateMessage msg(*_sceneGraph);
+		if (!_network.sendToClient(clientId, msg)) {
+			Log::error("Failed to send scene state to client %u", clientId);
+			return false;
+		}
+	} else {
+		Log::debug("No scene graph set, cannot send scene state to client %u", clientId);
+	}
+
+	return true;
+}
+
+void Server::disconnect(const ClientId &clientId) {
+	_network.disconnect(clientId);
+}
+
+void Server::onConnect(RemoteClient *client) {
+	Log::info("remote client connect (%i)", (int)_network.clientCount());
+}
+
+void Server::onDisconnect(RemoteClient *client) {
+	Log::info("remote client disconnect (%i): %s", (int)_network.clientCount(), client->name.c_str());
+}
+
+void Server::construct() {
+	_network.construct();
+}
+
+bool Server::init() {
+	return _network.init();
+}
+
+bool Server::start(uint16_t port, const core::String &iface) {
+	return _network.start(port, iface);
+}
+
+void Server::stop() {
+	_network.stop();
+}
+
+bool Server::isRunning() const {
+	return _network.isRunning();
+}
+
+void Server::update(double nowSeconds) {
+	_network.update(nowSeconds);
+}
+
+void Server::shutdown() {
+	_network.removeListener(this);
+	_network.shutdown();
+}
+
+const RemoteClients &Server::clients() const {
+	return _network.clients();
+}
+
+} // namespace network
+} // namespace voxedit
