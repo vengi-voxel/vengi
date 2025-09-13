@@ -213,7 +213,7 @@ private:
 	void cutFromGroupStatePosition();
 	bool addState(MementoState &&state);
 	/**
-	 * @return @c true if it's allowed to create an undo state
+	 * @return @c true if it's not allowed to create a new undo state
 	 */
 	bool locked();
 

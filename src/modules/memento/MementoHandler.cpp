@@ -580,9 +580,6 @@ MementoStateGroup MementoHandler::redo() {
 
 bool MementoHandler::markAllAnimations(const core::DynamicArray<core::String> &animations) {
 	Log::debug("Add all (%i) animations from the scenegraph to the memento state", (int)animations.size());
-	if (!locked()) {
-		return false;
-	}
 	MementoState state(MementoType::SceneGraphAnimation, animations);
 	addState(core::move(state));
 	return true;
@@ -718,9 +715,9 @@ bool MementoHandler::markAnimationRemoved(const scenegraph::SceneGraph &sceneGra
 bool MementoHandler::locked() {
 	if (_locked > 0) {
 		Log::debug("Don't add memento state - we are currently in locked mode");
-		return false;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 bool MementoHandler::removeLast() {
@@ -767,7 +764,7 @@ void MementoHandler::cutFromGroupStatePosition() {
 }
 
 bool MementoHandler::addState(MementoState &&state) {
-	if (!locked()) {
+	if (locked()) {
 		for (auto *listener : _listeners) {
 			listener->onMementoStateSkipped(state);
 		}
