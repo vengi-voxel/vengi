@@ -37,7 +37,6 @@
 // INCLUDES
 // -----------------------------------------------------------------------------
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -105,7 +104,7 @@ struct texture_data {
 // Material type
 enum struct material_type {
   // clang-format off
-  matte, glossy, reflective, transparent, refractive, subsurface, volumetric, 
+  matte, glossy, reflective, transparent, refractive, subsurface, volumetric,
   gltfpbr
   // clang-format on
 };

@@ -36,7 +36,6 @@
 
 #include <future>
 #include <memory>
-#include <stdexcept>
 
 #include "yocto_color.h"
 #include "yocto_noise.h"
