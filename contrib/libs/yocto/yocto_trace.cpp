@@ -28,13 +28,9 @@
 
 #include "yocto_trace.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <future>
-#include <memory>
-#include <stdexcept>
-#include <utility>
 
 #include "yocto_color.h"
 #include "yocto_geometry.h"

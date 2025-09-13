@@ -52,7 +52,6 @@
 // -----------------------------------------------------------------------------
 
 #include <cassert>
-#include <stdexcept>
 #include <utility>
 
 #include "yocto_math.h"

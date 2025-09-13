@@ -28,20 +28,17 @@
 
 #include "yocto_scene.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cctype>
 #include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <stdexcept>
 #include <unordered_map>
 
 #include "yocto_color.h"
 #include "yocto_geometry.h"
 #include "yocto_image.h"
-#include "yocto_noise.h"
 #include "yocto_shading.h"
 #include "yocto_shape.h"
 
