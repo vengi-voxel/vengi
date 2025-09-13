@@ -55,5 +55,9 @@ constexpr const char *VoxEditAnimationSpeed = "ve_animspeed";
 constexpr const char *VoxEditAutoNormalMode = "ve_autonormalmode";
 constexpr const char *VoxEditClipping = "ve_clipping";
 constexpr const char *VoxEditGravity = "ve_gravity";
+constexpr const char *VoxEditNetPort = "ve_netport";
+constexpr const char *VoxEditNetHostname = "ve_nethostname";
+constexpr const char *VoxEditNetServerInterface = "ve_netserverinterface";
+constexpr const char *VoxEditNetServerMaxConnections = "ve_netservermaxconnections";
 
 }

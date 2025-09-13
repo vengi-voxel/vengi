@@ -23,6 +23,45 @@ set(SRCS
 	modifier/SelectionManager.h modifier/SelectionManager.cpp
 	modifier/SceneModifiedFlags.h
 
+	network/Client.h network/Client.cpp
+	network/Server.h network/Server.cpp
+	network/ClientNetwork.h network/ClientNetwork.cpp
+	network/ServerNetwork.h network/ServerNetwork.cpp
+	network/NetworkError.cpp network/NetworkError.h
+	network/NetworkAdapters.cpp network/NetworkAdapters.h
+	network/ProtocolHandlerRegistry.h
+	network/ProtocolHandler.h
+	network/ProtocolMessage.h
+	network/ProtocolMessageFactory.h network/ProtocolMessageFactory.cpp
+
+	network/protocol/NodeAddedMessage.h
+	network/protocol/InitSessionMessage.h
+	network/protocol/NodeKeyFramesMessage.h
+	network/protocol/NodeMovedMessage.h
+	network/protocol/NodePaletteChangedMessage.h
+	network/protocol/NodePropertiesMessage.h
+	network/protocol/NodeRemovedMessage.h
+	network/protocol/NodeRenamedMessage.h
+	network/protocol/PingMessage.h
+	network/protocol/SceneStateMessage.h
+	network/protocol/SceneStateRequestMessage.h
+	network/protocol/VoxelModificationMessage.h
+
+	network/handler/client/VoxelModificationHandler.h network/handler/client/VoxelModificationHandler.cpp
+	network/handler/client/NodeAddedHandler.h network/handler/client/NodeAddedHandler.cpp
+	network/handler/client/NodeKeyFramesHandler.h network/handler/client/NodeKeyFramesHandler.cpp
+	network/handler/client/NodeMovedHandler.h network/handler/client/NodeMovedHandler.cpp
+	network/handler/client/NodePaletteChangedHandler.h network/handler/client/NodePaletteChangedHandler.cpp
+	network/handler/client/NodePropertiesHandler.h network/handler/client/NodePropertiesHandler.cpp
+	network/handler/client/NodeRemovedHandler.h network/handler/client/NodeRemovedHandler.cpp
+	network/handler/client/NodeRenamedHandler.h network/handler/client/NodeRenamedHandler.cpp
+	network/handler/client/SceneStateRequestHandler.h network/handler/client/SceneStateRequestHandler.cpp
+	network/handler/client/SceneStateHandlerClient.h network/handler/client/SceneStateHandlerClient.cpp
+
+	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp
+	network/handler/server/SceneStateHandlerServer.h network/handler/server/SceneStateHandlerServer.cpp
+	network/handler/server/BroadcastHandler.h network/handler/server/BroadcastHandler.cpp
+
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
 	CameraMovement.h CameraMovement.cpp
@@ -48,9 +87,11 @@ set(TEST_SRCS
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp
+	tests/NetworkAdaptersTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp
 	tests/PlaneBrushTest.cpp
+	tests/ProtocolMessageFactoryTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
 	tests/SelectionManagerTest.cpp
@@ -58,6 +99,7 @@ set(TEST_SRCS
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp
 	tests/TextureBrushTest.cpp
+	tests/ClientTest.cpp
 )
 set(TEST_FILES
 	shared/font.ttf

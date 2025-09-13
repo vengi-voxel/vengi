@@ -24,6 +24,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "voxedit-util/CameraMovement.h"
+#include "voxedit-util/network/Client.h"
+#include "voxedit-util/network/Server.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -76,6 +78,8 @@ protected:
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
 	SelectionManagerPtr _selectionManager;
+	network::Server _server;
+	network::Client _client;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -420,6 +424,12 @@ public:
 	bool trace(bool sceneMode, bool force = false, const glm::mat4 &invModel = glm::mat4(1.0f));
 	void resetLastTrace();
 
+	void startLocalServer(int port, const core::String &iface);
+	void stopLocalServer();
+
+	void connectToServer(const core::String &hostname, int port);
+	void disconnectFromServer();
+
 	bool setGridResolution(int resolution);
 
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
@@ -437,6 +447,8 @@ public:
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
 	voxelgenerator::LUAApi &luaApi();
+	network::Server &server();
+	network::Client &client();
 
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
@@ -573,6 +585,14 @@ public:
 	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
+
+inline network::Server &SceneManager::server() {
+	return _server;
+}
+
+inline network::Client &SceneManager::client() {
+	return _client;
+}
 
 inline const voxel::VoxelData &SceneManager::clipBoardData() const {
 	return _copy;
