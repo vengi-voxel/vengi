@@ -289,8 +289,8 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 }
 
 TEST_F(SceneManagerTest, testExceedsMaxSuggestedVolumeSize) {
-	util::ScopedVarChange scoped(cfg::VoxEditMaxSuggestedVolumeSize, "16");
-	const voxel::Region region{0, 32};
+	util::ScopedVarChange scoped(cfg::VoxEditMaxSuggestedVolumeSize, "32");
+	const voxel::Region region{0, 33};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
 	ASSERT_TRUE(_sceneMgr->exceedsMaxSuggestedVolumeSize());
 
