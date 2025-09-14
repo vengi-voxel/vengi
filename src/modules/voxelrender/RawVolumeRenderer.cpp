@@ -380,6 +380,28 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_voxelShaderFragData.diffuseColor = color;
 }
 
+// Convert Euler angles (pitch, yaw, roll) to a directional vector
+// Note: roll (angle.z) is unused
+// Angles are expected in degrees
+void RawVolumeRenderer::setSunAngle(const glm::vec3 &angle) {
+	const float pitch = glm::radians(angle.x);
+	const float yaw = glm::radians(angle.y);
+
+	// Convert spherical coordinates to Cartesian direction
+	const glm::vec3 direction = glm::vec3(
+		glm::cos(pitch) * glm::cos(yaw),
+		glm::sin(pitch),
+		glm::cos(pitch) * glm::sin(yaw)
+	);
+
+	// Calculate sun position at a reasonable distance from origin
+	const float sunDistance = 1000.0f;
+	const glm::vec3 sunPosition = direction * sunDistance;
+
+	// Set the shadow system's sun position
+	_shadow.setPosition(sunPosition, glm::vec3(0.0f), glm::up());
+}
+
 voxel::RawVolume *RawVolumeRenderer::resetVolume(const voxel::MeshStatePtr &meshState, int idx) {
 	return setVolume(meshState, idx, nullptr, nullptr, nullptr, true);
 }
@@ -810,10 +832,6 @@ void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
 		_shapeRenderer.deleteMesh(state._normalPreviewBufferIndex);
 		state._normalPreviewBufferIndex = -1;
 	}
-}
-
-void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) {
-	_shadow.setPosition(eye, center, up);
 }
 
 void RawVolumeRenderer::shutdownStateBuffers() {

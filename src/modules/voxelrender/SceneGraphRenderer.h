@@ -63,6 +63,7 @@ public:
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);
+	void setSunAngle(const glm::vec3 &angle);
 
 	void nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId);
 	/**

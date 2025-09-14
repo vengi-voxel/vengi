@@ -38,8 +38,9 @@ bool SceneRenderer::init() {
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_grayInactive = core::Var::getSafe(cfg::VoxEditGrayInactive);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
-	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "1.0 1.0 1.0");
-	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "0.0 0.0 0.0");
+	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.3 0.3 0.3");
+	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7");
+	_sunAngle = core::Var::get(cfg::VoxEditSunAngle, "45.0 135.0 0.0", _("pitch, yaw and ignored roll in degrees"));
 	_planeSize = core::Var::getSafe(cfg::VoxEditPlaneSize);
 	_showPlane = core::Var::getSafe(cfg::VoxEditShowPlane);
 
@@ -310,9 +311,19 @@ void SceneRenderer::update() {
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	glm::vec3 val;
 	_ambientColor->vec3Val(&val[0]);
-	_sceneGraphRenderer.setAmbientColor(val);
-	_diffuseColor->vec3Val(&val[0]);
-	_sceneGraphRenderer.setDiffuseColor(val);
+
+	// When shadows are disabled, use full ambient lighting to show pure colors
+	if (!_renderShadow->boolVal()) {
+		_sceneGraphRenderer.setAmbientColor(glm::vec3(1.0f, 1.0f, 1.0f));
+		_sceneGraphRenderer.setDiffuseColor(glm::vec3(0.0f, 0.0f, 0.0f));
+	} else {
+		_sceneGraphRenderer.setAmbientColor(val);
+		_diffuseColor->vec3Val(&val[0]);
+		_sceneGraphRenderer.setDiffuseColor(val);
+	}
+
+	_sunAngle->vec3Val(&val[0]);
+	_sceneGraphRenderer.setSunAngle(val);
 	_sceneGraphRenderer.update(_meshState);
 }
 

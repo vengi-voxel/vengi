@@ -39,6 +39,7 @@ private:
 	core::VarPtr _grayInactive;
 	core::VarPtr _hideInactive;
 	core::VarPtr _ambientColor;
+	core::VarPtr _sunAngle;
 	core::VarPtr _diffuseColor;
 	core::VarPtr _planeSize;
 	core::VarPtr _showPlane;

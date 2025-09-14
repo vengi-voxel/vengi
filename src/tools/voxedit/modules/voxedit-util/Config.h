@@ -17,6 +17,7 @@ constexpr const char *VoxEditAnimationPlaying = "ve_animationplaying";
 constexpr const char *VoxEditMovementSpeed = "ve_movementspeed";
 constexpr const char *VoxEditTransformUpdateChildren = "ve_transformupdatechildren";
 constexpr const char *VoxEditAmbientColor = "ve_ambientcolor";
+constexpr const char *VoxEditSunAngle = "ve_sunangle";
 constexpr const char *VoxEditColorWheel = "ve_usercolorwheel";
 constexpr const char *VoxEditShowColorPicker = "ve_showcolorpicker";
 constexpr const char *VoxEditDiffuseColor = "ve_diffusecolor";

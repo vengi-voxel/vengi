@@ -724,8 +724,76 @@ void MainWindow::popupSceneSettings() {
 		ImGui::TextUnformatted(_("Scene settings"));
 		ImGui::Separator();
 
+		ImGui::CheckboxVar(_("Enable shadows"), cfg::VoxEditRendershadow);
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("%s", _("Enable or disable shadows and shading.\nWhen disabled, shows pure voxel colors without any lighting effects."));
+		}
+
+		const bool shadowsEnabled = core::Var::get(cfg::VoxEditRendershadow)->boolVal();
+		if (!shadowsEnabled) {
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		}
+
 		ImGui::ColorEdit3Var(_("Diffuse color"), cfg::VoxEditDiffuseColor);
+		if (ImGui::IsItemHovered() && !shadowsEnabled) {
+			ImGui::SetTooltip("%s", _("Diffuse color is disabled when shadows are off"));
+		}
+
 		ImGui::ColorEdit3Var(_("Ambient color"), cfg::VoxEditAmbientColor);
+		if (ImGui::IsItemHovered() && !shadowsEnabled) {
+			ImGui::SetTooltip("%s", _("Ambient color is disabled when shadows are off"));
+		}
+
+		// Improved sun angle widget
+		ImGui::TextUnformatted(_("Sun angle"));
+		if (ImGui::IsItemHovered() && !shadowsEnabled) {
+			ImGui::SetTooltip("%s", _("Sun angle is disabled when shadows are off"));
+		}
+
+		glm::vec3 sunAngle;
+		core::Var::get(cfg::VoxEditSunAngle)->vec3Val(&sunAngle[0]);
+
+		bool changed = false;
+		ImGui::PushID("sunangle");
+		if (ImGui::SliderFloat(_("Elevation"), &sunAngle.x, -90.0f, 90.0f, "%.1f°")) {
+			changed = true && shadowsEnabled;
+		}
+		if (ImGui::IsItemHovered() && shadowsEnabled) {
+			ImGui::SetTooltip("%s", _("Sun elevation angle (pitch): -90° (below) to +90° (above)"));
+		}
+
+		if (ImGui::SliderFloat(_("Azimuth"), &sunAngle.y, 0.0f, 360.0f, "%.1f°")) {
+			changed = true && shadowsEnabled;
+		}
+		if (ImGui::IsItemHovered() && shadowsEnabled) {
+			ImGui::SetTooltip("%s", _("Sun azimuth angle (yaw): 0° (North) to 360°"));
+		}
+
+		if (shadowsEnabled) {
+			if (ImGui::Button(_("Preset: Noon"))) {
+				sunAngle = glm::vec3(60.0f, 135.0f, 0.0f);
+				changed = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(_("Preset: Evening"))) {
+				sunAngle = glm::vec3(15.0f, 225.0f, 0.0f);
+				changed = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(_("Preset: Morning"))) {
+				sunAngle = glm::vec3(15.0f, 45.0f, 0.0f);
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			core::Var::get(cfg::VoxEditSunAngle)->setVal(core::String::format("%.2f %.2f %.2f", sunAngle.x, sunAngle.y, sunAngle.z));
+		}
+		ImGui::PopID();
+
+		if (!shadowsEnabled) {
+			ImGui::PopStyleVar();
+		}
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Close"))) {
 			ImGui::CloseCurrentPopup();

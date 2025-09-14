@@ -142,6 +142,10 @@ void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_volumeRenderer.setDiffuseColor(color);
 }
 
+void SceneGraphRenderer::setSunAngle(const glm::vec3 &angle) {
+	_volumeRenderer.setSunAngle(angle);
+}
+
 void SceneGraphRenderer::shutdown() {
 	_volumeRenderer.shutdown();
 	_cameraRenderer.shutdown();

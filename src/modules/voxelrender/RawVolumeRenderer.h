@@ -162,7 +162,7 @@ public:
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);
-	void setSunPosition(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up);
+	void setSunAngle(const glm::vec3 &angle);
 
 	void construct();
 
