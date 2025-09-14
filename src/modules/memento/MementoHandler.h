@@ -25,29 +25,106 @@ class RawVolume;
 
 namespace memento {
 
+/**
+ * @brief Enumeration of different types of memento states that can be tracked for undo/redo functionality
+ *
+ * Each type represents a specific kind of change that can be applied to the scene graph or voxel data.
+ * The type determines how the undo/redo operations will restore the previous state.
+ */
 enum class MementoType {
 	/**
-	 * voxel volume modifications
+	 * @brief Voxel volume modifications - changes to the actual voxel data within a volume
+	 *
+	 * This includes any changes to individual voxels, such as placing, removing, or modifying voxels.
+	 * The memento state stores compressed volume data to restore the previous voxel configuration.
 	 */
 	Modification,
-	// scene graph actions
+
+	/**
+	 * @brief Scene graph node movement - changes to node position within the scene graph hierarchy
+	 *
+	 * Tracks when a node is moved to a different parent or position in the scene graph structure.
+	 * Does not include transformations (rotation, scale, translation) of the node's content.
+	 */
 	SceneNodeMove,
+
+	/**
+	 * @brief Scene graph node addition - when a new node is added to the scene graph
+	 *
+	 * Records the creation of new nodes so they can be removed during undo operations.
+	 * Stores all necessary information to recreate the node exactly as it was.
+	 */
 	SceneNodeAdded,
+
+	/**
+	 * @brief Scene graph node removal - when a node is deleted from the scene graph
+	 *
+	 * Records all node data so the node can be fully restored during undo operations.
+	 * This includes the node's position, properties, volume data, and relationships.
+	 */
 	SceneNodeRemoved,
+
+	/**
+	 * @brief Scene graph node renaming - changes to a node's display name
+	 *
+	 * Tracks name changes for scene graph nodes so the previous name can be restored.
+	 */
 	SceneNodeRenamed,
+
+	/**
+	 * @brief Color palette changes for a scene graph node
+	 *
+	 * Records changes to the color palette associated with a node's voxel data.
+	 * The palette defines the available colors that can be used for voxels in that node.
+	 */
 	SceneNodePaletteChanged,
+
+	/**
+	 * @brief Normal palette changes for a scene graph node
+	 *
+	 * Records changes to the normal palette used for lighting and surface calculations.
+	 * Normal palettes define surface orientations for rendering purposes.
+	 */
 	SceneNodeNormalPaletteChanged,
+
+	/**
+	 * @brief Animation keyframe changes for a scene graph node
+	 *
+	 * Tracks modifications to animation keyframes that define how nodes transform over time.
+	 * This includes position, rotation, and scale keyframes at different time points.
+	 */
 	SceneNodeKeyFrames,
+
+	/**
+	 * @brief Scene graph node property changes
+	 *
+	 * Records changes to various node properties such as visibility, transformation matrices,
+	 * and other metadata associated with the node.
+	 */
 	SceneNodeProperties,
+
+	/**
+	 * @brief Scene graph animation changes
+	 *
+	 * Tracks changes to the overall animation system, such as adding or removing animations,
+	 * or modifying animation properties that affect multiple nodes.
+	 */
 	SceneGraphAnimation,
 
+	/**
+	 * @brief Sentinel value indicating an invalid or uninitialized memento type
+	 */
 	Max
 };
 
 /**
- * @brief Holds the data of a memento state
+ * @brief Holds compressed voxel volume data for a memento state
  *
  * The given buffer is owned by this class and represents a compressed volume
+ *
+ * The class distinguishes between two regions:
+ * - dataRegion: The specific area within the volume that contains actual voxel data
+ * - volumeRegion: The full bounds of the volume, which may be larger than the data region
  */
 class MementoData {
 	friend struct MementoState;
@@ -59,13 +136,29 @@ private:
 	 */
 	size_t _compressedSize = 0;
 	/**
-	 * @brief The compressed volume data
+	 * @brief Pointer to the compressed volume data buffer
+	 *
+	 * This buffer is owned by the MementoData instance and contains the compressed voxel data.
+	 * The buffer is allocated when creating memento data and freed when the instance is destroyed.
+	 * A nullptr indicates that no volume data is associated with this memento state.
 	 */
 	uint8_t *_buffer = nullptr;
 	/**
-	 * The region the given volume data is for
+	 * @brief The region within the volume that contains the actual voxel data
+	 *
+	 * This defines the bounds of the meaningful voxel data within the larger volume.
+	 * For sparse volumes, this may be much smaller than the volume region, allowing
+	 * for more efficient storage and processing.
 	 */
 	voxel::Region _dataRegion{};
+
+	/**
+	 * @brief The full bounds of the volume
+	 *
+	 * This defines the complete coordinate space of the volume, which may extend beyond
+	 * the actual data region. This is important for maintaining proper spatial relationships
+	 * when restoring volume data.
+	 */
 	voxel::Region _volumeRegion{};
 
 	MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
@@ -78,6 +171,10 @@ public:
 	MementoData(const MementoData &o);
 	~MementoData();
 
+	/**
+	 * @brief Get the size of the compressed data buffer
+	 * @return Size in bytes of the compressed data, 0 if no data is present
+	 */
 	inline size_t size() const {
 		return _compressedSize;
 	}
@@ -85,61 +182,150 @@ public:
 	MementoData &operator=(MementoData &&o) noexcept;
 	MementoData &operator=(const MementoData &o) noexcept;
 
+	/**
+	 * @brief Get the region containing actual voxel data
+	 * @return The data region bounds
+	 */
 	inline const voxel::Region &dataRegion() const {
 		return _dataRegion;
 	}
 
+	/**
+	 * @brief Get the full volume bounds
+	 * @return The complete volume region bounds
+	 */
 	inline const voxel::Region &volumeRegion() const {
 		return _volumeRegion;
 	}
 
+	/**
+	 * @brief Check if this memento data contains volume information
+	 * @return true if volume data is present, false if this is a metadata-only memento
+	 */
 	inline bool hasVolume() const {
 		return _buffer != nullptr;
 	}
 
+	/**
+	 * @brief Get read-only access to the compressed data buffer
+	 * @return Pointer to the compressed data buffer, or nullptr if no data is present
+	 */
 	const uint8_t *buffer() const {
 		return _buffer;
 	}
 
 	/**
-	 * @brief Converts the given @c mementoData back into a voxels
-	 * @note Inserts the voxels from the memento data into the given volume at the given region.
+	 * @brief Decompresses and restores voxel data from memento state into a volume
+	 *
+	 * This method takes the compressed voxel data stored in the memento and decompresses it
+	 * back into the target volume. The voxels are inserted at the positions specified by
+	 * the memento's data region.
+	 *
+	 * @param[in,out] volume The target volume to restore voxel data into
+	 * @param[in] mementoData The memento data containing compressed voxel information
+	 * @return true if the restoration was successful, false on decompression or other errors
 	 */
 	static bool toVolume(voxel::RawVolume *volume, const MementoData &mementoData);
 	/**
-	 * @brief Converts the given volume into a @c MementoData structure (and perform the compression)
-	 * @param[in] volume The volume to create the memento state for. This might be @c null.
-	 * @param[in] region The region of the volume to create the memento data for - if this is not a valid region,
-	 * the whole volume is going to added to the memento data.
+	 * @brief Compresses volume data into a MementoData structure for storage
+	 *
+	 * This method takes a voxel volume and compresses the specified region into a compact
+	 * representation suitable for undo/redo storage. The compression significantly reduces
+	 * memory usage compared to storing raw voxel data.
+	 *
+	 * @param[in] volume The source volume to compress. Can be nullptr for empty memento data.
+	 * @param[in] region The specific region within the volume to compress. If invalid,
+	 *                   the entire volume bounds will be used.
+	 * @return MementoData instance containing the compressed volume data and region information
 	 */
 	static MementoData fromVolume(const voxel::RawVolume *volume, const voxel::Region &region);
 };
 
 /**
- * @brief This is a memento record of a scene graph node state
- * Not all fields are set with meaningful values - this depends on the
- * @c SceneGraphNodeType and the @c MementoType
+ * @brief Complete snapshot of a scene graph node's state for undo/redo functionality
+ *
+ * This structure captures all relevant information about a scene graph node at a specific point in time.
+ * Not all fields are meaningful for every MementoType - the relevant fields depend on the type of
+ * change being tracked. For example, a SceneNodeRenamed memento only needs the name field, while
+ * a Modification memento requires the compressed volume data.
  */
 struct MementoState {
+	/**
+	 * @brief The type of change this memento represents
+	 *
+	 * This determines which fields in the structure are meaningful and how the undo/redo
+	 * operation should be performed.
+	 */
 	MementoType type;
 	// data is not always included in a state - as this is the volume and would consume a lot of memory
 	MementoData data;
 
-	// when re-adding nodes from a memento state, make sure to add them with the correct uuid
+	/**
+	 * @brief UUID of the parent node in the scene graph hierarchy
+	 *
+	 * Used to maintain proper parent-child relationships when restoring nodes.
+	 * Essential for SceneNodeAdded and SceneNodeRemoved operations to ensure
+	 * nodes are restored to the correct position in the hierarchy.
+	 */
 	core::String parentUUID;
+
+	/**
+	 * @brief Unique identifier for this scene graph node
+	 *
+	 * Every scene graph node has a persistent UUID that remains constant across
+	 * operations. This is crucial for tracking the same logical node across
+	 * different memento states.
+	 */
 	core::String nodeUUID;
+
+	/**
+	 * @brief UUID of a referenced node (for reference-type nodes)
+	 *
+	 * Some nodes in the scene graph can reference other nodes rather than containing
+	 * their own data. This field stores the UUID of the referenced node when applicable.
+	 */
 	core::String referenceUUID;
 
+	/**
+	 * @brief The type of scene graph node (Model, Group, Camera, etc.)
+	 *
+	 * Different node types have different properties and behaviors. This information
+	 * is essential for correctly recreating nodes during undo operations.
+	 */
 	scenegraph::SceneGraphNodeType nodeType;
+
+	/**
+	 * @brief Animation keyframes associated with this node
+	 *
+	 * Stores transformation keyframes (position, rotation, scale) at different time points.
+	 * This enables undoing changes to node animations and maintaining temporal consistency.
+	 */
 	scenegraph::SceneGraphKeyFramesMap keyFrames;
-	// properties of the scene graph node
+
+	/**
+	 * @brief Various properties and metadata for the scene graph node
+	 */
 	scenegraph::SceneGraphNodeProperties properties;
-	// name of the scene graph node
+
+	/**
+	 * @brief Display name of the scene graph node
+	 */
 	core::String name;
+
+	/**
+	 * @brief Pivot point for transformations and rotations
+	 */
 	glm::vec3 pivot;
 	palette::Palette palette;
 	palette::NormalPalette normalPalette;
-	// e.g. used for animations in the scene graph
+
+	/**
+	 * @brief List of strings for various purposes (e.g., animation names)
+	 *
+	 * A flexible field used to store arrays of strings for different purposes.
+	 * For example, it may contain the names of animations in the scene graph.
+	 * The Optional wrapper indicates this field is not always populated.
+	 */
 	core::Optional<core::DynamicArray<core::String>> stringList;
 
 	MementoState();
@@ -159,32 +345,61 @@ struct MementoState {
 				 palette::NormalPalette &&_normalPalette, scenegraph::SceneGraphNodeProperties &&_properties);
 	MementoState(MementoType _type, const core::DynamicArray<core::String> &stringList);
 
+	/**
+	 * @brief Check if this memento state is valid and can be used for undo/redo
+	 * @return true if the state has a valid type, false if uninitialized or invalid
+	 */
 	inline bool valid() const {
 		return type != MementoType::Max;
 	}
 
 	/**
-	 * Some types (@c MementoType) don't have a volume attached.
+	 * @brief Check if this memento state contains compressed volume data
+	 *
+	 * Not all memento types require volume data. For example, SceneNodeRenamed only needs
+	 * the name change, while Modification requires the actual voxel data to restore.
+	 *
+	 * @return true if compressed volume data is present, false for metadata-only changes
 	 */
 	inline bool hasVolumeData() const {
 		return data._buffer != nullptr;
 	}
 
+	/**
+	 * @brief Get the region containing actual voxel data
+	 * @return The bounds of meaningful voxel data within the volume
+	 */
 	inline const voxel::Region &dataRegion() const {
 		return data._dataRegion;
 	}
 
+	/**
+	 * @brief Get the full volume bounds
+	 * @return The complete coordinate space of the volume
+	 */
 	inline const voxel::Region &volumeRegion() const {
 		return data._volumeRegion;
 	}
 };
 
 /**
- * @brief A group of @c MementoState that should all be handled in one step.
- * @see @c ScopedMementoGroup
+ * @brief A collection of related memento states that should be treated as a single undo/redo operation
+ *
+ * When multiple changes occur together (such as moving a node and updating its properties),
+ * they are grouped together so that undoing/redoing affects all related changes atomically.
+ * This prevents partial undo states that could leave the scene in an inconsistent condition.
+ *
+ * @see ScopedMementoGroup for convenient group management
  */
 struct MementoStateGroup {
 	core::String name;
+
+	/**
+	 * @brief Array of individual memento states that comprise this group
+	 *
+	 * When undoing/redoing, all states in this array are processed together in the
+	 * appropriate order to restore the complete previous state.
+	 */
 	core::DynamicArray<MementoState> states;
 };
 
