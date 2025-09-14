@@ -12,7 +12,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
-   - Added missing ascii `fbx` header
+   - Added missing ascii `fbx` header for saving and support texture coordinates for loading
    - Support `obj` point clouds
    - Added cvars `voxformat_imagesliceoffsetaxis` and `voxformat_imagesliceoffset` to import spritestacks via Aseprite `asprite` files
    - Fixed symlink handling on linux
@@ -21,6 +21,7 @@ General:
    - Added `meshoptimizer` simplification support for mesh imports (cvar `voxformat_mesh_simplify`)
    - Improved split-by-objects for hollowed objects
    - Bump `vengi` format version
+   - Improved a few error messages and added missing error handling to some parts
 
 VoxEdit:
 
