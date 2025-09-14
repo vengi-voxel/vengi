@@ -161,6 +161,11 @@ private:
 	 */
 	voxel::Region _volumeRegion{};
 
+	/**
+	 * @brief The modified region is used for undoing.
+	 */
+	voxel::Region _modifiedRegion{};
+
 	MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
 	MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion);
 
@@ -214,6 +219,13 @@ public:
 		return _buffer;
 	}
 
+	void setModifiedRegion(const voxel::Region &region) {
+		_modifiedRegion = region;
+	}
+	const voxel::Region &modifiedRegion() const {
+		return _modifiedRegion;
+	}
+
 	/**
 	 * @brief Decompresses and restores voxel data from memento state into a volume
 	 *
@@ -225,7 +237,7 @@ public:
 	 * @param[in] mementoData The memento data containing compressed voxel information
 	 * @return true if the restoration was successful, false on decompression or other errors
 	 */
-	static bool toVolume(voxel::RawVolume *volume, const MementoData &mementoData);
+	static bool toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region);
 	/**
 	 * @brief Compresses volume data into a MementoData structure for storage
 	 *
@@ -418,8 +430,6 @@ private:
 	 * we lock the memento state handler for new states while we are performing an undo or redo step
 	 */
 	int _locked = 0;
-	// TODO:MEMENTO: MEMENTO_PARTIAL_REGION: supporting partial regions would make this obsolete
-	voxel::Region _maxUndoRegion = voxel::Region::InvalidRegion;
 	core_trace_mutex(core::Lock, _mutex, "MementoHandler");
 
 	// Network notification listeners
@@ -485,16 +495,6 @@ public:
 	void unregisterListener(IMementoStateListener *listener);
 
 	/**
-	 * @brief Allow to set the max region to record volume states for
-	 */
-	void setMaxUndoRegion(const voxel::Region &region);
-	const voxel::Region &maxUndoRegion() const;
-	/**
-	 * @brief Checks if the given volume states are recorded or whether the region is too big and is not recorded
-	 */
-	bool recordVolumeStates(const voxel::RawVolume *volume) const;
-
-	/**
 	 * @brief Locks the handler for accepting new states or perform undo() or redo() steps
 	 * @sa @c unlock()
 	 */
@@ -532,6 +532,8 @@ public:
 	bool markNormalPaletteChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markAnimationAdded(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
 	bool markAnimationRemoved(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
+
+	void extractVolumeRegion(voxel::RawVolume *targetVolume, const MementoState &state) const;
 
 	/**
 	 * @brief This returns the state we are moving to

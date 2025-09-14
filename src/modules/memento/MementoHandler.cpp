@@ -24,10 +24,6 @@
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
 
-// TODO: MEMENTO: MEMENTO_PARTIAL_REGION: this doesn't yet work but would save a lot of memory and would allow us
-//       to re-enable the undo/redo functionality for huge volumes
-#define MEMENTO_PARTIAL_REGION 0
-
 namespace memento {
 
 static const MementoStateGroup InvalidMementoGroup{};
@@ -130,8 +126,9 @@ MementoState::MementoState(MementoType _type, const core::DynamicArray<core::Str
 	: type(_type), nodeType(scenegraph::SceneGraphNodeType::Max), pivot(0.0f), stringList(_stringList) {
 }
 
-MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion)
-	: _compressedSize(bufSize), _dataRegion(dataRegion), _volumeRegion(volumeRegion) {
+MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion,
+						 const voxel::Region &volumeRegion)
+	: _compressedSize(bufSize), _dataRegion(dataRegion), _volumeRegion(volumeRegion), _modifiedRegion(dataRegion) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = buf;
@@ -140,8 +137,9 @@ MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &data
 	}
 }
 
-MementoData::MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion, const voxel::Region &volumeRegion)
-	: _compressedSize(bufSize), _dataRegion(dataRegion), _volumeRegion(volumeRegion) {
+MementoData::MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &dataRegion,
+						 const voxel::Region &volumeRegion)
+	: _compressedSize(bufSize), _dataRegion(dataRegion), _volumeRegion(volumeRegion), _modifiedRegion(dataRegion) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = (uint8_t *)core_malloc(_compressedSize);
@@ -152,7 +150,8 @@ MementoData::MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region
 }
 
 MementoData::MementoData(MementoData &&o) noexcept
-	: _compressedSize(o._compressedSize), _buffer(o._buffer), _dataRegion(o._dataRegion), _volumeRegion(o._volumeRegion) {
+	: _compressedSize(o._compressedSize), _buffer(o._buffer), _dataRegion(o._dataRegion),
+	  _volumeRegion(o._volumeRegion), _modifiedRegion(o._modifiedRegion) {
 	o._compressedSize = 0;
 	o._buffer = nullptr;
 }
@@ -164,7 +163,9 @@ MementoData::~MementoData() {
 	}
 }
 
-MementoData::MementoData(const MementoData &o) : _compressedSize(o._compressedSize), _dataRegion(o._dataRegion), _volumeRegion(o._volumeRegion) {
+MementoData::MementoData(const MementoData &o)
+	: _compressedSize(o._compressedSize), _dataRegion(o._dataRegion), _volumeRegion(o._volumeRegion),
+	  _modifiedRegion(o._modifiedRegion) {
 	if (o._buffer != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = (uint8_t *)core_malloc(_compressedSize);
@@ -185,6 +186,7 @@ MementoData &MementoData::operator=(MementoData &&o) noexcept {
 		o._buffer = nullptr;
 		_dataRegion = o._dataRegion;
 		_volumeRegion = o._volumeRegion;
+		_modifiedRegion = o._modifiedRegion;
 	}
 	return *this;
 }
@@ -214,12 +216,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		return MementoData();
 	}
 	voxel::Region mementoRegion = region;
-#if MEMENTO_PARTIAL_REGION
-	// TODO: MEMENTO: see issue https://github.com/vengi-voxel/vengi/issues/200
 	const bool partialMemento = mementoRegion.isValid();
-#else
-	const bool partialMemento = false;
-#endif
 	if (!partialMemento) {
 		mementoRegion = volume->region();
 	}
@@ -238,7 +235,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	return {outStream.release(), size, mementoRegion, volume->region()};
 }
 
-bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData) {
+bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region) {
 	if (mementoData._buffer == nullptr) {
 		return false;
 	}
@@ -246,12 +243,18 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	if (volume == nullptr) {
 		return false;
 	}
+	if (!mementoData.dataRegion().containsRegion(region)) {
+		return false;
+	}
 
-	core::ScopedPtr<voxel::RawVolume> v(voxel::toVolume(mementoData._buffer, (uint32_t)mementoData._compressedSize, mementoData.dataRegion()));
+	core::ScopedPtr<voxel::RawVolume> v(
+		voxel::toVolume(mementoData._buffer, (uint32_t)mementoData._compressedSize, mementoData.dataRegion()));
 	if (!v) {
 		return false;
 	}
-	volume->copyInto(*v);
+	if (!volume->copyInto(*v, region)) {
+		Log::error("Failed to copy memento volume region into target volume");
+	}
 	return true;
 }
 
@@ -332,6 +335,32 @@ void MementoHandler::endGroup() {
 	}
 }
 
+void MementoHandler::extractVolumeRegion(voxel::RawVolume *targetVolume, const MementoState &state) const {
+	if (!state.hasVolumeData() || targetVolume == nullptr) {
+		return;
+	}
+
+	Log::debug("Undo region changes at %i:%i:%i - %i:%i:%i", state.data.modifiedRegion().getLowerX(),
+			   state.data.modifiedRegion().getLowerY(), state.data.modifiedRegion().getLowerZ(),
+			   state.data.modifiedRegion().getUpperX(), state.data.modifiedRegion().getUpperY(),
+			   state.data.modifiedRegion().getUpperZ());
+
+	// we need to walk all states because the memento data might be a partial region only
+	for (int groupStatePos = 0; groupStatePos < _groupStatePosition; ++groupStatePos) {
+		const MementoStateGroup &group = _groups[groupStatePos];
+		for (const MementoState &s : group.states) {
+			if (s.type != MementoType::Modification && s.type != MementoType::SceneNodeAdded) {
+				continue;
+			}
+			if (s.nodeUUID != state.nodeUUID) {
+				continue;
+			}
+			memento::MementoData::toVolume(targetVolume, s.data, state.data.modifiedRegion());
+		}
+	}
+	memento::MementoData::toVolume(targetVolume, state.data, state.data.modifiedRegion());
+}
+
 const char *MementoHandler::typeToString(MementoType type) {
 	const char *states[] = {"Modification",
 							"SceneNodeMove",
@@ -356,10 +385,12 @@ void MementoHandler::printState(const MementoState &state) const {
 	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
 	const glm::ivec3 &dataMins = state.dataRegion().getLowerCorner();
 	const glm::ivec3 &dataMaxs = state.dataRegion().getUpperCorner();
-	Log::info(" - dataregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", dataMins.x, dataMins.y, dataMins.z, dataMaxs.x, dataMaxs.y, dataMaxs.z);
+	Log::info(" - dataregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", dataMins.x, dataMins.y, dataMins.z, dataMaxs.x,
+			  dataMaxs.y, dataMaxs.z);
 	const glm::ivec3 &volumeMins = state.volumeRegion().getLowerCorner();
 	const glm::ivec3 &volumeMaxs = state.volumeRegion().getUpperCorner();
-	Log::info(" - volumeregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", volumeMins.x, volumeMins.y, volumeMins.z, volumeMaxs.x, volumeMaxs.y, volumeMaxs.z);
+	Log::info(" - volumeregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", volumeMins.x, volumeMins.y, volumeMins.z, volumeMaxs.x,
+			  volumeMaxs.y, volumeMaxs.z);
 	Log::info(" - size: %ib", (int)state.data.size());
 	Log::info(" - palette: %s", palHash.c_str());
 	Log::info(" - normalPalette: %s", normalPalHash.c_str());
@@ -421,16 +452,11 @@ void MementoHandler::undoModification(MementoState &s) {
 			if (prevS.nodeUUID != s.nodeUUID) {
 				continue;
 			}
-			// TODO: MEMENTO: MEMENTO_PARTIAL_REGION - we need to handle partial regions here
-			//       the idea is to use the previous volume data and copy only the region that was modified
-			//       into the current volume - this would save a lot of memory - but the issue here is that
-			//       the previous state might also be a partial region - so we would need to merge multiple
-			//       previous states to get the full region back - but walking backward from initial state to
-			//       the previous state while only copying the modified regions would be needed in order to
-			//       restore the full previous state (the initial state is the full volume state)
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 				core_assert(prevS.hasVolumeData() || !prevS.referenceUUID.empty());
+				const voxel::Region modifiedRegion = s.data.dataRegion();
 				s.data = prevS.data;
+				s.data.setModifiedRegion(modifiedRegion);
 				// undo for un-reference node - so we have to make it a reference node again
 				if (s.nodeType != prevS.nodeType) {
 					core_assert(prevS.nodeType == scenegraph::SceneGraphNodeType::ModelReference);
@@ -640,7 +666,7 @@ bool MementoHandler::markModification(const scenegraph::SceneGraph &sceneGraph, 
 									  const voxel::Region &modifiedRegion) {
 	const voxel::RawVolume *volume = node.volume();
 	// Modification without volume isn't possible - so skip it here already
-	if (!recordVolumeStates(volume)) {
+	if (volume == nullptr) {
 		return false;
 	}
 	const int nodeId = node.id();
@@ -747,10 +773,6 @@ bool MementoHandler::markUndo(const core::String &parentId, const core::String &
 							  const scenegraph::SceneGraphNodeProperties &properties) {
 	Log::debug("New memento state for node %s with name '%s'", nodeId.c_str(), name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
-	if (/*TODO: MEMENTO (type != MementoType::SceneNodeAdded && type != MementoType::Modification) ||*/
-		!recordVolumeStates(volume)) {
-		volume = nullptr;
-	}
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
 	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, pivot, allKeyFrames, palette,
 					   normalPalette, properties);
@@ -797,31 +819,6 @@ bool MementoHandler::addState(MementoState &&state) {
 		listener->onMementoStateAdded(_groups.back().states.back());
 	}
 	return true;
-}
-
-void MementoHandler::setMaxUndoRegion(const voxel::Region &region) {
-	_maxUndoRegion = region;
-}
-
-const voxel::Region &MementoHandler::maxUndoRegion() const {
-	return _maxUndoRegion;
-}
-
-bool MementoHandler::recordVolumeStates(const voxel::RawVolume *volume) const {
-	// no volume given
-	if (volume == nullptr) {
-		return false;
-	}
-#if MEMENTO_PARTIAL_REGION == 0
-	// TODO: MEMENTO: MEMENTO_PARTIAL_REGION: we need to handle partial regions here and remove this check
-	// the max region is not set, we accept everything
-	if (!_maxUndoRegion.isValid()) {
-		return true;
-	}
-	return _maxUndoRegion.voxels() >= volume->region().voxels();
-#else
-	return true;
-#endif
 }
 
 } // namespace memento

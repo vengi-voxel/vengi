@@ -81,7 +81,7 @@ protected:
 
 		// Extract volume from memento state
 		voxel::RawVolume volume(state.dataRegion());
-		ASSERT_TRUE(state.data.toVolume(&volume, state.data)) << "Failed to extract volume from state " << description;
+		ASSERT_TRUE(state.data.toVolume(&volume, state.data, state.dataRegion())) << "Failed to extract volume from state " << description;
 
 		// Check expected voxels with specific colors
 		for (const core::Pair<glm::ivec3, uint8_t> &expectedVoxel : expectedVoxels) {
@@ -692,7 +692,7 @@ TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
 	memento::MementoState state = firstState(_mementoHandler.undo());
 	EXPECT_EQ(state.name, "Node name");
 	voxel::RawVolume volume(voxel::Region(0, 0));
-	ASSERT_TRUE(state.data.toVolume(&volume, state.data));
+	ASSERT_TRUE(state.data.toVolume(&volume, state.data, state.dataRegion()));
 	EXPECT_EQ(voxel::VoxelType::Air, volume.voxel(0, 0, 0).getMaterial());
 }
 

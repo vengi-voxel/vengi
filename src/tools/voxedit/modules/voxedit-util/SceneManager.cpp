@@ -851,12 +851,12 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 				}
 			}
 			if (s.hasVolumeData()) {
-				memento::MementoData::toVolume(node->volume(), s.data);
+				_mementoHandler.extractVolumeRegion(node->volume(), s);
 			}
 		}
 		node->setName(s.name);
 		node->setPalette(s.palette);
-		modified(node->id(), s.data.dataRegion());
+		modified(node->id(), s.data.modifiedRegion());
 		return true;
 	}
 	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
@@ -869,7 +869,7 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	if (newNode.isModelNode()) {
 		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		if (s.hasVolumeData()) {
-			memento::MementoData::toVolume(newNode.volume(), s.data);
+			memento::MementoData::toVolume(newNode.volume(), s.data, s.data.dataRegion());
 		}
 	}
 	newNode.setPalette(s.palette);
@@ -2518,9 +2518,8 @@ bool SceneManager::init() {
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();
 
-	voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
-	_mementoHandler.setMaxUndoRegion(maxUndoRegion);
-	_selectionManager->setMaxRegionSize(maxUndoRegion);
+	voxel::Region maxRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
+	_selectionManager->setMaxRegionSize(maxRegion);
 
 	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;
@@ -2641,9 +2640,8 @@ bool SceneManager::update(double nowSeconds) {
 	}
 
 	if (_maxSuggestedVolumeSize->isDirty()) {
-		voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
-		_mementoHandler.setMaxUndoRegion(maxUndoRegion);
-		_selectionManager->setMaxRegionSize(maxUndoRegion);
+		voxel::Region maxRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
+		_selectionManager->setMaxRegionSize(maxRegion);
 		_maxSuggestedVolumeSize->markClean();
 	}
 
