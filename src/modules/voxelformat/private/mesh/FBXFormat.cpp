@@ -473,6 +473,10 @@ static bool _ufbx_skip_fn(void *user, size_t size) {
 	return stream->skip((int64_t)size) != -1;
 }
 
+static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
+	return glm::vec2((float)v.x, (float)v.y);
+}
+
 static inline glm::vec3 _ufbx_to_vec3(const ufbx_vec3 &v) {
 	return glm::vec3((float)v.x, (float)v.y, (float)v.z);
 }
@@ -528,6 +532,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 
 	Log::debug("There are %i materials in the mesh", (int)ufbxMesh->materials.count);
 	Log::debug("Vertex colors: %s", ufbxMesh->vertex_color.exists ? "true" : "false");
+	Log::debug("UV coordinates: %s", ufbxMesh->vertex_uv.exists ? "true" : "false");
 	Log::debug("Scene meter scale: %f", ufbxScene->settings.unit_meters);
 	Log::debug("Scene original meter scale: %f", ufbxScene->settings.original_unit_meters);
 
@@ -539,15 +544,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		mesh.reserveAdditionalTris(ufbxMeshPart.num_triangles);
 
 		const ufbx_material *ufbxMaterial = nullptr;
-		// Get the material index from the first face in this mesh part
-		if (ufbxMeshPart.face_indices.count > 0) {
-			const uint32_t faceIndex = ufbxMeshPart.face_indices[0];
-			if (faceIndex < ufbxMesh->face_material.count) {
-				const uint32_t materialIndex = ufbxMesh->face_material[faceIndex];
-				if (materialIndex < ufbxMesh->materials.count) {
-					ufbxMaterial = ufbxMesh->materials[materialIndex];
-				}
-			}
+		if (ufbxMeshPart.index < ufbxMesh->materials.count) {
+			ufbxMaterial = ufbxMesh->materials[ufbxMeshPart.index];
 		}
 		Log::debug("Faces: %i - material: %s (mesh part index: %u)", (int)ufbxMeshPart.num_faces,
 				   ufbxMaterial ? "yes" : "no", ufbxMeshPart.index);
@@ -557,14 +555,20 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		if (ufbxMaterial) {
 			const core::String &matname = priv::_ufbx_to_string(ufbxMaterial->name);
 			if (matname.empty()) {
+				Log::warn("No material name");
 				continue;
 			}
 			mat = createMaterial(matname);
-			const ufbx_texture *ufbxTexture = ufbxMaterial->fbx.diffuse_color.texture;
-			if (ufbxTexture == nullptr) {
-				ufbxTexture = ufbxMaterial->pbr.base_color.texture;
+
+			const ufbx_material_texture *ufbxMaterialTexture = nullptr;
+			for (size_t i = 0; i < ufbxMaterial->textures.count; ++i) {
+				ufbxMaterialTexture = &ufbxMaterial->textures[i];
+				if (ufbxMaterialTexture) {
+					break;
+				}
 			}
 
+			const ufbx_texture *ufbxTexture = ufbxMaterialTexture ? ufbxMaterialTexture->texture : nullptr;
 			if (ufbxTexture) {
 				const core::String &fbxTextureFilename = priv::_ufbx_to_string(ufbxTexture->relative_filename);
 				const core::String &textureName = lookupTexture(filename, fbxTextureFilename, archive);
@@ -577,6 +581,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				} else {
 					Log::debug("Failed to load image %s for material %s", fbxTextureFilename.c_str(), matname.c_str());
 				}
+			} else if (ufbxMesh->vertex_uv.exists) {
+				Log::warn("Mesh has UV coordinates but no texture assigned in material %s", matname.c_str());
 			}
 			if (ufbxMaterial->features.pbr.enabled) {
 				if (ufbxMaterial->pbr.base_factor.has_value) {
@@ -633,6 +639,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				const ufbx_vec3 &vertex0 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx0);
 				const ufbx_vec3 &vertex1 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx1);
 				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx2);
+
 				// TODO: VOXELFORMAT: transform here - see issue
 				// https://github.com/vengi-voxel/vengi/issues/447
 				meshTri.setVertices(priv::_ufbx_to_vec3(vertex0), priv::_ufbx_to_vec3(vertex1),
@@ -644,6 +651,12 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					meshTri.setColor(core::Color::getRGBA(priv::_ufbx_to_vec4(color0)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
+				}
+				if (ufbxMesh->vertex_uv.exists) {
+					const ufbx_vec2 &uv0 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx0);
+					const ufbx_vec2 &uv1 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx1);
+					const ufbx_vec2 &uv2 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx2);
+					meshTri.setUVs(priv::_ufbx_to_vec2(uv0), priv::_ufbx_to_vec2(uv1), priv::_ufbx_to_vec2(uv2));
 				}
 				meshTri.materialIdx = mesh.materials.size() - 1;
 				mesh.addTriangle(meshTri);
