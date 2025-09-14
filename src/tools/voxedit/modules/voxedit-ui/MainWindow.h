@@ -24,6 +24,7 @@
 #include "voxedit-ui/SceneDebugPanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
+#include "voxedit-ui/SceneSettingsPanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/PalettePanel.h"
@@ -53,7 +54,6 @@ private:
 	core::VarPtr _popupTipOfTheDay;
 	core::VarPtr _popupWelcome;
 	core::VarPtr _popupMinecraftMapping;
-	core::VarPtr _popupSceneSettings;
 	core::VarPtr _popupAbout;
 	core::VarPtr _popupRenameNode;
 
@@ -99,6 +99,7 @@ private:
 	AnimationPanel _animationPanel;
 	CameraPanel _cameraPanel;
 	SceneDebugPanel _sceneDebugPanel;
+	SceneSettingsPanel _sceneSettingsPanel;
 
 	bool isSceneMode() const;
 
@@ -134,7 +135,6 @@ private:
 	void popupFailedSave();
 	void popupUnsavedChanges();
 	void popupUnsavedDiscard();
-	void popupSceneSettings();
 	void popupAbout();
 	void popupModelNodeSettings();
 	void popupVolumeSplit();

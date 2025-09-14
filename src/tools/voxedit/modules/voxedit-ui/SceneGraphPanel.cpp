@@ -9,7 +9,6 @@
 #include "core/Log.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
-#include "imgui.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"

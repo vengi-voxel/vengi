@@ -21,6 +21,7 @@ set(SRCS
 	RenderPanel.h RenderPanel.cpp
 	SceneDebugPanel.h SceneDebugPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
+	SceneSettingsPanel.h SceneSettingsPanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	BrushPanel.h BrushPanel.cpp
 	StatusBar.h StatusBar.cpp
@@ -50,6 +51,7 @@ if (USE_IMGUITESTENGINE)
 		tests/PalettePanelTest.cpp
 		tests/RenderPanelTest.cpp
 		tests/SceneGraphPanelTest.cpp
+		tests/SceneSettingsPanelTest.cpp
 		tests/ScriptPanelTest.cpp
 		tests/BrushPanelTest.cpp
 		tests/StatusBarTest.cpp

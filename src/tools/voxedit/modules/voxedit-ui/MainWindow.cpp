@@ -121,7 +121,8 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
 	  _networkPanel(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline),
-	  _cameraPanel(app, _sceneMgr), _sceneDebugPanel(app, _sceneMgr, sceneRenderer) {
+	  _cameraPanel(app, _sceneMgr), _sceneDebugPanel(app, _sceneMgr, sceneRenderer),
+	  _sceneSettingsPanel(app, _sceneMgr) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));
 }
@@ -190,7 +191,6 @@ bool MainWindow::init() {
 	_popupTipOfTheDay = core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay);
 	_popupWelcome = core::Var::getSafe(cfg::VoxEditPopupWelcome);
 	_popupMinecraftMapping = core::Var::getSafe(cfg::VoxEditPopupMinecraftMapping);
-	_popupSceneSettings = core::Var::getSafe(cfg::VoxEditPopupSceneSettings);
 	_popupAbout = core::Var::getSafe(cfg::VoxEditPopupAbout);
 	_popupRenameNode = core::Var::getSafe(cfg::VoxEditPopupRenameNode);
 
@@ -210,6 +210,7 @@ bool MainWindow::init() {
 #if ENABLE_RENDER_PANEL
 	_renderPanel.init();
 #endif
+	_sceneSettingsPanel.init();
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
@@ -425,6 +426,7 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_SCENE_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NETWORK, dockId);
 }
 
@@ -457,6 +459,7 @@ void MainWindow::rightWidget() {
 	if (viewModeCameraPanel(_viewMode->intVal()) && _lastHoveredViewport != nullptr) {
 		_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 	}
+	_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
 	// _sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
 
 	// bottom
@@ -718,91 +721,6 @@ void MainWindow::popupUnsavedDiscard() {
 	}
 }
 
-void MainWindow::popupSceneSettings() {
-	const core::String title = makeTitle(_("Scene settings"), POPUP_TITLE_SCENE_SETTINGS);
-	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::TextUnformatted(_("Scene settings"));
-		ImGui::Separator();
-
-		ImGui::CheckboxVar(_("Enable shadows"), cfg::VoxEditRendershadow);
-		if (ImGui::IsItemHovered()) {
-			ImGui::SetTooltip("%s", _("Enable or disable shadows and shading.\nWhen disabled, shows pure voxel colors without any lighting effects."));
-		}
-
-		const bool shadowsEnabled = core::Var::get(cfg::VoxEditRendershadow)->boolVal();
-		if (!shadowsEnabled) {
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-		}
-
-		ImGui::ColorEdit3Var(_("Diffuse color"), cfg::VoxEditDiffuseColor);
-		if (ImGui::IsItemHovered() && !shadowsEnabled) {
-			ImGui::SetTooltip("%s", _("Diffuse color is disabled when shadows are off"));
-		}
-
-		ImGui::ColorEdit3Var(_("Ambient color"), cfg::VoxEditAmbientColor);
-		if (ImGui::IsItemHovered() && !shadowsEnabled) {
-			ImGui::SetTooltip("%s", _("Ambient color is disabled when shadows are off"));
-		}
-
-		// Improved sun angle widget
-		ImGui::TextUnformatted(_("Sun angle"));
-		if (ImGui::IsItemHovered() && !shadowsEnabled) {
-			ImGui::SetTooltip("%s", _("Sun angle is disabled when shadows are off"));
-		}
-
-		glm::vec3 sunAngle;
-		core::Var::get(cfg::VoxEditSunAngle)->vec3Val(&sunAngle[0]);
-
-		bool changed = false;
-		ImGui::PushID("sunangle");
-		if (ImGui::SliderFloat(_("Elevation"), &sunAngle.x, -90.0f, 90.0f, "%.1f°")) {
-			changed = true && shadowsEnabled;
-		}
-		if (ImGui::IsItemHovered() && shadowsEnabled) {
-			ImGui::SetTooltip("%s", _("Sun elevation angle (pitch): -90° (below) to +90° (above)"));
-		}
-
-		if (ImGui::SliderFloat(_("Azimuth"), &sunAngle.y, 0.0f, 360.0f, "%.1f°")) {
-			changed = true && shadowsEnabled;
-		}
-		if (ImGui::IsItemHovered() && shadowsEnabled) {
-			ImGui::SetTooltip("%s", _("Sun azimuth angle (yaw): 0° (North) to 360°"));
-		}
-
-		if (shadowsEnabled) {
-			if (ImGui::Button(_("Preset: Noon"))) {
-				sunAngle = glm::vec3(60.0f, 135.0f, 0.0f);
-				changed = true;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(_("Preset: Evening"))) {
-				sunAngle = glm::vec3(15.0f, 225.0f, 0.0f);
-				changed = true;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button(_("Preset: Morning"))) {
-				sunAngle = glm::vec3(15.0f, 45.0f, 0.0f);
-				changed = true;
-			}
-		}
-
-		if (changed) {
-			core::Var::get(cfg::VoxEditSunAngle)->setVal(core::String::format("%.2f %.2f %.2f", sunAngle.x, sunAngle.y, sunAngle.z));
-		}
-		ImGui::PopID();
-
-		if (!shadowsEnabled) {
-			ImGui::PopStyleVar();
-		}
-
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Close"))) {
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::EndPopup();
-	}
-}
-
 void MainWindow::popupVolumeSplit() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 50, 0));
 	const core::String title = makeTitle(_("Volume split"), POPUP_TITLE_VOLUME_SPLIT);
@@ -896,10 +814,6 @@ void MainWindow::registerPopups() {
 	}
 
 	// popups that can get triggers externally
-	if (_popupSceneSettings->boolVal()) {
-		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
-		_popupSceneSettings->setVal("false");
-	}
 	if (_popupTipOfTheDay->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_TIPOFTHEDAY);
 		_popupTipOfTheDay->setVal("false");
@@ -924,7 +838,6 @@ void MainWindow::registerPopups() {
 	}
 
 	popupModelNodeSettings();
-	popupSceneSettings();
 	popupUnsavedDiscard();
 	popupUnsavedChanges();
 	popupFailedSave();

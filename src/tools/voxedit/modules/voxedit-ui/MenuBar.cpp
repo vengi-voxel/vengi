@@ -35,7 +35,23 @@ void MenuBar::viewportOptions() {
 	}
 	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, _("Checkerboard"), cfg::RenderCheckerBoard);
 	ImGui::EndDisabled();
-	ImGui::IconCheckboxVar(ICON_LC_SUNSET, _("Shadow"), cfg::VoxEditRendershadow);
+	const char* shadingModeLabels[] = { _("Unlit"), _("Lit"), _("Shadows") };
+	int currentShadingMode = core::Var::get(cfg::VoxEditShadingMode)->intVal();
+	const char* currentLabel = (currentShadingMode >= 0 && currentShadingMode < (int)lengthof(shadingModeLabels)) ?
+		shadingModeLabels[currentShadingMode] : _("Unknown");
+
+	if (ImGui::BeginIconCombo(ICON_LC_SUNSET, _("Shading"), currentLabel)) {
+		for (int i = 0; i < (int)lengthof(shadingModeLabels); ++i) {
+			const bool isSelected = (currentShadingMode == i);
+			if (ImGui::Selectable(shadingModeLabels[i], isSelected)) {
+				core::Var::get(cfg::VoxEditShadingMode)->setVal(i);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
 	ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
 	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, _("Tone mapping"), cfg::ToneMapping, 0, 3);
 }

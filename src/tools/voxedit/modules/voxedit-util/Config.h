@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace cfg {
 
 const int MaxViewports = 4;
@@ -52,6 +54,7 @@ constexpr const char *VoxEditModelGizmo = "ve_modelgizmo";
 constexpr const char *VoxEditViewdistance = "ve_viewdistance";
 constexpr const char *VoxEditShowlockedaxis = "ve_showlockedaxis";
 constexpr const char *VoxEditRendershadow = "ve_rendershadow";
+constexpr const char *VoxEditShadingMode = "ve_shadingmode";
 constexpr const char *VoxEditAnimationSpeed = "ve_animspeed";
 constexpr const char *VoxEditAutoNormalMode = "ve_autonormalmode";
 constexpr const char *VoxEditClipping = "ve_clipping";

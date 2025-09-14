@@ -35,6 +35,7 @@ private:
 	core::VarPtr _showAABB;
 	core::VarPtr _showBones;
 	core::VarPtr _renderShadow;
+	core::VarPtr _shadingMode;
 	core::VarPtr _gridSize;
 	core::VarPtr _grayInactive;
 	core::VarPtr _hideInactive;

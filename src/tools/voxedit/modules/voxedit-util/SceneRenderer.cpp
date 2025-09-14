@@ -13,6 +13,7 @@
 #include "scenegraph/SceneUtil.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
+#include "voxedit-ui/SceneSettingsPanel.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
@@ -35,12 +36,13 @@ bool SceneRenderer::init() {
 	_showAABB = core::Var::getSafe(cfg::VoxEditShowaabb);
 	_showBones = core::Var::getSafe(cfg::VoxEditShowBones);
 	_renderShadow = core::Var::getSafe(cfg::VoxEditRendershadow);
+	_shadingMode = core::Var::get(cfg::VoxEditShadingMode, "1", _("Shading mode: 0=Unlit, 1=Lit, 2=Shadows"));
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_grayInactive = core::Var::getSafe(cfg::VoxEditGrayInactive);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.3 0.3 0.3");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7");
-	_sunAngle = core::Var::get(cfg::VoxEditSunAngle, "45.0 135.0 0.0", _("pitch, yaw and ignored roll in degrees"));
+	_sunAngle = core::Var::get(cfg::VoxEditSunAngle, "35.0 135.0 0.0", _("pitch, yaw and ignored roll in degrees"));
 	_planeSize = core::Var::getSafe(cfg::VoxEditPlaneSize);
 	_showPlane = core::Var::getSafe(cfg::VoxEditShowPlane);
 
@@ -311,17 +313,9 @@ void SceneRenderer::update() {
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	glm::vec3 val;
 	_ambientColor->vec3Val(&val[0]);
-
-	// When shadows are disabled, use full ambient lighting to show pure colors
-	if (!_renderShadow->boolVal()) {
-		_sceneGraphRenderer.setAmbientColor(glm::vec3(1.0f, 1.0f, 1.0f));
-		_sceneGraphRenderer.setDiffuseColor(glm::vec3(0.0f, 0.0f, 0.0f));
-	} else {
-		_sceneGraphRenderer.setAmbientColor(val);
-		_diffuseColor->vec3Val(&val[0]);
-		_sceneGraphRenderer.setDiffuseColor(val);
-	}
-
+	_sceneGraphRenderer.setAmbientColor(val);
+	_diffuseColor->vec3Val(&val[0]);
+	_sceneGraphRenderer.setDiffuseColor(val);
 	_sunAngle->vec3Val(&val[0]);
 	_sceneGraphRenderer.setSunAngle(val);
 	_sceneGraphRenderer.update(_meshState);
