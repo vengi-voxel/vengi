@@ -508,6 +508,21 @@ bool SliderVarFloat(const char *label, const char *varName, float v_min, float v
 	return SliderVarFloat(label, var, v_min, v_max, format, flags);
 }
 
+bool InputVec3Var(const char *label, const char *varName) {
+	glm::vec3 vec;
+	const core::VarPtr &var = core::Var::getSafe(varName);
+	var->vec3Val(&vec[0]);
+	if (InputVec3(label, vec, "%.3f", 0)) {
+		const core::String &v = core::String::format("%f %f %f", vec.x, vec.y, vec.z);
+		var->setVal(v);
+		return true;
+	}
+	if (var->help()) {
+		TooltipTextUnformatted(var->help());
+	}
+	return false;
+}
+
 bool ColorEdit3Var(const char *label, const char *varName) {
 	glm::vec3 col;
 	const core::VarPtr &var = core::Var::getSafe(varName);
