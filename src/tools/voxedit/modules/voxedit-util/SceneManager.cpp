@@ -844,8 +844,8 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 			if (node->type() == scenegraph::SceneGraphNodeType::ModelReference && s.nodeType == scenegraph::SceneGraphNodeType::Model) {
 				node->unreferenceModelNode(_sceneGraph.node(node->reference()));
 			}
-			if (node->region() != s.dataRegion()) {
-				voxel::RawVolume *v = new voxel::RawVolume(s.dataRegion());
+			if (node->region() != s.volumeRegion()) {
+				voxel::RawVolume *v = new voxel::RawVolume(s.volumeRegion());
 				if (!setSceneGraphNodeVolume(*node, v)) {
 					delete v;
 				}
