@@ -535,12 +535,26 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		if (ufbxMeshPart.num_triangles == 0) {
 			continue;
 		}
-		Log::debug("Faces: %i - material: %s", (int)ufbxMeshPart.num_faces,
-				   ufbxMesh->materials[ufbxMeshPart.index] ? "yes" : "no");
+
+		mesh.reserveAdditionalTris(ufbxMeshPart.num_triangles);
+
+		const ufbx_material *ufbxMaterial = nullptr;
+		// Get the material index from the first face in this mesh part
+		if (ufbxMeshPart.face_indices.count > 0) {
+			const uint32_t faceIndex = ufbxMeshPart.face_indices[0];
+			if (faceIndex < ufbxMesh->face_material.count) {
+				const uint32_t materialIndex = ufbxMesh->face_material[faceIndex];
+				if (materialIndex < ufbxMesh->materials.count) {
+					ufbxMaterial = ufbxMesh->materials[materialIndex];
+				}
+			}
+		}
+		Log::debug("Faces: %i - material: %s (mesh part index: %u)", (int)ufbxMeshPart.num_faces,
+				   ufbxMaterial ? "yes" : "no", ufbxMeshPart.index);
 
 		MeshMaterialPtr mat = createMaterial("default");
 
-		if (const ufbx_material *ufbxMaterial = ufbxMesh->materials[ufbxMeshPart.index]) {
+		if (ufbxMaterial) {
 			const core::String &matname = priv::_ufbx_to_string(ufbxMaterial->name);
 			if (matname.empty()) {
 				continue;

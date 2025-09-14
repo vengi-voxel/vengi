@@ -12,6 +12,11 @@ void Mesh::clearAfterTriangulation() {
 	polygons.release();
 }
 
+void Mesh::reserveAdditionalTris(size_t numTris) {
+	vertices.reserve(vertices.size() + numTris * 3);
+	indices.reserve(indices.size() + numTris * 3);
+}
+
 void Mesh::addTriangle(const voxelformat::MeshTri &tri) {
 	const glm::vec3 &normal = tri.normal();
 	MeshVertex vertex0;

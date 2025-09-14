@@ -31,6 +31,7 @@ struct Mesh {
 	core::DynamicArray<voxel::IndexArray> polygons;
 
 	void clearAfterTriangulation();
+	void reserveAdditionalTris(size_t numTris);
 	// helper function to add a triangle to the mesh - better add it directly
 	void addTriangle(const voxelformat::MeshTri &tri);
 };
