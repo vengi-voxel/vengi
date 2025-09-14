@@ -86,6 +86,16 @@ TEST_F(RawVolumeTest, testCopy) {
 	EXPECT_EQ(0, countVoxels(v3));
 }
 
+TEST_F(RawVolumeTest, testCopyInto) {
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+
+	RawVolume v2(_region);
+	v2.setVoxel(1, 1, 1, voxel::createVoxel(VoxelType::Generic, 42));
+	v.copyInto(v2, {1, 1});
+	ASSERT_EQ(42, v.voxel(1, 1, 1).getColor());
+}
+
 TEST_F(RawVolumeTest, testSamplerPeek) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
