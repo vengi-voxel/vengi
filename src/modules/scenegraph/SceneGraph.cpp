@@ -1004,6 +1004,14 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 
 	const KeyFrameIndex keyFrameIdx = 0;
 	const voxel::Region &mergedRegion = sceneRegion(keyFrameIdx, skipHidden);
+	if (!mergedRegion.isValid()) {
+		return MergeResult{};
+	}
+	const size_t bytes = voxel::RawVolume::size(mergedRegion);
+	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
+		Log::error("Not enough memory to merge the scene graph nodes");
+		return MergeResult{};
+	}
 	const palette::Palette &mergedPalette = mergePalettes(true);
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
 

@@ -426,6 +426,10 @@ app::AppState VoxConvert::onInit() {
 	}
 	if (_printSceneToConsole) {
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+		if (!merged.hasVolume()) {
+			Log::error("No valid volume in the scenegraph to print");
+			return app::AppState::InitFailure;
+		}
 		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 		int width = terminalWidth();
 		int height = -1;

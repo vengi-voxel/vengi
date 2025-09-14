@@ -393,6 +393,10 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
 		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
+		if (!merged.hasVolume()) {
+			Log::error("Failed to merge the scenegraph nodes");
+			return;
+		}
 		newSceneGraph.clear();
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setVolume(merged.volume(), true);
@@ -2110,6 +2114,10 @@ void SceneManager::construct() {
 		if (args.size() == 1) {
 			if (args[0] == "all") {
 				const scenegraph::SceneGraph::MergeResult &merged = _sceneGraph.merge();
+				if (!merged.hasVolume()) {
+					Log::warn("Merging failed");
+					return;
+				}
 				newScene(true, "merged", merged.volume());
 				if (auto *node = _sceneGraph.firstModelNode()) {
 					node->setPalette(merged.palette);

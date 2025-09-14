@@ -63,6 +63,10 @@ float Format::floatProperty(const scenegraph::SceneGraphNode *node, const core::
 image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
 														   const voxelformat::ThumbnailContext &ctx) {
 	scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+	if (!merged.hasVolume()) {
+		Log::error("No valid volume in the scenegraph to create a thumbnail");
+		return image::ImagePtr();
+	}
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	voxel::FaceNames frontFace = voxel::FaceNames::Front;
 	if (ctx.useWorldPosition) {
