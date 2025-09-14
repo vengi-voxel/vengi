@@ -808,16 +808,20 @@ const voxel::Region &MementoHandler::maxUndoRegion() const {
 }
 
 bool MementoHandler::recordVolumeStates(const voxel::RawVolume *volume) const {
+	// no volume given
+	if (volume == nullptr) {
+		return false;
+	}
+#if MEMENTO_PARTIAL_REGION == 0
 	// TODO: MEMENTO: MEMENTO_PARTIAL_REGION: we need to handle partial regions here and remove this check
 	// the max region is not set, we accept everything
 	if (!_maxUndoRegion.isValid()) {
 		return true;
 	}
-	// no volume given
-	if (volume == nullptr) {
-		return false;
-	}
 	return _maxUndoRegion.voxels() >= volume->region().voxels();
+#else
+	return true;
+#endif
 }
 
 } // namespace memento
