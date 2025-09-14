@@ -2,13 +2,16 @@
  * @file
  */
 
+#include "scenegraph/SceneGraph.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
+#include "math/OBB.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "palette/tests/TestHelper.h"
 #include "math/tests/TestMathHelper.h"
+#include "voxel/tests/VoxelPrinter.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -270,6 +273,53 @@ TEST_F(SceneGraphTest, testMerge) {
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()));
 }
 
+TEST_F(SceneGraphTest, testSceneOBB) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(2, 3));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.localTranslate(-v.region().calcCenterf());
+		node.setPivot(glm::vec3(0.0f));
+		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
+		sceneGraph.updateTransforms();
+	}
+	const math::OBBF &obb = sceneGraph.sceneOBB(sceneGraph.node(1), 0);
+	const glm::vec3 &center = obb.origin();
+	EXPECT_FLOAT_EQ(0.0f, center.x);
+	EXPECT_FLOAT_EQ(0.0f, center.y);
+	EXPECT_FLOAT_EQ(0.0f, center.z);
+
+	const glm::vec3 &extents = obb.extents();
+	EXPECT_FLOAT_EQ(1.0f, extents.x);
+	EXPECT_FLOAT_EQ(1.0f, extents.y);
+	EXPECT_FLOAT_EQ(1.0f, extents.z);
+}
+
+TEST_F(SceneGraphTest, testSceneOBBScale) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(2, 3));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.localTranslate(glm::vec3(-3.0f));
+		node.transform(0).setLocalScale({2.0f, 2.0f, 2.0f});
+		node.setPivot(glm::vec3(0.0f));
+		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
+		sceneGraph.updateTransforms();
+	}
+	const math::OBBF &obb = sceneGraph.sceneOBB(sceneGraph.node(1), 0);
+	const glm::vec3 &center = obb.origin();
+	EXPECT_FLOAT_EQ(0.0f, center.x);
+	EXPECT_FLOAT_EQ(0.0f, center.y);
+	EXPECT_FLOAT_EQ(0.0f, center.z);
+
+	const glm::vec3 &extents = obb.extents();
+	EXPECT_FLOAT_EQ(2.0f, extents.x);
+	EXPECT_FLOAT_EQ(2.0f, extents.y);
+	EXPECT_FLOAT_EQ(2.0f, extents.z);
+}
+
 TEST_F(SceneGraphTest, testNodeSceneRegion_1) {
 	SceneGraph sceneGraph;
 	voxel::RawVolume v(voxel::Region(-3, 3));
@@ -352,10 +402,13 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 
 TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 	SceneGraph sceneGraph;
+	const int expectedWidthNode1 = 11;
+	const int expectedWidthNode2 = 5;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node1");
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 10));
+		EXPECT_EQ(expectedWidthNode1, v->region().getWidthInVoxels());
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setVolume(v, true);
@@ -363,24 +416,37 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		transform.setWorldTranslation(glm::vec3(-10));
 		node.setTransform(0, transform);
 		node.setPivot(glm::vec3(1.0f) / glm::vec3(v->region().getDimensionsInVoxels()));
-		sceneGraph.emplace(core::move(node));
+		EXPECT_EQ(1, sceneGraph.emplace(core::move(node)));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node2");
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
+		EXPECT_EQ(expectedWidthNode2, v->region().getWidthInVoxels());
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v, true);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(10));
 		node.setTransform(0, transform);
 		node.setPivot(glm::vec3(0.0f));
-		sceneGraph.emplace(core::move(node));
+		EXPECT_EQ(2, sceneGraph.emplace(core::move(node)));
 	}
 	sceneGraph.updateTransforms();
+
+	const voxel::Region &node1Region = sceneGraph.sceneRegion(sceneGraph.node(1));
+	// without pivot it would be (-10, 0)
+	EXPECT_EQ(voxel::Region(-11, -1), node1Region);
+
+	const voxel::Region &node2Region = sceneGraph.sceneRegion(sceneGraph.node(2));
+	EXPECT_EQ(voxel::Region(11, 15), node2Region);
+
+	voxel::Region completeRegion = node1Region;
+	completeRegion.accumulate(node2Region);
+
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(completeRegion, v->region());
 	EXPECT_EQ(27, v->region().getWidthInVoxels());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-10, -10, -10).getMaterial()));
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(12, 12, 12).getMaterial()));
