@@ -32,6 +32,18 @@ bool Shadow::init(const ShadowParameters& parameters) {
 		return false;
 	}
 	_parameters = parameters;
+
+	// Optimize parameters for voxel environments
+	if (_parameters.constantBias <= 0.0f) {
+		_parameters.constantBias = 0.002f; // Base constant bias optimized for voxels
+	}
+	if (_parameters.slopeBias <= 0.0f) {
+		_parameters.slopeBias = 1.5f; // Slope bias adjusted for voxel hard edges
+	}
+	if (_parameters.biasClamp <= 0.0f) {
+		_parameters.biasClamp = 0.01f; // Prevent excessive bias causing Peter Panning
+	}
+
 	const glm::vec3 sunPos(25.0f, 100.0f, 25.0f);
 	setPosition(sunPos, glm::vec3(0.0f), glm::up());
 
@@ -155,20 +167,35 @@ bool Shadow::bind(video::TextureUnit unit) {
 void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	video_trace_scoped(ShadowRender);
 	const bool oldBlend = video::disable(video::State::Blend);
-	// put shadow acne into the dark
+
+	// Enable polygon offset (depth bias) for shadow map rendering
+	const bool oldPolygonOffsetFill = video::enable(video::State::PolygonOffsetFill);
+
+	// Front face culling helps reduce self-shadowing
 	video::enable(video::State::CullFace);
 	video::cullFace(video::Face::Front);
 	video::colorMask(false, false, false, false);
+
 	_depthBuffer.bind(false);
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
+		// Apply dynamic polygon offset based on cascade level
+		glm::vec3 biasParams = getBiasParameters(i);
+		video::polygonOffset(glm::vec2(biasParams.y, biasParams.x)); // slope, units
+
 		_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, clearDepthBuffer);
 		if (!renderCallback(i, _cascades[i])) {
 			break;
 		}
 	}
 	_depthBuffer.unbind();
+
+	// Restore state
 	video::colorMask(true, true, true, true);
 	video::cullFace(video::Face::Back);
+
+	if (!oldPolygonOffsetFill) {
+		video::disable(video::State::PolygonOffsetFill);
+	}
 	if (oldBlend) {
 		video::enable(video::State::Blend);
 	}
@@ -192,6 +219,17 @@ glm::vec3 Shadow::sunPosition() const {
 	const glm::mat3 rotMat(_lightView);
 	const glm::vec3 d(_lightView[3]);
 	return -d * rotMat;
+}
+
+glm::vec3 Shadow::getBiasParameters(int cascade) const {
+	// Return bias parameters for GPU use
+	// x: constant bias, y: slope bias, z: max bias clamp
+	float cascadeScale = 1.0f + cascade * 0.5f;
+	return glm::vec3(
+		_parameters.constantBias * cascadeScale,
+		_parameters.slopeBias,
+		_parameters.biasClamp
+	);
 }
 
 }

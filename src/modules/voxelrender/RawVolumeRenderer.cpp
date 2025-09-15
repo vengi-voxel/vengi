@@ -230,6 +230,15 @@ bool RawVolumeRenderer::init(bool normals) {
 
 	voxelrender::ShadowParameters shadowParams;
 	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
+
+	// Optimize shadow parameters for voxel environments
+	shadowParams.constantBias = 0.001f;     // Base constant bias for voxels
+	shadowParams.slopeBias = 2.0f;          // Higher slope bias for voxel hard edges
+	shadowParams.biasClamp = 0.008f;        // Prevent Peter Panning
+	shadowParams.voxelEdgeBias = 0.0008f;   // Additional bias for voxel self-shadowing
+	shadowParams.normalOffsetScale = 0.6f;  // Reduced normal offset to maintain contact shadows
+	shadowParams.adaptiveBias = true;       // Enable adaptive bias for better quality
+
 	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to initialize the shadow object");
 		return false;
