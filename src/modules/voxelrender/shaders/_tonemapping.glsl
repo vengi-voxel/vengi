@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// All values used to derive this implementation are sourced from Troy’s initial AgX implementation/OCIO config file available here:
+// All values used to derive this implementation are sourced from Troy's initial AgX implementation/OCIO config file available here:
 //   https://github.com/sobotka/AgX
 
 // https://iolite-engine.com/blog_posts/minimal_agx_implementation
