@@ -37,6 +37,13 @@ SOFTWARE.
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
 #include <stdint.h>
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
+#if !defined(_M_X64) && !defined(__x86_64__)
+#error "Only x86_64 is supported"
+#endif
 
 namespace voxel {
 
