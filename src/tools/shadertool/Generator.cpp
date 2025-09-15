@@ -37,12 +37,10 @@ static const char *convertToTexUnit(int unit) {
  * @sa https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2026?view=vs-2019
  */
 static core::String maxStringLength(const core::String& input) {
-#ifdef _MSC_VER
 	if (input.size() > 16380) {
 		Log::debug("Need to split the shader source string");
 		return "R\"(" + core::string::replaceAll(input, "\n", "\n)\"\nR\"(") + ")\"";
 	}
-#endif
 	return "R\"(" + input + ")\"";
 }
 
