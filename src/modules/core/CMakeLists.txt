@@ -145,6 +145,7 @@ set(TEST_SRCS
 	tests/OptionalTest.cpp
 	tests/PathTest.cpp
 	tests/PoolAllocatorTest.cpp
+	tests/ProcessTest.cpp
 	tests/QueueTest.cpp
 	tests/RingBufferTest.cpp
 	tests/SharedPtrTest.cpp
@@ -160,7 +161,7 @@ set(TEST_SRCS
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
-gtest_suite_deps(tests-${LIB} ${LIB})
+gtest_suite_deps(tests-${LIB} ${LIB} io)
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS

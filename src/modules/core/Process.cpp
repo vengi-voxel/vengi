@@ -73,9 +73,9 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 
 	const pid_t childPid = ::fork();
 	if (childPid < 0) {
-		sigprocmask(SIG_SETMASK, &origMask, NULL);
-		sigaction(SIGINT, &saOrigInt, NULL);
-		sigaction(SIGQUIT, &saOrigQuit, NULL);
+		sigprocmask(SIG_SETMASK, &origMask, nullptr);
+		sigaction(SIGINT, &saOrigInt, nullptr);
+		sigaction(SIGQUIT, &saOrigQuit, nullptr);
 		Log::error("fork failed: %s", strerror(errno));
 		return -1;
 	}
@@ -97,11 +97,11 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 		sigemptyset(&saDefault.sa_mask);
 
 		if (saOrigInt.sa_handler != SIG_IGN)
-			sigaction(SIGINT, &saDefault, NULL);
+			sigaction(SIGINT, &saDefault, nullptr);
 		if (saOrigQuit.sa_handler != SIG_IGN)
-			sigaction(SIGQUIT, &saDefault, NULL);
+			sigaction(SIGQUIT, &saDefault, nullptr);
 
-		sigprocmask(SIG_SETMASK, &origMask, NULL);
+		sigprocmask(SIG_SETMASK, &origMask, nullptr);
 
 		// the child process isn't reading anything, so close
 		// stdin and the read end of the pipes
@@ -173,39 +173,84 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 		return -1;
 	}
 
-	sigprocmask(SIG_SETMASK, &origMask, NULL);
-	sigaction(SIGINT, &saOrigInt, NULL);
-	sigaction(SIGQUIT, &saOrigQuit, NULL);
+	sigprocmask(SIG_SETMASK, &origMask, nullptr);
+	sigaction(SIGINT, &saOrigInt, nullptr);
+	sigaction(SIGQUIT, &saOrigQuit, nullptr);
 
 	// success
 	return 0;
 #elif defined(_WIN32) || defined(__CYGWIN__)
-	core::String cmd = command;
-	if (!arguments.empty()) {
-		cmd.append(" ");
-	}
+	// Helper to quote arguments for Windows command line
+	auto quoteArg = [](const core::String &arg) -> core::String {
+		if (arg.find_first_of(" \t\"") == core::String::npos)
+			return arg;
+		core::String quoted = "\"";
+		for (size_t i = 0; i < arg.size(); ++i) {
+			if (arg[i] == '"')
+				quoted += "\\\"";
+			else
+				quoted += arg[i];
+		}
+		quoted += '"';
+		return quoted;
+	};
+
+	core::String cmd = quoteArg(command);
 	for (const core::String &argument : arguments) {
-		cmd.append(argument);
 		cmd.append(" ");
+		cmd.append(quoteArg(argument));
 	}
 
-	STARTUPINFO startupInfo{};
 	SECURITY_ATTRIBUTES secattr{};
-	PROCESS_INFORMATION processInfo{};
-
-	startupInfo.cb = sizeof(startupInfo);
-	startupInfo.hStdInput = ::GetStdHandle(STD_INPUT_HANDLE);
-	startupInfo.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
-	startupInfo.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
-	startupInfo.dwFlags |= STARTF_USESTDHANDLES;
-
 	secattr.nLength = sizeof(secattr);
 	secattr.bInheritHandle = TRUE;
-	secattr.lpSecurityDescriptor = NULL;
+	secattr.lpSecurityDescriptor = nullptr;
+
+	HANDLE hReadOut = nullptr, hWriteOut = nullptr;
+	HANDLE hReadErr = nullptr, hWriteErr = nullptr;
+	STARTUPINFOA startupInfo{};
+	PROCESS_INFORMATION processInfo{};
+	startupInfo.cb = sizeof(startupInfo);
+
+	if (stream != nullptr) {
+		// Create pipes for stdout and stderr
+		if (!CreatePipe(&hReadOut, &hWriteOut, &secattr, 0)) {
+			Log::error("Failed to create stdout pipe");
+			return -1;
+		}
+		if (!CreatePipe(&hReadErr, &hWriteErr, &secattr, 0)) {
+			Log::error("Failed to create stderr pipe");
+			CloseHandle(hReadOut);
+			CloseHandle(hWriteOut);
+			return -1;
+		}
+		// Ensure the read handles are not inherited
+		SetHandleInformation(hReadOut, HANDLE_FLAG_INHERIT, 0);
+		SetHandleInformation(hReadErr, HANDLE_FLAG_INHERIT, 0);
+		startupInfo.hStdOutput = hWriteOut;
+		startupInfo.hStdError = hWriteErr;
+		startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+		startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+	} else {
+		startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+		startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+		startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+		startupInfo.dwFlags |= STARTF_USESTDHANDLES;
+	}
+
+	// Use workingDirectory if provided
+	LPCSTR workDir = nullptr;
+	if (workingDirectory != nullptr && *workingDirectory) {
+		workDir = workingDirectory;
+	}
 
 	char *commandPtr = SDL_strdup(cmd.c_str());
-	if (!CreateProcess(nullptr, (LPSTR)commandPtr, &secattr, &secattr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr,
-					   &startupInfo, &processInfo)) {
+	BOOL ok = CreateProcessA(nullptr, commandPtr, nullptr, nullptr,
+							 TRUE, // inherit handles
+							 CREATE_NO_WINDOW, nullptr, workDir, &startupInfo, &processInfo);
+	SDL_free(commandPtr);
+
+	if (!ok) {
 		DWORD errnum = ::GetLastError();
 		LPTSTR errmsg = nullptr;
 		::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -216,23 +261,53 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 			Log::error("%d - %s", (int)errnum, errmsg);
 			::LocalFree(errmsg);
 		}
-		SDL_free(commandPtr);
+		if (hReadOut)
+			CloseHandle(hReadOut);
+		if (hWriteOut)
+			CloseHandle(hWriteOut);
+		if (hReadErr)
+			CloseHandle(hReadErr);
+		if (hWriteErr)
+			CloseHandle(hWriteErr);
 		return -1;
 	}
-	SDL_free(commandPtr);
+	// Close write ends in parent
+	if (stream != nullptr) {
+		CloseHandle(hWriteOut);
+		CloseHandle(hWriteErr);
+	}
 
 	WaitForSingleObject(processInfo.hProcess, INFINITE);
 
-	// Process finished
-	DWORD exitCode;
+	DWORD exitCode = 0;
 	if (GetExitCodeProcess(processInfo.hProcess, &exitCode)) {
 		Log::debug("Child process exited with code %d", (int)exitCode);
+	}
+
+	// Read output if requested
+	if (stream != nullptr) {
+		char buffer[1024];
+		DWORD bytesRead = 0;
+		// stdout
+		for (;;) {
+			if (!ReadFile(hReadOut, buffer, sizeof(buffer), &bytesRead, nullptr) || bytesRead == 0)
+				break;
+			stream->write(buffer, (int)bytesRead);
+		}
+		// stderr
+		for (;;) {
+			if (!ReadFile(hReadErr, buffer, sizeof(buffer), &bytesRead, nullptr) || bytesRead == 0)
+				break;
+			stream->write(buffer, (int)bytesRead);
+		}
+		CloseHandle(hReadOut);
+		CloseHandle(hReadErr);
 	}
 
 	CloseHandle(processInfo.hProcess);
 	CloseHandle(processInfo.hThread);
 
-	return (int)exitCode == 0;
+	return exitCode == 0 ? 0 : -1;
 #else
 	Log::error("Process::exec is not implemented for this platform");
 	return 1;

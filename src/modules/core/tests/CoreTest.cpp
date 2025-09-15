@@ -4,10 +4,6 @@
 
 #include <gtest/gtest.h>
 #include "core/FourCC.h"
-#include <glm/fwd.hpp>
-#include <glm/vec4.hpp>
-#include <list>
-#include <vector>
 
 namespace core {
 
