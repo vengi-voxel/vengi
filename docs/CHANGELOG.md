@@ -29,6 +29,9 @@ VoxEdit:
    - Allow to follow an animated camera to fly through a scene
    - Fixed `resetcamera` when transforms are applied in edit mode
    - Shared voxel editing with client/server collaboration mode
+   - Enable undo/redo for big volumes
+   - Refactored scene rendering settings dialog
+   - Improved shadow rendering
 
 VoxConvert:
 
