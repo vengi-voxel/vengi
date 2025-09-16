@@ -38,7 +38,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	ImGui::SameLine();
 
 	if (_animationPlaying->boolVal()) {
-		if (ImGui::Button(ICON_LC_CIRCLE_STOP)) {
+		if (ImGui::Button(ICON_LC_PAUSE)) {
 			_animationPlaying->setVal(false);
 		}
 	} else {
