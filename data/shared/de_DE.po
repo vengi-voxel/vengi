@@ -406,7 +406,7 @@ msgid "Copy to clipboard"
 msgstr "In die Zwischenablage kopieren"
 
 msgid "Debug"
-msgstr "Debuggen"
+msgstr "Debug"
 
 msgid "Enable debug logging for the console"
 msgstr "Debug-Protokollierung für die Konsole aktivieren"
