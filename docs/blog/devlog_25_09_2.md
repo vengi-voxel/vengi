@@ -1,6 +1,6 @@
 # Multiuser mode
 
-I've started to implement a client/server mode for `vengi-voxedit` so people can collaborate while working on scenes. This feature was requested by a Ace of Spades community member. Initial state transfer might take some time - but after that the traffic is must lower.
+I've started to implement a client/server mode for `vengi-voxedit` so people can collaborate while working on scenes. This feature was requested by a Ace of Spades community member. Initial state transfer might take some time - but after that the traffic is much lower.
 
 ![image voxedit client panel](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-client_2025-09-11.png)
 ![image voxedit server panel](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-server_2025-09-11.png)
