@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
+#include "gtest/gtest.h"
 
 namespace voxelutil {
 
@@ -78,7 +79,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsEmptyVolume) {
 	CountingRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Completed, result) << "Should complete without hitting anything in an empty volume";
+	EXPECT_TRUE(result.isCompleted()) << "Should complete without hitting anything in an empty volume";
 	EXPECT_GT(functor.visitedVoxels, 0) << "Should visit at least some voxels";
 	EXPECT_LT(functor.visitedVoxels, 50) << "Should not visit excessive voxels";
 }
@@ -92,7 +93,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsHitSolidVoxel) {
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_GT(functor.visitedVoxels, 0) << "Should visit at least some voxels";
@@ -107,7 +108,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsSameStartEnd) {
 	CountingRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Completed, result) << "Should complete without hitting anything since start == end";
+	EXPECT_TRUE(result.isCompleted()) << "Should complete without hitting anything since start == end";
 	EXPECT_EQ(1, functor.visitedVoxels) << "Should visit exactly one voxel when start == end";
 }
 
@@ -122,7 +123,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsAxisAligned) {
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (4, 4, 4)";
+		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (4, 4, 4)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (4, 4, 4)";
 		EXPECT_EQ(glm::ivec3(3, 4, 4), functor.hitPosition) << "Should hit the solid voxel at (4, 4, 4)";
 	}
@@ -135,7 +136,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsAxisAligned) {
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (5, 6, 6)";
+		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	}
@@ -148,7 +149,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsAxisAligned) {
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (7, 3, 5)";
+		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (7, 3, 5)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (7, 3, 5)";
 		EXPECT_EQ(glm::ivec3(7, 3, 5), functor.hitPosition) << "Should hit the solid voxel at (7, 3, 5)";
 	}
@@ -163,7 +164,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsNegativeDirection) {
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 }
@@ -177,8 +178,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsDiagonalRay) {
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Interupted, result)
-		<< "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
 	EXPECT_EQ(glm::ivec3(4, 4, 4), functor.hitPosition)
 		<< "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
@@ -193,7 +193,7 @@ TEST_F(RaycastTest, testRaycastWithDirectionBasicFunctionality) {
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithDirection(&volume, start, direction, functor);
 
-	EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 }
@@ -208,7 +208,7 @@ TEST_F(RaycastTest, testRaycastWithDirectionShortRay) {
 	CountingRaycastFunctor functor;
 	RaycastResult result = raycastWithDirection(&volume, start, direction, functor);
 
-	EXPECT_EQ(RaycastResults::Completed, result) << "Should complete without hitting anything since ray is too short";
+	EXPECT_TRUE(result.isCompleted()) << "Should complete without hitting anything since ray is too short";
 	EXPECT_GT(functor.visitedVoxels, 0) << "Should visit at least some voxels";
 	EXPECT_LE(functor.visitedVoxels, 5) << "Should visit at most a few voxels";
 }
@@ -223,7 +223,7 @@ TEST_F(RaycastTest, testRaycastWithDirectionNormalizedDirection) {
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithDirection(&volume, start, direction, functor);
 
-	EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel immediately";
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel immediately";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel immediately";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(1, functor.visitedVoxels) << "Normalized direction should only visit one voxel";
@@ -238,7 +238,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsVolumeSpecializedFunction) {
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpointsVolume(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (4, 4, 4)";
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (4, 4, 4)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (4, 4, 4)";
 	EXPECT_EQ(glm::ivec3(3, 4, 4), functor.hitPosition) << "Should hit the solid voxel at (4, 4, 4)";
 }
@@ -256,7 +256,7 @@ TEST_F(RaycastTest, testRaycastConsistencyEndpointsVsDirection) {
 	SimpleRaycastFunctor functor2;
 	RaycastResult result2 = raycastWithDirection(&volume, start, direction, functor2);
 
-	EXPECT_EQ(result1, result2) << "Raycast results should be the same for both methods";
+	EXPECT_EQ(result1.type, result2.type) << "Raycast results should be the same for both methods";
 	EXPECT_EQ(functor1.hitSolid, functor2.hitSolid) << "Hit status should be the same for both methods";
 	EXPECT_EQ(functor1.hitPosition, functor2.hitPosition) << "Hit position should be the same for both methods";
 	EXPECT_EQ(functor1.visitedVoxels, functor2.visitedVoxels)
@@ -274,7 +274,7 @@ TEST_F(RaycastTest, testRaycastEdgeCases) {
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (5, 6, 6)";
+		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	}
@@ -287,7 +287,7 @@ TEST_F(RaycastTest, testRaycastEdgeCases) {
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_EQ(RaycastResults::Interupted, result) << "Should hit the solid voxel at (5, 6, 6)";
+		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	}
@@ -303,7 +303,7 @@ TEST_F(RaycastTest, testRaycastVoxelTraversal) {
 	CountingRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Completed, result) << "Should complete without hitting anything in an empty volume";
+	EXPECT_TRUE(result.isCompleted()) << "Should complete without hitting anything in an empty volume";
 	EXPECT_GT(functor.visitedVoxels, 0) << "Should visit at least some voxels";
 
 	// Check that visited positions are reasonable
@@ -324,8 +324,23 @@ TEST_F(RaycastTest, testRaycastOutOfBounds) {
 	CountingRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_EQ(RaycastResults::Completed, result) << "Should complete without hitting anything since volume is empty";
+	EXPECT_TRUE(result.isCompleted()) << "Should complete without hitting anything since volume is empty";
 	EXPECT_GT(functor.visitedVoxels, 0) << "Should visit at least some voxels";
+}
+
+TEST_F(RaycastTest, testRaycastLengthToSolidVoxelFace) {
+	voxel::RawVolume volume = createTestVolume({0, 10});
+
+	const glm::vec3 start(4, 6, 6);
+	const glm::vec3 end(8, 6, 6);
+
+	SimpleRaycastFunctor functor;
+	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
+
+	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_FLOAT_EQ(result.length, 0.5f) << "RaycastResult.length should be the distance to the voxel face";
 }
 
 } // namespace voxelutil

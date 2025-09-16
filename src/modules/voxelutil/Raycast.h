@@ -11,19 +11,35 @@
 #include <glm/common.hpp>
 
 namespace voxelutil {
-namespace RaycastResults {
-
 /**
  * The results of a raycast
  */
-enum RaycastResult {
-	Completed, ///< If the ray passed through the volume without being interrupted
-	Interupted ///< If the ray was interrupted while traveling
+struct RaycastResult {
+	float length = 0.0f; ///< The length the ray traveled before being interrupted or completing
+	enum Type {
+		Completed, ///< If the ray passed through the volume without being interrupted
+		Interupted ///< If the ray was interrupted while traveling
+	} type = Completed;
+
+	bool isCompleted() const {
+		return type == Completed;
+	}
+	bool isInterupted() const {
+		return type == Interupted;
+	}
+	static RaycastResult completed(float length) {
+		RaycastResult r;
+		r.type = Completed;
+		r.length = length;
+		return r;
+	}
+	static RaycastResult interrupted(float length) {
+		RaycastResult r;
+		r.type = Interupted;
+		r.length = length;
+		return r;
+	}
 };
-
-}
-
-typedef RaycastResults::RaycastResult RaycastResult;
 
 /// OUT OF DATE SINCE UNCLASSING
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,8 +108,8 @@ typedef RaycastResults::RaycastResult RaycastResult;
  *
  * The ray will move from @a v3dStart to @a v3dEnd, calling @a callback for each
  * voxel it passes through until @a callback returns @a false. In this case it
- * returns a RaycastResults::Interrupted. If it passes from start to end
- * without @a callback returning @a false, it returns RaycastResults::Completed.
+ * returns a RaycastResults::Type::Interrupted. If it passes from start to end
+ * without @a callback returning @a false, it returns RaycastResults::Type::Completed.
  *
  * @param volData The volume to pass the ray though
  * @param v3dStart The start position in the volume
@@ -148,8 +164,21 @@ RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& start, cons
 
 	for (;;) {
 		if (!callback(sampler)) {
-			// TODO: calculate the face that was hit
-			return RaycastResults::Interupted;
+			// Find which axis was crossed last (minimum t)
+			// The t values (tx, ty, tz) are the normalized distances along the ray direction
+			// to the next voxel boundary, but they are incremented after the crossing.
+			// We need to subtract the last increment to get the correct intersection.
+			float t = 0.0f;
+			if (tx <= ty && tx <= tz) {
+				t = tx - deltatx;
+			} else if (ty <= tz) {
+				t = ty - deltaty;
+			} else {
+				t = tz - deltatz;
+			}
+			float rayLength = glm::length(v3dEnd - v3dStart);
+			float length = t * rayLength;
+			return RaycastResult::interrupted(length);
 		}
 
 		if (tx <= ty && tx <= tz) {
@@ -191,7 +220,8 @@ RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& start, cons
 		}
 	}
 
-	return RaycastResults::Completed;
+	float length = glm::distance(v3dStart, glm::vec3(i + offset, j + offset, k + offset));
+	return RaycastResult::completed(length);
 }
 
 template<typename Callback>
