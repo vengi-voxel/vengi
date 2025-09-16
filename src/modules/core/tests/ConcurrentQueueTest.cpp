@@ -69,8 +69,6 @@ TEST_F(ConcurrentQueueTest, testPushThread) {
 }
 
 TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
-#ifndef _MSC_VER
-	// TODO: find a fix for windows
 	const uint32_t n = 1000u;
 	core::ConcurrentQueue<uint32_t> queue(n);
 	std::thread threadPush([&] () {
@@ -78,7 +76,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 			queue.push(i);
 		}
 	});
-	std::future<bool> future = std::async(std::launch::async, [&queue] () {
+	std::future<bool> future = std::async(std::launch::async, [&queue, n] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			uint32_t v;
 			if (!queue.waitAndPop(v)) {
@@ -92,7 +90,6 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 	});
 	threadPush.join();
 	EXPECT_TRUE(future.get());
-#endif
 }
 
 TEST_F(ConcurrentQueueTest, testAbortWait) {
