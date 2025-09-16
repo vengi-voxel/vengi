@@ -130,29 +130,35 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 	// end of the pipes
 	close(stdoutfd[STDOUT_FILENO]);
 	close(stderrfd[STDOUT_FILENO]);
-	if (stream != nullptr) {
-		char output[1024];
-		for (;;) {
-			const int n = (int)::read(stdoutfd[STDIN_FILENO], output, sizeof(output));
-			if (n <= 0) {
-				break;
-			}
+	// Always read the output, even if we don't want to keep it
+	// This prevents the child process from getting SIGPIPE when writing to stdout/stderr
+	char output[1024];
+
+	// Read stdout
+	for (;;) {
+		const int n = (int)::read(stdoutfd[STDIN_FILENO], output, sizeof(output));
+		if (n <= 0) {
+			break;
+		}
+		if (stream != nullptr) {
 			stream->write(output, n);
 		}
-		close(stdoutfd[STDIN_FILENO]);
-		for (;;) {
-			const int n = (int)::read(stderrfd[STDIN_FILENO], output, sizeof(output));
-			if (n <= 0) {
-				break;
-			}
-			stream->write(output, n);
-		}
-		close(stderrfd[STDIN_FILENO]);
-	} else {
-		// we are not interested in the output, so close the read end of the pipes
-		close(stdoutfd[STDIN_FILENO]);
-		close(stderrfd[STDIN_FILENO]);
+		// If stream is null, we just discard the output
 	}
+	close(stdoutfd[STDIN_FILENO]);
+
+	// Read stderr
+	for (;;) {
+		const int n = (int)::read(stderrfd[STDIN_FILENO], output, sizeof(output));
+		if (n <= 0) {
+			break;
+		}
+		if (stream != nullptr) {
+			stream->write(output, n);
+		}
+		// If stream is null, we just discard the output
+	}
+	close(stderrfd[STDIN_FILENO]);
 	// we are the parent and are blocking until the child stopped
 	int status;
 	const pid_t pid = ::wait(&status);
