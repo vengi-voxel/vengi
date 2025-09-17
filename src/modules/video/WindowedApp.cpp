@@ -91,7 +91,7 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 			const int w = event.window.data1;
 			const int h = event.window.data2;
 			int frameBufferWidth, frameBufferHeight;
-			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+			SDL_GetWindowSizeInPixels(_window, &frameBufferWidth, &frameBufferHeight);
 			_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
 			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 			_windowDimension = glm::ivec2(w, h);
@@ -114,7 +114,11 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 			const int w = event.window.data1;
 			const int h = event.window.data2;
 			int frameBufferWidth, frameBufferHeight;
+#ifdef USE_GL_RENDERER
 			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+#else
+#error "renderer not supported"
+#endif
 			_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
 			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
 			_windowDimension = glm::ivec2(w, h);
@@ -412,7 +416,15 @@ app::AppState WindowedApp::onInit() {
 	// 	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
 	// #endif
 
-	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+	int flags = SDL_WINDOW_RESIZABLE;
+#ifdef USE_GL_RENDERER
+	flags |= SDL_WINDOW_OPENGL;
+#elif USE_VK_RENDERER
+	flags |= SDL_WINDOW_VULKAN;
+#else
+#error "renderer not supported"
+#endif
 	if (!_showWindow) {
 		flags |= SDL_WINDOW_HIDDEN;
 	}
@@ -450,8 +462,14 @@ app::AppState WindowedApp::onInit() {
 	_window = createWindow(width, height, displayIndex, flags);
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - retrying without multisampling");
+#ifdef USE_GL_RENDERER
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+#elif USE_VK_RENDERER
+		// TODO: VULKAN
+#else
+#error "renderer not supported"
+#endif
 		_window = createWindow(width, height, displayIndex, flags);
 		if (!_window) {
 			sdlCheckError();

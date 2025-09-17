@@ -5,8 +5,15 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "engine-config.h"
 #include <stdint.h>
+#if USE_GL_RENDERER
 #include "gl/GLTypes.h"
+#elif USE_VK_RENDERER
+#include "vk/VKTypes.h"
+#else
+#error "renderer not supported"
+#endif
 
 /**
  * Rendering
@@ -90,7 +97,8 @@ enum class StencilOp {
 };
 
 /**
- * @brief Specifies the texture comparison mode for currently bound depth textures. That is, a texture whose internal format is a depth TextureFormat)
+ * @brief Specifies the texture comparison mode for currently bound depth textures. That is, a texture whose internal
+ * format is a depth TextureFormat)
  */
 enum class TextureCompareMode {
 	/**
@@ -98,8 +106,10 @@ enum class TextureCompareMode {
 	 */
 	None,
 	/**
-	 * Specifies that the interpolated and clamped texture coordinate should be compared to the value in the currently bound depth texture.
-	 * @sa CompareFunc for details of how the comparison is evaluated. The result of the comparison is assigned to the red channel.
+	 * Specifies that the interpolated and clamped texture coordinate should be compared to the value in the currently
+	 * bound depth texture.
+	 * @sa CompareFunc for details of how the comparison is evaluated. The result of the comparison is assigned to the
+	 * red channel.
 	 */
 	RefToTexture,
 
@@ -517,8 +527,8 @@ struct Attribute {
 	 * The rate by which the attribute advances during instanced rendering. It basically means the number of
 	 * times the entire set of vertices is rendered before the attribute is updated from the buffer. By default,
 	 * the divisor is zero. This causes regular vertex attributes to be updated from vertex to vertex. If the divisor
-	 * is 10 it means that the first 10 instances will use the first piece of data from the buffer, the next 10 instances
-	 * will use the second, etc.
+	 * is 10 it means that the first 10 instances will use the first piece of data from the buffer, the next 10
+	 * instances will use the second, etc.
 	 */
 	uint8_t divisor = 0;
 	bool normalized = false;
@@ -526,4 +536,4 @@ struct Attribute {
 	bool typeIsInt = false;
 };
 
-}
+} // namespace video

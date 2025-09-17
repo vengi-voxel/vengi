@@ -2,6 +2,9 @@ set(VK_SRCS
 	vk/flextVk.c vk/flextVk.h
 	vk/VkRenderer.cpp vk/VkRenderer.h
 	vk/VkShader.cpp
+	vk/VkMapping.h
+	vk/VkState.h
+	vk/VKTypes.h
 )
 set(GL_SRCS
 	gl/flextGL.c gl/flextGL.h
@@ -64,6 +67,13 @@ if (RENDERER STREQUAL "GL")
 	if (APPLE)
 		target_link_libraries(${LIB} PRIVATE "-framework OpenGL -framework CoreFoundation")
 	endif()
+	set(USE_GL_RENDERER 1 CACHE INTERNAL "")
+elseif (RENDERER STREQUAL "VK")
+	find_package(Vulkan REQUIRED)
+	if (APPLE)
+		target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
+	endif()
+	set(USE_VK_RENDERER 1 CACHE INTERNAL "")
 endif()
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 

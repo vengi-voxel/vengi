@@ -12,10 +12,15 @@
 #include "flextVk.h"
 #include "video/Renderer.h"
 #include "video/Types.h"
-#include "core/sdl/SDLSystem.h"
+#include "video/vk/VkState.h"
 #include <SDL_vulkan.h>
 
 namespace video {
+
+static inline _priv::VkState &vkstate() {
+	static _priv::VkState s;
+	return s;
+}
 
 void setup() {
 }
@@ -31,10 +36,13 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	VkInstance instance;
 	{
 		unsigned int count;
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		const char *const *names = SDL_Vulkan_GetInstanceExtensions(&count);
+#else
 		SDL_Vulkan_GetInstanceExtensions(window, &count, nullptr);
 		const char **names = (const char **)core_malloc(sizeof(const char *) * count);
 		SDL_Vulkan_GetInstanceExtensions(window, &count, names);
-
+#endif
 		VkInstanceCreateInfo createInfo;
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pNext = nullptr;
@@ -46,7 +54,10 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		createInfo.ppEnabledExtensionNames = names;
 
 		vkCreateInstance(&createInfo, nullptr, &instance);
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+#else
 		core_free(names);
+#endif
 	}
 
 	uint32_t physicalDeviceCount;
@@ -78,7 +89,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	VkDevice device;
 	vkCreateDevice(physicalDevices[0], &deviceCreateInfo, nullptr, &device);
 
-	core_free(physicalDevices);
+	core_free((void *)physicalDevices);
 
 	VkQueue queue;
 	vkGetDeviceQueue(device, 0, 0, &queue);
@@ -103,7 +114,11 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	vkAllocateCommandBuffers(device, &allocateInfo, &commandBuffer);
 
 	VkSurfaceKHR surface;
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	SDL_Vulkan_CreateSurface(window, instance, nullptr, &surface);
+#else
 	SDL_Vulkan_CreateSurface(window, instance, &surface);
+#endif
 
 	if (useFeature(Feature::DirectStateAccess)) {
 		Log::debug("Use direct state access");
@@ -150,6 +165,8 @@ void endFrame(SDL_Window *window) {
 }
 
 bool checkError(bool triggerAssert) {
+	// Vulkan errors are checked immediately when calling functions
+	// This is mostly for API compatibility with OpenGL
 	return false;
 }
 
@@ -199,7 +216,7 @@ bool enable(State state) {
 }
 
 bool currentState(State state) {
-	return false;
+	return vkstate().states[core::enumVal(state)];
 }
 
 bool disable(State state) {
@@ -218,7 +235,7 @@ bool depthFunc(CompareFunc func) {
 }
 
 CompareFunc getDepthFunc() {
-	return CompareFunc::Max;
+	return vkstate().depthFunc;
 }
 
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
@@ -241,7 +258,7 @@ bool polygonOffset(const glm::vec2 &offset) {
 }
 
 Id currentTexture(TextureUnit unit) {
-	return InvalidId;
+	return vkstate().textureHandle[core::enumVal(unit)];
 }
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
@@ -265,11 +282,11 @@ bool bindVertexArray(Id handle) {
 }
 
 Id boundVertexArray() {
-	return InvalidId;
+	return vkstate().vertexArrayHandle;
 }
 
 Id boundBuffer(BufferType type) {
-	return InvalidId;
+	return vkstate().bufferHandle[core::enumVal(type)];
 }
 
 bool bindBuffer(BufferType type, Id handle) {
@@ -325,7 +342,7 @@ void deleteTextures(uint8_t amount, Id *ids) {
 }
 
 Id currentFramebuffer() {
-	return InvalidId;
+	return vkstate().framebufferHandle;
 }
 
 void genFramebuffers(uint8_t amount, Id *ids) {
@@ -373,14 +390,16 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 	return false;
 }
 
-bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)], const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
+bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
+					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	return false;
 }
 
 void setupTexture(Id texture, const TextureConfig &config) {
 }
 
-void uploadTexture(Id texture, video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t *data, int index, int samples) {
+void uploadTexture(Id texture, video::TextureType type, video::TextureFormat format, int width, int height,
+				   const uint8_t *data, int index, int samples) {
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
@@ -432,12 +451,16 @@ void flush() {
 void finish() {
 }
 
-void traceVideoBegin(const char* name) {
+void traceVideoBegin(const char *name) {
 	core::traceBegin(name);
 }
 
 void traceVideoEnd() {
 	core::traceEnd();
+}
+
+Face currentCullFace() {
+	return vkstate().cullFace;
 }
 
 } // namespace video

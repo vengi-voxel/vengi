@@ -24,3 +24,5 @@
 #cmakedefine USE_CURL 1
 #cmakedefine USE_LIBJPEG 1
 #cmakedefine USE_LIBPNG 1
+#cmakedefine USE_VK_RENDERER 1
+#cmakedefine USE_GL_RENDERER 1
