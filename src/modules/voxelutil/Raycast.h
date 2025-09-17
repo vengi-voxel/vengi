@@ -107,6 +107,11 @@ struct RaycastResult {
 //
 //	This error was reported by Joey Hammer (PixelActive).
 
+// The doRaycast function is assuming that it is iterating over the areas defined between
+// voxels. We actually want to define the areas as being centered on voxels (as this is
+// what the CubicSurfaceExtractor generates). We can add an offset here to adjust for this.
+const float RaycastOffset = 0.0f;
+
 /**
  * Cast a ray through a volume by specifying the start and end positions
  *
@@ -127,12 +132,8 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
-	// The doRaycast function is assuming that it is iterating over the areas defined between
-	// voxels. We actually want to define the areas as being centered on voxels (as this is
-	// what the CubicSurfaceExtractor generates). We add 0.5 here to adjust for this.
-	const float offset = 0.0f;
-	const glm::vec3 v3dStart = start + offset;
-	const glm::vec3 v3dEnd = end + offset;
+	const glm::vec3 v3dStart = start + RaycastOffset;
+	const glm::vec3 v3dEnd = end + RaycastOffset;
 	const float x1 = v3dStart.x;
 	const float y1 = v3dStart.y;
 	const float z1 = v3dStart.z;
@@ -227,7 +228,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 		}
 	}
 
-	float length = glm::distance(v3dStart, glm::vec3(i + offset, j + offset, k + offset));
+	float length = glm::distance(v3dStart, glm::vec3(i + RaycastOffset, j + RaycastOffset, k + RaycastOffset));
 	return RaycastResult::completed(length);
 }
 
