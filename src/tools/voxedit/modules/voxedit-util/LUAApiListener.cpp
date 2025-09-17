@@ -35,7 +35,7 @@ void LUAApiListener::onNodeChangedParent(int nodeId) {
 }
 
 void LUAApiListener::onNodesAligned() {
-	// TODO: MEMENTO: record all nodes
+	// TODO: MEMENTO: record all nodes - transform, pivot and region
 }
 
 } // namespace voxedit
