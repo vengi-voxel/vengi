@@ -10,8 +10,6 @@
 
 namespace voxedit {
 
-class SceneManager; // TODO: get rid of this
-
 enum BrushFlags : uint32_t {
 	BRUSH_MODE_AABB = 0,
 	/**
