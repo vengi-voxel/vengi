@@ -20,7 +20,6 @@ After doing this the shader got bigger and bigger - and .... there is a max stri
 ![image voxedit shadows](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-shadow1_2025-09-15.png)
 ![image voxedit shadows](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-shadow2_2025-09-15.png)
 
-
 # Formats, formats, formats
 
 There were a few memory leaks that are fixed now - and FBX got texture coordinate support on loading and other bug fixes. The vengi internal format got a version bump because I needed the UUIDs of the nodes inside the format (I use the `VengiFormat` to serialize the scene graph state for the network protocol initial message).

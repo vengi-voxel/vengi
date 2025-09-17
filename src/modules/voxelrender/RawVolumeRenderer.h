@@ -44,7 +44,8 @@ enum class RenderMode : uint8_t {
 };
 
 struct RenderContext : public core::NonCopyable {
-	video::FrameBuffer frameBuffer;
+	video::FrameBuffer frameBuffer;        // Main framebuffer (multisampled when MSAA is enabled)
+	video::FrameBuffer resolveFrameBuffer; // Resolve target for multisampled framebuffer
 	render::BloomRenderer bloomRenderer;
 	const scenegraph::SceneGraph *sceneGraph = nullptr;
 	scenegraph::FrameIndex frame = 0;
@@ -55,6 +56,9 @@ struct RenderContext : public core::NonCopyable {
 	bool renderNormals = false;
 	bool applyTransformsInEditMode = true;
 	RenderMode renderMode = RenderMode::Edit;
+	// multisampling configuration
+	bool enableMultisampling = false;
+	int multisampleSamples = 4;
 
 	bool isEditMode() const;
 	bool isSceneMode() const;
@@ -64,6 +68,7 @@ struct RenderContext : public core::NonCopyable {
 	bool init(const glm::ivec2 &size);
 	void shutdown();
 	bool resize(const glm::ivec2 &size);
+	bool updateMultisampling();
 };
 
 /**

@@ -1596,7 +1596,14 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 			_modifierFacade.render(camera, activePalette(), modelMatrix(renderContext));
 		}
 	}
-	// TODO: the multisample frame buffer needs to blit back in the unbind
+
+	// If multisampling is enabled, resolve the multisampled framebuffer before unbinding
+	if (renderContext.enableMultisampling) {
+		const glm::ivec2 fbDim = renderContext.frameBuffer.dimension();
+		video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
+							 video::ClearFlag::Color, fbDim.x, fbDim.y);
+	}
+
 	renderContext.frameBuffer.unbind();
 }
 

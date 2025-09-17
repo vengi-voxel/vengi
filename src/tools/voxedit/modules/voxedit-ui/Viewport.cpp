@@ -195,11 +195,17 @@ void Viewport::dragAndDrop(float headerSize) {
 
 void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 	core_trace_scoped(ViewportImage);
+
+	// Choose the correct framebuffer based on multisampling
+	video::FrameBuffer &displayFrameBuffer = _renderContext.enableMultisampling ?
+											  _renderContext.resolveFrameBuffer :
+											  _renderContext.frameBuffer;
+
 	// use the uv coords here to take a potential fb flip into account
-	const glm::vec4 &uv = _renderContext.frameBuffer.uv();
+	const glm::vec4 &uv = displayFrameBuffer.uv();
 	const glm::vec2 uva(uv.x, uv.y);
 	const glm::vec2 uvc(uv.z, uv.w);
-	const video::TexturePtr &texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	const video::TexturePtr &texture = displayFrameBuffer.texture(video::FrameBufferAttachment::Color0);
 	ImGui::Image(texture->handle(), contentSize, uva, uvc);
 }
 
@@ -589,7 +595,17 @@ void Viewport::shutdown() {
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {
 	_sceneMgr->render(_renderContext, camera(), SceneManager::RenderScene);
-	return _renderContext.frameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
+
+	// If multisampling is enabled, resolve first, then get image from resolve framebuffer
+	if (_renderContext.enableMultisampling) {
+		const glm::ivec2 fbDim = _renderContext.frameBuffer.dimension();
+		// Resolve the multisampled framebuffer to regular textures
+		video::blitFramebuffer(_renderContext.frameBuffer.handle(), _renderContext.resolveFrameBuffer.handle(),
+							 video::ClearFlag::Color, fbDim.x, fbDim.y);
+		return _renderContext.resolveFrameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
+	} else {
+		return _renderContext.frameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
+	}
 }
 
 bool Viewport::saveImage(const char *filename) {
