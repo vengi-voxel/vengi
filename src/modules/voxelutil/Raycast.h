@@ -121,8 +121,8 @@ const float RaycastOffset = 0.0f;
  * without @a callback returning @a false, it returns RaycastResults::Type::Completed.
  *
  * @param volData The volume to pass the ray though
- * @param v3dStart The start position in the volume
- * @param v3dEnd The end position in the volume
+ * @param start The start position in the volume
+ * @param end The end position in the volume
  * @param callback The callback to call for each voxel
  *
  * @return A RaycastResults designating whether the ray hit anything or not
