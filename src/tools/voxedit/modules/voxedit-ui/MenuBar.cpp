@@ -153,9 +153,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::ButtonFullWidth(_("Scene settings"))) {
-				core::Var::getSafe(cfg::VoxEditPopupSceneSettings)->setVal(true);
-			}
 			if (ImGui::ButtonFullWidth(_("Bindings"))) {
 				app->showBindingsDialog();
 			}
