@@ -8,8 +8,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /W4")
 if (USE_SANITIZERS)
 	# /fsanitize=address: enable address sanitizer
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fsanitize=address")
+	# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
+	# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fsanitize=address")
 endif()
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

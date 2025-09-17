@@ -12,9 +12,11 @@ set(SRCS
 	i18n/POParser.cpp i18n/POParser.h
 )
 if (APPLE)
-	list(APPEND SRCS AppDocument.m)
+	list(APPEND SRCS system/AppDocument.m)
 endif()
-
+if (WINDOWS)
+	list(APPEND SRCS system/Windows.cpp system/Windows.h)
+endif()
 set(LIB app)
 
 set(LIBS command metric)

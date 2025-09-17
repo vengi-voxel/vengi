@@ -31,7 +31,7 @@
 #include <cfenv>
 #include <signal.h>
 #ifdef _WIN32
-#include <process.h>
+#include "system/Windows.h"
 #else
 #include <unistd.h>
 #endif
@@ -94,10 +94,12 @@ static void app_threads(int signo) {
 	App::getInstance()->threadsDump();
 }
 
+#ifndef _WIN32
 static void app_timeout_handler(int signo) {
 	Log::error("Application timeout");
 	exit(1);
 }
+#endif
 
 static void app_loop_debug_log(int signo) {
 	const core::VarPtr &log = core::Var::getSafe(cfg::CoreLogLevel);
@@ -187,7 +189,9 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	Log::setLevel(_initialLogLevel);
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
+#ifndef _WIN32
 	signal(SIGALRM, app_timeout_handler);
+#endif
 	signal(SIGINT, app_graceful_shutdown);
 	signal(SIGTERM, app_graceful_shutdown);
 	// send the signal 42 to enable debug logging in a running application
@@ -405,6 +409,8 @@ void App::onFrame() {
 			if (_exitCode == 0) {
 				_exitCode = 1;
 			}
+
+			shutdownTimeout();
 			_nextState = onCleanup();
 			Log::debug("AppState::InitFailure done");
 			break;
@@ -440,6 +446,7 @@ void App::onFrame() {
 		}
 		case AppState::Cleanup: {
 			core_trace_scoped(AppOnCleanup);
+			shutdownTimeout();
 			_nextState = onCleanup();
 			Log::debug("AppState::Cleanup done");
 			break;
@@ -1229,8 +1236,6 @@ AppState App::onCleanup() {
 		addBlocker(AppState::Init);
 		return AppState::Init;
 	}
-
-	shutdownTimeout();
 
 	metric::count("stop");
 
