@@ -35,14 +35,19 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	VkInstance instance;
 	{
-		unsigned int count;
+		unsigned int extensionCount;
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-		const char *const *names = SDL_Vulkan_GetInstanceExtensions(&count);
+		const char *const *extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
 #else
-		SDL_Vulkan_GetInstanceExtensions(window, &count, nullptr);
-		const char **names = (const char **)core_malloc(sizeof(const char *) * count);
-		SDL_Vulkan_GetInstanceExtensions(window, &count, names);
+		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
+		const char **extensions = (const char **)core_malloc(sizeof(const char *) * extensionCount);
+		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensions);
 #endif
+
+		for (unsigned int i = 0; i < extensionCount; ++i) {
+			Log::info("  [%u]: %s", i, extensions[i]);
+		}
+
 		VkInstanceCreateInfo createInfo;
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pNext = nullptr;
@@ -50,8 +55,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		createInfo.pApplicationInfo = nullptr;
 		createInfo.enabledLayerCount = 0;
 		createInfo.ppEnabledLayerNames = nullptr;
-		createInfo.enabledExtensionCount = count;
-		createInfo.ppEnabledExtensionNames = names;
+		createInfo.enabledExtensionCount = extensionCount;
+		createInfo.ppEnabledExtensionNames = extensions;
 
 		vkCreateInstance(&createInfo, nullptr, &instance);
 #if SDL_VERSION_ATLEAST(3, 2, 0)
@@ -185,13 +190,16 @@ float lineWidth(float width) {
 	return 1.0f;
 }
 
+float currentLineWidth() {
+	return vkstate().lineWidth;
+}
+
 bool clearColor(const glm::vec4 &clearColor) {
 	return false;
 }
 
 const glm::vec4 &currentClearColor() {
-	static glm::vec4 todo;
-	return todo;
+	return vkstate().clearColor;
 }
 
 void clear(ClearFlag flag) {
@@ -202,9 +210,17 @@ bool viewport(int x, int y, int w, int h) {
 }
 
 void getScissor(int &x, int &y, int &w, int &h) {
+	x = vkstate().scissorX;
+	y = vkstate().scissorY;
+	w = vkstate().scissorW;
+	h = vkstate().scissorH;
 }
 
 void getViewport(int &x, int &y, int &w, int &h) {
+	x = vkstate().viewportX;
+	y = vkstate().viewportY;
+	w = vkstate().viewportW;
+	h = vkstate().viewportH;
 }
 
 bool scissor(int x, int y, int w, int h) {
@@ -239,6 +255,10 @@ CompareFunc getDepthFunc() {
 }
 
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
+	enabled = vkstate().states[core::enumVal(State::Blend)];
+	src = vkstate().blendSrcRGB;
+	dest = vkstate().blendDestRGB;
+	func = vkstate().blendEquation;
 }
 
 bool blendFunc(BlendMode src, BlendMode dest) {
@@ -294,7 +314,7 @@ bool bindBuffer(BufferType type, Id handle) {
 }
 
 bool unbindBuffer(BufferType type) {
-	return false;
+	return bindBuffer(type, InvalidId);
 }
 
 bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
