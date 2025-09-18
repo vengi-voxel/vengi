@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "image/Image.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
@@ -313,7 +314,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 }
 
 image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH, bool upScale) {
+							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH, bool upScale, float depthFactor) {
 	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
@@ -335,16 +336,45 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 			image->setColor(background, x, y);
 		}
 	}
-	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height] (int x, int y, int z, const voxel::Voxel& voxel) {
-		const core::RGBA rgba = palette.color(voxel.getColor());
-		// TODO: shade the color
+	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height, depthFactor] (int x, int y, int z, const voxel::Voxel& voxel) {
+		core::RGBA rgba = palette.color(voxel.getColor());
+		// TODO: iso rendering
+		int px = 0;
+		int py = 0;
+		float depth = 0.0f;
 		if (voxel::isY(frontFace)) {
-			image->setColor(rgba, x - region.getLowerX(), height - 1 - (z - region.getLowerZ()));
+			px = x - region.getLowerX();
+			py = height - 1 - (z - region.getLowerZ());
+			if (voxel::isPositiveFace(frontFace)) {
+				depth = (float)((region.getUpperY() - y) * depthFactor) / (float)region.getHeightInVoxels();
+			} else {
+				depth = (float)((y - region.getLowerY()) * depthFactor) / (float)region.getHeightInVoxels();
+			}
 		} else if (voxel::isX(frontFace)) {
-			image->setColor(rgba, z - region.getLowerZ(), height - 1 - (y - region.getLowerY()));
+			px = z - region.getLowerZ();
+			py = height - 1 - (y - region.getLowerY());
+			if (voxel::isPositiveFace(frontFace)) {
+				depth = (float)((region.getUpperX() - x) * depthFactor) / (float)region.getWidthInVoxels();
+			} else {
+				depth = (float)((x - region.getLowerX()) * depthFactor) / (float)region.getWidthInVoxels();
+			}
+
 		} else if (voxel::isZ(frontFace)) {
-			image->setColor(rgba, x - region.getLowerX(), height - 1 - (y - region.getLowerY()));
+			px = x - region.getLowerX();
+			py = height - 1 - (y - region.getLowerY());
+			if (voxel::isPositiveFace(frontFace)) {
+				depth = (float)((region.getUpperZ() - z) * depthFactor) / (float)region.getDepthInVoxels();
+			} else {
+				depth = (float)((z - region.getLowerZ()) * depthFactor) / (float)region.getDepthInVoxels();
+			}
+		} else {
+			return;
 		}
+
+		if (depthFactor > 0.0f) {
+			rgba = core::Color::darker(rgba, depth);
+		}
+		image->setColor(rgba, px, py);
 	}, VisitorOrder::Max, true);
 
 	if ((imgW > 0 && imgW != width) || (imgH > 0 && imgH != height)) {

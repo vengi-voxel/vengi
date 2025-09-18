@@ -1033,7 +1033,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	ThumbnailContext thumbnailCtx;
 	thumbnailCtx.outputSize = glm::ivec2(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbnailCtx);
-	if (image) {
+	if (image && image->isLoaded()) {
 		WriteChunkStream ws(priv::CHUNK_ID_PREVIEW, *stream);
 		image->writePNG(ws);
 	}

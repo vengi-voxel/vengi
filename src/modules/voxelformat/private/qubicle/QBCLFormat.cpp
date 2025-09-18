@@ -296,7 +296,7 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
-	if (image) {
+	if (image && image->isLoaded()) {
 		const int size = image->width() * image->height() * image->components();
 		if (size > 0) {
 			wrapSave(stream->writeUInt32(image->width()))

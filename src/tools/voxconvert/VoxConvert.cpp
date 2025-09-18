@@ -108,6 +108,7 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::Var::getSafe(cfg::VoxformatQuads);
 	_withColor = core::Var::getSafe(cfg::VoxformatWithColor);
 	_withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords);
+	core::Var::get(cfg::VoxConvertDepthFactor2D, 0.0f);
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
@@ -437,8 +438,9 @@ app::AppState VoxConvert::onInit() {
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
 		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
+		const float depthFactor2D = core::Var::getSafe(cfg::VoxConvertDepthFactor2D)->floatVal();
 		const image::ImagePtr &image =
-			voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false);
+			voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false, depthFactor2D);
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());
 	}

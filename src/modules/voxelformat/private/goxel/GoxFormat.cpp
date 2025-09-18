@@ -732,7 +732,7 @@ bool GoxFormat::saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::See
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
-	if (!image) {
+	if (!image || !image->isLoaded()) {
 		return true;
 	}
 	const int64_t pos = stream.pos();

@@ -105,7 +105,7 @@ public:
 
 	bool isGrayScale() const;
 
-	void setColor(core::RGBA rgba, int x, int y);
+	bool setColor(core::RGBA rgba, int x, int y);
 
 	const uint8_t *at(int x, int y) const;
 

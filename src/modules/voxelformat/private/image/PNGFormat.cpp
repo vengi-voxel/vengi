@@ -282,7 +282,7 @@ bool PNGFormat::saveThumbnail(const scenegraph::SceneGraph &sceneGraph, const co
 		ctx.outputSize = {-1, -1};
 	}
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
-	if (!image) {
+	if (!image || !image->isLoaded()) {
 		Log::error("Failed to create thumbnail for %s", filename.c_str());
 		return false;
 	}

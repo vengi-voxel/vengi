@@ -85,7 +85,7 @@ image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::Sce
 	const core::RGBA background = core::Color::getRGBA(ctx.clearColor);
 	const int imgW = ctx.outputSize.x;
 	const int imgH = ctx.outputSize.y;
-	return voxelutil::renderToImage(v, merged.palette, frontFace, background, imgW, imgH);
+	return voxelutil::renderToImage(v, merged.palette, frontFace, background, imgW, imgH, true, ctx.depthFactor2D);
 }
 
 image::ImagePtr Format::createThumbnail(const scenegraph::SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator,

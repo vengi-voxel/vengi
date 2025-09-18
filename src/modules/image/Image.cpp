@@ -62,16 +62,16 @@ const uint8_t *Image::at(int x, int y) const {
 	return _colors + offset;
 }
 
-void Image::setColor(core::RGBA rgba, int x, int y) {
+bool Image::setColor(core::RGBA rgba, int x, int y) {
 	if (x < 0 || x >= _width) {
-		return;
+		return false;
 	}
 	if (y < 0 || y >= _height) {
-		return;
+		return false;
 	}
 	if (_colorComponents != 4) {
 		Log::error("Failed to set rgba color for an image with %i components", _colorComponents);
-		return;
+		return false;
 	}
 	const int colSpan = _width * _colorComponents;
 	const intptr_t offset = x * _colorComponents + y * colSpan;
@@ -80,6 +80,7 @@ void Image::setColor(core::RGBA rgba, int x, int y) {
 	pixel[1] = rgba.g;
 	pixel[2] = rgba.b;
 	pixel[3] = rgba.a;
+	return true;
 }
 
 core::RGBA Image::colorAt(int x, int y) const {

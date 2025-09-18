@@ -78,6 +78,7 @@ constexpr const char *NormalPalette = "normalpalette";
 constexpr const char *PalformatRGB6Bit = "palformat_rgb6bit";
 constexpr const char *PalformatMaxSize = "palformat_maxsize";
 constexpr const char *PalformatGimpRGBA = "palformat_gimprgba";
+constexpr const char *VoxConvertDepthFactor2D = "voxconvert_depthfactor2d";
 constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
