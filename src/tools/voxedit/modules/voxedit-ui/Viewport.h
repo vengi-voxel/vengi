@@ -148,12 +148,9 @@ private:
 	void toggleVideoRecording();
 	void menuBarPolygonModeOptions();
 	void menuBarCaptureOptions();
-	void menuBarFreeCameraOptions();
-	void menuBarCameraOptions(command::CommandExecutionListener *listener);
 	void menuBarScreenshotOptions(command::CommandExecutionListener *listener);
 	void menuBarView(command::CommandExecutionListener *listener);
 	void menuBarRenderModeToggle();
-	void menuBarCameraMode();
 	void menuBarMementoOptions(command::CommandExecutionListener *listener);
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void resize(const glm::ivec2 &frameBufferSize);

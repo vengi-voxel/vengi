@@ -9,6 +9,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "video/Camera.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelrender/SceneGraphRenderer.h"
 
@@ -22,6 +23,61 @@ void CameraPanel::addToolbar(command::CommandExecutionListener &listener, video:
 		_sceneMgr->moveNodeToSceneGraph(cameraNode);
 	});
 	toolbar.button(ICON_LC_EYE, "cam_activate", _sceneMgr->activeCameraNode() == nullptr);
+}
+
+void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, video::Camera &camera,
+								voxelrender::SceneCameraMode camMode) {
+	if (camMode != voxelrender::SceneCameraMode::Free) {
+		return;
+	}
+
+	glm::vec3 omega = camera.omega();
+	if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
+		camera.setOmega(omega);
+	}
+
+	const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
+	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+	const int currentCamRotType = (int)camera.rotationType();
+	if (ImGui::BeginCombo(_("Camera movement"), camRotTypes[currentCamRotType])) {
+		for (int n = 0; n < lengthof(camRotTypes); n++) {
+			const bool isSelected = (currentCamRotType == n);
+			if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+				camera.setRotationType((video::CameraRotationType)n);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::BeginDisabled(camera.rotationType() != video::CameraRotationType::Eye);
+	const core::VarPtr &clipping = core::Var::getSafe(cfg::VoxEditClipping);
+	ImGui::CheckboxVar(_("Clipping"), clipping);
+	ImGui::BeginDisabled(!clipping->boolVal());
+	ImGui::CheckboxVar(_("Gravity"), cfg::VoxEditGravity);
+	ImGui::EndDisabled();
+
+	ImGui::EndDisabled();
+}
+
+void CameraPanel::cameraModeCombo(command::CommandExecutionListener *listener, voxelrender::SceneCameraMode &camMode) {
+	const int currentMode = (int)camMode;
+	const float modeMaxWidth = ImGui::CalcComboWidth(_(voxelrender::SceneCameraModeStr[currentMode]));
+	ImGui::SetNextItemWidth(modeMaxWidth);
+	if (ImGui::BeginCombo("###cameramode", _(voxelrender::SceneCameraModeStr[currentMode]))) {
+		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
+			const bool isSelected = (currentMode == n);
+			if (ImGui::Selectable(_(voxelrender::SceneCameraModeStr[n]), isSelected)) {
+				camMode = (voxelrender::SceneCameraMode)n;
+				command::executeCommands("resetcamera", listener);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
 }
 
 void CameraPanel::cameraProjectionCombo(video::Camera &camera) {
@@ -55,21 +111,7 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 			if (ImGui::InputXYZ(_("Position"), pos)) {
 				camera.setWorldPosition(pos);
 			}
-			glm::vec3 target = camera.target();
-			if (ImGui::InputXYZ(_("Target"), target)) {
-				camera.setTarget(target);
-			}
-			if (camera.mode() != video::CameraMode::Orthogonal) {
-				float targetDistance = camera.targetDistance();
-				if (ImGui::InputFloat(_("Target distance"), targetDistance)) {
-					camera.setTargetDistance(targetDistance);
-				}
-				float fov = camera.fieldOfView();
-				if (ImGui::InputFloat(_("FOV"), fov)) {
-					camera.setFieldOfView(fov);
-				}
-				ImGui::TooltipTextUnformatted(_("Field of view in degrees"));
-			}
+
 			float farplane = camera.farPlane();
 			if (ImGui::InputFloat(_("Farplane"), farplane)) {
 				camera.setFarPlane(farplane);
@@ -79,10 +121,33 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 				camera.setNearPlane(nearplane);
 			}
 
-			ImGui::BeginDisabled(true);
-			float aspect = camera.aspect();
-			ImGui::InputFloat(_("Aspect ratio"), aspect, "%0.3f", ImGuiInputTextFlags_ReadOnly);
-			ImGui::EndDisabled();
+			{
+				ImGui::BeginDisabled(camera.rotationType() != video::CameraRotationType::Target);
+				glm::vec3 target = camera.target();
+				if (ImGui::InputXYZ(_("Target"), target)) {
+					camera.setTarget(target);
+				}
+				float targetDistance = camera.targetDistance();
+				if (ImGui::InputFloat(_("Target distance"), targetDistance)) {
+					camera.setTargetDistance(targetDistance);
+				}
+				ImGui::EndDisabled();
+			}
+			{
+				ImGui::BeginDisabled(camera.mode() == video::CameraMode::Orthogonal);
+				float fov = camera.fieldOfView();
+				if (ImGui::InputFloat(_("FOV"), fov)) {
+					camera.setFieldOfView(fov);
+				}
+				ImGui::TooltipTextUnformatted(_("Field of view in degrees"));
+				ImGui::EndDisabled();
+			}
+			{
+				ImGui::BeginDisabled(true);
+				float aspect = camera.aspect();
+				ImGui::InputFloat(_("Aspect ratio"), aspect, "%0.3f", ImGuiInputTextFlags_ReadOnly);
+				ImGui::EndDisabled();
+			}
 			ImGui::EndTable();
 		}
 	}

@@ -7,6 +7,7 @@
 #include "Gizmo.h"
 #include "ViewMode.h"
 #include "app/App.h"
+#include "command/CommandHandler.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
@@ -346,25 +347,6 @@ void Viewport::renderViewport() {
 	}
 }
 
-void Viewport::menuBarCameraMode() {
-	const int currentMode = (int)_camMode;
-	const float modeMaxWidth = ImGui::CalcComboWidth(_(voxelrender::SceneCameraModeStr[currentMode]));
-	ImGui::SetNextItemWidth(modeMaxWidth);
-	if (ImGui::BeginCombo("###cameramode", _(voxelrender::SceneCameraModeStr[currentMode]))) {
-		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
-			const bool isSelected = (currentMode == n);
-			if (ImGui::Selectable(_(voxelrender::SceneCameraModeStr[n]), isSelected)) {
-				_camMode = (voxelrender::SceneCameraMode)n;
-				resetCamera();
-			}
-			if (isSelected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-}
-
 bool Viewport::isSceneMode() const {
 	return _renderContext.isSceneMode();
 }
@@ -436,44 +418,6 @@ void Viewport::menuBarCaptureOptions() {
 	}
 }
 
-void Viewport::menuBarFreeCameraOptions() {
-	glm::vec3 omega = camera().omega();
-	if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
-		camera().setOmega(omega);
-	}
-
-	const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
-	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
-	const int currentCamRotType = (int)camera().rotationType();
-	if (ImGui::BeginCombo(_("Camera movement"), camRotTypes[currentCamRotType])) {
-		for (int n = 0; n < lengthof(camRotTypes); n++) {
-			const bool isSelected = (currentCamRotType == n);
-			if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-				camera().setRotationType((video::CameraRotationType)n);
-			}
-			if (isSelected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-	ImGui::BeginDisabled(camera().rotationType() != video::CameraRotationType::Eye);
-	const core::VarPtr &clipping = core::Var::getSafe(cfg::VoxEditClipping);
-	ImGui::CheckboxVar(_("Clipping"), clipping);
-	ImGui::BeginDisabled(!clipping->boolVal());
-	ImGui::CheckboxVar(_("Gravity"), cfg::VoxEditGravity);
-	ImGui::EndDisabled();
-
-	ImGui::EndDisabled();
-}
-
-void Viewport::menuBarCameraOptions(command::CommandExecutionListener *listener) {
-	ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "resetcamera", true, listener);
-	if (!isFixedCamera()) {
-		menuBarFreeCameraOptions();
-	}
-}
-
 void Viewport::menuBarScreenshotOptions(command::CommandExecutionListener *listener) {
 	const core::String command = core::String::format("screenshot %i", _id);
 	ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), command.c_str(), listener);
@@ -483,7 +427,8 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginIconMenu(ICON_LC_EYE, _("View"))) {
 		menuBarScreenshotOptions(listener);
 		menuBarCaptureOptions();
-		menuBarCameraOptions(listener);
+		ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "resetcamera", true, listener);
+		CameraPanel::cameraOptions(listener, camera(), _camMode);
 		menuBarPolygonModeOptions();
 		MenuBar::viewportOptions();
 		ImGui::EndMenu();
@@ -520,7 +465,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		menuBarMementoOptions(listener);
 		ImGui::Dummy(ImVec2(20, 0));
 		CameraPanel::cameraProjectionCombo(camera());
-		menuBarCameraMode();
+		CameraPanel::cameraModeCombo(listener, _camMode);
 		menuBarRenderModeToggle();
 		menuBarView(listener);
 

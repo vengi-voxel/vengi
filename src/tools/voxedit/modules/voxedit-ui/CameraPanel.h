@@ -7,6 +7,7 @@
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "ui/Panel.h"
+#include "voxelrender/SceneGraphRenderer.h"
 
 namespace video {
 class Camera;
@@ -31,6 +32,10 @@ public:
 	CameraPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "camera"), _sceneMgr(sceneMgr) {
 	}
 	static void cameraProjectionCombo(video::Camera &camera);
+	static void cameraModeCombo(command::CommandExecutionListener *listener, voxelrender::SceneCameraMode &camMode);
+	static void cameraOptions(command::CommandExecutionListener *listener, video::Camera &camera,
+							  voxelrender::SceneCameraMode camMode);
+
 	void update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
