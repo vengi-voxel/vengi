@@ -154,7 +154,6 @@ private:
 	void menuBarView(command::CommandExecutionListener *listener);
 	void menuBarRenderModeToggle();
 	void menuBarCameraMode();
-	void menuBarCameraProjection();
 	void menuBarMementoOptions(command::CommandExecutionListener *listener);
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void resize(const glm::ivec2 &frameBufferSize);

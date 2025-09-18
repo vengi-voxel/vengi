@@ -28,6 +28,7 @@
 #include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/WindowedApp.h"
+#include "voxedit-ui/CameraPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -345,26 +346,6 @@ void Viewport::renderViewport() {
 	}
 }
 
-void Viewport::menuBarCameraProjection() {
-	const char *modes[] = {_("Perspective"), _("Orthogonal")};
-	static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
-	const int currentMode = (int)camera().mode();
-	const float modeMaxWidth = ImGui::CalcComboWidth(modes[currentMode]);
-	ImGui::SetNextItemWidth(modeMaxWidth);
-	if (ImGui::BeginCombo("###cameraproj", modes[currentMode])) {
-		for (int n = 0; n < lengthof(modes); n++) {
-			const bool isSelected = (currentMode == n);
-			if (ImGui::Selectable(modes[n], isSelected)) {
-				camera().setMode((video::CameraMode)n);
-			}
-			if (isSelected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-}
-
 void Viewport::menuBarCameraMode() {
 	const int currentMode = (int)_camMode;
 	const float modeMaxWidth = ImGui::CalcComboWidth(_(voxelrender::SceneCameraModeStr[currentMode]));
@@ -538,7 +519,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
 		menuBarMementoOptions(listener);
 		ImGui::Dummy(ImVec2(20, 0));
-		menuBarCameraProjection();
+		CameraPanel::cameraProjectionCombo(camera());
 		menuBarCameraMode();
 		menuBarRenderModeToggle();
 		menuBarView(listener);
