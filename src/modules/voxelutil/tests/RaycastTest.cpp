@@ -87,13 +87,13 @@ TEST_F(RaycastTest, testRaycastWithEndpointsEmptyVolume) {
 TEST_F(RaycastTest, testRaycastWithEndpointsHitSolidVoxel) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(0.5f, 5.5f, 5.5f);
+	const glm::vec3 start(1.5f, 6.5f, 6.5f);
 	const glm::vec3 end(10.5f, 5.5f, 5.5f); // Ray passes through (5, 6, 6)
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_GT(functor.visitedVoxels, 0) << "Should visit at least some voxels";
@@ -117,39 +117,39 @@ TEST_F(RaycastTest, testRaycastWithEndpointsAxisAligned) {
 
 	// X-axis raycast
 	{
-		const glm::vec3 start(0.5f, 3.5f, 3.5f);
-		const glm::vec3 end(10.5f, 3.5f, 3.5f);
+		const glm::vec3 start(1.5f, 4.5f, 4.5f);
+		const glm::vec3 end(11.5f, 4.5f, 4.5f);
 
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (4, 4, 4)";
+		EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (4, 4, 4)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (4, 4, 4)";
 		EXPECT_EQ(glm::ivec3(3, 4, 4), functor.hitPosition) << "Should hit the solid voxel at (4, 4, 4)";
 	}
 
 	// Y-axis raycast
 	{
-		const glm::vec3 start(4.5f, 0.5f, 5.5f);
-		const glm::vec3 end(4.5f, 10.5f, 5.5f);
+		const glm::vec3 start(5.5f, 1.5f, 6.5f);
+		const glm::vec3 end(5.5f, 11.5f, 6.5f);
 
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+		EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	}
 
 	// Z-axis raycast
 	{
-		const glm::vec3 start(6.5f, 2.5f, 0.5f);
-		const glm::vec3 end(6.5f, 2.5f, 10.5f);
+		const glm::vec3 start(7.5f, 3.5f, 1.5f);
+		const glm::vec3 end(7.5f, 3.5f, 11.5f);
 
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (7, 3, 5)";
+		EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (7, 3, 5)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (7, 3, 5)";
 		EXPECT_EQ(glm::ivec3(7, 3, 5), functor.hitPosition) << "Should hit the solid voxel at (7, 3, 5)";
 	}
@@ -158,13 +158,13 @@ TEST_F(RaycastTest, testRaycastWithEndpointsAxisAligned) {
 TEST_F(RaycastTest, testRaycastWithEndpointsNegativeDirection) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(15.5f, 5.5f, 5.5f); // Start further out to reach the voxel
-	const glm::vec3 end(-5.5f, 5.5f, 5.5f);	  // Ray passes through (5, 6, 6) from positive direction
+	const glm::vec3 start(16.5f, 6.5f, 6.5f); // Start further out to reach the voxel
+	const glm::vec3 end(-6.5f, 6.5f, 6.5f);	  // Ray passes through (5, 6, 6) from positive direction
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 }
@@ -172,13 +172,13 @@ TEST_F(RaycastTest, testRaycastWithEndpointsNegativeDirection) {
 TEST_F(RaycastTest, testRaycastWithEndpointsDiagonalRay) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(0.5f, 0.5f, 0.5f);
+	const glm::vec3 start(1.5f, 1.5f, 1.5f);
 	const glm::vec3 end(6.5f, 6.5f, 6.5f); // Should pass through some solid voxels
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
 	EXPECT_EQ(glm::ivec3(4, 4, 4), functor.hitPosition)
 		<< "Should hit the first solid voxel in the diagonal path - (4, 4, 4)";
@@ -187,13 +187,13 @@ TEST_F(RaycastTest, testRaycastWithEndpointsDiagonalRay) {
 TEST_F(RaycastTest, testRaycastWithDirectionBasicFunctionality) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(0.5f, 5.5f, 5.5f);
+	const glm::vec3 start(1.5f, 6.5f, 6.5f);
 	const glm::vec3 direction(10.0f, 0.0f, 0.0f); // 10 units in positive X direction
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithDirection(&volume, start, direction, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 }
@@ -217,13 +217,13 @@ TEST_F(RaycastTest, testRaycastWithDirectionShortRay) {
 TEST_F(RaycastTest, testRaycastWithDirectionNormalizedDirection) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(4.5f, 5.5f, 5.5f); // Start at solid voxel position
+	const glm::vec3 start(5.5f, 6.5f, 6.5f); // Start at solid voxel position
 	const glm::vec3 direction(1.0f, 0.0f, 0.0f);
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithDirection(&volume, start, direction, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel immediately";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel immediately";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel immediately";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(1, functor.visitedVoxels) << "Normalized direction should only visit one voxel";
@@ -232,13 +232,13 @@ TEST_F(RaycastTest, testRaycastWithDirectionNormalizedDirection) {
 TEST_F(RaycastTest, testRaycastWithEndpointsVolumeSpecializedFunction) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(0.5f, 3.5f, 3.5f);
-	const glm::vec3 end(10.5f, 3.5f, 3.5f);
+	const glm::vec3 start(1.5f, 4.5f, 4.5f);
+	const glm::vec3 end(11.5f, 4.5f, 4.5f);
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpointsVolume(&volume, start, end, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (4, 4, 4)";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (4, 4, 4)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (4, 4, 4)";
 	EXPECT_EQ(glm::ivec3(3, 4, 4), functor.hitPosition) << "Should hit the solid voxel at (4, 4, 4)";
 }
@@ -268,26 +268,26 @@ TEST_F(RaycastTest, testRaycastEdgeCases) {
 
 	// Test ray starting from solid voxel
 	{
-		const glm::vec3 start(4.5f, 5.5f, 5.5f);
-		const glm::vec3 end(8.5f, 5.5f, 5.5f);
+		const glm::vec3 start(5.5f, 6.5f, 6.5f);
+		const glm::vec3 end(8.5f, 6.5f, 6.5f);
 
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+		EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	}
 
 	// Test ray ending at solid voxel
 	{
-		const glm::vec3 start(2.5f, 5.5f, 5.5f);
-		const glm::vec3 end(5.5f, 5.5f, 5.5f);
+		const glm::vec3 start(3.5f, 6.5f, 6.5f);
+		const glm::vec3 end(6.5f, 6.5f, 6.5f);
 
 		SimpleRaycastFunctor functor;
 		RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-		EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+		EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 		EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	}
@@ -310,8 +310,8 @@ TEST_F(RaycastTest, testRaycastVoxelTraversal) {
 	for (const auto &pos : functor.visitedPositions) {
 		EXPECT_GE(pos.x, 1) << "Should start at voxel x=1";
 		EXPECT_LE(pos.x, 5) << "Should end at voxel x=5";
-		EXPECT_EQ(pos.y, 2) << "Should stay on same Y (1.5 -> 2 after offset)";
-		EXPECT_EQ(pos.z, 2) << "Should stay on same Z (1.5 -> 2 after offset)";
+		EXPECT_EQ(pos.y, 1) << "Should stay on same Y";
+		EXPECT_EQ(pos.z, 1) << "Should stay on same Z";
 	}
 }
 
@@ -331,13 +331,13 @@ TEST_F(RaycastTest, testRaycastOutOfBounds) {
 TEST_F(RaycastTest, testRaycastLengthToSolidVoxelFace) {
 	voxel::RawVolume volume = createTestVolume({0, 10});
 
-	const glm::vec3 start(4, 6, 6);
+	const glm::vec3 start(4.5, 6, 6);
 	const glm::vec3 end(8, 6, 6);
 
 	SimpleRaycastFunctor functor;
 	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
-	EXPECT_TRUE(result.isInterupted()) << "Should hit the solid voxel at (5, 6, 6)";
+	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_EQ(glm::ivec3(5, 6, 6), functor.hitPosition) << "Should hit the solid voxel at (5, 6, 6)";
 	EXPECT_FLOAT_EQ(result.length, 0.5f) << "RaycastResult.length should be the distance to the voxel face";

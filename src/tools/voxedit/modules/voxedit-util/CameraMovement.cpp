@@ -45,7 +45,8 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 			const float currentY = camPos.y;
 			moveDelta += _movement.gravityDelta(speed, orientation, currentY, lowestY);
 		}
-		moveDelta = _clipper.clipDelta(sceneGraph, frameIdx, camPos, moveDelta, orientation);
+		voxelutil::RaycastResult result = _clipper.clipDelta(sceneGraph, frameIdx, camPos, moveDelta, orientation);
+		moveDelta *= result.fract;
 	}
 	camera->move(moveDelta);
 }

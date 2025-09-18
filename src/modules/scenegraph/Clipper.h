@@ -6,6 +6,7 @@
 
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "voxelutil/Raycast.h"
 
 namespace scenegraph {
 
@@ -26,9 +27,9 @@ public:
 	 * @param delta The intended movement vector in camera local space.
 	 * @return The clipped movement delta that does not intersect solid voxels.
 	 */
-	glm::vec3 clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx,
-						const glm::vec3 &worldPosition, const glm::vec3 &delta,
-						const glm::mat3 &cameraOrientation) const;
+	voxelutil::RaycastResult clipDelta(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx,
+									   const glm::vec3 &worldPosition, const glm::vec3 &delta,
+									   const glm::mat3 &cameraOrientation) const;
 
 	const glm::vec3 &boxSize() const {
 		return _boxSize;

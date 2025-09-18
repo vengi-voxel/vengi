@@ -101,7 +101,6 @@ template<class VOLUME>
 void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, voxel::FaceNames faceName,
 						const image::ImagePtr &image, glm::vec2 uv0 = {0.0f, 0.0f}, glm::vec2 uv1 = {1.0f, 1.0f},
 						bool projectOntoSurface = false) {
-	// TODO: Move into ImportFace.h
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::vec3 &size = region.getDimensionsInVoxels();
 	const math::Axis axis = faceToAxis(faceName);

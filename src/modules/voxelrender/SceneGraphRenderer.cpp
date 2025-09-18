@@ -381,6 +381,7 @@ void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderCont
 		for (video::Camera &sceneCamera : _cameras) {
 			sceneCamera.setSize(camera.size());
 			sceneCamera.update(0.0);
+			// TODO: node id to resolv the color _cameraRenderer.setColor(style::color(style::ColorCamera));
 			_cameraRenderer.render(camera, sceneCamera);
 		}
 	}

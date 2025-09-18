@@ -4,11 +4,12 @@
 
 #pragma once
 
+#include "core/Common.h"
+#include "core/Log.h"
 #include "core/Trace.h"
 #include "voxel/RawVolume.h"
-#include "core/Common.h"
-#include <glm/ext/scalar_constants.hpp>
 #include <glm/common.hpp>
+#include <glm/ext/scalar_constants.hpp>
 
 namespace voxelutil {
 /**
@@ -16,27 +17,30 @@ namespace voxelutil {
  */
 struct RaycastResult {
 	float length = 0.0f; ///< The length the ray traveled before being interrupted or completing
+	float fract = 0.0f;   ///< The fraction [0..1] of the ray that was traveled
 	enum Type {
-		Completed, ///< If the ray passed through the volume without being interrupted
-		Interupted ///< If the ray was interrupted while traveling
+		Completed,	///< If the ray passed through the volume without being interrupted
+		Interrupted ///< If the ray was interrupted while traveling
 	} type = Completed;
 
 	bool isCompleted() const {
 		return type == Completed;
 	}
-	bool isInterupted() const {
-		return type == Interupted;
+	bool isInterrupted() const {
+		return type == Interrupted;
 	}
 	static RaycastResult completed(float length) {
 		RaycastResult r;
 		r.type = Completed;
 		r.length = length;
+		r.fract = 1.0f;
 		return r;
 	}
-	static RaycastResult interrupted(float length) {
+	static RaycastResult interrupted(float length, float fract) {
 		RaycastResult r;
-		r.type = Interupted;
+		r.type = Interrupted;
 		r.length = length;
+		r.fract = fract;
 		return r;
 	}
 };
@@ -119,14 +123,14 @@ struct RaycastResult {
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& start, const glm::vec3& end, Callback&& callback) {
+RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, const glm::vec3 &end, Callback &&callback) {
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
 	// The doRaycast function is assuming that it is iterating over the areas defined between
 	// voxels. We actually want to define the areas as being centered on voxels (as this is
 	// what the CubicSurfaceExtractor generates). We add 0.5 here to adjust for this.
-	const float offset = 0.5f;
+	const float offset = 0.0f;
 	const glm::vec3 v3dStart = start + offset;
 	const glm::vec3 v3dEnd = end + offset;
 	const float x1 = v3dStart.x;
@@ -164,21 +168,24 @@ RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& start, cons
 
 	for (;;) {
 		if (!callback(sampler)) {
-			// Find which axis was crossed last (minimum t)
-			// The t values (tx, ty, tz) are the normalized distances along the ray direction
-			// to the next voxel boundary, but they are incremented after the crossing.
-			// We need to subtract the last increment to get the correct intersection.
-			float t = 0.0f;
-			if (tx <= ty && tx <= tz) {
-				t = tx - deltatx;
-			} else if (ty <= tz) {
-				t = ty - deltaty;
-			} else {
-				t = tz - deltatz;
+			if (i == (int)floorStart.x && j == (int)floorStart.y && k == (int)floorStart.z) {
+				return RaycastResult::interrupted(0.0f, 0.0f);
 			}
-			float rayLength = glm::length(v3dEnd - v3dStart);
-			float length = t * rayLength;
-			return RaycastResult::interrupted(length);
+
+			glm::vec3 r = sampler.position();
+			if (di == -1) {
+				r.x += 1.0f;
+			}
+			if (dj == -1) {
+				r.y += 1.0f;
+			}
+			if (dk == -1) {
+				r.z += 1.0f;
+			}
+
+			const float length = glm::length(r - v3dStart);
+			const float fract = length / glm::length(v3dEnd - v3dStart);
+			return RaycastResult::interrupted(length, fract);
 		}
 
 		if (tx <= ty && tx <= tz) {
@@ -225,7 +232,8 @@ RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& start, cons
 }
 
 template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(voxel::RawVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+inline RaycastResult raycastWithEndpointsVolume(voxel::RawVolume *volData, const glm::vec3 &v3dStart,
+												const glm::vec3 &v3dEnd, Callback &&callback) {
 	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
@@ -254,9 +262,10 @@ inline RaycastResult raycastWithEndpointsVolume(voxel::RawVolume* volData, const
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithDirection(Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
+RaycastResult raycastWithDirection(Volume *volData, const glm::vec3 &v3dStart, const glm::vec3 &v3dDirectionAndLength,
+								   Callback &&callback) {
 	const glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
 	return raycastWithEndpoints<Callback, Volume>(volData, v3dStart, v3dEnd, core::forward<Callback>(callback));
 }
 
-}
+} // namespace voxelutil
