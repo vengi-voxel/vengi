@@ -320,6 +320,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 	int width = 1;
 	int height = 1;
+	// TODO: iso rendering proper image size
 	if (voxel::isY(frontFace)) {
 		width = dim.x;
 		height = dim.z;
@@ -330,15 +331,19 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		width = dim.x;
 		height = dim.y;
 	}
+
+	// now that we have the size - fill it with the background color
 	image->resize(width, height);
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 			image->setColor(background, x, y);
 		}
 	}
+
+	// now render the voxels to the image
 	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height, depthFactor] (int x, int y, int z, const voxel::Voxel& voxel) {
 		core::RGBA rgba = palette.color(voxel.getColor());
-		// TODO: iso rendering
+		// TODO: iso rendering coordinate calculation
 		int px = 0;
 		int py = 0;
 		float depth = 0.0f;
@@ -377,6 +382,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		image->setColor(rgba, px, py);
 	}, VisitorOrder::Max, true);
 
+	// check if we need to rescale the image
 	if ((imgW > 0 && imgW != width) || (imgH > 0 && imgH != height)) {
 		if (imgW <= 0) {
 			const float factor = (float)imgH / (float)height;
@@ -392,6 +398,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		}
 	}
 
+	// finally mark this as loaded to indicate that the image data is valid
 	image->markLoaded();
 
 	return image;
