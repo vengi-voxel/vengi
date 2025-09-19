@@ -555,10 +555,10 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		if (ufbxMaterial) {
 			const core::String &matname = priv::_ufbx_to_string(ufbxMaterial->name);
 			if (matname.empty()) {
-				Log::warn("No material name");
-				continue;
+				Log::warn("No material name, using default");
+			} else {
+				mat = createMaterial(matname);
 			}
-			mat = createMaterial(matname);
 
 			const ufbx_material_texture *ufbxMaterialTexture = nullptr;
 			for (size_t i = 0; i < ufbxMaterial->textures.count; ++i) {
