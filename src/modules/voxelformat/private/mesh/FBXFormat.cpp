@@ -818,14 +818,10 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	Log::debug("right: %i, up: %i, front: %i", ufbxScene->settings.axes.right, ufbxScene->settings.axes.up,
 			   ufbxScene->settings.axes.front);
 
-	const ufbx_node *ufbxRoot = ufbxScene->root_node;
-	for (const ufbx_node *ufbxChildNode : ufbxRoot->children) {
-		if (addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
-			const core::String name = priv::_ufbx_to_string(ufbxChildNode->name);
-			Log::error("Failed to add root child node '%s'", name.c_str());
-			ufbx_free_scene(ufbxScene);
-			return false;
-		}
+	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
+		Log::error("Failed to add root child node");
+		ufbx_free_scene(ufbxScene);
+		return false;
 	}
 
 	ufbx_free_scene(ufbxScene);
