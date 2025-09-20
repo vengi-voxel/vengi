@@ -27,7 +27,8 @@ TEST_F(MeshFormatTest, testSubdivide) {
 	meshTri.setVertices(glm::vec3(-8.77272797, -11.43335, -0.154544264),
 						glm::vec3(-8.77272701, 11.1000004, -0.154543981),
 						glm::vec3(8.77272701, 11.1000004, -0.154543981));
-	MeshFormat::subdivideTri(meshTri, tinyTris);
+	int depth = 0;
+	MeshFormat::subdivideTri(meshTri, tinyTris, depth);
 	EXPECT_EQ(1024u, tinyTris.size());
 }
 

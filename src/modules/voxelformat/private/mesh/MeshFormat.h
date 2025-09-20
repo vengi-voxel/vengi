@@ -42,7 +42,7 @@ public:
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
-	static void subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris);
+	static bool subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth);
 	static bool calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	/**
 	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes

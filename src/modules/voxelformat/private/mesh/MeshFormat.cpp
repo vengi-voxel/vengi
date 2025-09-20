@@ -75,9 +75,18 @@ glm::vec3 MeshFormat::getInputScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-void MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris) {
+bool MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int &depth) {
+	if (depth > 16) {
+		const glm::vec3 &mins = meshTri.mins();
+		const glm::vec3 &maxs = meshTri.maxs();
+		const glm::vec3 size = maxs - mins;
+		Log::warn("Max subdivision depth reached for tri with size %f:%f:%f", size.x, size.y, size.z);
+
+		tinyTris.push_back(meshTri);
+		return false;
+	}
 	if (stopExecution()) {
-		return;
+		return false;
 	}
 	const glm::vec3 &mins = meshTri.mins();
 	const glm::vec3 &maxs = meshTri.maxs();
@@ -86,11 +95,13 @@ void MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollec
 		voxelformat::MeshTri out[4];
 		subdivide(meshTri, out);
 		for (int i = 0; i < lengthof(out); ++i) {
-			subdivideTri(out[i], tinyTris);
+			int d = depth;
+			subdivideTri(out[i], tinyTris, d);
 		}
-		return;
+		return true;
 	}
 	tinyTris.push_back(meshTri);
+	return true;
 }
 
 static void convertToVoxelGrid(glm::vec3 &v) {
@@ -391,13 +402,12 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		meshTriCollections.resize(parallel);
 		core::AtomicInt currentIdx(0);
 		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
-			MeshTriCollection &subdivided = meshTriCollections[currentIdx.increment()];
+			int c = currentIdx.increment();
+			MeshTriCollection &subdivided = meshTriCollections[c];
 			subdivided.reserve(end - start);
 			for (int i = start; i < end; ++i) {
-				if (stopExecution()) {
-					return;
-				}
-				subdivideTri(tris[i], subdivided);
+				int depth = 0;
+				subdivideTri(tris[i], subdivided, depth);
 			}
 		});
 		Log::debug("Subdivision done");
