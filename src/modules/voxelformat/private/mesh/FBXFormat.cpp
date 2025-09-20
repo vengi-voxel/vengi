@@ -783,7 +783,7 @@ static void configureUFBXOpts(ufbx_load_opts &ufbxOpts, const core::String &file
 	ufbxOpts.geometry_transform_handling = UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK;
 	ufbxOpts.inherit_mode_handling = UFBX_INHERIT_MODE_HANDLING_IGNORE;
 	ufbxOpts.pivot_handling = UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT;
-	ufbxOpts.generate_missing_normals = true;
+	ufbxOpts.generate_missing_normals = false; // we don't load them yet but generate them with the Tri class
 
 	ufbxOpts.raw_filename.data = filename.c_str();
 	ufbxOpts.raw_filename.size = filename.size();
