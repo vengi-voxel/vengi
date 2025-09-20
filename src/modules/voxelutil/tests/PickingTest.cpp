@@ -61,9 +61,7 @@ protected:
 TEST_F(PickingTest, testPicking) {
 	voxel::RawVolume v(voxel::Region(glm::ivec3(0), glm::ivec3(10)));
 	ASSERT_TRUE(v.setVoxel(glm::ivec3(0), voxel::createVoxel(voxel::VoxelType::Generic, 0)));
-	// Adjust ray start to account for the 0.5 offset applied in raycastWithEndpoints
-	// The ray will be offset by 0.5, so start at (-0.5, 3.0, -0.5) to hit voxel center (0, 0, 0)
-	const glm::vec3 start(-0.5f, 3.0f, -0.5f);
+	const glm::vec3 start(0.0f, 3.0f, 0.0f);
 	const glm::vec3 direction = glm::down() * 100.0f;
 	const PickResult &result = pickVoxel(&v, start, direction);
 	ASSERT_TRUE(result.didHit) << "Expected to hit the voxel at (0, 0, 0)";
