@@ -560,6 +560,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 
 		MeshMaterialPtr mat = createMaterial("default");
 
+		bool useUVs = ufbxMesh->vertex_uv.exists;
 		if (ufbxMaterial) {
 			const core::String &matname = priv::_ufbx_to_string(ufbxMaterial->name);
 			if (matname.empty()) {
@@ -589,8 +590,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				} else {
 					Log::debug("Failed to load image %s for material %s", fbxTextureFilename.c_str(), matname.c_str());
 				}
-			} else if (ufbxMesh->vertex_uv.exists) {
+			} else if (useUVs) {
 				Log::warn("Mesh has UV coordinates but no texture assigned in material %s", matname.c_str());
+				useUVs = false;
 			}
 			if (ufbxMaterial->features.pbr.enabled) {
 				if (ufbxMaterial->pbr.base_factor.has_value) {
@@ -681,7 +683,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
 				}
-				if (ufbxMesh->vertex_uv.exists) {
+				if (useUVs) {
 					const ufbx_vec2 &uv0 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx0);
 					const ufbx_vec2 &uv1 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx1);
 					const ufbx_vec2 &uv2 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx2);
