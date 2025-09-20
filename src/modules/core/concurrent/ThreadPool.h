@@ -51,6 +51,7 @@ public:
 	template<class F>
 	auto enqueue(F&& f) -> core::Future<typename std::invoke_result<F>::type>;
 
+	void dump() const;
 	size_t size() const;
 	void init();
 	/**

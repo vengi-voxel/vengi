@@ -24,6 +24,12 @@ void ThreadPool::abort() {
 	_tasks.clear();
 }
 
+void ThreadPool::dump() const {
+	core::ScopedLock lock(_queueMutex);
+	Log::info("ThreadPool '%s' dump: %zu threads, %zu queued tasks, %d active workers", _name, _threads, _tasks.size(),
+			  (int)_activeWorkers);
+}
+
 void ThreadPool::init() {
 #ifdef __EMSCRIPTEN__
 #ifndef __EMSCRIPTEN_PTHREADS__

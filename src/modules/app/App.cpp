@@ -89,6 +89,10 @@ static void app_graceful_shutdown(int signo) {
 	App::getInstance()->requestQuit();
 }
 
+static void app_threads(int signo) {
+	App::getInstance()->threadsDump();
+}
+
 static void app_loop_debug_log(int signo) {
 	const core::VarPtr &log = core::Var::getSafe(cfg::CoreLogLevel);
 	int current = log->intVal();
@@ -181,11 +185,16 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	signal(SIGTERM, app_graceful_shutdown);
 	// send the signal 42 to enable debug logging in a running application
 	signal(42, app_loop_debug_log);
+	signal(43, app_threads);
 }
 
 App::~App() {
 	Log::shutdown();
 	_threadPool = core::ThreadPoolPtr();
+}
+
+void App::threadsDump() const {
+	_threadPool->dump();
 }
 
 void App::init(const core::String &organisation, const core::String &appname) {

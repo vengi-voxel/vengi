@@ -314,6 +314,8 @@ public:
 		return _threadPool->enqueue(core::forward<F>(f));
 	}
 
+	void threadsDump() const;
+
 	int threads() const {
 		return _threadPool->size();
 	}
