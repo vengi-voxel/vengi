@@ -3,31 +3,41 @@
  */
 
 #include "ThreadPool.h"
+#include "core/Log.h"
 #include "core/String.h"
 #include "core/Trace.h"
-#include "core/Log.h"
 #include "core/concurrent/Concurrency.h"
 
 namespace core {
 
 thread_local bool ThreadPool::_inThreadPool = false;
 
-ThreadPool::ThreadPool(size_t threads, const char *name) :
-		_threads(threads), _name(name) {
+ThreadPool::ThreadPool(size_t threads, const char *name) : _threads(threads), _name(name) {
 	if (_name == nullptr) {
 		_name = "ThreadPool";
 	}
 }
 
 void ThreadPool::abort() {
-	core::ScopedLock lock(_queueMutex);
-	_tasks.clear();
+	{
+		core::ScopedLock lock(_queueMutex);
+		_tasks.clear();
+	}
+	// wake workers so they can notice abort / stop condition
+	_queueCondition.notify_all();
 }
 
 void ThreadPool::dump() const {
-	core::ScopedLock lock(_queueMutex);
-	Log::info("ThreadPool '%s' dump: %zu threads, %zu queued tasks, %d active workers", _name, _threads, _tasks.size(),
-			  (int)_activeWorkers);
+	size_t queued = 0;
+	int threads = 0;
+	int active = 0;
+	{
+		core::ScopedLock lock(_queueMutex);
+		queued = _tasks.size();
+		threads = (int)_threads;
+		active = (int)_activeWorkers;
+	}
+	Log::info("ThreadPool '%s' dump: %d threads, %zu queued tasks, %d active workers", _name, threads, queued, active);
 }
 
 void ThreadPool::init() {
@@ -50,28 +60,33 @@ void ThreadPool::init() {
 			core_trace_thread(n.c_str());
 			for (;;) {
 				std::function<void()> task;
+				bool shouldExit = false;
+				bool haveActive = false;
+
 				{
 					core::ScopedLock lock(this->_queueMutex);
-					if (!this->_stop) {
-						this->_queueCondition.wait(this->_queueMutex, [this] {
-							// predicate must return false if the waiting should continue
-							if (this->_stop) {
-								return true;
-							}
-							core::ScopedLock queueLock(this->_queueMutex);
-							if (!this->_tasks.empty()) {
-								return true;
-							}
-							return false;
-						});
-					}
+					// wait until stop or a task is available
+					this->_queueCondition.wait(this->_queueMutex,
+											   [this] { return this->_stop || !this->_tasks.empty(); });
+
 					if (this->_stop && (this->_force || this->_tasks.empty())) {
-						Log::debug("Shutdown worker thread for %i", (int)i);
-						break;
+						shouldExit = true;
+					} else if (!this->_tasks.empty()) {
+						task = core::move(this->_tasks.front());
+						this->_tasks.pop();
+						this->_activeWorkers.increment();
+						haveActive = true;
 					}
-					task = core::move(this->_tasks.front());
-					this->_tasks.pop();
-					_activeWorkers.increment();
+				}
+
+				if (shouldExit) {
+					Log::debug("Shutdown worker thread for %i", (int)i);
+					break;
+				}
+
+				if (!task) {
+					// spurious wake or no task to run
+					continue;
 				}
 
 				core_trace_begin_frame(n.c_str());
@@ -80,7 +95,10 @@ void ThreadPool::init() {
 				task();
 				Log::trace("End of task in %i", (int)i);
 				core_trace_end_frame(n.c_str());
-				_activeWorkers.decrement();
+
+				if (haveActive) {
+					this->_activeWorkers.decrement();
+				}
 			}
 		});
 	}
@@ -96,6 +114,10 @@ void ThreadPool::shutdown(bool wait) {
 	}
 	_force = !wait;
 	_stop = true;
+	if (_force) {
+		core::ScopedLock lock(_queueMutex);
+		_tasks.clear();
+	}
 	_queueCondition.notify_all();
 	for (std::thread &worker : _workers) {
 		worker.join();
@@ -103,4 +125,4 @@ void ThreadPool::shutdown(bool wait) {
 	_workers.clear();
 }
 
-}
+} // namespace core
