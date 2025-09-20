@@ -496,6 +496,37 @@ static inline core::String _ufbx_to_string(const ufbx_string &s) {
 	return core::String(s.data, s.length);
 }
 
+// Convert a ufbx_vec3 from the scene's coordinate axes into engine axes
+// (assumed right=X, up=Y, front=Z). The scene provides a `ufbx_coordinate_axes`
+// struct where each component is one of the `ufbx_coordinate_axis` enum values
+// (eg. UFBX_COORDINATE_AXIS_POSITIVE_Z). We map components and signs
+// accordingly so we don't rely on ad-hoc swaps.
+static inline ufbx_vec3 _ufbx_axes_to_engine(const ufbx_vec3 &v, const ufbx_coordinate_axes &axes) {
+	auto get_comp = [&](ufbx_coordinate_axis a) -> float {
+		switch (a) {
+		case UFBX_COORDINATE_AXIS_POSITIVE_X:
+			return v.x;
+		case UFBX_COORDINATE_AXIS_NEGATIVE_X:
+			return -v.x;
+		case UFBX_COORDINATE_AXIS_POSITIVE_Y:
+			return v.y;
+		case UFBX_COORDINATE_AXIS_NEGATIVE_Y:
+			return -v.y;
+		case UFBX_COORDINATE_AXIS_POSITIVE_Z:
+			return v.z;
+		case UFBX_COORDINATE_AXIS_NEGATIVE_Z:
+			return -v.z;
+		default:
+			return 0.0f;
+		}
+	};
+	ufbx_vec3 out;
+	out.x = get_comp(axes.right);
+	out.y = get_comp(axes.up);
+	out.z = get_comp(axes.front);
+	return out;
+}
+
 static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
 	return glm::quat((float)v.x, (float)v.y, (float)v.z, (float)v.w);
 }
