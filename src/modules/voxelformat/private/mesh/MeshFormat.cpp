@@ -647,6 +647,7 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 
 int MeshFormat::voxelizeMesh(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin) const {
 	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
+	Log::debug("Total vertices: %i, indices: %i", (int)mesh.vertices.size(), (int)mesh.indices.size());
 	const glm::vec3 &scale = getInputScale();
 	const size_t maxIndices = simplify(mesh.indices, mesh.vertices);
 	MeshTriCollection tris;
