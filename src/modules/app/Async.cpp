@@ -21,6 +21,12 @@ int for_parallel_size(int start, int end) {
 	return (end - start) / chunkSize + 1;
 }
 
+void for_not_parallel(int start, int end, const std::function<void(int, int)> &f) {
+	if (start >= end)
+		return;
+	f(start, end);
+}
+
 void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda, bool wait) {
 	if (start >= end)
 		return;
