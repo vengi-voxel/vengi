@@ -574,6 +574,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 	Log::debug("UV coordinates: %s", ufbxMesh->vertex_uv.exists ? "true" : "false");
 	Log::debug("Scene meter scale: %f", ufbxScene->settings.unit_meters);
 	Log::debug("Scene original meter scale: %f", ufbxScene->settings.original_unit_meters);
+	Log::debug("Scene original up axis: %i", ufbxScene->settings.original_axis_up);
 
 	for (const ufbx_mesh_part &ufbxMeshPart : ufbxMesh->material_parts) {
 		if (ufbxMeshPart.num_triangles == 0) {
