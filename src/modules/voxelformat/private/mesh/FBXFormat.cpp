@@ -739,16 +739,12 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	int nodeId = parent;
-	if (ufbxNode->mesh != nullptr) {
+	if (ufbxNode->attrib_type == UFBX_ELEMENT_MESH) {
 		nodeId = addMeshNode(ufbxScene, ufbxNode, filename, archive, sceneGraph, parent);
-	} else if (ufbxNode->camera != nullptr) {
+	} else if (ufbxNode->attrib_type == UFBX_ELEMENT_CAMERA) {
 		nodeId = addCameraNode(ufbxScene, ufbxNode, sceneGraph, parent);
-	} else if (ufbxNode->light != nullptr) {
-		Log::debug("Skip light node");
-	} else if (ufbx_as_bone(ufbxNode->attrib) != nullptr) {
-		Log::debug("Skip bone node");
 	} else {
-		Log::debug("Skip unknown node");
+		Log::debug("Unhandled node type: %i", ufbxNode->attrib_type);
 	}
 	if (nodeId < 0) {
 		Log::error("Failed to add node with parent %i", parent);
