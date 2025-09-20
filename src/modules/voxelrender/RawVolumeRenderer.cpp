@@ -198,14 +198,14 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 	// Check GL state before framebuffer creation
 	if (enableMultisampling) {
 		int maxSamples = video::limit(video::Limit::MaxSamples);
-		Log::info("Resize GL_MAX_SAMPLES: %d, requested: %d", maxSamples, multisampleSamples);
+		Log::debug("Resize GL_MAX_SAMPLES: %d, requested: %d", maxSamples, multisampleSamples);
 	}
 
 	if (!frameBuffer.init(cfg)) {
 		Log::error("Failed to initialize the volume renderer framebuffer - FB incomplete multisample detected");
 		return false;
 	}
-	Log::info("Successfully created %s framebuffer in resize", enableMultisampling ? "multisampled" : "regular");
+	Log::debug("Successfully created %s framebuffer in resize", enableMultisampling ? "multisampled" : "regular");
 
 	// If multisampling is enabled, create/resize resolve framebuffer with regular textures
 	if (enableMultisampling) {
@@ -221,7 +221,7 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 			Log::error("Failed to initialize resolve framebuffer for multisampling");
 			return false;
 		}
-		Log::info("Successfully created resolve framebuffer in resize");
+		Log::debug("Successfully created resolve framebuffer in resize");
 	}
 
 	// we have to do an y-flip here due to the framebuffer handling
