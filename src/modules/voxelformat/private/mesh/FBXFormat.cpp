@@ -11,7 +11,9 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
+#include "image/Image.h"
 #include "io/Archive.h"
+#include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -498,7 +500,8 @@ static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform
 	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(ufbxScene->anim, ufbxNode, 1.0);
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
-	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale));
+	// transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale)); // UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY is
+	// used - localScale not needed
 }
 
 static core::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
@@ -762,20 +765,7 @@ int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 	return nodeId;
 }
 
-bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
-							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::error("Could not load file %s", filename.c_str());
-		return false;
-	}
-	ufbx_stream ufbxStream;
-	core_memset(&ufbxStream, 0, sizeof(ufbxStream));
-	ufbxStream.user = stream;
-	ufbxStream.read_fn = priv::_ufbx_read_fn;
-	ufbxStream.skip_fn = priv::_ufbx_skip_fn;
-
-	ufbx_load_opts ufbxOpts;
+static void configureUFBXOpts(ufbx_load_opts &ufbxOpts, const core::String &filename) {
 	core_memset(&ufbxOpts, 0, sizeof(ufbxOpts));
 
 	ufbxOpts.temp_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
@@ -788,9 +778,6 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	ufbxOpts.path_separator = '/';
 
-	ufbxOpts.raw_filename.data = filename.c_str();
-	ufbxOpts.raw_filename.size = filename.size();
-
 	// TODO: VOXELFORMAT: see issue https://github.com/vengi-voxel/vengi/issues/227
 	ufbxOpts.target_axes = ufbx_axes_right_handed_y_up;
 	ufbxOpts.target_unit_meters = 1.0f;
@@ -802,17 +789,41 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	ufbxOpts.pivot_handling = UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT;
 	ufbxOpts.generate_missing_normals = true;
 
+	ufbxOpts.raw_filename.data = filename.c_str();
+	ufbxOpts.raw_filename.size = filename.size();
+}
+
+static void configureUFBXStream(core::ScopedPtr<io::SeekableReadStream> &stream, ufbx_stream &ufbxStream) {
+	core_memset(&ufbxStream, 0, sizeof(ufbxStream));
+	ufbxStream.user = stream;
+	ufbxStream.read_fn = priv::_ufbx_read_fn;
+	ufbxStream.skip_fn = priv::_ufbx_skip_fn;
+}
+
+bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
+							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	ufbx_stream ufbxStream;
+	configureUFBXStream(stream, ufbxStream);
+
+	ufbx_load_opts ufbxOpts;
+	configureUFBXOpts(ufbxOpts, filename);
+
 	ufbx_error ufbxError;
 
 	ufbx_scene *ufbxScene = ufbx_load_stream(&ufbxStream, &ufbxOpts, &ufbxError);
-	if (!ufbxScene) {
-		Log::error("Failed to load fbx scene: %s", ufbxError.description.data);
-		return false;
-	}
 	if (ufbxError.type != UFBX_ERROR_NONE) {
 		char err[4096];
 		ufbx_format_error(err, sizeof(err), &ufbxError);
 		Log::error("Error while loading fbx: %s", err);
+	}
+	if (!ufbxScene) {
+		Log::error("Failed to load fbx scene: %s", ufbxError.description.data);
+		return false;
 	}
 
 	Log::debug("right: %i, up: %i, front: %i", ufbxScene->settings.axes.right, ufbxScene->settings.axes.up,
@@ -826,6 +837,74 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	ufbx_free_scene(ufbxScene);
 	return !sceneGraph.empty();
+}
+
+image::ImagePtr FBXFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
+										  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return image::ImagePtr();
+	}
+	ufbx_stream ufbxStream;
+	configureUFBXStream(stream, ufbxStream);
+
+	ufbx_load_opts ufbxOpts;
+	configureUFBXOpts(ufbxOpts, filename);
+
+	ufbxOpts.raw_filename.data = filename.c_str();
+	ufbxOpts.raw_filename.size = filename.size();
+
+	ufbx_error ufbxError;
+
+	ufbx_scene *ufbxScene = ufbx_load_stream(&ufbxStream, &ufbxOpts, &ufbxError);
+	if (ufbxError.type != UFBX_ERROR_NONE) {
+		char err[4096];
+		ufbx_format_error(err, sizeof(err), &ufbxError);
+		ufbx_free_scene(ufbxScene);
+		Log::error("Error while loading fbx file %s: %s", filename.c_str(), err);
+		return image::ImagePtr();
+	}
+	if (!ufbxScene) {
+		Log::error("Failed to load fbx scene: %s", filename.c_str());
+		return image::ImagePtr();
+	}
+	if (ufbxScene->metadata.thumbnail.width <= 0 || ufbxScene->metadata.thumbnail.height <= 0 ||
+		ufbxScene->metadata.thumbnail.data.size <= 0) {
+		Log::debug("Invalid thumbnail data in fbx file %s", filename.c_str());
+		ufbx_free_scene(ufbxScene);
+		return image::ImagePtr();
+	}
+
+	const int w = (int)ufbxScene->metadata.thumbnail.width;
+	const int h = (int)ufbxScene->metadata.thumbnail.height;
+	Log::debug("Found thumbnail in fbx file %s with size %ix%i", filename.c_str(), w, h);
+	const int bpp = (int)ufbxScene->metadata.thumbnail.format == UFBX_THUMBNAIL_FORMAT_RGBA_32 ? 4 : 3;
+	const int rowStride = w * bpp;
+	image::ImagePtr img(image::createEmptyImage("screenshot"));
+	img->resize(w, h);
+	const uint8_t *src = (const uint8_t *)ufbxScene->metadata.thumbnail.data.data;
+	for (int y = 0; y < h; ++y) {
+		const uint8_t *s = src + (size_t)(h - 1 - y) * rowStride;
+		io::MemoryReadStream rowStream(s, rowStride);
+		for (int x = 0; x < w; ++x) {
+			uint8_t r, g, b, a = 255;
+			if (bpp == 4) {
+				rowStream.readUInt8(r);
+				rowStream.readUInt8(g);
+				rowStream.readUInt8(b);
+				rowStream.readUInt8(a);
+			} else {
+				rowStream.readUInt8(r);
+				rowStream.readUInt8(g);
+				rowStream.readUInt8(b);
+			}
+			img->setColor(x, y, core::RGBA(r, g, b, a));
+		}
+	}
+	img->markLoaded();
+	ufbx_free_scene(ufbxScene);
+	return img;
 }
 
 #undef wrapBool

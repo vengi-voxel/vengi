@@ -44,9 +44,10 @@ public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
-
+	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
+								   const LoadContext &ctx) override;
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 		return f;
 	}
 };
