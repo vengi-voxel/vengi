@@ -102,7 +102,7 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 	const bool matchesHorizontalStack = (info.height == imgH) && (info.width * info.slices == imgW);
 	const bool matchesSingle = (info.width == imgW) && (info.height == imgH) && info.slices == 1;
 	if (!matchesAtlas && !matchesVerticalStack && !matchesHorizontalStack && !matchesSingle) {
-		Log::error(
+		Log::debug(
 			"slices.png size %dx%d doesn't match expected atlas (%dx%d) or stacks. Trying best-effort extraction.",
 			imgW, imgH, atlasCols * info.width, atlasRows * info.height);
 		return false;
@@ -116,10 +116,10 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 	palette::PaletteLookup palLookup(palette);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
-	Log::error("Region width: %d, height: %d, depth: %d", region.getWidthInVoxels(), region.getHeightInVoxels(),
+	Log::debug("Region width: %d, height: %d, depth: %d", region.getWidthInVoxels(), region.getHeightInVoxels(),
 			   region.getDepthInVoxels());
-	Log::error("Slices: %d, Frames: %d, Width: %d, Height: %d", info.slices, info.frames, info.width, info.height);
-	Log::error("atlasCols: %d, atlasRows: %d, imgW: %d, imgH: %d", atlasCols, atlasRows, imgW, imgH);
+	Log::debug("Slices: %d, Frames: %d, Width: %d, Height: %d", info.slices, info.frames, info.width, info.height);
+	Log::debug("atlasCols: %d, atlasRows: %d, imgW: %d, imgH: %d", atlasCols, atlasRows, imgW, imgH);
 
 	// For each slice i, compute sub-image origin in the atlas and iterate pixels:
 	for (int i = 0; i < info.slices; ++i) {
