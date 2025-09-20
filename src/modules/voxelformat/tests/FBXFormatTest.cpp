@@ -19,7 +19,7 @@ TEST_F(FBXFormatTest, testLoad) {
 	EXPECT_EQ(modelNode->children().size(), 0);
 }
 
-// TODO: VOXELFORMAT: we currently don't have fbx write support
+// TODO: VOXELFORMAT: we currently don't have fbx material write support - and ufbx can't load ascii files
 TEST_F(FBXFormatTest, DISABLED_testMaterial) {
 	scenegraph::SceneGraph sceneGraph;
 	testMaterial(sceneGraph, "test_material.fbx");
