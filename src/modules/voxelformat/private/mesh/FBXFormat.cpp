@@ -751,13 +751,13 @@ int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 	} else {
 		Log::debug("Unhandled node type: %i", ufbxNode->attrib_type);
 	}
-	if (nodeId < 0) {
+	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add node with parent %i", parent);
 		return nodeId;
 	}
 	for (const ufbx_node *ufbxChildNode : ufbxNode->children) {
 		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId);
-		if (newNodeId < 0) {
+		if (newNodeId == InvalidNodeId) {
 			const core::String name = priv::_ufbx_to_string(ufbxNode->name);
 			Log::error("Failed to add child node '%s'", name.c_str());
 			return newNodeId;
