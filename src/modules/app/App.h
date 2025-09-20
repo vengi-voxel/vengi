@@ -139,6 +139,7 @@ protected:
 	bool isRunning(int pid) const;
 	virtual bool createPid();
 	void deletePid();
+	void shutdownTimeout();
 
 #ifdef __EMSCRIPTEN__
 	static void runFrameEmscripten();

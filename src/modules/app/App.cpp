@@ -24,6 +24,7 @@
 #include "core/sdl/SDLSystem.h"
 #include <SDL_messagebox.h>
 #include <SDL_cpuinfo.h>
+#include <signal.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
@@ -91,6 +92,11 @@ static void app_graceful_shutdown(int signo) {
 
 static void app_threads(int signo) {
 	App::getInstance()->threadsDump();
+}
+
+static void app_timeout_handler(int signo) {
+	Log::error("Application timeout");
+	exit(1);
 }
 
 static void app_loop_debug_log(int signo) {
@@ -181,6 +187,7 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	Log::setLevel(_initialLogLevel);
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
+	signal(SIGALRM, app_timeout_handler);
 	signal(SIGINT, app_graceful_shutdown);
 	signal(SIGTERM, app_graceful_shutdown);
 	// send the signal 42 to enable debug logging in a running application
@@ -1210,11 +1217,20 @@ bool App::saveConfiguration() {
 	return _filesystem->homeWrite(filename, ss);
 }
 
+void App::shutdownTimeout() {
+	// terminate any pending alarms
+	alarm(0);
+	const int timeoutInSecondsForCleanup = 10;
+	alarm(timeoutInSecondsForCleanup);
+}
+
 AppState App::onCleanup() {
 	if (_suspendRequested) {
 		addBlocker(AppState::Init);
 		return AppState::Init;
 	}
+
+	shutdownTimeout();
 
 	metric::count("stop");
 
@@ -1241,6 +1257,9 @@ AppState App::onCleanup() {
 
 	SDL_Quit();
 
+	// disable the alarm again
+	alarm(0);
+
 	return AppState::Destroy;
 }
 
@@ -1259,10 +1278,14 @@ bool App::allowedToQuit() {
 
 void App::requestQuit() {
 	if (AppState::Running == _curState) {
-		if (allowedToQuit()) {
-			_nextState = AppState::Cleanup;
+		if (_nextState != AppState::Cleanup) {
+			if (allowedToQuit()) {
+				shutdownTimeout();
+				_nextState = AppState::Cleanup;
+			}
 		}
-	} else {
+	} else if (_nextState != AppState::Destroy) {
+		shutdownTimeout();
 		_nextState = AppState::Destroy;
 	}
 }
