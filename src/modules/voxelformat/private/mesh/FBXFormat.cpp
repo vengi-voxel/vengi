@@ -475,6 +475,11 @@ static bool _ufbx_skip_fn(void *user, size_t size) {
 	return stream->skip((int64_t)size) != -1;
 }
 
+static uint64_t _ufbx_size_fn(void *user) {
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	return (uint64_t)stream->size();
+}
+
 static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
 	return glm::vec2((float)v.x, (float)v.y);
 }
@@ -794,6 +799,8 @@ static void configureUFBXStream(core::ScopedPtr<io::SeekableReadStream> &stream,
 	ufbxStream.user = stream;
 	ufbxStream.read_fn = priv::_ufbx_read_fn;
 	ufbxStream.skip_fn = priv::_ufbx_skip_fn;
+	ufbxStream.size_fn = priv::_ufbx_size_fn;
+	ufbxStream.close_fn = nullptr;
 }
 
 bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
