@@ -618,9 +618,12 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					if (tex->isLoaded()) {
 						Log::debug("Use image %s", textureName.c_str());
 						mat->texture = tex;
+					} else {
+						useUVs = false;
 					}
 				} else {
 					Log::debug("Failed to load image %s for material %s", fbxTextureFilename.c_str(), matname.c_str());
+					useUVs = false;
 				}
 			} else if (useUVs) {
 				Log::warn("Mesh has UV coordinates but no texture assigned in material %s", matname.c_str());
@@ -687,6 +690,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 			}
 		} else {
 			Log::debug("No material assigned for mesh");
+			useUVs = false;
 		}
 		mesh.materials.emplace_back(core::move(mat));
 		const MeshMaterialIndex materialIndex = mesh.materials.size() - 1;
