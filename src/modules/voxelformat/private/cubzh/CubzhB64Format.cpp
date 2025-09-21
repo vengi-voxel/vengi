@@ -356,6 +356,7 @@ void CubzhB64Format::setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, c
 	root.setProperty("ambientDirLightFactor", ambience.ambientDirLightFactor);
 
 	root.setProperty("txt", ambience.txt);
+	root.setProperty(scenegraph::PropDescription, ambience.txt);
 }
 
 bool CubzhB64Format::loadVersion1(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
