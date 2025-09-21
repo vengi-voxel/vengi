@@ -531,6 +531,18 @@ static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
 	return glm::quat((float)v.x, (float)v.y, (float)v.z, (float)v.w);
 }
 
+#if 0 
+static inline glm::mat4 _ufbx_to_mat(const ufbx_matrix& v) {
+	glm::mat4 mat(1.0f);
+	for (int column = 0; column < 4; ++column) {
+		mat[column].x = v.cols[column].x;
+		mat[column].y = v.cols[column].y;
+		mat[column].z = v.cols[column].z;
+	}
+	return mat;
+}
+#endif
+
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *ufbxScene,
 									  const ufbx_node *ufbxNode, const glm::vec3 &scale) {
 	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(ufbxScene->anim, ufbxNode, 1.0);
