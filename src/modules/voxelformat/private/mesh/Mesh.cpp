@@ -38,11 +38,11 @@ void Mesh::addTriangle(const voxelformat::MeshTri &tri) {
 	vertex2.normal = normal;
 	vertex2.materialIdx = tri.materialIdx;
 	indices.push_back((voxel::IndexType)vertices.size());
-	vertices.push_back(vertex0);
+	vertices.emplace_back(vertex0);
 	indices.push_back((voxel::IndexType)vertices.size());
-	vertices.push_back(vertex1);
+	vertices.emplace_back(vertex1);
 	indices.push_back((voxel::IndexType)vertices.size());
-	vertices.push_back(vertex2);
+	vertices.emplace_back(vertex2);
 }
 
 } // namespace voxelformat

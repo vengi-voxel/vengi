@@ -26,7 +26,7 @@ struct Mesh {
 	/**
 	 * polygons are just indices into the vertices array
 	 * they must be triangulated before they are voxelized.
-	 * @sa triangulatePolygons()
+	 * @sa MeshFormat::triangulatePolygons()
 	 */
 	core::DynamicArray<voxel::IndexArray> polygons;
 

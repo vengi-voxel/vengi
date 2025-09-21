@@ -685,7 +685,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					mat->emitColor = priv::_ufbx_to_rgba(ufbxMaterial->fbx.emission_color);
 				}
 				if (ufbxMaterial->fbx.transparency_factor.has_value) {
-					mat->transparency = ufbxMaterial->fbx.transparency_factor.value_real;
+					mat->transparency = 1.0f - ufbxMaterial->fbx.transparency_factor.value_real;
 				}
 			}
 		} else {
