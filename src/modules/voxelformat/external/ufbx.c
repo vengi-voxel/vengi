@@ -40,7 +40,6 @@
 //   UFBX_STATIC_ANALYSIS      Enable static analysis augmentation
 //   UFBX_DEBUG_BINARY_SEARCH  Force using binary search for debugging
 //   UFBX_EXTENSIVE_THREADING  Use threads for small inputs
-//   UFBX_POINTER_SIZE         Allow specifying sizeof(void*) as a preprocessor constant
 //   UFBX_MAXIMUM_ALIGNMENT    Maximum alignment used for allocation
 
 #if defined(UFBX_CONFIG_SOURCE)
@@ -859,22 +858,22 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 enum { UFBX_MAXIMUM_ALIGNMENT = sizeof(void*) > 8 ? sizeof(void*) : 8 };
 #endif
 
-#if !defined(UFBX_POINTER_SIZE) && !defined(UFBX_STANDARD_C)
-	#if (defined(_M_X64) || defined(__x86_64__) || defined(_M_ARM64) || defined(__aarch64__)) && !defined(__CHERI__)
-		#define UFBX_POINTER_SIZE 8
-	#elif defined(__wasm__) || defined(__EMSCRIPTEN__)
-		#define UFBX_POINTER_SIZE 4
+#if !defined(UFBXI_UINTPTR_SIZE) && !defined(__CHERI__) // CHERI lies about UINTPTR_MAX
+	#if UINTPTR_MAX == UINT64_MAX
+		#define UFBXI_UINTPTR_SIZE 8
+	#elif UINTPTR_MAX == UINT32_MAX
+		#define UFBXI_UINTPTR_SIZE 4
 	#endif
 #endif
-#if defined(UFBX_POINTER_SIZE)
-	ufbx_static_assert(pointer_size, UFBX_POINTER_SIZE == sizeof(void*));
+#if defined(UFBXI_UINTPTR_SIZE)
+	ufbx_static_assert(pointer_size, UFBXI_UINTPTR_SIZE == sizeof(uintptr_t));
 #else
-	#define UFBX_POINTER_SIZE 0
+	#define UFBXI_UINTPTR_SIZE 0
 #endif
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 20, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 20, 1)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -4797,9 +4796,9 @@ static ufbxi_unused ufbxi_forceinline uint32_t ufbxi_hash64(uint64_t x)
 
 static ufbxi_forceinline uint32_t ufbxi_hash_uptr(uintptr_t ptr)
 {
-#if UFBX_POINTER_SIZE == 8
+#if UFBXI_UINTPTR_SIZE == 8
 	return ufbxi_hash64((uint64_t)ptr);
-#elif UFBX_POINTER_SIZE == 4
+#elif UFBXI_UINTPTR_SIZE == 4
 	return ufbxi_hash32((uint32_t)ptr);
 #else
 	if (sizeof(ptr) == 8) return ufbxi_hash64((uint64_t)ptr);
