@@ -32,6 +32,14 @@ public:
 	const glm::vec2 &uv1() const;
 	const glm::vec2 &uv2() const;
 
+	float maxSideLength() const;
+	/**
+	 * Estimate reserve size: each subdivision splits a triangle into 4.
+	 * We need d subdivisions where longest_side * (0.5^d) <= 1 => d = ceil(log2(longest_side)).
+	 * The number of triangles produced per original triangle is 4^d.
+	 */
+	int subdivideTriCount(size_t maxPerTriangle) const;
+
 	/**
 	 * @return @c false if the given position is not within the triangle area. The value of uv should not be used in
 	 * this case.

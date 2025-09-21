@@ -404,7 +404,16 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx] (int start, int end) {
 			int c = currentIdx.increment();
 			MeshTriCollection &subdivided = meshTriCollections[c];
-			subdivided.reserve(end - start);
+			size_t estimateReserve = 0;
+			// cap per-triangle estimate to avoid pathological values (~1M)
+			const size_t maxPerTriangle = 1u << 20;
+			for (int i = start; i < end; ++i) {
+				const voxelformat::MeshTri &tri = tris[i];
+				estimateReserve += tri.subdivideTriCount(maxPerTriangle);
+			}
+			// Cap the total estimate to a reasonable upper bound to avoid huge single allocations
+			const size_t maxTotalReserve = (size_t)(end - start) * maxPerTriangle;
+			subdivided.reserve(glm::min(estimateReserve, maxTotalReserve));
 			for (int i = start; i < end; ++i) {
 				int depth = 0;
 				subdivideTri(tris[i], subdivided, depth);
