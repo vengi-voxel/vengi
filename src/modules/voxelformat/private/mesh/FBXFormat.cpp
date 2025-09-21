@@ -667,12 +667,12 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					mat->emitColor = priv::_ufbx_to_rgba(ufbxMaterial->pbr.emission_color);
 				}
 			} else {
-				if (ufbxMaterial->fbx.diffuse_factor.has_value) {
-					mat->baseColorFactor = (float)ufbxMaterial->fbx.diffuse_factor.value_real;
-				}
-				if (ufbxMaterial->fbx.diffuse_color.has_value) {
-					mat->baseColor = priv::_ufbx_to_rgba(ufbxMaterial->fbx.diffuse_color);
-				}
+				// if (ufbxMaterial->fbx.diffuse_factor.has_value) {
+				// 	mat->baseColorFactor = (float)ufbxMaterial->fbx.diffuse_factor.value_real;
+				// }
+				// if (ufbxMaterial->fbx.diffuse_color.has_value) {
+				// 	mat->baseColor = priv::_ufbx_to_rgba(ufbxMaterial->fbx.diffuse_color);
+				// }
 				if (ufbxMaterial->fbx.specular_factor.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialSpecular,
 										   ufbxMaterial->fbx.specular_factor.value_real);
@@ -684,9 +684,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				if (ufbxMaterial->fbx.emission_color.has_value) {
 					mat->emitColor = priv::_ufbx_to_rgba(ufbxMaterial->fbx.emission_color);
 				}
-				if (ufbxMaterial->fbx.transparency_factor.has_value) {
-					mat->transparency = 1.0f - ufbxMaterial->fbx.transparency_factor.value_real;
-				}
+				// if (ufbxMaterial->fbx.transparency_factor.has_value) {
+				// 	mat->transparency = 1.0f - ufbxMaterial->fbx.transparency_factor.value_real;
+				// }
 			}
 		} else {
 			Log::debug("No material assigned for mesh");
