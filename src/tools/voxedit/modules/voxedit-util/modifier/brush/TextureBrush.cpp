@@ -35,7 +35,7 @@ void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWr
 		return;
 	}
 
-	voxelutil::applyTextureToFace(wrapper, region, _aabbFace, _image, _uv0, _uv1, _projectOntoSurface);
+	voxelutil::applyTextureToFace(wrapper, region, wrapper.node().palette(), _aabbFace, _image, _uv0, _uv1, _projectOntoSurface);
 }
 
 void TextureBrush::setImage(const image::ImagePtr &texture) {

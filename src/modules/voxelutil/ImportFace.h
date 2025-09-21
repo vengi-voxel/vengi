@@ -98,7 +98,7 @@ inline glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &regi
  * @note UV coordinates have their origin in the upper left corner
  */
 template<class VOLUME>
-void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, voxel::FaceNames faceName,
+void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName,
 						const image::ImagePtr &image, glm::vec2 uv0 = {0.0f, 0.0f}, glm::vec2 uv1 = {1.0f, 1.0f},
 						bool projectOntoSurface = false) {
 	const glm::ivec3 &mins = region.getLowerCorner();
@@ -109,7 +109,6 @@ void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, voxel::Fac
 	const int axisIdx2 = axis == math::Axis::Y ? (axisIdx0 + 1) % 3 : (axisIdx0 + 2) % 3;
 	const int axisIdxUV1 = (axisIdx1 + 0) % 2;
 	const int axisIdxUV2 = (axisIdx1 + 1) % 2;
-	const palette::Palette &palette = wrapper.node().palette();
 
 	auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		const glm::ivec3 uvPos = getUVPosForFace(x, y, z, region, faceName);
