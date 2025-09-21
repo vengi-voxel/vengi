@@ -1,4 +1,4 @@
-// dear imgui, v1.92.3 WIP
+// dear imgui, v1.92.4 WIP
 // (main code and documentation)
 
 // Help:
@@ -4147,7 +4147,7 @@ ImGuiContext::ImGuiContext(ImFontAtlas* shared_font_atlas)
     WheelingWindowReleaseTimer = 0.0f;
 
     DebugDrawIdConflictsId = 0;
-    DebugHookIdInfo = 0;
+    DebugHookIdInfoId = 0;
     HoveredId = HoveredIdPreviousFrame = 0;
     HoveredIdPreviousFrameItemCount = 0;
     HoveredIdAllowOverlap = false;
@@ -4415,6 +4415,11 @@ void ImGui::Shutdown()
     ImGuiContext& g = *GImGui;
     IM_ASSERT_USER_ERROR(g.IO.BackendPlatformUserData == NULL, "Forgot to shutdown Platform backend?");
     IM_ASSERT_USER_ERROR(g.IO.BackendRendererUserData == NULL, "Forgot to shutdown Renderer backend?");
+    for (ImGuiViewportP* viewport : g.Viewports)
+    {
+        IM_UNUSED(viewport);
+        IM_ASSERT_USER_ERROR(viewport->RendererUserData == NULL && viewport->PlatformUserData == NULL && viewport->PlatformHandle == NULL, "Backend or app forgot to call DestroyPlatformWindows()?");
+    }
 
     // The fonts atlas can be used prior to calling NewFrame(), so we clear it even if g.Initialized is FALSE (which would happen if we never called NewFrame)
     for (ImFontAtlas* atlas : g.FontAtlases)
@@ -4435,9 +4440,6 @@ void ImGui::Shutdown()
     // Save settings (unless we haven't attempted to load them: CreateContext/DestroyContext without a call to NewFrame shouldn't save an empty file)
     if (g.SettingsLoaded && g.IO.IniFilename != NULL)
         SaveIniSettingsToDisk(g.IO.IniFilename);
-
-    // Destroy platform windows
-    DestroyPlatformWindows();
 
     // Shutdown extensions
     DockContextShutdown(&g);
@@ -9597,7 +9599,7 @@ ImGuiID ImGuiWindow::GetID(const char* str, const char* str_end)
     ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
     ImGuiContext& g = *Ctx;
-    if (g.DebugHookIdInfo == id)
+    if (g.DebugHookIdInfoId == id)
         ImGui::DebugHookIdInfo(id, ImGuiDataType_String, str, str_end);
 #endif
     return id;
@@ -9609,7 +9611,7 @@ ImGuiID ImGuiWindow::GetID(const void* ptr)
     ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
     ImGuiContext& g = *Ctx;
-    if (g.DebugHookIdInfo == id)
+    if (g.DebugHookIdInfoId == id)
         ImGui::DebugHookIdInfo(id, ImGuiDataType_Pointer, ptr, NULL);
 #endif
     return id;
@@ -9621,7 +9623,7 @@ ImGuiID ImGuiWindow::GetID(int n)
     ImGuiID id = ImHashData(&n, sizeof(n), seed);
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
     ImGuiContext& g = *Ctx;
-    if (g.DebugHookIdInfo == id)
+    if (g.DebugHookIdInfoId == id)
         ImGui::DebugHookIdInfo(id, ImGuiDataType_S32, (void*)(intptr_t)n, NULL);
 #endif
     return id;
@@ -9684,7 +9686,7 @@ void ImGui::PushOverrideID(ImGuiID id)
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
-    if (g.DebugHookIdInfo == id)
+    if (g.DebugHookIdInfoId == id)
         DebugHookIdInfo(id, ImGuiDataType_ID, NULL, NULL);
 #endif
     window->IDStack.push_back(id);
@@ -9698,7 +9700,7 @@ ImGuiID ImGui::GetIDWithSeed(const char* str, const char* str_end, ImGuiID seed)
     ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
     ImGuiContext& g = *GImGui;
-    if (g.DebugHookIdInfo == id)
+    if (g.DebugHookIdInfoId == id)
         DebugHookIdInfo(id, ImGuiDataType_String, str, str_end);
 #endif
     return id;
@@ -9709,7 +9711,7 @@ ImGuiID ImGui::GetIDWithSeed(int n, ImGuiID seed)
     ImGuiID id = ImHashData(&n, sizeof(n), seed);
 #ifndef IMGUI_DISABLE_DEBUG_TOOLS
     ImGuiContext& g = *GImGui;
-    if (g.DebugHookIdInfo == id)
+    if (g.DebugHookIdInfoId == id)
         DebugHookIdInfo(id, ImGuiDataType_S32, (void*)(intptr_t)n, NULL);
 #endif
     return id;
@@ -14121,6 +14123,9 @@ static ImVec2 ImGui::NavCalcPreferredRefPos()
 
     const bool activated_shortcut = g.ActiveId != 0 && g.ActiveIdFromShortcut && g.ActiveId == g.LastItemData.ID;
 
+    if (source != ImGuiInputSource_Mouse && !activated_shortcut && window == NULL)
+        source = ImGuiInputSource_Mouse;
+
     // Testing for !activated_shortcut here could in theory be removed if we decided that activating a remote shortcut altered one of the g.NavDisableXXX flag.
     if (source == ImGuiInputSource_Mouse)
     {
@@ -14136,18 +14141,20 @@ static ImVec2 ImGui::NavCalcPreferredRefPos()
         ImRect ref_rect;
         if (activated_shortcut)
             ref_rect = g.LastItemData.NavRect;
-        else
+        else if (window != NULL)
             ref_rect = WindowRectRelToAbs(window, window->NavRectRel[g.NavLayer]);
 
         // Take account of upcoming scrolling (maybe set mouse pos should be done in EndFrame?)
-        if (window->LastFrameActive != g.FrameCount && (window->ScrollTarget.x != FLT_MAX || window->ScrollTarget.y != FLT_MAX))
+        if (window != NULL && window->LastFrameActive != g.FrameCount && (window->ScrollTarget.x != FLT_MAX || window->ScrollTarget.y != FLT_MAX))
         {
             ImVec2 next_scroll = CalcNextScrollFromScrollTargetAndClamp(window);
             ref_rect.Translate(window->Scroll - next_scroll);
         }
         ImVec2 pos = ImVec2(ref_rect.Min.x + ImMin(g.Style.FramePadding.x * 4, ref_rect.GetWidth()), ref_rect.Max.y - ImMin(g.Style.FramePadding.y, ref_rect.GetHeight()));
-        ImGuiViewport* viewport = window->Viewport;
-        return ImTrunc(ImClamp(pos, viewport->Pos, viewport->Pos + viewport->Size)); // ImTrunc() is important because non-integer mouse position application in backend might be lossy and result in undesirable non-zero delta.
+        if (window != NULL)
+            if (ImGuiViewport* viewport = window->Viewport)
+                pos = ImClamp(pos, viewport->Pos, viewport->Pos + viewport->Size);
+        return ImTrunc(pos); // ImTrunc() is important because non-integer mouse position application in backend might be lossy and result in undesirable non-zero delta.
     }
 }
 
@@ -16216,6 +16223,37 @@ void ImGui::LocalizeRegisterEntries(const ImGuiLocEntry* entries, int count)
 // - DestroyPlatformWindow() [Internal]
 // - DestroyPlatformWindows()
 //-----------------------------------------------------------------------------
+
+void ImGuiPlatformIO::ClearPlatformHandlers()
+{
+    Platform_GetClipboardTextFn = NULL;
+    Platform_SetClipboardTextFn = NULL;
+    Platform_OpenInShellFn = NULL;
+    Platform_SetImeDataFn = NULL;
+    Platform_ClipboardUserData = Platform_OpenInShellUserData = Platform_ImeUserData = NULL;
+    Platform_CreateWindow = Platform_DestroyWindow = Platform_ShowWindow = NULL;
+    Platform_SetWindowPos = Platform_SetWindowSize = NULL;
+    Platform_GetWindowPos = Platform_GetWindowSize = Platform_GetWindowFramebufferScale = NULL;
+    Platform_SetWindowFocus = NULL;
+    Platform_GetWindowFocus = Platform_GetWindowMinimized = NULL;
+    Platform_SetWindowTitle = NULL;
+    Platform_SetWindowAlpha = NULL;
+    Platform_UpdateWindow = NULL;
+    Platform_RenderWindow = Platform_SwapBuffers = NULL;
+    Platform_GetWindowDpiScale = NULL;
+    Platform_OnChangedViewport = NULL;
+    Platform_GetWindowWorkAreaInsets = NULL;
+    Platform_CreateVkSurface = NULL;
+}
+
+void ImGuiPlatformIO::ClearRendererHandlers()
+{
+    Renderer_TextureMaxWidth = Renderer_TextureMaxHeight = 0;
+    Renderer_RenderState = NULL;
+    Renderer_CreateWindow = Renderer_DestroyWindow = NULL;
+    Renderer_SetWindowSize = NULL;
+    Renderer_RenderWindow = Renderer_SwapBuffers = NULL;
+}
 
 ImGuiViewport* ImGui::GetMainViewport()
 {
@@ -23539,21 +23577,22 @@ void ImGui::UpdateDebugToolStackQueries()
     ImGuiIDStackTool* tool = &g.DebugIDStackTool;
 
     // Clear hook when id stack tool is not visible
-    g.DebugHookIdInfo = 0;
+    g.DebugHookIdInfoId = 0;
+    tool->QueryHookActive = false;
     if (g.FrameCount != tool->LastActiveFrame + 1)
         return;
 
     // Update queries. The steps are: -1: query Stack, >= 0: query each stack item
     // We can only perform 1 ID Info query every frame. This is designed so the GetID() tests are cheap and constant-time
-    const ImGuiID query_id = g.HoveredIdPreviousFrame ? g.HoveredIdPreviousFrame : g.ActiveId;
-    if (tool->QueryId != query_id)
+    const ImGuiID query_main_id = g.HoveredIdPreviousFrame ? g.HoveredIdPreviousFrame : g.ActiveId;
+    if (tool->QueryMainId != query_main_id)
     {
-        tool->QueryId = query_id;
+        tool->QueryMainId = query_main_id;
         tool->StackLevel = -1;
         tool->Results.resize(0);
         tool->ResultPathsBuf.resize(0);
     }
-    if (query_id == 0)
+    if (query_main_id == 0)
         return;
 
     // Advance to next stack level when we got our result, or after 2 frames (in case we never get a result)
@@ -23565,11 +23604,15 @@ void ImGui::UpdateDebugToolStackQueries()
     // Update hook
     stack_level = tool->StackLevel;
     if (stack_level == -1)
-        g.DebugHookIdInfo = query_id;
-    if (stack_level >= 0 && stack_level < tool->Results.Size)
     {
-        g.DebugHookIdInfo = tool->Results[stack_level].ID;
+        g.DebugHookIdInfoId = query_main_id;
+        tool->QueryHookActive = true;
+    }
+    else if (stack_level >= 0 && stack_level < tool->Results.Size)
+    {
+        g.DebugHookIdInfoId = tool->Results[stack_level].ID;
         tool->Results[stack_level].QueryFrameCount++;
+        tool->QueryHookActive = true;
     }
 }
 
@@ -23579,11 +23622,17 @@ void ImGui::DebugHookIdInfo(ImGuiID id, ImGuiDataType data_type, const void* dat
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
     ImGuiIDStackTool* tool = &g.DebugIDStackTool;
+    if (tool->QueryHookActive == false)
+    {
+        IM_ASSERT(id == 0);
+        return;
+    }
 
     // Step 0: stack query
     // This assumes that the ID was computed with the current ID stack, which tends to be the case for our widget.
     if (tool->StackLevel == -1)
     {
+        IM_ASSERT(tool->Results.Size == 0);
         tool->StackLevel++;
         tool->Results.resize(window->IDStack.Size + 1, ImGuiStackLevelInfo());
         for (int n = 0; n < window->IDStack.Size + 1; n++)
@@ -23679,7 +23728,7 @@ void ImGui::ShowIDStackToolWindow(bool* p_open)
             p = p_next;
         }
     }
-    Text("0x%08X", tool->QueryId);
+    Text("0x%08X", tool->QueryMainId);
     SameLine();
     MetricsHelpMarker("Hover an item with the mouse to display elements of the ID Stack leading to the item's final ID.\nEach level of the stack correspond to a PushID() call.\nAll levels of the stack are hashed together to make the final ID of a widget (ID displayed at the bottom level of the stack).\nRead FAQ entry about the ID stack for details.");
 
@@ -23700,7 +23749,7 @@ void ImGui::ShowIDStackToolWindow(bool* p_open)
 
     Text("- Path \"%s\"", tool->ResultTempBuf.c_str());
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-    Text("- Label \"%s\"", tool->QueryId ? ImGuiTestEngine_FindItemDebugLabel(&g, tool->QueryId) : "");
+    Text("- Label \"%s\"", tool->QueryMainId ? ImGuiTestEngine_FindItemDebugLabel(&g, tool->QueryMainId) : "");
 #endif
 
     Separator();

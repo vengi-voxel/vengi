@@ -652,7 +652,13 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::Text("TestEngine: HookItems: %d, HookPushId: %d, InfoTasks: %d", g.TestEngineHookItems, g.DebugHookIdInfo != 0, engine->InfoTasks.Size);
+        ImGui::Text("TestEngine: HookItems: %d, HookPushId: %d, InfoTasks: %d", g.TestEngineHookItems,
+#if IMGUI_VERSION_NUM < 19229
+            g.DebugHookIdInfo != 0,
+#else
+            g.DebugHookIdInfoId != 0,
+#endif
+            engine->InfoTasks.Size);
         ImGui::Separator();
 
         if (ImGui::Button("Reboot UI context"))
