@@ -689,6 +689,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 			Log::debug("No material assigned for mesh");
 		}
 		mesh.materials.emplace_back(core::move(mat));
+		const MeshMaterialIndex materialIndex = mesh.materials.size() - 1;
 
 		for (size_t fi = 0; fi < ufbxMeshPart.num_faces; fi++) {
 			const ufbx_face ufbxFace = ufbxMesh->faces[ufbxMeshPart.face_indices[fi]];
@@ -696,6 +697,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 
 			for (size_t vi = 0; vi < numTris; vi++) {
 				voxelformat::MeshTri meshTri;
+				meshTri.materialIdx = materialIndex;
 				const uint32_t idx0 = triIndices[vi * 3 + 0];
 				const uint32_t idx1 = triIndices[vi * 3 + 1];
 				const uint32_t idx2 = triIndices[vi * 3 + 2];
@@ -725,7 +727,6 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					const ufbx_vec2 &uv2 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx2);
 					meshTri.setUVs(priv::_ufbx_to_vec2(uv0), priv::_ufbx_to_vec2(uv1), priv::_ufbx_to_vec2(uv2));
 				}
-				meshTri.materialIdx = mesh.materials.size() - 1;
 				mesh.addTriangle(meshTri);
 			}
 		}
