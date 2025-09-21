@@ -531,7 +531,7 @@ static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
 	return glm::quat((float)v.x, (float)v.y, (float)v.z, (float)v.w);
 }
 
-#if 0 
+#if 0
 static inline glm::mat4 _ufbx_to_mat(const ufbx_matrix& v) {
 	glm::mat4 mat(1.0f);
 	for (int column = 0; column < 4; ++column) {
@@ -545,9 +545,13 @@ static inline glm::mat4 _ufbx_to_mat(const ufbx_matrix& v) {
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *ufbxScene,
 									  const ufbx_node *ufbxNode, const glm::vec3 &scale) {
+#if 0
+	transform.setWorldMatrix(priv::_ufbx_to_mat(ufbxNode->unscaled_node_to_world));
+#else
 	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(ufbxScene->anim, ufbxNode, 1.0);
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
+#endif
 	// transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale)); // UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY is
 	// used - localScale not needed
 }
@@ -756,6 +760,10 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 	}
 
 	scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
+	sceneGraphNode.setVisible(ufbxNode->visible);
+
+#if 0
+	// TODO: VOXELFORMAT: animations - see ufbx_evaluate_transform
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
 	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, getInputScale());
@@ -766,8 +774,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 		sceneGraphNode.setProperty(priv::_ufbx_to_string(ufbxProp.name), priv::_ufbx_to_string(ufbxProp.value_str));
 	}
 	sceneGraphNode.setTransform(keyFrameIdx, transform);
-	sceneGraphNode.setVisible(ufbxNode->visible);
-	// TODO: VOXELFORMAT: animations - see ufbx_evaluate_transform
+#endif
 	return nodeId;
 }
 
