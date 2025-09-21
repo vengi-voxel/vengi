@@ -13,6 +13,8 @@
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace memento {
 
@@ -26,6 +28,10 @@ protected:
 			return core::String::Empty;
 		}
 		return core::string::toString(id);
+	}
+
+	int countVoxels(const voxel::RawVolume &volume) {
+		return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 	}
 
 	class TestMementoHandler : public MementoHandler {
@@ -58,7 +64,7 @@ protected:
 		Super::SetUp();
 		ASSERT_TRUE(_mementoHandler.init());
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, "1");
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1)), true);
 		node.setName("Node name");
 		_sceneGraph.emplace(core::move(node));
 	}
@@ -81,7 +87,8 @@ protected:
 
 		// Extract volume from memento state
 		voxel::RawVolume volume(state.dataRegion());
-		ASSERT_TRUE(state.data.toVolume(&volume, state.data, state.dataRegion())) << "Failed to extract volume from state " << description;
+		ASSERT_TRUE(state.data.toVolume(&volume, state.data, state.dataRegion()))
+			<< "Failed to extract volume from state " << description;
 
 		// Check expected voxels with specific colors
 		for (const core::Pair<glm::ivec3, uint8_t> &expectedVoxel : expectedVoxels) {
@@ -964,6 +971,99 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 																			   {glm::ivec3(1, 0, 0), 2}};
 	core::DynamicArray<glm::ivec3> partialUndoAir = {glm::ivec3(2, 0, 0), glm::ivec3(3, 0, 0)};
 	verifyVoxelState(partialUndo, "partial undo to first state", partialUndoExpected, partialUndoAir);
+}
+
+TEST_F(MementoHandlerTest, testNodeShiftWithModifiedRegionExceedingVolumeRegion) {
+	scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID("1");
+	ASSERT_NE(node, nullptr);
+	node->volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_mementoHandler.markInitialSceneState(_sceneGraph);
+	ASSERT_NE(node, nullptr);
+	voxel::Region regionCopy = node->region();
+	voxel::Region modifiedRegion = regionCopy;
+	node->volume()->translate({1, 1, 1});
+	modifiedRegion.accumulate(node->region());
+	ASSERT_TRUE(_mementoHandler.markModification(_sceneGraph, *node, modifiedRegion));
+	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
+	EXPECT_EQ(1, (int)_mementoHandler.statePosition());
+
+	const MementoState &undoFirst = firstState(_mementoHandler.undo());
+	ASSERT_TRUE(undoFirst.hasVolumeData());
+	EXPECT_EQ(regionCopy.getWidthInVoxels(), undoFirst.volumeRegion().getWidthInVoxels());
+	EXPECT_EQ(regionCopy.getLowerCorner(), undoFirst.volumeRegion().getLowerCorner());
+	{
+		voxel::RawVolume volume(undoFirst.dataRegion());
+		ASSERT_TRUE(undoFirst.data.toVolume(&volume, undoFirst.data, undoFirst.dataRegion()))
+			<< "Failed to extract volume";
+		EXPECT_EQ(voxel::VoxelType::Generic, volume.voxel(0, 0, 0).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Air, volume.voxel(1, 1, 1).getMaterial());
+	}
+
+	EXPECT_TRUE(_mementoHandler.canRedo());
+	const MementoState &redoFirst = firstState(_mementoHandler.redo());
+	ASSERT_TRUE(redoFirst.hasVolumeData());
+	EXPECT_EQ(regionCopy.getLowerCorner() + 1, redoFirst.volumeRegion().getLowerCorner());
+	{
+		voxel::RawVolume volume(redoFirst.dataRegion());
+		ASSERT_TRUE(redoFirst.data.toVolume(&volume, redoFirst.data, redoFirst.dataRegion()))
+			<< "Failed to extract volume";
+		EXPECT_EQ(voxel::VoxelType::Air, volume.voxel(0, 0, 0).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume.voxel(1, 1, 1).getMaterial());
+	}
+}
+
+TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
+	const int expectedVoxels = 4;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, "rotate");
+		node.setVolume(new voxel::RawVolume(voxel::Region(-3, -2, -10, expectedVoxels - 1, 2, 1)), true);
+		for (int i = 0; i < expectedVoxels; ++i) {
+			node.volume()->setVoxel(i, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+		node.setName("Node rotate");
+		_sceneGraph.emplace(core::move(node));
+	}
+	_mementoHandler.markInitialSceneState(_sceneGraph);
+	scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID("rotate");
+	ASSERT_NE(node, nullptr);
+	const voxel::Region regionCopy = node->region();
+	EXPECT_EQ(expectedVoxels, countVoxels(node->volume()));
+	voxel::RawVolume *newVolume = voxelutil::rotateAxis(node->volume(), math::Axis::Z);
+	ASSERT_NE(newVolume, nullptr);
+	voxel::Region modifiedRegion = newVolume->region();
+	ASSERT_NE(newVolume->region(), regionCopy);
+	modifiedRegion.accumulate(regionCopy);
+	ASSERT_NE(modifiedRegion, regionCopy);
+	node->setVolume(newVolume, true);
+	ASSERT_TRUE(_mementoHandler.markModification(_sceneGraph, *node, modifiedRegion));
+	EXPECT_EQ(expectedVoxels, countVoxels(node->volume()));
+
+	const MementoState &undoFirst = firstState(_mementoHandler.undo());
+	ASSERT_TRUE(undoFirst.hasVolumeData());
+	{
+		ASSERT_EQ(undoFirst.volumeRegion(), regionCopy);
+		ASSERT_EQ(undoFirst.dataRegion(), regionCopy);
+		voxel::RawVolume volume(undoFirst.volumeRegion());
+		ASSERT_TRUE(undoFirst.data.toVolume(&volume, undoFirst.data, undoFirst.dataRegion()))
+			<< "Failed to extract volume";
+		EXPECT_EQ(expectedVoxels, countVoxels(&volume));
+
+		for (int i = 0; i < expectedVoxels; ++i) {
+			EXPECT_EQ(voxel::VoxelType::Generic, volume.voxel(i, 0, 0).getMaterial());
+		}
+	}
+
+	ASSERT_TRUE(_mementoHandler.canRedo());
+	const MementoState &redoFirst = firstState(_mementoHandler.redo());
+	ASSERT_TRUE(redoFirst.hasVolumeData());
+	{
+		ASSERT_EQ(redoFirst.volumeRegion(), newVolume->region());
+		ASSERT_EQ(redoFirst.dataRegion(), newVolume->region());
+		voxel::RawVolume volume(redoFirst.volumeRegion());
+		ASSERT_TRUE(redoFirst.data.toVolume(&volume, redoFirst.data, redoFirst.dataRegion()))
+			<< "Failed to extract volume";
+		EXPECT_EQ(expectedVoxels, countVoxels(&volume));
+	}
 }
 
 } // namespace memento

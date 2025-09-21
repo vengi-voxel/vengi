@@ -215,24 +215,27 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	if (volume == nullptr) {
 		return MementoData();
 	}
-	voxel::Region mementoRegion = region;
-	const bool partialMemento = mementoRegion.isValid();
-	if (!partialMemento) {
-		mementoRegion = volume->region();
+	// Preserve the requested region. If it's invalid, fall back to the full volume region.
+	if (region.isValid()) {
+		// Use the RawVolume copy-with-region constructor which will handle regions
+		// that extend outside the source by filling with air or cropping as needed.
+		voxel::RawVolume v(*volume, region);
+		const int actualVoxels = v.region().voxels();
+		io::BufferedReadWriteStream outStream((int64_t)actualVoxels * sizeof(voxel::Voxel));
+		io::ZipWriteStream stream(outStream);
+		stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel));
+		stream.flush();
+		const size_t size = (size_t)outStream.size();
+		const voxel::Region actualRegion = v.region();
+		return {outStream.release(), size, actualRegion, volume->region()};
 	}
-
-	const int allVoxels = mementoRegion.voxels();
-	io::BufferedReadWriteStream outStream(allVoxels * sizeof(voxel::Voxel));
+	const int allVoxels = volume->region().voxels();
+	io::BufferedReadWriteStream outStream((int64_t)allVoxels * sizeof(voxel::Voxel));
 	io::ZipWriteStream stream(outStream);
-	if (partialMemento) {
-		voxel::RawVolume v(volume, mementoRegion);
-		stream.write(v.data(), allVoxels * sizeof(voxel::Voxel));
-	} else {
-		stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
-	}
+	stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
 	stream.flush();
 	const size_t size = (size_t)outStream.size();
-	return {outStream.release(), size, mementoRegion, volume->region()};
+	return {outStream.release(), size, volume->region(), volume->region()};
 }
 
 bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region) {
@@ -340,10 +343,14 @@ void MementoHandler::extractVolumeRegion(voxel::RawVolume *targetVolume, const M
 		return;
 	}
 
-	Log::debug("Undo region changes at %i:%i:%i - %i:%i:%i", state.data.modifiedRegion().getLowerX(),
-			   state.data.modifiedRegion().getLowerY(), state.data.modifiedRegion().getLowerZ(),
-			   state.data.modifiedRegion().getUpperX(), state.data.modifiedRegion().getUpperY(),
-			   state.data.modifiedRegion().getUpperZ());
+	voxel::Region modifiedRegion = state.data.modifiedRegion();
+	if (!state.data.volumeRegion().containsRegion(modifiedRegion)) {
+		modifiedRegion = state.data.dataRegion();
+	}
+	Log::debug("Undo region changes at %i:%i:%i - %i:%i:%i", modifiedRegion.getLowerX(),
+			   modifiedRegion.getLowerY(), modifiedRegion.getLowerZ(),
+			   modifiedRegion.getUpperX(), modifiedRegion.getUpperY(),
+			   modifiedRegion.getUpperZ());
 
 	// we need to walk all states because the memento data might be a partial region only
 	for (int groupStatePos = 0; groupStatePos < _groupStatePosition; ++groupStatePos) {
@@ -355,10 +362,16 @@ void MementoHandler::extractVolumeRegion(voxel::RawVolume *targetVolume, const M
 			if (s.nodeUUID != state.nodeUUID) {
 				continue;
 			}
-			memento::MementoData::toVolume(targetVolume, s.data, state.data.modifiedRegion());
+			if (!memento::MementoData::toVolume(targetVolume, s.data, modifiedRegion)) {
+				Log::debug("Failed to apply memento state of type %s for node %s", typeToString(s.type),
+						   s.nodeUUID.c_str());
+			}
 		}
 	}
-	memento::MementoData::toVolume(targetVolume, state.data, state.data.modifiedRegion());
+	if (!memento::MementoData::toVolume(targetVolume, state.data, modifiedRegion)) {
+		Log::debug("Failed to apply memento state of type %s for node %s", typeToString(state.type),
+				   state.nodeUUID.c_str());
+	}
 }
 
 const char *MementoHandler::typeToString(MementoType type) {
