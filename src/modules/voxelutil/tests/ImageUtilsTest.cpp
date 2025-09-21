@@ -220,4 +220,17 @@ TEST_F(ImageUtilsTest, testRenderIsometric) {
 	ASSERT_TRUE(image::writePNG(img, stream));
 }
 
+TEST_F(ImageUtilsTest, testApplyTextureToFace) {
+	const image::ImagePtr &image = image::loadImage("test-palette-in.png");
+	ASSERT_TRUE(image && image->isLoaded());
+	voxel::Region region(0, 0, 0, image->width() - 1, image->height() - 1, 1);
+	voxel::RawVolume volume(region);
+	palette::Palette palette;
+	palette.nippon();
+	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
+	voxelutil::applyTextureToFace(volume, region, palette, faceName, image, glm::vec2(0.0f, 1.0f),
+								  glm::vec2(1.0f, 0.0f));
+	EXPECT_EQ(1870, countVoxels(volume));
+}
+
 } // namespace voxelutil
