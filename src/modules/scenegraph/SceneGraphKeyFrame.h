@@ -45,7 +45,7 @@ private:
 public:
 	FrameIndex frameIdx = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
-	// TODO: ANIMATION: Support this by negation of the quaternions - they are equivalent, but interpolating between
+	// Support this by negation of the quaternions - they are equivalent, but interpolating between
 	// ones of different polarity takes the longer path
 	// if longRotation is true the dot of the quaternion should be > 0 otherwise < 0
 	bool longRotation = false;

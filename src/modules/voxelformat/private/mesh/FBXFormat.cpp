@@ -721,6 +721,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx0);
 					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx1);
 					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx2);
+					// TODO: VOXELFORMAT: this is sRGB - need to convert to linear
 					meshTri.setColor(core::Color::getRGBA(priv::_ufbx_to_vec4(color0)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 core::Color::getRGBA(priv::_ufbx_to_vec4(color2)));

@@ -431,11 +431,20 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 			const SceneGraphKeyFrame *target = node.keyFrame(end);
 			core_assert_always(source && target);
 			const InterpolationType interpolationType = source->interpolation;
+
+			glm::quat tgtLocalOrientation = target->transform().localOrientation();
+			const glm::quat &srcLocalOrientation = source->transform().localOrientation();
+			if (source->longRotation) {
+				if (glm::dot(tgtLocalOrientation, srcLocalOrientation) < 0.0f) {
+					tgtLocalOrientation *= -1.0f;
+				}
+			}
+
 			const double deltaFrame = scenegraph::interpolate(interpolationType, (double)frameIdx, (double)source->frameIdx, (double)target->frameIdx);
 			const float lerpFactor = glm::clamp((float)(deltaFrame - (double)source->frameIdx), 0.0f, 1.0f);
 
 			const glm::vec3 translation = glm::mix(source->transform().localTranslation(), target->transform().localTranslation(), lerpFactor);
-			const glm::quat orientation = glm::slerp(source->transform().localOrientation(), target->transform().localOrientation(), lerpFactor);
+			const glm::quat orientation = glm::slerp(srcLocalOrientation, tgtLocalOrientation, lerpFactor);
 			const glm::vec3 scale = glm::mix(source->transform().localScale(), target->transform().localScale(), lerpFactor);
 			transform.setWorldMatrix(parentTransform.worldMatrix() * (glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale)));
 		}
