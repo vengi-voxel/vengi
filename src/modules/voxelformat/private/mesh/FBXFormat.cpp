@@ -699,9 +699,13 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				const uint32_t idx0 = triIndices[vi * 3 + 0];
 				const uint32_t idx1 = triIndices[vi * 3 + 1];
 				const uint32_t idx2 = triIndices[vi * 3 + 2];
-				const ufbx_vec3 &vertex0 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx0);
-				const ufbx_vec3 &vertex1 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx1);
-				const ufbx_vec3 &vertex2 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx2);
+				ufbx_vec3 vertex0 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx0);
+				ufbx_vec3 vertex1 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx1);
+				ufbx_vec3 vertex2 = ufbx_get_vertex_vec3(&ufbxMesh->vertex_position, idx2);
+
+				vertex0 = priv::_ufbx_axes_to_engine(vertex0, ufbxScene->settings.axes);
+				vertex1 = priv::_ufbx_axes_to_engine(vertex1, ufbxScene->settings.axes);
+				vertex2 = priv::_ufbx_axes_to_engine(vertex2, ufbxScene->settings.axes);
 
 				// TODO: VOXELFORMAT: transform here - see issue
 				// https://github.com/vengi-voxel/vengi/issues/447
