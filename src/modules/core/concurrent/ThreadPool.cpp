@@ -120,7 +120,9 @@ void ThreadPool::shutdown(bool wait) {
 	}
 	_queueCondition.notify_all();
 	for (std::thread &worker : _workers) {
-		worker.join();
+		if (worker.joinable()) {
+			worker.join();
+		}
 	}
 	_workers.clear();
 }
