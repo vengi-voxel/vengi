@@ -94,6 +94,8 @@ static void logOutputFunction(void *userdata, int category, SDL_LogPriority prio
 	SetConsoleTextAttribute(terminalHandle, info.wAttributes);
 	_logCallback(_logCallbackUserData, category, priority, message);
 	SetConsoleTextAttribute(terminalHandle, defaultAttributes);
+#else
+	_logCallback(_logCallbackUserData, category, priority, message);
 #endif
 }
 
