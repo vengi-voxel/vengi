@@ -385,14 +385,31 @@ bool Filesystem::sysIsReadableDir(const core::String &name) {
 bool Filesystem::sysIsRelativePath(const core::String &name) {
 	const size_t size = name.size();
 #if defined(_WIN32) || defined(__CYGWIN__)
-	if (size < 2) {
+	if (size == 0) {
 		return true;
 	}
-	if (name[0] == '/') {
+	// UNC paths or device paths: start with \\ or // -> absolute
+	if ((name[0] == '\\' || name[0] == '/') && size >= 2 && (name[1] == '\\' || name[1] == '/')) {
 		return false;
 	}
-	// TODO: hm... not cool and most likely not enough
-	return name[1] != ':';
+	// Rooted path on current drive: \foo or /foo -> absolute (rooted)
+	if (name[0] == '\\' || name[0] == '/') {
+		return false;
+	}
+	// Drive-letter paths: e.g. C:\foo (absolute) or C:foo (relative to drive)
+	if (size >= 2 && ((name[0] >= 'A' && name[0] <= 'Z') || (name[0] >= 'a' && name[0] <= 'z')) && name[1] == ':') {
+		// If only "C:" then it's relative (current directory on that drive)
+		if (size == 2) {
+			return true;
+		}
+		// If third char is slash/backslash it's absolute (C:\ or C:/)
+		if (size >= 3 && (name[2] == '\\' || name[2] == '/')) {
+			return false;
+		}
+		// Otherwise C:foo -> relative to drive
+		return true;
+	}
+	return true;
 #else
 	if (size == 0) {
 		return true;
