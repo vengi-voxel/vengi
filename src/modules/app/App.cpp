@@ -221,6 +221,8 @@ void App::setArgs(int argc, char *argv[]) {
 int App::startMainLoop(int argc, char *argv[]) {
 	setArgs(argc, argv);
 #ifdef __EMSCRIPTEN__
+	// ensure any previously installed main loop (e.g. from shell file) is cancelled
+	emscripten_cancel_main_loop();
 	emscripten_set_main_loop(runFrameEmscripten, 0, 1);
 #else
 	while (AppState::InvalidAppState != _curState) {
