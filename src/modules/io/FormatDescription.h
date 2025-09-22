@@ -125,6 +125,7 @@ const FormatDescription *lua();
 
 FormatDescription png();
 
+void writeJson(io::WriteStream &stream, const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags);
 void printJson(const FormatDescription *desc, const core::StringMap<uint32_t> &flags = {});
 
 } // namespace format

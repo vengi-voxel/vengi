@@ -10,34 +10,44 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/StandardLib.h"
+#include "io/BufferedReadWriteStream.h"
 
 namespace io {
 
 namespace format {
 
-void printJson(const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags) {
+void writeJson(io::WriteStream &stream, const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags) {
 	const io::FormatDescription *first = desc;
 	for (; desc->valid(); ++desc) {
 		if (desc != first) {
-			Log::printf(",");
+			stream.writeString(",", false);
 		}
-		Log::printf("{");
-		Log::printf("\"name\":\"%s\",", desc->name.c_str());
-		Log::printf("\"extensions\":[");
+		stream.writeString("{", false);
+		stream.writeStringFormat(false, "\"name\":\"%s\",", desc->name.c_str());
+		stream.writeString("\"extensions\":[", false);
 		for (size_t i = 0; i < desc->exts.size(); ++i) {
 			if (i > 0) {
-				Log::printf(",");
+				stream.writeString(",", false);
 			}
-			Log::printf("\"%s\"", desc->exts[i].c_str());
+			stream.writeStringFormat(false, "\"%s\"", desc->exts[i].c_str());
 		}
-		Log::printf("]");
+		stream.writeString("]", false);
 		for (const auto &entry : flags) {
 			if (desc->flags & entry->second) {
-				Log::printf(",\"%s\":true", entry->first.c_str());
+				stream.writeStringFormat(false, ",\"%s\":true", entry->first.c_str());
 			}
 		}
-		Log::printf("}");
+		stream.writeString("}", false);
 	}
+}
+
+void printJson(const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags) {
+	BufferedReadWriteStream stream;
+	writeJson(stream, desc, flags);
+	if (!stream.writeUInt8('\0')) {
+		return;
+	}
+	Log::printf("%s\n", stream.getBuffer());
 }
 
 FormatDescription png() {
