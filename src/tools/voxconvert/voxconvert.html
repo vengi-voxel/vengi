@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <title>@NAME@</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        #output {
+            white-space: pre-wrap; /* Preserve line breaks */
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .controls { margin: 10px 0; }
+        label { display:block; margin-top: 8px; }
+        select, input[type="file"], button { margin-top: 6px; }
+    </style>
+    <script>
+    var Module = {
+        preRun: [],
+        postRun: [],
+        noInitialRun: true,
+        print: function(text) {
+            var outputElement = document.getElementById('output');
+            if (outputElement) outputElement.textContent += text + '\n'; // Append the text to the output div
+        },
+        printErr: function(text) {
+            var outputElement = document.getElementById('output');
+            if (outputElement) outputElement.textContent += 'ERROR: ' + text + '\n'; // Highlight errors in output
+        }
+    };
+    window.onerror = function(event) {
+        var outputElement = document.getElementById('output');
+        if (outputElement) outputElement.textContent += 'Unhandled Error: ' + event.message + '\n';
+    };
+    </script>
+    {{{ SCRIPT }}}
+    <script>
+    // utility to append messages to the on-page console
+    function log(msg) {
+        var o = document.getElementById('output');
+        if (o) o.textContent += msg + '\n';
+        console.log(msg);
+    }
+
+    // Helper removed: we'll call Module.callMain directly and use Module.print/printErr
+
+    function fetchFormats() {
+        var jsonStr = Module.ccall('get_supported_formats_json', 'string', [], []);
+        var json = JSON.parse(jsonStr);
+        var sel = document.getElementById('formatSelect');
+        sel.innerHTML = '';
+
+        json['voxels'].forEach(function(item) {
+            var name = item.name;
+            var exts = item.extensions;
+            exts.forEach(function(ext) {
+                var opt = document.createElement('option');
+                opt.value = ext;
+                opt.textContent = name + ' (.' + ext + ')';
+                sel.appendChild(opt);
+            });
+        });
+
+        sel.selectedIndex = 0;
+        sel.disabled = false;
+    }
+
+    async function runWithUploadedFile(file) {
+        if (!file) {
+            log('No input file selected');
+            return;
+        }
+        var sel = document.getElementById('formatSelect');
+        var ext = sel.value;
+
+        log('Uploading file: ' + file.name); // TODO: progress bar
+
+        var arrayBuffer = await file.arrayBuffer();
+        // write input directly at the virtual FS root to avoid depending on /in or /out
+        var inPath = '/' + file.name;
+        try {
+            Module.FS.writeFile(inPath, new Uint8Array(arrayBuffer));
+        } catch (e) {
+            log('FS.writeFile error: ' + e);
+            return;
+        }
+        var baseName = file.name.replace(/\.[^/.]+$/, '') || file.name;
+        var outName = baseName + '.' + ext;
+        var outPath = '/' + outName;
+
+        await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
+
+        // Try to read the output file. If not found, retry once after a short delay (to cover small async delays).
+        // TODO: why is this needed? There should be a FS.syncfs call in io::Filesystem::shutdown
+        try {
+            var data = Module.FS.readFile(outPath);
+        } catch (e) {
+            await new Promise(function(res) { setTimeout(res, 200); });
+            try { data = Module.FS.readFile(outPath); } catch (e2) { data = null; }
+        }
+
+        if (data) {
+            var blob = new Blob([data], { type: 'application/octet-stream' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = outName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            log('Download triggered: ' + outName);
+        }
+    }
+
+    function buildUI() {
+        var container = document.createElement('div');
+        container.className = 'controls';
+
+        var fileLabel = document.createElement('label');
+        fileLabel.textContent = 'Input file:';
+        var fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'fileInput';
+        fileLabel.appendChild(fileInput);
+        container.appendChild(fileLabel);
+
+        var formatLabel = document.createElement('label');
+        formatLabel.textContent = 'Output format:';
+        var formatSelect = document.createElement('select');
+        formatSelect.id = 'formatSelect';
+        formatSelect.disabled = true;
+        formatLabel.appendChild(formatSelect);
+        container.appendChild(formatLabel);
+
+        var runBtn = document.createElement('button');
+        runBtn.textContent = 'Run and Download';
+        runBtn.onclick = function() {
+            var f = document.getElementById('fileInput').files[0];
+            runWithUploadedFile(f);
+        };
+        container.appendChild(runBtn);
+
+        var root = document.getElementById('controlsRoot');
+        if (root) root.appendChild(container);
+    }
+
+    // wait for the Module runtime to be ready
+    Module.onRuntimeInitialized = function() {
+        buildUI();
+        fetchFormats();
+    };
+    </script>
+</head>
+<body>
+    <h1>@NAME@ @PROJECT_VERSION@</h1>
+    <div id="controlsRoot"></div>
+    <div id="output"></div>
+</body>
+</html>

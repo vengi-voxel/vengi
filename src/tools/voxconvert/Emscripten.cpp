@@ -2,6 +2,8 @@
  * @file
  */
 
+#include "core/Var.h"
+#include "VoxConvert.h"
 #include "core/String.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FormatDescription.h"
@@ -13,6 +15,20 @@
 #ifndef EMSCRIPTEN_KEEPALIVE
 #define EMSCRIPTEN_KEEPALIVE
 #endif
+
+extern "C" EMSCRIPTEN_KEEPALIVE void convert_file(char *input, char *output) {
+	if (input == nullptr || output == nullptr) {
+		return;
+	}
+	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();
+	VoxConvert app(filesystem, timeProvider);
+	char appnameArg[] = "voxconvert";
+	char inputArg[] = "--input";
+	char outputArg[] = "--output";
+	char *argv[] = {appnameArg, inputArg, input, outputArg, output};
+	app.startMainLoop(lengthof(argv), argv);
+}
 
 extern "C" EMSCRIPTEN_KEEPALIVE const char *get_supported_formats_json() {
 	static core::String formats;
