@@ -8,7 +8,7 @@ endif()
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} DESCRIPTION "Command line voxel tool")
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES app voxelformat voxelgenerator voxelgenerator-lua)
-engine_emscripten_export_functions(${PROJECT_NAME} get_supported_formats_json)
+engine_emscripten_export_functions(${PROJECT_NAME} _get_supported_formats_json)
 
 set(UI_SRCS
 	VoxConvertUI.h VoxConvertUI.cpp
