@@ -561,6 +561,20 @@ function(engine_target_link_libraries)
 	endif()
 endfunction()
 
+# Emscripten expects exported symbol names to be listed with a leading
+# underscore (e.g. `_get_supported_formats_json`). Export the symbol that
+# way so the linker finds the C-style symbol produced by `extern "C"`.
+function(engine_emscripten_export_functions TARGET)
+	set(FUNCTIONS ${ARGN} ${EMSCRIPTEN_EXPORTED_FUNCTIONS})
+	foreach (func ${FUNCTIONS})
+		if (NOT func MATCHES "^_")
+			set(FUNCTIONS ${FUNCTIONS} "_${func}")
+		endif()
+	endforeach()
+	string(REPLACE ";" "," FUNCTIONS_LIST "${FUNCTIONS}")
+	set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "${CMAKE_LINKER_FLAGS} -sEXPORTED_FUNCTIONS=[${FUNCTIONS_LIST}]")
+endfunction()
+
 function(engine_target_optimize TARGET)
 	# http://christian-seiler.de/projekte/fpmath/
 	if (MSVC)
