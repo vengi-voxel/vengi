@@ -1997,6 +1997,7 @@ void ImGuiTestEngine_ErrorRecoverySetup(ImGuiTestEngine* engine)
         ctx->UiContext->ErrorCallbackUserData = ctx;
     }
     ctx->UiContext->IO.ConfigErrorRecoveryEnableAssert = ((ctx->Test->Flags & ImGuiTestFlags_NoRecoveryWarnings) == 0 && ctx->TestOutput->Status != ImGuiTestStatus_Error);
+    ctx->UiContext->IO.ConfigErrorRecoveryEnableDebugLog = ((ctx->Test->Flags & ImGuiTestFlags_NoRecoveryWarnings) == 0);
 #else
     IM_UNUSED(ctx);
 #endif

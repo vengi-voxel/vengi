@@ -400,6 +400,7 @@ IMPLEMENTING SUPPORT for ImGuiBackendFlags_RendererHasTextures:
                           - likewise io.MousePos and GetMousePos() will use OS coordinates.
                             If you query mouse positions to interact with non-imgui coordinates you will need to offset them, e.g. subtract GetWindowViewport()->Pos.
 
+ - 2025/09/22 (1.92.4) - Viewports: renamed io.ConfigViewportPlatformFocusSetsImGuiFocus to io.ConfigViewportsPlatformFocusSetsImGuiFocus. Was a typo in the first place. (#6299, #6462)
  - 2025/08/08 (1.92.2) - Backends: SDL_GPU3: Changed ImTextureID type from SDL_GPUTextureSamplerBinding* to SDL_GPUTexture*, which is more natural and easier for user to manage. If you need to change the current sampler, you can access the ImGui_ImplSDLGPU3_RenderState struct. (#8866, #8163, #7998, #7988)
  - 2025/07/31 (1.92.2) - Tabs: Renamed ImGuiTabBarFlags_FittingPolicyResizeDown to ImGuiTabBarFlags_FittingPolicyShrink. Kept inline redirection enum (will obsolete).
  - 2025/06/25 (1.92.0) - Layout: commented out legacy ErrorCheckUsingSetCursorPosToExtendParentBoundaries() fallback obsoleted in 1.89 (August 2022) which allowed a SetCursorPos()/SetCursorScreenPos() call WITHOUT AN ITEM
@@ -1575,8 +1576,8 @@ ImGuiIO::ImGuiIO()
     ConfigViewportsNoAutoMerge = false;
     ConfigViewportsNoTaskBarIcon = false;
     ConfigViewportsNoDecoration = true;
-    ConfigViewportsNoDefaultParent = false;
-    ConfigViewportPlatformFocusSetsImGuiFocus = true;
+    ConfigViewportsNoDefaultParent = true;
+    ConfigViewportsPlatformFocusSetsImGuiFocus = true;
 
     // Miscellaneous options
     MouseDrawCursor = false;
@@ -16326,6 +16327,15 @@ static bool ImGui::GetWindowAlwaysWantOwnViewport(ImGuiWindow* window)
     return false;
 }
 
+
+// Heuristic, see #8948: depends on how backends handle OS-level parenting.
+static bool IsViewportAbove(ImGuiViewportP* potential_above, ImGuiViewportP* potential_below)
+{
+    if (potential_above->LastFocusedStampCount > potential_below->LastFocusedStampCount || potential_above->ParentViewportId == potential_below->ID) // FIXME: Should follow the ParentViewportId list.
+        return true;
+    return false;
+}
+
 static bool ImGui::UpdateTryMergeWindowIntoHostViewport(ImGuiWindow* window, ImGuiViewportP* viewport)
 {
     ImGuiContext& g = *GImGui;
@@ -16340,14 +16350,12 @@ static bool ImGui::UpdateTryMergeWindowIntoHostViewport(ImGuiWindow* window, ImG
     if (GetWindowAlwaysWantOwnViewport(window))
         return false;
 
-    // FIXME: Can't use g.WindowsFocusOrder[] for root windows only as we care about Z order. If we maintained a DisplayOrder along with FocusOrder we could..
-    for (ImGuiWindow* window_behind : g.Windows)
+    for (ImGuiViewportP* viewport_2 : g.Viewports)
     {
-        if (window_behind == window)
-            break;
-        if (window_behind->WasActive && window_behind->ViewportOwned && !(window_behind->Flags & ImGuiWindowFlags_ChildWindow))
-            if (window_behind->Viewport->GetMainRect().Overlaps(window->Rect()))
-                return false;
+        if (viewport_2 == viewport || viewport_2 == window->Viewport)
+            continue;
+        if (IsViewportAbove(viewport_2, viewport) && viewport_2->GetMainRect().Overlaps(window->Rect()))
+            return false;
     }
 
     // Move to the existing viewport, Move child/hosted windows as well (FIXME-OPT: iterate child)
@@ -16479,7 +16487,7 @@ static void ImGui::UpdateViewportsNewFrame()
             // - if focus didn't happen because we destroyed another window (#6462)
             // FIXME: perhaps 'FocusTopMostWindowUnderOne()' can handle the 'focused_window->Window != NULL' case as well.
             const bool apply_imgui_focus_on_focused_viewport = !IsAnyMouseDown() && !prev_focused_has_been_destroyed;
-            if (apply_imgui_focus_on_focused_viewport && g.IO.ConfigViewportPlatformFocusSetsImGuiFocus)
+            if (apply_imgui_focus_on_focused_viewport && g.IO.ConfigViewportsPlatformFocusSetsImGuiFocus)
             {
                 focused_viewport->LastFocusedHadNavWindow |= (g.NavWindow != NULL) && (g.NavWindow->Viewport == focused_viewport); // Update so a window changing viewport won't lose focus.
                 ImGuiFocusRequestFlags focus_request_flags = ImGuiFocusRequestFlags_UnlessBelowModal | ImGuiFocusRequestFlags_RestoreFocusedChild;

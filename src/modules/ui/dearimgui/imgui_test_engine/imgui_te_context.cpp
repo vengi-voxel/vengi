@@ -146,8 +146,14 @@ void    ImGuiTestContext::LogExV(ImGuiTestVerboseLevel level, ImGuiTestLogFlags 
     log->Buffer.append("\n");
 
     log->UpdateLineOffsets(EngineIO, level, log->Buffer.begin() + prev_size);
-    LogToTTY(level, log->Buffer.c_str() + prev_size);
-    LogToDebugger(level, log->Buffer.c_str() + prev_size);
+
+    const char* output_raw = log->Buffer.c_str() + prev_size;
+    if (EngineIO->ConfigLogToTTY)
+        LogToTTY(level, output_raw);
+    if (EngineIO->ConfigLogToDebugger)
+        LogToDebugger(level, output_raw);
+    if (EngineIO->ConfigLogToFunc)
+        EngineIO->ConfigLogToFunc(Engine, this, level, output_raw, EngineIO->ConfigLogToFuncUserData);
 }
 
 void    ImGuiTestContext::LogDebug(const char* fmt, ...)
