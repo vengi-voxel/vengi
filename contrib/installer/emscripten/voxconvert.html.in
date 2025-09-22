@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+	<meta charset="utf-8">
+	<title>Console Application</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+			background-color: #f4f4f4;
+			color: #333;
+		}
+		#output {
+			white-space: pre-wrap; /* Preserve line breaks */
+			background: #222;
+			color: #0f0;
+			padding: 10px;
+			border-radius: 5px;
+			overflow-y: auto;
+			max-height: 400px;
+		}
+		.controls { margin: 10px 0; }
+		label { display:block; margin-top: 8px; }
+		select, input[type="file"], button { margin-top: 6px; }
+	</style>
+	<script>
+	var Module = {
+		preRun: [
+		function() {
+			// Ensure expected directories exist and mount IDBFS for persistence.
+			try {
+				// create folders used by the UI/program so lookups won't fail
+				try { Module.FS.mkdir('/in'); } catch (e) { /* already exists */ }
+				try { Module.FS.mkdir('/out'); } catch (e) { /* already exists */ }
+
+				// mount IDBFS on /out so outputs can persist across reloads (optional)
+				if (Module.FS && Module.FS.filesystems && Module.FS.filesystems.IDBFS) {
+					try { Module.FS.mount(Module.FS.filesystems.IDBFS, {}, '/out'); } catch (e) { /* ignore mount errors */ }
+				}
+
+				// sync from IndexedDB -> memory before anything tries to read /out
+				try {
+					if (Module.FS && Module.FS.syncfs) {
+					Module.FS.syncfs(true, function(err) {
+						if (err) console.warn('IDBFS initial sync error (ignored):', err);
+						else console.log('IDBFS initial sync completed');
+					});
+					}
+				} catch (e) {
+					console.warn('FS.syncfs call failed (ignored):', e);
+				}
+			} catch (e) {
+				console.warn('preRun FS setup failed (ignored):', e);
+			}
+		}
+		],
+		postRun: [],
+		print: function(text) {
+		var outputElement = document.getElementById('output');
+		if (outputElement) outputElement.textContent += text + '\n'; // Append the text to the output div
+		},
+		printErr: function(text) {
+		var outputElement = document.getElementById('output');
+		if (outputElement) outputElement.textContent += 'ERROR: ' + text + '\n'; // Highlight errors in output
+		}
+	};
+	window.onerror = function(event) {
+		var outputElement = document.getElementById('output');
+		if (outputElement) outputElement.textContent += 'Unhandled Error: ' + event.message + '\n';
+	};
+	</script>
+	{{{ SCRIPT }}}
+	<script>
+	// utility to append messages to the on-page console
+	function log(msg) {
+		var o = document.getElementById('output');
+		if (o) o.textContent += msg + '\n';
+		console.log(msg);
+	}
+
+	// run Module.callMain synchronously and capture printed output into a string
+	function runAndCapture(args) {
+		args = args || [];
+		var buf = '';
+		var oldPrint = Module.print;
+		var oldPrintErr = Module.printErr;
+		Module.print = function(text) { buf += text + '\n'; oldPrint(text); };
+		Module.printErr = function(text) { buf += text + '\n'; oldPrintErr(text); };
+		try {
+			Module.callMain(args);
+		} catch (e) {
+			buf += 'Exception: ' + e + '\n';
+			oldPrintErr('Exception: ' + e);
+		} finally {
+			Module.print = oldPrint;
+			Module.printErr = oldPrintErr;
+		}
+		return buf;
+	}
+
+	// parse JSON output robustly
+	function tryParseJSON(s) {
+		s = (s||'').trim();
+		if (!s) return null;
+		try { return JSON.parse(s); } catch (e) {}
+		// fallback: attempt to extract the first {...} or [...] substring
+		var idx1 = s.indexOf('{');
+		var idx2 = s.lastIndexOf('}');
+		if (idx1 !== -1 && idx2 !== -1 && idx2 > idx1) {
+			try { return JSON.parse(s.slice(idx1, idx2+1)); } catch (e) {}
+		}
+		idx1 = s.indexOf('[');
+		idx2 = s.lastIndexOf(']');
+		if (idx1 !== -1 && idx2 !== -1 && idx2 > idx1) {
+			try { return JSON.parse(s.slice(idx1, idx2+1)); } catch (e) {}
+		}
+		return null;
+	}
+
+	// populate formats select by calling --print-formats json
+	function fetchFormats() {
+		log('Querying supported formats...');
+		var out = runAndCapture(['--print-formats', 'json']);
+		var parsed = tryParseJSON(out);
+		var sel = document.getElementById('formatSelect');
+		sel.innerHTML = '';
+		if (!parsed) {
+			log('Could not parse formats from program output. Full output:\n' + out);
+			var opt = document.createElement('option');
+			opt.value = '';
+			opt.text = 'parse error';
+			sel.appendChild(opt);
+			sel.disabled = true;
+			return;
+		}
+		// Expecting either array of extensions or object. Handle common shapes.
+		var exts = [];
+		if (Array.isArray(parsed)) exts = parsed;
+			else if (parsed.formats && Array.isArray(parsed.formats)) exts = parsed.formats;
+			else if (parsed.extensions && Array.isArray(parsed.extensions)) exts = parsed.extensions;
+			else {
+			// if object of ext->{...}, use keys
+			exts = Object.keys(parsed);
+		}
+		if (exts.length === 0) {
+			var opt = document.createElement('option');
+			opt.value = '';
+			opt.text = '(no formats)';
+			sel.appendChild(opt);
+			sel.disabled = true;
+			log('No formats found in JSON.');
+			return;
+		}
+		exts.forEach(function(e) {
+			var opt = document.createElement('option');
+			opt.value = e;
+			opt.text = e;
+			sel.appendChild(opt);
+		});
+		sel.disabled = false;
+		log('Supported formats loaded: ' + exts.join(', '));
+	}
+
+	// run the program with the uploaded input and chosen output extension
+	async function runWithUploadedFile(file) {
+		if (!file) { log('No input file selected'); return; }
+		var sel = document.getElementById('formatSelect');
+		var ext = sel.value;
+		if (!ext) { log('No output format selected'); return; }
+
+		log('Reading input file: ' + file.name);
+		var arrayBuffer = await file.arrayBuffer();
+		var inputDir = '/in';
+		var outputDir = '/out';
+		try { Module.FS.mkdir(inputDir); } catch (e) {}
+		try { Module.FS.mkdir(outputDir); } catch (e) {}
+		var inPath = inputDir + '/' + file.name;
+		try {
+			Module.FS.writeFile(inPath, new Uint8Array(arrayBuffer));
+		} catch (e) {
+			log('FS.writeFile error: ' + e);
+			return;
+		}
+		var baseName = file.name.replace(/\.[^/.]+$/, '') || file.name;
+		var outName = baseName + '.' + ext;
+		var outPath = outputDir + '/' + outName;
+
+		log('Running program: --input ' + inPath + ' --output ' + outPath);
+		try {
+			runAndCapture(['--input', inPath, '--output', outPath]);
+		} catch (e) {
+			log('Execution error: ' + e);
+		}
+
+		// read output from virtual FS and trigger download
+		try {
+			var data = Module.FS.readFile(outPath);
+			var blob = new Blob([data], { type: 'application/octet-stream' });
+			var url = URL.createObjectURL(blob);
+			var a = document.createElement('a');
+			a.href = url;
+			a.download = outName;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			URL.revokeObjectURL(url);
+			log('Download triggered: ' + outName);
+		} catch (e) {
+			log('Could not read output file at ' + outPath + ' — program may not have produced it. Error: ' + e);
+		}
+	}
+
+	function buildUI() {
+		var container = document.createElement('div');
+		container.className = 'controls';
+
+		var fileLabel = document.createElement('label');
+		fileLabel.textContent = 'Input file:';
+		var fileInput = document.createElement('input');
+		fileInput.type = 'file';
+		fileInput.id = 'fileInput';
+		fileLabel.appendChild(fileInput);
+		container.appendChild(fileLabel);
+
+		var formatLabel = document.createElement('label');
+		formatLabel.textContent = 'Output format (extension):';
+		var formatSelect = document.createElement('select');
+		formatSelect.id = 'formatSelect';
+		formatSelect.disabled = true;
+		formatLabel.appendChild(formatSelect);
+		container.appendChild(formatLabel);
+
+		var runBtn = document.createElement('button');
+		runBtn.textContent = 'Run and Download';
+		runBtn.onclick = function() {
+			var f = document.getElementById('fileInput').files[0];
+			runWithUploadedFile(f);
+		};
+		container.appendChild(runBtn);
+
+		var refreshBtn = document.createElement('button');
+		refreshBtn.textContent = 'Refresh formats';
+		refreshBtn.style.marginLeft = '8px';
+		refreshBtn.onclick = fetchFormats;
+		container.appendChild(refreshBtn);
+
+		var root = document.getElementById('controlsRoot');
+		if (root) root.appendChild(container);
+	}
+
+	// wait for the Module runtime to be ready
+	Module.onRuntimeInitialized = function() {
+		log('WASM runtime initialized.');
+		buildUI();
+		try { fetchFormats(); } catch (e) { log('fetchFormats error: ' + e); }
+	};
+	</script>
+</head>
+<body>
+	<h1>Console Application</h1>
+	<p>Controls:</p>
+	<div id="controlsRoot"></div>
+	<p>Output:</p>
+	<div id="output"></div>
+</body>
+</html>
