@@ -566,6 +566,9 @@ endfunction()
 # underscore (e.g. `_get_supported_formats_json`). Export the symbol that
 # way so the linker finds the C-style symbol produced by `extern "C"`.
 function(engine_emscripten_export_functions TARGET)
+	if (NOT EMSCRIPTEN)
+		return()
+	endif()
 	set(FUNCTIONS ${ARGN} ${EMSCRIPTEN_EXPORTED_FUNCTIONS})
 	foreach (func ${FUNCTIONS})
 		if (NOT func MATCHES "^_")
