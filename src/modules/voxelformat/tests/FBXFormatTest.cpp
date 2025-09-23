@@ -16,7 +16,7 @@ TEST_F(FBXFormatTest, testLoad) {
 	const scenegraph::SceneGraphNode *modelNode = sceneGraph.firstModelNode();
 	ASSERT_NE(modelNode, nullptr);
 	EXPECT_EQ(modelNode->name(), "K_Foot_Right");
-	EXPECT_EQ(modelNode->children().size(), 0);
+	EXPECT_EQ(modelNode->children().size(), 0u);
 }
 
 // TODO: VOXELFORMAT: we currently don't have fbx material write support - and ufbx can't load ascii files
