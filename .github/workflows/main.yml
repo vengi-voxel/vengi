@@ -274,13 +274,20 @@ jobs:
             mkdir -p build/emscripten
             cp -r build/generated build/emscripten
             emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+            cmake --build build/emscripten --target voxconvert
             cmake --build build/emscripten --target voxedit
 
-        - name: Upload the build artifacts
+        - name: Upload the build artifacts voxedit
           uses: actions/upload-artifact@v4
           with:
-            name: emscripten
+            name: emscripten-voxedit
             path: build/emscripten/voxedit
+
+        - name: Upload the build artifacts voxconvert
+          uses: actions/upload-artifact@v4
+          with:
+            name: emscripten-voxconvert
+            path: build/emscripten/voxconvert
 
     windows:
         timeout-minutes: 45
