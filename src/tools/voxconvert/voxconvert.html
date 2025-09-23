@@ -1,27 +1,226 @@
 <!doctype html>
 <html lang="en-us">
 <head>
-    <meta charset="utf-8">
-    <title>@NAME@</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
-            color: #333;
+<meta charset="utf-8">
+<link rel="icon" type="image/png" href="favicon.png" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@NAME@</title>
+<style>
+    :root {
+        --bg: #0f1720;
+        --panel: #0b1220;
+        --accent: #1ea7fd;
+        --accent-2: #6ee7b7;
+        --muted: #9aa8b2;
+        --success: #4ade80;
+        --danger: #fb7185;
+        --card: #07101a;
+        --radius: 12px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+    }
+
+    body {
+        font-family: Inter, Roboto, Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: linear-gradient(180deg, #071021 0%, #071827 100%);
+        color: #cfe7f5;
+        line-height: 1.5;
+    }
+
+    h1 {
+        font-size: clamp(1.25rem, 2vw, 1.75rem);
+        text-align: center;
+        margin: 0 0 20px;
+    }
+
+    .app {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: linear-gradient(180deg, #071427 0%, #081827 100%);
+        border-radius: var(--radius);
+        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.7);
+        padding: 18px;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(1.25rem, 2vw, 1.75rem);
+        background: url('vengi-banner-493x58.png') no-repeat right center;
+        background-size: auto 58px;
+        line-height: 58px;
+    }
+
+    .controls {
+        margin-top: 12px;
+    }
+
+    @media (min-width: 800px) {
+        .controls {
+            grid-template-columns: 1fr 380px;
         }
-        #output {
-            white-space: pre-wrap; /* Preserve line breaks */
-            background: #222;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-y: auto;
-            max-height: 400px;
-        }
-        .controls { margin: 10px 0; }
-        label { display:block; margin-top: 8px; }
-        select, input[type="file"], button { margin-top: 6px; }
+    }
+
+    .panel {
+        background: var(--panel);
+        padding: 16px;
+        border-radius: var(--radius);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    label {
+        color: var(--muted);
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    input[type=file], select {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #09131f;
+        color: #cfe7f5;
+        font-size: 14px;
+    }
+
+    .btn {
+        background: var(--accent);
+        color: #06202a;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .btn:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+
+    .btn.secondary {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid rgba(30, 167, 253, 0.3);
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+        background: rgba(30, 167, 253, 0.05);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pending-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .output-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+        border-radius: 8px;
+    }
+
+    .output-item .meta {
+        color: var(--muted);
+        font-size: 13px;
+    }
+
+    .history-grid {
+        margin-top: 12px;
+    }
+
+    .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+        border-radius: var(--radius);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: transform 0.15s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    .card .title {
+        font-weight: 700;
+        color: #e6f7ff;
+        word-break: break-word;
+    }
+
+    .card .meta {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .card .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    progress {
+        width: 100%;
+        height: 12px;
+        appearance: none;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    progress::-webkit-progress-bar {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    progress::-webkit-progress-value {
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    #output {
+        display: none;
+        white-space: pre-wrap;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+        color: #9fbfb0;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 14px;
+        max-height: 240px;
+        min-height: 48px;
+        overflow: auto;
+        font-size: 13px;
+    }
+
+    .console-visible #output {
+        display: block;
+    }
+
+    .toolbar {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
     </style>
     <script>
     var Module = {
@@ -30,28 +229,106 @@
         noInitialRun: true,
         print: function(text) {
             var outputElement = document.getElementById('output');
-            if (outputElement) outputElement.textContent += text + '\n'; // Append the text to the output div
+            if (outputElement) {
+                outputElement.textContent += text + '\n';
+            }
         },
         printErr: function(text) {
             var outputElement = document.getElementById('output');
-            if (outputElement) outputElement.textContent += 'ERROR: ' + text + '\n'; // Highlight errors in output
+            if (outputElement) {
+                outputElement.textContent += 'ERROR: ' + text + '\n';
+            }
         }
     };
     window.onerror = function(event) {
         var outputElement = document.getElementById('output');
-        if (outputElement) outputElement.textContent += 'Unhandled Error: ' + event.message + '\n';
+        if (outputElement) {
+            outputElement.textContent += 'Unhandled Error: ' + event.message + '\n';
+        }
     };
     </script>
     {{{ SCRIPT }}}
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
     // utility to append messages to the on-page console
     function log(msg) {
         var o = document.getElementById('output');
-        if (o) o.textContent += msg + '\n';
+        if (o) {
+            o.textContent += msg + '\n';
+            o.scrollTop = o.scrollHeight;
+        }
         console.log(msg);
     }
 
-    // Helper removed: we'll call Module.callMain directly and use Module.print/printErr
+    // selectedFiles holds the user-chosen input files (allows removing before run)
+    var selectedFiles = [];
+
+    function addFilesToSelection(fileList) {
+        for (let i = 0; i < fileList.length; ++i) {
+            const f = fileList[i];
+            // avoid duplicates by name+size
+            if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified)) {
+                selectedFiles.push(f);
+            }
+        }
+        renderSelectedFiles();
+    }
+
+    function removeSelectedFileAt(index) {
+        if (index >= 0 && index < selectedFiles.length) {
+            selectedFiles.splice(index, 1);
+            renderSelectedFiles();
+        }
+    }
+
+    function renderSelectedFiles() {
+        const container = document.getElementById('selectedList');
+        if (!container) {
+            return;
+        }
+        container.innerHTML = '';
+        selectedFiles.forEach(function(f, idx) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.style.padding = '8px';
+            card.style.display = 'flex';
+            card.style.justifyContent = 'space-between';
+            card.style.gap = '8px';
+
+            const left = document.createElement('div');
+            left.style.display = 'flex';
+            left.style.flexDirection = 'column';
+            const title = document.createElement('div');
+            title.className = 'title';
+            title.textContent = f.name;
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.textContent = (f.size ? (Math.round(f.size/1024) + ' KB') : '');
+            left.appendChild(title);
+            left.appendChild(meta);
+
+            const actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '6px';
+            const rem = document.createElement('button');
+            rem.className = 'btn secondary';
+            rem.innerHTML = '<i data-lucide="x"></i>';
+            rem.title = 'Remove';
+            rem.onclick = function() {
+                removeSelectedFileAt(idx);
+            };
+            actions.appendChild(rem);
+
+            card.appendChild(left);
+            card.appendChild(actions);
+            container.appendChild(card);
+        });
+        try {
+            if (window.lucide && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        } catch (e) {}
+    }
 
     function fetchFormats() {
         var jsonStr = Module.ccall('get_supported_formats_json', 'string', [], []);
@@ -74,65 +351,242 @@
         sel.disabled = false;
     }
 
-    async function runWithUploadedFile(file) {
-        if (!file) {
-            log('No input file selected');
-            return;
-        }
+    // convert a single file and return an object describing result
+    // progressCb(progress: 0..1, message: string)
+    async function runConvert(file, idx, progressCb) {
         var sel = document.getElementById('formatSelect');
         var ext = sel.value;
+        if (!ext) {
+            throw new Error('No output format selected');
+        }
 
-        log('Uploading file: ' + file.name); // TODO: progress bar
-
-        var arrayBuffer = await file.arrayBuffer();
-        // write input directly at the virtual FS root to avoid depending on /in or /out
-        var inPath = '/' + file.name;
+        log('Uploading: ' + file.name);
+        if (progressCb) {
+            progressCb(0.05, 'Uploading');
+        }
+        const arrayBuffer = await file.arrayBuffer();
+        // unique file names to avoid clobbering
+        const inPath = '/' + Date.now() + '-' + idx + '-' + file.name;
         try {
             Module.FS.writeFile(inPath, new Uint8Array(arrayBuffer));
         } catch (e) {
             log('FS.writeFile error: ' + e);
+            return { file: file.name, ok: false, error: e };
+        }
+        if (progressCb) {
+            progressCb(0.12, 'Running');
+        }
+
+        const baseName = file.name.replace(/\.[^/.]+$/, '') || file.name;
+        const outName = baseName + '.' + ext;
+        const outPath = '/' + outName;
+
+        // call the conversion (supports sync or Promise-returning callMain)
+        try {
+            await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
+        } catch (e) {
+            log('Conversion error for ' + file.name + ': ' + e);
+            return { file: file.name, ok: false, error: e };
+        }
+        if (progressCb) {
+            progressCb(0.8, 'Finalizing');
+        }
+
+        // try read; if missing, retry once briefly
+        let data = null;
+        try {
+            data = Module.FS.readFile(outPath);
+        } catch (e) {
+            await new Promise(r => setTimeout(r, 200));
+            try {
+                data = Module.FS.readFile(outPath);
+            } catch (e2) {
+                data = null;
+            }
+        }
+        if (!data) {
+            log('No output produced for ' + file.name);
+            return { file: file.name, ok: false, error: 'no output' };
+        }
+
+        // Ensure blob-safe (copy to a non-shared buffer)
+        let safe = null;
+        try {
+            // slice creates a copied view backed by a non-shared buffer
+            safe = (data.slice) ? data.slice(0) : new Uint8Array(data);
+        } catch (e) {
+            safe = new Uint8Array(data);
+        }
+        const blob = new Blob([safe], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        log('Finished: ' + file.name);
+        if (progressCb) {
+            progressCb(1, 'Done');
+        }
+        return { file: file.name, ok: true, outName: outName, blobUrl: url };
+    }
+
+    // process all selected files sequentially
+    async function runAll() {
+        const files = Array.from(selectedFiles || []);
+        if (!files.length) {
+            log('No files selected');
             return;
         }
-        var baseName = file.name.replace(/\.[^/.]+$/, '') || file.name;
-        var outName = baseName + '.' + ext;
-        var outPath = '/' + outName;
+        const runBtn = document.getElementById('runBtn');
+        const fileInput = document.getElementById('fileInput');
+        runBtn.disabled = true; fileInput.disabled = true;
 
-        await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
+        const pending = document.getElementById('pendingList');
+        const historyGrid = document.getElementById('historyGrid');
 
-        // Try to read the output file. If not found, retry once after a short delay (to cover small async delays).
-        // TODO: why is this needed? There should be a FS.syncfs call in io::Filesystem::shutdown
-        try {
-            var data = Module.FS.readFile(outPath);
-        } catch (e) {
-            await new Promise(function(res) { setTimeout(res, 200); });
-            try { data = Module.FS.readFile(outPath); } catch (e2) { data = null; }
+        for (let i = 0; i < files.length; ++i) {
+            const file = files[i];
+
+            // create pending UI entry with progress bar
+            const item = document.createElement('div');
+            item.className = 'output-item';
+            const left = document.createElement('div');
+            left.style.flex = '1';
+            const title = document.createElement('div');
+            title.className = 'meta';
+            title.textContent = file.name;
+            const prog = document.createElement('progress');
+            prog.max = 1;
+            prog.value = 0;
+            left.appendChild(title);
+            left.appendChild(prog);
+            const actions = document.createElement('div');
+            item.appendChild(left);
+            item.appendChild(actions);
+            pending.appendChild(item);
+
+            // progress callback updates the bar and subtitle
+            const progressCb = function(p, msg) {
+                try {
+                    prog.value = Math.max(0, Math.min(1, p));
+                } catch (e) {}
+                title.textContent = file.name + ' — ' + msg;
+            };
+
+            const res = await runConvert(file, i, progressCb);
+
+            // remove pending entry
+            pending.removeChild(item);
+
+            // create persistent history card for this run
+            const card = document.createElement('div');
+            card.className = 'card';
+            const t = document.createElement('div');
+            t.className = 'title';
+            t.textContent = file.name;
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            const row = document.createElement('div');
+            row.className = 'row';
+            card.appendChild(t);
+            card.appendChild(meta);
+            card.appendChild(row);
+
+            if (res.ok) {
+                meta.textContent = 'Format: ' + document.getElementById('formatSelect').value + ' — ' + res.outName;
+                card.dataset.bloburl = res.blobUrl || '';
+                const dl = document.createElement('button');
+                dl.className = 'btn secondary';
+                dl.textContent = 'Download ' + res.outName;
+                dl.onclick = function() {
+                    const a = document.createElement('a');
+                    a.href = res.blobUrl;
+                    a.download = res.outName;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                };
+                row.appendChild(dl);
+
+                // remove/revoke button
+                const rem = document.createElement('button');
+                rem.className = 'btn secondary';
+                rem.style.marginLeft = '6px';
+                rem.textContent = 'Remove';
+                rem.onclick = function() {
+                    try {
+                        URL.revokeObjectURL(res.blobUrl);
+                    } catch (e) {};
+                    card.remove();
+                };
+                row.appendChild(rem);
+
+                // timestamp
+                const ts = document.createElement('div');
+                ts.className = 'meta';
+                ts.style.fontSize = '11px';
+                ts.textContent = new Date().toLocaleString();
+                card.appendChild(ts);
+            } else {
+                meta.textContent = 'Failed: ' + (res.error || 'unknown');
+                const err = document.createElement('div');
+                err.style.color = 'var(--danger)';
+                err.textContent = 'Error';
+                row.appendChild(err);
+                const ts = document.createElement('div');
+                ts.className = 'meta';
+                ts.style.fontSize = '11px';
+                ts.textContent = new Date().toLocaleString();
+                card.appendChild(ts);
+            }
+
+            historyGrid.appendChild(card);
         }
 
-        if (data) {
-            var blob = new Blob([data], { type: 'application/octet-stream' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = outName;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            log('Download triggered: ' + outName);
-        }
+        runBtn.disabled = false; fileInput.disabled = false;
     }
 
     function buildUI() {
         var container = document.createElement('div');
         container.className = 'controls';
 
+        // toolbar
+        var toolbar = document.createElement('div');
+        toolbar.classname = 'toolbar';
+        var consoleBtn = document.createElement('button');
+        consoleBtn.className = 'btn secondary';
+        consoleBtn.title = 'Toggle Console';
+        consoleBtn.innerHTML = '<i data-lucide="terminal"></i>';
+        var clearBtn = document.createElement('button');
+        clearBtn.className = 'btn secondary';
+        clearBtn.title = 'Clear Downloads';
+        clearBtn.innerHTML = '<i data-lucide="trash-2"></i>';
+        toolbar.appendChild(clearBtn);
+        toolbar.appendChild(consoleBtn);
+        container.appendChild(toolbar);
+
+        var left = document.createElement('div');
+        left.className = 'panel';
+
         var fileLabel = document.createElement('label');
-        fileLabel.textContent = 'Input file:';
+        fileLabel.textContent = 'Input files (select multiple or drag):';
         var fileInput = document.createElement('input');
         fileInput.type = 'file';
+        fileInput.multiple = true;
         fileInput.id = 'fileInput';
+        fileInput.onchange = function(e) {
+            addFilesToSelection(e.target.files);
+            e.target.value = '';
+        };
         fileLabel.appendChild(fileInput);
-        container.appendChild(fileLabel);
+        left.appendChild(fileLabel);
+
+        // preview of selected files (cards)
+        var selLabel = document.createElement('label');
+        selLabel.textContent = 'Selected files:';
+        var selList = document.createElement('div');
+        selList.id = 'selectedList';
+        selList.style.display = 'flex';
+        selList.style.flexDirection = 'column';
+        selList.style.gap = '8px';
+        left.appendChild(selLabel);
+        left.appendChild(selList);
 
         var formatLabel = document.createElement('label');
         formatLabel.textContent = 'Output format:';
@@ -140,29 +594,100 @@
         formatSelect.id = 'formatSelect';
         formatSelect.disabled = true;
         formatLabel.appendChild(formatSelect);
-        container.appendChild(formatLabel);
+        left.appendChild(formatLabel);
 
         var runBtn = document.createElement('button');
-        runBtn.textContent = 'Run and Download';
-        runBtn.onclick = function() {
-            var f = document.getElementById('fileInput').files[0];
-            runWithUploadedFile(f);
-        };
-        container.appendChild(runBtn);
+        runBtn.className = 'btn';
+        runBtn.id = 'runBtn';
+        runBtn.textContent = 'Run';
+        runBtn.onclick = runAll;
+        left.appendChild(runBtn);
+
+        container.appendChild(left);
+
+        var right = document.createElement('div');
+        right.className = 'panel';
+        var outputsTitle = document.createElement('div');
+        outputsTitle.textContent = 'Results';
+        outputsTitle.style.marginBottom = '8px';
+        right.appendChild(outputsTitle);
+
+        var pendingTitle = document.createElement('div');
+        pendingTitle.textContent = 'In progress';
+        pendingTitle.style.marginTop = '6px';
+        pendingTitle.style.color = 'var(--muted)';
+        right.appendChild(pendingTitle);
+        var pendingList = document.createElement('div');
+        pendingList.id = 'pendingList';
+        pendingList.className = 'pending-list';
+        right.appendChild(pendingList);
+
+        var historyTitle = document.createElement('div');
+        historyTitle.textContent = 'Downloads';
+        historyTitle.style.marginTop = '10px';
+        historyTitle.style.color = 'var(--muted)';
+        right.appendChild(historyTitle);
+        var historyGrid = document.createElement('div');
+        historyGrid.id = 'historyGrid';
+        historyGrid.className = 'history-grid';
+        right.appendChild(historyGrid);
+
+        container.appendChild(right);
 
         var root = document.getElementById('controlsRoot');
-        if (root) root.appendChild(container);
+        if (root) {
+            root.appendChild(container);
+        }
     }
 
     // wait for the Module runtime to be ready
     Module.onRuntimeInitialized = function() {
         buildUI();
         fetchFormats();
+
+        // hook toolbar buttons (they exist after buildUI)
+        try {
+            var consoleBtn = document.querySelector('.controls button[title="Toggle Console"]');
+            var clearBtn = document.querySelector('.controls button[title="Clear Downloads"]');
+            var controlsRoot = document.getElementById('controlsRoot');
+            if (consoleBtn) {
+                consoleBtn.addEventListener('click', function() {
+                    document.body.classList.toggle('console-visible');
+                });
+            }
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    var grid = document.getElementById('historyGrid');
+                    if (!grid) {
+                        return;
+                    }
+                    // revoke all blob urls
+                    Array.from(grid.querySelectorAll('.card')).forEach(function(c) {
+                        var blob = c.dataset.bloburl;
+                        if (blob) {
+                            try {
+                                URL.revokeObjectURL(blob);
+                            } catch (e) {}
+                        }
+                    });
+                    grid.innerHTML = '';
+                });
+            }
+        } catch (e) {
+            console.warn('toolbar hook failed', e);
+        }
+
+        // render lucide icons inside the new UI
+        try {
+            if (window.lucide && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        } catch (e) {}
     };
     </script>
 </head>
 <body>
-    <h1>@NAME@ @PROJECT_VERSION@</h1>
+    <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
     <div id="controlsRoot"></div>
     <div id="output"></div>
 </body>
