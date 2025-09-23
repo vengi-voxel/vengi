@@ -5,20 +5,19 @@
 <link rel="icon" type="image/png" href="favicon.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@NAME@</title>
-<style>
-    :root {
-        --bg: #0f1720;
-        --panel: #0b1220;
-        --accent: #1ea7fd;
-        --accent-2: #6ee7b7;
-        --muted: #9aa8b2;
-        --success: #4ade80;
-        --danger: #fb7185;
-        --card: #07101a;
-        --radius: 12px;
-    }
 
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Vengi Voxel Tools" />
+<meta property="og:description" content="Voxel tools for artists and developers" />
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
+
+<meta name="keywords" content="voxel,voxelart,voxeleditor,magicavoxel,cubzh,qubicle,sandbox,minecraft,quake,starmade,cubeworld,goxel,aceofspades,binvox,cnc,gltf,animation" />
+<meta name="description" content="Voxel tools for artists and developers">
+
+<style>
     * {
+        margin: 0;
+        padding: 0;
         box-sizing: border-box;
     }
 
@@ -27,12 +26,43 @@
     }
 
     body {
-        font-family: Inter, Roboto, Arial, sans-serif;
-        margin: 0;
-        padding: 16px;
-        background: linear-gradient(180deg, #071021 0%, #071827 100%);
-        color: #cfe7f5;
-        line-height: 1.5;
+        font-family: 'Roboto', sans-serif;
+        background-color: #1e1e1e;
+        color: #f0f0f0;
+        line-height: 1.6;
+    }
+
+    header {
+        background-color: #2b2b2b;
+        padding: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #444;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    a {
+        margin: 8px 12px;
+        text-decoration: none;
+        color: #aaa;
+        transition: color 0.3s;
+    }
+
+    a:hover {
+        color: #00d1b2;
+    }
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 40px;
+        font-size: 0.9rem;
+        color: #666;
+        border-top: 1px solid #333;
+        opacity: 0;
+        animation: fadeIn 0.8s 1.1s ease-out forwards;
     }
 
     h1 {
@@ -56,6 +86,12 @@
         background: url('vengi-banner-493x58.png') no-repeat right center;
         background-size: auto 58px;
         line-height: 58px;
+    }
+
+    .disclaimer {
+        margin-top: 8px;
+        font-size: 14px;
+        color: var(--muted);
     }
 
     .controls {
@@ -90,20 +126,21 @@
         border-radius: 6px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: #09131f;
-        color: #cfe7f5;
+        color: #00ffc8;
         font-size: 14px;
     }
 
     .btn {
-        background: var(--accent);
-        color: #06202a;
-        border: none;
-        padding: 10px 16px;
+        background-color: #2b2b2b;
         border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.2s ease;
+        padding: 20px;
+        border-left: 4px solid #00d1b2;
+        opacity: 100;
+        transform: translateY(15px);
+        animation: slideIn 1s forwards;
+        margin-bottom: 10px;
+        font-size: 1.4rem;
+        color: #00d1b2;
     }
 
     .btn:hover:not(:disabled) {
@@ -111,9 +148,7 @@
     }
 
     .btn.secondary {
-        background: transparent;
-        color: var(--accent);
-        border: 1px solid rgba(30, 167, 253, 0.3);
+        border: 1px solid #2b2b2b;
     }
 
     .btn.secondary:hover:not(:disabled) {
@@ -200,8 +235,7 @@
     #output {
         display: none;
         white-space: pre-wrap;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
-        color: #9fbfb0;
+        color: #fff;
         padding: 10px;
         border-radius: 8px;
         margin-top: 14px;
@@ -236,7 +270,7 @@
         printErr: function(text) {
             var outputElement = document.getElementById('output');
             if (outputElement) {
-                outputElement.textContent += 'ERROR: ' + text + '\n';
+                outputElement.textContent += text + '\n';
             }
         }
     };
@@ -351,8 +385,6 @@
         sel.disabled = false;
     }
 
-    // convert a single file and return an object describing result
-    // progressCb(progress: 0..1, message: string)
     async function runConvert(file, idx, progressCb) {
         var sel = document.getElementById('formatSelect');
         var ext = sel.value;
@@ -381,7 +413,6 @@
         const outName = baseName + '.' + ext;
         const outPath = '/' + outName;
 
-        // call the conversion (supports sync or Promise-returning callMain)
         try {
             await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
         } catch (e) {
@@ -392,7 +423,6 @@
             progressCb(0.8, 'Finalizing');
         }
 
-        // try read; if missing, retry once briefly
         let data = null;
         try {
             data = Module.FS.readFile(outPath);
@@ -597,9 +627,10 @@
         left.appendChild(formatLabel);
 
         var runBtn = document.createElement('button');
-        runBtn.className = 'btn';
+        runBtn.className = 'btn secondary';
         runBtn.id = 'runBtn';
-        runBtn.textContent = 'Run';
+        runBtn.title = 'Run';
+        runBtn.innerHTML = '<i data-lucide="play"></i>';
         runBtn.onclick = runAll;
         left.appendChild(runBtn);
 
@@ -687,8 +718,24 @@
     </script>
 </head>
 <body>
-    <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
-    <div id="controlsRoot"></div>
-    <div id="output"></div>
+    <header>
+        <div class="logo">vengi Voxel Tools</div>
+        <nav>
+            <a href="https://vengi-voxel.github.io/vengi">Documentation</a>
+            <a href="https://github.com/vengi-voxel/vengi/releases">Downloads</a>
+            <a href="https://github.com/vengi-voxel/vengi">GitHub</a>
+            <a href="https://www.youtube.com/@martingerhardy7214">Youtube</a>
+            <a href="https://mastodon.social/@mgerhardy">Mastodon</a>
+            <a href="https://vengi-voxel.de/discord">Discord</a>
+        </nav>
+    </header>
+    <main>
+        <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
+        <div class="disclaimer">This is a very simpified version of vengi-voxconvert. The tool is opensource and free to use. Visit <a href="https://vengi-voxel.de">vengi-voxel.de</a> for more details.</div>
+        <div id="controlsRoot"></div>
+        <div id="output"></div>
+    </main>
+
+    <footer>&copy; 2025 Vengi Voxel Tools. All rights reserved.</footer>
 </body>
 </html>
