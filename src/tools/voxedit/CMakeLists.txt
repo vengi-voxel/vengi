@@ -16,6 +16,9 @@ set(FILES
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED DESCRIPTION "Voxel Editor")
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES voxedit-ui voxedit-util voxelgenerator-lua)
 engine_emscripten_export_functions(${PROJECT_NAME})
+if (EMSCRIPTEN)
+	engine_install(${PROJECT_NAME} "${ROOT_DIR}/tools/html/favicon.png" "" TRUE)
+endif()
 
 # headless ui tests
 if (USE_IMGUITESTENGINE)
