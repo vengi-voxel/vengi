@@ -365,38 +365,38 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 TEST_F(SceneManagerTest, testDuplicateAndRemove) {
 	// prepare scenegraph with multiple nodes and a reference
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
 	const int crnodeId = _sceneMgr->nodeReference(cnodeId);
 	ASSERT_NE(crnodeId, InvalidNodeId);
-	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 
 	int newNodeId = InvalidNodeId;
 	ASSERT_TRUE(_sceneMgr->nodeDuplicate(nodeId, &newNodeId));
 	ASSERT_NE(newNodeId, InvalidNodeId);
-	ASSERT_EQ(7, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(7u, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_TRUE(_sceneMgr->nodeRemove(newNodeId, true));
-	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 }
 
 TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
 	// prepare scenegraph with multiple nodes and a reference
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
 	const int crnodeId = _sceneMgr->nodeReference(cnodeId);
 	ASSERT_NE(crnodeId, InvalidNodeId);
 	_sceneMgr->nodeReference(cnodeId);
-	ASSERT_EQ(5, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(5u, _sceneMgr->sceneGraph().nodeSize());
 
 	int newNodeId = InvalidNodeId;
 	ASSERT_TRUE(_sceneMgr->nodeDuplicate(nodeId, &newNodeId));
 	ASSERT_NE(newNodeId, InvalidNodeId);
-	ASSERT_EQ(9, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(9u, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_TRUE(_sceneMgr->nodeRemove(cnodeId, true));
-	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(4u, _sceneMgr->sceneGraph().nodeSize());
 }
 
 // https://github.com/vengi-voxel/vengi/issues/425
@@ -405,13 +405,13 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 	const voxel::RawVolume *v1 = _sceneMgr->volume(nodeId);
 	const int rnodeId = _sceneMgr->nodeReference(nodeId);
 	ASSERT_NE(rnodeId, InvalidNodeId);
-	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	EXPECT_TRUE(_sceneMgr->nodeUnreference(rnodeId));
 	ASSERT_EQ(2, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_NE(v1, _sceneMgr->volume(rnodeId));
 	EXPECT_TRUE(_sceneMgr->undo());
-	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_EQ(v1, _sceneMgr->volume(rnodeId));
 	EXPECT_TRUE(_sceneMgr->redo());
@@ -444,17 +444,17 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 	}
 
 	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
-	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	EXPECT_TRUE(_sceneMgr->nodeUnreference(referenceNodeId));
 	ASSERT_EQ(2, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
-	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	EXPECT_TRUE(_sceneMgr->undo());
 	EXPECT_TRUE(_sceneMgr->redo());
 }
 
 TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
 	const glm::vec3 clocalTranslationVec = glm::vec3(10.0f);
