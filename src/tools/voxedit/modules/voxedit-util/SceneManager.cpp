@@ -2868,6 +2868,9 @@ bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) 
 	if (sceneMode) {
 		return true;
 	}
+	if (_rotate.pressed()) {
+		return false;
+	}
 
 	return mouseRayTrace(force, invModel);
 }
