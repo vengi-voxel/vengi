@@ -713,6 +713,7 @@ bool SeekableReadStream::readLine(int length, char *strbuff) {
 			return true;
 		}
 	}
+	Log::error("Line too long to fit into buffer of size %i", length);
 	return false;
 }
 

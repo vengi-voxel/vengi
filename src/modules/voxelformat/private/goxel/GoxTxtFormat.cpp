@@ -17,6 +17,7 @@
 #include "voxel/Voxel.h"
 #include "palette/Palette.h"
 #include "engine-config.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -42,7 +43,7 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	char buf[64];
+	char buf[512];
 
 	int64_t pos = stream->pos();
 
@@ -51,9 +52,9 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 	glm::ivec3 maxs{0};
 	while (stream->readLine(sizeof(buf), buf)) {
 		if (buf[0] == '\n' || buf[0] == '#') {
-			Log::error("skip comment: %s", buf);
 			continue;
 		}
+		core::String str(buf, sizeof(buf));
 		int x, y, z;
 		uint32_t rgb[3];
 		if (sscanf(buf, "%i %i %i %02x%02x%02x", &x, &z, &y, &rgb[0], &rgb[1], &rgb[2]) != 6) {
@@ -61,10 +62,15 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 			return false;
 		}
 		const core::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
-		colors.put(rgba, true);
+		colors.insert(rgba);
 		mins = glm::min(mins, glm::ivec3(x, y, z));
 		maxs = glm::max(maxs, glm::ivec3(x, y, z));
 	}
+	if (colors.empty()) {
+		Log::error("No voxel data found");
+		return false;
+	}
+	Log::debug("Found %i colors", (int)colors.size());
 
 	core::Buffer<core::RGBA> colorsBuf;
 	colorsBuf.reserve(colors.size());
@@ -79,10 +85,6 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 	voxel::Region region(mins, maxs);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
-		return false;
-	}
-	if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(MaxRegionSize)))) {
-		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
 	if (glm::any(glm::lessThan(region.getDimensionsInVoxels(), glm::ivec3(1)))) {
@@ -128,32 +130,19 @@ bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
     stream->writeString("# X Y Z RRGGBB\n", false);
 
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
-	core_assert(node);
-
-	const voxel::Region &region = node->volume()->region();
-	voxel::RawVolume::Sampler sampler(node->volume());
-	const glm::ivec3 &lower = region.getLowerCorner();
-
-	const uint32_t width = region.getWidthInVoxels();
-	const uint32_t height = region.getHeightInVoxels();
-	const uint32_t depth = region.getDepthInVoxels();
-	for (uint32_t x = 0u; x < width; ++x) {
-		for (uint32_t y = 0u; y < height; ++y) {
-			for (uint32_t z = 0u; z < depth; ++z) {
-				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
-				const voxel::Voxel &voxel = sampler.voxel();
-				if (voxel.getMaterial() == voxel::VoxelType::Air) {
-					continue;
-				}
-				const core::RGBA rgba = node->palette().color(voxel.getColor());
-				if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
-					Log::error("Could not write voxel data");
-					return false;
-				}
-			}
-		}
+	if (!node || node->volume() == nullptr) {
+		Log::error("No model node found");
+		return false;
 	}
-	return true;
+	int voxels = voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const core::RGBA rgba = node->palette().color(voxel.getColor());
+		if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
+			Log::error("Could not write voxel data");
+			return;
+		}
+	}, voxelutil::SkipEmpty());
+	Log::debug("Wrote %i voxels", voxels);
+	return voxels > 0;
 }
 
 #undef wrap
