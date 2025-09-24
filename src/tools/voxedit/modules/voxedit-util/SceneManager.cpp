@@ -2785,6 +2785,24 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	}
 }
 
+glm::vec3 SceneManager::cursorWorldPosition(const voxelrender::RenderContext &renderContext) const {
+	const glm::ivec3& pos = cursorPosition();
+	if (!renderContext.applyTransforms()) {
+		return glm::vec3(pos);
+	}
+	const glm::mat4 &model = modelMatrix(renderContext);
+	return glm::vec3(model * glm::vec4(pos, 1.0f));
+}
+
+glm::vec3 SceneManager::referenceWorldPosition(const voxelrender::RenderContext &renderContext) const {
+	const glm::ivec3& pos = referencePosition();
+	if (!renderContext.applyTransforms()) {
+		return glm::vec3(pos);
+	}
+	const glm::mat4 &model = modelMatrix(renderContext);
+	return glm::vec3(model * glm::vec4(pos, 1.0f));
+}
+
 void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force) {
 	const voxel::RawVolume* v = activeVolume();
 	if (v == nullptr) {
