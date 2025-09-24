@@ -252,7 +252,12 @@ void Camera::setPitch(float radians) {
 inline void Camera::slerp(const glm::quat& quat, float factor) {
 	core_assert(!glm::any(glm::isnan(quat)));
 	core_assert(!glm::any(glm::isinf(quat)));
-	_quat = glm::mix(_quat, quat, factor);
+	// Ensure shortest-path interpolation: if dot < 0, negate target quaternion
+	glm::quat targetQuat = quat;
+	if (glm::dot(_quat, targetQuat) < 0.0f) {
+		targetQuat = -targetQuat;
+	}
+	_quat = glm::mix(_quat, targetQuat, factor);
 	_dirty |= DIRTY_ORIENTATION;
 	core_assert_msg(!glm::any(glm::isnan(_quat)), "Factor: %f", factor);
 	core_assert_msg(!glm::any(glm::isinf(_quat)), "Factor: %f", factor);
@@ -354,7 +359,11 @@ void Camera::zoom(float value) {
 void Camera::updateLerp(double deltaFrameSeconds) {
 	_lerpTarget.seconds += deltaFrameSeconds;
 	const float t = glm::clamp(0.0, 1.0, _lerpTarget.seconds);
-	_quat = glm::mix(_lerpTarget.fromQuat, _lerpTarget.quat, t);
+	glm::quat targetQuat = _lerpTarget.quat;
+	if (glm::dot(_lerpTarget.fromQuat, targetQuat) < 0.0f) {
+		targetQuat = -targetQuat;
+	}
+	_quat = glm::mix(_lerpTarget.fromQuat, targetQuat, t);
 	_dirty |= DIRTY_ORIENTATION;
 	if (_lerpTarget.rotationType == CameraRotationType::Target) {
 		_target = glm::mix(_lerpTarget.fromTarget, _lerpTarget.target, t);
