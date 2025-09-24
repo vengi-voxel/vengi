@@ -132,6 +132,8 @@ void Viewport::move(bool pan, bool rotate, int x, int y) {
 			const float yaw = (float)(x - _mouseX);
 			const float pitch = (float)(y - _mouseY);
 			const float s = _rotationSpeed->floatVal();
+			// TODO: this lets the camera jump because it will update the eye position, too
+			_camera.setTarget(_sceneMgr->referencePosition());
 			_camera.turn(yaw * s);
 			_camera.setPitch(pitch * s);
 		}

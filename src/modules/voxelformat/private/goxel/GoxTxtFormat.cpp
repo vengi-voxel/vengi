@@ -44,12 +44,6 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 	}
 	char buf[64];
 
-	wrapBool(stream->readLine(sizeof(buf), buf))
-	if (strncmp(buf, "# Goxel Voxel List", 18) != 0) {
-		Log::error("Unexpected magic line: '%s'", buf);
-		return false;
-	}
-
 	int64_t pos = stream->pos();
 
 	palette::RGBABuffer colors;
@@ -57,6 +51,7 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 	glm::ivec3 maxs{0};
 	while (stream->readLine(sizeof(buf), buf)) {
 		if (buf[0] == '\n' || buf[0] == '#') {
+			Log::error("skip comment: %s", buf);
 			continue;
 		}
 		int x, y, z;
@@ -151,7 +146,10 @@ bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 					continue;
 				}
 				const core::RGBA rgba = node->palette().color(voxel.getColor());
-				stream->writeStringFormat(false, "%i %i %i %x%x%x\n", x, z, y, rgba.r, rgba.g, rgba.b);
+				if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
+					Log::error("Could not write voxel data");
+					return false;
+				}
 			}
 		}
 	}
