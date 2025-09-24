@@ -52,6 +52,7 @@ set(SRCS
 	private/cubzh/PCubesFormat.h             private/cubzh/PCubesFormat.cpp
 	private/cubzh/CubzhB64Format.h           private/cubzh/CubzhB64Format.cpp
 	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
+	private/goxel/GoxTxtFormat.h             private/goxel/GoxTxtFormat.cpp
 	private/image/AsepriteFormat.h           private/image/AsepriteFormat.cpp
 	private/image/PNGFormat.h                private/image/PNGFormat.cpp
 	private/kenshape/KenShapeFormat.h        private/kenshape/KenShapeFormat.cpp
@@ -133,6 +134,7 @@ set(TEST_SRCS
 	tests/GLTFFormatTest.cpp
 	tests/GodotSceneFormatTest.cpp
 	tests/GoxFormatTest.cpp
+	tests/GoxTxtFormatTest.cpp
 	tests/KenShapeFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp

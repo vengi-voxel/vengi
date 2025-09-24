@@ -31,6 +31,7 @@
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include "voxelformat/private/cubzh/PCubesFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/goxel/GoxTxtFormat.h"
 #include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/kenshape/KenShapeFormat.h"
@@ -95,6 +96,7 @@ const io::FormatDescription *voxelFormats() {
 												 BinVoxFormat::format(),
 												 GodotSceneFormat::format(),
 												 GoxFormat::format(),
+												 GoxTxtFormat::format(),
 												 CubFormat::format(),
 												 MTSFormat::format(),
 												 MCRFormat::format(),
@@ -193,6 +195,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<CubFormat>();
 		} else if (ext == GoxFormat::format().mainExtension()) {
 			return core::make_shared<GoxFormat>();
+		} else if (ext == GoxTxtFormat::format().mainExtension()) {
+			return core::make_shared<GoxTxtFormat>();
 		} else if (ext == AnimaToonFormat::format().mainExtension()) {
 			return core::make_shared<AnimaToonFormat>();
 		} else if (ext == MCRFormat::format().mainExtension()) {
