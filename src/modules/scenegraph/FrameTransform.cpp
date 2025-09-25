@@ -13,15 +13,34 @@
 
 namespace scenegraph {
 
+void FrameTransform::setWorldMatrix(const glm::mat4 &m) {
+	_matrix = m;
+	resetCache();
+}
+
+const glm::mat4 &FrameTransform::worldMatrix() const {
+	return _matrix;
+}
+
 glm::vec3 FrameTransform::calcModelSpace(const glm::vec3 &worldPos) const {
-	// TODO: PERF: cache the inverse
-	const glm::mat4 &invModel = glm::inverse(worldMatrix());
-	const glm::vec3 modelSpacePos(invModel * glm::vec4(worldPos, 1.0f));
+	if (!_inverseCalculated) {
+		_inverseMatrix = glm::inverse(worldMatrix());
+		_inverseCalculated = true;
+	}
+	const glm::vec3 modelSpacePos(_inverseMatrix * glm::vec4(worldPos, 1.0f));
 	return modelSpacePos;
 }
 
+glm::mat3 FrameTransform::calcNormalMatrix() const {
+	return glm::transpose(_inverseMatrix);
+}
+
+glm::vec3 FrameTransform::calcWorldNormal(const glm::vec3 &normal) const {
+	return glm::normalize(calcNormalMatrix() * normal);
+}
+
 glm::vec3 FrameTransform::calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const {
-	return matrix * glm::vec4(pos - pivot, 1.0f);
+	return _matrix * glm::vec4(pos - pivot, 1.0f);
 }
 
 glm::mat4 FrameTransform::calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const {
@@ -42,13 +61,13 @@ glm::vec3 FrameTransform::scale() const {
 }
 
 glm::vec3 FrameTransform::translation() const {
-	return glm::column(matrix, 3);
+	return glm::column(_matrix, 3);
 }
 
 void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const {
 	glm::vec3 skew;
 	glm::vec4 perspective;
-	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
+	glm::decompose(_matrix, scale, orientation, translation, skew, perspective);
 }
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions) {

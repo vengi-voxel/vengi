@@ -19,19 +19,22 @@ namespace scenegraph {
 class FrameTransform {
 private:
 	mutable glm::vec3 _scale;
+	mutable glm::mat4 _inverseMatrix;
 	mutable bool _scaleCalculated = false;
-	glm::mat4 matrix;
-public:
-	FrameTransform() : matrix(1.0f) {
-	}
-	void setWorldMatrix(const glm::mat4 &m) {
-		matrix = m;
+	mutable bool _inverseCalculated = false;
+	glm::mat4 _matrix{1.0f};
+
+	void resetCache() {
 		_scaleCalculated = false;
+		_inverseCalculated = false;
 	}
-	inline const glm::mat4 &worldMatrix() const {
-		return matrix;
-	}
+
+public:
+	void setWorldMatrix(const glm::mat4 &m);
+	const glm::mat4 &worldMatrix() const;
 	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
+	glm::vec3 calcWorldNormal(const glm::vec3 &normal) const;
+	glm::mat3 calcNormalMatrix() const;
 
 	glm::vec3 translation() const;
 	glm::vec3 scale() const;
@@ -39,8 +42,8 @@ public:
 
 	/**
 	 * @brief Calculate the transformed position for the given input
-	 * @param[in] pos The position in object space
-	 * @param[in] pivot The pivot in object space (see @c calcPivot() for details)
+	 * @param[in] pos The position in model/object space
+	 * @param[in] pivot The pivot in model/object space
 	 */
 	glm::vec3 calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const;
 	glm::vec3 calcModelSpace(const glm::vec3 &worldPos) const;
