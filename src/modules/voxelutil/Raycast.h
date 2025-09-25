@@ -16,9 +16,10 @@ namespace voxelutil {
  * The results of a raycast
  */
 struct RaycastResult {
-	float length = 0.0f; ///< The length the ray traveled before being interrupted or completing
-	float fract = 0.0f;   ///< The fraction [0..1] of the ray that was traveled
-	enum Type {
+	float length = 0.0f;		///< The length the ray traveled before being interrupted or completing
+	float fract = 0.0f;			///< The fraction [0..1] of the ray that was traveled
+	glm::ivec3 normal{0, 0, 0}; ///< The normal of the intersecting face (axis-aligned, volume/voxel space)
+	enum Type : uint8_t {
 		Completed,	///< If the ray passed through the volume without being interrupted
 		Interrupted ///< If the ray was interrupted while traveling
 	} type = Completed;
@@ -36,11 +37,12 @@ struct RaycastResult {
 		r.fract = 1.0f;
 		return r;
 	}
-	static RaycastResult interrupted(float length, float fract) {
+	static RaycastResult interrupted(float length, float fract, const glm::ivec3 &normal) {
 		RaycastResult r;
 		r.type = Interrupted;
 		r.length = length;
 		r.fract = fract;
+		r.normal = normal;
 		return r;
 	}
 };
@@ -167,10 +169,12 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 	int k = (int)floorStart.z;
 	sampler.setPosition(i, j, k);
 
+	// Track the last stepped face normal so we can report which face was hit when interrupted
+	glm::ivec3 lastNormal{0, 0, 0};
 	for (;;) {
 		if (!callback(sampler)) {
 			if (i == (int)floorStart.x && j == (int)floorStart.y && k == (int)floorStart.z) {
-				return RaycastResult::interrupted(0.0f, 0.0f);
+				return RaycastResult::interrupted(0.0f, 0.0f, lastNormal);
 			}
 
 			glm::vec3 r = sampler.position();
@@ -186,7 +190,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 
 			const float length = glm::length(r - v3dStart);
 			const float fract = length / glm::length(v3dEnd - v3dStart);
-			return RaycastResult::interrupted(length, fract);
+			return RaycastResult::interrupted(length, fract, lastNormal);
 		}
 
 		if (tx <= ty && tx <= tz) {
@@ -195,6 +199,9 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			}
 			tx += deltatx;
 			i += di;
+
+			// we stepped along the x-axis; set normal accordingly
+			lastNormal = glm::ivec3(-di, 0, 0);
 
 			if (di == 1) {
 				sampler.movePositiveX();
@@ -213,6 +220,9 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			} else if (dj == -1) {
 				sampler.moveNegativeY();
 			}
+
+			// we stepped along the y-axis; set normal accordingly
+			lastNormal = glm::ivec3(0, -dj, 0);
 		} else {
 			if (k == kend) {
 				break;
@@ -225,6 +235,9 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			} else if (dk == -1) {
 				sampler.moveNegativeZ();
 			}
+
+			// we stepped along the z-axis; set normal accordingly
+			lastNormal = glm::ivec3(0, 0, -dk);
 		}
 	}
 

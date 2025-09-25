@@ -16,7 +16,7 @@ voxelutil::RaycastResult Clipper::clipDelta(const scenegraph::SceneGraph &sceneG
 											const glm::vec3 &worldPosition, const glm::vec3 &delta,
 											const glm::mat3 &cameraOrientation) const {
 	if (glm::all(glm::epsilonEqual(delta, glm::zero<glm::vec3>(), 0.0001f))) {
-		return voxelutil::RaycastResult::interrupted(0.0f, 0.0f);
+		return voxelutil::RaycastResult::interrupted(0.0f, 0.0f, glm::ivec3(0));
 	}
 
 	// Convert delta to world space
