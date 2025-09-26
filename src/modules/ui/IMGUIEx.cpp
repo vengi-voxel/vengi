@@ -5,6 +5,7 @@
 #include "IMGUIEx.h"
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
+#include "ScopedID.h"
 #include "ScopedStyle.h"
 #include "Style.h"
 #include "app/App.h"
@@ -300,7 +301,7 @@ bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputT
 		const ImVec2 size(h - 2.0f, h);
 		bool modified = false;
 
-		ImGui::PushID(label);
+		ui::ScopedID id(label);
 
 		if (ImGui::AxisButtonX(size, ImGuiButtonFlags_AlignTextBaseLine)) {
 			vec.x = 0.0f;
@@ -332,8 +333,6 @@ bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputT
 		ImGui::TableNextColumn();
 		ImGui::SetNextItemWidth(-1);
 		ImGui::TextUnformatted(label);
-
-		ImGui::PopID();
 
 		ImGui::EndGroup();
 		return modified;

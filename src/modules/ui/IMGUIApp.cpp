@@ -5,6 +5,7 @@
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "Panel.h"
+#include "ScopedID.h"
 #include "ScopedStyle.h"
 #include "Style.h"
 #include "app/i18n/Language.h"
@@ -586,12 +587,11 @@ void IMGUIApp::renderCvarDialog() {
 				ImGui::EndDisabled();
 				ImGui::TableNextColumn();
 				if (!readOnly) {
-					ImGui::PushID(var->name().c_str());
+					ScopedID id(var->name());
 					if (ImGui::Button(_("Reset"))) {
 						var->reset();
 					}
 					ImGui::TooltipTextUnformatted(_("Reset to default value"));
-					ImGui::PopID();
 				}
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(var->help() ? var->help() : "");

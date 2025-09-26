@@ -3,6 +3,7 @@
  */
 
 #include "ToolsPanel.h"
+#include "ScopedID.h"
 #include "Toolbar.h"
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -96,7 +97,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	const float buttonWidth = ImGui::GetFontSize() * 4;
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::PushID("##rotatevolumeonaxis");
+		ui::ScopedID id("##rotatevolumeonaxis");
 		ImGui::AxisCommandButton(math::Axis::X, _("X"), "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
@@ -105,11 +106,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::SameLine();
 		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
-		ImGui::PopID();
 	}
 
 	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::PushID("##flipvolumeonaxis");
+		ui::ScopedID id("##flipvolumeonaxis");
 		ImGui::AxisCommandButton(math::Axis::X, _("X"), "flip x", ICON_LC_MOVE_HORIZONTAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
@@ -118,11 +118,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::SameLine();
 		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "flip z", ICON_LC_MOVE_DIAGONAL, nullptr, buttonWidth,
 						 &listener);
-		ImGui::PopID();
 	}
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::PushID("##translatevolume");
+		ui::ScopedID id("##translatevolume");
 		static glm::ivec3 translate{0};
 		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
 		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
@@ -132,11 +131,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::SameLine();
 		const core::String &moveCmd = core::String::format("move %i %i %i", translate.x, translate.y, translate.z);
 		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
-		ImGui::PopID();
 	}
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::PushID("##cursor");
+		ui::ScopedID id("##cursor");
 		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
 		if (ImGui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
@@ -170,7 +168,6 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 			command::executeCommands(commandLine, &listener);
 		}
 		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
-		ImGui::PopID();
 	}
 }
 

@@ -11,6 +11,7 @@ set(SRCS
 	Panel.cpp Panel.h
 	PopupAbout.h PopupAbout.cpp
 	ScopedStyle.h
+	ScopedID.h
 	Style.cpp Style.h
 	TextEditor.h TextEditor.cpp
 	Toolbar.h Toolbar.cpp

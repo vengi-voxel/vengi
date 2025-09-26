@@ -3,6 +3,7 @@
  */
 
 #include "NodePropertiesPanel.h"
+#include "ScopedID.h"
 #include "command/CommandHandler.h"
 #include "imgui.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -107,7 +108,7 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 					ImGui::TableNextColumn();
 					ImGui::SetNextItemWidth(-1);
 
-					ImGui::PushID(entry->key.c_str());
+					ui::ScopedID scopedId(entry->key);
 					bool propertyAlreadyHandled = false;
 					if (node.isCameraNode()) {
 						propertyAlreadyHandled =
@@ -134,8 +135,6 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 						deleteKey = entry->key;
 					}
 					ImGui::TooltipTextUnformatted(_("Delete this node property"));
-
-					ImGui::PopID();
 				}
 			}
 

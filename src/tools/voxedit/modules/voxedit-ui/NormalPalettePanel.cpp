@@ -5,6 +5,7 @@
 #include "NormalPalettePanel.h"
 #include "IMGUIEx.h"
 #include "IconsLucide.h"
+#include "ScopedID.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "imgui.h"
@@ -52,9 +53,8 @@ void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, s
 	} else {
 		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
 	}
-	ImGui::PushID(paletteColorIdx);
+	ui::ScopedID id(paletteColorIdx);
 	ImGui::InvisibleButton("", colorButtonSize);
-	ImGui::PopID();
 	globalCursorPos.x += colorButtonSize.x;
 	if (globalCursorPos.x > windowPos.x + contentRegionWidth - colorButtonSize.x) {
 		globalCursorPos.x = startingPosX;

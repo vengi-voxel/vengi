@@ -4,6 +4,7 @@
 
 #include "SceneSettingsPanel.h"
 #include "IconsLucide.h"
+#include "ScopedID.h"
 #include "ScopedStyle.h"
 #include "imgui.h"
 #include "ui/IMGUIEx.h"
@@ -66,7 +67,7 @@ void SceneSettingsPanel::sceneShadowAndSun(ShadingMode shadingMode) {
 	_sunAngle->vec3Val(&sunAngle[0]);
 
 	bool sunChanged = false;
-	ImGui::PushID("sunangle");
+	ui::ScopedID id("sunangle");
 	if (ImGui::SliderFloat(_("Elevation"), &sunAngle.x, -90.0f, 90.0f, "%.1f°")) {
 		sunChanged = shadowsEnabled;
 	}
@@ -98,7 +99,6 @@ void SceneSettingsPanel::sceneShadowAndSun(ShadingMode shadingMode) {
 		const core::String val = core::String::format("%.2f %.2f %.2f", sunAngle.x, sunAngle.y, sunAngle.z);
 		_sunAngle->setVal(val);
 	}
-	ImGui::PopID();
 }
 
 void SceneSettingsPanel::update(const char *id, command::CommandExecutionListener &listener) {
