@@ -6,6 +6,10 @@
 
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/type_aligned.hpp>
 
 namespace voxel {
 class Region;
@@ -19,9 +23,9 @@ namespace scenegraph {
 class FrameTransform {
 private:
 	mutable glm::vec3 _scale;
-	mutable glm::mat4 _inverseMatrix;
 	mutable bool _scaleCalculated = false;
 	mutable bool _inverseCalculated = false;
+	mutable glm::mat4 _inverseMatrix;
 	glm::mat4 _matrix{1.0f};
 
 	void resetCache() {

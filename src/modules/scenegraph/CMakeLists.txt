@@ -34,6 +34,7 @@ gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
 	benchmarks/ClipperBenchmark.cpp
+	benchmarks/FrameTransformBenchmark.cpp
 	benchmarks/SceneGraphBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
