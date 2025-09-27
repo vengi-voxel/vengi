@@ -406,13 +406,13 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 	const int rnodeId = _sceneMgr->nodeReference(nodeId);
 	ASSERT_NE(rnodeId, InvalidNodeId);
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
-	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	EXPECT_TRUE(_sceneMgr->nodeUnreference(rnodeId));
-	ASSERT_EQ(2, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_NE(v1, _sceneMgr->volume(rnodeId));
 	EXPECT_TRUE(_sceneMgr->undo());
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
-	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_EQ(v1, _sceneMgr->volume(rnodeId));
 	EXPECT_TRUE(_sceneMgr->redo());
 }
@@ -443,10 +443,10 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 		ASSERT_TRUE(sceneMgr()->loadForTest(core::move(sceneGraph)));
 	}
 
-	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	EXPECT_TRUE(_sceneMgr->nodeUnreference(referenceNodeId));
-	ASSERT_EQ(2, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 	ASSERT_EQ(3u, _sceneMgr->sceneGraph().nodeSize());
 	EXPECT_TRUE(_sceneMgr->undo());
 	EXPECT_TRUE(_sceneMgr->redo());

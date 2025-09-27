@@ -249,7 +249,7 @@ void Camera::setPitch(float radians) {
 	}
 }
 
-inline void Camera::slerp(const glm::quat& quat, float factor) {
+void Camera::slerp(const glm::quat& quat, float factor) {
 	core_assert(!glm::any(glm::isnan(quat)));
 	core_assert(!glm::any(glm::isinf(quat)));
 	// Ensure shortest-path interpolation: if dot < 0, negate target quaternion
