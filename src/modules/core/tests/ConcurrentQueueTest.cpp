@@ -76,7 +76,7 @@ TEST_F(ConcurrentQueueTest, testPushWaitAndPopMultipleThreads) {
 			queue.push(i);
 		}
 	});
-	std::future<bool> future = std::async(std::launch::async, [&queue, n] () {
+	std::future<bool> future = std::async(std::launch::async, [&queue] () {
 		for (uint32_t i = 0u; i < n; ++i) {
 			uint32_t v;
 			if (!queue.waitAndPop(v)) {
