@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/String.h"
-#include <cstdint>
 #include <stdint.h>
 
 namespace core {

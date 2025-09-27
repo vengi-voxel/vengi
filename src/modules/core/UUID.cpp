@@ -3,8 +3,6 @@
  */
 
 #include "UUID.h"
-#include "core/Hash.h"
-#include <cstdio>
 #include <random>
 
 namespace core {
@@ -91,12 +89,18 @@ UUID &UUID::operator=(const String &uuid) {
 }
 
 UUID &UUID::operator=(const UUID &other) {
+	if (this == &other) {
+		return *this;
+	}
 	_data[0] = other._data[0];
 	_data[1] = other._data[1];
 	return *this;
 }
 
 UUID &UUID::operator=(UUID &&other) noexcept {
+	if (this == &other) {
+		return *this;
+	}
 	_data[0] = other._data[0];
 	_data[1] = other._data[1];
 	return *this;
