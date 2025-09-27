@@ -45,7 +45,7 @@ Each node chunk begins with the `NODE` FourCC and includes the following informa
 
 * **Node Name**: String (16-bit length prefix, followed by UTF-8 encoded string)
 * **Node Type**: String (16-bit length prefix, followed by UTF-8 encoded string)
-* **Node UUID**: String (16-bit length prefix)
+* **Node UUID**: two 64 bit unsigned integers in little endian
 * **Node ID**: 4-byte signed integer
 * **Reference Node ID**: 4-byte signed integer (for referenced nodes - `-1` if no node is referenced)
 * **Visibility**: 1-byte boolean

@@ -104,10 +104,10 @@ bool WriteStream::writeUInt8(uint8_t val) {
 }
 
 bool WriteStream::writeUUID(const core::UUID &uuid) {
-	if (!writeUInt64BE(uuid.data0())) {
+	if (!writeUInt64(uuid.data0())) {
 		return false;
 	}
-	return writeUInt64BE(uuid.data1());
+	return writeUInt64(uuid.data1());
 }
 
 bool WriteStream::writeString(const core::String &string, bool terminate) {
@@ -669,11 +669,11 @@ int ReadStream::readInt64BE(int64_t &val) {
 
 int ReadStream::readUUID(core::UUID &uuid) {
 	uint64_t id0;
-	if (readUInt64BE(id0) != 0) {
+	if (readUInt64(id0) != 0) {
 		return -1;
 	}
 	uint64_t id1;
-	if (readUInt64BE(id1) != 0) {
+	if (readUInt64(id1) != 0) {
 		return -1;
 	}
 	uuid = core::UUID(id0, id1);

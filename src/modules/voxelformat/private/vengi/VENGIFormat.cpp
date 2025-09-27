@@ -192,7 +192,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writeUInt32(FourCC('N', 'O', 'D', 'E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
-	wrapBool(stream.writePascalStringUInt16LE(node.uuid().str()))
+	wrapBool(stream.writeUUID(node.uuid()))
 	wrapBool(stream.writeInt32(node.id()))
 	wrapBool(stream.writeInt32(node.reference()))
 	wrapBool(stream.writeBool(node.visible()))
@@ -426,9 +426,9 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		Log::error("Could not load node type %s", type.c_str());
 		return false;
 	}
-	core::String uuid;
+	core::UUID uuid;
 	if (version >= 6) {
-		wrapBool(stream.readPascalStringUInt16LE(uuid))
+		wrap(stream.readUUID(uuid))
 	}
 	Log::debug("Load node with name '%s' of type %s", name.c_str(), type.c_str());
 	const bool isRootNode = nodeType == scenegraph::SceneGraphNodeType::Root;
