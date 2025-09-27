@@ -30,3 +30,10 @@ if (USE_IMGUITESTENGINE)
 	engine_target_link_libraries(TARGET tests-voxedit DEPENDENCIES voxedit-ui voxedit-util)
 	add_test(NAME tests-voxedit COMMAND $<TARGET_FILE:tests-voxedit> WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endif()
+
+set(SERVER_SRCS
+	VoxEditServer.h VoxEditServer.cpp
+)
+
+engine_add_executable(TARGET ${PROJECT_NAME}server SRCS ${SERVER_SRCS} DESCRIPTION "VoxEdit server")
+engine_target_link_libraries(TARGET ${PROJECT_NAME}server DEPENDENCIES app voxedit-util)
