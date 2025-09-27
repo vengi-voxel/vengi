@@ -47,7 +47,7 @@ protected:
 	mutable voxel::Region _region;
 	mutable bool _regionDirty = true;
 	mutable FrameIndex _cachedMaxFrame = -1;
-	const core::String _emptyUUID;
+	const core::UUID _emptyUUID;
 	core::Buffer<SceneGraphListener*> _listeners;
 	mutable core::DynamicMap<int, FrameTransform> _frameTransforms;
 
@@ -86,7 +86,7 @@ public:
 
 	void fixErrors();
 	bool validate() const;
-	void setRootUUID(const core::String &uuid);
+	void setRootUUID(const core::UUID &uuid);
 
 	/**
 	 * @brief Merge the palettes of all scene graph model nodes
@@ -116,7 +116,7 @@ public:
 	 */
 	const voxel::Region &region() const;
 	voxel::Region maxRegion() const;
-	const core::String &uuid(int nodeId) const;
+	const core::UUID &uuid(int nodeId) const;
 
 	bool isRegistered(SceneGraphListener *listener) const;
 	void unregisterListener(SceneGraphListener *listener);
@@ -175,7 +175,7 @@ public:
 	int emplace(SceneGraphNode &&node, int parent = 0);
 
 	SceneGraphNode* findNodeByName(const core::String& name);
-	SceneGraphNode* findNodeByUUID(const core::String& uuid);
+	SceneGraphNode* findNodeByUUID(const core::UUID& uuid);
 	const SceneGraphNode* findNodeByName(const core::String& name) const;
 	SceneGraphNode* findNodeByPropertyValue(const core::String &key, const core::String &value) const;
 	SceneGraphNode* first();

@@ -572,7 +572,8 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		for (const priv::Animator &animator : animation.animators) {
 			Log::debug("Animator: %s", animator.name.c_str());
 			if (scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(animator.uuid)) {
-				Log::debug("Found node: %s (uuid: %s)", node->name().c_str(), node->uuid().c_str());
+				const core::String &uuidStr = node->uuid().str();
+				Log::debug("Found node: %s (uuid: %s)", node->name().c_str(), uuidStr.c_str());
 				const auto &keyframes = animator.keyframes;
 				scenegraph::KeyFrameIndex keyFrameIdx = 0;
 				node->keyFrames()->reserve(keyframes.size());

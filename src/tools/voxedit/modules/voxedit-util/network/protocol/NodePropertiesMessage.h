@@ -16,29 +16,29 @@ namespace network {
  */
 class NodePropertiesMessage : public ProtocolMessage {
 private:
-	core::String _nodeUUID;
+	core::UUID _nodeUUID;
 	scenegraph::SceneGraphNodeProperties _properties;
 
 public:
 	NodePropertiesMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_PROPERTIES) {
-		writePascalStringUInt16LE(state.nodeUUID);
+		writeUUID(state.nodeUUID);
 		serializeProperties(state.properties);
 		writeSize();
 	}
 	NodePropertiesMessage(MessageStream &in) {
 		_id = PROTO_NODE_PROPERTIES;
-		in.readPascalStringUInt16LE(_nodeUUID);
+		in.readUUID(_nodeUUID);
 		deserializeProperties(in, _properties);
 	}
 	void writeBack() override {
 		writeInt32(0);
 		writeUInt8(_id);
-		writePascalStringUInt16LE(_nodeUUID);
+		writeUUID(_nodeUUID);
 		serializeProperties(_properties);
 		writeSize();
 	}
 
-	const core::String &nodeUUID() const {
+	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
 	}
 	const scenegraph::SceneGraphNodeProperties &properties() const {

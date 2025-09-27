@@ -14,6 +14,16 @@ UUID::UUID() {
 	_data[1] = 0;
 }
 
+UUID::UUID(uint64_t id0, uint64_t id1) {
+	_data[0] = id0;
+	_data[1] = id1;
+}
+
+UUID::UUID(uint32_t id) {
+	_data[0] = id;
+	_data[1] = 0;
+}
+
 UUID::UUID(const String &uuid) {
 	*this = uuid;
 }
@@ -134,8 +144,23 @@ bool UUID::isValid() const {
 	return _data[0] != 0 || _data[1] != 0;
 }
 
+// https://www.ietf.org/rfc/rfc4122.txt
 UUID UUID::generate() {
-	return UUID(core::generateUUID());
+	UUID u;
+	std::random_device rd;
+	std::mt19937_64 gen(rd());
+	std::uniform_int_distribution<uint64_t> dis;
+	uint64_t a = dis(gen);
+	uint64_t b = dis(gen);
+	// set version to 4 (bits 12-15 of time_hi_and_version)
+	a &= 0xFFFFFFFFFFFF0FFFULL;
+	a |= (uint64_t)0x4 << 12;
+	// set variant to 10xx (most significant two bits of clock_seq_hi_and_reserved)
+	b &= 0x3FFFFFFFFFFFFFFFULL;
+	b |= 0x8000000000000000ULL;
+	u._data[0] = a;
+	u._data[1] = b;
+	return u;
 }
 
 } // namespace core

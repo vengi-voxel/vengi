@@ -232,7 +232,7 @@ bool GodotSceneFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, con
 	}
 
 	Log::debug("Create godot scene file %s", filename.c_str());
-	const core::String &uuid = core::generateUUID();
+	const core::String &uuid = core::UUID::generate().str();
 	const int steps = sceneGraph.size();
 	stream->writeStringFormat(false, "[gd_scene load_steps=%i format=3 uid=\"uid://%s\"]\n", steps, uuid.c_str());
 

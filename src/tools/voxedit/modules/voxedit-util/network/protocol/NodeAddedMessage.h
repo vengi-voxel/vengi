@@ -17,9 +17,9 @@ namespace network {
  */
 class NodeAddedMessage : public ProtocolMessage {
 private:
-	core::String _parentUUID;
-	core::String _nodeUUID;
-	core::String _referenceUUID;
+	core::UUID _parentUUID;
+	core::UUID _nodeUUID;
+	core::UUID _referenceUUID;
 	core::String _name;
 	scenegraph::SceneGraphNodeType _nodeType = scenegraph::SceneGraphNodeType::Unknown;
 	glm::vec3 _pivot{0.0f};
@@ -32,9 +32,9 @@ private:
 
 public:
 	NodeAddedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_ADDED) {
-		writePascalStringUInt16LE(state.parentUUID);
-		writePascalStringUInt16LE(state.nodeUUID);
-		writePascalStringUInt16LE(state.referenceUUID);
+		writeUUID(state.parentUUID);
+		writeUUID(state.nodeUUID);
+		writeUUID(state.referenceUUID);
 		writePascalStringUInt16LE(state.name);
 		writeUInt8((uint8_t)state.nodeType);
 		serializeVec3(state.pivot);
@@ -49,9 +49,9 @@ public:
 	}
 	NodeAddedMessage(MessageStream &in) {
 		_id = PROTO_NODE_ADDED;
-		in.readPascalStringUInt16LE(_parentUUID);
-		in.readPascalStringUInt16LE(_nodeUUID);
-		in.readPascalStringUInt16LE(_referenceUUID);
+		in.readUUID(_parentUUID);
+		in.readUUID(_nodeUUID);
+		in.readUUID(_referenceUUID);
 		in.readPascalStringUInt16LE(_name);
 		in.readUInt8(*(uint8_t *)&_nodeType);
 		deserializeVec3(in, _pivot);
@@ -70,10 +70,10 @@ public:
 	void writeBack() override {
 		writeInt32(0);
 		writeUInt8(_id);
-		writePascalStringUInt16LE(_parentUUID);
-		writePascalStringUInt16LE(_nodeUUID);
-		writePascalStringUInt16LE(_referenceUUID);
-		writePascalStringUInt16LE(_name);
+		writeUUID(_parentUUID);
+		writeUUID(_nodeUUID);
+		writeUUID(_referenceUUID);
+		writeUUID(_name);
 		writeUInt8((uint8_t)_nodeType);
 		serializeVec3(_pivot);
 		serializePalette(_palette);
@@ -85,13 +85,13 @@ public:
 		serializeKeyFrames(_keyFrames);
 		writeSize();
 	}
-	const core::String &parentUUID() const {
+	const core::UUID &parentUUID() const {
 		return _parentUUID;
 	}
-	const core::String &nodeUUID() const {
+	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
 	}
-	const core::String &referenceUUID() const {
+	const core::UUID &referenceUUID() const {
 		return _referenceUUID;
 	}
 	const core::String &name() const {

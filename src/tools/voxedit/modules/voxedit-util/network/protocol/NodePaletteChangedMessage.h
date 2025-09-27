@@ -18,30 +18,30 @@ namespace network {
  */
 class NodePaletteChangedMessage : public ProtocolMessage {
 private:
-	core::String _nodeUUID;
+	core::UUID _nodeUUID;
 	palette::Palette _palette;
 
 public:
 	NodePaletteChangedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_PALETTE_CHANGED) {
-		writePascalStringUInt16LE(state.nodeUUID);
+		writeUUID(state.nodeUUID);
 		serializePalette(state.palette);
 		writeSize();
 	}
 
 	NodePaletteChangedMessage(MessageStream &in) {
 		_id = PROTO_NODE_PALETTE_CHANGED;
-		in.readPascalStringUInt16LE(_nodeUUID);
+		in.readUUID(_nodeUUID);
 		deserializePalette(in, _palette);
 	}
 	void writeBack() override {
 		writeInt32(0);
 		writeUInt8(_id);
-		writePascalStringUInt16LE(_nodeUUID);
+		writeUUID(_nodeUUID);
 		serializePalette(_palette);
 		writeSize();
 	}
 
-	const core::String &nodeUUID() const {
+	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
 	}
 	const palette::Palette &palette() const {

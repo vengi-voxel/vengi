@@ -20,12 +20,12 @@ namespace network {
  */
 class NodeKeyFramesMessage : public ProtocolMessage {
 private:
-	core::String _nodeUUID;
+	core::UUID _nodeUUID;
 	scenegraph::SceneGraphKeyFramesMap _keyFrames;
 
 public:
 	NodeKeyFramesMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_KEYFRAMES) {
-		writePascalStringUInt16LE(state.nodeUUID);
+		writeUUID(state.nodeUUID);
 		writeUInt16(state.keyFrames.size());
 		for (const auto &e : state.keyFrames) {
 			const core::String &animation = e->first;
@@ -48,7 +48,7 @@ public:
 	}
 	NodeKeyFramesMessage(MessageStream &in) {
 		_id = PROTO_NODE_KEYFRAMES;
-		in.readPascalStringUInt16LE(_nodeUUID);
+		in.readUUID(_nodeUUID);
 		uint16_t keyFrameMapSize;
 		in.readUInt16(keyFrameMapSize);
 		for (uint16_t i = 0; i < keyFrameMapSize; ++i) {
@@ -79,7 +79,7 @@ public:
 	void writeBack() override {
 		writeInt32(0);
 		writeUInt8(_id);
-		writePascalStringUInt16LE(_nodeUUID);
+		writeUUID(_nodeUUID);
 		writeUInt16(_keyFrames.size());
 		for (const auto &e : _keyFrames) {
 			const core::String &animation = e->first;
@@ -101,7 +101,7 @@ public:
 		writeSize();
 	}
 
-	const core::String &nodeUUID() const {
+	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
 	}
 	const scenegraph::SceneGraphKeyFramesMap &keyFrames() const {

@@ -279,7 +279,7 @@ struct MementoState {
 	 * Essential for SceneNodeAdded and SceneNodeRemoved operations to ensure
 	 * nodes are restored to the correct position in the hierarchy.
 	 */
-	core::String parentUUID;
+	core::UUID parentUUID;
 
 	/**
 	 * @brief Unique identifier for this scene graph node
@@ -288,7 +288,7 @@ struct MementoState {
 	 * operations. This is crucial for tracking the same logical node across
 	 * different memento states.
 	 */
-	core::String nodeUUID;
+	core::UUID nodeUUID;
 
 	/**
 	 * @brief UUID of a referenced node (for reference-type nodes)
@@ -296,7 +296,7 @@ struct MementoState {
 	 * Some nodes in the scene graph can reference other nodes rather than containing
 	 * their own data. This field stores the UUID of the referenced node when applicable.
 	 */
-	core::String referenceUUID;
+	core::UUID referenceUUID;
 
 	/**
 	 * @brief The type of scene graph node (Model, Group, Camera, etc.)
@@ -346,13 +346,13 @@ struct MementoState {
 	MementoState(MementoState &&other) noexcept;
 	MementoState &operator=(MementoState &&other) noexcept;
 	MementoState &operator=(const MementoState &other);
-	MementoState(MementoType _type, const MementoData &_data, const core::String &_parentId,
-				 const core::String &_nodeId, const core::String &_referenceId, const core::String &_name,
+	MementoState(MementoType _type, const MementoData &_data, const core::UUID &_parentId,
+				 const core::UUID &_nodeId, const core::UUID &_referenceId, const core::String &_name,
 				 scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
 				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
 				 const palette::NormalPalette &_normalPalette, const scenegraph::SceneGraphNodeProperties &_properties);
-	MementoState(MementoType _type, MementoData &&_data, core::String &&_parentId, core::String &&_nodeId,
-				 core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
+	MementoState(MementoType _type, MementoData &&_data, core::UUID &&_parentId, core::UUID &&_nodeId,
+				 core::UUID &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
 				 glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
 				 palette::NormalPalette &&_normalPalette, scenegraph::SceneGraphNodeProperties &&_properties);
 	MementoState(MementoType _type, const core::DynamicArray<core::String> &stringList);
@@ -468,7 +468,7 @@ protected:
 	 */
 	bool markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 				  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion);
-	bool markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
+	bool markUndo(const core::UUID &parentId, const core::UUID &nodeId, const core::UUID &referenceId,
 				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
 				  MementoType type, const voxel::Region &modifiedRegion, const glm::vec3 &pivot,
 				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,

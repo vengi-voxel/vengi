@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/Assert.h"
 #include "core/UTF8.h"
+#include "core/UUID.h"
 #include "core/collection/Buffer.h"
 #include "core/Endian.h"
 #include <SDL_stdinc.h>
@@ -100,6 +101,13 @@ bool WriteStream::writeInt8(int8_t val) {
 
 bool WriteStream::writeUInt8(uint8_t val) {
 	return write(&val, sizeof(val)) != -1;
+}
+
+bool WriteStream::writeUUID(const core::UUID &uuid) {
+	if (!writeUInt64BE(uuid.data0())) {
+		return false;
+	}
+	return writeUInt64BE(uuid.data1());
 }
 
 bool WriteStream::writeString(const core::String &string, bool terminate) {
@@ -657,6 +665,19 @@ int ReadStream::readInt64BE(int64_t &val) {
 		return 0;
 	}
 	return -1;
+}
+
+int ReadStream::readUUID(core::UUID &uuid) {
+	uint64_t id0;
+	if (readUInt64BE(id0) != 0) {
+		return -1;
+	}
+	uint64_t id1;
+	if (readUInt64BE(id1) != 0) {
+		return -1;
+	}
+	uuid = core::UUID(id0, id1);
+	return 0;
 }
 
 bool SeekableReadStream::readLine(core::String &str) {

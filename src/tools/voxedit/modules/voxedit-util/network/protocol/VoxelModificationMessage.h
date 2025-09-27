@@ -17,14 +17,14 @@ namespace network {
  */
 class VoxelModificationMessage : public ProtocolMessage {
 private:
-	core::String _nodeUUID;
+	core::UUID _nodeUUID;
 	voxel::Region _region;
 	uint32_t _compressedSize = 0;
 	uint8_t *_compressedData = nullptr;
 
 public:
 	VoxelModificationMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_VOXEL_MODIFICATION) {
-		writePascalStringUInt16LE(state.nodeUUID);
+		writeUUID(state.nodeUUID);
 		core_assert_always(state.dataRegion().isValid());
 		serializeRegion(state.dataRegion());
 		serializeVolume(state.data.buffer(), state.data.size());
@@ -32,14 +32,14 @@ public:
 	}
 	VoxelModificationMessage(MessageStream &in) {
 		_id = PROTO_VOXEL_MODIFICATION;
-		in.readPascalStringUInt16LE(_nodeUUID);
+		in.readUUID(_nodeUUID);
 		deserializeRegion(in, _region);
 		deserializeVolume(in, _compressedSize, _compressedData);
 	}
 	void writeBack() override {
 		writeInt32(0);
 		writeUInt8(_id);
-		writePascalStringUInt16LE(_nodeUUID);
+		writeUUID(_nodeUUID);
 		serializeRegion(_region);
 		serializeVolume(_compressedData, _compressedSize);
 		writeSize();
@@ -52,7 +52,7 @@ public:
 	const voxel::Region &region() const {
 		return _region;
 	}
-	const core::String &nodeUUID() const {
+	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
 	}
 	const uint8_t *compressedData() const {

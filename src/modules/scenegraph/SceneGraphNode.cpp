@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Hash.h"
+#include "core/UUID.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "palette/NormalPalette.h"
@@ -29,7 +30,6 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_id = move._id;
 	move._id = InvalidNodeId;
 	_uuid = move._uuid;
-	move._uuid.clear();
 	_referenceId = move._referenceId;
 	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
@@ -62,7 +62,6 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_id = move._id;
 	move._id = InvalidNodeId;
 	_uuid = move._uuid;
-	move._uuid.clear();
 	_referenceId = move._referenceId;
 	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
@@ -81,10 +80,10 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	return *this;
 }
 
-SceneGraphNode::SceneGraphNode(SceneGraphNodeType type, const core::String &uuid)
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type, const core::UUID &uuid)
 	: _type(type), _flags(VolumeOwned | Visible), _uuid(uuid) {
-	if (_uuid.empty()) {
-		_uuid = core::generateUUID();
+	if (!_uuid.isValid()) {
+		_uuid = core::UUID::generate();
 	}
 	// ensure that there is at least one animation with keyframes
 	setAnimation(DEFAULT_ANIMATION);

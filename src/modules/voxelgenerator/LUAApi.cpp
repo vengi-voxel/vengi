@@ -1242,7 +1242,8 @@ static int luaVoxel_scenegraph_get_node_by_name(lua_State* s) {
 }
 
 static int luaVoxel_scenegraph_get_node_by_uuid(lua_State* s) {
-	const char *uuid = luaL_checkstring(s, 1);
+	const char *uuidStr = luaL_checkstring(s, 1);
+	core::UUID uuid(uuidStr);
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	if (scenegraph::SceneGraphNode *node = sceneGraph->findNodeByUUID(uuid)) {
 		return luaVoxel_pushscenegraphnode(s, *node);
@@ -1367,7 +1368,8 @@ static int luaVoxel_scenegraphnode_clone(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_uuid(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushstring(s, node->node->uuid().c_str());
+	const core::String &uuidStr = node->node->uuid().str();
+	lua_pushstring(s, uuidStr.c_str());
 	return 1;
 }
 

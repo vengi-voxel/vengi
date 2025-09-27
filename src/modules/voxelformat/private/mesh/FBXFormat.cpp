@@ -252,8 +252,9 @@ Objects: {
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 			const char *objectName = meshExt.name.c_str();
+			const core::String &uuidStr = graphNode.uuid().str();
 			if (objectName[0] == '\0') {
-				objectName = graphNode.uuid().c_str();
+				objectName = uuidStr.c_str();
 			}
 
 			const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
@@ -415,8 +416,9 @@ Objects: {
 			continue;
 		}
 		const char *objectName = graphNode.name().c_str();
+		const core::String &uuidStr = graphNode.uuid().str();
 		if (objectName[0] == '\0') {
-			objectName = graphNode.uuid().c_str();
+			objectName = uuidStr.c_str();
 		}
 		const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
 		connections.push_back(modelName);

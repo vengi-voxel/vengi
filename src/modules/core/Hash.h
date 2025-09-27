@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/String.h"
 #include <stdint.h>
 
 namespace core {
@@ -22,7 +21,5 @@ constexpr uint64_t hash(const char *inString, uint64_t seed = 146959810393466560
 	}
 	return hash;
 }
-
-core::String generateUUID();
 
 }

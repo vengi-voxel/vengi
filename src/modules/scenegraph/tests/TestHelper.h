@@ -14,7 +14,8 @@ inline ::std::ostream &operator<<(::std::ostream &os, const scenegraph::SceneGra
 	os << "SceneGraph: " << sceneGraph.size() << " nodes\n";
 	for (const auto &entry : sceneGraph.nodes()) {
 		const SceneGraphNode &node = entry->second;
-		os << " - " << SceneGraphNodeTypeStr[(int)node.type()] << ": " << node.name().c_str() << " (" << node.uuid().c_str() << ")\n";
+		const core::String &uuidStr = node.uuid().str();
+		os << " - " << SceneGraphNodeTypeStr[(int)node.type()] << ": " << node.name().c_str() << " (" << uuidStr.c_str() << ")\n";
 	}
 	return os;
 }

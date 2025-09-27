@@ -192,7 +192,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writeUInt32(FourCC('N', 'O', 'D', 'E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
-	wrapBool(stream.writePascalStringUInt16LE(node.uuid()))
+	wrapBool(stream.writePascalStringUInt16LE(node.uuid().str()))
 	wrapBool(stream.writeInt32(node.id()))
 	wrapBool(stream.writeInt32(node.reference()))
 	wrapBool(stream.writeBool(node.visible()))

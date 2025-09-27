@@ -13,16 +13,20 @@
 namespace voxedit {
 
 static inline core::String toString(const memento::MementoState &state, const core::String &name, int n) {
+	const core::String &uuidStr = state.nodeUUID.str();
+	const core::String &parentUUIDStr = state.parentUUID.str();
 	return core::String::format("%s (%s): node %s, parent %s, name: %s##%i",
-								memento::MementoHandler::typeToString(state.type), name.c_str(), state.nodeUUID.c_str(),
-								state.parentUUID.c_str(), state.name.c_str(), n);
+								memento::MementoHandler::typeToString(state.type), name.c_str(), uuidStr.c_str(),
+								parentUUIDStr.c_str(), state.name.c_str(), n);
 }
 
 static void stateTooltip(const memento::MementoState &state) {
 	core::String palHash = core::string::toString(state.palette.hash());
 	if (ImGui::BeginItemTooltip()) {
-		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), state.nodeUUID.c_str());
-		ImGui::Text(" - parent: %s", state.parentUUID.c_str());
+		const core::String &uuidStr = state.nodeUUID.str();
+		const core::String &parentUUIDStr = state.parentUUID.str();
+		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), uuidStr.c_str());
+		ImGui::Text(" - parent: %s", parentUUIDStr.c_str());
 		ImGui::Text(" - name: %s", state.name.c_str());
 		ImGui::Text(" - type: %s", scenegraph::SceneGraphNodeTypeStr[(int)state.nodeType]);
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");

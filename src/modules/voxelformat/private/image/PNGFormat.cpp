@@ -327,8 +327,9 @@ bool PNGFormat::saveHeightmaps(const scenegraph::SceneGraph &sceneGraph, const c
 		// TODO: VOXELFORMAT: make max height configurable
 		const float heightScale = 256.0f / (float)region.getHeightInVoxels();
 		const palette::Palette &palette = node.palette();
+		const core::String &uuidStr = node.uuid().str();
 		const core::String name = core::String::format("%s-%s.png", core::string::stripExtension(filename).c_str(),
-												 node.uuid().c_str());
+												 uuidStr.c_str());
 		image::Image image(name, 4);
 		image.resize(region.getWidthInVoxels(), region.getDepthInVoxels());
 		app::for_parallel(region.getLowerZ(), region.getUpperZ() + 1, [&image, volume, &region, &palette, heightScale] (int start, int end) {
@@ -386,8 +387,9 @@ bool PNGFormat::saveSlices(const scenegraph::SceneGraph &sceneGraph, const core:
 		const voxel::Region &region = volume->region();
 		const palette::Palette &palette = node.palette();
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			const core::String &uuidStr = node.uuid().str();
 			const core::String &layerFilename =
-				core::String::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
+				core::String::format("%s-%s-%i.png", basename.c_str(), uuidStr.c_str(), z);
 			image::Image image(layerFilename);
 			core::Buffer<core::RGBA> rgba;
 			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());

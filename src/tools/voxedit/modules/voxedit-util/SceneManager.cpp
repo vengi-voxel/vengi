@@ -774,16 +774,18 @@ voxel::RawVolume* SceneManager::activeVolume() {
 }
 
 bool SceneManager::mementoRename(const memento::MementoState& s) {
-	Log::debug("Memento: rename of node %s (%s)", s.nodeUUID.c_str(), s.name.c_str());
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: rename of node %s (%s)", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		return nodeRename(*node, s.name);
 	}
-	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+	Log::warn("Failed to handle memento state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 	return false;
 }
 
 bool SceneManager::mementoProperties(const memento::MementoState& s) {
-	Log::debug("Memento: properties of node %s (%s)", s.nodeUUID.c_str(), s.name.c_str());
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: properties of node %s (%s)", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		node->properties().clear();
 		node->addProperties(s.properties);
@@ -803,7 +805,8 @@ bool SceneManager::mementoAnimations(const memento::MementoState &s) {
 }
 
 bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
-	Log::debug("Memento: keyframes of node %s (%s)", s.nodeUUID.c_str(), s.name.c_str());
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: keyframes of node %s (%s)", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		_sceneGraph.setAllKeyFramesForNode(*node, s.keyFrames);
 		node->setPivot(s.pivot);
@@ -814,7 +817,8 @@ bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 }
 
 bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
-	Log::debug("Memento: palette change of node %s to %s", s.nodeUUID.c_str(), s.name.c_str());
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: palette change of node %s to %s", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode* node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		node->setPalette(s.palette);
 		return true;
@@ -823,7 +827,8 @@ bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
 }
 
 bool SceneManager::mementoNormalPaletteChange(const memento::MementoState &s) {
-	Log::debug("Memento: normal palette change of node %s to %s", s.nodeUUID.c_str(), s.name.c_str());
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: normal palette change of node %s to %s", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode* node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		node->setNormalPalette(s.normalPalette);
 		return true;
@@ -832,13 +837,15 @@ bool SceneManager::mementoNormalPaletteChange(const memento::MementoState &s) {
 }
 
 bool SceneManager::mementoModification(const memento::MementoState& s) {
-	Log::debug("Memento: modification in volume of node %s (%s)", s.nodeUUID.c_str(), s.name.c_str());
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: modification in volume of node %s (%s)", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		if (node->type() == scenegraph::SceneGraphNodeType::Model && s.nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
 				node->setReference(referenceNode->id(), true);
 			} else {
-				Log::warn("Failed to handle memento state - reference node id %s not found", s.referenceUUID.c_str());
+				const core::String &refUUIDStr = s.referenceUUID.str();
+				Log::warn("Failed to handle memento state - reference node id %s not found", refUUIDStr.c_str());
 			}
 		} else {
 			if (node->type() == scenegraph::SceneGraphNodeType::ModelReference && s.nodeType == scenegraph::SceneGraphNodeType::Model) {
@@ -859,7 +866,7 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 		modified(node->id(), s.data.modifiedRegion());
 		return true;
 	}
-	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+	Log::warn("Failed to handle memento state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 	return false;
 }
 
@@ -877,7 +884,8 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 		if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
 			newNode.setReference(referenceNode->id());
 		} else {
-			Log::warn("Failed to handle memento state - reference node id %s not found", s.referenceUUID.c_str());
+			const core::String &refUUIDStr = s.referenceUUID.str();
+			Log::warn("Failed to handle memento state - reference node id %s not found", refUUIDStr.c_str());
 		}
 	}
 	_sceneGraph.setAllKeyFramesForNode(newNode, s.keyFrames);
@@ -916,13 +924,15 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 		return mementoNormalPaletteChange(s);
 	}
 	if (s.type == memento::MementoType::SceneNodeMove) {
-		Log::debug("Memento: move of node %s (%s) (new parent %s)", s.nodeUUID.c_str(), s.name.c_str(), s.parentUUID.c_str());
+		const core::String &uuidStr = s.nodeUUID.str();
+		const core::String &parentUUIDStr = s.parentUUID.str();
+		Log::debug("Memento: move of node %s (%s) (new parent %s)", uuidStr.c_str(), s.name.c_str(), parentUUIDStr.c_str());
 		scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID);
 		scenegraph::SceneGraphNode *nodeParent = sceneGraphNodeByUUID(s.parentUUID);
 		if (node && nodeParent) {
 			return nodeMove(node->id(), nodeParent->id());
 		}
-		Log::warn("Failed to handle memento move state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+		Log::warn("Failed to handle memento move state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 		return false;
 	}
 	if (s.type == memento::MementoType::Modification) {
@@ -930,28 +940,34 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 	}
 	if (isRedo) {
 		if (s.type == memento::MementoType::SceneNodeRemoved) {
-			Log::debug("Memento: remove of node %s (%s) from parent %s", s.nodeUUID.c_str(), s.name.c_str(), s.parentUUID.c_str());
+			const core::String &uuidStr = s.nodeUUID.str();
+			const core::String &parentUUIDStr = s.parentUUID.str();
+			Log::debug("Memento: remove of node %s (%s) from parent %s", uuidStr.c_str(), s.name.c_str(), parentUUIDStr.c_str());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 				return nodeRemove(*node, true);
 			}
-			Log::warn("Failed to handle redo memento remove state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+			Log::warn("Failed to handle redo memento remove state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 			return false;
 		}
 		if (s.type == memento::MementoType::SceneNodeAdded) {
-			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), s.parentUUID.c_str());
+			const core::String &parentUUIDStr = s.parentUUID.str();
+			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), parentUUIDStr.c_str());
 			return mementoStateToNode(s);
 		}
 	} else {
 		if (s.type == memento::MementoType::SceneNodeRemoved) {
-			Log::debug("Memento: remove of node (%s) from parent %s", s.name.c_str(), s.parentUUID.c_str());
+			const core::String &parentUUIDStr = s.parentUUID.str();
+			Log::debug("Memento: remove of node (%s) from parent %s", s.name.c_str(), parentUUIDStr.c_str());
 			return mementoStateToNode(s);
 		}
 		if (s.type == memento::MementoType::SceneNodeAdded) {
-			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), s.parentUUID.c_str());
+			const core::String &parentUUIDStr = s.parentUUID.str();
+			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), parentUUIDStr.c_str());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 				return nodeRemove(*node, true);
 			}
-			Log::warn("Failed to handle undo memento add state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+			const core::String &uuidStr = s.nodeUUID.str();
+			Log::warn("Failed to handle undo memento add state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 		}
 	}
 	return true;
@@ -1272,8 +1288,9 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
 		const core::String &name = node->name();
 		const scenegraph::SceneGraphNodeType type = node->type();
+		const core::String &uuidStr = node->uuid().str();
 		Log::debug("Adding node %i with name %s (type: %s, uuid: %s)", newNodeId, name.c_str(),
-				   scenegraph::SceneGraphNodeTypeStr[(int)type], node->uuid().c_str());
+				   scenegraph::SceneGraphNodeTypeStr[(int)type], uuidStr.c_str());
 
 		_mementoHandler.markNodeAdded(_sceneGraph, *node);
 
@@ -1379,7 +1396,7 @@ scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
 	return nullptr;
 }
 
-scenegraph::SceneGraphNode *SceneManager::sceneGraphNodeByUUID(const core::String &uuid) {
+scenegraph::SceneGraphNode *SceneManager::sceneGraphNodeByUUID(const core::UUID &uuid) {
 	return _sceneGraph.findNodeByUUID(uuid);
 }
 

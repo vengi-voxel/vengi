@@ -13,10 +13,11 @@ NodePropertiesHandler::NodePropertiesHandler(SceneManager *sceneMgr) : _sceneMgr
 }
 
 void NodePropertiesHandler::execute(const network::ClientId &, network::NodePropertiesMessage *message) {
-	const core::String &uuid = message->nodeUUID();
+	const core::UUID &uuid = message->nodeUUID();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {
-		Log::warn("Received properties changed for unknown node UUID %s", uuid.c_str());
+		const core::String &uuidStr = uuid.str();
+		Log::warn("Received properties changed for unknown node UUID %s", uuidStr.c_str());
 		return;
 	}
 	node->properties() = message->properties();

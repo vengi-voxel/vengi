@@ -84,7 +84,8 @@ void NodePropertiesPanel::update(const char *id, command::CommandExecutionListen
 			ImGui::TextUnformatted(_("UUID"));
 			ImGui::TableNextColumn();
 			ImGui::SetNextItemWidth(-1);
-			ImGui::TextUnformatted(node.uuid().c_str());
+			const core::String &uuidStr = node.uuid().str();
+			ImGui::TextUnformatted(uuidStr.c_str());
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();

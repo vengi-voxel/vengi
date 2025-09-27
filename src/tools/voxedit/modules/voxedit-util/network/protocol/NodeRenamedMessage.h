@@ -16,29 +16,29 @@ namespace network {
  */
 class NodeRenamedMessage : public ProtocolMessage {
 private:
-	core::String _nodeUUID;
+	core::UUID _nodeUUID;
 	core::String _name;
 
 public:
 	NodeRenamedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_RENAMED) {
-		writePascalStringUInt16LE(state.nodeUUID);
+		writeUUID(state.nodeUUID);
 		writePascalStringUInt16LE(state.name);
 		writeSize();
 	}
 	NodeRenamedMessage(MessageStream &in) {
 		_id = PROTO_NODE_RENAMED;
-		in.readPascalStringUInt16LE(_nodeUUID);
+		in.readUUID(_nodeUUID);
 		in.readPascalStringUInt16LE(_name);
 	}
 	void writeBack() override {
 		writeInt32(0);
 		writeUInt8(_id);
-		writePascalStringUInt16LE(_nodeUUID);
+		writeUUID(_nodeUUID);
 		writePascalStringUInt16LE(_name);
 		writeSize();
 	}
 
-	const core::String &nodeUUID() const {
+	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
 	}
 	/**

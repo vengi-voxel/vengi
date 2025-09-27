@@ -69,29 +69,4 @@ uint32_t hash(const void *key, int len, uint32_t seed) {
 	return h1;
 }
 
-// https://www.ietf.org/rfc/rfc4122.txt
-core::String generateUUID() {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> dis(0, 15);
-	const char *hexDigits = "0123456789ABCDEF";
-	core::String uuid(36, ' ');
-	for (size_t i = 0; i < uuid.size(); i++) {
-		if (i == 8 || i == 13 || i == 18 || i == 23) {
-			// separators
-			uuid[i] = '-';
-		} else if (i == 14) {
-			// Version 4 UUID: Random
-			uuid[i] = '4';
-		} else if (i == 19) {
-			// Variant bits: 10b for RFC4122
-			uuid[i] = hexDigits[(dis(gen) & 0x3) | 0x8];
-		} else {
-			uuid[i] = hexDigits[dis(gen)];
-		}
-	}
-
-	return uuid;
-}
-
 } // namespace core

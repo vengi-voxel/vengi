@@ -13,20 +13,22 @@ NodeMovedHandler::NodeMovedHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr)
 }
 
 void NodeMovedHandler::execute(const network::ClientId &, network::NodeMovedMessage *message) {
-	const core::String &nodeUUID = message->nodeUUID();
-	const core::String &parentUUID = message->parentUUID();
+	const core::UUID &nodeUUID = message->nodeUUID();
+	const core::UUID &parentUUID = message->parentUUID();
 
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 	if (node == nullptr) {
-		Log::warn("Received node moved for unknown node UUID %s", nodeUUID.c_str());
+		const core::String &uuidStr = nodeUUID.str();
+		Log::warn("Received node moved for unknown node UUID %s", uuidStr.c_str());
 		return;
 	}
 
 	scenegraph::SceneGraphNode *newParent = nullptr;
-	if (!parentUUID.empty()) {
+	if (parentUUID.isValid()) {
 		newParent = _sceneMgr->sceneGraph().findNodeByUUID(parentUUID);
 		if (newParent == nullptr) {
-			Log::warn("Received node moved for unknown parent UUID %s", parentUUID.c_str());
+			const core::String &uuidStr = parentUUID.str();
+			Log::warn("Received node moved for unknown parent UUID %s", uuidStr.c_str());
 			return;
 		}
 	}

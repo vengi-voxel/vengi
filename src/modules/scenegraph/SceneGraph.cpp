@@ -269,7 +269,7 @@ palette::Palette &SceneGraph::firstPalette() const {
 	return node->palette();
 }
 
-const core::String &SceneGraph::uuid(int nodeId) const {
+const core::UUID &SceneGraph::uuid(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
 		return _emptyUUID;
@@ -582,9 +582,10 @@ SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) {
 	return nullptr;
 }
 
-SceneGraphNode *SceneGraph::findNodeByUUID(const core::String &uuid) {
+SceneGraphNode *SceneGraph::findNodeByUUID(const core::UUID &uuid) {
 	for (const auto &entry : _nodes) {
-		Log::trace("node uuid: %s", entry->value.uuid().c_str());
+		const core::String &uuidStr = entry->value.uuid().str();
+		Log::trace("node uuid: %s", uuidStr.c_str());
 		if (entry->value.uuid() == uuid) {
 			return &entry->value;
 		}
@@ -609,8 +610,8 @@ SceneGraphNode *SceneGraph::first() {
 	return nullptr;
 }
 
-void SceneGraph::setRootUUID(const core::String &uuid) {
-	if (uuid.empty()) {
+void SceneGraph::setRootUUID(const core::UUID &uuid) {
+	if (!uuid.isValid()) {
 		return;
 	}
 	auto iter = _nodes.find(0);
@@ -643,7 +644,8 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 
 	if (findNodeByUUID(node.uuid()) != nullptr) {
-		Log::error("Node with UUID %s already exists in the scene graph", node.uuid().c_str());
+		const core::String &uuidStr = node.uuid().str();
+		Log::error("Node with UUID %s already exists in the scene graph", uuidStr.c_str());
 		node.release();
 		return InvalidNodeId;
 	}

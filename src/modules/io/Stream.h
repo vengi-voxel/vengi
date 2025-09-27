@@ -18,6 +18,7 @@
 
 namespace core {
 class String;
+class UUID;
 }
 
 namespace io {
@@ -120,6 +121,7 @@ public:
 	 * @return -1 on error - 0 on success
 	 */
 	int readDoubleBE(double &val);
+	int readUUID(core::UUID &uuid);
 	/**
 	 * @brief Read a fixed-width string from a file. It may be null-terminated, but
 	 * the position of the stream is still advanced by the given length
@@ -266,6 +268,7 @@ public:
 	bool writeUInt16(uint16_t val);
 	bool writeUInt32(uint32_t val);
 	bool writeUInt64(uint64_t val);
+	bool writeUUID(const core::UUID &uuid);
 	bool writeFloat(float val);
 	bool writeDouble(double val);
 

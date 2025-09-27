@@ -9,7 +9,7 @@
 
 namespace scenegraph {
 
-SceneGraphNodeCamera::SceneGraphNodeCamera(const core::String &uuid) : Super(SceneGraphNodeType::Camera, uuid) {
+SceneGraphNodeCamera::SceneGraphNodeCamera(const core::UUID &uuid) : Super(SceneGraphNodeType::Camera, uuid) {
 }
 
 float SceneGraphNodeCamera::farPlane() const {

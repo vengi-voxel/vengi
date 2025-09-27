@@ -15,19 +15,20 @@ VoxelModificationHandler::VoxelModificationHandler(SceneManager *sceneMgr) : _sc
 }
 
 void VoxelModificationHandler::execute(const network::ClientId &, network::VoxelModificationMessage *message) {
-	const core::String &uuid = message->nodeUUID();
+	const core::UUID &uuid = message->nodeUUID();
+	const core::String &uuidStr = uuid.str();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {
-		Log::warn("Received voxel modification for unknown node UUID %s", uuid.c_str());
+		Log::warn("Received voxel modification for unknown node UUID %s", uuidStr.c_str());
 		return;
 	}
 	if (!node->isModelNode()) {
-		Log::warn("Received voxel modification for non-model node UUID %s", uuid.c_str());
+		Log::warn("Received voxel modification for non-model node UUID %s", uuidStr.c_str());
 		return;
 	}
 	const voxel::Region &region = message->region();
 	if (!region.isValid()) {
-		Log::warn("Received voxel modification with invalid region for node UUID %s", uuid.c_str());
+		Log::warn("Received voxel modification with invalid region for node UUID %s", uuidStr.c_str());
 		return;
 	}
 	const uint8_t *data = message->compressedData();

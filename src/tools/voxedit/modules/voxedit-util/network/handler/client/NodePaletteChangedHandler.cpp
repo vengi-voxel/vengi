@@ -13,15 +13,17 @@ NodePaletteChangedHandler::NodePaletteChangedHandler(SceneManager *sceneMgr) : _
 }
 
 void NodePaletteChangedHandler::execute(const network::ClientId &, network::NodePaletteChangedMessage *message) {
-	const core::String &uuid = message->nodeUUID();
+	const core::UUID &uuid = message->nodeUUID();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {
-		Log::warn("Received palette changed for unknown node UUID %s", uuid.c_str());
+		const core::String &uuidStr = uuid.str();
+		Log::warn("Received palette changed for unknown node UUID %s", uuidStr.c_str());
 		return;
 	}
 
 	if (!node->isModelNode()) {
-		Log::warn("Received palette changed for non-model node UUID %s", uuid.c_str());
+		const core::String &uuidStr = uuid.str();
+		Log::warn("Received palette changed for non-model node UUID %s", uuidStr.c_str());
 		return;
 	}
 

@@ -17,7 +17,7 @@ private:
 	using Super = SceneGraphNode;
 
 public:
-	SceneGraphNodeCamera(const core::String &uuid = "");
+	SceneGraphNodeCamera(const core::UUID &uuid = core::UUID());
 
 	static constexpr const char *Modes[] = {"orthographic", "perspective"};
 

@@ -21,7 +21,7 @@ TEST(UUIDTest, testGenerateAndString) {
 }
 
 TEST(UUIDTest, testParseAndEquality) {
-    const String sample = generateUUID();
+    const String sample = core::UUID::generate().str();
     UUID a(sample);
     UUID b;
     b = sample;

@@ -13,10 +13,11 @@ NodeRemovedHandler::NodeRemovedHandler(SceneManager *sceneMgr) : _sceneMgr(scene
 }
 
 void NodeRemovedHandler::execute(const network::ClientId &, network::NodeRemovedMessage *message) {
-	const core::String &uuid = message->nodeUUID();
+	const core::UUID &uuid = message->nodeUUID();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {
-		Log::debug("Received node removed for unknown node UUID %s - already removed", uuid.c_str());
+		const core::String &uuidStr = uuid.str();
+		Log::debug("Received node removed for unknown node UUID %s - already removed", uuidStr.c_str());
 		return;
 	}
 

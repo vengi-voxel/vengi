@@ -7,6 +7,7 @@
 #include "core/Optional.h"
 #include "core/RGBA.h"
 #include "core/String.h"
+#include "core/UUID.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicStringMap.h"
@@ -70,7 +71,7 @@ using SceneGraphNodeProperties = core::DynamicStringMap<core::String>;
 class SceneGraphNode {
 	friend class SceneGraph;
 public:
-	SceneGraphNode(SceneGraphNodeType type, const core::String &uuid = "");
+	SceneGraphNode(SceneGraphNodeType type, const core::UUID &uuid = core::UUID());
 	SceneGraphNode(SceneGraphNode &&move) noexcept;
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 
@@ -91,7 +92,7 @@ protected:
 	core::RGBA _color;
 	glm::vec3 _pivot {0.0f};
 
-	core::String _uuid;
+	core::UUID _uuid;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
 	SceneGraphKeyFramesMap _keyFramesMap;
@@ -230,7 +231,7 @@ public:
 	// meta data
 
 	const core::String &name() const;
-	const core::String &uuid() const;
+	const core::UUID &uuid() const;
 	void setName(const core::String &name);
 	bool visible() const;
 	void setVisible(bool visible);
@@ -351,7 +352,7 @@ inline const core::String &SceneGraphNode::name() const {
 	return _name;
 }
 
-inline const core::String &SceneGraphNode::uuid() const {
+inline const core::UUID &SceneGraphNode::uuid() const {
 	return _uuid;
 }
 

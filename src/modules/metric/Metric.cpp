@@ -4,6 +4,7 @@
 
 #include "Metric.h"
 #include "core/Hash.h"
+#include "core/UUID.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
@@ -21,7 +22,7 @@ bool Metric::init(const char *prefix, const IMetricSenderPtr &messageSender) {
 	_prefix = prefix;
 	core::VarPtr uuid = core::Var::get(cfg::MetricUUID, "");
 	if (uuid->strVal().empty()) {
-		uuid->setVal(core::generateUUID());
+		uuid->setVal(core::UUID::generate().str());
 	}
 	_uuid = uuid->strVal();
 	Log::debug("Use uuid for metrics: %s", _uuid.c_str());
