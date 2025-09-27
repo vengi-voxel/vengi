@@ -648,6 +648,34 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return data;
 }
 
+void unmapBuffer(Id handle, BufferType type) {
+	video_trace_scoped(UnmapBuffer);
+	if (handle == InvalidId) {
+		return;
+	}
+	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glUnmapNamedBuffer != nullptr);
+		core_assert(glUnmapNamedBuffer((GLuint)handle) == GL_TRUE);
+		checkError();
+		return;
+	}
+
+	const int typeIndex = core::enumVal(type);
+	const GLenum glType = _priv::BufferTypes[typeIndex];
+	const Id oldBuffer = boundBuffer(type);
+	const bool changed = bindBuffer(type, handle);
+	core_assert(glUnmapBuffer != nullptr);
+	core_assert(glUnmapBuffer(glType) == GL_TRUE);
+	checkError();
+	if (changed) {
+		if (oldBuffer == InvalidId) {
+			unbindBuffer(type);
+		} else {
+			bindBuffer(type, oldBuffer);
+		}
+	}
+}
+
 bool bindBuffer(BufferType type, Id handle) {
 	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);

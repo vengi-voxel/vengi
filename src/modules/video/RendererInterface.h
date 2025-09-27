@@ -434,6 +434,20 @@ Id boundBuffer(BufferType type);
 void unmapBuffer(Id handle, BufferType type);
 
 /**
+ * @brief Map a buffer object's data store into client memory for CPU access.
+ *
+ * Returns a pointer to the mapped memory region or nullptr on failure. The
+ * pointer is valid until @c unmapBuffer() is called for the same @p handle.
+ * Implementations may use direct-state-access (DSA) APIs where available.
+ *
+ * @param handle Buffer object id to map.
+ * @param type Binding type used for mapping (Array, Uniform, etc.).
+ * @param mode Access mode (Read, Write, ReadWrite).
+ * @return Pointer to mapped memory or nullptr on failure.
+ */
+void *mapBuffer(Id handle, BufferType type, AccessMode mode);
+
+/**
  * @brief Bind a buffer object for the specified buffer type.
  *
  * Returns @c true if the binding changed.
