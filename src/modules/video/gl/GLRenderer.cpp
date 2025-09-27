@@ -119,7 +119,8 @@ bool checkError(bool triggerAssert) {
 		} else {
 			Log::error("GL error: %s (%i)", error, glError);
 		}
-		hasError |= (glError == GL_NO_ERROR);
+		/* record that an error was found */
+		hasError = true;
 	}
 	return hasError;
 #else

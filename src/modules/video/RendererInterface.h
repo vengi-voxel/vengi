@@ -136,9 +136,15 @@ void startFrame(SDL_Window *window, RendererContext &context);
 void endFrame(SDL_Window *window);
 /**
  * @brief Checks the error state since the last call to this function.
- * @param[in] triggerAssert Triggers an assert whenever a failure happened. If @c false is given here, you might
- * just want to delete the error state for future checks or the previous state chnages are expected to fail.
- * @return @c false if no error was found, @c true if an error occurred
+ *
+ * Queries the backend for any pending error state (for GL this calls glGetError
+ * repeatedly) and logs or asserts depending on @p triggerAssert. The function
+ * returns true if any error was detected, false otherwise.
+ *
+ * @param[in] triggerAssert When true (and in DEBUG builds) an assert will be
+ * triggered on the first detected error. When false the function will log
+ * detected errors instead of asserting.
+ * @return @c true if an error was found, @c false if no error was found.
  */
 bool checkError(bool triggerAssert = true);
 /**
