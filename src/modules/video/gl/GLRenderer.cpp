@@ -1736,6 +1736,10 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	core_assert(glBindImageTexture != nullptr);
 	glBindImageTexture(unit, (GLuint)textureHandle, level, layered, layer, glAccessMode, glFormat);
 	video::checkError();
+	/* update cached binding so redundant binds can be avoided */
+	glstate().imageHandle = textureHandle;
+	glstate().imageFormat = format;
+	glstate().imageAccessMode = mode;
 	return true;
 }
 
