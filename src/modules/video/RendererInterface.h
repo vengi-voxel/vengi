@@ -117,8 +117,10 @@ void activateContext(SDL_Window *window, RendererContext &context);
 /**
  * @brief Begin a new frame on @p window using @p context.
  *
- * Prepares command buffers, clears per-frame state and makes any backend
- * preparations required before issuing draw calls for the frame.
+ * Make @p context the current backend context for this frame and perform any
+ * minimal per-frame backend setup. Note: the GL implementation currently only
+ * makes the context current; callers are responsible for per-frame clears and
+ * other per-frame state initialization.
  *
  * @param window The SDL window being rendered to.
  * @param context The renderer context to use for this frame.
@@ -156,18 +158,26 @@ bool checkError(bool triggerAssert = true);
  */
 void readBuffer(GBufferTextureType textureType);
 /**
- * @brief Change the renderer line width
- * @param width The new line width
- * @return The previous line width
+ * @brief Change the renderer line width.
+ *
+ * Sets the requested line width and returns the previously requested value.
+ * Note: wide lines (>1.0) are deprecated in modern core-profile GL and on
+ * OpenGL ES. On such contexts the call may be a no-op; the value returned by
+ * @c currentLineWidth() is the cached requested width, which may differ from
+ * what the driver actually uses.
+ *
+ * @param width The new line width.
+ * @return The previously requested line width.
  */
 float lineWidth(float width);
+
 /**
  * @brief Query the current cached line width.
  *
  * Returns the value last set via @c lineWidth(). This is a cached value and
  * may not reflect driver-clamped values for deprecated features.
  *
- * @return Current line width.
+ * @return Current (requested) line width.
  */
 float currentLineWidth();
 
@@ -344,7 +354,8 @@ bool blendEquation(BlendEquation func);
 /**
  * @brief Set polygon rasterization mode for the given face (fill/line/point).
  *
- * Returns the previous polygon mode.
+ * Returns the previous polygon mode. Note: polygon modes are not available on
+ * OpenGL ES; on GLES backends this call may be a no-op.
  */
 PolygonMode polygonMode(Face face, PolygonMode mode);
 
