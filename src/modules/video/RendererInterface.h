@@ -763,7 +763,12 @@ bool bindImage(Id handle, AccessMode mode, ImageFormat format);
 void setObjectName(Id handle, ObjectNameType type, const core::String &name);
 
 /**
- * @brief Execute a compute shader
+ * @brief Execute a compute shader.
+ *
+ * Dispatches the compute shader described by @p program using the given
+ * work group counts. The function returns true if the dispatch was issued
+ * successfully (after validation and issuing the dispatch), false on
+ * validation failure.
  */
 bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
 /**

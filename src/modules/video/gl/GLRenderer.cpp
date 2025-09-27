@@ -1774,7 +1774,7 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	glDispatchCompute((GLuint)workGroups.x, (GLuint)workGroups.y, (GLuint)workGroups.z);
 	video::checkError();
 	waitShader(wait);
-	return false;
+	return true;
 }
 
 bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
