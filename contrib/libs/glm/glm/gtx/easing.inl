@@ -248,7 +248,7 @@ namespace glm{
 		{
 			genType const Complementary = a - one<genType>();
 			genType const Two = static_cast<genType>(2);
-			
+
 			return glm::pow(Two, Complementary * static_cast<genType>(10));
 		}
 	}
@@ -354,7 +354,7 @@ namespace glm{
 			genType m = n * n * z;
 			return x * m;
 		}
-		else 
+		else
 		{
 			n -= static_cast<genType>(2);
 			genType z = ((s + static_cast<genType>(1)) * n) + s;

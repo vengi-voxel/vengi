@@ -28,7 +28,7 @@ namespace detail
 
 	template<length_t C, length_t R, typename T, qualifier Q, bool Aligned>
 	struct compute_determinant_type<C, R, T, Q, false, Aligned>{
-	
+
 		GLM_FUNC_QUALIFIER static T call(mat<C, R, T, Q> const& m)
 		{
 			return detail::compute_determinant<C, R, T, Q, detail::is_aligned<Q>::value>::call(m);

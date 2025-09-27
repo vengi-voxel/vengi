@@ -1059,7 +1059,7 @@ namespace glm {
 	{
 		data = _mm_loadu_ps(reinterpret_cast<const float*>(&v));
 	}
-		
+
 	template<>
 	template<>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, float, packed_highp>::vec(const vec<4, float, aligned_highp>& v)

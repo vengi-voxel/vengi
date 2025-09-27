@@ -719,7 +719,7 @@ struct compute_vec_div<L, T, Q, true> : public compute_vec_div<L, T, Q, false>
 // the functions below needs to be properly implemented, use unoptimized function fro now.
 
 template<length_t L, qualifier Q, int E0, int E1, int E2, int E3>
-struct _swizzle_base1<L, float, Q, E0, E1, E2, E3, true> : public _swizzle_base1<L, float, Q, E0, E1, E2, E3, false>{}; 
+struct _swizzle_base1<L, float, Q, E0, E1, E2, E3, true> : public _swizzle_base1<L, float, Q, E0, E1, E2, E3, false>{};
 
 template<length_t L, qualifier Q, int E0, int E1, int E2, int E3>
 struct _swizzle_base1<L, int, Q, E0, E1, E2, E3, true> : public _swizzle_base1<L, int, Q, E0, E1, E2, E3, false> {};

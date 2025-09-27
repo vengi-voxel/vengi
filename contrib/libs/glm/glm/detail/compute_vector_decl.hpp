@@ -152,7 +152,7 @@ namespace glm {
 				return v;
 			}
 		};
-		
+
 		template<length_t L, typename T, qualifier Q, int IsInt, std::size_t Size>
 		struct compute_vec_equal<L, T, Q, IsInt, Size, false>
 		{

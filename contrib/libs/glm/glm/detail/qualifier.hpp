@@ -141,7 +141,7 @@ namespace detail
 	template<>
 	struct storage<3, unsigned int, true>
 	{
-		typedef glm_i32vec4 type;
+		typedef glm_u32vec4 type;
 	};
 
 	template<>
@@ -192,7 +192,7 @@ namespace detail
 	template<>
 	struct storage<3, double, true> : public storage<4, double, true>
 	{};
-	
+
 #	endif
 
 #	if (GLM_ARCH & GLM_ARCH_AVX2_BIT)

@@ -21,7 +21,7 @@ namespace glm
 		typedef T value_type;
 		typedef vec<4, T, Q> type;
 		typedef vec<4, bool, Q> bool_type;
-		
+
 		enum is_aligned
 		{
 			value = detail::is_aligned<Q>::value

@@ -92,7 +92,7 @@ namespace glm {
 				case 1: l = vgetq_lane_f32(vsrc, 1); break;
 				case 2: l = vgetq_lane_f32(vsrc, 2); break;
 				case 3: l = vgetq_lane_f32(vsrc, 3); break;
-				default: 
+				default:
 					assert(false); //Unreachable code executed!
 			}
 			switch(dlane) {
@@ -108,12 +108,12 @@ namespace glm {
 
 		static inline float32x4_t mul_lane(float32x4_t v, float32x4_t vlane, int lane) {
 #if GLM_ARCH & GLM_ARCH_ARMV8_BIT
-			switch(lane) { 
+			switch(lane) {
 				case 0: return vmulq_laneq_f32(v, vlane, 0); break;
 				case 1: return vmulq_laneq_f32(v, vlane, 1); break;
 				case 2: return vmulq_laneq_f32(v, vlane, 2); break;
 				case 3: return vmulq_laneq_f32(v, vlane, 3); break;
-				default: 
+				default:
 					assert(false); //Unreachable code executed!
 			}
 			assert(false); //Unreachable code executed!
@@ -131,8 +131,8 @@ namespace glm {
 #	define FMADD_LANE(acc, x, y, L) do { acc = vmlaq_laneq_f32(acc, x, y, L); } while(0)
 #endif
 
-			switch(lane) { 
-				case 0: 
+			switch(lane) {
+				case 0:
 					FMADD_LANE(acc, v, vlane, 0);
 					return acc;
 				case 1:
@@ -144,7 +144,7 @@ namespace glm {
 				case 3:
 					FMADD_LANE(acc, v, vlane, 3);
 					return acc;
-				default: 
+				default:
 					assert(false); //Unreachable code executed!
 			}
 			assert(false); //Unreachable code executed!

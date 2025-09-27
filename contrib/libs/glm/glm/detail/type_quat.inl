@@ -161,7 +161,7 @@ namespace detail
 		return qua<T, Q>(w, x, y, z);
 #	endif
 	}
-	
+
 	// -- Conversion constructors --
 
 	template<typename T, qualifier Q>
