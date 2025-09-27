@@ -76,6 +76,7 @@ set(SRCS
 	Trace.cpp Trace.h
 	Tuple.h
 	UTF8.cpp UTF8.h
+	UUID.cpp UUID.h
 	Var.cpp Var.h
 )
 
@@ -155,6 +156,7 @@ set(TEST_SRCS
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp
 	tests/TupleTest.cpp
+	tests/UUIDTest.cpp
 	tests/VarTest.cpp
 	tests/VectorTest.cpp
 )
