@@ -23,6 +23,7 @@ General:
    - Bump `vengi` format version
    - Improved a few error messages and added missing error handling to some parts
    - Optimized voxelization (subdividing triangles)
+   - Added support for goxel `txt` file format
 
 VoxEdit:
 

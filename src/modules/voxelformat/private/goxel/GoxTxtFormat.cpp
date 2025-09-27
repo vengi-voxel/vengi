@@ -8,15 +8,15 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "engine-config.h"
 #include "glm/vector_relational.hpp"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "palette/RGBABuffer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
-#include "palette/Palette.h"
-#include "engine-config.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
@@ -36,8 +36,8 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
-								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+size_t GoxTxtFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
+								 const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -45,11 +45,7 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 	}
 	char buf[512];
 
-	int64_t pos = stream->pos();
-
 	palette::RGBABuffer colors;
-	glm::ivec3 mins{0};
-	glm::ivec3 maxs{0};
 	while (stream->readLine(sizeof(buf), buf)) {
 		if (buf[0] == '\n' || buf[0] == '#') {
 			continue;
@@ -63,8 +59,6 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 		}
 		const core::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
 		colors.insert(rgba);
-		mins = glm::min(mins, glm::ivec3(x, y, z));
-		maxs = glm::max(maxs, glm::ivec3(x, y, z));
 	}
 	if (colors.empty()) {
 		Log::error("No voxel data found");
@@ -80,6 +74,38 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 	colors.clear();
 	palette.quantize(colorsBuf.data(), colorsBuf.size());
 	palette.markDirty();
+	return palette.size();
+}
+
+bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
+								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+								  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	char buf[512];
+
+	int64_t pos = stream->pos();
+
+	glm::ivec3 mins{0};
+	glm::ivec3 maxs{0};
+	while (stream->readLine(sizeof(buf), buf)) {
+		if (buf[0] == '\n' || buf[0] == '#') {
+			continue;
+		}
+		core::String str(buf, sizeof(buf));
+		int x, y, z;
+		uint32_t rgb[3];
+		if (sscanf(buf, "%i %i %i %02x%02x%02x", &x, &z, &y, &rgb[0], &rgb[1], &rgb[2]) != 6) {
+			Log::error("Failed to parse voxel data line");
+			return false;
+		}
+		const core::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
+		mins = glm::min(mins, glm::ivec3(x, y, z));
+		maxs = glm::max(maxs, glm::ivec3(x, y, z));
+	}
 
 	stream->seek(pos, SEEK_SET);
 	voxel::Region region(mins, maxs);
@@ -119,28 +145,32 @@ bool GoxTxtFormat::loadGroupsPalette(const core::String &filename, const io::Arc
 }
 
 bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+							  const io::ArchivePtr &archive, const SaveContext &ctx) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
-	stream->writeString("# Goxel - generated with vengi version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n", false);
+	stream->writeString("# Goxel - generated with vengi version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n",
+						false);
 	stream->writeString("# One line per voxel\n", false);
-    stream->writeString("# X Y Z RRGGBB\n", false);
+	stream->writeString("# X Y Z RRGGBB\n", false);
 
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	if (!node || node->volume() == nullptr) {
 		Log::error("No model node found");
 		return false;
 	}
-	int voxels = voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		const core::RGBA rgba = node->palette().color(voxel.getColor());
-		if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
-			Log::error("Could not write voxel data");
-			return;
-		}
-	}, voxelutil::SkipEmpty());
+	int voxels = voxelutil::visitVolume(
+		*node->volume(),
+		[&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA rgba = node->palette().color(voxel.getColor());
+			if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
+				Log::error("Could not write voxel data");
+				return;
+			}
+		},
+		voxelutil::SkipEmpty());
 	Log::debug("Wrote %i voxels", voxels);
 	return voxels > 0;
 }
