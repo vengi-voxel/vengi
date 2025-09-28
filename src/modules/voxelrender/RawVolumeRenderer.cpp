@@ -888,6 +888,9 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 	}
 	_voxelShaderFragData.lightdir = _shadow.sunDirection();
+
+	const voxelrender::ShadowParameters &sp = _shadow.parameters();
+	_voxelShaderFragData.biasParams = glm::vec4(sp.constantBias, sp.slopeBias, sp.biasClamp, sp.voxelEdgeBias);
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
