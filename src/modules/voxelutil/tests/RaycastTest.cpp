@@ -533,4 +533,19 @@ TEST_F(RaycastTest, testRaycastFractMiddleHitIsOneThird) {
 	EXPECT_NEAR(result.fract, 0.3333f, 0.0001f) << "fract should be approximately 0.5 for this mid-ray hit";
 }
 
+TEST_F(RaycastTest, testRaycastCornerHitFraction) {
+	voxel::RawVolume volume({0, 3});
+	volume.setVoxel(glm::ivec3(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	const glm::vec3 start(0.25f, 0.25f, 0.25f);
+	const glm::vec3 dir(2.0f, 2.0f, 2.0f);
+
+	SimpleRaycastFunctor functor;
+	RaycastResult result = raycastWithDirection(&volume, start, dir, functor);
+
+	EXPECT_TRUE(result.isInterrupted());
+	EXPECT_NEAR(result.fract, 0.375f, 0.0001f);
+	EXPECT_NEAR(result.length, glm::length(dir) * 0.375f, 0.0001f);
+}
+
 } // namespace voxelutil
