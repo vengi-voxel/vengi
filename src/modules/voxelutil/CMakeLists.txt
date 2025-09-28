@@ -7,7 +7,7 @@ set(SRCS
 	ImageUtils.h ImageUtils.cpp
 	ImportFace.h
 	Picking.h
-	Raycast.h
+	Raycast.h Raycast.cpp
 	Shadow.h
 	VolumeMerger.h VolumeMerger.cpp
 	VolumeMover.h

@@ -137,8 +137,4 @@ static FaceBits visibleFaces(const Volume &v, const glm::ivec3 &pos, bool skipEm
 	return visibleFaces(v, pos.x, pos.y, pos.z, skipEmpty);
 }
 
-
-extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::vec3& hitPos, float offsetMins = -0.5f, float offsetMaxs = 0.5f);
-extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float offsetMins = -0.5f, float offsetMaxs = 0.5f);
-
 }

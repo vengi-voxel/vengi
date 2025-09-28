@@ -3009,7 +3009,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 		if (sampler.voxel() != air) {
 			_result.didHit = true;
 			_result.hitVoxel = sampler.position();
-			_result.hitFace = voxel::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f);
+			_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f).face;
 			Log::debug("Raycast face hit: %i", (int)_result.hitFace);
 			return false;
 		}
@@ -3045,7 +3045,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	});
 
 	if (_result.firstInvalidPosition) {
-		_result.hitFace = voxel::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f);
+		_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f).face;
 		Log::debug("Raycast face hit: %i", (int)_result.hitFace);
 	}
 
