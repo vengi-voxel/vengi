@@ -44,6 +44,11 @@ bool Shadow::init(const ShadowParameters& parameters) {
 		_parameters.biasClamp = 0.01f; // Prevent excessive bias causing Peter Panning
 	}
 
+	// Ensure slice weight is sane; Camera::sliceFrustum expects a value in [0,1].
+	if (_parameters.sliceWeight <= 0.0f || _parameters.sliceWeight > 1.0f) {
+		_parameters.sliceWeight = 0.75f;
+	}
+
 	const glm::vec3 sunPos(25.0f, 100.0f, 25.0f);
 	setPosition(sunPos, glm::vec3(0.0f), glm::up());
 
