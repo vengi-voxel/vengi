@@ -182,13 +182,13 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			// to 1,1,1 - we actually want to return the position of the face we hit
 			glm::vec3 r = sampler.position();
 			if (di == -1) {
-				r.x += 1.0f;
+				r.x += (1.0f - RaycastOffset);
 			}
 			if (dj == -1) {
-				r.y += 1.0f;
+				r.y += (1.0f - RaycastOffset);
 			}
 			if (dk == -1) {
-				r.z += 1.0f;
+				r.z += (1.0f - RaycastOffset);
 			}
 
 			const float length = glm::length(r - v3dStart);
