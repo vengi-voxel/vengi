@@ -22,6 +22,7 @@ voxelutil::RaycastResult Clipper::clipDelta(const scenegraph::SceneGraph &sceneG
 	// Convert delta to world space
 	const glm::vec3 worldDelta = cameraOrientation * delta;
 
+	voxelutil::RaycastResult closest = voxelutil::RaycastResult::completed(glm::length(delta));
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->second;
 		if (!node.visible() || !node.isAnyModelNode()) {
@@ -48,14 +49,13 @@ voxelutil::RaycastResult Clipper::clipDelta(const scenegraph::SceneGraph &sceneG
 		};
 
 		voxelutil::RaycastResult result = voxelutil::raycastWithEndpoints(volume, start, end, callback);
-		if (result.isInterrupted()) {
-			Log::debug("Hit a solid voxel, clip the movement to the collision point with fract: %f", result.fract);
-			return result;
+		if (result.isInterrupted() && result.fract < closest.fract) {
+			closest = result;
 		}
 	}
 
 	// No collisions, return requested move delta
-	return voxelutil::RaycastResult::completed(glm::length(delta));
+	return closest;
 }
 
 } // namespace scenegraph
