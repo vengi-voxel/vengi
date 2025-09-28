@@ -17,13 +17,16 @@ namespace voxelutil {
  */
 struct RaycastResult {
 	float length = 0.0f;		///< The length the ray traveled before being interrupted or completing
-	float fract = 0.0f;			///< The fraction [0..1] of the ray that was traveled
+	float fract = 0.0f;			///< The fraction [0..1] of the ray that was traveled - 0.0 means that we were starting inside a solid voxel - 1.0 means, that we hit nothing
 	glm::ivec3 normal{0, 0, 0}; ///< The normal of the intersecting face (axis-aligned, volume/voxel space)
 	enum Type : uint8_t {
 		Completed,	///< If the ray passed through the volume without being interrupted
 		Interrupted ///< If the ray was interrupted while traveling
 	} type = Completed;
 
+	bool isSolidStart() const {
+		return fract <= 0.0f;
+	}
 	bool isCompleted() const {
 		return type == Completed;
 	}
@@ -44,6 +47,15 @@ struct RaycastResult {
 		r.fract = fract;
 		r.normal = normal;
 		return r;
+	}
+	// this just moves the point slightly away from the collided plane along its normal (e.g., to prevent z-fighting or
+	// embedding).
+	glm::vec3 adjustPoint(const glm::vec3 &point, float offset = 0.5f) const {
+		return point - glm::vec3(normal) * (offset + 0.001f);
+	}
+	glm::vec3 projectOnPlane(const glm::vec3 &v) const {
+		glm::vec3 n = glm::normalize(glm::vec3(normal));
+		return v - glm::dot(v, n) * n;
 	}
 };
 
@@ -177,6 +189,8 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 				return RaycastResult::interrupted(0.0f, 0.0f, lastNormal);
 			}
 
+			// hitting a voxel is returing the voxel position - but the voxel geometry at voxel 0,0,0 goes from 0,0,0
+			// to 1,1,1 - we actually want to return the position of the face we hit
 			glm::vec3 r = sampler.position();
 			if (di == -1) {
 				r.x += 1.0f;
