@@ -228,7 +228,7 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	}
 
 	if (thickness == 1) {
-		voxelutil::raycastWithEndpointsVolume(volume, start, end, [&] (auto& sampler) {
+		voxelutil::raycastWithEndpoints(&volume, start, end, [&] (auto& sampler) {
 			sampler.setVoxel(voxel);
 			return true;
 		});

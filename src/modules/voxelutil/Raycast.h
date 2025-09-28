@@ -67,7 +67,6 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Log.h"
 #include "core/Trace.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -272,12 +271,6 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 
 	float length = glm::distance(v3dStart, glm::vec3(i + RaycastOffset, j + RaycastOffset, k + RaycastOffset));
 	return RaycastResult::completed(length);
-}
-
-template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(voxel::RawVolume *volData, const glm::vec3 &v3dStart,
-												const glm::vec3 &v3dEnd, Callback &&callback) {
-	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
 /**

@@ -324,7 +324,7 @@ TEST_F(RaycastTest, testRaycastWithEndpointsVolumeSpecializedFunction) {
 	const glm::vec3 end(11.5f, 4.5f, 4.5f);
 
 	SimpleRaycastFunctor functor;
-	RaycastResult result = raycastWithEndpointsVolume(&volume, start, end, functor);
+	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
 
 	EXPECT_TRUE(result.isInterrupted()) << "Should hit the solid voxel at (4, 4, 4)";
 	EXPECT_TRUE(functor.hitSolid) << "Should hit the solid voxel at (4, 4, 4)";
