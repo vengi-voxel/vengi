@@ -122,7 +122,7 @@ glm::vec4 Shadow::splitFrustumSphereBoundingBox(const video::Camera& camera, flo
 
 void Shadow::update(const video::Camera& camera, bool active) {
 	core_trace_scoped(ShadowCalculate);
-	_shadowRangeZ = camera.farPlane() * 3.0f;
+	_shadowRangeZ = camera.farPlane();
 
 	if (!active) {
 		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
