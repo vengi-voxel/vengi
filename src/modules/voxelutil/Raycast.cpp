@@ -3,8 +3,47 @@
  */
 
 #include "Raycast.h"
+#include "core/Common.h"
 
 namespace voxelutil {
+
+bool RaycastResult::isSolidStart() const {
+	return fract <= 0.0f;
+}
+
+bool RaycastResult::isCompleted() const {
+	return type == Completed;
+}
+
+bool RaycastResult::isInterrupted() const {
+	return type == Interrupted;
+}
+
+RaycastResult RaycastResult::completed(float length) {
+	RaycastResult r;
+	r.type = Completed;
+	r.length = length;
+	r.fract = 1.0f;
+	return r;
+}
+
+RaycastResult RaycastResult::interrupted(float length, float fract, const glm::ivec3 &normal) {
+	RaycastResult r;
+	r.type = Interrupted;
+	r.length = length;
+	r.fract = fract;
+	r.normal = normal;
+	return r;
+}
+
+glm::vec3 RaycastResult::adjustPoint(const glm::vec3 &point, float offset) const {
+	return point - glm::vec3(normal) * (offset + 0.001f);
+}
+
+glm::vec3 RaycastResult::projectOnPlane(const glm::vec3 &v) const {
+	glm::vec3 n = glm::normalize(glm::vec3(normal));
+	return v - glm::dot(v, n) * n;
+}
 
 RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &hitPos, float offsetMins,
 								float offsetMaxs) {

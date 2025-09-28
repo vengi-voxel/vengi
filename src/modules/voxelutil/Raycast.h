@@ -69,9 +69,8 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolume.h"
-#include <glm/common.hpp>
 #include <glm/ext/scalar_constants.hpp>
+#include <glm/geometric.hpp>
 
 namespace voxelutil {
 
@@ -98,39 +97,15 @@ struct RaycastResult {
 		Interrupted ///< If the ray was interrupted while traveling
 	} type = Completed;
 
-	bool isSolidStart() const {
-		return fract <= 0.0f;
-	}
-	bool isCompleted() const {
-		return type == Completed;
-	}
-	bool isInterrupted() const {
-		return type == Interrupted;
-	}
-	static RaycastResult completed(float length) {
-		RaycastResult r;
-		r.type = Completed;
-		r.length = length;
-		r.fract = 1.0f;
-		return r;
-	}
-	static RaycastResult interrupted(float length, float fract, const glm::ivec3 &normal) {
-		RaycastResult r;
-		r.type = Interrupted;
-		r.length = length;
-		r.fract = fract;
-		r.normal = normal;
-		return r;
-	}
+	bool isSolidStart() const;
+	bool isCompleted() const;
+	bool isInterrupted() const;
+	static RaycastResult completed(float length);
+	static RaycastResult interrupted(float length, float fract, const glm::ivec3 &normal);
 	// this just moves the point slightly away from the collided plane along its normal (e.g., to prevent z-fighting or
 	// embedding).
-	glm::vec3 adjustPoint(const glm::vec3 &point, float offset = 0.5f) const {
-		return point - glm::vec3(normal) * (offset + 0.001f);
-	}
-	glm::vec3 projectOnPlane(const glm::vec3 &v) const {
-		glm::vec3 n = glm::normalize(glm::vec3(normal));
-		return v - glm::dot(v, n) * n;
-	}
+	glm::vec3 adjustPoint(const glm::vec3 &point, float offset = 0.5f) const;
+	glm::vec3 projectOnPlane(const glm::vec3 &v) const;
 };
 
 // Outdated - but left here for reference
