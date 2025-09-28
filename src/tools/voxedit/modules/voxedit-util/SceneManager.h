@@ -587,7 +587,13 @@ public:
 	 * @note This is not related to the group node type
 	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
+
+	const CameraMovement &cameraMovement() const;
 };
+
+inline const CameraMovement &SceneManager::cameraMovement() const {
+	return _camMovement;
+}
 
 inline network::Server &SceneManager::server() {
 	return _server;
