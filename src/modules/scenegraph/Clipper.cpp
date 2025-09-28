@@ -23,6 +23,7 @@ voxelutil::RaycastResult Clipper::clipDelta(const scenegraph::SceneGraph &sceneG
 	const glm::vec3 worldDelta = cameraOrientation * delta;
 
 	voxelutil::RaycastResult closest = voxelutil::RaycastResult::completed(glm::length(delta));
+	// TODO: sort them by distance to avoid unnecessary checks
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->second;
 		if (!node.visible() || !node.isAnyModelNode()) {
