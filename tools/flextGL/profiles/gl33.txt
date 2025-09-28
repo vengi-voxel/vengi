@@ -10,3 +10,4 @@ extension ARB_shader_image_load_store optional
 extension ARB_transform_feedback2 optional
 extension ARB_shader_storage_buffer_object optional
 extension KHR_debug optional
+extension ARB_texture_filter_anisotropic optional

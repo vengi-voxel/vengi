@@ -66,6 +66,10 @@ int flextInit(void)
         FLEXT_KHR_debug = GL_TRUE;
     }
 
+    if (SDL_GL_ExtensionSupported("GL_ARB_texture_filter_anisotropic")) {
+        FLEXT_ARB_texture_filter_anisotropic = GL_TRUE;
+    }
+
 
     return 0;
 }
@@ -212,6 +216,9 @@ void flextLoadOpenGLFunctions(void)
     /* GL_ARB_shader_storage_buffer_object */
 
     glpfShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDING_PROC*)SDL_GL_GetProcAddress("glShaderStorageBlockBinding");
+
+    /* GL_ARB_texture_filter_anisotropic */
+
 
     /* GL_ARB_transform_feedback2 */
 
@@ -631,6 +638,7 @@ int FLEXT_ARB_shader_image_load_store = GL_FALSE;
 int FLEXT_ARB_transform_feedback2 = GL_FALSE;
 int FLEXT_ARB_shader_storage_buffer_object = GL_FALSE;
 int FLEXT_KHR_debug = GL_FALSE;
+int FLEXT_ARB_texture_filter_anisotropic = GL_FALSE;
 
 /* ---------------------- Function pointer definitions --------------------- */
 

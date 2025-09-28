@@ -1169,6 +1169,11 @@ typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLen
 #define GL_STACK_OVERFLOW 0x0503
 #define GL_STACK_UNDERFLOW 0x0504
 
+/* GL_ARB_texture_filter_anisotropic */
+
+#define GL_TEXTURE_MAX_ANISOTROPY 0x84FE
+#define GL_MAX_TEXTURE_MAX_ANISOTROPY 0x84FF
+
 /* --------------------------- FUNCTION PROTOTYPES --------------------------- */
 
 
@@ -1560,6 +1565,12 @@ typedef void (APIENTRY PFNGLSHADERSTORAGEBLOCKBINDING_PROC (GLuint program, GLui
 GLAPI PFNGLSHADERSTORAGEBLOCKBINDING_PROC* glpfShaderStorageBlockBinding;
 
 #define glShaderStorageBlockBinding glpfShaderStorageBlockBinding
+
+
+/* GL_ARB_texture_filter_anisotropic */
+
+
+
 
 
 /* GL_ARB_transform_feedback2 */
@@ -2743,6 +2754,7 @@ GLAPI PFNGLVERTEXATTRIBP4UIV_PROC* glpfVertexAttribP4uiv;
 #define GL_ARB_multi_draw_indirect
 #define GL_ARB_shader_image_load_store
 #define GL_ARB_shader_storage_buffer_object
+#define GL_ARB_texture_filter_anisotropic
 #define GL_ARB_transform_feedback2
 #define GL_KHR_debug
 #define GL_VERSION_1_0
@@ -2772,6 +2784,7 @@ extern int FLEXT_ARB_shader_image_load_store;
 extern int FLEXT_ARB_transform_feedback2;
 extern int FLEXT_ARB_shader_storage_buffer_object;
 extern int FLEXT_KHR_debug;
+extern int FLEXT_ARB_texture_filter_anisotropic;
 
 int flextInit(void);
 
