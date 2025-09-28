@@ -1,0 +1,6 @@
+# Suppress known leaks from proprietary NVIDIA GL drivers when running with AddressSanitizer on Linux.
+# These originate outside the project and cannot be fixed from our side.
+leak:libnvidia-glcore
+leak:libGLX_nvidia
+leak:libnvidia-eglcore
+leak:libGLdispatch
