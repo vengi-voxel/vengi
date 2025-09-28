@@ -432,6 +432,8 @@ enum class Limit {
 	MaxUniformBufferBindings,
 	MaxShaderStorageBufferSize,
 	MaxLabelLength,
+	MaxAnisotropy,
+	MaxLodBias,
 
 	Max
 };

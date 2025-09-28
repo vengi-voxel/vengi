@@ -71,7 +71,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 
 	if (enableMultisampling && multisampleSamples > 1) {
 		// Clamp to supported range
-		const int maxSamples = video::limit(video::Limit::MaxSamples);
+		const int maxSamples = video::limiti(video::Limit::MaxSamples);
 		Log::debug("Hardware supports up to %d multisampling samples, requested: %d", maxSamples, multisampleSamples);
 		multisampleSamples = glm::clamp(multisampleSamples, 2, maxSamples);
 
@@ -197,7 +197,7 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 	}
 	// Check GL state before framebuffer creation
 	if (enableMultisampling) {
-		int maxSamples = video::limit(video::Limit::MaxSamples);
+		int maxSamples = video::limiti(video::Limit::MaxSamples);
 		Log::debug("Resize GL_MAX_SAMPLES: %d, requested: %d", maxSamples, multisampleSamples);
 	}
 

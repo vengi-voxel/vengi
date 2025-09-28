@@ -114,7 +114,7 @@ void disableDebug() {
 }
 
 bool checkLimit(int amount, Limit l) {
-	const int v = renderState().limit(l);
+	const int v = renderState().limiti(l);
 	if (v <= 0) {
 		Log::trace("No limit found for %i", (int)l);
 		return true;

@@ -188,7 +188,13 @@ public:
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
 	glm::mat4 perspectiveMatrix(float nplane, float fplane) const;
 	const glm::mat4& inverseViewMatrix() const;
+	/**
+	 * from world space to camera space
+	 */
 	const glm::mat4& viewMatrix() const;
+	/**
+	 * camera space to screen space
+	 */
 	const glm::mat4& projectionMatrix() const;
 	const glm::mat4& inverseProjectionMatrix() const;
 	const glm::mat4& viewProjectionMatrix() const;

@@ -9,6 +9,7 @@
 #include "core/collection/List.h"
 #include "core/Log.h"
 #include "core/sdl/SDLSystem.h"
+#include "video/gl/flextGL.h"
 
 namespace video {
 
@@ -202,6 +203,13 @@ void setupLimitsAndSpecs() {
 	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentUniformComponents)]);
 	checkError();
 #endif
+	if (FLEXT_ARB_texture_filter_anisotropic) {
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &renderState().flimits[core::enumVal(Limit::MaxAnisotropy)]);
+		checkError();
+	}
+	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &renderState().flimits[core::enumVal(Limit::MaxLodBias)]);
+	checkError();
+
 	GLint uniformBufferAlignment;
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignment);
 	renderState().specs[core::enumVal(Spec::UniformBufferAlignment)] = uniformBufferAlignment;

@@ -102,10 +102,13 @@ template <> constexpr inline DataType mapType<glm::vec4>() {
 
 struct RenderState {
 	int limits[core::enumVal(video::Limit::Max)] = {};
-	inline int limit(video::Limit limit) const {
+	inline int limiti(video::Limit limit) const {
 		return limits[core::enumVal(limit)];
 	}
-
+	float flimits[core::enumVal(video::Limit::Max)] = {};
+	inline float limit(video::Limit limit) const {
+		return flimits[core::enumVal(limit)];
+	}
 	double specs[core::enumVal(video::Spec::Max)] = {};
 	inline int specificationi(video::Spec spec) const {
 		return (int)(specification(spec) + 0.5);
@@ -156,7 +159,11 @@ IdPtr genFenc();
 bool checkFence(IdPtr id, uint64_t timeout);
 void deleteFence(IdPtr& id);
 
-inline int limit(Limit l) {
+inline int limiti(Limit l) {
+	return renderState().limiti(l);
+}
+
+inline float limit(Limit l) {
 	return renderState().limit(l);
 }
 

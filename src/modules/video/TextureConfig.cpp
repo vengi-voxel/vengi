@@ -81,11 +81,16 @@ TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
 }
 
 TextureConfig& TextureConfig::samples(int samples) {
-	_samples = glm::clamp(samples, 0, video::limit(Limit::MaxSamples));
+	_samples = glm::clamp(samples, 0, video::limiti(Limit::MaxSamples));
 	if (samples != _samples) {
 		Log::warn("Could get get the requested number of samples - using %i instead of %i", _samples, samples);
 	}
 	return *this;
+}
+
+TextureConfig& TextureConfig::lodBias(float bias) {
+    _lodBias = bias;
+    return *this;
 }
 
 video::TextureConfig createDefaultTextureConfig() {

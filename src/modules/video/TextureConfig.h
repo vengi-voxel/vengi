@@ -26,6 +26,13 @@ private:
 	TextureCompareMode _compareMode = TextureCompareMode::Max;
 	uint8_t _layers = 1u;
 	uint8_t _alignment = 1u;
+	// Reduces blur and shimmering at oblique viewing angles.
+	// typical range is 1.0 (off) to 16.0 (max)
+	float _maxAnisotropy = 1.0f;
+	// Level of Detail bias for mipmapped textures.
+	// A positive bias -> selects lower-resolution mip levels sooner -> blurrier but faster.
+	// A negative bias -> selects higher-resolution mip levels -> sharper but noisier/aliasing.
+	float _lodBias = 0.0f;
 	bool _useBorderColor = false;
 	glm::vec4 _borderColor {0.0f};
 	int _samples = 0;
@@ -43,6 +50,8 @@ public:
 	TextureConfig& compareMode(TextureCompareMode mode);
 	TextureConfig& borderColor(const glm::vec4& borderColor);
 	TextureConfig& samples(int samples);
+	TextureConfig& maxAnisotropy(float aniso);
+	TextureConfig& lodBias(float bias);
 	/**
 	 * @param[in] layers The amount of layers for the given texture.
 	 * @see TextureType
@@ -62,6 +71,8 @@ public:
 	TextureType type() const;
 	TextureFormat format() const;
 	int samples() const;
+	float maxAnisotropy() const;
+	float lodBias() const;
 	uint8_t layers() const;
 	uint8_t alignment() const;
 	CompareFunc compareFunc() const;
@@ -72,6 +83,19 @@ public:
 
 inline int TextureConfig::samples() const {
 	return _samples;
+}
+
+inline TextureConfig& TextureConfig::maxAnisotropy(float aniso) {
+	_maxAnisotropy = aniso;
+	return *this;
+}
+
+inline float TextureConfig::maxAnisotropy() const {
+    return _maxAnisotropy;
+}
+
+inline float TextureConfig::lodBias() const {
+	return _lodBias;
 }
 
 inline TextureFilter TextureConfig::filterMag() const{

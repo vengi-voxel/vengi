@@ -1130,8 +1130,8 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	if (size <= 0) {
 		return;
 	}
-	core_assert_msg(type != BufferType::UniformBuffer || limit(Limit::MaxUniformBufferSize) <= 0 || (int)size <= limit(Limit::MaxUniformBufferSize),
-			"Given size %i exceeds the max allowed of %i", (int)size, limit(Limit::MaxUniformBufferSize));
+	core_assert_msg(type != BufferType::UniformBuffer || limiti(Limit::MaxUniformBufferSize) <= 0 || (int)size <= limiti(Limit::MaxUniformBufferSize),
+			"Given size %i exceeds the max allowed of %i", (int)size, limiti(Limit::MaxUniformBufferSize));
 	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[core::enumVal(mode)];
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1403,11 +1403,30 @@ void setupTexture(Id texture, const TextureConfig &config) {
 		if (config.useBorderColor()) {
 			glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
 		}
+		if (config.lodBias() != 0.0f) {
+			const GLfloat requested = config.lodBias();
+			const GLfloat maxLodBias = limit(Limit::MaxLodBias);
+			const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+			core_assert(glTextureParameterf != nullptr);
+			glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, clamped);
+			checkError();
+		}
 #endif
 		/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
 		// glTextureParameteri(texture, GL_TEXTURE_BASE_LEVEL, 0);
 		/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
 		// glTextureParameteri(texture, GL_TEXTURE_MAX_LEVEL, 0);
+
+		if (FLEXT_ARB_texture_filter_anisotropic) {
+			const GLfloat maxAnisotropy = config.maxAnisotropy();
+			if (maxAnisotropy > 0.0f) {
+				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
+				const GLfloat clampedMaxAnisotropy = core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
+				core_assert(glTextureParameterf != nullptr);
+				glTextureParameterf(texture, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
+				checkError();
+			}
+		}
 	} else {
 		core_assert(glTexParameteri != nullptr);
 		core_assert(glTexParameterfv != nullptr);
@@ -1450,11 +1469,30 @@ void setupTexture(Id texture, const TextureConfig &config) {
 		if (config.useBorderColor()) {
 			glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
 		}
+		if (config.lodBias() != 0.0f) {
+			const GLfloat requested = config.lodBias();
+			const GLfloat maxLodBias = limit(Limit::MaxLodBias);
+			const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+			core_assert(glTexParameterf != nullptr);
+			glTexParameterf(glType, GL_TEXTURE_LOD_BIAS, clamped);
+			checkError();
+		}
 #endif
 		/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
 		// glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 		/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
 		// glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+
+		if (FLEXT_ARB_texture_filter_anisotropic) {
+			const GLfloat maxAnisotropy = config.maxAnisotropy();
+			if (maxAnisotropy > 0.0f) {
+				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
+				const GLfloat clampedMaxAnisotropy = core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
+				core_assert(glTexParameterf != nullptr);
+				glTexParameterf(glType, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
+				checkError();
+			}
+		}
 	}
 	const uint8_t alignment = config.alignment();
 	if (alignment > 0u) {
@@ -1838,17 +1876,17 @@ int fetchUniforms(Id program, ShaderUniforms &uniforms, const core::String &name
 	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, false);
 	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, true);
 
-	if (limit(Limit::MaxUniformBufferSize) > 0) {
+	if (limiti(Limit::MaxUniformBufferSize) > 0) {
 		for (auto *e : uniforms) {
 			if (!e->value.block) {
 				continue;
 			}
-			if (e->value.size > limit(Limit::MaxUniformBufferSize)) {
+			if (e->value.size > limiti(Limit::MaxUniformBufferSize)) {
 				Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(),
-						   e->value.location, limit(Limit::MaxUniformBufferSize));
+						   e->value.location, limiti(Limit::MaxUniformBufferSize));
 			} else if (e->value.size <= 0) {
 				Log::error("Failed to query size of uniform buffer %s at location %i (max is %i)", e->key.c_str(),
-						   e->value.location, limit(Limit::MaxUniformBufferSize));
+						   e->value.location, limiti(Limit::MaxUniformBufferSize));
 			}
 		}
 	}

@@ -61,7 +61,7 @@ FrameBufferConfig& FrameBufferConfig::stencilBuffer(bool stencilBuffer) {
 }
 
 FrameBufferConfig& FrameBufferConfig::samples(int samples) {
-	_samples = glm::clamp(samples, 0, video::limit(Limit::MaxSamples));
+	_samples = glm::clamp(samples, 0, video::limiti(Limit::MaxSamples));
 	return *this;
 }
 
