@@ -121,7 +121,7 @@ TEST_F(RaycastTest, testPositiveX) {
 	glm::vec3 rayOrigin { 31.0f };
 	glm::vec3 hitPos { 14.0f };
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
-	const RaycastHit hit = raycastFaceDetection(rayOrigin, rayDirection, hitPos);
+	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::PositiveX, hit.face)
 		<< "Ray did not hit the expected face. Direction is "
 		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
@@ -132,7 +132,7 @@ TEST_F(RaycastTest, testNegativeY) {
 	glm::vec3 rayOrigin { 12.0f, 0.0f, 14.0f };
 	glm::vec3 hitPos { 15.0f };
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
-	const RaycastHit hit = raycastFaceDetection(rayOrigin, rayDirection, hitPos);
+	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::NegativeY, hit.face)
 		<< "Ray did not hit the expected face. Direction is "
 		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
@@ -143,7 +143,7 @@ TEST_F(RaycastTest, testPositiveY) {
 	glm::vec3 rayOrigin { 12.0f, 31.0f, 14.0f };
 	glm::vec3 hitPos { 15.0f };
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
-	const RaycastHit hit = raycastFaceDetection(rayOrigin, rayDirection, hitPos);
+	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::PositiveY, hit.face)
 		<< "Ray did not hit the expected face. Direction is "
 		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
@@ -154,7 +154,7 @@ TEST_F(RaycastTest, testNegativeZ) {
 	glm::vec3 rayOrigin { 12.0f, 14.0f, 0.0f };
 	glm::vec3 hitPos { 15.0f };
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
-	const RaycastHit hit = raycastFaceDetection(rayOrigin, rayDirection, hitPos);
+	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::NegativeZ, hit.face)
 		<< "Ray did not hit the expected face. Direction is "
 		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
@@ -165,7 +165,7 @@ TEST_F(RaycastTest, testPositiveZ) {
 	glm::vec3 rayOrigin { 12.0f, 14.0f, 31.0f };
 	glm::vec3 hitPos { 15.0f };
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
-	const RaycastHit hit = raycastFaceDetection(rayOrigin, rayDirection, hitPos);
+	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::PositiveZ, hit.face)
 		<< "Ray did not hit the expected face. Direction is "
 		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
