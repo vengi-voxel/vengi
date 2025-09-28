@@ -74,6 +74,12 @@
 
 namespace voxelutil {
 
+// Outdated - but left here for reference
+// The raycastWithEndpoints function is assuming that it is iterating over the areas defined between
+// voxels. We actually want to define the areas as being centered on voxels (as this is
+// what the CubicSurfaceExtractor generates). We can add an offset here to adjust for this.
+const float RaycastOffset = 0.0f;
+
 struct RaycastHit {
 	voxel::FaceNames face = voxel::FaceNames::Max;
 	float fract = 0.0f; ///< The fraction [0..1] of the ray that was traveled - 0.0 means that we were starting inside a
@@ -107,12 +113,6 @@ struct RaycastResult {
 	glm::vec3 adjustPoint(const glm::vec3 &point, float offset = 0.5f) const;
 	glm::vec3 projectOnPlane(const glm::vec3 &v) const;
 };
-
-// Outdated - but left here for reference
-// The raycastWithEndpoints function is assuming that it is iterating over the areas defined between
-// voxels. We actually want to define the areas as being centered on voxels (as this is
-// what the CubicSurfaceExtractor generates). We can add an offset here to adjust for this.
-const float RaycastOffset = 0.0f;
 
 /**
  * Cast a ray through a volume by specifying the start and end positions
