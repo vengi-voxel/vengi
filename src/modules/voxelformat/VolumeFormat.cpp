@@ -72,6 +72,7 @@
 #include "voxelformat/private/sproxel/SproxelFormat.h"
 #include "voxelformat/private/starmade/SMFormat.h"
 #include "voxelformat/private/starmade/SMTPLFormat.h"
+#include "voxelformat/private/veloren/VelorenTerrainFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelformat/private/voxel3d/V3AFormat.h"
 #include "voxelformat/private/voxelbuilder/VBXFormat.h"
@@ -136,6 +137,7 @@ const io::FormatDescription *voxelFormats() {
 												 SLAB6VoxFormat::format(),
 												 VMaxFormat::format(),
 												 SpriteStackFormat::format(),
+												 VelorenTerrainFormat::format(),
 												 io::format::png(),
 												 SkinFormat::format(), // let this be after png
 												 {"", {}, {}, 0u}};
@@ -215,6 +217,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<GoxFormat>();
 		} else if (isA(GoxTxtFormat::format(), desc, ext, magic)) {
 			return core::make_shared<GoxTxtFormat>();
+		} else if (isA(VelorenTerrainFormat::format(), desc, ext, magic)) {
+			return core::make_shared<VelorenTerrainFormat>();
 		} else if (isA(AnimaToonFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AnimaToonFormat>();
 		} else if (isA(MCRFormat::format(), desc, ext, magic)) {

@@ -365,6 +365,8 @@ GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
 Goxel (*.gox)
 .TP
+Goxel txt (*.txt)
+.TP
 KenShape (*.kenshape)
 .TP
 Luanti (Minetest) (*.mts)
@@ -421,6 +423,8 @@ Sandbox VoxEdit Tilemap (*.vxt)
 .TP
 SLAB6 vox (*.vox)
 .TP
+SpriteStack (*.zip)
+.TP
 Sproxel csv (*.csv)
 .TP
 Standard Triangle Language (*.stl)
@@ -432,6 +436,8 @@ StarMade Template (*.smtpl)
 Tiberian Sun (*.vxl)
 .TP
 UFO:Alien Invasion (*.bsp)
+.TP
+Veloren terrain (*.dat)
 .TP
 Vengi (*.vengi)
 .TP
@@ -466,6 +472,8 @@ GL Transmission Format (*.gltf, *.glb, *.vrm)
 Godot Scene (*.escn)
 .TP
 Goxel (*.gox)
+.TP
+Goxel txt (*.txt)
 .TP
 Luanti (Minetest) (*.mts)
 .TP
@@ -506,6 +514,8 @@ Standard Triangle Language (*.stl)
 StarMade Template (*.smtpl)
 .TP
 Tiberian Sun (*.vxl)
+.TP
+Veloren terrain (*.dat)
 .TP
 Vengi (*.vengi)
 .TP

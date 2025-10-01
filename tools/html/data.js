@@ -7,8 +7,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "8BCB"
+          "type": "bytes",
+          "value": "0x38424342"
         }
       ],
       "load": true,
@@ -21,8 +21,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "ASEF"
+          "type": "bytes",
+          "value": "0x41534546"
         }
       ],
       "load": true,
@@ -62,8 +62,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "JASC"
+          "type": "bytes",
+          "value": "0x4A415343"
         }
       ],
       "load": true,
@@ -239,8 +239,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "VENG"
+          "type": "bytes",
+          "value": "0x56454E47"
         }
       ],
       "mimetype": "application/x-vengi",
@@ -290,8 +290,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "VOX "
+          "type": "bytes",
+          "value": "0x564F5820"
         }
       ],
       "mimetype": "application/x-magicavoxel",
@@ -306,8 +306,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "QB 2"
+          "type": "bytes",
+          "value": "0x51422032"
         }
       ],
       "mimetype": "application/x-qubicle-binary-tree",
@@ -322,8 +322,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "QBCL"
+          "type": "bytes",
+          "value": "0x5142434C"
         }
       ],
       "mimetype": "application/x-qubicle-project",
@@ -338,8 +338,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "VXT1"
+          "type": "bytes",
+          "value": "0x56585431"
         }
       ],
       "mimetype": "application/x-sandbox-voxedit-tilemap",
@@ -365,44 +365,44 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "VXMA"
+          "type": "bytes",
+          "value": "0x56584D41"
         },
         {
-          "type": "string",
-          "value": "VXMB"
+          "type": "bytes",
+          "value": "0x56584D42"
         },
         {
-          "type": "string",
-          "value": "VXMC"
+          "type": "bytes",
+          "value": "0x56584D43"
         },
         {
-          "type": "string",
-          "value": "VXM9"
+          "type": "bytes",
+          "value": "0x56584D39"
         },
         {
-          "type": "string",
-          "value": "VXM8"
+          "type": "bytes",
+          "value": "0x56584D38"
         },
         {
-          "type": "string",
-          "value": "VXM7"
+          "type": "bytes",
+          "value": "0x56584D37"
         },
         {
-          "type": "string",
-          "value": "VXM6"
+          "type": "bytes",
+          "value": "0x56584D36"
         },
         {
-          "type": "string",
-          "value": "VXM5"
+          "type": "bytes",
+          "value": "0x56584D35"
         },
         {
-          "type": "string",
-          "value": "VXM4"
+          "type": "bytes",
+          "value": "0x56584D34"
         },
         {
-          "type": "string",
-          "value": "VXM3"
+          "type": "bytes",
+          "value": "0x56584D33"
         }
       ],
       "mimetype": "application/x-sandbox-voxedit-model",
@@ -417,8 +417,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "VXB1"
+          "type": "bytes",
+          "value": "0x56584231"
         }
       ],
       "mimetype": "application/x-sandbox-voxedit-block",
@@ -445,40 +445,40 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "VXR9"
+          "type": "bytes",
+          "value": "0x56585239"
         },
         {
-          "type": "string",
-          "value": "VXR8"
+          "type": "bytes",
+          "value": "0x56585238"
         },
         {
-          "type": "string",
-          "value": "VXR7"
+          "type": "bytes",
+          "value": "0x56585237"
         },
         {
-          "type": "string",
-          "value": "VXR6"
+          "type": "bytes",
+          "value": "0x56585236"
         },
         {
-          "type": "string",
-          "value": "VXR5"
+          "type": "bytes",
+          "value": "0x56585235"
         },
         {
-          "type": "string",
-          "value": "VXR4"
+          "type": "bytes",
+          "value": "0x56585234"
         },
         {
-          "type": "string",
-          "value": "VXR3"
+          "type": "bytes",
+          "value": "0x56585233"
         },
         {
-          "type": "string",
-          "value": "VXR2"
+          "type": "bytes",
+          "value": "0x56585232"
         },
         {
-          "type": "string",
-          "value": "VXR1"
+          "type": "bytes",
+          "value": "0x56585231"
         }
       ],
       "mimetype": "application/x-sandbox-voxedit-hierarchy",
@@ -493,8 +493,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "#binvox"
+          "type": "bytes",
+          "value": "0x2362696E"
         }
       ],
       "mimetype": "application/x-binvox",
@@ -509,8 +509,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "[gd_"
+          "type": "bytes",
+          "value": "0x5B67645F"
         }
       ],
       "mimetype": "application/x-godot-scene",
@@ -526,11 +526,27 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "GOX "
+          "type": "bytes",
+          "value": "0x474F5820"
         }
       ],
       "mimetype": "application/x-goxel",
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
+      "name": "Goxel txt",
+      "extensions": [
+        "txt"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x2320476F"
+        }
+      ],
+      "mimetype": "application/x-goxel-txt",
       "animation": false,
       "load": true,
       "save": true
@@ -624,8 +640,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "IBSP"
+          "type": "bytes",
+          "value": "0x49425350"
         }
       ],
       "mimetype": "application/x-ufo-alien-invasion",
@@ -658,12 +674,12 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "IDPO"
+          "type": "bytes",
+          "value": "0x4944504F"
         },
         {
-          "type": "string",
-          "value": "RAPO"
+          "type": "bytes",
+          "value": "0x5241504F"
         }
       ],
       "mimetype": "application/x-quake-1-model",
@@ -679,8 +695,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "IDP2"
+          "type": "bytes",
+          "value": "0x49445032"
         }
       ],
       "mimetype": "application/x-quake-2-model",
@@ -742,8 +758,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "XRAW"
+          "type": "bytes",
+          "value": "0x58524157"
         }
       ],
       "mimetype": "application/x-magicavoxel-xraw",
@@ -793,8 +809,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "; Voxel Builder file format (VBX)"
+          "type": "bytes",
+          "value": "0x3B20566F"
         }
       ],
       "mimetype": "application/x-voxelbuilder",
@@ -871,8 +887,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "PARTICUBES!"
+          "type": "bytes",
+          "value": "0x50415254"
         }
       ],
       "mimetype": "application/x-particubes",
@@ -887,8 +903,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "CUBZH!"
+          "type": "bytes",
+          "value": "0x4355425A"
         }
       ],
       "mimetype": "application/x-cubzh",
@@ -937,8 +953,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "Kvxl"
+          "type": "bytes",
+          "value": "0x4B76786C"
         }
       ],
       "mimetype": "application/x-aceofspades",
@@ -953,8 +969,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "Voxel Animation"
+          "type": "bytes",
+          "value": "0x566F7865"
         }
       ],
       "mimetype": "application/x-tiberian-sun",
@@ -980,8 +996,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": "Qubicle Exchange Format"
+          "type": "bytes",
+          "value": "0x51756269"
         }
       ],
       "mimetype": "application/x-qubicle-exchange",
@@ -996,8 +1012,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": ".CSM"
+          "type": "bytes",
+          "value": "0x2E43534D"
         }
       ],
       "mimetype": "application/x-chronovox",
@@ -1012,8 +1028,8 @@ const jsonData = {
       ],
       "magics": [
         {
-          "type": "string",
-          "value": ".NVM"
+          "type": "bytes",
+          "value": "0x2E4E564D"
         }
       ],
       "mimetype": "application/x-nicks-voxel-model",
@@ -1043,6 +1059,41 @@ const jsonData = {
       "animation": false,
       "load": true,
       "save": false
+    },
+    {
+      "name": "SpriteStack",
+      "extensions": [
+        "zip"
+      ],
+      "magics": [],
+      "mimetype": "application/x-spritestack",
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
+      "name": "Veloren terrain",
+      "extensions": [
+        "dat"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x030089A7"
+        },
+        {
+          "type": "bytes",
+          "value": "0x020089A7"
+        },
+        {
+          "type": "bytes",
+          "value": "0x010089A7"
+        }
+      ],
+      "mimetype": "application/x-veloren-terrain",
+      "animation": false,
+      "load": true,
+      "save": true
     },
     {
       "name": "Portable Network Graphics",

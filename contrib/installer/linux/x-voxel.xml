@@ -4,7 +4,10 @@
 		<comment>Vengi</comment>
 		<glob pattern="*.vengi"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="VENG"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x45"/>
+			<match type="byte" offset="2" value="\x4e"/>
+			<match type="byte" offset="3" value="\x47"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-aseprite">
@@ -25,28 +28,40 @@
 		<comment>MagicaVoxel</comment>
 		<glob pattern="*.vox"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="VOX "/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x4f"/>
+			<match type="byte" offset="2" value="\x58"/>
+			<match type="byte" offset="3" value="\x20"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-qubicle-binary-tree">
 		<comment>Qubicle Binary Tree</comment>
 		<glob pattern="*.qbt"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="QB 2"/>
+			<match type="byte" offset="0" value="\x51"/>
+			<match type="byte" offset="1" value="\x42"/>
+			<match type="byte" offset="2" value="\x20"/>
+			<match type="byte" offset="3" value="\x32"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-qubicle-project">
 		<comment>Qubicle Project</comment>
 		<glob pattern="*.qbcl"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="QBCL"/>
+			<match type="byte" offset="0" value="\x51"/>
+			<match type="byte" offset="1" value="\x42"/>
+			<match type="byte" offset="2" value="\x43"/>
+			<match type="byte" offset="3" value="\x4c"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-tilemap">
 		<comment>Sandbox VoxEdit Tilemap</comment>
 		<glob pattern="*.vxt"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXT1"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x54"/>
+			<match type="byte" offset="3" value="\x31"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-collection">
@@ -57,41 +72,74 @@
 		<comment>Sandbox VoxEdit Model</comment>
 		<glob pattern="*.vxm"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXMA"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x41"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXMB"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x42"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXMC"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x43"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM9"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x39"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM8"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x38"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM7"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x37"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM6"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x36"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM5"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x35"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM4"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x34"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXM3"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x4d"/>
+			<match type="byte" offset="3" value="\x33"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-block">
 		<comment>Sandbox VoxEdit Block</comment>
 		<glob pattern="*.vxb"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXB1"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x42"/>
+			<match type="byte" offset="3" value="\x31"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-blockbench">
@@ -102,45 +150,88 @@
 		<comment>Sandbox VoxEdit Hierarchy</comment>
 		<glob pattern="*.vxr"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR9"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x39"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR8"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x38"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR7"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x37"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR6"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x36"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR5"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x35"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR4"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x34"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR3"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x33"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR2"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x32"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="VXR1"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x58"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x31"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-binvox">
 		<comment>BinVox</comment>
 		<glob pattern="*.binvox"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="#binvox"/>
+			<match type="byte" offset="0" value="\x23"/>
+			<match type="byte" offset="1" value="\x62"/>
+			<match type="byte" offset="2" value="\x69"/>
+			<match type="byte" offset="3" value="\x6e"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-goxel">
 		<comment>Goxel</comment>
 		<glob pattern="*.gox"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="GOX "/>
+			<match type="byte" offset="0" value="\x47"/>
+			<match type="byte" offset="1" value="\x4f"/>
+			<match type="byte" offset="2" value="\x58"/>
+			<match type="byte" offset="3" value="\x20"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-goxel-txt">
+		<comment>Goxel txt</comment>
+		<glob pattern="*.txt"/>
+		<magic priority="50">
+			<match type="byte" offset="0" value="\x23"/>
+			<match type="byte" offset="1" value="\x20"/>
+			<match type="byte" offset="2" value="\x47"/>
+			<match type="byte" offset="3" value="\x6f"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-cubeworld">
@@ -179,7 +270,10 @@
 		<comment>UFO:Alien Invasion</comment>
 		<glob pattern="*.bsp"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="IBSP"/>
+			<match type="byte" offset="0" value="\x49"/>
+			<match type="byte" offset="1" value="\x42"/>
+			<match type="byte" offset="2" value="\x53"/>
+			<match type="byte" offset="3" value="\x50"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-quake-1">
@@ -193,17 +287,26 @@
 		<comment>Quake 1 Model</comment>
 		<glob pattern="*.mdl"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="IDPO"/>
+			<match type="byte" offset="0" value="\x49"/>
+			<match type="byte" offset="1" value="\x44"/>
+			<match type="byte" offset="2" value="\x50"/>
+			<match type="byte" offset="3" value="\x4f"/>
 		</magic>
 		<magic priority="50">
-			<match type="string" offset="0" value="RAPO"/>
+			<match type="byte" offset="0" value="\x52"/>
+			<match type="byte" offset="1" value="\x41"/>
+			<match type="byte" offset="2" value="\x50"/>
+			<match type="byte" offset="3" value="\x4f"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-quake-2-model">
 		<comment>Quake 2 Model</comment>
 		<glob pattern="*.md2"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="IDP2"/>
+			<match type="byte" offset="0" value="\x49"/>
+			<match type="byte" offset="1" value="\x44"/>
+			<match type="byte" offset="2" value="\x50"/>
+			<match type="byte" offset="3" value="\x32"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-fbx">
@@ -226,7 +329,10 @@
 		<comment>Magicavoxel XRAW</comment>
 		<glob pattern="*.xraw"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="XRAW"/>
+			<match type="byte" offset="0" value="\x58"/>
+			<match type="byte" offset="1" value="\x52"/>
+			<match type="byte" offset="2" value="\x41"/>
+			<match type="byte" offset="3" value="\x57"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-starmade-blueprint">
@@ -247,7 +353,10 @@
 		<comment>VoxelBuilder</comment>
 		<glob pattern="*.vbx"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="; Voxel Builder file format (VBX)"/>
+			<match type="byte" offset="0" value="\x3b"/>
+			<match type="byte" offset="1" value="\x20"/>
+			<match type="byte" offset="2" value="\x56"/>
+			<match type="byte" offset="3" value="\x6f"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-wavefront-object">
@@ -277,14 +386,20 @@
 		<glob pattern="*.pcubes"/>
 		<glob pattern="*.particubes"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="PARTICUBES!"/>
+			<match type="byte" offset="0" value="\x50"/>
+			<match type="byte" offset="1" value="\x41"/>
+			<match type="byte" offset="2" value="\x52"/>
+			<match type="byte" offset="3" value="\x54"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-cubzh">
 		<comment>Cubzh</comment>
 		<glob pattern="*.3zh"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="CUBZH!"/>
+			<match type="byte" offset="0" value="\x43"/>
+			<match type="byte" offset="1" value="\x55"/>
+			<match type="byte" offset="2" value="\x42"/>
+			<match type="byte" offset="3" value="\x5a"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-cubzh-world">
@@ -304,14 +419,20 @@
 		<comment>AceOfSpades</comment>
 		<glob pattern="*.kv6"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="Kvxl"/>
+			<match type="byte" offset="0" value="\x4b"/>
+			<match type="byte" offset="1" value="\x76"/>
+			<match type="byte" offset="2" value="\x78"/>
+			<match type="byte" offset="3" value="\x6c"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-tiberian-sun">
 		<comment>Tiberian Sun</comment>
 		<glob pattern="*.vxl"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="Voxel Animation"/>
+			<match type="byte" offset="0" value="\x56"/>
+			<match type="byte" offset="1" value="\x6f"/>
+			<match type="byte" offset="2" value="\x78"/>
+			<match type="byte" offset="3" value="\x65"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-aceofspades-vxl">
@@ -322,21 +443,30 @@
 		<comment>Qubicle Exchange</comment>
 		<glob pattern="*.qef"/>
 		<magic priority="50">
-			<match type="string" offset="0" value="Qubicle Exchange Format"/>
+			<match type="byte" offset="0" value="\x51"/>
+			<match type="byte" offset="1" value="\x75"/>
+			<match type="byte" offset="2" value="\x62"/>
+			<match type="byte" offset="3" value="\x69"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-chronovox">
 		<comment>Chronovox</comment>
 		<glob pattern="*.csm"/>
 		<magic priority="50">
-			<match type="string" offset="0" value=".CSM"/>
+			<match type="byte" offset="0" value="\x2e"/>
+			<match type="byte" offset="1" value="\x43"/>
+			<match type="byte" offset="2" value="\x53"/>
+			<match type="byte" offset="3" value="\x4d"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-nicks-voxel-model">
 		<comment>Nicks Voxel Model</comment>
 		<glob pattern="*.nvm"/>
 		<magic priority="50">
-			<match type="string" offset="0" value=".NVM"/>
+			<match type="byte" offset="0" value="\x2e"/>
+			<match type="byte" offset="1" value="\x4e"/>
+			<match type="byte" offset="2" value="\x56"/>
+			<match type="byte" offset="3" value="\x4d"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-slab6-vox">
@@ -347,6 +477,32 @@
 		<comment>VoxelMax</comment>
 		<glob pattern="*.vmax.zip"/>
 		<glob pattern="*.vmaxb"/>
+	</mime-type>
+	<mime-type type="application/x-spritestack">
+		<comment>SpriteStack</comment>
+		<glob pattern="*.zip"/>
+	</mime-type>
+	<mime-type type="application/x-veloren-terrain">
+		<comment>Veloren terrain</comment>
+		<glob pattern="*.dat"/>
+		<magic priority="50">
+			<match type="byte" offset="0" value="\x3"/>
+			<match type="byte" offset="1" value="\x0"/>
+			<match type="byte" offset="2" value="\x89"/>
+			<match type="byte" offset="3" value="\xa7"/>
+		</magic>
+		<magic priority="50">
+			<match type="byte" offset="0" value="\x2"/>
+			<match type="byte" offset="1" value="\x0"/>
+			<match type="byte" offset="2" value="\x89"/>
+			<match type="byte" offset="3" value="\xa7"/>
+		</magic>
+		<magic priority="50">
+			<match type="byte" offset="0" value="\x1"/>
+			<match type="byte" offset="1" value="\x0"/>
+			<match type="byte" offset="2" value="\x89"/>
+			<match type="byte" offset="3" value="\xa7"/>
+		</magic>
 	</mime-type>
 	<mime-type type="application/x-portable-network-graphics">
 		<comment>Portable Network Graphics</comment>

@@ -108,6 +108,7 @@ set(SRCS
 	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
 	private/starmade/SMTPLFormat.h           private/starmade/SMTPLFormat.cpp
 	private/starmade/SMPalette.h
+	private/veloren/VelorenTerrainFormat.h   private/veloren/VelorenTerrainFormat.cpp
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
@@ -165,6 +166,7 @@ set(TEST_SRCS
 	tests/ThingFormatTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
+	tests/VelorenTerrainFormatTest.cpp
 	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/VXBFormatTest.cpp
@@ -213,6 +215,7 @@ set(TEST_FILES
 	"tests/cube.ply"
 	"tests/cube.stl"
 	"tests/cubictest.vox"
+	"tests/chunkveloren.dat"
 	"tests/cw.cub"
 	"tests/e2de1723/Content (1).vxm"
 	"tests/e2de1723/Content.vxm"

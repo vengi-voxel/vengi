@@ -64,6 +64,9 @@
 		<RegistryKey Root="HKCR" Key=".gox">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".txt">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".cub">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -200,6 +203,9 @@
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".vmaxb">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".zip">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".png">
@@ -378,6 +384,15 @@
 		<RegistryValue Root="HKCR" Key=".gox\OpenWithProgids" Name="vengi-voxedit.gox" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.gox" Description="Goxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="gox" ContentType="application/x-goxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".txt" Value="vengi-voxedit.txt" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".txt" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".txt\OpenWithProgids" Name="vengi-voxedit.txt" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.txt" Description="Goxel txt" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="txt" ContentType="application/x-goxel-txt">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
@@ -792,6 +807,15 @@
 		<RegistryValue Root="HKCR" Key=".vmaxb\OpenWithProgids" Name="vengi-voxedit.vmaxb" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vmaxb" Description="VoxelMax" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vmaxb" ContentType="application/x-voxelmax-vmax-zip">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".zip" Value="vengi-voxedit.zip" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".zip" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".zip\OpenWithProgids" Name="vengi-voxedit.zip" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.zip" Description="SpriteStack" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="zip" ContentType="application/x-spritestack">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

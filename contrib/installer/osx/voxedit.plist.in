@@ -302,6 +302,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Goxel txt</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-goxel-txt</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>txt</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>CubeWorld</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -989,6 +1007,42 @@
         <array>
           <string>vmax.zip</string>
           <string>vmaxb</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>SpriteStack</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-spritestack</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>zip</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Veloren terrain</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-veloren-terrain</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>dat</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>

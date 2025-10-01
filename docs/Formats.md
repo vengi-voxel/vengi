@@ -18,6 +18,7 @@
 | Cubzh                      | 3zh         | X       | X      | X          | X       |            |
 | Cubzh World                | b64         | X       |        |            |         |            |
 | Goxel                      | gox         | X       | X      | X          | X       |            |
+| Goxel txt                  | txt         | X       | X      |            |         |            |
 | KenShape                   | kenshape    | X       |        |            | X       |            |
 | Luanti (Minetest)          | mts         | X       | X      |            | X       |            |
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
@@ -41,10 +42,12 @@
 | Sandbox VoxEdit Model      | vxm         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Tilemap    | vxt         | X       |        |            |         |            |
 | SLAB6 vox                  | vox         | X       | X      |            | X       |            |
+| SpriteStack                | zip         | X       |        |            | X       |            |
 | Sproxel csv                | csv         | X       | X      |            | X       |            |
 | StarMade Blueprint         | sment       | X       |        |            | X       |            |
 | StarMade Template          | smtpl       | X       | X      |            | X       |            |
 | Tiberian Sun               | vxl         | X       | X      |            | X       | X          |
+| Veloren terrain            | dat         | X       | X      |            | X       |            |
 | Vengi                      | vengi       | X       | X      |            | X       | X          |
 | Voxel3D                    | v3a         | X       | X      |            |         |            |
 | VoxelBuilder               | vbx         | X       |        |            |         |            |
