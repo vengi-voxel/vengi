@@ -184,7 +184,7 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 	uint32_t magic;
 	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('K', 'v', 'x', 'l')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid kv6 magic");
 		return 0;
 	}
 
@@ -252,7 +252,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	uint32_t magic;
 	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('K', 'w', 'l', 'k')) {
-		Log::error("Invalid magic number");
+		Log::error("Invalid kwalk magic number");
 		return false;
 	}
 	core::String kv6Name;
@@ -505,7 +505,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	uint32_t magic;
 	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('K', 'v', 'x', 'l')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid kv6 magic");
 		return false;
 	}
 

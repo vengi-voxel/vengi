@@ -539,7 +539,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	uint32_t magic;
 	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('V', 'E', 'N', 'G')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid vengi magic");
 		return false;
 	}
 	io::ZipReadStream zipStream(*stream, stream->size());

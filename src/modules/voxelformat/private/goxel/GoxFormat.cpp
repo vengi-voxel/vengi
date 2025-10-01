@@ -160,7 +160,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, const io
 	wrapImg(stream->readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid gox magic");
 		return image::ImagePtr();
 	}
 
@@ -556,7 +556,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	wrap(stream->readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid gox magic");
 		return false;
 	}
 
@@ -606,7 +606,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	wrap(stream->readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid gox magic");
 		return false;
 	}
 

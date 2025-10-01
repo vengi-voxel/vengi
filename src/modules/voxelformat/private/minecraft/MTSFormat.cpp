@@ -39,7 +39,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	uint32_t magic;
 	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('M', 'T', 'S', 'M')) {
-		Log::error("Invalid magic");
+		Log::error("Invalid mts magic");
 		return false;
 	}
 	uint16_t version;
