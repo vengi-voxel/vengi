@@ -145,6 +145,7 @@ core::String convertToFilePattern(const FormatDescription &desc);
 bool isImage(const core::String &file);
 bool isA(const core::String &file, const FormatDescription *desc);
 bool isA(const io::FormatDescription &desc, uint32_t magic);
+bool isA(const io::FormatDescription &check, const io::FormatDescription &desc, const core::String &ext, uint32_t magic);
 uint32_t loadMagic(io::SeekableReadStream &stream);
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic, const io::FormatDescription *descriptions);
 const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic, const io::FormatDescription *descriptions);

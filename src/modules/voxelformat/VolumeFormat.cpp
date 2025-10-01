@@ -173,141 +173,123 @@ const io::FormatDescription *voxelSave() {
 	return desc.data();
 }
 
-static bool isA(const io::FormatDescription &check, const io::FormatDescription &desc, const core::String &ext,
-				uint32_t magic) {
-	if (magic != 0u && !check.magics.empty() && io::isA(check, magic)) {
-		Log::debug("Magic matches for file: %s (%u) => %s", ext.c_str(), magic, check.name.c_str());
-		return true;
-	}
-	if (ext == check.mainExtension()) {
-		if (!check.name.empty() && desc.name != check.name) {
-			Log::debug("Name doesn't match for file: %s (%s) => %s", ext.c_str(), desc.name.c_str(),
-					   check.name.c_str());
-			return false;
-		}
-		Log::debug("Extension matches for file: %s => %s", ext.c_str(), check.name.c_str());
-		return true;
-	}
-	return false;
-}
-
 static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint32_t magic) {
 	for (const core::String &ext : desc.exts) {
 		// you only have to check one of the supported extensions
 		// here
-		if (isA(VENGIFormat::format(), desc, ext, magic)) {
+		if (io::isA(VENGIFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VENGIFormat>();
-		} else if (isA(QBFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(QBFormat::format(), desc, ext, magic)) {
 			return core::make_shared<QBFormat>();
-		} else if (isA(VoxFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VoxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VoxFormat>();
-		} else if (isA(SLAB6VoxFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SLAB6VoxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SLAB6VoxFormat>();
-		} else if (isA(QBTFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(QBTFormat::format(), desc, ext, magic)) {
 			return core::make_shared<QBTFormat>();
-		} else if (isA(KVXFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(KVXFormat::format(), desc, ext, magic)) {
 			return core::make_shared<KVXFormat>();
-		} else if (isA(KV6Format::format(), desc, ext, magic)) {
+		} else if (io::isA(KV6Format::format(), desc, ext, magic)) {
 			return core::make_shared<KV6Format>();
-		} else if (isA(SproxelFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SproxelFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SproxelFormat>();
-		} else if (isA(CubFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(CubFormat::format(), desc, ext, magic)) {
 			return core::make_shared<CubFormat>();
-		} else if (isA(GoxFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(GoxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<GoxFormat>();
-		} else if (isA(GoxTxtFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(GoxTxtFormat::format(), desc, ext, magic)) {
 			return core::make_shared<GoxTxtFormat>();
-		} else if (isA(VelorenTerrainFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VelorenTerrainFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VelorenTerrainFormat>();
-		} else if (isA(AnimaToonFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(AnimaToonFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AnimaToonFormat>();
-		} else if (isA(MCRFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(MCRFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MCRFormat>();
-		} else if (isA(MTSFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(MTSFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MTSFormat>();
-		} else if (isA(DatFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(DatFormat::format(), desc, ext, magic)) {
 			return core::make_shared<DatFormat>();
-		} else if (isA(MCWorldFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(MCWorldFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MCWorldFormat>();
-		} else if (isA(SMFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SMFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SMFormat>();
-		} else if (isA(SMTPLFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SMTPLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SMTPLFormat>();
-		} else if (isA(VXMFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VXMFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXMFormat>();
-		} else if (isA(VXRFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VXRFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXRFormat>();
-		} else if (isA(VXBFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VXBFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXBFormat>();
-		} else if (isA(VMaxFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VMaxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VMaxFormat>();
-		} else if (isA(BlockbenchFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(BlockbenchFormat::format(), desc, ext, magic)) {
 			return core::make_shared<BlockbenchFormat>();
-		} else if (isA(VXCFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VXCFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXCFormat>();
-		} else if (isA(VXTFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VXTFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXTFormat>();
-		} else if (isA(VXLFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VXLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VXLFormat>();
-		} else if (isA(AoSVXLFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(AoSVXLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AoSVXLFormat>();
-		} else if (isA(CSMFormat::formatNVM(), desc, ext, magic) || isA(CSMFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(CSMFormat::formatNVM(), desc, ext, magic) || isA(CSMFormat::format(), desc, ext, magic)) {
 			return core::make_shared<CSMFormat>();
-		} else if (isA(BinVoxFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(BinVoxFormat::format(), desc, ext, magic)) {
 			return core::make_shared<BinVoxFormat>();
-		} else if (isA(QEFFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(QEFFormat::format(), desc, ext, magic)) {
 			return core::make_shared<QEFFormat>();
-		} else if (isA(QBCLFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(QBCLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<QBCLFormat>();
-		} else if (isA(OBJFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(OBJFormat::format(), desc, ext, magic)) {
 			return core::make_shared<OBJFormat>();
-		} else if (isA(SkinFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SkinFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SkinFormat>();
-		} else if (isA(STLFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(STLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<STLFormat>();
-		} else if (isA(QuakeBSPFormat::formatUFOAI(), desc, ext, magic) || isA(QuakeBSPFormat::formatQuake1(), desc, ext, magic)) {
+		} else if (io::isA(QuakeBSPFormat::formatUFOAI(), desc, ext, magic) || isA(QuakeBSPFormat::formatQuake1(), desc, ext, magic)) {
 			return core::make_shared<QuakeBSPFormat>();
-		} else if (isA(MapFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(MapFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MapFormat>();
-		} else if (isA(PLYFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(PLYFormat::format(), desc, ext, magic)) {
 			return core::make_shared<PLYFormat>();
-		} else if (isA(FBXFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(FBXFormat::format(), desc, ext, magic)) {
 			return core::make_shared<FBXFormat>();
-		} else if (isA(Autodesk3DSFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(Autodesk3DSFormat::format(), desc, ext, magic)) {
 			return core::make_shared<Autodesk3DSFormat>();
-		} else if (isA(MDLFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(MDLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MDLFormat>();
-		} else if (isA(MD2Format::format(), desc, ext, magic)) {
+		} else if (io::isA(MD2Format::format(), desc, ext, magic)) {
 			return core::make_shared<MD2Format>();
-		} else if (isA(SchematicFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SchematicFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SchematicFormat>();
-		} else if (isA(VBXFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(VBXFormat::format(), desc, ext, magic)) {
 			return core::make_shared<VBXFormat>();
-		} else if (isA(XRawFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(XRawFormat::format(), desc, ext, magic)) {
 			return core::make_shared<XRawFormat>();
-		} else if (isA(V3AFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(V3AFormat::format(), desc, ext, magic)) {
 			return core::make_shared<V3AFormat>();
-		} else if (isA(PCubesFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(PCubesFormat::format(), desc, ext, magic)) {
 			return core::make_shared<PCubesFormat>();
-		} else if (isA(CubzhFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(CubzhFormat::format(), desc, ext, magic)) {
 			return core::make_shared<CubzhFormat>();
-		} else if (isA(CubzhB64Format::format(), desc, ext, magic)) {
+		} else if (io::isA(CubzhB64Format::format(), desc, ext, magic)) {
 			return core::make_shared<CubzhB64Format>();
-		} else if (isA(AsepriteFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(AsepriteFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AsepriteFormat>();
-		} else if (isA(ThingFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(ThingFormat::format(), desc, ext, magic)) {
 			return core::make_shared<ThingFormat>();
-		} else if (isA(io::format::png(), desc, ext, magic)) {
+		} else if (io::isA(io::format::png(), desc, ext, magic)) {
 			return core::make_shared<PNGFormat>();
-		} else if (isA(GodotSceneFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(GodotSceneFormat::format(), desc, ext, magic)) {
 			return core::make_shared<GodotSceneFormat>();
-		} else if (isA(KenShapeFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(KenShapeFormat::format(), desc, ext, magic)) {
 			return core::make_shared<KenShapeFormat>();
-		} else if (isA(GLTFFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(GLTFFormat::format(), desc, ext, magic)) {
 			return core::make_shared<GLTFFormat>();
-		} else if (isA(SpriteStackFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(SpriteStackFormat::format(), desc, ext, magic)) {
 			return core::make_shared<SpriteStackFormat>();
-		} else if (isA(BenVoxelFormat::format(), desc, ext, magic)) {
+		} else if (io::isA(BenVoxelFormat::format(), desc, ext, magic)) {
 			return core::make_shared<BenVoxelFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());

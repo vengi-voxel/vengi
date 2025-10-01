@@ -272,6 +272,24 @@ bool isA(const io::FormatDescription &desc, uint32_t magic) {
 	return false;
 }
 
+bool isA(const io::FormatDescription &check, const io::FormatDescription &desc, const core::String &ext,
+		 uint32_t magic) {
+	if (magic != 0u && !check.magics.empty() && io::isA(check, magic)) {
+		Log::debug("Magic matches for file: %s (%u) => %s", ext.c_str(), magic, check.name.c_str());
+		return true;
+	}
+	if (ext == check.mainExtension()) {
+		if (!check.name.empty() && desc.name != check.name) {
+			Log::debug("Name doesn't match for file: %s (%s) => %s", ext.c_str(), desc.name.c_str(),
+					   check.name.c_str());
+			return false;
+		}
+		Log::debug("Extension matches for file: %s => %s", ext.c_str(), check.name.c_str());
+		return true;
+	}
+	return false;
+}
+
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic,
 											const io::FormatDescription *descriptions) {
 	const core::String ext = core::string::extractExtension(filename);
