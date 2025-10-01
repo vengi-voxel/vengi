@@ -380,7 +380,6 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	pal.magicaVoxel();
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
 	voxel::RawVolume original(region);
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, 0)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(pal, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(pal, 201)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, pal.colorCount() - 1)));
