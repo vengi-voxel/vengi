@@ -239,4 +239,14 @@ TEST_F(RegionTest, testIndex) {
 	EXPECT_EQ(26, region.index(3, 3, 3));
 }
 
+TEST_F(RegionTest, testIndexBackAndForth) {
+	voxel::Region region(1, 3);
+	const int size = region.voxels();
+	for (int i = 0; i < size; ++i) {
+		const glm::ivec3 pos = region.fromIndex(i);
+		const int idx = region.index(pos);
+		EXPECT_EQ(i, idx);
+	}
+}
+
 } // namespace voxel

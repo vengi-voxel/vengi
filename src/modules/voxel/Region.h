@@ -123,6 +123,12 @@ public:
 		return subtract(a, result);
 	}
 
+	glm::ivec3 fromIndex(uint32_t idx) const {
+		return glm::ivec3(_mins.x + (idx % getWidthInVoxels()),
+						  _mins.y + ((idx / getWidthInVoxels()) % getHeightInVoxels()),
+						  _mins.z + (idx / (_stride)));
+	}
+
 	inline int index(const glm::ivec3 &pos) const {
 		return index(pos.x, pos.y, pos.z);
 	}
