@@ -481,7 +481,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 			replaceReadOnly = "";
 			replaceRestrict = "";
 		}
-		src = core::string::replaceAll(src, "$constant", "//");
+		src = core::string::replaceAll(src, "$constant", "#define");
 		src = core::string::replaceAll(src, "$in", replaceIn);
 		src = core::string::replaceAll(src, "$writeonly", replaceWriteOnly);
 		src = core::string::replaceAll(src, "$readonly", replaceReadOnly);
