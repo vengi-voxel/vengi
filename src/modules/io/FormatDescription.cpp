@@ -259,12 +259,12 @@ uint32_t loadMagic(io::SeekableReadStream &stream) {
 }
 
 bool isA(const io::FormatDescription &desc, uint32_t magic) {
-	for (const core::String &m : desc.magics) {
+	for (const io::Magic &m : desc.magics) {
 		const size_t l = m.size();
-		const char f1 = l > 0 ? m[0] : '\0';
-		const char f2 = l > 1 ? m[1] : '\0';
-		const char f3 = l > 2 ? m[2] : '\0';
-		const char f4 = l > 3 ? m[3] : '\0';
+		const uint8_t f1 = l > 0 ? m.data.u8[0] : '\0';
+		const uint8_t f2 = l > 1 ? m.data.u8[1] : '\0';
+		const uint8_t f3 = l > 2 ? m.data.u8[2] : '\0';
+		const uint8_t f4 = l > 3 ? m.data.u8[3] : '\0';
 		if (FourCC(f1, f2, f3, f4) == magic) {
 			return true;
 		}

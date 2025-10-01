@@ -9,14 +9,50 @@
 #include "core/collection/StringMap.h"
 #include "core/collection/Vector.h"
 #include "io/Stream.h"
+#include <string.h>
 #include <stdint.h>
 
 namespace io {
 
+struct Magic {
+	Magic() {
+		data.u32 = 0;
+		len = 0;
+	}
+	Magic(uint32_t u) {
+		data.u32 = u;
+		len = 4;
+	}
+	Magic(const char *s) {
+		const int l = (int)strlen(s);
+		data.u8[0] = l > 0 ? s[0] : 0;
+		data.u8[1] = l > 1 ? s[1] : 0;
+		data.u8[2] = l > 2 ? s[2] : 0;
+		data.u8[3] = l > 3 ? s[3] : 0;
+		len = l > 4 ? 4 : l;
+	}
+	Magic(int a, int b, int c, int d) {
+		data.u8[0] = a;
+		data.u8[1] = b;
+		data.u8[2] = c;
+		data.u8[3] = d;
+		len = 4;
+	}
+	union data {
+		uint32_t u32;
+		uint8_t u8[4];
+	} data;
+	int len;
+
+	int size() const {
+		return len;
+	}
+};
+
 #define MAX_FORMATDESCRIPTION_EXTENSIONS 8
 using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIPTION_EXTENSIONS>;
 #define MAX_FORMATDESCRIPTION_MAGICS 16
-using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION_MAGICS>;
+using FormatDescriptionMagics = core::Vector<Magic, MAX_FORMATDESCRIPTION_MAGICS>;
 
 #define FORMAT_FLAG_ALL (1 << 0)
 #define FORMAT_FLAG_GROUP (1 << 1)
@@ -42,8 +78,9 @@ struct FormatDescription {
 	FormatDescriptionMagics magics;	  /**< magic bytes for the format description */
 	uint32_t flags = 0u;			  /**< flags for user defined properties */
 
-	// There are pseudo formats (like 'All supported') that are not valid format descriptions in the sense that they are not standing for a real format.
-	// These pseudo formats are used to group other formats together and usually don't have extensions.
+	// There are pseudo formats (like 'All supported') that are not valid format descriptions in the sense that they are
+	// not standing for a real format. These pseudo formats are used to group other formats together and usually don't
+	// have extensions.
 	inline bool valid() const {
 		return !name.empty() && !exts.empty();
 	}
@@ -91,7 +128,7 @@ struct FileDescription {
 	}
 };
 
-inline const io::FormatDescription& ALL_SUPPORTED() {
+inline const io::FormatDescription &ALL_SUPPORTED() {
 	static const io::FormatDescription v{"All supported", {}, {}, FORMAT_FLAG_ALL};
 	return v;
 }
@@ -106,7 +143,7 @@ core::String convertToAllFilePattern(const FormatDescription *desc);
  */
 core::String convertToFilePattern(const FormatDescription &desc);
 bool isImage(const core::String &file);
-bool isA(const core::String& file, const FormatDescription *desc);
+bool isA(const core::String &file, const FormatDescription *desc);
 bool isA(const io::FormatDescription &desc, uint32_t magic);
 uint32_t loadMagic(io::SeekableReadStream &stream);
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic, const io::FormatDescription *descriptions);
@@ -120,7 +157,7 @@ void createGroupPatterns(const FormatDescription *desc, core::DynamicArray<io::F
 namespace format {
 
 const FormatDescription *images();
-const FormatDescription* fonts();
+const FormatDescription *fonts();
 const FormatDescription *lua();
 
 FormatDescription png();

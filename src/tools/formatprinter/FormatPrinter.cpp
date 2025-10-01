@@ -57,21 +57,17 @@ static void printJsonStringArray(const T &array) {
 template<class T>
 static void printJsonMagicArray(const T &array) {
 	int i = 0;
-	for (const core::String &e : array) {
+	for (const io::Magic &e : array) {
 		if (i != 0) {
 			Log::printf(",");
 		}
 		Log::printf("{");
-		if (isprint(e.first())) {
-			Log::printf("\"type\": \"string\", \"value\": \"%s\"", e.c_str());
-		} else {
-			Log::printf("\"type\": \"bytes\", \"value\": \"");
-			Log::printf("0x");
-			for (size_t j = 0; j < e.size(); ++j) {
-				Log::printf("%02X", (uint8_t)e[j]);
-			}
-			Log::printf("\"");
+		Log::printf("\"type\": \"bytes\", \"value\": \"");
+		Log::printf("0x");
+		for (int j = 0; j < e.size(); ++j) {
+			Log::printf("%02X", (uint8_t)e.data.u8[j]);
 		}
+		Log::printf("\"");
 		Log::printf("}");
 		++i;
 	}
@@ -481,14 +477,10 @@ void FormatPrinter::printMagic() {
 		}
 		Log::printf("# %s\n", desc.name.c_str());
 		const core::String &m = uniqueMimetype(desc);
-		for (const core::String &magic : desc.magics) {
-			if (isprint(magic.first())) {
-				Log::printf("50 string 0 \"%s\"", magic.c_str());
-			} else {
-				Log::printf("50 byte 0 ");
-				for (size_t i = 0; i < magic.size(); ++i) {
-					Log::printf("%02X", (uint8_t)magic[i]);
-				}
+		for (const io::Magic &magic : desc.magics) {
+			Log::printf("50 byte 0 ");
+			for (int i = 0; i < magic.size(); ++i) {
+				Log::printf("%02X", (uint8_t)magic.data.u8[i]);
 			}
 			Log::printf(" %s\n", m.c_str());
 		}
@@ -721,14 +713,10 @@ void FormatPrinter::printMimeInfo() {
 		for (const core::String &e : desc->exts) {
 			Log::printf("\t\t<glob pattern=\"*.%s\"/>\n", e.c_str());
 		}
-		for (const core::String &e : desc->magics) {
+		for (const io::Magic &e : desc->magics) {
 			Log::printf("\t\t<magic priority=\"50\">\n");
-			if (isprint(e.first())) {
-				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n", e.c_str());
-			} else {
-				for (size_t i = 0; i < e.size(); ++i) {
-					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e[i]);
-				}
+			for (int i = 0; i < e.size(); ++i) {
+				Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);
 			}
 			Log::printf("\t\t</magic>\n");
 		}
