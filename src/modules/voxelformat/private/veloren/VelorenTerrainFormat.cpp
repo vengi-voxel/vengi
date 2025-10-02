@@ -56,8 +56,8 @@ size_t VelorenTerrainFormat::loadPalette(const core::String &filename, const io:
 	wrap(stream->readUInt64(count))
 	palette::RGBABuffer colors;
 	for (uint64_t i = 0; i < count; ++i) {
-		int32_t x = 0, y = 0, z = 0;
 		if (version == 1) {
+			int32_t x = 0, y = 0, z = 0;
 			wrap(stream->readInt32(x));
 			wrap(stream->readInt32(y));
 			wrap(stream->readInt32(z));
@@ -67,9 +67,6 @@ size_t VelorenTerrainFormat::loadPalette(const core::String &filename, const io:
 			wrap(stream->readUInt8(sx));
 			wrap(stream->readUInt8(sy));
 			wrap(stream->readInt16(sz));
-			x = (int32_t)sx;
-			y = (int32_t)sy;
-			z = (int32_t)sz;
 		}
 
 		uint8_t blockType = BlockType::Air;
@@ -196,7 +193,7 @@ bool VelorenTerrainFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, 
 		}
 		// write v3
 		wrapBool(stream->writeUInt8(pos.x))
-		wrapBool(stream->writeUInt8(pos.z))
+		wrapBool(stream->writeUInt8(region.getDepthInVoxels() - pos.z))
 		wrapBool(stream->writeInt16(pos.y))
 
 		wrapBool(stream->writeUInt8(blockType))
