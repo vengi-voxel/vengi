@@ -129,6 +129,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 		wrap(stream->readUInt8(rgba.g))
 		wrap(stream->readUInt8(rgba.b))
 		if (blockType == BlockType::Air) {
+			// TODO: VOXELFORMAT: place the sprites, too - the latter 24 bits are the sprite types for air and water
 			continue;
 		}
 		const int index = palLookup.findClosestIndex(rgba);
