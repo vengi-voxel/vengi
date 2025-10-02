@@ -136,7 +136,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 		}
 		const int index = palLookup.findClosestIndex(rgba);
 		const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-		v.setVoxel(x, z, y, voxel); // swap y and z
+		v.setVoxel(x, z, -y, voxel); // swap y and z
 	}
 
 	int x = 0;
@@ -147,7 +147,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(v.calculateRegion());
 	v.copyTo(*volume);
-	volume->region().shift(glm::ivec3(x * 32, 0, z * 32));
+	volume->region().shift(glm::ivec3(x * 32, 0, z * -32));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
