@@ -61,6 +61,7 @@ nav:
       - thumbnailer/Index.md
       - thumbnailer/Examples.md
   - Blog:
+      - blog/devlog_25_10.md
       - blog/devlog_25_09_2.md
       - blog/devlog_25_09.md
       - blog/devlog_25_08_2.md
