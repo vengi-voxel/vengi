@@ -140,13 +140,14 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	}
 
 	int x = 0;
-	int y = 0;
-	if (SDL_sscanf(filename.c_str(), "chunk_%i_%i.dat", &x, &y) == 2) {
-		Log::debug("chunk position for %s at %i:%i", filename.c_str(), x, y);
+	int z = 0;
+	core::String file = core::string::extractFilename(filename);
+	if (SDL_sscanf(file.c_str(), "chunk_%i_%i.dat", &x, &z) == 2) {
+		Log::debug("chunk position for %s at %i:%i", file.c_str(), x, z);
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(v.calculateRegion());
 	v.copyTo(*volume);
-	// volume->move(glm::ivec3(x * 32, 0, y * 32));
+	volume->region().shift(glm::ivec3(x * 32, 0, z * 32));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(core::string::extractFilename(filename));
