@@ -1809,6 +1809,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
         {
             // Test function
             test->TestFunc(ctx);
+            ImGui::SetCurrentContext(ctx->UiContext);
 
             // In case test failed without finishing gif capture - finish it here. This may trigger due to user error or
             // due to IM_SUSPEND_TESTFUNC() terminating TestFunc() early.

@@ -534,7 +534,8 @@ static bool ImGui_ImplSDL3_Init(SDL_Window* window, SDL_Renderer* renderer, void
     io.BackendPlatformName = bd->BackendPlatformName;
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
-    // (ImGuiBackendFlags_PlatformHasViewports may be set just below)
+    // (ImGuiBackendFlags_PlatformHasViewports and ImGuiBackendFlags_HasParentViewport may be set just below)
+    // (ImGuiBackendFlags_HasMouseHoveredViewport is set dynamically in our _NewFrame function)
 
     bd->Window = window;
     bd->WindowID = SDL_GetWindowID(window);
@@ -560,7 +561,10 @@ static bool ImGui_ImplSDL3_Init(SDL_Window* window, SDL_Renderer* renderer, void
             bd->MouseCanUseGlobalState = bd->MouseCanUseCapture = true;
 #endif
     if (bd->MouseCanUseGlobalState)
+    {
         io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;  // We can create multi-viewports on the Platform side (optional)
+        io.BackendFlags |= ImGuiBackendFlags_HasParentViewport;     // We can honor viewport->ParentViewportId by applying the corresponding parent/child relationship at platform level (optional)
+    }
 
     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
     platform_io.Platform_SetClipboardTextFn = ImGui_ImplSDL3_SetClipboardText;
@@ -675,7 +679,7 @@ void ImGui_ImplSDL3_Shutdown()
 
     io.BackendPlatformName = nullptr;
     io.BackendPlatformUserData = nullptr;
-    io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_HasSetMousePos | ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_PlatformHasViewports | ImGuiBackendFlags_HasMouseHoveredViewport);
+    io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_HasSetMousePos | ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_PlatformHasViewports | ImGuiBackendFlags_HasMouseHoveredViewport | ImGuiBackendFlags_HasParentViewport);
     platform_io.ClearPlatformHandlers();
     IM_DELETE(bd);
 }
@@ -1004,14 +1008,13 @@ struct ImGui_ImplSDL3_ViewportData
     ~ImGui_ImplSDL3_ViewportData()  { IM_ASSERT(Window == nullptr && GLContext == nullptr); }
 };
 
-static SDL_Window* ImGui_ImplSDL3_GetSDLWindowFromViewportID(ImGuiID viewport_id)
+static SDL_Window* ImGui_ImplSDL3_GetSDLWindowFromViewport(ImGuiViewport* viewport)
 {
-    if (viewport_id != 0)
-        if (ImGuiViewport* viewport = ImGui::FindViewportByID(viewport_id))
-        {
-            SDL_WindowID window_id = (SDL_WindowID)(intptr_t)viewport->PlatformHandle;
-            return SDL_GetWindowFromID(window_id);
-        }
+    if (viewport != nullptr)
+    {
+        SDL_WindowID window_id = (SDL_WindowID)(intptr_t)viewport->PlatformHandle;
+        return SDL_GetWindowFromID(window_id);
+    }
     return nullptr;
 }
 
@@ -1021,7 +1024,7 @@ static void ImGui_ImplSDL3_CreateWindow(ImGuiViewport* viewport)
     ImGui_ImplSDL3_ViewportData* vd = IM_NEW(ImGui_ImplSDL3_ViewportData)();
     viewport->PlatformUserData = vd;
 
-    vd->ParentWindow = ImGui_ImplSDL3_GetSDLWindowFromViewportID(viewport->ParentViewportId);
+    vd->ParentWindow = ImGui_ImplSDL3_GetSDLWindowFromViewport(viewport->ParentViewport);
 
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui_ImplSDL3_ViewportData* main_viewport_data = (ImGui_ImplSDL3_ViewportData*)main_viewport->PlatformUserData;
@@ -1110,7 +1113,7 @@ static void ImGui_ImplSDL3_UpdateWindow(ImGuiViewport* viewport)
 #ifndef __APPLE__ // On Mac, SDL3 Parenting appears to prevent viewport from appearing in another monitor
     // Update SDL3 parent if it changed _after_ creation.
     // This is for advanced apps that are manipulating ParentViewportID manually.
-    SDL_Window* new_parent = ImGui_ImplSDL3_GetSDLWindowFromViewportID(viewport->ParentViewportId);
+    SDL_Window* new_parent = ImGui_ImplSDL3_GetSDLWindowFromViewport(viewport->ParentViewport);
     if (new_parent != vd->ParentWindow)
     {
         vd->ParentWindow = new_parent;

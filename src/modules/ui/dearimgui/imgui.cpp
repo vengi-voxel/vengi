@@ -4426,7 +4426,7 @@ void ImGui::Shutdown()
     for (ImFontAtlas* atlas : g.FontAtlases)
     {
         UnregisterFontAtlas(atlas);
-        if (atlas->OwnerContext == &g)
+        if (atlas->RefCount == 0)
         {
             atlas->Locked = false;
             IM_DELETE(atlas);
@@ -9461,6 +9461,8 @@ void ImGui::RegisterFontAtlas(ImFontAtlas* atlas)
     atlas->RefCount++;
     g.FontAtlases.push_back(atlas);
     ImFontAtlasAddDrawListSharedData(atlas, &g.DrawListSharedData);
+    for (ImTextureData* tex : atlas->TexList)
+        tex->RefCount = (unsigned short)atlas->RefCount;
 }
 
 void ImGui::UnregisterFontAtlas(ImFontAtlas* atlas)
@@ -9470,6 +9472,8 @@ void ImGui::UnregisterFontAtlas(ImFontAtlas* atlas)
     ImFontAtlasRemoveDrawListSharedData(atlas, &g.DrawListSharedData);
     g.FontAtlases.find_erase(atlas);
     atlas->RefCount--;
+    for (ImTextureData* tex : atlas->TexList)
+        tex->RefCount = (unsigned short)atlas->RefCount;
 }
 
 // Use ImDrawList::_SetTexture(), making our shared g.FontStack[] authoritative against window-local ImDrawList.
@@ -16339,7 +16343,21 @@ static bool ImGui::GetWindowAlwaysWantOwnViewport(ImGuiWindow* window)
 // Heuristic, see #8948: depends on how backends handle OS-level parenting.
 static bool IsViewportAbove(ImGuiViewportP* potential_above, ImGuiViewportP* potential_below)
 {
-    if (potential_above->LastFocusedStampCount > potential_below->LastFocusedStampCount || potential_above->ParentViewportId == potential_below->ID) // FIXME: Should follow the ParentViewportId list.
+    // If ImGuiBackendFlags_HasParentViewport if set, ->ParentViewport chain should be accurate.
+    ImGuiContext& g = *GImGui;
+    if (g.IO.BackendFlags & ImGuiBackendFlags_HasParentViewport)
+    {
+        for (ImGuiViewport* v = potential_above; v != NULL && v->ParentViewport; v = v->ParentViewport)
+            if (v->ParentViewport == potential_below)
+                return true;
+    }
+    else
+    {
+        if (potential_above->ParentViewport == potential_below)
+            return true;
+    }
+
+    if (potential_above->LastFocusedStampCount > potential_below->LastFocusedStampCount)
         return true;
     return false;
 }
@@ -16362,8 +16380,9 @@ static bool ImGui::UpdateTryMergeWindowIntoHostViewport(ImGuiWindow* window, ImG
     {
         if (viewport_2 == viewport || viewport_2 == window->Viewport)
             continue;
-        if (IsViewportAbove(viewport_2, viewport) && viewport_2->GetMainRect().Overlaps(window->Rect()))
-            return false;
+        if (viewport_2->GetMainRect().Overlaps(window->Rect()))
+            if (IsViewportAbove(viewport_2, viewport) && !IsViewportAbove(viewport_2, window->Viewport))
+                return false;
     }
 
     // Move to the existing viewport, Move child/hosted windows as well (FIXME-OPT: iterate child)
@@ -17021,11 +17040,22 @@ void ImGui::WindowSyncOwnedViewport(ImGuiWindow* window, ImGuiWindow* parent_win
     // Update parent viewport ID
     // (the !IsFallbackWindow test mimic the one done in WindowSelectViewport())
     if (window->WindowClass.ParentViewportId != (ImGuiID)-1)
+    {
+        ImGuiID old_parent_viewport_id = window->Viewport->ParentViewportId;
         window->Viewport->ParentViewportId = window->WindowClass.ParentViewportId;
+        if (window->Viewport->ParentViewportId != old_parent_viewport_id)
+            window->Viewport->ParentViewport = FindViewportByID(window->Viewport->ParentViewportId);
+    }
     else if ((window_flags & (ImGuiWindowFlags_Popup | ImGuiWindowFlags_Tooltip)) && parent_window_in_stack && (!parent_window_in_stack->IsFallbackWindow || parent_window_in_stack->WasActive))
+    {
+        window->Viewport->ParentViewport = parent_window_in_stack->Viewport;
         window->Viewport->ParentViewportId = parent_window_in_stack->Viewport->ID;
+    }
     else
+    {
+        window->Viewport->ParentViewport = g.IO.ConfigViewportsNoDefaultParent ? NULL : GetMainViewport();
         window->Viewport->ParentViewportId = g.IO.ConfigViewportsNoDefaultParent ? 0 : IMGUI_VIEWPORT_DEFAULT_ID;
+    }
 }
 
 // Called by user at the end of the main loop, after EndFrame()
