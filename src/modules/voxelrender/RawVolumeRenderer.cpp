@@ -463,6 +463,7 @@ bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &me
 		core_free(indicesBuf);
 		return false;
 	}
+	core_free(indicesBuf);
 	return true;
 }
 
