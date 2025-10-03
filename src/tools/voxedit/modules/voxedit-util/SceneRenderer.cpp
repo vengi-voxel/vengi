@@ -13,7 +13,6 @@
 #include "scenegraph/SceneUtil.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
-#include "voxedit-ui/SceneSettingsPanel.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
