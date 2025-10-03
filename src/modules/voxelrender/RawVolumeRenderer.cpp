@@ -285,6 +285,10 @@ bool RawVolumeRenderer::initStateBuffers(bool normals) {
 				Log::error("Could not create the vertex buffer object for the indices");
 				return false;
 			}
+			if (i == voxel::MeshType_Transparency) {
+				// we are sorting the transparency buffer every frame
+				state._vertexBuffer[i].setMode(state._indexBufferIndex[i], video::BufferMode::Dynamic);
+			}
 		}
 	}
 
