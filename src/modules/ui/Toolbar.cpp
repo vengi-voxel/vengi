@@ -24,16 +24,22 @@ void Toolbar::next() {
 }
 
 void Toolbar::newline() {
-	const float wmax = ImGui::GetWindowPos().x + _windowWidth;
-	if (_pos.x > _startingPosX && _pos.x + _size.x > wmax) {
+	// If there's not enough horizontal space left for another button, wrap to the next line.
+	const float avail = ImGui::GetContentRegionAvail().x;
+	if (_pos.x > _startingPosX && avail < _size.x) {
 		ImGui::NewLine();
 		_pos = ImGui::GetCursorScreenPos();
 	}
 }
 
 void Toolbar::end() {
+	// If we placed any items on the same line as the toolbar start, make sure we move
+	// to the next line so following widgets don't end up inline with the toolbar.
 	newline();
-	ImGui::Dummy(ImVec2(0, 0));
+	if (_pos.x > _startingPosX) {
+		ImGui::NewLine();
+		_pos = ImGui::GetCursorScreenPos();
+	}
 }
 
 void Toolbar::applyIconStyle(ui::ScopedStyle &style) {
