@@ -1818,8 +1818,8 @@ bool linkComputeShader(Id program, Id comp, const core::String &name) {
 
 		if (infoLogLength > 1) {
 			GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-			core_assert(glGetShaderInfoLog != nullptr);
-			glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+			core_assert(glGetProgramInfoLog != nullptr);
+			glGetProgramInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 			video::checkError();
 			const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
 			if (status != GL_TRUE) {
@@ -1923,8 +1923,8 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name)
 
 		if (infoLogLength > 1) {
 			GLchar *strInfoLog = new GLchar[infoLogLength + 1];
-			core_assert(glGetShaderInfoLog != nullptr);
-			glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
+			core_assert(glGetProgramInfoLog != nullptr);
+			glGetProgramInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 			checkError();
 			const core::String linkLog(strInfoLog, static_cast<size_t>(infoLogLength));
 			if (status != GL_TRUE) {
