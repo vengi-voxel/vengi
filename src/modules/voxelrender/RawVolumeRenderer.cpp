@@ -458,7 +458,7 @@ bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &me
 		offset += mesh->getNoOfVertices();
 	}
 	Log::debug("update indexbuffer: %i (type: %i)", idx, type);
-	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
+	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize, true)) {
 		Log::error("Failed to update the index buffer");
 		core_free(indicesBuf);
 		return false;
