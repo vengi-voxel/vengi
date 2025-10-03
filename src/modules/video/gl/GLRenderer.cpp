@@ -1398,8 +1398,8 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
 			checkError();
 		} else {
-			core_assert(glDrawBuffers != nullptr);
-			glDrawBuffers((GLsizei)1, &glAttachment);
+			core_assert(glFramebufferTexture != nullptr);
+			glFramebufferTexture(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0);
 			checkError();
 		}
 	}
