@@ -77,15 +77,30 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 		}
 		if (value != 0u) {
 			const voxel::Voxel voxel = voxel::createVoxel(palette, value);
-			// TODO: PERF: use volume sampler - see VXMFormat.cpp
 			// The y-coordinate runs fastest, then the z-coordinate, then the x-coordinate.
-			for (uint32_t i = index; i < endIndex; ++i) {
-				const int32_t iy = (int32_t)(i % state._w);
-				const int32_t iz = (int32_t)((i / state._w) % state._h);
-				const int32_t ix = (int32_t)(i / (state._w * state._h));
-				if (!volume->setVoxel(ix, iy, iz, voxel)) {
-					Log::debug("Failed to store voxel at x: %i, y: %i, z: %i (region: %s)", ix, iy, iz,
-							   region.toString().c_str());
+			voxel::RawVolume::Sampler sampler(volume);
+			const uint32_t end = endIndex;
+			const int32_t w = (int32_t)state._w;
+			const int32_t h = (int32_t)state._h;
+			uint32_t i = index;
+			int32_t ix = (int32_t)(i / (state._w * state._h));
+			int32_t iy = (int32_t)(i % state._w);
+			int32_t iz = (int32_t)((i / state._w) % state._h);
+			sampler.setPosition(ix, iy, iz);
+			for (; i < end; ++i) {
+				sampler.setVoxel(voxel);
+				++iy;
+				if (iy >= w) {
+					iy = 0;
+					++iz;
+					if (iz >= h) {
+						iz = 0;
+						++ix;
+					}
+					// setPosition is needed when we jump to next row/slice
+					sampler.setPosition(ix, iy, iz);
+				} else {
+					sampler.movePositiveY();
 				}
 			}
 		}
