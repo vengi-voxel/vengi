@@ -568,20 +568,67 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 	*pixels = (uint8_t *)core_malloc(h * pitch);
 	core_assert(glPixelStorei != nullptr);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-	if (useFeature(Feature::DirectStateAccess)) {
-		core_assert(glGetTextureImage != nullptr);
+	if (useFeature(Feature::DirectStateAccess) && glGetTextureImage != nullptr) {
 		glGetTextureImage(handle,
 						  0,			// mipmap level
 						  f.dataFormat, // e.g. GL_RGBA
 						  f.dataType,	// e.g. GL_UNSIGNED_BYTE
 						  h * pitch,	// size of the destination buffer
 						  *pixels		// destination pointer
+
 		);
-	} else {
+	} else if (!useFeature(Feature::DirectStateAccess) && glGetTexImage != nullptr) {
 		bindTexture(unit, type, handle);
-		core_assert(glGetTexImage != nullptr);
 		glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void *)*pixels);
+	} else {
+		/* Fallback for WebGL / OpenGLES where glGetTexImage / glGetTextureImage
+		 * are not available: create a temporary FBO, attach the texture and
+		 * use glReadPixels to read the pixels. This covers 2D and cube faces;
+		 * for other types this may not be supported. */
+		GLuint oldFbo = 0;
+		core_assert(glGetIntegerv != nullptr);
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&oldFbo);
+		GLuint tmpFbo = 0;
+		core_assert(glGenFramebuffers != nullptr);
+		glGenFramebuffers(1, &tmpFbo);
+		core_assert(glBindFramebuffer != nullptr);
+		glBindFramebuffer(GL_FRAMEBUFFER, tmpFbo);
+		checkError();
+
+		/* Attach depending on texture type. Prefer POSITIVE_X face for cubes. */
+		if (type == TextureType::TextureCube) {
+			core_assert(glFramebufferTexture2D != nullptr);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, (GLuint)handle,
+								   0);
+		} else if (type == TextureType::Texture2D || type == TextureType::Texture2DMultisample) {
+			core_assert(glFramebufferTexture2D != nullptr);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, (GLuint)handle, 0);
+		} else if (type == TextureType::Texture2DArray || type == TextureType::Texture3D) {
+			/* attach layer 0 */
+			core_assert(glFramebufferTextureLayer != nullptr);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLuint)handle, 0, 0);
+		} else {
+			/* fallback to generic framebuffer texture attach if available */
+			if (glFramebufferTexture != nullptr) {
+				glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLuint)handle, 0);
+			} else {
+				/* unsupported texture type for fallback */
+				Log::error("readTexture: unsupported texture type for fallback read");
+				glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+				glDeleteFramebuffers(1, &tmpFbo);
+				core_free(*pixels);
+				*pixels = nullptr;
+				return false;
+			}
+		}
+		/* set read buffer and read */
+		core_assert(glReadBuffer != nullptr);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		core_assert(glReadPixels != nullptr);
+		glReadPixels(0, 0, w, h, f.dataFormat, f.dataType, (void *)*pixels);
+		/* restore */
+		glBindFramebuffer(GL_FRAMEBUFFER, oldFbo);
+		glDeleteFramebuffers(1, &tmpFbo);
 	}
 	if (checkError()) {
 		core_free(*pixels);
