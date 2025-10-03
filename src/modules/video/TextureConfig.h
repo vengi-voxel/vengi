@@ -28,40 +28,41 @@ private:
 	uint8_t _alignment = 1u;
 	// Reduces blur and shimmering at oblique viewing angles.
 	// typical range is 1.0 (off) to 16.0 (max)
-	float _maxAnisotropy = 1.0f;
+	float _maxAnisotropy = 0.0f;
 	// Level of Detail bias for mipmapped textures.
 	// A positive bias -> selects lower-resolution mip levels sooner -> blurrier but faster.
 	// A negative bias -> selects higher-resolution mip levels -> sharper but noisier/aliasing.
 	float _lodBias = 0.0f;
 	bool _useBorderColor = false;
-	glm::vec4 _borderColor {0.0f};
+	glm::vec4 _borderColor{0.0f};
 	int _samples = 0;
+
 public:
-	TextureConfig& wrap(TextureWrap wrap);
-	TextureConfig& wrapR(TextureWrap wrap);
-	TextureConfig& wrapS(TextureWrap wrap);
-	TextureConfig& wrapT(TextureWrap wrap);
-	TextureConfig& filter(TextureFilter filter);
-	TextureConfig& filterMag(TextureFilter filter);
-	TextureConfig& filterMin(TextureFilter filter);
-	TextureConfig& type(TextureType type);
-	TextureConfig& format(TextureFormat format);
-	TextureConfig& compareFunc(CompareFunc func);
-	TextureConfig& compareMode(TextureCompareMode mode);
-	TextureConfig& borderColor(const glm::vec4& borderColor);
-	TextureConfig& samples(int samples);
-	TextureConfig& maxAnisotropy(float aniso);
-	TextureConfig& lodBias(float bias);
+	TextureConfig &wrap(TextureWrap wrap);
+	TextureConfig &wrapR(TextureWrap wrap);
+	TextureConfig &wrapS(TextureWrap wrap);
+	TextureConfig &wrapT(TextureWrap wrap);
+	TextureConfig &filter(TextureFilter filter);
+	TextureConfig &filterMag(TextureFilter filter);
+	TextureConfig &filterMin(TextureFilter filter);
+	TextureConfig &type(TextureType type);
+	TextureConfig &format(TextureFormat format);
+	TextureConfig &compareFunc(CompareFunc func);
+	TextureConfig &compareMode(TextureCompareMode mode);
+	TextureConfig &borderColor(const glm::vec4 &borderColor);
+	TextureConfig &samples(int samples);
+	TextureConfig &maxAnisotropy(float aniso);
+	TextureConfig &lodBias(float bias);
 	/**
 	 * @param[in] layers The amount of layers for the given texture.
 	 * @see TextureType
 	 */
-	TextureConfig& layers(uint8_t layers);
+	TextureConfig &layers(uint8_t layers);
 	/**
 	 * @param[in] alignment A value of 0 doesn't change the default.
 	 * Valid values are @c 0, @c 1, @c 2, @c 4 and @c 8.
 	 */
-	TextureConfig& alignment(uint8_t alignment);
+	TextureConfig &alignment(uint8_t alignment);
 
 	TextureWrap wrapR() const;
 	TextureWrap wrapS() const;
@@ -78,32 +79,26 @@ public:
 	CompareFunc compareFunc() const;
 	TextureCompareMode compareMode() const;
 	bool useBorderColor() const;
-	const glm::vec4& borderColor() const;
+	const glm::vec4 &borderColor() const;
 };
 
 inline int TextureConfig::samples() const {
 	return _samples;
 }
 
-inline TextureConfig& TextureConfig::maxAnisotropy(float aniso) {
-	// Anisotropy values < 1.0 are not meaningful. Enforce a sensible minimum here.
-	_maxAnisotropy = (aniso < 1.0f) ? 1.0f : aniso;
-	return *this;
-}
-
 inline float TextureConfig::maxAnisotropy() const {
-    return _maxAnisotropy;
+	return _maxAnisotropy;
 }
 
 inline float TextureConfig::lodBias() const {
 	return _lodBias;
 }
 
-inline TextureFilter TextureConfig::filterMag() const{
+inline TextureFilter TextureConfig::filterMag() const {
 	return _filterMag;
 }
 
-inline TextureFilter TextureConfig::filterMin() const{
+inline TextureFilter TextureConfig::filterMin() const {
 	return _filterMin;
 }
 
@@ -147,11 +142,11 @@ inline bool TextureConfig::useBorderColor() const {
 	return _useBorderColor;
 }
 
-inline const glm::vec4& TextureConfig::borderColor() const {
+inline const glm::vec4 &TextureConfig::borderColor() const {
 	return _borderColor;
 }
 
 video::TextureConfig createDefaultTextureConfig();
 video::TextureConfig createDefaultMultiSampleTextureConfig();
 
-}
+} // namespace video

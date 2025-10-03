@@ -539,6 +539,13 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientDebugSeverity, "0", 0u, _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));
 	core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
 
+	// Default anisotropy used for framebuffer-created textures. -1 means use device max.
+	core::Var::get(cfg::MaxAnisotropy, "-1", 0u, "", [](const core::String &val) {
+		const float fv = core::string::toFloat(val);
+		// allow -1 (use device max) or any value >= 0
+		return fv == -1.0f || fv >= 0.0f;
+	});
+
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0", 0u, "", [](const core::String &val) {
 		const float fv = core::string::toFloat(val);
 		return fv > 1.0f && fv <= 1000.0f;

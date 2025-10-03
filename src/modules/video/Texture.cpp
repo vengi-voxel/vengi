@@ -3,9 +3,11 @@
  */
 
 #include "Texture.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/Assert.h"
+#include "core/Var.h"
 #include "image/Image.h"
 #include "video/Renderer.h"
 
@@ -109,6 +111,10 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	_width = width;
 	_height = height;
 	video::bindTexture(TextureUnit::Upload, type(), _handle);
+	if (_config.maxAnisotropy() < 1.0f) {
+		const float maxAnisotropy = core::Var::getSafe(cfg::MaxAnisotropy)->floatVal();
+		_config.maxAnisotropy(maxAnisotropy);
+	}
 	video::setupTexture(_handle, _config);
 	video::uploadTexture(_handle, type(), format(), _width, _height, data, index, _config.samples());
 	_layerCount = core_max(_layerCount, index);

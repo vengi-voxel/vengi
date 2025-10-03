@@ -52,6 +52,7 @@ constexpr const char *RenderOutline = "r_renderoutline";
 constexpr const char *RenderNormals = "r_normals";
 constexpr const char *ToneMapping = "r_tonemapping";
 constexpr const char *RenderCheckerBoard = "r_checkerboard";
+constexpr const char *MaxAnisotropy = "r_maxanisotropy";
 
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";

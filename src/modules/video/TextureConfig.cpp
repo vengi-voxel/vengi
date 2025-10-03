@@ -44,6 +44,16 @@ TextureConfig& TextureConfig::filterMin(TextureFilter filter) {
 	return *this;
 }
 
+TextureConfig& TextureConfig::maxAnisotropy(float aniso) {
+	const float maxAnisotropy = video::limit(video::Limit::MaxAnisotropy);
+	if (aniso <= 1.0f) {
+		aniso = maxAnisotropy;
+	}
+	// Anisotropy values < 1.0 are not meaningful. Enforce a sensible minimum here.
+	_maxAnisotropy = glm::clamp(aniso, 1.0f, maxAnisotropy);
+	return *this;
+}
+
 TextureConfig& TextureConfig::type(TextureType type) {
 	_type = type;
 	return *this;

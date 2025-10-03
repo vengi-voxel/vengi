@@ -60,6 +60,7 @@ public:
 		core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 		core::Var::get(cfg::ClientMultiSampleSamples, "0");
 		core::Var::get(cfg::ClientVSync, "false");
+		core::Var::get(cfg::MaxAnisotropy, "1.0");
 		core::Var::get(cfg::ClientDebugSeverity, "3");
 		app::AbstractTest::SetUp();
 #if defined(_WIN32) || defined(__CYGWIN__)
