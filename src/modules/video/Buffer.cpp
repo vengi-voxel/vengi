@@ -180,16 +180,37 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
-	if (size > 0 && oldSize >= size && _modes[idx] != BufferMode::Static) {
-		video::bufferSubData(id, type, 0, data, size);
-	} else {
-		if (orphaning && size > 0) {
-			if (oldSize < size) {
-				video::bufferData(id, type, _modes[idx], nullptr, size);
+	if (size > 0) {
+		// If the requested update fits into the old allocation and the buffer
+		// isn't static, prefer sub-data path if mapping isn't possible.
+		if (oldSize >= size && _modes[idx] != BufferMode::Static) {
+			// try map range
+			void *ptr = video::mapBufferRange(id, type, 0, size, video::AccessMode::Write,
+											  video::MapBufferFlag::Unsynchronized | video::MapBufferFlag::InvalidateRange);
+			if (ptr != nullptr) {
+				core_memcpy(ptr, data, size);
+				// explicit flush isn't required in this path; unmap will commit
+				video::unmapBuffer(id, type);
+			} else {
+				video::bufferSubData(id, type, 0, data, size);
 			}
-			video::bufferSubData(id, type, 0, data, size);
 		} else {
-			video::bufferData(id, type, _modes[idx], data, size);
+			if (orphaning) {
+				// ensure buffer has required size
+				if (oldSize < size) {
+					video::bufferData(id, type, _modes[idx], nullptr, size);
+				}
+				void *ptr = video::mapBufferRange(id, type, 0, size, video::AccessMode::Write,
+												  video::MapBufferFlag::Unsynchronized | video::MapBufferFlag::InvalidateRange);
+				if (ptr != nullptr) {
+					core_memcpy(ptr, data, size);
+					video::unmapBuffer(id, type);
+				} else {
+					video::bufferSubData(id, type, 0, data, size);
+				}
+			} else {
+				video::bufferData(id, type, _modes[idx], data, size);
+			}
 		}
 	}
 
