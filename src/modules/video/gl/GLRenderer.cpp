@@ -648,6 +648,61 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return data;
 }
 
+void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {
+	video_trace_scoped(MapBufferRange);
+	if (length == 0 || handle == InvalidId) {
+		return nullptr;
+	}
+	GLenum access = 0;
+	switch (mode) {
+	case AccessMode::Read:
+		access |= GL_MAP_READ_BIT;
+		break;
+	case AccessMode::Write:
+		access |= GL_MAP_WRITE_BIT;
+		break;
+	case AccessMode::ReadWrite:
+		access |= GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
+		break;
+	default:
+		access |= GL_MAP_WRITE_BIT;
+		break;
+	}
+
+	if ((flags & MapBufferFlag::InvalidateRange) == MapBufferFlag::InvalidateRange) {
+		access |= GL_MAP_INVALIDATE_RANGE_BIT;
+	}
+	if ((flags & MapBufferFlag::Unsynchronized) == MapBufferFlag::Unsynchronized) {
+		access |= GL_MAP_UNSYNCHRONIZED_BIT;
+	}
+	if ((flags & MapBufferFlag::ExplicitFlush) == MapBufferFlag::ExplicitFlush) {
+		access |= GL_MAP_FLUSH_EXPLICIT_BIT;
+	}
+
+	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glMapNamedBufferRange != nullptr);
+		void *ptr = glMapNamedBufferRange((GLuint)handle, (GLintptr)offset, (GLsizeiptr)length, access);
+		checkError();
+		return ptr;
+	}
+
+	const int typeIndex = core::enumVal(type);
+	const GLenum glType = _priv::BufferTypes[typeIndex];
+	const Id old = boundBuffer(type);
+	const bool changed = bindBuffer(type, handle);
+	core_assert(glMapBufferRange != nullptr);
+	void *ptr = glMapBufferRange(glType, (GLintptr)offset, (GLsizeiptr)length, access);
+	checkError();
+	if (changed) {
+		if (old == InvalidId) {
+			unbindBuffer(type);
+		} else {
+			bindBuffer(type, old);
+		}
+	}
+	return ptr;
+}
+
 void unmapBuffer(Id handle, BufferType type) {
 	video_trace_scoped(UnmapBuffer);
 	if (handle == InvalidId) {

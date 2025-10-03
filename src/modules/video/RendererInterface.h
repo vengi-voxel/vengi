@@ -38,6 +38,38 @@ class TextureConfig;
 void setup();
 
 /**
+ * Flags used with mapBufferRange to request specific mapping behavior. These
+ * are backend-agnostic hints; the GL backend maps them to the corresponding
+ * GL_MAP_* bits when available. Use bitwise-or to combine flags.
+ */
+enum class MapBufferFlag : uint8_t {
+	None = 0,
+	/** Invalidate the specified range (GL_MAP_INVALIDATE_RANGE_BIT) */
+	InvalidateRange = 1u << 0,
+	/** Don't synchronize with GPU (GL_MAP_UNSYNCHRONIZED_BIT) */
+	Unsynchronized = 1u << 1,
+	/** Use explicit flush (GL_MAP_FLUSH_EXPLICIT_BIT) when available */
+	ExplicitFlush = 1u << 2,
+};
+CORE_ENUM_BIT_OPERATIONS(MapBufferFlag)
+
+/**
+ * Map a buffer range. This is a thin, backend-agnostic wrapper that allows
+ * requesting non-blocking mapping hints. The meaning of @p flags is defined
+ * by the MapBufferFlag enum above. Implementations should return nullptr if
+ * mapping failed.
+ *
+ * @param handle Buffer handle.
+ * @param type Buffer type (array/index/uniform/etc.).
+ * @param offset Byte offset into the buffer.
+ * @param length Number of bytes to map.
+ * @param mode Access mode (Read/Write/ReadWrite).
+ * @param flags MapBufferFlag bitset (default: MapBufferFlag_None).
+ * @return Pointer to mapped memory or nullptr on failure.
+ */
+void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode,
+					 MapBufferFlag flags = MapBufferFlag::None);
+/**
  * @brief Initialize the renderer backend for a window of the given size.
  *
  * Allocates and configures renderer resources required for rendering to a
