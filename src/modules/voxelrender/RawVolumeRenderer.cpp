@@ -800,20 +800,33 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RawVolumeRendererSortBeforeRender);
 	for (const auto &i : meshState->meshes(voxel::MeshType_Transparency)) {
+		core::DynamicArray<int> indices;
+		indices.resize(voxel::MAX_VOLUMES);
+		indices.fill(-1);
+		app::for_parallel(0, voxel::MAX_VOLUMES, [&](int start, int end) {
+			for (int idx = start; idx < end; ++idx) {
+				if (!isVisible(meshState, idx)) {
+					continue;
+				}
+				const int bufferIndex = meshState->resolveIdx(idx);
+				// TODO: transform - vertices are in object space - eye in world space
+				// inverse of state._model - but take pivot into account
+				voxel::Mesh *mesh = i->second[bufferIndex];
+				if (!mesh || mesh->isEmpty()) {
+					continue;
+				}
+				if (mesh->sort(camera.worldPosition())) {
+					indices[idx] = bufferIndex;
+				}
+			}
+		});
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-			if (!isVisible(meshState, idx)) {
+			if (indices[idx] == -1) {
 				continue;
 			}
-			const int bufferIndex = meshState->resolveIdx(idx);
-			// TODO: transform - vertices are in object space - eye in world space
-			// inverse of state._model - but take pivot into account
-			voxel::Mesh *mesh = i->second[bufferIndex];
-			if (!mesh || mesh->isEmpty()) {
-				continue;
-			}
-			if (mesh->sort(camera.worldPosition())) {
-				// TODO: PERF: delay the update of the buffer and use app::for_parallel to sort all meshes in parallel
-				updateBufferForVolume(meshState, bufferIndex, voxel::MeshType_Transparency);
+			// TODO: PERF: only the indices must be updated - not the normals and vertices, too
+			if (!updateBufferForVolume(meshState, indices[idx], voxel::MeshType_Transparency)) {
+				Log::error("Failed to update the transparency mesh at index %i", idx);
 			}
 		}
 	}
