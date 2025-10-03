@@ -175,7 +175,11 @@ static_assert(core::enumVal(TextureType::Max) == lengthof(TextureTypes), "Array 
 
 static const GLenum TextureFilters[] {
 	GL_LINEAR,
-	GL_NEAREST
+	GL_NEAREST,
+	GL_NEAREST_MIPMAP_NEAREST,
+	GL_NEAREST_MIPMAP_LINEAR,
+	GL_LINEAR_MIPMAP_NEAREST,
+	GL_LINEAR_MIPMAP_LINEAR
 };
 static_assert(core::enumVal(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
 

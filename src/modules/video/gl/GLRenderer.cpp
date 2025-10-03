@@ -1558,11 +1558,28 @@ void setupTexture(Id texture, const TextureConfig &config) {
 	checkError();
 }
 
-void uploadTexture(Id texture, TextureType type, TextureFormat format, int width, int height, const uint8_t *data, int index,
-				   int samples) {
+void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
 	video_trace_scoped(UploadTexture);
+	const int samples = cfg.samples();
+	const TextureType type = cfg.type();
+	const TextureFormat format = cfg.format();
 	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
-	const int levels = 1; // TODO: RENDERER: mipmapping glm::floor(glm::log2((float)core_max(width, height))) + 1;
+	// Determine whether we should allocate mip levels and generate mipmaps.
+	bool wantMipmaps = false;
+	if (cfg.filterMin() != TextureFilter::Max) {
+		const TextureFilter fm = cfg.filterMin();
+		// If the min filter is one of the mipmap-aware modes, request mipmaps.
+		if (fm == TextureFilter::NearestMipmapNearest || fm == TextureFilter::NearestMipmapLinear ||
+			fm == TextureFilter::LinearMipmapNearest || fm == TextureFilter::LinearMipmapLinear) {
+			wantMipmaps = true;
+		}
+	}
+	// Multisample textures cannot have mipmaps
+	if (type == TextureType::Texture2DMultisample || type == TextureType::Texture2DMultisampleArray) {
+		wantMipmaps = false;
+	}
+
+	const int levels = wantMipmaps && width > 0 && height > 0 ? (int)glm::floor(glm::log2((float)core_max(width, height))) + 1 : 1;
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glTextureStorage2D != nullptr);
 		core_assert(glTextureStorage3D != nullptr);
@@ -1616,8 +1633,13 @@ void uploadTexture(Id texture, TextureType type, TextureFormat format, int width
 				checkError();
 			}
 		}
-		// TODO: RENDERER: mipmapping glGenerateTextureMipmap(texture);
-		// checkError();
+		if (wantMipmaps && levels > 1) {
+			// Allocate storage already used levels above; generate mips on the GPU
+			if (glGenerateTextureMipmap != nullptr) {
+				glGenerateTextureMipmap(texture);
+			}
+			checkError();
+		}
 	} else {
 		const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
 		core_assert(type != TextureType::Max);
@@ -1643,8 +1665,12 @@ void uploadTexture(Id texture, TextureType type, TextureFormat format, int width
 			glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 			checkError();
 		}
-		// TODO: RENDERER: mipmapping glGenerateMipmap(glType);
-		// checkError();
+		if (wantMipmaps && levels > 1) {
+			// generate on currently bound target
+			core_assert(glGenerateMipmap != nullptr);
+			glGenerateMipmap(glType);
+			checkError();
+		}
 	}
 }
 

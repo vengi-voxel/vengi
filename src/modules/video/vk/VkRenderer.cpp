@@ -418,8 +418,7 @@ bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(Fr
 void setupTexture(Id texture, const TextureConfig &config) {
 }
 
-void uploadTexture(Id texture, video::TextureType type, video::TextureFormat format, int width, int height,
-				   const uint8_t *data, int index, int samples) {
+void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
 }
 
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {

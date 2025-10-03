@@ -36,6 +36,12 @@ enum class TextureFilter {
 	Linear,
 	Nearest,
 
+	// Mipmap-aware minification filters
+	NearestMipmapNearest,
+	NearestMipmapLinear,
+	LinearMipmapNearest,
+	LinearMipmapLinear,
+
 	Max
 };
 

@@ -717,16 +717,13 @@ void setupTexture(Id texture, const TextureConfig &config);
  * available.
  *
  * @param texture Texture id to upload into.
- * @param type Texture target type (1D/2D/3D/multisample/array/...)
- * @param format TextureFormat describing internal/data formats.
  * @param width Width in pixels.
  * @param height Height in pixels.
  * @param data Optional pointer to pixel data (may be null to allocate storage).
  * @param index Layer/depth/array index for 3D/array textures.
- * @param samples Number of samples for multisample textures.
+ * @param cfg TextureConfig describing the texture format and type.
  */
-void uploadTexture(Id texture, video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t *data,
-				   int index, int samples);
+void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg);
 
 /**
  * @brief Draw indexed geometry from the currently bound VAO/IBO.

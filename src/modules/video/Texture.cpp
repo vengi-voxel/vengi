@@ -116,7 +116,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 		_config.maxAnisotropy(maxAnisotropy);
 	}
 	video::setupTexture(_handle, _config);
-	video::uploadTexture(_handle, type(), format(), _width, _height, data, index, _config.samples());
+	video::uploadTexture(_handle, _width, _height, data, index, _config);
 	_layerCount = core_max(_layerCount, index);
 	_state = io::IOSTATE_LOADED;
 }
@@ -198,6 +198,9 @@ TexturePtr createTextureFromImage(const image::ImagePtr& image) {
 	} else {
 		cfg.format(TextureFormat::RGB);
 	}
+	// Use trilinear minification by default for loaded images to get smooth downsampled results
+	cfg.filterMag(TextureFilter::Linear);
+	cfg.filterMin(TextureFilter::LinearMipmapLinear);
 	const TexturePtr& t = core::make_shared<Texture>(cfg, image->width(), image->height(), image->name());
 	t->upload(image->data());
 	return t;

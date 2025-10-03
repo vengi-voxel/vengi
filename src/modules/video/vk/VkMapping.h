@@ -119,7 +119,11 @@ static_assert(core::enumVal(TextureType::Max) == lengthof(ImageViewTypes), "Arra
 
 static const VkFilter TextureFilters[] = {
 	VK_FILTER_LINEAR, // Linear
-	VK_FILTER_NEAREST // Nearest
+	VK_FILTER_NEAREST, // Nearest
+	VK_FILTER_NEAREST, // NearestMipmapNearest -> nearest
+	VK_FILTER_NEAREST, // NearestMipmapLinear -> nearest (mipmap mode handled separately)
+	VK_FILTER_LINEAR,  // LinearMipmapNearest -> linear
+	VK_FILTER_LINEAR   // LinearMipmapLinear -> linear
 };
 static_assert(core::enumVal(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
 
