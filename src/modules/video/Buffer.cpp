@@ -7,6 +7,9 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#if VIDEO_BUFFER_HASH_COMPARE
+#include "core/Hash.h"
+#endif
 
 namespace video {
 

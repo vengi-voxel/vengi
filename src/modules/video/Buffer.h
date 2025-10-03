@@ -10,9 +10,6 @@
 #include "core/collection/DynamicArray.h"
 
 #define VIDEO_BUFFER_HASH_COMPARE 0
-#if VIDEO_BUFFER_HASH_COMPARE
-#include "core/Hash.h"
-#endif
 
 namespace video {
 
