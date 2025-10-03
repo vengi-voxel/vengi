@@ -1474,7 +1474,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 
 		if (FLEXT_ARB_texture_filter_anisotropic) {
 			const GLfloat maxAnisotropy = config.maxAnisotropy();
-			if (maxAnisotropy > 0.0f) {
+			if (maxAnisotropy > 1.0f) {
 				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
 				const GLfloat clampedMaxAnisotropy = core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
 				core_assert(glTextureParameterf != nullptr);
@@ -1540,7 +1540,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 
 		if (FLEXT_ARB_texture_filter_anisotropic) {
 			const GLfloat maxAnisotropy = config.maxAnisotropy();
-			if (maxAnisotropy > 0.0f) {
+			if (maxAnisotropy > 1.0f) {
 				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
 				const GLfloat clampedMaxAnisotropy = core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
 				core_assert(glTexParameterf != nullptr);

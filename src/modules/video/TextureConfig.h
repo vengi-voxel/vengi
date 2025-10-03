@@ -86,7 +86,8 @@ inline int TextureConfig::samples() const {
 }
 
 inline TextureConfig& TextureConfig::maxAnisotropy(float aniso) {
-	_maxAnisotropy = aniso;
+	// Anisotropy values < 1.0 are not meaningful. Enforce a sensible minimum here.
+	_maxAnisotropy = (aniso < 1.0f) ? 1.0f : aniso;
 	return *this;
 }
 
