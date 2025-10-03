@@ -537,6 +537,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		Log::error("Failed to update the vertex buffer");
 		core_free(indicesBuf);
 		core_free(verticesBuf);
+		core_free(normalsBuf);
 		return false;
 	}
 	core_free(verticesBuf);
@@ -546,6 +547,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		if (!state._vertexBuffer[type].update(state._normalBufferIndex[type], normalsBuf, normalsBufSize)) {
 			Log::error("Failed to update the normal buffer");
 			core_free(normalsBuf);
+			core_free(indicesBuf);
 			return false;
 		}
 	}
