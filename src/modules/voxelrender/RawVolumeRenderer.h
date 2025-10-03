@@ -119,7 +119,13 @@ protected:
 	core::VarPtr _bloom;
 
 	void updatePalette(const voxel::MeshStatePtr &meshState, int idx);
-	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type);
+	enum UpdateBufferFlags : uint8_t {
+		Vertices = 1 << 0,
+		Normals = 1 << 1,
+		Indices = 1 << 2,
+		All = Vertices | Normals | Indices
+	};
+	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, UpdateBufferFlags flags = UpdateBufferFlags::All);
 	void deleteMesh(int idx, voxel::MeshType meshType);
 	void deleteMeshes(int idx);
 	void updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera);

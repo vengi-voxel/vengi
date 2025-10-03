@@ -437,7 +437,7 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 	}
 }
 
-bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type) {
+bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, UpdateBufferFlags flags) {
 	if (idx < 0 || idx >= voxel::MAX_VOLUMES) {
 		return false;
 	}
@@ -457,6 +457,33 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		buffer.update(state._normalBufferIndex[type], nullptr, 0);
 		buffer.update(state._indexBufferIndex[type], nullptr, 0);
 		state._dirtyNormals = true;
+		return true;
+	}
+
+	if (flags == UpdateBufferFlags::Indices) {
+		const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
+		voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
+		voxel::IndexType *indicesPos = indicesBuf;
+		voxel::IndexType offset = (voxel::IndexType)0;
+		for (const auto &i : meshState->meshes(type)) {
+			const voxel::MeshState::Meshes &meshes = i->second;
+			const voxel::Mesh *mesh = meshes[bufferIndex];
+			if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
+				continue;
+			}
+			const voxel::IndexArray &indexVector = mesh->getIndexVector();
+			core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
+			for (size_t j = 0; j < indexVector.size(); ++j) {
+				*indicesPos++ += offset;
+			}
+			offset += mesh->getNoOfVertices();
+		}
+		Log::debug("update indexbuffer: %i (type: %i)", idx, type);
+		if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
+			Log::error("Failed to update the index buffer");
+			core_free(indicesBuf);
+			return false;
+		}
 		return true;
 	}
 
@@ -824,8 +851,7 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 			if (indices[idx] == -1) {
 				continue;
 			}
-			// TODO: PERF: only the indices must be updated - not the normals and vertices, too
-			if (!updateBufferForVolume(meshState, indices[idx], voxel::MeshType_Transparency)) {
+			if (!updateBufferForVolume(meshState, indices[idx], voxel::MeshType_Transparency, UpdateBufferFlags::Indices)) {
 				Log::error("Failed to update the transparency mesh at index %i", idx);
 			}
 		}
