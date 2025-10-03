@@ -720,7 +720,7 @@ void unmapBuffer(Id handle, BufferType type) {
 	const Id oldBuffer = boundBuffer(type);
 	const bool changed = bindBuffer(type, handle);
 	core_assert(glUnmapBuffer != nullptr);
-	core_assert(glUnmapBuffer(glType) == GL_TRUE);
+	core_assert_always(glUnmapBuffer(glType) == GL_TRUE);
 	checkError();
 	if (changed) {
 		if (oldBuffer == InvalidId) {
