@@ -831,6 +831,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	}
 }
 
+// TODO: PERF: this is a huge bottleneck when rendering large scenes with many transparent objects
 void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RawVolumeRendererSortBeforeRender);
 	for (const auto &i : meshState->meshes(voxel::MeshType_Transparency)) {

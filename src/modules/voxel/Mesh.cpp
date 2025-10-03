@@ -14,6 +14,10 @@
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include <glm/vector_relational.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/norm.hpp>
 
 namespace voxel {
 
@@ -511,7 +515,7 @@ bool Mesh::sort(const glm::vec3 &cameraPos) {
 	core_trace_scoped(MeshSort);
 	TriangleView triView(_vecVertices, _vecIndices);
 	core::sort(triView.begin(), triView.end(), [&cameraPos](const Triangle &lhs, const Triangle &rhs) {
-		return glm::distance(lhs.center(), cameraPos) < glm::distance(rhs.center(), cameraPos);
+		return glm::distance2(lhs.center(), cameraPos) < glm::distance2(rhs.center(), cameraPos);
 	});
 	return true;
 }
