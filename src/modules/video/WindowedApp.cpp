@@ -5,28 +5,28 @@
 #include "WindowedApp.h"
 #include "Renderer.h"
 #include "ShaderManager.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
-#include "app/I18N.h"
 #if !SDL_VERSION_ATLEAST(3, 2, 0)
 #include "core/Process.h"
 #include "io/BufferedReadWriteStream.h"
 #endif
-#include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
-#include "io/FormatDescription.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "video/EventHandler.h"
-#include <glm/common.hpp>
+#include "video/Trace.h"
 #include <SDL_events.h>
-#include <SDL_mouse.h>
 #include <SDL_hints.h>
+#include <SDL_mouse.h>
+#include <glm/common.hpp>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
@@ -57,7 +57,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 		Log::error("unknown error (%s:%i => %s)", file, line, function);
 	}
 }
-}
+} // namespace
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(filesystem, timeProvider, threadPoolSize), _frameBufferDimension(-1), _mouseRelativePos(-1) {
@@ -79,7 +79,7 @@ void WindowedApp::onAfterRunning() {
 	video::endFrame(_window);
 }
 
-bool WindowedApp::handleSDLEvent(SDL_Event& event) {
+bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 	switch (event.type) {
 	case SDL_QUIT:
 		// continue to handle any other following event
@@ -343,7 +343,7 @@ SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, u
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
 	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
-	SDL_Window* window = SDL_CreateWindowWithProperties(props);
+	SDL_Window *window = SDL_CreateWindowWithProperties(props);
 	SDL_DestroyProperties(props);
 	return window;
 #else
@@ -422,7 +422,6 @@ app::AppState WindowedApp::onInit() {
 	// 	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
 	// #endif
 
-
 	int flags = SDL_WINDOW_RESIZABLE;
 #ifdef USE_GL_RENDERER
 	flags |= SDL_WINDOW_OPENGL;
@@ -448,7 +447,7 @@ app::AppState WindowedApp::onInit() {
 			displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 		}
 	}
-	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
+	const core::VarPtr &highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 		Log::debug("Enable high dpi support");
@@ -639,8 +638,8 @@ void WindowedApp::minimize() {
 	SDL_MinimizeWindow(_window);
 }
 
-WindowedApp* WindowedApp::getInstance() {
-	return (WindowedApp*)Super::getInstance();
+WindowedApp *WindowedApp::getInstance() {
+	return (WindowedApp *)Super::getInstance();
 }
 
-}
+} // namespace video
