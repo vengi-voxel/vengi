@@ -573,146 +573,44 @@
     }
 
     function buildUI() {
-        var container = document.createElement('div');
-        container.className = 'controls';
-
-        // toolbar
-        var toolbar = document.createElement('div');
-        toolbar.classname = 'toolbar';
-        var consoleBtn = document.createElement('button');
-        consoleBtn.className = 'btn secondary';
-        consoleBtn.title = 'Toggle Console';
-        consoleBtn.innerHTML = '<i data-lucide="terminal"></i>';
-        var clearBtn = document.createElement('button');
-        clearBtn.className = 'btn secondary';
-        clearBtn.title = 'Clear Downloads';
-        clearBtn.innerHTML = '<i data-lucide="trash-2"></i>';
-        toolbar.appendChild(clearBtn);
-        toolbar.appendChild(consoleBtn);
-        container.appendChild(toolbar);
-
-        var left = document.createElement('div');
-        left.className = 'panel';
-
-        var fileLabel = document.createElement('label');
-        fileLabel.textContent = 'Input files (select multiple or drag):';
-        var fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.multiple = true;
-        fileInput.id = 'fileInput';
-        fileInput.onchange = function(e) {
-            addFilesToSelection(e.target.files);
-            e.target.value = '';
-        };
-        fileLabel.appendChild(fileInput);
-        left.appendChild(fileLabel);
-
-        // preview of selected files (cards)
-        var selLabel = document.createElement('label');
-        selLabel.textContent = 'Selected files:';
-        var selList = document.createElement('div');
-        selList.id = 'selectedList';
-        selList.style.display = 'flex';
-        selList.style.flexDirection = 'column';
-        selList.style.gap = '8px';
-        left.appendChild(selLabel);
-        left.appendChild(selList);
-
-        var formatLabel = document.createElement('label');
-        formatLabel.textContent = 'Output format:';
-        var formatSelect = document.createElement('select');
-        formatSelect.id = 'formatSelect';
-        formatSelect.disabled = true;
-        formatLabel.appendChild(formatSelect);
-        left.appendChild(formatLabel);
-
-        var runBtn = document.createElement('button');
-        runBtn.className = 'btn secondary';
-        runBtn.id = 'runBtn';
-        runBtn.title = 'Run';
-        runBtn.innerHTML = '<i data-lucide="play"></i>';
-        runBtn.onclick = runAll;
-        left.appendChild(runBtn);
-
-        container.appendChild(left);
-
-        var right = document.createElement('div');
-        right.className = 'panel';
-        var outputsTitle = document.createElement('div');
-        outputsTitle.textContent = 'Results';
-        outputsTitle.style.marginBottom = '8px';
-        right.appendChild(outputsTitle);
-
-        var pendingTitle = document.createElement('div');
-        pendingTitle.textContent = 'In progress';
-        pendingTitle.style.marginTop = '6px';
-        pendingTitle.style.color = 'var(--muted)';
-        right.appendChild(pendingTitle);
-        var pendingList = document.createElement('div');
-        pendingList.id = 'pendingList';
-        pendingList.className = 'pending-list';
-        right.appendChild(pendingList);
-
-        var historyTitle = document.createElement('div');
-        historyTitle.textContent = 'Downloads';
-        historyTitle.style.marginTop = '10px';
-        historyTitle.style.color = 'var(--muted)';
-        right.appendChild(historyTitle);
-        var historyGrid = document.createElement('div');
-        historyGrid.id = 'historyGrid';
-        historyGrid.className = 'history-grid';
-        right.appendChild(historyGrid);
-
-        container.appendChild(right);
-
-        var root = document.getElementById('controlsRoot');
-        if (root) {
-            root.appendChild(container);
+        // Attach handlers to DOM elements that are now present in the static HTML
+        var fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.onchange = function(e) {
+                addFilesToSelection(e.target.files);
+                e.target.value = '';
+            };
         }
+
+        var runBtn = document.getElementById('runBtn');
+        if (runBtn) runBtn.onclick = runAll;
+
+        var consoleBtn = document.querySelector('.controls button[title="Toggle Console"]');
+        var clearBtn = document.querySelector('.controls button[title="Clear Downloads"]');
+        if (consoleBtn) {
+            consoleBtn.addEventListener('click', function() { document.body.classList.toggle('console-visible'); });
+        }
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                var grid = document.getElementById('historyGrid');
+                if (!grid) return;
+                Array.from(grid.querySelectorAll('.card')).forEach(function(c) {
+                    var blob = c.dataset.bloburl;
+                    if (blob) {
+                        try { URL.revokeObjectURL(blob); } catch (e) {}
+                    }
+                });
+                grid.innerHTML = '';
+            });
+        }
+
+        try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
+        renderSelectedFiles();
     }
 
     function onReady() {
         buildUI();
         fetchFormats();
-
-        // hook toolbar buttons (they exist after buildUI)
-        try {
-            var consoleBtn = document.querySelector('.controls button[title="Toggle Console"]');
-            var clearBtn = document.querySelector('.controls button[title="Clear Downloads"]');
-            var controlsRoot = document.getElementById('controlsRoot');
-            if (consoleBtn) {
-                consoleBtn.addEventListener('click', function() {
-                    document.body.classList.toggle('console-visible');
-                });
-            }
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    var grid = document.getElementById('historyGrid');
-                    if (!grid) {
-                        return;
-                    }
-                    // revoke all blob urls
-                    Array.from(grid.querySelectorAll('.card')).forEach(function(c) {
-                        var blob = c.dataset.bloburl;
-                        if (blob) {
-                            try {
-                                URL.revokeObjectURL(blob);
-                            } catch (e) {}
-                        }
-                    });
-                    grid.innerHTML = '';
-                });
-            }
-        } catch (e) {
-            console.warn('toolbar hook failed', e);
-        }
-
-        // render lucide icons inside the new UI
-        try {
-            if (window.lucide && lucide.createIcons) {
-                lucide.createIcons();
-            }
-        } catch (e) {}
     }
 
     try {
@@ -749,10 +647,39 @@
     <main>
         <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
         <div class="disclaimer">This is a very simpified version of vengi-voxconvert. The tool is opensource and free to use. Visit <a href="https://vengi-voxel.de">vengi-voxel.de</a> for more details.</div>
-        <div id="controlsRoot"></div>
+        <div id="controlsRoot" class="controls">
+            <div class="toolbar">
+                <button class="btn secondary" title="Clear Downloads"><i data-lucide="trash-2"></i></button>
+                <button class="btn secondary" title="Toggle Console"><i data-lucide="terminal"></i></button>
+            </div>
+
+            <div class="panel left-panel">
+                <label>Input files (select multiple or drag):
+                    <input type="file" id="fileInput" multiple />
+                </label>
+
+                <label>Selected files:
+                    <div id="selectedList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                </label>
+
+                <label>Output format:
+                    <select id="formatSelect" disabled></select>
+                </label>
+
+                <button id="runBtn" class="btn secondary" title="Run"><i data-lucide="play"></i></button>
+            </div>
+
+            <div class="panel right-panel">
+                <div style="margin-bottom:8px;">Results</div>
+                <div style="margin-top:6px;color:var(--muted);">In progress</div>
+                <div id="pendingList" class="pending-list"></div>
+                <div style="margin-top:10px;color:var(--muted);">Downloads</div>
+                <div id="historyGrid" class="history-grid"></div>
+            </div>
+        </div>
         <div id="output"></div>
     </main>
 
-    <footer>&copy; 2025 Vengi Voxel Tools. All rights reserved.</footer>
+    <footer>&copy; @COPYRIGHT_YEAR@ Vengi Voxel Tools. All rights reserved.</footer>
 </body>
 </html>
