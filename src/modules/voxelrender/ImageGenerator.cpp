@@ -70,6 +70,7 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 		}
 		configureCamera(camera, sceneGraph.sceneRegion(), cameraMode, ctx.farPlane, {ctx.pitch, ctx.yaw, ctx.roll});
 		if (ctx.useWorldPosition) {
+			camera.setRotationType(video::CameraRotationType::Eye);
 			camera.setWorldPosition(ctx.worldPosition);
 		}
 	}
