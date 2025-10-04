@@ -584,6 +584,70 @@
             sel.disabled = false;
             toggleButton('formatNext', true);
         }
+        function fetchConfig() {
+            var json = {};
+            try {
+                var s = Module.ccall('get_config_json', 'string', [], []);
+                json = JSON.parse(s || '{}');
+            } catch (e) {
+                console.warn('fetchConfig: failed to read config json', e);
+                json = {};
+            }
+
+            // container to render option controls
+            var container = document.getElementById('optionsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // store current option values here so runConvert can access them
+            window.runtimeOptions = window.runtimeOptions || {};
+
+            Object.keys(json).forEach(function (key) {
+                // skip some less relevant options here
+                if (key == "core_language" || key == "app_homepath" || key == "core_loglevel" || key == "core_path") {
+                    return;
+                }
+
+                var entry = json[key];
+                if (!entry.help) {
+                    return;
+                }
+                var value = entry && entry.value != null ? String(entry.value) : '';
+                window.runtimeOptions[key] = value;
+                var help = entry && entry.help || '';
+                var row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.gap = '8px';
+                row.style.marginBottom = '8px';
+
+                // choose control type: boolean -> checkbox, otherwise text input
+                var control;
+                if (value === 'true' || value === 'false') {
+                    control = document.createElement('input');
+                    control.type = 'checkbox';
+                    control.checked = value === 'true';
+                    control.addEventListener('change', function () { window.runtimeOptions[key] = control.checked ? 'true' : 'false'; });
+                } else {
+                    control = document.createElement('input');
+                    control.type = 'text';
+                    control.value = value;
+                    control.style.width = '220px';
+                    control.addEventListener('input', function () { window.runtimeOptions[key] = control.value; });
+                }
+
+                row.appendChild(control);
+                if (help) {
+                    var helpEl = document.createElement('div');
+                    helpEl.textContent = help;
+                    helpEl.style.fontSize = '12px';
+                    helpEl.style.color = 'var(--muted)';
+                    helpEl.style.marginLeft = '8px';
+                    row.appendChild(helpEl);
+                }
+                container.appendChild(row);
+            });
+        }
 
         async function runConvert(file, idx, progressCb) {
             var ext = document.getElementById('formatSelect').value;
@@ -605,9 +669,20 @@
             const outPath = '/' + outName;
 
             var callMainOk = false;
+            // build extra args from runtimeOptions (if any): --set key=value
+            var extraArgs = [];
+            try {
+                if (window.runtimeOptions) {
+                    Object.keys(window.runtimeOptions).forEach(function (k) {
+                        var v = window.runtimeOptions[k];
+                        if (v != null && v !== '') extraArgs.push('-set', k, String(v));
+                    });
+                }
+            } catch (e) { /* ignore */ }
+
             try {
                 if (Module.callMain) {
-                    await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
+                    await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath].concat(extraArgs)));
                     callMainOk = true;
                 }
             } catch (e) {
@@ -617,7 +692,14 @@
             if (!callMainOk) {
                 try {
                     if (Module.ccall) {
-                        Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
+                        // try to pass a JSON blob of options as a third arg if the native binding supports it
+                        try {
+                            var optsJson = window.runtimeOptions ? JSON.stringify(window.runtimeOptions) : '';
+                            if (optsJson) Module.ccall('convert_file', 'void', ['string', 'string', 'string'], [inPath, outPath, optsJson]);
+                            else Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
+                        } catch (e) {
+                            Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
+                        }
                     } else if (Module._convert_file) {
                         Module._convert_file(inPath, outPath);
                     }
@@ -752,7 +834,12 @@
             }
 
             document.getElementById('filesNext')?.addEventListener('click', function () {
-                if (selectedFiles.length) { showStep('step-format'); setActiveDot('format'); fetchFormats(); }
+                if (selectedFiles.length) {
+                    showStep('step-format'); setActiveDot('format');
+                    fetchFormats();
+                    // populate runtime options if available
+                    try { fetchConfig(); } catch (e) { console.warn(e); }
+                }
             });
             document.getElementById('formatBack')?.addEventListener('click', function () { showStep('step-files'); setActiveDot('files'); });
             document.getElementById('formatNext')?.addEventListener('click', function () {
@@ -862,6 +949,8 @@
                     <label>Output format:
                         <select id="formatSelect" disabled></select>
                     </label>
+                    <!-- Additional per-format / global options populated by fetchConfig() -->
+                    <div id="optionsContainer" style="margin-top:12px"></div>
                     <div class="step-footer">
                         <button id="formatBack" class="btn ghost">Back to files</button>
                         <button id="formatNext" class="btn disabled" disabled>Continue to run</button>

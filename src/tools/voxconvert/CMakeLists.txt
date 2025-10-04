@@ -8,7 +8,7 @@ endif()
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} DESCRIPTION "Command line voxel tool")
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES app voxelformat voxelgenerator voxelgenerator-lua)
-engine_emscripten_export_functions(${PROJECT_NAME} _get_supported_formats_json,_convert_file)
+engine_emscripten_export_functions(${PROJECT_NAME} _get_supported_formats_json,_convert_file,_get_config_json)
 if (EMSCRIPTEN)
 	engine_install(${PROJECT_NAME} "${ROOT_DIR}/contrib/installer/vengi-banner-493x58.png" "" TRUE)
 	engine_install(${PROJECT_NAME} "${ROOT_DIR}/tools/html/favicon.png" "" TRUE)
