@@ -255,6 +255,26 @@
         gap: 8px;
         margin-bottom: 8px;
     }
+
+    .selected-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .results-title {
+        margin-bottom: 8px;
+    }
+
+    .progress-title {
+        margin-top: 6px;
+        color: var(--muted);
+    }
+
+    .downloads-title {
+        margin-top: 10px;
+        color: var(--muted);
+    }
     </style>
     <script>
     var Module = {
@@ -659,7 +679,7 @@
                 </label>
 
                 <label>Selected files:
-                    <div id="selectedList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    <div id="selectedList" class="selected-list"></div>
                 </label>
 
                 <label>Output format:
@@ -670,10 +690,10 @@
             </div>
 
             <div class="panel right-panel">
-                <div style="margin-bottom:8px;">Results</div>
-                <div style="margin-top:6px;color:var(--muted);">In progress</div>
+                <div class="results-title">Results</div>
+                <div class="progress-title">In progress</div>
                 <div id="pendingList" class="pending-list"></div>
-                <div style="margin-top:10px;color:var(--muted);">Downloads</div>
+                <div class="downloads-title">Downloads</div>
                 <div id="historyGrid" class="history-grid"></div>
             </div>
         </div>
