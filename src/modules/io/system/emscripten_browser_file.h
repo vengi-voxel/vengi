@@ -90,8 +90,11 @@ EM_JS_INLINE(void, download, (char const *filename, char const *mime_type, void 
   /// Offer a buffer in memory as a file to download, specifying download filename and mime type
   var a = document.createElement('a');
   a.download = UTF8ToString(filename);
-  a.href = URL.createObjectURL(new Blob([new Uint8Array(Module["HEAPU8"].buffer, buffer, buffer_size)], {type: UTF8ToString(mime_type)}));
-  a.click();
+  var bufferCopy = new ArrayBuffer(buffer_size);
+  var uint8Array = new Uint8Array(bufferCopy);
+  uint8Array.set(new Uint8Array(Module["HEAPU8"].buffer, buffer, buffer_size));
+  a.href = URL.createObjectURL(new Blob([uint8Array], {type: UTF8ToString(mime_type)}));
+  URL.revokeObjectURL(a.href);
 });
 #pragma GCC diagnostic pop
 
