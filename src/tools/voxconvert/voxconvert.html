@@ -186,22 +186,22 @@
             gap: 8px;
         }
 
-        .output-item {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 12px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
-            border-radius: var(--radius);
-        }
-
+        .output-item,
         .card {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
             border-radius: var(--radius);
             padding: 12px;
             display: flex;
-            flex-direction: column;
             gap: 8px;
+        }
+
+        .output-item {
+            justify-content: space-between;
+            padding: 10px 12px;
+        }
+
+        .card {
+            flex-direction: column;
             transition: transform var(--anim-card-duration) cubic-bezier(.2, .9, .2, 1), opacity var(--anim-card-duration) cubic-bezier(.2, .9, .2, 1);
             opacity: 0;
             transform: translateY(10px);
@@ -269,14 +269,6 @@
             font-size: 13px;
         }
 
-        .results-header,
-        .results-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
         .results-title,
         .progress-title {
             margin-top: 6px;
@@ -323,6 +315,10 @@
             transition: background 160ms ease, border-color 160ms ease, transform 120ms ease;
         }
 
+        .dropzone {
+            position: relative;
+        }
+
         .dropzone.dragover {
             background: rgba(0, 209, 178, 0.04);
             border-color: rgba(0, 209, 178, 0.5);
@@ -332,6 +328,15 @@
         .dropzone .hint {
             color: var(--muted);
             font-size: 14px;
+        }
+
+        .dropzone-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
         }
 
         .file-badge {
@@ -437,6 +442,14 @@
             justify-content: flex-end;
         }
 
+        .console-modal {
+            display: none;
+        }
+
+        .console-modal.open {
+            display: flex;
+        }
+
         .console-modal .modal {
             max-width: 900px;
             width: 96%;
@@ -453,6 +466,81 @@
             font-family: monospace;
             font-size: 13px;
         }
+
+        .file-card {
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .config-input {
+            width: 220px;
+        }
+
+        .config-help {
+            font-size: 12px;
+            color: var(--muted);
+            margin-left: 8px;
+        }
+
+        .config-link {
+            color: inherit;
+            text-decoration: underline;
+        }
+
+        .options-container {
+            margin-top: 12px;
+        }
+
+        .progress-wrapper {
+            flex: 1;
+        }
+
+        .timestamp {
+            font-size: 11px;
+        }
+
+        .error-text {
+            color: #f44;
+        }
+
+        .btn-spacing {
+            margin-left: 6px;
+        }
+
+        .step-spacer {
+            width: 8px;
+        }
+
+        .flex-grow {
+            flex: 1;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
     </style>
     <script>
         function _readCssMsVar(name, fallback) {
@@ -468,17 +556,10 @@
 
         function appendOutput(text) {
             var o = document.getElementById('output');
-            if (o) {
-                o.textContent += text + '\n';
-                o.scrollTop = o.scrollHeight;
-            }
+            if (o) { o.textContent += text + '\n'; o.scrollTop = o.scrollHeight; }
         }
 
-        var Module = {
-            preRun: [], postRun: [], noInitialRun: true,
-            print: appendOutput,
-            printErr: appendOutput
-        };
+        var Module = { preRun: [], postRun: [], noInitialRun: true, print: appendOutput, printErr: appendOutput };
         window.onerror = function (event) { appendOutput('Error: ' + event.message); };
     </script>
     {{{ SCRIPT }}}
@@ -498,31 +579,28 @@
             if (!btn) return;
             btn.disabled = !enabled;
             btn.classList.toggle('disabled', !enabled);
-            if (tooltip && !enabled) btn.title = tooltip;
-            else btn.removeAttribute('title');
+            btn.title = (tooltip && !enabled) ? tooltip : '';
         }
 
         function updateFileBadge() {
             var badge = document.getElementById('fileCountBadge');
             if (!badge) return;
-            var total = selectedFiles.reduce(function (s, f) { return s + (f.size || 0); }, 0);
             var count = selectedFiles.length;
+            var total = selectedFiles.reduce(function (s, f) { return s + (f.size || 0); }, 0);
             badge.textContent = count ? count + ' file' + (count > 1 ? 's' : '') + ' • ' + humanFileSize(total) : '0';
             toggleButton('filesNext', count > 0, 'Select at least one file to continue');
         }
 
         function updateDownloadsButton() {
-            var grid = document.getElementById('historyGrid');
-            var count = grid ? grid.querySelectorAll('.card').length : 0;
+            var count = document.getElementById('historyGrid')?.querySelectorAll('.card').length || 0;
             toggleButton('clearDownloadsBtn', count > 0, 'No downloads to clear');
         }
 
         function addFilesToSelection(fileList) {
             for (let i = 0; i < fileList.length; i++) {
                 const f = fileList[i];
-                if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified)) {
+                if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified))
                     selectedFiles.push(f);
-                }
             }
             renderSelectedFiles();
         }
@@ -540,27 +618,16 @@
             container.innerHTML = '';
             selectedFiles.forEach(function (f, idx) {
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.style.cssText = 'padding:8px;display:flex;justify-content:space-between;gap:8px';
+                card.className = 'card file-card';
+                card.innerHTML = '<div class="file-info">' +
+                    '<div class="title">' + f.name + '</div><div class="meta">' + humanFileSize(f.size) + '</div></div>' +
+                    '<button class="btn secondary" title="Remove"><i data-lucide="x"></i></button>';
 
-                const left = document.createElement('div');
-                left.style.cssText = 'display:flex;flex-direction:column';
-                left.innerHTML = '<div class="title">' + f.name + '</div><div class="meta">' + humanFileSize(f.size) + '</div>';
-
-                const actions = document.createElement('div');
-                actions.style.cssText = 'display:flex;gap:6px';
-                const rem = document.createElement('button');
-                rem.className = 'btn secondary';
-                rem.innerHTML = '<i data-lucide="x"></i>';
-                rem.title = 'Remove';
-                rem.onclick = function () {
+                card.querySelector('button').onclick = function () {
                     card.classList.add('card-exit');
                     setTimeout(function () { removeSelectedFileAt(idx); }, ANIM_CARD_MS);
                 };
-                actions.appendChild(rem);
 
-                card.appendChild(left);
-                card.appendChild(actions);
                 container.appendChild(card);
                 requestAnimationFrame(function () { card.classList.add('visible'); });
             });
@@ -584,44 +651,29 @@
             sel.disabled = false;
             toggleButton('formatNext', true);
         }
+
         function fetchConfig() {
             var json = {};
-            try {
-                var s = Module.ccall('get_config_json', 'string', [], []);
-                json = JSON.parse(s || '{}');
-            } catch (e) {
-                console.warn('fetchConfig: failed to read config json', e);
-                json = {};
-            }
+            try { json = JSON.parse(Module.ccall('get_config_json', 'string', [], []) || '{}'); }
+            catch (e) { console.warn('fetchConfig error:', e); }
 
-            // container to render option controls
             var container = document.getElementById('optionsContainer');
             if (!container) return;
             container.innerHTML = '';
-
-            // store current option values here so runConvert can access them
             window.runtimeOptions = window.runtimeOptions || {};
 
+            var skipKeys = ["core_language", "app_homepath", "core_loglevel", "core_path"];
             Object.keys(json).forEach(function (key) {
-                // skip some less relevant options here
-                if (key == "core_language" || key == "app_homepath" || key == "core_loglevel" || key == "core_path") {
-                    return;
-                }
-
+                if (skipKeys.includes(key)) return;
                 var entry = json[key];
-                if (!entry.help) {
-                    return;
-                }
+                if (!entry.help) return;
+
                 var value = entry && entry.value != null ? String(entry.value) : '';
                 window.runtimeOptions[key] = value;
-                var help = entry && entry.help || '';
-                var row = document.createElement('div');
-                row.style.display = 'flex';
-                row.style.alignItems = 'center';
-                row.style.gap = '8px';
-                row.style.marginBottom = '8px';
 
-                // choose control type: boolean -> checkbox, otherwise text input
+                var row = document.createElement('div');
+                row.className = 'config-row';
+
                 var control;
                 if (value === 'true' || value === 'false') {
                     control = document.createElement('input');
@@ -632,19 +684,26 @@
                     control = document.createElement('input');
                     control.type = 'text';
                     control.value = value;
-                    control.style.width = '220px';
+                    control.className = 'config-input';
                     control.addEventListener('input', function () { window.runtimeOptions[key] = control.value; });
                 }
 
+                var helpEl = document.createElement('div');
+                helpEl.className = 'config-help';
+                var docsBase = 'https://vengi-voxel.github.io/vengi/Configuration/';
+
+                if (entry.help) helpEl.appendChild(document.createTextNode(entry.help + ' ('));
+                var keyLink = document.createElement('a');
+                keyLink.href = docsBase + '#' + encodeURIComponent(key);
+                keyLink.target = '_blank';
+                keyLink.rel = 'noopener noreferrer';
+                keyLink.textContent = key;
+                keyLink.className = 'config-link';
+                helpEl.appendChild(keyLink);
+                if (entry.help) helpEl.appendChild(document.createTextNode(')'));
+
                 row.appendChild(control);
-                if (help) {
-                    var helpEl = document.createElement('div');
-                    helpEl.textContent = help;
-                    helpEl.style.fontSize = '12px';
-                    helpEl.style.color = 'var(--muted)';
-                    helpEl.style.marginLeft = '8px';
-                    row.appendChild(helpEl);
-                }
+                row.appendChild(helpEl);
                 container.appendChild(row);
             });
         }
@@ -657,19 +716,13 @@
             progressCb?.(0.05, 'Uploading');
 
             const inPath = '/' + Date.now() + '-' + idx + '-' + file.name;
-            try {
-                Module.FS.writeFile(inPath, new Uint8Array(await file.arrayBuffer()));
-            } catch (e) {
-                log('FS.writeFile error: ' + e);
-                return { file: file.name, ok: false, error: e };
-            }
-            progressCb?.(0.12, 'Running');
+            try { Module.FS.writeFile(inPath, new Uint8Array(await file.arrayBuffer())); }
+            catch (e) { log('FS.writeFile error: ' + e); return { file: file.name, ok: false, error: e }; }
 
+            progressCb?.(0.12, 'Running');
             const outName = (file.name.replace(/\.[^/.]+$/, '') || file.name) + '.' + ext;
             const outPath = '/' + outName;
 
-            var callMainOk = false;
-            // build extra args from runtimeOptions (if any): --set key=value
             var extraArgs = [];
             try {
                 if (window.runtimeOptions) {
@@ -678,48 +731,36 @@
                         if (v != null && v !== '') extraArgs.push('-set', k, String(v));
                     });
                 }
-            } catch (e) { /* ignore */ }
+            } catch (e) { }
 
+            var callMainOk = false;
             try {
                 if (Module.callMain) {
                     await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath].concat(extraArgs)));
                     callMainOk = true;
                 }
-            } catch (e) {
-                log('Conversion error: ' + e);
-            }
+            } catch (e) { log('Conversion error: ' + e); }
 
             if (!callMainOk) {
                 try {
                     if (Module.ccall) {
-                        // try to pass a JSON blob of options as a third arg if the native binding supports it
+                        var optsJson = window.runtimeOptions ? JSON.stringify(window.runtimeOptions) : '';
                         try {
-                            var optsJson = window.runtimeOptions ? JSON.stringify(window.runtimeOptions) : '';
                             if (optsJson) Module.ccall('convert_file', 'void', ['string', 'string', 'string'], [inPath, outPath, optsJson]);
                             else Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
-                        } catch (e) {
-                            Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
-                        }
-                    } else if (Module._convert_file) {
-                        Module._convert_file(inPath, outPath);
-                    }
-                } catch (e2) {
-                    log('Fallback conversion error: ' + e2);
-                }
+                        } catch (e) { Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]); }
+                    } else if (Module._convert_file) Module._convert_file(inPath, outPath);
+                } catch (e2) { log('Fallback conversion error: ' + e2); }
             }
             progressCb?.(0.8, 'Finalizing');
 
             let data = null;
-            try {
-                data = Module.FS.readFile(outPath);
-            } catch (e) {
+            try { data = Module.FS.readFile(outPath); }
+            catch (e) {
                 await new Promise(r => setTimeout(r, 200));
                 try { data = Module.FS.readFile(outPath); } catch (e2) { }
             }
-            if (!data) {
-                log('No output produced for ' + file.name);
-                return { file: file.name, ok: false, error: 'no output' };
-            }
+            if (!data) { log('No output produced for ' + file.name); return { file: file.name, ok: false, error: 'no output' }; }
 
             const blob = new Blob([data.slice ? data.slice(0) : new Uint8Array(data)], { type: 'application/octet-stream' });
             log('Finished: ' + file.name);
@@ -742,7 +783,7 @@
                 const file = selectedFiles[i];
                 const item = document.createElement('div');
                 item.className = 'output-item';
-                item.innerHTML = '<div style="flex:1"><div class="meta">' + file.name + '</div><progress max="1" value="0"></progress></div>';
+                item.innerHTML = '<div class="progress-wrapper"><div class="meta">' + file.name + '</div><progress max="1" value="0"></progress></div>';
                 const prog = item.querySelector('progress');
                 const title = item.querySelector('.meta');
                 pending.appendChild(item);
@@ -757,15 +798,17 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 const timestamp = new Date().toLocaleString();
+                const fmt = document.getElementById('formatSelect').value;
 
                 if (res.ok) {
                     card.innerHTML = '<div class="title">' + file.name + '</div>' +
-                        '<div class="meta">Format: ' + document.getElementById('formatSelect').value + ' — ' + res.outName + '</div>' +
+                        '<div class="meta">Format: ' + fmt + ' — ' + res.outName + '</div>' +
                         '<div class="row"><button class="btn secondary">Download ' + res.outName + '</button>' +
-                        '<button class="btn secondary" style="margin-left:6px">Remove</button></div>' +
-                        '<div class="meta" style="font-size:11px">' + timestamp + '</div>';
+                        '<button class="btn secondary btn-spacing">Remove</button></div>' +
+                        '<div class="meta timestamp">' + timestamp + '</div>';
                     card.dataset.bloburl = res.blobUrl;
-                    card.querySelectorAll('button')[0].onclick = function () {
+                    var btns = card.querySelectorAll('button');
+                    btns[0].onclick = function () {
                         const a = document.createElement('a');
                         a.href = res.blobUrl;
                         a.download = res.outName;
@@ -773,7 +816,7 @@
                         a.click();
                         document.body.removeChild(a);
                     };
-                    card.querySelectorAll('button')[1].onclick = function () {
+                    btns[1].onclick = function () {
                         try { URL.revokeObjectURL(res.blobUrl); } catch (e) { }
                         card.classList.add('card-exit');
                         setTimeout(function () { card.remove(); updateDownloadsButton(); }, ANIM_CARD_MS);
@@ -781,8 +824,8 @@
                 } else {
                     card.innerHTML = '<div class="title">' + file.name + '</div>' +
                         '<div class="meta">Failed: ' + (res.error || 'unknown') + '</div>' +
-                        '<div class="row"><div style="color:#f44">Error</div></div>' +
-                        '<div class="meta" style="font-size:11px">' + timestamp + '</div>';
+                        '<div class="row"><div class="error-text">Error</div></div>' +
+                        '<div class="meta timestamp">' + timestamp + '</div>';
                 }
 
                 historyGrid.appendChild(card);
@@ -818,6 +861,11 @@
             });
         }
 
+        function navigate(step, dot) {
+            showStep(step);
+            setActiveDot(dot);
+        }
+
         function buildUI() {
             var fileInput = document.getElementById('fileInput');
             var dropzone = document.getElementById('dropzone');
@@ -835,21 +883,18 @@
 
             document.getElementById('filesNext')?.addEventListener('click', function () {
                 if (selectedFiles.length) {
-                    showStep('step-format'); setActiveDot('format');
+                    navigate('step-format', 'format');
                     fetchFormats();
-                    // populate runtime options if available
                     try { fetchConfig(); } catch (e) { console.warn(e); }
                 }
             });
-            document.getElementById('formatBack')?.addEventListener('click', function () { showStep('step-files'); setActiveDot('files'); });
+            document.getElementById('formatBack')?.addEventListener('click', function () { navigate('step-files', 'files'); });
             document.getElementById('formatNext')?.addEventListener('click', function () {
-                if (document.getElementById('formatSelect').value) { showStep('step-run'); setActiveDot('run'); }
+                if (document.getElementById('formatSelect').value) navigate('step-run', 'run');
             });
-            document.getElementById('runBack')?.addEventListener('click', function () { showStep('step-format'); setActiveDot('format'); });
+            document.getElementById('runBack')?.addEventListener('click', function () { navigate('step-format', 'format'); });
             document.getElementById('runStart')?.addEventListener('click', runAll);
-            document.getElementById('formatSelect')?.addEventListener('change', function (e) {
-                toggleButton('formatNext', !!e.target.value);
-            });
+            document.getElementById('formatSelect')?.addEventListener('change', function (e) { toggleButton('formatNext', !!e.target.value); });
 
             var consoleBtn = document.getElementById('toggleConsoleBtn');
             if (consoleBtn) {
@@ -890,9 +935,7 @@
         try {
             var prev = Module.onRuntimeInitialized;
             Module.onRuntimeInitialized = prev ? function () { try { prev(); } catch (e) { } onReady(); } : onReady;
-        } catch (e) {
-            setTimeout(onReady, 0);
-        }
+        } catch (e) { setTimeout(onReady, 0); }
     </script>
 </head>
 
@@ -914,26 +957,24 @@
             use. Visit <a href="https://vengi-voxel.de">vengi-voxel.de</a> for more details.</div>
         <div id="controlsRoot" class="controls">
             <div class="panel left-panel">
-                <!-- Step 1: select files -->
                 <div class="step-indicator" aria-hidden="true">
                     <div class="step-dot active" id="dot-files"></div>
                     <div class="step-label">Files</div>
-                    <div style="width:8px"></div>
+                    <div class="step-spacer"></div>
                     <div class="step-dot" id="dot-format"></div>
                     <div class="step-label">Format</div>
-                    <div style="width:8px"></div>
+                    <div class="step-spacer"></div>
                     <div class="step-dot" id="dot-run"></div>
                     <div class="step-label">Run</div>
-                    <div style="flex:1"></div>
+                    <div class="flex-grow"></div>
                     <div class="file-badge" id="fileCountBadge">0</div>
                 </div>
 
                 <div id="step-files" class="step visible">
                     <h3>Select input files</h3>
-                    <div id="dropzone" class="dropzone" style="position:relative;">
+                    <div id="dropzone" class="dropzone">
                         <div class="hint">Drag & drop files here or click to choose</div>
-                        <input type="file" id="fileInput" multiple
-                            style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" />
+                        <input type="file" id="fileInput" multiple class="dropzone-input" />
                     </div>
                     <label>Selected files:
                         <div id="selectedList" class="selected-list"></div>
@@ -943,21 +984,18 @@
                     </div>
                 </div>
 
-                <!-- Step 2: choose format -->
                 <div id="step-format" class="step hidden">
                     <h3>Choose output format</h3>
                     <label>Output format:
                         <select id="formatSelect" disabled></select>
                     </label>
-                    <!-- Additional per-format / global options populated by fetchConfig() -->
-                    <div id="optionsContainer" style="margin-top:12px"></div>
+                    <div id="optionsContainer" class="options-container"></div>
                     <div class="step-footer">
                         <button id="formatBack" class="btn ghost">Back to files</button>
                         <button id="formatNext" class="btn disabled" disabled>Continue to run</button>
                     </div>
                 </div>
 
-                <!-- Step 3: run conversion -->
                 <div id="step-run" class="step hidden">
                     <h3>Run conversion</h3>
                     <div class="progress-title">In progress</div>
@@ -970,10 +1008,9 @@
             </div>
 
             <div class="panel right-panel">
-                <div class="results-header"
-                    style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                <div class="results-header">
                     <div class="results-title">Results</div>
-                    <div class="results-actions" style="display:flex;gap:8px;align-items:center;">
+                    <div class="results-actions">
                         <button id="toggleConsoleBtn" class="btn secondary" title="Toggle Console"><i
                                 data-lucide="terminal"></i></button>
                         <button id="clearDownloadsBtn" class="btn secondary" title="Clear Downloads"><i
@@ -991,7 +1028,6 @@
         <div id="output"></div>
     </main>
 
-    <!-- confirmation modal -->
     <div id="confirmModal" class="modal-overlay" role="dialog" aria-hidden="true">
         <div class="modal" role="document">
             <div class="modal-title">Confirm action</div>
@@ -1003,8 +1039,7 @@
         </div>
     </div>
 
-    <!-- console modal -->
-    <div id="consoleModal" class="modal-overlay console-modal" role="dialog" aria-hidden="true" style="display:none;">
+    <div id="consoleModal" class="modal-overlay console-modal" role="dialog" aria-hidden="true">
         <div class="modal" role="document">
             <div class="modal-title">Console output</div>
             <pre id="consoleModalContent"></pre>
@@ -1068,7 +1103,6 @@
             if (!overlay || !content || !close || !source) { alert(source?.textContent || 'No console'); return; }
 
             content.textContent = source.textContent || '';
-            overlay.style.display = 'flex';
             overlay.classList.add('open');
             overlay.setAttribute('aria-hidden', 'false');
 
@@ -1082,7 +1116,6 @@
                 obs.disconnect();
                 overlay.classList.remove('open');
                 overlay.setAttribute('aria-hidden', 'true');
-                overlay.style.display = 'none';
                 close.removeEventListener('click', onClose);
                 document.removeEventListener('keydown', onKey);
             }
