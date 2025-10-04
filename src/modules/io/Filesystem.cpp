@@ -43,7 +43,7 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 #ifdef __EMSCRIPTEN__
 	EM_ASM({
 		try {
-			// Try to create the directory
+			// Try to create the directory - /libsdl is assumed in SDL_GetPrefPath()
 			if (!FS.analyzePath('/libsdl').exists) {
 				FS.mkdir('/libsdl');
 			}
