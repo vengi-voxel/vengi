@@ -8,11 +8,13 @@
 #include "command/Command.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include "core/Process.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "app/I18N.h"
+#if !SDL_VERSION_ATLEAST(3, 2, 0)
+#include "core/Process.h"
 #include "io/BufferedReadWriteStream.h"
+#endif
 #include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
@@ -210,6 +212,9 @@ void WindowedApp::onWindowClose(void *windowHandle) {
 // https://stackoverflow.com/questions/25207077/how-to-detect-if-os-x-is-in-dark-mode
 // https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
 bool WindowedApp::isDarkMode() const {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	return SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK;
+#else
 #ifdef __APPLE__
 	return isOSXDarkMode();
 #elif __linux__
@@ -242,6 +247,7 @@ bool WindowedApp::isDarkMode() const {
 	return true;
 #else
 	return true;
+#endif
 #endif
 }
 
