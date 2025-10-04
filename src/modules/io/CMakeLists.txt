@@ -21,6 +21,8 @@ set(SRCS
 	MemoryArchive.cpp MemoryArchive.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	StdStreamBuf.h
+	StderrWriteStream.h
+	StdoutWriteStream.h
 	Stream.cpp Stream.h
 	StringStream.cpp StringStream.h
 	TokenStream.cpp TokenStream.h

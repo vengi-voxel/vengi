@@ -18,6 +18,7 @@
 #include "engine-config.h"
 #include "http/Request.h"
 #include "io/Filesystem.h"
+#include "io/StdoutWriteStream.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
@@ -638,6 +639,7 @@ AppState App::onConstruct() {
 
 	core::Var::get(cfg::AppUserName, defaultUsername.c_str());
 
+	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
 	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
 	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
 	registerArg("--completion").setDescription(_("Generate completion for bash and zsh"));
@@ -721,6 +723,11 @@ AppState App::onInit() {
 	core::Var::needsSaving();
 	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
 
+	if (hasArg("--jsonconfig")) {
+		io::StdoutWriteStream stream;
+		writeConfigJson(stream);
+		return AppState::Destroy;
+	}
 	if (hasArg("--version")) {
 		Log::info("%s " PROJECT_VERSION, _appname.c_str());
 		return AppState::Destroy;
@@ -1304,6 +1311,26 @@ void App::requestSuspend() {
 
 void App::openURL(const core::String &url) {
 	SDL_OpenURL(url.c_str());
+}
+
+void App::writeConfigJson(io::WriteStream &stream) {
+	stream.writeString("{", false);
+	bool first = true;
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (!first) {
+			stream.write(",", 1);
+		} else {
+			first = false;
+		}
+		stream.writeStringFormat(false, "\"%s\": {", var->name().c_str());
+		stream.writeStringFormat(false, "\"value\":\"%s\"", var->strVal().c_str());
+		stream.writeStringFormat(false, ",\"flags\": %u", var->getFlags());
+		if (var->help()) {
+			stream.writeStringFormat(false, ",\"help\":\"%s\"", var->help());
+		}
+		stream.writeString("}", false);
+	});
+	stream.writeString("}", false);
 }
 
 } // namespace app

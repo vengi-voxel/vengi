@@ -135,7 +135,6 @@ protected:
 	void usageFooter() const;
 	virtual void printUsageHeader() const;
 
-	void setArgs(int argc, char *argv[]);
 	bool isRunning(int pid) const;
 	virtual bool createPid();
 	void deletePid();
@@ -151,6 +150,9 @@ public:
 
 	void init(const core::String& organisation, const core::String& appname);
 	int startMainLoop(int argc, char *argv[]);
+	void setArgs(int argc, char *argv[]);
+
+	static void writeConfigJson(io::WriteStream &stream);
 
 	/**
 	 * @brief Register your commands and cvars here

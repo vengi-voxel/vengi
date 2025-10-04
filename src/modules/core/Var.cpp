@@ -3,10 +3,10 @@
  */
 
 #include "Var.h"
-#include "core/Log.h"
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "core/GLM.h"
-#include "core/Assert.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
@@ -15,12 +15,11 @@
 
 namespace core {
 
-
 Var::VarMap Var::_vars;
 uint8_t Var::_visitFlags = 0u;
 core_trace_mutex_static(Lock, Var, _lock);
 
-VarPtr Var::get(const core::String& name, int value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
+VarPtr Var::get(const core::String &name, int value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
 	char buf[64];
 	core::String::formatBuf(buf, sizeof(buf), "%i", value);
 	return get(name, buf, flags, help, validatorFunc);
@@ -58,13 +57,13 @@ bool Var::setVal(float value) {
 	return setVal(core::String::format("%f", value));
 }
 
-VarPtr Var::getSafe(const core::String& name) {
-	const VarPtr& var = get(name);
+VarPtr Var::getSafe(const core::String &name) {
+	const VarPtr &var = get(name);
 	core_assert_msg(var, "var %s doesn't exist yet", name.c_str());
 	return var;
 }
 
-bool Var::_ivec3ListValidator(const core::String& value, int nmin, int nmax) {
+bool Var::_ivec3ListValidator(const core::String &value, int nmin, int nmax) {
 	core::DynamicArray<core::String> regionSizes;
 	core::string::splitString(value, regionSizes, ",");
 	for (const core::String &s : regionSizes) {
@@ -79,7 +78,7 @@ bool Var::_ivec3ListValidator(const core::String& value, int nmin, int nmax) {
 	return true;
 }
 
-bool Var::_minMaxValidator(const core::String& value, int nmin, int nmax) {
+bool Var::_minMaxValidator(const core::String &value, int nmin, int nmax) {
 	const int v = value.toInt();
 	if (v < nmin || v > nmax) {
 		return false;
@@ -87,16 +86,16 @@ bool Var::_minMaxValidator(const core::String& value, int nmin, int nmax) {
 	return true;
 }
 
-core::String Var::str(const core::String& name) {
-	const VarPtr& var = get(name);
+core::String Var::str(const core::String &name) {
+	const VarPtr &var = get(name);
 	if (!var) {
 		return core::String::Empty;
 	}
 	return var->strVal();
 }
 
-bool Var::boolean(const core::String& name) {
-	const VarPtr& var = get(name);
+bool Var::boolean(const core::String &name) {
+	const VarPtr &var = get(name);
 	if (!var) {
 		return false;
 	}
@@ -121,7 +120,8 @@ void Var::vec3Val(float out[3]) const {
 	out[2] = z;
 }
 
-VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
+VarPtr Var::get(const core::String &name, const char *value, int32_t flags, const char *help,
+				ValidatorFunc validatorFunc) {
 	core_assert(!name.empty());
 	VarMap::iterator i;
 	const char *defaultValue = value;
@@ -137,9 +137,9 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 		// environment variables have higher priority than config file values - but command line
 		// arguments have the highest priority
 		if ((flagsMask & CV_FROMCOMMANDLINE) == 0) {
-			const char* envValue = SDL_getenv(name.c_str());
+			const char *envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const core::String& upper = name.toUpper();
+				const core::String &upper = name.toUpper();
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
@@ -155,19 +155,20 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 			return VarPtr();
 		}
 
-		const VarPtr& p = core::make_shared<Var>(name, value, defaultValue == nullptr ? "" : defaultValue, flagsMask, help, validatorFunc);
+		const VarPtr &p = core::make_shared<Var>(name, value, defaultValue == nullptr ? "" : defaultValue, flagsMask,
+												 help, validatorFunc);
 		ScopedLock lock(_lock);
 		_vars.put(name, p);
 		return p;
 	}
-	const VarPtr& v = i->second;
+	const VarPtr &v = i->second;
 	if (flags >= 0) {
 		if ((flagsMask & CV_FROMFILE) == CV_FROMFILE && (v->_flags & (CV_FROMCOMMANDLINE | CV_FROMENV)) == 0u) {
 			Log::debug("Look for env var to resolve value of %s", name.c_str());
 			// environment variables have higher priority than config file values
-			const char* envValue = SDL_getenv(name.c_str());
+			const char *envValue = SDL_getenv(name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const core::String& upper = name.toUpper();
+				const core::String &upper = name.toUpper();
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
@@ -214,7 +215,7 @@ Var::Var(const core::String& name, const core::String& value, const core::String
 Var::~Var() {
 }
 
-void Var::addValueToHistory(const core::String& value) {
+void Var::addValueToHistory(const core::String &value) {
 	Value v;
 	v._value = value;
 	const bool isTrue = v._value == "true";
@@ -245,7 +246,7 @@ bool Var::useHistory(uint32_t historyIndex) {
 	return true;
 }
 
-bool Var::setVal(const core::String& value) {
+bool Var::setVal(const core::String &value) {
 	if ((_flags & CV_READONLY) != 0u) {
 		Log::error("%s is write protected", _name.c_str());
 		return false;
@@ -274,4 +275,4 @@ bool Var::setVal(const core::String& value) {
 	return true;
 }
 
-}
+} // namespace core

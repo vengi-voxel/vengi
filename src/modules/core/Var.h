@@ -10,6 +10,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "core/concurrent/Lock.h"
+#include "io/Stream.h"
 #include <string.h>
 
 namespace core {
