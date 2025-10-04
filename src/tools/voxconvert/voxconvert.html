@@ -671,8 +671,7 @@
         }
     }
 
-    // wait for the Module runtime to be ready
-    Module.onRuntimeInitialized = function() {
+    function onReady() {
         buildUI();
         fetchFormats();
 
@@ -714,7 +713,25 @@
                 lucide.createIcons();
             }
         } catch (e) {}
-    };
+    }
+
+    try {
+        // If Module.onRuntimeInitialized already exists, chain it.
+        if (Module && typeof Module.onRuntimeInitialized === 'function') {
+            var prev = Module.onRuntimeInitialized;
+            Module.onRuntimeInitialized = function() {
+                try { prev(); } catch (e) {}
+                try { onReady(); } catch (e) { console.error(e); }
+            };
+        } else {
+            // normal assignment
+            Module.onRuntimeInitialized = onReady;
+        }
+    } catch (e) {
+        // Assignment can throw if the runtime was already finalized (e.g. when using --post-js).
+        // In that case call onReady asynchronously to avoid the abort.
+        setTimeout(onReady, 0);
+    }
     </script>
 </head>
 <body>
