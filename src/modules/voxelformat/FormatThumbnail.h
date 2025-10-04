@@ -24,6 +24,8 @@ struct ThumbnailContext {
 	float roll = 0.0f;
 	float distance = -1.0f;
 	float farPlane = 5000.0f;
+	float sunElevation = 45.0f;
+	float sunAzimuth = 135.0f;
 	/** This is applied to 2d renderer shots of an image (headless mode) */
 	float depthFactor2D = 0.0f;
 	/** The camera rotation - see @c deltaFrameSeconds */

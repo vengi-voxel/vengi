@@ -90,6 +90,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.onlyModels = true;
+	sceneGraphRenderer.setSunAngle(glm::vec3(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
 	const voxel::MeshStatePtr meshState = core::make_shared<voxel::MeshState>();
 	meshState->construct();
 	meshState->init();

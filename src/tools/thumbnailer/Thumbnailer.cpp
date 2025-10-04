@@ -62,6 +62,12 @@ app::AppState Thumbnailer::onConstruct() {
 		.setShort("-a")
 		.setDefaultValue("0:0:0")
 		.setDescription("Set the camera angles (pitch:yaw:roll))");
+	registerArg("--sunelevation")
+		.setDefaultValue("45")
+		.setDescription("Set the sun elevation");
+	registerArg("--sunazimuth")
+		.setDefaultValue("135")
+		.setDescription("Set the sun azimuth");
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
 	Argument &cameraMode =
 		registerArg("--camera-mode")
@@ -180,6 +186,12 @@ app::AppState Thumbnailer::onRunning() {
 		ctx.yaw = angles.y;
 		ctx.roll = angles.z;
 		Log::info("Use euler angles %f:%f:%f", ctx.pitch, ctx.yaw, ctx.roll);
+	}
+	if (hasArg("--sunelevation")) {
+		ctx.sunElevation = core::string::toFloat(getArgVal("--sunelevation"));
+	}
+	if (hasArg("--sunazimuth")) {
+		ctx.sunAzimuth = core::string::toFloat(getArgVal("--sunazimuth"));
 	}
 
 	const int renderTurntableLoops = hasArg("--turntable") ? getArgVal("--turntable", "16").toInt() : 0;
