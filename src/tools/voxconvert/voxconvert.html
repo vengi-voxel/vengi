@@ -1,657 +1,814 @@
 <!doctype html>
 <html lang="en-us">
+
 <head>
-<meta charset="utf-8">
-<link rel="icon" type="image/png" href="favicon.png" />
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>@NAME@</title>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@NAME@</title>
 
-<meta property="og:type" content="website" />
-<meta property="og:title" content="Vengi Voxel Tools" />
-<meta property="og:description" content="Voxel tools for artists and developers" />
-<meta property="og:image" content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vengi Voxel Tools" />
+    <meta property="og:description" content="Voxel tools for artists and developers" />
+    <meta property="og:image"
+        content="https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-07_2024.png" />
 
-<meta name="keywords" content="voxel,voxelart,voxeleditor,magicavoxel,cubzh,qubicle,sandbox,minecraft,quake,starmade,cubeworld,goxel,aceofspades,binvox,cnc,gltf,animation" />
-<meta name="description" content="Voxel tools for artists and developers">
+    <meta name="keywords"
+        content="voxel,voxelart,voxeleditor,magicavoxel,cubzh,qubicle,sandbox,minecraft,quake,starmade,cubeworld,goxel,aceofspades,binvox,cnc,gltf,animation" />
+    <meta name="description" content="Voxel tools for artists and developers">
 
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    html, body {
-        height: 100%;
-    }
-
-    body {
-        font-family: 'Roboto', sans-serif;
-        background-color: #1e1e1e;
-        color: #f0f0f0;
-        line-height: 1.6;
-    }
-
-    header {
-        background-color: #2b2b2b;
-        padding: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #444;
-        animation: fadeIn 0.8s ease-out;
-    }
-
-    a {
-        margin: 8px 12px;
-        text-decoration: none;
-        color: #aaa;
-        transition: color 0.3s;
-    }
-
-    a:hover {
-        color: #00d1b2;
-    }
-
-    footer {
-        text-align: center;
-        padding: 20px;
-        margin-top: 40px;
-        font-size: 0.9rem;
-        color: #666;
-        border-top: 1px solid #333;
-        opacity: 0;
-        animation: fadeIn 0.8s 1.1s ease-out forwards;
-    }
-
-    h1 {
-        font-size: clamp(1.25rem, 2vw, 1.75rem);
-        text-align: center;
-        margin: 0 0 20px;
-    }
-
-    .app {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: linear-gradient(180deg, #071427 0%, #081827 100%);
-        border-radius: var(--radius);
-        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.7);
-        padding: 18px;
-    }
-
-    h1 {
-        margin: 0;
-        font-size: clamp(1.25rem, 2vw, 1.75rem);
-        background: url('vengi-banner-493x58.png') no-repeat right center;
-        background-size: auto 58px;
-        line-height: 58px;
-    }
-
-    .disclaimer {
-        margin-top: 8px;
-        font-size: 14px;
-        color: var(--muted);
-    }
-
-    .controls {
-        margin-top: 12px;
-    }
-
-    @media (min-width: 800px) {
-        .controls {
-            grid-template-columns: 1fr 380px;
+    <style>
+        :root {
+            --anim-card-duration: 340ms;
+            --anim-step-duration: 360ms;
+            --focus-color: #00d1b2;
+            --muted: #888;
+            --radius: 8px;
+            --panel: rgba(255, 255, 255, 0.02);
         }
-    }
 
-    .panel {
-        background: var(--panel);
-        padding: 16px;
-        border-radius: var(--radius);
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    label {
-        color: var(--muted);
-        font-size: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
+        html,
+        body {
+            height: 100%;
+        }
 
-    input[type=file], select {
-        padding: 8px;
-        border-radius: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: #09131f;
-        color: #00ffc8;
-        font-size: 14px;
-    }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            line-height: 1.6;
+        }
 
-    .btn {
-        background-color: #2b2b2b;
-        border-radius: 8px;
-        padding: 20px;
-        border-left: 4px solid #00d1b2;
-        opacity: 100;
-        transform: translateY(15px);
-        animation: slideIn 1s forwards;
-        margin-bottom: 10px;
-        font-size: 1.4rem;
-        color: #00d1b2;
-    }
+        header {
+            background-color: #2b2b2b;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+        }
 
-    .btn:hover:not(:disabled) {
-        filter: brightness(1.1);
-    }
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #666;
+            border-top: 1px solid #333;
+        }
 
-    .btn.secondary {
-        border: 1px solid #2b2b2b;
-    }
+        h1 {
+            margin: 0 0 20px;
+            font-size: clamp(1.25rem, 2vw, 1.75rem);
+            background: url('vengi-banner-493x58.png') no-repeat right center;
+            background-size: auto 58px;
+            line-height: 58px;
+        }
 
-    .btn.secondary:hover:not(:disabled) {
-        background: rgba(30, 167, 253, 0.05);
-    }
+        a {
+            margin: 8px 12px;
+            text-decoration: none;
+            color: #aaa;
+            transition: color 0.3s;
+        }
 
-    .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+        a:hover {
+            color: var(--focus-color);
+        }
 
-    .pending-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
+        .disclaimer {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--muted);
+        }
 
-    .output-item {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 10px 12px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
-        border-radius: 8px;
-    }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            align-items: start;
+            margin-top: 12px;
+        }
 
-    .output-item .meta {
-        color: var(--muted);
-        font-size: 13px;
-    }
+        @media (min-width: 900px) {
+            .controls {
+                grid-template-columns: 1fr 420px;
+            }
+        }
 
-    .history-grid {
-        margin-top: 12px;
-    }
+        .panel {
+            background: var(--panel);
+            padding: 16px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-    .card {
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
-        border-radius: var(--radius);
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        transition: transform 0.15s ease;
-    }
+        label {
+            color: var(--muted);
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-    .card:hover {
-        transform: translateY(-2px);
-    }
+        input[type=file],
+        select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #09131f;
+            color: #00ffc8;
+            font-size: 14px;
+        }
 
-    .card .title {
-        font-weight: 700;
-        color: #e6f7ff;
-        word-break: break-word;
-    }
+        .btn {
+            background-color: #2b2b2b;
+            border-radius: var(--radius);
+            padding: 20px;
+            border-left: 4px solid var(--focus-color);
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+            color: var(--focus-color);
+            cursor: pointer;
+        }
 
-    .card .meta {
-        color: var(--muted);
-        font-size: 12px;
-    }
+        .btn:hover:not(:disabled) {
+            filter: brightness(1.1);
+        }
 
-    .card .row {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
+        .btn.secondary {
+            border: 1px solid #2b2b2b;
+        }
 
-    progress {
-        width: 100%;
-        height: 12px;
-        appearance: none;
-        border-radius: 6px;
-        overflow: hidden;
-    }
+        .btn.secondary:hover:not(:disabled) {
+            background: rgba(30, 167, 253, 0.05);
+        }
 
-    progress::-webkit-progress-bar {
-        background: rgba(255, 255, 255, 0.05);
-    }
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #aaa;
+        }
 
-    progress::-webkit-progress-value {
-        background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    }
+        .btn:disabled,
+        .btn.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
 
-    #output {
-        display: none;
-        white-space: pre-wrap;
-        color: #fff;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 14px;
-        max-height: 240px;
-        min-height: 48px;
-        overflow: auto;
-        font-size: 13px;
-    }
+        .btn.confirm {
+            background: linear-gradient(90deg, var(--focus-color), #00a88f);
+            color: #022;
+            border-left: none;
+            padding: 10px 14px;
+        }
 
-    .console-visible #output {
-        display: block;
-    }
+        .btn.cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #ccc;
+            padding: 10px 14px;
+        }
 
-    .toolbar {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-bottom: 8px;
-    }
+        .pending-list,
+        .selected-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-    .selected-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
+        .output-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            border-radius: var(--radius);
+        }
 
-    .results-title {
-        margin-bottom: 8px;
-    }
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+            border-radius: var(--radius);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform var(--anim-card-duration) cubic-bezier(.2, .9, .2, 1), opacity var(--anim-card-duration) cubic-bezier(.2, .9, .2, 1);
+            opacity: 0;
+            transform: translateY(10px);
+        }
 
-    .progress-title {
-        margin-top: 6px;
-        color: var(--muted);
-    }
+        .card:hover {
+            transform: translateY(-2px);
+        }
 
-    .downloads-title {
-        margin-top: 10px;
-        color: var(--muted);
-    }
+        .card.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        .card-exit {
+            opacity: 0 !important;
+            transform: translateY(-12px) !important;
+        }
+
+        .card .title {
+            font-weight: 700;
+            color: #e6f7ff;
+            word-break: break-word;
+        }
+
+        .card .meta,
+        .output-item .meta {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .card .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        progress {
+            width: 100%;
+            height: 12px;
+            appearance: none;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        progress::-webkit-progress-bar {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        progress::-webkit-progress-value {
+            background: linear-gradient(90deg, var(--focus-color), #00a88f);
+        }
+
+        #output {
+            display: none;
+            white-space: pre-wrap;
+            color: #fff;
+            padding: 10px;
+            border-radius: var(--radius);
+            margin-top: 14px;
+            max-height: 240px;
+            min-height: 48px;
+            overflow: auto;
+            font-size: 13px;
+        }
+
+        .results-header,
+        .results-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .results-title,
+        .progress-title {
+            margin-top: 6px;
+            color: var(--muted);
+        }
+
+        .downloads-title {
+            margin-top: 10px;
+            color: var(--muted);
+        }
+
+        .step {
+            display: block;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity var(--anim-step-duration) cubic-bezier(.2, .9, .2, 1), transform var(--anim-step-duration) cubic-bezier(.2, .9, .2, 1);
+        }
+
+        .step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .step-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius);
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.01);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 64px;
+            transition: background 160ms ease, border-color 160ms ease, transform 120ms ease;
+        }
+
+        .dropzone.dragover {
+            background: rgba(0, 209, 178, 0.04);
+            border-color: rgba(0, 209, 178, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .dropzone .hint {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .file-badge {
+            display: inline-block;
+            background: rgba(0, 209, 178, 0.08);
+            color: var(--focus-color);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 13px;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .step-indicator .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .step-indicator .step-dot.active {
+            background: var(--focus-color);
+            box-shadow: 0 0 6px rgba(0, 209, 178, 0.25);
+        }
+
+        .step-indicator .step-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        :focus-visible {
+            outline: 4px solid var(--focus-color);
+            outline-offset: 2px;
+            border-radius: 6px;
+        }
+
+        .btn:focus-visible {
+            box-shadow: 0 0 0 6px rgba(0, 209, 178, 0.08);
+            outline: none;
+        }
+
+        input:focus-visible,
+        select:focus-visible {
+            box-shadow: 0 0 0 4px rgba(0, 209, 178, 0.06) inset;
+            outline: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms ease;
+            z-index: 1200;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #141414;
+            border-radius: 10px;
+            padding: 18px;
+            width: 92%;
+            max-width: 480px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+            transform: translateY(6px);
+            transition: transform 180ms ease;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #e6f7ff;
+        }
+
+        .modal-message {
+            color: var(--muted);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .console-modal .modal {
+            max-width: 900px;
+            width: 96%;
+        }
+
+        .console-modal pre {
+            background: #0b0b0b;
+            color: #ddd;
+            padding: 12px;
+            border-radius: var(--radius);
+            max-height: 60vh;
+            overflow: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+        }
     </style>
     <script>
-    var Module = {
-        preRun: [],
-        postRun: [],
-        noInitialRun: true,
-        print: function(text) {
-            var outputElement = document.getElementById('output');
-            if (outputElement) {
-                outputElement.textContent += text + '\n';
-            }
-        },
-        printErr: function(text) {
-            var outputElement = document.getElementById('output');
-            if (outputElement) {
-                outputElement.textContent += text + '\n';
+        function _readCssMsVar(name, fallback) {
+            try {
+                var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+                if (!v) return fallback;
+                var n = parseInt(v.trim().replace('ms', ''), 10);
+                return isNaN(n) ? fallback : n;
+            } catch (e) { return fallback; }
+        }
+        const ANIM_CARD_MS = _readCssMsVar('--anim-card-duration', 340);
+        const ANIM_STEP_MS = _readCssMsVar('--anim-step-duration', 360);
+
+        function appendOutput(text) {
+            var o = document.getElementById('output');
+            if (o) {
+                o.textContent += text + '\n';
+                o.scrollTop = o.scrollHeight;
             }
         }
-    };
-    window.onerror = function(event) {
-        var outputElement = document.getElementById('output');
-        if (outputElement) {
-            outputElement.textContent += 'Unhandled Error: ' + event.message + '\n';
-        }
-    };
+
+        var Module = {
+            preRun: [], postRun: [], noInitialRun: true,
+            print: appendOutput,
+            printErr: appendOutput
+        };
+        window.onerror = function (event) { appendOutput('Error: ' + event.message); };
     </script>
     {{{ SCRIPT }}}
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-    // utility to append messages to the on-page console
-    function log(msg) {
-        var o = document.getElementById('output');
-        if (o) {
-            o.textContent += msg + '\n';
-            o.scrollTop = o.scrollHeight;
+        function log(msg) { appendOutput(msg); console.log(msg); }
+        var selectedFiles = [];
+
+        function humanFileSize(bytes) {
+            if (!bytes) return '0 B';
+            var i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
         }
-        console.log(msg);
-    }
 
-    // selectedFiles holds the user-chosen input files (allows removing before run)
-    var selectedFiles = [];
+        function toggleButton(id, enabled, tooltip) {
+            var btn = document.getElementById(id);
+            if (!btn) return;
+            btn.disabled = !enabled;
+            btn.classList.toggle('disabled', !enabled);
+            if (tooltip && !enabled) btn.title = tooltip;
+            else btn.removeAttribute('title');
+        }
 
-    function addFilesToSelection(fileList) {
-        for (let i = 0; i < fileList.length; ++i) {
-            const f = fileList[i];
-            // avoid duplicates by name+size
-            if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified)) {
-                selectedFiles.push(f);
+        function updateFileBadge() {
+            var badge = document.getElementById('fileCountBadge');
+            if (!badge) return;
+            var total = selectedFiles.reduce(function (s, f) { return s + (f.size || 0); }, 0);
+            var count = selectedFiles.length;
+            badge.textContent = count ? count + ' file' + (count > 1 ? 's' : '') + ' • ' + humanFileSize(total) : '0';
+            toggleButton('filesNext', count > 0, 'Select at least one file to continue');
+        }
+
+        function updateDownloadsButton() {
+            var grid = document.getElementById('historyGrid');
+            var count = grid ? grid.querySelectorAll('.card').length : 0;
+            toggleButton('clearDownloadsBtn', count > 0, 'No downloads to clear');
+        }
+
+        function addFilesToSelection(fileList) {
+            for (let i = 0; i < fileList.length; i++) {
+                const f = fileList[i];
+                if (!selectedFiles.some(s => s.name === f.name && s.size === f.size && s.lastModified === f.lastModified)) {
+                    selectedFiles.push(f);
+                }
             }
-        }
-        renderSelectedFiles();
-    }
-
-    function removeSelectedFileAt(index) {
-        if (index >= 0 && index < selectedFiles.length) {
-            selectedFiles.splice(index, 1);
             renderSelectedFiles();
         }
-    }
 
-    function renderSelectedFiles() {
-        const container = document.getElementById('selectedList');
-        if (!container) {
-            return;
-        }
-        container.innerHTML = '';
-        selectedFiles.forEach(function(f, idx) {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.style.padding = '8px';
-            card.style.display = 'flex';
-            card.style.justifyContent = 'space-between';
-            card.style.gap = '8px';
-
-            const left = document.createElement('div');
-            left.style.display = 'flex';
-            left.style.flexDirection = 'column';
-            const title = document.createElement('div');
-            title.className = 'title';
-            title.textContent = f.name;
-            const meta = document.createElement('div');
-            meta.className = 'meta';
-            meta.textContent = (f.size ? (Math.round(f.size/1024) + ' KB') : '');
-            left.appendChild(title);
-            left.appendChild(meta);
-
-            const actions = document.createElement('div');
-            actions.style.display = 'flex';
-            actions.style.gap = '6px';
-            const rem = document.createElement('button');
-            rem.className = 'btn secondary';
-            rem.innerHTML = '<i data-lucide="x"></i>';
-            rem.title = 'Remove';
-            rem.onclick = function() {
-                removeSelectedFileAt(idx);
-            };
-            actions.appendChild(rem);
-
-            card.appendChild(left);
-            card.appendChild(actions);
-            container.appendChild(card);
-        });
-        try {
-            if (window.lucide && lucide.createIcons) {
-                lucide.createIcons();
-            }
-        } catch (e) {}
-    }
-
-    function fetchFormats() {
-        var jsonStr = Module.ccall('get_supported_formats_json', 'string', [], []);
-        var json = JSON.parse(jsonStr);
-        var sel = document.getElementById('formatSelect');
-        sel.innerHTML = '';
-
-        json['voxels'].forEach(function(item) {
-            var name = item.name;
-            var exts = item.extensions;
-            exts.forEach(function(ext) {
-                var opt = document.createElement('option');
-                opt.value = ext;
-                opt.textContent = name + ' (.' + ext + ')';
-                sel.appendChild(opt);
-            });
-        });
-
-        sel.selectedIndex = 0;
-        sel.disabled = false;
-    }
-
-    async function runConvert(file, idx, progressCb) {
-        var sel = document.getElementById('formatSelect');
-        var ext = sel.value;
-        if (!ext) {
-            throw new Error('No output format selected');
-        }
-
-        log('Uploading: ' + file.name);
-        if (progressCb) {
-            progressCb(0.05, 'Uploading');
-        }
-        const arrayBuffer = await file.arrayBuffer();
-        // unique file names to avoid clobbering
-        const inPath = '/' + Date.now() + '-' + idx + '-' + file.name;
-        try {
-            Module.FS.writeFile(inPath, new Uint8Array(arrayBuffer));
-        } catch (e) {
-            log('FS.writeFile error: ' + e);
-            return { file: file.name, ok: false, error: e };
-        }
-        if (progressCb) {
-            progressCb(0.12, 'Running');
-        }
-
-        const baseName = file.name.replace(/\.[^/.]+$/, '') || file.name;
-        const outName = baseName + '.' + ext;
-        const outPath = '/' + outName;
-
-        try {
-            await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
-        } catch (e) {
-            log('Conversion error for ' + file.name + ': ' + e);
-            return { file: file.name, ok: false, error: e };
-        }
-        if (progressCb) {
-            progressCb(0.8, 'Finalizing');
-        }
-
-        let data = null;
-        try {
-            data = Module.FS.readFile(outPath);
-        } catch (e) {
-            await new Promise(r => setTimeout(r, 200));
-            try {
-                data = Module.FS.readFile(outPath);
-            } catch (e2) {
-                data = null;
+        function removeSelectedFileAt(index) {
+            if (index >= 0 && index < selectedFiles.length) {
+                selectedFiles.splice(index, 1);
+                renderSelectedFiles();
             }
         }
-        if (!data) {
-            log('No output produced for ' + file.name);
-            return { file: file.name, ok: false, error: 'no output' };
-        }
 
-        // Ensure blob-safe (copy to a non-shared buffer)
-        let safe = null;
-        try {
-            // slice creates a copied view backed by a non-shared buffer
-            safe = (data.slice) ? data.slice(0) : new Uint8Array(data);
-        } catch (e) {
-            safe = new Uint8Array(data);
-        }
-        const blob = new Blob([safe], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        log('Finished: ' + file.name);
-        if (progressCb) {
-            progressCb(1, 'Done');
-        }
-        return { file: file.name, ok: true, outName: outName, blobUrl: url };
-    }
+        function renderSelectedFiles() {
+            const container = document.getElementById('selectedList');
+            if (!container) return;
+            container.innerHTML = '';
+            selectedFiles.forEach(function (f, idx) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cssText = 'padding:8px;display:flex;justify-content:space-between;gap:8px';
 
-    // process all selected files sequentially
-    async function runAll() {
-        const files = Array.from(selectedFiles || []);
-        if (!files.length) {
-            log('No files selected');
-            return;
-        }
-        const runBtn = document.getElementById('runBtn');
-        const fileInput = document.getElementById('fileInput');
-        runBtn.disabled = true; fileInput.disabled = true;
+                const left = document.createElement('div');
+                left.style.cssText = 'display:flex;flex-direction:column';
+                left.innerHTML = '<div class="title">' + f.name + '</div><div class="meta">' + humanFileSize(f.size) + '</div>';
 
-        const pending = document.getElementById('pendingList');
-        const historyGrid = document.getElementById('historyGrid');
-
-        for (let i = 0; i < files.length; ++i) {
-            const file = files[i];
-
-            // create pending UI entry with progress bar
-            const item = document.createElement('div');
-            item.className = 'output-item';
-            const left = document.createElement('div');
-            left.style.flex = '1';
-            const title = document.createElement('div');
-            title.className = 'meta';
-            title.textContent = file.name;
-            const prog = document.createElement('progress');
-            prog.max = 1;
-            prog.value = 0;
-            left.appendChild(title);
-            left.appendChild(prog);
-            const actions = document.createElement('div');
-            item.appendChild(left);
-            item.appendChild(actions);
-            pending.appendChild(item);
-
-            // progress callback updates the bar and subtitle
-            const progressCb = function(p, msg) {
-                try {
-                    prog.value = Math.max(0, Math.min(1, p));
-                } catch (e) {}
-                title.textContent = file.name + ' — ' + msg;
-            };
-
-            const res = await runConvert(file, i, progressCb);
-
-            // remove pending entry
-            pending.removeChild(item);
-
-            // create persistent history card for this run
-            const card = document.createElement('div');
-            card.className = 'card';
-            const t = document.createElement('div');
-            t.className = 'title';
-            t.textContent = file.name;
-            const meta = document.createElement('div');
-            meta.className = 'meta';
-            const row = document.createElement('div');
-            row.className = 'row';
-            card.appendChild(t);
-            card.appendChild(meta);
-            card.appendChild(row);
-
-            if (res.ok) {
-                meta.textContent = 'Format: ' + document.getElementById('formatSelect').value + ' — ' + res.outName;
-                card.dataset.bloburl = res.blobUrl || '';
-                const dl = document.createElement('button');
-                dl.className = 'btn secondary';
-                dl.textContent = 'Download ' + res.outName;
-                dl.onclick = function() {
-                    const a = document.createElement('a');
-                    a.href = res.blobUrl;
-                    a.download = res.outName;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                };
-                row.appendChild(dl);
-
-                // remove/revoke button
+                const actions = document.createElement('div');
+                actions.style.cssText = 'display:flex;gap:6px';
                 const rem = document.createElement('button');
                 rem.className = 'btn secondary';
-                rem.style.marginLeft = '6px';
-                rem.textContent = 'Remove';
-                rem.onclick = function() {
-                    try {
-                        URL.revokeObjectURL(res.blobUrl);
-                    } catch (e) {};
-                    card.remove();
+                rem.innerHTML = '<i data-lucide="x"></i>';
+                rem.title = 'Remove';
+                rem.onclick = function () {
+                    card.classList.add('card-exit');
+                    setTimeout(function () { removeSelectedFileAt(idx); }, ANIM_CARD_MS);
                 };
-                row.appendChild(rem);
+                actions.appendChild(rem);
 
-                // timestamp
-                const ts = document.createElement('div');
-                ts.className = 'meta';
-                ts.style.fontSize = '11px';
-                ts.textContent = new Date().toLocaleString();
-                card.appendChild(ts);
-            } else {
-                meta.textContent = 'Failed: ' + (res.error || 'unknown');
-                const err = document.createElement('div');
-                err.style.color = 'var(--danger)';
-                err.textContent = 'Error';
-                row.appendChild(err);
-                const ts = document.createElement('div');
-                ts.className = 'meta';
-                ts.style.fontSize = '11px';
-                ts.textContent = new Date().toLocaleString();
-                card.appendChild(ts);
+                card.appendChild(left);
+                card.appendChild(actions);
+                container.appendChild(card);
+                requestAnimationFrame(function () { card.classList.add('visible'); });
+            });
+            try { if (window.lucide?.createIcons) lucide.createIcons(); } catch (e) { }
+            updateFileBadge();
+        }
+
+        function fetchFormats() {
+            var json = JSON.parse(Module.ccall('get_supported_formats_json', 'string', [], []));
+            var sel = document.getElementById('formatSelect');
+            sel.innerHTML = '';
+            json.voxels.forEach(function (item) {
+                item.extensions.forEach(function (ext) {
+                    var opt = document.createElement('option');
+                    opt.value = ext;
+                    opt.textContent = item.name + ' (.' + ext + ')';
+                    sel.appendChild(opt);
+                });
+            });
+            sel.selectedIndex = 0;
+            sel.disabled = false;
+            toggleButton('formatNext', true);
+        }
+
+        async function runConvert(file, idx, progressCb) {
+            var ext = document.getElementById('formatSelect').value;
+            if (!ext) throw new Error('No output format selected');
+
+            log('Uploading: ' + file.name);
+            progressCb?.(0.05, 'Uploading');
+
+            const inPath = '/' + Date.now() + '-' + idx + '-' + file.name;
+            try {
+                Module.FS.writeFile(inPath, new Uint8Array(await file.arrayBuffer()));
+            } catch (e) {
+                log('FS.writeFile error: ' + e);
+                return { file: file.name, ok: false, error: e };
+            }
+            progressCb?.(0.12, 'Running');
+
+            const outName = (file.name.replace(/\.[^/.]+$/, '') || file.name) + '.' + ext;
+            const outPath = '/' + outName;
+
+            var callMainOk = false;
+            try {
+                if (Module.callMain) {
+                    await Promise.resolve(Module.callMain(['--input', inPath, '--output', outPath]));
+                    callMainOk = true;
+                }
+            } catch (e) {
+                log('Conversion error: ' + e);
             }
 
-            historyGrid.appendChild(card);
-        }
-
-        runBtn.disabled = false; fileInput.disabled = false;
-    }
-
-    function buildUI() {
-        // Attach handlers to DOM elements that are now present in the static HTML
-        var fileInput = document.getElementById('fileInput');
-        if (fileInput) {
-            fileInput.onchange = function(e) {
-                addFilesToSelection(e.target.files);
-                e.target.value = '';
-            };
-        }
-
-        var runBtn = document.getElementById('runBtn');
-        if (runBtn) runBtn.onclick = runAll;
-
-        var consoleBtn = document.querySelector('.controls button[title="Toggle Console"]');
-        var clearBtn = document.querySelector('.controls button[title="Clear Downloads"]');
-        if (consoleBtn) {
-            consoleBtn.addEventListener('click', function() { document.body.classList.toggle('console-visible'); });
-        }
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function() {
-                var grid = document.getElementById('historyGrid');
-                if (!grid) return;
-                Array.from(grid.querySelectorAll('.card')).forEach(function(c) {
-                    var blob = c.dataset.bloburl;
-                    if (blob) {
-                        try { URL.revokeObjectURL(blob); } catch (e) {}
+            if (!callMainOk) {
+                try {
+                    if (Module.ccall) {
+                        Module.ccall('convert_file', 'void', ['string', 'string'], [inPath, outPath]);
+                    } else if (Module._convert_file) {
+                        Module._convert_file(inPath, outPath);
                     }
+                } catch (e2) {
+                    log('Fallback conversion error: ' + e2);
+                }
+            }
+            progressCb?.(0.8, 'Finalizing');
+
+            let data = null;
+            try {
+                data = Module.FS.readFile(outPath);
+            } catch (e) {
+                await new Promise(r => setTimeout(r, 200));
+                try { data = Module.FS.readFile(outPath); } catch (e2) { }
+            }
+            if (!data) {
+                log('No output produced for ' + file.name);
+                return { file: file.name, ok: false, error: 'no output' };
+            }
+
+            const blob = new Blob([data.slice ? data.slice(0) : new Uint8Array(data)], { type: 'application/octet-stream' });
+            log('Finished: ' + file.name);
+            progressCb?.(1, 'Done');
+            return { file: file.name, ok: true, outName: outName, blobUrl: URL.createObjectURL(blob) };
+        }
+
+        async function runAll() {
+            if (!selectedFiles.length) { log('No files selected'); return; }
+
+            const runBtn = document.getElementById('runStart');
+            const fileInput = document.getElementById('fileInput');
+            const pending = document.getElementById('pendingListRight') || document.getElementById('pendingList');
+            const historyGrid = document.getElementById('historyGrid');
+
+            if (runBtn) runBtn.disabled = true;
+            if (fileInput) fileInput.disabled = true;
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const item = document.createElement('div');
+                item.className = 'output-item';
+                item.innerHTML = '<div style="flex:1"><div class="meta">' + file.name + '</div><progress max="1" value="0"></progress></div>';
+                const prog = item.querySelector('progress');
+                const title = item.querySelector('.meta');
+                pending.appendChild(item);
+
+                const res = await runConvert(file, i, function (p, msg) {
+                    prog.value = Math.max(0, Math.min(1, p));
+                    title.textContent = file.name + ' — ' + msg;
                 });
-                grid.innerHTML = '';
+
+                pending.removeChild(item);
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                const timestamp = new Date().toLocaleString();
+
+                if (res.ok) {
+                    card.innerHTML = '<div class="title">' + file.name + '</div>' +
+                        '<div class="meta">Format: ' + document.getElementById('formatSelect').value + ' — ' + res.outName + '</div>' +
+                        '<div class="row"><button class="btn secondary">Download ' + res.outName + '</button>' +
+                        '<button class="btn secondary" style="margin-left:6px">Remove</button></div>' +
+                        '<div class="meta" style="font-size:11px">' + timestamp + '</div>';
+                    card.dataset.bloburl = res.blobUrl;
+                    card.querySelectorAll('button')[0].onclick = function () {
+                        const a = document.createElement('a');
+                        a.href = res.blobUrl;
+                        a.download = res.outName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+                    card.querySelectorAll('button')[1].onclick = function () {
+                        try { URL.revokeObjectURL(res.blobUrl); } catch (e) { }
+                        card.classList.add('card-exit');
+                        setTimeout(function () { card.remove(); updateDownloadsButton(); }, ANIM_CARD_MS);
+                    };
+                } else {
+                    card.innerHTML = '<div class="title">' + file.name + '</div>' +
+                        '<div class="meta">Failed: ' + (res.error || 'unknown') + '</div>' +
+                        '<div class="row"><div style="color:#f44">Error</div></div>' +
+                        '<div class="meta" style="font-size:11px">' + timestamp + '</div>';
+                }
+
+                historyGrid.appendChild(card);
+                requestAnimationFrame(function () { card.classList.add('visible'); });
+                updateDownloadsButton();
+            }
+
+            if (runBtn) runBtn.disabled = false;
+            if (fileInput) fileInput.disabled = false;
+        }
+
+        function showStep(id) {
+            ['step-files', 'step-format', 'step-run'].forEach(function (s) {
+                var el = document.getElementById(s);
+                if (!el) return;
+                if (s === id) {
+                    el.classList.remove('hidden');
+                    setTimeout(function () { el.classList.add('visible'); }, 10);
+                } else {
+                    el.classList.remove('visible');
+                    setTimeout(function () { el.classList.add('hidden'); }, ANIM_STEP_MS);
+                }
+            });
+            var cb = document.getElementById('toggleConsoleBtn');
+            if (cb) cb.style.display = id === 'step-run' ? 'inline-flex' : 'none';
+            window.currentStep = id;
+        }
+
+        function setActiveDot(name) {
+            ['files', 'format', 'run'].forEach(function (k) {
+                var el = document.getElementById('dot-' + k);
+                if (el) el.classList.toggle('active', k === name);
             });
         }
 
-        try { if (window.lucide && lucide.createIcons) lucide.createIcons(); } catch (e) {}
-        renderSelectedFiles();
-    }
+        function buildUI() {
+            var fileInput = document.getElementById('fileInput');
+            var dropzone = document.getElementById('dropzone');
 
-    function onReady() {
-        buildUI();
-        fetchFormats();
-    }
+            if (fileInput) fileInput.onchange = function (e) { addFilesToSelection(e.target.files); e.target.value = ''; };
+            if (dropzone) {
+                dropzone.addEventListener('click', function () { fileInput.click(); });
+                dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+                dropzone.addEventListener('dragleave', function (e) { e.preventDefault(); dropzone.classList.remove('dragover'); });
+                dropzone.addEventListener('drop', function (e) {
+                    e.preventDefault(); dropzone.classList.remove('dragover');
+                    addFilesToSelection(e.dataTransfer.files);
+                });
+            }
 
-    try {
-        // If Module.onRuntimeInitialized already exists, chain it.
-        if (Module && typeof Module.onRuntimeInitialized === 'function') {
-            var prev = Module.onRuntimeInitialized;
-            Module.onRuntimeInitialized = function() {
-                try { prev(); } catch (e) {}
-                try { onReady(); } catch (e) { console.error(e); }
-            };
-        } else {
-            // normal assignment
-            Module.onRuntimeInitialized = onReady;
+            document.getElementById('filesNext')?.addEventListener('click', function () {
+                if (selectedFiles.length) { showStep('step-format'); setActiveDot('format'); fetchFormats(); }
+            });
+            document.getElementById('formatBack')?.addEventListener('click', function () { showStep('step-files'); setActiveDot('files'); });
+            document.getElementById('formatNext')?.addEventListener('click', function () {
+                if (document.getElementById('formatSelect').value) { showStep('step-run'); setActiveDot('run'); }
+            });
+            document.getElementById('runBack')?.addEventListener('click', function () { showStep('step-format'); setActiveDot('format'); });
+            document.getElementById('runStart')?.addEventListener('click', runAll);
+            document.getElementById('formatSelect')?.addEventListener('change', function (e) {
+                toggleButton('formatNext', !!e.target.value);
+            });
+
+            var consoleBtn = document.getElementById('toggleConsoleBtn');
+            if (consoleBtn) {
+                consoleBtn.style.display = 'none';
+                consoleBtn.addEventListener('click', showConsoleModal);
+            }
+
+            document.getElementById('clearDownloadsBtn')?.addEventListener('click', function () {
+                var grid = document.getElementById('historyGrid');
+                var count = grid?.querySelectorAll('.card').length || 0;
+                if (!count) return;
+                showConfirmModal('Clear all ' + count + ' downloads?').then(function (ok) {
+                    if (!ok) return;
+                    Array.from(grid.querySelectorAll('.card')).forEach(function (c) {
+                        if (c.dataset.bloburl) try { URL.revokeObjectURL(c.dataset.bloburl); } catch (e) { }
+                    });
+                    grid.innerHTML = '';
+                    updateDownloadsButton();
+                });
+            });
+
+            try { if (window.lucide?.createIcons) lucide.createIcons(); } catch (e) { }
+            renderSelectedFiles();
+            updateDownloadsButton();
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                var t = document.activeElement;
+                if (!t || t.isContentEditable || ['input', 'textarea', 'select'].includes(t.tagName?.toLowerCase())) return;
+                var btnId = { 'step-files': 'filesNext', 'step-format': 'formatNext', 'step-run': 'runStart' }[window.currentStep || 'step-files'];
+                var btn = document.getElementById(btnId);
+                if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+            });
         }
-    } catch (e) {
-        // Assignment can throw if the runtime was already finalized (e.g. when using --post-js).
-        // In that case call onReady asynchronously to avoid the abort.
-        setTimeout(onReady, 0);
-    }
+
+        function onReady() { buildUI(); fetchFormats(); }
+
+        try {
+            var prev = Module.onRuntimeInitialized;
+            Module.onRuntimeInitialized = prev ? function () { try { prev(); } catch (e) { } onReady(); } : onReady;
+        } catch (e) {
+            setTimeout(onReady, 0);
+        }
     </script>
 </head>
+
 <body>
     <header>
         <div class="logo">vengi Voxel Tools</div>
@@ -666,40 +823,191 @@
     </header>
     <main>
         <h1>@NAME@ @ROOT_PROJECT_VERSION@</h1>
-        <div class="disclaimer">This is a very simpified version of vengi-voxconvert. The tool is opensource and free to use. Visit <a href="https://vengi-voxel.de">vengi-voxel.de</a> for more details.</div>
+        <div class="disclaimer">This is a very simpified version of vengi-voxconvert. The tool is opensource and free to
+            use. Visit <a href="https://vengi-voxel.de">vengi-voxel.de</a> for more details.</div>
         <div id="controlsRoot" class="controls">
-            <div class="toolbar">
-                <button class="btn secondary" title="Clear Downloads"><i data-lucide="trash-2"></i></button>
-                <button class="btn secondary" title="Toggle Console"><i data-lucide="terminal"></i></button>
-            </div>
-
             <div class="panel left-panel">
-                <label>Input files (select multiple or drag):
-                    <input type="file" id="fileInput" multiple />
-                </label>
+                <!-- Step 1: select files -->
+                <div class="step-indicator" aria-hidden="true">
+                    <div class="step-dot active" id="dot-files"></div>
+                    <div class="step-label">Files</div>
+                    <div style="width:8px"></div>
+                    <div class="step-dot" id="dot-format"></div>
+                    <div class="step-label">Format</div>
+                    <div style="width:8px"></div>
+                    <div class="step-dot" id="dot-run"></div>
+                    <div class="step-label">Run</div>
+                    <div style="flex:1"></div>
+                    <div class="file-badge" id="fileCountBadge">0</div>
+                </div>
 
-                <label>Selected files:
-                    <div id="selectedList" class="selected-list"></div>
-                </label>
+                <div id="step-files" class="step visible">
+                    <h3>Select input files</h3>
+                    <div id="dropzone" class="dropzone" style="position:relative;">
+                        <div class="hint">Drag & drop files here or click to choose</div>
+                        <input type="file" id="fileInput" multiple
+                            style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" />
+                    </div>
+                    <label>Selected files:
+                        <div id="selectedList" class="selected-list"></div>
+                    </label>
+                    <div class="step-footer">
+                        <button id="filesNext" class="btn disabled" disabled>Continue</button>
+                    </div>
+                </div>
 
-                <label>Output format:
-                    <select id="formatSelect" disabled></select>
-                </label>
+                <!-- Step 2: choose format -->
+                <div id="step-format" class="step hidden">
+                    <h3>Choose output format</h3>
+                    <label>Output format:
+                        <select id="formatSelect" disabled></select>
+                    </label>
+                    <div class="step-footer">
+                        <button id="formatBack" class="btn ghost">Back to files</button>
+                        <button id="formatNext" class="btn disabled" disabled>Continue to run</button>
+                    </div>
+                </div>
 
-                <button id="runBtn" class="btn secondary" title="Run"><i data-lucide="play"></i></button>
+                <!-- Step 3: run conversion -->
+                <div id="step-run" class="step hidden">
+                    <h3>Run conversion</h3>
+                    <div class="progress-title">In progress</div>
+                    <div id="pendingList" class="pending-list"></div>
+                    <div class="step-footer">
+                        <button id="runBack" class="btn ghost">Back to options</button>
+                        <button id="runStart" class="btn">Start conversion</button>
+                    </div>
+                </div>
             </div>
 
             <div class="panel right-panel">
-                <div class="results-title">Results</div>
-                <div class="progress-title">In progress</div>
-                <div id="pendingList" class="pending-list"></div>
-                <div class="downloads-title">Downloads</div>
-                <div id="historyGrid" class="history-grid"></div>
+                <div class="results-header"
+                    style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                    <div class="results-title">Results</div>
+                    <div class="results-actions" style="display:flex;gap:8px;align-items:center;">
+                        <button id="toggleConsoleBtn" class="btn secondary" title="Toggle Console"><i
+                                data-lucide="terminal"></i></button>
+                        <button id="clearDownloadsBtn" class="btn secondary" title="Clear Downloads"><i
+                                data-lucide="trash-2"></i></button>
+                    </div>
+                </div>
+                <div id="results-area">
+                    <div class="progress-title">In progress</div>
+                    <div id="pendingListRight" class="pending-list"></div>
+                    <div class="downloads-title">Downloads</div>
+                    <div id="historyGrid" class="history-grid"></div>
+                </div>
             </div>
         </div>
         <div id="output"></div>
     </main>
 
+    <!-- confirmation modal -->
+    <div id="confirmModal" class="modal-overlay" role="dialog" aria-hidden="true">
+        <div class="modal" role="document">
+            <div class="modal-title">Confirm action</div>
+            <div class="modal-message" id="confirmModalMessage">Are you sure?</div>
+            <div class="modal-actions">
+                <button id="confirmCancel" class="btn cancel">Cancel</button>
+                <button id="confirmOk" class="btn confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- console modal -->
+    <div id="consoleModal" class="modal-overlay console-modal" role="dialog" aria-hidden="true" style="display:none;">
+        <div class="modal" role="document">
+            <div class="modal-title">Console output</div>
+            <pre id="consoleModalContent"></pre>
+            <div class="modal-actions">
+                <button id="consoleClose" class="btn cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
     <footer>&copy; @COPYRIGHT_YEAR@ Vengi Voxel Tools. All rights reserved.</footer>
+
+    <script>
+        function trapFocus(overlay, e) {
+            if (e.key !== 'Tab') return;
+            var focusable = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusable?.length) return;
+            var first = focusable[0], last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+
+        function showConfirmModal(message) {
+            return new Promise(function (resolve) {
+                var overlay = document.getElementById('confirmModal');
+                var msg = document.getElementById('confirmModalMessage');
+                var ok = document.getElementById('confirmOk');
+                var cancel = document.getElementById('confirmCancel');
+                if (!overlay || !ok || !cancel || !msg) { resolve(window.confirm(message)); return; }
+
+                msg.textContent = message;
+                function cleanup(result) {
+                    overlay.classList.remove('open');
+                    overlay.setAttribute('aria-hidden', 'true');
+                    ok.removeEventListener('click', onOk);
+                    cancel.removeEventListener('click', onCancel);
+                    document.removeEventListener('keydown', onKey);
+                    resolve(result);
+                }
+                function onOk(e) { e?.preventDefault(); cleanup(true); }
+                function onCancel(e) { e?.preventDefault(); cleanup(false); }
+                function onKey(e) {
+                    if (e.key === 'Escape') { e.preventDefault(); cleanup(false); }
+                    else if (e.key === 'Enter') { e.preventDefault(); cleanup(true); }
+                    else trapFocus(overlay, e);
+                }
+
+                ok.addEventListener('click', onOk);
+                cancel.addEventListener('click', onCancel);
+                document.addEventListener('keydown', onKey);
+                overlay.classList.add('open');
+                overlay.setAttribute('aria-hidden', 'false');
+                cancel.focus();
+            });
+        }
+
+        function showConsoleModal() {
+            var overlay = document.getElementById('consoleModal');
+            var content = document.getElementById('consoleModalContent');
+            var close = document.getElementById('consoleClose');
+            var source = document.getElementById('output');
+            if (!overlay || !content || !close || !source) { alert(source?.textContent || 'No console'); return; }
+
+            content.textContent = source.textContent || '';
+            overlay.style.display = 'flex';
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            var obs = new MutationObserver(function () {
+                content.textContent = source.textContent || '';
+                content.scrollTop = content.scrollHeight;
+            });
+            obs.observe(source, { childList: true, subtree: true, characterData: true });
+
+            function cleanup() {
+                obs.disconnect();
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden', 'true');
+                overlay.style.display = 'none';
+                close.removeEventListener('click', onClose);
+                document.removeEventListener('keydown', onKey);
+            }
+            function onClose(e) { e?.preventDefault(); cleanup(); }
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); cleanup(); }
+                else trapFocus(overlay, e);
+            }
+
+            close.addEventListener('click', onClose);
+            document.addEventListener('keydown', onKey);
+            content.scrollTop = content.scrollHeight;
+        }
+    </script>
 </body>
+
 </html>
