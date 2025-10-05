@@ -30,10 +30,6 @@ struct ShadowParameters {
 	 */
 	int maxDepthBuffers = -1;
 
-	/** set the scale used to calculate depth values */
-	float shadowBiasSlope = 2.0f;
-	/** influences the units used to calculate depth values */
-	float shadowBias = 0.09f;
 	/** Used to slice the camera frustum */
 	float sliceWeight = -0.3f;
 };
@@ -76,8 +72,6 @@ public:
 
 	video::FrameBuffer& depthBuffer();
 
-	ShadowParameters& parameters();
-
 	const Cascades& cascades() const;
 	const Distances& distances() const;
 	const glm::vec3& sunDirection() const;
@@ -101,7 +95,4 @@ inline const glm::vec3& Shadow::sunDirection() const {
 	return _sunDirection;
 }
 
-inline ShadowParameters& Shadow::parameters() {
-	return _parameters;
-}
 }
