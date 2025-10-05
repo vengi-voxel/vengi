@@ -30,22 +30,12 @@ struct ShadowParameters {
 	 */
 	int maxDepthBuffers = -1;
 
-	/** Base constant depth bias (units) - optimized for voxel environments */
-	float constantBias = 0.002f;
-	/** Slope-scale depth bias factor - adjusted for voxel hard edges */
-	float slopeBias = 1.5f;
-	/** Maximum bias clamp to prevent Peter Panning */
-	float biasClamp = 0.01f;
+	/** set the scale used to calculate depth values */
+	float shadowBiasSlope = 2.0f;
+	/** influences the units used to calculate depth values */
+	float shadowBias = 0.09f;
 	/** Used to slice the camera frustum */
 	float sliceWeight = -0.3f;
-
-	// Voxel-specific shadow parameters
-	/** Additional bias for voxel edges to reduce self-shadowing */
-	float voxelEdgeBias = 0.001f;
-	/** Normal offset factor to reduce Peter Panning while maintaining contact shadows */
-	float normalOffsetScale = 0.8f;
-	/** Enable adaptive bias based on surface angle */
-	bool adaptiveBias = true;
 };
 
 /**
@@ -83,11 +73,6 @@ public:
 
 	void setPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
 	void setLightViewMatrix(const glm::mat4& lightView);
-
-	/**
-	 * @brief Get bias parameters for GPU rendering
-	 */
-	glm::vec3 getBiasParameters(int cascade) const;
 
 	video::FrameBuffer& depthBuffer();
 

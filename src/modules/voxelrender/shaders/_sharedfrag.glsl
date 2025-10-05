@@ -6,7 +6,6 @@ layout(std140) uniform u_frag {
 	vec2 u_depthsize;
 	vec4 u_distances;
 	mat4 u_cascades[4];
-	vec4 u_biasParams; // x: constantBias, y: slopeBias, z: biasClamp, w: voxelEdgeBias
 };
 
 layout(location = 0) $out vec4 o_color;
@@ -25,82 +24,21 @@ $constant MaxDepthBuffers 4
 uniform sampler2DArrayShadow u_shadowmap;
 
 /**
- * Calculate dynamic bias for voxel shadow mapping
- * Uses slope-scale depth bias to reduce shadow acne and self-shadowing
+ * perform percentage-closer shadow map lookup
+ * http://codeflow.org/entries/2013/feb/15/soft-shadow-mapping
  */
-float calculateVoxelBias(in vec3 normal, in vec3 lightDir, in int cascade) {
-	// Calculate angle between surface normal and light direction
-	float cosTheta = clamp(dot(normal, lightDir), 0.01, 1.0);
-
-	// Calculate slope for slope-scale bias
-	float tanTheta = sqrt(1.0 - cosTheta * cosTheta) / cosTheta;
-
-	// Base constant bias scaled by cascade
-	float cascadeScale = 1.0 + float(cascade) * 0.5;
-	float constantBias = u_biasParams.x * cascadeScale;
-
-	// Slope-scale bias - critical for voxel hard edges
-	float slopeBias = u_biasParams.y * tanTheta;
-
-	// Additional voxel edge bias
-	float voxelBias = u_biasParams.w * cascadeScale;
-
-	// Combine biases
-	float totalBias = constantBias + slopeBias + voxelBias;
-
-	// Adaptive bias for grazing angles
-	float grazingFactor = 1.0 / (cosTheta * cosTheta);
-	totalBias *= mix(1.0, grazingFactor, 0.2);
-
-	// Clamp to prevent Peter Panning
-	return min(totalBias, u_biasParams.z);
-}
-
-/**
- * perform percentage-closer shadow map lookup with adaptive sampling
- * Enhanced with voxel-specific bias calculations
- */
-float sampleShadowPCF(in vec3 normal, in vec3 lightDir, in int cascade, in vec2 uv, in float compare) {
+float sampleShadowPCF(in float bias, in int cascade, in vec2 uv, in float compare) {
 	float result = 0.0;
-
-	// Calculate dynamic bias for voxel environments
-	float bias = calculateVoxelBias(normal, lightDir, cascade);
-	float biasedCompare = compare - bias;
-
-	// Adaptive kernel size based on cascade level for better performance
-	// Closer cascades get sharper shadows, distant ones can be softer
-	int r = cascade == 0 ? 1 : (cascade == 1 ? 1 : 2);
-
-	// Use a more efficient sampling pattern for better quality
-	if (r == 1) {
-		// 3x3 kernel for sharp shadows
-		for (int x = -1; x <= 1; x++) {
-			for (int y = -1; y <= 1; y++) {
-				vec2 off = vec2(x, y) / u_depthsize;
-				result += texture(u_shadowmap, vec4(uv + off, cascade, biasedCompare));
-			}
+	const int r = 2;
+	for (int x = -r; x <= r; x++) {
+		for (int y = -r; y <= r; y++) {
+			vec2 off = vec2(x, y) / u_depthsize;
+			result += texture(u_shadowmap, vec4(uv + off, cascade, compare));
 		}
-		return result / 9.0;
-	} else {
-		// Poisson disk sampling for larger kernels - better quality than regular grid
-		const vec2 poissonDisk[16] = vec2[](
-			vec2(-0.94201624, -0.39906216), vec2(0.94558609, -0.76890725),
-			vec2(-0.094184101, -0.92938870), vec2(0.34495938, 0.29387760),
-			vec2(-0.91588581, 0.45771432), vec2(-0.81544232, -0.87912464),
-			vec2(-0.38277543, 0.27676845), vec2(0.97484398, 0.75648379),
-			vec2(0.44323325, -0.97511554), vec2(0.53742981, -0.47373420),
-			vec2(-0.26496911, -0.41893023), vec2(0.79197514, 0.19090188),
-			vec2(-0.24188840, 0.99706507), vec2(-0.81409955, 0.91437590),
-			vec2(0.19984126, 0.78641367), vec2(0.14383161, -0.14100790)
-		);
-
-		float kernelScale = float(r) * 0.5;
-		for (int i = 0; i < 16; i++) {
-			vec2 off = poissonDisk[i] * kernelScale / u_depthsize;
-			result += texture(u_shadowmap, vec4(uv + off, cascade, biasedCompare));
-		}
-		return result / 16.0;
 	}
+	const float size = 2.0 * float(r) + 1.0;
+	const float elements = size * size;
+	return result / elements;
 }
 
 vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
@@ -112,45 +50,10 @@ vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
 	return (lightp.xyz / lightp.w) * 0.5 + 0.5;
 }
 
-/**
- * Enhanced shadow sampling with better edge detection for voxels
- */
-float sampleShadowEnhanced(in vec3 normal, in vec3 lightDir, in int cascade, in vec2 uv, in float compare) {
-	// Basic PCF sample with voxel-aware bias
-	float shadowValue = sampleShadowPCF(normal, lightDir, cascade, uv, compare);
-
-	// Dynamic bias for edge detection
-	float bias = calculateVoxelBias(normal, lightDir, cascade);
-
-	// Check if we're near a shadow boundary for extra sharpening
-	float center = texture(u_shadowmap, vec4(uv, cascade, compare - bias));
-	vec2 texelSize = 1.0 / u_depthsize;
-
-	// Sample neighboring pixels to detect edges
-	float left = texture(u_shadowmap, vec4(uv + vec2(-texelSize.x, 0.0), cascade, compare - bias));
-	float right = texture(u_shadowmap, vec4(uv + vec2(texelSize.x, 0.0), cascade, compare - bias));
-	float up = texture(u_shadowmap, vec4(uv + vec2(0.0, -texelSize.y), cascade, compare - bias));
-	float down = texture(u_shadowmap, vec4(uv + vec2(0.0, texelSize.y), cascade, compare - bias));
-
-	// Calculate edge strength
-	float edgeStrength = abs(center - left) + abs(center - right) + abs(center - up) + abs(center - down);
-
-	// Voxel environments benefit from sharper shadow transitions
-	if (edgeStrength > 0.08) {
-		// More aggressive sharpening for voxel hard edges
-		shadowValue = shadowValue * shadowValue * (3.0 - 2.0 * shadowValue); // Smoothstep for sharper transition
-	}
-
-	return shadowValue;
-}
-
-vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, in vec3 ambient, in vec3 normal) {
+vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, in vec3 ambient) {
 	int cascade = int(dot(vec4(greaterThan(vec4(v_viewz), u_distances)), vec4(1)));
 	vec3 uv = calculateShadowUVZ(lightspacepos, cascade);
-	float shadow = sampleShadowEnhanced(normal, u_lightdir, cascade, uv.xy, uv.z);
-
-	// Apply contrast enhancement for sharper voxel shadow edges
-	shadow = smoothstep(0.15, 0.85, shadow);
+	float shadow = sampleShadowPCF(bias, cascade, uv.xy, uv.z);
 #if cl_debug_cascade
 	if (cascade == 0) {
 		color.r = 0.0;
@@ -181,17 +84,17 @@ vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, i
 #endif // cl_debug_shadow
 }
 
-vec3 shadow(in float bias, vec3 color, in vec3 diffuse, in vec3 ambient, in vec3 normal) {
-	return shadow(vec4(v_lightspacepos, 1.0), bias, color, diffuse, ambient, normal);
+vec3 shadow(in float bias, vec3 color, in vec3 diffuse, in vec3 ambient) {
+	return shadow(vec4(v_lightspacepos, 1.0), bias, color, diffuse, ambient);
 }
 
 #else // cl_shadowmap == 1
 
-vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient, in vec3 normal) {
+vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return color * (ambient + diffuse);
 }
 
-vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient, in vec3 normal) {
+vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return color * (ambient + diffuse);
 }
 
