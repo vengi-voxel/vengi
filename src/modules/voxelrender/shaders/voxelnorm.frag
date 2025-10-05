@@ -12,9 +12,12 @@ vec4 calcColor(void) {
 	vec3 normal = v_normal;
 	float ndotl1 = dot(normal, u_lightdir);
 	float ndotl2 = dot(normal, -u_lightdir);
-	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
-	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
-	vec3 shadowColor = shadow(bias, v_color.rgb, diffuse, u_ambient_color);
+	bool usePrimaryLight = ndotl1 >= ndotl2;
+	vec3 lightDir = usePrimaryLight ? u_lightdir : -u_lightdir;
+	float ndotl = max(ndotl1, ndotl2);
+	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
+	float bias = max(0.0015 * (1.0 - ndotl), 0.00035);
+	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
 	return vec4(shadowColor, v_color.a);
 }
 

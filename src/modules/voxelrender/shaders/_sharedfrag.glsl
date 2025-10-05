@@ -29,11 +29,12 @@ uniform sampler2DArrayShadow u_shadowmap;
  */
 float sampleShadowPCF(in float bias, in int cascade, in vec2 uv, in float compare) {
 	float result = 0.0;
+	float compareDepth = compare - bias;
 	const int r = 2;
 	for (int x = -r; x <= r; x++) {
 		for (int y = -r; y <= r; y++) {
 			vec2 off = vec2(x, y) / u_depthsize;
-			result += texture(u_shadowmap, vec4(uv + off, cascade, compare));
+			result += texture(u_shadowmap, vec4(uv + off, cascade, compareDepth));
 		}
 	}
 	const float size = 2.0 * float(r) + 1.0;
@@ -50,10 +51,25 @@ vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
 	return (lightp.xyz / lightp.w) * 0.5 + 0.5;
 }
 
-vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
 	int cascade = int(dot(vec4(greaterThan(vec4(v_viewz), u_distances)), vec4(1)));
-	vec3 uv = calculateShadowUVZ(lightspacepos, cascade);
-	float shadow = sampleShadowPCF(bias, cascade, uv.xy, uv.z);
+	cascade = clamp(cascade, 0, MaxDepthBuffers - 1);
+	float cascadeNear = (cascade == 0) ? 0.0 : u_distances[cascade - 1];
+	float cascadeFar = u_distances[cascade];
+	float cascadeRange = max(cascadeFar - cascadeNear, 0.001);
+	vec3 normalizedLightDir = normalize(lightDir);
+	vec3 normalizedNormal = normalize(normal);
+	float alignment = max(dot(normalizedNormal, normalizedLightDir), 0.0);
+	float invAlignment = 1.0 - alignment;
+	float invAlignmentSq = invAlignment * invAlignment;
+	float distanceFactor = mix(1.0, min(1.0 + cascadeRange * 0.003, 1.5), invAlignmentSq);
+	float receiverScale = mix(0.01, 0.55, invAlignmentSq * invAlignment);
+	float receiverBias = bias * receiverScale * distanceFactor;
+	receiverBias = min(receiverBias, bias * 2.0);
+	vec3 offsetPos = lightspacepos.xyz - normalizedLightDir * receiverBias;
+	vec3 uv = calculateShadowUVZ(vec4(offsetPos, 1.0), cascade);
+	float slopeBias = mix(bias * 0.02, bias * 0.85, invAlignmentSq);
+	float shadow = sampleShadowPCF(slopeBias, cascade, uv.xy, uv.z);
 #if cl_debug_cascade
 	if (cascade == 0) {
 		color.r = 0.0;
@@ -84,17 +100,17 @@ vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, i
 #endif // cl_debug_shadow
 }
 
-vec3 shadow(in float bias, vec3 color, in vec3 diffuse, in vec3 ambient) {
-	return shadow(vec4(v_lightspacepos, 1.0), bias, color, diffuse, ambient);
+vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, vec3 color, in vec3 diffuse, in vec3 ambient) {
+	return shadow(vec4(v_lightspacepos, 1.0), bias, normal, lightDir, color, diffuse, ambient);
 }
 
 #else // cl_shadowmap == 1
 
-vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightDir, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return color * (ambient + diffuse);
 }
 
-vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
+vec3 shadow(in float bias, in vec3 normal, in vec3 lightDir, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 	return color * (ambient + diffuse);
 }
 
