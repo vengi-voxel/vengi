@@ -19,6 +19,7 @@
 #endif
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/stack.h>
 #endif
 
 static core::String g_crashLogPath = "crash.log";
@@ -112,7 +113,15 @@ void core_write_stacktrace(const char *file) {
 
 void core_stacktrace() {
 #ifdef __EMSCRIPTEN__
-	EM_ASM({ stackTrace(); });
+	char callstack[4096];
+	int size = emscripten_get_callstack(EM_LOG_C_STACK, callstack, sizeof(callstack));
+	core::String str(callstack, size);
+	const char *c = str.c_str();
+	while (char *l = SDL_strchr(c, '\n')) {
+		*l = '\0';
+		Log::error("%s", c);
+		c = l + 1;
+	}
 #elif defined(HAVE_BACKWARD)
 	std::ostringstream os;
 	backward::StackTrace st;

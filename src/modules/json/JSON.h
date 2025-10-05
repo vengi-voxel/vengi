@@ -8,6 +8,7 @@
 #include "core/Assert.h"
 
 #define JSON_THROW_USER(exception) core_assert_msg(false, "%s", exception.what()); std::abort()
+#define JSON_NO_IO
 #include "private/json.hpp"
 
 namespace json {

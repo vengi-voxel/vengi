@@ -10,7 +10,6 @@
 #include "io/Archive.h"
 #include "io/LZFSEReadStream.h"
 #include "io/MemoryReadStream.h"
-#include "io/StdStreamBuf.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "palette/Palette.h"
@@ -96,10 +95,9 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 		return false;
 	}
 
-	io::StdIStreamBuf buf(*stream);
-	std::istream is(&buf);
-	nlohmann::json json;
-	is >> json;
+	core::String jsonStr;
+	stream->readString(stream->size(), jsonStr);
+	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
 	if (json.is_null()) {
 		Log::error("Failed to parse the json");
 		return false;
