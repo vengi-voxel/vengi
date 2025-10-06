@@ -359,7 +359,7 @@ public:
 	bool load(const io::FileDescription &file);
 	bool load(const io::FileDescription &file, const uint8_t *data, size_t size);
 	bool isLoading() const;
-	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph);
+	bool loadSceneGraph(scenegraph::SceneGraph &&sceneGraph, bool disconnect = true);
 
 	bool undo(int n = 1);
 	bool redo(int n = 1);

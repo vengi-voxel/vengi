@@ -1320,8 +1320,13 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 	return newNodeId;
 }
 
-bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
+bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disconnect) {
 	core_trace_scoped(LoadSceneGraph);
+
+	if (disconnect && client().isConnected()) {
+		disconnectFromServer();
+	}
+
 	bool createDiff = core::Var::get("ve_diff", "false")->boolVal();
 	if (createDiff) {
 		for (const auto &entry : sceneGraph.nodes()) {

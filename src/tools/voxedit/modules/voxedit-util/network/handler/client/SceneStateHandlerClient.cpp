@@ -16,7 +16,7 @@ void SceneStateHandlerClient::execute(const ClientId &, SceneStateMessage *msg) 
 
 	Client &client = _sceneMgr->client();
 	client.lockListener();
-	_sceneMgr->loadSceneGraph(core::move(msg->sceneGraph()));
+	_sceneMgr->loadSceneGraph(core::move(msg->sceneGraph()), false);
 	client.unlockListener();
 }
 

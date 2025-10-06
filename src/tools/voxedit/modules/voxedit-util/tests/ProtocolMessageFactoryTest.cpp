@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/UUID.h"
 #include "math/tests/TestMathHelper.h"
 #include "memento/MementoHandler.h"
 #include "palette/Palette.h"
@@ -30,9 +31,9 @@ class ProtocolMessageFactoryTest : public app::AbstractTest {
 protected:
 	memento::MementoState createTestMementoState() {
 		memento::MementoState state;
-		state.nodeUUID = "test-uuid-12345";
-		state.parentUUID = "parent-uuid-67890";
-		state.referenceUUID = "reference-uuid-abcde";
+		state.nodeUUID = core::UUID::generate();
+		state.parentUUID = core::UUID::generate();
+		state.referenceUUID = core::UUID::generate();
 		state.name = "Test Node";
 		state.nodeType = scenegraph::SceneGraphNodeType::Model;
 		state.pivot = glm::vec3(1.0f, 2.0f, 3.0f);
