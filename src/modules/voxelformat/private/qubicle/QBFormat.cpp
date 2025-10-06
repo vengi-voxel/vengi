@@ -15,6 +15,7 @@
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -309,17 +310,35 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	core::ScopedPtr<voxel::RawVolume> v(new voxel::RawVolume(region));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
-		// TODO: PERF: use a sampler
-		for (uint32_t z = 0; z < size.z; ++z) {
-			for (uint32_t y = 0; y < size.y; ++y) {
-				for (uint32_t x = 0; x < size.x; ++x) {
-					const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
-					if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
-						v->setVoxel((int)x, (int)y, (int)z, voxel);
-					} else {
-						v->setVoxel((int)z, (int)y, (int)x, voxel);
+		voxel::RawVolume::Sampler sampler(*v);
+		sampler.setPosition(0, 0, 0);
+		if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
+			for (uint32_t z = 0; z < size.z; ++z) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (uint32_t y = 0; y < size.y; ++y) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (uint32_t x = 0; x < size.x; ++x) {
+						const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveX();
 					}
+					sampler2.movePositiveY();
 				}
+				sampler.movePositiveZ();
+			}
+		} else {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (uint32_t x = 0; x < size.x; ++x) {
+				for (uint32_t y = 0; y < size.y; ++y) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (uint32_t z = 0; z < size.z; ++z) {
+						const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
+						sampler3.setVoxel(voxel);
+						sampler3.movePositiveZ();
+					}
+					sampler2.movePositiveY();
+				}
+				sampler.movePositiveX();
 			}
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
