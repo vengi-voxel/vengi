@@ -42,6 +42,7 @@
 #include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
 #include "voxedit-util/ModelNodeSettings.h"
+#include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
@@ -1274,6 +1275,10 @@ void SceneManager::resetSceneState() {
 	setCursorPosition(cursorPosition(), voxel::FaceNames::Max, true);
 	setReferencePosition(node.region().getCenter());
 	resetLastTrace();
+	if (server().isRunning()) {
+		network::SceneStateMessage msg(_sceneGraph);
+		server().network().broadcast(msg, 0);
+	}
 }
 
 void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
@@ -1323,7 +1328,7 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disconnect) {
 	core_trace_scoped(LoadSceneGraph);
 
-	if (disconnect && client().isConnected()) {
+	if (disconnect && client().isConnected() && !server().isRunning()) {
 		disconnectFromServer();
 	}
 

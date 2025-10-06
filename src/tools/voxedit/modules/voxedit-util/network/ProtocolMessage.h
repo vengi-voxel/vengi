@@ -126,13 +126,18 @@ protected:
 	}
 
 	bool serializeProperties(const scenegraph::SceneGraphNodeProperties &properties) {
-		if (!writeUInt16(properties.size())) {
+		const size_t n = properties.size();
+		if (!writeUInt16(n)) {
 			Log::error("Failed to serialize properties");
 			return false;
 		}
 		for (const auto &entry : properties) {
-			if (!writePascalStringUInt16LE(entry->key) || !writePascalStringUInt16LE(entry->value)) {
-				Log::error("Failed to serialize property");
+			if (!writePascalStringUInt16LE(entry->key)) {
+				Log::error("Failed to serialize property key");
+				return false;
+			}
+			if (!writePascalStringUInt16LE(entry->value)) {
+				Log::error("Failed to serialize property value");
 				return false;
 			}
 		}
@@ -147,8 +152,12 @@ protected:
 		}
 		for (uint16_t i = 0; i < propertyCount; ++i) {
 			core::String key, value;
-			if (!in.readPascalStringUInt16LE(key) || !in.readPascalStringUInt16LE(value)) {
-				Log::error("Failed to deserialize property");
+			if (!in.readPascalStringUInt16LE(key)) {
+				Log::error("Failed to deserialize property key for property %d/%d", i, propertyCount);
+				return false;
+			}
+			if (!in.readPascalStringUInt16LE(value)) {
+				Log::error("Failed to deserialize property value for property %d/%d", i, propertyCount);
 				return false;
 			}
 			properties.put(key, value);

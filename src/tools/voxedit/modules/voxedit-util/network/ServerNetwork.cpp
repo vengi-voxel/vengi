@@ -153,7 +153,7 @@ bool ServerNetwork::isRunning() const {
 
 void ServerNetwork::construct() {
 	core::Var::get(cfg::VoxEditNetPort, "10001", _("The port to run the voxedit server on"));
-	core::Var::get(cfg::VoxEditNetServerInterface, "0.0.0.0", _("The host to run the voxedit server on"));
+	core::Var::get(cfg::VoxEditNetServerInterface, "0.0.0.0", _("The interface to run the voxedit server on"));
 	_maxClients = core::Var::get(cfg::VoxEditNetServerMaxConnections, "10",
 								 _("The maximum number of clients that can connect to the server"));
 }
@@ -402,6 +402,7 @@ bool ServerNetwork::sendToClient(RemoteClient &client, ProtocolMessage &msg) {
 		return false;
 	}
 
+	msg.seek(0);
 	client.out.seek(0, SEEK_END);
 	client.out.writeStream(msg);
 	FD_SET(client.socket, &_impl->writeFDSet);

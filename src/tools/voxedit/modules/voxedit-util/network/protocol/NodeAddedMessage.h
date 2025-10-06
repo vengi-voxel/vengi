@@ -54,9 +54,13 @@ public:
 		in.readUUID(_referenceUUID);
 		in.readPascalStringUInt16LE(_name);
 		in.readUInt8(*(uint8_t *)&_nodeType);
-		deserializeVec3(in, _pivot);
+		if (!deserializeVec3(in, _pivot)) {
+			Log::error("Failed to deserialize pivot for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+		}
 		deserializePalette(in, _palette);
-		deserializeProperties(in, _properties);
+		if (!deserializeProperties(in, _properties)) {
+			Log::error("Failed to deserialize properties for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+		}
 		if (_nodeType == scenegraph::SceneGraphNodeType::Model) {
 			deserializeRegion(in, _region);
 			deserializeVolume(in, _compressedSize, _compressedData);
