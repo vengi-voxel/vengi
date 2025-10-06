@@ -451,7 +451,6 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 	// now render the voxels to the image
 	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height, depthFactor] (int x, int y, int z, const voxel::Voxel& voxel) {
 		core::RGBA rgba = palette.color(voxel.getColor());
-		// TODO: iso rendering coordinate calculation
 		int px = 0;
 		int py = 0;
 		float depth = 0.0f;
