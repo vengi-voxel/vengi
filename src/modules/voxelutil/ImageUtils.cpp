@@ -313,14 +313,122 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 	return volume;
 }
 
+namespace {
+const int VoxelSpriteWidth = 4;
+const int VoxelSpriteHeight = 4;
+} // namespace
+
+static void renderIsometricVoxel(const image::ImagePtr &img, const palette::Palette &palette, int x, int y, int z,
+								 const voxel::Voxel &v) {
+	const core::RGBA palCol = palette.color(v.getColor());
+	const core::RGBA darkerCol = core::Color::darker(palCol);
+	const core::RGBA lighterCol = core::Color::brighter(palCol);
+	const core::RGBA colors[VoxelSpriteWidth] = {darkerCol, darkerCol, lighterCol, lighterCol};
+	for (int j = 0; j < VoxelSpriteHeight; ++j) {
+		const int py = y + j;
+		if (py < 0 || py >= img->height()) {
+			continue;
+		}
+		for (int i = 0; i < VoxelSpriteWidth; ++i) {
+			const int px = x + i;
+			if (px < 0 || px >= img->width()) {
+				continue;
+			}
+			core::RGBA c;
+			if (j == 0) {
+				c = lighterCol;
+			} else {
+				c = colors[i];
+			}
+			img->setColor(c, px, py);
+		}
+	}
+}
+
+image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
+									 voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH,
+									 bool upScale) {
+	const voxel::Region &r = volume->region();
+
+	const int sizeX = r.getWidthInVoxels();
+	const int sizeZ = r.getDepthInVoxels();
+	const int minY = r.getLowerY();
+	const int maxY = r.getUpperY();
+
+	image::ImagePtr image = image::createEmptyImage("isometric");
+	image->resize((sizeX + sizeZ) * 2, sizeX + sizeZ + (maxY - minY + 1) * 3 - 1);
+	for (int x = 0; x < image->width(); ++x) {
+		for (int y = 0; y < image->height(); ++y) {
+			image->setColor(background, x, y);
+		}
+	}
+
+	// TODO: visitor order is not yet working
+	VisitorOrder visitorOrder;
+	switch (frontFace) {
+	case voxel::FaceNames::Front:
+		visitorOrder = VisitorOrder::mXmZY;
+		break;
+	case voxel::FaceNames::Back:
+		visitorOrder = VisitorOrder::mXZmY;
+		break;
+	case voxel::FaceNames::Right:
+		visitorOrder = VisitorOrder::mYmZmX;
+		break;
+	case voxel::FaceNames::Left:
+		visitorOrder = VisitorOrder::mYZX;
+		break;
+	case voxel::FaceNames::Up:
+		visitorOrder = VisitorOrder::mZmXmY;
+		break;
+	case voxel::FaceNames::Down:
+		visitorOrder = VisitorOrder::ZmXY;
+		break;
+	default:
+		return 0;
+	}
+	// visitor to draw each visible voxel. We must translate volume coords to image coords.
+	auto func = [&](int vx, int vy, int vz, const voxel::Voxel &v) {
+		const int x = vx - r.getLowerX();
+		const int z = vz - r.getLowerZ();
+		const int bmpPosX = 2 * (sizeZ - 1) + (x - z) * 2;
+		const int bmpPosY = image->height() - 2 + x + z - sizeX - sizeZ - (vy - minY) * 3;
+		renderIsometricVoxel(image, palette, bmpPosX, bmpPosY, vy, v);
+	};
+	voxelutil::visitSurfaceVolume(*volume, func, visitorOrder);
+
+	// check if we need to rescale the image
+	int width = image->width();
+	int height = image->height();
+	if ((imgW > 0 && imgW != width) || (imgH > 0 && imgH != height)) {
+		if (imgW <= 0) {
+			const float factor = (float)imgH / (float)height;
+			imgW = (int)glm::round((float)width * factor);
+		}
+		if (imgH <= 0) {
+			const float factor = (float)imgW / (float)width;
+			imgH = (int)glm::round((float)height * factor);
+		}
+		const bool wouldUpscale = imgW > width || imgH > height;
+		if (upScale || !wouldUpscale) {
+			image->resize(imgW, imgH);
+		}
+	}
+
+	// finally mark this as loaded to indicate that the image data is valid
+	image->markLoaded();
+
+	return image;
+}
+
 image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH, bool upScale, float depthFactor) {
+							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH, bool upScale,
+							  float depthFactor) {
 	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 	int width = 1;
 	int height = 1;
-	// TODO: iso rendering proper image size
 	if (voxel::isY(frontFace)) {
 		width = dim.x;
 		height = dim.z;

@@ -12,12 +12,12 @@ class RawVolumeWrapper;
 class RawVolume;
 class Voxel;
 class Region;
-}
+} // namespace voxel
 
 namespace palette {
 class PaletteLookup;
 class Palette;
-}
+} // namespace palette
 
 namespace voxelutil {
 
@@ -46,4 +46,13 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
 											voxel::FaceNames frontFace = voxel::FaceNames::Front,
 											core::RGBA background = {}, int imgW = -1, int imgH = -1,
 											bool upScale = true, float depthFactor = 0.0f);
-}
+
+/**
+ * @brief Creates an isometric render image for voxel::RawVolume
+ * @sa voxel::RawVolume
+ */
+[[nodiscard]] image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
+												   voxel::FaceNames frontFace = voxel::FaceNames::Front,
+												   core::RGBA background = {}, int imgW = -1, int imgH = -1,
+												   bool upScale = true);
+} // namespace voxelutil

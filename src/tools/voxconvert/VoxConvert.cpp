@@ -64,6 +64,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--json").setDescription(
 		"Print the scene graph of the input file. Give full as argument to also get mesh details");
 	registerArg("--image").setDescription("Print the scene graph of the input file as image to the console");
+	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the palette data into the given output file format");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
@@ -440,7 +441,9 @@ app::AppState VoxConvert::onInit() {
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
 		const float depthFactor2D = core::Var::getSafe(cfg::VoxConvertDepthFactor2D)->floatVal();
 		const image::ImagePtr &image =
-			voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false, depthFactor2D);
+			hasArg("--isometric")
+				? voxelutil::renderIsometricImage(v, merged.palette, frontFace, bgColor, width, height)
+				: voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false, depthFactor2D);
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());
 	}

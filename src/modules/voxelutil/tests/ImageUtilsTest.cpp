@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
+#include "io/FileStream.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -67,16 +68,16 @@ protected:
 				const core::RGBA actualColor = palette.color(voxel.getColor());
 				ASSERT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
 					<< "Expected color: " << core::Color::print(expectedColor)
-					<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", "
-					<< expectedY << ", " << z << ") with height alpha value " << (int)expectedColor.a
-					<< " and min height " << minHeight << " and height in voxels " << volumeHeight;
-					if (expectedY > 0) {
-						const voxel::Voxel &actualUnderground = volume.voxel(x, expectedY - 1, z);
-						EXPECT_EQ(underground.getMaterial(), actualUnderground.getMaterial())
-							<< "Expected underground voxel at (" << x << ", " << expectedY - 1 << ", " << z
-							<< ") to have material " << underground.getMaterial()
-							<< ", but got: " << actualUnderground.getMaterial();
-					}
+					<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", " << expectedY
+					<< ", " << z << ") with height alpha value " << (int)expectedColor.a << " and min height "
+					<< minHeight << " and height in voxels " << volumeHeight;
+				if (expectedY > 0) {
+					const voxel::Voxel &actualUnderground = volume.voxel(x, expectedY - 1, z);
+					EXPECT_EQ(underground.getMaterial(), actualUnderground.getMaterial())
+						<< "Expected underground voxel at (" << x << ", " << expectedY - 1 << ", " << z
+						<< ") to have material " << underground.getMaterial()
+						<< ", but got: " << actualUnderground.getMaterial();
+				}
 			}
 		}
 	}
@@ -181,6 +182,42 @@ TEST_F(ImageUtilsTest, testImportColoredHeightmap) {
 TEST_F(ImageUtilsTest, testImportColoredHeightmapSurfaceOnly) {
 	const voxel::Voxel underground = voxel::createVoxel(voxel::VoxelType::Air, 1);
 	validateHeightmap(underground);
+}
+
+TEST_F(ImageUtilsTest, testRenderIsometric) {
+	palette::Palette palette;
+	palette.nippon();
+	voxel::Region _region(0, 63);
+	voxel::RawVolume volume(_region);
+	const voxel::Voxel color1 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel color2 = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel color3 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
+
+	// Fill a small structure in the lower corner of the test region for a nicer render:
+	const glm::ivec3 base = _region.getLowerCorner();
+	// 3x3x3 cube with alternating colors
+	for (int z = 0; z < 3; ++z) {
+		for (int y = 0; y < 3; ++y) {
+			for (int x = 0; x < 3; ++x) {
+				voxel::Voxel v = (x + y + z) % 3 == 0 ? color1 : ((x + y + z) % 3 == 1 ? color2 : color3);
+				volume.setVoxel(base + glm::ivec3(x, y, z), v);
+			}
+		}
+	}
+
+	// Add a small column and a diagonal line for depth cues
+	for (int y = 0; y < 6; ++y) {
+		volume.setVoxel(base + glm::ivec3(5, y, 0), color2);
+	}
+	for (int i = 0; i < 6; ++i) {
+		volume.setVoxel(base + glm::ivec3(i, i % 4, 5), color3);
+	}
+
+	const image::ImagePtr &img = renderIsometricImage(&volume, palette);
+	ASSERT_TRUE(img && img->isLoaded());
+	const io::FilePtr &file = _testApp->filesystem()->open("isometric.png", io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	ASSERT_TRUE(image::writePNG(img, stream));
 }
 
 } // namespace voxelutil
