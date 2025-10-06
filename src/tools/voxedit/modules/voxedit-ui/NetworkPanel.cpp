@@ -9,6 +9,7 @@
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/network/NetworkAdapters.h"
 #include "voxedit-util/network/ServerNetwork.h"
 
 namespace voxedit {
@@ -53,12 +54,24 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 						ImGui::Text(_("Traffic: %i bytes sent, %i bytes received"), (int)client.bytesOut, (int)client.bytesIn);
 					}
 				} else {
-					// TODO: use getNetworkAdapters() and add auto completion to the typing of the text field
-					ImGui::InputVarString(_("Interface"), cfg::VoxEditNetServerInterface);
+					static const core::DynamicArray<core::String> &adapters = network::getNetworkAdapters();
+					const core::VarPtr &ifaceVar = core::Var::getSafe(cfg::VoxEditNetServerInterface);
+					const core::String &iface = ifaceVar->strVal();
+					if (ImGui::BeginCombo(_("Interface"), iface.c_str())) {
+						for (const core::String &ip : adapters) {
+							const bool selected = iface == ip;
+							if (ImGui::Selectable(ip.c_str(), selected)) {
+								ifaceVar->setVal(ip);
+							}
+							if (selected) {
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+						ImGui::EndCombo();
+					}
 					ImGui::InputVarInt(_("Port"), portVar);
 					if (ImGui::Button(_("Start Server"))) {
 						const int port = portVar->intVal();
-						const core::String &iface = core::Var::getSafe(cfg::VoxEditNetServerInterface)->strVal();
 						_sceneMgr->startLocalServer(port, iface);
 					}
 					if (ImGui::IsItemHovered()) {
