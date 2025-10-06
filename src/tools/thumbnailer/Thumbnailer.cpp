@@ -4,6 +4,7 @@
 
 #include "Thumbnailer.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "image/Image.h"
@@ -12,11 +13,13 @@
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
+#include "voxel/Face.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
 #include "engine-git.h"
 #include "voxelrender/SceneGraphRenderer.h"
+#include "voxelutil/ImageUtils.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -43,12 +46,11 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDescription("The input file to create a thumbnail for")
 		.addFlag(ARGUMENT_FLAG_FILE)
 		.addFlag(ARGUMENT_FLAG_MANDATORY);
-	registerArg("--output").setShort("-o").setDescription("The output image file").addFlag(ARGUMENT_FLAG_FILE);
-	registerArg("--size")
-		.setShort("-s")
-		.setDescription("Size of the thumbnail in pixels")
-		.setDefaultValue("128")
-		.addFlag(ARGUMENT_FLAG_MANDATORY);
+	registerArg("--output")
+		.setShort("-o")
+		.setDescription("The output image file")
+		.addFlag(ARGUMENT_FLAG_FILE | ARGUMENT_FLAG_MANDATORY);
+	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128");
 	registerArg("--turntable").setShort("-t").setDescription("Render in different angles (16 by default)");
 	registerArg("--fallback").setShort("-f").setDescription("Create a fallback thumbnail if an error occurs");
 	registerArg("--use-scene-camera")
@@ -69,6 +71,8 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDefaultValue("135")
 		.setDescription("Set the sun azimuth");
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
+	registerArg("--image").setDescription("Create a 2d image of the scene");
+	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used");
 	Argument &cameraMode =
 		registerArg("--camera-mode")
 			.setDefaultValue(voxelrender::SceneCameraModeStr[(int)voxelrender::SceneCameraMode::Free])
@@ -105,7 +109,7 @@ app::AppState Thumbnailer::onInit() {
 }
 
 static image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchivePtr &archive,
-									   voxelformat::ThumbnailContext &ctx) {
+									   voxelformat::ThumbnailContext &ctx, voxel::FaceNames image2dFace, bool isometric2d) {
 	voxelformat::LoadContext loadctx;
 	image::ImagePtr image = voxelformat::loadScreenshot(fileName, archive, loadctx);
 	if (image && image->isLoaded()) {
@@ -118,6 +122,20 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, const io::A
 	if (!voxelformat::loadFormat(fileDesc, archive, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return image::ImagePtr();
+	}
+
+	if (image2dFace != voxel::FaceNames::Max) {
+		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+		if (!merged.hasVolume()) {
+			Log::error("No valid volume in the scenegraph to print");
+			return image::ImagePtr();
+		}
+		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
+		const core::RGBA bgColor(0, 0, 0, 255);
+		const float depthFactor2D = 0.0f;
+		return isometric2d
+				? voxelutil::renderIsometricImage(v, merged.palette, image2dFace, bgColor, ctx.outputSize.x, ctx.outputSize.y)
+				: voxelutil::renderToImage(v, merged.palette, image2dFace, bgColor, ctx.outputSize.x, ctx.outputSize.y, false, depthFactor2D);
 	}
 
 	return voxelrender::volumeThumbnail(sceneGraph, ctx);
@@ -176,7 +194,7 @@ app::AppState Thumbnailer::onRunning() {
 	if (ctx.useWorldPosition) {
 		const core::String &pos = getArgVal("--position");
 		core::string::parseVec3(pos, glm::value_ptr(ctx.worldPosition), ":");
-		Log::info("Use position %f:%f:%f", ctx.worldPosition.x, ctx.worldPosition.y, ctx.worldPosition.z);
+		Log::debug("Use position %f:%f:%f", ctx.worldPosition.x, ctx.worldPosition.y, ctx.worldPosition.z);
 	}
 	if (hasArg("--angles")) {
 		const core::String &anglesStr = getArgVal("--angles");
@@ -203,7 +221,14 @@ app::AppState Thumbnailer::onRunning() {
 			Log::error("Failed to open %s for reading", infile.c_str());
 			return app::AppState::Cleanup;
 		}
-		const image::ImagePtr &image = volumeThumbnail(infile, archive, ctx);
+		voxel::FaceNames frontFace = voxel::FaceNames::Max;
+		bool isometric2d = false;
+		if (hasArg("--image")) {
+			const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
+			frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
+			isometric2d = hasArg("--isometric");
+		}
+		const image::ImagePtr &image = volumeThumbnail(infile, archive, ctx, frontFace, isometric2d);
 		saveImage(image);
 	}
 

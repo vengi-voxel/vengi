@@ -366,26 +366,13 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 	// TODO: visitor order is not yet working
 	VisitorOrder visitorOrder;
 	switch (frontFace) {
-	case voxel::FaceNames::Front:
-		visitorOrder = VisitorOrder::mXmZY;
-		break;
-	case voxel::FaceNames::Back:
-		visitorOrder = VisitorOrder::mXZmY;
-		break;
-	case voxel::FaceNames::Right:
-		visitorOrder = VisitorOrder::mYmZmX;
-		break;
-	case voxel::FaceNames::Left:
-		visitorOrder = VisitorOrder::mYZX;
-		break;
+	default:
 	case voxel::FaceNames::Up:
-		visitorOrder = VisitorOrder::mZmXmY;
+		visitorOrder = VisitorOrder::XZY;
 		break;
 	case voxel::FaceNames::Down:
-		visitorOrder = VisitorOrder::ZmXY;
+		visitorOrder = VisitorOrder::mXZY;
 		break;
-	default:
-		return 0;
 	}
 	// visitor to draw each visible voxel. We must translate volume coords to image coords.
 	auto func = [&](int vx, int vy, int vz, const voxel::Voxel &v) {
