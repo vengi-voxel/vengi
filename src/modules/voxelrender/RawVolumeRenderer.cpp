@@ -736,7 +736,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
 		if (indices == 0u) {
 			if (meshState->volume(bufferIndex)) {
-				Log::debug("No indices but volume for idx %d: %d", idx, bufferIndex);
+				Log::trace("No indices but volume for idx %d: %d", idx, bufferIndex);
 			}
 			continue;
 		}
