@@ -52,6 +52,38 @@ class ProtocolMessage : public io::BufferedReadWriteStream {
 protected:
 	ProtocolId _id;
 
+	class ScopedProtocolMessageSerialization {
+	private:
+		ProtocolMessage *_msg;
+		int64_t _startPos;
+		const char *_type;
+	public:
+		ScopedProtocolMessageSerialization(ProtocolMessage *msg, const char *type) : _msg(msg), _type(type) {
+			_startPos = _msg->pos();
+		}
+		~ScopedProtocolMessageSerialization() {
+			const int64_t endPos = _msg->pos();
+			const uint32_t delta = endPos - _startPos;
+			Log::debug("Serialized %u bytes for message type %d (%s)", delta, _msg->_id, _type);
+		}
+	};
+
+	class ScopedProtocolStreamDeserialization {
+	private:
+		MessageStream *_msg;
+		int64_t _startPos;
+		const char *_type;
+	public:
+		ScopedProtocolStreamDeserialization(MessageStream &msg, const char *type) : _msg(&msg), _type(type) {
+			_startPos = _msg->pos();
+		}
+		~ScopedProtocolStreamDeserialization() {
+			const int64_t endPos = _msg->pos();
+			const uint32_t delta = endPos - _startPos;
+			Log::debug("Deserialized %u bytes for type %s", delta, _type);
+		}
+	};
+
 	void writeSize() {
 		const int64_t bytes = pos();
 		core_assert_always(bytes >= 5); // at least the size of the header
@@ -62,6 +94,7 @@ protected:
 	}
 
 	bool serializePalette(const palette::Palette &palette) {
+		ScopedProtocolMessageSerialization s(this, "Palette");
 		if (!writePascalStringUInt16LE(palette.name())) {
 			Log::error("Failed to write palette name");
 			return false;
@@ -73,11 +106,11 @@ protected:
 		if (palette.isBuiltIn()) {
 			return true;
 		}
-		if (!writeUInt8(palette.size())) {
+		if (!writeUInt16(palette.colorCount())) {
 			Log::error("Failed to write palette size");
 			return false;
 		}
-		for (size_t i = 0; i < palette.size(); ++i) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
 			const core::RGBA color = palette.color(i);
 			const palette::Material &material = palette.material(i);
 			if (!writeUInt32(color.rgba)) {
@@ -114,7 +147,8 @@ protected:
 		return true;
 	}
 
-	bool deserializePalette(MessageStream &in, palette::Palette &palette) const {
+	static bool deserializePalette(MessageStream &in, palette::Palette &palette) {
+		ScopedProtocolStreamDeserialization s(in, "Palette");
 		core::String paletteName;
 		if (!in.readPascalStringUInt16LE(paletteName)) {
 			Log::error("Failed to read palette name");
@@ -123,17 +157,18 @@ protected:
 		palette.setName(paletteName);
 		bool isBuiltIn = in.readBool();
 		if (isBuiltIn) {
+			Log::error("Built-in palette - nothing more to read");
 			core_assert(palette::Palette::isBuiltIn(paletteName));
 			return palette.load(paletteName.c_str());
 		}
 
-		uint8_t paletteSize = 0;
-		if (in.readUInt8(paletteSize) == -1) {
+		uint16_t paletteSize = 0;
+		if (in.readUInt16(paletteSize) == -1) {
 			Log::error("Failed to read palette size");
 			return false;
 		}
 		palette.setSize(paletteSize);
-		for (uint8_t i = 0; i < paletteSize; ++i) {
+		for (uint16_t i = 0; i < paletteSize; ++i) {
 			core::RGBA color;
 			if (in.readUInt32(color.rgba) == -1) {
 				Log::error("Failed to read color for palette index %d/%d", i, paletteSize);
@@ -179,6 +214,7 @@ protected:
 	}
 
 	bool serializeProperties(const scenegraph::SceneGraphNodeProperties &properties) {
+		ScopedProtocolMessageSerialization s(this, "Properties");
 		const uint16_t n = (uint16_t)properties.size();
 		if (!writeUInt16(n)) {
 			Log::error("Failed to serialize properties");
@@ -197,7 +233,8 @@ protected:
 		return true;
 	}
 
-	bool deserializeProperties(MessageStream &in, scenegraph::SceneGraphNodeProperties &properties) const {
+	static bool deserializeProperties(MessageStream &in, scenegraph::SceneGraphNodeProperties &properties) {
+		ScopedProtocolStreamDeserialization s(in, "Properties");
 		uint16_t propertyCount = 0;
 		if (in.readUInt16(propertyCount) == -1) {
 			Log::error("Failed to deserialize properties");
@@ -206,11 +243,11 @@ protected:
 		for (uint16_t i = 0; i < propertyCount; ++i) {
 			core::String key, value;
 			if (!in.readPascalStringUInt16LE(key)) {
-				Log::error("Failed to deserialize property key for property %d/%d", i, propertyCount);
+				Log::error("Failed to deserialize property key for property %d/%d", (int)i, (int)propertyCount);
 				return false;
 			}
 			if (!in.readPascalStringUInt16LE(value)) {
-				Log::error("Failed to deserialize property value for property %d/%d", i, propertyCount);
+				Log::error("Failed to deserialize property value for property %d/%d", (int)i, (int)propertyCount);
 				return false;
 			}
 			properties.put(key, value);
@@ -219,6 +256,7 @@ protected:
 	}
 
 	bool serializeKeyFrames(const scenegraph::SceneGraphKeyFramesMap &keyFrames) {
+		ScopedProtocolMessageSerialization s(this, "Keyframes");
 		if (!writeUInt16((uint16_t)keyFrames.size())) {
 			Log::error("Failed to serialize key frame animation count");
 			return false;
@@ -257,9 +295,10 @@ protected:
 		return true;
 	}
 
-	bool deserializeKeyFrames(MessageStream &in, scenegraph::SceneGraphKeyFramesMap &keyFrames) const {
+	static bool deserializeKeyFrames(MessageStream &in, scenegraph::SceneGraphKeyFramesMap &keyFrames) {
+		ScopedProtocolStreamDeserialization s(in, "Keyfranes");
 		uint16_t animationCount = 0;
-		if (!in.readUInt16(animationCount)) {
+		if (in.readUInt16(animationCount) == -1) {
 			Log::error("Failed to read animation count");
 			return false;
 		}
@@ -270,20 +309,20 @@ protected:
 				return false;
 			}
 			uint16_t keyFrameCount;
-			if (!in.readUInt16(keyFrameCount)) {
+			if (in.readUInt16(keyFrameCount) == -1) {
 				Log::error("Failed to read key frame count for animation %s", animationName.c_str());
 				return false;
 			}
 			scenegraph::SceneGraphKeyFrames keyFramesList;
 			for (uint16_t k = 0; k < keyFrameCount; ++k) {
 				scenegraph::SceneGraphKeyFrame keyFrame;
-				if (!in.readInt32(keyFrame.frameIdx)) {
+				if (in.readInt32(keyFrame.frameIdx) == -1) {
 					Log::error("Failed to read frame index");
 					return false;
 				}
 				keyFrame.longRotation = in.readBool();
 				uint8_t interpolationValue;
-				if (!in.readUInt8(interpolationValue)) {
+				if (in.readUInt8(interpolationValue) == -1) {
 					Log::error("Failed to read interpolation value");
 					return false;
 				}
@@ -301,6 +340,7 @@ protected:
 	}
 
 	bool serializeRegion(const voxel::Region &region) {
+		ScopedProtocolMessageSerialization s(this, "Region");
 		core_assert_always(region.isValid());
 		const glm::ivec3 &mins = region.getLowerCorner();
 		const glm::ivec3 &maxs = region.getUpperCorner();
@@ -312,7 +352,8 @@ protected:
 		return true;
 	}
 
-	bool deserializeRegion(MessageStream &in, voxel::Region &region) const {
+	static bool deserializeRegion(MessageStream &in, voxel::Region &region) {
+		ScopedProtocolStreamDeserialization s(in, "Region");
 		glm::ivec3 mins{0}, maxs{0};
 		if (in.readInt32(mins.x) == -1 || in.readInt32(mins.y) == -1 || in.readInt32(mins.z) == -1 ||
 			in.readInt32(maxs.x) == -1 || in.readInt32(maxs.y) == -1 || in.readInt32(maxs.z) == -1) {
@@ -326,6 +367,7 @@ protected:
 	}
 
 	bool serializeMat4x4(const glm::mat4 &matrix) {
+		ScopedProtocolMessageSerialization s(this, "Mat4x4");
 		const float *matrixPtr = glm::value_ptr(matrix);
 		for (int i = 0; i < 16; ++i) {
 			if (!writeFloat(matrixPtr[i])) {
@@ -336,7 +378,8 @@ protected:
 		return true;
 	}
 
-	bool deserializeMat4x4(MessageStream &in, glm::mat4 &matrix) const {
+	static bool deserializeMat4x4(MessageStream &in, glm::mat4 &matrix) {
+		ScopedProtocolStreamDeserialization s(in, "Mat4x4");
 		float *matrixPtr = glm::value_ptr(matrix);
 		for (int i = 0; i < 16; ++i) {
 			if (in.readFloat(matrixPtr[i]) == -1) {
@@ -349,6 +392,7 @@ protected:
 	}
 
 	bool serializeVec3(const glm::vec3 &vec) {
+		ScopedProtocolMessageSerialization s(this, "Vec3");
 		if (!writeFloat(vec.x) || !writeFloat(vec.y) || !writeFloat(vec.z)) {
 			Log::error("Failed to serialize vec3");
 			return false;
@@ -356,7 +400,8 @@ protected:
 		return true;
 	}
 
-	bool deserializeVec3(MessageStream &in, glm::vec3 &vec) const {
+	static bool deserializeVec3(MessageStream &in, glm::vec3 &vec) {
+		ScopedProtocolStreamDeserialization s(in, "Vec3");
 		if (in.readFloat(vec.x) == -1 || in.readFloat(vec.y) == -1 || in.readFloat(vec.z) == -1) {
 			Log::error("Failed to deserialize vec3");
 			vec = glm::vec3(0.0f);
@@ -365,7 +410,21 @@ protected:
 		return true;
 	}
 
-	bool deserializeVolume(MessageStream &in, uint32_t &compressedSize, uint8_t *&compressedData) const {
+	bool serializeVolume(const uint8_t *compressedData, uint32_t compressedSize) {
+		ScopedProtocolMessageSerialization s(this, "Volume");
+		if (!writeUInt32(compressedSize)) {
+			Log::error("Failed to write compressed size");
+			return false;
+		}
+		if (write(compressedData, compressedSize) == -1) {
+			Log::error("Failed to write compressed volume data");
+			return false;
+		}
+		return true;
+	}
+
+	static bool deserializeVolume(MessageStream &in, uint32_t &compressedSize, uint8_t *&compressedData) {
+		ScopedProtocolStreamDeserialization s(in, "Volume");
 		if (in.readUInt32(compressedSize) == -1) {
 			compressedSize = 0;
 			compressedData = nullptr;
@@ -385,17 +444,6 @@ protected:
 		return true;
 	}
 
-	bool serializeVolume(const uint8_t *compressedData, uint32_t compressedSize) {
-		if (!writeUInt32(compressedSize)) {
-			Log::error("Failed to write compressed size");
-			return false;
-		}
-		if (write(compressedData, compressedSize) == -1) {
-			Log::error("Failed to write compressed volume data");
-			return false;
-		}
-		return true;
-	}
 public:
 	ProtocolMessage() : _id(0xff) {
 	}

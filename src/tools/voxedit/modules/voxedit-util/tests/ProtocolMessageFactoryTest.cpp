@@ -10,6 +10,7 @@
 #include "math/tests/TestMathHelper.h"
 #include "memento/MementoHandler.h"
 #include "palette/Palette.h"
+#include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/network/ProtocolMessage.h"
 #include "voxedit-util/network/protocol/InitSessionMessage.h"
@@ -45,7 +46,7 @@ protected:
 		// Create a test palette
 		palette::Palette palette;
 		palette.setName("TestPalette");
-		palette.setSize(4);
+		palette.setSize(palette::PaletteMaxColors);
 		palette.setColor(0, core::RGBA(255, 0, 0, 255));
 		palette.setColor(1, core::RGBA(0, 255, 0, 255));
 		palette.setColor(2, core::RGBA(0, 0, 255, 255));
@@ -54,6 +55,11 @@ protected:
 		palette.setColorName(1, "Green");
 		palette.setColorName(2, "Blue");
 		palette.setColorName(3, "White");
+
+		for (int i = 4; i < palette::PaletteMaxColors; ++i) {
+			palette.setColor(i, core::RGBA(0, 0, 0, 255));
+			palette.setColorName(i, "Empty");
+		}
 
 		state.palette = palette;
 
@@ -156,6 +162,12 @@ protected:
 		MessageType *typedMsg = static_cast<MessageType *>(deserializedMsg);
 		ASSERT_NE(nullptr, typedMsg) << "Failed to cast deserialized message for " << messageName;
 
+		if (messageName != "SceneStateMessage") {
+			deserializedMsg->seek(0);
+			deserializedMsg->writeBack();
+			EXPECT_EQ(deserializedMsg->size(), originalMsg->size()) << messageName + ": Size mismatch after writeBack";
+		}
+
 		delete deserializedMsg;
 	}
 
@@ -177,6 +189,9 @@ protected:
 		ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch for " << messageName;
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to cast deserialized message for " << messageName;
 		verifyMessageContent(state, (MessageType *)((voxedit::network::ProtocolMessage *)deserializedMsg), messageName);
+		deserializedMsg->seek(0);
+		deserializedMsg->writeBack();
+		EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << messageName + ": Size mismatch after writeBack";
 	}
 
 	void verifyMessageContent(voxedit::network::InitSessionMessage *original,

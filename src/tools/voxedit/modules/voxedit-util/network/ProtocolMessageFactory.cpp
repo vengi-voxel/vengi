@@ -48,6 +48,11 @@ ProtocolMessage *ProtocolMessageFactory::create(MessageStream &in) {
 	in.readUInt8(type);
 	Log::debug("Message of type %d with size %u", type, size);
 	const int64_t startPos = in.pos();
+	if (in.remaining() < size) {
+		Log::error("Not enough data in the stream to read the full message. Remaining: %zu, expected: %u",
+				   in.remaining(), size);
+		return nullptr;
+	}
 	ProtocolMessage *msg = nullptr;
 	switch (type) {
 	case PROTO_PING:
