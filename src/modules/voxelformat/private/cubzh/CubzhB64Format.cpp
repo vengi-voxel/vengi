@@ -295,7 +295,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 
 			// create a group node to apply the transforms to - this is needed to keep the original transforms of the
 			// imported 3zh nodes
-			scenegraph::SceneGraphNode instanceGroupNode(scenegraph::SceneGraphNodeType::Group, uuid);
+			scenegraph::SceneGraphNode instanceGroupNode(scenegraph::SceneGraphNodeType::Group, core::UUID(uuid));
 			instanceGroupNode.setProperty("Physic mode", core::string::toString((int)physicMode));
 			if (!name.empty()) {
 				instanceGroupNode.setName(name);
