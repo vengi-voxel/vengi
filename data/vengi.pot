@@ -6,6 +6,9 @@ msgid ""
 "fatal errors."
 msgstr ""
 
+msgid "Print the cvars in json format"
+msgstr ""
+
 msgid "Print the version and quit"
 msgstr ""
 
@@ -1204,19 +1207,43 @@ msgstr ""
 msgid "Add new camera"
 msgstr ""
 
+msgid "Camera rotation"
+msgstr ""
+
+msgid "Eye"
+msgstr ""
+
+msgid "Reference Point"
+msgstr ""
+
+msgid "Camera movement"
+msgstr ""
+
+msgid "Clipping"
+msgstr ""
+
+msgid "Gravity"
+msgstr ""
+
+msgid "Orthogonal"
+msgstr ""
+
+msgid "Perspective"
+msgstr ""
+
 msgid "Camera"
 msgstr ""
 
 msgid "Position"
 msgstr ""
 
-msgid "Target distance"
-msgstr ""
-
 msgid "Farplane"
 msgstr ""
 
 msgid "Nearplane"
+msgstr ""
+
+msgid "Target distance"
 msgstr ""
 
 msgid "FOV"
@@ -1564,9 +1591,6 @@ msgid "View distance"
 msgstr ""
 
 msgid "Reset layout"
-msgstr ""
-
-msgid "Scene settings"
 msgstr ""
 
 msgid "Select"
@@ -2134,6 +2158,9 @@ msgstr ""
 msgid "Preset: Morning"
 msgstr ""
 
+msgid "Scene settings"
+msgstr ""
+
 msgid "Lit (No Shadows)"
 msgstr ""
 
@@ -2521,12 +2548,6 @@ msgstr ""
 msgid "Loading"
 msgstr ""
 
-msgid "Orthogonal"
-msgstr ""
-
-msgid "Perspective"
-msgstr ""
-
 msgid "Lines"
 msgstr ""
 
@@ -2552,31 +2573,13 @@ msgid ""
 "Pending frames: %u"
 msgstr ""
 
-msgid "Camera rotation"
-msgstr ""
-
-msgid "Eye"
-msgstr ""
-
-msgid "Reference Point"
-msgstr ""
-
-msgid "Camera movement"
-msgstr ""
-
-msgid "Clipping"
-msgstr ""
-
-msgid "Gravity"
-msgstr ""
-
-msgid "Reset camera"
-msgstr ""
-
 msgid "Screenshot"
 msgstr ""
 
 msgid "View"
+msgstr ""
+
+msgid "Reset camera"
 msgstr ""
 
 msgid "Scene Mode"
@@ -3074,7 +3077,7 @@ msgstr ""
 msgid "The port to run the voxedit server on"
 msgstr ""
 
-msgid "The host to run the voxedit server on"
+msgid "The interface to run the voxedit server on"
 msgstr ""
 
 msgid "The maximum number of clients that can connect to the server"

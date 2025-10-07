@@ -27,6 +27,9 @@ msgstr ""
 "Je niedriger der Wert, desto mehr sehen Sie. 1 ist das höchste "
 "Protokollniveau, 5 sind nur schwerwiegende Fehler."
 
+msgid "Print the cvars in json format"
+msgstr ""
+
 msgid "Print the version and quit"
 msgstr "Die Version anzeigen und beenden"
 
@@ -1237,20 +1240,44 @@ msgstr ""
 msgid "Add new camera"
 msgstr "Neue Kamera hinzufügen"
 
+msgid "Camera rotation"
+msgstr "Kamerarotation"
+
+msgid "Eye"
+msgstr "Auge"
+
+msgid "Reference Point"
+msgstr "Referenzpunkt"
+
+msgid "Camera movement"
+msgstr "Kamerabewegung"
+
+msgid "Clipping"
+msgstr ""
+
+msgid "Gravity"
+msgstr ""
+
+msgid "Orthogonal"
+msgstr "Orthogonal"
+
+msgid "Perspective"
+msgstr "Perspektive"
+
 msgid "Camera"
 msgstr "Kamera"
 
 msgid "Position"
 msgstr "Position"
 
-msgid "Target distance"
-msgstr "Entfernung zum Ziel"
-
 msgid "Farplane"
 msgstr "Farplane"
 
 msgid "Nearplane"
 msgstr "Nearplane"
+
+msgid "Target distance"
+msgstr "Entfernung zum Ziel"
 
 msgid "FOV"
 msgstr "FOV"
@@ -1613,9 +1640,6 @@ msgstr "Sichtweite"
 
 msgid "Reset layout"
 msgstr "Layout zurücksetzen"
-
-msgid "Scene settings"
-msgstr "Szene-Einstellungen"
 
 msgid "Select"
 msgstr "Auswählen"
@@ -2206,6 +2230,9 @@ msgstr ""
 msgid "Preset: Morning"
 msgstr ""
 
+msgid "Scene settings"
+msgstr "Szene-Einstellungen"
+
 msgid "Lit (No Shadows)"
 msgstr ""
 
@@ -2632,12 +2659,6 @@ msgstr ""
 msgid "Loading"
 msgstr "Laden"
 
-msgid "Orthogonal"
-msgstr "Orthogonal"
-
-msgid "Perspective"
-msgstr "Perspektive"
-
 msgid "Lines"
 msgstr "Linien"
 
@@ -2665,32 +2686,14 @@ msgstr ""
 "Sie können die Bildrate des Videos mit der cvar %s steuern\n"
 "Ausstehende Frames: %u"
 
-msgid "Camera rotation"
-msgstr "Kamerarotation"
-
-msgid "Eye"
-msgstr "Auge"
-
-msgid "Reference Point"
-msgstr "Referenzpunkt"
-
-msgid "Camera movement"
-msgstr "Kamerabewegung"
-
-msgid "Clipping"
-msgstr ""
-
-msgid "Gravity"
-msgstr ""
-
-msgid "Reset camera"
-msgstr "Kamera zurücksetzen"
-
 msgid "Screenshot"
 msgstr "Screenshot"
 
 msgid "View"
 msgstr "Ansicht"
+
+msgid "Reset camera"
+msgstr "Kamera zurücksetzen"
 
 msgid "Scene Mode"
 msgstr "Szenenmodus"
@@ -3248,7 +3251,7 @@ msgstr ""
 msgid "The port to run the voxedit server on"
 msgstr ""
 
-msgid "The host to run the voxedit server on"
+msgid "The interface to run the voxedit server on"
 msgstr ""
 
 msgid "The maximum number of clients that can connect to the server"
