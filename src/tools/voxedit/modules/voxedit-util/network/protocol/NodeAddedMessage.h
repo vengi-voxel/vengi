@@ -78,37 +78,51 @@ public:
 		_id = PROTO_NODE_ADDED;
 		if (in.readUUID(_parentUUID) == -1) {
 			Log::error("Failed to read parent UUID");
+			return;
 		}
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID");
+			return;
 		}
 		if (in.readUUID(_referenceUUID) == -1) {
 			Log::error("Failed to read reference UUID");
+			return;
 		}
 		if (!in.readPascalStringUInt16LE(_name)) {
 			Log::error("Failed to read node name");
 			_name = "";
+			return;
 		}
-		in.readUInt8(*(uint8_t *)&_nodeType);
+		if (in.readUInt8(*(uint8_t *)&_nodeType) == -1) {
+			Log::error("Failed to read node type for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+			_nodeType = scenegraph::SceneGraphNodeType::Unknown;
+			return;
+		}
 		if (!deserializeVec3(in, _pivot)) {
 			Log::error("Failed to deserialize pivot for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+			return;
 		}
 		if (!deserializePalette(in, _palette)) {
 			Log::error("Failed to deserialize palette for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+			return;
 		}
 		if (!deserializeProperties(in, _properties)) {
 			Log::error("Failed to deserialize properties for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+			return;
 		}
 		if (_nodeType == scenegraph::SceneGraphNodeType::Model) {
 			if (!deserializeRegion(in, _region)) {
 				Log::error("Failed to deserialize region for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+				return;
 			}
 			if (!deserializeVolume(in, _compressedSize, _compressedData)) {
 				Log::error("Failed to deserialize volume for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+				return;
 			}
 		}
 		if (!deserializeKeyFrames(in, _keyFrames)) {
 			Log::error("Failed to deserialize key frames for node: %s (%s)", _name.c_str(), _nodeUUID.str().c_str());
+			return;
 		}
 	}
 	~NodeAddedMessage() override {
@@ -116,21 +130,48 @@ public:
 	}
 
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_parentUUID);
-		writeUUID(_nodeUUID);
-		writeUUID(_referenceUUID);
-		writePascalStringUInt16LE(_name);
-		writeUInt8((uint8_t)_nodeType);
-		serializeVec3(_pivot);
-		serializePalette(_palette);
-		serializeProperties(_properties);
-		if (_nodeType == scenegraph::SceneGraphNodeType::Model) {
-			serializeRegion(_region);
-			serializeVolume(_compressedData, _compressedSize);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in NodeAddedMessage::writeBack");
+			return;
 		}
-		serializeKeyFrames(_keyFrames);
+		if (!writeUUID(_parentUUID) || !writeUUID(_nodeUUID) || !writeUUID(_referenceUUID)) {
+			Log::error("Failed to write UUIDs in NodeAddedMessage::writeBack");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_name)) {
+			Log::error("Failed to write node name in NodeAddedMessage::writeBack");
+			return;
+		}
+		if (!writeUInt8((uint8_t)_nodeType)) {
+			Log::error("Failed to write node type in NodeAddedMessage::writeBack");
+			return;
+		}
+		if (!serializeVec3(_pivot)) {
+			Log::error("Failed to serialize pivot in NodeAddedMessage::writeBack");
+			return;
+		}
+		if (!serializePalette(_palette)) {
+			Log::error("Failed to serialize palette in NodeAddedMessage::writeBack");
+			return;
+		}
+		if (!serializeProperties(_properties)) {
+			Log::error("Failed to serialize properties in NodeAddedMessage::writeBack");
+			return;
+		}
+		if (_nodeType == scenegraph::SceneGraphNodeType::Model) {
+			if (!serializeRegion(_region)) {
+				Log::error("Failed to serialize region in NodeAddedMessage::writeBack");
+				return;
+			}
+			if (!serializeVolume(_compressedData, _compressedSize)) {
+				Log::error("Failed to serialize volume in NodeAddedMessage::writeBack");
+				return;
+			}
+		}
+		if (!serializeKeyFrames(_keyFrames)) {
+			Log::error("Failed to serialize key frames in NodeAddedMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 	const core::UUID &parentUUID() const {

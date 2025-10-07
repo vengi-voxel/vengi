@@ -23,21 +23,41 @@ private:
 
 public:
 	NodePaletteChangedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_PALETTE_CHANGED) {
-		writeUUID(state.nodeUUID);
-		serializePalette(state.palette);
+		if (!writeUUID(state.nodeUUID)) {
+			Log::error("Failed to write node UUID in NodePaletteChangedMessage ctor");
+			return;
+		}
+		if (!serializePalette(state.palette)) {
+			Log::error("Failed to serialize palette in NodePaletteChangedMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 
 	NodePaletteChangedMessage(MessageStream &in) {
 		_id = PROTO_NODE_PALETTE_CHANGED;
-		in.readUUID(_nodeUUID);
-		deserializePalette(in, _palette);
+		if (in.readUUID(_nodeUUID) == -1) {
+			Log::error("Failed to read node UUID for palette changed");
+			return;
+		}
+		if (!deserializePalette(in, _palette)) {
+			Log::error("Failed to deserialize palette for node %s", _nodeUUID.str().c_str());
+			return;
+		}
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_nodeUUID);
-		serializePalette(_palette);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in NodePaletteChangedMessage::writeBack");
+			return;
+		}
+		if (!writeUUID(_nodeUUID)) {
+			Log::error("Failed to write node UUID in NodePaletteChangedMessage::writeBack");
+			return;
+		}
+		if (!serializePalette(_palette)) {
+			Log::error("Failed to serialize palette in NodePaletteChangedMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 

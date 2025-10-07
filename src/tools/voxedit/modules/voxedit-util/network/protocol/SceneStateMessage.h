@@ -47,8 +47,10 @@ public:
 	// this is intentionally not complete - as this message is not broadcasted because it is sent by the server and
 	// never coming from a client
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in SceneStateMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 

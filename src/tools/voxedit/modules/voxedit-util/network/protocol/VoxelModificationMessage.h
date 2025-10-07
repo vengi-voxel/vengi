@@ -24,24 +24,53 @@ private:
 
 public:
 	VoxelModificationMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_VOXEL_MODIFICATION) {
-		writeUUID(state.nodeUUID);
+		if (!writeUUID(state.nodeUUID)) {
+			Log::error("Failed to write node UUID in VoxelModificationMessage ctor");
+			return;
+		}
 		core_assert_always(state.dataRegion().isValid());
-		serializeRegion(state.dataRegion());
-		serializeVolume(state.data.buffer(), state.data.size());
+		if (!serializeRegion(state.dataRegion())) {
+			Log::error("Failed to serialize region in VoxelModificationMessage ctor");
+			return;
+		}
+		if (!serializeVolume(state.data.buffer(), state.data.size())) {
+			Log::error("Failed to serialize volume in VoxelModificationMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 	VoxelModificationMessage(MessageStream &in) {
 		_id = PROTO_VOXEL_MODIFICATION;
-		in.readUUID(_nodeUUID);
-		deserializeRegion(in, _region);
-		deserializeVolume(in, _compressedSize, _compressedData);
+		if (in.readUUID(_nodeUUID) == -1) {
+			Log::error("Failed to read node UUID for voxel modification");
+			return;
+		}
+		if (!deserializeRegion(in, _region)) {
+			Log::error("Failed to deserialize region for voxel modification");
+			return;
+		}
+		if (!deserializeVolume(in, _compressedSize, _compressedData)) {
+			Log::error("Failed to deserialize volume for voxel modification");
+			return;
+		}
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_nodeUUID);
-		serializeRegion(_region);
-		serializeVolume(_compressedData, _compressedSize);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in VoxelModificationMessage::writeBack");
+			return;
+		}
+		if (!writeUUID(_nodeUUID)) {
+			Log::error("Failed to write node UUID in VoxelModificationMessage::writeBack");
+			return;
+		}
+		if (!serializeRegion(_region)) {
+			Log::error("Failed to serialize region in VoxelModificationMessage::writeBack");
+			return;
+		}
+		if (!serializeVolume(_compressedData, _compressedSize)) {
+			Log::error("Failed to serialize volume in VoxelModificationMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 

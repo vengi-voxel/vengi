@@ -29,27 +29,62 @@ public:
 		_applicationVersion = core::Var::getSafe(cfg::AppVersion)->strVal();
 		_username = core::Var::getSafe(cfg::AppUserName)->strVal();
 
-		writeUInt32(_protocolVersion);
-		writePascalStringUInt16LE(_applicationVersion);
-		writePascalStringUInt16LE(_username);
-		writeBool(localServer);
+		if (!writeUInt32(_protocolVersion)) {
+			Log::error("Failed to write protocol version in InitSessionMessage ctor");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_applicationVersion)) {
+			Log::error("Failed to write application version in InitSessionMessage ctor");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_username)) {
+			Log::error("Failed to write username in InitSessionMessage ctor");
+			return;
+		}
+		if (!writeBool(localServer)) {
+			Log::error("Failed to write localServer flag in InitSessionMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 
 	InitSessionMessage(MessageStream &in) {
 		_id = PROTO_INIT_SESSION;
-		in.readUInt32(_protocolVersion);
-		in.readPascalStringUInt16LE(_applicationVersion);
-		in.readPascalStringUInt16LE(_username);
+		if (in.readUInt32(_protocolVersion) == -1) {
+			Log::error("Failed to read protocol version for init session");
+			return;
+		}
+		if (!in.readPascalStringUInt16LE(_applicationVersion)) {
+			Log::error("Failed to read application version for init session");
+			return;
+		}
+		if (!in.readPascalStringUInt16LE(_username)) {
+			Log::error("Failed to read username for init session");
+			return;
+		}
 		_localServer = in.readBool();
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUInt32(_protocolVersion);
-		writePascalStringUInt16LE(_applicationVersion);
-		writePascalStringUInt16LE(_username);
-		writeBool(_localServer);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in InitSessionMessage::writeBack");
+			return;
+		}
+		if (!writeUInt32(_protocolVersion)) {
+			Log::error("Failed to write protocol version in InitSessionMessage::writeBack");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_applicationVersion)) {
+			Log::error("Failed to write application version in InitSessionMessage::writeBack");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_username)) {
+			Log::error("Failed to write username in InitSessionMessage::writeBack");
+			return;
+		}
+		if (!writeBool(_localServer)) {
+			Log::error("Failed to write localServer flag in InitSessionMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 

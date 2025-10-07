@@ -21,20 +21,41 @@ private:
 
 public:
 	NodeRenamedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_RENAMED) {
-		writeUUID(state.nodeUUID);
-		writePascalStringUInt16LE(state.name);
+		if (!writeUUID(state.nodeUUID)) {
+			Log::error("Failed to write node UUID in NodeRenamedMessage ctor");
+			return;
+		}
+		if (!writePascalStringUInt16LE(state.name)) {
+			Log::error("Failed to write name in NodeRenamedMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 	NodeRenamedMessage(MessageStream &in) {
 		_id = PROTO_NODE_RENAMED;
-		in.readUUID(_nodeUUID);
-		in.readPascalStringUInt16LE(_name);
+		if (in.readUUID(_nodeUUID) == -1) {
+			Log::error("Failed to read node UUID for node renamed");
+			return;
+		}
+		if (!in.readPascalStringUInt16LE(_name)) {
+			Log::error("Failed to read name for node renamed %s", _nodeUUID.str().c_str());
+			_name = "";
+			return;
+		}
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_nodeUUID);
-		writePascalStringUInt16LE(_name);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in NodeRenamedMessage::writeBack");
+			return;
+		}
+		if (!writeUUID(_nodeUUID)) {
+			Log::error("Failed to write node UUID in NodeRenamedMessage::writeBack");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_name)) {
+			Log::error("Failed to write name in NodeRenamedMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 

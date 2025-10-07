@@ -22,23 +22,36 @@ private:
 
 public:
 	NodeMovedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_MOVED) {
-		writeUUID(state.nodeUUID);
-		writeUUID(state.parentUUID);
-		writeUUID(state.referenceUUID);
+		if (!writeUUID(state.nodeUUID) || !writeUUID(state.parentUUID) || !writeUUID(state.referenceUUID)) {
+			Log::error("Failed to write UUIDs in NodeMovedMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 	NodeMovedMessage(MessageStream &in) {
 		_id = PROTO_NODE_MOVED;
-		in.readUUID(_nodeUUID);
-		in.readUUID(_parentUUID);
-		in.readUUID(_referenceUUID);
+		if (in.readUUID(_nodeUUID) == -1) {
+			Log::error("Failed to read node UUID for node moved");
+			return;
+		}
+		if (in.readUUID(_parentUUID) == -1) {
+			Log::error("Failed to read parent UUID for node moved");
+			return;
+		}
+		if (in.readUUID(_referenceUUID) == -1) {
+			Log::error("Failed to read reference UUID for node moved");
+			return;
+		}
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_nodeUUID);
-		writeUUID(_parentUUID);
-		writeUUID(_referenceUUID);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in NodeMovedMessage::writeBack");
+			return;
+		}
+		if (!writeUUID(_nodeUUID) || !writeUUID(_parentUUID) || !writeUUID(_referenceUUID)) {
+			Log::error("Failed to write UUIDs in NodeMovedMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 

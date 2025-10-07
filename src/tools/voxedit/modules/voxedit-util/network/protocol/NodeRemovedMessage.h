@@ -20,17 +20,28 @@ private:
 
 public:
 	NodeRemovedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_REMOVED) {
-		writeUUID(state.nodeUUID);
+		if (!writeUUID(state.nodeUUID)) {
+			Log::error("Failed to write node UUID in NodeRemovedMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 	NodeRemovedMessage(MessageStream &in) {
 		_id = PROTO_NODE_REMOVED;
-		in.readUUID(_nodeUUID);
+		if (in.readUUID(_nodeUUID) == -1) {
+			Log::error("Failed to read node UUID for node removed");
+			return;
+		}
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_nodeUUID);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in NodeRemovedMessage::writeBack");
+			return;
+		}
+		if (!writeUUID(_nodeUUID)) {
+			Log::error("Failed to write node UUID in NodeRemovedMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 	const core::UUID &nodeUUID() const {

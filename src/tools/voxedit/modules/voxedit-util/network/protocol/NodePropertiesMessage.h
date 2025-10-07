@@ -21,20 +21,40 @@ private:
 
 public:
 	NodePropertiesMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_PROPERTIES) {
-		writeUUID(state.nodeUUID);
-		serializeProperties(state.properties);
+		if (!writeUUID(state.nodeUUID)) {
+			Log::error("Failed to write node UUID in NodePropertiesMessage ctor");
+			return;
+		}
+		if (!serializeProperties(state.properties)) {
+			Log::error("Failed to serialize properties in NodePropertiesMessage ctor");
+			return;
+		}
 		writeSize();
 	}
 	NodePropertiesMessage(MessageStream &in) {
 		_id = PROTO_NODE_PROPERTIES;
-		in.readUUID(_nodeUUID);
-		deserializeProperties(in, _properties);
+		if (in.readUUID(_nodeUUID) == -1) {
+			Log::error("Failed to read node UUID for node properties");
+			return;
+		}
+		if (!deserializeProperties(in, _properties)) {
+			Log::error("Failed to deserialize properties for node %s", _nodeUUID.str().c_str());
+			return;
+		}
 	}
 	void writeBack() override {
-		writeInt32(0);
-		writeUInt8(_id);
-		writeUUID(_nodeUUID);
-		serializeProperties(_properties);
+		if (!writeInt32(0) || !writeUInt8(_id)) {
+			Log::error("Failed to write header in NodePropertiesMessage::writeBack");
+			return;
+		}
+		if (!writeUUID(_nodeUUID)) {
+			Log::error("Failed to write node UUID in NodePropertiesMessage::writeBack");
+			return;
+		}
+		if (!serializeProperties(_properties)) {
+			Log::error("Failed to serialize properties in NodePropertiesMessage::writeBack");
+			return;
+		}
 		writeSize();
 	}
 
