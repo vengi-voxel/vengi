@@ -61,72 +61,125 @@ protected:
 		Log::debug("Message size for type %d is %u", _id, (uint32_t)bytes);
 	}
 
-	void serializePalette(const palette::Palette &palette) {
-		writePascalStringUInt16LE(palette.name());
-		writeBool(palette.isBuiltIn());
-		if (palette.isBuiltIn()) {
-			return;
+	bool serializePalette(const palette::Palette &palette) {
+		if (!writePascalStringUInt16LE(palette.name())) {
+			Log::error("Failed to write palette name");
+			return false;
 		}
-		writeUInt8(palette.size());
+		if (!writeBool(palette.isBuiltIn())) {
+			Log::error("Failed to write built-in flag");
+			return false;
+		}
+		if (palette.isBuiltIn()) {
+			return true;
+		}
+		if (!writeUInt8(palette.size())) {
+			Log::error("Failed to write palette size");
+			return false;
+		}
 		for (size_t i = 0; i < palette.size(); ++i) {
 			const core::RGBA color = palette.color(i);
-			writeUInt32(color.rgba);
-			writePascalStringUInt16LE(palette.colorName(i));
 			const palette::Material &material = palette.material(i);
-			writeUInt8((uint8_t)material.type);
-			writeUInt8(palette::MaterialProperty::MaterialMax - 1);
+			if (!writeUInt32(color.rgba)) {
+				Log::error("Failed to write color for palette index %d/%d", (int)i, (int)palette.size());
+				return false;
+			}
+			if (!writePascalStringUInt16LE(palette.colorName(i))) {
+				Log::error("Failed to write color name for palette index %d/%d", (int)i, (int)palette.size());
+				return false;
+			}
+			if (!writeUInt8((uint8_t)material.type)) {
+				Log::error("Failed to write material type for palette index %d/%d", (int)i, (int)palette.size());
+				return false;
+			}
+			if (!writeUInt8(palette::MaterialProperty::MaterialMax - 1)) {
+				Log::error("Failed to write material property count for palette index %d/%d", (int)i,
+						   (int)palette.size());
+				return false;
+			}
 			for (uint32_t n = 0u; n < palette::MaterialProperty::MaterialMax - 1; ++n) {
 				const char *materialName = palette::MaterialPropertyNames[n];
-				writePascalStringUInt16LE(materialName);
+				if (!writePascalStringUInt16LE(materialName)) {
+					Log::error("Failed to write material property name");
+					return false;
+				}
 				const palette::MaterialProperty property = (palette::MaterialProperty)(n + 1);
 				const float value = material.value(property);
-				writeFloat(value);
+				if (!writeFloat(value)) {
+					Log::error("Failed to write material property value");
+					return false;
+				}
 			}
 		}
+		return true;
 	}
 
-	void deserializePalette(MessageStream &in, palette::Palette &palette) const {
+	bool deserializePalette(MessageStream &in, palette::Palette &palette) const {
 		core::String paletteName;
-		in.readPascalStringUInt16LE(paletteName);
+		if (!in.readPascalStringUInt16LE(paletteName)) {
+			Log::error("Failed to read palette name");
+			return false;
+		}
 		palette.setName(paletteName);
 		bool isBuiltIn = in.readBool();
 		if (isBuiltIn) {
 			core_assert(palette::Palette::isBuiltIn(paletteName));
-			palette.load(paletteName.c_str());
-			return;
+			return palette.load(paletteName.c_str());
 		}
 
 		uint8_t paletteSize = 0;
-		in.readUInt8(paletteSize);
+		if (in.readUInt8(paletteSize) == -1) {
+			Log::error("Failed to read palette size");
+			return false;
+		}
 		palette.setSize(paletteSize);
 		for (uint8_t i = 0; i < paletteSize; ++i) {
 			core::RGBA color;
-			in.readUInt32(color.rgba);
+			if (in.readUInt32(color.rgba) == -1) {
+				Log::error("Failed to read color for palette index %d/%d", i, paletteSize);
+				return false;
+			}
 			palette.setColor(i, color);
 			core::String colorName;
-			in.readPascalStringUInt16LE(colorName);
+			if (!in.readPascalStringUInt16LE(colorName)) {
+				Log::error("Failed to read color name for palette index %d/%d", i, paletteSize);
+				return false;
+			}
 			palette.setColorName(i, colorName);
 
 			// Read material type
 			uint8_t materialType = 0;
-			in.readUInt8(materialType);
+			if (in.readUInt8(materialType) == -1) {
+				Log::error("Failed to read material type for palette index %d/%d", i, paletteSize);
+				return false;
+			}
 			palette.setMaterialType(i, (palette::MaterialType)materialType);
 
 			// Read material properties
 			uint8_t propertyCount = 0;
-			in.readUInt8(propertyCount);
+			if (in.readUInt8(propertyCount) == -1) {
+				Log::error("Failed to read material property count for palette index %d/%d", i, paletteSize);
+				return false;
+			}
 			for (uint8_t n = 0; n < propertyCount; ++n) {
 				core::String propertyName;
-				in.readPascalStringUInt16LE(propertyName);
+				if (!in.readPascalStringUInt16LE(propertyName)) {
+					Log::error("Failed to read material property name for palette index %d/%d", i, paletteSize);
+					return false;
+				}
 				float value;
-				in.readFloat(value);
+				if (in.readFloat(value) == -1) {
+					Log::error("Failed to read material property value for palette index %d/%d", i, paletteSize);
+					return false;
+				}
 				palette.setMaterialProperty(i, propertyName, value);
 			}
 		}
+		return true;
 	}
 
 	bool serializeProperties(const scenegraph::SceneGraphNodeProperties &properties) {
-		const size_t n = properties.size();
+		const uint16_t n = (uint16_t)properties.size();
 		if (!writeUInt16(n)) {
 			Log::error("Failed to serialize properties");
 			return false;
@@ -165,47 +218,86 @@ protected:
 		return true;
 	}
 
-	void serializeKeyFrames(const scenegraph::SceneGraphKeyFramesMap &keyFrames) {
-		writeUInt16(keyFrames.size());
+	bool serializeKeyFrames(const scenegraph::SceneGraphKeyFramesMap &keyFrames) {
+		if (!writeUInt16((uint16_t)keyFrames.size())) {
+			Log::error("Failed to serialize key frame animation count");
+			return false;
+		}
 		for (const auto &entry : keyFrames) {
 			const core::String &animationName = entry->first;
 			const scenegraph::SceneGraphKeyFrames &keyFramesList = entry->second;
-			writePascalStringUInt16LE(animationName);
-			writeUInt16(keyFramesList.size());
+			if (!writePascalStringUInt16LE(animationName)) {
+				Log::error("Failed to serialize animation name");
+				return false;
+			}
+			if (!writeUInt16(keyFramesList.size())) {
+				Log::error("Failed to serialize key frame count");
+				return false;
+			}
 			for (const scenegraph::SceneGraphKeyFrame &keyFrame : keyFramesList) {
-				writeInt32(keyFrame.frameIdx);
-				writeBool(keyFrame.longRotation);
-				writeUInt8((uint8_t)keyFrame.interpolation);
+				if (!writeInt32(keyFrame.frameIdx)) {
+					Log::error("Failed to serialize frame index");
+					return false;
+				}
+				if (!writeBool(keyFrame.longRotation)) {
+					Log::error("Failed to serialize long rotation");
+					return false;
+				}
+				if (!writeUInt8((uint8_t)keyFrame.interpolation)) {
+					Log::error("Failed to serialize interpolation");
+					return false;
+				}
 				// calculate it here, instead of using the getter, as the transform state
 				// might still be dirty
-				serializeMat4x4(keyFrame.transform().calculateLocalMatrix());
+				if (!serializeMat4x4(keyFrame.transform().calculateLocalMatrix())) {
+					return false;
+				}
 			}
 		}
+		return true;
 	}
 
-	void deserializeKeyFrames(MessageStream &in, scenegraph::SceneGraphKeyFramesMap &keyFrames) const {
+	bool deserializeKeyFrames(MessageStream &in, scenegraph::SceneGraphKeyFramesMap &keyFrames) const {
 		uint16_t animationCount = 0;
-		in.readUInt16(animationCount);
+		if (!in.readUInt16(animationCount)) {
+			Log::error("Failed to read animation count");
+			return false;
+		}
 		for (uint16_t a = 0; a < animationCount; ++a) {
 			core::String animationName;
-			in.readPascalStringUInt16LE(animationName);
+			if (!in.readPascalStringUInt16LE(animationName)) {
+				Log::error("Failed to read animation name for animation %d/%d", a, animationCount);
+				return false;
+			}
 			uint16_t keyFrameCount;
-			in.readUInt16(keyFrameCount);
+			if (!in.readUInt16(keyFrameCount)) {
+				Log::error("Failed to read key frame count for animation %s", animationName.c_str());
+				return false;
+			}
 			scenegraph::SceneGraphKeyFrames keyFramesList;
 			for (uint16_t k = 0; k < keyFrameCount; ++k) {
 				scenegraph::SceneGraphKeyFrame keyFrame;
-				in.readInt32(keyFrame.frameIdx);
+				if (!in.readInt32(keyFrame.frameIdx)) {
+					Log::error("Failed to read frame index");
+					return false;
+				}
 				keyFrame.longRotation = in.readBool();
 				uint8_t interpolationValue;
-				in.readUInt8(interpolationValue);
+				if (!in.readUInt8(interpolationValue)) {
+					Log::error("Failed to read interpolation value");
+					return false;
+				}
 				keyFrame.interpolation = (scenegraph::InterpolationType)interpolationValue;
 				glm::mat4 matrix;
-				deserializeMat4x4(in, matrix);
+				if (!deserializeMat4x4(in, matrix)) {
+					return false;
+				}
 				keyFrame.transform().setLocalMatrix(matrix);
 				keyFramesList.push_back(keyFrame);
 			}
 			keyFrames.emplace(animationName, core::move(keyFramesList));
 		}
+		return true;
 	}
 
 	bool serializeRegion(const voxel::Region &region) {
@@ -273,17 +365,36 @@ protected:
 		return true;
 	}
 
-	void deserializeVolume(MessageStream &in, uint32_t &compressedSize, uint8_t *&compressedData) const {
-		in.readUInt32(compressedSize);
+	bool deserializeVolume(MessageStream &in, uint32_t &compressedSize, uint8_t *&compressedData) const {
+		if (in.readUInt32(compressedSize) == -1) {
+			compressedSize = 0;
+			compressedData = nullptr;
+			Log::error("Failed to read compressed size");
+			return false;
+		}
 		if (compressedSize > 0) {
 			compressedData = new uint8_t[compressedSize];
-			in.read((char *)compressedData, compressedSize);
+			if (in.read((char *)compressedData, compressedSize) == -1) {
+				Log::error("Failed to read compressed volume data");
+				delete[] compressedData;
+				compressedData = nullptr;
+				compressedSize = 0;
+				return false;
+			}
 		}
+		return true;
 	}
 
-	void serializeVolume(const uint8_t *compressedData, uint32_t compressedSize) {
-		writeUInt32(compressedSize);
-		write(compressedData, compressedSize);
+	bool serializeVolume(const uint8_t *compressedData, uint32_t compressedSize) {
+		if (!writeUInt32(compressedSize)) {
+			Log::error("Failed to write compressed size");
+			return false;
+		}
+		if (write(compressedData, compressedSize) == -1) {
+			Log::error("Failed to write compressed volume data");
+			return false;
+		}
+		return true;
 	}
 public:
 	ProtocolMessage() : _id(0xff) {
