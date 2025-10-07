@@ -121,7 +121,7 @@ public:
 		writeUUID(_parentUUID);
 		writeUUID(_nodeUUID);
 		writeUUID(_referenceUUID);
-		writeUUID(_name);
+		writePascalStringUInt16LE(_name);
 		writeUInt8((uint8_t)_nodeType);
 		serializeVec3(_pivot);
 		serializePalette(_palette);
