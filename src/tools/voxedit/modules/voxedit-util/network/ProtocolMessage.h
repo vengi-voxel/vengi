@@ -409,6 +409,7 @@ public:
 	virtual ~ProtocolMessage() {
 	}
 
+	// write a deserialized message back into the byte stream to sending over the wire
 	virtual void writeBack() = 0;
 
 	inline const ProtocolId &getId() const {
