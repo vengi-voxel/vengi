@@ -11,7 +11,7 @@
 
 ## Details
 
-There is a timeline for creating keyframes and you can transform the objects with the guizmo if the editor is in scene mode.
+There is a timeline for creating keyframes and you can transform the objects with the gizmo if the editor is in scene mode.
 
 Check out the options in the animation timeline to e.g. create keyframes automatically whenever you change something in the transform data.
 

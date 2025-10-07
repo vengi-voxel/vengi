@@ -187,3 +187,7 @@ The viewport can get changed to scene and edit mode. You can switch the cameras 
 There are several view modes available - most of them will change the layout and/or options that are available in the ui. There is e.g. a Command & Conquer mode where you can manage the normals that are part of the [vxl](../Formats.md).
 
 Artists that only want to edit voxels without animating them might use the simple layout to get a less complex ui.
+
+## Network
+
+You can start a server to allow others to work on the same scene with you. Head over to the network panel in vengi-voxedit and start a server. Pick the proper interface to bind on. This is usually `0.0.0.0` if you want to have it opened globally. Make sure to open the specified port in your firewall/router. Now clients can connect.

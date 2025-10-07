@@ -34,3 +34,10 @@ The thumbnailer is able to generate scene turntables with 16 images.
 ```sh
 ./vengi-thumbnailer -s 128 --camera-mode top --input somevoxel.vox --output somevoxel.png
 ```
+
+## Render isometric image
+
+
+```sh
+./vengi-thumbnailer -s 128 --input somevoxel.vox --output somevoxel.png --image --isometric
+```
