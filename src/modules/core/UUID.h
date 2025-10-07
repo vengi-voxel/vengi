@@ -15,10 +15,10 @@ private:
 
 public:
 	UUID();
-	UUID(const String &uuid);
+	explicit UUID(const String &uuid);
+	explicit UUID(uint64_t id0, uint64_t id1);
+	explicit UUID(uint32_t id);
 	UUID(const UUID &other);
-	UUID(uint64_t id0, uint64_t id1);
-	UUID(uint32_t id);
 	UUID(UUID &&other) noexcept;
 	~UUID();
 

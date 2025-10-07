@@ -9,6 +9,7 @@
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/UUID.h"
 #include "image/Image.h"
 #include "io/Base64ReadStream.h"
 #include "io/BufferedReadWriteStream.h"
@@ -34,7 +35,7 @@ namespace priv {
 struct KeyFrame {
 	core::String channel; // "rotation", "position", "scale"
 	core::Buffer<glm::vec3> dataPoints;
-	core::String uuid;
+	core::UUID uuid;
 	float time = 0.0f;
 	int color; // none = -1, white = 0, black, red, green, blue, yellow, pink, purple, orange, brown, cyan, gray, lightgray
 	scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
@@ -46,14 +47,14 @@ struct KeyFrame {
 };
 
 struct Animator {
-	core::String uuid;
+	core::UUID uuid;
 	core::String name;
 	core::String type; // "bone", "cube"
 	core::DynamicArray<KeyFrame> keyframes;
 };
 
 struct Animation {
-	core::String uuid;
+	core::UUID uuid;
 	core::String name;
 	core::String loop; // "loop", "once"
 	bool overrideVal;
@@ -316,7 +317,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 						  BlockbenchFormat::BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
 		BlockbenchFormat::BBElement bbElement;
-		bbElement.uuid = json::toStr(elementJson, "uuid");
+		bbElement.uuid = core::UUID(json::toStr(elementJson, "uuid"));
 		bbElement.name = json::toStr(elementJson, "name");
 		bbElement.origin = scale * priv::toVec3(elementJson, "origin");
 		bbElement.rotation = priv::toVec3(elementJson, "rotation");
@@ -340,7 +341,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		}
 
 		// make a copy here, the element is moved into the map
-		const core::String uuidCopy = bbElement.uuid;
+		const core::UUID uuidCopy = bbElement.uuid;
 		bbElementMap.emplace(uuidCopy, core::move(bbElement));
 	}
 	return true;
@@ -349,7 +350,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 						  const nlohmann::json &entryJson, BlockbenchFormat::BBNode &bbNode) {
 	bbNode.name = json::toStr(entryJson, "name");
-	bbNode.uuid = json::toStr(entryJson, "uuid");
+	bbNode.uuid = core::UUID(json::toStr(entryJson, "uuid"));
 	bbNode.locked = entryJson.value("locked", false);
 	bbNode.visible = entryJson.value("visibility", true);
 	bbNode.mirror_uv = entryJson.value("mirror_uv", false);
@@ -374,7 +375,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 	for (auto iter = childrenJson.begin(); iter != childrenJson.end(); ++iter) {
 		if (iter->is_string()) {
-			core::String uuid = json::toStr(*iter);
+			core::UUID uuid = core::UUID(json::toStr(*iter));
 			bbNode.referenced.emplace_back(uuid);
 			continue;
 		}
@@ -463,10 +464,11 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph,
 							   const MeshMaterialArray &meshMaterialArray, int parent) const {
 	Log::debug("node: %s with %i children", bbNode.name.c_str(), (int)bbNode.children.size());
-	for (const core::String &uuid : bbNode.referenced) {
+	for (const core::UUID &uuid : bbNode.referenced) {
 		auto elementIter = bbElementMap.find(uuid);
 		if (elementIter == bbElementMap.end()) {
-			Log::warn("Could not find node with uuid: %s", uuid.c_str());
+			const core::String uuidStr = uuid.str();
+			Log::warn("Could not find node with uuid: %s", uuidStr.c_str());
 			continue;
 		}
 		BBElement &bbElement = elementIter->value;
@@ -521,7 +523,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		sceneGraph.addAnimation(animationName);
 #if BLOCKBENCH_ANIMATION
 		priv::Animation animation;
-		animation.uuid = json::toStr(animationJson, "uuid");
+		animation.uuid = core::UUID(json::toStr(animationJson, "uuid"));
 		animation.name = animationName;
 		animation.loop = json::toStr(animationJson, "loop");
 		animation.overrideVal = animationJson["override"];
@@ -540,7 +542,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		const auto &object = animatorsIter->get<std::map<std::string, nlohmann::json>>();
 		for (const auto &entry : object) {
 			priv::Animator animator;
-			animator.uuid = json::toStr(entry.first);
+			animator.uuid = core::UUID(json::toStr(entry.first));
 			const auto &animatorsJson = entry.second;
 			animator.name = json::toStr(animatorsJson, "name");
 			animator.type = json::toStr(animatorsJson, "type");
@@ -554,7 +556,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 				priv::KeyFrame kf;
 				kf.channel = json::toStr(keyframeJson, "channel");
 				kf.interpolation = priv::toInterpolationType(keyframeJson, "interpolation");
-				kf.uuid = json::toStr(keyframeJson, "uuid");
+				kf.uuid = core::UUID(json::toStr(keyframeJson, "uuid"));
 				kf.time = keyframeJson.value("time", 0.0f);
 				kf.color = keyframeJson.value("color", 0);
 				kf.bezierLinked = keyframeJson.value("bezier_linked", false);
@@ -595,7 +597,8 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 					kf.setTransform(transform);
 				}
 			} else {
-				Log::warn("Node not found for uuid: %s", animator.uuid.c_str());
+				const core::String &uuidStr = animator.uuid.str();
+				Log::warn("Node not found for uuid: %s", uuidStr.c_str());
 			}
 		}
 #endif
@@ -719,7 +722,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			}
 		} else if (entry.is_string()) {
 			core::String uuid = json::toStr(entry);
-			bbRoot.referenced.emplace_back(uuid);
+			bbRoot.referenced.emplace_back(core::UUID(uuid));
 		}
 	}
 

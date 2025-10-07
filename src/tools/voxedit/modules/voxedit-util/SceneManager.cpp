@@ -2468,7 +2468,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
 	}
 }
 
-int SceneManager::addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::String &uuid) {
+int SceneManager::addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::UUID &uuid) {
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Point, uuid);
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(position);
@@ -2486,7 +2486,7 @@ int SceneManager::addPointChild(const core::String& name, const glm::ivec3& posi
 	return nodeId;
 }
 
-int SceneManager::addModelChild(const core::String& name, int width, int height, int depth, const core::String &uuid) {
+int SceneManager::addModelChild(const core::String& name, int width, int height, int depth, const core::UUID &uuid) {
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	if (!region.isValid()) {
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);

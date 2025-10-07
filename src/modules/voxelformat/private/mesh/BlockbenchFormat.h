@@ -43,7 +43,7 @@ public:
 	};
 
 	struct BBNode {
-		core::String uuid;
+		core::UUID uuid;
 		core::String name;
 		// in degrees
 		glm::vec3 rotation{0.0f};
@@ -56,13 +56,13 @@ public:
 		// group nodes
 		core::DynamicArray<BBNode> children;
 		// elements (volumes) by uuid
-		core::DynamicArray<core::String> referenced;
+		core::DynamicArray<core::UUID> referenced;
 	};
 
 	enum class BBElementType { Cube, Mesh, Max };
 
 	struct BBElement {
-		core::String uuid;
+		core::UUID uuid;
 		core::String name;
 		// in degrees
 		glm::vec3 rotation{0.0f};
@@ -91,7 +91,7 @@ public:
 	};
 
 	// map via uuid
-	using BBElementMap = core::StringMap<BBElement>;
+	using BBElementMap = core::Map<core::UUID, BBElement, 11, core::UUIDHash>;
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};

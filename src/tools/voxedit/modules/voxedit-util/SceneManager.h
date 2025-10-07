@@ -319,9 +319,9 @@ public:
 	/**
 	 * @brief Add a new model node as children to the current active node
 	 */
-	int addModelChild(const core::String &name, int width, int height, int depth, const core::String &uuid = "");
+	int addModelChild(const core::String &name, int width, int height, int depth, const core::UUID &uuid = core::UUID());
 	int addPointChild(const core::String &name, const glm::ivec3 &position, const glm::quat &orientation,
-					  const core::String &uuid = "");
+					  const core::UUID &uuid = core::UUID());
 
 	/**
 	 * @brief Merge two nodes and extend the smaller one

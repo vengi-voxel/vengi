@@ -210,12 +210,13 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 		transform.setLocalMatrix(matrix);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
-		if (!obj.pid.empty()) {
-			node.setProperty(scenegraph::PropParentUUID, obj.pid);
+		if (obj.pid.isValid()) {
+			node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
 		}
 		node.setVisible(!obj.s);
 		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
-			Log::error("Failed to add group %s to the scene graph", obj.id.c_str());
+			const core::String uuidStr = obj.id.str();
+			Log::error("Failed to add group %s to the scene graph", uuidStr.c_str());
 			return false;
 		}
 	}
@@ -337,7 +338,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 	}
 
 	int parent = sceneGraph.root().id();
-	if (!obj.pid.empty()) {
+	if (obj.pid.isValid()) {
 		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByUUID(obj.pid)) {
 			parent = parentNode->id();
 		}
@@ -456,8 +457,8 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
-	if (!obj.pid.empty()) {
-		node.setProperty(scenegraph::PropParentUUID, obj.pid);
+	if (obj.pid.isValid()) {
+		node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
 	}
 	node.setVisible(!obj.h);
 	node.setVolume(merged.volume(), true);

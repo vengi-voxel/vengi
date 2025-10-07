@@ -11,6 +11,7 @@
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/StringUtil.h"
+#include "core/UUID.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
@@ -268,7 +269,7 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 	}
 }
 
-int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
+int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
 							 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent, bool resetOrigin) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
@@ -654,7 +655,7 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 	}
 }
 
-int MeshFormat::voxelizeMesh(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin) const {
+int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh, int parent, bool resetOrigin) const {
 	triangulatePolygons(mesh.polygons, mesh.vertices, mesh.indices);
 	Log::debug("Total vertices: %i, indices: %i", (int)mesh.vertices.size(), (int)mesh.indices.size());
 	const glm::vec3 &scale = getInputScale();

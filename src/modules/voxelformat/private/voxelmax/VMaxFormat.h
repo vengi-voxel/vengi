@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/UUID.h"
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
@@ -144,8 +145,8 @@ private:
 		core::String pal;					   // palette - only for objects, not for groups
 		core::String data;					   // contents - only for objects, not for groups
 		core::String hist;					   // history - only for objects, not for groups
-		core::String id;					   // uuid
-		core::String pid;					   // parent id
+		core::UUID id;						   // uuid
+		core::UUID pid;						   // parent id
 		core::String t_al;					   // alignment
 		core::String t_pa;					   // pivotAlign
 		core::String t_pf;					   // pivotFace
@@ -210,9 +211,9 @@ private:
 
 	// scene.json
 	struct VMaxGroup {
-		core::String id;
+		core::UUID id;
 		core::String name;
-		core::String pid;					   // parent id
+		core::UUID pid;					   // parent id
 		glm::vec3 t_p{0.0f};				   // position
 		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // rotation
 		glm::vec3 t_s{1.0f};				   // scale
