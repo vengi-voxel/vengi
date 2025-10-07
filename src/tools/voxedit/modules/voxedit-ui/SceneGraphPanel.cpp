@@ -190,7 +190,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 				icon = ICON_LC_CAMERA;
 				break;
 			case scenegraph::SceneGraphNodeType::Unknown:
-				icon = ICON_LC_CIRCLE_HELP;
+				icon = ICON_LC_CIRCLE_QUESTION_MARK;
 				break;
 			case scenegraph::SceneGraphNodeType::AllModels:
 			case scenegraph::SceneGraphNodeType::All:
@@ -418,7 +418,7 @@ void SceneGraphPanel::registerPopups() {
 			}
 		}
 		if (canChangeParent) {
-			if (ImGui::IconButton(ICON_LC_INDENT_INCREASE, _("Move below"))) {
+			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, _("Move below"))) {
 				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
 					Log::error("Failed to move node");
 				}

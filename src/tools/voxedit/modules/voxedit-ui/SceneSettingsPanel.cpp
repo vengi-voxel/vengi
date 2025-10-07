@@ -102,7 +102,7 @@ void SceneSettingsPanel::sceneShadowAndSun(ShadingMode shadingMode) {
 }
 
 void SceneSettingsPanel::update(const char *id, command::CommandExecutionListener &listener) {
-	const core::String title = makeTitle(ICON_LC_SUNSET, _("Scene settings"), id);
+	const core::String title = makeTitle(ICON_LC_SPOTLIGHT, _("Scene settings"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::TextUnformatted(_("Scene settings"));
 		ImGui::Separator();

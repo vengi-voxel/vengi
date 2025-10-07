@@ -544,7 +544,7 @@ void MainWindow::popupMinecraftMapping() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Minecraft mapping"), POPUP_TITLE_MINECRAFTMAPPING);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::IconDialog(ICON_LC_CIRCLE_HELP,
+		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK,
 						  _("The voxel editor uses a different mapping than Minecraft.\n\nHere you can see which block "
 							"type is mapped to which color"),
 						  true);
@@ -605,7 +605,7 @@ void MainWindow::popupModelUnreference() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Unreference Model"), POPUP_TITLE_MODEL_UNREFERENCE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"), true);
+		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"), true);
 		if (ImGui::YesButton()) {
 			command::Command::execute("modelunref");
 			ImGui::CloseCurrentPopup();
@@ -683,7 +683,7 @@ void MainWindow::popupFailedSave() {
 void MainWindow::popupUnsavedChanges() {
 	const core::String title = makeTitle(_("Unsaved Changes"), POPUP_TITLE_UNSAVED_SCENE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Unsaved changes - are you sure to quit?"));
+		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("Unsaved changes - are you sure to quit?"));
 		if (ImGui::OkButton()) {
 			_forceQuit = true;
 			_app->requestQuit();
@@ -701,7 +701,7 @@ void MainWindow::popupUnsavedChanges() {
 void MainWindow::popupUnsavedDiscard() {
 	const core::String title = makeTitle(_("Unsaved Modifications"), POPUP_TITLE_UNSAVED);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("There are unsaved modifications.\nDo you wish to discard them?"));
+		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("There are unsaved modifications.\nDo you wish to discard them?"));
 		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
@@ -725,7 +725,7 @@ void MainWindow::popupVolumeSplit() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 50, 0));
 	const core::String title = makeTitle(_("Volume split"), POPUP_TITLE_VOLUME_SPLIT);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
+		ImGui::IconDialog(ICON_LC_CIRCLE_QUESTION_MARK, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"), true);
 		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();

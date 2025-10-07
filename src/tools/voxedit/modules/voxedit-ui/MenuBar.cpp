@@ -40,7 +40,7 @@ void MenuBar::viewportOptions() {
 	const char* currentLabel = (currentShadingMode >= 0 && currentShadingMode < (int)lengthof(shadingModeLabels)) ?
 		shadingModeLabels[currentShadingMode] : _("Unknown");
 
-	if (ImGui::BeginIconCombo(ICON_LC_SUNSET, _("Shading"), currentLabel)) {
+	if (ImGui::BeginIconCombo(ICON_LC_SPOTLIGHT, _("Shading"), currentLabel)) {
 		for (int i = 0; i < (int)lengthof(shadingModeLabels); ++i) {
 			const bool isSelected = (currentShadingMode == i);
 			if (ImGui::Selectable(shadingModeLabels[i], isSelected)) {
@@ -127,7 +127,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::IconCheckboxVar(ICON_LC_TV_MINIMAL, _("Allow multi monitor"), cfg::UIMultiMonitor);
 				ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
-				ImGui::CheckboxVar(_("Tip of the day"), cfg::VoxEditTipOftheDay);
+				ImGui::IconCheckboxVar(ICON_LC_LIGHTBULB, _("Tip of the day"), cfg::VoxEditTipOftheDay);
 
 				ui::metricOption();
 				viewModeOption();
@@ -166,7 +166,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("All"), "select all", true, &listener);
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
+		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_QUESTION_MARK, _("Help"))) {
 #ifdef DEBUG
 			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
 				if (ImGui::Button(_("Textures"))) {

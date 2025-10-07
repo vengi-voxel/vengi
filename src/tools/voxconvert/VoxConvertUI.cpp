@@ -109,7 +109,7 @@ void VoxConvertUI::onRenderUI() {
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
+			if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_QUESTION_MARK, _("Help"))) {
 				if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
 					popupAbout = true;
 				}

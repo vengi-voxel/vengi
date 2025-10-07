@@ -19,7 +19,7 @@ void NetworkPanel::init() {
 
 void NetworkPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NetworkPanel);
-	const core::String title = makeTitle(ICON_LC_BOOK_OPEN, _("Network"), id);
+	const core::String title = makeTitle(ICON_LC_NETWORK, _("Network"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (ImGui::BeginTabBar("##networktabbar")) {
 			if (ImGui::BeginTabItem(_("Client"))) {
