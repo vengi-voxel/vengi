@@ -42,4 +42,15 @@ public:
 	static UUID generate();
 };
 
+struct UUIDHash {
+	size_t operator()(const core::UUID &p) const {
+		uint64_t v1 = p.data0();
+		uint64_t v2 = p.data1();
+		// mix the two 64-bit parts into a size_t using a variant of boost::hash_combine
+		uint64_t res = v1;
+		res ^= v2 + 0x9e3779b97f4a7c15ULL + (res << 6) + (res >> 2);
+		return (size_t)res;
+	}
+};
+
 } // namespace core
