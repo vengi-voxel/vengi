@@ -226,9 +226,6 @@ static pair<int, int> split_middle(vector<int>& primitives,
   return {middle, axis};
 }
 
-// Maximum number of primitives per BVH node.
-const int bvh_max_prims = 4;
-
 // Build BVH nodes
 static bvh_tree make_bvh(const vector<bbox3f>& bboxes, bool highquality) {
   // bvh
@@ -264,6 +261,8 @@ static bvh_tree make_bvh(const vector<bbox3f>& bboxes, bool highquality) {
     for (auto i = start; i < end; i++)
       node.bbox = merge(node.bbox, bboxes[bvh.primitives[i]]);
 
+	// Maximum number of primitives per BVH node.
+	const int bvh_max_prims = 4;
     // split into two children
     if (end - start > bvh_max_prims) {
       // get split

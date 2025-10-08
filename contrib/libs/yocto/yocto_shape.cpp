@@ -1990,7 +1990,7 @@ namespace yocto {
 
 // Splits a BVH node using the middle heuristic. Returns split position and
 // axis.
-static pair<int, int> split_middle(vector<int>& primitives,
+static pair<int, int> bvh_split_middle(vector<int>& primitives,
     const vector<bbox3f>& bboxes, const vector<vec3f>& centers, int start,
     int end) {
   // initialize split axis and position
@@ -2026,9 +2026,6 @@ static pair<int, int> split_middle(vector<int>& primitives,
 
   return {mid, axis};
 }
-
-// Maximum number of primitives per BVH node.
-const int bvh_max_prims = 4;
 
 // Build BVH nodes
 static bvh_tree make_bvh(vector<bbox3f>& bboxes) {
@@ -2066,10 +2063,13 @@ static bvh_tree make_bvh(vector<bbox3f>& bboxes) {
     for (auto i = start; i < end; i++)
       node.bbox = merge(node.bbox, bboxes[bvh.primitives[i]]);
 
+	// Maximum number of primitives per BVH node.
+	const int bvh_max_prims = 4;
+
     // split into two children
     if (end - start > bvh_max_prims) {
       // get split
-      auto [mid, axis] = split_middle(
+      auto [mid, axis] = bvh_split_middle(
           bvh.primitives, bboxes, centers, start, end);
 
       // make an internal node
