@@ -71,7 +71,7 @@ distclean:
 analysebuild:
 	$(Q)ccache -cC
 	$(Q)rm -rf $(BUILDDIR)/analyse
-	$(Q)mkdir $(BUILDDIR)/analyse
+	$(Q)mkdir -p $(BUILDDIR)/analyse
 	$(Q)CC=clang CXX=clang++ $(CMAKE) -H$(CURDIR) -B$(BUILDDIR)/analyse $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DUSE_SANITIZERS=OFF
 	$(Q)ClangBuildAnalyzer --start $(BUILDDIR)/analyse
 	$(Q)$(CMAKE) --build $(BUILDDIR)/analyse --target $(ALLTARGET)
