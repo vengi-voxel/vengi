@@ -25,6 +25,7 @@ General:
    - Optimized voxelization (subdividing triangles)
    - Added support for goxel `txt` file format
    - Added support for the veloren server chunk `dat` files
+   - Allow to export all cvars as json
 
 VoxEdit:
 
@@ -35,10 +36,18 @@ VoxEdit:
    - Enable undo/redo for big volumes
    - Refactored scene rendering settings dialog
    - Improved shadow rendering
+   - Support translations and lua scripts in the web version
 
 VoxConvert:
 
    - Transfer existing thumbnails between formats (if supported)
+   - Allow isometric console output of a scene
+   - A web version is available now, too
+
+Thumbnailer:
+
+   - Added isometric thumbnail support
+   - Allow to set sun parameters
 
 ## 0.1.0 (2025-07-19)
 
