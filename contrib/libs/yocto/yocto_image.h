@@ -40,7 +40,6 @@
 // INCLUDES
 // -----------------------------------------------------------------------------
 
-#include <string>
 #include <vector>
 
 #include "yocto_color.h"
@@ -52,7 +51,6 @@
 namespace yocto {
 
 // using directives
-using std::string;
 using std::vector;
 
 }  // namespace yocto
