@@ -18,10 +18,7 @@ auto async(F &&f) -> core::Future<typename std::invoke_result<F>::type> {
 }
 
 // add new work item to the pool
-template<class F>
-void schedule(F &&f) {
-	app::App::getInstance()->enqueue(core::forward<F>(f));
-}
+void schedule(std::function<void()> &&f);
 
 void for_not_parallel(int start, int end, const std::function<void(int, int)> &f);
 void for_parallel(int start, int end, const std::function<void(int, int)> &f, bool wait = true);

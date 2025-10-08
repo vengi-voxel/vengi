@@ -316,6 +316,7 @@ public:
 	auto enqueue(F&& f) -> core::Future<typename std::invoke_result<F>::type> {
 		return _threadPool->enqueue(core::forward<F>(f));
 	}
+	void schedule(std::function<void()> &&f);
 
 	void threadsDump() const;
 

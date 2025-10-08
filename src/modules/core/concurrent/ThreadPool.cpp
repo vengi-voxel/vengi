@@ -127,4 +127,20 @@ void ThreadPool::shutdown(bool wait) {
 	_workers.clear();
 }
 
+void ThreadPool::schedule(std::function<void()>&& f) {
+	if (_stop) {
+		return;
+	}
+
+	{
+		core::ScopedLock lock(_queueMutex);
+
+		if (_stop) {
+			return;
+		}
+		_tasks.emplace(std::move(f));
+	}
+	_queueCondition.notify_one();
+}
+
 } // namespace core

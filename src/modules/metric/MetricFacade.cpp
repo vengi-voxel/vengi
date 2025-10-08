@@ -67,7 +67,7 @@ void MetricState::shutdown() {
 
 bool count(const core::String &key, int delta, const TagMap &tags) {
 	MetricState &s = MetricState::getInstance();
-	s._threadPool.enqueue([=, &s]() { s._metric.count(key.c_str(), delta, tags); });
+	s._threadPool.schedule([=, &s]() { s._metric.count(key.c_str(), delta, tags); });
 	return true;
 }
 

@@ -35,7 +35,7 @@ TEST_F(ThreadPoolTest, testMultiplePush) {
 	core::ThreadPool pool(2);
 	pool.init();
 	for (int i = 0; i < x; ++i) {
-		pool.enqueue([this] () {
+		pool.schedule([this] () {
 			++_count;
 		});
 	}

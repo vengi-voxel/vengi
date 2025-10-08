@@ -57,4 +57,8 @@ void for_parallel(int start, int end, const std::function<void(int, int)> &taskL
 	}
 }
 
+void schedule(std::function<void()> &&f) {
+	app::App::getInstance()->schedule(core::forward<std::function<void()>>(f));
+}
+
 } // namespace app

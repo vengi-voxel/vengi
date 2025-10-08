@@ -1333,4 +1333,8 @@ void App::writeConfigJson(io::WriteStream &stream) {
 	stream.writeString("}", false);
 }
 
+void App::schedule(std::function<void()> &&f) {
+	return _threadPool->schedule(core::forward<std::function<void()>>(f));
+}
+
 } // namespace app
