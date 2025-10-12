@@ -5,18 +5,10 @@
 #include "Parser.h"
 #include "TokenIterator.h"
 #include "core/ArrayLength.h"
-#include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
-#include "core/Var.h"
-#include "core/Assert.h"
-#include "core/ConfigVar.h"
-#include "video/Shader.h"
-#include "Generator.h"
 #include "Parser.h"
 #include "Util.h"
-#include <sstream>
-#include <algorithm>
 
 namespace shadertool {
 

@@ -7,7 +7,6 @@
 #include "core/StringUtil.h"
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
-#include <vector>
 #include "video/Shader.h"
 #include "video/Version.h"
 
