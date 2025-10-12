@@ -3,11 +3,10 @@
  */
 
 #include "SceneSettingsPanel.h"
-#include "IconsLucide.h"
-#include "ScopedID.h"
-#include "ScopedStyle.h"
-#include "imgui.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
+#include "ui/ScopedID.h"
+#include "ui/ScopedStyle.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 

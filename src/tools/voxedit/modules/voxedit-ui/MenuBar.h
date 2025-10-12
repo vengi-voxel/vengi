@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/SharedPtr.h"
-#include "ui/FileDialog.h"
 #include "ui/Panel.h"
 #include "command/CommandHandler.h"
 

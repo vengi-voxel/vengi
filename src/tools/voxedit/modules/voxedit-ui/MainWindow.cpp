@@ -13,7 +13,6 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"

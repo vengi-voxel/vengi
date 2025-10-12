@@ -5,7 +5,6 @@
 #include "NetworkPanel.h"
 #include "IconsLucide.h"
 #include "core/ConfigVar.h"
-#include "imgui.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"

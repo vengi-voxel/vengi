@@ -3,13 +3,13 @@
  */
 
 #include "ToolsPanel.h"
-#include "ScopedID.h"
-#include "Toolbar.h"
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/ScopedID.h"
+#include "ui/Toolbar.h"
 #include "voxedit-ui/Gizmo.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-util/Config.h"

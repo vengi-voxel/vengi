@@ -5,7 +5,7 @@
 #include "SceneDebugPanel.h"
 #include "IconsLucide.h"
 #include "app/I18N.h"
-#include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
 

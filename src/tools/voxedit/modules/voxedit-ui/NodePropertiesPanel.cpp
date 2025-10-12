@@ -5,7 +5,6 @@
 #include "NodePropertiesPanel.h"
 #include "ScopedID.h"
 #include "command/CommandHandler.h"
-#include "imgui.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "ui/IMGUIEx.h"

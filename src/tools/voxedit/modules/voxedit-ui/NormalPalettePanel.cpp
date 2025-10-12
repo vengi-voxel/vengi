@@ -3,15 +3,14 @@
  */
 
 #include "NormalPalettePanel.h"
-#include "IMGUIEx.h"
-#include "IconsLucide.h"
-#include "ScopedID.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
-#include "imgui.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
+#include "ui/ScopedID.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
