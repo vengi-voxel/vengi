@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <cstdint>
-
 namespace cfg {
 
 const int MaxViewports = 4;
