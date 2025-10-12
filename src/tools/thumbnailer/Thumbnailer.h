@@ -6,7 +6,6 @@
 
 #include "image/Image.h"
 #include "video/WindowedApp.h"
-#include "io/File.h"
 
 /**
  * @brief This tool is able to generate thumbnails for all supported voxel formats
