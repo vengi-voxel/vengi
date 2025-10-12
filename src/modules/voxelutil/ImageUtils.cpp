@@ -318,27 +318,36 @@ const int VoxelSpriteWidth = 4;
 const int VoxelSpriteHeight = 4;
 } // namespace
 
-static void renderIsometricVoxel(const image::ImagePtr &img, const palette::Palette &palette, int x, int y, int z,
-								 const voxel::Voxel &v) {
-	const core::RGBA palCol = palette.color(v.getColor());
+static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const core::RGBA palCol) {
 	const core::RGBA darkerCol = core::Color::darker(palCol);
 	const core::RGBA lighterCol = core::Color::brighter(palCol);
-	const core::RGBA colors[VoxelSpriteWidth] = {darkerCol, darkerCol, lighterCol, lighterCol};
-	for (int j = 0; j < VoxelSpriteHeight; ++j) {
+	/**
+	 * Each voxel is rendered as a 4x4 sprite with the following pattern:
+	 *
+	 * CCCC
+	 * DDLL
+	 * DDLL
+	 * DDLL
+	 *
+	 * C = color
+	 * D = darker
+	 * L = lighter
+	 *
+	 * This gives a nice 3D effect when rendering the voxels in an isometric view
+	 * The idea for this is coming from isovoxel and mcmap
+	 */
+	for (int i = 0; i < VoxelSpriteWidth; ++i) {
+		img->setColor(palCol, x +i, y);
+	}
+	for (int j = 1; j < VoxelSpriteHeight; ++j) {
 		const int py = y + j;
-		if (py < 0 || py >= img->height()) {
-			continue;
-		}
 		for (int i = 0; i < VoxelSpriteWidth; ++i) {
 			const int px = x + i;
-			if (px < 0 || px >= img->width()) {
-				continue;
-			}
 			core::RGBA c;
-			if (j == 0) {
-				c = lighterCol;
+			if (i < VoxelSpriteWidth / 2) {
+				c = darkerCol;
 			} else {
-				c = colors[i];
+				c = lighterCol;
 			}
 			img->setColor(c, px, py);
 		}
@@ -356,14 +365,14 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 	const int maxY = r.getUpperY();
 
 	image::ImagePtr image = image::createEmptyImage("isometric");
-	image->resize((sizeX + sizeZ) * 2, sizeX + sizeZ + (maxY - minY + 1) * 3 - 1);
+	image->resize((sizeX + sizeZ) * 2, sizeX + sizeZ + (maxY - minY + 1) * (VoxelSpriteHeight - 1) - 1);
 	for (int x = 0; x < image->width(); ++x) {
 		for (int y = 0; y < image->height(); ++y) {
 			image->setColor(background, x, y);
 		}
 	}
 
-	// TODO: visitor order is not yet working
+	// TODO: visitor order is not yet working for all faces
 	VisitorOrder visitorOrder;
 	switch (frontFace) {
 	default:
@@ -378,9 +387,10 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 	auto func = [&](int vx, int vy, int vz, const voxel::Voxel &v) {
 		const int x = vx - r.getLowerX();
 		const int z = vz - r.getLowerZ();
-		const int bmpPosX = 2 * (sizeZ - 1) + (x - z) * 2;
-		const int bmpPosY = image->height() - 2 + x + z - sizeX - sizeZ - (vy - minY) * 3;
-		renderIsometricVoxel(image, palette, bmpPosX, bmpPosY, vy, v);
+		const int imgX = 2 * (sizeZ - 1) + (x - z) * 2;
+		const int imgY = image->height() - 2 + x + z - sizeX - sizeZ - (vy - minY) * (VoxelSpriteHeight - 1);
+		const core::RGBA palCol = palette.color(v.getColor());
+		renderIsometricVoxel(image, imgX, imgY, palCol);
 	};
 	voxelutil::visitSurfaceVolume(*volume, func, visitorOrder);
 
