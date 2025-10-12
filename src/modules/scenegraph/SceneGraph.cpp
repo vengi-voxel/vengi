@@ -400,6 +400,25 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 	return aabb;
 }
 
+void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
+	out.reserve(nodes().size());
+	for (const auto &e : nodes()) {
+		const scenegraph::SceneGraphNode &node = e->second;
+		if (!node.visible() || !node.isAnyModelNode()) {
+			continue;
+		}
+		const voxel::RawVolume *volume = resolveVolume(node);
+		if (!volume) {
+			continue;
+		}
+		if (frameIdx != InvalidFrame) {
+			out.emplace_back(volume, transformForFrame(node, frameIdx));
+		} else {
+			out.emplace_back(volume, scenegraph::FrameTransform());
+		}
+	}
+}
+
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	// TODO: SCENEGRAPH: ik solver https://github.com/vengi-voxel/vengi/issues/182
 	// and https://github.com/vengi-voxel/vengi/issues/265

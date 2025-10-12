@@ -17,6 +17,7 @@
 #include "math/OBB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
+#include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphListener.h"
 #include "voxel/Region.h"
@@ -83,6 +84,8 @@ public:
 	inline const SceneGraphNodes &nodes() const {
 		return _nodes;
 	}
+
+	void getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const;
 
 	void fixErrors();
 	bool validate() const;

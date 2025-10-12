@@ -5,6 +5,7 @@ set(SRCS
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	FrameTransform.h FrameTransform.cpp
 	JsonExporter.h JsonExporter.cpp
+	Physics.h
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphAnimation.h
 	SceneGraphKeyFrame.h
