@@ -7,7 +7,6 @@
 #include "command/tests/TestHelper.h"
 #include "core/Var.h"
 #include "math/tests/TestMathHelper.h"
-#include "scenegraph/Clipper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -26,10 +25,6 @@ class CameraMovementTest : public app::AbstractTest {
 protected:
 	class CameraMovementExt : public CameraMovement {
 	public:
-		scenegraph::Clipper &clipper() {
-			return _clipper;
-		}
-
 		util::Movement &movement() {
 			return _movement;
 		}
