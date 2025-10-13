@@ -152,7 +152,7 @@ protected:
 	void autosave();
 	void setReferencePosition(const glm::ivec3 &pos);
 	void updateDirtyRendererStates();
-	void zoom(video::Camera &camera, float level) const;
+	void zoom(video::Camera &camera, float level);
 	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
 	void updateCursor();
 	int traceScene();
@@ -589,9 +589,14 @@ public:
 	void nodeForeachGroup(const std::function<void(int)> &f);
 
 	const CameraMovement &cameraMovement() const;
+	CameraMovement &cameraMovement();
 };
 
 inline const CameraMovement &SceneManager::cameraMovement() const {
+	return _camMovement;
+}
+
+inline CameraMovement &SceneManager::cameraMovement() {
 	return _camMovement;
 }
 

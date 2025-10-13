@@ -34,7 +34,8 @@ void CameraMovement::shutdown() {
 	_movement.shutdown();
 }
 
-void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx) const {
+void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
+										 scenegraph::FrameIndex frameIdx) {
 	const float speed = _movementSpeed->floatVal();
 	glm::vec3 moveDelta = _movement.moveDelta(speed);
 	if (_clipping->boolVal()) {
@@ -63,7 +64,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	}
 }
 
-void CameraMovement::zoom(video::Camera &camera, float level, double deltaSeconds) const {
+void CameraMovement::zoom(video::Camera &camera, float level, double deltaSeconds) {
 	if (camera.rotationType() == video::CameraRotationType::Target) {
 		camera.zoom(level);
 	} else {

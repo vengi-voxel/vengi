@@ -22,7 +22,7 @@ protected:
 	scenegraph::Clipper _clipper;
 	util::Movement _movement;
 	void moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
-							 scenegraph::FrameIndex frameIdx) const;
+							 scenegraph::FrameIndex frameIdx);
 
 public:
 	void construct() override;
@@ -30,7 +30,9 @@ public:
 	void shutdown() override;
 	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 				scenegraph::FrameIndex frameIdx);
-	void zoom(video::Camera &camera, float level, double deltaSeconds) const;
+	void zoom(video::Camera &camera, float level, double deltaSeconds);
+	const scenegraph::KinematicBody &body() const;
+	scenegraph::KinematicBody &body();
 };
 
 } // namespace voxedit

@@ -2630,7 +2630,7 @@ void SceneManager::animate(double nowSeconds) {
 	}
 }
 
-void SceneManager::zoom(video::Camera& camera, float level) const {
+void SceneManager::zoom(video::Camera& camera, float level) {
 	_camMovement.zoom(camera, level, deltaSeconds());
 }
 
