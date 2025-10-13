@@ -76,6 +76,8 @@ private:
 	double _nowSeconds = 0.0;
 	double _resizeRequestSeconds = 1.0;
 	glm::ivec2 _resizeRequestSize{0, 0};
+	glm::ivec2 _pos{0};
+	glm::ivec2 _size{0};
 
 	struct Bounds {
 		glm::vec3 mins{0};
@@ -171,6 +173,7 @@ public:
 	bool isSceneMode() const;
 
 	video::Camera &camera();
+	const video::Camera &camera() const;
 
 	bool isHovered() const;
 	bool isVisible() const;
@@ -182,6 +185,8 @@ public:
 	void shutdown();
 
 	int id() const;
+	const glm::ivec2 &pos() const;
+	const glm::ivec2 &size() const;
 
 	void resetCamera();
 	bool saveImage(const char *filename);
@@ -189,6 +194,10 @@ public:
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
+
+inline const video::Camera &Viewport::camera() const {
+	return _camera;
+}
 
 inline video::Camera &Viewport::camera() {
 	return _camera;
@@ -204,6 +213,14 @@ inline bool Viewport::isHovered() const {
 
 inline bool Viewport::isVisible() const {
 	return _visible;
+}
+
+inline const glm::ivec2 &Viewport::pos() const {
+	return _pos;
+}
+
+inline const glm::ivec2 &Viewport::size() const {
+	return _size;
 }
 
 } // namespace voxedit

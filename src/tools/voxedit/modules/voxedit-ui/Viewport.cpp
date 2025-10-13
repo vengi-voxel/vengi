@@ -501,6 +501,8 @@ void Viewport::update(double nowSeconds, command::CommandExecutionListener *list
 		name = core::String::format("%s%s", modeStr, _uiId.c_str());
 	}
 	if (ImGui::Begin(name.c_str(), nullptr, sceneWindowFlags)) {
+		_pos = ImGui::GetWindowPos();
+		_size = ImGui::GetWindowSize();
 		_visible = true;
 		renderMenuBar(listener);
 		renderViewport();
