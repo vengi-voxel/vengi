@@ -304,6 +304,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("a",                      "+move_left",                 "editing");
 		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
 		_keybindingHandler.registerBinding("d",                      "+move_right",                "editing");
+		_keybindingHandler.registerBinding("j",                      "+jump",                      "editing");
 	}
 
 	if (keymap == KeyBindings::Blender) {
@@ -348,6 +349,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("a",                      "actionplace",                "model");
 		_keybindingHandler.registerBinding("b",                      "brushpaint",                 "model");
 		_keybindingHandler.registerBinding("m",                      "actionselect",               "model");
+		// TODO: move bindings
 	} else /*if (keymap == KeyBindings::Vengi) */ {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
