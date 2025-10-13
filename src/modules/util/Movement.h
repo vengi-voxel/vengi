@@ -48,7 +48,6 @@ public:
 	 * @note update() must have been called with proper delta milliseconds.
 	 */
 	glm::vec3 moveDelta(double speed) const;
-	glm::vec3 gravityDelta(double speed, const glm::mat4 &orientation, float y, float lowestY) const;
 };
 
 inline bool Movement::moving() const {

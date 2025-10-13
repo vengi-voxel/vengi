@@ -55,7 +55,7 @@ void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, vid
 	const core::VarPtr &clipping = core::Var::getSafe(cfg::VoxEditClipping);
 	ImGui::CheckboxVar(_("Clipping"), clipping);
 	ImGui::BeginDisabled(!clipping->boolVal());
-	ImGui::CheckboxVar(_("Gravity"), cfg::VoxEditGravity);
+	ImGui::CheckboxVar(_("Gravity"), cfg::VoxEditApplyGravity);
 	ImGui::EndDisabled();
 
 	ImGui::EndDisabled();
