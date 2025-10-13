@@ -22,6 +22,7 @@ protected:
 	command::ActionButton _moveRight;
 	command::ActionButton _moveBackward;
 	command::ActionButton _moveForward;
+	command::ActionButton _jump;
 
 	glm::vec3 calculateDelta(double speed) const;
 
@@ -37,6 +38,7 @@ public:
 	bool right() const;
 	bool forward() const;
 	bool backward() const;
+	bool jump() const;
 
 	bool moving() const;
 
@@ -51,6 +53,10 @@ public:
 
 inline bool Movement::moving() const {
 	return left() || right() || forward() || backward();
+}
+
+inline bool Movement::jump() const {
+	return _jump.pressed();
 }
 
 inline bool Movement::left() const {

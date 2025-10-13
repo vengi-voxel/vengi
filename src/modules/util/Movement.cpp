@@ -24,6 +24,7 @@ void Movement::construct() {
 	command::Command::registerActionButton("move_backward", _moveBackward);
 	command::Command::registerActionButton("move_left", _moveLeft);
 	command::Command::registerActionButton("move_right", _moveRight);
+	command::Command::registerActionButton("jump", _jump);
 }
 
 void Movement::shutdown() {
@@ -31,10 +32,12 @@ void Movement::shutdown() {
 	command::Command::unregisterActionButton("move_backward");
 	command::Command::unregisterActionButton("move_left");
 	command::Command::unregisterActionButton("move_right");
+	command::Command::unregisterActionButton("jump");
 	_moveLeft.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 	_moveRight.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 	_moveForward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 	_moveBackward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
+	_jump.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
 void Movement::update(double nowSeconds) {
