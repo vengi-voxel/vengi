@@ -6,7 +6,6 @@
 
 #include "core/IComponent.h"
 #include "core/Var.h"
-#include "scenegraph/Clipper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
@@ -19,7 +18,6 @@ protected:
 	core::VarPtr _movementSpeed;
 	core::VarPtr _gravity;
 	core::VarPtr _clipping;
-	scenegraph::Clipper _clipper;
 	util::Movement _movement;
 	void moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 							 scenegraph::FrameIndex frameIdx);

@@ -1,6 +1,5 @@
 set(LIB scenegraph)
 set(SRCS
-	Clipper.h Clipper.cpp
 	CoordinateSystem.h
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	FrameTransform.h FrameTransform.cpp
@@ -22,7 +21,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 set(TEST_SRCS
 	tests/CoordinateSystemTest.cpp
 	tests/SceneGraphTest.cpp
-	tests/ClipperTest.cpp
 	tests/SceneGraphUtilTest.cpp
 	tests/TestHelper.h
 )
@@ -34,7 +32,6 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app video)
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
-	benchmarks/ClipperBenchmark.cpp
 	benchmarks/FrameTransformBenchmark.cpp
 	benchmarks/SceneGraphBenchmark.cpp
 )
