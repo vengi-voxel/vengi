@@ -37,6 +37,7 @@ VoxEdit:
    - Refactored scene rendering settings dialog
    - Improved shadow rendering
    - Support translations and lua scripts in the web version
+   - Implemented basic physics that allows you to walk through a scene
 
 VoxConvert:
 

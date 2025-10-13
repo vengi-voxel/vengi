@@ -6,6 +6,7 @@
 #include "app/I18N.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "scenegraph/Physics.h"
 #include "voxedit-util/Config.h"
 
 namespace voxedit {
@@ -14,11 +15,15 @@ namespace voxedit {
 //       jump - specify the height of the player, the jump height, the velocity, etc.
 //       it should be possible to walk a scene in a first person perspective
 void CameraMovement::construct() {
-	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
+	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0");
+	_jumpVelocity =
+		core::Var::get(cfg::VoxEditJumpVelocity, "15.5", core::CV_NOPERSIST, _("Jump velocity in eye mode"));
+	_bodyHeight =
+		core::Var::get(cfg::VoxEditBodyHeight, "0.5", core::CV_NOPERSIST, _("Height of the body in eye mode"));
 	_clipping = core::Var::get(cfg::VoxEditClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
 							   core::Var::boolValidator);
-	_gravity =
-		core::Var::get(cfg::VoxEditGravity, "false", core::CV_NOPERSIST, _("Enable gravity"), core::Var::boolValidator);
+	_applyGravity = core::Var::get(cfg::VoxEditApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
+								   core::Var::boolValidator);
 	_movement.construct();
 }
 
@@ -37,10 +42,58 @@ void CameraMovement::shutdown() {
 void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 										 scenegraph::FrameIndex frameIdx) {
 	const float speed = _movementSpeed->floatVal();
-	glm::vec3 moveDelta = _movement.moveDelta(speed);
-	if (_clipping->boolVal()) {
+	if (_clipping->isDirty()) {
+		_clipping->markClean();
+		_body.position = camera->worldPosition();
 	}
-	camera->move(moveDelta);
+	if (_clipping->boolVal()) {
+		glm::vec3 camForward = camera->forward();
+		glm::vec3 camRight = camera->right();
+		camForward.y = 0.0f;
+		camRight.y = 0.0f;
+		_deltaSeconds += _movement.deltaSeconds();
+
+		if (_movement.moving()) {
+			glm::vec3 direction(0);
+			if (_movement.forward()) {
+				direction += camForward;
+			}
+			if (_movement.left()) {
+				direction -= camRight;
+			}
+			if (_movement.backward()) {
+				direction -= camForward;
+			}
+			if (_movement.right()) {
+				direction += camRight;
+			}
+			if (glm::dot(direction, direction) > 0.0f) {
+				direction = glm::normalize(direction);
+				const float minmax = speed * _deltaSeconds;
+				_body.velocity.x = glm::clamp(_body.velocity.x + direction.x, -minmax, minmax);
+				_body.velocity.z = glm::clamp(_body.velocity.z + direction.z, -minmax, minmax);
+			}
+		}
+		if (_applyGravity->boolVal() && _movement.jump() && _body.collidedY) {
+			_body.velocity.y = _jumpVelocity->floatVal();
+			_body.collidedY = false;
+		}
+
+		scenegraph::CollisionNodes nodes;
+		sceneGraph.getCollisionNodes(nodes, frameIdx);
+
+		constexpr double hz = 1.0 / 60.0;
+		const float gravity = _applyGravity->boolVal() ? 9.81f : 0.0f;
+		while (_deltaSeconds > hz) {
+			_physics.update(hz, nodes, _body, gravity);
+			_deltaSeconds -= hz;
+		}
+		const float bodyHeight = _bodyHeight->floatVal();
+		camera->setWorldPosition(_body.position + glm::vec3(0.0f, bodyHeight, 0.0f));
+	} else {
+		glm::vec3 moveDelta = _movement.moveDelta(speed);
+		camera->move(moveDelta);
+	}
 }
 
 void CameraMovement::update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
@@ -58,10 +111,11 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 void CameraMovement::zoom(video::Camera &camera, float level, double deltaSeconds) {
 	if (camera.rotationType() == video::CameraRotationType::Target) {
 		camera.zoom(level);
-	} else {
+	} else if (!_clipping->boolVal()) {
 		float speed = level * _movementSpeed->floatVal();
 		speed *= (float)deltaSeconds;
 		camera.move(glm::vec3(0.0f, 0.0f, speed));
+		camera.update(deltaSeconds);
 	}
 }
 

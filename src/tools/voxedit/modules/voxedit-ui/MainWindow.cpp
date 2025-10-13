@@ -120,7 +120,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
 	  _networkPanel(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline),
-	  _cameraPanel(app, _sceneMgr), _sceneDebugPanel(app, _sceneMgr, sceneRenderer),
+	  _cameraPanel(app, _sceneMgr), _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this),
 	  _sceneSettingsPanel(app, _sceneMgr) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));
@@ -427,6 +427,7 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCENE_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NETWORK, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_SCENEDEBUGPANEL, dockId);
 }
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
@@ -459,7 +460,7 @@ void MainWindow::rightWidget() {
 		_cameraPanel.update(TITLE_CAMERA, _lastHoveredViewport->camera(), listener);
 	}
 	_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
-	// _sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
+	_sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredViewport->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
