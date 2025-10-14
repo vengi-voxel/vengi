@@ -170,6 +170,7 @@ struct ImGuiTestEngine
     ImGuiTestFindByLabelTask    FindByLabelTask;
     ImGuiTestCoroutineHandle    TestQueueCoroutine = nullptr;   // Coroutine to run the test queue
     bool                        TestQueueCoroutineShouldExit = false; // Flag to indicate that we are shutting down and the test queue coroutine should stop
+    ImGuiTextBuffer             StringBuilderForChecks;
 
     // Inputs
     ImGuiTestInputs             Inputs;

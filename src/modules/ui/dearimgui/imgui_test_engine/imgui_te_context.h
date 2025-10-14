@@ -226,7 +226,7 @@ struct IMGUI_API ImGuiTestContext
     ImGuiContext*           UiContext = nullptr;                    // UI context
     ImGuiTestEngineIO*      EngineIO = nullptr;                     // Test Engine IO/settings
     ImGuiTest*              Test = nullptr;                         // Test currently running
-    ImGuiTestOutput*        TestOutput = nullptr;                   // Test output (generally == &Test->Output)
+    ImGuiTestOutput*        TestOutput = nullptr;                   // Test output (generally == &Test->Output while executing TestFunc)
     ImGuiTestOpFlags        OpFlags = ImGuiTestOpFlags_None;        // Flags affecting all operation (supported: ImGuiTestOpFlags_NoAutoUncollapse)
     int                     PerfStressAmount = 0;                   // Convenience copy of engine->IO.PerfStressAmount
     int                     FrameCount = 0;                         // Test frame count (restarts from zero every time)
@@ -604,11 +604,30 @@ template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, Im
     do                                                          \
     {                                                           \
         bool __res;                                             \
-        if (ImGuiTestEngine_CheckStrOp(__FILE__, __func__, __LINE__, _FLAGS, #_OP, #_LHS, _LHS, #_RHS, _RHS, &__res)) \
+        if (ImGuiTestEngine_CheckOpStr(__FILE__, __func__, __LINE__, _FLAGS, #_OP, #_LHS, _LHS, #_RHS, _RHS, &__res)) \
             IM_ASSERT(__res);                                   \
         if (_RETURN && !__res)                                  \
             return;                                             \
     } while (0)
+
+#define IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, _DISPLAY_OP, _ACTUAL_COMPARE, _RETURN) \
+    do                                                                              \
+    {                                                                               \
+        auto __lhs = _LHS; /* Cache to avoid side effects */                        \
+        auto __rhs = _RHS;                                                          \
+        bool __res = _ACTUAL_COMPARE;                                               \
+        ImGuiTextBuffer* expr_buf = ImGuiTestEngine_GetTempStringBuilder();         \
+        expr_buf->append(#_LHS " [");                                               \
+        ImGuiTestEngineUtil_appendf_auto(expr_buf, __lhs);                          \
+        expr_buf->append("] " #_DISPLAY_OP " " #_RHS " [");                         \
+        ImGuiTestEngineUtil_appendf_auto(expr_buf, __rhs);                          \
+        expr_buf->append("] (using epsilon)");                                      \
+        if (ImGuiTestEngine_Check(__FILE__, __func__, __LINE__, ImGuiTestCheckFlags_None, __res, expr_buf->c_str())) \
+            IM_ASSERT(__res);                                                       \
+        if (_RETURN && !__res)                                                      \
+            return;                                                                 \
+    } while(0)
+
 
 // Scalar compares
 #define IM_CHECK_EQ(_LHS, _RHS)                     IM_CHECK_OP(_LHS, _RHS, ==, true)   // Equal
@@ -633,11 +652,21 @@ template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, Im
 #define IM_CHECK_STR_NE_NO_RET(_LHS, _RHS)          IM_CHECK_STR_OP(_LHS, _RHS, !=, false, ImGuiTestCheckFlags_None)
 #define IM_CHECK_STR_EQ_SILENT(_LHS, _RHS)          IM_CHECK_STR_OP(_LHS, _RHS, ==, true, ImGuiTestCheckFlags_SilentSuccess)
 
-// Floating point compares
-#define IM_CHECK_FLOAT_EQ_EPS(_LHS, _RHS)           IM_CHECK_LE(ImFabs(_LHS - (_RHS)), FLT_EPSILON)   // Float Equal
-#define IM_CHECK_FLOAT_NE_EPS(_LHS, _RHS)           IM_CHECK_GT(ImFabs(_LHS - (_RHS)), FLT_EPSILON)   // Float Not Equal
-#define IM_CHECK_FLOAT_NEAR(_LHS, _RHS, _EPS)       IM_CHECK_LE(ImFabs(_LHS - (_RHS)), _EPS)
-#define IM_CHECK_FLOAT_NEAR_NO_RET(_LHS, _RHS, _E)  IM_CHECK_LE_NO_RET(ImFabs(_LHS - (_RHS)), _E)
+// Floating point compares using an epsilon
+#define IM_CHECK_FLOAT_EQ(_LHS, _RHS)               IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, ==, ((__lhs-__rhs) <= FLT_EPSILON && (__lhs-__rhs) >= -FLT_EPSILON), true) // Float Equal (w/ epsilon)
+#define IM_CHECK_FLOAT_NE(_LHS, _RHS)               IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, !=, ((__lhs-__rhs) >  FLT_EPSILON || (__lhs-__rhs) <  -FLT_EPSILON), true) // Float Not Equal (w/ epsilon)
+#define IM_CHECK_DOUBLE_EQ(_LHS, _RHS)              IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, ==, ((__lhs-__rhs) <= DBL_EPSILON && (__lhs-__rhs) >= -DBL_EPSILON), true) // Double Equal (w/ epsilon)
+#define IM_CHECK_DOUBLE_NE(_LHS, _RHS)              IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, !=, ((__lhs-__rhs) >  DBL_EPSILON || (__lhs-__rhs) <  -DBL_EPSILON), true) // Double Not Equal (w/ epsilon)
+
+#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+// Obsoleted in favor of simpler names
+#define IM_CHECK_FLOAT_EQ_EPS   IM_CHECK_FLOAT_EQ
+#define IM_CHECK_FLOAT_NE_EPS   IM_CHECK_FLOAT_NE
+
+// Obsoleted because ambiguous/confusing
+#define IM_CHECK_FLOAT_NEAR(_LHS,_RHS,_EPS)         IM_CHECK_LE(ImFabs(_LHS - (_RHS)), _EPS)         // Float Near a value (custom epsilon)
+#define IM_CHECK_FLOAT_NEAR_NO_RET(_LHS,_RHS,_EPS)  IM_CHECK_LE_NO_RET(ImFabs(_LHS - (_RHS)), _EPS)  // Float Near a value (custom epsilon)
+#endif
 
 //-------------------------------------------------------------------------
 

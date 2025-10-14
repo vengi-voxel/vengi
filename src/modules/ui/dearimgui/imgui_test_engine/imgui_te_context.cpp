@@ -315,6 +315,10 @@ void    ImGuiTestContext::Finish(ImGuiTestStatus status)
         if (TestOutput->Status == ImGuiTestStatus_Running)
             TestOutput->Status = status;
     }
+    else if (ActiveFunc == ImGuiTestActiveFunc_TeardownFunc)
+    {
+        IM_ASSERT(0); // Unsupported
+    }
 }
 
 void    ImGuiTestContext::Yield(int count)
@@ -505,7 +509,7 @@ void ImGuiTestContext::SetRef(ImGuiWindow* window)
 void ImGuiTestContext::SetRef(ImGuiTestRef ref)
 {
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
-    if (ActiveFunc == ImGuiTestActiveFunc_TestFunc)
+    if (ActiveFunc != ImGuiTestActiveFunc_GuiFunc)
         LogDebug("SetRef '%s' 0x%08X", ref.Path ? ref.Path : "nullptr", ref.ID);
 
     if (ref.Path)
@@ -4207,7 +4211,7 @@ void    ImGuiTestContext::DockClear(const char* window_name, ...)
     }
     va_end(args);
 
-    if (ActiveFunc == ImGuiTestActiveFunc_TestFunc)
+    if (ActiveFunc != ImGuiTestActiveFunc_GuiFunc)
         Yield(2); // Give time to rebuild dock in case io.ConfigDockingAlwaysTabBar is set
 }
 

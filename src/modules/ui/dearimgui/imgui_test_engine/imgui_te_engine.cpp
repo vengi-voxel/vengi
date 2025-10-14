@@ -1020,7 +1020,7 @@ void ImGuiTestEngine_Yield(ImGuiTestEngine* engine)
     // Can only yield in the test func!
     if (ctx)
     {
-        IM_ASSERT(ctx->ActiveFunc == ImGuiTestActiveFunc_TestFunc && "Can only yield inside TestFunc()!");
+        IM_ASSERT(ctx->ActiveFunc != ImGuiTestActiveFunc_GuiFunc && "Can only yield inside a TestFunc()!");
         for (ImGuiWindow* window : ctx->ForeignWindowsToHide)
         {
             window->HiddenFramesForRenderOnly = 2;          // Hide root window
@@ -1805,7 +1805,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
     }
     else
     {
-        if (test->TestFunc)
+        if (test->TestFunc != nullptr)
         {
             // Test function
             test->TestFunc(ctx);
@@ -1878,6 +1878,24 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
                 }
             }
         }
+    }
+
+    // Call test shutdown function (optional)
+    if (test->TeardownFunc != nullptr)
+    {
+        ctx->LogInfo("Running TestShutdownFunc:");
+        IM_ASSERT(ctx->ActiveFunc == ImGuiTestActiveFunc_GuiFunc || ctx->ActiveFunc == ImGuiTestActiveFunc_TestFunc);
+        ctx->ActiveFunc = ImGuiTestActiveFunc_TeardownFunc;
+
+        // Backup and clear status
+        // - This allow us to store temporary status during the TestShutdownFunc(), so an error in it will stop the function.
+        // - An alternative would be to test for (ActiveFunc != ImGuiTestActiveFunc_TestShutdownFunc) inside ctx->IsError() if we want to keep running.
+        // - A crash during TestShutdownFunc() would not be reported as a failed test status but well, the crash itself will be reported.
+        ImGuiTestStatus backup_status = ctx->TestOutput->Status;
+        ctx->TestOutput->Status = ImGuiTestStatus_Running;
+        test->TeardownFunc(ctx);
+        ctx->TestOutput->Status = backup_status;
+        ImGui::SetCurrentContext(ctx->UiContext);
     }
 
     IM_ASSERT(engine->CaptureCurrentArgs == nullptr && "Active capture was not terminated in the test code.");
@@ -2379,10 +2397,10 @@ void ImGuiTestEngine_AssertLog(const char* expr, const char* file, const char* f
 // Used by IM_CHECK_OP() macros
 ImGuiTextBuffer* ImGuiTestEngine_GetTempStringBuilder()
 {
-    static ImGuiTextBuffer builder;
-    builder.Buf.resize(1);
-    builder.Buf[0] = 0;
-    return &builder;
+    ImGuiTestEngine* engine = GImGuiTestEngine;
+    engine->StringBuilderForChecks.Buf.resize(1);
+    engine->StringBuilderForChecks.Buf[0] = 0;
+    return &engine->StringBuilderForChecks;
 }
 
 // Out of convenience for main library we allow this to be called before TestEngine is initialized.
@@ -2413,12 +2431,11 @@ bool ImGuiTestEngine_Check(const char* file, const char* func, int line, ImGuiTe
 
     if (ImGuiTestContext* ctx = engine->TestContext)
     {
-        ImGuiTest* test = ctx->Test;
         //ctx->LogDebug("IM_CHECK(%s)", expr);
         if (!result)
         {
             if (!(ctx->RunFlags & ImGuiTestRunFlags_GuiFuncOnly))
-                test->Output.Status = ImGuiTestStatus_Error;
+                ctx->TestOutput->Status = ImGuiTestStatus_Error;
 
             if (file)
                 ctx->LogError("Error %s:%d '%s'", file_without_path, line, expr);
@@ -2447,7 +2464,7 @@ bool ImGuiTestEngine_Check(const char* file, const char* func, int line, ImGuiTe
     return false;
 }
 
-bool ImGuiTestEngine_CheckStrOp(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, const char* op, const char* lhs_var, const char* lhs_value, const char* rhs_var, const char* rhs_value, bool* out_res)
+bool ImGuiTestEngine_CheckOpStr(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, const char* op, const char* lhs_desc, const char* lhs_value, const char* rhs_desc, const char* rhs_value, bool* out_res)
 {
     int res_strcmp = strcmp(lhs_value, rhs_value);
     bool res = 0;
@@ -2459,10 +2476,10 @@ bool ImGuiTestEngine_CheckStrOp(const char* file, const char* func, int line, Im
         IM_ASSERT(0);
     *out_res = res;
 
-    ImGuiTextBuffer buf; // FIXME-OPT: Now we can probably remove that allocation
+    ImGuiTextBuffer* buf = ImGuiTestEngine_GetTempStringBuilder();
 
-    bool lhs_is_literal = lhs_var[0] == '\"';
-    bool rhs_is_literal = rhs_var[0] == '\"';
+    bool lhs_is_literal = lhs_desc[0] == '\"';
+    bool rhs_is_literal = rhs_desc[0] == '\"';
     if (strchr(lhs_value, '\n') != nullptr || strchr(rhs_value, '\n') != nullptr)
     {
         // Multi line strings
@@ -2472,31 +2489,29 @@ bool ImGuiTestEngine_CheckStrOp(const char* file, const char* func, int line, Im
             lhs_value_len--;
         if (rhs_value_len > 0 && rhs_value[rhs_value_len - 1] == '\n')
             rhs_value_len--;
-        buf.appendf(
+        buf->appendf(
             "\n"
             "---------------------------------------- // lhs: %s\n"
             "%.*s\n"
             "---------------------------------------- // rhs: %s, compare op: %s\n"
             "%.*s\n"
             "----------------------------------------\n",
-            lhs_is_literal ? "literal" : lhs_var,
+            lhs_is_literal ? "literal" : lhs_desc,
             (int)lhs_value_len, lhs_value,
-            rhs_is_literal ? "literal" : rhs_var,
+            rhs_is_literal ? "literal" : rhs_desc,
             op,
             (int)rhs_value_len, rhs_value);
     }
     else
     {
         // Single line strings
-        buf.appendf(
+        buf->appendf(
             "%s [\"%s\"] %s %s [\"%s\"]",
-            lhs_is_literal ? "" : lhs_var, lhs_value,
+            lhs_is_literal ? "" : lhs_desc, lhs_value,
             op,
-            rhs_is_literal ? "" : rhs_var, rhs_value);
+            rhs_is_literal ? "" : rhs_desc, rhs_value);
     }
-
-
-    return ImGuiTestEngine_Check(file, func, line, flags, res, buf.c_str());
+    return ImGuiTestEngine_Check(file, func, line, flags, res, buf->c_str());
 }
 
 bool ImGuiTestEngine_Error(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, const char* fmt, ...)

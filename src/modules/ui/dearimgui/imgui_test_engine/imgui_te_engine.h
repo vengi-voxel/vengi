@@ -69,8 +69,9 @@ enum ImGuiTestEngineExportFormat : int;
 enum ImGuiTestActiveFunc : int
 {
     ImGuiTestActiveFunc_None,
-    ImGuiTestActiveFunc_GuiFunc,
-    ImGuiTestActiveFunc_TestFunc
+    ImGuiTestActiveFunc_GuiFunc,            // == GuiFunc() handler
+    ImGuiTestActiveFunc_TestFunc,           // == TestFunc() handler
+    ImGuiTestActiveFunc_TeardownFunc,       // == TeardownFunc() handler
 };
 
 enum ImGuiTestRunSpeed : int
@@ -180,7 +181,7 @@ extern const char*  ImGuiTestEngine_FindItemDebugLabel(ImGuiContext* ui_ctx, ImG
 
 // Functions (generally called via IM_CHECK() macros)
 IMGUI_API bool      ImGuiTestEngine_Check(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, bool result, const char* expr);
-IMGUI_API bool      ImGuiTestEngine_CheckStrOp(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, const char* op, const char* lhs_var, const char* lhs_value, const char* rhs_var, const char* rhs_value, bool* out_result);
+IMGUI_API bool      ImGuiTestEngine_CheckOpStr(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, const char* op, const char* lhs_desc, const char* lhs_value, const char* rhs_desc, const char* rhs_value, bool* out_result);
 IMGUI_API bool      ImGuiTestEngine_Error(const char* file, const char* func, int line, ImGuiTestCheckFlags flags, const char* fmt, ...);
 IMGUI_API void      ImGuiTestEngine_AssertLog(const char* expr, const char* file, const char* function, int line);
 IMGUI_API ImGuiTextBuffer* ImGuiTestEngine_GetTempStringBuilder();
@@ -426,7 +427,8 @@ struct IMGUI_API ImGuiTest
     int                             ArgVariant = 0;                 // User parameter. Generally we use it to run variations of a same test by sharing GuiFunc/TestFunc
     ImGuiTestFlags                  Flags = ImGuiTestFlags_None;    // See ImGuiTestFlags_
     ImFuncPtr(ImGuiTestGuiFunc)     GuiFunc = nullptr;              // GUI function (optional if your test are running over an existing GUI application)
-    ImFuncPtr(ImGuiTestTestFunc)    TestFunc = nullptr;             // Test function
+    ImFuncPtr(ImGuiTestTestFunc)    TestFunc = nullptr;             // Test driving function
+    ImFuncPtr(ImGuiTestTestFunc)    TeardownFunc = nullptr;         // Teardown driving function, executed after TestFunc _regardless_ of TestFunc failing.
     void*                           UserData = nullptr;             // General purpose user data (if assigning capturing lambdas on GuiFunc/TestFunc you may not need to use this)
     //ImVector<ImGuiTestRunTask>    Dependencies;                   // Registered via AddDependencyTest(), ran automatically before our test. This is a simpler wrapper to calling ctx->RunChildTest()
 
