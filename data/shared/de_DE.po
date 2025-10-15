@@ -1665,6 +1665,9 @@ msgstr ""
 msgid "User name"
 msgstr "Benutzername"
 
+msgid "Server password"
+msgstr ""
+
 msgid "Host name"
 msgstr ""
 
@@ -1675,6 +1678,9 @@ msgid "Connect to server"
 msgstr ""
 
 msgid "Connected to server"
+msgstr ""
+
+msgid "Remote console password"
 msgstr ""
 
 msgid "Disconnect"
@@ -3251,13 +3257,14 @@ msgstr ""
 msgid "The port to run the voxedit server on"
 msgstr ""
 
+msgid "The password required to connect to the voxedit server"
+msgstr ""
+
+msgid "The rcon password required to send commands to the voxedit server"
+msgstr ""
+
 msgid "The interface to run the voxedit server on"
 msgstr ""
 
 msgid "The maximum number of clients that can connect to the server"
 msgstr ""
-
-#~ msgid "Undo disabled for this volume. Max volume size exceeded"
-#~ msgstr ""
-#~ "Rückgängig deaktiviert für dieses Volumen. Maximale Volumengröße "
-#~ "überschritten"
