@@ -4,13 +4,14 @@
 #pragma once
 
 #include "ProtocolHandler.h"
+#include "SocketId.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/collection/DynamicArray.h"
-#include "voxedit-util/network/ProtocolHandlerRegistry.h"
 #include "handler/server/InitSessionHandler.h"
 #include "handler/server/SceneStateHandlerServer.h"
+#include "voxedit-util/network/ProtocolHandlerRegistry.h"
 #include "voxedit-util/network/handler/server/BroadcastHandler.h"
-#include "SocketId.h"
+#include "voxedit-util/network/handler/server/CommandHandlerServer.h"
 
 namespace voxedit {
 namespace network {
@@ -56,6 +57,7 @@ protected:
 	double _pingSeconds = 0.0;
 	ProtocolHandlerRegistry _protocolRegistry;
 	network::NopHandler _nopHandler;
+	CommandHandlerServer _commandHandler;
 	InitSessionHandler _initSessionHandler;
 	SceneStateHandlerServer _sceneStateHandler;
 	BroadcastHandler _broadcastHandler;

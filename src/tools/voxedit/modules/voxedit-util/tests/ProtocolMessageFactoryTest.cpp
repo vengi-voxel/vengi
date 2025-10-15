@@ -12,6 +12,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/network/ProtocolMessage.h"
 #include "voxedit-util/network/protocol/InitSessionMessage.h"
 #include "voxedit-util/network/protocol/NodeAddedMessage.h"
@@ -328,6 +329,7 @@ public:
 		app::AbstractTest::SetUp();
 		core::Var::get(cfg::VoxformatRGBFlattenFactor, "0");
 		core::Var::get(cfg::VoxformatEmptyPaletteIndex, "-1");
+		core::Var::get(cfg::VoxEditNetPassword, "test");
 	}
 };
 

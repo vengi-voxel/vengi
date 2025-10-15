@@ -35,6 +35,7 @@ set(SRCS
 	network/ProtocolMessageFactory.h network/ProtocolMessageFactory.cpp
 
 	network/protocol/NodeAddedMessage.h
+	network/protocol/CommandMessage.h
 	network/protocol/InitSessionMessage.h
 	network/protocol/NodeKeyFramesMessage.h
 	network/protocol/NodeMovedMessage.h
@@ -58,6 +59,7 @@ set(SRCS
 	network/handler/client/SceneStateRequestHandler.h network/handler/client/SceneStateRequestHandler.cpp
 	network/handler/client/SceneStateHandlerClient.h network/handler/client/SceneStateHandlerClient.cpp
 
+	network/handler/server/CommandHandlerServer.h
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp
 	network/handler/server/SceneStateHandlerServer.h network/handler/server/SceneStateHandlerServer.cpp
 	network/handler/server/BroadcastHandler.h network/handler/server/BroadcastHandler.cpp

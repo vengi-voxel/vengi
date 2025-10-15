@@ -44,6 +44,8 @@ const ProtocolId PROTO_NODE_PROPERTIES = 9;
 const ProtocolId PROTO_NODE_KEYFRAMES = 10;
 // initial session handshake message
 const ProtocolId PROTO_INIT_SESSION = 11;
+// allow to send commands to the server
+const ProtocolId PROTO_COMMAND = 12;
 
 /**
  * @brief A protocol message is used for the serialization of the ai states for remote debugging
@@ -157,7 +159,7 @@ protected:
 		palette.setName(paletteName);
 		bool isBuiltIn = in.readBool();
 		if (isBuiltIn) {
-			Log::error("Built-in palette - nothing more to read");
+			Log::debug("Built-in palette - nothing more to read");
 			core_assert(palette::Palette::isBuiltIn(paletteName));
 			return palette.load(paletteName.c_str());
 		}

@@ -37,6 +37,7 @@ public:
 	void disconnect();
 	void update(double nowSeconds);
 
+	void executeCommand(const core::String &command);
 	void sendSceneState();
 
 	void lockListener();

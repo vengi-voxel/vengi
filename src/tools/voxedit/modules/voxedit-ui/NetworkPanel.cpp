@@ -24,6 +24,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 			if (ImGui::BeginTabItem(_("Client"))) {
 				if (!_sceneMgr->client().isConnected()) {
 					ImGui::InputVarString(_("User name"), cfg::AppUserName);
+					ImGui::InputVarString(_("Server password"), cfg::VoxEditNetPassword);
 					ImGui::InputVarString(_("Host name"), cfg::VoxEditNetHostname);
 					ImGui::InputVarInt(_("Port"), cfg::VoxEditNetPort);
 					if (ImGui::Button(_("Connect to server"))) {
@@ -33,6 +34,15 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					}
 				} else {
 					ImGui::TextUnformatted(_("Connected to server"));
+					ImGui::InputVarString(_("Remote console password"), cfg::VoxEditNetRconPassword);
+					if (ImGui::Button(_("New scene"))) {
+						_sceneMgr->client().executeCommand("newscene");
+					}
+					if (ImGui::InputText(_("Command"), &_command,
+										 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll)) {
+						_sceneMgr->client().executeCommand(_command);
+						ImGui::SetKeyboardFocusHere(-1);
+					}
 					if (ImGui::Button(_("Disconnect"))) {
 						_sceneMgr->disconnectFromServer();
 					}
@@ -41,6 +51,8 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 			}
 			if (ImGui::BeginTabItem(_("Server"))) {
 				ImGui::InputVarString(_("User name"), cfg::AppUserName);
+				ImGui::InputVarString(_("Server password"), cfg::VoxEditNetPassword);
+				ImGui::InputVarString(_("Remote console password"), cfg::VoxEditNetRconPassword);
 				ImGui::InputVarInt(_("Max connections"), cfg::VoxEditNetServerMaxConnections);
 				const core::VarPtr &portVar = core::Var::getSafe(cfg::VoxEditNetPort);
 				if (_sceneMgr->server().isRunning()) {

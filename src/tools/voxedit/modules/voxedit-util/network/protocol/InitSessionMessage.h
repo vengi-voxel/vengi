@@ -7,6 +7,7 @@
 #include "core/ConfigVar.h"
 #include "core/String.h"
 #include "core/Var.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/network/ProtocolMessage.h"
 #include "voxedit-util/network/ProtocolVersion.h"
 
@@ -20,6 +21,7 @@ class InitSessionMessage : public ProtocolMessage {
 private:
 	uint32_t _protocolVersion;
 	core::String _applicationVersion;
+	core::String _password;
 	core::String _username;
 	bool _localServer = false;
 
@@ -27,6 +29,7 @@ public:
 	InitSessionMessage(bool localServer) : ProtocolMessage(PROTO_INIT_SESSION) {
 		_protocolVersion = PROTOCOL_VERSION;
 		_applicationVersion = core::Var::getSafe(cfg::AppVersion)->strVal();
+		_password = core::Var::getSafe(cfg::VoxEditNetPassword)->strVal();
 		_username = core::Var::getSafe(cfg::AppUserName)->strVal();
 
 		if (!writeUInt32(_protocolVersion)) {
@@ -39,6 +42,10 @@ public:
 		}
 		if (!writePascalStringUInt16LE(_username)) {
 			Log::error("Failed to write username in InitSessionMessage ctor");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_password)) {
+			Log::error("Failed to write password in InitSessionMessage ctor");
 			return;
 		}
 		if (!writeBool(localServer)) {
@@ -62,6 +69,10 @@ public:
 			Log::error("Failed to read username for init session");
 			return;
 		}
+		if (!in.readPascalStringUInt16LE(_password)) {
+			Log::error("Failed to read password for init session");
+			return;
+		}
 		_localServer = in.readBool();
 	}
 	void writeBack() override {
@@ -79,6 +90,10 @@ public:
 		}
 		if (!writePascalStringUInt16LE(_username)) {
 			Log::error("Failed to write username in InitSessionMessage::writeBack");
+			return;
+		}
+		if (!writePascalStringUInt16LE(_password)) {
+			Log::error("Failed to write password in InitSessionMessage::writeBack");
 			return;
 		}
 		if (!writeBool(_localServer)) {
@@ -99,6 +114,9 @@ public:
 	}
 	bool isLocalServer() const {
 		return _localServer;
+	}
+	const core::String &password() const {
+		return _password;
 	}
 };
 

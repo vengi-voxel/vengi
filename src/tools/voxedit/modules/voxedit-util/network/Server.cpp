@@ -27,7 +27,8 @@ bool Server::shouldRequestClientState(bool localServer) const {
 	if (_sceneGraph == nullptr || !_sceneGraph->empty()) {
 		return false;
 	}
-	return _network.clientCount() == 1;
+	// the headless server is a client, itself. So the second client is basically the one we request the state from.
+	return _network.clientCount() == 2;
 }
 
 bool Server::shouldSendClientState(bool localServer) const {
@@ -41,9 +42,15 @@ bool Server::shouldSendClientState(bool localServer) const {
 }
 
 bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
-						 const core::String &username, bool localServer) {
+						 const core::String &username, const core::String &password, bool localServer) {
 	if (protocolVersion != PROTOCOL_VERSION) {
 		Log::error("Client %u has incompatible protocol version %u (expected 1)", clientId, protocolVersion);
+		return false;
+	}
+
+	const core::VarPtr &expectedPassword = core::Var::getSafe(cfg::VoxEditNetPassword);
+	if (expectedPassword->strVal() != password) {
+		Log::error("Client %u provided invalid password", clientId);
 		return false;
 	}
 
@@ -71,7 +78,7 @@ bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, con
 			Log::error("Failed to send scene state to client %u", clientId);
 			return false;
 		}
-	} else {
+	} else if (!localServer) {
 		Log::warn("No request nor send of the state for client %u", clientId);
 	}
 
