@@ -1617,6 +1617,9 @@ msgstr ""
 msgid "User name"
 msgstr ""
 
+msgid "Server password"
+msgstr ""
+
 msgid "Host name"
 msgstr ""
 
@@ -1627,6 +1630,9 @@ msgid "Connect to server"
 msgstr ""
 
 msgid "Connected to server"
+msgstr ""
+
+msgid "Remote console password"
 msgstr ""
 
 msgid "Disconnect"
@@ -3075,6 +3081,12 @@ msgid "The voxedit server hostname to connect to"
 msgstr ""
 
 msgid "The port to run the voxedit server on"
+msgstr ""
+
+msgid "The password required to connect to the voxedit server"
+msgstr ""
+
+msgid "The rcon password required to send commands to the voxedit server"
 msgstr ""
 
 msgid "The interface to run the voxedit server on"

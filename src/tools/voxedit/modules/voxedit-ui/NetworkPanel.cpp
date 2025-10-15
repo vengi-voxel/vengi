@@ -35,7 +35,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 				} else {
 					ImGui::TextUnformatted(_("Connected to server"));
 					ImGui::InputVarString(_("Remote console password"), cfg::VoxEditNetRconPassword);
-					if (ImGui::Button(_("New scene"))) {
+					if (ImGui::Button(_("New Scene"))) {
 						_sceneMgr->client().executeCommand("newscene");
 					}
 					if (ImGui::InputText(_("Command"), &_command,
