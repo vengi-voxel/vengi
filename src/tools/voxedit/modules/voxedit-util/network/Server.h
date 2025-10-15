@@ -19,6 +19,8 @@ protected:
 	void onConnect(RemoteClient *client) override;
 	void onDisconnect(RemoteClient *client) override;
 
+	bool shouldRequestClientState(bool localServer) const;
+	bool shouldSendClientState(bool localServer) const;
 public:
 	Server();
 	virtual ~Server();
