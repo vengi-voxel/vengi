@@ -20,6 +20,26 @@ Server::~Server() {
 	shutdown();
 }
 
+bool Server::shouldRequestClientState(bool localServer) const {
+	if (localServer) {
+		return false;
+	}
+	if (_sceneGraph == nullptr || !_sceneGraph->empty()) {
+		return false;
+	}
+	return _network.clientCount() == 1;
+}
+
+bool Server::shouldSendClientState(bool localServer) const {
+	if (localServer) {
+		return false;
+	}
+	if (_sceneGraph == nullptr) {
+		return false;
+	}
+	return !_sceneGraph->empty();
+}
+
 bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
 						 const core::String &username, bool localServer) {
 	if (protocolVersion != PROTOCOL_VERSION) {
@@ -37,19 +57,14 @@ bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, con
 		return false;
 	}
 
-	if (localServer) {
-		return true;
-	}
-
-	// if this is the first client, we request to get the scene state
-	if (_network.clientCount() == 1) {
+	if (shouldRequestClientState(localServer)) {
 		Log::info("Requesting scene state from client %u", clientId);
 		SceneStateRequestMessage msg;
 		if (!_network.sendToClient(clientId, msg)) {
 			Log::error("Failed to request scene state from client %u", clientId);
 			return false;
 		}
-	} else if (_sceneGraph) {
+	} else if (shouldSendClientState(localServer)) {
 		Log::info("Sending scene state to client %u", clientId);
 		SceneStateMessage msg(*_sceneGraph);
 		if (!_network.sendToClient(clientId, msg)) {
@@ -57,7 +72,7 @@ bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, con
 			return false;
 		}
 	} else {
-		Log::debug("No scene graph set, cannot send scene state to client %u", clientId);
+		Log::warn("No request nor send of the state for client %u", clientId);
 	}
 
 	return true;
