@@ -34,7 +34,8 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	init(ORGANISATION, "voxedit");
 	core::registerBindingContext("scene", core::BindingContext::Context1);
 	core::registerBindingContext("model", core::BindingContext::Context2);
-	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2);
+	core::registerBindingContext("game", core::BindingContext::Context3);
+	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
 	_allowRelativeMouseMode = false;
 	_iniVersion = 8;
 	_keybindingsVersion = 1;
@@ -304,7 +305,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("a",                      "+move_left",                 "editing");
 		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
 		_keybindingHandler.registerBinding("d",                      "+move_right",                "editing");
-		_keybindingHandler.registerBinding("j",                      "+jump",                      "editing");
+		_keybindingHandler.registerBinding("space",                  "+jump",                      "game");
 	}
 
 	if (keymap == KeyBindings::Blender) {
@@ -466,7 +467,9 @@ app::AppState VoxEdit::onRunning() {
 	_collectionMgr->update(_nowSeconds);
 	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
 	if (viewport) {
-		if (viewport->isSceneMode()) {
+		if (viewport->isGameMode()) {
+			core::setBindingContext(core::BindingContext::Context3);
+		} else if (viewport->isSceneMode()) {
 			core::setBindingContext(core::BindingContext::Context1);
 		} else {
 			core::setBindingContext(core::BindingContext::Context2);

@@ -36,6 +36,7 @@ public:
 	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 				scenegraph::FrameIndex frameIdx);
 	void zoom(video::Camera &camera, float level, double deltaSeconds);
+	void updateBodyPosition(const video::Camera &camera);
 	const scenegraph::KinematicBody &body() const;
 	scenegraph::KinematicBody &body();
 };
