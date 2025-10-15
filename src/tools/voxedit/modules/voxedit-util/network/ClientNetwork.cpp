@@ -109,6 +109,7 @@ bool ClientNetwork::init() {
 
 	network::ProtocolHandlerRegistry &r = _protocolRegistry;
 	r.registerHandler(network::PROTO_PING, &_nopHandler); // ping is just a nop for the client
+	r.registerHandler(network::PROTO_COMMAND, &_nopHandler); // never execute commands on the client side
 	r.registerHandler(network::PROTO_SCENE_STATE_REQUEST, &_sceneStateRequestHandler);
 	r.registerHandler(network::PROTO_SCENE_STATE, &_sceneStateHandler);
 	r.registerHandler(network::PROTO_VOXEL_MODIFICATION, &_voxelModificationHandler);

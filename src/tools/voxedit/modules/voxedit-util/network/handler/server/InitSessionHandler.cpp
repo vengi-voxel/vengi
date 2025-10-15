@@ -12,7 +12,7 @@ InitSessionHandler::InitSessionHandler(Server *server) : _server(server) {
 }
 
 void InitSessionHandler::execute(const ClientId &clientId, InitSessionMessage *msg) {
-	if (!_server->initSession(clientId, msg->protocolVersion(), msg->applicationVersion(), msg->username(), msg->isLocalServer())) {
+	if (!_server->initSession(clientId, msg->protocolVersion(), msg->applicationVersion(), msg->username(), msg->password(), msg->isLocalServer())) {
 		_server->disconnect(clientId);
 	}
 }

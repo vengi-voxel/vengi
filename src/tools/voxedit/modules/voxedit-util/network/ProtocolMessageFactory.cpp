@@ -16,6 +16,7 @@
 #include "protocol/SceneStateRequestMessage.h"
 #include "protocol/VoxelModificationMessage.h"
 #include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/protocol/CommandMessage.h"
 
 namespace voxedit {
 namespace network {
@@ -60,6 +61,9 @@ ProtocolMessage *ProtocolMessageFactory::create(MessageStream &in) {
 		break;
 	case PROTO_INIT_SESSION:
 		msg = new InitSessionMessage(in);
+		break;
+	case PROTO_COMMAND:
+		msg = new CommandMessage(in);
 		break;
 	case PROTO_SCENE_STATE_REQUEST:
 		msg = new SceneStateRequestMessage();

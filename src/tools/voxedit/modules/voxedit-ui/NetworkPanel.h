@@ -17,6 +17,7 @@ class NetworkPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	SceneManagerPtr _sceneMgr;
+	core::String _command;
 
 public:
 	NetworkPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "network"), _sceneMgr(sceneMgr) {

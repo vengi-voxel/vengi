@@ -13,6 +13,7 @@
 #include "app/I18N.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "protocol/PingMessage.h"
 #include "voxedit-util/Config.h"
 
@@ -153,6 +154,8 @@ bool ServerNetwork::isRunning() const {
 
 void ServerNetwork::construct() {
 	core::Var::get(cfg::VoxEditNetPort, "10001", _("The port to run the voxedit server on"));
+	core::Var::get(cfg::VoxEditNetPassword, "", core::CV_SECRET, _("The password required to connect to the voxedit server"));
+	core::Var::get(cfg::VoxEditNetRconPassword, "changeme", core::CV_SECRET, _("The rcon password required to send commands to the voxedit server"));
 	core::Var::get(cfg::VoxEditNetServerInterface, "0.0.0.0", _("The interface to run the voxedit server on"));
 	_maxClients = core::Var::get(cfg::VoxEditNetServerMaxConnections, "10",
 								 _("The maximum number of clients that can connect to the server"));
@@ -173,6 +176,7 @@ bool ServerNetwork::init() {
 	ProtocolHandlerRegistry &r = _protocolRegistry;
 	r.registerHandler(PROTO_INIT_SESSION, &_initSessionHandler);
 	r.registerHandler(network::PROTO_PING, &_nopHandler);
+	r.registerHandler(network::PROTO_COMMAND, &_commandHandler);
 	r.registerHandler(network::PROTO_SCENE_STATE_REQUEST, &_broadcastHandler);
 	r.registerHandler(network::PROTO_SCENE_STATE, &_sceneStateHandler);
 	r.registerHandler(network::PROTO_VOXEL_MODIFICATION, &_broadcastHandler);

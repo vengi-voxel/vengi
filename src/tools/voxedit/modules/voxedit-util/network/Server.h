@@ -55,7 +55,7 @@ public:
 	const RemoteClients &clients() const;
 
 	bool initSession(const ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
-					 const core::String &username, bool localServer);
+					 const core::String &username, const core::String &password, bool localServer);
 	void disconnect(const ClientId &clientId);
 };
 
