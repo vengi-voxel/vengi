@@ -105,6 +105,7 @@ private:
 	core::VarPtr _localSpace;
 	core::VarPtr _renderNormals;
 	core::VarPtr _animationPlaying;
+	core::VarPtr _clipping;
 
 	bool wantGizmo() const;
 	/**
@@ -171,6 +172,7 @@ public:
 
 	void toggleScene();
 	bool isSceneMode() const;
+	bool isGameMode() const;
 
 	video::Camera &camera();
 	const video::Camera &camera() const;

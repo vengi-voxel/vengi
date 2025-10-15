@@ -87,6 +87,7 @@ bool Viewport::init() {
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
 	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
+	_clipping = core::Var::getSafe(cfg::VoxEditClipping);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -347,6 +348,10 @@ void Viewport::renderViewport() {
 	}
 }
 
+bool Viewport::isGameMode() const {
+	return _clipping->boolVal() && _camera.rotationType() == video::CameraRotationType::Eye;
+}
+
 bool Viewport::isSceneMode() const {
 	return _renderContext.isSceneMode();
 }
@@ -574,7 +579,11 @@ void Viewport::resetCamera() {
 		region = sceneGraph.region();
 	}
 	const video::CameraRotationType rotationType = _camera.rotationType();
-	voxelrender::configureCamera(_camera, region, _camMode, _viewDistance->floatVal());
+	voxelrender::SceneCameraMode cameraMode = _camMode;
+	if (isGameMode()) {
+		cameraMode = voxelrender::SceneCameraMode::Top;
+	}
+	voxelrender::configureCamera(_camera, region, cameraMode, _viewDistance->floatVal());
 	_camera.setRotationType(rotationType);
 }
 

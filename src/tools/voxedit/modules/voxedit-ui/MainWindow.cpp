@@ -29,6 +29,7 @@
 #include "util/VersionCheck.h"
 #include "video/Texture.h"
 #include "voxedit-ui/TipOfTheDay.h"
+#include "voxedit-util/CameraMovement.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
@@ -1102,11 +1103,14 @@ bool MainWindow::saveScreenshot(const core::String &file, const core::String &vi
 }
 
 void MainWindow::resetCamera() {
+	CameraMovement &cameraMovement = _sceneMgr->cameraMovement();
 	if (Viewport *viewport = hoveredViewport()) {
 		viewport->resetCamera();
+		cameraMovement.updateBodyPosition(viewport->camera());
 	} else {
 		for (size_t i = 0; i < _viewports.size(); ++i) {
 			_viewports[i]->resetCamera();
+			cameraMovement.updateBodyPosition(_viewports[i]->camera());
 		}
 	}
 }

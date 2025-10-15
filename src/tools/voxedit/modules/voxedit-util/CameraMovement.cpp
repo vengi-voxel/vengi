@@ -39,13 +39,18 @@ void CameraMovement::shutdown() {
 	_movement.shutdown();
 }
 
+void CameraMovement::updateBodyPosition(const video::Camera &camera) {
+	_body.position = camera.worldPosition();
+}
+
 void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 										 scenegraph::FrameIndex frameIdx) {
 	const float speed = _movementSpeed->floatVal();
 	if (_clipping->isDirty()) {
 		_clipping->markClean();
-		_body.position = camera->worldPosition();
+		updateBodyPosition(*camera);
 	}
+	// game mode - see Viewport::isGameMode()
 	if (_clipping->boolVal()) {
 		glm::vec3 camForward = camera->forward();
 		glm::vec3 camRight = camera->right();
@@ -77,6 +82,8 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		if (_applyGravity->boolVal() && _movement.jump() && _body.collidedY) {
 			_body.velocity.y = _jumpVelocity->floatVal();
 			_body.collidedY = false;
+		} else if (!_applyGravity->boolVal()) {
+			_body.velocity.y = 0.0f;
 		}
 
 		scenegraph::CollisionNodes nodes;
