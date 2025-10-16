@@ -6,6 +6,17 @@
 #include <math.h>
 #include <string.h>
 
+// The block below auto-detects SIMD ISA that can be used on the target platform
+#ifndef MESHOPTIMIZER_NO_SIMD
+#if defined(__SSE2__) || (defined(_MSC_VER) && defined(_M_X64))
+#define SIMD_SSE
+#include <emmintrin.h>
+#elif defined(__aarch64__) || (defined(_MSC_VER) && defined(_M_ARM64) && _MSC_VER >= 1922)
+#define SIMD_NEON
+#include <arm_neon.h>
+#endif
+#endif // !MESHOPTIMIZER_NO_SIMD
+
 // This work is based on:
 // Graham Wihlidal. Optimizing the Graphics Pipeline with Compute. 2016
 // Matthaeus Chajdas. GeometryFX 1.2 - Cluster Culling. 2016
@@ -147,6 +158,19 @@ static void buildTriangleAdjacencySparse(TriangleAdjacency2& adjacency, const un
 			adjacency.offsets[v] -= adjacency.counts[v];
 		}
 	}
+}
+
+static void clearUsed(short* used, size_t vertex_count, const unsigned int* indices, size_t index_count)
+{
+	// for sparse inputs, it's faster to only clear vertices referenced by the index buffer
+	if (vertex_count <= index_count)
+		memset(used, -1, vertex_count * sizeof(short));
+	else
+		for (size_t i = 0; i < index_count; ++i)
+		{
+			assert(indices[i] < vertex_count);
+			used[indices[i]] = -1;
+		}
 }
 
 static void computeBoundingSphere(float result[4], const float* points, size_t count, size_t points_stride, const float* radii, size_t radii_stride, size_t axis_count)
@@ -571,7 +595,7 @@ struct KDNode
 	unsigned int children : 30;
 };
 
-static size_t kdtreePartition(unsigned int* indices, size_t count, const float* points, size_t stride, unsigned int axis, float pivot)
+static size_t kdtreePartition(unsigned int* indices, size_t count, const float* points, size_t stride, int axis, float pivot)
 {
 	size_t m = 0;
 
@@ -642,7 +666,7 @@ static size_t kdtreeBuild(size_t offset, KDNode* nodes, size_t node_count, const
 	}
 
 	// split axis is one where the variance is largest
-	unsigned int axis = (vars[0] >= vars[1] && vars[0] >= vars[2]) ? 0 : (vars[1] >= vars[2] ? 1 : 2);
+	int axis = (vars[0] >= vars[1] && vars[0] >= vars[2]) ? 0 : (vars[1] >= vars[2] ? 1 : 2);
 
 	float split = mean[axis];
 	size_t middle = kdtreePartition(indices, count, points, stride, axis, split);
@@ -723,26 +747,71 @@ static void kdtreeNearest(KDNode* nodes, unsigned int root, const float* points,
 	}
 }
 
+struct BVHBoxT
+{
+	float min[4];
+	float max[4];
+};
+
 struct BVHBox
 {
 	float min[3];
 	float max[3];
 };
 
-static void boxMerge(BVHBox& box, const BVHBox& other)
+#if defined(SIMD_SSE)
+static float boxMerge(BVHBoxT& box, const BVHBox& other)
+{
+	__m128 min = _mm_loadu_ps(box.min);
+	__m128 max = _mm_loadu_ps(box.max);
+
+	min = _mm_min_ps(min, _mm_loadu_ps(other.min));
+	max = _mm_max_ps(max, _mm_loadu_ps(other.max));
+
+	_mm_storeu_ps(box.min, min);
+	_mm_storeu_ps(box.max, max);
+
+	__m128 size = _mm_sub_ps(max, min);
+	__m128 size_yzx = _mm_shuffle_ps(size, size, _MM_SHUFFLE(0, 0, 2, 1));
+	__m128 mul = _mm_mul_ps(size, size_yzx);
+	__m128 sum_xy = _mm_add_ss(mul, _mm_shuffle_ps(mul, mul, _MM_SHUFFLE(1, 1, 1, 1)));
+	__m128 sum_xyz = _mm_add_ss(sum_xy, _mm_shuffle_ps(mul, mul, _MM_SHUFFLE(2, 2, 2, 2)));
+
+	return _mm_cvtss_f32(sum_xyz);
+}
+#elif defined(SIMD_NEON)
+static float boxMerge(BVHBoxT& box, const BVHBox& other)
+{
+	float32x4_t min = vld1q_f32(box.min);
+	float32x4_t max = vld1q_f32(box.max);
+
+	min = vminq_f32(min, vld1q_f32(other.min));
+	max = vmaxq_f32(max, vld1q_f32(other.max));
+
+	vst1q_f32(box.min, min);
+	vst1q_f32(box.max, max);
+
+	float32x4_t size = vsubq_f32(max, min);
+	float32x4_t size_yzx = vextq_f32(vextq_f32(size, size, 3), size, 2);
+	float32x4_t mul = vmulq_f32(size, size_yzx);
+	float sum_xy = vgetq_lane_f32(mul, 0) + vgetq_lane_f32(mul, 1);
+	float sum_xyz = sum_xy + vgetq_lane_f32(mul, 2);
+
+	return sum_xyz;
+}
+#else
+static float boxMerge(BVHBoxT& box, const BVHBox& other)
 {
 	for (int k = 0; k < 3; ++k)
 	{
 		box.min[k] = other.min[k] < box.min[k] ? other.min[k] : box.min[k];
 		box.max[k] = other.max[k] > box.max[k] ? other.max[k] : box.max[k];
 	}
-}
 
-inline float boxSurface(const BVHBox& box)
-{
 	float sx = box.max[0] - box.min[0], sy = box.max[1] - box.min[1], sz = box.max[2] - box.min[2];
 	return sx * sy + sx * sz + sy * sz;
 }
+#endif
 
 inline unsigned int radixFloat(unsigned int v)
 {
@@ -828,7 +897,7 @@ static void bvhPrepare(BVHBox* boxes, float* centroids, const unsigned int* indi
 	}
 }
 
-static bool bvhPackLeaf(unsigned char* boundary, const unsigned int* order, size_t count, short* used, const unsigned int* indices, size_t max_vertices)
+static size_t bvhCountVertices(const unsigned int* order, size_t count, short* used, const unsigned int* indices, unsigned int* out = NULL)
 {
 	// count number of unique vertices
 	size_t used_vertices = 0;
@@ -839,6 +908,9 @@ static bool bvhPackLeaf(unsigned char* boundary, const unsigned int* order, size
 
 		used_vertices += (used[a] < 0) + (used[b] < 0) + (used[c] < 0);
 		used[a] = used[b] = used[c] = 1;
+
+		if (out)
+			out[i] = unsigned(used_vertices);
 	}
 
 	// reset used[] for future invocations
@@ -850,16 +922,16 @@ static bool bvhPackLeaf(unsigned char* boundary, const unsigned int* order, size
 		used[a] = used[b] = used[c] = -1;
 	}
 
-	if (used_vertices > max_vertices)
-		return false;
+	return used_vertices;
+}
 
+static void bvhPackLeaf(unsigned char* boundary, size_t count)
+{
 	// mark meshlet boundary for future reassembly
 	assert(count > 0);
 
 	boundary[0] = 1;
 	memset(boundary + 1, 0, count - 1);
-
-	return true;
 }
 
 static void bvhPackTail(unsigned char* boundary, const unsigned int* order, size_t count, short* used, const unsigned int* indices, size_t max_vertices, size_t max_triangles)
@@ -868,8 +940,9 @@ static void bvhPackTail(unsigned char* boundary, const unsigned int* order, size
 	{
 		size_t chunk = i + max_triangles <= count ? max_triangles : count - i;
 
-		if (bvhPackLeaf(boundary + i, order + i, chunk, used, indices, max_vertices))
+		if (bvhCountVertices(order + i, chunk, used, indices) <= max_vertices)
 		{
+			bvhPackLeaf(boundary + i, chunk);
 			i += chunk;
 			continue;
 		}
@@ -877,7 +950,7 @@ static void bvhPackTail(unsigned char* boundary, const unsigned int* order, size
 		// chunk is vertex bound, split it into smaller meshlets
 		assert(chunk > max_vertices / 3);
 
-		bvhPackLeaf(boundary + i, order + i, max_vertices / 3, used, indices, max_vertices);
+		bvhPackLeaf(boundary + i, max_vertices / 3);
 		i += max_vertices / 3;
 	}
 }
@@ -890,25 +963,27 @@ static bool bvhDivisible(size_t count, size_t min, size_t max)
 	return min * 2 <= max ? count >= min : count % min <= (count / min) * (max - min);
 }
 
-static size_t bvhPivot(const BVHBox* boxes, const unsigned int* order, size_t count, void* scratch, size_t step, size_t min, size_t max, float fill, float* out_cost)
+static void bvhComputeArea(float* areas, const BVHBox* boxes, const unsigned int* order, size_t count)
 {
-	BVHBox accuml = boxes[order[0]], accumr = boxes[order[count - 1]];
-	float* costs = static_cast<float*>(scratch);
+	BVHBoxT accuml = {{FLT_MAX, FLT_MAX, FLT_MAX, 0}, {-FLT_MAX, -FLT_MAX, -FLT_MAX, 0}};
+	BVHBoxT accumr = accuml;
 
-	// accumulate SAH cost in forward and backward directions
 	for (size_t i = 0; i < count; ++i)
 	{
-		boxMerge(accuml, boxes[order[i]]);
-		boxMerge(accumr, boxes[order[count - 1 - i]]);
+		float larea = boxMerge(accuml, boxes[order[i]]);
+		float rarea = boxMerge(accumr, boxes[order[count - 1 - i]]);
 
-		costs[i] = boxSurface(accuml);
-		costs[i + count] = boxSurface(accumr);
+		areas[i] = larea;
+		areas[i + count] = rarea;
 	}
+}
 
+static size_t bvhPivot(const float* areas, const unsigned int* vertices, size_t count, size_t step, size_t min, size_t max, float fill, size_t maxfill, float* out_cost)
+{
 	bool aligned = count >= min * 2 && bvhDivisible(count, min, max);
 	size_t end = aligned ? count - min : count - 1;
 
-	float rmaxf = 1.f / float(int(max));
+	float rmaxfill = 1.f / float(int(maxfill));
 
 	// find best split that minimizes SAH
 	size_t bestsplit = 0;
@@ -923,17 +998,22 @@ static size_t bvhPivot(const BVHBox* boxes, const unsigned int* order, size_t co
 		if (aligned && !bvhDivisible(rsplit, min, max))
 			continue;
 
-		// costs[x] = inclusive surface area of boxes[0..x]
-		// costs[count-1-x] = inclusive surface area of boxes[x..count-1]
-		float larea = costs[i], rarea = costs[(count - 1 - (i + 1)) + count];
+		// areas[x] = inclusive surface area of boxes[0..x]
+		// areas[count-1-x] = inclusive surface area of boxes[x..count-1]
+		float larea = areas[i], rarea = areas[(count - 1 - (i + 1)) + count];
 		float cost = larea * float(int(lsplit)) + rarea * float(int(rsplit));
 
 		if (cost > bestcost)
 			continue;
 
-		// fill cost; use floating point math to avoid expensive integer modulo
-		int lrest = int(float(int(lsplit + max - 1)) * rmaxf) * int(max) - int(lsplit);
-		int rrest = int(float(int(rsplit + max - 1)) * rmaxf) * int(max) - int(rsplit);
+		// use vertex fill when splitting vertex limited clusters; note that we use the same (left->right) vertex count
+		// using bidirectional vertex counts is a little more expensive to compute and produces slightly worse results in practice
+		size_t lfill = vertices ? vertices[i] : lsplit;
+		size_t rfill = vertices ? vertices[i] : rsplit;
+
+		// fill cost; use floating point math to round up to maxfill to avoid expensive integer modulo
+		int lrest = int(float(int(lfill + maxfill - 1)) * rmaxfill) * int(maxfill) - int(lfill);
+		int rrest = int(float(int(rfill + maxfill - 1)) * rmaxfill) * int(maxfill) - int(rfill);
 
 		cost += fill * (float(lrest) * larea + float(rrest) * rarea);
 
@@ -969,8 +1049,8 @@ static void bvhSplit(const BVHBox* boxes, unsigned int* orderx, unsigned int* or
 	if (depth >= kMeshletMaxTreeDepth)
 		return bvhPackTail(boundary, orderx, count, used, indices, max_vertices, max_triangles);
 
-	if (count <= max_triangles && bvhPackLeaf(boundary, orderx, count, used, indices, max_vertices))
-		return;
+	if (count <= max_triangles && bvhCountVertices(orderx, count, used, indices) <= max_vertices)
+		return bvhPackLeaf(boundary, count);
 
 	unsigned int* axes[3] = {orderx, ordery, orderz};
 
@@ -979,9 +1059,7 @@ static void bvhSplit(const BVHBox* boxes, unsigned int* orderx, unsigned int* or
 
 	// if we could not pack the meshlet, we must be vertex bound
 	size_t mint = count <= max_triangles && max_vertices / 3 < min_triangles ? max_vertices / 3 : min_triangles;
-
-	// only use fill weight if we are optimizing for triangle count
-	float fill = count <= max_triangles ? 0.f : fill_weight;
+	size_t maxfill = count <= max_triangles ? max_vertices : max_triangles;
 
 	// find best split that minimizes SAH
 	int bestk = -1;
@@ -990,8 +1068,20 @@ static void bvhSplit(const BVHBox* boxes, unsigned int* orderx, unsigned int* or
 
 	for (int k = 0; k < 3; ++k)
 	{
+		float* areas = static_cast<float*>(scratch);
+		unsigned int* vertices = NULL;
+
+		bvhComputeArea(areas, boxes, axes[k], count);
+
+		if (count <= max_triangles)
+		{
+			// for vertex bound clusters, count number of unique vertices for each split
+			vertices = reinterpret_cast<unsigned int*>(areas + 2 * count);
+			bvhCountVertices(axes[k], count, used, indices, vertices);
+		}
+
 		float axiscost = FLT_MAX;
-		size_t axissplit = bvhPivot(boxes, axes[k], count, scratch, step, mint, max_triangles, fill, &axiscost);
+		size_t axissplit = bvhPivot(areas, vertices, count, step, mint, max_triangles, fill_weight, maxfill, &axiscost);
 
 		if (axissplit && axiscost < bestcost)
 		{
@@ -1117,7 +1207,7 @@ size_t meshopt_buildMeshletsFlex(meshopt_Meshlet* meshlets, unsigned int* meshle
 
 	// index of the vertex in the meshlet, -1 if the vertex isn't used
 	short* used = allocator.allocate<short>(vertex_count);
-	memset(used, -1, vertex_count * sizeof(short));
+	clearUsed(used, vertex_count, indices, index_count);
 
 	// initial seed triangle is the one closest to the corner
 	unsigned int initial_seed = ~0u;
@@ -1263,7 +1353,7 @@ size_t meshopt_buildMeshletsScan(meshopt_Meshlet* meshlets, unsigned int* meshle
 
 	// index of the vertex in the meshlet, -1 if the vertex isn't used
 	short* used = allocator.allocate<short>(vertex_count);
-	memset(used, -1, vertex_count * sizeof(short));
+	clearUsed(used, vertex_count, indices, index_count);
 
 	meshopt_Meshlet meshlet = {};
 	size_t meshlet_offset = 0;
@@ -1305,13 +1395,14 @@ size_t meshopt_buildMeshletsSpatial(struct meshopt_Meshlet* meshlets, unsigned i
 	meshopt_Allocator allocator;
 
 	// 3 floats plus 1 uint for sorting, or
-	// 2 floats for SAH costs, or
+	// 2 floats plus 1 uint for pivoting, or
 	// 1 uint plus 1 byte for partitioning
 	float* scratch = allocator.allocate<float>(face_count * 4);
 
 	// compute bounding boxes and centroids for sorting
-	BVHBox* boxes = allocator.allocate<BVHBox>(face_count);
+	BVHBox* boxes = allocator.allocate<BVHBox>(face_count + 1); // padding for SIMD
 	bvhPrepare(boxes, scratch, indices, face_count, vertex_positions, vertex_count, vertex_stride_float);
+	memset(boxes + face_count, 0, sizeof(BVHBox));
 
 	unsigned int* axes = allocator.allocate<unsigned int>(face_count * 3);
 	unsigned int* temp = reinterpret_cast<unsigned int*>(scratch) + face_count * 3;
@@ -1335,7 +1426,7 @@ size_t meshopt_buildMeshletsSpatial(struct meshopt_Meshlet* meshlets, unsigned i
 
 	// index of the vertex in the meshlet, -1 if the vertex isn't used
 	short* used = allocator.allocate<short>(vertex_count);
-	memset(used, -1, vertex_count * sizeof(short));
+	clearUsed(used, vertex_count, indices, index_count);
 
 	unsigned char* boundary = allocator.allocate<unsigned char>(face_count);
 
@@ -1675,3 +1766,6 @@ void meshopt_optimizeMeshlet(unsigned int* meshlet_vertices, unsigned char* mesh
 	assert(vertex_offset <= vertex_count);
 	memcpy(vertices, order, vertex_offset * sizeof(unsigned int));
 }
+
+#undef SIMD_SSE
+#undef SIMD_NEON
