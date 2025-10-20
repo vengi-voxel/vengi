@@ -11,10 +11,10 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
+#include "io/StreamUtil.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -549,12 +549,8 @@ bool VXLFormat::readLayerInfo(io::SeekableReadStream &stream, vxl::VXLModel &mdl
 		float &val = footer.transform.matrix[col][row];
 		wrap(stream.readFloat(val))
 	}
-	for (int i = 0; i < 3; ++i) {
-		wrap(stream.readFloat(footer.mins[i]))
-	}
-	for (int i = 0; i < 3; ++i) {
-		wrap(stream.readFloat(footer.maxs[i]))
-	}
+	wrapBool(io::readVec3(stream, footer.mins))
+	wrapBool(io::readVec3(stream, footer.maxs))
 
 	wrap(stream.readUInt8(footer.xsize))
 	wrap(stream.readUInt8(footer.ysize))

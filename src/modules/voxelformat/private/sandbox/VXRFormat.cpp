@@ -13,6 +13,7 @@
 #include "core/StringUtil.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
+#include "io/StreamUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -247,14 +248,10 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		glm::vec3 ignoredTranslation{0.0f};
 		float ignoredScale = 1.0f;
 
-		wrap(stream.readFloat(localTranslation.x))
+		wrapBool(io::readVec3(stream, localTranslation))
 		localTranslation.x *= -1.0f; // version 2 needed this
-		wrap(stream.readFloat(localTranslation.y))
-		wrap(stream.readFloat(localTranslation.z))
 		if (version >= 3) {
-			wrap(stream.readFloat(ignoredTranslation.x))
-			wrap(stream.readFloat(ignoredTranslation.y))
-			wrap(stream.readFloat(ignoredTranslation.z))
+			wrapBool(io::readVec3(stream, ignoredTranslation))
 		}
 		if (version == 1) {
 			float rotationx = 0.0f;
@@ -269,14 +266,8 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationz))
 			ignoredOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			wrap(stream.readFloat(localOrientation.x))
-			wrap(stream.readFloat(localOrientation.y))
-			wrap(stream.readFloat(localOrientation.z))
-			wrap(stream.readFloat(localOrientation.w))
-			wrap(stream.readFloat(ignoredOrientation.x))
-			wrap(stream.readFloat(ignoredOrientation.y))
-			wrap(stream.readFloat(ignoredOrientation.z))
-			wrap(stream.readFloat(ignoredOrientation.w))
+			wrapBool(io::readQuat(stream, localOrientation))
+			wrapBool(io::readQuat(stream, ignoredOrientation))
 		}
 		wrap(stream.readFloat(localScale))
 		if (version >= 3) {

@@ -14,6 +14,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
+#include "io/StreamUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include <glm/common.hpp>
@@ -203,20 +204,10 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 		glm::quat ignoredOrientation;
 		float ignoredScale;
 
-		wrap(stream.readFloat(localTranslation.x))
-		wrap(stream.readFloat(localTranslation.y))
-		wrap(stream.readFloat(localTranslation.z))
-		wrap(stream.readFloat(ignoredTranslation.x))
-		wrap(stream.readFloat(ignoredTranslation.y))
-		wrap(stream.readFloat(ignoredTranslation.z))
-		wrap(stream.readFloat(localOrientation.x))
-		wrap(stream.readFloat(localOrientation.y))
-		wrap(stream.readFloat(localOrientation.z))
-		wrap(stream.readFloat(localOrientation.w))
-		wrap(stream.readFloat(ignoredOrientation.x))
-		wrap(stream.readFloat(ignoredOrientation.y))
-		wrap(stream.readFloat(ignoredOrientation.z))
-		wrap(stream.readFloat(ignoredOrientation.w))
+		wrapBool(io::readVec3(stream, localTranslation))
+		wrapBool(io::readVec3(stream, ignoredTranslation))
+		wrapBool(io::readQuat(stream, localOrientation))
+		wrapBool(io::readQuat(stream, ignoredOrientation))
 		wrap(stream.readFloat(localScale))
 		wrap(stream.readFloat(ignoredScale))
 

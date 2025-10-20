@@ -14,6 +14,7 @@
 #include "image/ImageType.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
+#include "io/StreamUtil.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -411,9 +412,7 @@ bool GoxFormat::loadChunk_MATE(State &state, const GoxChunk &c, io::SeekableRead
 			io::MemoryReadStream subStream(dictValue, valueLength);
 			if (!strcmp(dictKey, "color")) {
 				// "color" 4xfloat
-				for (int i = 0; i < 4; ++i) {
-					subStream.readFloat(color[i]);
-				}
+				wrapBool(io::readColor(subStream, color))
 			} else if (!strcmp(dictKey, "metallic")) {
 				// "metallic" float
 				float metallic = 0.0f;

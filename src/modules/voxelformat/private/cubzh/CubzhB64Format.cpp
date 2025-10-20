@@ -11,6 +11,7 @@
 #include "core/StringUtil.h"
 #include "io/Archive.h"
 #include "io/Base64ReadStream.h"
+#include "io/StreamUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -97,32 +98,17 @@ bool CubzhB64Format::readAmbience(io::ReadStream &stream, scenegraph::SceneGraph
 			return false;
 		}
 		if (core_memcmp(fieldId, "ssc", 3) == 0) {
-			wrap(stream.readUInt8(ambience.skyColor.r))
-			wrap(stream.readUInt8(ambience.skyColor.g))
-			wrap(stream.readUInt8(ambience.skyColor.b))
-			wrap(stream.readUInt8(ambience.skyColor.a))
+			wrapBool(io::readColor(stream, ambience.skyColor))
 		} else if (core_memcmp(fieldId, "shc", 3) == 0) {
-			wrap(stream.readUInt8(ambience.skyHorizonColor.r))
-			wrap(stream.readUInt8(ambience.skyHorizonColor.g))
-			wrap(stream.readUInt8(ambience.skyHorizonColor.b))
-			wrap(stream.readUInt8(ambience.skyHorizonColor.a))
+			wrapBool(io::readColor(stream, ambience.skyHorizonColor))
 		} else if (core_memcmp(fieldId, "sac", 3) == 0) {
-			wrap(stream.readUInt8(ambience.skyAbyssColor.r))
-			wrap(stream.readUInt8(ambience.skyAbyssColor.g))
-			wrap(stream.readUInt8(ambience.skyAbyssColor.b))
-			wrap(stream.readUInt8(ambience.skyAbyssColor.a))
+			wrapBool(io::readColor(stream, ambience.skyAbyssColor))
 		} else if (core_memcmp(fieldId, "slc", 3) == 0) {
-			wrap(stream.readUInt8(ambience.skyLightColor.r))
-			wrap(stream.readUInt8(ambience.skyLightColor.g))
-			wrap(stream.readUInt8(ambience.skyLightColor.b))
-			wrap(stream.readUInt8(ambience.skyLightColor.a))
+			wrapBool(io::readColor(stream, ambience.skyLightColor))
 		} else if (core_memcmp(fieldId, "sli", 3) == 0) {
 			wrap(stream.readFloat(ambience.skyLightIntensity));
 		} else if (core_memcmp(fieldId, "foc", 3) == 0) {
-			wrap(stream.readUInt8(ambience.fogColor.r))
-			wrap(stream.readUInt8(ambience.fogColor.g))
-			wrap(stream.readUInt8(ambience.fogColor.b))
-			wrap(stream.readUInt8(ambience.fogColor.a))
+			wrapBool(io::readColor(stream, ambience.fogColor))
 		} else if (core_memcmp(fieldId, "fon", 3) == 0) {
 			wrap(stream.readFloat(ambience.fogNear));
 		} else if (core_memcmp(fieldId, "fof", 3) == 0) {
@@ -130,10 +116,7 @@ bool CubzhB64Format::readAmbience(io::ReadStream &stream, scenegraph::SceneGraph
 		} else if (core_memcmp(fieldId, "foa", 3) == 0) {
 			wrap(stream.readFloat(ambience.fogAbsorbtion));
 		} else if (core_memcmp(fieldId, "suc", 3) == 0) {
-			wrap(stream.readUInt8(ambience.sunColor.r))
-			wrap(stream.readUInt8(ambience.sunColor.g))
-			wrap(stream.readUInt8(ambience.sunColor.b))
-			wrap(stream.readUInt8(ambience.sunColor.a))
+			wrapBool(io::readColor(stream, ambience.sunColor))
 		} else if (core_memcmp(fieldId, "sui", 3) == 0) {
 			wrap(stream.readFloat(ambience.sunIntensity));
 		} else if (core_memcmp(fieldId, "sur", 3) == 0) {
@@ -173,10 +156,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 		wrap(stream.readUInt8(blockAction))
 		if (blockAction == 1) {
 			core::RGBA color;
-			wrap(stream.readUInt8(color.r))
-			wrap(stream.readUInt8(color.g))
-			wrap(stream.readUInt8(color.b))
-			wrap(stream.readUInt8(color.a))
+			wrapBool(io::readColor(stream, color))
 			// the index is an encoded position
 			const int x = i % 1000;
 			const int y = i / 1000 % 1000;
@@ -256,17 +236,11 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 				if (CHECK_ID(fieldId, "id")) {
 					wrapBool(stream.readPascalStringUInt8(uuid))
 				} else if (CHECK_ID(fieldId, "po")) {
-					wrap(stream.readFloat(pos.x))
-					wrap(stream.readFloat(pos.y))
-					wrap(stream.readFloat(pos.z))
+					wrapBool(io::readVec3(stream, pos))
 				} else if (CHECK_ID(fieldId, "ro")) {
-					wrap(stream.readFloat(rot.x))
-					wrap(stream.readFloat(rot.y))
-					wrap(stream.readFloat(rot.z))
+					wrapBool(io::readVec3(stream, rot))
 				} else if (CHECK_ID(fieldId, "sc")) {
-					wrap(stream.readFloat(scale.x))
-					wrap(stream.readFloat(scale.y))
-					wrap(stream.readFloat(scale.z))
+					wrapBool(io::readVec3(stream, scale))
 				} else if (CHECK_ID(fieldId, "na")) {
 					wrapBool(stream.readPascalStringUInt8(name))
 				} else if (CHECK_ID(fieldId, "de")) {

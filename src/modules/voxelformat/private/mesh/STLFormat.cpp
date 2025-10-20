@@ -11,6 +11,7 @@
 #include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Mesh.h"
+#include "io/StreamUtil.h"
 
 namespace voxelformat {
 
@@ -80,6 +81,12 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, Mesh &mesh) {
 		return false;                                                                                                  \
 	}
 
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Failed to read stl " CORE_STRINGIFY(read));                                                        \
+		return false;                                                                                                  \
+	}
+
 bool STLFormat::parseBinary(io::SeekableReadStream &stream, Mesh &mesh) {
 	if (stream.seek(priv::BinaryHeaderSize) == -1) {
 		Log::error("Failed to seek after the binary stl header");
@@ -96,14 +103,10 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, Mesh &mesh) {
 	mesh.vertices.reserve(3 * numFaces);
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
 		glm::vec3 faceNormal;
-		wrap(stream.readFloat(faceNormal.x))
-		wrap(stream.readFloat(faceNormal.y))
-		wrap(stream.readFloat(faceNormal.z))
+		wrapBool(io::readVec3(stream, faceNormal))
 		for (int i = 0; i < 3; ++i) {
 			MeshVertex vert;
-			wrap(stream.readFloat(vert.pos.x))
-			wrap(stream.readFloat(vert.pos.y))
-			wrap(stream.readFloat(vert.pos.z))
+			wrapBool(io::readVec3(stream, vert.pos))
 			// vert.normal = faceNormal;
 			mesh.indices.push_back(mesh.vertices.size());
 			mesh.vertices.emplace_back(core::move(vert));
@@ -146,6 +149,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 }
 
 #undef wrap
+#undef wrapBool
 
 bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt &meshExt, const voxel::VoxelVertex &v1,
 							const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {

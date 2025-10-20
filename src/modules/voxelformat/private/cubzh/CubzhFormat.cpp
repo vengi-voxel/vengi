@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/Archive.h"
+#include "io/StreamUtil.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -497,22 +498,14 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		case priv::CHUNK_ID_SHAPE_TRANSFORM_V6: {
 			Log::debug("Load local transform");
-			wrap(stream.readFloat(pos.x))
-			wrap(stream.readFloat(pos.y))
-			wrap(stream.readFloat(pos.z))
-			wrap(stream.readFloat(eulerAngles.x))
-			wrap(stream.readFloat(eulerAngles.y))
-			wrap(stream.readFloat(eulerAngles.z))
-			wrap(stream.readFloat(scale.x))
-			wrap(stream.readFloat(scale.y))
-			wrap(stream.readFloat(scale.z))
+			wrapBool(io::readVec3(stream, pos))
+			wrapBool(io::readVec3(stream, eulerAngles))
+			wrapBool(io::readVec3(stream, scale))
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_PIVOT_V6: {
 			Log::debug("Load pivot");
-			wrap(stream.readFloat(pivot.x))
-			wrap(stream.readFloat(pivot.y))
-			wrap(stream.readFloat(pivot.z))
+			wrapBool(io::readVec3(stream, pivot))
 			hasPivot = true;
 			Log::debug("pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
 			break;
@@ -525,13 +518,9 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		case priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6: {
 			Log::debug("Load collision box");
 			glm::vec3 mins;
+			wrapBool(io::readVec3(stream, mins))
 			glm::vec3 maxs;
-			wrap(stream.readFloat(mins.x))
-			wrap(stream.readFloat(mins.y))
-			wrap(stream.readFloat(mins.z))
-			wrap(stream.readFloat(maxs.x))
-			wrap(stream.readFloat(maxs.y))
-			wrap(stream.readFloat(maxs.z))
+			wrapBool(io::readVec3(stream, maxs))
 			break;
 		}
 		case priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6: {
@@ -648,9 +637,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
 			glm::vec3 poiPos;
-			wrap(stream.readFloat(poiPos.x))
-			wrap(stream.readFloat(poiPos.y))
-			wrap(stream.readFloat(poiPos.z))
+			wrapBool(io::readVec3(stream, poiPos))
 			if (scenegraph::SceneGraphNode *existingNode = sceneGraph.findNodeByName(name)) {
 				scenegraph::SceneGraphTransform &transform = existingNode->transform(0);
 				transform.setLocalTranslation(poiPos);
@@ -669,9 +656,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
 			glm::vec3 poiAngles;
-			wrap(stream.readFloat(poiAngles.x))
-			wrap(stream.readFloat(poiAngles.y))
-			wrap(stream.readFloat(poiAngles.z))
+			wrapBool(io::readVec3(stream, poiAngles))
 			if (scenegraph::SceneGraphNode *existingNode = sceneGraph.findNodeByName(name)) {
 				scenegraph::SceneGraphTransform &transform = existingNode->transform(0);
 				transform.setLocalOrientation(glm::quat(poiAngles));
