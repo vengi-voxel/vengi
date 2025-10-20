@@ -15,6 +15,7 @@ class RawVolume;
 namespace scenegraph {
 
 struct ContactListener {
+	virtual ~ContactListener() = default;
 	virtual void onContact(const glm::vec3& point) = 0;
 };
 
