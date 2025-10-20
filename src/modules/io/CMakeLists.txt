@@ -24,6 +24,7 @@ set(SRCS
 	StderrWriteStream.h
 	StdoutWriteStream.h
 	Stream.cpp Stream.h
+	StreamUtil.h
 	StringStream.cpp StringStream.h
 	TokenStream.cpp TokenStream.h
 	ZipArchive.cpp ZipArchive.h
