@@ -4,6 +4,8 @@
  * always needed/wanted
  */
 
+#pragma once
+
 #include "core/RGBA.h"
 #include "io/Stream.h"
 #include <glm/gtc/quaternion.hpp>
