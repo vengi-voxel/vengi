@@ -807,7 +807,7 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 	case VisitorOrder::mYmXmZ:
 	case VisitorOrder::mYZmX:
 	case VisitorOrder::mYXZ:
-		// anything were the outer loop is x is handled here
+		// anything were the outer loop is y is handled here
 		app::for_parallel(
 			region.getLowerY(), region.getUpperY() + 1,
 			[&](int32_t start, int32_t end) {
@@ -828,7 +828,7 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 	case VisitorOrder::mZXmY:
 	case VisitorOrder::mZmXY:
 	case VisitorOrder::mZmXmY:
-		// anything were the outer loop is x is handled here
+		// anything were the outer loop is z is handled here
 		app::for_parallel(
 			region.getLowerZ(), region.getUpperZ() + 1,
 			[&](int32_t start, int32_t end) {
