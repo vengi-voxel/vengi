@@ -555,12 +555,16 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 	}
 }
 
-void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
+int SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	const int nodeId = _sceneGraph.activeNode();
+	return colorToNewNode(nodeId, voxelColor);
+}
+
+int SceneManager::colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
 	if (v == nullptr) {
-		return;
+		return InvalidNodeId;
 	}
 	const voxel::Region &region = v->region();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
@@ -574,7 +578,7 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume, true);
 	newNode.setName(core::String::format("color: %i", (int)voxelColor.getColor()));
-	moveNodeToSceneGraph(newNode, node.parent());
+	return moveNodeToSceneGraph(newNode, node.parent());
 }
 
 void SceneManager::scaleUp(int nodeId) {

@@ -171,7 +171,8 @@ protected:
 	void fill();
 	void clear();
 
-	void colorToNewNode(const voxel::Voxel voxelColor);
+	int colorToNewNode(int nodeId, const voxel::Voxel voxelColor);
+	int colorToNewNode(const voxel::Voxel voxelColor);
 	void crop();
 	void splitObjects();
 	void scaleDown(int nodeId);

@@ -627,4 +627,23 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	_sceneMgr->setActiveCamera(nullptr);
 }
 
+TEST_F(SceneManagerTest, testColorToNewNode) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
+
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	for (int i = 0; i < 4; ++i) {
+		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
+	}
+	voxel::Voxel targetVoxel(voxel::VoxelType::Generic, 1);
+	EXPECT_EQ(1, countVoxels(*v, targetVoxel));
+	const int newNodeId = sceneMgr()->colorToNewNode(nodeId, targetVoxel);
+	EXPECT_NE(InvalidNodeId, newNodeId);
+	voxel::RawVolume *newV = _sceneMgr->volume(newNodeId);
+	ASSERT_NE(nullptr, newV);
+	EXPECT_EQ(1, countVoxels(*newV, targetVoxel));
+	EXPECT_EQ(0, countVoxels(*v, targetVoxel));
+}
+
 } // namespace voxedit

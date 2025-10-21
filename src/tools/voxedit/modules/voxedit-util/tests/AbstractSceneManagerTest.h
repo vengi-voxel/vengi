@@ -23,6 +23,10 @@ public:
 		return loadSceneGraph(core::move(sceneGraph));
 	}
 
+	int colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
+		return SceneManager::colorToNewNode(nodeId, voxelColor);
+	}
+
 	void setLastFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {
 		_lastFilename.set(name, desc);
 	}
