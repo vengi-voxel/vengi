@@ -344,12 +344,14 @@ void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelT
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelutil::visitVolume(wrapper, [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &voxel) {
-		if (voxel.getColor() != palIdx) {
-			return;
-		}
-		wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
-	});
+	voxelutil::visitVolumeParallel(
+		wrapper,
+		[&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &voxel) {
+			if (voxel.getColor() != palIdx) {
+				return;
+			}
+			wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
+		});
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
@@ -563,12 +565,10 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	const voxel::Region &region = v->region();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
-		if (voxel.getColor() == voxelColor.getColor()) {
-			newVolume->setVoxel(x, y, z, voxel);
-			wrapper.setVoxel(x, y, z, voxel::Voxel());
-		}
-	});
+	voxelutil::visitVolumeParallel(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
+		newVolume->setVoxel(x, y, z, voxel);
+		wrapper.setVoxel(x, y, z, voxel::Voxel());
+	}, voxelutil::VisitColor(voxelColor.getColor()));
 	modified(nodeId, wrapper.dirtyRegion());
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	copyNode(node, newNode, false, true);

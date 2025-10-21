@@ -93,7 +93,7 @@ TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	v.setVoxel(2, 0, 1, groundVoxel);
 	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel,
 										 newPlaneVoxel, 1));
-	EXPECT_EQ(8, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
+	EXPECT_EQ(8, voxelutil::visitVolumeParallel(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
@@ -108,10 +108,8 @@ TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
 	v.setVoxel(2, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 1, groundVoxel);
 	EXPECT_EQ(9, voxelutil::overridePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, newPlaneVoxel));
-	int n = 0;
-	EXPECT_EQ(9,
-			  voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) { n += voxel.getColor() == 3; }));
-	EXPECT_EQ(9, n);
+	EXPECT_EQ(9, voxelutil::visitVolumeParallel(
+					 v, [&](int, int, int, const voxel::Voxel &voxel) {}, voxelutil::VisitColor(3)));
 }
 
 TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
@@ -182,7 +180,7 @@ TEST_F(VoxelUtilTest, testErasePlanePositiveY) {
 	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
 	v.setVoxel(2, 0, 1, fillVoxel1); // second group
 	EXPECT_EQ(2, voxelutil::erasePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1));
-	EXPECT_EQ(2, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
+	EXPECT_EQ(2, voxelutil::visitVolumeParallel(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillEmptyPlaneNegativeX) {
@@ -192,7 +190,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlaneNegativeX) {
 	voxel::RawVolumeWrapper wrapper(&v);
 	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(),
 										 fillVoxel, 1));
-	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
+	EXPECT_EQ(9, voxelutil::visitVolumeParallel(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveY) {
@@ -202,7 +200,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveY) {
 	voxel::RawVolumeWrapper wrapper(&v);
 	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(),
 										 fillVoxel, 1));
-	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
+	EXPECT_EQ(9, voxelutil::visitVolumeParallel(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
@@ -212,7 +210,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 	voxel::RawVolumeWrapper wrapper(&v);
 	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(),
 										 fillVoxel, 1));
-	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
+	EXPECT_EQ(9, voxelutil::visitVolumeParallel(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillPlaneWithImage) {

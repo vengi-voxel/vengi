@@ -16,7 +16,7 @@ class VolumeRescalerTest : public app::AbstractTest {
 protected:
 	void testScaleUpFull(int lower, int upper) {
 		voxel::RawVolume volume({lower, upper});
-		const int n = voxelutil::visitVolume(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const int n = voxelutil::visitVolumeParallel(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 		}, VisitAll());
 		ASSERT_GT(n, 0);
@@ -32,7 +32,7 @@ protected:
 	}
 
 	int countVoxels(const voxel::RawVolume &volume) {
-		return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+		return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 	}
 };
 

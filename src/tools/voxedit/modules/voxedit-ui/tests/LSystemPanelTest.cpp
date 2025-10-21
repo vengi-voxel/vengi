@@ -23,7 +23,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		_sceneMgr->modifier().setReferencePosition(volume->region().getLowerCenter());
 
 		ctx->ItemClick("###Ok");
-		IM_CHECK(voxelutil::visitVolume(*volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()) > 0);
+		IM_CHECK(voxelutil::visitVolumeParallel(*volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()) > 0);
 	};
 }
 

@@ -22,12 +22,12 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
 		IM_CHECK(model != nullptr);
-		const int cnt = voxelutil::visitVolume(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+		const int cnt = voxelutil::visitVolumeParallel(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 		IM_CHECK(cnt == 0);
 		util::ScopedVarChange scoped(cfg::VoxEditGridsize, "1");
 		ctx->Yield();
 		executeViewportClick();
-		IM_CHECK_EQ(1, voxelutil::visitVolume(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()));
+		IM_CHECK_EQ(1, voxelutil::visitVolumeParallel(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()));
 	};
 
 	// TODO: viewport menubar tests

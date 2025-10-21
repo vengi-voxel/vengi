@@ -24,7 +24,7 @@ private:
 protected:
 	template<typename Volume>
 	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) {
-		return voxelutil::visitVolume(
+		return voxelutil::visitVolumeParallel(
 			volume, [&](int, int, int, const voxel::Voxel &v) {}, voxelutil::VisitColor(voxel.getColor()));
 	}
 
@@ -320,7 +320,7 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	int newNodeId = _sceneMgr->mergeNodes(secondNodeId, thirdNodeId);
 	const voxel::RawVolume *v = _sceneMgr->volume(newNodeId);
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(2, voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &voxel) {}, voxelutil::SkipEmpty()));
+	EXPECT_EQ(2, voxelutil::visitVolumeParallel(*v, [](int, int, int, const voxel::Voxel &voxel) {}, voxelutil::SkipEmpty()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
 

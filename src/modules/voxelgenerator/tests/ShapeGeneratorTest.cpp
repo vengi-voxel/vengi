@@ -156,9 +156,7 @@ TEST_F(ShapeGeneratorTest, testCreateCubeNoCenter) {
 TEST_F(ShapeGeneratorTest, testCreateCube) {
 	voxel::RawVolumeWrapper wrapper(_volume);
 	shape::createCube(wrapper, _center, _width, _height, _depth, _voxel);
-	int count = 0;
-	voxelutil::visitVolume(*_volume, [&count] (int, int, int, const voxel::Voxel&) {
-		++count;
+	int count = voxelutil::visitVolumeParallel(*_volume, [] (int, int, int, const voxel::Voxel&) {
 	});
 	// this -1 is due to rounding errors - but those are expected. The shape generator doesn't
 	// know anything about the region position.

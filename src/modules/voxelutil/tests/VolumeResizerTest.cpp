@@ -15,7 +15,7 @@ class VolumeResizerTest : public app::AbstractTest {};
 
 TEST_F(VolumeResizerTest, testResize) {
 	voxel::RawVolume volume({-8, 8});
-	voxelutil::visitVolume(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+	voxelutil::visitVolumeParallel(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	}, VisitAll());
 	voxel::Region newRegion = volume.region();

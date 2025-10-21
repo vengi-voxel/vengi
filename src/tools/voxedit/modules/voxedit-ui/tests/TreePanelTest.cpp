@@ -27,7 +27,7 @@ void TreePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			core::String name = core::String::format("//$FOCUSED/%s", treeTypeName(i));
 			ctx->ItemClick(name.c_str());
 			ctx->ItemClick("###Ok");
-			IM_CHECK(voxelutil::visitVolume(*volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()) > 0);
+			IM_CHECK(voxelutil::visitVolumeParallel(*volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()) > 0);
 		}
 	};
 }

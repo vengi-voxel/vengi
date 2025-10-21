@@ -75,7 +75,7 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 		os << os.iword(indent) << "  |- volume: " << (v != nullptr ? v->region().toString().c_str() : "no volume")
 		   << std::endl;
 		if (v) {
-			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
+			voxels = voxelutil::visitVolume(*v, [](int, int, int, const voxel::Voxel &) {});
 		}
 		os << os.iword(indent) << "  |- voxels: " << voxels << std::endl;
 	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
@@ -128,8 +128,8 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 }
 
 int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
-	int cnt = 0;
-	voxelutil::visitVolume(
+	core::AtomicInt cnt{0};
+	voxelutil::visitVolumeParallel(
 		volume,
 		[&](int, int, int, const voxel::Voxel &v) {
 			if (v == voxel) {

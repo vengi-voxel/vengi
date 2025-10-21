@@ -232,7 +232,7 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	palette::Palette starMadePal;
 	loadPalette(starMadePal);
 
-	const int32_t numBlocks = voxelutil::visitVolume(
+	const int32_t numBlocks = voxelutil::visitVolumeParallel(
 		*node->volume(), [](int, int, int, const voxel::Voxel &) {}, voxelutil::SkipEmpty());
 	wrapBool(stream->writeUInt32BE(numBlocks))
 	Log::debug("Number of blocks: %i", numBlocks);
