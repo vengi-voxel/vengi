@@ -393,6 +393,9 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
+		// TODO: don't merge everything blindly. Check if it's enough to merge single nodes here.
+		// TODO: PERF: merging will take a lot of time for large scenes
+		Log::debug("Merging scenegraph nodes as the number of volumes exceeds the limit of %i", voxel::MAX_VOLUMES);
 		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 		if (!merged.hasVolume()) {
 			Log::error("Failed to merge the scenegraph nodes");
@@ -404,6 +407,7 @@ static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 		newNode.setPalette(merged.palette);
 		newNode.setNormalPalette(merged.normalPalette);
 		newSceneGraph.emplace(core::move(newNode));
+		Log::debug("Merging successful");
 	}
 }
 

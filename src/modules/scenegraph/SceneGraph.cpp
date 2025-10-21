@@ -1077,8 +1077,8 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		const voxel::RawVolume *v = resolveVolume(node);
 		// TODO: SCENEGRAPH: rotation
 		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
-		++cnt;
 		Log::debug("Merged node %i/%i", cnt, (int)n);
+		++cnt;
 	}
 	return MergeResult{merged, mergedPalette, normalPalette};
 }
