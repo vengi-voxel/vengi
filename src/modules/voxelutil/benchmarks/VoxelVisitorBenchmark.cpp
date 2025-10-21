@@ -38,6 +38,20 @@ BENCHMARK_DEFINE_F(VoxelVisitorBenchmark, Visit)(benchmark::State &state) {
 	}
 }
 
+static void visitOrderParallel(voxelutil::VisitorOrder order, const voxel::RawVolume &v) {
+	auto visitor = [&](int, int, int, const voxel::Voxel &) {};
+	int n = voxelutil::visitVolumeParallel(v, visitor, voxelutil::SkipEmpty(), order);
+	benchmark::DoNotOptimize(n);
+}
+
+BENCHMARK_DEFINE_F(VoxelVisitorBenchmark, VisitParallel)(benchmark::State &state) {
+	for (auto _ : state) {
+		const voxelutil::VisitorOrder order = (voxelutil::VisitorOrder)(state.range());
+		visitOrderParallel(order, v);
+	}
+}
+
 BENCHMARK_REGISTER_F(VoxelVisitorBenchmark, Visit)->DenseRange(0, (int)(voxelutil::VisitorOrder::Max)-1);
+BENCHMARK_REGISTER_F(VoxelVisitorBenchmark, VisitParallel)->DenseRange(0, (int)(voxelutil::VisitorOrder::Max)-1);
 
 BENCHMARK_MAIN();

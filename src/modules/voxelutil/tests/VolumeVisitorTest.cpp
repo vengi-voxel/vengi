@@ -188,6 +188,8 @@ TEST_P(VolumeVisitorOrderTest, testVisitor) {
 
 	int cnt = visitVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, SkipEmpty(), GetParam());
 	EXPECT_EQ(8, cnt);
+	int parallelCnt = visitVolumeParallel(volume, [&](int, int, int, const voxel::Voxel &) {}, SkipEmpty(), GetParam());
+	EXPECT_EQ(8, parallelCnt);
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const VisitorOrder& state) {
