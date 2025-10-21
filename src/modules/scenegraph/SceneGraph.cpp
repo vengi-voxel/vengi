@@ -9,8 +9,10 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -1020,6 +1022,7 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 }
 
 SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
+	core_trace_scoped(Merge);
 	const size_t n = size(SceneGraphNodeType::AllModels);
 	if (n == 0) {
 		return MergeResult{};
@@ -1044,32 +1047,38 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	}
 	const palette::Palette &mergedPalette = mergePalettes(true);
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
+	palette::PaletteLookup mergedPaletteLookup(mergedPalette);
 
 	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
+	int cnt = 0;
 	for (const auto &e : nodes()) {
 		const SceneGraphNode &node = e->second;
 		if (!node.isAnyModelNode()) {
+			++cnt;
 			continue;
 		}
 		if (skipHidden && !node.visible()) {
+			++cnt;
 			continue;
 		}
 		const voxel::Region &sourceRegion = resolveRegion(node);
 		const voxel::Region &destRegion = sceneRegion(node, keyFrameIdx);
 		const palette::Palette &pal = node.palette();
 
-		auto mergeCondition = [&pal, &mergedPalette](voxel::Voxel &voxel) {
+		auto mergeCondition = [&pal, &mergedPaletteLookup](voxel::Voxel &voxel) {
 			if (isAir(voxel.getMaterial())) {
 				return false;
 			}
 			const core::RGBA color = pal.color(voxel.getColor());
-			const uint8_t index = mergedPalette.getClosestMatch(color);
+			const uint8_t index = mergedPaletteLookup.findClosestIndex(color);
 			voxel.setColor(index);
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
 		// TODO: SCENEGRAPH: rotation
 		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
+		++cnt;
+		Log::debug("Merged node %i/%i", cnt, (int)n);
 	}
 	return MergeResult{merged, mergedPalette, normalPalette};
 }
