@@ -63,7 +63,7 @@ TEST_F(SparseVolumeTest, testSetVoxels) {
 	voxel::SparseVolume v{voxel::Region{0, 0, 0, 3, 6, 3}};
 	voxel::setVoxels(v, 0, 0, 0, v.region().getWidthInVoxels(), v.region().getDepthInVoxels(), &voxels.front(),
 				v.region().getHeightInVoxels());
-	const int vxls = voxelutil::visitVolume(v, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+	const int vxls = voxelutil::visitVolumeParallel(v, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 	ASSERT_EQ(v.region().voxels(), vxls);
 }
 

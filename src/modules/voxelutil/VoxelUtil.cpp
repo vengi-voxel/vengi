@@ -88,7 +88,7 @@ void fill(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, bool overw
 		return;
 	}
 	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) { volume.setVoxel(x, y, z, voxel); };
-	visitVolume(volume, visitor, VisitEmpty());
+	visitVolumeParallel(volume, visitor, VisitEmpty());
 }
 
 void clear(voxel::RawVolumeWrapper &in) {
@@ -385,7 +385,7 @@ voxel::Region remapToPalette(voxel::RawVolume *volume, const palette::Palette &o
 		return voxel::Region::InvalidRegion;
 	}
 	voxel::RawVolumeWrapper wrapper(volume);
-	voxelutil::visitVolume(
+	voxelutil::visitVolumeParallel(
 		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = oldPalette.color(voxel.getColor());
 			const int newColor = newPalette.getClosestMatch(rgba, skipColorIndex);

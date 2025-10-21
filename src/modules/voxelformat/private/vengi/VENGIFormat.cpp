@@ -10,6 +10,7 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "palette/Material.h"
@@ -101,19 +102,31 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 		replacement = node.palette().findReplacement(replaceIndex);
 		Log::debug("Looking for a similar color in the palette: %d", replacement);
 	}
-	auto visitor = [&stream, replacement, replaceIndex](int, int, int, const voxel::Voxel &voxel) {
+	const int64_t bufSize = region.getHeightInVoxels() * region.getDepthInVoxels() * sizeof(uint8_t) * 3;
+	core::DynamicArray<io::BufferedReadWriteStream> streamBuffers;
+	streamBuffers.reserve(region.getWidthInVoxels());
+	for (int n = 0; n < region.getWidthInVoxels(); ++n) {
+		streamBuffers.emplace_back(io::BufferedReadWriteStream(bufSize));
+	}
+	auto visitor = [&streamBuffers, replacement, replaceIndex, &region](int x, int, int, const voxel::Voxel &voxel) {
 		const bool air = isAir(voxel.getMaterial());
-		stream.writeBool(air);
+		io::BufferedReadWriteStream &streamBuf = streamBuffers[x - region.getLowerX()];
+		streamBuf.writeBool(air);
 		if (!air) {
 			if (voxel.getColor() == replaceIndex) {
-				stream.writeUInt8(replacement);
+				streamBuf.writeUInt8(replacement);
 			} else {
-				stream.writeUInt8(voxel.getColor());
+				streamBuf.writeUInt8(voxel.getColor());
 			}
-			stream.writeUInt8(voxel.getNormal());
+			streamBuf.writeUInt8(voxel.getNormal());
 		}
 	};
-	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
+	voxelutil::visitVolumeParallel(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
+	for (auto &s : streamBuffers) {
+		s.seek(0);
+		wrapBool(stream.writeStream(s))
+		s.trim();
+	}
 	return true;
 }
 

@@ -31,7 +31,7 @@ protected:
 	}
 
 	int countVoxels(const voxel::RawVolume &volume) {
-		return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+		return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 	}
 
 	class TestMementoHandler : public MementoHandler {

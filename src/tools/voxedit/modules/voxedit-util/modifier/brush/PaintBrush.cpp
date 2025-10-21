@@ -78,12 +78,12 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 			const voxel::Voxel newVoxel = mix(wrapper, context.hitCursorVoxel, evalVoxel, factor);
 			wrapper.setVoxel(x, y, z, newVoxel);
 		};
-		voxelutil::visitVolume(wrapper, region, visitor, voxelutil::SkipEmpty());
+		voxelutil::visitVolumeParallel(wrapper, region, visitor, voxelutil::SkipEmpty());
 	} else {
 		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};
-		voxelutil::visitVolume(wrapper, region, visitor, voxelutil::SkipEmpty());
+		voxelutil::visitVolumeParallel(wrapper, region, visitor, voxelutil::SkipEmpty());
 	}
 }
 

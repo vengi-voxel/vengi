@@ -285,7 +285,7 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 					palette.changeSize(1);
 				}
 				voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-				voxelutil::visitVolume(
+				voxelutil::visitVolumeParallel(
 					*v, [v, skip = emptyIndex, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 						if (voxel.getColor() >= skip) {
 							v->setVoxel(x, y, z, voxel::createVoxel(pal, voxel.getColor() + 1));
@@ -305,7 +305,7 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 					if (replacement != emptyIndex) {
 						Log::debug("Replace %i with %i", emptyIndex, replacement);
 						voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-						voxelutil::visitVolume(*v,
+						voxelutil::visitVolumeParallel(*v,
 											   [v, replaceFrom = emptyIndex, replaceTo = replacement,
 												pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 												   if (voxel.getColor() == replaceFrom) {
@@ -319,7 +319,7 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 					Log::debug("Replace %i with unused slot %i", emptyIndex, unused);
 					voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
 					const voxel::Voxel replacement = voxel::createVoxel(palette, unused);
-					voxelutil::visitVolume(
+					voxelutil::visitVolumeParallel(
 						*v, [v, emptyIndex, replacement](int x, int y, int z, const voxel::Voxel &voxel) {
 							if (voxel.getColor() == emptyIndex) {
 								v->setVoxel(x, y, z, replacement);

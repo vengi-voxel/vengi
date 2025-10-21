@@ -84,7 +84,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, FillHollow)(benchmark::State &state) {
 	voxel::RawVolume in(voxel::Region{0, 20});
 	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, voxel); };
-	voxelutil::visitVolume(in, visitor, voxelutil::VisitAll());
+	voxelutil::visitVolumeParallel(in, visitor, voxelutil::VisitAll());
 	in.setVoxel(in.region().getCenter(), voxel::Voxel());
 	for (auto _ : state) {
 		voxel::RawVolume copy(in);

@@ -124,8 +124,8 @@ bool saveModel(const scenegraph::SceneGraph &sceneGraph, const scenegraph::Scene
 
 	BenVoxel::SparseVoxelOctree svo(dim.x, dim.z, dim.y);
 	voxelutil::visitVolume(*volume, [&svo, dim](int x, int y, int z, const voxel::Voxel &voxel) {
-		BenVoxel::SVOVoxel foo(dim.x - 1 - x, z, y, voxel.getColor() + 1);
-		svo.set(foo);
+		BenVoxel::SVOVoxel svoVoxel(dim.x - 1 - x, z, y, voxel.getColor() + 1);
+		svo.set(svoVoxel);
 	});
 
 	svo.write(stream, includeSizes);

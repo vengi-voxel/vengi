@@ -141,7 +141,7 @@ int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
 }
 
 int countVoxels(const voxel::RawVolume &volume) {
-	return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+	return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 }
 
 void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, core::RGBA c1, core::RGBA c2, uint8_t palIdx, float maxDelta) {

@@ -196,7 +196,7 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 	usedColors.fill(false);
 
 	palette::Palette &pal = palette();
-	voxelutil::visitVolume(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
+	voxelutil::visitVolumeParallel(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
 		usedColors[voxel.getColor()] = true;
 	});
 	int unused = 0;
@@ -227,7 +227,7 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 		}
 		core_assert(newPalette.colorCount() > 0);
 		pal = newPalette;
-		voxelutil::visitVolume(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
+		voxelutil::visitVolumeParallel(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
 			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
 		});
 		pal.markDirty();
@@ -255,7 +255,7 @@ int SceneGraphNode::findUnusedPaletteIndex(bool startFromEnd) const {
 
 		if (const voxel::RawVolume *v = volume()) {
 			for (int i = palette::PaletteMaxColors - 1; i >= 0; --i) {
-				if (voxelutil::visitVolume(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
+				if (voxelutil::visitVolumeParallel(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
 					return true;
 				}, voxelutil::VisitColor(i)) == 0) {
 					return i;
@@ -271,7 +271,7 @@ int SceneGraphNode::findUnusedPaletteIndex(bool startFromEnd) const {
 
 		if (const voxel::RawVolume *v = volume()) {
 			for (int i = 0; i < palette::PaletteMaxColors; ++i) {
-				if (voxelutil::visitVolume(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
+				if (voxelutil::visitVolumeParallel(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
 					return true;
 				}, voxelutil::VisitColor(i)) == 0) {
 					return i;
