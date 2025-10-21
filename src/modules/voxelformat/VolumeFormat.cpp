@@ -460,11 +460,15 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 			desc = nullptr;
 		}
 	}
+	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	const uint64_t msStart = timeProvider->systemMillis();
 	if (desc != nullptr) {
 		core::SharedPtr<Format> f = getFormat(*desc, 0u);
 		if (f) {
 			if (f->save(sceneGraph, filename, archive, ctx)) {
-				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+				const uint64_t msEnd = timeProvider->systemMillis();
+				const uint64_t msDiff = msEnd - msStart;
+				Log::debug("Saved file for format '%s' (ext: '%s') in %ums", desc->name.c_str(), ext.c_str(), (uint32_t)msDiff);
 				metric::count("save", 1, {{"type", ext.toLower()}});
 				return true;
 			}
@@ -479,7 +483,9 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		core::SharedPtr<Format> f = getFormat(*desc, 0u);
 		if (f) {
 			if (f->save(sceneGraph, filename, archive, ctx)) {
-				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+				const uint64_t msEnd = timeProvider->systemMillis();
+				const uint64_t msDiff = msEnd - msStart;
+				Log::debug("Saved file for format '%s' (ext: '%s') in %ums", desc->name.c_str(), ext.c_str(), (uint32_t)msDiff);
 				metric::count("save", 1, {{"type", ext.toLower()}});
 				return true;
 			}
