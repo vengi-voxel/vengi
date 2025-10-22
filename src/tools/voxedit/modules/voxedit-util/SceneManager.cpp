@@ -2486,7 +2486,6 @@ int SceneManager::addPointChild(const core::String& name, const glm::ivec3& posi
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(position);
 	transform.setWorldOrientation(orientation);
-	// TODO: SCENEGRAPH: setting the world translation and orientation here is maybe bugged due to https://github.com/vengi-voxel/vengi/issues/494
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	newNode.setTransform(keyFrameIdx, transform);
 	newNode.setName(name);

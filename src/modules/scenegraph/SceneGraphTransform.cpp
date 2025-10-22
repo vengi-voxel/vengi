@@ -270,7 +270,6 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		return;
 	}
 
-	// TODO: SCENEGRAPH: https://github.com/vengi-voxel/vengi/issues/494
 	if (_dirty & DIRTY_WORLDVALUES) {
 		core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local and world were modified");
 		if (node.type() == SceneGraphNodeType::Root) {
@@ -284,8 +283,10 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const SceneGraphTransform &parentTransform = parent.transform(keyFrameIdx);
-			_localTranslation = _worldTranslation - parentTransform.worldTranslation();
-			_localOrientation = _worldOrientation * glm::conjugate(parentTransform.worldOrientation());
+			const glm::vec3 relativeTranslation = _worldTranslation - parentTransform.worldTranslation();
+			const glm::quat invParentOrientation = glm::conjugate(parentTransform.worldOrientation());
+			_localTranslation = invParentOrientation * (relativeTranslation / parentTransform.worldScale());
+			_localOrientation = _worldOrientation * invParentOrientation;
 			_localScale = _worldScale / parentTransform.worldScale();
 		}
 		Log::debug("node %3i (%i): World transform is dirty - new local values: t(%0.2f:%0.2f:%0.2f), "
