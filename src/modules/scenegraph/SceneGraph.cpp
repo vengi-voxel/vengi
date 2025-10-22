@@ -556,7 +556,7 @@ voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisibl
 }
 
 math::OBBF SceneGraph::sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const {
-	const auto& transform = transformForFrame(node, frameIdx);
+	const auto &transform = transformForFrame(node, frameIdx);
 	const voxel::Region &region = resolveRegion(node);
 	const math::OBBF &obb = toOBB(true, region, node.pivot(), transform);
 	return obb;
@@ -694,8 +694,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 	node.setParent(parent);
 	node.setAnimation(_activeAnimation);
-	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)type, node.id(),
-			   node.parent());
+	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)type, node.id(), node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
 	if (type == SceneGraphNodeType::Model) {
 		_regionDirty = true;
@@ -731,7 +730,7 @@ bool SceneGraph::canChangeParent(const SceneGraphNode &node, int newParentId) co
 	return !nodeHasChildren(node, newParentId);
 }
 
-bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform) {
+bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 	if (!hasNode(nodeId)) {
 		return false;
 	}
@@ -749,7 +748,7 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform)
 		return false;
 	}
 	n.setParent(newParentId);
-	if (updateTransform) {
+	if (flag == NodeMoveFlag::UpdateTransform) {
 		for (const core::String &animation : animations()) {
 			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
 				SceneGraphTransform &transform = keyframe.transform();
@@ -990,7 +989,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 	return palette;
 }
 
-const palette::Palette& SceneGraph::resolvePalette(const SceneGraphNode &n) const {
+const palette::Palette &SceneGraph::resolvePalette(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
 		return resolvePalette(node(n.reference()));
 	}

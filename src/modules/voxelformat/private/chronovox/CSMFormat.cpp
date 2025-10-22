@@ -61,7 +61,7 @@ static void updateParents(scenegraph::SceneGraph &sceneGraph) {
 		}
 		if (const scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByName(parent)) {
 			Log::debug("change parent for node %s to %s", node.name().c_str(), parent.c_str());
-			sceneGraph.changeParent(node.id(), parentNode->id(), false);
+			sceneGraph.changeParent(node.id(), parentNode->id(), scenegraph::NodeMoveFlag::None);
 		} else {
 			Log::warn("Failed to find parent node '%s' for node '%s'", parent.c_str(), node.name().c_str());
 		}

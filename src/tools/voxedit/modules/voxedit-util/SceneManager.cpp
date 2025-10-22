@@ -939,7 +939,12 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 		scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID);
 		scenegraph::SceneGraphNode *nodeParent = sceneGraphNodeByUUID(s.parentUUID);
 		if (node && nodeParent) {
-			return nodeMove(node->id(), nodeParent->id());
+			if (nodeMove(node->id(), nodeParent->id(), scenegraph::NodeMoveFlag::None)) {
+				const core::String animation = sceneGraph().activeAnimation();
+				node->setAllKeyFrames(s.keyFrames, animation);
+				return true;
+			}
+			return false;
 		}
 		Log::warn("Failed to handle memento move state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 		return false;
@@ -3415,8 +3420,8 @@ bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
 	return false;
 }
 
-bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
-	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
+bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags) {
+	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId, flags)) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
 		core_assert(node != nullptr);
 		_mementoHandler.markNodeMoved(_sceneGraph, *node);

@@ -418,8 +418,12 @@ void SceneGraphPanel::registerPopups() {
 			}
 		}
 		if (canChangeParent) {
+			scenegraph::NodeMoveFlag flags = scenegraph::NodeMoveFlag::None;
 			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, _("Move below"))) {
-				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
+				flags = scenegraph::NodeMoveFlag::UpdateTransform;
+			}
+			if (flags != scenegraph::NodeMoveFlag::None) {
+				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId , flags)) {
 					Log::error("Failed to move node");
 				}
 				ImGui::CloseCurrentPopup();

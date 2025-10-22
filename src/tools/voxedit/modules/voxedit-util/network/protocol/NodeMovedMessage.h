@@ -19,11 +19,16 @@ private:
 	core::UUID _nodeUUID;
 	core::UUID _parentUUID;
 	core::UUID _referenceUUID;
+	scenegraph::SceneGraphKeyFramesMap _keyFrames;
 
 public:
 	NodeMovedMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_MOVED) {
 		if (!writeUUID(state.nodeUUID) || !writeUUID(state.parentUUID) || !writeUUID(state.referenceUUID)) {
 			Log::error("Failed to write UUIDs in NodeMovedMessage ctor");
+			return;
+		}
+		if (!serializeKeyFrames(state.keyFrames)) {
+			Log::error("Failed to write animation count in NodeMovedMessage ctor");
 			return;
 		}
 		writeSize();
@@ -42,6 +47,10 @@ public:
 			Log::error("Failed to read reference UUID for node moved");
 			return;
 		}
+		if (!deserializeKeyFrames(in, _keyFrames)) {
+			Log::error("Failed to read key frames for node moved");
+			return;
+		}
 	}
 	void writeBack() override {
 		if (!writeInt32(0) || !writeUInt8(_id)) {
@@ -50,6 +59,10 @@ public:
 		}
 		if (!writeUUID(_nodeUUID) || !writeUUID(_parentUUID) || !writeUUID(_referenceUUID)) {
 			Log::error("Failed to write UUIDs in NodeMovedMessage::writeBack");
+			return;
+		}
+		if (!serializeKeyFrames(_keyFrames)) {
+			Log::error("Failed to write animation count in NodeMovedMessage::writeBack");
 			return;
 		}
 		writeSize();
@@ -66,6 +79,9 @@ public:
 	}
 	const core::UUID &referenceUUID() const {
 		return _referenceUUID;
+	}
+	const scenegraph::SceneGraphKeyFramesMap &keyFrames() const {
+		return _keyFrames;
 	}
 };
 

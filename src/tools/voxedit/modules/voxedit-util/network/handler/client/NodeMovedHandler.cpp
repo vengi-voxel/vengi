@@ -15,6 +15,7 @@ NodeMovedHandler::NodeMovedHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr)
 void NodeMovedHandler::execute(const network::ClientId &, network::NodeMovedMessage *message) {
 	const core::UUID &nodeUUID = message->nodeUUID();
 	const core::UUID &parentUUID = message->parentUUID();
+	const scenegraph::SceneGraphKeyFramesMap &keyFrames = message->keyFrames();
 
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 	if (node == nullptr) {
@@ -37,8 +38,9 @@ void NodeMovedHandler::execute(const network::ClientId &, network::NodeMovedMess
 	client.lockListener();
 
 	const int newParentId = newParent ? newParent->id() : 0;
-	_sceneMgr->nodeMove(node->id(), newParentId);
-
+	_sceneMgr->nodeMove(node->id(), newParentId, scenegraph::NodeMoveFlag::None);
+	const core::String animation = _sceneMgr->sceneGraph().activeAnimation();
+	node->setAllKeyFrames(keyFrames, animation);
 	client.unlockListener();
 }
 

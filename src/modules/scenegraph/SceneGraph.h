@@ -32,6 +32,13 @@ class SceneGraphNodeCamera;
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 using SceneGraphNodes = core::DynamicParallelMap<int, SceneGraphNode, 251>;
 
+enum class NodeMoveFlag : uint8_t {
+	None = 0,
+	UpdateTransform = 1,
+
+	Max
+};
+
 /**
  * @brief The internal format for the save/load methods.
  *
@@ -202,7 +209,7 @@ public:
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
 	bool removeNode(int nodeId, bool recursive);
-	bool changeParent(int nodeId, int newParentId, bool updateTransform = true);
+	bool changeParent(int nodeId, int newParentId, NodeMoveFlag flag = NodeMoveFlag::UpdateTransform);
 	bool nodeHasChildren(const SceneGraphNode &node, int childId) const;
 	bool canChangeParent(const SceneGraphNode &node, int newParentId) const;
 

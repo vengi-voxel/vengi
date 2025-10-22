@@ -526,7 +526,7 @@ public:
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);
-	bool nodeMove(int sourceNodeId, int targetNodeId);
+	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
 	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
 	bool nodeRemoveProperty(int nodeId, const core::String &key);
 	bool nodeRename(int nodeId, const core::String &name);
