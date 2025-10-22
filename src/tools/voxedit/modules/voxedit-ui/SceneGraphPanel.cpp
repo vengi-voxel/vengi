@@ -422,6 +422,9 @@ void SceneGraphPanel::registerPopups() {
 			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, _("Move below"))) {
 				flags = scenegraph::NodeMoveFlag::UpdateTransform;
 			}
+			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, _("Move below but keep position"))) {
+				flags = scenegraph::NodeMoveFlag::KeepWorldTransform;
+			}
 			if (flags != scenegraph::NodeMoveFlag::None) {
 				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId , flags)) {
 					Log::error("Failed to move node");

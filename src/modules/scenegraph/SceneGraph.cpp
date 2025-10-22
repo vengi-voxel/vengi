@@ -756,6 +756,15 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 			}
 		}
 		updateTransforms();
+	} else if (flag == NodeMoveFlag::KeepWorldTransform) {
+		for (const core::String &animation : animations()) {
+			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
+				SceneGraphTransform &transform = keyframe.transform();
+				const glm::mat4 worldMatrix = transform.worldMatrix();
+				transform.setWorldMatrix(worldMatrix);
+			}
+		}
+		updateTransforms();
 	}
 	for (SceneGraphListener *listener : _listeners) {
 		listener->onNodeChangedParent(nodeId);

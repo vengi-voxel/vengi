@@ -35,6 +35,7 @@ using SceneGraphNodes = core::DynamicParallelMap<int, SceneGraphNode, 251>;
 enum class NodeMoveFlag : uint8_t {
 	None = 0,
 	UpdateTransform = 1,
+	KeepWorldTransform = 2,
 
 	Max
 };
