@@ -98,9 +98,16 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 	case EntityType::Light:
 		wrapBool(readLight(s))
 		break;
-	case EntityType::Location:
-		wrapBool(readLocation(s))
+	case EntityType::Location: {
+		int oldNodeId = nodeId;
+		wrapBool(readLocation(sceneGraph, s, parent, nodeId))
+		if (oldNodeId != nodeId) {
+			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+			sceneGraph.node(nodeId).setProperty(scenegraph::PropDescription, desc);
+			node.properties() = core::move(properties);
+		}
 		break;
+	}
 	case EntityType::Water:
 		wrapBool(readWater(s))
 		break;
@@ -776,12 +783,16 @@ bool TeardownFormat::readLight(io::ReadStream &s) {
 	return true;
 }
 
-bool TeardownFormat::readLocation(io::ReadStream &s) {
+bool TeardownFormat::readLocation(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
 	glm::vec3 pos;
 	glm::quat rot;
 	wrapBool(readTransform(s, pos, rot))
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
+	setTransform(node, pos, rot);
+	node.setName("Location");
+	nodeId = sceneGraph.emplace(core::move(node), parent);
 	return true;
 }
 

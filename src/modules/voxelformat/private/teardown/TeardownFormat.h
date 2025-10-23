@@ -61,7 +61,7 @@ protected:
 	bool readShape(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
 				   int &nodeId);
 	bool readLight(io::ReadStream &s);
-	bool readLocation(io::ReadStream &s);
+	bool readLocation(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId);
 	bool readWater(io::ReadStream &s);
 	bool readJoint(io::ReadStream &s);
 	bool readVehicle(const Header &header, io::ReadStream &s);
