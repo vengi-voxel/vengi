@@ -261,20 +261,61 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	node.setVolume(v, true);
 	const palette::Palette &palette = node.palette();
 
-	auto visitor = [&stream, v, version, &palette](int x, int y, int z, const voxel::Voxel &voxel) {
-		const bool air = stream.readBool();
-		if (air) {
-			return;
+	if (version >= 4u) {
+		union Data {
+			uint16_t data;
+			struct {
+				uint8_t color;
+				uint8_t normal;
+			};
+		};
+		voxel::RawVolume::Sampler sampler(*v);
+		sampler.setPosition(region.getLowerCorner());
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+					const bool air = stream.readBool();
+					if (air) {
+						sampler3.movePositiveZ();
+						continue;
+					}
+
+					Data data;
+					data.normal = NO_NORMAL;
+					stream.readUInt16(data.data);
+					sampler3.setVoxel(voxel::createVoxel(palette, data.color, data.normal));
+					sampler3.movePositiveZ();
+				}
+				sampler2.movePositiveY();
+			}
+			sampler.movePositiveX();
 		}
-		uint8_t color;
-		stream.readUInt8(color);
-		uint8_t normal = NO_NORMAL;
-		if (version >= 4u) {
-			stream.readUInt8(normal);
+	} else {
+		voxel::RawVolume::Sampler sampler(*v);
+		sampler.setPosition(region.getLowerCorner());
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+			voxel::RawVolume::Sampler sampler2 = sampler;
+			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				voxel::RawVolume::Sampler sampler3 = sampler2;
+				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+					const bool air = stream.readBool();
+					if (air) {
+						sampler3.movePositiveZ();
+						continue;
+					}
+
+					uint8_t color;
+					stream.readUInt8(color);
+					sampler3.setVoxel(voxel::createVoxel(palette, color));
+					sampler3.movePositiveZ();
+				}
+				sampler2.movePositiveY();
+			}
+			sampler.movePositiveX();
 		}
-		v->setVoxel(x, y, z, voxel::createVoxel(palette, color, normal));
-	};
-	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
+	}
 	return true;
 }
 
