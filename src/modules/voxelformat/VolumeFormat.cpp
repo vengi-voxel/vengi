@@ -72,6 +72,7 @@
 #include "voxelformat/private/sproxel/SproxelFormat.h"
 #include "voxelformat/private/starmade/SMFormat.h"
 #include "voxelformat/private/starmade/SMTPLFormat.h"
+#include "voxelformat/private/teardown/TeardownFormat.h"
 #include "voxelformat/private/veloren/VelorenTerrainFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelformat/private/voxel3d/V3AFormat.h"
@@ -118,6 +119,7 @@ const io::FormatDescription *voxelFormats() {
 												 SMTPLFormat::format(),
 												 AnimaToonFormat::format(),
 												 VBXFormat::format(),
+												 TeardownFormat::format(),
 												 OBJFormat::format(),
 												 GLTFFormat::format(),
 												 STLFormat::format(),
@@ -253,6 +255,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<MapFormat>();
 		} else if (io::isA(PLYFormat::format(), desc, ext, magic)) {
 			return core::make_shared<PLYFormat>();
+		} else if (io::isA(TeardownFormat::format(), desc, ext, magic)) {
+			return core::make_shared<TeardownFormat>();
 		} else if (io::isA(FBXFormat::format(), desc, ext, magic)) {
 			return core::make_shared<FBXFormat>();
 		} else if (io::isA(Autodesk3DSFormat::format(), desc, ext, magic)) {
