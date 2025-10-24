@@ -107,4 +107,27 @@ TEST_F(CoordinateSystemTest, testMagicaVoxelAxisConversion) {
 					  glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
+// OpenGL and vengi use the same coordinate system (right-handed, Y-up, -Z-forward)
+// So all conversions should be identical
+TEST_F(CoordinateSystemTest, testOpenGLAxisConversion) {
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
+// DirectX: Left-handed, Y-up, Z-forward (+Z is forward, not -Z)
+// vengi: Right-handed, Y-up, -Z-forward
+// The handedness flip means Z is negated
+TEST_F(CoordinateSystemTest, testDirectXAxisConversion) {
+	// Right stays right
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	// Up stays up
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	// DirectX forward (+Z) becomes vengi forward (-Z) 
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	// DirectX backward (-Z) becomes vengi backward (+Z)
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
 } // namespace scenegraph
