@@ -5,11 +5,13 @@
 #pragma once
 
 #include "math/CoordinateSystem.h"
+#include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
 
 namespace math {
 
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix);
+bool coordinateSystemToRotationMatrix(CoordinateSystem sys, glm::mat3 &matrix);
 
 /**
  * @param[in] from This specifies the coordinate system of the format

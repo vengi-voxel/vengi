@@ -8,6 +8,7 @@ set(SRCS
 	Connectivity.h
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
+	CoordinateSystemVolume.h
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
@@ -33,6 +34,7 @@ engine_target_optimize(${LIB})
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/AmbientOcclusionTest.cpp
+	tests/CoordinateSystemVolumeTest.cpp
 	tests/FaceTest.cpp
 	tests/MeshTests.cpp
 	tests/MeshStateTest.cpp

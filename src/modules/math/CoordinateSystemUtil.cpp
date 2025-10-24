@@ -8,7 +8,6 @@ namespace math {
 
 //
 // Coordinate system definitions and conversions
-//
 // vengi internal coordinate system (Right-handed, Y-up, -Z-forward):
 //     Y (up)
 //     |
@@ -127,6 +126,15 @@ glm::mat4 convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, co
 		return fromMatrix;
 	}
 	return transformationMatrix1 * fromMatrix * transformationMatrix2;
+}
+
+bool coordinateSystemToRotationMatrix(CoordinateSystem sys, glm::mat3 &matrix) {
+	glm::mat4 mat4;
+	if (!coordinateSystemToMatrix(sys, mat4)) {
+		return false;
+	}
+	matrix = glm::mat3(mat4);
+	return true;
 }
 
 } // namespace math

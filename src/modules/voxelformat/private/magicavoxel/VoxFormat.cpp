@@ -9,7 +9,6 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
-#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
