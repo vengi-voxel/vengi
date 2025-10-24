@@ -31,6 +31,9 @@ public:
 	 */
 	inline bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
 		glm::ivec3 v(x, y, z);
+		if (!_volume.region().containsPoint(v)) {
+			return false;
+		}
 		const int zFlipped = _maxs.z - (v.z - _mins.z);
 		switch (_coordinateSystem) {
 		case math::CoordinateSystem::Vengi:
