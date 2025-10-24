@@ -8,7 +8,7 @@ See [the documentation](https://vengi-voxel.github.io/vengi/) for further detail
 
 Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
-## 0.2.0 (2025-XX-XX)
+## 0.2.0 (2025-10-24)
 
 General:
 
@@ -26,6 +26,7 @@ General:
    - Added support for goxel `txt` file format
    - Added support for the veloren server chunk `dat` files
    - Allow to export all cvars as json
+   - Optimized loading vengi files
 
 VoxEdit:
 
@@ -38,6 +39,7 @@ VoxEdit:
    - Improved shadow rendering
    - Support translations and lua scripts in the web version
    - Implemented basic physics that allows you to walk through a scene
+   - Allow to move a node in the hierarchy but don't move it in the world
 
 VoxConvert:
 
