@@ -152,21 +152,19 @@ struct EmptyVisitor {
 		++cnt;                                                                                                         \
 	}
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
+template<class Sampler, class Visitor, typename Condition = SkipEmpty>
+int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	core_trace_scoped(VisitVolume);
 	int cnt = 0;
-
-	typename Volume::Sampler sampler(volume);
 
 	switch (order) {
 	case VisitorOrder::XYZ:
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
@@ -180,9 +178,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::ZYX:
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveX(xOff);
@@ -196,9 +194,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::ZXY:
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -212,9 +210,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::XZY:
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -228,9 +226,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::XZmY:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -244,9 +242,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mXmZY:
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -260,9 +258,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mXZY:
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -276,9 +274,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::XmZY:
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -292,9 +290,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::XmZmY:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -308,9 +306,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mXmZmY:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -324,9 +322,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mXZmY:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -340,9 +338,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::YXZ:
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
@@ -356,9 +354,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mZmXY:
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -372,9 +370,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mZXmY:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -388,9 +386,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYXZ:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
@@ -404,9 +402,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::YZX:
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveX(xOff);
@@ -420,9 +418,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYZmX:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeX(xOff);
@@ -436,9 +434,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::YZmX:
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeX(xOff);
@@ -452,9 +450,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYZX:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveX(xOff);
@@ -468,9 +466,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYmXZ:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
@@ -484,9 +482,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYXmZ:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeZ(zOff);
@@ -500,9 +498,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYmXmZ:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeZ(xOff);
@@ -516,9 +514,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mYmZmX:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeX(xOff);
@@ -532,9 +530,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mZmXmY:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -548,9 +546,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::ZmXmY:
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -564,9 +562,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::YmXZ:
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
@@ -580,9 +578,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::ZmXY:
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -596,9 +594,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::YXmZ:
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeZ(zOff);
@@ -612,9 +610,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::mZXY:
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
@@ -628,9 +626,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	case VisitorOrder::ZXmY:
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
-			typename Volume::Sampler sampler2 = sampler;
+			Sampler sampler2 = sampler;
 			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
-				typename Volume::Sampler sampler3 = sampler2;
+				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
@@ -647,6 +645,13 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 
 #undef LOOP
 	return cnt;
+}
+
+template<class Volume, class Visitor, typename Condition = SkipEmpty>
+int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
+				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+	typename Volume::Sampler sampler(volume);
+	return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
 }
 
 template<class Volume, class Visitor, typename Condition = SkipEmpty>
