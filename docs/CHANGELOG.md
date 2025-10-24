@@ -12,6 +12,12 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+## 0.2.1 (2025-10-24)
+
+General:
+
+   - Minor bugfix release
+
 ## 0.2.0 (2025-10-24)
 
 General:
