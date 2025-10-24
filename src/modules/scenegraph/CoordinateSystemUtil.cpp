@@ -11,27 +11,40 @@
 namespace scenegraph {
 
 //
-// Generate right, forward and up direction vectors to express the desired coordinate system for vengi
+// Coordinate system definitions and conversions
 //
-//                      Right handed   Left handed
-//   -----------------------------------------------
-//     Magicavoxel      OpenGL         VENGI
-//     VXL              Maya           DirectX12
-//     Blender
-//     3dsmax
+// vengi internal coordinate system (Right-handed, Y-up, -Z-forward):
+//     Y (up)
+//     |
+//     |
+//     o----X (right)
+//    /
+//   Z (backward, toward viewer)
 //
-//     Z                Y              Y
-//     | Y              |              | Z
-//     |/               |              |/
-//     o----X           o----X         o----X
-//                     /
-//                    Z
+//   -Z direction = forward (into screen)
+//
+// Coordinate system classifications:
+//
+//   RIGHT-HANDED (Y-up, -Z-forward, same as OpenGL):
+//     - vengi (internal)
+//     - OpenGL
+//     - Maya
+//
+//   LEFT-HANDED (Y-up, Z-forward):
+//     - DirectX
+//
+//   RIGHT-HANDED (Z-up, Y-forward):
+//     - MagicaVoxel
+//     - VXL
+//     - Blender
+//     - Autodesk 3ds Max
+//
+// The basis vectors below represent each system's axes expressed in vengi coordinates.
 //
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
-	// read the assignment as: our right is your ... (and so on)
-	// so right = glm::right() is a no-op, but right = glm::vec3(-1, 0, 0)
-	// would mean: our right is your left (with your left given in opengl
-	// coordinate system)
+	// Each case defines the basis vectors of the source coordinate system
+	// expressed in vengi's coordinate system.
+	// The resulting matrix columns represent: [right, up, forward, translation]
 	glm::vec3 right;
 	glm::vec3 up;
 	glm::vec3 forward;
