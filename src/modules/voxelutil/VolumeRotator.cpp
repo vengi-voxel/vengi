@@ -4,19 +4,17 @@
 
 #include "VolumeRotator.h"
 #include "app/Async.h"
-#include "core/Assert.h"
-#include "core/GLM.h"
-#include "core/Log.h"
-#include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Math.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/euler_angles.hpp>
 
 namespace voxelutil {
@@ -73,68 +71,23 @@ voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis)
 	if (axis == math::Axis::X) {
 		const voxel::Region destRegion(srcMins.x, srcMins.z, srcMins.y, srcMaxs.x, srcMaxs.z, srcMaxs.y);
 		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
-
-		voxel::RawVolume::Sampler srcSampler(srcVolume);
-		srcSampler.setPosition(srcRegion.getLowerCorner());
-		for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
-			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
-			for (int32_t y = 0; y < srcRegion.getHeightInVoxels(); ++y) {
-				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
-				for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
-					const voxel::Voxel voxel = srcSampler3.voxel();
-					if (!voxel::isAir(voxel.getMaterial())) {
-						destVolume->setVoxel(x, z, srcMaxs.y - y, voxel);
-					}
-					srcSampler3.movePositiveX();
-				}
-				srcSampler2.movePositiveY();
-			}
-			srcSampler.movePositiveZ();
-		}
+		visitVolumeParallel(*srcVolume, [destVolume, srcMins, srcMaxs](int x, int y, int z, const voxel::Voxel& voxel) {
+			destVolume->setVoxel(x, z, srcMaxs.y - (y - srcMins.y), voxel);
+		}, voxelutil::SkipEmpty());
 		return destVolume;
 	} else if (axis == math::Axis::Y) {
 		const voxel::Region destRegion(srcMins.z, srcMins.y, srcMins.x, srcMaxs.z, srcMaxs.y, srcMaxs.x);
 		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
-
-		voxel::RawVolume::Sampler srcSampler(srcVolume);
-		srcSampler.setPosition(srcRegion.getLowerCorner());
-		for (int32_t z = 0; z < srcRegion.getDepthInVoxels(); ++z) {
-			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
-			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
-				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
-				for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
-					const voxel::Voxel voxel = srcSampler3.voxel();
-					if (!voxel::isAir(voxel.getMaterial())) {
-						destVolume->setVoxel(srcMaxs.z - z, y, x, voxel);
-					}
-					srcSampler3.movePositiveX();
-				}
-				srcSampler2.movePositiveY();
-			}
-			srcSampler.movePositiveZ();
-		}
+		visitVolumeParallel(*srcVolume, [destVolume, srcMins, srcMaxs](int x, int y, int z, const voxel::Voxel& voxel) {
+			destVolume->setVoxel(srcMaxs.z - (z - srcMins.z), y, x, voxel);
+		}, voxelutil::SkipEmpty());
 		return destVolume;
 	}
 	const voxel::Region destRegion(srcMins.y, srcMins.x, srcMins.z, srcMaxs.y, srcMaxs.x, srcMaxs.z);
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
-
-	voxel::RawVolume::Sampler srcSampler(srcVolume);
-	srcSampler.setPosition(srcRegion.getLowerCorner());
-	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
-		voxel::RawVolume::Sampler srcSampler2 = srcSampler;
-		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
-			voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
-			for (int32_t x = 0; x < srcRegion.getWidthInVoxels(); ++x) {
-				const voxel::Voxel voxel = srcSampler3.voxel();
-				if (!voxel::isAir(voxel.getMaterial())) {
-					destVolume->setVoxel(y, srcMaxs.x - x, z, voxel);
-				}
-				srcSampler3.movePositiveX();
-			}
-			srcSampler2.movePositiveY();
-		}
-		srcSampler.movePositiveZ();
-	}
+	visitVolumeParallel(*srcVolume, [destVolume, srcMins, srcMaxs](int x, int y, int z, const voxel::Voxel& voxel) {
+		destVolume->setVoxel(y, srcMaxs.x - (x - srcMins.x), z, voxel);
+	}, voxelutil::SkipEmpty());
 	return destVolume;
 }
 
