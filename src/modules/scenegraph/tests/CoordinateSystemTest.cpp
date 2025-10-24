@@ -87,4 +87,24 @@ TEST_F(CoordinateSystemTest, test3dsMax) {
 	testConvert(CoordinateSystem::Autodesk3dsmax, CoordinateSystem::Vengi);
 }
 
+TEST_F(CoordinateSystemTest, testMagicaVoxelAxisConversion) {
+	// MagicaVoxel: Z-up, Y-forward, X-right (right-handed) (TODO: check this assumption)
+	// VENGI: Y-up, -Z-forward, X-right (right-handed, same as OpenGL)
+
+	// In MagicaVoxel (1,0,0) = right
+	// In VENGI (1,0,0) = right
+	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi,
+					  glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	// In MagicaVoxel (0,1,0) = forward (in Y direction)
+	// In VENGI (0,0,-1) = forward (in -Z direction)
+	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi,
+					  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+
+	// In MagicaVoxel (0,0,1) = up (in Z direction)
+	// In VENGI (0,1,0) = up (in Y direction)
+	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi,
+					  glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
 } // namespace scenegraph
