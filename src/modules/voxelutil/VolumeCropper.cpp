@@ -32,18 +32,17 @@ namespace voxelutil {
 	core_trace_scoped(CropRawVolume);
 	glm::ivec3 newMins((std::numeric_limits<int>::max)() / 2);
 	glm::ivec3 newMaxs((std::numeric_limits<int>::min)() / 2);
-	if (visitVolume(
-			*volume,
-			[&newMins, &newMaxs](int x, int y, int z, const voxel::Voxel &) {
-				newMins.x = core_min(newMins.x, x);
-				newMins.y = core_min(newMins.y, y);
-				newMins.z = core_min(newMins.z, z);
+	auto visitor = [&newMins, &newMaxs](int x, int y, int z, const voxel::Voxel &) {
+		newMins.x = core_min(newMins.x, x);
+		newMins.y = core_min(newMins.y, y);
+		newMins.z = core_min(newMins.z, z);
 
-				newMaxs.x = core_max(newMaxs.x, x);
-				newMaxs.y = core_max(newMaxs.y, y);
-				newMaxs.z = core_max(newMaxs.z, z);
-			},
-			SkipEmpty()) == 0) {
+		newMaxs.x = core_max(newMaxs.x, x);
+		newMaxs.y = core_max(newMaxs.y, y);
+		newMaxs.z = core_max(newMaxs.z, z);
+	};
+	// TODO: PERF: this algorithm can be optimized by using core::memchr_not
+	if (visitVolume(*volume, visitor, SkipEmpty()) == 0) {
 		return nullptr;
 	}
 	return cropVolume(volume, newMins, newMaxs);
