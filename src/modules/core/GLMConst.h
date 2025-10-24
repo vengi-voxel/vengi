@@ -7,6 +7,12 @@
  * @li the positive z-axis is backwards
  * Think of your screen being the center of the 3 axes and the positive z-axis going through your
  * screen towards you.
+ *
+ * vengi is using a right-handed coordinate system like OpenGL or Maya
+ *
+ *  y as the up axis
+ * +x to the right
+ * +z pointing toward the viewer (so the camera looks down the -z axis)
  */
 
 #pragma once
