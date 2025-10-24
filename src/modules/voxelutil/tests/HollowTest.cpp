@@ -30,7 +30,7 @@ TEST_F(HollowTest, testHollow1RemoveCenter) {
 	EXPECT_EQ(cubeVoxels - 1, solidVoxels);
 }
 
-TEST_F(HollowTest, DISABLED_testHollow4RemoveCenter) {
+TEST_F(HollowTest, testHollow4RemoveCenter) {
 	voxel::Region region(0, 3);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -49,7 +49,7 @@ TEST_F(HollowTest, DISABLED_testHollow4RemoveCenter) {
 	EXPECT_EQ(cubeVoxels - 8, solidVoxels);
 }
 
-TEST_F(HollowTest, DISABLED_testHollow27RemoveCenter) {
+TEST_F(HollowTest, testHollow27RemoveCenter) {
 	voxel::Region region(0, 4);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
