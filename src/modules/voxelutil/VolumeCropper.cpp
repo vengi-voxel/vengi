@@ -12,7 +12,7 @@ namespace voxelutil {
 
 [[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume, const glm::ivec3 &mins,
 										   const glm::ivec3 &maxs) {
-	core_trace_scoped(CropRawVolume);
+	core_trace_scoped(CropVolume);
 	const voxel::Region newRegion(mins, maxs);
 	if (!newRegion.isValid()) {
 		return nullptr;
@@ -29,7 +29,7 @@ namespace voxelutil {
 	if (volume == nullptr) {
 		return nullptr;
 	}
-	core_trace_scoped(CropRawVolume);
+	core_trace_scoped(CropVolume);
 	glm::ivec3 newMins((std::numeric_limits<int>::max)() / 2);
 	glm::ivec3 newMaxs((std::numeric_limits<int>::min)() / 2);
 	auto visitor = [&newMins, &newMaxs](int x, int y, int z, const voxel::Voxel &) {

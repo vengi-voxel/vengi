@@ -9,12 +9,12 @@
 namespace voxelutil {
 
 /**
- * @brief Resizes a volume to cut off empty parts
+ * @brief Creates a cropped volume by cutting off parts without voxels
  */
 [[nodiscard]] voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs);
 
 /**
- * @brief Resizes a volume to cut off empty parts
+ * @brief Creates a cropped volume by cutting off parts without voxels
  */
 [[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume);
 
