@@ -2004,6 +2004,36 @@ msgstr ""
 msgid "Pending extractions: %i"
 msgstr ""
 
+#, c-format
+msgid "Camera position: %.2f %.2f %.2f"
+msgstr ""
+
+#, c-format
+msgid "Camera velocity: %.2f %.2f %.2f"
+msgstr ""
+
+#, c-format
+msgid "Collided on x axis: %s"
+msgstr ""
+
+#, c-format
+msgid "Collided on y axis: %s"
+msgstr ""
+
+#, c-format
+msgid "Collided on z axis: %s"
+msgstr ""
+
+msgid "Camera extents"
+msgstr ""
+
+msgid "Camera friction decay"
+msgstr ""
+
+#, c-format
+msgid "Recent contact point: %.2f %.2f %.2f"
+msgstr ""
+
 msgid "Rename"
 msgstr ""
 
@@ -2114,6 +2144,9 @@ msgid "Merge %s onto %s"
 msgstr ""
 
 msgid "Move below"
+msgstr ""
+
+msgid "Move below but keep position"
 msgstr ""
 
 msgid "Ambient color"
@@ -2601,6 +2634,12 @@ msgid "SceneMode"
 msgstr ""
 
 msgid "Create a reference node"
+msgstr ""
+
+msgid "Jump velocity in eye mode"
+msgstr ""
+
+msgid "Height of the body in eye mode"
 msgstr ""
 
 msgid "Enable camera clipping"
