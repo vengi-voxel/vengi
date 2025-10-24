@@ -62,7 +62,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 #if MAGICAVOXEL_USE_REFERENCES
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform transform;
-	transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
+	transform.setWorldMatrix(math::convertCoordinateSystem(math::CoordinateSystem::MagicaVoxel, ogtMat));
 	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
 	if (models[ogtInstance.model_index].nodeId != InvalidNodeId) {
 		type = scenegraph::SceneGraphNodeType::ModelReference;

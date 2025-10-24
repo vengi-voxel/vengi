@@ -4,9 +4,11 @@
 
 #pragma once
 
-namespace scenegraph {
+#include <stdint.h>
 
-enum class CoordinateSystem {
+namespace math {
+
+enum class CoordinateSystem : uint8_t {
 	Vengi,
 	MagicaVoxel,
 	VXL,
@@ -14,8 +16,8 @@ enum class CoordinateSystem {
 	OpenGL,
 	Maya,
 	Autodesk3dsmax,
-	Max,
 
+	Max
 };
 
 }

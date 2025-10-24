@@ -1,6 +1,5 @@
 set(LIB scenegraph)
 set(SRCS
-	CoordinateSystem.h
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	FrameTransform.h FrameTransform.cpp
 	JsonExporter.h JsonExporter.cpp
@@ -19,7 +18,6 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
 set(TEST_SRCS
-	tests/CoordinateSystemTest.cpp
 	tests/SceneGraphTest.cpp
 	tests/SceneGraphTransformTest.cpp
 	tests/SceneGraphUtilTest.cpp

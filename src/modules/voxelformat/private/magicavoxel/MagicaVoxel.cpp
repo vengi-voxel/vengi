@@ -9,7 +9,7 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "palette/Palette.h"
-#include "scenegraph/CoordinateSystemUtil.h"
+#include "math/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
@@ -78,7 +78,7 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
-		transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
+		transform.setWorldMatrix(math::convertCoordinateSystem(math::CoordinateSystem::MagicaVoxel, ogtMat));
 		kf[keyFrameIdx] = core::move(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);

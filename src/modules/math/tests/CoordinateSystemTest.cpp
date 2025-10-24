@@ -2,12 +2,11 @@
  * @file
  */
 
-#include "TestHelper.h"
 #include "app/tests/AbstractTest.h"
-#include "scenegraph/CoordinateSystemUtil.h"
+#include "math/CoordinateSystemUtil.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace scenegraph {
+namespace math {
 
 class CoordinateSystemTest : public app::AbstractTest {
 protected:
@@ -28,14 +27,13 @@ protected:
 		// Compare matrices element by element with tolerance
 		for (int i = 0; i < 4; ++i) {
 			for (int j = 0; j < 4; ++j) {
-				EXPECT_NEAR(src[i][j], fromMatrix[i][j], 0.0001f)
-					<< "Matrix mismatch at [" << i << "][" << j << "]";
+				EXPECT_NEAR(src[i][j], fromMatrix[i][j], 0.0001f) << "Matrix mismatch at [" << i << "][" << j << "]";
 			}
 		}
 	}
 
-	void testAxisConversion(CoordinateSystem from, CoordinateSystem to,
-							const glm::vec3 &fromPoint, const glm::vec3 &expectedToPoint) {
+	void testAxisConversion(CoordinateSystem from, CoordinateSystem to, const glm::vec3 &fromPoint,
+							const glm::vec3 &expectedToPoint) {
 		// Create a translation matrix representing a point
 		glm::mat4 pointMatrix = glm::translate(glm::mat4(1.0f), fromPoint);
 		glm::mat4 convertedMatrix = convertCoordinateSystem(from, to, pointMatrix);
@@ -43,12 +41,9 @@ protected:
 		// Extract the translation from the converted matrix
 		glm::vec3 convertedPoint(convertedMatrix[3][0], convertedMatrix[3][1], convertedMatrix[3][2]);
 
-		EXPECT_NEAR(convertedPoint.x, expectedToPoint.x, 0.0001f)
-			<< "X coordinate mismatch";
-		EXPECT_NEAR(convertedPoint.y, expectedToPoint.y, 0.0001f)
-			<< "Y coordinate mismatch";
-		EXPECT_NEAR(convertedPoint.z, expectedToPoint.z, 0.0001f)
-			<< "Z coordinate mismatch";
+		EXPECT_NEAR(convertedPoint.x, expectedToPoint.x, 0.0001f) << "X coordinate mismatch";
+		EXPECT_NEAR(convertedPoint.y, expectedToPoint.y, 0.0001f) << "Y coordinate mismatch";
+		EXPECT_NEAR(convertedPoint.z, expectedToPoint.z, 0.0001f) << "Z coordinate mismatch";
 	}
 };
 
@@ -93,27 +88,31 @@ TEST_F(CoordinateSystemTest, testMagicaVoxelAxisConversion) {
 
 	// In MagicaVoxel (1,0,0) = right
 	// In VENGI (1,0,0) = right
-	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi,
-					  glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f),
+					   glm::vec3(1.0f, 0.0f, 0.0f));
 
 	// In MagicaVoxel (0,1,0) = forward (in Y direction)
 	// In VENGI (0,0,-1) = forward (in -Z direction)
-	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi,
-					  glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f),
+					   glm::vec3(0.0f, 0.0f, -1.0f));
 
 	// In MagicaVoxel (0,0,1) = up (in Z direction)
 	// In VENGI (0,1,0) = up (in Y direction)
-	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi,
-					  glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::MagicaVoxel, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f),
+					   glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 // OpenGL and vengi use the same coordinate system (right-handed, Y-up, -Z-forward)
 // So all conversions should be identical
 TEST_F(CoordinateSystemTest, testOpenGLAxisConversion) {
-	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f),
+					   glm::vec3(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f),
+					   glm::vec3(0.0f, 1.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f),
+					   glm::vec3(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::OpenGL, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f),
+					   glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 // DirectX: Left-handed, Y-up, Z-forward (+Z is forward, not -Z)
@@ -121,13 +120,17 @@ TEST_F(CoordinateSystemTest, testOpenGLAxisConversion) {
 // The handedness flip means Z is negated
 TEST_F(CoordinateSystemTest, testDirectXAxisConversion) {
 	// Right stays right
-	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(1.0f, 0.0f, 0.0f),
+					   glm::vec3(1.0f, 0.0f, 0.0f));
 	// Up stays up
-	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	// DirectX forward (+Z) becomes vengi forward (-Z) 
-	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 1.0f, 0.0f),
+					   glm::vec3(0.0f, 1.0f, 0.0f));
+	// DirectX forward (+Z) becomes vengi forward (-Z)
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, 1.0f),
+					   glm::vec3(0.0f, 0.0f, -1.0f));
 	// DirectX backward (-Z) becomes vengi backward (+Z)
-	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	testAxisConversion(CoordinateSystem::DirectX, CoordinateSystem::Vengi, glm::vec3(0.0f, 0.0f, -1.0f),
+					   glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
-} // namespace scenegraph
+} // namespace math

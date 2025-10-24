@@ -4,7 +4,7 @@
 
 #include "VXLShared.h"
 #include "core/Log.h"
-#include "scenegraph/CoordinateSystemUtil.h"
+#include "math/CoordinateSystemUtil.h"
 #include <glm/ext/matrix_transform.hpp>
 
 namespace voxelformat {
@@ -12,13 +12,11 @@ namespace voxelformat {
 namespace vxl {
 
 void VXLMatrix::fromVengi(const glm::mat4 &vengiMatrix) {
-	matrix = scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::Vengi, scenegraph::CoordinateSystem::VXL,
-												 vengiMatrix);
+	matrix = math::convertCoordinateSystem(math::CoordinateSystem::Vengi, math::CoordinateSystem::VXL, vengiMatrix);
 }
 
 glm::mat4 VXLMatrix::toVengi() const {
-	return scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::VXL, scenegraph::CoordinateSystem::Vengi,
-											   matrix);
+	return math::convertCoordinateSystem(math::CoordinateSystem::VXL, math::CoordinateSystem::Vengi, matrix);
 }
 
 int vxl::VXLModel::findLayerByName(const core::String &name) const {

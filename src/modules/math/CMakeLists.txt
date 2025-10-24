@@ -2,6 +2,8 @@ set(SRCS
 	AABB.h
 	Axis.cpp Axis.h
 	Bezier.h
+	CoordinateSystem.h
+	CoordinateSystemUtil.cpp CoordinateSystemUtil.h
 	Easing.h
 	Frustum.cpp Frustum.h
 	Functions.cpp Functions.h
@@ -20,6 +22,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
 
 set(TEST_SRCS
 	tests/AABBTest.cpp
+	tests/CoordinateSystemTest.cpp
 	tests/FrustumTest.cpp
 	tests/MathTest.cpp
 	tests/OBBTest.cpp
