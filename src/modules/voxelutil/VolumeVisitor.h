@@ -94,6 +94,30 @@ struct SkipEmpty {
 	}
 };
 
+template<class Sampler>
+struct VisitInvisible {
+	const Sampler &_sampler;
+
+	VisitInvisible(const Sampler &sampler) : _sampler(sampler) {
+	}
+
+	inline bool operator()(const voxel::Voxel &voxel) const {
+		return visibleFaces(_sampler, true) == voxel::FaceBits::None;
+	}
+};
+
+template<class Sampler>
+struct VisitVisible {
+	const Sampler &_sampler;
+
+	VisitVisible(const Sampler &sampler) : _sampler(sampler) {
+	}
+
+	inline bool operator()(const voxel::Voxel &voxel) const {
+		return visibleFaces(_sampler, true) != voxel::FaceBits::None;
+	}
+};
+
 /**
  * @note Visitor condition
  */
@@ -672,17 +696,14 @@ int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&vis
 	return visitVolume(volume, region, 1, 1, 1, visitor, condition, order);
 }
 
+/**
+ * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
+ * @sa visitInvisibleVolume()
+ */
 template<class Volume, class Visitor>
 int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
-	int cnt = 0;
-	const auto hullVisitor = [&cnt, &volume, visitor](int x, int y, int z, const voxel::Voxel &voxel) {
-		if (visibleFaces(volume, x, y, z) != voxel::FaceBits::None) {
-			visitor(x, y, z, voxel);
-			++cnt;
-		}
-	};
-	visitVolume(volume, hullVisitor, SkipEmpty(), order);
-	return cnt;
+	typename Volume::Sampler sampler(volume);
+	return visitSampler(sampler, volume.region(), 1, 1, 1, visitor, VisitVisible(sampler), order);
 }
 
 /**
@@ -756,6 +777,7 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, Vi
 /**
  * @brief Visit all non-visible voxels - voxels that are surrounded by solid voxels on all sides
  * @sa visibleFaces()
+ * @sa visitSurfaceVolume()
  */
 template<class Volume, class Visitor>
 int visitUndergroundVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
