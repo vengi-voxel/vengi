@@ -136,3 +136,9 @@ inline ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
 #define ASSERT_VEC_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVecEQ, lhs, rhs, delta)
 #define EXPECT_VEC_NOT_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVecNE, lhs, rhs, delta)
 #define ASSERT_VEC_NOT_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVecNE, lhs, rhs, delta)
+#define EXPECT_MAT_NEAR(lhs, rhs, delta) \
+	do { \
+		for (int col = 0; col < (lhs).length(); col++) { \
+			EXPECT_VEC_NEAR((lhs)[col], (rhs)[col], delta); \
+		} \
+	} while (0)

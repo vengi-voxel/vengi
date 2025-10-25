@@ -203,6 +203,8 @@ set(TEST_FILES
 	"tests/bug393.obj"
 	"tests/cc.hva"
 	"tests/cc.vxl"
+	"tests/bug636/legs.vxl"
+	"tests/bug636/legs.hva"
 	"tests/chr_knight.fbx"
 	"tests/chr_knight.gox"
 	"tests/chr_knight.qb"
