@@ -5,20 +5,19 @@
 #pragma once
 
 #include "app/Async.h"
-#include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicSet.h"
 #include "core/concurrent/Atomic.h"
-#include "math/Axis.h"
 #include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include <stdint.h>
 
 namespace voxelutil {
 
-enum class VisitorOrder {
+enum class VisitorOrder : uint8_t {
 	XYZ,
 	ZYX,
 	ZXY,
