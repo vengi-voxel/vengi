@@ -12,7 +12,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
-   - Allow to export ply vertex positions as integers when `voxformat_transform_mesh` is set to `false` and no scale is applied
+   - Allow to export `ply` vertex positions as integers when `voxformat_transform_mesh` is set to `false` and no scale is applied
    - Fixed hollowing in some situations
    - Fixed a few `vxl` issues
 
