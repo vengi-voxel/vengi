@@ -83,12 +83,20 @@ glm::vec3 VXLLayerInfo::offset() const {
 }
 
 // TODO: VOXELFORMAT: pivot handling is broken (https://github.com/vengi-voxel/vengi/issues/537)
+// TODO: VOXELFORMAT: https://github.com/vengi-voxel/vengi/issues/636
 // y and z flipped to bring it into vengi space
 glm::vec3 VXLLayerInfo::pivot() const {
-	glm::vec3 pivot{mins.x / (float)xsize, mins.z / (float)zsize, mins.y / (float)ysize};
+	// mins represents the offset of voxel data from origin
+	// Default mins = -size/2 (centers the voxel around origin)
+	// mins can be adjusted to offset the voxel
+	//
+	// The pivot is the normalized position within the bounding box where the origin (0,0,0) is located
+	// Formula: pivot = -mins / size
+	// This gives values typically around 0.5 (centered) but can vary if mins is adjusted
+	//
+	glm::vec3 pivot{-mins.x / (float)xsize, -mins.z / (float)zsize, -mins.y / (float)ysize};
 	Log::debug("Pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
-	// the glm::abs fixes the pivot for the hmec
-	return glm::abs(pivot);
+	return pivot;
 }
 
 } // namespace vxl
