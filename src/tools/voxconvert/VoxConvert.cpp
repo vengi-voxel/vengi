@@ -41,6 +41,7 @@
 #include "voxelformat/FormatThumbnail.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAApi.h"
+#include "voxelutil/Hollow.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRescaler.h"
@@ -738,13 +739,7 @@ void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Remove non-surface voxels");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		core::Buffer<glm::ivec3> filled;
-		voxelutil::visitUndergroundVolume(*node.volume(), [&filled](int x, int y, int z, const voxel::Voxel &voxel) {
-			filled.emplace_back(x, y, z);
-		});
-		for (const glm::ivec3 &pos : filled) {
-			node.volume()->setVoxel(pos, voxel::Voxel());
-		}
+		voxelutil::hollow(*node.volume());
 	}
 }
 
