@@ -142,10 +142,7 @@ TEST_F(VolumeRotatorTest, testRotateXYZByAngle) {
 	const glm::vec3 actualPivot(pivot * glm::vec3(region.getDimensionsInVoxels()));
 
 	for (const glm::ivec3 &p : originalPositions) {
-		const glm::vec3 srcPos(p);
-		const glm::vec3 transformedPos = math::transform(rotationMatrix, srcPos, actualPivot);
-		const glm::ivec3 expectedPos = glm::floor(transformedPos);
-
+		const glm::ivec3 expectedPos = math::transform(rotationMatrix, p, actualPivot);
 		EXPECT_TRUE(voxel::isBlocked(rotated->voxel(expectedPos).getMaterial()))
 			<< "Expected to find a voxel at position " << expectedPos
 			<< " (transformed from " << p << ")\n"
