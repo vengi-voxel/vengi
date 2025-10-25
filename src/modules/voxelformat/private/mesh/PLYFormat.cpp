@@ -4,9 +4,11 @@
 
 #include "PLYFormat.h"
 #include "core/Color.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/Archive.h"
@@ -662,6 +664,9 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
+	// if no transform are applied, and no scale is wanted, we can just export integers
+	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
+	const bool exportIntegers = glm::all(glm::equal(scale, glm::vec3(1.0f))) && !applyTransform;
 	int elementsCnt = 0;
 	int indicesCnt = 0;
 	for (const auto &meshExt : meshes) {
@@ -685,9 +690,15 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	stream->writeStringFormat(false, "comment TextureFile %s\n", paletteName.c_str());
 
 	stream->writeStringFormat(false, "element vertex %i\n", elementsCnt);
-	stream->writeStringFormat(false, "property float x\n");
-	stream->writeStringFormat(false, "property float z\n");
-	stream->writeStringFormat(false, "property float y\n");
+	if (exportIntegers) {
+		stream->writeStringFormat(false, "property int x\n");
+		stream->writeStringFormat(false, "property int z\n");
+		stream->writeStringFormat(false, "property int y\n");
+	} else {
+		stream->writeStringFormat(false, "property float x\n");
+		stream->writeStringFormat(false, "property float z\n");
+		stream->writeStringFormat(false, "property float y\n");
+	}
 	if (withTexCoords) {
 		stream->writeStringFormat(false, "property float s\n");
 		stream->writeStringFormat(false, "property float t\n");
@@ -731,8 +742,12 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				} else {
 					pos = v.position;
 				}
-				pos *= scale;
-				stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
+				if (exportIntegers) {
+					stream->writeStringFormat(false, "%d %d %d", (int)pos.x, (int)pos.y, (int)pos.z);
+				} else {
+					pos *= scale;
+					stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
+				}
 				if (withTexCoords) {
 					const glm::vec2 &uv = paletteUV(v.colorIndex);
 					stream->writeStringFormat(false, " %f %f", uv.x, uv.y);
