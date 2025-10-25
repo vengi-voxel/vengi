@@ -62,8 +62,8 @@ glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &foote
 	const glm::vec3 sectionScale = footer.calcScale();
 	vengiMatrix = glm::scale(vengiMatrix, sectionScale);
 	translation.x *= footer.scale * sectionScale.x;
-	translation.y *= footer.scale * sectionScale.z;
-	translation.z *= footer.scale * sectionScale.y;
+	translation.y *= footer.scale * sectionScale.y;
+	translation.z *= footer.scale * sectionScale.z;
 	Log::debug("ConvertRead: vxl translation: %f %f %f", translation.x, translation.y, translation.z);
 	return vengiMatrix;
 }
