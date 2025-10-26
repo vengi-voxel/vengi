@@ -484,6 +484,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 	}
 
 	palette::NormalPalette normalPalette;
+	// TODO: VOXELFORMAT: index 1 and 3 https://modenc.renegadeprojects.com/Normals#Index_1_Normals
 	if (footer.normalType == 2) {
 		normalPalette.tiberianSun();
 	} else {
