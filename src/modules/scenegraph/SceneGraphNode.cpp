@@ -244,45 +244,6 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 	return true;
 }
 
-int SceneGraphNode::findUnusedPaletteIndex(bool startFromEnd) const {
-	const palette::Palette &pal = palette();
-	if (startFromEnd) {
-		for (int i = palette::PaletteMaxColors - 1; i >= 0; --i) {
-			if (pal.color(i).a == 0) {
-				return i;
-			}
-		}
-
-		if (const voxel::RawVolume *v = volume()) {
-			for (int i = palette::PaletteMaxColors - 1; i >= 0; --i) {
-				if (voxelutil::visitVolumeParallel(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
-					return true;
-				}, voxelutil::VisitColor(i)) == 0) {
-					return i;
-				}
-			}
-		}
-	} else {
-		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
-			if (pal.color(i).a == 0) {
-				return i;
-			}
-		}
-
-		if (const voxel::RawVolume *v = volume()) {
-			for (int i = 0; i < palette::PaletteMaxColors; ++i) {
-				if (voxelutil::visitVolumeParallel(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
-					return true;
-				}, voxelutil::VisitColor(i)) == 0) {
-					return i;
-				}
-			}
-		}
-	}
-
-	return -1;
-}
-
 void SceneGraphNode::fixErrors() {
 	if (_type == SceneGraphNodeType::Model) {
 		if (_volume == nullptr) {

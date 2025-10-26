@@ -154,7 +154,6 @@ public:
 	 * @param[in] reindexPalette the palette is being compacted and voxel references are being adjusted accordingly
 	 */
 	bool removeUnusedColors(bool reindexPalette);
-	int findUnusedPaletteIndex(bool startFromEnd) const;
 
 	// normalized pivot of [0-1] to be somewhere inside the volume region
 	bool setPivot(const glm::vec3 &pivot);
