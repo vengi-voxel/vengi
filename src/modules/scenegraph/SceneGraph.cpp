@@ -1087,6 +1087,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
+		// TODO: SCENEGRAPH: scaling is not applied properly
 		const glm::vec3 angles = glm::eulerAngles(node.transform(keyFrameIdx).worldOrientation());
 		if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 			voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
