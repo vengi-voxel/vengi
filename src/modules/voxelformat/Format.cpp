@@ -292,41 +292,22 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 						}
 					});
 			} else {
-#if 0
-				int unused = node.findUnusedPaletteIndex(emptyIndex == 0);
-				if (unused < 0)
-#endif
-				{
-					Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
-							   "them. We need to find a replacement for %i",
-							   palette::PaletteMaxColors, emptyIndex);
-					uint8_t replacement = palette.findReplacement(emptyIndex, core::Color::Distance::HSB);
-					Log::debug("Looking for a similar color in the palette: %d", replacement);
-					if (replacement != emptyIndex) {
-						Log::debug("Replace %i with %i", emptyIndex, replacement);
-						voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-						voxelutil::visitVolumeParallel(*v,
-											   [v, replaceFrom = emptyIndex, replaceTo = replacement,
-												pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
-												   if (voxel.getColor() == replaceFrom) {
-													   v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
-												   }
-											   });
-					}
-				}
-#if 0
-				else {
-					Log::debug("Replace %i with unused slot %i", emptyIndex, unused);
+				Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
+							"them. We need to find a replacement for %i",
+							palette::PaletteMaxColors, emptyIndex);
+				uint8_t replacement = palette.findReplacement(emptyIndex, core::Color::Distance::HSB);
+				Log::debug("Looking for a similar color in the palette: %d", replacement);
+				if (replacement != emptyIndex) {
+					Log::debug("Replace %i with %i", emptyIndex, replacement);
 					voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-					const voxel::Voxel replacement = voxel::createVoxel(palette, unused);
-					voxelutil::visitVolumeParallel(
-						*v, [v, emptyIndex, replacement](int x, int y, int z, const voxel::Voxel &voxel) {
-							if (voxel.getColor() == emptyIndex) {
-								v->setVoxel(x, y, z, replacement);
-							}
-						});
+					voxelutil::visitVolumeParallel(*v,
+											[v, replaceFrom = emptyIndex, replaceTo = replacement,
+											pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
+												if (voxel.getColor() == replaceFrom) {
+													v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
+												}
+											});
 				}
-#endif
 			}
 			node.setPalette(palette);
 		} else {
