@@ -123,10 +123,11 @@ bool saveModel(const scenegraph::SceneGraph &sceneGraph, const scenegraph::Scene
 	Log::debug("Saving model with size: %d:%d:%d", dim.x, dim.y, dim.z);
 
 	BenVoxel::SparseVoxelOctree svo(dim.x, dim.z, dim.y);
-	voxelutil::visitVolume(*volume, [&svo, dim](int x, int y, int z, const voxel::Voxel &voxel) {
+	auto func = [&svo, dim](int x, int y, int z, const voxel::Voxel &voxel) {
 		BenVoxel::SVOVoxel svoVoxel(dim.x - 1 - x, z, y, voxel.getColor() + 1);
 		svo.set(svoVoxel);
-	});
+	};
+	voxelutil::visitVolume(*volume, func);
 
 	svo.write(stream, includeSizes);
 	return true;

@@ -975,9 +975,8 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 			core::Array<bool, palette::PaletteMaxColors> used;
 			if (removeUnused) {
 				used.fill(false);
-				voxelutil::visitVolumeParallel(*resolveVolume(node), [&used](int, int, int, const voxel::Voxel &voxel) {
-					used[voxel.getColor()] = true;
-				});
+				auto func = [&used](int, int, int, const voxel::Voxel &voxel) { used[voxel.getColor()] = true; };
+				voxelutil::visitVolumeParallel(*resolveVolume(node), func);
 			} else {
 				used.fill(true);
 			}

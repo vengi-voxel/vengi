@@ -120,9 +120,10 @@ void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	}
 
 	// TODO: context.lockedAxis support
-	voxelutil::visitVolumeParallel(*_volume, [&](int x, int y, int z, const voxel::Voxel &v) {
+	auto func = [&](int x, int y, int z, const voxel::Voxel &v) {
 		wrapper.setVoxel(offset.x + x, offset.y + y, offset.z + z, v);
-	});
+	};
+	voxelutil::visitVolumeParallel(*_volume, func);
 }
 
 void StampBrush::reset() {
@@ -172,8 +173,8 @@ void StampBrush::update(const BrushContext &ctx, double nowSeconds) {
 
 void StampBrush::setVoxel(const voxel::Voxel &voxel, const palette::Palette &palette) {
 	if (_volume) {
-		voxelutil::visitVolumeParallel(*_volume,
-							   [&](int x, int y, int z, const voxel::Voxel &v) { _volume->setVoxel(x, y, z, voxel); });
+		auto func = [&](int x, int y, int z, const voxel::Voxel &v) { _volume->setVoxel(x, y, z, voxel); };
+		voxelutil::visitVolumeParallel(*_volume, func);
 	} else {
 		_volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(0)));
 		_volume->setVoxel(0, 0, 0, voxel);

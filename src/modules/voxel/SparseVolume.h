@@ -179,8 +179,8 @@ public:
 
 	template<class Volume>
 	void copyFrom(const Volume &source) {
-		auto visitor = [this](int x, int y, int z, const voxel::Voxel &voxel) { setVoxel(x, y, z, voxel); };
-		voxelutil::visitVolumeParallel(source, visitor);
+		auto func = [this](int x, int y, int z, const voxel::Voxel &voxel) { setVoxel(x, y, z, voxel); };
+		voxelutil::visitVolumeParallel(source, func);
 	}
 };
 

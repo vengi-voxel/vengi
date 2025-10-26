@@ -437,12 +437,12 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		voxelutil::visitVolume(*sceneGraph.resolveVolume(node),
-							   [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
-								   const core::RGBA rgba = node.palette().color(voxel.getColor());
-								   const uint32_t color = vxl_color(rgba);
-								   libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
-							   });
+		auto func = [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA rgba = node.palette().color(voxel.getColor());
+			const uint32_t color = vxl_color(rgba);
+			libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
+		};
+		voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func);
 	}
 
 	uint8_t buf[4096];

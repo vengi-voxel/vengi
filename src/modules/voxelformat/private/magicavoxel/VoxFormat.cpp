@@ -404,12 +404,9 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
 			uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
 			ogt_model.voxel_data = dataptr;
-			voxelutil::visitVolume(
-				*sceneGraph.resolveVolume(node),
-				[&](int, int, int, const voxel::Voxel &voxel) {
-					*dataptr++ = voxel.getColor();
-				},
-				voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+			auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
+			voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll(),
+								   voxelutil::VisitorOrder::YZmX);
 
 			ctx.models.push_back(ogt_model);
 		}

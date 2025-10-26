@@ -16,9 +16,10 @@ class VolumeRescalerTest : public app::AbstractTest {
 protected:
 	void testScaleUpFull(int lower, int upper) {
 		voxel::RawVolume volume({lower, upper});
-		const int n = voxelutil::visitVolumeParallel(volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-		}, VisitAll());
+		};
+		const int n = voxelutil::visitVolumeParallel(volume, func, VisitAll());
 		ASSERT_GT(n, 0);
 		core::ScopedPtr<voxel::RawVolume> v(voxelutil::scaleUp(volume));
 		ASSERT_TRUE(v);

@@ -72,18 +72,18 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	} else if (gradient()) {
 		const glm::ivec3 start = context.cursorPosition;
 		const glm::ivec3 size = region.getDimensionsInVoxels();
-		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const float factor = glm::distance(glm::vec3(x, y, z), glm::vec3(start)) / glm::length(glm::vec3(size));
 			const voxel::Voxel evalVoxel = voxelColor.evaluate(voxel);
 			const voxel::Voxel newVoxel = mix(wrapper, context.hitCursorVoxel, evalVoxel, factor);
 			wrapper.setVoxel(x, y, z, newVoxel);
 		};
-		voxelutil::visitVolumeParallel(wrapper, region, visitor);
+		voxelutil::visitVolumeParallel(wrapper, region, func);
 	} else {
-		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};
-		voxelutil::visitVolumeParallel(wrapper, region, visitor);
+		voxelutil::visitVolumeParallel(wrapper, region, func);
 	}
 }
 

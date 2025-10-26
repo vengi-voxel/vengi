@@ -108,7 +108,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	for (int n = 0; n < region.getWidthInVoxels(); ++n) {
 		streamBuffers.emplace_back(io::BufferedReadWriteStream(bufSize));
 	}
-	auto visitor = [&streamBuffers, replacement, replaceIndex, &region](int x, int, int, const voxel::Voxel &voxel) {
+	auto func = [&streamBuffers, replacement, replaceIndex, &region](int x, int, int, const voxel::Voxel &voxel) {
 		const bool air = isAir(voxel.getMaterial());
 		io::BufferedReadWriteStream &streamBuf = streamBuffers[x - region.getLowerX()];
 		streamBuf.writeBool(air);
@@ -121,7 +121,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 			streamBuf.writeUInt8(voxel.getNormal());
 		}
 	};
-	voxelutil::visitVolumeParallel(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
+	voxelutil::visitVolumeParallel(*v, func, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
 	for (auto &s : streamBuffers) {
 		s.seek(0);
 		wrapBool(stream.writeStream(s))

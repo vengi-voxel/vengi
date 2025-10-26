@@ -302,18 +302,16 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		palette.setColor(0, core::RGBA(0, 0, 0, 0));
 		palette.tryAdd(color, false, &replacement, false, 0);
 	}
-	voxelutil::visitVolume(
-		*node->volume(),
-		[&stream, replacement](int, int, int, const voxel::Voxel &voxel) {
-			if (voxel.getMaterial() == voxel::VoxelType::Air) {
-				stream->writeUInt8(0);
-			} else if (voxel.getColor() == 0) {
-				stream->writeUInt8(replacement);
-			} else {
-				stream->writeUInt8(voxel.getColor());
-			}
-		},
-		voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+	auto func = [&stream, replacement](int, int, int, const voxel::Voxel &voxel) {
+		if (voxel.getMaterial() == voxel::VoxelType::Air) {
+			stream->writeUInt8(0);
+		} else if (voxel.getColor() == 0) {
+			stream->writeUInt8(replacement);
+		} else {
+			stream->writeUInt8(voxel.getColor());
+		}
+	};
+	voxelutil::visitVolume(*node->volume(), func, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 
 	wrapBool(stream->writeUInt32(0)) // first palette entry is always 0 - empty voxel
 	for (int i = 1; i < palette.colorCount(); ++i) {

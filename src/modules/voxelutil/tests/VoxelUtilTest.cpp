@@ -24,8 +24,8 @@ TEST_F(VoxelUtilTest, testFillHollow3x3Center) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
 	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	voxelutil::visitVolumeParallel(
-		v, [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, borderVoxel); }, VisitAll());
+	auto func = [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, borderVoxel); };
+	voxelutil::visitVolumeParallel(v, func, VisitAll());
 	EXPECT_EQ(voxelutil::countVoxelsByType(v, borderVoxel), region.voxels());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 	EXPECT_EQ(voxelutil::countVoxelsByType(v, borderVoxel), region.voxels() - 1);
@@ -41,9 +41,8 @@ TEST_F(VoxelUtilTest, testFillHollow5x5CenterNegativeOrigin) {
 	voxel::Region region(-2, 2);
 	voxel::RawVolume v(region);
 	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	voxelutil::visitVolume(
-		v, [&](int x, int y, int z, const voxel::Voxel &) { EXPECT_TRUE(v.setVoxel(x, y, z, borderVoxel)); },
-		VisitAll());
+	auto func = [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, borderVoxel); };
+	voxelutil::visitVolumeParallel(v, func, VisitAll());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
@@ -55,9 +54,8 @@ TEST_F(VoxelUtilTest, testFillHollowLeak) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
 	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	voxelutil::visitVolume(
-		v, [&](int x, int y, int z, const voxel::Voxel &) { EXPECT_TRUE(v.setVoxel(x, y, z, borderVoxel)); },
-		VisitAll());
+	auto func = [&](int x, int y, int z, const voxel::Voxel &) { v.setVoxel(x, y, z, borderVoxel); };
+	voxelutil::visitVolumeParallel(v, func, VisitAll());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 	EXPECT_TRUE(v.setVoxel(1, 1, 0, voxel::Voxel())); // produce leak
 
@@ -79,7 +77,7 @@ TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	v.setVoxel(2, 0, 1, groundVoxel);
 	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel,
 										 newPlaneVoxel, 1));
-	EXPECT_EQ(8, voxelutil::visitVolumeParallel(v));
+	EXPECT_EQ(8, voxelutil::countVoxels(v));
 }
 
 TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
@@ -146,10 +144,11 @@ TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 	EXPECT_EQ(2,
 			  voxelutil::paintPlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1, fillVoxel2));
 	int voxel2counter = 0;
-	EXPECT_EQ(4, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) {
-				  if (voxel.getColor() == fillVoxel2.getColor())
-					  voxel2counter++;
-			  }));
+	auto func = [&](int, int, int, const voxel::Voxel &voxel) {
+		if (voxel.getColor() == fillVoxel2.getColor())
+			voxel2counter++;
+	};
+	EXPECT_EQ(4, voxelutil::visitVolume(v, func));
 	EXPECT_EQ(3, voxel2counter);
 }
 

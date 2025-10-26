@@ -285,12 +285,13 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 					palette.changeSize(1);
 				}
 				voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-				voxelutil::visitVolumeParallel(
-					*v, [v, skip = emptyIndex, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
-						if (voxel.getColor() >= skip) {
-							v->setVoxel(x, y, z, voxel::createVoxel(pal, voxel.getColor() + 1));
-						}
-					});
+				auto func = [v, skip = emptyIndex, pal = node.palette()](int x, int y, int z,
+																		 const voxel::Voxel &voxel) {
+					if (voxel.getColor() >= skip) {
+						v->setVoxel(x, y, z, voxel::createVoxel(pal, voxel.getColor() + 1));
+					}
+				};
+				voxelutil::visitVolumeParallel(*v, func);
 			} else {
 				Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
 							"them. We need to find a replacement for %i",
@@ -300,13 +301,10 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 				if (replacement != emptyIndex) {
 					Log::debug("Replace %i with %i", emptyIndex, replacement);
 					voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
-					voxelutil::visitVolumeParallel(*v,
-											[v, replaceFrom = emptyIndex, replaceTo = replacement,
-											pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
-												if (voxel.getColor() == replaceFrom) {
-													v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
-												}
-											});
+					auto func = [v, replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &) {
+						v->setVoxel(x, y, z, voxel::createVoxel(pal, replacement));
+					};
+					voxelutil::visitVolumeParallel(*v, func, voxelutil::VisitVoxelColor(emptyIndex));
 				}
 			}
 			node.setPalette(palette);

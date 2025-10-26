@@ -385,15 +385,15 @@ voxel::Region remapToPalette(voxel::RawVolume *volume, const palette::Palette &o
 		return voxel::Region::InvalidRegion;
 	}
 	voxel::RawVolumeWrapper wrapper(volume);
-	voxelutil::visitVolumeParallel(
-		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = oldPalette.color(voxel.getColor());
-			const int newColor = newPalette.getClosestMatch(rgba, skipColorIndex);
-			if (newColor != palette::PaletteColorNotFound) {
-				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor, voxel.getNormal(), voxel.getFlags());
-				wrapper.setVoxel(x, y, z, newVoxel);
-			}
-		});
+	auto func = [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+		const core::RGBA rgba = oldPalette.color(voxel.getColor());
+		const int newColor = newPalette.getClosestMatch(rgba, skipColorIndex);
+		if (newColor != palette::PaletteColorNotFound) {
+			voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor, voxel.getNormal(), voxel.getFlags());
+			wrapper.setVoxel(x, y, z, newVoxel);
+		}
+	};
+	voxelutil::visitVolumeParallel(wrapper, func);
 	return wrapper.dirtyRegion();
 }
 

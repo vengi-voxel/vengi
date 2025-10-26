@@ -314,7 +314,7 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	int newNodeId = _sceneMgr->mergeNodes(secondNodeId, thirdNodeId);
 	const voxel::RawVolume *v = _sceneMgr->volume(newNodeId);
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(2, voxelutil::visitVolumeParallel(*v));
+	EXPECT_EQ(2, voxelutil::countVoxels(*v));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
 

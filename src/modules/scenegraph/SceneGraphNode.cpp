@@ -227,9 +227,10 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 		}
 		core_assert(newPalette.colorCount() > 0);
 		pal = newPalette;
-		voxelutil::visitVolumeParallel(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
+		auto func = [v, &newMapping, &pal](int x, int y, int z, const voxel::Voxel &voxel) {
 			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
-		});
+		};
+		voxelutil::visitVolumeParallel(*v, func);
 		pal.markDirty();
 		pal.markSave();
 	} else {

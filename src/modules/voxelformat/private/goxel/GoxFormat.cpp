@@ -778,15 +778,14 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 
 		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
 		int layerBlocks = 0;
-		voxelutil::visitVolume(
-			*sceneGraph.resolveVolume(node), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize,
-			[&](int x, int y, int z, const voxel::Voxel &) {
-				if (isEmptyBlock(sceneGraph.resolveVolume(node), glm::ivec3(BlockSize), x, y, z)) {
-					return;
-				}
-				++layerBlocks;
-			},
-			voxelutil::VisitAll());
+		auto func = [&](int x, int y, int z, const voxel::Voxel &) {
+			if (isEmptyBlock(sceneGraph.resolveVolume(node), glm::ivec3(BlockSize), x, y, z)) {
+				return;
+			}
+			++layerBlocks;
+		};
+		voxelutil::visitVolume(*sceneGraph.resolveVolume(node), voxel::Region(mins, maxs), BlockSize, BlockSize,
+							   BlockSize, func, voxelutil::VisitAll());
 
 		Log::debug("blocks: %i", layerBlocks);
 
@@ -856,16 +855,15 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 					uint32_t *data = (uint32_t *)core_malloc(size);
 					int offset = 0;
 					const palette::Palette &palette = node.palette();
-					voxelutil::visitVolume(
-						*mirrored, blockRegion,
-						[&](int, int, int, const voxel::Voxel &voxel) {
-							if (voxel::isAir(voxel.getMaterial())) {
-								data[offset++] = 0;
-							} else {
-								data[offset++] = palette.color(voxel.getColor());
-							}
-						},
-						voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
+					auto func = [&](int, int, int, const voxel::Voxel &voxel) {
+						if (voxel::isAir(voxel.getMaterial())) {
+							data[offset++] = 0;
+						} else {
+							data[offset++] = palette.color(voxel.getColor());
+						}
+					};
+					voxelutil::visitVolume(*mirrored, blockRegion, func, voxelutil::VisitAll(),
+										   voxelutil::VisitorOrder::YZX);
 
 					image::Image image2("##");
 					if (!image2.loadRGBA((const uint8_t*)data, 64, 64)) {

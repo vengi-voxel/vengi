@@ -161,16 +161,14 @@ bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		Log::error("No model node found");
 		return false;
 	}
-	int voxels = voxelutil::visitVolume(
-		*node->volume(),
-		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = node->palette().color(voxel.getColor());
-			if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
-				Log::error("Could not write voxel data");
-				return;
-			}
-		},
-		voxelutil::VisitSolid());
+	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const core::RGBA rgba = node->palette().color(voxel.getColor());
+		if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
+			Log::error("Could not write voxel data");
+			return;
+		}
+	};
+	int voxels = voxelutil::visitVolume(*node->volume(), func);
 	Log::debug("Wrote %i voxels", voxels);
 	return voxels > 0;
 }

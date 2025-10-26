@@ -565,10 +565,11 @@ int SceneManager::colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
 	const voxel::Region &region = v->region();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelutil::visitVolumeParallel(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
+	auto func = [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 		newVolume->setVoxel(x, y, z, voxel);
 		wrapper.setVoxel(x, y, z, voxel::Voxel());
-	}, voxelutil::VisitVoxelColor(voxelColor.getColor()));
+	};
+	voxelutil::visitVolumeParallel(wrapper, func, voxelutil::VisitVoxelColor(voxelColor.getColor()));
 	modified(nodeId, wrapper.dirtyRegion());
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	copyNode(node, newNode, false, true);
