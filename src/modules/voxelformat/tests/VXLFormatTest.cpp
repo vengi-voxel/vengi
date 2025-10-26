@@ -50,20 +50,20 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	EXPECT_VEC_NEAR(glm::vec3(0.5136022f, 0.1523392f, 0.5000000f), node1.pivot(), 0.001f);
 	const scenegraph::SceneGraphKeyFrame *keyframe1 = node1.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe1);
-	const glm::mat4 expected = {{1.0000000, -0.000000, 0.000000, 0.000000},
-								{0.000000, 0.9999999, -0.000000, 0.000000},
-								{-0.000000, 0.000000, 0.9999999, 0.000000},
-								{-14.555638, 0.870091, 6.930813, 1.000000}};
+	const glm::mat4 expected = {{1.0f, 0.0f, 0.0f, 0.0f},
+								{0.0f, 1.0f, 0.0f, 0.0f},
+								{0.0f, 0.0f, 1.0f, 0.0f},
+								{-14.9761734f, 0.8904828f, 7.3924913f, 1.0f}};
 	EXPECT_MAT_NEAR(expected, keyframe1->transform().localMatrix(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node2 = sceneGraph.node(2);
 	ASSERT_EQ(2, node2.id());
 	EXPECT_EQ("LEG R REAR LOWE", node2.name());
 	EXPECT_VEC_NEAR(glm::vec3(0.3476858f, 0.8018382f, 0.5000001f), node2.pivot(), 0.001f);
-	const glm::mat4 expected2 = {{0.9999999, -0.000000, 0.000000, 0.000000},
-									{0.000000, 1.0000000, -0.000000, 0.000000},
-									{-0.000000, 0.000000, 1.0000000, 0.000000},
-									{-17.094210, 9.179527, 6.393470, 1.000000}};
+	const glm::mat4 expected2 = {{1.0f, 0.0f, 0.0f, 0.0f},
+								 {0.0f, 1.0f, 0.0f, 0.0f},
+								 {0.0f, 0.0f, 1.0f, 0.0f},
+								 {-18.2648506f, 9.9278526f, 6.7404451f, 1.0f}};
 	const scenegraph::SceneGraphKeyFrame *keyframe2 = node2.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe2);
 	EXPECT_MAT_NEAR(expected2, keyframe2->transform().localMatrix(), 0.001f);
@@ -72,10 +72,10 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	ASSERT_EQ(3, node3.id());
 	EXPECT_EQ("LEG R REAR UPPE", node3.name());
 	EXPECT_VEC_NEAR(glm::vec3(0.6807217f, 0.7823251f, 0.5000000f), node3.pivot(), 0.001f);
-	const glm::mat4 expected3 = {{0.999207, -0.000000, 0.000000, 0.000000},
-									{0.000000, 1.0000001, -0.000000, 0.000000},
-									{-0.000000, 0.000000, 1.0000001, 0.000000},
-									{-13.611420, 15.680304, 5.164252, 1.000000}};
+	const glm::mat4 expected3 = {{1.0f, 0.0f, 0.0f, 0.0f},
+								 {0.0f, 1.0f, 0.0f, 0.0f},
+								 {0.0f, 0.0f, 1.0f, 0.0f},
+								 {-13.6222296f, 16.6269493f, 5.8894053f, 1.0f}};
 	const scenegraph::SceneGraphKeyFrame *keyframe3 = node3.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe3);
 	EXPECT_MAT_NEAR(expected3, keyframe3->transform().localMatrix(), 0.001f);

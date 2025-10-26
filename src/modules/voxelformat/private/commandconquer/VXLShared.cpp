@@ -30,9 +30,13 @@ int vxl::VXLModel::findLayerByName(const core::String &name) const {
 
 glm::mat4 convertVXLRead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	// The VXL base pose matrix is not scaled by the global footer.scale.
-	// The per-section scale is applied by the scene graph transform.
-	// TODO: VOXELFORMAT: scaling needed?
-	return matrix.toVengi();
+	// The per-section scale is applied here to the base matrix.
+	const glm::mat4 vengiMatrix = matrix.toVengi();
+	const glm::vec3 sectionScale = footer.calcScale();
+	const glm::vec3 offset = footer.offset();
+	const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), sectionScale);
+	const glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), offset);
+	return translateMatrix * scaleMatrix * vengiMatrix;
 }
 
 vxl::VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix) {
@@ -66,7 +70,7 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 // The HVA transformation is applied as follows:
 // 1. The HVA matrix is converted from VXL to vengi coordinate system.
 // 2. The translation part of the resulting matrix is scaled by the global `footer.scale` (typically 1.0/12.0).
-// 3. The per-section scale, calculated from the section's bounding box (mins/maxs), is NOT applied here. It is handled by the scenegraph node's transform.
+// 3. The per-section scale and offset are already baked into the base VXL transform, so they are NOT applied here.
 //
 // See https://github.com/vengi-voxel/vengi/issues/537 and https://github.com/vengi-voxel/vengi/issues/636
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
