@@ -3628,7 +3628,7 @@ bool SceneManager::nodeUnreference(int nodeId) {
 	return false;
 }
 
-bool SceneManager::nodeReduceColors(scenegraph::SceneGraphNode &node, core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx) {
+bool SceneManager::nodeReduceColors(scenegraph::SceneGraphNode &node, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx) {
 	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
 	if (v == nullptr) {
 		return false;
@@ -3636,16 +3636,15 @@ bool SceneManager::nodeReduceColors(scenegraph::SceneGraphNode &node, core::Buff
 	palette::Palette &palette = node.palette();
 	const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, targetPalIdx);
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelutil::visitVolume(
-		wrapper,
-		[&wrapper, &srcPalIdx, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
-			for (uint8_t srcPal : srcPalIdx) {
-				if (voxel.getColor() == srcPal) {
-					wrapper.setVoxel(x, y, z, replacementVoxel);
-					break;
-				}
+	auto func = [&wrapper, &srcPalIdx, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
+		for (uint8_t srcPal : srcPalIdx) {
+			if (voxel.getColor() == srcPal) {
+				wrapper.setVoxel(x, y, z, replacementVoxel);
+				break;
 			}
-		});
+		}
+	};
+	voxelutil::visitVolume(wrapper, func);
 	modified(node.id(), wrapper.dirtyRegion());
 	return true;
 }
@@ -3678,7 +3677,7 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 	return false;
 }
 
-bool SceneManager::nodeReduceColors(int nodeId, core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx) {
+bool SceneManager::nodeReduceColors(int nodeId, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeReduceColors(*node, srcPalIdx, targetPalIdx);
 	}

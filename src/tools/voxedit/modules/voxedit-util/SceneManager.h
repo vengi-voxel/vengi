@@ -491,7 +491,7 @@ private:
 	 * representation of the palette)
 	 */
 	bool nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
-	bool nodeReduceColors(scenegraph::SceneGraphNode &node, core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
+	bool nodeReduceColors(scenegraph::SceneGraphNode &node, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
@@ -549,7 +549,7 @@ public:
 	 * @param[in] srcPalIdx The palette color indices to replace with the target palette index
 	 * @param[in] targetPalIdx The target palette index
 	 */
-	bool nodeReduceColors(int nodeId, core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
+	bool nodeReduceColors(int nodeId, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
