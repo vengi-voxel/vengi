@@ -3662,12 +3662,10 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 		const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, replacement);
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-		voxelutil::visitVolume(
-			wrapper,
-			[&wrapper, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
-				wrapper.setVoxel(x, y, z, replacementVoxel);
-			},
-			voxelutil::VisitVoxelColor(palIdx));
+		auto func = [&wrapper, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
+			wrapper.setVoxel(x, y, z, replacementVoxel);
+		};
+		voxelutil::visitVolume(wrapper, func, voxelutil::VisitVoxelColor(palIdx));
 		modified(node.id(), wrapper.dirtyRegion());
 		if (_modifierFacade.cursorVoxel().getColor() == palIdx) {
 			_modifierFacade.setCursorVoxel(replacementVoxel);
