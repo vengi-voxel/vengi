@@ -344,14 +344,10 @@ void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelT
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelutil::visitVolumeParallel(
-		wrapper,
-		[&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &voxel) {
-			if (voxel.getColor() != palIdx) {
-				return;
-			}
-			wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
-		});
+	auto func = [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &) {
+		wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
+	};
+	voxelutil::visitVolumeParallel(wrapper, func, voxelutil::VisitVoxelColor(palIdx));
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
@@ -3644,7 +3640,7 @@ bool SceneManager::nodeReduceColors(scenegraph::SceneGraphNode &node, const core
 			}
 		}
 	};
-	voxelutil::visitVolume(wrapper, func);
+	voxelutil::visitVolumeParallel(wrapper, func);
 	modified(node.id(), wrapper.dirtyRegion());
 	return true;
 }
@@ -3662,10 +3658,10 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 		const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, replacement);
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-		auto func = [&wrapper, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
+		auto func = [&wrapper, replacementVoxel](int x, int y, int z, const voxel::Voxel &) {
 			wrapper.setVoxel(x, y, z, replacementVoxel);
 		};
-		voxelutil::visitVolume(wrapper, func, voxelutil::VisitVoxelColor(palIdx));
+		voxelutil::visitVolumeParallel(wrapper, func, voxelutil::VisitVoxelColor(palIdx));
 		modified(node.id(), wrapper.dirtyRegion());
 		if (_modifierFacade.cursorVoxel().getColor() == palIdx) {
 			_modifierFacade.setCursorVoxel(replacementVoxel);
