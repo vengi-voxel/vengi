@@ -89,32 +89,29 @@ static_assert(lengthof(VisitorOrderStr) == (int)VisitorOrder::Max, "Array size m
  * @note Visitor condition
  */
 struct SkipEmpty {
-	inline bool operator()(const voxel::Voxel &voxel) const {
-		return !isAir(voxel.getMaterial());
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		return !isAir(sampler.voxel().getMaterial());
 	}
 };
 
-template<class Sampler>
 struct VisitInvisible {
-	const Sampler &_sampler;
-
-	VisitInvisible(const Sampler &sampler) : _sampler(sampler) {
-	}
-
-	inline bool operator()(const voxel::Voxel &voxel) const {
-		return visibleFaces(_sampler, true) == voxel::FaceBits::None;
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		if (isAir(sampler.voxel().getMaterial())) {
+			return false;
+		}
+		return visibleFaces(sampler) == voxel::FaceBits::None;
 	}
 };
 
-template<class Sampler>
 struct VisitVisible {
-	const Sampler &_sampler;
-
-	VisitVisible(const Sampler &sampler) : _sampler(sampler) {
-	}
-
-	inline bool operator()(const voxel::Voxel &voxel) const {
-		return visibleFaces(_sampler, true) != voxel::FaceBits::None;
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		if (isAir(sampler.voxel().getMaterial())) {
+			return false;
+		}
+		return visibleFaces(sampler) != voxel::FaceBits::None;
 	}
 };
 
@@ -122,7 +119,8 @@ struct VisitVisible {
  * @note Visitor condition
  */
 struct VisitAll {
-	inline bool operator()(const voxel::Voxel &voxel) const {
+	template<class Sampler>
+	inline bool operator()(const Sampler &) const {
 		return true;
 	}
 };
@@ -131,8 +129,9 @@ struct VisitAll {
  * @note Visitor condition
  */
 struct VisitEmpty {
-	inline bool operator()(const voxel::Voxel &voxel) const {
-		return isAir(voxel.getMaterial());
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		return isAir(sampler.voxel().getMaterial());
 	}
 };
 
@@ -143,11 +142,12 @@ struct VisitColor {
 	const uint8_t _color;
 	VisitColor(uint8_t color) : _color(color) {
 	}
-	inline bool operator()(const voxel::Voxel &voxel) const {
-		if (voxel.getMaterial() == voxel::VoxelType::Air) {
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		if (sampler.voxel().getMaterial() == voxel::VoxelType::Air) {
 			return false;
 		}
-		return voxel.getColor() == _color;
+		return sampler.voxel().getColor() == _color;
 	}
 };
 
@@ -161,9 +161,6 @@ struct EmptyVisitor {
 
 // the visitor can return a boolean value to indicate whether the inner loop should break
 #define VISITOR_INNER_PART                                                                                             \
-	if (!condition(voxel)) {                                                                                           \
-		continue;                                                                                                      \
-	}                                                                                                                  \
 	if constexpr (std::is_same_v<decltype(visitor(x, y, z, voxel)), bool>) {                                          \
 		const bool breakInnerLoop = visitor(x, y, z, voxel);                                                           \
 		++cnt;                                                                                                         \
@@ -190,6 +187,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveZ(zOff);
+						continue;
+					}
 					sampler3.movePositiveZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -206,6 +207,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveX(xOff);
+						continue;
+					}
 					sampler3.movePositiveX(xOff);
 					VISITOR_INNER_PART
 				}
@@ -222,6 +227,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -238,6 +247,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -254,6 +267,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -270,6 +287,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -286,6 +307,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -302,6 +327,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -318,6 +347,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -334,6 +367,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -350,6 +387,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -366,6 +407,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveZ(zOff);
+						continue;
+					}
 					sampler3.movePositiveZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -382,6 +427,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -398,6 +447,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -414,6 +467,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveZ(zOff);
+						continue;
+					}
 					sampler3.movePositiveZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -430,6 +487,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveX(xOff);
+						continue;
+					}
 					sampler3.movePositiveX(xOff);
 					VISITOR_INNER_PART
 				}
@@ -446,6 +507,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeX(xOff);
+						continue;
+					}
 					sampler3.moveNegativeX(xOff);
 					VISITOR_INNER_PART
 				}
@@ -462,6 +527,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeX(xOff);
+						continue;
+					}
 					sampler3.moveNegativeX(xOff);
 					VISITOR_INNER_PART
 				}
@@ -478,6 +547,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveX(xOff);
+						continue;
+					}
 					sampler3.movePositiveX(xOff);
 					VISITOR_INNER_PART
 				}
@@ -494,6 +567,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveZ(zOff);
+						continue;
+					}
 					sampler3.movePositiveZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -510,6 +587,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeZ(zOff);
+						continue;
+					}
 					sampler3.moveNegativeZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -526,6 +607,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeZ(zOff);
+						continue;
+					}
 					sampler3.moveNegativeZ(xOff);
 					VISITOR_INNER_PART
 				}
@@ -542,6 +627,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeX(xOff);
+						continue;
+					}
 					sampler3.moveNegativeX(xOff);
 					VISITOR_INNER_PART
 				}
@@ -558,6 +647,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -574,6 +667,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -590,6 +687,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveZ(zOff);
+						continue;
+					}
 					sampler3.movePositiveZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -606,6 +707,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -622,6 +727,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeZ(zOff);
+						continue;
+					}
 					sampler3.moveNegativeZ(zOff);
 					VISITOR_INNER_PART
 				}
@@ -638,6 +747,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.movePositiveY(yOff);
+						continue;
+					}
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -654,6 +767,10 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 				Sampler sampler3 = sampler2;
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
+					if (!condition(sampler3)) {
+						sampler3.moveNegativeY(yOff);
+						continue;
+					}
 					sampler3.moveNegativeY(yOff);
 					VISITOR_INNER_PART
 				}
@@ -697,13 +814,22 @@ int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&vis
 }
 
 /**
+ * @brief Visit all non-visible voxels - voxels that are surrounded by solid voxels on all sides
+ * @sa visibleFaces()
+ * @sa visitSurfaceVolume()
+ */
+template<class Volume, class Visitor>
+int visitInvisibleVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
+	return visitVolume(volume, visitor, VisitInvisible(), order);
+}
+
+/**
  * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
  * @sa visitInvisibleVolume()
  */
 template<class Volume, class Visitor>
 int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
-	typename Volume::Sampler sampler(volume);
-	return visitSampler(sampler, volume.region(), 1, 1, 1, visitor, VisitVisible(sampler), order);
+	return visitVolume(volume, visitor, VisitVisible(), order);
 }
 
 /**
@@ -772,24 +898,6 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, Vi
 		return visitFace(volume, region, face, visitor, searchSurface);
 	}
 	return visitFace(volume, region, face, visitor, order, searchSurface);
-}
-
-/**
- * @brief Visit all non-visible voxels - voxels that are surrounded by solid voxels on all sides
- * @sa visibleFaces()
- * @sa visitSurfaceVolume()
- */
-template<class Volume, class Visitor>
-int visitInvisibleVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
-	int cnt = 0;
-	const auto hullVisitor = [&cnt, &volume, visitor](int x, int y, int z, const voxel::Voxel &voxel) {
-		if (visibleFaces(volume, x, y, z) == voxel::FaceBits::None) {
-			visitor(x, y, z, voxel);
-			++cnt;
-		}
-	};
-	visitVolume(volume, hullVisitor, SkipEmpty(), order);
-	return cnt;
 }
 
 template<class Volume, class Visitor, typename Condition = SkipEmpty>
