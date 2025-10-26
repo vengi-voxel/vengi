@@ -72,17 +72,36 @@ struct VXLLayerInfo {
 							   * @sa @c CoordinateSystem::VXL */
 	// this is the bounding box of the final rendered model. If the size of the bounding box is the same as the
 	// below given size of the volume - the scaling value would be exactly one.
+	// The mins and maxs values define the bounding box of the voxel data. They are used to calculate the per-section
+	// scale and offset. The voxel data is scaled and translated to fit within this box.
 	glm::vec3 mins;
 	glm::vec3 maxs;
 
-	uint8_t xsize;		/**< Width of the voxel node */
-	uint8_t ysize;		/**< Breadth of the voxel node - this is our z */
-	uint8_t zsize;		/**< Height of the voxel node - this is our y */
+	uint8_t xsize;		/**< Width of the voxel section */
+	uint8_t ysize;		/**< Breadth of the voxel section (in-engine Z) */
+	uint8_t zsize;		/**< Height of the voxel section (in-engine Y) */
 	uint8_t normalType; /**< 2 (TS) or 4 (RedAlert2) - normal encoding -
 						   https://xhp.xwis.net/documents/normals_tables.html */
 
+	/**
+	 * @brief Calculates the per-section scale factor from the bounding box.
+	 * This scale represents how much the voxel canvas was "shrunk" or "scaled" when saved.
+	 * Formula: scale = (maxs - mins) / voxel_canvas_size
+	 * Each section can have a different scale!
+	 * @note y and z are flipped to bring it into vengi space.
+	 */
 	glm::vec3 calcScale() const;
+	/**
+	 * @brief Calculates the offset of the voxel data from the origin.
+	 * @note y and z are flipped to bring it into vengi space.
+	 */
 	glm::vec3 offset() const;
+	/**
+	 * @brief The pivot is the normalized position within the bounding box where the origin (0,0,0) is located.
+	 * Formula: pivot = -mins / (maxs - mins)
+	 * This gives values typically around 0.5 (centered) but can vary if mins/maxs is adjusted.
+	 * @note y and z are flipped to bring it into vengi space.
+	 */
 	glm::vec3 pivot() const;
 };
 
@@ -121,7 +140,7 @@ struct HVAModel {
 	HVAFrames frames[MaxLayers];
 };
 
-glm::mat4 convertVXLRead(const VXLMatrix &matrix);
+glm::mat4 convertVXLRead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
 VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix);
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
 VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix);

@@ -434,7 +434,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 		node.setPalette(palette);
 	}
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalMatrix(vxl::convertVXLRead(footer.transform));
+	transform.setLocalMatrix(vxl::convertVXLRead(footer.transform, footer));
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	uint8_t maxNormalIndex = 0;

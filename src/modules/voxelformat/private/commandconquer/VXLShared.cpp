@@ -28,7 +28,7 @@ int vxl::VXLModel::findLayerByName(const core::String &name) const {
 	return -1;
 }
 
-glm::mat4 convertVXLRead(const VXLMatrix &matrix) {
+glm::mat4 convertVXLRead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	// TODO: VOXELFORMAT: scaling needed?
 	return matrix.toVengi();
 }
@@ -55,14 +55,11 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 	return vxlMatrix;
 }
 
-// Converts HVA matrix to Vengi coordinate system
-// HVA matrices contain transformations (rotation, translation) for animated sections
+// HVA matrices contain transformations (rotation, translation) for animated sections.
+// This function converts the HVA transformation into the vengi engine's coordinate system and applies the necessary scaling.
 //
-// Key points from issue #537:
-// - HVA positioning is lepton-based (cell-based measurement) and does NOT scale with voxel shrinkage
-// - footer.scale is the constant 1/12 conversion to pixel size
-// - sectionScale comes from the bounding box and is per-section (can differ between sections!)
-// - The translation in HVA must be scaled by both factors to convert leptons to vengi units
+// Westwood VXL/HVA Coordinate System: Z-up, right-handed (X=right, Y=forward, Z=up)
+// Vengi/OpenGL Coordinate System:    Y-up, right-handed (X=right, Y=up, Z=backward)
 //
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	glm::mat4 vengiMatrix = matrix.toVengi();
@@ -77,10 +74,6 @@ glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &foote
 	return vengiMatrix;
 }
 
-// Calculates the per-section scale factor from the bounding box
-// This scale represents how much the voxel canvas was "shrunk" or "scaled" when saved
-// Formula: scale = (maxs - mins) / voxel_canvas_size
-// Each section can have a different scale! (issue #537)
 // y and z flipped to bring it into vengi space
 glm::vec3 VXLLayerInfo::calcScale() const {
 	const glm::vec3 s{(maxs[0] - mins[0]) / (float)xsize, (maxs[2] - mins[2]) / (float)zsize, (maxs[1] - mins[1]) / (float)ysize};
