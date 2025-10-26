@@ -53,7 +53,7 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	const glm::mat4 expected = {{1.0f, 0.0f, 0.0f, 0.0f},
 								{0.0f, 1.0f, 0.0f, 0.0f},
 								{0.0f, 0.0f, 1.0f, 0.0f},
-								{-14.9761734f, 0.8904828f, 7.3924913f, 1.0f}};
+								{-14.5556374f, 0.8700906f, 6.9308133f, 1.0f}};
 	EXPECT_MAT_NEAR(expected, keyframe1->transform().localMatrix(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node2 = sceneGraph.node(2);
@@ -63,7 +63,7 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	const glm::mat4 expected2 = {{1.0f, 0.0f, 0.0f, 0.0f},
 								 {0.0f, 1.0f, 0.0f, 0.0f},
 								 {0.0f, 0.0f, 1.0f, 0.0f},
-								 {-18.2648506f, 9.9278526f, 6.7404451f, 1.0f}};
+								 {-17.0942078f, 9.1795263f, 6.3934708f, 1.0f}};
 	const scenegraph::SceneGraphKeyFrame *keyframe2 = node2.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe2);
 	EXPECT_MAT_NEAR(expected2, keyframe2->transform().localMatrix(), 0.001f);
@@ -75,7 +75,7 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	const glm::mat4 expected3 = {{1.0f, 0.0f, 0.0f, 0.0f},
 								 {0.0f, 1.0f, 0.0f, 0.0f},
 								 {0.0f, 0.0f, 1.0f, 0.0f},
-								 {-13.6222296f, 16.6269493f, 5.8894053f, 1.0f}};
+								 {-13.6114197f, 15.6803036f, 5.1642523f, 1.0f}};
 	const scenegraph::SceneGraphKeyFrame *keyframe3 = node3.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe3);
 	EXPECT_MAT_NEAR(expected3, keyframe3->transform().localMatrix(), 0.001f);

@@ -75,15 +75,23 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 // See https://github.com/vengi-voxel/vengi/issues/537 and https://github.com/vengi-voxel/vengi/issues/636
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	glm::mat4 vengiMatrix = matrix.toVengi();
-	glm::vec4 &translation = vengiMatrix[3];
+	// Extract rotation (upper-left 3x3) and translation (4th column)
+	glm::mat3 rotation = glm::mat3(vengiMatrix);
+	glm::vec3 hvaTranslation = glm::vec3(vengiMatrix[3]);
 
-	// Only the HVA translation is scaled by the global footer.scale.
-	// The rotation part of the matrix is preserved.
-	translation.x *= footer.scale;
-	translation.y *= footer.scale;
-	translation.z *= footer.scale;
-	Log::debug("ConvertRead: vxl translation: %f %f %f", translation.x, translation.y, translation.z);
-	return vengiMatrix;
+	// Scale ONLY the translation component by footer.scale (NOT sectionScale!)
+	// The sectionScale is already baked into the VXL base transform, and HVA translations
+	// are in leptons which are absolute world units independent of voxel dimensions.
+	glm::vec3 scaledTranslation = hvaTranslation * footer.scale;
+
+	// Rebuild matrix with original rotation + scaled translation
+	glm::mat4 result = glm::mat4(rotation);
+	result[3] = glm::vec4(scaledTranslation, 1.0f);
+
+	Log::debug("ConvertRead HVA: translation (leptons): %f %f %f -> scaled: %f %f %f",
+	           hvaTranslation.x, hvaTranslation.y, hvaTranslation.z,
+	           scaledTranslation.x, scaledTranslation.y, scaledTranslation.z);
+	return result;
 }
 
 // y and z flipped to bring it into vengi space
