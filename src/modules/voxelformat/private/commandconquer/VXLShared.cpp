@@ -67,9 +67,9 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	glm::mat4 vengiMatrix = matrix.toVengi();
 	glm::vec4 &translation = vengiMatrix[3];
-	// the hva matrices have to be scaled
+	
+	// Calculate per-section scale from bounding box
 	const glm::vec3 sectionScale = footer.calcScale();
-	vengiMatrix = glm::scale(vengiMatrix, sectionScale);
 	translation.x *= footer.scale * sectionScale.x;
 	translation.y *= footer.scale * sectionScale.y;
 	translation.z *= footer.scale * sectionScale.z;

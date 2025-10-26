@@ -50,9 +50,9 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	EXPECT_VEC_NEAR(glm::vec3(0.5136022f, 0.1523392f, 0.5000000f), node1.pivot(), 0.001f);
 	const scenegraph::SceneGraphKeyFrame *keyframe1 = node1.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe1);
-	const glm::mat4 expected = {{0.971920, -0.000000, 0.000000, 0.000000},
-								{0.000000, 0.977100, -0.000000, 0.000000},
-								{-0.000000, 0.000000, 0.937548, 0.000000},
+	const glm::mat4 expected = {{1.0000000, -0.000000, 0.000000, 0.000000},
+								{0.000000, 0.9999999, -0.000000, 0.000000},
+								{-0.000000, 0.000000, 0.9999999, 0.000000},
 								{-14.555638, 0.870091, 6.930813, 1.000000}};
 	EXPECT_MAT_NEAR(expected, keyframe1->transform().localMatrix(), 0.001f);
 
@@ -60,9 +60,9 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	ASSERT_EQ(2, node2.id());
 	EXPECT_EQ("LEG R REAR LOWE", node2.name());
 	EXPECT_VEC_NEAR(glm::vec3(0.3476858f, 0.8018382f, 0.5000001f), node2.pivot(), 0.001f);
-	const glm::mat4 expected2 = {{0.935907, -0.000000, 0.000000, 0.000000},
-									{0.000000, 0.924624, -0.000000, 0.000000},
-									{-0.000000, 0.000000, 0.948524, 0.000000},
+	const glm::mat4 expected2 = {{0.9999999, -0.000000, 0.000000, 0.000000},
+									{0.000000, 1.0000000, -0.000000, 0.000000},
+									{-0.000000, 0.000000, 1.0000000, 0.000000},
 									{-17.094210, 9.179527, 6.393470, 1.000000}};
 	const scenegraph::SceneGraphKeyFrame *keyframe2 = node2.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe2);
@@ -73,8 +73,8 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	EXPECT_EQ("LEG R REAR UPPE", node3.name());
 	EXPECT_VEC_NEAR(glm::vec3(0.6807217f, 0.7823251f, 0.5000000f), node3.pivot(), 0.001f);
 	const glm::mat4 expected3 = {{0.999207, -0.000000, 0.000000, 0.000000},
-									{0.000000, 0.943066, -0.000000, 0.000000},
-									{-0.000000, 0.000000, 0.876872, 0.000000},
+									{0.000000, 1.0000001, -0.000000, 0.000000},
+									{-0.000000, 0.000000, 1.0000001, 0.000000},
 									{-13.611420, 15.680304, 5.164252, 1.000000}};
 	const scenegraph::SceneGraphKeyFrame *keyframe3 = node3.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe3);
