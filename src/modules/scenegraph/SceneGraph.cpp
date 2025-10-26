@@ -23,10 +23,14 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
+#include <glm/ext/quaternion_relational.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STBRP_ASSERT core_assert
@@ -1083,8 +1087,14 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
-		// TODO: SCENEGRAPH: rotation
-		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
+		const glm::vec3 angles = glm::eulerAngles(node.transform(keyFrameIdx).worldOrientation());
+		if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
+			voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
+		} else {
+			voxel::RawVolume *rotated = voxelutil::rotateVolume(v, angles, node.pivot());
+			voxelutil::mergeVolumes(merged, rotated, destRegion, sourceRegion, mergeCondition);
+			delete rotated;
+		}
 		Log::debug("Merged node %i/%i", cnt, (int)n);
 		++cnt;
 	}
