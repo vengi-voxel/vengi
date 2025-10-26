@@ -29,6 +29,8 @@ int vxl::VXLModel::findLayerByName(const core::String &name) const {
 }
 
 glm::mat4 convertVXLRead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
+	// The VXL base pose matrix is not scaled by the global footer.scale.
+	// The per-section scale is applied by the scene graph transform.
 	// TODO: VOXELFORMAT: scaling needed?
 	return matrix.toVengi();
 }
@@ -61,15 +63,21 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 // Westwood VXL/HVA Coordinate System: Z-up, right-handed (X=right, Y=forward, Z=up)
 // Vengi/OpenGL Coordinate System:    Y-up, right-handed (X=right, Y=up, Z=backward)
 //
+// The HVA transformation is applied as follows:
+// 1. The HVA matrix is converted from VXL to vengi coordinate system.
+// 2. The translation part of the resulting matrix is scaled by the global `footer.scale` (typically 1.0/12.0).
+// 3. The per-section scale, calculated from the section's bounding box (mins/maxs), is NOT applied here. It is handled by the scenegraph node's transform.
+//
+// See https://github.com/vengi-voxel/vengi/issues/537 and https://github.com/vengi-voxel/vengi/issues/636
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	glm::mat4 vengiMatrix = matrix.toVengi();
 	glm::vec4 &translation = vengiMatrix[3];
-	
-	// Calculate per-section scale from bounding box
-	const glm::vec3 sectionScale = footer.calcScale();
-	translation.x *= footer.scale * sectionScale.x;
-	translation.y *= footer.scale * sectionScale.y;
-	translation.z *= footer.scale * sectionScale.z;
+
+	// Only the HVA translation is scaled by the global footer.scale.
+	// The rotation part of the matrix is preserved.
+	translation.x *= footer.scale;
+	translation.y *= footer.scale;
+	translation.z *= footer.scale;
 	Log::debug("ConvertRead: vxl translation: %f %f %f", translation.x, translation.y, translation.z);
 	return vengiMatrix;
 }

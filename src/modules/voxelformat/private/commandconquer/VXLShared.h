@@ -67,13 +67,24 @@ struct VXLLayerInfo {
 	uint32_t spanStartOffset; /**< Offset into body section to span start list */
 	uint32_t spanEndOffset;	  /**< Offset into body section to span end list */
 	uint32_t spanDataOffset;  /**< Offset into body section to span data */
-	float scale;			  /**< Scaling vector for the image */
+	/**
+	 * @brief This is a global scale factor for the whole model, but it's only applied to the translation part of the
+	 * HVA animation matrices. The VXL base pose matrix is not affected by this. It's a bit of a misnomer, as it
+	 * doesn't scale the geometry itself, but rather the animation translations. The value is typically 1.0/12.0.
+	 *
+	 * @sa convertHVARead()
+	 * @sa https://github.com/vengi-voxel/vengi/issues/537
+	 */
+	float scale;
 	VXLMatrix transform;	  /**< 4x3 right handed matrix - x, y and z axis point right, up and back
 							   * @sa @c CoordinateSystem::VXL */
-	// this is the bounding box of the final rendered model. If the size of the bounding box is the same as the
-	// below given size of the volume - the scaling value would be exactly one.
-	// The mins and maxs values define the bounding box of the voxel data. They are used to calculate the per-section
-	// scale and offset. The voxel data is scaled and translated to fit within this box.
+	/**
+	 * @brief The mins and maxs values define the bounding box of the voxel data. They are used to calculate the
+	 * per-section scale and offset. The voxel data is scaled and translated to fit within this box.
+	 *
+	 * @sa calcScale()
+	 * @sa offset()
+	 */
 	glm::vec3 mins;
 	glm::vec3 maxs;
 
