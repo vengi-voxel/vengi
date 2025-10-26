@@ -435,6 +435,7 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		return false;
 	}
 
+	// TODO: VOXELFORMAT: this doesn't apply transform - use singleModel mode to get an automated merge if needed
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		auto func = [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
