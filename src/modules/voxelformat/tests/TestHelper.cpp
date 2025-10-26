@@ -64,59 +64,59 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const scenegraph::SceneGraphNodeType type = node.type();
 
-	os << os.iword(indent) << "Node: " << nodeId << "(parent " << node.parent() << ")" << std::endl;
-	os << os.iword(indent) << "  |- name: " << node.name().c_str() << std::endl;
-	os << os.iword(indent) << "  |- type: " << scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)] << std::endl;
+	os << os.iword(indent) << "Node: " << nodeId << "(parent " << node.parent() << ")" << "\n";
+	os << os.iword(indent) << "  |- name: " << node.name().c_str() << "\n";
+	os << os.iword(indent) << "  |- type: " << scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)] << "\n";
 	const glm::vec3 &pivot = node.pivot();
-	os << os.iword(indent) << "  |- pivot " << pivot.x << ":" << pivot.y << ":" << pivot.z << std::endl;
+	os << os.iword(indent) << "  |- pivot " << pivot.x << ":" << pivot.y << ":" << pivot.z << "\n";
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		const voxel::RawVolume *v = node.volume();
 		int voxels = 0;
 		os << os.iword(indent) << "  |- volume: " << (v != nullptr ? v->region().toString().c_str() : "no volume")
-		   << std::endl;
+		   << "\n";
 		if (v) {
-			voxels = voxelutil::visitVolume(*v, [](int, int, int, const voxel::Voxel &) {});
+			voxels = voxelutil::visitVolume(*v, voxelutil::EmptyVisitor());
 		}
-		os << os.iword(indent) << "  |- voxels: " << voxels << std::endl;
+		os << os.iword(indent) << "  |- voxels: " << voxels << "\n";
 	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
 		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
-		os << os.iword(indent) << "  |- field of view: " << cameraNode.fieldOfView() << std::endl;
-		os << os.iword(indent) << "  |- nearplane: " << cameraNode.nearPlane() << std::endl;
-		os << os.iword(indent) << "  |- farplane: " << cameraNode.farPlane() << std::endl;
-		os << os.iword(indent) << "  |- mode: " << (cameraNode.isOrthographic() ? "ortho" : "perspective") << std::endl;
+		os << os.iword(indent) << "  |- field of view: " << cameraNode.fieldOfView() << "\n";
+		os << os.iword(indent) << "  |- nearplane: " << cameraNode.nearPlane() << "\n";
+		os << os.iword(indent) << "  |- farplane: " << cameraNode.farPlane() << "\n";
+		os << os.iword(indent) << "  |- mode: " << (cameraNode.isOrthographic() ? "ortho" : "perspective") << "\n";
 	}
 	for (const auto &entry : node.properties()) {
-		os << os.iword(indent) << "  |- " << entry->key.c_str() << ": " << entry->value.c_str() << std::endl;
+		os << os.iword(indent) << "  |- " << entry->key.c_str() << ": " << entry->value.c_str() << "\n";
 	}
 	for (const scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
-		os << os.iword(indent) << "  |- keyframe: " << kf.frameIdx << std::endl;
-		os << os.iword(indent) << "    |- long rotation: " << (kf.longRotation ? "true" : "false") << std::endl;
+		os << os.iword(indent) << "  |- keyframe: " << kf.frameIdx << "\n";
+		os << os.iword(indent) << "    |- long rotation: " << (kf.longRotation ? "true" : "false") << "\n";
 		os << os.iword(indent)
 		   << "    |- interpolation: " << scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]
-		   << std::endl;
-		os << os.iword(indent) << "    |- transform" << std::endl;
+		   << "\n";
+		os << os.iword(indent) << "    |- transform" << "\n";
 		const scenegraph::SceneGraphTransform &transform = kf.transform();
 		const glm::vec3 &tr = transform.worldTranslation();
-		os << os.iword(indent) << "      |- translation " << tr.x << ":" << tr.y << ":" << tr.z << std::endl;
+		os << os.iword(indent) << "      |- translation " << tr.x << ":" << tr.y << ":" << tr.z << "\n";
 		const glm::vec3 &ltr = transform.localTranslation();
-		os << os.iword(indent) << "      |- local translation " << ltr.x << ":" << ltr.y << ":" << ltr.z << std::endl;
+		os << os.iword(indent) << "      |- local translation " << ltr.x << ":" << ltr.y << ":" << ltr.z << "\n";
 		const glm::quat &rt = transform.worldOrientation();
 		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
 		os << os.iword(indent) << "      |- orientation :%f" << rt.x << ":" << rt.y << ":" << rt.z << ":" << rt.w
-		   << std::endl;
-		os << os.iword(indent) << "        |- euler " << rtEuler.x << ":" << rtEuler.y << ":" << rtEuler.z << std::endl;
+		   << "\n";
+		os << os.iword(indent) << "        |- euler " << rtEuler.x << ":" << rtEuler.y << ":" << rtEuler.z << "\n";
 		const glm::quat &lrt = transform.localOrientation();
 		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
 		os << os.iword(indent) << "      |- local orientation :%f" << lrt.x << ":" << lrt.y << ":" << lrt.z << ":"
-		   << lrt.w << std::endl;
+		   << lrt.w << "\n";
 		os << os.iword(indent) << "        |- euler " << lrtEuler.x << ":" << lrtEuler.y << ":" << lrtEuler.z
-		   << std::endl;
+		   << "\n";
 		const glm::vec3 &sc = transform.worldScale();
-		os << os.iword(indent) << "      |- scale " << sc.x << ":" << sc.y << ":" << sc.z << std::endl;
+		os << os.iword(indent) << "      |- scale " << sc.x << ":" << sc.y << ":" << sc.z << "\n";
 		const glm::vec3 &lsc = transform.localScale();
-		os << os.iword(indent) << "      |- local scale " << lsc.x << ":" << lsc.y << ":" << lsc.z << std::endl;
+		os << os.iword(indent) << "      |- local scale " << lsc.x << ":" << lsc.y << ":" << lsc.z << "\n";
 	}
-	os << os.iword(indent) << "  |- children: " << node.children().size() << std::endl;
+	os << os.iword(indent) << "  |- children: " << node.children().size() << "\n";
 	for (int children : node.children()) {
 		dumpNode_r(os, sceneGraph, children, indent + 2);
 	}
