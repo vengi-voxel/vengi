@@ -424,9 +424,29 @@ app::AppState VoxConvert::onInit() {
 			}
 		}
 	}
+	if (hasArg("--script") && sceneGraph.empty()) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		const voxel::Region region(0, 63);
+		node.setVolume(new voxel::RawVolume(region), true);
+		node.setName("Script generated");
+		sceneGraph.emplace(core::move(node));
+	}
+
+	if (sceneGraph.empty()) {
+		if (_exportPalette) {
+			return state;
+		}
+		Log::error("No valid input found in the scenegraph to operate on.");
+		return app::AppState::InitFailure;
+	}
+
+	// STEP 1: apply the filter
+	applyFilters(sceneGraph, infiles, outfiles);
+
 	if (_printSceneGraph) {
 		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
 	}
+
 	if (_printSceneToConsole) {
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
 		if (!merged.hasVolume()) {
@@ -448,24 +468,6 @@ app::AppState VoxConvert::onInit() {
 		const core::String prt(image::print(image, false));
 		Log::printf("%s", prt.c_str());
 	}
-	if (hasArg("--script") && sceneGraph.empty()) {
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		const voxel::Region region(0, 63);
-		node.setVolume(new voxel::RawVolume(region), true);
-		node.setName("Script generated");
-		sceneGraph.emplace(core::move(node));
-	}
-
-	if (sceneGraph.empty()) {
-		if (_exportPalette) {
-			return state;
-		}
-		Log::error("No valid input found in the scenegraph to operate on.");
-		return app::AppState::InitFailure;
-	}
-
-	// STEP 1: apply the filter
-	applyFilters(sceneGraph, infiles, outfiles);
 
 	if (_exportModels) {
 		if (infiles.size() > 1) {
