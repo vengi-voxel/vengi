@@ -4,7 +4,7 @@
 
 #include "AbstractFormatTest.h"
 #include "scenegraph/SceneGraph.h"
-#include "util/VarUtil.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -23,7 +23,7 @@ TEST_F(MD2FormatTest, testVoxelize) {
 	EXPECT_EQ(region.getUpperX(), 25);
 	EXPECT_EQ(region.getUpperY(), 32);
 	EXPECT_EQ(region.getUpperZ(), 25);
-	const int cntVoxels = voxel::countVoxels(node->volume());
+	const int cntVoxels = voxelutil::countVoxels(*node->volume());
 	EXPECT_EQ(cntVoxels, 12158);
 }
 

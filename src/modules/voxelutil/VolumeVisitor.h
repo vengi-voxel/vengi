@@ -88,13 +88,16 @@ static_assert(lengthof(VisitorOrderStr) == (int)VisitorOrder::Max, "Array size m
  * @brief Will skip air voxels on volume
  * @note Visitor condition
  */
-struct SkipEmpty {
+struct VisitSolid {
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
 		return !isAir(sampler.voxel().getMaterial());
 	}
 };
 
+/**
+ * @note Visitor condition
+ */
 struct VisitInvisible {
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
@@ -105,6 +108,9 @@ struct VisitInvisible {
 	}
 };
 
+/**
+ * @note Visitor condition
+ */
 struct VisitVisible {
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
@@ -136,11 +142,14 @@ struct VisitEmpty {
 };
 
 /**
- * @note Visitor condition
+ * @note Visitor condition for the same voxel color - while skipping air voxels - so the voxel type is ignored here
+ * @sa VisitVoxelType()
  */
-struct VisitColor {
+struct VisitVoxelColor {
 	const uint8_t _color;
-	VisitColor(uint8_t color) : _color(color) {
+	VisitVoxelColor(uint8_t color) : _color(color) {
+	}
+	VisitVoxelColor(voxel::Voxel voxel) : _color(voxel.getColor()) {
 	}
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
@@ -148,6 +157,22 @@ struct VisitColor {
 			return false;
 		}
 		return sampler.voxel().getColor() == _color;
+	}
+};
+
+/**
+ * @note Visitor condition for the same voxel type - does not check the color
+ * @sa VisitVoxelColor()
+ */
+struct VisitVoxelType {
+	const voxel::VoxelType _type;
+	VisitVoxelType(voxel::VoxelType type) : _type(type) {
+	}
+	VisitVoxelType(voxel::Voxel voxel) : _type(voxel.getMaterial()) {
+	}
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		return sampler.voxel().getMaterial() == _type;
 	}
 };
 
@@ -172,9 +197,10 @@ struct EmptyVisitor {
 		++cnt;                                                                                                         \
 	}
 
-template<class Sampler, class Visitor, typename Condition = SkipEmpty>
-int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
-				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+template<class Sampler, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yOff, int zOff,
+				 Visitor &&visitor = Visitor(), Condition condition = Condition(),
+				 VisitorOrder order = VisitorOrder::ZYX) {
 	core_trace_scoped(VisitVolume);
 	int cnt = 0;
 
@@ -787,28 +813,28 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 	return cnt;
 }
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	typename Volume::Sampler sampler(volume);
 	return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
 }
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, int xOff, int yOff, int zOff, Visitor &&visitor,
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	const voxel::Region &region = volume.region();
 	return visitVolume(volume, region, xOff, yOff, zOff, visitor, condition, order);
 }
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, Visitor &&visitor, Condition condition = Condition(),
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, Visitor &&visitor = Visitor(), Condition condition = Condition(),
 				VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, 1, 1, 1, visitor, condition, order);
 }
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor, Condition condition = Condition(),
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor = Visitor(), Condition condition = Condition(),
 				VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, region, 1, 1, 1, visitor, condition, order);
 }
@@ -818,8 +844,8 @@ int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&vis
  * @sa visibleFaces()
  * @sa visitSurfaceVolume()
  */
-template<class Volume, class Visitor>
-int visitInvisibleVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
+template<class Volume, class Visitor = EmptyVisitor>
+int visitInvisibleVolume(const Volume &volume, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, visitor, VisitInvisible(), order);
 }
 
@@ -827,17 +853,17 @@ int visitInvisibleVolume(const Volume &volume, Visitor &&visitor, VisitorOrder o
  * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
  * @sa visitInvisibleVolume()
  */
-template<class Volume, class Visitor>
-int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
+template<class Volume, class Visitor = EmptyVisitor>
+int visitSurfaceVolume(const Volume &volume, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, visitor, VisitVisible(), order);
 }
 
 /**
  * @return The number of voxels visited.
  */
-template<class Volume, class Visitor>
-int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor, VisitorOrder order,
-			  bool searchSurface = false) {
+template<class Volume, class Visitor = EmptyVisitor>
+int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor = Visitor(),
+			  VisitorOrder order = VisitorOrder::ZYX, bool searchSurface = false) {
 	typename Volume::Sampler sampler(volume);
 	voxel::FaceBits faceBits = voxel::faceBits(face);
 	constexpr bool skipEmpty = true;
@@ -861,8 +887,8 @@ int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceName
 /**
  * @return The number of voxels visited.
  */
-template<class Volume, class Visitor>
-int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor,
+template<class Volume, class Visitor = EmptyVisitor>
+int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor = Visitor(),
 			  bool searchSurface = false) {
 	// only the last axis matters here
 	VisitorOrder visitorOrder;
@@ -891,8 +917,8 @@ int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceName
 	return visitFace(volume, region, face, visitor, visitorOrder, searchSurface);
 }
 
-template<class Volume, class Visitor>
-int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, VisitorOrder order = VisitorOrder::Max, bool searchSurface = false) {
+template<class Volume, class Visitor = EmptyVisitor>
+int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::Max, bool searchSurface = false) {
 	const voxel::Region &region = volume.region();
 	if (order == VisitorOrder::Max) {
 		return visitFace(volume, region, face, visitor, searchSurface);
@@ -900,8 +926,8 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, Vi
 	return visitFace(volume, region, face, visitor, order, searchSurface);
 }
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visitor &&visitor,
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visitor &&visitor = Visitor(),
 						Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	core_trace_scoped(VisitVolumeParallel);
 	core::AtomicInt cnt(0);
@@ -980,11 +1006,26 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 	return cnt;
 }
 
-template<class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolumeParallel(const Volume &volume, Visitor &&visitor, Condition condition = Condition(),
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolumeParallel(const Volume &volume, Visitor &&visitor = Visitor(), Condition condition = Condition(),
 						VisitorOrder order = VisitorOrder::ZYX) {
 	const voxel::Region &region = volume.region();
 	return visitVolumeParallel(volume, region, visitor, condition, order);
+}
+
+template<class Volume>
+inline int countVoxels(const Volume &volume) {
+	return voxelutil::visitVolumeParallel(volume);
+}
+
+template<class Volume>
+int countVoxelsByType(const Volume &volume, const voxel::Voxel &voxel) {
+	return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::VisitVoxelType(voxel.getMaterial()));
+}
+
+template<class Volume>
+int countVoxelsByColor(const Volume &volume, const voxel::Voxel &voxel) {
+	return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::VisitVoxelColor(voxel.getColor()));
 }
 
 typedef core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> VisitedSet;
@@ -1015,8 +1056,8 @@ static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &vox
 	return n;
 }
 
-template<class Volume, class Visitor>
-int visitConnectedByVoxel(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor) {
+template<class Volume, class Visitor = EmptyVisitor>
+int visitConnectedByVoxel(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor = Visitor()) {
 	const voxel::Voxel voxel = volume.voxel(position);
 	VisitedSet visited;
 	return visitConnectedByVoxel_r(volume, voxel, position, visitor, visited);

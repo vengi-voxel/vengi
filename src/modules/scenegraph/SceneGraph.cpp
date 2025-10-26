@@ -1077,7 +1077,8 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		const voxel::Region &destRegion = sceneRegion(node, keyFrameIdx);
 		const palette::Palette &pal = node.palette();
 
-		auto mergeCondition = [&pal, &mergedPaletteLookup](voxel::Voxel &voxel) {
+		auto mergeCondition = [&pal, &mergedPaletteLookup](const voxel::RawVolume::Sampler &sampler) {
+			voxel::Voxel voxel = sampler.voxel();
 			if (isAir(voxel.getMaterial())) {
 				return false;
 			}

@@ -52,7 +52,7 @@ int voxelCount(const SceneManagerPtr &sceneMgr, int node) {
 	const int activeNode = node == InvalidNodeId ? sceneMgr->sceneGraph().activeNode() : node;
 	scenegraph::SceneGraphNode *model = sceneMgr->sceneGraphModelNode(activeNode);
 	IM_CHECK_RETV(model != nullptr, -1);
-	const int cnt = voxelutil::visitVolumeParallel(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+	const int cnt = voxelutil::visitVolumeParallel(*model->volume());
 	IM_CHECK_RETV(cnt == 0, -1);
 	return cnt;
 }

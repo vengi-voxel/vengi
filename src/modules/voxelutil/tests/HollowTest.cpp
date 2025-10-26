@@ -24,7 +24,7 @@ TEST_F(HollowTest, testHollow1RemoveCenter) {
 		}
 	}
 	voxelutil::hollow(volume);
-	const int solidVoxels = visitVolumeParallel(volume, EmptyVisitor(), SkipEmpty());
+	const int solidVoxels = visitVolumeParallel(volume, EmptyVisitor(), VisitSolid());
 	const int cubeVoxels = region.voxels();
 	EXPECT_LT(solidVoxels, cubeVoxels);
 	EXPECT_EQ(cubeVoxels - 1, solidVoxels);
@@ -43,7 +43,7 @@ TEST_F(HollowTest, testHollow4RemoveCenter) {
 		}
 	}
 	voxelutil::hollow(volume);
-	const int solidVoxels = visitVolumeParallel(volume, EmptyVisitor(), SkipEmpty());
+	const int solidVoxels = visitVolumeParallel(volume, EmptyVisitor(), VisitSolid());
 	const int cubeVoxels = region.voxels();
 	EXPECT_LT(solidVoxels, cubeVoxels);
 	EXPECT_EQ(cubeVoxels - 8, solidVoxels);
@@ -62,7 +62,7 @@ TEST_F(HollowTest, testHollow27RemoveCenter) {
 		}
 	}
 	voxelutil::hollow(volume);
-	const int solidVoxels = visitVolumeParallel(volume, EmptyVisitor(), SkipEmpty());
+	const int solidVoxels = visitVolumeParallel(volume, EmptyVisitor(), VisitSolid());
 	const int cubeVoxels = region.voxels();
 	EXPECT_LT(solidVoxels, cubeVoxels);
 	EXPECT_EQ(cubeVoxels - 27, solidVoxels);

@@ -22,12 +22,6 @@ private:
 	using Super = AbstractSceneManagerTest;
 
 protected:
-	template<typename Volume>
-	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) {
-		return voxelutil::visitVolumeParallel(
-			volume, [&](int, int, int, const voxel::Voxel &v) {}, voxelutil::VisitColor(voxel.getColor()));
-	}
-
 	void SetUp() override {
 		Super::SetUp();
 
@@ -309,18 +303,18 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	// set voxel into second node
 	EXPECT_TRUE(_sceneMgr->nodeActivate(secondNodeId));
 	testSetVoxel(glm::ivec3(1, 1, 1), modifier.cursorVoxel().getColor());
-	EXPECT_EQ(1, countVoxels(*_sceneMgr->volume(secondNodeId), modifier.cursorVoxel()));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(secondNodeId), modifier.cursorVoxel()));
 
 	// set voxel into third node
 	EXPECT_TRUE(_sceneMgr->nodeActivate(thirdNodeId));
 	testSetVoxel(glm::ivec3(2, 2, 2), modifier.cursorVoxel().getColor());
-	EXPECT_EQ(1, countVoxels(*_sceneMgr->volume(thirdNodeId), modifier.cursorVoxel()));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(thirdNodeId), modifier.cursorVoxel()));
 
 	// merge and validate
 	int newNodeId = _sceneMgr->mergeNodes(secondNodeId, thirdNodeId);
 	const voxel::RawVolume *v = _sceneMgr->volume(newNodeId);
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(2, voxelutil::visitVolumeParallel(*v, [](int, int, int, const voxel::Voxel &voxel) {}, voxelutil::SkipEmpty()));
+	EXPECT_EQ(2, voxelutil::visitVolumeParallel(*v));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
 
@@ -536,9 +530,9 @@ TEST_F(SceneManagerTest, testReduceColors) {
 			srcBuf.push_back(i);
 		}
 	}
-	EXPECT_EQ(2, countVoxels(*v, targetVoxel));
+	EXPECT_EQ(2, voxelutil::countVoxelsByColor(*v, targetVoxel));
 	EXPECT_TRUE(_sceneMgr->nodeReduceColors(nodeId, srcBuf, targetVoxel.getColor()));
-	EXPECT_EQ(7, countVoxels(*v, targetVoxel));
+	EXPECT_EQ(7, voxelutil::countVoxelsByColor(*v, targetVoxel));
 }
 
 TEST_F(SceneManagerTest, testRemoveColors) {
@@ -637,13 +631,13 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
 	}
 	voxel::Voxel targetVoxel(voxel::VoxelType::Generic, 1);
-	EXPECT_EQ(1, countVoxels(*v, targetVoxel));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, targetVoxel));
 	const int newNodeId = sceneMgr()->colorToNewNode(nodeId, targetVoxel);
 	EXPECT_NE(InvalidNodeId, newNodeId);
 	voxel::RawVolume *newV = _sceneMgr->volume(newNodeId);
 	ASSERT_NE(nullptr, newV);
-	EXPECT_EQ(1, countVoxels(*newV, targetVoxel));
-	EXPECT_EQ(0, countVoxels(*v, targetVoxel));
+	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*newV, targetVoxel));
+	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*v, targetVoxel));
 }
 
 } // namespace voxedit

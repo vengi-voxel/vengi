@@ -17,13 +17,12 @@ TEST_F(MCRFormatTest, testLoad117) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
 	ASSERT_EQ(node.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::RawVolume *v = node.volume();
-	const int cnt = voxelutil::visitVolumeParallel(*v, [&](int, int, int, const voxel::Voxel &) {}, voxelutil::VisitAll());
 	EXPECT_EQ(v->voxel(0, 62, -576), voxel::Voxel(voxel::VoxelType::Generic, 8));
 	EXPECT_EQ(v->voxel(0, -45, -576), voxel::Voxel(voxel::VoxelType::Generic, 8));
 	EXPECT_EQ(v->voxel(0, -45, -566), voxel::Voxel(voxel::VoxelType::Generic, 2));
 	EXPECT_EQ(v->voxel(0, -62, -576), voxel::Voxel(voxel::VoxelType::Generic, 118));
 	EXPECT_EQ(v->voxel(0, -64, -576), voxel::Voxel(voxel::VoxelType::Generic, 7));
-	EXPECT_EQ(32512, cnt);
+	EXPECT_EQ(32512, v->region().voxels());
 }
 
 TEST_F(MCRFormatTest, testLoad110) {
@@ -32,8 +31,7 @@ TEST_F(MCRFormatTest, testLoad110) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
 	ASSERT_EQ(node.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::RawVolume *v = node.volume();
-	const int cnt = voxelutil::visitVolumeParallel(*v, [&](int, int, int, const voxel::Voxel &) {}, voxelutil::VisitAll());
-	EXPECT_EQ(23296, cnt);
+	EXPECT_EQ(23296, v->region().voxels());
 }
 
 TEST_F(MCRFormatTest, testLoad113) {
@@ -42,8 +40,7 @@ TEST_F(MCRFormatTest, testLoad113) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
 	ASSERT_EQ(node.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::RawVolume *v = node.volume();
-	const int cnt = voxelutil::visitVolumeParallel(*v, [&](int, int, int, const voxel::Voxel &) {}, voxelutil::VisitAll());
-	EXPECT_EQ(17920, cnt);
+	EXPECT_EQ(17920, v->region().voxels());
 }
 
 } // namespace voxelformat

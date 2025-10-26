@@ -98,9 +98,7 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 					region.getDepthInVoxels());
 		Log::printf("},");
 		if (v) {
-			core::AtomicInt cnt{0};
-			voxelutil::visitVolumeParallel(*v, [&](int, int, int, const voxel::Voxel &) { ++cnt; });
-			stats.voxels = cnt;
+			stats.voxels = voxelutil::countVoxels(*v);
 		}
 		Log::printf("\"voxels\": %i", stats.voxels);
 		Log::printf("}");

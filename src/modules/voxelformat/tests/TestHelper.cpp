@@ -75,7 +75,7 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 		os << os.iword(indent) << "  |- volume: " << (v != nullptr ? v->region().toString().c_str() : "no volume")
 		   << "\n";
 		if (v) {
-			voxels = voxelutil::visitVolume(*v, voxelutil::EmptyVisitor());
+			voxels = voxelutil::countVoxels(*v);
 		}
 		os << os.iword(indent) << "  |- voxels: " << voxels << "\n";
 	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
@@ -125,23 +125,6 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 ::std::ostream &operator<<(::std::ostream &os, const scenegraph::SceneGraph &sceneGraph) {
 	dumpNode_r(os, sceneGraph, sceneGraph.root().id(), 0);
 	return os;
-}
-
-int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
-	core::AtomicInt cnt{0};
-	voxelutil::visitVolumeParallel(
-		volume,
-		[&](int, int, int, const voxel::Voxel &v) {
-			if (v == voxel) {
-				++cnt;
-			}
-		},
-		voxelutil::VisitAll());
-	return cnt;
-}
-
-int countVoxels(const voxel::RawVolume &volume) {
-	return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 }
 
 void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, core::RGBA c1, core::RGBA c2, uint8_t palIdx, float maxDelta) {

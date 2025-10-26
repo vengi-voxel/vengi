@@ -30,10 +30,6 @@ protected:
 		return core::UUID(id);
 	}
 
-	int countVoxels(const voxel::RawVolume &volume) {
-		return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
-	}
-
 	class TestMementoHandler : public MementoHandler {
 	private:
 		using Super = MementoHandler;
@@ -1027,7 +1023,7 @@ TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(core::UUID(13));
 	ASSERT_NE(node, nullptr);
 	const voxel::Region regionCopy = node->region();
-	EXPECT_EQ(expectedVoxels, countVoxels(node->volume()));
+	EXPECT_EQ(expectedVoxels, voxelutil::countVoxels(*node->volume()));
 	voxel::RawVolume *newVolume = voxelutil::rotateAxis(node->volume(), math::Axis::Z);
 	ASSERT_NE(newVolume, nullptr);
 	voxel::Region modifiedRegion = newVolume->region();
@@ -1036,7 +1032,7 @@ TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
 	ASSERT_NE(modifiedRegion, regionCopy);
 	node->setVolume(newVolume, true);
 	ASSERT_TRUE(_mementoHandler.markModification(_sceneGraph, *node, modifiedRegion));
-	EXPECT_EQ(expectedVoxels, countVoxels(node->volume()));
+	EXPECT_EQ(expectedVoxels, voxelutil::countVoxels(*node->volume()));
 
 	const MementoState &undoFirst = firstState(_mementoHandler.undo());
 	ASSERT_TRUE(undoFirst.hasVolumeData());
@@ -1046,7 +1042,7 @@ TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
 		voxel::RawVolume volume(undoFirst.volumeRegion());
 		ASSERT_TRUE(undoFirst.data.toVolume(&volume, undoFirst.data, undoFirst.dataRegion()))
 			<< "Failed to extract volume";
-		EXPECT_EQ(expectedVoxels, countVoxels(&volume));
+		EXPECT_EQ(expectedVoxels, voxelutil::countVoxels(volume));
 
 		for (int i = 0; i < expectedVoxels; ++i) {
 			EXPECT_EQ(voxel::VoxelType::Generic, volume.voxel(i, 0, 0).getMaterial());
@@ -1062,7 +1058,7 @@ TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
 		voxel::RawVolume volume(redoFirst.volumeRegion());
 		ASSERT_TRUE(redoFirst.data.toVolume(&volume, redoFirst.data, redoFirst.dataRegion()))
 			<< "Failed to extract volume";
-		EXPECT_EQ(expectedVoxels, countVoxels(&volume));
+		EXPECT_EQ(expectedVoxels, voxelutil::countVoxels(volume));
 	}
 }
 

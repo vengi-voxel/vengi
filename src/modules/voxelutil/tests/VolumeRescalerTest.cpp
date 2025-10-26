@@ -28,11 +28,7 @@ protected:
 		const glm::ivec3 mins = scaledRegion.getLowerCorner();
 		ASSERT_EQ(dims, volume.region().getDimensionsInVoxels() * 2);
 		ASSERT_EQ(mins, volume.region().getLowerCorner());
-		EXPECT_EQ(countVoxels(*v), n * 8) << "Expected " << n * 8 << " voxels, but got " << countVoxels(*v);
-	}
-
-	int countVoxels(const voxel::RawVolume &volume) {
-		return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
+		EXPECT_EQ(voxelutil::countVoxels(*v), n * 8) << "Expected " << n * 8 << " voxels, but got " << countVoxels(*v);
 	}
 };
 
@@ -63,13 +59,13 @@ TEST_F(VolumeRescalerTest, testScaleDown) {
 	}
 	palette::Palette pal;
 	pal.nippon();
-	ASSERT_EQ(5 * 5 * 17, countVoxels(volume));
+	ASSERT_EQ(5 * 5 * 17, voxelutil::countVoxels(volume));
 	const voxel::Region &srcRegion = volume.region();
 	const glm::ivec3 &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume destVolume(destRegion);
 	voxelutil::scaleDown(volume, pal, destVolume);
-	ASSERT_EQ(32, countVoxels(destVolume));
+	ASSERT_EQ(32, voxelutil::countVoxels(destVolume));
 }
 
 } // namespace voxelutil

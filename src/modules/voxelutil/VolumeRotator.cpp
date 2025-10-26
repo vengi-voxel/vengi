@@ -43,8 +43,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ive
 		[&destVolumeWrapper, &mat, &pivot](int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel) {
 			const glm::ivec3 &destPos = math::transform(mat, glm::ivec3{x, y, z}, pivot);
 			destVolumeWrapper.setVoxel(destPos, voxel);
-		},
-		voxelutil::SkipEmpty());
+		});
 	return destVolume;
 }
 
@@ -57,21 +56,21 @@ voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis)
 		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 		visitVolumeParallel(*srcVolume, [destVolume, srcMins, srcMaxs](int x, int y, int z, const voxel::Voxel& voxel) {
 			destVolume->setVoxel(x, z, srcMaxs.y - (y - srcMins.y), voxel);
-		}, voxelutil::SkipEmpty());
+		});
 		return destVolume;
 	} else if (axis == math::Axis::Y) {
 		const voxel::Region destRegion(srcMins.z, srcMins.y, srcMins.x, srcMaxs.z, srcMaxs.y, srcMaxs.x);
 		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 		visitVolumeParallel(*srcVolume, [destVolume, srcMins, srcMaxs](int x, int y, int z, const voxel::Voxel& voxel) {
 			destVolume->setVoxel(srcMaxs.z - (z - srcMins.z), y, x, voxel);
-		}, voxelutil::SkipEmpty());
+		});
 		return destVolume;
 	}
 	const voxel::Region destRegion(srcMins.y, srcMins.x, srcMins.z, srcMaxs.y, srcMaxs.x, srcMaxs.z);
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	visitVolumeParallel(*srcVolume, [destVolume, srcMins, srcMaxs](int x, int y, int z, const voxel::Voxel& voxel) {
 		destVolume->setVoxel(y, srcMaxs.x - (x - srcMins.x), z, voxel);
-	}, voxelutil::SkipEmpty());
+	});
 	return destVolume;
 }
 

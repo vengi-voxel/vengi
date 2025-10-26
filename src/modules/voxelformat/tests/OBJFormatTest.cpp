@@ -8,6 +8,7 @@
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace voxelformat {
@@ -30,7 +31,7 @@ TEST_F(OBJFormatTest, testVoxelizeUVSphereObj) {
 	// they are all using the 7th vertex of the mesh and this vertex is
 	// showing the bug.
 	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(1, 1, 2).getMaterial()));
-	const int cntVoxels = voxel::countVoxels(node->volume());
+	const int cntVoxels = voxelutil::countVoxels(*node->volume());
 	ASSERT_EQ(cntVoxels, 24);
 }
 

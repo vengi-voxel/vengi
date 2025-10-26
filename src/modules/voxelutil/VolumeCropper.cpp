@@ -42,7 +42,7 @@ namespace voxelutil {
 		newMaxs.z = core_max(newMaxs.z, z);
 	};
 	// TODO: PERF: this algorithm can be optimized by using core::memchr_not
-	if (visitVolume(*volume, visitor, SkipEmpty()) == 0) {
+	if (visitVolume(*volume, visitor, VisitSolid()) == 0) {
 		return nullptr;
 	}
 	return cropVolume(volume, newMins, newMaxs);

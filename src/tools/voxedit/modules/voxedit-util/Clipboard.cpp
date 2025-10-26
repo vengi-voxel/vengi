@@ -79,8 +79,7 @@ void paste(voxel::VoxelData &out, const voxel::VoxelData &in, const glm::ivec3 &
 	region.shift(-region.getLowerCorner());
 	region.shift(referencePosition);
 	modifiedRegion = region;
-	voxelutil::mergeVolumes(out.volume, *out.palette, in.volume, *in.palette, region, in.volume->region(),
-							voxelutil::MergeSkipEmpty());
+	voxelutil::mergeVolumes(out.volume, *out.palette, in.volume, *in.palette, region, in.volume->region());
 	Log::debug("Pasted %s", modifiedRegion.toString().c_str());
 }
 

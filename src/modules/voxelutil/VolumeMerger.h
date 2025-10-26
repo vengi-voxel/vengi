@@ -13,24 +13,16 @@
 #include "core/Trace.h"
 #include "core/Assert.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
 /**
- * @brief Will skip air voxels on volume merges
- */
-struct MergeSkipEmpty {
-	inline bool operator() (voxel::Voxel& voxel) const {
-		return !isAir(voxel.getMaterial());
-	}
-};
-
-/**
  * @note This version can deal with source volumes that are smaller or equal sized to the destination volume
  * @note The given merge condition function must return false for voxels that should be skipped.
- * @sa MergeSkipEmpty
+ * @sa voxelutil::VisitSolid
  */
-template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
+template<typename MergeCondition = VisitSolid, class Volume1, class Volume2>
 int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Region &destReg,
 				 const voxel::Region &sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
@@ -49,11 +41,12 @@ int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Regio
 				destSampler.setPosition(relX, destY, destZ);
 				for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
 					voxel::Voxel srcVoxel = sourceSampler3.voxel();
-					sourceSampler3.movePositiveX();
-					if (!mergeCondition(srcVoxel)) {
+					if (!mergeCondition(sourceSampler3)) {
+						sourceSampler3.movePositiveX();
 						destSampler.movePositiveX();
 						continue;
 					}
+					sourceSampler3.movePositiveX();
 					if (destSampler.setVoxel(srcVoxel)) {
 						++cnt;
 					}
@@ -70,9 +63,9 @@ int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Regio
 /**
  * @note This version can deal with source volumes that are smaller or equal sized to the destination volume
  * @note The given merge condition function must return false for voxels that should be skipped.
- * @sa MergeSkipEmpty
+ * @sa voxelutil::VisitSolid
  */
-template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
+template<typename MergeCondition = VisitSolid, class Volume1, class Volume2>
 int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalette, const Volume2 *source,
 				 const palette::Palette &sourcePalette, const voxel::Region &destReg, const voxel::Region &sourceReg,
 				 MergeCondition mergeCondition = MergeCondition()) {
@@ -93,11 +86,12 @@ int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalett
 				destSampler.setPosition(relX, destY, destZ);
 				for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
 					voxel::Voxel srcVoxel = sourceSampler3.voxel();
-					sourceSampler3.movePositiveX();
-					if (!mergeCondition(srcVoxel)) {
+					if (!mergeCondition(sourceSampler3)) {
+						sourceSampler3.movePositiveX();
 						destSampler.movePositiveX();
 						continue;
 					}
+					sourceSampler3.movePositiveX();
 					int idx = palLookup.findClosestIndex(sourcePalette.color(srcVoxel.getColor()));
 					if (idx == palette::PaletteColorNotFound) {
 						idx = 0;
@@ -118,9 +112,9 @@ int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalett
 
 /**
  * The given merge condition function must return false for voxels that should be skipped.
- * @sa MergeSkipEmpty
+ * @sa voxelutil::VisitSolid
  */
-template<typename MergeCondition = MergeSkipEmpty>
+template<typename MergeCondition = VisitSolid>
 inline int mergeRawVolumesSameDimension(voxel::RawVolume* destination, const voxel::RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
 	core_assert(source->region() == destination->region());
 	return mergeVolumes(destination, source, destination->region(), source->region());

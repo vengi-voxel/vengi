@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -79,13 +80,13 @@ TEST_F(KV6FormatTest, testAnasplit) {
 			if (r.region != region) {
 				continue;
 			}
-			EXPECT_EQ(r.cnt, voxel::countVoxels(node.volume()));
+			EXPECT_EQ(r.cnt, voxelutil::countVoxels(*node.volume()));
 			++compared;
 			found = true;
 			break;
 		}
 		EXPECT_TRUE(found) << "Expected region not found: voxel::Region{" << region.getLowerX() << ", " << region.getLowerY() << ", " << region.getLowerZ() << ", " << region.getUpperX() << ", " << region.getUpperY() << ", " << region.getUpperZ() << "}, "
-			<< voxel::countVoxels(node.volume());
+			<< voxelutil::countVoxels(*node.volume());
 	}
 	EXPECT_EQ(lengthof(modelRegions), compared);
 }

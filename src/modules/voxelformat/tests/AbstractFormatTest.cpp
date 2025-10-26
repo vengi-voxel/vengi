@@ -199,7 +199,7 @@ void AbstractFormatTest::testRGBSmall(const core::String &filename, const io::Ar
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *volume = node.volume();
-		EXPECT_EQ(3, voxelutil::visitVolumeParallel(*volume, [](int, int, int, const voxel::Voxel &) {}));
+		EXPECT_EQ(3, voxelutil::countVoxels(*volume));
 		checkColor(blue, node.palette(), volume->voxel(0, 0, 0).getColor(), 0.0f);
 		checkColor(green, node.palette(), volume->voxel(1, 0, 0).getColor(), 0.0f);
 		checkColor(red, node.palette(), volume->voxel(2, 0, 0).getColor(), 0.0f);
@@ -269,7 +269,7 @@ void AbstractFormatTest::testRGB(const core::String &filename, float maxDelta) {
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *volume = node.volume();
-		EXPECT_EQ(99, voxelutil::visitVolumeParallel(*volume, [](int, int, int, const voxel::Voxel &) {}));
+		EXPECT_EQ(99, voxelutil::countVoxels(*volume));
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(0, 0, 0).getMaterial())
 			<< "Failed rgb check for " << filename.c_str();
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 0, 0).getMaterial())

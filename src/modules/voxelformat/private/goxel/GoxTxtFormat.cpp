@@ -170,7 +170,7 @@ bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 				return;
 			}
 		},
-		voxelutil::SkipEmpty());
+		voxelutil::VisitSolid());
 	Log::debug("Wrote %i voxels", voxels);
 	return voxels > 0;
 }

@@ -7,6 +7,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -27,7 +28,7 @@ TEST_F(CSMFormatTest, testLoad) {
 	EXPECT_EQ(11, region.getUpperZ());
 	const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(1606, voxel::countVoxels(*v));
+	EXPECT_EQ(1606, voxelutil::countVoxels(*v));
 	EXPECT_EQ(79u, v->voxel(7, 2, 11).getColor());
 	EXPECT_EQ(191u, v->voxel(6, 4, 10).getColor());
 }

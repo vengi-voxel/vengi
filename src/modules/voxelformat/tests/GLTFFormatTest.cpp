@@ -9,6 +9,7 @@
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -81,7 +82,7 @@ TEST_P(VoxelizeLantern, exec) {
 	EXPECT_EQ(8, region.getUpperX());
 	EXPECT_EQ(13, region.getUpperY());
 	EXPECT_EQ(3, region.getUpperZ());
-	EXPECT_EQ(286, voxel::countVoxels(*v));
+	EXPECT_EQ(286, voxelutil::countVoxels(*v));
 	// TODO: VOXELFORMAT: https://github.com/vengi-voxel/vengi/issues/620
 	// EXPECT_EQ(89, v->voxel(-8, 9, 0).getColor());
 	const core::RGBA expected(69, 58, 46, 255);

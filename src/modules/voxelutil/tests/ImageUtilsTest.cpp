@@ -23,10 +23,6 @@ namespace voxelutil {
 
 class ImageUtilsTest : public app::AbstractTest {
 protected:
-	int countVoxels(const voxel::RawVolume &volume) {
-		return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
-	}
-
 	void validateVoxel(const voxel::RawVolume &volume, const palette::Palette &palette, const image::ImagePtr &image,
 					   int x, int y) {
 		const core::RGBA expectedColor = image->colorAt(x, y);
@@ -59,7 +55,7 @@ protected:
 		voxel::Region expectedRegion(region.getLowerX(), minsY, region.getLowerZ(), region.getUpperX(), 17,
 									 region.getUpperZ());
 		int expectedVoxelCount = voxel::isAir(underground.getMaterial()) ? image->width() * image->height() : 3626;
-		EXPECT_EQ(expectedVoxelCount, countVoxels(volume));
+		EXPECT_EQ(expectedVoxelCount, voxelutil::countVoxels(volume));
 		for (int x = 0; x < image->width(); ++x) {
 			for (int z = 0; z < image->height(); ++z) {
 				const core::RGBA expectedColor = image->colorAt(x, z);
@@ -95,7 +91,7 @@ TEST_F(ImageUtilsTest, testImportAsPlane) {
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
 	EXPECT_EQ(depth, volume->depth());
-	EXPECT_EQ(3758, countVoxels(*volume));
+	EXPECT_EQ(3758, voxelutil::countVoxels(*volume));
 }
 
 TEST_F(ImageUtilsTest, testImportAsVolumeBothSided) {
@@ -109,7 +105,7 @@ TEST_F(ImageUtilsTest, testImportAsVolumeBothSided) {
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
 	EXPECT_EQ(depth * 2 + 1, volume->depth());
-	EXPECT_EQ(40, countVoxels(*volume));
+	EXPECT_EQ(40, voxelutil::countVoxels(*volume));
 }
 
 TEST_F(ImageUtilsTest, testImportAsVolumeSingleSided) {
@@ -123,7 +119,7 @@ TEST_F(ImageUtilsTest, testImportAsVolumeSingleSided) {
 	EXPECT_EQ(img->width(), volume->width());
 	EXPECT_EQ(img->height(), volume->height());
 	EXPECT_EQ(depth, volume->depth());
-	EXPECT_EQ(28, countVoxels(*volume));
+	EXPECT_EQ(28, voxelutil::countVoxels(*volume));
 }
 
 TEST_F(ImageUtilsTest, testImportHeightMaxHeightAlpha) {
@@ -154,7 +150,7 @@ TEST_F(ImageUtilsTest, testImportFace) {
 	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
 	ASSERT_TRUE(
 		voxelutil::importFace(volume, region, palette, faceName, image, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
-	ASSERT_EQ(8, countVoxels(volume));
+	ASSERT_EQ(8, voxelutil::countVoxels(volume));
 
 	validateVoxel(volume, palette, image, 5, 7);
 	validateVoxel(volume, palette, image, 6, 5);
@@ -290,7 +286,7 @@ TEST_F(ImageUtilsTest, testApplyTextureToFace) {
 	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
 	voxelutil::applyTextureToFace(volume, region, palette, faceName, image, glm::vec2(0.0f, 1.0f),
 								  glm::vec2(1.0f, 0.0f));
-	EXPECT_EQ(1870, countVoxels(volume));
+	EXPECT_EQ(1870, voxelutil::countVoxels(volume));
 }
 
 } // namespace voxelutil

@@ -17,20 +17,6 @@ namespace voxelutil {
 
 class VolumeSplitterTest : public app::AbstractTest {
 protected:
-	template<typename Volume>
-	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) const {
-		int cnt = 0;
-		voxelutil::visitVolume(
-			volume,
-			[&](int, int, int, const voxel::Voxel &v) {
-				if (v == voxel) {
-					++cnt;
-				}
-			},
-			voxelutil::VisitAll());
-		return cnt;
-	}
-
 	void prepareSplitterVolume(voxel::RawVolume &volume) const {
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
@@ -72,13 +58,13 @@ protected:
 
 	void validateSplit(const core::Buffer<voxel::RawVolume *> &volumes) const {
 		ASSERT_EQ(7u, volumes.size());
-		EXPECT_EQ(3, countVoxels(*volumes[0], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_EQ(1, countVoxels(*volumes[1], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_EQ(1, countVoxels(*volumes[2], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_EQ(1, countVoxels(*volumes[3], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_EQ(6, countVoxels(*volumes[4], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_EQ(26, countVoxels(*volumes[5], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_EQ(6, countVoxels(*volumes[6], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(3, voxelutil::countVoxelsByType(*volumes[0], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(1, voxelutil::countVoxelsByType(*volumes[1], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(1, voxelutil::countVoxelsByType(*volumes[2], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(1, voxelutil::countVoxelsByType(*volumes[3], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(6, voxelutil::countVoxelsByType(*volumes[4], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(26, voxelutil::countVoxelsByType(*volumes[5], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_EQ(6, voxelutil::countVoxelsByType(*volumes[6], voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		for (voxel::RawVolume *v : volumes) {
 			delete v;
 		}
@@ -98,7 +84,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 					  region.getHeightInVoxels());
 
 	const int expectedVoxelCount = region.getWidthInVoxels() * region.getDepthInVoxels() * region.getHeightInVoxels();
-	const int foundVoxels = countVoxels(volume, voxel);
+	const int foundVoxels = countVoxelsByType(volume, voxel);
 	EXPECT_EQ(expectedVoxelCount, foundVoxels);
 
 	// perform split
@@ -113,7 +99,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	rawVolumes.clear();
 
 	// count voxels
-	const int foundVoxelsAfterSplitAndMerge = countVoxels(*merged, voxel);
+	const int foundVoxelsAfterSplitAndMerge = voxelutil::countVoxelsByType(*merged, voxel);
 	EXPECT_EQ(expectedVoxelCount, foundVoxelsAfterSplitAndMerge);
 }
 
@@ -130,7 +116,7 @@ TEST_F(VolumeSplitterTest, testSplitEmpty) {
 					  region.getHeightInVoxels());
 
 	const int expectedVoxelCount = region.getWidthInVoxels() * region.getDepthInVoxels() * region.getHeightInVoxels();
-	const int foundVoxels = countVoxels(volume, voxel);
+	const int foundVoxels = voxelutil::countVoxelsByType(volume, voxel);
 	EXPECT_EQ(expectedVoxelCount, foundVoxels);
 
 	// perform split
@@ -145,7 +131,7 @@ TEST_F(VolumeSplitterTest, testSplitEmpty) {
 	rawVolumes.clear();
 
 	// count voxels
-	const int foundVoxelsAfterSplitAndMerge = countVoxels(*merged, voxel);
+	const int foundVoxelsAfterSplitAndMerge = voxelutil::countVoxelsByType(*merged, voxel);
 	EXPECT_EQ(expectedVoxelCount, foundVoxelsAfterSplitAndMerge);
 }
 

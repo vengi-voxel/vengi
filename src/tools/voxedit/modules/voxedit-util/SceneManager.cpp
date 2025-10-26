@@ -572,7 +572,7 @@ int SceneManager::colorToNewNode(int nodeId, const voxel::Voxel voxelColor) {
 	voxelutil::visitVolumeParallel(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 		newVolume->setVoxel(x, y, z, voxel);
 		wrapper.setVoxel(x, y, z, voxel::Voxel());
-	}, voxelutil::VisitColor(voxelColor.getColor()));
+	}, voxelutil::VisitVoxelColor(voxelColor.getColor()));
 	modified(nodeId, wrapper.dirtyRegion());
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	copyNode(node, newNode, false, true);
@@ -3668,7 +3668,7 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 			[&wrapper, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
 				wrapper.setVoxel(x, y, z, replacementVoxel);
 			},
-			voxelutil::VisitColor(palIdx));
+			voxelutil::VisitVoxelColor(palIdx));
 		modified(node.id(), wrapper.dirtyRegion());
 		if (_modifierFacade.cursorVoxel().getColor() == palIdx) {
 			_modifierFacade.setCursorVoxel(replacementVoxel);

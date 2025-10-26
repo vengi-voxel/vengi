@@ -26,8 +26,8 @@ public:
 };
 
 static void visitOrder(voxelutil::VisitorOrder order, const voxel::RawVolume &v) {
-	auto visitor = [&](int, int, int, const voxel::Voxel &) {};
-	int n = voxelutil::visitVolume(v, visitor, voxelutil::SkipEmpty(), order);
+	auto visitor = voxelutil::EmptyVisitor();
+	int n = voxelutil::visitVolume(v, visitor, voxelutil::VisitSolid(), order);
 	benchmark::DoNotOptimize(n);
 }
 
@@ -39,8 +39,8 @@ BENCHMARK_DEFINE_F(VoxelVisitorBenchmark, Visit)(benchmark::State &state) {
 }
 
 static void visitOrderParallel(voxelutil::VisitorOrder order, const voxel::RawVolume &v) {
-	auto visitor = [&](int, int, int, const voxel::Voxel &) {};
-	int n = voxelutil::visitVolumeParallel(v, visitor, voxelutil::SkipEmpty(), order);
+	auto visitor = voxelutil::EmptyVisitor();
+	int n = voxelutil::visitVolumeParallel(v, visitor, voxelutil::VisitSolid(), order);
 	benchmark::DoNotOptimize(n);
 }
 

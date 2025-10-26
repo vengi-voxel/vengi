@@ -26,7 +26,7 @@ TEST_F(VolumeVisitorTest, testVisitSurface) {
 		}
 	}
 
-	int cnt = visitSurfaceVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, VisitorOrder::XZY);
+	int cnt = visitSurfaceVolume(volume);
 	EXPECT_EQ(26, cnt);
 }
 
@@ -105,7 +105,7 @@ TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
 	EXPECT_TRUE(volume.setVoxel(2, 0, 2, voxel));
 	EXPECT_TRUE(volume.setVoxel(2, 2, 0, voxel));
 
-	int cnt = visitSurfaceVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, VisitorOrder::XZY);
+	int cnt = visitSurfaceVolume(volume);
 	EXPECT_EQ(8, cnt);
 }
 
@@ -121,7 +121,7 @@ TEST_F(VolumeVisitorTest, testVisitConnectedByVoxel) {
 	EXPECT_TRUE(volume.setVoxel(1, 2, 1, voxel2));
 	EXPECT_TRUE(volume.setVoxel(1, 3, 1, voxel3));
 
-	int cnt = visitConnectedByVoxel(volume, {1, 1, 1}, [&](int, int, int, const voxel::Voxel &) {});
+	int cnt = visitConnectedByVoxel(volume, {1, 1, 1});
 	EXPECT_EQ(3, cnt);
 }
 
@@ -186,9 +186,9 @@ TEST_P(VolumeVisitorOrderTest, testVisitor) {
 	EXPECT_TRUE(volume.setVoxel(2, 0, 2, voxel));
 	EXPECT_TRUE(volume.setVoxel(2, 2, 0, voxel));
 
-	int cnt = visitVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, SkipEmpty(), GetParam());
+	int cnt = visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::VisitSolid(), GetParam());
 	EXPECT_EQ(8, cnt);
-	int parallelCnt = visitVolumeParallel(volume, [&](int, int, int, const voxel::Voxel &) {}, SkipEmpty(), GetParam());
+	int parallelCnt = visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::VisitSolid(), GetParam());
 	EXPECT_EQ(8, parallelCnt);
 }
 
