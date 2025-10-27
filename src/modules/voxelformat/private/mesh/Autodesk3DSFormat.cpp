@@ -860,7 +860,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				}
 				mesh.addTriangle(meshTri);
 			}
-			// TODO: VOXELFORMAT: node parent (looks like there is no hierarchy in 3ds)
+			// TODO: VOXELFORMAT: node parent - see node.parentId
 			int parent = 0;
 			core::String nodeName = node.instanceName;
 			if (nodeName.empty()) {
