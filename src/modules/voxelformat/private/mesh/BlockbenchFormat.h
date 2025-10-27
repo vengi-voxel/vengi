@@ -6,8 +6,6 @@
 
 #include "MeshFormat.h"
 #include "MeshMaterial.h"
-#include "core/collection/Buffer.h"
-#include "core/collection/StringMap.h"
 #include "util/Version.h"
 #include "voxel/Face.h"
 
@@ -26,6 +24,9 @@ namespace voxelformat {
  * have 6 different colors. This is not possible in vengi. We therefore define an order of faces where one overwrites
  * the other. This order is hardcoded from negative to positive from x to y to z. This basically means that the front
  * and the back sides are the dominant ones - followed by the up and down sides - and finally the left and right sides.
+ *
+ * @sa https://www.blockbench.net/wiki/docs/bbmodel
+ * @sa https://github.com/JannisX11/blockbench/blob/master/js/io/formats/bbmodel.js
  *
  * @ingroup Formats
  */
