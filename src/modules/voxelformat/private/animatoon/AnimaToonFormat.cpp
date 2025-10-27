@@ -6,12 +6,14 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/RawVolume.h"
@@ -316,19 +318,21 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 								 (*camTargetPosIter).value("z", 0.0f));
 	}
 
-	const glm::mat4 &orientation = glm::mat4_cast(cameraRot);
-	const glm::mat4 &viewMatrix = glm::translate(orientation, cameraPos);
-	scenegraph::SceneGraphNodeCamera camNode;
-	camNode.setName("Camera");
-	scenegraph::SceneGraphTransform transform;
-	transform.setWorldMatrix(viewMatrix);
-	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	camNode.setTransform(keyFrameIdx, transform);
-	camNode.setPerspective();
-	sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
+	{
+		const glm::mat4 &orientation = glm::mat4_cast(cameraRot);
+		const glm::mat4 &viewMatrix = glm::translate(orientation, cameraPos);
+		scenegraph::SceneGraphNodeCamera camNode;
+		camNode.setName("Camera");
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldMatrix(viewMatrix);
+		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		camNode.setTransform(keyFrameIdx, transform);
+		camNode.setPerspective();
+		sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
+	}
 
-	// TODO: VOXELFORMAT: use me
 #if 0
+	core::DynamicArray<AnimaToonPosition> positions;
 	for (const auto &savedPos : json["savedPositionsList"]) {
 		const std::string innerJson = savedPos.get<std::string>();
 		nlohmann::json inner = nlohmann::json::parse(innerJson);
@@ -365,13 +369,56 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		for (const auto &ikMod : inner["IKModified"]) {
 			pos.ikModified.push_back(ikMod);
 		}
+		positions.emplace_back(core::move(pos));
 	}
-	for (const auto &e : json["customColors"]) {
-		const core::RGBA color(e["r"], e["g"], e["b"], e["a"]);
-	}
+
+	// ImportModelSave contains imported external models as base64 encoded data
+	// These would need to be loaded similarly to ModelSave but as separate imported nodes
 	for (const auto &e : json["ImportModelSave"]) {
+		const core::String modelBase64 = e.get<std::string>().c_str();
+		if (modelBase64.empty()) {
+			continue;
+		}
+		// TODO: VOXELFORMAT: implement ImportModelSave support when needed
+		Log::debug("ImportModelSave entry found but not yet implemented");
+	}
+
+	for (size_t posIdx = 0; posIdx < positions.size(); ++posIdx) {
+		const AnimaToonPosition &pos = positions[posIdx];
+		const scenegraph::FrameIndex frameIdx = static_cast<scenegraph::FrameIndex>(posIdx);
+
+		const size_t numNodes = core_min(modelNodeIds.size(), pos.meshPositions.size());
+		for (size_t nodeIdx = 0; nodeIdx < numNodes; ++nodeIdx) {
+			const int nodeId = modelNodeIds[nodeIdx];
+			if (!sceneGraph.hasNode(nodeId)) {
+				Log::warn("Could not find node %d for animation frame %d", nodeId, (int)frameIdx);
+				continue;
+			}
+			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+			scenegraph::KeyFrameIndex kfIdx = InvalidKeyFrame;
+			if (node.hasKeyFrameForFrame(frameIdx, &kfIdx)) {
+				Log::debug("Using existing keyframe at frame %d for node %d", (int)frameIdx, nodeId);
+			} else {
+				kfIdx = node.addKeyFrame(frameIdx);
+				if (kfIdx == InvalidKeyFrame) {
+					Log::warn("Failed to add keyframe at frame %d for node %d", (int)frameIdx, nodeId);
+					continue;
+				}
+			}
+
+			scenegraph::SceneGraphTransform trans;
+			if (nodeIdx < pos.meshPositions.size()) {
+				trans.setLocalTranslation(pos.meshPositions[nodeIdx]);
+			}
+			if (nodeIdx < pos.meshRotations.size()) {
+				trans.setLocalOrientation(pos.meshRotations[nodeIdx]);
+			}
+
+			node.setTransform(kfIdx, trans);
+		}
 	}
 #endif
+
 	return true;
 }
 
