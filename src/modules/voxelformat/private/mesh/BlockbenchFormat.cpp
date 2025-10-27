@@ -642,8 +642,8 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 				scenegraph::SceneGraphKeyFrame &kf = node->keyFrame(kfIdx);
 				kf.interpolation = keyframe.interpolation;
 
-				// Get existing transform or create new one
-				scenegraph::SceneGraphTransform transform;
+				// Get existing transform to preserve other channel values
+				scenegraph::SceneGraphTransform transform = kf.transform();
 				const glm::vec3 &value = keyframe.dataPoints[0];
 
 				if (keyframe.channel == "rotation") {
