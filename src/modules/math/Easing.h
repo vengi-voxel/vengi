@@ -59,13 +59,29 @@ inline double cubicInOut(double current, double start, double end) {
 	return (v - 1.0) * glm::pow(v1, 2.0) + 1.0f;
 }
 
-inline double cubicBezier(double current, double start, double end) {
-	// TODO: implement this
-	return current;
+/**
+ * Bezier cubic formula: B(t) = (1-t)^3*P0 + 3(1-t)^2*t*P1 + 3(1-t)*t^2*P2 + t^3*P3
+ * where P0 = (0, 0), P1 = (cp1x, cp1y), P2 = (cp2x, cp2y), P3 = (1, 1)
+ *
+ * @sa https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
+ */
+inline double cubicBezier(double current, double start, double end, double cp1y, double cp2y) {
+	const double t = linear(current, start, end);
+	const double omt = 1.0 - t;
+	const double omt2 = omt * omt;
+	const double t2 = t * t;
+	const double t3 = t2 * t;
+
+	return 3.0 * omt2 * t * cp1y + 3.0 * omt * t2 * cp2y + t3;
 }
 
+/**
+ * Catmull-Rom spline interpolation between p1 and p2, with p0 and p3 as control points
+ * Uses the standard formulation with tangent vectors: m0 = (p2 - p0) / 2, m1 = (p3 - p1) / 2
+ *
+ * @sa https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull%E2%80%93Rom_spline
+ */
 inline double catmullRom(double p0, double p1, double p2, double p3, double t) {
-	// TODO: validate this
 	const double v0 = (p2 - p0) * 0.5;
 	const double v1 = (p3 - p1) * 0.5;
 	const double t2 = t * t;

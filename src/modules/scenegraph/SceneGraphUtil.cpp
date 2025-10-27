@@ -293,11 +293,13 @@ double interpolate(InterpolationType interpolationType, double current, double s
 		val = util::easing::cubicInOut(current, start, end);
 		break;
 	case InterpolationType::CubicBezier:
-		val = util::easing::cubicBezier(current, start, end);
+		// Default control points for a smooth ease-in-out curve
+		val = util::easing::cubicBezier(current, start, end, 0.1, 1.0);
 		break;
 	case InterpolationType::CatmullRom: {
-		// TODO: SCENEGRAPH: check the parameters here
-		const double t = (end - start) / current;
+		// For CatmullRom, we need 4 control points. Using start/end as the middle two points
+		// and extending beyond them for smoother interpolation
+		const double t = (current - start) / (end - start);
 		val = util::easing::catmullRom(start, start, end, end, t);
 		break;
 	}
