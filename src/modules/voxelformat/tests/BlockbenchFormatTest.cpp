@@ -51,6 +51,13 @@ TEST_F(BlockbenchFormatTest, testLoad_4_5) {
 	EXPECT_EQ(secondDim.y, 2);
 	EXPECT_EQ(secondDim.z, 2);
 	ASSERT_EQ(fingers_right.type(), scenegraph::SceneGraphNodeType::Group);
+
+	ASSERT_EQ(sceneGraph.animations().size(), 5u);
+	EXPECT_TRUE(sceneGraph.hasAnimation("handsdown"));
+	EXPECT_TRUE(sceneGraph.hasAnimation("sit"));
+	EXPECT_TRUE(sceneGraph.hasAnimation("fist"));
+	EXPECT_TRUE(sceneGraph.hasAnimation("walk"));
+	EXPECT_TRUE(sceneGraph.hasAnimation("run"));
 }
 
 // this model is based on a model from https://github.com/SL0ANE/Loy-s-Goodies/tree/main/models - but only one cube was

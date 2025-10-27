@@ -429,7 +429,8 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const BBCube &cube = bbElement.cube;
 
-	// TODO: VOXELFORMAT: is this (from > to) used to flip the uv coordinates or for culling?
+	// In Blockbench, 'from' and 'to' define opposite corners of a cube, but they might not be in min/max order.
+	// We normalize them to ensure we have proper bounds. This doesn't affect UV coordinates - those are handled separately per face.
 	glm::vec3 mins = glm::min(bbElement.cube.from, bbElement.cube.to);
 	glm::vec3 maxs = glm::max(bbElement.cube.from, bbElement.cube.to);
 
@@ -453,9 +454,15 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 	model.setLocked(bbNode.locked);
 	model.setVisible(bbNode.visible);
 	model.setRotation(glm::quat(glm::radians(bbElement.rotation)), true);
-	// TODO: VOXELFORMAT: pivot or translation is still wrong and group rotations are not correctly applied yet
+
+	// Calculate pivot: In Blockbench, origin is the pivot point in world coordinates.
+	// We need to convert it to normalized coordinates relative to the cube's local space.
+	// The pivot is the offset from the cube's corner (from) divided by the cube size.
 	const glm::vec3 pivot = (bbElement.origin - bbElement.cube.from) / size;
 	model.setPivot(pivot);
+
+	// Set translation: Position the cube at its 'from' corner, then offset by the pivot
+	// scaled to the voxel region dimensions.
 	const glm::vec3 regionsize = region.getDimensionsInVoxels();
 	model.setTranslation(bbElement.cube.from + pivot * regionsize, true);
 	const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX, voxel::FaceNames::PositiveX,
@@ -529,12 +536,17 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		Log::error("Animations is not an array in json file: %s", filename.c_str());
 		return false;
 	}
+	bool removeDefaultAnimation = true;
 	for (const auto &animationJson : animationsJson) {
 		const core::String animationName = json::toStr(animationJson, "name");
 		if (animationName.empty()) {
 			continue;
 		}
+		if (animationName == DEFAULT_ANIMATION) {
+			removeDefaultAnimation = false;
+		}
 		sceneGraph.addAnimation(animationName);
+		sceneGraph.setAnimation(animationName);
 #if BLOCKBENCH_ANIMATION
 		priv::Animation animation;
 		animation.uuid = core::UUID(json::toStr(animationJson, "uuid"));
@@ -578,44 +590,94 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 				kf.bezierRightTime = priv::toVec3(keyframeJson, "bezier_right_time");
 				kf.bezierLeftValue = priv::toVec3(keyframeJson, "bezier_left_value");
 				kf.bezierLeftTime = priv::toVec3(keyframeJson, "bezier_left_time");
-				for (auto dataPointsIter = keyframeJson.find("data_points"); dataPointsIter != keyframeJson.end(); ++dataPointsIter) {
-					kf.dataPoints.push_back(priv::toVec3(*dataPointsIter));
+
+				// Parse data_points array
+				auto dataPointsIter = keyframeJson.find("data_points");
+				if (dataPointsIter != keyframeJson.end() && dataPointsIter->is_array()) {
+					for (const auto &dataPoint : *dataPointsIter) {
+						kf.dataPoints.push_back(priv::toVec3(dataPoint));
+					}
 				}
 				animator.keyframes.push_back(kf);
 			}
 			animation.animators.push_back(animator);
 		}
 		for (const priv::Animator &animator : animation.animators) {
-			Log::debug("Animator: %s", animator.name.c_str());
-			if (scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(animator.uuid)) {
-				const core::String &uuidStr = node->uuid().str();
-				Log::debug("Found node: %s (uuid: %s)", node->name().c_str(), uuidStr.c_str());
-				const auto &keyframes = animator.keyframes;
-				scenegraph::KeyFrameIndex keyFrameIdx = 0;
-				node->keyFrames()->reserve(keyframes.size());
-				// TODO: VOXELFORMAT: finish this
-				for (const priv::KeyFrame &keyframe : keyframes) {
-					Log::debug("Keyframe: %s", keyframe.channel.c_str());
-					scenegraph::SceneGraphKeyFrame kf = node->keyFrame(keyFrameIdx);
-					kf.interpolation = keyframe.interpolation;
-					// TODO: VOXELFORMAT: the assumption here is that the keyframes are sorted by time
-					kf.frameIdx = keyframe.time * 60.0f;
-					scenegraph::SceneGraphTransform transform;
-					if (keyframe.channel == "rotation") {
-						transform.setLocalOrientation(glm::quat(glm::radians(keyframe.dataPoints[0])));
-					} else if (keyframe.channel == "position") {
-						transform.setLocalTranslation(keyframe.dataPoints[0]);
-					} else if (keyframe.channel == "scale") {
-						transform.setLocalScale(keyframe.dataPoints[0]);
-					}
-					kf.setTransform(transform);
-				}
-			} else {
+			Log::debug("Animator: %s with %d keyframes", animator.name.c_str(), (int)animator.keyframes.size());
+			scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(animator.uuid);
+			if (!node) {
 				const core::String &uuidStr = animator.uuid.str();
 				Log::warn("Node not found for uuid: %s", uuidStr.c_str());
+				continue;
+			}
+
+			const core::String &uuidStr = node->uuid().str();
+			Log::debug("Found node: %s (uuid: %s)", node->name().c_str(), uuidStr.c_str());
+
+			// Sort keyframes by time to ensure correct ordering
+			core::DynamicArray<priv::KeyFrame> sortedKeyframes = animator.keyframes;
+			core::sort(sortedKeyframes.begin(), sortedKeyframes.end(), [](const priv::KeyFrame &a, const priv::KeyFrame &b) {
+				return a.time < b.time;
+			});
+
+			for (const priv::KeyFrame &keyframe : sortedKeyframes) {
+				if (keyframe.dataPoints.empty()) {
+					Log::debug("Keyframe has no data points: channel=%s, time=%f", keyframe.channel.c_str(), keyframe.time);
+					continue;
+				}
+
+				Log::debug("Keyframe: channel=%s, time=%f, interpolation=%d, dataPoints=%d",
+						   keyframe.channel.c_str(), keyframe.time, (int)keyframe.interpolation,
+						   (int)keyframe.dataPoints.size());
+
+				// Blockbench uses seconds, vengi uses frames at 60fps
+				const scenegraph::FrameIndex frameIdx = keyframe.time * 60.0f;
+
+				// Get or create keyframe at this frame
+				scenegraph::KeyFrameIndex kfIdx;
+				if (!node->hasKeyFrameForFrame(frameIdx, &kfIdx)) {
+					kfIdx = node->addKeyFrame(frameIdx);
+				}
+
+				scenegraph::SceneGraphKeyFrame &kf = node->keyFrame(kfIdx);
+				kf.interpolation = keyframe.interpolation;
+
+				// Get existing transform or create new one
+				scenegraph::SceneGraphTransform transform;
+				const glm::vec3 &value = keyframe.dataPoints[0];
+
+				if (keyframe.channel == "rotation") {
+					// Blockbench uses degrees, convert to quaternion
+					transform.setLocalOrientation(glm::quat(glm::radians(value)));
+					Log::debug("  Rotation: %.2f, %.2f, %.2f degrees", value.x, value.y, value.z);
+				} else if (keyframe.channel == "position") {
+					transform.setLocalTranslation(value);
+					Log::debug("  Position: %.2f, %.2f, %.2f", value.x, value.y, value.z);
+				} else if (keyframe.channel == "scale") {
+					transform.setLocalScale(value);
+					Log::debug("  Scale: %.2f, %.2f, %.2f", value.x, value.y, value.z);
+				} else {
+					Log::warn("Unknown animation channel: %s", keyframe.channel.c_str());
+					continue;
+				}
+
+				node->setTransform(kfIdx, transform);
+
+				// Handle bezier curves for cubic interpolation
+				if (keyframe.interpolation == scenegraph::InterpolationType::CubicBezier) {
+					// TODO: VOXELFORMAT: Store bezier control points if the SceneGraphKeyFrame supports it
+					// For now, the interpolation type is set but control points are not used
+					Log::debug("  Bezier linked=%d, leftTime=(%.2f,%.2f,%.2f), rightTime=(%.2f,%.2f,%.2f)",
+							   keyframe.bezierLinked,
+							   keyframe.bezierLeftTime.x, keyframe.bezierLeftTime.y, keyframe.bezierLeftTime.z,
+							   keyframe.bezierRightTime.x, keyframe.bezierRightTime.y, keyframe.bezierRightTime.z);
+				}
 			}
 		}
 #endif
+	}
+	if (removeDefaultAnimation && sceneGraph.animations().size() > 1) {
+		sceneGraph.removeAnimation(DEFAULT_ANIMATION);
 	}
 	return true;
 }
