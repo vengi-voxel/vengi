@@ -112,14 +112,28 @@ static const glm::vec3 toVec3(const nlohmann::json &json, const glm::vec3 &defau
 	if (iterX == json.end() || iterY == json.end() || iterZ == json.end()) {
 		return defaultValue;
 	}
-	if (!iterX->is_number() || !iterY->is_number() || !iterZ->is_number()) {
-		return defaultValue;
-	}
-	// TODO: VOXELFORMAT: parse data_points - x, y and z - there can be strings inside for some - like "z": "0\n" and "z": 0
-	// "data_points": [{"x": "0","y": "0","z": 90}],
-	const float x = iterX.value().get<float>();
-	const float y = iterY.value().get<float>();
-	const float z = iterZ.value().get<float>();
+
+	// Handle both string and numeric types in data_points
+	// Blockbench can serialize values as strings (e.g., "0", "0\n") or numbers
+	auto getFloatValue = [](const nlohmann::json &val, float defaultVal) -> float {
+		if (val.is_number()) {
+			return val.get<float>();
+		} else if (val.is_string()) {
+			const std::string str = val.get<std::string>();
+			char *end = nullptr;
+			const float result = std::strtof(str.c_str(), &end);
+			if (end != str.c_str() && result != HUGE_VALF && result != -HUGE_VALF) {
+				return result;
+			}
+			Log::debug("Failed to parse float from string: '%s'", str.c_str());
+			return defaultVal;
+		}
+		return defaultVal;
+	};
+
+	const float x = getFloatValue(*iterX, defaultValue.x);
+	const float y = getFloatValue(*iterY, defaultValue.y);
+	const float z = getFloatValue(*iterZ, defaultValue.z);
 	return glm::vec3(x, y, z);
 }
 
