@@ -671,43 +671,81 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	for (const auto &texture : textures) {
 		const core::String &name = json::toStr(texture, "name");
-		// TODO: VOXELFORMAT: allow to load from "path" instead of "source"
-		// relative_path
 		const core::String &source = json::toStr(texture, "source");
+		const core::String &path = json::toStr(texture, "path");
+		const core::String &relativePath = json::toStr(texture, "relative_path");
+
+		image::ImagePtr image;
+
+		// Try to load from base64 encoded source
 		if (core::string::startsWith(source, "data:")) {
 			const size_t mimetypeEndPos = source.find(";");
 			if (mimetypeEndPos == core::String::npos) {
-				Log::error("No mimetype found in source: %s", source.c_str());
-				return false;
+				Log::warn("No mimetype found in source for texture: %s", name.c_str());
+			} else {
+				const core::String &mimetype = source.substr(5, mimetypeEndPos - 5);
+				if (mimetype != "image/png" && mimetype != "image/jpeg") {
+					Log::warn("Unsupported mimetype: %s for texture: %s", mimetype.c_str(), name.c_str());
+				} else {
+					const size_t encodingEnd = source.find(",");
+					if (encodingEnd == core::String::npos) {
+						Log::warn("No encoding found in source for texture: %s", name.c_str());
+					} else {
+						const core::String &encoding = source.substr(mimetypeEndPos + 1, encodingEnd - mimetypeEndPos - 1);
+						if (encoding != "base64") {
+							Log::warn("Unsupported encoding: %s for texture: %s", encoding.c_str(), name.c_str());
+						} else {
+							const core::String &data = source.substr(encodingEnd + 1);
+							Log::debug("Loading texture: %s with size: %d", name.c_str(), (int)data.size());
+							io::MemoryReadStream dataStream(data.c_str(), data.size());
+							io::Base64ReadStream base64Stream(dataStream);
+							io::BufferedReadWriteStream bufferedStream(base64Stream, data.size());
+							image = image::loadImage(name, bufferedStream);
+							if (!image->isLoaded()) {
+								Log::warn("Failed to load texture from base64: %s", name.c_str());
+							}
+						}
+					}
+				}
 			}
-			const core::String &mimetype = source.substr(5, mimetypeEndPos - 5);
-			if (mimetype != "image/png") {
-				Log::error("Unsupported mimetype: %s", mimetype.c_str());
-				return false;
+		}
+		// Try to load from external file path
+		else if (!path.empty()) {
+			Log::debug("Loading texture from path: %s", path.c_str());
+			core::ScopedPtr<io::SeekableReadStream> pathStream(archive->readStream(path));
+			if (pathStream) {
+				image = image::loadImage(path, *pathStream);
+				if (!image->isLoaded()) {
+					Log::warn("Failed to load texture from path: %s", path.c_str());
+				}
+			} else {
+				Log::warn("Could not open stream for texture path: %s", path.c_str());
 			}
-			const size_t encodingEnd = source.find(",");
-			if (encodingEnd == core::String::npos) {
-				Log::error("No encoding found in source: %s", source.c_str());
-				return false;
+		}
+		// Try to load from relative path
+		else if (!relativePath.empty()) {
+			Log::debug("Loading texture from relative path: %s", relativePath.c_str());
+			const core::String fullPath = core::string::path(filename, relativePath);
+			core::ScopedPtr<io::SeekableReadStream> relPathStream(archive->readStream(fullPath));
+			if (relPathStream) {
+				image = image::loadImage(fullPath, *relPathStream);
+				if (!image->isLoaded()) {
+					Log::warn("Failed to load texture from relative path: %s", relativePath.c_str());
+				}
+			} else {
+				Log::warn("Could not open stream for relative texture path: %s", fullPath.c_str());
 			}
-			const core::String &encoding = source.substr(mimetypeEndPos + 1, encodingEnd - mimetypeEndPos - 1);
-			if (encoding != "base64") {
-				Log::error("Unsupported encoding: %s", encoding.c_str());
-				return false;
-			}
-			const core::String &data = source.substr(encodingEnd + 1);
-			Log::debug("Loading texture: %s with size: %d", name.c_str(), (int)data.size());
-			io::MemoryReadStream dataStream(data.c_str(), data.size());
-			io::Base64ReadStream base64Stream(dataStream);
-			io::BufferedReadWriteStream bufferedStream(base64Stream, data.size());
-			const image::ImagePtr &image = image::loadImage(name, bufferedStream);
-			if (image->isLoaded()) {
-				meshMaterialArray.emplace_back(createMaterial(image));
-			}
-			// TODO: VOXELFORMAT: this will destroy the material indices...
+		}
+
+		// Always add material to array (even if null) to preserve indices
+		if (image && image->isLoaded()) {
+			meshMaterialArray.emplace_back(createMaterial(image));
+		} else {
+			// Add null material to maintain correct indexing
+			meshMaterialArray.emplace_back(MeshMaterialPtr{});
+			Log::debug("Added null material at index %d for texture: %s", (int)meshMaterialArray.size() - 1, name.c_str());
 		}
 	}
-
 	const nlohmann::json &elementsJson = json["elements"];
 	if (!elementsJson.is_array()) {
 		Log::error("Elements is not an array in json file: %s", filename.c_str());
