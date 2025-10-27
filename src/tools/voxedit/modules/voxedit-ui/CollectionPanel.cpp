@@ -140,6 +140,8 @@ int CollectionPanel::update() {
 				const core::String &label = core::String::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
 					if (!collection.sorted) {
+						ImGui::Spinner("##collectionspinner", ImGui::Size(1.0f));
+						ImGui::SameLine();
 						ImGui::TextUnformatted(_("Loading..."));
 					} else {
 						const voxelcollection::VoxelFiles &voxelFiles = collection.files;
@@ -157,6 +159,8 @@ int CollectionPanel::update() {
 				if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
 					// if resolved already but no files are available, we are still loading...
 					if (_collectionMgr->resolved(source)) {
+						ImGui::Spinner("##sourcespinner", ImGui::Size(1.0f));
+						ImGui::SameLine();
 						ImGui::TextUnformatted(_("Loading..."));
 					} else {
 						_collectionMgr->resolve(source);
