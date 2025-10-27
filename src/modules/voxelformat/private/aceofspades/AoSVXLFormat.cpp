@@ -383,6 +383,10 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 	return glm::ivec3(512, 256, 512);
 }
 
+bool AoSVXLFormat::singleVolume() const {
+	return true;
+}
+
 bool AoSVXLFormat::saveMetadataTxt(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								   const io::ArchivePtr &archive) const {
 	const core::String &metadataFilename = core::string::replaceExtension(filename, ".txt");
@@ -429,22 +433,25 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 
 	Log::debug("Save vxl of size %i:%i:%i", mapSize, mapHeight, mapSize);
 
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	if (!node) {
+		Log::error("No model node found in scene graph");
+		return false;
+	}
+
 	struct libvxl_map map;
 	if (!libvxl_create(&map, mapSize, mapSize, mapHeight, nullptr, 0)) {
 		Log::error("Failed to create libvxl map");
 		return false;
 	}
-
-	// TODO: VOXELFORMAT: this doesn't apply transform - use singleModel mode to get an automated merge if needed
-	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
-		auto func = [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = node.palette().color(voxel.getColor());
-			const uint32_t color = vxl_color(rgba);
-			libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
-		};
-		voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func);
-	}
+	const palette::Palette &palette = node->palette();
+	const voxel::RawVolume *v = node->volume();
+	auto func = [&map, &palette, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
+		const core::RGBA rgba = palette.color(voxel.getColor());
+		const uint32_t color = vxl_color(rgba);
+		libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
+	};
+	voxelutil::visitVolume(*v, func);
 
 	uint8_t buf[4096];
 	struct libvxl_stream s;

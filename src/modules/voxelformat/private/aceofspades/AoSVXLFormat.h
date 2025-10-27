@@ -30,6 +30,7 @@ protected:
 	glm::ivec3 maxSize() const override;
 
 public:
+	bool singleVolume() const override;
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
