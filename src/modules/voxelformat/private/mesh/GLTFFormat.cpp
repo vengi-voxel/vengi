@@ -38,7 +38,7 @@
 #include <limits.h>
 
 #define TINYGLTF_IMPLEMENTATION
-// #define TINYGLTF_NO_FS // TODO: VOXELFORMAT: use our own file abstraction
+#define TINYGLTF_NO_FS
 #define JSON_HAS_CPP_11
 // #define TINYGLTF_NOEXCEPTION
 #define TINYGLTF_NO_STB_IMAGE
@@ -52,6 +52,115 @@ namespace voxelformat {
 namespace _priv {
 
 const float FPS = 24.0f;
+
+// Custom filesystem callbacks for tinygltf using io::Archive
+struct ArchiveUserData {
+	const io::ArchivePtr *archive;
+	const core::String *basePath;
+};
+
+static bool archiveFileExists(const std::string &abs_filename, void *userData) {
+	core_assert(userData != nullptr);
+	const ArchiveUserData *archiveData = (const ArchiveUserData *)userData;
+	return (*archiveData->archive)->exists(abs_filename.c_str());
+}
+
+static std::string archiveExpandFilePath(const std::string &filepath, void *userData) {
+	core_assert(userData != nullptr);
+	const ArchiveUserData *archiveData = (const ArchiveUserData *)userData;
+	if (archiveData->basePath->empty()) {
+		return filepath;
+	}
+	// If the filepath is already absolute or contains a URI scheme, return as-is
+	if (filepath.empty() || filepath[0] == '/' || filepath.find("://") != std::string::npos ||
+		filepath.find("data:") == 0) {
+		return filepath;
+	}
+	// Join the base path with the relative filepath
+	const core::String fullPath = core::string::path(*archiveData->basePath, filepath.c_str());
+	return fullPath.c_str();
+}
+
+static bool archiveReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath,
+								  void *userData) {
+	core_assert(userData != nullptr);
+	const ArchiveUserData *archiveData = (const ArchiveUserData *)userData;
+	core::ScopedPtr<io::SeekableReadStream> stream((*archiveData->archive)->readStream(filepath.c_str()));
+	if (!stream) {
+		if (err != nullptr) {
+			*err = core::String::format("Failed to open file: %s", filepath.c_str()).c_str();
+		}
+		return false;
+	}
+
+	const int64_t size = stream->size();
+	if (size < 0) {
+		if (err != nullptr) {
+			*err = core::String::format("Failed to get file size: %s", filepath.c_str()).c_str();
+		}
+		return false;
+	}
+
+	out->resize(size);
+	if (size > 0) {
+		if (stream->read(out->data(), size) != size) {
+			if (err != nullptr) {
+				*err = core::String::format("Failed to read file: %s", filepath.c_str()).c_str();
+			}
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static bool archiveWriteWholeFile(std::string *err, const std::string &filepath,
+								   const std::vector<unsigned char> &contents, void *userData) {
+	core_assert(userData != nullptr);
+	const ArchiveUserData *archiveData = (const ArchiveUserData *)userData;
+	core::ScopedPtr<io::SeekableWriteStream> stream((*archiveData->archive)->writeStream(filepath.c_str()));
+	if (!stream) {
+		if (err != nullptr) {
+			*err = core::String::format("Failed to open file for writing: %s", filepath.c_str()).c_str();
+		}
+		return false;
+	}
+
+	if (!contents.empty()) {
+		if (stream->write(contents.data(), contents.size()) != (int64_t)contents.size()) {
+			if (err != nullptr) {
+				*err = core::String::format("Failed to write file: %s", filepath.c_str()).c_str();
+			}
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static bool archiveGetFileSize(size_t *filesize_out, std::string *err, const std::string &abs_filename,
+								void *userData) {
+	core_assert(userData != nullptr);
+	const ArchiveUserData *archiveData = (const ArchiveUserData *)userData;
+	core::ScopedPtr<io::SeekableReadStream> stream((*archiveData->archive)->readStream(abs_filename.c_str()));
+	if (!stream) {
+		if (err != nullptr) {
+			*err = core::String::format("Failed to open file: %s", abs_filename.c_str()).c_str();
+		}
+		return false;
+	}
+
+	const int64_t size = stream->size();
+	if (size < 0) {
+		if (err != nullptr) {
+			*err = core::String::format("Failed to get file size: %s", abs_filename.c_str()).c_str();
+		}
+		return false;
+	}
+
+	*filesize_out = (size_t)size;
+	return true;
+}
 
 static int addBuffer(tinygltf::Model &gltfModel, io::BufferedReadWriteStream &stream, const char *name) {
 	tinygltf::Buffer gltfBuffer;
@@ -1894,8 +2003,24 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	bool state;
 
 	const core::String filePath = core::string::extractDir(filename);
+
+	// Setup custom filesystem callbacks to use io::Archive
+	_priv::ArchiveUserData archiveUserData;
+	archiveUserData.archive = &archive;
+	archiveUserData.basePath = &filePath;
+
+	tinygltf::FsCallbacks fsCallbacks;
+	fsCallbacks.FileExists = _priv::archiveFileExists;
+	fsCallbacks.ExpandFilePath = _priv::archiveExpandFilePath;
+	fsCallbacks.ReadWholeFile = _priv::archiveReadWholeFile;
+	fsCallbacks.WriteWholeFile = _priv::archiveWriteWholeFile;
+	fsCallbacks.GetFileSizeInBytes = _priv::archiveGetFileSize;
+	fsCallbacks.user_data = &archiveUserData;
+
 	tinygltf::TinyGLTF gltfLoader;
 	gltfLoader.SetImageLoader(_priv::loadImageData, nullptr);
+	gltfLoader.SetFsCallbacks(fsCallbacks);
+
 	tinygltf::Model gltfModel;
 	if (magic == FourCC('g', 'l', 'T', 'F')) {
 		Log::debug("Detected binary gltf stream");
