@@ -8,6 +8,9 @@ set(EXTERNAL_SRCS
 	external/libvxl.h external/libvxl.c
 )
 add_library(${LIB}-external ${EXTERNAL_SRCS})
+if (USE_SANITIZERS)
+	target_compile_options(${LIB}-external PRIVATE -DUFBX_UBSAN=1)
+endif()
 check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
 if (C_NO_SHADOW)
 	foreach (src ${EXTERNAL_SRCS})
