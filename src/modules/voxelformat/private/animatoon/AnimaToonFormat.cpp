@@ -375,4 +375,41 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	return true;
 }
 
+size_t AnimaToonFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive,
+									palette::Palette &palette, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+	const int64_t size = stream->size();
+	core::String jsonStr(size, ' ');
+	if (!stream->readString((int)jsonStr.size(), jsonStr.c_str())) {
+		Log::error("Failed to read string from stream");
+		return false;
+	}
+
+	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
+	auto it = json.find("customColors");
+	if (it == json.end() || !it->is_array()) {
+		return 0u;
+	}
+
+	// TODO: VOXELFORMAT: quantize colors if they exceed the max allowed palette size
+	int idx = 0;
+	for (const auto &e : *it) {
+		const uint8_t r = (uint8_t)(e.value("r", 0.0f) * 255.0f);
+		const uint8_t g = (uint8_t)(e.value("g", 0.0f) * 255.0f);
+		const uint8_t b = (uint8_t)(e.value("b", 0.0f) * 255.0f);
+		const uint8_t a = (uint8_t)(e.value("a", 1.0f) * 255.0f);
+		if (idx < palette::PaletteMaxColors) {
+			palette.setColor(idx++, core::RGBA(r, g, b, a));
+		} else {
+			break;
+		}
+	}
+	palette.setSize(idx);
+	return (size_t)idx;
+}
+
 } // namespace voxelformat
