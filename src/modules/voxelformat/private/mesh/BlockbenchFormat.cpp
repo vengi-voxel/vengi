@@ -830,11 +830,15 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	BBNode bbRoot;
 	for (const auto &entry : outlinerJson) {
 		if (entry.is_object()) {
-			if (!priv::parseOutliner(scale, filename, bbMeta, entry, bbRoot)) {
+			// Parse group as a child node
+			BBNode bbChildNode;
+			if (!priv::parseOutliner(scale, filename, bbMeta, entry, bbChildNode)) {
 				Log::error("Failed to parse outliner");
 				return false;
 			}
+			bbRoot.children.emplace_back(core::move(bbChildNode));
 		} else if (entry.is_string()) {
+			// Direct element reference at root level
 			core::String uuid = json::toStr(entry);
 			bbRoot.referenced.emplace_back(core::UUID(uuid));
 		}
