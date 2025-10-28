@@ -279,6 +279,8 @@ set(TEST_FILES
 	"tests/libresprite.ase"
 	"tests/libresprite.aseprite"
 	"tests/loy_s_goodies_female_template.bbmodel"
+	"tests/loy_s_goodies_female_template_5_0_3.bbmodel"
+	"tests/loy_s_goodies_female_template_5_0_3.glb"
 	"tests/magicavoxel.vox"
 	"tests/minecraft_110.mca"
 	"tests/minecraft_113.mca"
