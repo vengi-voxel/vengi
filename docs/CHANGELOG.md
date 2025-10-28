@@ -14,7 +14,15 @@ General:
 
    - Allow to export `ply` vertex positions as integers when `voxformat_transform_mesh` is set to `false` and no scale is applied
    - Fixed hollowing in some situations
-   - Fixed a few `vxl` issues
+   - Fixed a few `vxl` (Tiberian sun) issues
+   - Added spritestack write support
+   - Load a few more world properties for the blip/cubzh base64 encoded world files
+   - Use own filesystem abstraction for gltf files
+   - Implemented missing easing functions
+   - Extended blockbench format support regarding external textures
+   - Allow to put rotations into the AceOfSpades `vxl` export (no scaling yet)
+   - Performance optimizations for stuff like rotate on axis
+   - Added support for loading the palette from animatoon files
 
 ## 0.2.1 (2025-10-24)
 
