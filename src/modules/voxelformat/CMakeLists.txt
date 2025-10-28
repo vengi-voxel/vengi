@@ -320,6 +320,7 @@ set(TEST_FILES
 	"tests/sora.ben"
 	"tests/sora.ben.json"
 	"tests/spritestack.zip"
+	"tests/spritestack-spritesheet.zip"
 	"tests/sylvie/02.ase"
 	"tests/sylvie/404.ase"
 	"tests/sylvie/46.ase"
