@@ -32,12 +32,24 @@ static size_t ziparchive_read(void *userdata, mz_uint64 offset, void *targetBuf,
 	return read;
 }
 
-static size_t ziparchive_write(void *userdata, mz_uint64 offset, const void *targetBuf, size_t targetBufSize) {
+static size_t ziparchive_write_callback(void *userdata, mz_uint64 offset, const void *targetBuf, size_t targetBufSize) {
 	io::BufferedReadWriteStream *out = (io::BufferedReadWriteStream *)userdata;
 	if (out->seek((int64_t)offset, SEEK_SET) == -1) {
 		return 0u;
 	}
-	// TODO: write until we have written the expected size
+	const int64_t written = out->write(targetBuf, targetBufSize);
+	if (written <= -1) {
+		Log::error("Failed to write %i bytes into stream", (int)targetBufSize);
+		return written;
+	}
+	return written;
+}
+
+static size_t ziparchive_write(void *userdata, mz_uint64 offset, const void *targetBuf, size_t targetBufSize) {
+	io::SeekableWriteStream *out = (io::SeekableWriteStream *)userdata;
+	if (out->seek((int64_t)offset, SEEK_SET) == -1) {
+		return 0u;
+	}
 	const int64_t written = out->write(targetBuf, targetBufSize);
 	if (written <= -1) {
 		Log::error("Failed to write %i bytes into stream", (int)targetBufSize);
@@ -70,12 +82,14 @@ void ZipArchive::shutdown() {
 }
 
 void ZipArchive::reset() {
-	if (_zip == nullptr) {
-		return;
+	if (isWrite()) {
+		flush();
 	}
-	mz_zip_end((mz_zip_archive*)_zip);
-	core_free(_zip);
-	_zip = nullptr;
+	if (_zip != nullptr) {
+		mz_zip_end((mz_zip_archive *)_zip);
+		core_free(_zip);
+		_zip = nullptr;
+	}
 }
 
 bool ZipArchive::validStream(io::SeekableReadStream &stream) {
@@ -151,14 +165,65 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 	return true;
 }
 
-SeekableReadStream* ZipArchive::readStream(const core::String &filePath) {
-	if ((mz_zip_archive*)_zip == nullptr) {
+bool ZipArchive::init(io::SeekableWriteStream *stream) {
+	if (stream == nullptr) {
+		Log::error("No stream given for writing");
+		return false;
+	}
+	reset();
+
+	mz_zip_archive *zip = (mz_zip_archive *)core_malloc(sizeof(mz_zip_archive));
+	_zip = zip;
+
+	mz_zip_zero_struct(zip);
+	zip->m_pAlloc = ziparchive_malloc;
+	zip->m_pRealloc = ziparchive_realloc;
+	zip->m_pFree = ziparchive_free;
+	zip->m_pWrite = ziparchive_write;
+	zip->m_pIO_opaque = stream;
+
+	if (!mz_zip_writer_init(zip, 0)) {
+		const mz_zip_error error = mz_zip_get_last_error(zip);
+		const char *err = mz_zip_get_error_string(error);
+		Log::error("Failed to initialize the zip writer: %s", err);
+		reset();
+		return false;
+	}
+
+	return true;
+}
+
+bool ZipArchive::isWrite() const {
+	if (_zip == nullptr) {
+		return false;
+	}
+
+	mz_zip_archive *zip = (mz_zip_archive *)_zip;
+	return zip->m_zip_mode == MZ_ZIP_MODE_WRITING;
+}
+
+bool ZipArchive::flush() {
+	core_assert(isWrite());
+
+	if (!mz_zip_writer_finalize_archive((mz_zip_archive *)_zip)) {
+		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive *)_zip);
+		const char *err = mz_zip_get_error_string(error);
+		Log::error("Failed to finalize zip archive: %s", err);
+		return false;
+	}
+
+	return true;
+}
+
+SeekableReadStream *ZipArchive::readStream(const core::String &filePath) {
+	if ((mz_zip_archive *)_zip == nullptr) {
 		Log::error("No zip archive loaded");
 		return nullptr;
 	}
-	BufferedReadWriteStream* stream = new BufferedReadWriteStream();
-	if (!mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, filePath.c_str(), ziparchive_write, stream, 0)) {
-		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive*)_zip);
+	BufferedReadWriteStream *stream = new BufferedReadWriteStream();
+	if (!mz_zip_reader_extract_file_to_callback((mz_zip_archive *)_zip, filePath.c_str(), ziparchive_write_callback,
+												stream, 0)) {
+		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive *)_zip);
 		const char *err = mz_zip_get_error_string(error);
 		Log::error("Failed to extract file '%s' from zip: %s", filePath.c_str(), err);
 		delete stream;
@@ -169,10 +234,46 @@ SeekableReadStream* ZipArchive::readStream(const core::String &filePath) {
 	return stream;
 }
 
-SeekableWriteStream* ZipArchive::writeStream(const core::String &filePath) {
-	// TODO: implement me
-	Log::debug("Write stream for file '%s' from zip", filePath.c_str());
-	return nullptr;
+class ZipArchiveWriteStream : public io::BufferedReadWriteStream {
+private:
+	using Super = io::BufferedReadWriteStream;
+	mz_zip_archive *_zip;
+	core::String _filePath;
+
+public:
+	ZipArchiveWriteStream(mz_zip_archive *zip, const core::String &filePath)
+		: io::BufferedReadWriteStream(), _zip(zip), _filePath(filePath) {
+	}
+
+	~ZipArchiveWriteStream() override {
+		flush();
+		_zip = nullptr;
+	}
+
+	bool flush() override {
+		const uint8_t *data = (const uint8_t *)getBuffer();
+		const size_t size = (size_t)this->size();
+
+		if (!mz_zip_writer_add_mem((mz_zip_archive *)_zip, _filePath.c_str(), data, size, MZ_DEFAULT_COMPRESSION)) {
+			const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive *)_zip);
+			const char *err = mz_zip_get_error_string(error);
+			Log::error("Failed to add file '%s' to zip: %s", _filePath.c_str(), err);
+			return false;
+		}
+		Log::debug("Added file '%s' to zip (%i bytes)", _filePath.c_str(), (int)size);
+		return Super::flush();
+	}
+};
+
+SeekableWriteStream *ZipArchive::writeStream(const core::String &filePath) {
+	if (_zip == nullptr) {
+		Log::error("No write zip archive initialized");
+		return nullptr;
+	}
+
+	ZipArchiveWriteStream *stream = new ZipArchiveWriteStream((mz_zip_archive *)_zip, filePath);
+	Log::debug("Created write stream for file '%s'", filePath.c_str());
+	return stream;
 }
 
 ArchivePtr openZipArchive(io::SeekableReadStream *stream) {

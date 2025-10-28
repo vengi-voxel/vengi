@@ -16,16 +16,18 @@ class ZipArchive : public Archive {
 private:
 	void *_zip = nullptr;
 	void reset();
-
+	bool flush();
 public:
 	ZipArchive();
 	virtual ~ZipArchive();
 
+	bool isWrite() const;
 	static bool validStream(io::SeekableReadStream &stream);
 	SeekableReadStream* readStream(const core::String &filePath) override;
 	SeekableWriteStream* writeStream(const core::String &filePath) override;
 
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
+	bool init(io::SeekableWriteStream *stream);
 	void shutdown() override;
 };
 

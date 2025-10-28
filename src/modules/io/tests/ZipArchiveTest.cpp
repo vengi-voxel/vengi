@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
 #include "core/ScopedPtr.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
@@ -35,6 +36,126 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	EXPECT_EQ("file.txt", files[1].name);
 	EXPECT_EQ("file.txt", files[2].name);
 	EXPECT_EQ("dir/file.txt", files[2].fullPath);
+}
+
+TEST_F(ZipArchiveTest, testZipArchiveWrite) {
+	BufferedReadWriteStream archiveStream;
+	{
+		ZipArchive archive;
+		ASSERT_TRUE(archive.init(&archiveStream));
+
+		// Write some test files
+		{
+			core::ScopedPtr<io::SeekableWriteStream> stream1(archive.writeStream("test1.txt"));
+			ASSERT_NE(nullptr, stream1);
+			const char *content1 = "Hello World!";
+			stream1->writeString(content1, false);
+		}
+
+		{
+			core::ScopedPtr<io::SeekableWriteStream> stream2(archive.writeStream("test2.txt"));
+			ASSERT_NE(nullptr, stream2);
+			const char *content2 = "Another test file\nwith multiple lines\n";
+			stream2->writeString(content2, false);
+		}
+
+		{
+			core::ScopedPtr<io::SeekableWriteStream> stream3(archive.writeStream("dir/test3.txt"));
+			ASSERT_NE(nullptr, stream3);
+			const char *content3 = "File in subdirectory";
+			stream3->writeString(content3, false);
+		}
+
+		archive.shutdown();
+	}
+	// Now read it back
+	archiveStream.seek(0);
+	{
+		ZipArchive readArchive;
+		ASSERT_TRUE(readArchive.init("test.zip", &archiveStream));
+
+		const ArchiveFiles &files = readArchive.files();
+		ASSERT_EQ(3u, files.size());
+
+		{
+			core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("test1.txt"));
+			ASSERT_TRUE(stream);
+			char buf[64];
+			stream->readString(sizeof(buf), buf, false);
+			EXPECT_STREQ("Hello World!", buf);
+		}
+
+		{
+			core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("test2.txt"));
+			ASSERT_TRUE(stream);
+			char buf[64];
+			stream->readString(sizeof(buf), buf, false);
+			EXPECT_STREQ("Another test file\nwith multiple lines\n", buf);
+		}
+
+		{
+			core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("dir/test3.txt"));
+			ASSERT_TRUE(stream);
+			char buf[64];
+			stream->readString(sizeof(buf), buf, false);
+			EXPECT_STREQ("File in subdirectory", buf);
+		}
+	}
+}
+
+TEST_F(ZipArchiveTest, testZipArchiveWriteBinary) {
+	BufferedReadWriteStream archiveStream;
+	{
+		ZipArchive archive;
+		ASSERT_TRUE(archive.init(&archiveStream));
+
+		{
+			core::ScopedPtr<io::SeekableWriteStream> stream(archive.writeStream("binary.dat"));
+			ASSERT_NE(nullptr, stream);
+			uint8_t data[] = {0x00, 0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFD, 0xFC};
+			stream->write(data, sizeof(data));
+		}
+
+		archive.shutdown();
+	}
+
+	// Read it back
+	archiveStream.seek(0);
+	{
+		ZipArchive readArchive;
+		ASSERT_TRUE(readArchive.init("test.zip", &archiveStream));
+
+		core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("binary.dat"));
+		ASSERT_TRUE(stream);
+		EXPECT_EQ(8, stream->size());
+
+		uint8_t readData[8];
+		EXPECT_EQ(8, stream->read(readData, 8));
+		EXPECT_EQ(0x00, readData[0]);
+		EXPECT_EQ(0x01, readData[1]);
+		EXPECT_EQ(0x02, readData[2]);
+		EXPECT_EQ(0x03, readData[3]);
+		EXPECT_EQ(0xFF, readData[4]);
+		EXPECT_EQ(0xFE, readData[5]);
+		EXPECT_EQ(0xFD, readData[6]);
+		EXPECT_EQ(0xFC, readData[7]);
+	}
+}
+
+TEST_F(ZipArchiveTest, testZipArchiveWriteEmpty) {
+	// Test writing an empty ZIP
+	BufferedReadWriteStream archiveStream;
+	ZipArchive archive;
+	ASSERT_TRUE(archive.init(&archiveStream));
+	archive.shutdown();
+
+	// Read it back
+	archiveStream.seek(0);
+	ZipArchive readArchive;
+	ASSERT_TRUE(readArchive.init("test.zip", &archiveStream));
+
+	const ArchiveFiles &files = readArchive.files();
+	EXPECT_EQ(0u, files.size());
 }
 
 } // namespace io
