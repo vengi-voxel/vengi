@@ -55,14 +55,27 @@ bool CubzhB64Format::loadObject(const io::ArchivePtr &archive, const core::Strin
 			fullPath = core::string::path(path, "..", "cache", file);
 		} else if (archive->exists(core::string::path(path, "cache", file))) {
 			fullPath = core::string::path(path, "cache", file);
+		} else if (archive->exists(core::string::extractFilenameWithExtension(file))) {
+			fullPath = core::string::extractFilenameWithExtension(file);
 		} else {
-			Log::error("3zh file not found: %s", fullPath.c_str());
-			return false;
+			fullPath = luaName;
+
+			// load the 3zh file
+			fullPath.replaceAllChars('.', '-'); // replace the lua dir separator
+			fullPath.append(".3zh");
+			if (!archive->exists(fullPath)) {
+				Log::error("3zh file not found: %s", fullPath.c_str());
+				return false;
+			}
 		}
 	}
 
 	CubzhFormat format;
-	return format.load(fullPath, archive, modelScene, ctx);
+	if (!format.load(fullPath, archive, modelScene, ctx)) {
+		Log::error("Failed to load 3zh file: %s", fullPath.c_str());
+		return false;
+	}
+	return true;
 }
 
 bool CubzhB64Format::readChunkMap(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
@@ -157,7 +170,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 		if (blockAction == 1) {
 			core::RGBA color;
 			wrapBool(io::readColor(stream, color))
-			// the index is an encoded position
+			// the index is an encoded position using: X + Y * 1000 + Z * 1000000
 			const int x = i % 1000;
 			const int y = i / 1000 % 1000;
 			const int z = i / 1000000;
@@ -261,6 +274,22 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 					wrap(stream.readUInt8(physicMode))
 					wrap(stream.readUInt8(physicMode))
 					wrap(stream.readUInt8(physicMode))
+				} else if (CHECK_ID(fieldId, "cg")) {
+					// CollisionGroups - read and skip for now
+					uint8_t cg1, cg2, cg3, cg4;
+					wrap(stream.readUInt8(cg1))
+					wrap(stream.readUInt8(cg2))
+					wrap(stream.readUInt8(cg3))
+					wrap(stream.readUInt8(cg4))
+					Log::debug("CollisionGroups: %u %u %u %u", cg1, cg2, cg3, cg4);
+				} else if (CHECK_ID(fieldId, "cw")) {
+					// CollidesWithGroups - read and skip for now
+					uint8_t cw1, cw2, cw3, cw4;
+					wrap(stream.readUInt8(cw1))
+					wrap(stream.readUInt8(cw2))
+					wrap(stream.readUInt8(cw3))
+					wrap(stream.readUInt8(cw4))
+					Log::debug("CollidesWithGroups: %u %u %u %u", cw1, cw2, cw3, cw4);
 				} else {
 					Log::error("Unknown field id: %c%c", fieldId[0], fieldId[1]);
 					return false;
@@ -289,12 +318,14 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 
 			++instanceCount;
 			if (modelNodeIds.empty()) {
-				modelNodeIds = scenegraph::copySceneGraph(sceneGraph, modelScene, instanceGroupNodeId);
-				if (modelNodeIds.empty()) {
-					Log::error("Failed to copy scene graph from %s", luaName.c_str());
-					return false;
+				if (!modelScene.empty()) {
+					modelNodeIds = scenegraph::copySceneGraph(sceneGraph, modelScene, instanceGroupNodeId);
+					if (modelNodeIds.empty()) {
+						Log::error("Failed to copy scene graph from %s", luaName.c_str());
+						// return false;
+					}
+					Log::debug("Added %i nodes from %s", (int)modelNodeIds.size(), luaName.c_str());
 				}
-				Log::debug("Added %i nodes from %s", (int)modelNodeIds.size(), luaName.c_str());
 			} else {
 				for (int modelNodeId : modelNodeIds) {
 					const int refNodeId =
