@@ -328,6 +328,19 @@ void SceneGraphNode::setTranslation(const glm::vec3 &translation, bool world) {
 	}
 }
 
+void SceneGraphNode::setScale(const glm::vec3 &scale, bool world) {
+	for (auto *keyFrames : _keyFramesMap) {
+		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
+			SceneGraphTransform &transform = keyFrame.transform();
+			if (world) {
+				transform.setWorldScale(scale);
+			} else {
+				transform.setLocalScale(scale);
+			}
+		}
+	}
+}
+
 void SceneGraphNode::setRotation(const glm::quat &rotation, bool world) {
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {

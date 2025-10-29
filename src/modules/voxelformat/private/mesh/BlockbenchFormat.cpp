@@ -371,6 +371,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 	bbNode.origin = scale * priv::toVec3(entryJson, "origin");
 	bbNode.rotation = priv::toVec3(entryJson, "rotation");
 	bbNode.color = priv::toNumber(entryJson, "color", 0);
+	bbNode.size = priv::toVec3(entryJson, "size", glm::vec3(1.0f));
 
 	Log::debug("Node name: %s (%i references)", bbNode.name.c_str(), (int)bbNode.referenced.size());
 
@@ -511,6 +512,7 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 		group.setVisible(bbChild.visible);
 		group.setLocked(bbChild.locked);
 		group.setRotation(glm::quat(glm::radians(bbChild.rotation)), true);
+		group.setScale(bbChild.size, true);
 		group.setTranslation(bbChild.origin, true);
 		int groupParent = sceneGraph.emplace(core::move(group), parent);
 		if (groupParent == InvalidNodeId) {

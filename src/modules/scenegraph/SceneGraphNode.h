@@ -170,6 +170,7 @@ public:
 	 * @brief Set the given @c translation vector to all keyframe transform of this node
 	 */
 	void setTranslation(const glm::vec3 &translation, bool world = false);
+	void setScale(const glm::vec3 &scale, bool world = false);
 	/**
 	 * @brief Set the given @c rotation to all keyframe transform of this node
 	 */

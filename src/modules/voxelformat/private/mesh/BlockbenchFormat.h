@@ -182,6 +182,7 @@ public:
 		glm::vec3 rotation{0.0f};
 		// in world coordinates
 		glm::vec3 origin{0.0f};
+		glm::vec3 size{1.0f};
 		bool locked = false;
 		bool visible = true;
 		bool mirror_uv = false;
