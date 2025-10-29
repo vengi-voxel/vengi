@@ -6,6 +6,7 @@
 #include "glm/fwd.hpp"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -71,6 +72,22 @@ protected:
 		scenegraph::SceneGraphNode *main = sceneGraph.findNodeByName("main");
 		ASSERT_NE(main, nullptr);
 		EXPECT_EQ(main->type(), scenegraph::SceneGraphNodeType::Group);
+
+#if 0
+		// TODO: VOXELFORMAT: these values were taken directly out of blockbench - need to verify why they don't match
+		scenegraph::SceneGraphNode *eyeglossRight = sceneGraph.findNodeByName("eyegloss_right");
+		ASSERT_NE(eyeglossRight, nullptr);
+		EXPECT_EQ(eyeglossRight->type(), scenegraph::SceneGraphNodeType::Group);
+		const scenegraph::SceneGraphTransform &eyeglossRightTransform = eyeglossRight->transform(0);
+		EXPECT_VEC_NEAR(glm::vec3(3.0f, 27.4f, -3.91f), eyeglossRightTransform.worldTranslation(), 0.00001f);
+		ASSERT_EQ(1u, eyeglossRight->children().size());
+
+		const scenegraph::SceneGraphNode &eyeglossRightCube = sceneGraph.node(eyeglossRight->children()[0]);
+		EXPECT_EQ(eyeglossRightCube.type(), scenegraph::SceneGraphNodeType::Model);
+		const scenegraph::SceneGraphTransform &eyeglossRightCubeTransform = eyeglossRightCube.transform(0);
+		EXPECT_VEC_NEAR(glm::vec3(2.5f, 27.15f, -3.991f), eyeglossRightCubeTransform.worldTranslation(), 0.00001f);
+		EXPECT_VEC_NEAR(glm::vec3(-0.25f, 23.9f, 0.0f), eyeglossRightCube.worldPivot(), 0.00001f);
+#endif
 	}
 };
 
@@ -79,22 +96,23 @@ protected:
 TEST_F(BlockbenchFormatTest, testLoad_4_5) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "loy_s_goodies_female_template.bbmodel", 53);
+	SCOPED_TRACE("loy_s_goodies_female_template.bbmodel");
 	test_loy_s_goodies_female_template(sceneGraph, true);
 }
 
 // TODO: failing to load the new version
 TEST_F(BlockbenchFormatTest, DISABLED_testLoad_5_0_3) {
 	{
-		SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
 		scenegraph::SceneGraph sceneGraphGLB;
 		testLoad(sceneGraphGLB, "loy_s_goodies_female_template_5_0_3.glb", 53);
+		SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
 		test_loy_s_goodies_female_template(sceneGraphGLB, false);
 	}
 
 	{
-		SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
 		scenegraph::SceneGraph sceneGraph;
 		testLoad(sceneGraph, "loy_s_goodies_female_template_5_0_3.bbmodel", 53);
+		SCOPED_TRACE("loy_s_goodies_female_template_5_0_3.glb");
 		test_loy_s_goodies_female_template(sceneGraph, true);
 	}
 }
