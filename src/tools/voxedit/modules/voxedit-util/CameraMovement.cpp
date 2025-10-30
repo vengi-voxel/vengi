@@ -108,6 +108,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	}
 
 	if (camera->rotationType() == video::CameraRotationType::Eye) {
+		_body.extents.y = _bodyHeight->floatVal();
 		moveCameraInEyeMode(camera, sceneGraph, frameIdx);
 	}
 }
