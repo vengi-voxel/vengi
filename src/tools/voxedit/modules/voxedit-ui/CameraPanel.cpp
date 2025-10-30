@@ -51,6 +51,7 @@ void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, vid
 		}
 		ImGui::EndCombo();
 	}
+	// gamemode
 	ImGui::BeginDisabled(camera.rotationType() != video::CameraRotationType::Eye);
 	const core::VarPtr &clipping = core::Var::getSafe(cfg::VoxEditClipping);
 	ImGui::CheckboxVar(_("Clipping"), clipping);

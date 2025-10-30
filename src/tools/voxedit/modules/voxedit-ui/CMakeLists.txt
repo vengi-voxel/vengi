@@ -7,6 +7,7 @@ set(SRCS
 	CameraPanel.h CameraPanel.cpp
 	CollectionPanel.h CollectionPanel.cpp
 	DragAndDropPayload.h
+	GameModePanel.cpp GameModePanel.h
 	Gizmo.h
 	ViewMode.h
 	NodeInspectorPanel.h NodeInspectorPanel.cpp
@@ -41,6 +42,7 @@ if (USE_IMGUITESTENGINE)
 		tests/AssetPanelTest.cpp
 		tests/CameraPanelTest.cpp
 		tests/CollectionPanelTest.cpp
+		tests/GameModePanelTest.cpp
 		tests/NodeInspectorPanelTest.cpp
 		tests/NodePropertiesPanelTest.cpp
 		tests/LSystemPanelTest.cpp

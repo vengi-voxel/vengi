@@ -119,10 +119,10 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
-	  _networkPanel(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
-	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline),
-	  _cameraPanel(app, _sceneMgr), _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this),
-	  _sceneSettingsPanel(app, _sceneMgr) {
+	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
+	  _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
+	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr),
+	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));
 }
@@ -222,6 +222,7 @@ bool MainWindow::init() {
 	_animationPanel.init();
 	_menuBar.init();
 	_networkPanel.init();
+	_gameModePanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
@@ -426,6 +427,7 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_GAMEMODE, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCENE_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NETWORK, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCENEDEBUGPANEL, dockId);
@@ -481,6 +483,9 @@ void MainWindow::rightWidget() {
 	}
 	if (viewModeNetworkPanel(_viewMode->intVal())) {
 		_networkPanel.update(TITLE_NETWORK, listener);
+	}
+	if (viewModeGameModePanel(_viewMode->intVal())) {
+		_gameModePanel.update(TITLE_GAMEMODE, listener);
 	}
 }
 

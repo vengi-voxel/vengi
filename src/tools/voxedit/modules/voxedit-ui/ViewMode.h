@@ -23,6 +23,7 @@ enum class ViewMode : uint8_t { Default, Simple, All, CommandAndConquer, Minecra
 #define VIEWMODE_FLAG_ANIMATIONS    (1 << 10)
 #define VIEWMODE_FLAG_NOSPLIT       (1 << 11)
 #define VIEWMODE_FLAG_NETWORKPANEL  (1 << 12)
+#define VIEWMODE_FLAG_GAMEMODEPANEL (1 << 13)
 
 uint64_t viewModeFlags(ViewMode viewMode);
 
@@ -64,6 +65,11 @@ inline bool viewModeScriptPanel(T viewMode) {
 template<typename T>
 inline bool viewModeNetworkPanel(T viewMode) {
 	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_NETWORKPANEL) != 0u;
+}
+
+template<typename T>
+inline bool viewModeGameModePanel(T viewMode) {
+	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_GAMEMODEPANEL) != 0u;
 }
 
 template<typename T>

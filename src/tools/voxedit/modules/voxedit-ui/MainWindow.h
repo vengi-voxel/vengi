@@ -13,23 +13,24 @@
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
+#include "voxedit-ui/BrushPanel.h"
 #include "voxedit-ui/CameraPanel.h"
+#include "voxedit-ui/GameModePanel.h"
+#include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/MementoPanel.h"
+#include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/NetworkPanel.h"
 #include "voxedit-ui/NodeInspectorPanel.h"
-#include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/NodePropertiesPanel.h"
 #include "voxedit-ui/NormalPalettePanel.h"
+#include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/SceneDebugPanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
-#include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/SceneSettingsPanel.h"
 #include "voxedit-ui/ScriptPanel.h"
-#include "voxedit-ui/ToolsPanel.h"
-#include "voxedit-ui/PalettePanel.h"
-#include "voxedit-ui/BrushPanel.h"
 #include "voxedit-ui/StatusBar.h"
+#include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
@@ -57,8 +58,8 @@ private:
 	core::VarPtr _popupAbout;
 	core::VarPtr _popupRenameNode;
 
-	core::Buffer<Viewport*> _viewports;
-	Viewport* _lastHoveredViewport = nullptr;
+	core::Buffer<Viewport *> _viewports;
+	Viewport *_lastHoveredViewport = nullptr;
 
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
@@ -93,6 +94,7 @@ private:
 	NormalPalettePanel _normalPalettePanel;
 	MenuBar _menuBar;
 	NetworkPanel _networkPanel;
+	GameModePanel _gameModePanel;
 	StatusBar _statusBar;
 	ScriptPanel _scriptPanel;
 	AnimationTimeline _animationTimeline;
@@ -141,9 +143,11 @@ private:
 	void registerPopups();
 	void addTemplate(const TemplateModel &model);
 	void updateViewMode();
+
 public:
 	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
-			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem, palette::PaletteCache &paletteCache, const SceneRendererPtr &sceneRenderer);
+			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem,
+			   palette::PaletteCache &paletteCache, const SceneRendererPtr &sceneRenderer);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();
@@ -168,16 +172,24 @@ public:
 	 * @sa afterLoad()
 	 */
 	void onNewScene();
-	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
+	void onNewPaletteImport(const core::String &paletteName, bool setActive, bool searchBestColors);
 	void update(double nowSeconds);
 	QuitDisallowReason allowToQuit();
-	Viewport* hoveredViewport();
+	Viewport *hoveredViewport();
+	Viewport *activeViewport() const;
 	/**
 	 * @brief Checks if any of the viewports is in edit mode
 	 */
 	bool isAnyEditMode() const;
 
-	bool saveScreenshot(const core::String& file, const core::String &viewportId = "");
+	bool saveScreenshot(const core::String &file, const core::String &viewportId = "");
 };
 
+inline Viewport *MainWindow::activeViewport() const {
+	if (_lastHoveredViewport == nullptr) {
+		return _viewports[0];
+	}
+	return _lastHoveredViewport;
 }
+
+} // namespace voxedit

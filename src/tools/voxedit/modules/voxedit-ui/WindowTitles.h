@@ -18,6 +18,7 @@
 #define TITLE_ASSET "###assetpanel"
 #define TITLE_SCRIPT "###scriptpanel"
 #define TITLE_NETWORK "###networkpanel"
+#define TITLE_GAMEMODE "###gamemodepanel"
 #define TITLE_SCENEGRAPH "###scenegraph"
 #define TITLE_RENDER "###renderpanel"
 #define TITLE_RENDERSETTINGS "###rendersettingspanel"
