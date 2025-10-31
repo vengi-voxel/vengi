@@ -49,21 +49,21 @@ TEST_F(ZipArchiveTest, testZipArchiveWrite) {
 			core::ScopedPtr<io::SeekableWriteStream> stream1(archive.writeStream("test1.txt"));
 			ASSERT_NE(nullptr, stream1);
 			const char *content1 = "Hello World!";
-			stream1->writeString(content1, false);
+			stream1->writePascalStringUInt8(content1);
 		}
 
 		{
 			core::ScopedPtr<io::SeekableWriteStream> stream2(archive.writeStream("test2.txt"));
 			ASSERT_NE(nullptr, stream2);
 			const char *content2 = "Another test file\nwith multiple lines\n";
-			stream2->writeString(content2, false);
+			stream2->writePascalStringUInt8(content2);
 		}
 
 		{
 			core::ScopedPtr<io::SeekableWriteStream> stream3(archive.writeStream("dir/test3.txt"));
 			ASSERT_NE(nullptr, stream3);
 			const char *content3 = "File in subdirectory";
-			stream3->writeString(content3, false);
+			stream3->writePascalStringUInt8(content3);
 		}
 
 		archive.shutdown();
@@ -80,25 +80,25 @@ TEST_F(ZipArchiveTest, testZipArchiveWrite) {
 		{
 			core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("test1.txt"));
 			ASSERT_TRUE(stream);
-			char buf[64];
-			stream->readString(sizeof(buf), buf, false);
-			EXPECT_STREQ("Hello World!", buf);
+			core::String buf;
+			stream->readPascalStringUInt8(buf);
+			EXPECT_EQ("Hello World!", buf);
 		}
 
 		{
 			core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("test2.txt"));
 			ASSERT_TRUE(stream);
-			char buf[64];
-			stream->readString(sizeof(buf), buf, false);
-			EXPECT_STREQ("Another test file\nwith multiple lines\n", buf);
+			core::String buf;
+			stream->readPascalStringUInt8(buf);
+			EXPECT_EQ("Another test file\nwith multiple lines\n", buf);
 		}
 
 		{
 			core::ScopedPtr<io::SeekableReadStream> stream(readArchive.readStream("dir/test3.txt"));
 			ASSERT_TRUE(stream);
-			char buf[64];
-			stream->readString(sizeof(buf), buf, false);
-			EXPECT_STREQ("File in subdirectory", buf);
+			core::String buf;
+			stream->readPascalStringUInt8(buf);
+			EXPECT_EQ("File in subdirectory", buf);
 		}
 	}
 }
