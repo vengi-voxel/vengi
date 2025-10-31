@@ -146,6 +146,7 @@ struct ImGuiTestInputs
     ImVector<ImGuiTestInput>    Queue;
     bool                        HostEscDown = false;
     float                       HostEscDownDuration = -1.0f;    // Maintain our own DownDuration for host/backend ESC key so we can abort.
+    ImVec2                      HostMousePos;
 };
 
 // [Internal] Test Engine Context

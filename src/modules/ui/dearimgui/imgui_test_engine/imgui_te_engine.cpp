@@ -849,8 +849,12 @@ static void ImGuiTestEngine_PreNewFrame(ImGuiTestEngine* engine, ImGuiContext* u
         // When running GuiFunc only main_io == simulated_io we test for a long hold.
         ImGuiIO& main_io = g.IO;
         for (auto& e : g.InputEventsQueue)
-            if (e.Type == ImGuiInputEventType_Key && e.Key.Key == ImGuiKey_Escape)
+        {
+            if (!e.AddedByTestEngine && e.Type == ImGuiInputEventType_Key && e.Key.Key == ImGuiKey_Escape)
                 engine->Inputs.HostEscDown = e.Key.Down;
+            if (!e.AddedByTestEngine && e.Type == ImGuiInputEventType_MousePos)
+                engine->Inputs.HostMousePos = ImVec2(e.MousePos.PosX, e.MousePos.PosY);
+        }
         engine->Inputs.HostEscDownDuration = engine->Inputs.HostEscDown ? (ImMax(engine->Inputs.HostEscDownDuration, 0.0f) + main_io.DeltaTime) : -1.0f;
         const bool abort = engine->Inputs.HostEscDownDuration >= 0.20f;
         if (abort)
@@ -1931,6 +1935,8 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
 
     // Restore backed up IO and style
     backup_ui_context.Restore(*ctx->UiContext);
+    ctx->UiContext->IO.ClearEventsQueue();
+    ctx->UiContext->IO.AddMousePosEvent(engine->Inputs.HostMousePos.x, engine->Inputs.HostMousePos.y);
 
     if (run_flags & ImGuiTestRunFlags_ShareVars)
     {
