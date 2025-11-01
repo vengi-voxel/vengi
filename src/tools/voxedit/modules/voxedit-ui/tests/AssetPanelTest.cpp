@@ -11,6 +11,8 @@
 namespace voxedit {
 
 void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	_collectionPanel.registerUITests(engine, id);
+
 	IM_REGISTER_TEST(engine, testCategory(), "drag drop image")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (_texturePool->cache().empty()) {
 			ctx->LogInfo("No images found in asset panel");

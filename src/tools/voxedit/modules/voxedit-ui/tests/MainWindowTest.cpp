@@ -13,27 +13,33 @@
 namespace voxedit {
 
 void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	_animationPanel.registerUITests(engine, TITLE_ANIMATION_SETTINGS);
+	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
+	_assetPanel.registerUITests(engine, TITLE_ASSET);
+	// collection panel tests belong to the asset panel
+	_brushPanel.registerUITests(engine, TITLE_BRUSHPANEL);
+	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
+	_gameModePanel.registerUITests(engine, TITLE_GAMEMODE);
+	_lsystemPanel.registerUITests(engine, TITLE_LSYSTEMPANEL);
+	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
+	_menuBar.registerUITests(engine, "##MenuBar");
+	_networkPanel.registerUITests(engine, TITLE_NETWORK);
+	_nodeInspectorPanel.registerUITests(engine, TITLE_NODE_INSPECTOR);
+	_nodePropertiesPanel.registerUITests(engine, TITLE_NODE_PROPERTIES);
+	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
+	_palettePanel.registerUITests(engine, TITLE_PALETTE);
 #if ENABLE_RENDER_PANEL
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
 #endif
-	_lsystemPanel.registerUITests(engine, TITLE_LSYSTEMPANEL);
-	_brushPanel.registerUITests(engine, TITLE_BRUSHPANEL);
-	_treePanel.registerUITests(engine, TITLE_TREES);
 	_sceneGraphPanel.registerUITests(engine, TITLE_SCENEGRAPH);
-	_animationPanel.registerUITests(engine, TITLE_ANIMATION_SETTINGS);
-	_toolsPanel.registerUITests(engine, TITLE_TOOLS);
-	_assetPanel.registerUITests(engine, TITLE_ASSET);
-	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
-	_nodeInspectorPanel.registerUITests(engine, TITLE_NODE_INSPECTOR);
-	_nodePropertiesPanel.registerUITests(engine, TITLE_NODE_PROPERTIES);
-	_palettePanel.registerUITests(engine, TITLE_PALETTE);
-	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
-	_menuBar.registerUITests(engine, "##MenuBar");
-	_statusBar.registerUITests(engine, TITLE_STATUSBAR);
+	_sceneSettingsPanel.registerUITests(engine, TITLE_SCENE_SETTINGS);
 	_scriptPanel.registerUITests(engine, TITLE_SCRIPT);
-	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
-	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
+	_statusBar.registerUITests(engine, TITLE_STATUSBAR);
+	_toolsPanel.registerUITests(engine, TITLE_TOOLS);
+	_treePanel.registerUITests(engine, TITLE_TREES);
+	// viewport tests are registered at init phase
 
+	// main window itself
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
 		ImGuiContext &g = *ctx->UiContext;
