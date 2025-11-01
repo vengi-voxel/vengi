@@ -723,11 +723,11 @@ void FormatPrinter::printMimeInfo() {
 				}
 			}
 			if (useString) {
-				Log::printf("\t\t\t<string offset=\"0\">");
+				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"");
 				for (int i = 0; i < e.size(); ++i) {
 					Log::printf("%c", (char)e.data.u8[i]);
 				}
-				Log::printf("</string>\n");
+				Log::printf("\"/>\n");
 			} else {
 				for (int i = 0; i < e.size(); ++i) {
 					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);

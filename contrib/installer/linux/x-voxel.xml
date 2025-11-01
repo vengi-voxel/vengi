@@ -4,7 +4,7 @@
 		<comment>Vengi</comment>
 		<glob pattern="*.vengi"/>
 		<magic priority="50">
-			<string offset="0">VENG</string>
+			<match type="string" offset="0" value="VENG"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-aseprite">
@@ -25,28 +25,28 @@
 		<comment>MagicaVoxel</comment>
 		<glob pattern="*.vox"/>
 		<magic priority="50">
-			<string offset="0">VOX </string>
+			<match type="string" offset="0" value="VOX "/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-qubicle-binary-tree">
 		<comment>Qubicle Binary Tree</comment>
 		<glob pattern="*.qbt"/>
 		<magic priority="50">
-			<string offset="0">QB 2</string>
+			<match type="string" offset="0" value="QB 2"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-qubicle-project">
 		<comment>Qubicle Project</comment>
 		<glob pattern="*.qbcl"/>
 		<magic priority="50">
-			<string offset="0">QBCL</string>
+			<match type="string" offset="0" value="QBCL"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-tilemap">
 		<comment>Sandbox VoxEdit Tilemap</comment>
 		<glob pattern="*.vxt"/>
 		<magic priority="50">
-			<string offset="0">VXT1</string>
+			<match type="string" offset="0" value="VXT1"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-collection">
@@ -57,41 +57,41 @@
 		<comment>Sandbox VoxEdit Model</comment>
 		<glob pattern="*.vxm"/>
 		<magic priority="50">
-			<string offset="0">VXMA</string>
+			<match type="string" offset="0" value="VXMA"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXMB</string>
+			<match type="string" offset="0" value="VXMB"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXMC</string>
+			<match type="string" offset="0" value="VXMC"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM9</string>
+			<match type="string" offset="0" value="VXM9"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM8</string>
+			<match type="string" offset="0" value="VXM8"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM7</string>
+			<match type="string" offset="0" value="VXM7"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM6</string>
+			<match type="string" offset="0" value="VXM6"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM5</string>
+			<match type="string" offset="0" value="VXM5"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM4</string>
+			<match type="string" offset="0" value="VXM4"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXM3</string>
+			<match type="string" offset="0" value="VXM3"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-block">
 		<comment>Sandbox VoxEdit Block</comment>
 		<glob pattern="*.vxb"/>
 		<magic priority="50">
-			<string offset="0">VXB1</string>
+			<match type="string" offset="0" value="VXB1"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-blockbench">
@@ -102,52 +102,52 @@
 		<comment>Sandbox VoxEdit Hierarchy</comment>
 		<glob pattern="*.vxr"/>
 		<magic priority="50">
-			<string offset="0">VXR9</string>
+			<match type="string" offset="0" value="VXR9"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR8</string>
+			<match type="string" offset="0" value="VXR8"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR7</string>
+			<match type="string" offset="0" value="VXR7"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR6</string>
+			<match type="string" offset="0" value="VXR6"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR5</string>
+			<match type="string" offset="0" value="VXR5"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR4</string>
+			<match type="string" offset="0" value="VXR4"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR3</string>
+			<match type="string" offset="0" value="VXR3"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR2</string>
+			<match type="string" offset="0" value="VXR2"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">VXR1</string>
+			<match type="string" offset="0" value="VXR1"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-binvox">
 		<comment>BinVox</comment>
 		<glob pattern="*.binvox"/>
 		<magic priority="50">
-			<string offset="0">#bin</string>
+			<match type="string" offset="0" value="#bin"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-goxel">
 		<comment>Goxel</comment>
 		<glob pattern="*.gox"/>
 		<magic priority="50">
-			<string offset="0">GOX </string>
+			<match type="string" offset="0" value="GOX "/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-goxel-txt">
 		<comment>Goxel txt</comment>
 		<glob pattern="*.txt"/>
 		<magic priority="50">
-			<string offset="0"># Go</string>
+			<match type="string" offset="0" value="# Go"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-cubeworld">
@@ -186,7 +186,7 @@
 		<comment>UFO:Alien Invasion</comment>
 		<glob pattern="*.bsp"/>
 		<magic priority="50">
-			<string offset="0">IBSP</string>
+			<match type="string" offset="0" value="IBSP"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-quake-1">
@@ -200,17 +200,17 @@
 		<comment>Quake 1 Model</comment>
 		<glob pattern="*.mdl"/>
 		<magic priority="50">
-			<string offset="0">IDPO</string>
+			<match type="string" offset="0" value="IDPO"/>
 		</magic>
 		<magic priority="50">
-			<string offset="0">RAPO</string>
+			<match type="string" offset="0" value="RAPO"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-quake-2-model">
 		<comment>Quake 2 Model</comment>
 		<glob pattern="*.md2"/>
 		<magic priority="50">
-			<string offset="0">IDP2</string>
+			<match type="string" offset="0" value="IDP2"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-fbx">
@@ -233,7 +233,7 @@
 		<comment>Magicavoxel XRAW</comment>
 		<glob pattern="*.xraw"/>
 		<magic priority="50">
-			<string offset="0">XRAW</string>
+			<match type="string" offset="0" value="XRAW"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-starmade-blueprint">
@@ -254,7 +254,7 @@
 		<comment>VoxelBuilder</comment>
 		<glob pattern="*.vbx"/>
 		<magic priority="50">
-			<string offset="0">; Vo</string>
+			<match type="string" offset="0" value="; Vo"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-wavefront-object">
@@ -284,14 +284,14 @@
 		<glob pattern="*.pcubes"/>
 		<glob pattern="*.particubes"/>
 		<magic priority="50">
-			<string offset="0">PART</string>
+			<match type="string" offset="0" value="PART"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-cubzh">
 		<comment>Cubzh</comment>
 		<glob pattern="*.3zh"/>
 		<magic priority="50">
-			<string offset="0">CUBZ</string>
+			<match type="string" offset="0" value="CUBZ"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-cubzh-world">
@@ -311,14 +311,14 @@
 		<comment>AceOfSpades</comment>
 		<glob pattern="*.kv6"/>
 		<magic priority="50">
-			<string offset="0">Kvxl</string>
+			<match type="string" offset="0" value="Kvxl"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-tiberian-sun">
 		<comment>Tiberian Sun</comment>
 		<glob pattern="*.vxl"/>
 		<magic priority="50">
-			<string offset="0">Voxe</string>
+			<match type="string" offset="0" value="Voxe"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-aceofspades-vxl">
@@ -329,21 +329,21 @@
 		<comment>Qubicle Exchange</comment>
 		<glob pattern="*.qef"/>
 		<magic priority="50">
-			<string offset="0">Qubi</string>
+			<match type="string" offset="0" value="Qubi"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-chronovox">
 		<comment>Chronovox</comment>
 		<glob pattern="*.csm"/>
 		<magic priority="50">
-			<string offset="0">.CSM</string>
+			<match type="string" offset="0" value=".CSM"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-nicks-voxel-model">
 		<comment>Nicks Voxel Model</comment>
 		<glob pattern="*.nvm"/>
 		<magic priority="50">
-			<string offset="0">.NVM</string>
+			<match type="string" offset="0" value=".NVM"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-slab6-vox">
