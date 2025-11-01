@@ -12,11 +12,11 @@
 namespace voxedit {
 
 void CameraMovement::construct() {
-	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0");
+	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "60.0");
 	_jumpVelocity =
-		core::Var::get(cfg::VoxEditJumpVelocity, "15.5", core::CV_NOPERSIST, _("Jump velocity in eye mode"));
+		core::Var::get(cfg::VoxEditJumpVelocity, "7.0", _("Jump velocity in eye mode"));
 	_bodyHeight =
-		core::Var::get(cfg::VoxEditBodyHeight, "0.5", core::CV_NOPERSIST, _("Height of the body in eye mode"));
+		core::Var::get(cfg::VoxEditBodyHeight, "2.0", _("Height of the body in eye mode"));
 	_clipping = core::Var::get(cfg::VoxEditClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
 							   core::Var::boolValidator);
 	_applyGravity = core::Var::get(cfg::VoxEditApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
@@ -55,7 +55,14 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		camRight.y = 0.0f;
 		_deltaSeconds += _movement.deltaSeconds();
 
-		if ((_body.collidedX || _body.collidedY || _body.collidedZ) && _movement.moving()) {
+		const bool isColliding = _body.isColliding();
+
+		const float groundAcceleration = speed;
+		const float airAcceleration = speed * 0.1f;
+		const float acceleration = isColliding ? groundAcceleration : airAcceleration;
+		const float maxSpeed = speed;
+
+		if (_movement.moving()) {
 			glm::vec3 direction(0);
 			if (_movement.forward()) {
 				direction += camForward;
@@ -69,14 +76,28 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 			if (_movement.right()) {
 				direction += camRight;
 			}
+
 			if (glm::dot(direction, direction) > 0.0f) {
 				direction = glm::normalize(direction);
-				const float minmax = speed * _deltaSeconds;
-				_body.velocity.x = glm::clamp(_body.velocity.x + direction.x, -minmax, minmax);
-				_body.velocity.z = glm::clamp(_body.velocity.z + direction.z, -minmax, minmax);
+
+				// Apply acceleration in the desired direction
+				const float accelAmount = acceleration * _deltaSeconds;
+				glm::vec3 accelerationVec = direction * accelAmount;
+
+				_body.velocity.x += accelerationVec.x;
+				_body.velocity.z += accelerationVec.z;
+
+				// Cap the horizontal velocity to max allowed speed
+				const float currentHorizontalSpeed = glm::length(glm::vec2(_body.velocity.x, _body.velocity.z));
+				if (currentHorizontalSpeed > maxSpeed) {
+					const float scale = maxSpeed / currentHorizontalSpeed;
+					_body.velocity.x *= scale;
+					_body.velocity.z *= scale;
+				}
 			}
 		}
-		if (_applyGravity->boolVal() && _movement.jump() && _body.collidedY) {
+
+		if (_applyGravity->boolVal() && _movement.jump() && _body.isGrounded()) {
 			_body.velocity.y = _jumpVelocity->floatVal();
 			_body.collidedY = false;
 		} else if (!_applyGravity->boolVal()) {

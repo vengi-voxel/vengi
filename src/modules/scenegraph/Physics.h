@@ -33,6 +33,14 @@ struct KinematicBody {
 	bool collidedZ = false;
 	float frictionDecay = 0.01f;
 	ContactListener *contactListener = nullptr;
+
+	bool isColliding() const {
+		return collidedX || collidedY || collidedZ;
+	}
+
+	bool isGrounded() const {
+		return collidedY;
+	}
 };
 
 /**
