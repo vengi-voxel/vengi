@@ -1298,6 +1298,27 @@ msgstr ""
 msgid "No match for filter found"
 msgstr ""
 
+msgid "Game mode"
+msgstr ""
+
+msgid ""
+"Activating the game mode will enable clipping and switch the eye mode camera "
+"that is controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
+"+move_right>, <cmd:+move_backward> and <cmd:+jump> for jumping"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Movement Speed"
+msgstr ""
+
+msgid "Jump Velocity"
+msgstr ""
+
+msgid "Body Height"
+msgstr ""
+
 msgid "L-System"
 msgstr ""
 

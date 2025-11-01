@@ -715,8 +715,23 @@ void FormatPrinter::printMimeInfo() {
 		}
 		for (const io::Magic &e : desc->magics) {
 			Log::printf("\t\t<magic priority=\"50\">\n");
+			bool useString = true;
 			for (int i = 0; i < e.size(); ++i) {
-				Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);
+				if (e.data.u8[i] < 32 || e.data.u8[i] > 126) {
+					useString = false;
+					break;
+				}
+			}
+			if (useString) {
+				Log::printf("\t\t\t<string offset=\"0\">");
+				for (int i = 0; i < e.size(); ++i) {
+					Log::printf("%c", (char)e.data.u8[i]);
+				}
+				Log::printf("</string>\n");
+			} else {
+				for (int i = 0; i < e.size(); ++i) {
+					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);
+				}
 			}
 			Log::printf("\t\t</magic>\n");
 		}

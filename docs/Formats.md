@@ -42,7 +42,7 @@
 | Sandbox VoxEdit Model      | vxm         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Tilemap    | vxt         | X       |        |            |         |            |
 | SLAB6 vox                  | vox         | X       | X      |            | X       |            |
-| SpriteStack                | zip         | X       |        |            | X       |            |
+| SpriteStack                | zip         | X       | X      |            | X       |            |
 | Sproxel csv                | csv         | X       | X      |            | X       |            |
 | StarMade Blueprint         | sment       | X       |        |            | X       |            |
 | StarMade Template          | smtpl       | X       | X      |            | X       |            |

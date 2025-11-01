@@ -1069,7 +1069,7 @@ const jsonData = {
       "mimetype": "application/x-spritestack",
       "animation": false,
       "load": true,
-      "save": false
+      "save": true
     },
     {
       "name": "Veloren terrain",

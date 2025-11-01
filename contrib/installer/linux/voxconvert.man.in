@@ -507,6 +507,8 @@ Sandbox VoxEdit Model (*.vxm)
 .TP
 SLAB6 vox (*.vox)
 .TP
+SpriteStack (*.zip)
+.TP
 Sproxel csv (*.csv)
 .TP
 Standard Triangle Language (*.stl)
