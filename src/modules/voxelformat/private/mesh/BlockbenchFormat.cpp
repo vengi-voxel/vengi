@@ -858,7 +858,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty(scenegraph::PropVersion, bbMeta.formatVersion);
+	rootNode.setProperty(scenegraph::PropTitle, bbMeta.name);
 	rootNode.setProperty("model_format", bbMeta.modelFormat);
+	rootNode.setProperty("model_identifier", bbMeta.model_identifier);
 
 	return true;
 }
