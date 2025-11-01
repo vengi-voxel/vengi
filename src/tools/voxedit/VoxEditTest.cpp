@@ -20,8 +20,8 @@ public:
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();
-	const core::SharedPtr<voxedit::SceneRenderer> &sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
-	const core::SharedPtr<voxedit::ModifierRenderer> &modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
+	const voxedit::SceneRendererPtr &sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
+	const voxedit::ModifierRendererPtr &modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
 	const video::TexturePoolPtr &texturePool = core::make_shared<video::TexturePool>();
 	const voxedit::SelectionManagerPtr &selectionMgr = core::make_shared<voxedit::SelectionManager>();
 	const voxedit::SceneManagerPtr &sceneMgr = core::make_shared<voxedit::SceneManager>(
