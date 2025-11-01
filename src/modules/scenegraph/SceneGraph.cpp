@@ -406,6 +406,7 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 	return aabb;
 }
 
+// TODO: PERF: sweeping
 void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
 	out.reserve(nodes().size());
 	for (const auto &e : nodes()) {

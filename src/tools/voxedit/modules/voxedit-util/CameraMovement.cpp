@@ -55,7 +55,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		camRight.y = 0.0f;
 		_deltaSeconds += _movement.deltaSeconds();
 
-		if (_movement.moving()) {
+		if ((_body.collidedX || _body.collidedY || _body.collidedZ) && _movement.moving()) {
 			glm::vec3 direction(0);
 			if (_movement.forward()) {
 				direction += camForward;
