@@ -93,7 +93,8 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 			_deltaSeconds -= hz;
 		}
 		const float bodyHeight = _bodyHeight->floatVal();
-		camera->setWorldPosition(_body.position + glm::vec3(0.0f, bodyHeight, 0.0f));
+		const float eyePos = bodyHeight * 0.9f;
+		camera->setWorldPosition(_body.position + glm::vec3(0.0f, eyePos, 0.0f));
 	} else {
 		glm::vec3 moveDelta = _movement.moveDelta(speed);
 		camera->move(moveDelta);
