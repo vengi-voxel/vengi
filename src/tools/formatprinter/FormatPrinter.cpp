@@ -730,7 +730,7 @@ void FormatPrinter::printMimeInfo() {
 				Log::printf("\"/>\n");
 			} else {
 				for (int i = 0; i < e.size(); ++i) {
-					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"\\x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);
+					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"0x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);
 				}
 			}
 			Log::printf("\t\t</magic>\n");

@@ -193,7 +193,7 @@
 		<comment>Quake 1</comment>
 		<glob pattern="*.bsp"/>
 		<magic priority="50">
-			<match type="byte" offset="0" value="\x1d"/>
+			<match type="byte" offset="0" value="0x1d"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-quake-1-model">
@@ -363,32 +363,32 @@
 		<comment>Veloren terrain</comment>
 		<glob pattern="*.dat"/>
 		<magic priority="50">
-			<match type="byte" offset="0" value="\x3"/>
-			<match type="byte" offset="1" value="\x0"/>
-			<match type="byte" offset="2" value="\x89"/>
-			<match type="byte" offset="3" value="\xa7"/>
+			<match type="byte" offset="0" value="0x3"/>
+			<match type="byte" offset="1" value="0x0"/>
+			<match type="byte" offset="2" value="0x89"/>
+			<match type="byte" offset="3" value="0xa7"/>
 		</magic>
 		<magic priority="50">
-			<match type="byte" offset="0" value="\x2"/>
-			<match type="byte" offset="1" value="\x0"/>
-			<match type="byte" offset="2" value="\x89"/>
-			<match type="byte" offset="3" value="\xa7"/>
+			<match type="byte" offset="0" value="0x2"/>
+			<match type="byte" offset="1" value="0x0"/>
+			<match type="byte" offset="2" value="0x89"/>
+			<match type="byte" offset="3" value="0xa7"/>
 		</magic>
 		<magic priority="50">
-			<match type="byte" offset="0" value="\x1"/>
-			<match type="byte" offset="1" value="\x0"/>
-			<match type="byte" offset="2" value="\x89"/>
-			<match type="byte" offset="3" value="\xa7"/>
+			<match type="byte" offset="0" value="0x1"/>
+			<match type="byte" offset="1" value="0x0"/>
+			<match type="byte" offset="2" value="0x89"/>
+			<match type="byte" offset="3" value="0xa7"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-portable-network-graphics">
 		<comment>Portable Network Graphics</comment>
 		<glob pattern="*.png"/>
 		<magic priority="50">
-			<match type="byte" offset="0" value="\x89"/>
-			<match type="byte" offset="1" value="\x50"/>
-			<match type="byte" offset="2" value="\x4e"/>
-			<match type="byte" offset="3" value="\x47"/>
+			<match type="byte" offset="0" value="0x89"/>
+			<match type="byte" offset="1" value="0x50"/>
+			<match type="byte" offset="2" value="0x4e"/>
+			<match type="byte" offset="3" value="0x47"/>
 		</magic>
 	</mime-type>
 	<mime-type type="application/x-minecraft-skin">
