@@ -38,7 +38,7 @@ protected:
 		}
 		const voxel::Voxel &vox = volume->voxel(voxelPos);
 		return !voxel::isAir(vox.getMaterial());
-	};
+	}
 
 	glm::vec3 attemptMovement(const char *command, const voxel::RawVolume *volume, CameraMovementExt &m,
 							  video::Camera &camera, scenegraph::SceneGraph &sceneGraph, const glm::vec3 &startPos) {
@@ -58,7 +58,7 @@ protected:
 		EXPECT_FALSE(isInsideSolid(pos, volume)) << "Camera ended inside solid voxels for command '" << command << "' "
 												 << pos.x << "," << pos.y << "," << pos.z;
 		return pos;
-	};
+	}
 
 	void prepareSolidSceneGraph(scenegraph::SceneGraph &sceneGraph) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
