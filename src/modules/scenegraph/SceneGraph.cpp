@@ -390,7 +390,7 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 		const math::OBBF &obb = toOBB(true, nregion, node.pivot(), transform);
 		aabb = toAABB(obb);
 	} else {
-		aabb = math::AABB<float>(transform.translation(), transform.translation() + 1.0f);
+		aabb = math::AABB<float>(transform.worldTranslation(), transform.worldTranslation() + 1.0f);
 	}
 
 	for (int child : node.children()) {

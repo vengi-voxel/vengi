@@ -100,7 +100,7 @@ static video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGra
 
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNodeCamera &cameraNode, scenegraph::FrameIndex frameIdx) {
 	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(cameraNode, frameIdx);
-	return toCamera(size, cameraNode, transform.translation(), glm::quat(transform.worldMatrix()));
+	return toCamera(size, cameraNode, transform.worldTranslation(), glm::quat(transform.worldMatrix()));
 }
 
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode) {
@@ -197,7 +197,7 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 												   const scenegraph::SceneGraphNode &node, int idx,
 												   const voxel::Region &region) {
 	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-	const glm::vec3 &scale = transform.scale();
+	const glm::vec3 &scale = transform.worldScale();
 	const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) + (int)std::signbit(scale.z);
 	if (negative == 1 || negative == 3) {
 		meshState->setCullFace(idx, video::Face::Front);

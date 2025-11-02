@@ -276,8 +276,8 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(pnode, frameIdx);
-		const glm::vec3 &ptranslation = ptransform.translation();
-		const glm::vec3 &translation = transform.translation();
+		const glm::vec3 &ptranslation = ptransform.worldTranslation();
+		const glm::vec3 &translation = transform.worldTranslation();
 
 		_shapeBuilder.bone(ptranslation, translation);
 	}

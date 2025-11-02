@@ -25,7 +25,7 @@ glm::mat4 FrameTransform::calculateWorldMatrix(const glm::vec3 &normalizedPivot,
 	return glm::translate(worldMatrix(), -normalizedPivot * dimensions);
 }
 
-const glm::vec3 &FrameTransform::scale() const {
+const glm::vec3 &FrameTransform::worldScale() const {
 	if (_scaleCalculated) {
 		return _scale;
 	}
@@ -38,7 +38,7 @@ const glm::vec3 &FrameTransform::scale() const {
 	return _scale;
 }
 
-glm::vec3 FrameTransform::translation() const {
+glm::vec3 FrameTransform::worldTranslation() const {
 	return glm::column(_matrix, 3);
 }
 

@@ -38,8 +38,8 @@ public:
 	const glm::mat4 &worldMatrix() const;
 	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
 
-	glm::vec3 translation() const;
-	const glm::vec3 &scale() const;
+	glm::vec3 worldTranslation() const;
+	const glm::vec3 &worldScale() const;
 	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
 };
 
