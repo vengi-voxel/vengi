@@ -419,9 +419,13 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 			continue;
 		}
 		if (frameIdx != InvalidFrame) {
-			out.emplace_back(volume, transformForFrame(node, frameIdx));
+			const FrameTransform &transform = transformForFrame(node, frameIdx);
+			const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
+			const glm::mat4 &worldMat = transform.calculateWorldMatrix(node.pivot(), dimensions);
+			const glm::mat4 &inverse = glm::inverse(worldMat);
+			out.emplace_back(volume, inverse);
 		} else {
-			out.emplace_back(volume, scenegraph::FrameTransform());
+			out.emplace_back(volume, glm::mat4(1.0f));
 		}
 	}
 }

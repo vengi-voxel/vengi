@@ -74,13 +74,13 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 	constexpr float epsilon = glm::epsilon<float>();
 	const glm::vec3 &extents = body.extents;
 	for (const CollisionNode &node : nodes) {
+		const voxel::Region &region = node.volume->region();
 		// Transform the body's position into the model space of the collision node.
-		const glm::vec3 &pos = node.transform.calcModelSpace(nextBodyPos);
+		const glm::vec3 &pos = node.calcModelSpace(nextBodyPos);
 		// Calculate the AABB of the body in the model space of the collision node.
 		const glm::ivec3 &mins = glm::floor(pos - glm::vec3(extents.x + epsilon, epsilon, extents.z + epsilon));
 		const glm::ivec3 &maxs = glm::floor(pos + extents);
-		const voxel::Region &volumeRegion = node.volume->region();
-		if (!volumeRegion.containsPoint(mins) && !volumeRegion.containsPoint(maxs)) {
+		if (!region.containsPoint(mins) && !region.containsPoint(maxs)) {
 			continue;
 		}
 

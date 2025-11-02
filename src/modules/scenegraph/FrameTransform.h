@@ -50,7 +50,7 @@ public:
 	 * @param[in] pivot The pivot in model/object space
 	 */
 	glm::vec3 calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const;
-	glm::vec3 calcModelSpace(const glm::vec3 &worldPos) const;
+	glm::vec3 calcModelSpace(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions, const glm::vec3 &worldPos) const;
 };
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions);

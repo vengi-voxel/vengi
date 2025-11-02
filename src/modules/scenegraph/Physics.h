@@ -47,13 +47,15 @@ struct KinematicBody {
  * @brief Represents a node in the scene graph that can be collided with.
  */
 struct CollisionNode {
-	CollisionNode(const voxel::RawVolume *v, const scenegraph::FrameTransform &t) : volume(v), transform(t) {
+	CollisionNode(const voxel::RawVolume *v, const glm::mat4 &inverseMatrixWithPivot) : volume(v), inverse(inverseMatrixWithPivot) {
 	}
 	const voxel::RawVolume *volume;
-	/**
-	 * @brief The frame transform as returned by @c SceneGraph::transformForFrame()
-	 */
-	const scenegraph::FrameTransform transform;
+	const glm::mat4 inverse;
+
+	glm::vec3 calcModelSpace(const glm::vec3 &worldPos) const {
+		const glm::vec3 modelSpacePos(inverse * glm::vec4(worldPos, 1.0f));
+		return modelSpacePos;
+	}
 };
 
 /**
