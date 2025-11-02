@@ -44,6 +44,7 @@ protected:
 							  video::Camera &camera, scenegraph::SceneGraph &sceneGraph, const glm::vec3 &startPos) {
 		camera.setWorldPosition(startPos);
 		camera.update(0.0);
+		m.updateBodyPosition(camera);
 		EXPECT_FALSE(isInsideSolid(startPos, volume)) << "Start position should be outside solids";
 		double nowSeconds = 0.0;
 		command::ScopedButtonCommand pressed(command, 10, 0.0);
