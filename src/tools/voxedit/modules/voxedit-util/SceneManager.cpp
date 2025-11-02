@@ -2710,7 +2710,7 @@ bool SceneManager::update(double nowSeconds) {
 	}
 	video::Camera *camera = activeCamera();
 	scenegraph::FrameIndex frameIdx = currentFrame();
-	// TODO: Set to InvalidFrameIndex is transforms should not get applied
+	// TODO: Set to InvalidFrameIndex if transforms should not get applied
 	_camMovement.update(_nowSeconds, camera, _sceneGraph, frameIdx);
 	_modifierFacade.update(nowSeconds, camera);
 
