@@ -3,7 +3,6 @@
  */
 
 #include "FrameTransform.h"
-#include "voxel/Region.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
