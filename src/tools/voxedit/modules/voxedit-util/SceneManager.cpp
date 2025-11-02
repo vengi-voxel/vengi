@@ -3315,7 +3315,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-	const glm::quat rot = glm::quat(glm::radians(angles));
+	const glm::quat rot(glm::radians(angles));
 	if (local) {
 		transform.setLocalOrientation(rot);
 		transform.setLocalScale(scale);

@@ -34,12 +34,21 @@ public:
 	void setWorldMatrix(const glm::mat4 &m);
 	/**
 	 * @brief World matrix without pivot offset
+	 * @sa calculateWorldMatrix()
 	 */
 	const glm::mat4 &worldMatrix() const;
-	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
-
+	/**
+	 * @brief World translation without pivot offset
+	 */
 	glm::vec3 worldTranslation() const;
 	const glm::vec3 &worldScale() const;
+
+	/**
+	 * @brief World matrix with pivot offset
+	 * @sa worldMatrix()
+	 */
+	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
+
 	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
 };
 

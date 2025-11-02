@@ -71,7 +71,7 @@ protected:
 		kf1.longRotation = false;
 		kf1.interpolation = scenegraph::InterpolationType::Linear;
 		kf1.transform().setLocalTranslation(glm::vec3(10.0f, 20.0f, 30.0f));
-		kf1.transform().setLocalOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+		kf1.transform().setLocalOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
 		kf1.transform().setLocalScale(glm::vec3(1.0f, 1.0f, 1.0f));
 		kf1.transform().markClean();
 		keyFrames.push_back(kf1);
@@ -81,7 +81,7 @@ protected:
 		kf2.longRotation = true;
 		kf2.interpolation = scenegraph::InterpolationType::QuadEaseIn;
 		kf2.transform().setLocalTranslation(glm::vec3(40.0f, 50.0f, 60.0f));
-		kf2.transform().setLocalOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+		kf2.transform().setLocalOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
 		kf2.transform().setLocalScale(glm::vec3(1.0f, 1.0f, 1.0f));
 		kf2.transform().markClean();
 		keyFrames.push_back(kf2);

@@ -530,7 +530,7 @@ static inline ufbx_vec3 _ufbx_axes_to_engine(const ufbx_vec3 &v, const ufbx_coor
 }
 
 static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
-	return glm::quat((float)v.x, (float)v.y, (float)v.z, (float)v.w);
+	return glm::quat::wxyz((float)v.w, (float)v.x, (float)v.y, (float)v.z);
 }
 
 #if 0

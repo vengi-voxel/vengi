@@ -351,7 +351,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 			const float y = meshRot.value("y", 0.0f);
 			const float z = meshRot.value("z", 0.0f);
 			const float w = meshRot.value("w", 0.0f);
-			pos.meshRotations.push_back(glm::quat(x, y, z, w));
+			pos.meshRotations.push_back(glm::quat::wxyz(w, x, y, z));
 		}
 		for (const auto &ikPos : inner["IKPositions"]) {
 			const float x = ikPos.value("x", 0.0f);
@@ -364,7 +364,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 			const float y = ikRot.value("y", 0.0f);
 			const float z = ikRot.value("z", 0.0f);
 			const float w = ikRot.value("w", 0.0f);
-			pos.ikRotations.push_back(glm::quat(x, y, z, w));
+			pos.ikRotations.push_back(glm::quat::wxyz(w, x, y, z));
 		}
 		for (const auto &ikMod : inner["IKModified"]) {
 			pos.ikModified.push_back(ikMod);
