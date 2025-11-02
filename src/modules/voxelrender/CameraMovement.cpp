@@ -7,19 +7,16 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "scenegraph/Physics.h"
-#include "voxedit-util/Config.h"
 
-namespace voxedit {
+namespace voxelrender {
 
 void CameraMovement::construct() {
-	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "60.0");
-	_jumpVelocity =
-		core::Var::get(cfg::VoxEditJumpVelocity, "7.0", _("Jump velocity in eye mode"));
-	_bodyHeight =
-		core::Var::get(cfg::VoxEditBodyHeight, "2.0", _("Height of the body in eye mode"));
-	_clipping = core::Var::get(cfg::VoxEditClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
+	_movementSpeed = core::Var::get(cfg::GameModeMovementSpeed, "60.0", _("Movement speed in game mode"));
+	_jumpVelocity = core::Var::get(cfg::GameModeJumpVelocity, "7.0", _("Jump velocity in game mode"));
+	_bodyHeight = core::Var::get(cfg::GameModeBodyHeight, "2.0", _("Height of the body in game mode"));
+	_clipping = core::Var::get(cfg::GameModeClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
 							   core::Var::boolValidator);
-	_applyGravity = core::Var::get(cfg::VoxEditApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
+	_applyGravity = core::Var::get(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
 								   core::Var::boolValidator);
 	_movement.construct();
 }

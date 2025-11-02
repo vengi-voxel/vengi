@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "command/tests/TestHelper.h"
 #include "core/Var.h"
+#include "core/ConfigVar.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -13,13 +14,12 @@
 #include "util/Movement.h"
 #include "util/VarUtil.h"
 #include "video/Camera.h"
-#include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "gtest/gtest.h"
 
-namespace voxedit {
+namespace voxelrender {
 
 class CameraMovementTest : public app::AbstractTest {
 protected:
@@ -124,7 +124,7 @@ TEST_F(CameraMovementTest, test) {
 TEST_F(CameraMovementTest, DISABLED_testClippingPreventsEnteringSolidVolume) {
 	CameraMovementExt m;
 	m.construct();
-	util::ScopedVarChange scoped(cfg::VoxEditClipping, "true");
+	util::ScopedVarChange scoped(cfg::GameModeClipping, "true");
 	ASSERT_TRUE(m.init());
 
 	scenegraph::SceneGraph sceneGraph;

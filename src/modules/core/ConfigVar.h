@@ -128,4 +128,10 @@ constexpr const char *VoxformatSkinApplyTransform = "voxformat_skinapplytransfor
 constexpr const char *VoxformatSkinAddGroups = "voxformat_skinaddgroups";
 constexpr const char *VoxformatSkinMergeFaces = "voxformat_skinmergefaces";
 
+constexpr const char *GameModeClipping = "g_clipping";
+constexpr const char *GameModeApplyGravity = "g_applygravity";
+constexpr const char *GameModeJumpVelocity = "g_jumpvelocity";
+constexpr const char *GameModeBodyHeight = "g_bodyheight";
+constexpr const char *GameModeMovementSpeed = "g_movementspeed";
+
 }

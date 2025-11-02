@@ -23,7 +23,6 @@
 #include "modifier/SelectionManager.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
-#include "voxedit-util/CameraMovement.h"
 #include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/Server.h"
 #include "voxel/Face.h"
@@ -33,6 +32,7 @@
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeContext.h"
+#include "voxelrender/CameraMovement.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/Picking.h"
 #include <functional>
@@ -68,7 +68,7 @@ class SceneManager : public core::DeltaFrameSeconds {
 
 protected:
 	scenegraph::SceneGraph _sceneGraph;
-	CameraMovement _camMovement;
+	voxelrender::CameraMovement _camMovement;
 	memento::MementoHandler _mementoHandler;
 	voxel::VoxelData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
@@ -589,15 +589,15 @@ public:
 	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
 
-	const CameraMovement &cameraMovement() const;
-	CameraMovement &cameraMovement();
+	const voxelrender::CameraMovement &cameraMovement() const;
+	voxelrender::CameraMovement &cameraMovement();
 };
 
-inline const CameraMovement &SceneManager::cameraMovement() const {
+inline const voxelrender::CameraMovement &SceneManager::cameraMovement() const {
 	return _camMovement;
 }
 
-inline CameraMovement &SceneManager::cameraMovement() {
+inline voxelrender::CameraMovement &SceneManager::cameraMovement() {
 	return _camMovement;
 }
 

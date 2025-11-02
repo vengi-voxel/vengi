@@ -13,7 +13,7 @@
 #include "util/Movement.h"
 #include "video/Camera.h"
 
-namespace voxedit {
+namespace voxelrender {
 
 class CameraMovement : public core::IComponent {
 protected:

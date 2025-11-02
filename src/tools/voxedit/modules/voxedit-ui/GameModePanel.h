@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
+#include "core/Var.h"
 #include "ui/Panel.h"
 
 namespace voxedit {

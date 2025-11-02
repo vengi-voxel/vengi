@@ -1,5 +1,6 @@
 set(LIB voxelrender)
 set(SRCS
+	CameraMovement.h CameraMovement.cpp
 	SceneGraphRenderer.cpp SceneGraphRenderer.h
 	Shadow.h Shadow.cpp
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
@@ -26,6 +27,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render
 engine_generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
+	tests/CameraMovementTest.cpp
 	tests/VoxelRenderShaderTest.cpp
 )
 

@@ -66,7 +66,6 @@ set(SRCS
 
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
-	CameraMovement.h CameraMovement.cpp
 	Config.h
 
 	LUAApiListener.h LUAApiListener.cpp
@@ -85,7 +84,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
-	tests/CameraMovementTest.cpp
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp

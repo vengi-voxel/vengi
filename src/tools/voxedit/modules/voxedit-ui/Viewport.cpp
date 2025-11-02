@@ -87,7 +87,7 @@ bool Viewport::init() {
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
 	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
-	_clipping = core::Var::getSafe(cfg::VoxEditClipping);
+	_clipping = core::Var::getSafe(cfg::GameModeClipping);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
