@@ -2711,7 +2711,9 @@ bool SceneManager::update(double nowSeconds) {
 		_mementoHandler.endGroup();
 	}
 	video::Camera *camera = activeCamera();
-	_camMovement.update(_nowSeconds, camera, _sceneGraph, currentFrame());
+	scenegraph::FrameIndex frameIdx = currentFrame();
+	// TODO: Set to InvalidFrameIndex is transforms should not get applied
+	_camMovement.update(_nowSeconds, camera, _sceneGraph, frameIdx);
 	_modifierFacade.update(nowSeconds, camera);
 
 	updateDirtyRendererStates();

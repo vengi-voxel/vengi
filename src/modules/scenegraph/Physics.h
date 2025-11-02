@@ -47,10 +47,13 @@ struct KinematicBody {
  * @brief Represents a node in the scene graph that can be collided with.
  */
 struct CollisionNode {
+	CollisionNode() = default;
 	CollisionNode(const voxel::RawVolume *v, const glm::mat4 &inverseMatrixWithPivot) : volume(v), inverse(inverseMatrixWithPivot) {
 	}
+	// the volume data to check collisions against
 	const voxel::RawVolume *volume;
-	const glm::mat4 inverse;
+	// the inverse matrix includes the pivot translation and is used to transform world positions into model space for the given volume
+	glm::mat4 inverse;
 
 	glm::vec3 calcModelSpace(const glm::vec3 &worldPos) const {
 		const glm::vec3 modelSpacePos(inverse * glm::vec4(worldPos, 1.0f));

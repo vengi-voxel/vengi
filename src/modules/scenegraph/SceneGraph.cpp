@@ -4,6 +4,7 @@
 
 #include "SceneGraph.h"
 #include "SceneUtil.h"
+#include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
@@ -14,6 +15,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/FrameTransform.h"
+#include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -408,7 +410,23 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 
 // TODO: PERF: sweeping
 void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
-	out.reserve(nodes().size());
+	if (frameIdx == InvalidFrame) {
+		out.reserve(nodes().size());
+		for (const auto &e : nodes()) {
+			const scenegraph::SceneGraphNode &node = e->second;
+			if (!node.visible() || !node.isAnyModelNode()) {
+				continue;
+			}
+			const voxel::RawVolume *volume = resolveVolume(node);
+			if (!volume) {
+				continue;
+			}
+			out.emplace_back(volume, glm::mat4(1.0f));
+		}
+		return;
+	}
+
+	core::DynamicArray<const scenegraph::SceneGraphNode *> cnodes;
 	for (const auto &e : nodes()) {
 		const scenegraph::SceneGraphNode &node = e->second;
 		if (!node.visible() || !node.isAnyModelNode()) {
@@ -418,16 +436,21 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 		if (!volume) {
 			continue;
 		}
-		if (frameIdx != InvalidFrame) {
+		cnodes.push_back(&node);
+	}
+
+	out.resize(cnodes.size());
+	app::for_parallel(0, (int)cnodes.size(), [&](int begin, int end) {
+		for (int i = begin; i < end; ++i) {
+			const scenegraph::SceneGraphNode &node = *cnodes[i];
 			const FrameTransform &transform = transformForFrame(node, frameIdx);
-			const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
+			const voxel::RawVolume *volume = resolveVolume(node);
+			const glm::ivec3 &dimensions = volume->region().getDimensionsInVoxels();
 			const glm::mat4 &worldMat = transform.calculateWorldMatrix(node.pivot(), dimensions);
 			const glm::mat4 &inverse = glm::inverse(worldMat);
-			out.emplace_back(volume, inverse);
-		} else {
-			out.emplace_back(volume, glm::mat4(1.0f));
+			out[i] = CollisionNode(volume, inverse);
 		}
-	}
+	});
 }
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {

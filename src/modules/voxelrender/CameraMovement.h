@@ -33,6 +33,9 @@ public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
+	/**
+	 * @param[in] frameIdx If this is InvalidFrameIndex then no transform is applied
+	 */
 	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 				scenegraph::FrameIndex frameIdx);
 	void zoom(video::Camera &camera, float level, double deltaSeconds);
