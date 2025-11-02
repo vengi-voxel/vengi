@@ -243,9 +243,9 @@ public:
 	bool supportsEditMode() const;
 
 	/**
-	 * @brief model matrix for the current active node
+	 * @brief world matrix for the current active node
 	 */
-	glm::mat4 modelMatrix(const voxelrender::RenderContext &renderContext) const;
+	glm::mat4 worldMatrix(scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
 
 	const voxel::Region &sliceRegion() const;
 	void setSliceRegion(const voxel::Region &region);

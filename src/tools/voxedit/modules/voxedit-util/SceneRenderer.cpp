@@ -379,7 +379,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
 		const bool applyTransforms = region.isValid() && renderContext.applyTransforms();
-		const glm::mat4 &model = sceneGraph.modelMatrix(*n, renderContext.frame, applyTransforms);
+		const glm::mat4 &model = sceneGraph.worldMatrix(*n, renderContext.frame, applyTransforms);
 		_gridRenderer.render(camera, scenegraph::toAABB(region), model);
 
 		if (_showLockedAxis->boolVal()) {

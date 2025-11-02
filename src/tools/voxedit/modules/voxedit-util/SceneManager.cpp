@@ -517,13 +517,10 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
-glm::mat4 SceneManager::modelMatrix(const voxelrender::RenderContext &renderContext) const {
-	if (!renderContext.applyTransforms()) {
-		return glm::mat4(1.0f);
-	}
+glm::mat4 SceneManager::worldMatrix(scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
 	const int nodeId = _sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	return _sceneGraph.modelMatrix(node, renderContext.frame, renderContext.applyTransforms());
+	return _sceneGraph.worldMatrix(node, frameIdx, applyTransforms);
 }
 
 bool SceneManager::supportsEditMode() const {
@@ -1634,7 +1631,8 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	if (renderUI) {
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
-			_modifierFacade.render(camera, activePalette(), modelMatrix(renderContext));
+			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
+			_modifierFacade.render(camera, activePalette(), mat);
 		}
 	}
 
@@ -2828,8 +2826,8 @@ glm::vec3 SceneManager::cursorWorldPosition(const voxelrender::RenderContext &re
 	if (!renderContext.applyTransforms()) {
 		return glm::vec3(pos);
 	}
-	const glm::mat4 &model = modelMatrix(renderContext);
-	return glm::vec3(model * glm::vec4(pos, 1.0f));
+	const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
+	return glm::vec3(mat * glm::vec4(pos, 1.0f));
 }
 
 glm::vec3 SceneManager::referenceWorldPosition(const voxelrender::RenderContext &renderContext) const {
@@ -2837,8 +2835,8 @@ glm::vec3 SceneManager::referenceWorldPosition(const voxelrender::RenderContext 
 	if (!renderContext.applyTransforms()) {
 		return glm::vec3(pos);
 	}
-	const glm::mat4 &model = modelMatrix(renderContext);
-	return glm::vec3(model * glm::vec4(pos, 1.0f));
+	const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
+	return glm::vec3(mat * glm::vec4(pos, 1.0f));
 }
 
 void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force) {

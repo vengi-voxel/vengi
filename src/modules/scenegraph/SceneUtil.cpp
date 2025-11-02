@@ -43,6 +43,9 @@ math::AABB<float> toAABB(const voxel::Region &region) {
 	return math::AABB<float>(1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 }
 
+/**
+ * @sa scenegraph::SceneGraph::worldMatrix()
+ */
 math::OBBF toOBB(bool sceneMode, const voxel::Region &region, const glm::vec3 &normalizedPivot,
 					   const scenegraph::FrameTransform &transform) {
 	core_assert(region.isValid());

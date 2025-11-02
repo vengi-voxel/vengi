@@ -32,6 +32,9 @@ private:
 
 public:
 	void setWorldMatrix(const glm::mat4 &m);
+	/**
+	 * @brief World matrix without pivot offset
+	 */
 	const glm::mat4 &worldMatrix() const;
 	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
 

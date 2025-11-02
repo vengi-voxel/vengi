@@ -188,6 +188,9 @@ bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, int nod
 	return _volumeRenderer.isVisible(meshState, idx, hideEmpty);
 }
 
+/**
+ * @sa scenegraph::SceneGraph::worldMatrix()
+ */
 void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &meshState,
 												   const scenegraph::SceneGraph &sceneGraph,
 												   const scenegraph::FrameIndex &frame,
