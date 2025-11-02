@@ -133,8 +133,6 @@ void Viewport::move(bool pan, bool rotate, int x, int y) {
 			const float yaw = (float)(x - _mouseX);
 			const float pitch = (float)(y - _mouseY);
 			const float s = _rotationSpeed->floatVal();
-			// TODO: fix the camera jumping
-			// _camera.setTarget(_sceneMgr->cursorWorldPosition(_renderContext));
 			_camera.turn(yaw * s);
 			_camera.setPitch(pitch * s);
 		}

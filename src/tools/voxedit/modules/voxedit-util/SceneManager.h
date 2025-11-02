@@ -283,8 +283,6 @@ public:
 	 * account (but the region)
 	 */
 	const glm::ivec3 &cursorPosition() const;
-	glm::vec3 cursorWorldPosition(const voxelrender::RenderContext &renderContext) const;
-	glm::vec3 referenceWorldPosition(const voxelrender::RenderContext &renderContext) const;
 
 	/**
 	 * @brief The reference position is in model space - it's a coordinate in the volume, not taking the transform into
