@@ -36,15 +36,8 @@ public:
 	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
 
 	glm::vec3 translation() const;
-	glm::vec3 scale() const;
+	const glm::vec3 &scale() const;
 	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
-
-	/**
-	 * @brief Calculate the transformed position for the given input
-	 * @param[in] pos The position in model/object space
-	 * @param[in] pivot The pivot in model/object space
-	 */
-	glm::vec3 calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const;
 };
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions);

@@ -194,7 +194,7 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 												   const scenegraph::SceneGraphNode &node, int idx,
 												   const voxel::Region &region) {
 	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-	const glm::vec3 scale = transform.scale();
+	const glm::vec3 &scale = transform.scale();
 	const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) + (int)std::signbit(scale.z);
 	if (negative == 1 || negative == 3) {
 		meshState->setCullFace(idx, video::Face::Front);
@@ -202,9 +202,9 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 		meshState->setCullFace(idx, video::Face::Back);
 	}
 	const glm::vec3 &pivot = node.pivot();
-	const glm::vec3 mins = transform.calcPosition(region.getLowerCornerf(), pivot);
-	const glm::vec3 maxs = transform.calcPosition(region.getUpperCornerf(), pivot);
 	const glm::mat4 &worldMatrix = transform.calculateWorldMatrix(pivot, region.getDimensionsInVoxels());
+	const glm::vec3 &mins = worldMatrix * glm::vec4(region.getLowerCornerf(), 1.0f);
+	const glm::vec3 &maxs = worldMatrix * glm::vec4(region.getUpperCornerf(), 1.0f);
 	meshState->setModelMatrix(idx, worldMatrix, mins, maxs);
 }
 

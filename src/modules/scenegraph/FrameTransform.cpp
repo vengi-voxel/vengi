@@ -22,15 +22,11 @@ const glm::mat4 &FrameTransform::worldMatrix() const {
 	return _matrix;
 }
 
-glm::vec3 FrameTransform::calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const {
-	return _matrix * glm::vec4(pos - pivot, 1.0f);
-}
-
 glm::mat4 FrameTransform::calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const {
 	return glm::translate(worldMatrix(), -normalizedPivot * dimensions);
 }
 
-glm::vec3 FrameTransform::scale() const {
+const glm::vec3 &FrameTransform::scale() const {
 	if (_scaleCalculated) {
 		return _scale;
 	}
@@ -40,7 +36,7 @@ glm::vec3 FrameTransform::scale() const {
 	decompose(sc, orientation, translation);
 	_scale = sc;
 	_scaleCalculated = true;
-	return sc;
+	return _scale;
 }
 
 glm::vec3 FrameTransform::translation() const {
