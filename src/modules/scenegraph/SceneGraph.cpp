@@ -455,8 +455,8 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 		for (int i = begin; i < end; ++i) {
 			const scenegraph::SceneGraphNode &node = *cnodes[i];
 			const voxel::RawVolume *volume = resolveVolume(node);
-			const glm::mat4 &modelSpaceMatrix = glm::inverse(worldMatrix(node, frameIdx, true));
-			out[i] = CollisionNode(volume, modelSpaceMatrix);
+			const glm::mat4 &worldToModel = glm::inverse(worldMatrix(node, frameIdx, true));
+			out[i] = CollisionNode(volume, worldToModel);
 		}
 	});
 }

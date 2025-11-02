@@ -154,8 +154,8 @@ void Viewport::updateViewportTrace(float headerSize) {
 	move(pan, rotate, mouseX, mouseY);
 	_sceneMgr->setMousePos(_mouseX, _mouseY);
 	_sceneMgr->setActiveCamera(&camera());
-	const glm::mat4 &modelSpaceMatrix = glm::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));
-	_sceneMgr->trace(_renderContext.isSceneMode(), false, modelSpaceMatrix);
+	const glm::mat4 &worldToModel = glm::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));
+	_sceneMgr->trace(_renderContext.isSceneMode(), false, worldToModel);
 }
 
 void Viewport::dragAndDrop(float headerSize) {

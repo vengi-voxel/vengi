@@ -48,12 +48,12 @@ struct KinematicBody {
  */
 struct CollisionNode {
 	CollisionNode() = default;
-	CollisionNode(const voxel::RawVolume *v, const glm::mat4 &m) : volume(v), modelSpaceMatrix(m) {
+	CollisionNode(const voxel::RawVolume *v, const glm::mat4 &m) : volume(v), worldToModel(m) {
 	}
 	// the volume data to check collisions against
 	const voxel::RawVolume *volume;
 	// the inverse matrix includes the pivot translation and is used to transform world positions into model space for the given volume
-	glm::mat4 modelSpaceMatrix;
+	glm::mat4 worldToModel;
 
 	/**
 	 * @brief Transforms a world position into model space.
@@ -61,7 +61,7 @@ struct CollisionNode {
 	 * @return The transformed position in model space - this can be used to e.g. trace inside a volume.
 	 */
 	glm::vec3 calcModelSpace(const glm::vec3 &worldPos) const {
-		const glm::vec3 modelSpacePos(modelSpaceMatrix * glm::vec4(worldPos, 1.0f));
+		const glm::vec3 modelSpacePos(worldToModel * glm::vec4(worldPos, 1.0f));
 		return modelSpacePos;
 	}
 };
