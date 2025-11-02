@@ -22,23 +22,6 @@ const glm::mat4 &FrameTransform::worldMatrix() const {
 	return _matrix;
 }
 
-glm::vec3 FrameTransform::calcModelSpace(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions, const glm::vec3 &worldPos) const {
-	if (!_inverseCalculated) {
-		_inverseMatrix = glm::inverse(calculateWorldMatrix(normalizedPivot, dimensions));
-		_inverseCalculated = true;
-	}
-	const glm::vec3 modelSpacePos(_inverseMatrix * glm::vec4(worldPos, 1.0f));
-	return modelSpacePos;
-}
-
-glm::mat3 FrameTransform::calcNormalMatrix() const {
-	return glm::transpose(_inverseMatrix);
-}
-
-glm::vec3 FrameTransform::calcWorldNormal(const glm::vec3 &normal) const {
-	return glm::normalize(calcNormalMatrix() * normal);
-}
-
 glm::vec3 FrameTransform::calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const {
 	return _matrix * glm::vec4(pos - pivot, 1.0f);
 }

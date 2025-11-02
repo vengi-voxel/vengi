@@ -409,6 +409,7 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 }
 
 // TODO: PERF: sweeping
+// TODO: see SceneGraphRenderer::modelMatrix() - code duplication - do this outside of the scene graph
 void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
 	if (frameIdx == InvalidFrame) {
 		out.reserve(nodes().size());

@@ -24,21 +24,16 @@ class FrameTransform {
 private:
 	mutable glm::vec3 _scale;
 	mutable bool _scaleCalculated = false;
-	mutable bool _inverseCalculated = false;
-	mutable glm::mat4 _inverseMatrix;
 	glm::mat4 _matrix{1.0f};
 
 	void resetCache() {
 		_scaleCalculated = false;
-		_inverseCalculated = false;
 	}
 
 public:
 	void setWorldMatrix(const glm::mat4 &m);
 	const glm::mat4 &worldMatrix() const;
 	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
-	glm::vec3 calcWorldNormal(const glm::vec3 &normal) const;
-	glm::mat3 calcNormalMatrix() const;
 
 	glm::vec3 translation() const;
 	glm::vec3 scale() const;
@@ -50,7 +45,6 @@ public:
 	 * @param[in] pivot The pivot in model/object space
 	 */
 	glm::vec3 calcPosition(const glm::vec3 &pos, const glm::vec3 &pivot) const;
-	glm::vec3 calcModelSpace(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions, const glm::vec3 &worldPos) const;
 };
 
 glm::vec3 calculateExtents(const glm::vec3 &dimensions);
