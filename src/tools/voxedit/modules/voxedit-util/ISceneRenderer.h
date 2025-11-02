@@ -57,9 +57,6 @@ public:
 	}
 	virtual void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	}
-	virtual glm::mat4 modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const {
-		return glm::mat4(1.0f);
-	}
 	virtual const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) {
 		return node.volume();
 	}

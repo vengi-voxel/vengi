@@ -87,8 +87,6 @@ public:
 	void setSliceRegion(const voxel::Region &region);
 	bool isSliceModeActive() const;
 
-	glm::mat4 modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const;
-
 	static inline int getVolumeIdx(int nodeId) {
 		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
 		return nodeId;

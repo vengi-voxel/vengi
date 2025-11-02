@@ -208,17 +208,6 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	meshState->setModelMatrix(idx, worldMatrix, mins, maxs);
 }
 
-glm::mat4 SceneGraphRenderer::modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const {
-	glm::mat4 model(1.0f);
-	if (node.isAnyModelNode() && renderContext.applyTransforms()) {
-		const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
-		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, renderContext.frame);
-		model = transform.calculateWorldMatrix(node.pivot(), region.getDimensionsInVoxels());
-	}
-	return model;
-}
-
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);

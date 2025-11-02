@@ -242,6 +242,9 @@ public:
 	 */
 	bool supportsEditMode() const;
 
+	/**
+	 * @brief model matrix for the current active node
+	 */
 	glm::mat4 modelMatrix(const voxelrender::RenderContext &renderContext) const;
 
 	const voxel::Region &sliceRegion() const;

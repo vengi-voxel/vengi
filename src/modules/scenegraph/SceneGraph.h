@@ -80,6 +80,8 @@ public:
 
 	scenegraph::SceneGraphNodeCamera *activeCameraNode() const;
 
+	glm::mat4 modelMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
+
 	/**
 	 * @brief Returns the first valid palette from any of the nodes
 	 */

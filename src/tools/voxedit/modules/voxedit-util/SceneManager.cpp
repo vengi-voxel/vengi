@@ -523,7 +523,7 @@ glm::mat4 SceneManager::modelMatrix(const voxelrender::RenderContext &renderCont
 	}
 	const int nodeId = _sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	return _sceneRenderer->modelMatrix(renderContext, node);
+	return _sceneGraph.modelMatrix(node, renderContext.frame, renderContext.applyTransforms());
 }
 
 bool SceneManager::supportsEditMode() const {

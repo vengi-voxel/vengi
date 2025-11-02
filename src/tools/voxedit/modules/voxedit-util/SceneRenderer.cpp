@@ -333,10 +333,6 @@ void SceneRenderer::updateSliceRegionMesh() {
 	_shapeRenderer.createOrUpdate(_sliceRegionMeshIndex, _shapeBuilder);
 }
 
-glm::mat4 SceneRenderer::modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const {
-	return _sceneGraphRenderer.modelMatrix(renderContext, node);
-}
-
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
 	if (renderContext.sceneGraph == nullptr) {
@@ -382,7 +378,8 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		}
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
-		const glm::mat4 &model = region.isValid() ? modelMatrix(renderContext, *n) : glm::mat4(1.0f);
+		const bool applyTransforms = region.isValid() && renderContext.applyTransforms();
+		const glm::mat4 &model = sceneGraph.modelMatrix(*n, renderContext.frame, applyTransforms);
 		_gridRenderer.render(camera, scenegraph::toAABB(region), model);
 
 		if (_showLockedAxis->boolVal()) {

@@ -76,7 +76,6 @@ public:
 							const glm::ivec3 &cursorPosition) override;
 	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) override;
 	void updateGridRegion(const voxel::Region &region) override;
-	glm::mat4 modelMatrix(const voxelrender::RenderContext &renderContext, const scenegraph::SceneGraphNode &node) const override;
 	void removeNode(int nodeId) override;
 	bool isVisible(int nodeId, bool hideEmpty = true) const override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;

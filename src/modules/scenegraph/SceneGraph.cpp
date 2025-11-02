@@ -408,8 +408,18 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 	return aabb;
 }
 
+glm::mat4 SceneGraph::modelMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
+	glm::mat4 model(1.0f);
+	if (applyTransforms && node.isAnyModelNode()) {
+		const voxel::Region &region = resolveRegion(node);
+		core_assert(region.isValid());
+		const scenegraph::FrameTransform &transform = transformForFrame(node, frameIdx);
+		model = transform.calculateWorldMatrix(node.pivot(), region.getDimensionsInVoxels());
+	}
+	return model;
+}
+
 // TODO: PERF: sweeping
-// TODO: see SceneGraphRenderer::modelMatrix() - code duplication - do this outside of the scene graph
 void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
 	if (frameIdx == InvalidFrame) {
 		out.reserve(nodes().size());
