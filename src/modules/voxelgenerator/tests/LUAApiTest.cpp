@@ -444,6 +444,11 @@ TEST_F(LUAApiTest, testScriptShadow) {
 	runFile(sceneGraph, "shadow.lua");
 }
 
+TEST_F(LUAApiTest, testScriptClouds) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "clouds.lua");
+}
+
 // long runtime - thus disabled
 TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesRainbowTowers) {
 	scenegraph::SceneGraph sceneGraph;
