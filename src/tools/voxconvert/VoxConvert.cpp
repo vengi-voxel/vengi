@@ -447,28 +447,6 @@ app::AppState VoxConvert::onInit() {
 		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
 	}
 
-	if (_outputImage) {
-		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
-		if (!merged.hasVolume()) {
-			Log::error("No valid volume in the scenegraph to print");
-			return app::AppState::InitFailure;
-		}
-		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
-		int width = terminalWidth();
-		int height = -1;
-		const core::RGBA bgColor(0, 0, 0, 255);
-		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
-		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
-		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
-		const float depthFactor2D = core::Var::getSafe(cfg::VoxConvertDepthFactor2D)->floatVal();
-		const image::ImagePtr &image =
-			hasArg("--isometric")
-				? voxelutil::renderIsometricImage(v, merged.palette, frontFace, bgColor, width, height)
-				: voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false, depthFactor2D);
-		const core::String prt(image::print(image, false));
-		Log::printf("%s", prt.c_str());
-	}
-
 	if (_exportModels) {
 		if (infiles.size() > 1) {
 			Log::warn("The format and path of the first input file is used for exporting all models");
@@ -542,6 +520,48 @@ app::AppState VoxConvert::onInit() {
 	// STEP 11: split the models
 	if (_splitModels) {
 		split(getArgIvec3("--split"), sceneGraph);
+	}
+
+	if (_outputImage) {
+		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
+		if (!merged.hasVolume()) {
+			Log::error("No valid volume in the scenegraph to print");
+			return app::AppState::InitFailure;
+		}
+		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
+		const bool saveToPng = !outfiles.empty() && io::isA(outfiles[0], io::format::png());
+		int width = -1;
+		int height = -1;
+		if (!saveToPng) {
+			width = terminalWidth();
+		}
+		const core::RGBA bgColor(0, 0, 0, 255);
+		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
+		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
+		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
+		const float depthFactor2D = core::Var::getSafe(cfg::VoxConvertDepthFactor2D)->floatVal();
+		const image::ImagePtr &image =
+			hasArg("--isometric")
+				? voxelutil::renderIsometricImage(v, merged.palette, frontFace, bgColor, width, height)
+				: voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false, depthFactor2D);
+		if (saveToPng) {
+			io::FilePtr outputFile = filesystem()->open(outfiles[0], io::FileMode::SysWrite);
+			if (!outputFile->validHandle()) {
+				Log::error("Could not open target file: %s", outfiles[0].c_str());
+				return app::AppState::InitFailure;
+			}
+			io::FileStream outStream(outputFile);
+			if (!image::writePNG(image, outStream)) {
+				Log::error("Failed to write image to %s", outfiles[0].c_str());
+				return app::AppState::InitFailure;
+			} else {
+				Log::info("Wrote image to %s", outfiles[0].c_str());
+				return state;
+			}
+		} else {
+			const core::String prt(image::print(image, false));
+			Log::printf("%s", prt.c_str());
+		}
 	}
 
 	for (const core::String &outfile : outfiles) {
