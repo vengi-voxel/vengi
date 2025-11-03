@@ -37,8 +37,8 @@ private:
 	bool _cropModels = false;
 	bool _surfaceOnly = false;
 	bool _splitModels = false;
-	bool _printSceneGraph = false;
-	bool _printSceneToConsole = false;
+	bool _outputJson = false;
+	bool _outputImage = false;
 	bool _resizeModels = false;
 
 protected:

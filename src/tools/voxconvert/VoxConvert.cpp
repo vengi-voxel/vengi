@@ -280,8 +280,8 @@ app::AppState VoxConvert::onInit() {
 	_cropModels = hasArg("--crop");
 	_surfaceOnly = hasArg("--surface-only");
 	_splitModels = hasArg("--split");
-	_printSceneGraph = hasArg("--json");
-	_printSceneToConsole = hasArg("--image");
+	_outputJson = hasArg("--json");
+	_outputImage = hasArg("--image");
 	_resizeModels = hasArg("--resize");
 
 	Log::info("Options");
@@ -320,8 +320,8 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
-	Log::info("* show scene graph:  - %s", (_printSceneGraph ? "true" : "false"));
-	Log::info("* scene graph image: - %s", (_printSceneToConsole ? "true" : "false"));
+	Log::info("* show scene graph:  - %s", (_outputJson ? "true" : "false"));
+	Log::info("* scene graph image: - %s", (_outputImage ? "true" : "false"));
 	Log::info("* merge models:      - %s", (_mergeModels ? "true" : "false"));
 	Log::info("* scale models:      - %s", (_scaleModels ? "true" : "false"));
 	Log::info("* crop models:       - %s", (_cropModels ? "true" : "false"));
@@ -350,7 +350,7 @@ app::AppState VoxConvert::onInit() {
 				}
 			}
 		}
-	} else if (!_exportModels && !_printSceneGraph && !_printSceneToConsole) {
+	} else if (!_exportModels && !_outputJson && !_outputImage) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -443,11 +443,11 @@ app::AppState VoxConvert::onInit() {
 	// STEP 1: apply the filter
 	applyFilters(sceneGraph, infiles, outfiles);
 
-	if (_printSceneGraph) {
+	if (_outputJson) {
 		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
 	}
 
-	if (_printSceneToConsole) {
+	if (_outputImage) {
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
 		if (!merged.hasVolume()) {
 			Log::error("No valid volume in the scenegraph to print");
