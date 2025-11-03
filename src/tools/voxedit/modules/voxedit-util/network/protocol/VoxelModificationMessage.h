@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "core/String.h"
 #include "memento/MementoHandler.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 #include "voxel/Region.h"
 
 namespace voxedit {

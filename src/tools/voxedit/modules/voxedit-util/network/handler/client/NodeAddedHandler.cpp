@@ -3,8 +3,6 @@
  */
 
 #include "NodeAddedHandler.h"
-#include "io/MemoryReadStream.h"
-#include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/VolumeCompression.h"

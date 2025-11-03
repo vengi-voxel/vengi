@@ -9,7 +9,7 @@
 #include "io/StreamArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "util/VarUtil.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 
 namespace voxedit {

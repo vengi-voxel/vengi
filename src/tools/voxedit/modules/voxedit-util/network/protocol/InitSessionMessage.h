@@ -8,7 +8,7 @@
 #include "core/String.h"
 #include "core/Var.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/ProtocolVersion.h"
 
 namespace voxedit {

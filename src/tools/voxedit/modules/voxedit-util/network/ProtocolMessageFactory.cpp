@@ -15,7 +15,7 @@
 #include "protocol/SceneStateMessage.h"
 #include "protocol/SceneStateRequestMessage.h"
 #include "protocol/VoxelModificationMessage.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/protocol/CommandMessage.h"
 
 namespace voxedit {

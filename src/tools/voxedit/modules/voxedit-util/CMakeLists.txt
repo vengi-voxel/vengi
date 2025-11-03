@@ -30,6 +30,7 @@ set(SRCS
 	network/ProtocolHandlerRegistry.h
 	network/ProtocolHandler.h
 	network/ProtocolMessage.h
+	network/ProtocolIds.h
 	network/ProtocolMessageFactory.h network/ProtocolMessageFactory.cpp
 
 	network/protocol/NodeAddedMessage.h

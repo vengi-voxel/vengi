@@ -6,9 +6,8 @@
 
 #include "core/String.h"
 #include "memento/MementoHandler.h"
-#include "palette/Material.h"
 #include "palette/Palette.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 
 namespace voxedit {
 namespace network {

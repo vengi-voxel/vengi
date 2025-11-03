@@ -6,7 +6,7 @@
 #include "NetworkImpl.h"
 #include "ProtocolHandler.h"
 #include "ProtocolHandlerRegistry.h"
-#include "ProtocolMessage.h"
+#include "ProtocolIds.h"
 #include "ProtocolMessageFactory.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/String.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 
 namespace voxedit {
 namespace network {

@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include "core/Enum.h"
-#include "core/String.h"
 #include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "voxedit-util/network/ProtocolIds.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
