@@ -142,7 +142,7 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, const io::A
 }
 
 static bool volumeTurntable(const core::String &fileName, const core::String &imageFile,
-							voxelformat::ThumbnailContext ctx, int loops) {
+							const voxelformat::ThumbnailContext &ctx, int loops) {
 	scenegraph::SceneGraph sceneGraph;
 	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
 	voxelformat::LoadContext loadctx;
