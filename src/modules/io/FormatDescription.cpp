@@ -171,6 +171,22 @@ bool isA(const core::String &file, const io::FormatDescription *desc) {
 	return false;
 }
 
+bool isA(const core::String &file, const FormatDescription &desc) {
+	if (!desc.valid()) {
+		return false;
+	}
+	const core::String &extAll = core::string::extractAllExtensions(file);
+	if (desc.matchesExtension(extAll)) {
+		return true;
+	}
+
+	const core::String &ext = core::string::extractExtension(file);
+	if (desc.matchesExtension(ext)) {
+		return true;
+	}
+	return false;
+}
+
 bool isImage(const core::String &file) {
 	return isA(file, io::format::images());
 }
