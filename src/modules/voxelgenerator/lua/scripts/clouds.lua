@@ -1,5 +1,3 @@
-local vol = require "modules.volume"
-
 function arguments()
 	return {
 		{ name = 'cloudcount', desc = 'number of cloud clusters to generate', type = 'int', default = '5', min = '1', max = '50' },
