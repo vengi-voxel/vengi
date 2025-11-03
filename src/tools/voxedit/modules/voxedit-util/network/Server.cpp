@@ -3,11 +3,10 @@
  */
 
 #include "Server.h"
+#include "ProtocolVersion.h"
 #include "core/Log.h"
-#include "voxedit-util/network/ProtocolVersion.h"
-#include "voxedit-util/network/ServerNetwork.h"
-#include "voxedit-util/network/protocol/SceneStateMessage.h"
-#include "voxedit-util/network/protocol/SceneStateRequestMessage.h"
+#include "protocol/SceneStateMessage.h"
+#include "protocol/SceneStateRequestMessage.h"
 
 namespace voxedit {
 

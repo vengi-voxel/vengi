@@ -4,6 +4,7 @@
 
 #include "Client.h"
 #include "memento/MementoHandler.h"
+#include "protocol/InitSessionMessage.h"
 #include "protocol/NodeAddedMessage.h"
 #include "protocol/NodeKeyFramesMessage.h"
 #include "protocol/NodeMovedMessage.h"
@@ -11,10 +12,9 @@
 #include "protocol/NodePropertiesMessage.h"
 #include "protocol/NodeRemovedMessage.h"
 #include "protocol/NodeRenamedMessage.h"
+#include "protocol/SceneStateMessage.h"
 #include "protocol/VoxelModificationMessage.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/network/protocol/InitSessionMessage.h"
-#include "voxedit-util/network/protocol/SceneStateMessage.h"
 
 namespace voxedit {
 
