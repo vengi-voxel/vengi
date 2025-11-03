@@ -1109,6 +1109,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			continue;
 		}
 		const voxel::Region &sourceRegion = resolveRegion(node);
+		// TODO: SCENEGRAPH: this is a frame idx not a keyframe idx
 		const voxel::Region &destRegion = sceneRegion(node, keyFrameIdx);
 		const palette::Palette &pal = node.palette();
 
