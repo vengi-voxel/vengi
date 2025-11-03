@@ -3,7 +3,6 @@
  */
 
 #include "ServerNetwork.h"
-#include "NetworkError.h"
 #include "NetworkImpl.h"
 #include "ProtocolHandler.h"
 #include "ProtocolHandlerRegistry.h"
@@ -14,6 +13,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
+#include "network/NetworkError.h"
 #include "protocol/PingMessage.h"
 #include "voxedit-util/Config.h"
 
@@ -72,7 +72,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 	_impl->socketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_impl->socketFD == InvalidSocketId) {
 		network_cleanup();
-		Log::error("Failed to create socket: %s", getNetworkErrorString());
+		Log::error("Failed to create socket: %s", ::network::getNetworkErrorString());
 		return false;
 	}
 	struct sockaddr_in sin;
@@ -86,7 +86,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 			closesocket(_impl->socketFD);
 			_impl->socketFD = InvalidSocketId;
 			network_cleanup();
-			Log::error("Invalid interface address '%s': %s", iface.c_str(), getNetworkErrorString());
+			Log::error("Invalid interface address '%s': %s", iface.c_str(), ::network::getNetworkErrorString());
 			return false;
 		}
 	}
@@ -101,7 +101,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		closesocket(_impl->socketFD);
 		_impl->socketFD = InvalidSocketId;
 		network_cleanup();
-		Log::error("Failed to set socket options: %s", getNetworkErrorString());
+		Log::error("Failed to set socket options: %s", ::network::getNetworkErrorString());
 		return false;
 	}
 
@@ -112,7 +112,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		_impl->socketFD = InvalidSocketId;
 		network_cleanup();
 		const char *ifaceStr = sin.sin_addr.s_addr == INADDR_ANY ? "any interface" : iface.c_str();
-		Log::error("Failed to bind to %s:%i: %s", ifaceStr, port, getNetworkErrorString());
+		Log::error("Failed to bind to %s:%i: %s", ifaceStr, port, ::network::getNetworkErrorString());
 		return false;
 	}
 
@@ -121,7 +121,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		_impl->socketFD = InvalidSocketId;
 		network_cleanup();
 		const char *ifaceStr = sin.sin_addr.s_addr == INADDR_ANY ? "any interface" : iface.c_str();
-		Log::error("Failed to listen on %s:%i: %s", ifaceStr, port, getNetworkErrorString());
+		Log::error("Failed to listen on %s:%i: %s", ifaceStr, port, ::network::getNetworkErrorString());
 		return false;
 	}
 
@@ -226,7 +226,7 @@ bool ServerNetwork::updateClient(RemoteClient &client) {
 			}
 #endif
 			// Real error occurred (connection reset, etc.)
-			Log::error("Server send error: %s", getNetworkErrorString());
+			Log::error("Server send error: %s", ::network::getNetworkErrorString());
 			return false;
 		}
 		if (sent == 0) {
@@ -277,7 +277,7 @@ void ServerNetwork::update(double nowSeconds) {
 	const int ready = select(maxFd + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #endif
 	if (ready < 0) {
-		Log::warn("select() failed: %s", getNetworkErrorString());
+		Log::warn("select() failed: %s", ::network::getNetworkErrorString());
 		return;
 	}
 	if (_impl->socketFD != InvalidSocketId && FD_ISSET(_impl->socketFD, &readFDsOut)) {
@@ -321,7 +321,7 @@ void ServerNetwork::update(double nowSeconds) {
 			core::Array<uint8_t, 16384> buf;
 			const network_return len = recv(clientSocket, (char *)&buf[0], buf.size(), 0);
 			if (len < 0) {
-				Log::debug("RemoteClient %d recv error: %s", clientId, getNetworkErrorString());
+				Log::debug("RemoteClient %d recv error: %s", clientId, ::network::getNetworkErrorString());
 				remove[clientId] = true;
 				continue;
 			} else if (len == 0) {
@@ -415,7 +415,7 @@ bool ServerNetwork::sendToClient(RemoteClient &client, ProtocolMessage &msg) {
 
 bool ServerNetwork::sendToClient(ClientId clientId, ProtocolMessage &msg) {
 	if (clientId >= (ClientId)_clients.size()) {
-		Log::error("Invalid client ID %d - failed to send message: %s", clientId, getNetworkErrorString());
+		Log::error("Invalid client ID %d - failed to send message: %s", clientId, ::network::getNetworkErrorString());
 		return false;
 	}
 	return sendToClient(_clients[clientId], msg);

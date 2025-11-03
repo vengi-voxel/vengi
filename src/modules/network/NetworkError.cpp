@@ -10,7 +10,6 @@
 #include <errno.h>
 #include <string.h>
 
-namespace voxedit {
 namespace network {
 
 const char *getNetworkErrorString() {
@@ -31,4 +30,3 @@ const char *getNetworkErrorString() {
 }
 
 } // namespace network
-} // namespace voxedit

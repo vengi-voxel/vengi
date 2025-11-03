@@ -2,10 +2,9 @@
  * @file
  */
 
-#include "../network/NetworkAdapters.h"
+#include "network/NetworkAdapters.h"
 #include <gtest/gtest.h>
 
-namespace voxedit {
 namespace network {
 
 TEST(NetworkAdaptersTest, ListInterfaces) {
@@ -14,4 +13,3 @@ TEST(NetworkAdaptersTest, ListInterfaces) {
 }
 
 } // namespace network
-} // namespace voxedit

@@ -5,10 +5,10 @@
 #include "NetworkPanel.h"
 #include "IconsLucide.h"
 #include "core/ConfigVar.h"
+#include "network/NetworkAdapters.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/network/NetworkAdapters.h"
 #include "voxedit-util/network/ServerNetwork.h"
 
 namespace voxedit {
@@ -65,7 +65,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 						ImGui::Text(_("Traffic: %i bytes sent, %i bytes received"), (int)client.bytesOut, (int)client.bytesIn);
 					}
 				} else {
-					static const core::DynamicArray<core::String> &adapters = network::getNetworkAdapters();
+					static const core::DynamicArray<core::String> &adapters = ::network::getNetworkAdapters();
 					const core::VarPtr &ifaceVar = core::Var::getSafe(cfg::VoxEditNetServerInterface);
 					const core::String &iface = ifaceVar->strVal();
 					if (ImGui::BeginCombo(_("Interface"), iface.c_str())) {

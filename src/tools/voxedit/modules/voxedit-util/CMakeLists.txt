@@ -27,8 +27,6 @@ set(SRCS
 	network/Server.h network/Server.cpp
 	network/ClientNetwork.h network/ClientNetwork.cpp
 	network/ServerNetwork.h network/ServerNetwork.cpp
-	network/NetworkError.cpp network/NetworkError.h
-	network/NetworkAdapters.cpp network/NetworkAdapters.h
 	network/ProtocolHandlerRegistry.h
 	network/ProtocolHandler.h
 	network/ProtocolMessage.h
@@ -79,7 +77,7 @@ set(SRCS
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento)
+set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator memento network)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
@@ -87,7 +85,6 @@ set(TEST_SRCS
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp
-	tests/NetworkAdaptersTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp
 	tests/PlaneBrushTest.cpp

@@ -21,7 +21,6 @@
 #include <netinet/in.h>
 #endif
 
-namespace voxedit {
 namespace network {
 
 core::DynamicArray<core::String> getNetworkAdapters() {
@@ -79,4 +78,3 @@ core::DynamicArray<core::String> getNetworkAdapters() {
 }
 
 } // namespace network
-} // namespace voxedit
