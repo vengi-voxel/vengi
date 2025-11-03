@@ -7,12 +7,11 @@
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
-namespace network {
 
 NodeRenamedHandler::NodeRenamedHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-void NodeRenamedHandler::execute(const network::ClientId &, network::NodeRenamedMessage *message) {
+void NodeRenamedHandler::execute(const ClientId &, NodeRenamedMessage *message) {
 	const core::UUID &uuid = message->nodeUUID();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {
@@ -31,5 +30,4 @@ void NodeRenamedHandler::execute(const network::ClientId &, network::NodeRenamed
 	client.unlockListener();
 }
 
-} // namespace network
 } // namespace voxedit

@@ -11,11 +11,10 @@
 #include "voxedit-util/network/protocol/CommandMessage.h"
 
 namespace voxedit {
-namespace network {
 
 class Server;
 
-class CommandHandlerServer : public network::ProtocolTypeHandler<CommandMessage> {
+class CommandHandlerServer : public ProtocolTypeHandler<CommandMessage> {
 public:
 	void execute(const ClientId &clientId, CommandMessage *msg) override {
 		Log::info("Received command message: %s", msg->command().c_str());
@@ -29,5 +28,4 @@ public:
 	}
 };
 
-} // namespace network
 } // namespace voxedit

@@ -8,7 +8,6 @@
 #include "scenegraph/SceneGraph.h"
 
 namespace voxedit {
-namespace network {
 
 class Server : public NetworkListener, public core::IComponent {
 protected:
@@ -41,7 +40,7 @@ public:
 		_sceneGraph->updateTransforms();
 	}
 
-	network::ServerNetwork &network() {
+	ServerNetwork &network() {
 		return _network;
 	}
 
@@ -59,5 +58,5 @@ public:
 	void disconnect(const ClientId &clientId);
 };
 
-} // namespace network
+
 } // namespace voxedit

@@ -16,7 +16,6 @@
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
-namespace network {
 
 ClientNetwork::ClientNetwork(SceneManager *sceneMgr)
 	: _impl(new NetworkImpl()), _voxelModificationHandler(sceneMgr), _nodeAddedHandler(sceneMgr),
@@ -70,14 +69,14 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 	core::String service = core::string::toString(port);
 	int err = getaddrinfo(hostname.c_str(), service.c_str(), &hints, &res);
 	if (err != 0 || res == nullptr) {
-		Log::error("Failed to resolve hostname %s: %s", hostname.c_str(), ::network::getNetworkErrorString());
+		Log::error("Failed to resolve hostname %s: %s", hostname.c_str(), network::getNetworkErrorString());
 		return false;
 	}
 
 	_impl->socketFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (_impl->socketFD == InvalidSocketId) {
 		freeaddrinfo(res);
-		Log::error("Failed to create socket: %s", ::network::getNetworkErrorString());
+		Log::error("Failed to create socket: %s", network::getNetworkErrorString());
 		return false;
 	}
 
@@ -86,7 +85,7 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 		closesocket(_impl->socketFD);
 		_impl->socketFD = InvalidSocketId;
 		freeaddrinfo(res);
-		Log::error("Failed to connect to %s:%i: %s", hostname.c_str(), port, ::network::getNetworkErrorString());
+		Log::error("Failed to connect to %s:%i: %s", hostname.c_str(), port, network::getNetworkErrorString());
 		return false;
 	}
 
@@ -107,19 +106,19 @@ bool ClientNetwork::init() {
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
-	network::ProtocolHandlerRegistry &r = _protocolRegistry;
-	r.registerHandler(network::PROTO_PING, &_nopHandler); // ping is just a nop for the client
-	r.registerHandler(network::PROTO_COMMAND, &_nopHandler); // never execute commands on the client side
-	r.registerHandler(network::PROTO_SCENE_STATE_REQUEST, &_sceneStateRequestHandler);
-	r.registerHandler(network::PROTO_SCENE_STATE, &_sceneStateHandler);
-	r.registerHandler(network::PROTO_VOXEL_MODIFICATION, &_voxelModificationHandler);
-	r.registerHandler(network::PROTO_NODE_ADDED, &_nodeAddedHandler);
-	r.registerHandler(network::PROTO_NODE_REMOVED, &_nodeRemovedHandler);
-	r.registerHandler(network::PROTO_NODE_MOVED, &_nodeMovedHandler);
-	r.registerHandler(network::PROTO_NODE_RENAMED, &_nodeRenamedHandler);
-	r.registerHandler(network::PROTO_NODE_PALETTE_CHANGED, &_nodePaletteChangedHandle);
-	r.registerHandler(network::PROTO_NODE_PROPERTIES, &_nodePropertiesHandler);
-	r.registerHandler(network::PROTO_NODE_KEYFRAMES, &_nodeKeyFramesHandle);
+	ProtocolHandlerRegistry &r = _protocolRegistry;
+	r.registerHandler(PROTO_PING, &_nopHandler); // ping is just a nop for the client
+	r.registerHandler(PROTO_COMMAND, &_nopHandler); // never execute commands on the client side
+	r.registerHandler(PROTO_SCENE_STATE_REQUEST, &_sceneStateRequestHandler);
+	r.registerHandler(PROTO_SCENE_STATE, &_sceneStateHandler);
+	r.registerHandler(PROTO_VOXEL_MODIFICATION, &_voxelModificationHandler);
+	r.registerHandler(PROTO_NODE_ADDED, &_nodeAddedHandler);
+	r.registerHandler(PROTO_NODE_REMOVED, &_nodeRemovedHandler);
+	r.registerHandler(PROTO_NODE_MOVED, &_nodeMovedHandler);
+	r.registerHandler(PROTO_NODE_RENAMED, &_nodeRenamedHandler);
+	r.registerHandler(PROTO_NODE_PALETTE_CHANGED, &_nodePaletteChangedHandle);
+	r.registerHandler(PROTO_NODE_PROPERTIES, &_nodePropertiesHandler);
+	r.registerHandler(PROTO_NODE_KEYFRAMES, &_nodeKeyFramesHandle);
 
 	return true;
 }
@@ -136,7 +135,7 @@ bool ClientNetwork::sendMessage(const ProtocolMessage &msg) {
 		const size_t toSend = total - sentTotal;
 		const network_return sent = send(_impl->socketFD, (const char *)msg.getBuffer() + sentTotal, toSend, 0);
 		if (sent < 0) {
-			Log::warn("Failed to send message: %s", ::network::getNetworkErrorString());
+			Log::warn("Failed to send message: %s", network::getNetworkErrorString());
 			return false;
 		}
 		sentTotal += sent;
@@ -165,7 +164,7 @@ void ClientNetwork::update(double nowSeconds) {
 	const int ready = select(_impl->socketFD + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #endif
 	if (ready < 0) {
-		Log::error("select() failed: %s", ::network::getNetworkErrorString());
+		Log::error("select() failed: %s", network::getNetworkErrorString());
 		return;
 	}
 
@@ -181,7 +180,7 @@ void ClientNetwork::update(double nowSeconds) {
 	core::Array<uint8_t, 16384> buf;
 	const network_return len = recv(_impl->socketFD, (char *)&buf[0], buf.size(), 0);
 	if (len < 0) {
-		Log::error("Error receiving data: %s", ::network::getNetworkErrorString());
+		Log::error("Error receiving data: %s", network::getNetworkErrorString());
 		disconnect();
 		return;
 	}
@@ -209,5 +208,5 @@ void ClientNetwork::update(double nowSeconds) {
 	}
 }
 
-} // namespace network
+
 } // namespace voxedit

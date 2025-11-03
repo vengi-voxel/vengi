@@ -60,12 +60,12 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					if (ImGui::Button(_("Stop server"))) {
 						_sceneMgr->stopLocalServer();
 					}
-					for (const network::RemoteClient &client : _sceneMgr->server().clients()) {
+					for (const RemoteClient &client : _sceneMgr->server().clients()) {
 						ImGui::BulletText("%s", client.name.c_str());
 						ImGui::Text(_("Traffic: %i bytes sent, %i bytes received"), (int)client.bytesOut, (int)client.bytesIn);
 					}
 				} else {
-					static const core::DynamicArray<core::String> &adapters = ::network::getNetworkAdapters();
+					static const core::DynamicArray<core::String> &adapters = network::getNetworkAdapters();
 					const core::VarPtr &ifaceVar = core::Var::getSafe(cfg::VoxEditNetServerInterface);
 					const core::String &iface = ifaceVar->strVal();
 					if (ImGui::BeginCombo(_("Interface"), iface.c_str())) {

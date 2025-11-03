@@ -12,7 +12,6 @@
 #include "voxedit-util/network/ProtocolVersion.h"
 
 namespace voxedit {
-namespace network {
 
 /**
  * @brief Initial session handshake message containing protocol version, application version, and username
@@ -120,5 +119,5 @@ public:
 	}
 };
 
-} // namespace network
+
 } // namespace voxedit

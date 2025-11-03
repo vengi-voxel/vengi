@@ -11,7 +11,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {
-namespace network {
 
 /**
  * @brief Scene graph node keyframes changed message
@@ -68,5 +67,4 @@ public:
 	}
 };
 
-} // namespace network
 } // namespace voxedit

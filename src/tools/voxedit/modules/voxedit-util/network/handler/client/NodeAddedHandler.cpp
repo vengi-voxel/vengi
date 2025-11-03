@@ -8,12 +8,11 @@
 #include "voxel/VolumeCompression.h"
 
 namespace voxedit {
-namespace network {
 
 NodeAddedHandler::NodeAddedHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-void NodeAddedHandler::execute(const network::ClientId &, network::NodeAddedMessage *message) {
+void NodeAddedHandler::execute(const ClientId &, NodeAddedMessage *message) {
 	const core::UUID &parentUUID = message->parentUUID();
 	const core::UUID &nodeUUID = message->nodeUUID();
 	const core::UUID &referenceUUID = message->referenceUUID();
@@ -69,5 +68,4 @@ void NodeAddedHandler::execute(const network::ClientId &, network::NodeAddedMess
 	client.unlockListener();
 }
 
-} // namespace network
 } // namespace voxedit

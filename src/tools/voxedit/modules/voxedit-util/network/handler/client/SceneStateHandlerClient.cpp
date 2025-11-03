@@ -6,7 +6,6 @@
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
-namespace network {
 
 SceneStateHandlerClient::SceneStateHandlerClient(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
@@ -20,5 +19,4 @@ void SceneStateHandlerClient::execute(const ClientId &, SceneStateMessage *msg) 
 	client.unlockListener();
 }
 
-} // namespace network
 } // namespace voxedit

@@ -79,8 +79,8 @@ protected:
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
 	SelectionManagerPtr _selectionManager;
-	network::Server _server;
-	network::Client _client;
+	Server _server;
+	Client _client;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -452,8 +452,8 @@ public:
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
 	voxelgenerator::LUAApi &luaApi();
-	network::Server &server();
-	network::Client &client();
+	Server &server();
+	Client &client();
 
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
@@ -602,11 +602,11 @@ inline voxelrender::CameraMovement &SceneManager::cameraMovement() {
 	return _camMovement;
 }
 
-inline network::Server &SceneManager::server() {
+inline Server &SceneManager::server() {
 	return _server;
 }
 
-inline network::Client &SceneManager::client() {
+inline Client &SceneManager::client() {
 	return _client;
 }
 

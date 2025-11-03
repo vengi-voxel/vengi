@@ -8,11 +8,10 @@
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 
 namespace voxedit {
-namespace network {
 
 class Server;
 
-class SceneStateHandlerServer : public network::ProtocolTypeHandler<SceneStateMessage> {
+class SceneStateHandlerServer : public ProtocolTypeHandler<SceneStateMessage> {
 private:
 	Server *_server;
 
@@ -21,5 +20,4 @@ public:
 	void execute(const ClientId &, SceneStateMessage *msg) override;
 };
 
-} // namespace network
 } // namespace voxedit

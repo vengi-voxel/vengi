@@ -10,7 +10,6 @@
 #include "voxedit-util/network/ProtocolIds.h"
 
 namespace voxedit {
-namespace network {
 
 /**
  * @brief Scene graph node added message
@@ -212,5 +211,4 @@ public:
 	}
 };
 
-} // namespace network
 } // namespace voxedit

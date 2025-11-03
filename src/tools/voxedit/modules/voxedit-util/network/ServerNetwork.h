@@ -14,7 +14,6 @@
 #include "voxedit-util/network/handler/server/CommandHandlerServer.h"
 
 namespace voxedit {
-namespace network {
 
 class ProtocolMessage;
 struct NetworkImpl;
@@ -56,7 +55,7 @@ protected:
 
 	double _pingSeconds = 0.0;
 	ProtocolHandlerRegistry _protocolRegistry;
-	network::NopHandler _nopHandler;
+	NopHandler _nopHandler;
 	CommandHandlerServer _commandHandler;
 	InitSessionHandler _initSessionHandler;
 	SceneStateHandlerServer _sceneStateHandler;
@@ -113,5 +112,5 @@ inline size_t ServerNetwork::clientCount() const {
 	return clients().size();
 }
 
-} // namespace network
+
 } // namespace voxedit

@@ -7,7 +7,6 @@
 #include "core/NonCopyable.h"
 
 namespace voxedit {
-namespace network {
 
 class ProtocolMessageFactory : public core::NonCopyable {
 public:
@@ -23,5 +22,5 @@ public:
 	static ProtocolMessage *create(MessageStream &in);
 };
 
-} // namespace network
+
 } // namespace voxedit

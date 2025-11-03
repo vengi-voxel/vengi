@@ -1283,7 +1283,7 @@ void SceneManager::resetSceneState() {
 	setReferencePosition(node.region().getCenter());
 	resetLastTrace();
 	if (server().isRunning()) {
-		network::SceneStateMessage msg(_sceneGraph);
+		SceneStateMessage msg(_sceneGraph);
 		server().network().broadcast(msg, 0);
 	}
 }

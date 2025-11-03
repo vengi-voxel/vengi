@@ -19,7 +19,6 @@
 #include "voxedit-util/network/protocol/CommandMessage.h"
 
 namespace voxedit {
-namespace network {
 
 bool ProtocolMessageFactory::isNewMessageAvailable(MessageStream &in) {
 	in.seek(0, SEEK_SET);
@@ -109,5 +108,5 @@ ProtocolMessage *ProtocolMessageFactory::create(MessageStream &in) {
 	return msg;
 }
 
-} // namespace network
+
 } // namespace voxedit

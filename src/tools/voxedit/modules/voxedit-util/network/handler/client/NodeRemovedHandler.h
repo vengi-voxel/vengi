@@ -11,16 +11,13 @@ namespace voxedit {
 
 class SceneManager;
 
-namespace network {
-
-class NodeRemovedHandler : public network::ProtocolTypeHandler<network::NodeRemovedMessage> {
+class NodeRemovedHandler : public ProtocolTypeHandler<NodeRemovedMessage> {
 private:
 	voxedit::SceneManager *_sceneMgr;
 
 public:
 	NodeRemovedHandler(SceneManager *sceneMgr);
-	void execute(const network::ClientId &, network::NodeRemovedMessage *message) override;
+	void execute(const ClientId &, NodeRemovedMessage *message) override;
 };
 
-} // namespace network
 } // namespace voxedit

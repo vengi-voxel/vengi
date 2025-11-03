@@ -9,7 +9,6 @@
 #include "voxel/Region.h"
 
 namespace voxedit {
-namespace network {
 
 /**
  * @brief Voxel modification message with compressed voxel data
@@ -91,5 +90,5 @@ public:
 	}
 };
 
-} // namespace network
+
 } // namespace voxedit

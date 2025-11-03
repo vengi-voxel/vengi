@@ -14,14 +14,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {
-namespace network {
 
 using ProtocolId = uint8_t;
 using MessageStream = io::BufferedReadWriteStream;
 
-/**
- * @brief A protocol message is used for the serialization of the ai states for remote debugging
- */
 class ProtocolMessage : public io::BufferedReadWriteStream {
 protected:
 	ProtocolId _id;
@@ -440,9 +436,9 @@ public:
 };
 
 #define PROTO_MSG(name, id)                                                                                            \
-	class name : public voxedit::network::ProtocolMessage {                                                            \
+	class name : public voxedit::ProtocolMessage {                                                            \
 	public:                                                                                                            \
-		name() : voxedit::network::ProtocolMessage(id) {                                                               \
+		name() : voxedit::ProtocolMessage(id) {                                                               \
 		}                                                                                                              \
 		void writeBack() override {                                                                                    \
 			writeInt32(0);                                                                                             \
@@ -451,5 +447,4 @@ public:
 		}                                                                                                              \
 	}
 
-} // namespace network
 } // namespace voxedit

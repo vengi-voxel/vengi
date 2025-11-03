@@ -18,7 +18,6 @@
 #include "voxedit-util/Config.h"
 
 namespace voxedit {
-namespace network {
 
 RemoteClient::RemoteClient(RemoteClient &&other) noexcept
 	: socket(other.socket), bytesIn(other.bytesIn), bytesOut(other.bytesOut), lastPingTime(other.lastPingTime),
@@ -72,7 +71,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 	_impl->socketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_impl->socketFD == InvalidSocketId) {
 		network_cleanup();
-		Log::error("Failed to create socket: %s", ::network::getNetworkErrorString());
+		Log::error("Failed to create socket: %s", network::getNetworkErrorString());
 		return false;
 	}
 	struct sockaddr_in sin;
@@ -86,7 +85,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 			closesocket(_impl->socketFD);
 			_impl->socketFD = InvalidSocketId;
 			network_cleanup();
-			Log::error("Invalid interface address '%s': %s", iface.c_str(), ::network::getNetworkErrorString());
+			Log::error("Invalid interface address '%s': %s", iface.c_str(), network::getNetworkErrorString());
 			return false;
 		}
 	}
@@ -101,7 +100,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		closesocket(_impl->socketFD);
 		_impl->socketFD = InvalidSocketId;
 		network_cleanup();
-		Log::error("Failed to set socket options: %s", ::network::getNetworkErrorString());
+		Log::error("Failed to set socket options: %s", network::getNetworkErrorString());
 		return false;
 	}
 
@@ -112,7 +111,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		_impl->socketFD = InvalidSocketId;
 		network_cleanup();
 		const char *ifaceStr = sin.sin_addr.s_addr == INADDR_ANY ? "any interface" : iface.c_str();
-		Log::error("Failed to bind to %s:%i: %s", ifaceStr, port, ::network::getNetworkErrorString());
+		Log::error("Failed to bind to %s:%i: %s", ifaceStr, port, network::getNetworkErrorString());
 		return false;
 	}
 
@@ -121,7 +120,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		_impl->socketFD = InvalidSocketId;
 		network_cleanup();
 		const char *ifaceStr = sin.sin_addr.s_addr == INADDR_ANY ? "any interface" : iface.c_str();
-		Log::error("Failed to listen on %s:%i: %s", ifaceStr, port, ::network::getNetworkErrorString());
+		Log::error("Failed to listen on %s:%i: %s", ifaceStr, port, network::getNetworkErrorString());
 		return false;
 	}
 
@@ -175,18 +174,18 @@ bool ServerNetwork::init() {
 
 	ProtocolHandlerRegistry &r = _protocolRegistry;
 	r.registerHandler(PROTO_INIT_SESSION, &_initSessionHandler);
-	r.registerHandler(network::PROTO_PING, &_nopHandler);
-	r.registerHandler(network::PROTO_COMMAND, &_commandHandler);
-	r.registerHandler(network::PROTO_SCENE_STATE_REQUEST, &_broadcastHandler);
-	r.registerHandler(network::PROTO_SCENE_STATE, &_sceneStateHandler);
-	r.registerHandler(network::PROTO_VOXEL_MODIFICATION, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_ADDED, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_REMOVED, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_MOVED, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_RENAMED, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_PALETTE_CHANGED, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_PROPERTIES, &_broadcastHandler);
-	r.registerHandler(network::PROTO_NODE_KEYFRAMES, &_broadcastHandler);
+	r.registerHandler(PROTO_PING, &_nopHandler);
+	r.registerHandler(PROTO_COMMAND, &_commandHandler);
+	r.registerHandler(PROTO_SCENE_STATE_REQUEST, &_broadcastHandler);
+	r.registerHandler(PROTO_SCENE_STATE, &_sceneStateHandler);
+	r.registerHandler(PROTO_VOXEL_MODIFICATION, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_ADDED, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_REMOVED, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_MOVED, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_RENAMED, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_PALETTE_CHANGED, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_PROPERTIES, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_KEYFRAMES, &_broadcastHandler);
 	return true;
 }
 
@@ -226,7 +225,7 @@ bool ServerNetwork::updateClient(RemoteClient &client) {
 			}
 #endif
 			// Real error occurred (connection reset, etc.)
-			Log::error("Server send error: %s", ::network::getNetworkErrorString());
+			Log::error("Server send error: %s", network::getNetworkErrorString());
 			return false;
 		}
 		if (sent == 0) {
@@ -277,7 +276,7 @@ void ServerNetwork::update(double nowSeconds) {
 	const int ready = select(maxFd + 1, &readFDsOut, &writeFDsOut, nullptr, &tv);
 #endif
 	if (ready < 0) {
-		Log::warn("select() failed: %s", ::network::getNetworkErrorString());
+		Log::warn("select() failed: %s", network::getNetworkErrorString());
 		return;
 	}
 	if (_impl->socketFD != InvalidSocketId && FD_ISSET(_impl->socketFD, &readFDsOut)) {
@@ -321,7 +320,7 @@ void ServerNetwork::update(double nowSeconds) {
 			core::Array<uint8_t, 16384> buf;
 			const network_return len = recv(clientSocket, (char *)&buf[0], buf.size(), 0);
 			if (len < 0) {
-				Log::debug("RemoteClient %d recv error: %s", clientId, ::network::getNetworkErrorString());
+				Log::debug("RemoteClient %d recv error: %s", clientId, network::getNetworkErrorString());
 				remove[clientId] = true;
 				continue;
 			} else if (len == 0) {
@@ -415,7 +414,7 @@ bool ServerNetwork::sendToClient(RemoteClient &client, ProtocolMessage &msg) {
 
 bool ServerNetwork::sendToClient(ClientId clientId, ProtocolMessage &msg) {
 	if (clientId >= (ClientId)_clients.size()) {
-		Log::error("Invalid client ID %d - failed to send message: %s", clientId, ::network::getNetworkErrorString());
+		Log::error("Invalid client ID %d - failed to send message: %s", clientId, network::getNetworkErrorString());
 		return false;
 	}
 	return sendToClient(_clients[clientId], msg);
@@ -433,5 +432,5 @@ void ServerNetwork::removeListener(NetworkListener *listener) {
 	}
 }
 
-} // namespace network
+
 } // namespace voxedit

@@ -13,7 +13,6 @@
 #include "voxelformat/private/vengi/VENGIFormat.h"
 
 namespace voxedit {
-namespace network {
 
 class SceneStateMessage : public ProtocolMessage {
 private:
@@ -60,5 +59,5 @@ public:
 	}
 };
 
-} // namespace network
+
 } // namespace voxedit

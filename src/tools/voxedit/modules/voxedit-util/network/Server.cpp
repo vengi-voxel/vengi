@@ -10,7 +10,6 @@
 #include "voxedit-util/network/protocol/SceneStateRequestMessage.h"
 
 namespace voxedit {
-namespace network {
 
 Server::Server() : _network(this) {
 	_network.addListener(this);
@@ -130,5 +129,5 @@ const RemoteClients &Server::clients() const {
 	return _network.clients();
 }
 
-} // namespace network
+
 } // namespace voxedit

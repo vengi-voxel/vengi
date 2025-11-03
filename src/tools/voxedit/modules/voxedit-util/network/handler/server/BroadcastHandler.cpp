@@ -6,7 +6,6 @@
 #include "voxedit-util/network/Server.h"
 
 namespace voxedit {
-namespace network {
 
 BroadcastHandler::BroadcastHandler(Server *server) : _server(server) {
 }
@@ -17,5 +16,4 @@ void BroadcastHandler::execute(const ClientId &clientId, ProtocolMessage &msg) {
 	_server->network().broadcast(msg, clientId);
 }
 
-} // namespace network
 } // namespace voxedit

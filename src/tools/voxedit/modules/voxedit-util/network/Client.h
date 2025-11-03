@@ -12,12 +12,11 @@ namespace voxedit {
 
 class SceneManager;
 
-namespace network {
 
 class Client : public core::IComponent, public memento::IMementoStateListener {
 protected:
 	SceneManager *_sceneMgr = nullptr;
-	network::ClientNetwork _network;
+	ClientNetwork _network;
 	bool _locked = false;
 
 public:
@@ -25,7 +24,7 @@ public:
 	}
 	virtual ~Client();
 
-	network::ClientNetwork &network() {
+	ClientNetwork &network() {
 		return _network;
 	}
 
@@ -46,5 +45,5 @@ public:
 	void onMementoStateSkipped(const memento::MementoState &state) override;
 };
 
-} // namespace network
+
 } // namespace voxedit

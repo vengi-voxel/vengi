@@ -8,11 +8,10 @@
 #include "voxedit-util/network/ProtocolMessage.h"
 
 namespace voxedit {
-namespace network {
 
 class Server;
 
-class BroadcastHandler : public network::ProtocolHandler {
+class BroadcastHandler : public ProtocolHandler {
 private:
 	Server *_server;
 
@@ -21,5 +20,4 @@ public:
 	void execute(const ClientId &, ProtocolMessage &msg) override;
 };
 
-} // namespace network
 } // namespace voxedit

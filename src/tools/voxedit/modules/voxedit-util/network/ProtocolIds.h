@@ -6,7 +6,6 @@
 #include "ProtocolMessage.h"
 
 namespace voxedit {
-namespace network {
 
 // keep alive message
 const ProtocolId PROTO_PING = 0;
@@ -35,5 +34,4 @@ const ProtocolId PROTO_INIT_SESSION = 11;
 // allow to send commands to the server
 const ProtocolId PROTO_COMMAND = 12;
 
-} // namespace network
 } // namespace voxedit

@@ -11,9 +11,7 @@ namespace voxedit {
 
 class SceneManager;
 
-namespace network {
-
-class SceneStateHandlerClient : public network::ProtocolTypeHandler<SceneStateMessage> {
+class SceneStateHandlerClient : public ProtocolTypeHandler<SceneStateMessage> {
 private:
 	SceneManager *_sceneMgr;
 
@@ -22,5 +20,4 @@ public:
 	void execute(const ClientId &, SceneStateMessage *msg) override;
 };
 
-} // namespace network
 } // namespace voxedit

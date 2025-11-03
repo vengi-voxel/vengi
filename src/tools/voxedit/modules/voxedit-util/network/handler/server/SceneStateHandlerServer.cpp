@@ -6,7 +6,6 @@
 #include "voxedit-util/network/Server.h"
 
 namespace voxedit {
-namespace network {
 
 SceneStateHandlerServer::SceneStateHandlerServer(Server *server) : _server(server) {
 }
@@ -16,5 +15,4 @@ void SceneStateHandlerServer::execute(const ClientId &, SceneStateMessage *msg) 
 	_server->setSceneGraph(core::move(msg->sceneGraph()));
 }
 
-} // namespace network
 } // namespace voxedit

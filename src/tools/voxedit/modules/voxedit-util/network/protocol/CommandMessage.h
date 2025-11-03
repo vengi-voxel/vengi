@@ -8,7 +8,6 @@
 #include "voxedit-util/network/ProtocolIds.h"
 
 namespace voxedit {
-namespace network {
 
 /**
  * @brief Allows remote command execution on the server side
@@ -70,5 +69,4 @@ public:
 	}
 };
 
-} // namespace network
 } // namespace voxedit

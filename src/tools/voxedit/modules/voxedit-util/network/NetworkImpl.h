@@ -39,7 +39,6 @@
 #endif
 
 namespace voxedit {
-namespace network {
 
 // Platform-specific network implementation
 struct NetworkImpl {
@@ -53,5 +52,5 @@ struct NetworkImpl {
 	}
 };
 
-} // namespace network
+
 } // namespace voxedit

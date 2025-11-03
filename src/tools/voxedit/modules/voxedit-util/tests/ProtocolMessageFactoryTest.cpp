@@ -145,7 +145,7 @@ protected:
 		Log::info("Testing round-trip serialization for %s", messageName.c_str());
 
 		// Serialize the original message
-		voxedit::network::MessageStream serializedStream;
+		voxedit::MessageStream serializedStream;
 		serializedStream.write(originalMsg->getBuffer(), originalMsg->size());
 		for (int i = 0; i < 10; ++i) {
 			// add some garbage
@@ -154,8 +154,8 @@ protected:
 		}
 
 		// Create a new message from the factory
-		voxedit::network::ProtocolMessage *deserializedMsg =
-			voxedit::network::ProtocolMessageFactory::create(serializedStream);
+		voxedit::ProtocolMessage *deserializedMsg =
+			voxedit::ProtocolMessageFactory::create(serializedStream);
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize " << messageName;
 		ASSERT_EQ(originalMsg->getId(), deserializedMsg->getId()) << "Message ID mismatch for " << messageName;
 
@@ -176,7 +176,7 @@ protected:
 	void testRoundTripSerializationWithState(const memento::MementoState &state, const core::String &messageName) {
 		MessageType originalMsg(state);
 
-		voxedit::network::MessageStream serializedStream;
+		voxedit::MessageStream serializedStream;
 		serializedStream.write(originalMsg.getBuffer(), originalMsg.size());
 		for (int i = 0; i < 10; ++i) {
 			// add some garbage
@@ -184,19 +184,19 @@ protected:
 			serializedStream.writeUInt8(0xFE);
 		}
 
-		core::ScopedPtr<voxedit::network::ProtocolMessage> deserializedMsg(
-			voxedit::network::ProtocolMessageFactory::create(serializedStream));
+		core::ScopedPtr<voxedit::ProtocolMessage> deserializedMsg(
+			voxedit::ProtocolMessageFactory::create(serializedStream));
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize " << messageName;
 		ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch for " << messageName;
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to cast deserialized message for " << messageName;
-		verifyMessageContent(state, (MessageType *)((voxedit::network::ProtocolMessage *)deserializedMsg), messageName);
+		verifyMessageContent(state, (MessageType *)((voxedit::ProtocolMessage *)deserializedMsg), messageName);
 		deserializedMsg->seek(0);
 		deserializedMsg->writeBack();
 		EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << messageName + ": Size mismatch after writeBack";
 	}
 
-	void verifyMessageContent(voxedit::network::InitSessionMessage *original,
-							  voxedit::network::InitSessionMessage *deserialized, const core::String &messageName) {
+	void verifyMessageContent(voxedit::InitSessionMessage *original,
+							  voxedit::InitSessionMessage *deserialized, const core::String &messageName) {
 		EXPECT_EQ(original->protocolVersion(), deserialized->protocolVersion())
 			<< messageName + ": Protocol version mismatch";
 		EXPECT_EQ(original->applicationVersion(), deserialized->applicationVersion())
@@ -204,7 +204,7 @@ protected:
 		EXPECT_EQ(original->username(), deserialized->username()) << messageName + ": Username mismatch";
 	}
 
-	void verifyMessageContent(const memento::MementoState &state, voxedit::network::NodeAddedMessage *deserialized,
+	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeAddedMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.parentUUID, deserialized->parentUUID()) << messageName + ": Parent UUID mismatch";
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
@@ -214,25 +214,25 @@ protected:
 		EXPECT_VEC_NEAR(state.pivot, deserialized->pivot(), 0.001f) << messageName + ": Pivot mismatch";
 	}
 
-	void verifyMessageContent(const memento::MementoState &state, voxedit::network::NodeRemovedMessage *deserialized,
+	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeRemovedMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 	}
 
-	void verifyMessageContent(const memento::MementoState &state, voxedit::network::NodeMovedMessage *deserialized,
+	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeMovedMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 		EXPECT_EQ(state.parentUUID, deserialized->parentUUID()) << messageName + ": Parent UUID mismatch";
 		EXPECT_EQ(state.referenceUUID, deserialized->referenceUUID()) << messageName + ": Reference UUID mismatch";
 	}
 
-	void verifyMessageContent(const memento::MementoState &state, voxedit::network::NodeRenamedMessage *deserialized,
+	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeRenamedMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 		EXPECT_EQ(state.name, deserialized->name()) << messageName + ": Name mismatch";
 	}
 
-	void verifyMessageContent(const memento::MementoState &state, voxedit::network::NodePropertiesMessage *deserialized,
+	void verifyMessageContent(const memento::MementoState &state, voxedit::NodePropertiesMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 
@@ -253,7 +253,7 @@ protected:
 	}
 
 	void verifyMessageContent(const memento::MementoState &state,
-							  voxedit::network::NodePaletteChangedMessage *deserialized,
+							  voxedit::NodePaletteChangedMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 
@@ -269,7 +269,7 @@ protected:
 	}
 
 	void verifyMessageContent(const memento::MementoState &state,
-							  voxedit::network::VoxelModificationMessage *deserialized,
+							  voxedit::VoxelModificationMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 		EXPECT_EQ(state.dataRegion(), deserialized->region()) << messageName + ": Region mismatch";
@@ -281,7 +281,7 @@ protected:
 		}
 	}
 
-	void verifyMessageContent(const memento::MementoState &state, voxedit::network::NodeKeyFramesMessage *deserialized,
+	void verifyMessageContent(const memento::MementoState &state, voxedit::NodeKeyFramesMessage *deserialized,
 							  const core::String &messageName) {
 		EXPECT_EQ(state.nodeUUID, deserialized->nodeUUID()) << messageName + ": Node UUID mismatch";
 
@@ -334,63 +334,63 @@ public:
 };
 
 TEST_F(ProtocolMessageFactoryTest, testPingMessage) {
-	voxedit::network::PingMessage originalMsg;
+	voxedit::PingMessage originalMsg;
 	testRoundTripSerialization(&originalMsg, "PingMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testSceneStateRequestMessage) {
-	voxedit::network::SceneStateRequestMessage originalMsg;
+	voxedit::SceneStateRequestMessage originalMsg;
 	testRoundTripSerialization(&originalMsg, "SceneStateRequestMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testInitSessionMessage) {
-	voxedit::network::InitSessionMessage originalMsg(true);
+	voxedit::InitSessionMessage originalMsg(true);
 	testRoundTripSerialization(&originalMsg, "InitSessionMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testVoxelModificationMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::VoxelModificationMessage>(state, "VoxelModificationMessage");
+	testRoundTripSerializationWithState<voxedit::VoxelModificationMessage>(state, "VoxelModificationMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodeAddedMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodeAddedMessage>(state, "NodeAddedMessage");
+	testRoundTripSerializationWithState<voxedit::NodeAddedMessage>(state, "NodeAddedMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodeRemovedMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodeRemovedMessage>(state, "NodeRemovedMessage");
+	testRoundTripSerializationWithState<voxedit::NodeRemovedMessage>(state, "NodeRemovedMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodeMovedMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodeMovedMessage>(state, "NodeMovedMessage");
+	testRoundTripSerializationWithState<voxedit::NodeMovedMessage>(state, "NodeMovedMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodeRenamedMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodeRenamedMessage>(state, "NodeRenamedMessage");
+	testRoundTripSerializationWithState<voxedit::NodeRenamedMessage>(state, "NodeRenamedMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodePropertiesMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodePropertiesMessage>(state, "NodePropertiesMessage");
+	testRoundTripSerializationWithState<voxedit::NodePropertiesMessage>(state, "NodePropertiesMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodePaletteChangedMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodePaletteChangedMessage>(state,
+	testRoundTripSerializationWithState<voxedit::NodePaletteChangedMessage>(state,
 																					 "NodePaletteChangedMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testNodeKeyFramesMessage) {
 	memento::MementoState state = createTestMementoState();
-	testRoundTripSerializationWithState<voxedit::network::NodeKeyFramesMessage>(state, "NodeKeyFramesMessage");
+	testRoundTripSerializationWithState<voxedit::NodeKeyFramesMessage>(state, "NodeKeyFramesMessage");
 }
 
 TEST_F(ProtocolMessageFactoryTest, testSceneStateMessage) {
 	scenegraph::SceneGraph sceneGraph = createTestSceneGraph();
-	voxedit::network::SceneStateMessage originalMsg(sceneGraph);
+	voxedit::SceneStateMessage originalMsg(sceneGraph);
 	testRoundTripSerialization(&originalMsg, "SceneStateMessage");
 }

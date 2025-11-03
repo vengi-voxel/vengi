@@ -8,7 +8,6 @@
 #include "core/SharedPtr.h"
 
 namespace voxedit {
-namespace network {
 
 typedef uint8_t ClientId;
 
@@ -22,7 +21,7 @@ public:
 	virtual ~ProtocolHandler() {
 	}
 
-	virtual void execute(const ClientId &clientId, voxedit::network::ProtocolMessage &message) = 0;
+	virtual void execute(const ClientId &clientId, ProtocolMessage &message) = 0;
 };
 
 template<class T>
@@ -31,7 +30,7 @@ public:
 	virtual ~ProtocolTypeHandler() {
 	}
 
-	void execute(const ClientId &clientId, voxedit::network::ProtocolMessage &message) override {
+	void execute(const ClientId &clientId, ProtocolMessage &message) override {
 		T *msg = (T *)&message;
 		execute(clientId, msg);
 	}
@@ -41,12 +40,11 @@ public:
 
 class NopHandler : public ProtocolHandler {
 public:
-	void execute(const ClientId & /*clientId*/, voxedit::network::ProtocolMessage &message) override {
+	void execute(const ClientId & /*clientId*/, ProtocolMessage &message) override {
 		Log::debug("NOP handler called for message ID %d", message.getId());
 	}
 };
 
 typedef core::SharedPtr<ProtocolHandler> ProtocolHandlerPtr;
 
-} // namespace network
 } // namespace voxedit

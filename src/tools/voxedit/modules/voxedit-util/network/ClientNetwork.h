@@ -20,7 +20,6 @@
 #include <stdint.h>
 
 namespace voxedit {
-namespace network {
 
 struct NetworkImpl;
 
@@ -28,17 +27,17 @@ class ClientNetwork : public core::DeltaFrameSeconds {
 protected:
 	NetworkImpl *_impl;
 	ProtocolHandlerRegistry _protocolRegistry;
-	network::NopHandler _nopHandler;
-	network::VoxelModificationHandler _voxelModificationHandler;
-	network::NodeAddedHandler _nodeAddedHandler;
-	network::NodeKeyFramesHandler _nodeKeyFramesHandle;
-	network::NodeMovedHandler _nodeMovedHandler;
-	network::NodePaletteChangedHandler _nodePaletteChangedHandle;
-	network::NodePropertiesHandler _nodePropertiesHandler;
-	network::NodeRemovedHandler _nodeRemovedHandler;
-	network::NodeRenamedHandler _nodeRenamedHandler;
-	network::SceneStateRequestHandler _sceneStateRequestHandler;
-	network::SceneStateHandlerClient _sceneStateHandler;
+	NopHandler _nopHandler;
+	VoxelModificationHandler _voxelModificationHandler;
+	NodeAddedHandler _nodeAddedHandler;
+	NodeKeyFramesHandler _nodeKeyFramesHandle;
+	NodeMovedHandler _nodeMovedHandler;
+	NodePaletteChangedHandler _nodePaletteChangedHandle;
+	NodePropertiesHandler _nodePropertiesHandler;
+	NodeRemovedHandler _nodeRemovedHandler;
+	NodeRenamedHandler _nodeRenamedHandler;
+	SceneStateRequestHandler _sceneStateRequestHandler;
+	SceneStateHandlerClient _sceneStateHandler;
 	MessageStream in;
 
 public:
@@ -60,5 +59,4 @@ public:
 	bool sendMessage(const ProtocolMessage &msg);
 };
 
-} // namespace network
 } // namespace voxedit

@@ -11,7 +11,6 @@
 #include "voxedit-util/network/protocol/PingMessage.h"
 
 namespace voxedit {
-namespace network {
 
 class ClientTest : public app::AbstractTest {
 protected:
@@ -21,10 +20,10 @@ protected:
 	}
 	core::SharedPtr<Client> _client;
 
-	class PingTestHandler : public network::ProtocolTypeHandler<network::PingMessage> {
+	class PingTestHandler : public ProtocolTypeHandler<PingMessage> {
 	public:
 		int _cnt = 0;
-		void execute(const network::ClientId & /*clientId*/, network::PingMessage *message) override {
+		void execute(const ClientId & /*clientId*/, PingMessage *message) override {
 			++_cnt;
 		}
 	};
@@ -52,7 +51,7 @@ public:
 			GTEST_SKIP() << "Could not connect to voxedit server at " << hostname.c_str() << ":" << port
 						 << " - server not running";
 		}
-		_client->network().protocolRegistry().registerHandler(network::PROTO_PING, &_pingHandler);
+		_client->network().protocolRegistry().registerHandler(PROTO_PING, &_pingHandler);
 	}
 
 	void TearDown() override {
@@ -76,5 +75,4 @@ TEST_F(ClientTest, testConnectionToLocalhost) {
 	EXPECT_FALSE(_client->isConnected());
 }
 
-} // namespace network
 } // namespace voxedit

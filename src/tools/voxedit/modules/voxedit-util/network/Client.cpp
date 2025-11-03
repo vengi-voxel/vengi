@@ -17,7 +17,6 @@
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 
 namespace voxedit {
-namespace network {
 
 Client::~Client() {
 	shutdown();
@@ -33,7 +32,7 @@ bool Client::init() {
 
 bool Client::connect(const core::String &hostname, uint16_t port, bool localServer) {
 	if (_network.connect(hostname, port)) {
-		network::InitSessionMessage initMsg(localServer);
+		InitSessionMessage initMsg(localServer);
 		return _network.sendMessage(initMsg);
 	}
 	return false;
@@ -73,42 +72,42 @@ void Client::onMementoStateAdded(const memento::MementoState &state) {
 	}
 	switch (state.type) {
 	case memento::MementoType::Modification: {
-		network::VoxelModificationMessage msg(state);
+		VoxelModificationMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeMove: {
-		network::NodeMovedMessage msg(state);
+		NodeMovedMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeAdded: {
-		network::NodeAddedMessage msg(state);
+		NodeAddedMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeRemoved: {
-		network::NodeRemovedMessage msg(state);
+		NodeRemovedMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeRenamed: {
-		network::NodeRenamedMessage msg(state);
+		NodeRenamedMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodePaletteChanged: {
-		network::NodePaletteChangedMessage msg(state);
+		NodePaletteChangedMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeKeyFrames: {
-		network::NodeKeyFramesMessage msg(state);
+		NodeKeyFramesMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
 	case memento::MementoType::SceneNodeProperties: {
-		network::NodePropertiesMessage msg(state);
+		NodePropertiesMessage msg(state);
 		_network.sendMessage(msg);
 		break;
 	}
@@ -127,7 +126,7 @@ void Client::executeCommand(const core::String &command) {
 		return;
 	}
 	const core::String rconPassword = core::Var::getSafe(cfg::VoxEditNetRconPassword)->strVal();
-	network::CommandMessage msg(command, rconPassword);
+	CommandMessage msg(command, rconPassword);
 	Log::info("Send command to server: %s", command.c_str());
 	_network.sendMessage(msg);
 }
@@ -141,5 +140,5 @@ void Client::sendSceneState() {
 	_network.sendMessage(msg);
 }
 
-} // namespace network
+
 } // namespace voxedit
