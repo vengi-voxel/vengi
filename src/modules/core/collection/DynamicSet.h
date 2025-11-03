@@ -8,10 +8,10 @@
 
 namespace core {
 
-template<class T, size_t BUCKETSIZE = 11, typename HASHER = privdynamicmap::DefaultHasher, typename COMPARE = privdynamicmap::EqualCompare>
-class DynamicSet : public DynamicMap<T, bool, BUCKETSIZE, HASHER, COMPARE> {
+template<class T, size_t BUCKETSIZE = 11, typename HASHER = privdynamicmap::DefaultHasher, typename COMPARE = privdynamicmap::EqualCompare, size_t BLOCK_SIZE = 256>
+class DynamicSet : public DynamicMap<T, bool, BUCKETSIZE, HASHER, COMPARE, BLOCK_SIZE> {
 private:
-	using Super = DynamicMap<T, bool, BUCKETSIZE, HASHER, COMPARE>;
+	using Super = DynamicMap<T, bool, BUCKETSIZE, HASHER, COMPARE, BLOCK_SIZE>;
 public:
 	bool insert(const T& key) {
 		if (has(key)) {

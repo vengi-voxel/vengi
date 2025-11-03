@@ -20,6 +20,8 @@ class Palette;
  * palette indices, enabling efficient lookups based on quantization - which basically means that
  * there is a loss of precision when mapping colors to palette indices - but this is a trade-off
  * for speed. The LUT is designed to cover a wide range of colors, but it may not be exhaustive.
+ *
+ * @note Thread-safe implementation for concurrent access.
  */
 class PaletteLookup {
 private:
