@@ -16,7 +16,7 @@ namespace voxedit {
 /**
  * @brief Initial session handshake message containing protocol version, application version, and username
  */
-class InitSessionMessage : public ProtocolMessage {
+class InitSessionMessage : public network::ProtocolMessage {
 private:
 	uint32_t _protocolVersion;
 	core::String _applicationVersion;
@@ -54,7 +54,7 @@ public:
 		writeSize();
 	}
 
-	InitSessionMessage(MessageStream &in) {
+	InitSessionMessage(network::MessageStream &in) {
 		_id = PROTO_INIT_SESSION;
 		if (in.readUInt32(_protocolVersion) == -1) {
 			Log::error("Failed to read protocol version for init session");

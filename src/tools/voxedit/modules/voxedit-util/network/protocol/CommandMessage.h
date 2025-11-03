@@ -12,7 +12,7 @@ namespace voxedit {
 /**
  * @brief Allows remote command execution on the server side
  */
-class CommandMessage : public ProtocolMessage {
+class CommandMessage : public network::ProtocolMessage {
 private:
 	core::String _rconPassword;
 	core::String _command;
@@ -33,7 +33,7 @@ public:
 		writeSize();
 	}
 
-	CommandMessage(MessageStream &in) {
+	CommandMessage(network::MessageStream &in) {
 		_id = PROTO_COMMAND;
 		if (!in.readPascalStringUInt16LE(_rconPassword)) {
 			Log::error("Failed to read rcon password");

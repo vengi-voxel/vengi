@@ -13,7 +13,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-namespace voxedit {
+namespace network {
 
 using ProtocolId = uint8_t;
 using MessageStream = io::BufferedReadWriteStream;
@@ -27,6 +27,7 @@ protected:
 		ProtocolMessage *_msg;
 		int64_t _startPos;
 		const char *_type;
+
 	public:
 		ScopedProtocolMessageSerialization(ProtocolMessage *msg, const char *type) : _msg(msg), _type(type) {
 			_startPos = _msg->pos();
@@ -43,6 +44,7 @@ protected:
 		MessageStream *_msg;
 		int64_t _startPos;
 		const char *_type;
+
 	public:
 		ScopedProtocolStreamDeserialization(MessageStream &msg, const char *type) : _msg(&msg), _type(type) {
 			_startPos = _msg->pos();
@@ -436,9 +438,9 @@ public:
 };
 
 #define PROTO_MSG(name, id)                                                                                            \
-	class name : public voxedit::ProtocolMessage {                                                            \
+	class name : public network::ProtocolMessage {                                                                     \
 	public:                                                                                                            \
-		name() : voxedit::ProtocolMessage(id) {                                                               \
+		name() : network::ProtocolMessage(id) {                                                                        \
 		}                                                                                                              \
 		void writeBack() override {                                                                                    \
 			writeInt32(0);                                                                                             \
@@ -447,4 +449,4 @@ public:
 		}                                                                                                              \
 	}
 
-} // namespace voxedit
+} // namespace network

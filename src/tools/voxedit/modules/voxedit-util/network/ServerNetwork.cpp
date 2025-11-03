@@ -3,17 +3,17 @@
  */
 
 #include "ServerNetwork.h"
-#include "NetworkImpl.h"
-#include "ProtocolHandler.h"
-#include "ProtocolHandlerRegistry.h"
 #include "ProtocolIds.h"
 #include "ProtocolMessageFactory.h"
-#include "SocketId.h"
 #include "app/I18N.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "network/NetworkError.h"
+#include "network/NetworkImpl.h"
+#include "network/ProtocolHandler.h"
+#include "network/ProtocolHandlerRegistry.h"
+#include "network/SocketId.h"
 #include "protocol/PingMessage.h"
 #include "voxedit-util/Config.h"
 
@@ -23,7 +23,7 @@ RemoteClient::RemoteClient(RemoteClient &&other) noexcept
 	: socket(other.socket), bytesIn(other.bytesIn), bytesOut(other.bytesOut), lastPingTime(other.lastPingTime),
 	  lastActivity(other.lastActivity), in(core::move(other.in)), out(core::move(other.out)),
 	  name(core::move(other.name)) {
-	other.socket = InvalidSocketId;
+	other.socket = network::InvalidSocketId;
 	other.bytesIn = 0u;
 	other.bytesOut = 0u;
 	other.lastPingTime = 0.0;
@@ -40,7 +40,7 @@ RemoteClient &RemoteClient::operator=(RemoteClient &&other) noexcept {
 		in = core::move(other.in);
 		out = core::move(other.out);
 		name = core::move(other.name);
-		other.socket = InvalidSocketId;
+		other.socket = network::InvalidSocketId;
 		other.bytesIn = 0u;
 		other.bytesOut = 0u;
 		other.lastPingTime = 0.0;
@@ -50,7 +50,7 @@ RemoteClient &RemoteClient::operator=(RemoteClient &&other) noexcept {
 }
 
 ServerNetwork::ServerNetwork(Server *server)
-	: _impl(new NetworkImpl()), _initSessionHandler(server), _sceneStateHandler(server), _broadcastHandler(server) {
+	: _impl(new network::NetworkImpl()), _initSessionHandler(server), _sceneStateHandler(server), _broadcastHandler(server) {
 }
 
 ServerNetwork::~ServerNetwork() {
@@ -69,7 +69,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 	FD_ZERO(&_impl->writeFDSet);
 
 	_impl->socketFD = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (_impl->socketFD == InvalidSocketId) {
+	if (_impl->socketFD == network::InvalidSocketId) {
 		network_cleanup();
 		Log::error("Failed to create socket: %s", network::getNetworkErrorString());
 		return false;
@@ -83,7 +83,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 	} else {
 		if (inet_pton(AF_INET, iface.c_str(), &sin.sin_addr) <= 0) {
 			closesocket(_impl->socketFD);
-			_impl->socketFD = InvalidSocketId;
+			_impl->socketFD = network::InvalidSocketId;
 			network_cleanup();
 			Log::error("Invalid interface address '%s': %s", iface.c_str(), network::getNetworkErrorString());
 			return false;
@@ -98,7 +98,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 	if (setsockopt(_impl->socketFD, SOL_SOCKET, SO_REUSEADDR, &t, sizeof(t)) != 0) {
 #endif
 		closesocket(_impl->socketFD);
-		_impl->socketFD = InvalidSocketId;
+		_impl->socketFD = network::InvalidSocketId;
 		network_cleanup();
 		Log::error("Failed to set socket options: %s", network::getNetworkErrorString());
 		return false;
@@ -108,7 +108,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 		FD_CLR(_impl->socketFD, &_impl->readFDSet);
 		FD_CLR(_impl->socketFD, &_impl->writeFDSet);
 		closesocket(_impl->socketFD);
-		_impl->socketFD = InvalidSocketId;
+		_impl->socketFD = network::InvalidSocketId;
 		network_cleanup();
 		const char *ifaceStr = sin.sin_addr.s_addr == INADDR_ANY ? "any interface" : iface.c_str();
 		Log::error("Failed to bind to %s:%i: %s", ifaceStr, port, network::getNetworkErrorString());
@@ -117,7 +117,7 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 
 	if (listen(_impl->socketFD, 5) < 0) {
 		closesocket(_impl->socketFD);
-		_impl->socketFD = InvalidSocketId;
+		_impl->socketFD = network::InvalidSocketId;
 		network_cleanup();
 		const char *ifaceStr = sin.sin_addr.s_addr == INADDR_ANY ? "any interface" : iface.c_str();
 		Log::error("Failed to listen on %s:%i: %s", ifaceStr, port, network::getNetworkErrorString());
@@ -137,18 +137,18 @@ bool ServerNetwork::start(uint16_t port, const core::String &iface) {
 }
 
 void ServerNetwork::stop() {
-	if (_impl->socketFD == InvalidSocketId) {
+	if (_impl->socketFD == network::InvalidSocketId) {
 		return;
 	}
 	for (int j = _clients.size() - 1; j >= 0; --j) {
-		disconnect((ClientId)j);
+		disconnect((network::ClientId)j);
 	}
 	closesocket(_impl->socketFD);
-	_impl->socketFD = InvalidSocketId;
+	_impl->socketFD = network::InvalidSocketId;
 }
 
 bool ServerNetwork::isRunning() const {
-	return _impl->socketFD != InvalidSocketId;
+	return _impl->socketFD != network::InvalidSocketId;
 }
 
 void ServerNetwork::construct() {
@@ -172,7 +172,7 @@ bool ServerNetwork::init() {
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
-	ProtocolHandlerRegistry &r = _protocolRegistry;
+	network::ProtocolHandlerRegistry &r = _protocolRegistry;
 	r.registerHandler(PROTO_INIT_SESSION, &_initSessionHandler);
 	r.registerHandler(PROTO_PING, &_nopHandler);
 	r.registerHandler(PROTO_COMMAND, &_commandHandler);
@@ -189,13 +189,13 @@ bool ServerNetwork::init() {
 	return true;
 }
 
-void ServerNetwork::disconnect(ClientId clientId) {
+void ServerNetwork::disconnect(network::ClientId clientId) {
 	RemoteClient &client = _clients[clientId];
-	const SocketId clientSocket = client.socket;
+	const network::SocketId clientSocket = client.socket;
 	FD_CLR(clientSocket, &_impl->readFDSet);
 	FD_CLR(clientSocket, &_impl->writeFDSet);
 	closesocket(clientSocket);
-	client.socket = InvalidSocketId;
+	client.socket = network::InvalidSocketId;
 	Log::debug("RemoteClient %d disconnected", clientId);
 	for (NetworkListener *listener : _listeners) {
 		listener->onDisconnect(&client);
@@ -244,7 +244,7 @@ bool ServerNetwork::updateClient(RemoteClient &client) {
 
 void ServerNetwork::update(double nowSeconds) {
 	updateDelta(nowSeconds);
-	if (_impl->socketFD == InvalidSocketId) {
+	if (_impl->socketFD == network::InvalidSocketId) {
 		return;
 	}
 	_pingSeconds += _deltaSeconds;
@@ -268,8 +268,8 @@ void ServerNetwork::update(double nowSeconds) {
 #else
 	int maxFd = _impl->socketFD;
 	for (const auto &client : _clients) {
-		const SocketId clientSocket = client.socket;
-		if (client.socket != InvalidSocketId && clientSocket > maxFd) {
+		const network::SocketId clientSocket = client.socket;
+		if (client.socket != network::InvalidSocketId && clientSocket > maxFd) {
 			maxFd = clientSocket;
 		}
 	}
@@ -279,9 +279,9 @@ void ServerNetwork::update(double nowSeconds) {
 		Log::warn("select() failed: %s", network::getNetworkErrorString());
 		return;
 	}
-	if (_impl->socketFD != InvalidSocketId && FD_ISSET(_impl->socketFD, &readFDsOut)) {
-		const SocketId clientSocket = accept(_impl->socketFD, nullptr, nullptr);
-		if (clientSocket != InvalidSocketId) {
+	if (_impl->socketFD != network::InvalidSocketId && FD_ISSET(_impl->socketFD, &readFDsOut)) {
+		const network::SocketId clientSocket = accept(_impl->socketFD, nullptr, nullptr);
+		if (clientSocket != network::InvalidSocketId) {
 			if (_clients.size() >= (size_t)_maxClients->intVal()) {
 				Log::info("Maximum number of clients reached - rejecting connection");
 				closesocket(clientSocket);
@@ -298,13 +298,13 @@ void ServerNetwork::update(double nowSeconds) {
 		}
 	}
 
-	ClientId clientId = 0;
+	network::ClientId clientId = 0;
 	core::Array<bool, 256> remove;
 	remove.fill(false);
 	for (auto i = _clients.begin(); i != _clients.end(); ++i, ++clientId) {
 		RemoteClient &client = *i;
-		const SocketId clientSocket = client.socket;
-		if (client.socket == InvalidSocketId) {
+		const network::SocketId clientSocket = client.socket;
+		if (client.socket == network::InvalidSocketId) {
 			remove[clientId] = true;
 			continue;
 		}
@@ -338,7 +338,7 @@ void ServerNetwork::update(double nowSeconds) {
 
 		// Process all available messages in the buffer
 		while (ProtocolMessageFactory::isNewMessageAvailable(client.in)) {
-			core::ScopedPtr<ProtocolMessage> msg(ProtocolMessageFactory::create(client.in));
+			core::ScopedPtr<network::ProtocolMessage> msg(ProtocolMessageFactory::create(client.in));
 			if (!msg) {
 				Log::debug("RemoteClient %d sent invalid message", clientId);
 				remove[clientId] = true;
@@ -346,7 +346,7 @@ void ServerNetwork::update(double nowSeconds) {
 			}
 			// Update activity timestamp when we receive a valid message
 			client.lastActivity = nowSeconds;
-			if (ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
+			if (network::ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
 				handler->execute(clientId, *msg);
 			} else {
 				Log::warn("No server handler for message type %d", msg->getId());
@@ -358,25 +358,25 @@ void ServerNetwork::update(double nowSeconds) {
 			if (!remove[j - 1]) {
 				continue;
 			}
-			disconnect((ClientId)j - 1);
+			disconnect((network::ClientId)j - 1);
 		}
 	}
 }
 
-bool ServerNetwork::broadcast(ProtocolMessage &msg, ClientId except) {
+bool ServerNetwork::broadcast(network::ProtocolMessage &msg, network::ClientId except) {
 	if (_clients.empty()) {
 		return false;
 	}
 	_pingSeconds = 0.0;
 	core::Array<bool, 256> remove;
 	remove.fill(false);
-	ClientId clientId = 0;
+	network::ClientId clientId = 0;
 	for (auto i = _clients.begin(); i != _clients.end(); ++i, ++clientId) {
 		if (clientId == except) {
 			continue;
 		}
 		RemoteClient &client = *i;
-		if (client.socket == InvalidSocketId) {
+		if (client.socket == network::InvalidSocketId) {
 			remove[clientId] = true;
 			continue;
 		}
@@ -393,15 +393,15 @@ bool ServerNetwork::broadcast(ProtocolMessage &msg, ClientId except) {
 			if (!remove[j - 1]) {
 				continue;
 			}
-			disconnect((ClientId)j - 1);
+			disconnect((network::ClientId)j - 1);
 		}
 	}
 
 	return true;
 }
 
-bool ServerNetwork::sendToClient(RemoteClient &client, ProtocolMessage &msg) {
-	if (client.socket == InvalidSocketId) {
+bool ServerNetwork::sendToClient(RemoteClient &client, network::ProtocolMessage &msg) {
+	if (client.socket == network::InvalidSocketId) {
 		return false;
 	}
 
@@ -412,8 +412,8 @@ bool ServerNetwork::sendToClient(RemoteClient &client, ProtocolMessage &msg) {
 	return true;
 }
 
-bool ServerNetwork::sendToClient(ClientId clientId, ProtocolMessage &msg) {
-	if (clientId >= (ClientId)_clients.size()) {
+bool ServerNetwork::sendToClient(network::ClientId clientId, network::ProtocolMessage &msg) {
+	if (clientId >= (network::ClientId)_clients.size()) {
 		Log::error("Invalid client ID %d - failed to send message: %s", clientId, network::getNetworkErrorString());
 		return false;
 	}

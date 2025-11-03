@@ -11,7 +11,7 @@ namespace voxedit {
 NodePropertiesHandler::NodePropertiesHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-void NodePropertiesHandler::execute(const ClientId &, NodePropertiesMessage *message) {
+void NodePropertiesHandler::execute(const network::ClientId &, NodePropertiesMessage *message) {
 	const core::UUID &uuid = message->nodeUUID();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {

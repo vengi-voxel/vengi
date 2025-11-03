@@ -13,7 +13,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node properties changed message
  */
-class NodePropertiesMessage : public ProtocolMessage {
+class NodePropertiesMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	scenegraph::SceneGraphNodeProperties _properties;
@@ -30,7 +30,7 @@ public:
 		}
 		writeSize();
 	}
-	NodePropertiesMessage(MessageStream &in) {
+	NodePropertiesMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_PROPERTIES;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for node properties");

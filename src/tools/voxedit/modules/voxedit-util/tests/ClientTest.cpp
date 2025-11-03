@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include "core/tests/TestHelper.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/network/ProtocolHandler.h"
+#include "network/ProtocolHandler.h"
 #include "voxedit-util/network/protocol/PingMessage.h"
 
 namespace voxedit {
@@ -20,10 +20,10 @@ protected:
 	}
 	core::SharedPtr<Client> _client;
 
-	class PingTestHandler : public ProtocolTypeHandler<PingMessage> {
+	class PingTestHandler : public network::ProtocolTypeHandler<PingMessage> {
 	public:
 		int _cnt = 0;
-		void execute(const ClientId & /*clientId*/, PingMessage *message) override {
+		void execute(const network::ClientId & /*clientId*/, PingMessage *message) override {
 			++_cnt;
 		}
 	};

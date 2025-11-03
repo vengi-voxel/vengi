@@ -10,7 +10,7 @@ namespace voxedit {
 BroadcastHandler::BroadcastHandler(Server *server) : _server(server) {
 }
 
-void BroadcastHandler::execute(const ClientId &clientId, ProtocolMessage &msg) {
+void BroadcastHandler::execute(const network::ClientId &clientId, network::ProtocolMessage &msg) {
 	Log::debug("Broadcasting message of type %d from client %d", msg.getId(), (int)clientId);
 	msg.writeBack();
 	_server->network().broadcast(msg, clientId);

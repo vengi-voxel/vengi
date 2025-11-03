@@ -11,7 +11,7 @@ namespace voxedit {
 NodeKeyFramesHandler::NodeKeyFramesHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-void NodeKeyFramesHandler::execute(const ClientId &, NodeKeyFramesMessage *message) {
+void NodeKeyFramesHandler::execute(const network::ClientId &, NodeKeyFramesMessage *message) {
 	const core::UUID &uuid = message->nodeUUID();
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(uuid);
 	if (node == nullptr) {

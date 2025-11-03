@@ -12,7 +12,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node removed message
  */
-class NodeRemovedMessage : public ProtocolMessage {
+class NodeRemovedMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 
@@ -24,7 +24,7 @@ public:
 		}
 		writeSize();
 	}
-	NodeRemovedMessage(MessageStream &in) {
+	NodeRemovedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_REMOVED;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for node removed");

@@ -9,11 +9,11 @@
 #include "core/UUID.h"
 #include "math/tests/TestMathHelper.h"
 #include "memento/MementoHandler.h"
+#include "network/ProtocolMessage.h"
 #include "palette/Palette.h"
 #include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/network/ProtocolMessage.h"
 #include "voxedit-util/network/protocol/InitSessionMessage.h"
 #include "voxedit-util/network/protocol/NodeAddedMessage.h"
 #include "voxedit-util/network/protocol/NodeKeyFramesMessage.h"
@@ -145,7 +145,7 @@ protected:
 		Log::info("Testing round-trip serialization for %s", messageName.c_str());
 
 		// Serialize the original message
-		voxedit::MessageStream serializedStream;
+		network::MessageStream serializedStream;
 		serializedStream.write(originalMsg->getBuffer(), originalMsg->size());
 		for (int i = 0; i < 10; ++i) {
 			// add some garbage
@@ -154,7 +154,7 @@ protected:
 		}
 
 		// Create a new message from the factory
-		voxedit::ProtocolMessage *deserializedMsg =
+		network::ProtocolMessage *deserializedMsg =
 			voxedit::ProtocolMessageFactory::create(serializedStream);
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize " << messageName;
 		ASSERT_EQ(originalMsg->getId(), deserializedMsg->getId()) << "Message ID mismatch for " << messageName;
@@ -176,7 +176,7 @@ protected:
 	void testRoundTripSerializationWithState(const memento::MementoState &state, const core::String &messageName) {
 		MessageType originalMsg(state);
 
-		voxedit::MessageStream serializedStream;
+		network::MessageStream serializedStream;
 		serializedStream.write(originalMsg.getBuffer(), originalMsg.size());
 		for (int i = 0; i < 10; ++i) {
 			// add some garbage
@@ -184,12 +184,12 @@ protected:
 			serializedStream.writeUInt8(0xFE);
 		}
 
-		core::ScopedPtr<voxedit::ProtocolMessage> deserializedMsg(
+		core::ScopedPtr<network::ProtocolMessage> deserializedMsg(
 			voxedit::ProtocolMessageFactory::create(serializedStream));
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize " << messageName;
 		ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch for " << messageName;
 		ASSERT_NE(nullptr, deserializedMsg) << "Failed to cast deserialized message for " << messageName;
-		verifyMessageContent(state, (MessageType *)((voxedit::ProtocolMessage *)deserializedMsg), messageName);
+		verifyMessageContent(state, (MessageType *)((network::ProtocolMessage *)deserializedMsg), messageName);
 		deserializedMsg->seek(0);
 		deserializedMsg->writeBack();
 		EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << messageName + ": Size mismatch after writeBack";

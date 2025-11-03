@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 
-namespace voxedit {
+namespace network {
 
 typedef uint8_t ClientId;
 
@@ -47,4 +47,4 @@ public:
 
 typedef core::SharedPtr<ProtocolHandler> ProtocolHandlerPtr;
 
-} // namespace voxedit
+} // namespace network

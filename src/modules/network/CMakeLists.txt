@@ -1,6 +1,11 @@
 set(SRCS
 	NetworkError.cpp NetworkError.h
 	NetworkAdapters.cpp NetworkAdapters.h
+	ProtocolHandlerRegistry.h
+	ProtocolHandler.h
+	ProtocolMessage.h
+	NetworkImpl.h
+	SocketId.h
 )
 
 set(LIB network)

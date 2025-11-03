@@ -3,10 +3,10 @@
  */
 #pragma once
 
-#include "ProtocolMessage.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/String.h"
-#include "voxedit-util/network/ProtocolHandlerRegistry.h"
+#include "network/ProtocolHandlerRegistry.h"
+#include "network/ProtocolMessage.h"
 #include "voxedit-util/network/handler/client/NodeAddedHandler.h"
 #include "voxedit-util/network/handler/client/NodeKeyFramesHandler.h"
 #include "voxedit-util/network/handler/client/NodeMovedHandler.h"
@@ -19,15 +19,17 @@
 #include "voxedit-util/network/handler/client/VoxelModificationHandler.h"
 #include <stdint.h>
 
-namespace voxedit {
-
+namespace network {
 struct NetworkImpl;
+}
+
+namespace voxedit {
 
 class ClientNetwork : public core::DeltaFrameSeconds {
 protected:
-	NetworkImpl *_impl;
-	ProtocolHandlerRegistry _protocolRegistry;
-	NopHandler _nopHandler;
+	network::NetworkImpl *_impl;
+	network::ProtocolHandlerRegistry _protocolRegistry;
+	network::NopHandler _nopHandler;
 	VoxelModificationHandler _voxelModificationHandler;
 	NodeAddedHandler _nodeAddedHandler;
 	NodeKeyFramesHandler _nodeKeyFramesHandle;
@@ -38,13 +40,13 @@ protected:
 	NodeRenamedHandler _nodeRenamedHandler;
 	SceneStateRequestHandler _sceneStateRequestHandler;
 	SceneStateHandlerClient _sceneStateHandler;
-	MessageStream in;
+	network::MessageStream in;
 
 public:
 	ClientNetwork(SceneManager *sceneMgr);
 	virtual ~ClientNetwork();
 
-	ProtocolHandlerRegistry &protocolRegistry() {
+	network::ProtocolHandlerRegistry &protocolRegistry() {
 		return _protocolRegistry;
 	}
 
@@ -56,7 +58,7 @@ public:
 	void shutdown() override;
 	void update(double nowSeconds);
 
-	bool sendMessage(const ProtocolMessage &msg);
+	bool sendMessage(const network::ProtocolMessage &msg);
 };
 
 } // namespace voxedit

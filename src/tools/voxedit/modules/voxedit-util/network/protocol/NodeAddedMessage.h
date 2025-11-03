@@ -14,7 +14,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node added message
  */
-class NodeAddedMessage : public ProtocolMessage {
+class NodeAddedMessage : public network::ProtocolMessage {
 private:
 	core::UUID _parentUUID;
 	core::UUID _nodeUUID;
@@ -73,7 +73,7 @@ public:
 		}
 		writeSize();
 	}
-	NodeAddedMessage(MessageStream &in) {
+	NodeAddedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_ADDED;
 		if (in.readUUID(_parentUUID) == -1) {
 			Log::error("Failed to read parent UUID");

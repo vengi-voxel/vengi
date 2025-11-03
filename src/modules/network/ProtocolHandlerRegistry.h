@@ -6,7 +6,7 @@
 #include "ProtocolHandler.h"
 #include "core/collection/Map.h"
 
-namespace voxedit {
+namespace network {
 
 class ProtocolHandlerRegistry {
 private:
@@ -35,5 +35,4 @@ public:
 	}
 };
 
-
-} // namespace voxedit
+} // namespace network

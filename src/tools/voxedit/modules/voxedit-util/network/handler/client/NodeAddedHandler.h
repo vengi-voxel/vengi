@@ -4,20 +4,20 @@
 
 #pragma once
 
-#include "voxedit-util/network/ProtocolHandler.h"
+#include "network/ProtocolHandler.h"
 #include "voxedit-util/network/protocol/NodeAddedMessage.h"
 
 namespace voxedit {
 
 class SceneManager;
 
-class NodeAddedHandler : public ProtocolTypeHandler<NodeAddedMessage> {
+class NodeAddedHandler : public network::ProtocolTypeHandler<NodeAddedMessage> {
 private:
 	SceneManager *_sceneMgr;
 
 public:
 	NodeAddedHandler(SceneManager *sceneMgr);
-	void execute(const ClientId &, NodeAddedMessage *message) override;
+	void execute(const network::ClientId &, NodeAddedMessage *message) override;
 };
 
 } // namespace voxedit

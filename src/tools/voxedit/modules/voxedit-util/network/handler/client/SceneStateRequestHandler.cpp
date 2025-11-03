@@ -10,7 +10,7 @@ namespace voxedit {
 SceneStateRequestHandler::SceneStateRequestHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-void SceneStateRequestHandler::execute(const ClientId &, SceneStateRequestMessage *message) {
+void SceneStateRequestHandler::execute(const network::ClientId &, SceneStateRequestMessage *message) {
 	_sceneMgr->client().sendSceneState();
 }
 

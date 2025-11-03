@@ -40,7 +40,7 @@ bool Server::shouldSendClientState(bool localServer) const {
 	return !_sceneGraph->empty();
 }
 
-bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
+bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
 						 const core::String &username, const core::String &password, bool localServer) {
 	if (protocolVersion != PROTOCOL_VERSION) {
 		Log::error("Client %u has incompatible protocol version %u (expected 1)", clientId, protocolVersion);
@@ -84,7 +84,7 @@ bool Server::initSession(const ClientId &clientId, uint32_t protocolVersion, con
 	return true;
 }
 
-void Server::disconnect(const ClientId &clientId) {
+void Server::disconnect(const network::ClientId &clientId) {
 	_network.disconnect(clientId);
 }
 

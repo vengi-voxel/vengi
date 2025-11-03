@@ -38,7 +38,7 @@
 #define network_cleanup()
 #endif
 
-namespace voxedit {
+namespace network {
 
 // Platform-specific network implementation
 struct NetworkImpl {

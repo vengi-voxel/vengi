@@ -20,7 +20,7 @@
 
 namespace voxedit {
 
-bool ProtocolMessageFactory::isNewMessageAvailable(MessageStream &in) {
+bool ProtocolMessageFactory::isNewMessageAvailable(network::MessageStream &in) {
 	in.seek(0, SEEK_SET);
 	int32_t size = -1;
 	in.peekInt32(size);
@@ -38,7 +38,7 @@ bool ProtocolMessageFactory::isNewMessageAvailable(MessageStream &in) {
 	return true;
 }
 
-ProtocolMessage *ProtocolMessageFactory::create(MessageStream &in) {
+network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream &in) {
 	in.seek(0);
 	// remove the size from the stream
 	uint32_t size = 0;
@@ -53,7 +53,7 @@ ProtocolMessage *ProtocolMessageFactory::create(MessageStream &in) {
 				   in.remaining(), size);
 		return nullptr;
 	}
-	ProtocolMessage *msg = nullptr;
+	network::ProtocolMessage *msg = nullptr;
 	switch (type) {
 	case PROTO_PING:
 		msg = new PingMessage();

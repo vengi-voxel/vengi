@@ -14,7 +14,7 @@
 
 namespace voxedit {
 
-class SceneStateMessage : public ProtocolMessage {
+class SceneStateMessage : public network::ProtocolMessage {
 private:
 	scenegraph::SceneGraph _sceneGraph;
 
@@ -31,7 +31,7 @@ public:
 		writeSize();
 	}
 
-	SceneStateMessage(MessageStream &in, uint32_t size) {
+	SceneStateMessage(network::MessageStream &in, uint32_t size) {
 		_id = PROTO_SCENE_STATE;
 		// we don't want to modify the voxels
 		util::ScopedVarChange var1(cfg::VoxformatEmptyPaletteIndex, "-1");

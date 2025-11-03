@@ -13,7 +13,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node renamed message
  */
-class NodeRenamedMessage : public ProtocolMessage {
+class NodeRenamedMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	core::String _name;
@@ -30,7 +30,7 @@ public:
 		}
 		writeSize();
 	}
-	NodeRenamedMessage(MessageStream &in) {
+	NodeRenamedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_RENAMED;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for node renamed");

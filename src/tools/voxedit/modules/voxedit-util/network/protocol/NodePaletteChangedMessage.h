@@ -14,7 +14,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node palette changed message
  */
-class NodePaletteChangedMessage : public ProtocolMessage {
+class NodePaletteChangedMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	palette::Palette _palette;
@@ -32,7 +32,7 @@ public:
 		writeSize();
 	}
 
-	NodePaletteChangedMessage(MessageStream &in) {
+	NodePaletteChangedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_PALETTE_CHANGED;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for palette changed");

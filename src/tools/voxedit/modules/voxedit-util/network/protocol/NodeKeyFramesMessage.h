@@ -15,7 +15,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node keyframes changed message
  */
-class NodeKeyFramesMessage : public ProtocolMessage {
+class NodeKeyFramesMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	scenegraph::SceneGraphKeyFramesMap _keyFrames;
@@ -32,7 +32,7 @@ public:
 		}
 		writeSize();
 	}
-	NodeKeyFramesMessage(MessageStream &in) {
+	NodeKeyFramesMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_KEYFRAMES;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for node keyframes");

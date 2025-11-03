@@ -53,9 +53,9 @@ public:
 	void update(double nowSeconds);
 	const RemoteClients &clients() const;
 
-	bool initSession(const ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
+	bool initSession(const network::ClientId &clientId, uint32_t protocolVersion, const core::String &applicationVersion,
 					 const core::String &username, const core::String &password, bool localServer);
-	void disconnect(const ClientId &clientId);
+	void disconnect(const network::ClientId &clientId);
 };
 
 

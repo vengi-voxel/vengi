@@ -3,9 +3,8 @@
  */
 
 #include "ClientNetwork.h"
-#include "NetworkImpl.h"
-#include "ProtocolHandler.h"
-#include "ProtocolHandlerRegistry.h"
+#include "network/NetworkImpl.h"
+#include "network/ProtocolHandler.h"
 #include "ProtocolIds.h"
 #include "ProtocolMessageFactory.h"
 #include "core/Log.h"
@@ -18,7 +17,7 @@
 namespace voxedit {
 
 ClientNetwork::ClientNetwork(SceneManager *sceneMgr)
-	: _impl(new NetworkImpl()), _voxelModificationHandler(sceneMgr), _nodeAddedHandler(sceneMgr),
+	: _impl(new network::NetworkImpl()), _voxelModificationHandler(sceneMgr), _nodeAddedHandler(sceneMgr),
 	  _nodeKeyFramesHandle(sceneMgr), _nodeMovedHandler(sceneMgr), _nodePaletteChangedHandle(sceneMgr),
 	  _nodePropertiesHandler(sceneMgr), _nodeRemovedHandler(sceneMgr), _nodeRenamedHandler(sceneMgr),
 	  _sceneStateRequestHandler(sceneMgr), _sceneStateHandler(sceneMgr) {
@@ -40,20 +39,20 @@ void ClientNetwork::shutdown() {
 }
 
 void ClientNetwork::disconnect() {
-	if (_impl->socketFD != InvalidSocketId) {
+	if (_impl->socketFD != network::InvalidSocketId) {
 		closesocket(_impl->socketFD);
-		_impl->socketFD = InvalidSocketId;
+		_impl->socketFD = network::InvalidSocketId;
 	}
 	FD_ZERO(&_impl->readFDSet);
 	FD_ZERO(&_impl->writeFDSet);
 }
 
 bool ClientNetwork::isConnected() const {
-	return _impl->socketFD != InvalidSocketId;
+	return _impl->socketFD != network::InvalidSocketId;
 }
 
 bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
-	if (_impl->socketFD != InvalidSocketId) {
+	if (_impl->socketFD != network::InvalidSocketId) {
 		Log::warn("Already connected, disconnecting first");
 		disconnect();
 	}
@@ -74,7 +73,7 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 	}
 
 	_impl->socketFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if (_impl->socketFD == InvalidSocketId) {
+	if (_impl->socketFD == network::InvalidSocketId) {
 		freeaddrinfo(res);
 		Log::error("Failed to create socket: %s", network::getNetworkErrorString());
 		return false;
@@ -83,7 +82,7 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 	int connectResult = ::connect(_impl->socketFD, res->ai_addr, res->ai_addrlen);
 	if (connectResult < 0) {
 		closesocket(_impl->socketFD);
-		_impl->socketFD = InvalidSocketId;
+		_impl->socketFD = network::InvalidSocketId;
 		freeaddrinfo(res);
 		Log::error("Failed to connect to %s:%i: %s", hostname.c_str(), port, network::getNetworkErrorString());
 		return false;
@@ -106,7 +105,7 @@ bool ClientNetwork::init() {
 	signal(SIGPIPE, SIG_IGN);
 #endif
 
-	ProtocolHandlerRegistry &r = _protocolRegistry;
+	network::ProtocolHandlerRegistry &r = _protocolRegistry;
 	r.registerHandler(PROTO_PING, &_nopHandler); // ping is just a nop for the client
 	r.registerHandler(PROTO_COMMAND, &_nopHandler); // never execute commands on the client side
 	r.registerHandler(PROTO_SCENE_STATE_REQUEST, &_sceneStateRequestHandler);
@@ -123,8 +122,8 @@ bool ClientNetwork::init() {
 	return true;
 }
 
-bool ClientNetwork::sendMessage(const ProtocolMessage &msg) {
-	if (_impl->socketFD == InvalidSocketId) {
+bool ClientNetwork::sendMessage(const network::ProtocolMessage &msg) {
+	if (_impl->socketFD == network::InvalidSocketId) {
 		return false;
 	}
 
@@ -145,7 +144,7 @@ bool ClientNetwork::sendMessage(const ProtocolMessage &msg) {
 
 void ClientNetwork::update(double nowSeconds) {
 	updateDelta(nowSeconds);
-	if (_impl->socketFD == InvalidSocketId) {
+	if (_impl->socketFD == network::InvalidSocketId) {
 		return;
 	}
 
@@ -194,13 +193,13 @@ void ClientNetwork::update(double nowSeconds) {
 
 	// Process all available messages in the buffer
 	while (ProtocolMessageFactory::isNewMessageAvailable(in)) {
-		core::ScopedPtr<ProtocolMessage> msg(ProtocolMessageFactory::create(in));
+		core::ScopedPtr<network::ProtocolMessage> msg(ProtocolMessageFactory::create(in));
 		if (!msg) {
 			Log::warn("Received invalid message");
 			break;
 		}
-		if (ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
-			// ClientId is 0 - because we are the client, not the server
+		if (network::ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
+			// network::ClientId is 0 - because we are the client, not the server
 			handler->execute(0, *msg);
 		} else {
 			Log::error("No client handler for message type %d", (int)msg->getId());

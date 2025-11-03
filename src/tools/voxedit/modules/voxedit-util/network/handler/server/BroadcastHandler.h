@@ -4,20 +4,20 @@
 
 #pragma once
 
-#include "voxedit-util/network/ProtocolHandler.h"
-#include "voxedit-util/network/ProtocolMessage.h"
+#include "network/ProtocolHandler.h"
+#include "network/ProtocolMessage.h"
 
 namespace voxedit {
 
 class Server;
 
-class BroadcastHandler : public ProtocolHandler {
+class BroadcastHandler : public network::ProtocolHandler {
 private:
 	Server *_server;
 
 public:
 	BroadcastHandler(Server *server);
-	void execute(const ClientId &, ProtocolMessage &msg) override;
+	void execute(const network::ClientId &, network::ProtocolMessage &msg) override;
 };
 
 } // namespace voxedit

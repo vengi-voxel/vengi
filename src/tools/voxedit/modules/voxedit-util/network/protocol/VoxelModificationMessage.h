@@ -13,7 +13,7 @@ namespace voxedit {
 /**
  * @brief Voxel modification message with compressed voxel data
  */
-class VoxelModificationMessage : public ProtocolMessage {
+class VoxelModificationMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	voxel::Region _region;
@@ -37,7 +37,7 @@ public:
 		}
 		writeSize();
 	}
-	VoxelModificationMessage(MessageStream &in) {
+	VoxelModificationMessage(network::MessageStream &in) {
 		_id = PROTO_VOXEL_MODIFICATION;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for voxel modification");

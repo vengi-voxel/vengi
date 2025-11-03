@@ -12,7 +12,7 @@ namespace voxedit {
 /**
  * @brief Scene graph node moved parent message
  */
-class NodeMovedMessage : public ProtocolMessage {
+class NodeMovedMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	core::UUID _parentUUID;
@@ -31,7 +31,7 @@ public:
 		}
 		writeSize();
 	}
-	NodeMovedMessage(MessageStream &in) {
+	NodeMovedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_MOVED;
 		if (in.readUUID(_nodeUUID) == -1) {
 			Log::error("Failed to read node UUID for node moved");

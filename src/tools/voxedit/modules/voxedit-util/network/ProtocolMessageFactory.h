@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include "ProtocolMessage.h"
+#include "network/ProtocolMessage.h"
 #include "core/NonCopyable.h"
 
 namespace voxedit {
@@ -13,13 +13,13 @@ public:
 	/**
 	 * @brief Checks whether a new message is available in the stream
 	 */
-	static bool isNewMessageAvailable(MessageStream &in);
+	static bool isNewMessageAvailable(network::MessageStream &in);
 
 	/**
 	 * @brief Call this only if @c isNewMessageAvailable returned @c true on the same @c MessageStream before!
 	 * @note Don't free this pointer, it reuses memory for each new protocol message
 	 */
-	static ProtocolMessage *create(MessageStream &in);
+	static network::ProtocolMessage *create(network::MessageStream &in);
 };
 
 

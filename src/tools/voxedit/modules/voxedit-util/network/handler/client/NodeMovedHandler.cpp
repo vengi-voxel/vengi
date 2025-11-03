@@ -11,7 +11,7 @@ namespace voxedit {
 NodeMovedHandler::NodeMovedHandler(SceneManager *sceneMgr) : _sceneMgr(sceneMgr) {
 }
 
-void NodeMovedHandler::execute(const ClientId &, NodeMovedMessage *message) {
+void NodeMovedHandler::execute(const network::ClientId &, NodeMovedMessage *message) {
 	const core::UUID &nodeUUID = message->nodeUUID();
 	const core::UUID &parentUUID = message->parentUUID();
 	const scenegraph::SceneGraphKeyFramesMap &keyFrames = message->keyFrames();
