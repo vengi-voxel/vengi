@@ -23,6 +23,14 @@ General:
    - Allow to put rotations into the AceOfSpades `vxl` export (no scaling yet)
    - Performance optimizations for stuff like rotate on axis
    - Added support for loading the palette from animatoon files
+   - Added `clouds.lua` to generate parameterized clouds
+   - Fixed a few culling issues
+   - Fixed debian/ubuntu/mint mimetype errors
+
+VoxEdit:
+
+   - Improved the game mode movement
+   - Fixed physics for nodes that have a pivot applied
 
 ## 0.2.1 (2025-10-24)
 
