@@ -9,7 +9,7 @@ set(SRCS
 )
 
 set(LIB network)
-set(DEPENDENCIES core)
+set(DEPENDENCIES scenegraph)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
