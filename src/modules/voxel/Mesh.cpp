@@ -3,6 +3,7 @@
  */
 
 #include "Mesh.h"
+#include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
@@ -514,7 +515,7 @@ bool Mesh::sort(const glm::vec3 &cameraPos) {
 	_lastCameraPos = cameraPos;
 	core_trace_scoped(MeshSort);
 	TriangleView triView(_vecVertices, _vecIndices);
-	core::sort(triView.begin(), triView.end(), [&cameraPos](const Triangle &lhs, const Triangle &rhs) {
+	app::sort_parallel(triView.begin(), triView.end(), [&cameraPos](const Triangle &lhs, const Triangle &rhs) {
 		return glm::distance2(lhs.center(), cameraPos) < glm::distance2(rhs.center(), cameraPos);
 	});
 	return true;

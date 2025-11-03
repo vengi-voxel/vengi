@@ -24,4 +24,12 @@ void for_not_parallel(int start, int end, const std::function<void(int, int)> &f
 void for_parallel(int start, int end, const std::function<void(int, int)> &f, bool wait = true);
 int for_parallel_size(int start, int end);
 
+/**
+ * @note This sort is unstable
+ */
+template<typename Iter, class Comparator>
+void sort_parallel(Iter first, Iter last, Comparator comp) {
+	core::sort(first, last, comp); // TODO: PERF: implement parallel sort
+}
+
 } // namespace app
