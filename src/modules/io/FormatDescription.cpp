@@ -162,7 +162,7 @@ bool isA(const core::String &file, const io::FormatDescription *desc) {
 		}
 	}
 
-	const core::String &ext = core::string::extractAllExtensions(file);
+	const core::String &ext = core::string::extractExtension(file);
 	for (; desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext)) {
 			return true;
