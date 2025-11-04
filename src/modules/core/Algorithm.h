@@ -120,6 +120,76 @@ Iter rotate_forward(Iter first, Iter middle, Iter last) {
 	return first;
 }
 
+namespace priv {
+
+// In-place merge using rotation-based algorithm with binary search
+template<typename Iter, class Comparator>
+void inplace_merge_impl(Iter first, Iter middle, Iter last, Comparator comp) {
+	if (first == middle || middle == last) {
+		return;
+	}
+
+	const int len1 = core::distance(first, middle);
+	const int len2 = core::distance(middle, last);
+
+	// Handle trivial cases
+	if (len1 == 0 || len2 == 0) {
+		return;
+	}
+
+	// Check if already sorted
+	Iter last1 = middle;
+	--last1;
+	if (!comp(*middle, *last1)) {
+		return;
+	}
+
+	// For small ranges, use simple insertion-based merge
+	if (len1 + len2 < 15) {
+		while (first != middle && middle != last) {
+			if (comp(*middle, *first)) {
+				// Need to insert *middle before *first
+				auto tmp = *middle;
+				Iter current = middle;
+				while (current != first) {
+					Iter prev = current;
+					--prev;
+					*current = *prev;
+					current = prev;
+				}
+				*first = tmp;
+				++middle;
+			}
+			++first;
+		}
+		return;
+	}
+
+	// For larger ranges, use divide-and-conquer with binary search
+	// Always split the first sequence in half
+	Iter cut1 = first;
+	for (int i = 0; i < len1 / 2; ++i) {
+		++cut1;
+	}
+
+	// Find where *cut1 should go in second range using binary search
+	Iter cut2 = core::lower_bound(middle, last, *cut1, comp);
+
+	// Rotate [cut1, middle, cut2) to bring [middle, cut2) before cut1
+	Iter new_middle = core::rotate(cut1, middle, cut2);
+
+	// Recursively merge the two parts
+	inplace_merge_impl(first, cut1, new_middle, comp);
+	inplace_merge_impl(new_middle, cut2, last, comp);
+}
+
+}
+
+template<typename Iter, class Comparator>
+void inplace_merge(Iter first, Iter middle, Iter last, Comparator comp) {
+	priv::inplace_merge_impl(first, middle, last, comp);
+}
+
 template<class Iter, class T>
 Iter find(Iter first, Iter last, const T &v) {
 	while (first != last) {
