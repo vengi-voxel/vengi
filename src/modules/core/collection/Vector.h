@@ -32,11 +32,11 @@ public:
 		}
 	}
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _size;
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return _size == 0u;
 	}
 
@@ -44,13 +44,13 @@ public:
 		return SIZE;
 	}
 
-	inline TYPE& operator[](size_t index) {
+	CORE_FORCE_INLINE TYPE& operator[](size_t index) {
 		core_assert(index < SIZE);
 		_size = core_max(_size, index + 1);
 		return _items[index];
 	}
 
-	inline const TYPE& operator[](size_t index) const {
+	CORE_FORCE_INLINE const TYPE& operator[](size_t index) const {
 		core_assert(index < SIZE);
 		return _items[index];
 	}

@@ -62,7 +62,7 @@ private:
 	size_t _size = 0u;
 	size_t _increase = INCREASE;
 
-	inline constexpr size_t align(size_t val) {
+	CORE_FORCE_INLINE constexpr size_t align(size_t val) {
 		const size_t len = _increase - 1u;
 		return (size_t)((val + len) & ~len);
 	}
@@ -150,11 +150,11 @@ public:
 		return *this;
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return _size == 0u;
 	}
 
-	inline size_t bytes() const {
+	CORE_FORCE_INLINE size_t bytes() const {
 		return _size * sizeof(TYPE);
 	}
 
@@ -170,11 +170,11 @@ public:
 			_ptr(ptr) {
 		}
 
-		inline const TYPE& operator*() const {
+		CORE_FORCE_INLINE const TYPE& operator*() const {
 			return *_ptr;
 		}
 
-		inline TYPE& operator*() {
+		CORE_FORCE_INLINE TYPE& operator*() {
 			return *_ptr;
 		}
 
@@ -220,19 +220,19 @@ public:
 			return *this;
 		}
 
-		inline const TYPE* operator->() const {
+		CORE_FORCE_INLINE const TYPE* operator->() const {
 			return _ptr;
 		}
 
-		inline TYPE* operator->() {
+		CORE_FORCE_INLINE TYPE* operator->() {
 			return _ptr;
 		}
 
-		inline bool operator!=(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator!=(const iterator& rhs) const {
 			return _ptr != rhs._ptr;
 		}
 
-		inline bool operator==(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator==(const iterator& rhs) const {
 			return _ptr == rhs._ptr;
 		}
 	};
@@ -286,7 +286,7 @@ public:
 		}
 	}
 
-	inline void insert(iterator pos, const TYPE& value) {
+	CORE_FORCE_INLINE void insert(iterator pos, const TYPE& value) {
 		insert(pos, &value, 1);
 	}
 
@@ -478,23 +478,23 @@ public:
 		_size = newSize;
 	}
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _size;
 	}
 
-	inline size_t capacity() const {
+	CORE_FORCE_INLINE size_t capacity() const {
 		return _capacity;
 	}
 
-	inline iterator begin() const {
+	CORE_FORCE_INLINE iterator begin() const {
 		return iterator(_buffer);
 	}
 
-	inline iterator end() const {
+	CORE_FORCE_INLINE iterator end() const {
 		return iterator(_buffer + _size);
 	}
 
-	inline const TYPE& operator[](size_t idx) const {
+	CORE_FORCE_INLINE const TYPE& operator[](size_t idx) const {
 		core_assert_msg(idx < _size, "idx is out of bounds: %i vs %i", (int)idx, (int)_size);
 		return _buffer[idx];
 	}
@@ -519,7 +519,7 @@ public:
 		}
 	}
 
-	inline TYPE& operator[](size_t idx) {
+	CORE_FORCE_INLINE TYPE& operator[](size_t idx) {
 		core_assert_msg(idx < _size, "idx is out of bounds: %i vs %i", (int)idx, (int)_size);
 		return _buffer[idx];
 	}

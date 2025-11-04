@@ -20,7 +20,7 @@ template<class TYPE>
 class List {
 private:
 	struct Node {
-		inline Node(const TYPE& _value) :
+		CORE_FORCE_INLINE Node(const TYPE& _value) :
 				value(_value), next(nullptr) {
 		}
 		TYPE value;
@@ -79,23 +79,23 @@ public:
 			_node(node), _prev(prev) {
 		}
 
-		inline const TYPE& operator*() const {
+		CORE_FORCE_INLINE const TYPE& operator*() const {
 			return _node->value;
 		}
 
-		inline TYPE& operator*() {
+		CORE_FORCE_INLINE TYPE& operator*() {
 			return _node->value;
 		}
 
-		inline const TYPE& operator()() const {
+		CORE_FORCE_INLINE const TYPE& operator()() const {
 			return _node->value;
 		}
 
-		inline TYPE& operator()() {
+		CORE_FORCE_INLINE TYPE& operator()() {
 			return _node->value;
 		}
 
-		iterator& operator++() {
+		CORE_FORCE_INLINE iterator& operator++() {
 			if (_node->next != nullptr) {
 				_prev = _node;
 				_node = _node->next;
@@ -106,24 +106,24 @@ public:
 			return *this;
 		}
 
-		inline const Node* operator->() const {
+		CORE_FORCE_INLINE const Node* operator->() const {
 			return _node;
 		}
 
-		inline bool operator!=(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator!=(const iterator& rhs) const {
 			return _node != rhs._node;
 		}
 
-		inline bool operator==(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator==(const iterator& rhs) const {
 			return _node == rhs._node;
 		}
 	};
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _allocator.allocated();
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return size() == 0;
 	}
 

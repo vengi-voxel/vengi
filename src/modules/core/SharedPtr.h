@@ -31,21 +31,21 @@ private:
 
 	priv::SharedPtrControlBlock *_ctrl;
 
-	int count() const {
+	CORE_FORCE_INLINE int count() const {
 		if (_ctrl == nullptr) {
 			return 0;
 		}
 		return _ctrl->_refCnt;
 	}
 
-	void increase() {
+	CORE_FORCE_INLINE void increase() {
 		if (_ctrl == nullptr) {
 			return;
 		}
 		_ctrl->_refCnt.increment(1);
 	}
 
-	int decrease() {
+	CORE_FORCE_INLINE int decrease() {
 		if (_ctrl == nullptr) {
 			return -1;
 		}
@@ -131,11 +131,11 @@ public:
 		_ctrl = nullptr;
 	}
 
-	inline T *get() const {
+	CORE_FORCE_INLINE T *get() const {
 		return _ctrl ? (T*)_ctrl->_ptr : nullptr;
 	}
 
-	inline T *operator->() const {
+	CORE_FORCE_INLINE T *operator->() const {
 		return get();
 	}
 
@@ -143,39 +143,39 @@ public:
 		release();
 	}
 
-	inline operator bool() const {
+	CORE_FORCE_INLINE operator bool() const {
 		return *this != nullptr;
 	}
 
-	inline bool operator==(const SharedPtr &rhs) const {
+	CORE_FORCE_INLINE bool operator==(const SharedPtr &rhs) const {
 		return _ctrl == rhs._ctrl;
 	}
 
-	inline bool operator!=(const SharedPtr &rhs) const {
+	CORE_FORCE_INLINE bool operator!=(const SharedPtr &rhs) const {
 		return _ctrl != rhs._ctrl;
 	}
 
-	inline bool operator<(const SharedPtr &rhs) const {
+	CORE_FORCE_INLINE bool operator<(const SharedPtr &rhs) const {
 		return _ctrl < rhs._ctrl;
 	}
 
-	inline bool operator>(const SharedPtr &rhs) const {
+	CORE_FORCE_INLINE bool operator>(const SharedPtr &rhs) const {
 		return _ctrl > rhs._ctrl;
 	}
 
-	inline bool operator<=(const SharedPtr &rhs) const {
+	CORE_FORCE_INLINE bool operator<=(const SharedPtr &rhs) const {
 		return _ctrl <= rhs._ctrl;
 	}
 
-	inline bool operator>=(const SharedPtr &rhs) const {
+	CORE_FORCE_INLINE bool operator>=(const SharedPtr &rhs) const {
 		return _ctrl >= rhs._ctrl;
 	}
 
-	inline bool operator==(decltype(nullptr)) const {
+	CORE_FORCE_INLINE bool operator==(decltype(nullptr)) const {
 		return nullptr == _ctrl;
 	}
 
-	inline bool operator!=(decltype(nullptr)) const {
+	CORE_FORCE_INLINE bool operator!=(decltype(nullptr)) const {
 		return nullptr != _ctrl;
 	}
 };

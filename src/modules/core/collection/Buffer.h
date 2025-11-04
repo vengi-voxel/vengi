@@ -123,7 +123,7 @@ public:
 		return *this;
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return _size == 0u;
 	}
 
@@ -253,11 +253,11 @@ public:
 		}
 	}
 
-	TYPE* data() {
+	CORE_FORCE_INLINE TYPE* data() {
 		return _buffer;
 	}
 
-	const TYPE* data() const {
+	CORE_FORCE_INLINE const TYPE* data() const {
 		return _buffer;
 	}
 
@@ -436,34 +436,34 @@ public:
 		return true;
 	}
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _size;
 	}
 
-	inline size_t capacity() const {
+	CORE_FORCE_INLINE size_t capacity() const {
 		return _capacity;
 	}
 
-	inline iterator begin() const {
+	CORE_FORCE_INLINE iterator begin() const {
 		return iterator(_buffer);
 	}
 
-	inline iterator end() const {
+	CORE_FORCE_INLINE iterator end() const {
 		return iterator(_buffer + _size);
 	}
 
-	inline const TYPE& operator[](size_t idx) const {
+	CORE_FORCE_INLINE const TYPE& operator[](size_t idx) const {
 		core_assert(idx < _size);
 		return _buffer[idx];
 	}
 
-	inline TYPE& operator[](size_t idx) {
+	CORE_FORCE_INLINE TYPE& operator[](size_t idx) {
 		core_assert(idx < _size);
 		return _buffer[idx];
 	}
 
 private:
-	constexpr size_t index(const_iterator iter) const {
+	CORE_FORCE_INLINE constexpr size_t index(const_iterator iter) const {
 		if (iter == begin()) {
 			return 0;
 		}

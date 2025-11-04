@@ -15,21 +15,21 @@ namespace priv {
 
 struct EqualCompare {
 	template<typename T>
-	inline bool operator() (const T& lhs, const T& rhs) const {
+	CORE_FORCE_INLINE bool operator() (const T& lhs, const T& rhs) const {
 		return lhs == rhs;
 	}
 };
 
 struct DefaultHasher {
 	template<typename T>
-	inline size_t operator() (const T& o) const {
+	CORE_FORCE_INLINE size_t operator() (const T& o) const {
 		return (size_t)o;
 	}
 };
 
 struct SharedPtrHasher {
 	template<typename T>
-	inline size_t operator() (const T& o) const {
+	CORE_FORCE_INLINE size_t operator() (const T& o) const {
 		return (size_t)(intptr_t)o.get();
 	}
 };
@@ -50,15 +50,15 @@ public:
 	using key_type = KEYTYPE;
 
 	struct KeyValue {
-		inline KeyValue(const KEYTYPE& _key, const VALUETYPE& _value) :
+		CORE_FORCE_INLINE KeyValue(const KEYTYPE& _key, const VALUETYPE& _value) :
 				key(_key), value(_value), next(nullptr), first(key), second(value) {
 		}
 
-		inline KeyValue(const KEYTYPE& _key, VALUETYPE&& _value) :
+		CORE_FORCE_INLINE KeyValue(const KEYTYPE& _key, VALUETYPE&& _value) :
 				key(_key), value(core::forward<VALUETYPE>(_value)), next(nullptr), first(key), second(value) {
 		}
 
-		inline KeyValue(KeyValue &&other) noexcept :
+		CORE_FORCE_INLINE KeyValue(KeyValue &&other) noexcept :
 				key(core::move(other.key)), value(core::move(other.value)), next(
 						nullptr), first(key), second(value) {
 		}
@@ -135,11 +135,11 @@ public:
 			_map(nullptr), _bucket(0), _ptr(nullptr) {
 		}
 
-		iterator(const Map* map, size_t bucket, KeyValue *ptr) :
+		CORE_FORCE_INLINE iterator(const Map* map, size_t bucket, KeyValue *ptr) :
 				_map(map), _bucket(bucket), _ptr(ptr) {
 		}
 
-		inline KeyValue* operator*() const {
+		CORE_FORCE_INLINE KeyValue* operator*() const {
 			return _ptr;
 		}
 
@@ -162,28 +162,28 @@ public:
 			return *this;
 		}
 
-		inline KeyValue* operator->() const {
+		CORE_FORCE_INLINE KeyValue* operator->() const {
 			return _ptr;
 		}
 
-		inline bool operator!=(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator!=(const iterator& rhs) const {
 			return _ptr != rhs._ptr;
 		}
 
-		inline bool operator==(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator==(const iterator& rhs) const {
 			return _ptr == rhs._ptr;
 		}
 	};
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _allocator.allocated();
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return size() == 0;
 	}
 
-	inline size_t capacity() const {
+	CORE_FORCE_INLINE size_t capacity() const {
 		return (_allocator.max)();
 	}
 
@@ -301,7 +301,7 @@ public:
 		}
 	}
 
-	inline bool erase(const iterator& iter) {
+	CORE_FORCE_INLINE bool erase(const iterator& iter) {
 		return remove(iter->key);
 	}
 

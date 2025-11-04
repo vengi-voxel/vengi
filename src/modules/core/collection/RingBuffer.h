@@ -34,36 +34,36 @@ public:
 				_ringBuffer(ringBuffer), _idx(idx) {
 		}
 
-		inline const TYPE& operator*() const {
+		CORE_FORCE_INLINE const TYPE& operator*() const {
 			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
-		inline TYPE& operator*() {
+		CORE_FORCE_INLINE TYPE& operator*() {
 			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
-		inline const TYPE& operator()() const {
+		CORE_FORCE_INLINE const TYPE& operator()() const {
 			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
-		inline TYPE& operator()() {
+		CORE_FORCE_INLINE TYPE& operator()() {
 			return _ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 
-		iterator& operator++() {
+		CORE_FORCE_INLINE iterator& operator++() {
 			++_idx;
 			return *this;
 		}
 
-		inline bool operator!=(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator!=(const iterator& rhs) const {
 			return _ringBuffer != rhs._ringBuffer || _idx != rhs._idx;
 		}
 
-		inline bool operator==(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator==(const iterator& rhs) const {
 			return _ringBuffer == rhs._ringBuffer && _idx == rhs._idx;
 		}
 
-		inline const TYPE* operator->() const {
+		CORE_FORCE_INLINE const TYPE* operator->() const {
 			return &_ringBuffer->_buffer[_idx % _ringBuffer->capacity()];
 		}
 	};
@@ -84,7 +84,7 @@ public:
 		return iterator(const_cast<RingBuffer*>(this), _front + _size);
 	}
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _size;
 	}
 
@@ -92,7 +92,7 @@ public:
 		return SIZE;
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return _size == 0;
 	}
 
@@ -201,12 +201,12 @@ public:
 		_size -= n;
 	}
 
-	inline TYPE &operator[](size_t i) {
+	CORE_FORCE_INLINE TYPE &operator[](size_t i) {
 		core_assert(i < SIZE);
 		return _buffer[(_front + i) % SIZE];
 	}
 
-	inline const TYPE &operator[](size_t i) const {
+	CORE_FORCE_INLINE const TYPE &operator[](size_t i) const {
 		core_assert(i < SIZE);
 		return _buffer[(_front + i) % SIZE];
 	}

@@ -137,10 +137,10 @@ public:
 			_node(node), _prev(prev) {
 		}
 
-		inline TYPE& operator*() {
+		CORE_FORCE_INLINE TYPE& operator*() {
 			return *_node->valuePtr();
 		}
-		inline const TYPE& operator*() const {
+		CORE_FORCE_INLINE const TYPE& operator*() const {
 			return *_node->valuePtr();
 		}
 
@@ -152,15 +152,15 @@ public:
 			return *this;
 		}
 
-		inline const Node* operator->() const {
+		CORE_FORCE_INLINE const Node* operator->() const {
 			return _node;
 		}
 
-		inline bool operator!=(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator!=(const iterator& rhs) const {
 			return _node != rhs._node;
 		}
 
-		inline bool operator==(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator==(const iterator& rhs) const {
 			return _node == rhs._node;
 		}
 	};

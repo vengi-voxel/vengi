@@ -28,15 +28,15 @@ public:
 		return SIZE;
 	}
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _size;
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return size() <= 0;
 	}
 
-	inline void clear() {
+	CORE_FORCE_INLINE void clear() {
 		_size = 0;
 	}
 
@@ -67,12 +67,12 @@ public:
 		return tmp;
 	}
 
-	inline TYPE &operator[](size_t i) {
+	CORE_FORCE_INLINE TYPE &operator[](size_t i) {
 		core_assert(i < SIZE);
 		return _stack[i];
 	}
 
-	inline const TYPE &operator[](size_t i) const {
+	CORE_FORCE_INLINE const TYPE &operator[](size_t i) const {
 		core_assert(i < SIZE);
 		return _stack[i];
 	}

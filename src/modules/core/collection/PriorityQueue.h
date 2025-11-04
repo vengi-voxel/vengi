@@ -59,7 +59,7 @@ public:
 					   _comparator);
 	}
 
-	inline const Data &operator[](size_t idx) const {
+	CORE_FORCE_INLINE const Data &operator[](size_t idx) const {
 		core_assert_msg(idx < _data.size(), "idx is out of bounds: %i vs %i", (int)idx, (int)_data.size());
 		return _data[idx];
 	}
@@ -85,11 +85,11 @@ public:
 		std::push_heap(_data.begin(), _data.end(), _comparator);
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return _data.empty();
 	}
 
-	inline uint32_t size() const {
+	CORE_FORCE_INLINE uint32_t size() const {
 		return (uint32_t)_data.size();
 	}
 

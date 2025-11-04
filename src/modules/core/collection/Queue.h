@@ -118,31 +118,31 @@ public:
 		return true;
 	}
 
-	inline TYPE &front() {
+	CORE_FORCE_INLINE TYPE &front() {
 		core_assert(!empty());
 		return _buffer[_head];
 	}
 
-	inline const TYPE &front() const {
+	CORE_FORCE_INLINE const TYPE &front() const {
 		core_assert(!empty());
 		return _buffer[_head];
 	}
 
-	inline TYPE &back() {
+	CORE_FORCE_INLINE TYPE &back() {
 		core_assert(!empty());
 		return _buffer[(_tail + _capacity - 1) % _capacity];
 	}
 
-	inline const TYPE &back() const {
+	CORE_FORCE_INLINE const TYPE &back() const {
 		core_assert(!empty());
 		return _buffer[(_tail + _capacity - 1) % _capacity];
 	}
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _size;
 	}
 
-	inline size_t capacity() const {
+	CORE_FORCE_INLINE size_t capacity() const {
 		return _capacity;
 	}
 };

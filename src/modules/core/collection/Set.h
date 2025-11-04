@@ -35,7 +35,7 @@ public:
 		}
 	}
 
-	inline bool has(const T& key) const {
+	CORE_FORCE_INLINE bool has(const T& key) const {
 		return this->hasKey(key);
 	}
 };

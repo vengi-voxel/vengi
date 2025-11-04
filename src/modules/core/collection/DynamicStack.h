@@ -24,15 +24,15 @@ private:
 public:
 	using value_type = TYPE;
 
-	inline size_t size() const {
+	CORE_FORCE_INLINE size_t size() const {
 		return _stack.size();
 	}
 
-	inline bool empty() const {
+	CORE_FORCE_INLINE bool empty() const {
 		return _stack.empty();
 	}
 
-	inline void clear() {
+	CORE_FORCE_INLINE void clear() {
 		_stack.clear();
 	}
 
@@ -59,11 +59,11 @@ public:
 		return tmp;
 	}
 
-	inline TYPE &operator[](size_t i) {
+	CORE_FORCE_INLINE TYPE &operator[](size_t i) {
 		return _stack[i];
 	}
 
-	inline const TYPE &operator[](size_t i) const {
+	CORE_FORCE_INLINE const TYPE &operator[](size_t i) const {
 		return _stack[i];
 	}
 };

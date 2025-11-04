@@ -198,11 +198,11 @@ public:
 				_map(map), _bucket(bucket), _ptr(ptr) {
 		}
 
-		inline KeyValue* operator*() const {
+		CORE_FORCE_INLINE KeyValue* operator*() const {
 			return _ptr;
 		}
 
-		iterator& operator++() {
+		CORE_FORCE_INLINE iterator& operator++() {
 			if (_ptr->next != nullptr) {
 				_ptr = _ptr->next;
 				return *this;
@@ -221,15 +221,15 @@ public:
 			return *this;
 		}
 
-		inline KeyValue* operator->() const {
+		CORE_FORCE_INLINE KeyValue* operator->() const {
 			return _ptr;
 		}
 
-		inline bool operator!=(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator!=(const iterator& rhs) const {
 			return _ptr != rhs._ptr;
 		}
 
-		inline bool operator==(const iterator& rhs) const {
+		CORE_FORCE_INLINE bool operator==(const iterator& rhs) const {
 			return _ptr == rhs._ptr;
 		}
 	};
