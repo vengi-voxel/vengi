@@ -175,6 +175,12 @@ public:
 	}
 
 	void reserve(size_t n) {
+		if (n == 0u) {
+			return;
+		}
+		if (!_blocks.empty()) {
+			return;
+		}
 		_blocks.emplace(n);
 	}
 
