@@ -24,6 +24,7 @@
 #include "DictionaryManager.h"
 #include "Language.h"
 #include "POParser.h"
+#include "app/Async.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -147,7 +148,7 @@ Languages DictionaryManager::getLanguages() {
 			}
 		}
 	}
-	core::sort(_languages.begin(), _languages.end(), core::Less<Language>());
+	app::sort_parallel(_languages.begin(), _languages.end(), core::Less<Language>());
 	return _languages;
 }
 

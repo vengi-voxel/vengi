@@ -789,7 +789,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		}
 
 		const glm::vec3 &camPos = camera.worldPosition();
-		core::sort(sorted.begin(), sorted.end(), [&camPos, &meshState](int a, int b) {
+		app::sort_parallel(sorted.begin(), sorted.end(), [&camPos, &meshState](int a, int b) {
 			const glm::vec3 &posA = meshState->centerPos(a, true);
 			const glm::vec3 &posB = meshState->centerPos(b, true);
 			const float d1 = glm::distance2(camPos, posA);

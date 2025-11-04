@@ -3,6 +3,7 @@
  */
 
 #include "PaletteView.h"
+#include "app/Async.h"
 #include "core/Color.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
@@ -36,7 +37,7 @@ void PaletteView::sortOriginal() {
 }
 
 void PaletteView::sortHue() {
-	core::sort(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
+	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
@@ -53,7 +54,7 @@ void PaletteView::sortHue() {
 }
 
 void PaletteView::sortSaturation() {
-	core::sort(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
+	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
@@ -70,14 +71,14 @@ void PaletteView::sortSaturation() {
 }
 
 void PaletteView::sortBrightness() {
-	core::sort(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
+	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
 		return core::Color::brightness(_palette->color(lhs)) < core::Color::brightness(_palette->color(rhs));
 	});
 	_palette->markDirty();
 }
 
 void PaletteView::sortCIELab() {
-	core::sort(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
+	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
 		glm::vec3 lcielab;
 		glm::vec3 rcielab;
 		core::Color::getCIELab(_palette->color(lhs), lcielab.x, lcielab.y, lcielab.z);

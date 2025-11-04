@@ -6,6 +6,7 @@
 #include "IconsLucide.h"
 #include "ScopedStyle.h"
 #include "app/App.h"
+#include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/Alphanumeric.h"
 #include "core/ArrayLength.h"
@@ -203,7 +204,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 			_filterEntries.push_back(*f);
 			++f;
 		}
-		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<io::FormatDescription>());
+		app::sort_parallel(_filterEntries.begin(), _filterEntries.end(), core::Less<io::FormatDescription>());
 		if (type == video::OpenFileMode::Open) {
 			io::createGroupPatterns(formats, _filterEntries);
 		}

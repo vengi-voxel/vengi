@@ -255,7 +255,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 		if (collection.timestamp + 5.0 > nowSeconds) {
 			continue;
 		}
-		core::sort(collection.files.begin(), collection.files.end(), core::Less<VoxelFile>());
+		app::sort_parallel(collection.files.begin(), collection.files.end(), core::Less<VoxelFile>());
 		collection.sorted = true;
 	}
 	_count += voxelFiles.size();
