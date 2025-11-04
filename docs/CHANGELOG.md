@@ -26,11 +26,17 @@ General:
    - Added `clouds.lua` to generate parameterized clouds
    - Fixed a few culling issues
    - Fixed debian/ubuntu/mint mimetype errors
+   - Performance optimizations
 
 VoxEdit:
 
    - Improved the game mode movement
    - Fixed physics for nodes that have a pivot applied
+
+VoxConvert:
+
+   - `--image` (and `--isometric`) is now also able to write `png` files
+   - `--image` is now executed after all other steps are executed (so script output can directly go to images)
 
 ## 0.2.1 (2025-10-24)
 
