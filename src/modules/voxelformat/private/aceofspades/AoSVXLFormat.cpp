@@ -364,10 +364,10 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 	for (int x = 0; x < (int)mapSize; x++) {
 		for (int y = 0; y < (int)mapSize; y++) {
 			for (int z = 0; z < (int)mapHeight; z++) {
-				if (!libvxl_map_issolid(&map, x, y, z)) {
+				const uint32_t color = libvxl_map_get(&map, x, y, z);
+				if (color == 0u) {
 					continue;
 				}
-				const uint32_t color = libvxl_map_get(&map, x, y, z);
 				const core::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
 				colors.put(rgba, true);
 			}
