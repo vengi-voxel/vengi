@@ -144,4 +144,118 @@ TEST(AlgorithmTest, sortedUnion) {
 	}
 }
 
+TEST(AlgorithmTest, testLowerBound) {
+	core::Array<int, 5> foo{{1, 3, 5, 7, 9}};
+
+	// Value exists in array
+	auto it = core::lower_bound(foo.begin(), foo.end(), 5, core::Less<int>());
+	EXPECT_EQ(5, *it);
+	EXPECT_EQ(2, core::distance(foo.begin(), it));
+
+	// Value doesn't exist, between elements
+	it = core::lower_bound(foo.begin(), foo.end(), 4, core::Less<int>());
+	EXPECT_EQ(5, *it);
+	EXPECT_EQ(2, core::distance(foo.begin(), it));
+
+	// Value smaller than all
+	it = core::lower_bound(foo.begin(), foo.end(), 0, core::Less<int>());
+	EXPECT_EQ(1, *it);
+	EXPECT_EQ(0, core::distance(foo.begin(), it));
+
+	// Value larger than all
+	it = core::lower_bound(foo.begin(), foo.end(), 10, core::Less<int>());
+	EXPECT_EQ(foo.end(), it);
+}
+
+TEST(AlgorithmTest, testLowerBoundDuplicates) {
+	core::Array<int, 7> foo{{1, 2, 2, 2, 5, 7, 9}};
+
+	// Should find first occurrence
+	auto it = core::lower_bound(foo.begin(), foo.end(), 2, core::Less<int>());
+	EXPECT_EQ(2, *it);
+	EXPECT_EQ(1, core::distance(foo.begin(), it));
+}
+
+TEST(AlgorithmTest, testLowerBoundEmpty) {
+	core::Array<int, 5> foo{{1, 2, 3, 4, 5}};
+	auto it = core::lower_bound(foo.begin(), foo.begin(), 3, core::Less<int>());
+	EXPECT_EQ(foo.begin(), it);
+}
+
+TEST(AlgorithmTest, testUpperBound) {
+	core::Array<int, 5> foo{{1, 3, 5, 7, 9}};
+
+	// Value exists in array
+	auto it = core::upper_bound(foo.begin(), foo.end(), 5, core::Less<int>());
+	EXPECT_EQ(7, *it);
+	EXPECT_EQ(3, core::distance(foo.begin(), it));
+
+	// Value doesn't exist, between elements
+	it = core::upper_bound(foo.begin(), foo.end(), 4, core::Less<int>());
+	EXPECT_EQ(5, *it);
+	EXPECT_EQ(2, core::distance(foo.begin(), it));
+
+	// Value smaller than all
+	it = core::upper_bound(foo.begin(), foo.end(), 0, core::Less<int>());
+	EXPECT_EQ(1, *it);
+	EXPECT_EQ(0, core::distance(foo.begin(), it));
+
+	// Value larger than all
+	it = core::upper_bound(foo.begin(), foo.end(), 10, core::Less<int>());
+	EXPECT_EQ(foo.end(), it);
+}
+
+TEST(AlgorithmTest, testUpperBoundDuplicates) {
+	core::Array<int, 7> foo{{1, 2, 2, 2, 5, 7, 9}};
+
+	// Should find position after last occurrence
+	auto it = core::upper_bound(foo.begin(), foo.end(), 2, core::Less<int>());
+	EXPECT_EQ(5, *it);
+	EXPECT_EQ(4, core::distance(foo.begin(), it));
+}
+
+TEST(AlgorithmTest, testRotateForward) {
+	core::Array<int, 6> foo{{1, 2, 3, 4, 5, 6}};
+
+	// Rotate [1,2,3,4,5,6] with middle at 4 -> [4,5,6,1,2,3]
+	auto result = core::rotate_forward(foo.begin(), core::next(foo.begin(), 3), foo.end());
+
+	EXPECT_EQ(4, foo[0]);
+	EXPECT_EQ(5, foo[1]);
+	EXPECT_EQ(6, foo[2]);
+	EXPECT_EQ(1, foo[3]);
+	EXPECT_EQ(2, foo[4]);
+	EXPECT_EQ(3, foo[5]);
+	EXPECT_EQ(3, core::distance(foo.begin(), result));
+}
+
+TEST(AlgorithmTest, testRotateForwardSmall) {
+	core::Array<int, 3> foo{{1, 2, 3}};
+
+	// Rotate [1,2,3] with middle at 2 -> [2,3,1]
+	core::rotate_forward(foo.begin(), core::next(foo.begin(), 1), foo.end());
+
+	EXPECT_EQ(2, foo[0]);
+	EXPECT_EQ(3, foo[1]);
+	EXPECT_EQ(1, foo[2]);
+}
+
+TEST(AlgorithmTest, testRotateForwardEdgeCases) {
+	// Test with first == middle
+	core::Array<int, 3> foo1{{1, 2, 3}};
+	auto result1 = core::rotate_forward(foo1.begin(), foo1.begin(), foo1.end());
+	EXPECT_EQ(foo1.end(), result1);
+	EXPECT_EQ(1, foo1[0]);
+	EXPECT_EQ(2, foo1[1]);
+	EXPECT_EQ(3, foo1[2]);
+
+	// Test with middle == last
+	core::Array<int, 3> foo2{{1, 2, 3}};
+	auto result2 = core::rotate_forward(foo2.begin(), foo2.end(), foo2.end());
+	EXPECT_EQ(foo2.begin(), result2);
+	EXPECT_EQ(1, foo2[0]);
+	EXPECT_EQ(2, foo2[1]);
+	EXPECT_EQ(3, foo2[2]);
+}
+
 }

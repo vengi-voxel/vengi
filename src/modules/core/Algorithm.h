@@ -57,6 +57,69 @@ Iter rotate(Iter first, Iter middle, Iter last) {
 	return write;
 }
 
+template<typename Iter, typename T, class Comparator>
+Iter lower_bound(Iter first, Iter last, const T& val, Comparator comp) {
+	int len = core::distance(first, last);
+	while (len > 0) {
+		int half = len / 2;
+		Iter middle = first;
+		for (int i = 0; i < half; ++i) {
+			++middle;
+		}
+
+		if (comp(*middle, val)) {
+			first = middle;
+			++first;
+			len = len - half - 1;
+		} else {
+			len = half;
+		}
+	}
+	return first;
+}
+
+template<typename Iter, typename T, class Comparator>
+Iter upper_bound(Iter first, Iter last, const T& val, Comparator comp) {
+	int len = core::distance(first, last);
+	while (len > 0) {
+		int half = len / 2;
+		Iter middle = first;
+		for (int i = 0; i < half; ++i) {
+			++middle;
+		}
+
+		if (!comp(val, *middle)) {
+			first = middle;
+			++first;
+			len = len - half - 1;
+		} else {
+			len = half;
+		}
+	}
+	return first;
+}
+
+template<class Iter>
+Iter rotate_forward(Iter first, Iter middle, Iter last) {
+	if (first == middle)
+		return last;
+	if (middle == last)
+		return first;
+
+	Iter next = middle;
+	while (first != next) {
+		core::exchange(*first, *next);
+		++first;
+		++next;
+		if (next == last) {
+			next = middle;
+		} else if (first == middle) {
+			middle = next;
+		}
+	}
+	return first;
+}
+
 template<class Iter, class T>
 Iter find(Iter first, Iter last, const T &v) {
 	while (first != last) {
