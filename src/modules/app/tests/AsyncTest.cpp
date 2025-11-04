@@ -7,9 +7,9 @@
 
 namespace app {
 
-class TestAsync : public app::AbstractTest {};
+class AsyncTest : public app::AbstractTest {};
 
-TEST_F(TestAsync, testForParallel) {
+TEST_F(AsyncTest, testForParallel) {
 	constexpr int size = 512;
 	int buf[size + 1];
 	buf[size] = -1;
@@ -25,7 +25,7 @@ TEST_F(TestAsync, testForParallel) {
 	ASSERT_EQ(buf[size], -1);
 }
 
-TEST_F(TestAsync, testSort) {
+TEST_F(AsyncTest, testSort) {
 	core::Array<int, 8> foo{{1, 5, 3, 7, 8, 10, 100, -100}};
 	app::sort_parallel(foo.begin(), foo.end(), core::Less<int>());
 	EXPECT_EQ(-100, foo[0]);
@@ -38,27 +38,27 @@ TEST_F(TestAsync, testSort) {
 	EXPECT_EQ(100, foo[7]);
 }
 
-TEST_F(TestAsync, testSort1) {
+TEST_F(AsyncTest, testSort1) {
 	core::Array<int, 1> foo{{1}};
 	app::sort_parallel(foo.begin(), foo.end(), core::Less<int>());
 	EXPECT_EQ(1, foo[0]);
 }
 
-TEST_F(TestAsync, testSort2) {
+TEST_F(AsyncTest, testSort2) {
 	core::Array<int, 2> foo{{2, 1}};
 	app::sort_parallel(foo.begin(), foo.end(), core::Less<int>());
 	EXPECT_EQ(1, foo[0]);
 	EXPECT_EQ(2, foo[1]);
 }
 
-TEST_F(TestAsync, testEmpty) {
+TEST_F(AsyncTest, testEmpty) {
 	core::Array<int, 2> foo{{0, -1}};
 	app::sort_parallel(foo.begin(), foo.begin(), core::Less<int>());
 	EXPECT_EQ(0, foo[0]);
 	EXPECT_EQ(-1, foo[1]);
 }
 
-TEST_F(TestAsync, testPartially) {
+TEST_F(AsyncTest, testPartially) {
 	core::Array<int, 5> foo{{0, -1, -2, -4, -6}};
 	app::sort_parallel(foo.begin(), core::next(foo.begin(), 2), core::Less<int>());
 	EXPECT_EQ(-1, foo[0]);
