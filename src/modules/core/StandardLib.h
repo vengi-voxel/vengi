@@ -28,8 +28,20 @@ extern "C" char *SDLCALL SDL_strdup(const char *str);
 #define core_strcasecmp strcasecmp
 #endif
 
+#define DEBUG_MALLOC 0
 #ifndef core_malloc
-#define core_malloc SDL_malloc
+# if DEBUG_MALLOC
+#include <stdio.h>
+
+static inline void* debug_core_malloc(size_t size, const char* file, int line) {
+	void* ptr = SDL_malloc(size);
+	printf("malloc %p of size %zu at %s:%d\n", ptr, size, file, line);
+	return ptr;
+}
+#  define core_malloc(size) debug_core_malloc(size, __FILE__, __LINE__)
+# else
+#  define core_malloc SDL_malloc
+# endif
 #endif
 
 #ifndef core_realloc
