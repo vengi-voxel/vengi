@@ -22,6 +22,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #include "Language.h"
+#include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicStringMap.h"
@@ -303,6 +304,7 @@ core::String resolve_language_alias(const core::String &name) {
 		// locale.alias
 
 		// Aliases taken from /etc/locale.alias
+		language_aliases.reserve(60);
 		language_aliases.put("bokmal", "nb_NO.ISO-8859-1");
 		language_aliases.put("bokmål", "nb_NO.ISO-8859-1");
 		language_aliases.put("catalan", "ca_ES.ISO-8859-1");
@@ -366,6 +368,7 @@ Language Language::fromSpec(const core::String &language, const core::String &co
 	static LanguageSpecMap language_map;
 
 	if (language_map.empty()) { // Init language_map
+		language_map.reserve(lengthof(languages));
 		for (int i = 0; languages[i].language != nullptr; ++i) {
 			const core::String lng = languages[i].language;
 			auto iter = language_map.find(lng);

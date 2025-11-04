@@ -253,6 +253,7 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
 
 static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core::DynamicArray<ColorBox> boxes;
+	boxes.reserve(maxTargetBufColors + 1);
 	{
 		core::RGBA white{0, 0, 0, 255};
 		core::RGBA black{255, 255, 255, 255};
@@ -559,6 +560,7 @@ static int quantizeNeuQuant(RGBA *targetBuf, size_t maxTargetBufColors, const RG
 static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	// Initialize the set of boxes with the full color range
 	core::DynamicArray<ColorBox> boxes;
+	boxes.reserve(maxTargetBufColors + 1);
 	{
 		core::Buffer<RGBA> pixels;
 		pixels.append(inputBuf, inputBufColors);
