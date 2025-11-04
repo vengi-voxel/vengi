@@ -75,8 +75,9 @@ protected:
 	struct Block {
 		KeyValue *_nodes;
 		size_t _used = 0;
+		const size_t _size;
 
-		Block(size_t count) : _nodes(static_cast<KeyValue *>(core_malloc(sizeof(KeyValue) * count))) {
+		Block(size_t count) : _nodes(static_cast<KeyValue *>(core_malloc(sizeof(KeyValue) * count))), _size(count) {
 		}
 
 		Block(const Block&) = delete;
@@ -88,6 +89,10 @@ protected:
 			core_free(_nodes);
 			_nodes = nullptr;
 			_used = 0;
+		}
+
+		bool full() const {
+			return _used >= _size;
 		}
 	};
 
@@ -106,7 +111,7 @@ protected:
 			return ::new (node) KeyValue(core::forward<Args>(args)...);
 		}
 
-		if (_blocks.empty() || _blocks.back()->_used >= BLOCK_SIZE) {
+		if (_blocks.empty() || _blocks.back()->full()) {
 			_blocks.emplace(BLOCK_SIZE);
 		}
 
@@ -122,6 +127,7 @@ protected:
 public:
 	DynamicMap(std::initializer_list<KeyValue> other) {
 		_buckets.fill(nullptr);
+		reserve(other.size());
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
 		}
@@ -131,6 +137,7 @@ public:
 	}
 	DynamicMap(const DynamicMap& other) {
 		_buckets.fill(nullptr);
+		reserve(other.size());
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
 		}
@@ -160,10 +167,15 @@ public:
 
 	DynamicMap& operator=(const DynamicMap& other) {
 		clear();
+		reserve(other.size());
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
 		}
 		return *this;
+	}
+
+	void reserve(size_t n) {
+		_blocks.emplace(n);
 	}
 
 	class iterator {
