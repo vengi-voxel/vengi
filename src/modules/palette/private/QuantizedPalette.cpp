@@ -11,6 +11,7 @@ namespace palette {
 
 bool QuantizedPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	palette::RGBABuffer colors;
+	colors.reserve(1024 * 256);
 	if (!load(filename, stream, colors)) {
 		return false;
 	}

@@ -507,6 +507,7 @@ size_t QBFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 		return 0;
 	}
 	palette::RGBABuffer colors;
+	colors.reserve(numMatrices * 256);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);
 		if (!readPalette(state, *stream, colors)) {
