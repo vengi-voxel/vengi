@@ -19,7 +19,10 @@ enum BindingContext : uint8_t {
 	Context1 = 2,
 	Context2 = 4,
 	Context3 = 8,
-	Context4 = 16
+	Context4 = 16,
+	// if this flag is set to the key binding context, it is only active if the current binding context matches exactly
+	// and no other context is set
+	ContextExclusive = 128,
 };
 
 /**
@@ -35,13 +38,16 @@ BindingContext bindingContext();
  */
 BindingContext setBindingContext(int ctx);
 BindingContext parseBindingContext(const String &context);
-const core::String& bindingContextString(int ctx);
+core::String bindingContextString(int ctx);
 bool registerBindingContext(const String &context, int ctx);
 void resetBindingContexts();
 
 inline bool isSuitableBindingContext(core::BindingContext context) {
 	if (context == core::BindingContext::All || core::bindingContext() == core::BindingContext::All) {
 		return true;
+	}
+	if (context & ContextExclusive) {
+		return core::bindingContext() == (context & ~ContextExclusive);
 	}
 	return (core::bindingContext() & context) != 0;
 }

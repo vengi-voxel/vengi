@@ -29,8 +29,9 @@ General:
 
 VoxEdit:
 
-   - Improved the game mode movement
+   - Improved the game mode movement (stair handling)
    - Fixed physics for nodes that have a pivot applied
+   - Allow editing in game mode, too (there where key binding conflicts before)
 
 VoxConvert:
 

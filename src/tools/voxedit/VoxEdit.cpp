@@ -38,7 +38,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
 	_allowRelativeMouseMode = false;
 	_iniVersion = 8;
-	_keybindingsVersion = 1;
+	_keybindingsVersion = 2;
 	_wantCrashLogs = true;
 
 	// see KeyBindings enum
@@ -297,7 +297,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("v",                    "brushshape",                   "model");
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
-	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "scene");
+	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
 	_keybindingHandler.registerBinding("left_gui",             "+camera_pan",                  "editing");
 
 	if (keymap != KeyBindings::Qubicle) {
@@ -468,7 +468,11 @@ app::AppState VoxEdit::onRunning() {
 	const voxedit::Viewport *viewport = _mainWindow->hoveredViewport();
 	if (viewport) {
 		if (viewport->isGameMode()) {
-			core::setBindingContext(core::BindingContext::Context3);
+			if (viewport->isSceneMode()) {
+				core::setBindingContext(core::BindingContext::Context3 | core::BindingContext::Context1);
+			} else {
+				core::setBindingContext(core::BindingContext::Context3 | core::BindingContext::Context2);
+			}
 		} else if (viewport->isSceneMode()) {
 			core::setBindingContext(core::BindingContext::Context1);
 		} else {
