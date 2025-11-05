@@ -127,6 +127,21 @@ private:
 	 */
 	void applyFriction(KinematicBody &body, double deltaSeconds) const;
 
+	/**
+	 * @brief Attempts to step up when horizontal movement is blocked by a low obstacle.
+	 *
+	 * This implements automatic stair climbing. If the body is blocked horizontally but the obstacle
+	 * is low enough relative to the body's height, the body will be lifted to step over it.
+	 * The maximum step height is calculated as body.extents.y (half the body height).
+	 * For example: body height of 2 allows stepping up 1 voxel, height of 4 allows 2 voxels.
+	 *
+	 * @param[in] nodes The collision nodes to check against.
+	 * @param[in,out] body The kinematic body attempting to step. Its position may be modified.
+	 * @param[in] desiredHorizontalPos The desired horizontal position (X/Z) before collision.
+	 * @return @c true if a step was successfully performed, @c false otherwise.
+	 */
+	bool tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const;
+
 public:
 	/**
 	 * @brief Updates the state of a kinematic body.

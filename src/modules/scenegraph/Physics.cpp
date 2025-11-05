@@ -123,6 +123,55 @@ void Physics::applyFriction(KinematicBody &body, double deltaSeconds) const {
 	}
 }
 
+bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const {
+	// Only allow stepping up when grounded
+	if (!body.collidedY) {
+		return false;
+	}
+
+	// Check if there's horizontal movement being attempted
+	const glm::vec2 horizontalDelta(desiredHorizontalPos.x - body.position.x, desiredHorizontalPos.z - body.position.z);
+	const float horizontalDistance = glm::length(horizontalDelta);
+	if (horizontalDistance < glm::epsilon<float>()) {
+		return false;
+	}
+
+	const float maxStepHeight = body.extents.y;
+	constexpr float stepIncrement = 0.1f;
+	const int maxSteps = static_cast<int>(glm::ceil(maxStepHeight / stepIncrement));
+
+	for (int i = 1; i <= maxSteps; ++i) {
+		const float testStepHeight = i * stepIncrement;
+
+		glm::vec3 testPos = body.position;
+		testPos.y += testStepHeight;
+		testPos.x = desiredHorizontalPos.x;
+		testPos.z = desiredHorizontalPos.z;
+
+		if (!checkCollision(nodes, testPos, body)) {
+			bool foundGround = false;
+			for (float groundCheckDelta = 0.1f; groundCheckDelta <= testStepHeight + 0.5f; groundCheckDelta += 0.1f) {
+				glm::vec3 groundCheckPos = testPos;
+				groundCheckPos.y -= groundCheckDelta;
+
+				if (checkCollision(nodes, groundCheckPos, body)) {
+					foundGround = true;
+					break;
+				}
+			}
+
+			if (foundGround) {
+				body.position = testPos;
+				body.collidedX = false;
+				body.collidedZ = false;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void Physics::update(double deltaSeconds, const CollisionNodes &nodes, KinematicBody &body, float gravity) const {
 	// If there are no collision nodes, there is nothing to do.
 	if (nodes.empty()) {
@@ -133,14 +182,35 @@ void Physics::update(double deltaSeconds, const CollisionNodes &nodes, Kinematic
 	body.contactPoint = {0.0f, 0.0f, 0.0f};
 	// Calculate the next potential position of the body.
 	const glm::vec3 nextPos = body.position + (body.velocity * (float)deltaSeconds);
-	// Check for collision on each axis separately. This allows for sliding along walls.
-	const bool collidedX = checkCollisionOnAxis(nodes, body, nextPos, math::Axis::X);
+
+	// First, handle vertical collision (Y axis)
 	const bool collidedY = checkCollisionOnAxis(nodes, body, nextPos, math::Axis::Y);
-	const bool collidedZ = checkCollisionOnAxis(nodes, body, nextPos, math::Axis::Z);
+
+	bool steppedUp = false;
+	const bool hasHorizontalVelocity = glm::abs(body.velocity.x) > glm::epsilon<float>() || glm::abs(body.velocity.z) > glm::epsilon<float>();
+
+	if (collidedY && hasHorizontalVelocity) {
+		glm::vec3 testPos = body.position;
+		testPos.x = nextPos.x;
+		testPos.z = nextPos.z;
+
+		if (checkCollision(nodes, testPos, body)) {
+			steppedUp = tryStepUp(nodes, body, nextPos);
+		}
+	}
+
+	bool collidedX = false;
+	bool collidedZ = false;
+
+	if (!steppedUp) {
+		collidedX = checkCollisionOnAxis(nodes, body, nextPos, math::Axis::X);
+		collidedZ = checkCollisionOnAxis(nodes, body, nextPos, math::Axis::Z);
+	}
+
 	const bool collisionChange = (body.collidedX != collidedX) || (body.collidedY != collidedY) || (body.collidedZ != collidedZ);
 	const bool collided = (collidedX || collidedY || collidedZ);
 
-	if (collisionChange && collided) {
+	if (collisionChange && collided && !steppedUp) {
 		if (body.contactListener) {
 			body.contactListener->onContact(body.contactPoint);
 		}
