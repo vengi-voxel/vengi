@@ -49,6 +49,8 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		ImGui::InputVarFloat(_("Jump Velocity"), _jumpVelocity, 0.1f, 100.0f);
 		ImGui::InputVarFloat(_("Body Height"), _bodyHeight, 0.1f, 10.0f);
 		// TODO: make gravity configurable - see voxelrender::CameraMovement
+		// TODO: make friction configurable - see scenegraph::KinematicBody
+		// TODO: make extends/size of the body configurable - see scenegraph::KinematicBody
 
 		ImGui::EndDisabled();
 
