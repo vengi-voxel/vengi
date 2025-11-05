@@ -90,7 +90,7 @@ public:
 	}
 
 	CORE_FORCE_INLINE const Voxel &voxel() const {
-		if (this->currentPositionValid()) {
+		if (core_likely(this->currentPositionValid())) {
 			return *_currentVoxel;
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z);
@@ -378,16 +378,16 @@ public:
 
 		_posInVolume.x += (int)offset;
 
-		if (region().getUpperX() < _posInVolume.x) {
+		if (core_unlikely(region().getUpperX() < _posInVolume.x)) {
 			_currentPositionInvalid |= SAMPLER_INVALIDX;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDX;
 		}
 
 		// Then we update the voxel pointer
-		if (!bIsOldPositionValid) {
+		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
-		} else if (currentPositionValid()) {
+		} else if (core_likely(currentPositionValid())) {
 			_currentVoxel += (intptr_t)offset;
 		} else {
 			_currentVoxel = nullptr;
@@ -399,16 +399,16 @@ public:
 
 		_posInVolume.y += (int)offset;
 
-		if (region().getUpperY() < _posInVolume.y) {
+		if (core_unlikely(region().getUpperY() < _posInVolume.y)) {
 			_currentPositionInvalid |= SAMPLER_INVALIDY;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDY;
 		}
 
 		// Then we update the voxel pointer
-		if (!bIsOldPositionValid) {
+		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
-		} else if (currentPositionValid()) {
+		} else if (core_likely(currentPositionValid())) {
 			_currentVoxel += (intptr_t)(_volume->width() * offset);
 		} else {
 			_currentVoxel = nullptr;
@@ -420,16 +420,16 @@ public:
 
 		_posInVolume.z += (int)offset;
 
-		if (region().getUpperZ() < _posInVolume.z) {
+		if (core_unlikely(region().getUpperZ() < _posInVolume.z)) {
 			_currentPositionInvalid |= SAMPLER_INVALIDZ;
 		} else {
 			_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
 		}
 
 		// Then we update the voxel pointer
-		if (!bIsOldPositionValid) {
+		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
-		} else if (currentPositionValid()) {
+		} else if (core_likely(currentPositionValid())) {
 			_currentVoxel += (intptr_t)(_volume->width() * _volume->height() * offset);
 		} else {
 			_currentVoxel = nullptr;
@@ -464,9 +464,9 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (!bIsOldPositionValid) {
+		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
-		} else if (currentPositionValid()) {
+		} else if (core_likely(currentPositionValid())) {
 			_currentVoxel -= (intptr_t)offset;
 		} else {
 			_currentVoxel = nullptr;
@@ -485,9 +485,9 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (!bIsOldPositionValid) {
+		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
-		} else if (currentPositionValid()) {
+		} else if (core_likely(currentPositionValid())) {
 			_currentVoxel -= (intptr_t)(_volume->width() * offset);
 		} else {
 			_currentVoxel = nullptr;
@@ -506,9 +506,9 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (!bIsOldPositionValid) {
+		if (core_unlikely(!bIsOldPositionValid)) {
 			setPosition(_posInVolume);
-		} else if (currentPositionValid()) {
+		} else if (core_likely(currentPositionValid())) {
 			_currentVoxel -= (intptr_t)(_volume->width() * _volume->height() * offset);
 		} else {
 			_currentVoxel = nullptr;
