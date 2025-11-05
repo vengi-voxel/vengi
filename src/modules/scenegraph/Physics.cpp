@@ -88,19 +88,19 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 		voxel::RawVolume::Sampler sampler(node.volume);
 		sampler.setPosition(mins);
 		// Iterate over all voxels in the AABB and check for collision.
-		for (int x = mins.x; x <= maxs.x; x++) {
+		for (int z = mins.z; z <= maxs.z; z++) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y = mins.y; y <= maxs.y; y++) {
 				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int z = mins.z; z <= maxs.z; z++) {
+				for (int x = mins.x; x <= maxs.x; x++) {
 					if (voxel::isBlocked(sampler3.voxel().getMaterial())) {
 						return true;
 					}
-					sampler3.movePositiveZ();
+					sampler3.movePositiveX();
 				}
 				sampler2.movePositiveY();
 			}
-			sampler.movePositiveX();
+			sampler.movePositiveZ();
 		}
 	}
 	return false;
