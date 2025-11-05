@@ -26,7 +26,6 @@ General:
    - Added `clouds.lua` to generate parameterized clouds
    - Fixed a few culling issues
    - Fixed debian/ubuntu/mint mimetype errors
-   - Performance optimizations
 
 VoxEdit:
 
