@@ -9,6 +9,8 @@ set(SRCS
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
 	BufferedSeekableWriteStream.h
 	BufferedWriteStream.h
+	CompressionReadStream.h
+	CompressionWriteStream.h
 	EndianStreamReadWrapper.h
 	File.cpp File.h
 	FileStream.cpp FileStream.h
@@ -17,6 +19,10 @@ set(SRCS
 	FilesystemEntry.cpp FilesystemEntry.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
+	LZ4ReadStream.cpp LZ4ReadStream.h
+	LZ4WriteStream.cpp LZ4WriteStream.h
+	LZAVReadStream.cpp LZAVReadStream.h
+	LZAVWriteStream.cpp LZAVWriteStream.h
 	LZFSEReadStream.cpp LZFSEReadStream.h
 	MemoryArchive.cpp MemoryArchive.h
 	MemoryReadStream.cpp MemoryReadStream.h
@@ -49,6 +55,17 @@ if (ZLIB_FOUND)
 endif()
 set(USE_ZLIB ${ZLIB_FOUND} CACHE BOOL "Use zlib for zip compression" FORCE)
 
+find_package(PkgConfig REQUIRED)
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(LIBLZ4 liblz4)
+  if (LIBLZ4_FOUND)
+	list(APPEND LIBS ${LIBLZ4_LIBRARIES})
+	set(USE_LZ4 TRUE CACHE BOOL "Use lz4 for compression" FORCE)
+  else()
+	set(USE_LZ4 FALSE CACHE BOOL "Use lz4 for compression" FORCE)
+  endif()
+endif()
+
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 target_compile_definitions(${LIB} PRIVATE MINIZ_NO_STDIO)
 
@@ -66,6 +83,8 @@ set(TEST_SRCS
 	tests/FileStreamTest.cpp
 	tests/FormatDescriptionTest.cpp
 	tests/FileTest.cpp
+	tests/LZ4StreamTest.cpp
+	tests/LZAVStreamTest.cpp
 	tests/MemoryArchiveTest.cpp
 	tests/MemoryReadStreamTest.cpp
 	tests/StdStreamBufTest.cpp
