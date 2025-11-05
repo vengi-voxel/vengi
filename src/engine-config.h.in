@@ -26,3 +26,4 @@
 #cmakedefine USE_LIBPNG 1
 #cmakedefine USE_VK_RENDERER 1
 #cmakedefine USE_GL_RENDERER 1
+#cmakedefine USE_LZ4 1

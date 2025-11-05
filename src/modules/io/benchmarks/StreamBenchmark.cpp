@@ -40,5 +40,19 @@ BENCHMARK_DEFINE_F(StreamBenchmark, ZipStream)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(StreamBenchmark, LZ4Stream)(benchmark::State &state) {
+	for (auto _ : state) {
+		compress<io::LZ4WriteStream, io::LZ4ReadStream>();
+	}
+}
+
+BENCHMARK_DEFINE_F(StreamBenchmark, LZAVStream)(benchmark::State &state) {
+	for (auto _ : state) {
+		compress<io::LZAVWriteStream, io::LZAVReadStream>();
+	}
+}
+
 BENCHMARK_REGISTER_F(StreamBenchmark, ZipStream);
+BENCHMARK_REGISTER_F(StreamBenchmark, LZ4Stream);
+BENCHMARK_REGISTER_F(StreamBenchmark, LZAVStream);
 BENCHMARK_MAIN();
