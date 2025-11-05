@@ -46,6 +46,7 @@ set(TEST_SRCS
 	tests/SparseVolumeTest.cpp
 	tests/SurfaceExtractorTest.cpp
 	tests/RawVolumeWrapperTest.cpp
+	tests/VolumeCompressionTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
