@@ -542,7 +542,8 @@ extern "C" {
 		#pragma GCC diagnostic ignored "-Wfloat-conversion"
 	#endif
 	// `-Warray-bounds` results in warnings if UBsan is enabled and pre-GCC-14 has no way of detecting it..
-	#if UFBXI_GNUC_VERSION >= ufbx_pack_version(4, 3, 0) && UFBXI_GNUC_VERSION < ufbx_pack_version(14, 0, 0)
+	// The workaround for this uses an assert, but if the user has both UBsan and asserts disabled we need to silence the warning.
+	#if (UFBXI_GNUC_VERSION >= ufbx_pack_version(4, 3, 0) && UFBXI_GNUC_VERSION < ufbx_pack_version(14, 0, 0)) || defined(NDEBUG)
 		#pragma GCC diagnostic ignored "-Warray-bounds"
 	#endif
 #endif
@@ -873,7 +874,7 @@ enum { UFBX_MAXIMUM_ALIGNMENT = sizeof(void*) > 8 ? sizeof(void*) : 8 };
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 21, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 21, 2)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -1081,7 +1082,7 @@ ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEAD
 // -- Utility
 
 #if defined(UFBX_UBSAN)
-	static void ufbxi_assert_zero(size_t offset) { ufbx_assert(offset == 0); }
+	static void ufbxi_assert_zero(size_t offset) { (void)offset; ufbx_assert(offset == 0); }
 	#define ufbxi_add_ptr(ptr, offset) ((ptr) ? (ptr) + (offset) : (ufbxi_assert_zero((size_t)(offset)), (ptr)))
 	#define ufbxi_sub_ptr(ptr, offset) ((ptr) ? (ptr) - (offset) : (ufbxi_assert_zero((size_t)(offset)), (ptr)))
 #else
@@ -2214,6 +2215,11 @@ ufbxi_bit_copy_bytes(void *dst, ufbxi_bit_stream *s, size_t len)
 		s->left -= 8;
 	}
 
+	// Copied fully from buffer
+	if (len == 0) {
+		return 1;
+	}
+
 	// We need to clear the top bits as there may be data
 	// read ahead past `s->left` in some cases
 	s->bits = 0;
@@ -2531,14 +2537,6 @@ static ufbxi_noinline void ufbxi_init_static_huff(ufbxi_trees *trees, const ufbx
 	ufbx_assert(err == 0);
 }
 
-// 0: Success
-// -1: Huffman Overfull
-// -2: Huffman Underfull
-// -3: Code 16 repeat overflow
-// -4: Code 17 repeat overflow
-// -5: Code 18 repeat overflow
-// -6: Bad length code
-// -7: Cancelled
 static ufbxi_noinline ptrdiff_t ufbxi_decode_dynamic_huff_bits(ufbxi_deflate_context *dc, const ufbxi_huff_tree *huff_code_length, uint8_t *code_lengths, uint32_t num_symbols)
 {
 	uint64_t bits = dc->stream.bits;
@@ -2549,10 +2547,11 @@ static ufbxi_noinline ptrdiff_t ufbxi_decode_dynamic_huff_bits(ufbxi_deflate_con
 	uint8_t prev = 0;
 	while (symbol_index < num_symbols) {
 		ufbxi_bit_refill(&bits, &left, &data, &dc->stream);
-		if (dc->stream.cancelled) return -7;
+		if (dc->stream.cancelled) return -28;
 
 		ufbxi_huff_sym sym = ufbxi_huff_decode_bits(huff_code_length, bits, UFBXI_HUFF_CODELEN_FAST_BITS, UFBXI_HUFF_CODELEN_FAST_MASK);
 		ufbxi_regression_assert(sym != UFBXI_HUFF_UNINITIALIZED_SYM);
+		if (sym == UFBXI_HUFF_ERROR_SYM) return -21;
 
 		uint32_t inst = ufbxi_huff_sym_value(sym);
 		uint32_t sym_len = ufbxi_huff_sym_total_bits(sym);
@@ -2569,7 +2568,7 @@ static ufbxi_noinline ptrdiff_t ufbxi_decode_dynamic_huff_bits(ufbxi_deflate_con
 			uint32_t num = 3 + ((uint32_t)bits & 0x3);
 			bits >>= 2;
 			left -= 2;
-			if (symbol_index + num > num_symbols) return -3;
+			if (symbol_index + num > num_symbols) return -18;
 			memset(code_lengths + symbol_index, prev, num);
 			symbol_index += num;
 		} else if (inst == 17) {
@@ -2577,7 +2576,7 @@ static ufbxi_noinline ptrdiff_t ufbxi_decode_dynamic_huff_bits(ufbxi_deflate_con
 			uint32_t num = 3 + ((uint32_t)bits & 0x7);
 			bits >>= 3;
 			left -= 3;
-			if (symbol_index + num > num_symbols) return -4;
+			if (symbol_index + num > num_symbols) return -19;
 			memset(code_lengths + symbol_index, 0, num);
 			symbol_index += num;
 			prev = 0;
@@ -2586,7 +2585,7 @@ static ufbxi_noinline ptrdiff_t ufbxi_decode_dynamic_huff_bits(ufbxi_deflate_con
 			uint32_t num = 11 + ((uint32_t)bits & 0x7f);
 			bits >>= 7;
 			left -= 7;
-			if (symbol_index + num > num_symbols) return -5;
+			if (symbol_index + num > num_symbols) return -20;
 			memset(code_lengths + symbol_index, 0, num);
 			symbol_index += num;
 			prev = 0;
@@ -2651,7 +2650,7 @@ ufbxi_init_dynamic_huff(ufbxi_deflate_context *dc, ufbxi_trees *trees)
 	if (err) return -14 + 1 + err;
 
 	err = ufbxi_decode_dynamic_huff_bits(dc, &huff_code_length, code_lengths, num_lit_lengths + num_dists);
-	if (err) return err == -7 ? -28 : -16 + 1 + err;
+	if (err) return err;
 
 	err = ufbxi_huff_build(&trees->lit_length, code_lengths, num_lit_lengths, ufbxi_deflate_length_lut, 256, dc->fast_bits);
 	if (err) return err == -7 ? -28 : -16 + 1 + err;
@@ -3118,10 +3117,17 @@ static void ufbxi_inflate_init_retain(ufbx_inflate_retain *retain)
 // -13: Bad lit/length code
 // -14: Codelen Huffman Overfull
 // -15: Codelen Huffman Underfull
-// -16 - -21: Litlen Huffman: Overfull / Underfull / Repeat 16/17/18 overflow / Bad length code
-// -22 - -27: Distance Huffman: Overfull / Underfull / Repeat 16/17/18 overflow / Bad length code
+// -16: Litlen Huffman Overfull
+// -17: Litlen Huffman Underfull
+// -18: Repeat 16 overflow
+// -19: Repeat 17 overflow
+// -20: Repeat 18 overflow
+// -21: Bad codelen code
+// -22: Distance Huffman: Overfull
+// -23: Distance Huffman: Underfull
 // -28: Cancelled
 // -29: Invalid ufbx_inflate_input.internal_fast_bits value
+// -30: Bad window size (ZLIB header)
 ufbxi_extern_c ptrdiff_t ufbx_inflate(void *dst, size_t dst_size, const ufbx_inflate_input *input, ufbx_inflate_retain *retain)
 {
 	ufbxi_inflate_retain_imp *ret_imp = (ufbxi_inflate_retain_imp*)retain;
@@ -3157,6 +3163,7 @@ ufbxi_extern_c ptrdiff_t ufbx_inflate(void *dst, size_t dst_size, const ufbx_inf
 		if ((cmf & 0xf) != 0x8) return -1;
 		if ((flg & 0x20) != 0) return -2;
 		if ((cmf << 8 | flg) % 31u != 0) return -3;
+		if ((cmf >> 4) > 7) return -30;
 	}
 
 	for (;;) {
