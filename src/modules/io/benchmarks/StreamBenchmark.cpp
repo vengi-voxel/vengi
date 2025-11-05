@@ -5,10 +5,6 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/DynamicArray.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/LZ4ReadStream.h"
-#include "io/LZ4WriteStream.h"
-#include "io/LZAVReadStream.h"
-#include "io/LZAVWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 
