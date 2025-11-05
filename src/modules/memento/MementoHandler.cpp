@@ -223,7 +223,10 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		const int actualVoxels = v.region().voxels();
 		io::BufferedReadWriteStream outStream((int64_t)actualVoxels * sizeof(voxel::Voxel));
 		io::ZipWriteStream stream(outStream);
-		stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel));
+		if (stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel)) == -1) {
+			Log::error("Failed to compress memento volume data");
+			return MementoData();
+		}
 		stream.flush();
 		const size_t size = (size_t)outStream.size();
 		const voxel::Region actualRegion = v.region();
@@ -232,7 +235,10 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	const int allVoxels = volume->region().voxels();
 	io::BufferedReadWriteStream outStream((int64_t)allVoxels * sizeof(voxel::Voxel));
 	io::ZipWriteStream stream(outStream);
-	stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
+	if (stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel)) == -1) {
+		Log::error("Failed to compress memento volume data");
+		return MementoData();
+	}
 	stream.flush();
 	const size_t size = (size_t)outStream.size();
 	return {outStream.release(), size, volume->region(), volume->region()};
