@@ -80,3 +80,9 @@ gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_deps(tests-${LIB} test-app)
 gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_end(tests-${LIB})
+
+set(BENCHMARK_SRCS
+	benchmarks/StreamBenchmark.cpp
+)
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
