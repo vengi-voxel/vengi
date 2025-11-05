@@ -85,9 +85,13 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 			continue;
 		}
 
-		voxelutil::visitVolume(*node.volume, {mins, maxs}, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			return true;
-		});
+		};
+		const voxel::Region collisionRegion{mins, maxs};
+		if (voxelutil::visitVolume(*node.volume, collisionRegion, func) == 1) {
+			return true;
+		}
 	}
 	return false;
 }
