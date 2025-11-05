@@ -81,7 +81,7 @@ using CollisionNodes = core::DynamicArray<CollisionNode>;
  * https://www.youtube.com/watch?v=3lBYVSplAuo
  */
 class Physics {
-private:
+protected:
 	/**
 	 * @brief Performs a binary search to find the precise collision point along an axis.
 	 *

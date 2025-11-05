@@ -32,6 +32,7 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app video)
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
+	benchmarks/PhysicsBenchmark.cpp
 	benchmarks/SceneGraphBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
