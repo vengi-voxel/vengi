@@ -72,4 +72,19 @@ TEST_F(Base64Test, testBase64ReadStream) {
 	decode("Zm9vYmFy", "foobar");
 }
 
+TEST_F(Base64Test, roundTrip) {
+	core::DynamicArray<uint32_t> data;
+	data.reserve(1024 * 1024 * 3);
+
+	io::BufferedReadWriteStream outStream(data.capacity() * 4);
+	Base64WriteStream stream(outStream);
+	ASSERT_NE(stream.write(data.data(), data.capacity()), -1);
+	ASSERT_TRUE(stream.flush());
+	outStream.seek(0);
+	Base64ReadStream inStream(outStream);
+	core::DynamicArray<uint32_t> decoded;
+	decoded.resize(data.capacity());
+	inStream.read(decoded.data(), decoded.size() * sizeof(uint32_t));
+};
+
 } // namespace io

@@ -23,6 +23,7 @@ private:
 	int64_t _capacity = 0;
 	int64_t _size = 0;
 
+	// TODO: PERF: make this configurable
 	static constexpr int64_t INCREASE = 32;
 	static inline constexpr int64_t align(int64_t val) {
 		const uint64_t len = INCREASE - 1u;

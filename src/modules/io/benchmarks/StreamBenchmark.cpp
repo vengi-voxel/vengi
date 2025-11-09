@@ -5,6 +5,8 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/DynamicArray.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/Base64ReadStream.h"
+#include "io/Base64WriteStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 
@@ -21,13 +23,15 @@ public:
 
 	template<typename WriteStreamType, typename ReadStreamType>
 	void compress() {
-		io::BufferedReadWriteStream outStream(data.capacity());
-		WriteStreamType stream(outStream);
-		stream.write(data.data(), data.capacity());
-		stream.flush();
+		io::BufferedReadWriteStream outStream(data.capacity() * 4);
+		{
+			// some streams needs a flush that is called by the dtor
+			WriteStreamType stream(outStream);
+			stream.write(data.data(), data.capacity());
+		}
 		outStream.seek(0);
 		Log::error("Compressed size: %d bytes", (int)outStream.size());
-		ReadStreamType inStream(outStream, (int)outStream.size());
+		ReadStreamType inStream(outStream);
 		core::DynamicArray<uint32_t> decompressed;
 		decompressed.resize(data.capacity());
 		inStream.read(decompressed.data(), decompressed.size() * sizeof(uint32_t));
@@ -40,5 +44,12 @@ BENCHMARK_DEFINE_F(StreamBenchmark, ZipStream)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(StreamBenchmark, Base64Stream)(benchmark::State &state) {
+	for (auto _ : state) {
+		compress<io::Base64WriteStream, io::Base64ReadStream>();
+	}
+}
+
 BENCHMARK_REGISTER_F(StreamBenchmark, ZipStream);
+BENCHMARK_REGISTER_F(StreamBenchmark, Base64Stream);
 BENCHMARK_MAIN();
