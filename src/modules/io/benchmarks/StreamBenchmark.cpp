@@ -4,9 +4,9 @@
 
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/DynamicArray.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/Base64ReadStream.h"
 #include "io/Base64WriteStream.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 
@@ -68,8 +68,24 @@ BENCHMARK_DEFINE_F(StreamBenchmark, Base64StreamWrite)(benchmark::State &state) 
 	}
 }
 
+BENCHMARK_DEFINE_F(StreamBenchmark, Base64StreamRead)(benchmark::State &state) {
+	io::BufferedReadWriteStream outStream;
+	{
+		io::Base64WriteStream stream(outStream);
+		stream.write(data.data(), data.capacity());
+	}
+	core::DynamicArray<uint32_t> decompressed;
+	decompressed.resize(data.capacity());
+	for (auto _ : state) {
+		outStream.seek(0);
+		io::Base64ReadStream inStream(outStream);
+		inStream.read(decompressed.data(), decompressed.size() * sizeof(uint32_t));
+	}
+}
+
 BENCHMARK_REGISTER_F(StreamBenchmark, ZipStreamRoundTrip);
 BENCHMARK_REGISTER_F(StreamBenchmark, Base64StreamRoundTrip);
 BENCHMARK_REGISTER_F(StreamBenchmark, ZipStreamWrite);
 BENCHMARK_REGISTER_F(StreamBenchmark, Base64StreamWrite);
+BENCHMARK_REGISTER_F(StreamBenchmark, Base64StreamRead);
 BENCHMARK_MAIN();
