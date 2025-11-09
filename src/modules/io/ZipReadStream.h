@@ -8,6 +8,12 @@
 
 namespace io {
 
+enum class CompressionType : uint8_t {
+	Deflate,
+	Gzip,
+	Zlib
+};
+
 /**
  * @see ZipWriteStream
  * @ingroup IO
@@ -15,7 +21,7 @@ namespace io {
 class ZipReadStream : public io::ReadStream {
 private:
 	void *_stream;
-	io::SeekableReadStream &_readStream;
+	io::ReadStream &_readStream;
 	uint8_t _buf[256 * 1024] {};
 	const int _size;
 	int _remaining;
@@ -28,6 +34,7 @@ public:
 	 * @param size The compressed size
 	 */
 	ZipReadStream(io::SeekableReadStream &readStream, int size = -1);
+	ZipReadStream(io::ReadStream &readStream, int size, CompressionType type);
 	virtual ~ZipReadStream();
 
 	static bool isZipStream(io::SeekableReadStream &stream);

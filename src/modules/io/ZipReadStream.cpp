@@ -32,12 +32,43 @@ bool ZipReadStream::isZipStream(io::SeekableReadStream &readStream) {
 	return retVal == 0;
 }
 
+ZipReadStream::ZipReadStream(io::ReadStream &readStream, int size, CompressionType type)
+	: _readStream(readStream), _size(size), _remaining(size) {
+	_stream = (z_stream *)core_malloc(sizeof(z_stream));
+	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
+	((z_stream *)_stream)->zalloc = Z_NULL;
+	((z_stream *)_stream)->zfree = Z_NULL;
+
+	int windowBits = 0;
+	switch (type) {
+	case CompressionType::Deflate:
+	case CompressionType::Gzip:
+		windowBits = -Z_DEFAULT_WINDOW_BITS;
+		readStream.skipDelta(10); // skip gzip header
+		break;
+	case CompressionType::Zlib:
+		windowBits = Z_DEFAULT_WINDOW_BITS;
+		break;
+	default:
+		_err = true;
+		break;
+	}
+	if (inflateInit2(((z_stream *)_stream), windowBits) != Z_OK) {
+		Log::error("Failed to initialize zip stream");
+		_err = true;
+	}
+}
+
 ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	: _readStream(readStream), _size(size), _remaining(size) {
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
 	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
 	((z_stream *)_stream)->zalloc = Z_NULL;
 	((z_stream *)_stream)->zfree = Z_NULL;
+
+	if (_remaining < 0 || readStream.remaining() < _remaining) {
+		_remaining = (int)readStream.remaining();
+	}
 	const int64_t curPos = readStream.pos();
 	uint8_t gzipHeader[2];
 	if (readStream.readUInt8(gzipHeader[0]) == -1) {
@@ -55,6 +86,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		uint32_t isize = 0u;
 		readStream.readUInt32(isize);
 		_uncompressedSize = isize;
+		Log::debug("detected gzip with uncompressed size %d", _uncompressedSize);
 		readStream.seek(curPos, SEEK_SET);
 		// gzip header is 10 bytes long
 		readStream.skip(10);
@@ -94,9 +126,8 @@ int64_t ZipReadStream::remaining() const {
 	if (_size >= 0) {
 		core_assert_msg(_remaining >= 0, "if size is given (%i), remaining should be >= 0 - but is %i", _size,
 						_remaining);
-		return core_min(_remaining, _readStream.remaining());
 	}
-	return _readStream.remaining();
+	return _remaining;
 }
 
 int64_t ZipReadStream::skip(int64_t delta) {
@@ -139,9 +170,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 					_err = true;
 					return -1;
 				}
-				if (_size >= 0) {
-					_remaining -= bytes;
-				}
+				_remaining -= bytes;
 				stream->avail_in = bytes;
 			}
 		}
