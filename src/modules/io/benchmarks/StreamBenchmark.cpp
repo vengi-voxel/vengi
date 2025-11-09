@@ -23,7 +23,7 @@ public:
 
 	template<typename WriteStreamType, typename ReadStreamType>
 	void compress() {
-		io::BufferedReadWriteStream outStream(data.capacity() * 4);
+		io::BufferedReadWriteStream outStream;
 		{
 			// some streams needs a flush that is called by the dtor
 			WriteStreamType stream(outStream);

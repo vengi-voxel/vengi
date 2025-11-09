@@ -20,6 +20,7 @@ int Base64WriteStream::write(const void *buf, size_t size) {
 	uint8_t dest[4];
 	int written = 0;
 	const uint8_t *bytesPtr = (const uint8_t *)buf;
+	_stream.reserve((size + 2) / 3 * 4);
 	for (size_t i = 0; i < size; ++i) {
 		uint8_t val = bytesPtr[i];
 		_buf[_bytes++] = val;
