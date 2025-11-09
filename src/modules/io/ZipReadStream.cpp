@@ -38,6 +38,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
 	((z_stream *)_stream)->zalloc = Z_NULL;
 	((z_stream *)_stream)->zfree = Z_NULL;
+	const int64_t curPos = readStream.pos();
 	uint8_t gzipHeader[2];
 	if (readStream.readUInt8(gzipHeader[0]) == -1) {
 		_err = true;
@@ -52,18 +53,23 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		windowBits = -Z_DEFAULT_WINDOW_BITS;
 		// gzip header is 10 bytes long
 		readStream.skip(8);
+		readStream.seek(-4, SEEK_END);
+		uint32_t isize;
+		readStream.readUInt32(isize);
+		_uncompressedSize = isize;
+		readStream.seek(curPos, SEEK_SET);
 	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED &&						// Compression method is DEFLATE
 			   ((gzipHeader[0] >> 4) >= 7 && (gzipHeader[0] >> 4) <= 15) && // Valid window size
 			   ((gzipHeader[0] << 8 | gzipHeader[1]) % 31 == 0)) {
 		// zlib
 		Log::debug("detected zlib");
 		windowBits = Z_DEFAULT_WINDOW_BITS;
-		readStream.seek(-2, SEEK_CUR);
+		readStream.seek(curPos, SEEK_SET);
 	} else {
 		// raw deflate
 		Log::debug("Detected raw deflate");
 		windowBits = -Z_DEFAULT_WINDOW_BITS;
-		readStream.seek(-2, SEEK_CUR);
+		readStream.seek(curPos, SEEK_SET);
 	}
 	if (inflateInit2(((z_stream *)_stream), windowBits) != Z_OK) {
 		Log::error("Failed to initialize zip stream");
@@ -78,6 +84,10 @@ ZipReadStream::~ZipReadStream() {
 
 bool ZipReadStream::eos() const {
 	return _eos;
+}
+
+int ZipReadStream::uncompressedSize() const {
+	return _uncompressedSize;
 }
 
 int64_t ZipReadStream::remaining() const {

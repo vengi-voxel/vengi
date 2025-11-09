@@ -19,6 +19,7 @@ private:
 	uint8_t _buf[256 * 1024] {};
 	const int _size;
 	int _remaining;
+	int _uncompressedSize = -1;
 	bool _eos = false;
 	bool _err = false;
 
@@ -30,6 +31,10 @@ public:
 	virtual ~ZipReadStream();
 
 	static bool isZipStream(io::SeekableReadStream &stream);
+	/**
+	 * @return The uncompressed size of the zip stream or -1 if not known.
+	 */
+	int uncompressedSize() const;
 
 	/**
 	 * @brief Read an arbitrary sized amount of bytes from the input stream
