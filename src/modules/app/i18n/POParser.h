@@ -47,7 +47,7 @@ private:
 	core::String _currentLine;
 
 	IConv _conv;
-	io::BufferedReadWriteStream _out{256};
+	io::BufferedReadWriteStream _out{512};
 
 	POParser(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy = true);
 	~POParser();
