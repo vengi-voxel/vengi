@@ -297,7 +297,7 @@ bool SpriteStackFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, con
 	const int height = region.getHeightInVoxels();
 	const int slices = region.getDepthInVoxels();
 
-	io::BufferedReadWriteStream zipFileStream;
+	io::BufferedReadWriteStream zipFileStream(64000);
 	{
 		io::ZipArchive zipArchive;
 		if (!zipArchive.init(&zipFileStream)) {

@@ -236,8 +236,8 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		}
 		int parent = 0;
 		node.setPalette(palette);
-		io::BufferedReadWriteStream base64Stream;
 		const core::String modelBase64 = e.get<std::string>().c_str();
+		io::BufferedReadWriteStream base64Stream(modelBase64.size());
 		if (!io::Base64::decode(base64Stream, modelBase64)) {
 			Log::error("Failed to decode ModelSave array entry");
 			return false;

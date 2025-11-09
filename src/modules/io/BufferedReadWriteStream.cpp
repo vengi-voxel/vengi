@@ -21,6 +21,9 @@ BufferedReadWriteStream::BufferedReadWriteStream(io::ReadStream &stream) {
 	uint8_t buffer[1024];
 	int64_t size = 0;
 	while ((size = stream.read(buffer, sizeof(buffer))) > 0) {
+		if (capacity() < size + this->size()) {
+			resizeBuffer(size + this->size() + 10000);
+		}
 		write(buffer, size);
 	}
 	seek(0);

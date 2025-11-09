@@ -480,7 +480,7 @@ bool Image::writePNG(io::SeekableWriteStream &stream, const uint8_t *buffer, int
 }
 
 core::String Image::pngBase64() const {
-	io::BufferedReadWriteStream s;
+	io::BufferedReadWriteStream s(_width * _height * _colorComponents);
 	if (!writePNG(s, _colors, _width, _height, _colorComponents)) {
 		return core::String::Empty;
 	}

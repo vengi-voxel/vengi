@@ -148,7 +148,7 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 		}
 		io::MemoryReadStream z85InStream(z85.data(), z85.size());
 
-		io::BufferedReadWriteStream z85Stream;
+		io::BufferedReadWriteStream z85Stream(z85.size());
 		if (!io::Z85::decode(z85Stream, z85InStream)) {
 			Log::error("Failed to decode z85");
 			return false;

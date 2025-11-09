@@ -55,7 +55,7 @@ static void addNodeToHashStream_r(const scenegraph::SceneGraph &sceneGraph, cons
 }
 
 static void calculateHash(const scenegraph::SceneGraph &sceneGraph, uint64_t hash[2]) {
-	io::BufferedReadWriteStream stream;
+	io::BufferedReadWriteStream stream(4096);
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 

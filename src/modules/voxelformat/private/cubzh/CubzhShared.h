@@ -132,7 +132,7 @@ class WriteSubChunkStream : public io::SeekableWriteStream {
 private:
 	uint32_t _chunkId;
 	io::SeekableWriteStream &_stream;
-	io::BufferedReadWriteStream _buffer;
+	io::BufferedReadWriteStream _buffer{4096};
 
 public:
 	WriteSubChunkStream(uint32_t chunkId, io::SeekableWriteStream &stream) : _chunkId(chunkId), _stream(stream) {

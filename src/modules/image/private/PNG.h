@@ -119,6 +119,7 @@ bool write(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, in
 	}
 
 	bool hasError = false;
+	stream.reserve(width * height * components);
 	png_set_error_fn(png, &hasError, pngErrorHandler, nullptr);
 	png_set_write_fn(png, &stream, pngWriteFunc, nullptr);
 

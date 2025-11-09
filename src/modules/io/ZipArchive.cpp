@@ -220,7 +220,7 @@ SeekableReadStream *ZipArchive::readStream(const core::String &filePath) {
 		Log::error("No zip archive loaded");
 		return nullptr;
 	}
-	BufferedReadWriteStream *stream = new BufferedReadWriteStream();
+	BufferedReadWriteStream *stream = new BufferedReadWriteStream(64000);
 	if (!mz_zip_reader_extract_file_to_callback((mz_zip_archive *)_zip, filePath.c_str(), ziparchive_write_callback,
 												stream, 0)) {
 		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive *)_zip);
