@@ -83,9 +83,21 @@ BENCHMARK_DEFINE_F(StreamBenchmark, Base64StreamRead)(benchmark::State &state) {
 	}
 }
 
+BENCHMARK_DEFINE_F(StreamBenchmark, BufferedStream)(benchmark::State &state) {
+	for (auto _ : state) {
+		io::BufferedReadWriteStream stream;
+		stream.reserve(1024);
+		for (int i = 0; i < 1024; ++i) {
+			stream.writeUInt8(1);
+		}
+		benchmark::DoNotOptimize(stream.pos());
+	}
+}
+
 BENCHMARK_REGISTER_F(StreamBenchmark, ZipStreamRoundTrip);
 BENCHMARK_REGISTER_F(StreamBenchmark, Base64StreamRoundTrip);
 BENCHMARK_REGISTER_F(StreamBenchmark, ZipStreamWrite);
 BENCHMARK_REGISTER_F(StreamBenchmark, Base64StreamWrite);
 BENCHMARK_REGISTER_F(StreamBenchmark, Base64StreamRead);
+BENCHMARK_REGISTER_F(StreamBenchmark, BufferedStream);
 BENCHMARK_MAIN();
