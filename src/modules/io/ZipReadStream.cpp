@@ -51,13 +51,13 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
 		// gzip
 		windowBits = -Z_DEFAULT_WINDOW_BITS;
-		// gzip header is 10 bytes long
-		readStream.skip(8);
 		readStream.seek(-4, SEEK_END);
-		uint32_t isize;
+		uint32_t isize = 0u;
 		readStream.readUInt32(isize);
 		_uncompressedSize = isize;
 		readStream.seek(curPos, SEEK_SET);
+		// gzip header is 10 bytes long
+		readStream.skip(10);
 	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED &&						// Compression method is DEFLATE
 			   ((gzipHeader[0] >> 4) >= 7 && (gzipHeader[0] >> 4) <= 15) && // Valid window size
 			   ((gzipHeader[0] << 8 | gzipHeader[1]) % 31 == 0)) {
