@@ -10,6 +10,7 @@
 #include "io/Archive.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -236,9 +237,10 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		}
 		int parent = 0;
 		node.setPalette(palette);
-		const core::String modelBase64 = e.get<std::string>().c_str();
+		const std::string &modelBase64 = e.get<std::string>();
 		io::BufferedReadWriteStream base64Stream(modelBase64.size());
-		if (!io::Base64::decode(base64Stream, modelBase64)) {
+		io::MemoryReadStream inputStream(modelBase64.c_str(), modelBase64.size());
+		if (!io::Base64::decode(base64Stream, inputStream)) {
 			Log::error("Failed to decode ModelSave array entry");
 			return false;
 		}
