@@ -716,7 +716,7 @@ static void clua_http_headers(lua_State *&s, int n, http::Request &request) {
 }
 
 static int clua_http_requestexec(lua_State *s, http::Request &request) {
-	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream();
+	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream(512);
 	int status = 0;
 	http::Headers outheaders;
 	// TODO: this should be threaded and we should just return a future

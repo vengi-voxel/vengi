@@ -63,7 +63,7 @@ bool isNewVersionAvailable(int timeout) {
 		Log::error("Could not check for new version: HTTP requests are not supported");
 		return false;
 	}
-	io::BufferedReadWriteStream stream;
+	io::BufferedReadWriteStream stream(512);
 
 	http::Request request(releaseUrl(), http::RequestType::GET);
 	if (timeout > 0) {
