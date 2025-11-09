@@ -4,14 +4,20 @@
 
 #include "Curl.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
+#include "http/RequestContext.h"
+#include "io/Stream.h"
 
 #include <curl/curl.h>
 
 namespace http {
 
+struct HeaderData {
+	Headers *outheaders;
+	io::WriteStream *stream;
+};
+
 static size_t WriteHeaderData(char *b, size_t size, size_t nitems, void *userdata) {
-	http::Headers *headers = (http::Headers *)userdata;
+	HeaderData *headers = (HeaderData *)userdata;
 	core::String str;
 
 	size_t total = size * nitems;
@@ -28,7 +34,12 @@ static size_t WriteHeaderData(char *b, size_t size, size_t nitems, void *userdat
 		const core::String &key = str.substr(0, pos);
 		const core::String &value = str.substr(pos + 2);
 		Log::debug("Header: %s: %s", key.c_str(), value.c_str());
-		headers->put(key, value);
+		if (headers->outheaders) {
+			headers->outheaders->put(key, value);
+		}
+		if (key == "Content-Length") {
+			headers->stream->reserve(value.toInt());
+		}
 	}
 	return total;
 }
@@ -60,10 +71,9 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
 	curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
-	if (outheaders) {
-		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteHeaderData);
-		curl_easy_setopt(curl, CURLOPT_HEADERDATA, outheaders);
-	}
+	HeaderData headerdata = {outheaders, &stream};
+	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteHeaderData);
+	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, ctx._connectTimeoutSecond);
