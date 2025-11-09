@@ -204,6 +204,15 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	// Read and save the response data
 	DWORD bytesRead;
 	BYTE buffer[4096];
+	// Reserve buffer space up-front if Content-Length header is available
+	DWORD dwContentLength = 0;
+	DWORD dwContentLengthSize = sizeof(dwContentLength);
+	if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER,
+							WINHTTP_HEADER_NAME_BY_INDEX, &dwContentLength, &dwContentLengthSize, WINHTTP_NO_HEADER_INDEX)) {
+		if (dwContentLength > 0) {
+			stream.reserve((int)dwContentLength);
+		}
+	}
 	while (WinHttpReadData(hRequest, buffer, sizeof(buffer), &bytesRead)) {
 		// Write the 'bytesRead' bytes from the buffer
 		if (bytesRead == 0) {
