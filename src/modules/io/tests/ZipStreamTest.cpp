@@ -106,7 +106,7 @@ TEST_F(ZipStreamTest, testZipStreamNoSize) {
 	const int n = 64;
 	const int size = n * 4 * sizeof(uint32_t);
 	const int expectedZippedSize = 134;
-	BufferedReadWriteStream stream(size);
+	BufferedReadWriteStream stream(size * 2);
 	{
 		ZipWriteStream w(stream);
 		for (int i = 0; i < n; ++i) {

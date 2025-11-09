@@ -104,6 +104,7 @@ bool WriteStream::writeUInt8(uint8_t val) {
 }
 
 bool WriteStream::writeUUID(const core::UUID &uuid) {
+	reserve(sizeof(uint64_t) * 2);
 	if (!writeUInt64(uuid.data0())) {
 		return false;
 	}
@@ -135,6 +136,7 @@ bool WriteStream::writeUTF16BE(const core::String &str) {
 	core::Buffer<uint16_t> utf16str;
 	utf16str.resize(str.size());
 	const int utf16Len = core::utf8::toUtf16(str.c_str(), str.size(), utf16str.data(), utf16str.size());
+	reserve(utf16Len * sizeof(uint16_t));
 	for (int i = 0; i < utf16Len; ++i) {
 		if (!writeUInt16BE(utf16str[i])) {
 			return false;
@@ -145,6 +147,7 @@ bool WriteStream::writeUTF16BE(const core::String &str) {
 
 bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
 	const uint16_t length = (uint16_t)str.size();
+	reserve(sizeof(uint16_t) + length);
 	if (!writeUInt16(length)) {
 		return false;
 	}
@@ -153,6 +156,7 @@ bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
 
 bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
 	const uint16_t length = (uint16_t)str.size();
+	reserve(sizeof(uint16_t) + length);
 	if (!writeUInt16BE(length)) {
 		return false;
 	}
@@ -161,6 +165,7 @@ bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
 
 bool WriteStream::writePascalStringUInt8(const core::String &str) {
 	const uint8_t length = (uint8_t)str.size();
+	reserve(sizeof(uint8_t) + length);
 	if (!writeUInt8(length)) {
 		return false;
 	}
@@ -170,6 +175,7 @@ bool WriteStream::writePascalStringUInt8(const core::String &str) {
 
 bool WriteStream::writePascalStringUInt32LE(const core::String &str) {
 	uint32_t length = (uint32_t)str.size();
+	reserve(sizeof(uint32_t) + length);
 	if (!writeUInt32(length)) {
 		return false;
 	}
@@ -178,6 +184,7 @@ bool WriteStream::writePascalStringUInt32LE(const core::String &str) {
 
 bool WriteStream::writePascalStringUInt32BE(const core::String &str) {
 	uint32_t length = str.size();
+	reserve(sizeof(uint32_t) + length);
 	if (!writeUInt32BE(length)) {
 		return false;
 	}

@@ -38,6 +38,7 @@ static CORE_FORCE_INLINE bool decode0(uint8_t src[4], io::WriteStream &out, int 
 	dest[1] = ((src[1] & 0xf) << 4) + ((src[2] & 0x3c) >> 2);
 	dest[2] = ((src[2] & 0x3) << 6) + src[3];
 
+	out.reserve(bytes);
 	for (int i = 0; i < bytes; ++i) {
 		if (!out.writeUInt8(dest[i])) {
 			return false;

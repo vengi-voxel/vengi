@@ -29,7 +29,7 @@ protected:
 	}
 
 	void encode(const core::String &input, const core::String &expectedBase64Output, bool flush = true) {
-		io::BufferedReadWriteStream stream;
+		io::BufferedReadWriteStream stream(expectedBase64Output.size());
 		io::Base64WriteStream base64Stream(stream);
 		base64Stream.writeString(input, false);
 		if (flush) {
@@ -45,7 +45,7 @@ protected:
 
 TEST_F(Base64Test, testBase64Decode) {
 	const core::String input = "Zm9vYmFy";
-	io::BufferedReadWriteStream stream;
+	io::BufferedReadWriteStream stream(128);
 	EXPECT_TRUE(io::Base64::decode(stream, input));
 	EXPECT_EQ(6u, stream.size());
 

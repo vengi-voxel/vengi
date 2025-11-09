@@ -39,7 +39,7 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 }
 
 TEST_F(ZipArchiveTest, testZipArchiveWrite) {
-	BufferedReadWriteStream archiveStream;
+	BufferedReadWriteStream archiveStream(4096);
 	{
 		ZipArchive archive;
 		ASSERT_TRUE(archive.init(&archiveStream));
@@ -104,7 +104,7 @@ TEST_F(ZipArchiveTest, testZipArchiveWrite) {
 }
 
 TEST_F(ZipArchiveTest, testZipArchiveWriteBinary) {
-	BufferedReadWriteStream archiveStream;
+	BufferedReadWriteStream archiveStream(4096);
 	{
 		ZipArchive archive;
 		ASSERT_TRUE(archive.init(&archiveStream));
@@ -144,7 +144,7 @@ TEST_F(ZipArchiveTest, testZipArchiveWriteBinary) {
 
 TEST_F(ZipArchiveTest, testZipArchiveWriteEmpty) {
 	// Test writing an empty ZIP
-	BufferedReadWriteStream archiveStream;
+	BufferedReadWriteStream archiveStream(4096);
 	ZipArchive archive;
 	ASSERT_TRUE(archive.init(&archiveStream));
 	archive.shutdown();

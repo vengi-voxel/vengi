@@ -66,6 +66,10 @@ BufferedReadWriteStream& BufferedReadWriteStream::operator=(BufferedReadWriteStr
 	return *this;
 }
 
+void BufferedReadWriteStream::reserve(int bytes) {
+	resizeBuffer(_size + bytes);
+}
+
 void BufferedReadWriteStream::reset() {
 	_size = 0u;
 	_pos = 0u;

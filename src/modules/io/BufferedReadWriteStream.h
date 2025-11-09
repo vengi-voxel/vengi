@@ -43,6 +43,7 @@ public:
 	BufferedReadWriteStream(const BufferedReadWriteStream&) = delete;
 	BufferedReadWriteStream& operator=(const BufferedReadWriteStream&) = delete;
 
+	void reserve(int bytes) override;
 	void reset();
 
 	// get the raw data pointer for the buffer

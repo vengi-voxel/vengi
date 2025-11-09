@@ -11,6 +11,7 @@ namespace io {
 
 TEST(BufferedWriteStreamTest, testWriteReadUInt8) {
 	BufferedReadWriteStream child;
+	// here we are testing the flush and realloc - so make this buffer small enough
 	BufferedWriteStream stream(child, 32);
 
 	uint8_t writeVal = UCHAR_MAX;

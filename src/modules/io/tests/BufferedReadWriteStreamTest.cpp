@@ -271,7 +271,7 @@ TEST(BufferedReadWriteStreamTest, testFormatStringTerminated) {
 }
 
 TEST(BufferedReadWriteStreamTest, testSkipDelta) {
-	BufferedReadWriteStream stream;
+	BufferedReadWriteStream stream(100 * sizeof(uint32_t));
 	for (int i = 0; i < 100; ++i) {
 		stream.writeUInt32(i);
 	}

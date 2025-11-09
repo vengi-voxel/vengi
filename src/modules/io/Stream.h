@@ -252,6 +252,8 @@ public:
 	virtual int write(const void *buf, size_t size) = 0;
 	virtual void close() {}
 
+	// allow to reserve space in the stream if supported
+	virtual void reserve(int bytes)	{}
 	virtual bool flush() {
 		return true;
 	}
