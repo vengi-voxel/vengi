@@ -26,7 +26,6 @@ voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerP
 }
 
 voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion) {
-	const Selections &selections = selectionMgr->selections();
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
@@ -37,30 +36,11 @@ voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &sel
 		return {};
 	}
 
-	voxel::RawVolume *v = new voxel::RawVolume(voxelData.volume, selections);
-	for (const Selection &selection : selections) {
-		const glm::ivec3 &mins = selection.getLowerCorner();
-		const glm::ivec3 &maxs = selection.getUpperCorner();
-		static constexpr voxel::Voxel AIR;
-		voxel::RawVolume::Sampler sampler(voxelData.volume);
-		sampler.setPosition(mins);
-		for (int32_t z = mins.z; z <= maxs.z; ++z) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int32_t y = mins.y; y <= maxs.y; ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int32_t x = mins.x; x <= maxs.x; ++x) {
-					sampler3.setVoxel(AIR);
-					sampler3.movePositiveX();
-				}
-				sampler2.movePositiveY();
-			}
-			sampler.movePositiveZ();
-		}
-		if (modifiedRegion.isValid()) {
-			modifiedRegion.accumulate(selection);
-		} else {
-			modifiedRegion = selection;
-		}
+	voxel::RawVolume *v = selectionMgr->cut(*voxelData.volume);
+	if (modifiedRegion.isValid()) {
+		modifiedRegion.accumulate(v->region());
+	} else {
+		modifiedRegion = v->region();
 	}
 	return {v, voxelData.palette, true};
 }
