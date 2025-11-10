@@ -25,13 +25,14 @@ voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerP
 	return voxel::VoxelData(v, voxelData.palette, true);
 }
 
-voxel::VoxelData cut(voxel::VoxelData &voxelData, const Selections &selections, voxel::Region &modifiedRegion) {
+voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion) {
+	const Selections &selections = selectionMgr->selections();
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
 	}
 
-	if (selections.empty()) {
+	if (!selectionMgr->hasSelection()) {
 		Log::debug("Cut failed: no selection active");
 		return {};
 	}

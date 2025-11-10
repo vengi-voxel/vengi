@@ -1141,8 +1141,7 @@ bool SceneManager::cut() {
 	}
 	voxel::Region modifiedRegion;
 	voxel::VoxelData voxelData(node.volume(), node.palette(), false);
-	const Selections& selections = _selectionManager->selections();
-	_copy = voxedit::tool::cut(voxelData, selections, modifiedRegion);
+	_copy = voxedit::tool::cut(voxelData, _selectionManager, modifiedRegion);
 	if (!_copy) {
 		Log::debug("Failed to cut");
 		return false;
