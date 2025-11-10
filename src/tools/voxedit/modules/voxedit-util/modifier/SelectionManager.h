@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Selection.h"
+#include "core/DirtyState.h"
 #include "core/SharedPtr.h"
 
 namespace voxel {
@@ -13,7 +14,7 @@ class RawVolume;
 
 namespace voxedit {
 
-class SelectionManager {
+class SelectionManager : public core::DirtyState {
 private:
 	Selections _selections;
 	// when moving selected voxels, don't do it in a region larger than this
