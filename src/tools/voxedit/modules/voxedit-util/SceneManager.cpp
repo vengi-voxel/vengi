@@ -1086,8 +1086,7 @@ bool SceneManager::copy() {
 		return false;
 	}
 	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
-	const Selections& selections = _selectionManager->selections();
-	_copy = voxedit::tool::copy(voxelData, selections);
+	_copy = voxedit::tool::copy(voxelData, _selectionManager);
 	return _copy;
 }
 

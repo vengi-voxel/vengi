@@ -4,24 +4,24 @@
 
 #include "Clipboard.h"
 #include "core/Log.h"
-#include "voxedit-util/modifier/Selection.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxelutil/VolumeMerger.h"
 #include <glm/common.hpp>
 
 namespace voxedit {
 namespace tool {
 
-voxel::VoxelData copy(const voxel::VoxelData &voxelData, const Selections &selections) {
+voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr) {
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
 	}
-	if (selections.empty()) {
+	if (!selectionMgr->hasSelection()) {
 		Log::debug("Copy failed: no selection active");
 		return {};
 	}
 
-	voxel::RawVolume *v = new voxel::RawVolume(voxelData.volume, selections);
+	voxel::RawVolume *v = new voxel::RawVolume(voxelData.volume, selectionMgr->region());
 	return voxel::VoxelData(v, voxelData.palette, true);
 }
 
