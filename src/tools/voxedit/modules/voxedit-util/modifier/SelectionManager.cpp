@@ -83,6 +83,10 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 	return true;
 }
 
+bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &pos) {
+	return false;
+}
+
 bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &pos) {
 	return select(volume, pos, pos);
 }
