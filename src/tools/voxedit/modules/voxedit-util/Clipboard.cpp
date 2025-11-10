@@ -16,12 +16,11 @@ voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerP
 		Log::debug("Copy failed: no voxel data");
 		return {};
 	}
-	if (!selectionMgr->hasSelection()) {
+	voxel::RawVolume *v = selectionMgr->copy(*voxelData.volume);
+	if (v == nullptr) {
 		Log::debug("Copy failed: no selection active");
 		return {};
 	}
-
-	voxel::RawVolume *v = selectionMgr->copy(*voxelData.volume);
 	return voxel::VoxelData(v, voxelData.palette, true);
 }
 
@@ -31,12 +30,11 @@ voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &sel
 		return {};
 	}
 
-	if (!selectionMgr->hasSelection()) {
+	voxel::RawVolume *v = selectionMgr->cut(*voxelData.volume);
+	if (!v) {
 		Log::debug("Cut failed: no selection active");
 		return {};
 	}
-
-	voxel::RawVolume *v = selectionMgr->cut(*voxelData.volume);
 	if (modifiedRegion.isValid()) {
 		modifiedRegion.accumulate(v->region());
 	} else {

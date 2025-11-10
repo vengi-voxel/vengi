@@ -39,7 +39,7 @@ void SelectionManager::reset() {
 	markDirty();
 }
 
-const voxel::Region& SelectionManager::region() {
+const voxel::Region &SelectionManager::region() {
 	if (!dirty()) {
 		return _cachedRegion;
 	}
@@ -107,6 +107,9 @@ bool SelectionManager::isSelected(const glm::ivec3 &pos) const {
 }
 
 voxel::RawVolume *SelectionManager::cut(voxel::RawVolume &volume) {
+	if (!hasSelection()) {
+		return nullptr;
+	}
 	voxel::RawVolume *v = new voxel::RawVolume(volume, _selections);
 	for (const Selection &selection : _selections) {
 		const glm::ivec3 &mins = selection.getLowerCorner();
@@ -131,6 +134,9 @@ voxel::RawVolume *SelectionManager::cut(voxel::RawVolume &volume) {
 }
 
 voxel::RawVolume *SelectionManager::copy(voxel::RawVolume &volume) {
+	if (!hasSelection()) {
+		return nullptr;
+	}
 	voxel::RawVolume *v = new voxel::RawVolume(volume, _selections);
 	return v;
 }
