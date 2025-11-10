@@ -45,6 +45,7 @@ public:
 	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &pos);
 	bool isSelected(const glm::ivec3 &pos) const;
 	voxel::RawVolume *cut(voxel::RawVolume &volume);
+	voxel::RawVolume *copy(voxel::RawVolume &volume);
 
 	void reset();
 };

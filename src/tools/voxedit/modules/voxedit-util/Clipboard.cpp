@@ -21,7 +21,7 @@ voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerP
 		return {};
 	}
 
-	voxel::RawVolume *v = new voxel::RawVolume(voxelData.volume, selectionMgr->region());
+	voxel::RawVolume *v = selectionMgr->copy(*voxelData.volume);
 	return voxel::VoxelData(v, voxelData.palette, true);
 }
 

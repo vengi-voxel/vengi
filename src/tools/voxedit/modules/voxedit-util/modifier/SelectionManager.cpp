@@ -130,4 +130,9 @@ voxel::RawVolume *SelectionManager::cut(voxel::RawVolume &volume) {
 	return v;
 }
 
+voxel::RawVolume *SelectionManager::copy(voxel::RawVolume &volume) {
+	voxel::RawVolume *v = new voxel::RawVolume(volume, _selections);
+	return v;
+}
+
 } // namespace voxedit
