@@ -133,7 +133,7 @@ voxel::RawVolume *SelectionManager::cut(voxel::RawVolume &volume) {
 	return v;
 }
 
-voxel::RawVolume *SelectionManager::copy(voxel::RawVolume &volume) {
+voxel::RawVolume *SelectionManager::copy(const voxel::RawVolume &volume) {
 	if (!hasSelection()) {
 		return nullptr;
 	}

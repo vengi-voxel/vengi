@@ -25,13 +25,6 @@ public:
 	// TODO: SELECTION: reduce access to this as much as possible
 	const Selections &selections() const;
 
-	template <typename F>
-	void visitSelections(F &&f) const {
-		for (const auto &selection : _selections) {
-			f(selection);
-		}
-	}
-
 	void setMaxRegionSize(const voxel::Region &maxRegion);
 	const voxel::Region& region();
 	bool hasSelection() const;
@@ -45,7 +38,7 @@ public:
 	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &pos);
 	bool isSelected(const glm::ivec3 &pos) const;
 	voxel::RawVolume *cut(voxel::RawVolume &volume);
-	voxel::RawVolume *copy(voxel::RawVolume &volume);
+	voxel::RawVolume *copy(const voxel::RawVolume &volume);
 
 	void reset();
 };

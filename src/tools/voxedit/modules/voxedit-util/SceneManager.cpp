@@ -1061,12 +1061,11 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 
 	const voxel::RawVolume *volume = _sceneGraph.resolveVolume(*node);
 	scenegraph::SceneGraph newSceneGraph;
-	_selectionManager->visitSelections([&] (const Selection &selection) {
-		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-		scenegraph::copyNode(*node, newNode, false);
-		newNode.setVolume(new voxel::RawVolume(volume, selection), true);
-		newSceneGraph.emplace(core::move(newNode));
-	});
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	scenegraph::copyNode(*node, newNode, false);
+	voxel::RawVolume *v = _selectionManager->copy(*volume);
+	newNode.setVolume(v, true);
+	newSceneGraph.emplace(core::move(newNode));
 	if (!voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
 		Log::warn("Failed to save node %i to %s", nodeId, file.name.c_str());
 		return false;
