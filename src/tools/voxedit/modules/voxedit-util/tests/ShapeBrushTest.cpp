@@ -41,7 +41,8 @@ protected:
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
-		ModifierVolumeWrapper wrapper(node, ModifierType::Place, {});
+		SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+		ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
 		brush.preExecute(brushContext, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, brushContext);
 		brush.postExecute(brushContext);

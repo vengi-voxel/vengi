@@ -350,7 +350,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 							ModifierType modifierType, const voxel::Voxel &voxel,
 							const ModifiedRegionCallback &callback) {
 	if (Brush *brush = currentBrush()) {
-		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager->selections());
+		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager);
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 		if (brush->brushClamping()) {

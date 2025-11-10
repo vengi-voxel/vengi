@@ -39,7 +39,7 @@ void SelectionManager::reset() {
 	markDirty();
 }
 
-voxel::Region SelectionManager::region() {
+const voxel::Region& SelectionManager::region() {
 	if (!dirty()) {
 		return _cachedRegion;
 	}
@@ -52,7 +52,7 @@ voxel::Region SelectionManager::region() {
 	}
 	_cachedRegion = r;
 	markClean();
-	return r;
+	return _cachedRegion;
 }
 
 bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
@@ -89,6 +89,21 @@ bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &pos)
 
 bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &pos) {
 	return select(volume, pos, pos);
+}
+
+bool SelectionManager::isSelected(const glm::ivec3 &pos) const {
+	if (!dirty()) {
+		if (!_cachedRegion.containsPoint(pos)) {
+			return false;
+		}
+	}
+
+	for (const Selection &sel : _selections) {
+		if (sel.containsPoint(pos)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 } // namespace voxedit

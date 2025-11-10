@@ -30,7 +30,8 @@ TEST_F(StampBrushTest, testExecute) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
-	ModifierVolumeWrapper wrapper(node, brush.modifierType());
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(node, brush.modifierType(), selectionMgr);
 	palette::Palette palette;
 	palette.nippon();
 

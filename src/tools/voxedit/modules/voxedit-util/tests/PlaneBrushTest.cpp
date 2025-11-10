@@ -66,8 +66,9 @@ TEST_F(PlaneBrushTest, testExtrude) {
 	}
 
 	const int maxZ = 3;
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
 	for (int z = 1; z <= maxZ; ++z) {
-		ModifierVolumeWrapper wrapper(_node, _brush.modifierType());
+		ModifierVolumeWrapper wrapper(_node, _brush.modifierType(), selectionMgr);
 		prepare(voxel::FaceNames::PositiveZ, glm::ivec3(1, 1, z), glm::ivec3(1, 1, z));
 		EXPECT_FALSE(voxel::isBlocked(_volume.voxel(_brushContext.cursorPosition).getMaterial())) << "for z: " << z;
 		EXPECT_TRUE(execute(wrapper)) << "for z: " << z;
@@ -84,7 +85,8 @@ TEST_F(PlaneBrushTest, testExtrudeThickness) {
 		}
 	}
 
-	ModifierVolumeWrapper wrapper(_node, _brush.modifierType());
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(_node, _brush.modifierType(), selectionMgr);
 	prepare(voxel::FaceNames::PositiveY, glm::ivec3(1, 1, 1), glm::ivec3(3, 2, 3));
 	EXPECT_FALSE(voxel::isBlocked(_volume.voxel(_brushContext.cursorPosition).getMaterial()));
 	EXPECT_TRUE(execute(wrapper));

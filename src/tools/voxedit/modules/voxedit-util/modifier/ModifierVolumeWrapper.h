@@ -7,6 +7,7 @@
 #include "ModifierType.h"
 #include "Selection.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {
@@ -21,7 +22,7 @@ namespace voxedit {
 class ModifierVolumeWrapper : public voxel::RawVolumeWrapper {
 private:
 	using Super = voxel::RawVolumeWrapper;
-	const Selections _selections;
+	SelectionManagerPtr _selectionMgr;
 	const ModifierType _modifierType;
 	scenegraph::SceneGraphNode &_node;
 
@@ -29,16 +30,12 @@ private:
 	bool _override;
 	bool _paint;
 
+	// if we have a selection, we only handle voxels inside the selection
 	bool skip(const glm::aligned_ivec4 &pos) const {
-		if (_selections.empty()) {
+		if (!_selectionMgr->hasSelection()) {
 			return false;
 		}
-		for (const Selection &sel : _selections) {
-			if (sel.containsPoint(pos)) {
-				return false;
-			}
-		}
-		return true;
+		return !_selectionMgr->isSelected(pos);
 	}
 
 public:
@@ -82,8 +79,8 @@ public:
 		}
 	};
 
-	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType, const Selections &selections = {})
-		: Super(node.volume()), _selections(selections), _modifierType(modifierType), _node(node) {
+	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType, const SelectionManagerPtr &selectionMgr)
+		: Super(node.volume()), _selectionMgr(selectionMgr), _modifierType(modifierType), _node(node) {
 		_erase = _modifierType == ModifierType::Erase;
 		_override = _modifierType == ModifierType::Override;
 		_paint = _modifierType == ModifierType::Paint;

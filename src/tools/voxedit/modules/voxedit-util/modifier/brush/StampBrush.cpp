@@ -16,6 +16,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
@@ -55,8 +56,8 @@ void StampBrush::construct() {
 		if (modifier.selectionMgr()->hasSelection()) {
 			if (const scenegraph::SceneGraphNode *node =
 					_sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
-				const Selections &selections = modifier.selectionMgr()->selections();
-				const voxel::RawVolume stampVolume(node->volume(), selections);
+				const SelectionManagerPtr &selectionMgr = modifier.selectionMgr();
+				voxel::RawVolume stampVolume(node->volume(), selectionMgr->region());
 				setVolume(stampVolume, node->palette());
 				// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
 				// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area

@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -31,10 +32,11 @@ protected:
 		ASSERT_TRUE(brush.init()) << "failed to initialize brush";
 		voxel::RawVolume volume(voxel::Region(0, 3));
 
+		SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
 		scenegraph::SceneGraph sceneGraph;
-		ModifierVolumeWrapper wrapper(node, param.modifier);
+		ModifierVolumeWrapper wrapper(node, param.modifier, selectionMgr);
 		BrushContext brushContext;
 		brushContext.referencePos = volume.region().getCenter();
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);

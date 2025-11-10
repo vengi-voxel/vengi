@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -17,7 +18,8 @@ TEST_F(ModifierVolumeWrapperTest, testPlace) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
-	ModifierVolumeWrapper wrapper(node, ModifierType::Place);
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	ASSERT_TRUE(wrapper.dirtyRegion().isValid());
@@ -29,9 +31,9 @@ TEST_F(ModifierVolumeWrapperTest, testPlaceSelection) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
-	Selections selections;
-	selections.push_back(voxel::Region(1, 1));
-	ModifierVolumeWrapper wrapper(node, ModifierType::Place, selections);
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	selectionMgr->select(volume, {1, 1, 1}, {1, 1, 1});
+	ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_FALSE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	ASSERT_TRUE(wrapper.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
@@ -46,7 +48,8 @@ TEST_F(ModifierVolumeWrapperTest, testErase) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
-	ModifierVolumeWrapper wrapper(node, ModifierType::Erase);
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(node, ModifierType::Erase, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	ASSERT_TRUE(wrapper.dirtyRegion().isValid());
@@ -59,7 +62,8 @@ TEST_F(ModifierVolumeWrapperTest, testPaint) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
-	ModifierVolumeWrapper wrapper(node, ModifierType::Paint);
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(node, ModifierType::Paint, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 	ASSERT_FALSE(wrapper.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
@@ -74,7 +78,8 @@ TEST_F(ModifierVolumeWrapperTest, testOverride) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
-	ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(node, ModifierType::Override, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_TRUE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 	ASSERT_TRUE(wrapper.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2)));

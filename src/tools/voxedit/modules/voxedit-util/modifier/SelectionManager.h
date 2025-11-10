@@ -33,7 +33,7 @@ public:
 	}
 
 	void setMaxRegionSize(const voxel::Region &maxRegion);
-	voxel::Region region();
+	const voxel::Region& region();
 	bool hasSelection() const;
 
 	// TODO: SELECTION: the plan here is to move the selected voxels into the sparse volume to allow copy/cut/move operations
@@ -43,6 +43,7 @@ public:
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &pos);
 	void unselect(voxel::RawVolume &volume);
 	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &pos);
+	bool isSelected(const glm::ivec3 &pos) const;
 
 	void reset();
 };

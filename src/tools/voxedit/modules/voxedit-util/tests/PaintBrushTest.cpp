@@ -46,7 +46,8 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 	scenegraph::SceneGraph sceneGraph;
 	const int nodeId = prepareSceneGraph(sceneGraph);
 	ASSERT_NE(nodeId, InvalidNodeId);
-	ModifierVolumeWrapper wrapper(sceneGraph.node(nodeId), brush.modifierType());
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(sceneGraph.node(nodeId), brush.modifierType(), selectionMgr);
 
 	BrushContext brushContext;
 	prepareBrushContext(brushContext);
@@ -77,7 +78,8 @@ TEST_F(PaintBrushTest, testExecuteSingleRadius) {
 	scenegraph::SceneGraph sceneGraph;
 	const int nodeId = prepareSceneGraph(sceneGraph);
 	ASSERT_NE(nodeId, InvalidNodeId);
-	ModifierVolumeWrapper wrapper(sceneGraph.node(nodeId), brush.modifierType());
+	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
+	ModifierVolumeWrapper wrapper(sceneGraph.node(nodeId), brush.modifierType(), selectionMgr);
 
 	BrushContext brushContext;
 	prepareBrushContext(brushContext);
