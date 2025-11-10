@@ -8,8 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
-#include "io/Base64.h"
-#include "io/BufferedReadWriteStream.h"
+#include "io/Base64ReadStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
@@ -238,14 +237,9 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		int parent = 0;
 		node.setPalette(palette);
 		const std::string &modelBase64 = e.get<std::string>();
-		io::BufferedReadWriteStream base64Stream(modelBase64.size());
 		io::MemoryReadStream inputStream(modelBase64.c_str(), modelBase64.size());
-		if (!io::Base64::decode(base64Stream, inputStream)) {
-			Log::error("Failed to decode ModelSave array entry");
-			return false;
-		}
-		base64Stream.seek(0);
-		io::ZipReadStream readStream(base64Stream);
+		io::Base64ReadStream base64Stream(inputStream);
+		io::ZipReadStream readStream(base64Stream, inputStream.size(), io::CompressionType::Gzip);
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(regionSize) - 1);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		node.setVolume(volume, true);
