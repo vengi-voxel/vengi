@@ -36,9 +36,13 @@ void SelectionManager::unselect(voxel::RawVolume &volume) {
 
 void SelectionManager::reset() {
 	_selections.clear();
+	markDirty();
 }
 
-voxel::Region SelectionManager::region() const {
+voxel::Region SelectionManager::region() {
+	if (!dirty()) {
+		return _cachedRegion;
+	}
 	if (_selections.empty()) {
 		return voxel::Region::InvalidRegion;
 	}
@@ -46,6 +50,8 @@ voxel::Region SelectionManager::region() const {
 	for (const Selection &selection : _selections) {
 		r.accumulate(selection);
 	}
+	_cachedRegion = r;
+	markClean();
 	return r;
 }
 
@@ -73,7 +79,12 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 		}
 	}
 	_selections.push_back(sel);
+	markDirty();
 	return true;
+}
+
+bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &pos) {
+	return select(volume, pos, pos);
 }
 
 } // namespace voxedit
