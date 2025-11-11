@@ -3,10 +3,7 @@
  */
 
 #include "SelectionManager.h"
-#include "core/Common.h"
-#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
-#include "voxel/SparseVolume.h"
 
 namespace voxedit {
 
