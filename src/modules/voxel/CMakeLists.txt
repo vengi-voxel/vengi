@@ -8,6 +8,7 @@ set(SRCS
 	Connectivity.h
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
+	ClipboardData.h ClipboardData.cpp
 	CoordinateSystemVolume.h
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
@@ -25,7 +26,6 @@ set(SRCS
 	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
-	VoxelData.h VoxelData.cpp
 	VoxelNormalUtil.h VoxelNormalUtil.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer app)

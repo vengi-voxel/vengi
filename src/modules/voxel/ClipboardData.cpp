@@ -2,47 +2,47 @@
  * @file
  */
 
-#include "VoxelData.h"
+#include "ClipboardData.h"
 
 namespace voxel {
 
-VoxelData::VoxelData(const voxel::RawVolume *v, const palette::Palette *p, bool disposeAfterUse)
+ClipboardData::ClipboardData(const voxel::RawVolume *v, const palette::Palette *p, bool disposeAfterUse)
 	: _disposeAfterUse(disposeAfterUse), volume(new voxel::RawVolume(*v)), palette(new palette::Palette(*p)) {
 }
 
-VoxelData::VoxelData(const voxel::RawVolume *v, const palette::Palette &p, bool disposeAfterUse)
+ClipboardData::ClipboardData(const voxel::RawVolume *v, const palette::Palette &p, bool disposeAfterUse)
 	: _disposeAfterUse(disposeAfterUse), volume(new voxel::RawVolume(*v)), palette(new palette::Palette(p)) {
 }
 
-VoxelData::VoxelData(voxel::RawVolume *v, const palette::Palette *p, bool disposeAfterUse)
+ClipboardData::ClipboardData(voxel::RawVolume *v, const palette::Palette *p, bool disposeAfterUse)
 	: _disposeAfterUse(disposeAfterUse), volume(v), palette(new palette::Palette(*p)) {
 }
 
-VoxelData::VoxelData(voxel::RawVolume *v, const palette::Palette &p, bool disposeAfterUse)
+ClipboardData::ClipboardData(voxel::RawVolume *v, const palette::Palette &p, bool disposeAfterUse)
 	: _disposeAfterUse(disposeAfterUse), volume(v), palette(new palette::Palette(p)) {
 }
 
-VoxelData::VoxelData(const VoxelData &v)
+ClipboardData::ClipboardData(const ClipboardData &v)
 	: _disposeAfterUse(true), volume(new voxel::RawVolume(*v.volume)), palette(new palette::Palette(*v.palette)) {
 }
 
-VoxelData::VoxelData(VoxelData &&v) : _disposeAfterUse(v._disposeAfterUse), volume(v.volume), palette(v.palette) {
+ClipboardData::ClipboardData(ClipboardData &&v) : _disposeAfterUse(v._disposeAfterUse), volume(v.volume), palette(v.palette) {
 	v.volume = nullptr;
 	v.palette = nullptr;
 }
 
-VoxelData::~VoxelData() {
+ClipboardData::~ClipboardData() {
 	if (_disposeAfterUse) {
 		delete volume;
 	}
 	delete palette;
 }
 
-bool VoxelData::dispose() const {
+bool ClipboardData::dispose() const {
 	return _disposeAfterUse;
 }
 
-VoxelData &VoxelData::operator=(const VoxelData &v) {
+ClipboardData &ClipboardData::operator=(const ClipboardData &v) {
 	if (this == &v) {
 		return *this;
 	}
@@ -61,7 +61,7 @@ VoxelData &VoxelData::operator=(const VoxelData &v) {
 	return *this;
 }
 
-VoxelData &VoxelData::operator=(VoxelData &&v) {
+ClipboardData &ClipboardData::operator=(ClipboardData &&v) {
 	if (this == &v) {
 		return *this;
 	}

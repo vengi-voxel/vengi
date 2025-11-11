@@ -70,7 +70,7 @@ protected:
 	scenegraph::SceneGraph _sceneGraph;
 	voxelrender::CameraMovement _camMovement;
 	memento::MementoHandler _mementoHandler;
-	voxel::VoxelData _copy;
+	voxel::ClipboardData _copy;
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
@@ -442,7 +442,7 @@ public:
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
 	scenegraph::SceneGraphNode *sceneGraphNodeByUUID(const core::UUID &uuid);
 
-	const voxel::VoxelData &clipBoardData() const;
+	const voxel::ClipboardData &clipboardData() const;
 
 	// component access
 	const ModifierFacade &modifier() const;
@@ -610,7 +610,7 @@ inline Client &SceneManager::client() {
 	return _client;
 }
 
-inline const voxel::VoxelData &SceneManager::clipBoardData() const {
+inline const voxel::ClipboardData &SceneManager::clipboardData() const {
 	return _copy;
 }
 

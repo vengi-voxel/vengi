@@ -11,7 +11,7 @@
 namespace voxedit {
 namespace tool {
 
-voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr) {
+voxel::ClipboardData copy(const voxel::ClipboardData &voxelData, const SelectionManagerPtr &selectionMgr) {
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
@@ -21,10 +21,10 @@ voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerP
 		Log::debug("Copy failed: no selection active");
 		return {};
 	}
-	return voxel::VoxelData(v, voxelData.palette, true);
+	return voxel::ClipboardData(v, voxelData.palette, true);
 }
 
-voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion) {
+voxel::ClipboardData cut(voxel::ClipboardData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion) {
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
@@ -43,7 +43,7 @@ voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &sel
 	return {v, voxelData.palette, true};
 }
 
-void paste(voxel::VoxelData &out, const voxel::VoxelData &in, const glm::ivec3 &referencePosition,
+void paste(voxel::ClipboardData &out, const voxel::ClipboardData &in, const glm::ivec3 &referencePosition,
 		   voxel::Region &modifiedRegion) {
 	if (!in) {
 		Log::debug("Paste failed: no in voxel data");

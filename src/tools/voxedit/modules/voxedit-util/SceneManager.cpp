@@ -1084,7 +1084,7 @@ bool SceneManager::copy() {
 	if (node == nullptr) {
 		return false;
 	}
-	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
+	voxel::ClipboardData voxelData(node->volume(), node->palette(), false);
 	_copy = voxedit::tool::copy(voxelData, _selectionManager);
 	return _copy;
 }
@@ -1117,7 +1117,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
+	voxel::ClipboardData voxelData(node->volume(), node->palette(), false);
 	voxedit::tool::paste(voxelData, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to paste");
@@ -1139,7 +1139,7 @@ bool SceneManager::cut() {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	voxel::VoxelData voxelData(node.volume(), node.palette(), false);
+	voxel::ClipboardData voxelData(node.volume(), node.palette(), false);
 	_copy = voxedit::tool::cut(voxelData, _selectionManager, modifiedRegion);
 	if (!_copy) {
 		Log::debug("Failed to cut");

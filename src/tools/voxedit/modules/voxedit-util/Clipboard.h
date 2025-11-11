@@ -5,14 +5,14 @@
 #pragma once
 
 #include "modifier/SelectionManager.h"
-#include "voxel/VoxelData.h"
+#include "voxel/ClipboardData.h"
 
 namespace voxedit {
 namespace tool {
 
-voxel::VoxelData copy(const voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr);
-voxel::VoxelData cut(voxel::VoxelData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion);
-void paste(voxel::VoxelData &out, const voxel::VoxelData &in, const glm::ivec3 &referencePosition,
+voxel::ClipboardData copy(const voxel::ClipboardData &voxelData, const SelectionManagerPtr &selectionMgr);
+voxel::ClipboardData cut(voxel::ClipboardData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion);
+void paste(voxel::ClipboardData &out, const voxel::ClipboardData &in, const glm::ivec3 &referencePosition,
 		   voxel::Region &modifiedRegion);
 
 } // namespace tool
