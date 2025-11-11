@@ -95,10 +95,6 @@ String::String(const char *str) :
 		String(str, SDL_strlen(str)) {
 }
 
-String::String(const String &str) :
-		String(str.c_str(), str.size()) {
-}
-
 String::String(const char *str, size_t len) {
 	copyBuf(str, len);
 	updateSize();
@@ -192,10 +188,6 @@ void String::resize(size_t bytes, char c) {
 	}
 }
 
-void String::reserve(size_t bytes) {
-	checkBufferSize(bytes + 1);
-}
-
 void String::reset() {
 	_data._size = 0u;
 	_data._str[0] = '\0';
@@ -210,10 +202,6 @@ void String::clear() {
 	core_free(_data._str);
 	_data._str = _buf;
 	_data._capacity = 0u;
-}
-
-bool String::contains(const core::String& str) const {
-	return contains(str.c_str(), str.size());
 }
 
 void String::erase(size_t index, size_t length) {
@@ -352,10 +340,6 @@ String &String::operator+=(const char *str) {
 	return *this;
 }
 
-String &String::operator+=(const String &str) {
-	return operator+=(str.c_str());
-}
-
 String& String::append(int c) {
 	char text[16];
 	SDL_snprintf(text, sizeof(text), "%i", c);
@@ -483,10 +467,6 @@ size_t String::find(const char* str, size_t pos) const {
 	return (size_t)(f - c_str());
 }
 
-size_t String::find(const String &str, size_t pos) const {
-	return find(str.c_str(), pos);
-}
-
 size_t String::find_first_not_of(const char *str, size_t pos) const {
 	for (size_t idx = pos; idx < _data._size; ++idx) {
 		if (SDL_strchr(str, (*this)[idx]) == nullptr) {
@@ -585,46 +565,6 @@ String &String::operator+=(char c) {
 	_data._str[_data._size + 1] = '\0';
 	++_data._size;
 	return *this;
-}
-
-bool String::operator==(const String &rhs) const {
-	return equals(rhs.c_str());
-}
-
-bool String::operator==(const char *rhs) const {
-	return equals(rhs);
-}
-
-bool String::operator!=(const String &rhs) const {
-	return !equals(rhs.c_str());
-}
-
-bool String::operator !=(const char *rhs) const {
-	return !equals(rhs);
-}
-
-bool String::operator<(const String &rhs) const {
-	return compare(rhs) < 0;
-}
-
-bool String::operator<=(const String &rhs) const {
-	return compare(rhs) <= 0;
-}
-
-bool String::operator>(const String &rhs) const {
-	return compare(rhs) > 0;
-}
-
-bool String::operator>=(const String &rhs) const {
-	return compare(rhs) >= 0;
-}
-
-bool operator==(const char* lhs, const String &rhs) {
-	return rhs == lhs;
-}
-
-bool operator!=(const char* lhs, const String &rhs) {
-	return rhs != lhs;
 }
 
 String operator+(const String &lhs, const String &rhs) {

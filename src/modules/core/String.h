@@ -148,6 +148,9 @@ public:
 	bool operator>=(const String &x) const;
 };
 
+inline String::String(const String &str) : String(str.c_str(), str.size()) {
+}
+
 inline bool String::onStack() const {
 	return _data._str == _buf;
 }
@@ -181,6 +184,62 @@ inline const char *String::begin() const {
 
 inline const char *String::end() const {
 	return begin() + size();
+}
+
+inline size_t String::find(const String &str, size_t pos) const {
+	return find(str.c_str(), pos);
+}
+
+inline void String::reserve(size_t bytes) {
+	checkBufferSize(bytes + 1);
+}
+
+inline bool String::contains(const core::String &str) const {
+	return contains(str.c_str(), str.size());
+}
+
+inline bool String::operator==(const String &rhs) const {
+	return equals(rhs.c_str());
+}
+
+inline bool String::operator==(const char *rhs) const {
+	return equals(rhs);
+}
+
+inline bool String::operator!=(const String &rhs) const {
+	return !equals(rhs.c_str());
+}
+
+inline bool String::operator!=(const char *rhs) const {
+	return !equals(rhs);
+}
+
+inline bool String::operator<(const String &rhs) const {
+	return compare(rhs) < 0;
+}
+
+inline bool String::operator<=(const String &rhs) const {
+	return compare(rhs) <= 0;
+}
+
+inline bool String::operator>(const String &rhs) const {
+	return compare(rhs) > 0;
+}
+
+inline bool String::operator>=(const String &rhs) const {
+	return compare(rhs) >= 0;
+}
+
+inline String &String::operator+=(const String &str) {
+	return operator+=(str.c_str());
+}
+
+inline bool operator==(const char *lhs, const String &rhs) {
+	return rhs == lhs;
+}
+
+inline bool operator!=(const char *lhs, const String &rhs) {
+	return rhs != lhs;
 }
 
 String operator+(const String &x, const String &y);

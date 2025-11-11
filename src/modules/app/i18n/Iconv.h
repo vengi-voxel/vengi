@@ -41,7 +41,7 @@ public:
 
 	bool setCharsets(const core::String &fromcode, const core::String &tocode);
 	core::String convert(const core::String &text);
-	bool isValid() const { return _cd != nullptr; }
+	inline bool isValid() const { return _cd != nullptr; }
 };
 
 } // namespace app

@@ -28,12 +28,22 @@ function(engine_add_valgrind TARGET)
 		add_custom_target(${TARGET}-cachegrind
 			COMMAND
 				${VALGRIND_EXECUTABLE}
-				--tool=cachegrind --log-file=${CMAKE_CURRENT_BINARY_DIR}/cachegrind-${TARGET}.log
+				--tool=cachegrind --branch-sim=yes --log-file=${CMAKE_CURRENT_BINARY_DIR}/cachegrind-${TARGET}.log
 				$<TARGET_FILE:${TARGET}>
 			USES_TERMINAL
 			DEPENDS ${TARGET}
 			WORKING_DIRECTORY $<TARGET_FILE_DIR:${TARGET}>
 			COMMENT "Executing valgrind cachegrind and log into ${CMAKE_CURRENT_BINARY_DIR}"
+		)
+		add_custom_target(${TARGET}-callgrind
+			COMMAND
+				${VALGRIND_EXECUTABLE}
+				--tool=callgrind --dump-instr=yes --log-file=${CMAKE_CURRENT_BINARY_DIR}/callgrind-${TARGET}.log
+				$<TARGET_FILE:${TARGET}>
+			USES_TERMINAL
+			DEPENDS ${TARGET}
+			WORKING_DIRECTORY $<TARGET_FILE_DIR:${TARGET}>
+			COMMENT "Executing valgrind callgrind and log into ${CMAKE_CURRENT_BINARY_DIR}"
 		)
 		add_custom_target(${TARGET}-drd
 			COMMAND
