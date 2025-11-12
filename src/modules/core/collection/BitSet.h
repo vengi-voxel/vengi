@@ -50,6 +50,9 @@ public:
 	}
 
 	inline constexpr bool operator[](size_t idx) const {
+		if (idx >= SIZE) {
+			return false;
+		}
 		const size_t arrayIdx = idx / bitsPerValue;
 		const size_t elementIdx = idx % bitsPerValue;
 		const Type &ref = _buffer[arrayIdx];
@@ -59,6 +62,9 @@ public:
 	}
 
 	inline constexpr void set(size_t idx, bool value) {
+		if (idx >= SIZE) {
+			return;
+		}
 		const size_t arrayIdx = idx / bitsPerValue;
 		const size_t elementIdx = idx % bitsPerValue;
 		Type &ref = _buffer[arrayIdx];
