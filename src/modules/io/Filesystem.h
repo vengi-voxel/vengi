@@ -160,8 +160,17 @@ public:
 	static core::String sysCurrentDir();
 
 	static bool sysIsReadableDir(const core::String& name);
+	static bool sysIsReadableDir(const core::Path& name) {
+		return sysIsReadableDir(name.str());
+	}
 	static bool sysIsHidden(const core::String &name);
+	static bool sysIsHidden(const core::Path &name) {
+		return sysIsHidden(name.str());
+	}
 	static bool sysIsRelativePath(const core::String &name);
+	static bool sysIsRelativePath(const core::Path &name) {
+		return sysIsRelativePath(name.str());
+	}
 	core::String sysAbsolutePath(const core::String& path) const;
 
 	/**
@@ -170,6 +179,7 @@ public:
 	 * @see pushDir()
 	 */
 	static bool sysChdir(const core::String& directory);
+	static bool sysChdir(const core::Path& directory);
 
 	/**
 	 * @note The difference to the usual write() methods is that the given path is not put into the
@@ -189,17 +199,26 @@ public:
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
 	static bool sysCreateDir(const core::String& dir, bool recursive = true);
+	static bool sysCreateDir(const core::Path& dir, bool recursive = true) {
+		return sysCreateDir(dir.str(), recursive);
+	}
 
 	/**
 	 * @brief This will remove the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
 	static bool sysRemoveDir(const core::String& dir, bool recursive = false);
+	static bool sysRemoveDir(const core::Path& dir, bool recursive = false) {
+		return sysRemoveDir(dir.str(), recursive);
+	}
 	/**
 	 * @brief This will remove the file without taking the write path into account. BEWARE!
 	 * @param file The full path to the file or relative to the current working dir of your app.
 	 */
 	static bool sysRemoveFile(const core::String& file);
+	static bool sysRemoveFile(const core::Path& file) {
+		return sysRemoveFile(file.str());
+	}
 };
 
 inline const Paths& Filesystem::registeredPaths() const {

@@ -311,6 +311,10 @@ bool Filesystem::sysChdir(const core::String &directory) {
 	return fs_chdir(directory.c_str());
 }
 
+bool Filesystem::sysChdir(const core::Path& directory) {
+	return sysChdir(directory.toNativePath());
+}
+
 void Filesystem::shutdown() {
 #ifdef __EMSCRIPTEN__
 	EM_ASM({
