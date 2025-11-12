@@ -281,7 +281,7 @@ The functions are:
 
 * `colorString(paletteIndex)`: Return a color string for logging to the console (includes ansi color escape sequences).
 
-* `rgba(paletteIndex)`: Pushes the four values of the color behind the palette index (`0-255`).
+* `rgba(paletteIndex)`: Pushes the four values of the color behind the palette index (`0-255`). Example: `local r, g, b, a = palette:rgba(0)`.
 
 * `colors()`: Returns the palette RGBA colors as vec4 values between `0.0` and `1.0`.
 
