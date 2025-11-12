@@ -24,8 +24,9 @@ private:
 	}
 	Type _buffer[requiredElements(SIZE)];
 	static constexpr size_t bitsPerValue = sizeof(Type) * CHAR_BIT;
+
 public:
-	BitSet() {
+	constexpr BitSet() {
 		clear();
 	}
 
@@ -39,7 +40,7 @@ public:
 		}
 	}
 
-	inline void clear() {
+	inline constexpr void clear() {
 		for (size_t i = 0; i < requiredElements(SIZE); ++i) {
 			_buffer[i] = Type(0);
 		}
