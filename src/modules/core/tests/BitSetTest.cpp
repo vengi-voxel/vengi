@@ -8,7 +8,7 @@
 namespace core {
 
 TEST(BitSetTest, testSetGet) {
-	BitSet bitset(512);
+	BitSet<512> bitset;
 	ASSERT_EQ(64u, bitset.bytes());
 	bitset.set(0, true);
 	bitset.set(511, true);
@@ -19,7 +19,7 @@ TEST(BitSetTest, testSetGet) {
 }
 
 TEST(BitSetTest, testFillClear) {
-	BitSet bitset(512);
+	BitSet<512> bitset;
     bitset.fill();
     for (int i = 0; i < bitset.bits(); ++i) {
 	    EXPECT_TRUE(bitset[i]);

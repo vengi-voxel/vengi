@@ -76,7 +76,7 @@ struct GLState {
 	int scissorY = 0;
 	int scissorW = 0;
 	int scissorH = 0;
-	core::BitSet states{core::enumVal(State::Max)};
+	core::BitSet<core::enumVal(State::Max)> states;
 	Id bufferHandle[core::enumVal(BufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
 	FrameBufferMode framebufferMode = FrameBufferMode::Default;
@@ -84,7 +84,7 @@ struct GLState {
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	float lineWidth = 1.0f;
-	core::BitSet vendor{core::enumVal(Vendor::Max)};
+	core::BitSet<core::enumVal(Vendor::Max)> vendor;
 };
 
 }

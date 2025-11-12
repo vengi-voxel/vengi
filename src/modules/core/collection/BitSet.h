@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "core/Assert.h"
-#include "core/StandardLib.h"
+#pragma once
+
 #include <limits.h>
 #include <stdint.h>
 
@@ -13,51 +13,43 @@ namespace core {
  * @brief Allows to store boolean values in a compact bit buffer
  * @ingroup Collections
  */
+template<size_t SIZE>
 class BitSet {
 private:
+	static_assert(SIZE > 0, "BitSet size must be greater than 0");
 	using Type = uint32_t;
-	int _bits;
-	size_t _bytes;
-	Type *_buffer = nullptr;
-	static constexpr size_t bitsPerValue = sizeof(Type) * CHAR_BIT;
-	static_assert(bitsPerValue == 32, "Unexpected size");
-
-	static inline constexpr size_t align(size_t bits) {
-		const size_t bytes = bits % CHAR_BIT == 0 ? bits / CHAR_BIT : bits / CHAR_BIT + 1;
-		const size_t len = 31u;
-		const size_t aligned = ((bytes + len) & ~len);
-		return aligned;
+	static constexpr size_t requiredElements(size_t bits) {
+		const int bitsPerType = sizeof(Type) * CHAR_BIT;
+		return bits % bitsPerType == 0 ? bits / bitsPerType : bits / bitsPerType + 1;
 	}
-
+	Type _buffer[requiredElements(SIZE)];
+	static constexpr size_t bitsPerValue = sizeof(Type) * CHAR_BIT;
 public:
-	BitSet(int bits) : _bits(bits) {
-		_bytes = align(_bits);
-		_buffer = (Type *)core_malloc(_bytes);
+	BitSet() {
 		clear();
 	}
 
-	~BitSet() {
-		core_free(_buffer);
+	inline constexpr int bits() const {
+		return SIZE;
 	}
 
-	inline int bits() const {
-		return _bits;
-	}
-
-	inline void fill() {
-		core_memset(_buffer, 0xFFu, _bytes);
+	inline constexpr void fill() {
+		for (size_t i = 0; i < requiredElements(SIZE); ++i) {
+			_buffer[i] = ~Type(0);
+		}
 	}
 
 	inline void clear() {
-		core_memset(_buffer, 0x00u, _bytes);
+		for (size_t i = 0; i < requiredElements(SIZE); ++i) {
+			_buffer[i] = Type(0);
+		}
 	}
 
-	inline size_t bytes() const {
-		return _bytes;
+	inline constexpr size_t bytes() const {
+		return sizeof(_buffer);
 	}
 
-	inline bool operator[](size_t idx) const {
-		core_assert_msg((int)idx < _bits, "index out of bounds %i", (int)idx);
+	inline constexpr bool operator[](size_t idx) const {
 		const size_t arrayIdx = idx / bitsPerValue;
 		const size_t elementIdx = idx % bitsPerValue;
 		const Type &ref = _buffer[arrayIdx];
@@ -66,8 +58,7 @@ public:
 		return val;
 	}
 
-	inline void set(size_t idx, bool value) const {
-		core_assert_msg((int)idx < _bits, "index out of bounds %i", (int)idx);
+	inline constexpr void set(size_t idx, bool value) {
 		const size_t arrayIdx = idx / bitsPerValue;
 		const size_t elementIdx = idx % bitsPerValue;
 		Type &ref = _buffer[arrayIdx];
