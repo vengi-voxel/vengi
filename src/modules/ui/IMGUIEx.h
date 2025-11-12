@@ -115,10 +115,12 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 		for (int i = 0; i < itemCount; ++i) {
 			const bool selected = i == *currentItem;
 			const char *text = items[i].c_str();
+			ImGui::PushID(i);
 			if (ImGui::Selectable(text, selected)) {
 				*currentItem = i;
 				changed = true;
 			}
+			ImGui::PopID();
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
 			}
