@@ -36,6 +36,7 @@ set(LUA_SRCS
 	scripts/newelstair.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua
+	scripts/palette-brighten.lua
 	scripts/planet.lua
 	scripts/pyramid.lua
 	scripts/remapcolors.lua

@@ -306,6 +306,8 @@ The functions are:
 
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
+* `size()`: Return the amount of colors in the palette
+
 They are available as e.g. `palette:color([...])`, `palette:match([...])` and so on.
 
 You can create new palettes with the `g_palette` global by calling e.g.

@@ -26,6 +26,8 @@ General:
    - Added `clouds.lua` to generate parameterized clouds
    - Fixed a few culling issues
    - Fixed debian/ubuntu/mint mimetype errors
+   - Added `palette:size()` to lua bindings
+   - New lua script `palette-brighten`
 
 VoxEdit:
 

@@ -664,6 +664,12 @@ static int luaVoxel_palette_gc(lua_State *s) {
 	return 0;
 }
 
+static int luaVoxel_palette_size(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	lua_pushinteger(s, palette->colorCount());
+	return 1;
+}
+
 static int luaVoxel_palette_colors(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	lua_createtable(s, palette->colorCount(), 0);
@@ -1877,6 +1883,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
+		{"size", luaVoxel_palette_size},
 		{"rgba", luaVoxel_palette_rgba},
 		{"load", luaVoxel_palette_load},
 		{"setColor", luaVoxel_palette_setcolor},
@@ -1895,6 +1902,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg paletteFuncs_gc[] = {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
+		{"size", luaVoxel_palette_size},
 		{"rgba", luaVoxel_palette_rgba},
 		{"load", luaVoxel_palette_load},
 		{"setColor", luaVoxel_palette_setcolor},
