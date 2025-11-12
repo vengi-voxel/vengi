@@ -1995,9 +1995,12 @@ ScriptState LUAApi::update(double nowSeconds) {
 		} else if (error != LUA_YIELD) {
 			const char *msg = lua_tostring(_lua, -1);
 			luaL_traceback(_lua, _lua, msg, 1);
+			lua_pop(_lua, 1);
 			Log::error("Error running script: %s", lua_tostring(_lua, -1));
 			_scriptStillRunning = false;
-			lua_gc(_lua, LUA_GCCOLLECT, 0);
+			// Reset the Lua state after an error to prevent "cannot resume dead coroutine" errors
+			_lua.resetState();
+			init();
 			return ScriptState::Error;
 		}
 		return ScriptState::Running;
@@ -2311,7 +2314,10 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 
 	// load and run once to initialize the global variables
 	if (luaL_dostring(s, luaScript.c_str())) {
-		Log::error("%s", lua_tostring(s, -1));
+		Log::error("Failed to load and run the lua script: %s", lua_tostring(s, -1));
+		// Reset the Lua state after a loading error to ensure clean state for next execution
+		_lua.resetState();
+		init();
 		return false;
 	}
 
@@ -2319,18 +2325,21 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	lua_getglobal(s, "main");
 	if (!lua_isfunction(s, -1)) {
 		Log::error("LUA generator: no main(node, region, color) function found in '%s'", luaScript.c_str());
+		lua_pop(s, 1); // pop the non-function value from the stack
 		return false;
 	}
 
 	// first parameter is scene node
 	if (luaVoxel_pushscenegraphnode(s, node) == 0) {
 		Log::error("Failed to push scene graph node");
+		lua_pop(s, 1); // pop the main function
 		return false;
 	}
 
 	// second parameter is the region to operate on
 	if (luaVoxel_pushregion(s, region) == 0) {
 		Log::error("Failed to push region");
+		lua_pop(s, 2); // pop the main function and node
 		return false;
 	}
 
@@ -2358,6 +2367,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 
 	if (!luaVoxel_pushargs(s, args, _argsInfo)) {
 		Log::error("Failed to execute main() function with the given number of arguments. Try calling with 'help' as parameter");
+		lua_pop(s, 4); // pop the main function, node, region, and color
 		return false;
 	}
 

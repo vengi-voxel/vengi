@@ -2691,7 +2691,6 @@ bool SceneManager::update(double nowSeconds) {
 	if (state == voxelgenerator::ScriptState::Error) {
 		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
-		Log::error("Error in script: %s", _luaApi.error().c_str());
 	} else if (state == voxelgenerator::ScriptState::Finished) {
 		const voxel::Region dirtyRegion = _luaApi.dirtyRegion();
 		if (dirtyRegion.isValid()) {
