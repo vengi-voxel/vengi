@@ -52,8 +52,15 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		// TODO: make friction configurable - see scenegraph::KinematicBody
 		// TODO: make extends/size of the body configurable - see scenegraph::KinematicBody
 
-		ImGui::EndDisabled();
+		if (ImGui::Button(_("Minecraft"))) {
+			_bodyHeight->setVal(1.8f);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(_("Ace Of Spades"))) {
+			_bodyHeight->setVal(2.8f);
+		}
 
+		ImGui::EndDisabled();
 	}
 	ImGui::End();
 }
