@@ -435,7 +435,9 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBufferActive) {
 			uniformBuffer.members.insert(Variable{typeEnum, name, arraySize});
-		} else if (!shaderStorageBufferActive) {
+		} else if (shaderStorageBufferActive) {
+			shaderStorageBuffer.members.insert(Variable{typeEnum, name, arraySize});
+		} else {
 			bool found = false;
 			for (auto i = v->begin(); i != v->end(); ++i) {
 				if (i->value.name == name) {
