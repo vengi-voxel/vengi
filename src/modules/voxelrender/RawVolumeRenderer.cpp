@@ -485,6 +485,10 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		return true;
 	}
 
+	// TODO: PERF: maybe we could cull here by updating the index buffer only to leave out the mesh instances that are not visible
+	//             right now only the whole RenderState is culled or not - but for huge volumes, it might make a big difference to
+	//             cull individual mesh instances here
+
 	if (flags == UpdateBufferFlags::Indices) {
 		return updateIndexBufferForVolume(meshState, idx, type, indCount);
 	}

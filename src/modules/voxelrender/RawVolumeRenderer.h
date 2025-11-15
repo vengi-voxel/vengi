@@ -125,6 +125,9 @@ protected:
 		Indices = 1 << 2,
 		All = Vertices | Normals | Indices
 	};
+	/**
+	 * @brief This is merging the multiple @c voxel::Mesh instances into one big vertex/index buffer
+	 */
 	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, UpdateBufferFlags flags = UpdateBufferFlags::All);
 	void deleteMesh(int idx, voxel::MeshType meshType);
 	void deleteMeshes(int idx);
