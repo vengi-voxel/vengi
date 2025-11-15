@@ -57,8 +57,8 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 		if (token == "std140") {
 			layout.blockLayout = BlockLayout::std140;
 		} else if (token == "std430") {
-			Log::error("Unsupported alignment");
-			return false;
+			// std430 is used for SSBOs (shader storage buffers) in compute shaders
+			layout.blockLayout = BlockLayout::std140; // Treat like std140 for now
 		} else if (token == "location") {
 			if (!tok.hasNext() || tok.next() != "=") {
 				Log::error("Expected = for location");
