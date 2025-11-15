@@ -144,10 +144,10 @@ protected:
 	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
 	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera);
 	void renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera);
+	void sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
 public:
 	RawVolumeRenderer();
 
-	void sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera);
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
 				bool shadow);
 	void clear(const voxel::MeshStatePtr &meshState);
