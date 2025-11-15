@@ -324,7 +324,7 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				Log::trace("End of uniform block: %s", uniformBuffer.name.c_str());
 				shaderStruct.uniformBlocks.insert(uniformBuffer);
 				if (tok.next() != ";") {
-					Log::error("Missing ;");
+					Log::error("Missing ; in uniform block: %s (%s:%i)", uniformBuffer.name.c_str(), tok.file(), tok.line());
 					return false;
 				}
 			} else {
@@ -340,7 +340,7 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				Log::trace("End of buffer block: %s", shaderStorageBuffer.name.c_str());
 				shaderStruct.bufferBlocks.insert(shaderStorageBuffer);
 				if (tok.next() != ";") {
-					Log::error("Missing ;");
+					Log::error("Missing ; for storage buffer block: %s (%s:%i)", shaderStorageBuffer.name.c_str(), tok.file(), tok.line());
 					return false;
 				}
 			} else {
@@ -406,16 +406,16 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				}
 			}
 			if (tok.next() != "]") {
-				Log::error("Missing ]");
+				Log::error("Missing ] for array %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 			if (tok.next() != ";") {
-				Log::error("Missing ;");
+				Log::error("Missing ; for array %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 		} else {
 			if (tok.next() != ";") {
-				Log::error("Missing ;");
+				Log::error("Missing ; for variable %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 		}
