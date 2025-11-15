@@ -432,6 +432,51 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 	}
 }
 
+bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr &meshState,
+													   const video::Camera &camera, int idx, voxel::MeshType type,
+													   size_t indCount) {
+	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
+	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
+	voxel::IndexType *indicesPos = indicesBuf;
+	voxel::IndexType offset = (voxel::IndexType)0;
+	const int bufferIndex = meshState->resolveIdx(idx);
+	RenderState &state = _state[bufferIndex];
+	const voxel::MeshState::MeshesMap & meshesMap = meshState->meshes(type);
+	core::VarPtr meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
+	int culled = 0;
+	for (const auto &i : meshesMap) {
+		const voxel::MeshState::Meshes &meshes = i->second;
+		const voxel::Mesh *mesh = meshes[bufferIndex];
+		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
+			continue;
+		}
+		const glm::ivec3 &mins = i->first;
+		const glm::ivec3 &maxs = mins + (meshSize->intVal() - 1);
+		const glm::vec3 &mi = meshState->model(idx) * glm::vec4(mins, 1.0f);
+		const glm::vec3 &ma = meshState->model(idx) * glm::vec4(maxs, 1.0f);
+		if (!camera.isVisible(mi, ma)) {
+			offset += mesh->getNoOfVertices();
+			++culled;
+			Log::trace("Culled mesh at index %i at pos %i:%i:%i", idx, mins.x, mins.y, mins.z);
+			continue;
+		}
+		const voxel::IndexArray &indexVector = mesh->getIndexVector();
+		core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
+		for (size_t j = 0; j < indexVector.size(); ++j) {
+			*indicesPos++ += offset;
+		}
+		offset += mesh->getNoOfVertices();
+	}
+	Log::debug("update indexbuffer with culling: %i (type: %i, culled: %i)", idx, type, culled);
+	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize, true)) {
+		Log::error("Failed to update the index buffer with culling");
+		core_free(indicesBuf);
+		return false;
+	}
+	core_free(indicesBuf);
+	return true;
+}
+
 bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount) {
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
 	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
@@ -884,6 +929,26 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	if (!visible) {
 		return;
 	}
+
+	// TODO: PERF: activate me
+#if 0
+	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		if (!isVisible(meshState, idx)) {
+			continue;
+		}
+		size_t indCount = 0u;
+		size_t vertCount = 0u;
+		size_t normalsCount = 0u;
+		meshState->count(voxel::MeshType_Opaque, idx, vertCount, normalsCount, indCount);
+		if (indCount == 0u || vertCount == 0u) {
+			continue;
+		}
+		if (!updateIndexBufferForVolumeCull(meshState, camera, idx, voxel::MeshType_Opaque, indCount)) {
+			Log::error("Failed to update the opaque mesh at index %i", idx);
+		}
+	}
+#endif
+
 	sortBeforeRender(meshState, camera);
 
 	video::ScopedState scopedDepth(video::State::DepthTest);

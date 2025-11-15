@@ -137,6 +137,8 @@ protected:
 	void shutdownStateBuffers();
 	bool resetStateBuffers(bool normals);
 	bool updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount);
+	bool updateIndexBufferForVolumeCull(const voxel::MeshStatePtr &meshState, const video::Camera &camera, int idx,
+										voxel::MeshType type, size_t indCount);
 	/**
 	 * @brief Updates the vertex buffers manually
 	 */
