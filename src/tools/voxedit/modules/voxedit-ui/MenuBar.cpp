@@ -184,6 +184,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			if (ImGui::IconMenuItem(ICON_LC_SETTINGS, _("Show all cvars"))) {
 				app->showCvarDialog();
 			}
+			if (ImGui::IconMenuItem(ICON_LC_TIMER, _("Show FPS stats"))) {
+				app->showFPSDialog();
+			}
 			if (ImGui::IconMenuItem(ICON_LC_LIGHTBULB, _("Tip of the day"))) {
 				core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
 			}

@@ -6,6 +6,7 @@
 
 #include "FileDialog.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/RingBuffer.h"
 #include "video/WindowedApp.h"
 #include "IMGUIConsole.h"
 #include "Style.h"
@@ -69,6 +70,7 @@ protected:
 	bool _showTexturesDialog = false;
 	bool _showCommandDialog = false;
 	bool _showCvarDialog = false;
+	bool _showFPSDialog = false;
 	bool _closeModalPopup = false;
 	bool _showFileDialog = false;
 	bool _imguiBackendInitialized = false;
@@ -102,6 +104,7 @@ protected:
 
 	core::Buffer<Panel*> _panels;
 	FileDialog _fileDialog;
+	core::RingBuffer<float, 4096> _fpsData;
 
 	/**
 	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
@@ -128,6 +131,7 @@ protected:
 	void renderBindingsDialog();
 	void renderTexturesDialog();
 	void renderCvarDialog();
+	void renderFPSDialog();
 	void renderCommandDialog();
 public:
 	IMGUIApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
@@ -170,6 +174,7 @@ public:
 	void showBindingsDialog();
 	void showTexturesDialog();
 	void showCvarDialog();
+	void showFPSDialog();
 	void showCommandDialog();
 	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
@@ -188,6 +193,10 @@ inline void IMGUIApp::showTexturesDialog() {
 
 inline void IMGUIApp::showCvarDialog() {
 	_showCvarDialog = true;
+}
+
+inline void IMGUIApp::showFPSDialog() {
+	_showFPSDialog = true;
 }
 
 inline void IMGUIApp::showCommandDialog() {

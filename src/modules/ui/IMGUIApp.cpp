@@ -547,6 +547,34 @@ void IMGUIApp::renderBindingsDialog() {
 	ImGui::End();
 }
 
+void IMGUIApp::renderFPSDialog() {
+	if (ImGui::Begin(_("FPS"), &_showFPSDialog)) {
+		static bool paused = false;
+		ImGui::Checkbox(_("Pause"), &paused);
+
+		auto getter = [](int idx, void *data) {
+			IMGUIApp *app = (IMGUIApp *)data;
+			return ImPlotPoint(idx, app->_fpsData[idx]);
+		};
+
+		if (ImPlot::BeginPlot(_("##fpsplot"), ImVec2(-1, 300), ImPlotFlags_NoMenus | ImPlotFlags_Crosshairs)) {
+			ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+			ImPlot::SetupAxis(ImAxis_Y1, _("FPS"));
+			if (!paused) {
+				// Auto-fit to show latest data
+				const int dataSize = (int)_fpsData.size();
+				const int startIdx = dataSize > 100 ? dataSize - 100 : 0;
+				ImPlot::SetupAxisLimits(ImAxis_X1, startIdx, (double)dataSize, ImGuiCond_Always);
+			}
+			ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 200, ImGuiCond_Once);
+			ImPlot::SetupAxisFormat(ImAxis_Y1, "%.0f");
+			ImPlot::PlotLineG(_("FPS"), getter, this, (int)_fpsData.size());
+			ImPlot::EndPlot();
+		}
+	}
+	ImGui::End();
+}
+
 void IMGUIApp::renderCvarDialog() {
 	if (ImGui::Begin(_("Configuration variables"), &_showCvarDialog, ImGuiWindowFlags_AlwaysAutoResize)) {
 		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
@@ -712,6 +740,7 @@ app::AppState IMGUIApp::onRunning() {
 		return state;
 	}
 	video::clear(video::ClearFlag::Color);
+	_fpsData.push_back(_fps);
 
 	_console.update(_deltaFrameSeconds);
 
@@ -815,6 +844,10 @@ app::AppState IMGUIApp::onRunning() {
 
 		if (_showCvarDialog) {
 			renderCvarDialog();
+		}
+
+		if (_showFPSDialog) {
+			renderFPSDialog();
 		}
 
 		if (_showBindingsDialog) {

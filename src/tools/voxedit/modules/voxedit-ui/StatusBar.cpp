@@ -42,6 +42,8 @@ void StatusBar::update(const char *id, float height, const core::String &lastExe
 				ImGui::Text(_("Command: %s (%s)"), lastExecutedCommand.c_str(), keybindingStr.c_str());
 			}
 		}
+		ImGui::SameLine();
+		ImGui::Text(_("FPS: %.2f"), _app->fps());
 	}
 	ImGui::End();
 }
