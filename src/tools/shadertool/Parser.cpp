@@ -338,6 +338,19 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 					shaderStorageBuffer.layout = layout;
 				}
 				Log::trace("End of buffer block: %s", shaderStorageBuffer.name.c_str());
+
+				// Check if there's an instance name after the closing brace
+				if (tok.hasNext()) {
+					const core::String &instanceName = tok.next();
+					if (instanceName != ";") {
+						// Store instance name in the buffer block
+						shaderStorageBuffer.name = shaderStorageBuffer.name + "_" + instanceName;
+						Log::trace("Buffer block instance name: %s", instanceName.c_str());
+					} else {
+						tok.prev(); // Put the semicolon back
+					}
+				}
+
 				shaderStruct.bufferBlocks.insert(shaderStorageBuffer);
 				if (tok.next() != ";") {
 					Log::error("Missing ; for storage buffer block: %s (%s:%i)", shaderStorageBuffer.name.c_str(), tok.file(), tok.line());
