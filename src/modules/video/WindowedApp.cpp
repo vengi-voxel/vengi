@@ -529,6 +529,8 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientWindowHighDPI, "true", core::CV_READONLY);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, _("Activate shadow map"), core::Var::boolValidator);
 	core::Var::get(cfg::RenderCheckerBoard, "false", core::CV_SHADER, _("Activate checkerboard rendering"), core::Var::boolValidator);
+	core::Var::get(cfg::RenderCullBuffers, "false", _("Activate culling for buffer parts"), core::Var::boolValidator);
+	core::Var::get(cfg::RenderCullNodes, "true", _("Activate culling for scene nodes"), core::Var::boolValidator);
 	core::Var::get(cfg::ClientBloom, "true", _("Activate bloom post processing"), core::Var::boolValidator);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER, _("Activate shadow debug rendering"), core::Var::boolValidator);
 	core::Var::get(cfg::ClientShadowMapSize, "4096");

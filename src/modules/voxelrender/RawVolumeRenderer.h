@@ -117,6 +117,8 @@ protected:
 
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
+	core::VarPtr _cullBuffers;
+	core::VarPtr _cullNodes;
 
 	void updatePalette(const voxel::MeshStatePtr &meshState, int idx);
 	enum UpdateBufferFlags : uint8_t {

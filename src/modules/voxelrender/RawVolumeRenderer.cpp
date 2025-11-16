@@ -338,6 +338,8 @@ bool RawVolumeRenderer::initStateBuffers(bool normals) {
 bool RawVolumeRenderer::init(bool normals) {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
+	_cullBuffers = core::Var::getSafe(cfg::RenderCullBuffers);
+	_cullNodes = core::Var::getSafe(cfg::RenderCullNodes);
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
@@ -688,6 +690,9 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 }
 
 void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera) {
+	if (!_cullNodes->boolVal()) {
+		return;
+	}
 	if (meshState->hidden(idx)) {
 		_state[idx]._culled = true;
 		return;
@@ -930,24 +935,23 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		return;
 	}
 
-	// TODO: PERF: activate me
-#if 0
-	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-		if (!isVisible(meshState, idx)) {
-			continue;
-		}
-		size_t indCount = 0u;
-		size_t vertCount = 0u;
-		size_t normalsCount = 0u;
-		meshState->count(voxel::MeshType_Opaque, idx, vertCount, normalsCount, indCount);
-		if (indCount == 0u || vertCount == 0u) {
-			continue;
-		}
-		if (!updateIndexBufferForVolumeCull(meshState, camera, idx, voxel::MeshType_Opaque, indCount)) {
-			Log::error("Failed to update the opaque mesh at index %i", idx);
+	if (_cullBuffers->boolVal()) {
+		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+			if (!isVisible(meshState, idx)) {
+				continue;
+			}
+			size_t indCount = 0u;
+			size_t vertCount = 0u;
+			size_t normalsCount = 0u;
+			meshState->count(voxel::MeshType_Opaque, idx, vertCount, normalsCount, indCount);
+			if (indCount == 0u || vertCount == 0u) {
+				continue;
+			}
+			if (!updateIndexBufferForVolumeCull(meshState, camera, idx, voxel::MeshType_Opaque, indCount)) {
+				Log::error("Failed to update the opaque mesh at index %i", idx);
+			}
 		}
 	}
-#endif
 
 	sortBeforeRender(meshState, camera);
 
