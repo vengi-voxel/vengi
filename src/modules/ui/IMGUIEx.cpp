@@ -59,6 +59,125 @@ static core::String getId(const char *icon, const char *label) {
 	return id;
 }
 
+static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
+	switch (axis) {
+	case math::Axis::X: {
+		const glm::vec4 &c = color(style::ColorAxisX);
+		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		style.setButtonColor(c);
+		break;
+	}
+	case math::Axis::Y: {
+		const glm::vec4 &c = color(style::ColorAxisY);
+		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		style.setButtonColor(c);
+		break;
+	}
+	case math::Axis::Z: {
+		const glm::vec4 &c = color(style::ColorAxisZ);
+		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		style.setButtonColor(c);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+bool AxisButtonX(const ImVec2& size_arg, ImGuiButtonFlags flags) {
+	ui::ScopedStyle style;
+	AxisStyleButton(style, math::Axis::X);
+	return ImGui::ButtonEx(_("X"), size_arg, flags);
+}
+
+bool AxisButtonY(const ImVec2& size_arg, ImGuiButtonFlags flags) {
+	ui::ScopedStyle style;
+	AxisStyleButton(style, math::Axis::Y);
+	return ImGui::ButtonEx(_("Y"), size_arg, flags);
+}
+
+bool AxisButtonZ(const ImVec2& size_arg, ImGuiButtonFlags flags) {
+	ui::ScopedStyle style;
+	AxisStyleButton(style, math::Axis::Z);
+	return ImGui::ButtonEx(_("Z"), size_arg, flags);
+}
+
+template<typename ValueType>
+static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const char *format, ImGuiInputTextFlags flags, ValueType step, ValueType step_fast) {
+	constexpr bool isFloat = std::is_same<ValueType, float>::value;
+	constexpr bool isInt = std::is_same<ValueType, int>::value;
+	static_assert(isFloat || isInt, "VecType must be glm::vec3 or glm::ivec3");
+
+	if (ImGui::GetCurrentTable()) {
+		ImGui::BeginGroup();
+		ImGui::TableNextColumn();
+		const float h = ImGui::GetFrameHeight();
+		const ImVec2 size(h - 2.0f, h);
+		bool modified = false;
+
+		if constexpr (isFloat) {
+			ui::ScopedID id(label);
+		} else {
+			ImGui::PushID(ImGui::GetCurrentTable()->CurrentRow);
+		}
+
+		if (AxisButtonX(size, ImGuiButtonFlags_AlignTextBaseLine)) {
+			vec.x = ValueType(0);
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(-1);
+		ImGui::PushID(0);
+		if constexpr (isFloat) {
+			modified |= ImGui::InputFloat("", &vec.x, step, step_fast, format, flags);
+		} else {
+			modified |= ImGui::InputInt("", &vec.x, step, step_fast, flags);
+		}
+		ImGui::PopID();
+
+		if (AxisButtonY(size, ImGuiButtonFlags_AlignTextBaseLine)) {
+			vec.y = ValueType(0);
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(-1);
+		ImGui::PushID(1);
+		if constexpr (isFloat) {
+			modified |= ImGui::InputFloat("", &vec.y, step, step_fast, format, flags);
+		} else {
+			modified |= ImGui::InputInt("", &vec.y, step, step_fast, flags);
+		}
+		ImGui::PopID();
+
+		if (AxisButtonZ(size, ImGuiButtonFlags_AlignTextBaseLine)) {
+			vec.z = ValueType(0);
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(-1);
+		ImGui::PushID(2);
+		if constexpr (isFloat) {
+			modified |= ImGui::InputFloat("", &vec.z, step, step_fast, format, flags);
+		} else {
+			modified |= ImGui::InputInt("", &vec.z, step, step_fast, flags);
+		}
+		ImGui::PopID();
+
+		ImGui::TableNextColumn();
+		ImGui::SetNextItemWidth(-1);
+		ImGui::TextUnformatted(label);
+
+		if constexpr (!isFloat) {
+			ImGui::PopID();
+		}
+
+		ImGui::EndGroup();
+		return modified;
+	}
+	if constexpr (isFloat) {
+		return InputVec3(label, vec, format, flags);
+	} else {
+		return InputVec3(label, vec, flags);
+	}
+}
+
 } // namespace _priv
 
 bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
@@ -186,31 +305,6 @@ bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
 	return InputInt3(label, glm::value_ptr(vec), flags);
 }
 
-static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
-	switch (axis) {
-	case math::Axis::X: {
-		const glm::vec4 &c = color(style::ColorAxisX);
-		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
-		style.setButtonColor(c);
-		break;
-	}
-	case math::Axis::Y: {
-		const glm::vec4 &c = color(style::ColorAxisY);
-		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
-		style.setButtonColor(c);
-		break;
-	}
-	case math::Axis::Z: {
-		const glm::vec4 &c = color(style::ColorAxisZ);
-		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
-		style.setButtonColor(c);
-		break;
-	}
-	default:
-		break;
-	}
-}
-
 void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X:
@@ -231,7 +325,7 @@ bool AxisCommandButton(math::Axis axis, const char *name, const char *command, c
 					   command::CommandExecutionListener *listener) {
 	{
 		ui::ScopedStyle style;
-		ImGui::AxisStyleButton(style, axis);
+		_priv::AxisStyleButton(style, axis);
 		char buf[16];
 		if (icon != nullptr) {
 			core::String::formatBuf(buf, sizeof(buf), "%s %s", icon, name);
@@ -271,122 +365,17 @@ bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value) {
 	return false;
 }
 
-bool AxisButtonX(const ImVec2& size_arg, ImGuiButtonFlags flags) {
-	ui::ScopedStyle style;
-	AxisStyleButton(style, math::Axis::X);
-	return ImGui::ButtonEx(_("X"), size_arg, flags);
-}
-
-bool AxisButtonY(const ImVec2& size_arg, ImGuiButtonFlags flags) {
-	ui::ScopedStyle style;
-	AxisStyleButton(style, math::Axis::Y);
-	return ImGui::ButtonEx(_("Y"), size_arg, flags);
-}
-
-bool AxisButtonZ(const ImVec2& size_arg, ImGuiButtonFlags flags) {
-	ui::ScopedStyle style;
-	AxisStyleButton(style, math::Axis::Z);
-	return ImGui::ButtonEx(_("Z"), size_arg, flags);
-}
-
 bool InputXYZ(const char *label, const glm::vec3 &vec) {
-	return InputXYZ(label, const_cast<glm::vec3 &>(vec), "%.3f", ImGuiInputTextFlags_ReadOnly);
+	glm::vec3 copy = vec;
+	return InputXYZ(label, copy, "%.3f", ImGuiInputTextFlags_ReadOnly);
 }
 
-bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags) {
-	if (ImGui::GetCurrentTable()) {
-		ImGui::BeginGroup();
-		ImGui::TableNextColumn();
-		const float h = ImGui::GetFrameHeight();
-		const ImVec2 size(h - 2.0f, h);
-		bool modified = false;
-
-		ui::ScopedID id(label);
-
-		if (ImGui::AxisButtonX(size, ImGuiButtonFlags_AlignTextBaseLine)) {
-			vec.x = 0.0f;
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::PushID(0);
-		modified |= ImGui::InputFloat("", &vec.x, 0.0f, 0.0f, format, flags);
-		ImGui::PopID();
-
-		if (ImGui::AxisButtonY(size, ImGuiButtonFlags_AlignTextBaseLine)) {
-			vec.y = 0.0f;
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::PushID(1);
-		modified |= ImGui::InputFloat("", &vec.y, 0.0f, 0.0f, format, flags);
-		ImGui::PopID();
-
-		if (ImGui::AxisButtonZ(size, ImGuiButtonFlags_AlignTextBaseLine)) {
-			vec.z = 0.0f;
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::PushID(2);
-		modified |= ImGui::InputFloat("", &vec.z, 0.0f, 0.0f, format, flags);
-		ImGui::PopID();
-
-		ImGui::TableNextColumn();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::TextUnformatted(label);
-
-		ImGui::EndGroup();
-		return modified;
-	}
-	return InputVec3(label, vec, format, flags);
+bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags, float step, float step_fast) {
+	return _priv::InputXYZImpl(label, vec, format, flags, step, step_fast);
 }
 
-bool InputXYZ(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
-	if (ImGui::GetCurrentTable()) {
-		ImGui::BeginGroup();
-		ImGui::TableNextColumn();
-		const float h = ImGui::GetFrameHeight();
-		const ImVec2 size(h - 2.0f, h);
-		bool modified = false;
-
-		ImGui::PushID(ImGui::GetCurrentTable()->CurrentRow);
-
-		if (ImGui::AxisButtonX(size, ImGuiButtonFlags_AlignTextBaseLine)) {
-			vec.x = 0.0f;
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::PushID(0);
-		modified |= ImGui::InputInt("", &vec.x, 0.0f, 0.0f, flags);
-		ImGui::PopID();
-
-		if (ImGui::AxisButtonY(size, ImGuiButtonFlags_AlignTextBaseLine)) {
-			vec.y = 0.0f;
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::PushID(1);
-		modified |= ImGui::InputInt("", &vec.y, 0.0f, 0.0f, flags);
-		ImGui::PopID();
-
-		if (ImGui::AxisButtonZ(size, ImGuiButtonFlags_AlignTextBaseLine)) {
-			vec.z = 0.0f;
-		}
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::PushID(2);
-		modified |= ImGui::InputInt("", &vec.z, 0.0f, 0.0f, flags);
-		ImGui::PopID();
-
-		ImGui::TableNextColumn();
-		ImGui::SetNextItemWidth(-1);
-		ImGui::TextUnformatted(label);
-
-		ImGui::PopID();
-
-		ImGui::EndGroup();
-		return modified;
-	}
-	return InputVec3(label, vec, flags);
+bool InputXYZ(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags, int step, int step_fast) {
+	return _priv::InputXYZImpl(label, vec, nullptr, flags, step, step_fast);
 }
 
 bool InputFloat(const char *label, float &v, const char *format, ImGuiInputTextFlags flags) {
