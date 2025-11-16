@@ -199,7 +199,7 @@ app::AppState VoxEdit::onConstruct() {
 			}
 		}
 		_sceneMgr->importDirectory(args[0], format);
-	}).setHelp(_("Import all files from a given directory"));
+	}).setHelp(_("Import all files from a given directory")).setArgumentCompleter(command::dirCompleter(_filesystem, _lastDirectory));
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
