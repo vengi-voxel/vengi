@@ -68,6 +68,7 @@ protected:
 		const auto selectionManager = core::make_shared<SelectionManager>();
 		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
 													  modifierRenderer, selectionManager);
+		core::Var::get(cfg::UILastDirectory, "", core::CV_NOPERSIST);
 		_sceneMgr->construct();
 		ASSERT_TRUE(_sceneMgr->init());
 
