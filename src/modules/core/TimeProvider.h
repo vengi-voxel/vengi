@@ -41,6 +41,7 @@ public:
 		return _tickSeconds;
 	}
 
+	double nowSeconds() const;
 	static core::String toString(unsigned long millis, const char *format = "%d-%m-%Y %H-%M-%S");
 
 	static uint64_t systemMillis();

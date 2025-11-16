@@ -13,6 +13,10 @@ namespace core {
 
 static constexpr uint64_t SecToMillis = (uint64_t)1000;
 
+double TimeProvider::nowSeconds() const {
+	return highResTime() / (double)highResTimeResolution();
+}
+
 void TimeProvider::updateTickTime() {
 	const double freq = (double)highResTimeResolution();
 	const uint64_t res = highResTimeResolution() / SecToMillis;
