@@ -91,6 +91,7 @@ protected:
 	core::VarPtr _gridSize;
 	core::VarPtr _transformUpdateChildren;
 	core::VarPtr _maxSuggestedVolumeSize;
+	core::VarPtr _lastDirectory;
 
 	bool _dirty = false;
 	// this is basically the same as the dirty state, but we stop

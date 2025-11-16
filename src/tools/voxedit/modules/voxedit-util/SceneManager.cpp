@@ -1704,6 +1704,7 @@ void SceneManager::construct() {
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
 	_maxSuggestedVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize);
+	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
 
 	voxelformat::FormatConfig::init();
 
@@ -1873,7 +1874,7 @@ void SceneManager::construct() {
 		if (!saveModels(dir)) {
 			Log::error("Failed to save models to dir: %s", dir.c_str());
 		}
-	}).setHelp(_("Save all model nodes into filenames represented by their node names"));
+	}).setHelp(_("Save all model nodes into filenames represented by their node names")).setArgumentCompleter(command::dirCompleter(_filesystem, _lastDirectory));
 
 	command::Command::registerCommand("modelsave", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
