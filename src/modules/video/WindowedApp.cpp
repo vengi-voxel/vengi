@@ -77,6 +77,11 @@ WindowedApp::~WindowedApp() {
 void WindowedApp::onAfterRunning() {
 	core_trace_scoped(WindowedAppAfterRunning);
 	video::endFrame(_window);
+
+	const double frameStartSeconds = _timeProvider->tickSeconds();
+	const double frameCurrentSeconds = _timeProvider->nowSeconds();
+	const double frameDeltaSeconds = frameCurrentSeconds - frameStartSeconds;
+	_fps = 1.0 / frameDeltaSeconds;
 }
 
 bool WindowedApp::handleSDLEvent(SDL_Event &event) {
@@ -192,10 +197,6 @@ app::AppState WindowedApp::onRunning() {
 	core_trace_scoped(WindowedAppStartFrame);
 	video::startFrame(_window, _rendererContext);
 	core::Singleton<ShaderManager>::getInstance().update();
-
-	const uint64_t end = core::TimeProvider::highResTime();
-	const double frameDelta = (double)(end - _timeProvider->highResTickTime()) / (double)core::TimeProvider::highResTimeResolution() * 1000.0;
-	_fps = 1.0 / frameDelta;
 
 	video_trace_frame_end();
 
