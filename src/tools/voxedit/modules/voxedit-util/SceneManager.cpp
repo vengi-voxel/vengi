@@ -235,7 +235,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 		Log::warn("Node with id %i wasn't found", nodeId);
 		return true;
 	}
-	if (node->type() != scenegraph::SceneGraphNodeType::Model) {
+	if (!node->isAnyModelNode()) {
 		Log::warn("Given node is no model node");
 		return false;
 	}
