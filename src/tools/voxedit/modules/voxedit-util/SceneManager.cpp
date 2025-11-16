@@ -352,10 +352,19 @@ void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelT
 }
 
 bool SceneManager::saveModels(const core::String& dir) {
+	if (dir.empty()) {
+		Log::warn("No directory given for model saving");
+		return false;
+	}
 	bool state = false;
+	const core::String &suggestedFilename = getSuggestedFilename();
+	core::String extension = core::string::extractExtension(suggestedFilename);
+	if (extension.empty()) {
+		extension = voxelformat::VENGIFormat::format().mainExtension();
+	}
 	for (auto iter = _sceneGraph.beginAllModels(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		const core::String filename = core::string::path(dir, node.name() + ".vengi");
+		const core::String filename = core::string::path(dir, node.name() + "." + extension);
 		state |= saveNode(node.id(), filename);
 	}
 	return state;
@@ -1854,9 +1863,12 @@ void SceneManager::construct() {
 	}).setHelp(_("Allow to align all nodes on the floor next to each other without overlapping"));
 
 	command::Command::registerCommand("modelssave", [&] (const command::CmdArgs& args) {
-		core::String dir = ".";
+		core::String dir = core::string::extractDir(getSuggestedFilename());
 		if (!args.empty()) {
 			dir = args[0];
+		}
+		if (dir.empty()) {
+			dir = _filesystem->homePath();
 		}
 		if (!saveModels(dir)) {
 			Log::error("Failed to save models to dir: %s", dir.c_str());
