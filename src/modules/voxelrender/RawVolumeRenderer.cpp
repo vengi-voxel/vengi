@@ -889,33 +889,33 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 // TODO: PERF: this is a huge bottleneck when rendering large scenes with many transparent objects
 void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RawVolumeRendererSortBeforeRender);
-	core::DynamicArray<int> indices;
-	indices.resize(voxel::MAX_VOLUMES);
-	for (const auto &i : meshState->meshes(voxel::MeshType_Transparency)) {
+	const voxel::MeshState::MeshesMap &transparencyMeshes = meshState->meshes(voxel::MeshType_Transparency);
+	for (const auto &i : transparencyMeshes) {
+		core::Buffer<int> indices;
+		indices.resize(voxel::MAX_VOLUMES);
 		indices.fill(-1);
-		app::for_parallel(0, voxel::MAX_VOLUMES, [&](int start, int end) {
-			for (int idx = start; idx < end; ++idx) {
-				if (!isVisible(meshState, idx)) {
-					continue;
-				}
-				const int bufferIndex = meshState->resolveIdx(idx);
-				// TODO: transform - vertices are in object space - eye in world space
-				// inverse of state._model - but take pivot into account
-				voxel::Mesh *mesh = i->second[bufferIndex];
-				if (!mesh || mesh->isEmpty()) {
-					continue;
-				}
-				if (mesh->sort(camera.worldPosition())) {
-					indices[idx] = bufferIndex;
-				}
-			}
-		});
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+			if (!isVisible(meshState, idx, true)) {
+				continue;
+			}
+			const int bufferIndex = meshState->resolveIdx(idx);
+			// TODO: transform - vertices are in object space - eye in world space
+			// inverse of state._model - but take pivot into account
+			voxel::Mesh *mesh = i->second[bufferIndex];
+			if (!mesh || mesh->isEmpty()) {
+				continue;
+			}
+			if (mesh->sort(camera.worldPosition())) {
+				indices[idx] = bufferIndex;
+			}
+		}
+		core_trace_scoped(UpdateBuffers);
+		for (size_t idx = 0; idx < indices.size(); ++idx) {
 			if (indices[idx] == -1) {
 				continue;
 			}
 			if (!updateBufferForVolume(meshState, indices[idx], voxel::MeshType_Transparency, UpdateBufferFlags::Indices)) {
-				Log::error("Failed to update the transparency mesh at index %i", idx);
+				Log::error("Failed to update the transparency mesh at index %i", (int)idx);
 			}
 		}
 	}
