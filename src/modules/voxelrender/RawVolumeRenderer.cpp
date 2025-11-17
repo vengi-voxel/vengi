@@ -891,10 +891,12 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RawVolumeRendererSortBeforeRender);
 	const voxel::MeshState::MeshesMap &transparencyMeshes = meshState->meshes(voxel::MeshType_Transparency);
+	core::Buffer<int> indices;
+	indices.resize(voxel::MAX_VOLUMES);
 	for (const auto &i : transparencyMeshes) {
-		core::Buffer<int> indices;
-		indices.resize(voxel::MAX_VOLUMES);
 		indices.fill(-1);
+		const glm::vec3 worldPosition = camera.worldPosition();
+		const voxel::MeshState::Meshes &meshes = i->second;
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
 			if (!isVisible(meshState, idx, true)) {
 				continue;
@@ -902,11 +904,11 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 			const int bufferIndex = meshState->resolveIdx(idx);
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
-			voxel::Mesh *mesh = i->second[bufferIndex];
+			voxel::Mesh *mesh = meshes[bufferIndex];
 			if (!mesh || mesh->isEmpty()) {
 				continue;
 			}
-			if (mesh->sort(camera.worldPosition())) {
+			if (mesh->sort(worldPosition)) {
 				indices[idx] = bufferIndex;
 			}
 		}
