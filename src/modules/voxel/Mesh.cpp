@@ -509,11 +509,11 @@ struct TriangleView {
 };
 
 bool Mesh::sort(const glm::vec3 &cameraPos) {
+	core_trace_scoped(MeshSort);
 	if (glm::all(glm::epsilonEqual(cameraPos, _lastCameraPos, glm::vec3(0.5f)))) {
 		return false;
 	}
 	_lastCameraPos = cameraPos;
-	core_trace_scoped(MeshSort);
 	TriangleView triView(_vecVertices, _vecIndices);
 	app::sort_parallel(triView.begin(), triView.end(), [&cameraPos](const Triangle &lhs, const Triangle &rhs) {
 		return glm::distance2(lhs.center(), cameraPos) < glm::distance2(rhs.center(), cameraPos);

@@ -29,6 +29,7 @@ int for_parallel_size(int start, int end);
  */
 template<typename Iter, class Comparator>
 void sort_parallel(Iter first, Iter last, Comparator comp) {
+	core_trace_scoped(sort_parallel);
 	const int size = core::distance(first, last);
 	if (size <= 128) {
 		core::sort(first, last, comp);

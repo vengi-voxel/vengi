@@ -22,12 +22,14 @@ int for_parallel_size(int start, int end) {
 }
 
 void for_not_parallel(int start, int end, const std::function<void(int, int)> &f) {
+	core_trace_scoped(for_not_parallel);
 	if (start >= end)
 		return;
 	f(start, end);
 }
 
 void for_parallel(int start, int end, const std::function<void(int, int)> &taskLambda, bool wait) {
+	core_trace_scoped(for_parallel);
 	if (start >= end)
 		return;
 
