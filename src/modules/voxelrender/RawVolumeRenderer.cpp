@@ -669,6 +669,7 @@ void RawVolumeRenderer::clear(const voxel::MeshStatePtr &meshState) {
 		}
 	}
 	meshState->resetReferences();
+	meshState->clear();
 }
 
 void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int idx) {
