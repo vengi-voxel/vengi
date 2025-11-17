@@ -480,6 +480,7 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 }
 
 bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount) {
+	core_trace_scoped(UpdateIndexBufferForVolume);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
 	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
 	voxel::IndexType *indicesPos = indicesBuf;
@@ -523,6 +524,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 
 	RenderState &state = _state[bufferIndex];
 	if (indCount == 0u || vertCount == 0u) {
+		core_trace_scoped(ClearVertexBuffer);
 		Log::debug("clear vertexbuffer: %i", idx);
 		video::Buffer &buffer = state._vertexBuffer[type];
 		buffer.update(state._vertexBufferIndex[type], nullptr, 0);
@@ -670,6 +672,7 @@ void RawVolumeRenderer::clear(const voxel::MeshStatePtr &meshState) {
 }
 
 void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int idx) {
+	core_trace_scoped(UpdatePalette);
 	const int bufferIndex = meshState->resolveIdx(idx);
 	const palette::Palette &palette = meshState->palette(bufferIndex);
 
@@ -697,6 +700,7 @@ void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int 
 		_state[idx]._culled = true;
 		return;
 	}
+	core_trace_scoped(UpdateCulling);
 	_state[idx]._culled = false;
 	_state[idx]._empty = false;
 	// check a potentially referenced mesh here
@@ -936,6 +940,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	}
 
 	if (_cullBuffers->boolVal()) {
+		core_trace_scoped(CullBuffers);
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
 			if (!isVisible(meshState, idx)) {
 				continue;

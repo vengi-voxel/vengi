@@ -118,6 +118,7 @@ bool SceneGraphPanel::isFiltered(const scenegraph::SceneGraphNode &node) const {
 void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
 							  int depth, int referencedNodeId) {
+	core_trace_scoped(RecursiveAddNodes);
 	const int nodeId = node.id();
 	bool open = false;
 	const int activeNode = sceneGraph.activeNode();

@@ -4,6 +4,7 @@
 
 #include "CommandHandler.h"
 #include "core/BindingContext.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "command/Command.h"
 #include "core/Tokenizer.h"
@@ -31,6 +32,7 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 	if (commandLine.empty()) {
 		return 0;
 	}
+	core_trace_scoped(ExecuteCommands);
 	int n = 0;
 	core::TokenizerConfig cfg;
 	cfg.skipComments = false;
