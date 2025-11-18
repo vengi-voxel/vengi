@@ -583,32 +583,38 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 	}
 	state._dirtyNormals = true;
 
-	Log::debug("update vertexbuffer: %i (type: %i)", idx, type);
-	if (!state._vertexBuffer[type].update(state._vertexBufferIndex[type], verticesBuf, verticesBufSize)) {
-		Log::error("Failed to update the vertex buffer");
-		core_free(indicesBuf);
-		core_free(verticesBuf);
-		core_free(normalsBuf);
-		return false;
+	if (flags & UpdateBufferFlags::Vertices) {
+		Log::debug("update vertexbuffer: %i (type: %i)", idx, type);
+		if (!state._vertexBuffer[type].update(state._vertexBufferIndex[type], verticesBuf, verticesBufSize)) {
+			Log::error("Failed to update the vertex buffer");
+			core_free(indicesBuf);
+			core_free(verticesBuf);
+			core_free(normalsBuf);
+			return false;
+		}
 	}
 	core_free(verticesBuf);
 
-	if (state._normalBufferIndex[type] != -1) {
-		Log::debug("update normalbuffer: %i (type: %i)", idx, type);
-		if (!state._vertexBuffer[type].update(state._normalBufferIndex[type], normalsBuf, normalsBufSize)) {
-			Log::error("Failed to update the normal buffer");
-			core_free(normalsBuf);
-			core_free(indicesBuf);
-			return false;
+	if (flags & UpdateBufferFlags::Normals) {
+		if (state._normalBufferIndex[type] != -1) {
+			Log::debug("update normalbuffer: %i (type: %i)", idx, type);
+			if (!state._vertexBuffer[type].update(state._normalBufferIndex[type], normalsBuf, normalsBufSize)) {
+				Log::error("Failed to update the normal buffer");
+				core_free(normalsBuf);
+				core_free(indicesBuf);
+				return false;
+			}
 		}
 	}
 	core_free(normalsBuf);
 
-	Log::debug("update indexbuffer: %i (type: %i)", idx, type);
-	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
-		Log::error("Failed to update the index buffer");
-		core_free(indicesBuf);
-		return false;
+	if (flags & UpdateBufferFlags::Indices) {
+		Log::debug("update indexbuffer: %i (type: %i)", idx, type);
+		if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
+			Log::error("Failed to update the index buffer");
+			core_free(indicesBuf);
+			return false;
+		}
 	}
 	core_free(indicesBuf);
 	return true;
