@@ -471,7 +471,8 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 		offset += mesh->getNoOfVertices();
 	}
 	Log::debug("update indexbuffer with culling: %i (type: %i, culled: %i)", idx, type, culled);
-	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize, true)) {
+	const size_t reducedIndices = (size_t)(indicesPos - indicesBuf) * sizeof(voxel::IndexType);
+	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, reducedIndices, true)) {
 		Log::error("Failed to update the index buffer with culling");
 		core_free(indicesBuf);
 		return false;
@@ -502,7 +503,8 @@ bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &me
 		offset += mesh->getNoOfVertices();
 	}
 	Log::debug("update indexbuffer: %i (type: %i)", idx, type);
-	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize, true)) {
+	const size_t reducedIndices = (size_t)(indicesPos - indicesBuf) * sizeof(voxel::IndexType);
+	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, reducedIndices, true)) {
 		Log::error("Failed to update the index buffer");
 		core_free(indicesBuf);
 		return false;
