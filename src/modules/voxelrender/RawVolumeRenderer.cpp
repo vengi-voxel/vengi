@@ -976,37 +976,37 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_shadow.update(camera, true);
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
-			_shadow.render(
-				[this, &meshState](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
-					alignas(16) shader::ShadowmapData::BlockData var;
-					var.lightviewprojection = lightViewProjection;
+			auto renderFunc = [this, &meshState](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+				alignas(16) shader::ShadowmapData::BlockData var;
+				var.lightviewprojection = lightViewProjection;
 
-					for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-						if (!isVisible(meshState, idx)) {
-							continue;
-						}
-						const int bufferIndex = meshState->resolveIdx(idx);
-						for (int i = 0; i < voxel::MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
-							const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
-							if (indices > 0u) {
-								video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
-								var.model = meshState->model(idx);
-								_shadowMapUniformBlock.update(var);
-								_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
-								video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-								static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-								video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-							}
+				for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+					if (!isVisible(meshState, idx)) {
+						continue;
+					}
+					const int bufferIndex = meshState->resolveIdx(idx);
+					for (int i = 0; i < voxel::MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
+						const uint32_t indices = _state[bufferIndex].indices((voxel::MeshType)i);
+						if (indices > 0u) {
+							video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
+							var.model = meshState->model(idx);
+							_shadowMapUniformBlock.update(var);
+							_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
+							video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
+							static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+							video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 						}
 					}
-					return true;
-				},
-				true);
+				}
+				return true;
+			};
+			_shadow.render(renderFunc, true);
 		} else {
-			_shadow.render([](int i, const glm::mat4 &lightViewProjection) {
+			auto renderFunc = [](int i, const glm::mat4 &lightViewProjection) {
 				video::clear(video::ClearFlag::Depth);
 				return true;
-			});
+			};
+			_shadow.render(renderFunc);
 		}
 	}
 
