@@ -891,6 +891,9 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RawVolumeRendererSortBeforeRender);
 	const voxel::MeshState::MeshesMap &transparencyMeshes = meshState->meshes(voxel::MeshType_Transparency);
+	if (transparencyMeshes.empty()) {
+		return;
+	}
 	core::Buffer<int> indices;
 	indices.resize(voxel::MAX_VOLUMES);
 	for (const auto &i : transparencyMeshes) {

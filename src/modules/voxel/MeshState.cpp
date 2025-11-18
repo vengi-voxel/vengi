@@ -80,14 +80,22 @@ void MeshState::clearMeshes() {
 
 void MeshState::addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType type) {
 	auto iter = _meshes[type].find(result.mins);
+	auto &mesh = result.mesh.mesh[type];
 	if (iter != _meshes[type].end()) {
 		delete iter->value[result.idx];
-		iter->value[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
+		if (mesh.isEmpty()) {
+			iter->value[result.idx] = nullptr;
+			return;
+		}
+		iter->value[result.idx] = new voxel::Mesh(core::move(mesh));
+		return;
+	}
+	if (mesh.isEmpty()) {
 		return;
 	}
 	Meshes meshes;
 	meshes.fill(nullptr);
-	meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
+	meshes[result.idx] = new voxel::Mesh(core::move(mesh));
 	_meshes[type].emplace(result.mins, core::move(meshes));
 }
 
