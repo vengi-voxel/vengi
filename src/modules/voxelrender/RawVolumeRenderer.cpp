@@ -695,9 +695,6 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 }
 
 void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera) {
-	if (!_cullNodes->boolVal()) {
-		return;
-	}
 	if (meshState->hidden(idx)) {
 		_state[idx]._culled = true;
 		return;
@@ -714,6 +711,9 @@ void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int 
 		}
 #endif
 		_state[idx]._empty = true;
+		return;
+	}
+	if (!_cullNodes->boolVal()) {
 		return;
 	}
 	const glm::ivec3 &mins = meshState->mins(idx);
@@ -871,6 +871,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
+		core_assert_always(scopedBuf.success());
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
