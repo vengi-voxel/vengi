@@ -12,6 +12,7 @@
 #include "video/Camera.h"
 #include "voxel/RawVolume.h"
 #include "voxelrender/RawVolumeRenderer.h"
+#include <limits>
 
 namespace voxelrender {
 
@@ -206,9 +207,27 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	}
 	const glm::vec3 &pivot = node.pivot();
 	const glm::mat4 &worldMatrix = transform.calculateWorldMatrix(pivot, region.getDimensionsInVoxels());
-	const glm::vec3 &mins = worldMatrix * glm::vec4(region.getLowerCornerf(), 1.0f);
-	const glm::vec3 &maxs = worldMatrix * glm::vec4(region.getUpperCornerf(), 1.0f);
-	meshState->setModelMatrix(idx, worldMatrix, mins, maxs);
+	const glm::vec3 &mins = region.getLowerCornerf();
+	const glm::vec3 &maxs = region.getUpperCornerf();
+	glm::vec3 corners[8];
+	corners[0] = glm::vec3(mins.x, mins.y, mins.z);
+	corners[1] = glm::vec3(maxs.x, mins.y, mins.z);
+	corners[2] = glm::vec3(mins.x, maxs.y, mins.z);
+	corners[3] = glm::vec3(maxs.x, maxs.y, mins.z);
+	corners[4] = glm::vec3(mins.x, mins.y, maxs.z);
+	corners[5] = glm::vec3(maxs.x, mins.y, maxs.z);
+	corners[6] = glm::vec3(mins.x, maxs.y, maxs.z);
+	corners[7] = glm::vec3(maxs.x, maxs.y, maxs.z);
+
+	glm::vec3 transformedMins(std::numeric_limits<float>::max());
+	glm::vec3 transformedMaxs(std::numeric_limits<float>::lowest());
+
+	for (int i = 0; i < 8; ++i) {
+		const glm::vec3 transformed = glm::vec3(worldMatrix * glm::vec4(corners[i], 1.0f));
+		transformedMins = glm::min(transformedMins, transformed);
+		transformedMaxs = glm::max(transformedMaxs, transformed);
+	}
+	meshState->setModelMatrix(idx, worldMatrix, transformedMins, transformedMaxs);
 }
 
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
