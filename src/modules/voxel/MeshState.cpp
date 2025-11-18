@@ -67,7 +67,7 @@ bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 
 	return true;
 }
 
-void MeshState::clear() {
+void MeshState::clearMeshes() {
 	for (int i = 0; i < MeshType_Max; ++i) {
 		for (const auto &iter : _meshes[i]) {
 			for (voxel::Mesh *mesh : iter->value) {
@@ -360,7 +360,7 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 }
 
 core::Buffer<voxel::RawVolume *> MeshState::shutdown() {
-	clear();
+	clearMeshes();
 	core::Buffer<voxel::RawVolume *> old;
 	old.reserve(MAX_VOLUMES);
 	for (int idx = 0; idx < (int)_volumeData.size(); ++idx) {

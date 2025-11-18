@@ -128,7 +128,7 @@ BENCHMARK_DEFINE_F(MeshStateBenchmark, Extract)(benchmark::State &state) {
 				break;
 			}
 		}
-		meshState.clear();
+		meshState.clearMeshes();
 		(void)meshState.setVolume(0, nullptr, nullptr, nullptr, true, meshDeleted);
 	}
 }

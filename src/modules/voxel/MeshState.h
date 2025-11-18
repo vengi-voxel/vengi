@@ -107,7 +107,7 @@ private:
 
 public:
 	MeshState();
-	void clear();
+	void clearMeshes();
 	const MeshesMap &meshes(MeshType type) const;
 	/**
 	 * @brief This will transfer the extracted meshes into the mesh state and make
