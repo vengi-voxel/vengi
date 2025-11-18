@@ -981,11 +981,21 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
 			auto renderFunc = [this, &meshState](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+				math::Frustum frustum;
+				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection);
 				alignas(16) shader::ShadowmapData::BlockData var;
 				var.lightviewprojection = lightViewProjection;
 
 				for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-					if (!isVisible(meshState, idx)) {
+					if (meshState->hidden(idx)) {
+						continue;
+					}
+					if (_state[idx]._empty) {
+						continue;
+					}
+					const glm::vec3 &mins = meshState->mins(idx);
+					const glm::vec3 &maxs = meshState->maxs(idx);
+					if (!frustum.isVisible(mins, maxs)) {
 						continue;
 					}
 					const int bufferIndex = meshState->resolveIdx(idx);
