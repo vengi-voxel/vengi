@@ -437,6 +437,7 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr &meshState,
 													   const video::Camera &camera, int idx, voxel::MeshType type,
 													   size_t indCount) {
+	core_trace_scoped(UpdateIndexBufferForVolumeCull);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
 	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
 	voxel::IndexType *indicesPos = indicesBuf;
