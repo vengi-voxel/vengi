@@ -301,7 +301,7 @@ void Mesh::calculateNormals() {
 
 void Mesh::calculateBounds() {
 	_mins = glm::vec3(std::numeric_limits<float>::max());
-	_maxs = glm::vec3(std::numeric_limits<float>::min());
+	_maxs = glm::vec3(std::numeric_limits<float>::lowest());
 	for (const VoxelVertex &vertex : _vecVertices) {
 		_mins = glm::min(_mins, vertex.position);
 		_maxs = glm::max(_maxs, vertex.position);

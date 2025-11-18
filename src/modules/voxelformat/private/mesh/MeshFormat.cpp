@@ -688,7 +688,7 @@ int MeshFormat::voxelizeMesh(const core::UUID &uuid, const core::String &name, s
 int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 									PointCloud &&vertices) const {
 	glm::vec3 mins{std::numeric_limits<float>::max()};
-	glm::vec3 maxs{std::numeric_limits<float>::min()};
+	glm::vec3 maxs{std::numeric_limits<float>::lowest()};
 	const glm::vec3 scale = getInputScale();
 	for (PointCloudVertex &v : vertices) {
 		v.position *= scale;

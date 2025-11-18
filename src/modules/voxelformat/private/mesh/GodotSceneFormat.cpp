@@ -121,7 +121,7 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 			wrapBool(stream.writeStringFormat(false, "_surfaces = ["))
 			for (size_t c = 0; c < palette.size(); ++c) {
 				glm::vec3 mins(std::numeric_limits<float>::max());
-				glm::vec3 maxs(std::numeric_limits<float>::min());
+				glm::vec3 maxs(std::numeric_limits<float>::lowest());
 
 				if (stopExecution()) {
 					break;
