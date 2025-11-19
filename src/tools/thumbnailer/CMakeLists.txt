@@ -1,6 +1,7 @@
 project(thumbnailer)
 set(SRCS
 	Thumbnailer.h Thumbnailer.cpp
+	Shared.h Shared.cpp
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} DESCRIPTION "Command line voxel thumbnailer")
@@ -19,6 +20,7 @@ if (WIN32)
 		windows/ThumbnailerDLL.def
 		windows/ThumbnailerProvider.cpp windows/ThumbnailerProvider.h
 		Thumbnailer.h Thumbnailer.cpp
+		Shared.h Shared.cpp
 	)
 	engine_add_sharedlibrary(TARGET voxelthumb SRCS ${WIN_SRCS})
 	target_compile_definitions(voxelthumb PRIVATE -DWINDOWS_THUMBNAILER_DLL)
