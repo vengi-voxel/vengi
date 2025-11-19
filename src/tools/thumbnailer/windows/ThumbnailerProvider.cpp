@@ -4,6 +4,7 @@
 
 #include "ThumbnailerProvider.h"
 #include "../Thumbnailer.h"
+#include "app/App.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "io/Filesystem.h"
@@ -17,6 +18,8 @@
 extern void DllAddRef();
 extern void DllRelease();
 
+// TODO: don't inherit from Thumbnailer directly - instead move the relevant code into a shared class and inherit from
+// app::App because we are handling the gl context here ourselves
 class DLLThumbnailer : public Thumbnailer {
 private:
 	using Super = Thumbnailer;
@@ -51,6 +54,53 @@ public:
 	DLLThumbnailer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, HBITMAP *phbmp)
 		: Super(filesystem, timeProvider), _phbmp(phbmp) {
 	}
+
+#if 0
+	app::AppState onRunning() override {
+		app::AppState state = Super::onRunning();
+		if (state != app::AppState::Running) {
+			return state;
+		}
+		// TODO: move code from Thumbnailer::onRunning() here and adapt
+		return state;
+	}
+
+	app::AppState onCleanup() override {
+		// TODO: clean up OpenGL context and handles
+		return Super::onCleanup();
+	}
+
+	app::AppState onInit() override {
+		app::AppState state = Super::onInit();
+		if (state != app::AppState::Running) {
+			return state;
+		}
+		// TODO: the DLLThumbnailer app is creating a SDL window and GL context - which is not allowed from within a DLL.
+		// This needs to be rewritten to only use a rendering buffer from windows without creating a window. See
+		// https://github.com/vengi-voxel/vengi/issues/85
+		// Create offscreen OpenGL context
+		HDC hdc = CreateCompatibleDC(NULL);
+		PIXELFORMATDESCRIPTOR pfd = {
+			sizeof(PIXELFORMATDESCRIPTOR),
+			1,
+			PFD_DRAW_TO_BITMAP | PFD_SUPPORT_OPENGL,
+			PFD_TYPE_RGBA,
+			32, // Color bits
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			16, // Depth bits
+			0, 0,
+			PFD_MAIN_PLANE,
+			0, 0, 0, 0
+		};
+
+		int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+		SetPixelFormat(hdc, pixelFormat, &pfd);
+		HGLRC hglrc = wglCreateContext(hdc);
+		wglMakeCurrent(hdc, hglrc);
+		// load OpenGL functions and all the init stuff that the WindowedApp is doing, too (except of course the window itself ;) )
+		return state;
+	}
+#endif
 };
 
 ThumbnailerProvider::ThumbnailerProvider() : count(1) {
