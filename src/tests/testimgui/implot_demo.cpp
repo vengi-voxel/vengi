@@ -1399,6 +1399,7 @@ void Demo_LegendOptions() {
     CHECKBOX_FLAG(flags, ImPlotLegendFlags_Horizontal);
     CHECKBOX_FLAG(flags, ImPlotLegendFlags_Outside);
     CHECKBOX_FLAG(flags, ImPlotLegendFlags_Sort);
+    CHECKBOX_FLAG(flags, ImPlotLegendFlags_Reverse);
 
     ImGui::SliderFloat2("LegendPadding", (float*)&GetStyle().LegendPadding, 0.0f, 20.0f, "%.0f");
     ImGui::SliderFloat2("LegendInnerPadding", (float*)&GetStyle().LegendInnerPadding, 0.0f, 10.0f, "%.0f");
@@ -1422,7 +1423,7 @@ void Demo_LegendOptions() {
         ImPlot::PlotLineG("Item 003", MyImPlot::SawWave,  &data5, 1000);         // combined with previous "Item C"
 
         for (int i = 0; i < num_dummy_items; ++i) {
-            char label[17];
+            char label[16];
             snprintf(label, sizeof(label), "Item %03d", i+4);
             ImPlot::PlotDummy(label);
         }
