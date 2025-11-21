@@ -311,9 +311,8 @@ public:
 
 	void append(const TYPE* array, size_t n) {
 		checkBufferSize(_size + n);
-		for (size_t i = 0u; i < n; ++i) {
-			_buffer[_size++] = array[i];
-		}
+		core_memcpy(&_buffer[_size], array, n * sizeof(TYPE));
+		_size += n;
 	}
 
 	template<class FUNC>
