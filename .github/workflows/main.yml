@@ -22,7 +22,7 @@ jobs:
         timeout-minutes: 60
         runs-on: macos-15
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Setup
           run: brew install sdl2 jpeg-turbo python curl glslang ninja ccache pkg-config
@@ -87,7 +87,7 @@ jobs:
         if: github.repository == 'vengi-voxel/vengi'
         runs-on: ubuntu-22.04
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Setup
           run: |
@@ -126,7 +126,7 @@ jobs:
         runs-on: ubuntu-22.04
 
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Setup
           run: |
@@ -157,7 +157,7 @@ jobs:
         runs-on: ubuntu-22.04
 
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Setup
           run: |
@@ -211,7 +211,7 @@ jobs:
           image: rockylinux/rockylinux:9
 
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Setup
           run: |
@@ -248,7 +248,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Setup
           run: |
@@ -304,7 +304,7 @@ jobs:
                 artifactsPostfix: -debug
 
         steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         - name: Build
           run: |
