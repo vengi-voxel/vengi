@@ -12,6 +12,7 @@ Build-Depends:
  binutils-dev,
  libunwind-dev,
  libcurl-ssl-dev,
+ libdeflate-dev,
  libjpeg-dev,
  libsdl2-dev,
  libfreetype-dev,
