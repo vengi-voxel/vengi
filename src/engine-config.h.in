@@ -21,6 +21,7 @@
 
 #cmakedefine USE_OPENGLES 1
 #cmakedefine USE_ZLIB 1
+#cmakedefine USE_LIBDEFLATE 1
 #cmakedefine USE_CURL 1
 #cmakedefine USE_LIBJPEG 1
 #cmakedefine USE_LIBPNG 1

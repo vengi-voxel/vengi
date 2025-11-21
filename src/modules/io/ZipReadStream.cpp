@@ -5,19 +5,37 @@
 #include "ZipReadStream.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "engine-config.h" // USE_ZLIB
-#if USE_ZLIB
+#include "engine-config.h" // USE_ZLIB, USE_LIBDEFLATE
+#if USE_LIBDEFLATE
+#include "core/collection/Buffer.h"
+#include <libdeflate.h>
+#elif USE_ZLIB
 #define ZLIB_CONST
 #ifndef Z_DEFAULT_WINDOW_BITS
 #define Z_DEFAULT_WINDOW_BITS 15
 #endif
 #include <zlib.h>
-#else
+#else // USE_ZLIB
 #include "io/external/miniz.h"
 #endif
 #include "core/Assert.h"
 
 namespace io {
+
+#if USE_LIBDEFLATE
+struct ZipReadLibDeflateState {
+	libdeflate_decompressor *decompressor = nullptr;
+	core::Buffer<uint8_t> uncompressedData;
+	size_t uncompressedPos = 0;
+	bool decompressed = false;
+	CompressionType type = CompressionType::Deflate;
+	int64_t compressedSize = -1;
+};
+
+#ifndef Z_DEFLATED
+#define Z_DEFLATED 8
+#endif
+#endif
 
 bool ZipReadStream::isZipStream(io::SeekableReadStream &readStream) {
 	int64_t pos = readStream.pos();
@@ -34,6 +52,13 @@ bool ZipReadStream::isZipStream(io::SeekableReadStream &readStream) {
 
 ZipReadStream::ZipReadStream(io::ReadStream &readStream, int size, CompressionType type)
 	: _readStream(readStream), _size(size), _remaining(size) {
+#if USE_LIBDEFLATE
+	ZipReadLibDeflateState *state = new ZipReadLibDeflateState();
+	state->decompressor = libdeflate_alloc_decompressor();
+	state->type = type;
+	state->compressedSize = size;
+	_stream = state;
+#else
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
 	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
 	((z_stream *)_stream)->zalloc = Z_NULL;
@@ -57,14 +82,11 @@ ZipReadStream::ZipReadStream(io::ReadStream &readStream, int size, CompressionTy
 		Log::error("Failed to initialize zip stream");
 		_err = true;
 	}
+#endif
 }
 
 ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	: _readStream(readStream), _size(size), _remaining(size) {
-	_stream = (z_stream *)core_malloc(sizeof(z_stream));
-	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
-	((z_stream *)_stream)->zalloc = Z_NULL;
-	((z_stream *)_stream)->zfree = Z_NULL;
 
 	if (_remaining < 0 || readStream.remaining() < _remaining) {
 		_remaining = (int)readStream.remaining();
@@ -77,6 +99,41 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	if (readStream.readUInt8(gzipHeader[1]) == -1) {
 		_err = true;
 	}
+
+#if USE_LIBDEFLATE
+	ZipReadLibDeflateState *state = new ZipReadLibDeflateState();
+	state->decompressor = libdeflate_alloc_decompressor();
+	_stream = state;
+
+	CompressionType type = CompressionType::Deflate;
+	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
+		type = CompressionType::Gzip;
+		readStream.seek(-4, SEEK_END);
+		uint32_t isize = 0u;
+		readStream.readUInt32(isize);
+		_uncompressedSize = isize;
+		readStream.seek(curPos, SEEK_SET);
+		readStream.skip(10); // Skip header
+	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED && ((gzipHeader[0] >> 4) >= 7 && (gzipHeader[0] >> 4) <= 15) &&
+			   ((gzipHeader[0] << 8 | gzipHeader[1]) % 31 == 0)) {
+		type = CompressionType::Zlib;
+		readStream.seek(curPos, SEEK_SET);
+	} else {
+		type = CompressionType::Deflate;
+		readStream.seek(curPos, SEEK_SET);
+	}
+	state->type = type;
+
+	int64_t readSize = size;
+	if (readSize == -1) {
+		readSize = readStream.remaining();
+	}
+	state->compressedSize = readSize;
+#else
+	_stream = (z_stream *)core_malloc(sizeof(z_stream));
+	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
+	((z_stream *)_stream)->zalloc = Z_NULL;
+	((z_stream *)_stream)->zfree = Z_NULL;
 
 	int windowBits = 0;
 	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
@@ -107,11 +164,18 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		Log::error("Failed to initialize zip stream");
 		_err = true;
 	}
+#endif
 }
 
 ZipReadStream::~ZipReadStream() {
+#if USE_LIBDEFLATE
+	ZipReadLibDeflateState *state = (ZipReadLibDeflateState *)_stream;
+	libdeflate_free_decompressor(state->decompressor);
+	delete state;
+#else
 	inflateEnd(((z_stream *)_stream));
 	core_free(((z_stream *)_stream));
+#endif
 }
 
 bool ZipReadStream::eos() const {
@@ -151,6 +215,85 @@ int ZipReadStream::read(void *buf, size_t size) {
 	if (_eos) {
 		return 0;
 	}
+#if USE_LIBDEFLATE
+	ZipReadLibDeflateState *state = (ZipReadLibDeflateState *)_stream;
+	if (!state->decompressed) {
+		state->decompressed = true;
+		core::Buffer<uint8_t> compressedData;
+		if (state->compressedSize > 0) {
+			compressedData.resize(state->compressedSize);
+			if (_readStream.read(compressedData.data(), state->compressedSize) != state->compressedSize) {
+				_err = true;
+				return -1;
+			}
+		} else if (state->compressedSize == -1) {
+			uint8_t readBuf[4096];
+			while (true) {
+				int read = _readStream.read(readBuf, sizeof(readBuf));
+				if (read < 0) {
+					_err = true;
+					return -1;
+				}
+				if (read == 0) {
+					break;
+				}
+				const size_t newSize = compressedData.size() + read;
+				if (compressedData.capacity() < newSize) {
+					compressedData.reserve(core_max(compressedData.capacity() * 2, newSize));
+				}
+				compressedData.append(readBuf, read);
+			}
+		} else {
+			_err = true;
+			return -1;
+		}
+
+		size_t outSize = _uncompressedSize > 0 ? _uncompressedSize : (compressedData.size() * 4);
+		if (outSize == 0) {
+			outSize = 1024 * 1024;
+		}
+
+		while (true) {
+			state->uncompressedData.resize(outSize);
+			size_t actualOutSize = 0;
+			libdeflate_result res;
+			if (state->type == CompressionType::Gzip) {
+				res = libdeflate_gzip_decompress(state->decompressor, compressedData.data(), compressedData.size(),
+												 state->uncompressedData.data(), outSize, &actualOutSize);
+			} else if (state->type == CompressionType::Zlib) {
+				res = libdeflate_zlib_decompress(state->decompressor, compressedData.data(), compressedData.size(),
+												 state->uncompressedData.data(), outSize, &actualOutSize);
+			} else {
+				res = libdeflate_deflate_decompress(state->decompressor, compressedData.data(), compressedData.size(),
+													state->uncompressedData.data(), outSize, &actualOutSize);
+			}
+
+			if (res == LIBDEFLATE_SUCCESS) {
+				state->uncompressedData.resize(actualOutSize);
+				_uncompressedSize = (int)actualOutSize;
+				_remaining = 0;
+				break;
+			} else if (res == LIBDEFLATE_INSUFFICIENT_SPACE) {
+				outSize *= 2;
+			} else {
+				_err = true;
+				Log::error("Failed to decompress zip stream");
+				return -1;
+			}
+		}
+	}
+
+	size_t avail = state->uncompressedData.size() - state->uncompressedPos;
+	size_t toRead = core_min(size, avail);
+	if (toRead > 0) {
+		core_memcpy(buf, state->uncompressedData.data() + state->uncompressedPos, toRead);
+		state->uncompressedPos += toRead;
+	}
+	if (state->uncompressedPos >= state->uncompressedData.size()) {
+		_eos = true;
+	}
+	return (int)toRead;
+#else
 	uint8_t *targetPtr = (uint8_t *)buf;
 	z_stream *stream = (z_stream *)_stream;
 	size_t readCnt = 0;
@@ -201,6 +344,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 		}
 	}
 	return (int)readCnt;
+#endif
 }
 
 } // namespace io
