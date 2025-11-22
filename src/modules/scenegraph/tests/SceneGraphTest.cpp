@@ -800,4 +800,60 @@ TEST_F(SceneGraphTest, testSceneGraphKeyFramesMap) {
 	keyFramesMap.emplace("Test", core::move(frames));
 }
 
-} // namespace scenegraph
+TEST_F(SceneGraphTest, testChildRotationFlipping) {
+	SceneGraph sceneGraph;
+	int parentId = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		node.setName("parent");
+		SceneGraphTransform transform;
+		// Rotate parent 90 degrees around Y
+		transform.setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+		node.setTransform(0, transform);
+		parentId = sceneGraph.emplace(core::move(node));
+	}
+	int childId = InvalidNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("child");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		SceneGraphTransform transform;
+		// Rotate child 90 degrees around X
+		transform.setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+		node.setTransform(0, transform);
+		childId = sceneGraph.emplace(core::move(node), parentId);
+	}
+
+	sceneGraph.updateTransforms();
+	const glm::mat4 worldMatrix = sceneGraph.worldMatrix(sceneGraph.node(childId), 0);
+	// Expected: Parent Rotation * Child Rotation
+	// R_p = RotY(90)
+	// R_c = RotX(90)
+	// World = R_p * R_c
+
+	glm::quat qp = glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::quat qc = glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 expected = glm::mat4_cast(qp) * glm::mat4_cast(qc);
+
+	// Check if they match
+	// We can check basis vectors
+	glm::vec3 expectedRight = glm::vec3(expected[0]);
+	glm::vec3 expectedUp = glm::vec3(expected[1]);
+	glm::vec3 expectedForward = glm::vec3(expected[2]);
+
+	glm::vec3 actualRight = glm::vec3(worldMatrix[0]);
+	glm::vec3 actualUp = glm::vec3(worldMatrix[1]);
+	glm::vec3 actualForward = glm::vec3(worldMatrix[2]);
+
+	EXPECT_NEAR(expectedRight.x, actualRight.x, 0.001f);
+	EXPECT_NEAR(expectedRight.y, actualRight.y, 0.001f);
+	EXPECT_NEAR(expectedRight.z, actualRight.z, 0.001f);
+	EXPECT_NEAR(expectedUp.x, actualUp.x, 0.001f);
+	EXPECT_NEAR(expectedUp.y, actualUp.y, 0.001f);
+	EXPECT_NEAR(expectedUp.z, actualUp.z, 0.001f);
+	EXPECT_NEAR(expectedForward.x, actualForward.x, 0.001f);
+	EXPECT_NEAR(expectedForward.y, actualForward.y, 0.001f);
+	EXPECT_NEAR(expectedForward.z, actualForward.z, 0.001f);
+}
+
+}
