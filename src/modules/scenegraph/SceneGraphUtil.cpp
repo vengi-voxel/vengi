@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
+#include "core/collection/DynamicMap.h"
 
 namespace scenegraph {
 
@@ -37,7 +38,7 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	target.setPivot(node.pivot());
 	target.setColor(node.color());
 	target.addProperties(node.properties());
-	// TODO: SCENEGRAPH: the reference node id might have changed - fix this
+	// SCENEGRAPH: the reference node id is copied as is - the caller is responsible for fixing this if needed
 	target.setReference(node.reference());
 	if (node.hasPalette()) {
 		target.setPalette(node.palette());
@@ -169,7 +170,7 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const
 /**
  * @return the main node id that was added
  */
-static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, const SceneGraphNode &sourceNode, int parent) {
+static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, const SceneGraphNode &sourceNode, int parent, core::DynamicMap<int, int> &nodeMap) {
 	SceneGraphNode newNode(sourceNode.type());
 	copy(sourceNode, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -180,11 +181,12 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 		Log::error("Failed to add node to the scene graph");
 		return InvalidNodeId;
 	}
+	nodeMap.put(sourceNode.id(), newNodeId);
 
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		copySceneGraphNode_r(target, source, sourceChildNode, newNodeId);
+		copySceneGraphNode_r(target, source, sourceChildNode, newNodeId, nodeMap);
 	}
 
 	return newNodeId;
@@ -193,6 +195,7 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent) {
 	const SceneGraphNode &sourceRoot = source.root();
 	core::Buffer<int> nodesAdded;
+	core::DynamicMap<int, int> nodeMap;
 
 	for (const core::String &animation : source.animations()) {
 		target.addAnimation(animation);
@@ -200,65 +203,161 @@ core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, i
 
 	target.node(parent).addProperties(sourceRoot.properties());
 	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent));
+		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent, nodeMap));
 	}
 
-	for (int nodeId : nodesAdded) {
-		SceneGraphNode &node = target.node(nodeId);
+	for (auto entry : nodeMap) {
+		int newNodeId = entry->second;
+		SceneGraphNode &node = target.node(newNodeId);
 		if (node.type() == SceneGraphNodeType::ModelReference) {
-			// this is not enough of course - the id might have already existed in the target scene graph
-			if (!target.hasNode(node.reference())) {
-				Log::warn("Reference node %i is not in the scene graph", node.reference());
+			int oldRefId = node.reference();
+			auto iter = nodeMap.find(oldRefId);
+			if (iter != nodeMap.end()) {
+				node.setReference(iter->second);
+			} else {
+				// this is not enough of course - the id might have already existed in the target scene graph
+				if (!target.hasNode(oldRefId)) {
+					Log::warn("Reference node %i is not in the scene graph", oldRefId);
+				}
 			}
 		}
 	}
 
-	// TODO: SCENEGRAPH: fix references - see copy() above
 	return nodesAdded;
 }
 
-// TODO: SCENEGRAPH: split is destroying groups
+static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeId, int destParentId,
+						   core::DynamicMap<int, core::Buffer<int>> &splitMap,
+						   bool crop, bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {
+	if (!src.hasNode(srcNodeId)) {
+		return;
+	}
+	const SceneGraphNode &node = src.node(srcNodeId);
+	if (skipHidden && !node.visible()) {
+		return;
+	}
+
+	if (node.type() == SceneGraphNodeType::Model) {
+		const voxel::Region &region = node.region();
+		if (!region.isValid()) {
+			Log::warn("invalid region for node %i", node.id());
+			return;
+		}
+
+		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
+			SceneGraphNode newNode(SceneGraphNodeType::Model);
+			copyNode(node, newNode, true);
+			int newNodeId = addToGraph(dest, core::move(newNode), destParentId);
+			if (newNodeId != InvalidNodeId) {
+				auto iter = splitMap.find(node.id());
+				if (iter == splitMap.end()) {
+					core::Buffer<int> vec;
+					vec.push_back(newNodeId);
+					splitMap.put(node.id(), core::move(vec));
+				} else {
+					iter->value.push_back(newNodeId);
+				}
+				for (int childId : node.children()) {
+					splitVolumes_r(src, dest, childId, newNodeId, splitMap, crop, createEmpty, skipHidden, maxSize);
+				}
+			}
+		} else {
+			Log::debug("Split needed for node '%s'", node.name().c_str());
+			core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(node.volume(), maxSize, createEmpty);
+			Log::debug("Created %i volumes", (int)rawVolumes.size());
+			int firstPartId = InvalidNodeId;
+			for (voxel::RawVolume *v : rawVolumes) {
+				if (v == nullptr) {
+					continue;
+				}
+				SceneGraphNode newNode(SceneGraphNodeType::Model);
+				if (crop) {
+					if (voxel::RawVolume *cv = voxelutil::cropVolume(v)) {
+						delete v;
+						v = cv;
+					}
+				}
+				copyNode(node, newNode, false);
+				newNode.setVolume(v, true);
+				int newNodeId = addToGraph(dest, core::move(newNode), destParentId);
+				if (newNodeId != InvalidNodeId) {
+					auto iter = splitMap.find(node.id());
+					if (iter == splitMap.end()) {
+						core::Buffer<int> vec;
+						vec.push_back(newNodeId);
+						splitMap.put(node.id(), core::move(vec));
+					} else {
+						iter->value.push_back(newNodeId);
+					}
+					if (firstPartId == InvalidNodeId) {
+						firstPartId = newNodeId;
+					}
+				}
+			}
+			if (firstPartId != InvalidNodeId) {
+				for (int childId : node.children()) {
+					splitVolumes_r(src, dest, childId, firstPartId, splitMap, crop, createEmpty, skipHidden, maxSize);
+				}
+			}
+		}
+	} else {
+		SceneGraphNode newNode(node.type());
+		copy(node, newNode, true);
+		int newNodeId = addToGraph(dest, core::move(newNode), destParentId);
+		if (newNodeId != InvalidNodeId) {
+			auto iter = splitMap.find(node.id());
+			if (iter == splitMap.end()) {
+				core::Buffer<int> vec;
+				vec.push_back(newNodeId);
+				splitMap.put(node.id(), core::move(vec));
+			} else {
+				iter->value.push_back(newNodeId);
+			}
+			for (int childId : node.children()) {
+				splitVolumes_r(src, dest, childId, newNodeId, splitMap, crop, createEmpty, skipHidden, maxSize);
+			}
+		}
+	}
+}
+
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph, bool crop,
 				  bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {
 	core_assert(&srcSceneGraph != &destSceneGraph);
 	destSceneGraph.reserve(srcSceneGraph.size());
-	for (auto iter = srcSceneGraph.beginModel(); iter != srcSceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
-		if (skipHidden && !node.visible()) {
+	core::DynamicMap<int, core::Buffer<int>> splitMap;
+
+	for (int childId : srcSceneGraph.root().children()) {
+		splitVolumes_r(srcSceneGraph, destSceneGraph, childId, destSceneGraph.root().id(), splitMap, crop, createEmpty, skipHidden, maxSize);
+	}
+
+	// Fix references
+	// We need to collect references first because we might add new nodes while iterating
+	core::Buffer<int> referenceNodes;
+	for (auto iter = destSceneGraph.begin(SceneGraphNodeType::ModelReference); iter != destSceneGraph.end(); ++iter) {
+		referenceNodes.push_back((*iter).id());
+	}
+
+	for (int refNodeId : referenceNodes) {
+		if (!destSceneGraph.hasNode(refNodeId)) {
 			continue;
 		}
-		const voxel::Region &region = node.region();
-		if (!region.isValid()) {
-			Log::warn("invalid region for node %i", node.id());
-			continue;
-		}
-		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
-			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-			copyNode(node, newNode, true);
-			destSceneGraph.emplace(core::move(newNode));
-			Log::debug("No split needed for node '%s'", node.name().c_str());
-			continue;
-		}
-		Log::debug("Split needed for node '%s'", node.name().c_str());
-		core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(node.volume(), maxSize, createEmpty);
-		Log::debug("Created %i volumes", (int)rawVolumes.size());
-		for (voxel::RawVolume *v : rawVolumes) {
-			if (v == nullptr) {
-				continue;
-			}
-			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);
-			if (crop) {
-				if (voxel::RawVolume *cv = voxelutil::cropVolume(v)) {
-					delete v;
-					v = cv;
+		SceneGraphNode &refNode = destSceneGraph.node(refNodeId);
+		int oldTargetId = refNode.reference();
+		auto mapIter = splitMap.find(oldTargetId);
+		if (mapIter != splitMap.end()) {
+			const core::Buffer<int> &newTargets = mapIter->value;
+			if (!newTargets.empty()) {
+				refNode.setReference(newTargets[0]);
+				for (size_t i = 1; i < newTargets.size(); ++i) {
+					SceneGraphNode newRefNode(SceneGraphNodeType::ModelReference);
+					copy(refNode, newRefNode, true);
+					newRefNode.setReference(newTargets[i]);
+					addToGraph(destSceneGraph, core::move(newRefNode), refNode.parent());
 				}
 			}
-			copyNode(node, newNode, false);
-			newNode.setVolume(v, true);
-			destSceneGraph.emplace(core::move(newNode));
-			// TODO: SCENEGRAPH: find nodes that are referencing node.id() and create references to the newly created nodes
 		}
 	}
+
 	return !destSceneGraph.empty();
 }
 
