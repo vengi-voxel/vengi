@@ -235,7 +235,7 @@ public:
 	/**
 	 * @sa region()
 	 */
-	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0, bool onlyVisible = false) const;
+	voxel::Region sceneRegion(FrameIndex frameIdx = 0, bool onlyVisible = false) const;
 	voxel::Region sceneRegion(const SceneGraphNode &node, FrameIndex frameIdx = 0) const;
 	math::OBBF sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const;
 

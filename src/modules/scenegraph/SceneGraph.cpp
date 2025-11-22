@@ -574,7 +574,7 @@ const voxel::Region &SceneGraph::region() const {
 	return _region;
 }
 
-voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisible) const {
+voxel::Region SceneGraph::sceneRegion(FrameIndex frameIdx, bool onlyVisible) const {
 	voxel::Region r;
 	bool validVolume = false;
 	for (const auto &n : nodes()) {
@@ -585,7 +585,7 @@ voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisibl
 		if (onlyVisible && !node.visible()) {
 			continue;
 		}
-		const voxel::Region &nodeRegion = sceneRegion(node, keyFrameIdx);
+		const voxel::Region &nodeRegion = sceneRegion(node, frameIdx);
 		if (validVolume) {
 			r.accumulate(nodeRegion);
 			continue;
@@ -1083,8 +1083,8 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		}
 	}
 
-	const KeyFrameIndex keyFrameIdx = 0;
-	const voxel::Region &mergedRegion = sceneRegion(keyFrameIdx, skipHidden);
+	const FrameIndex frameIdx = 0;
+	const voxel::Region &mergedRegion = sceneRegion(frameIdx, skipHidden);
 	if (!mergedRegion.isValid()) {
 		return MergeResult{};
 	}
@@ -1110,8 +1110,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			continue;
 		}
 		const voxel::Region &sourceRegion = resolveRegion(node);
-		// TODO: SCENEGRAPH: this is a frame idx not a keyframe idx
-		const voxel::Region &destRegion = sceneRegion(node, keyFrameIdx);
+		const voxel::Region &destRegion = sceneRegion(node, frameIdx);
 		const palette::Palette &pal = node.palette();
 
 		auto mergeCondition = [&pal, &mergedPaletteLookup](const voxel::RawVolume::Sampler &sampler) {
@@ -1126,7 +1125,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
 		// TODO: SCENEGRAPH: scaling is not applied properly
-		const glm::vec3 angles = glm::eulerAngles(node.transform(keyFrameIdx).worldOrientation());
+		const glm::vec3 angles = glm::eulerAngles(node.transform(frameIdx).worldOrientation());
 		if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 			voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
 		} else {
