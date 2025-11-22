@@ -997,13 +997,12 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 		}
 	}
 	if (tooManyColors) {
-		Log::debug("too many colors - restart, but skip similar");
+		Log::debug("too many colors - quantize");
 		palette.setSize(0);
 		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 			palette.setMaterial(i, palette::Material{});
 		}
-		// TODO: SCENEGRAPH: this puts higher priority on the first model nodes
-		//                   use quantization to increase the spectrum of colors
+		core::DynamicArray<core::RGBA> allColors;
 		for (const auto &e : nodes()) {
 			const SceneGraphNode &node = e->second;
 			if (!node.isAnyModelNode()) {
@@ -1019,20 +1018,12 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 			}
 			const palette::Palette &nodePalette = node.palette();
 			for (int i = 0; i < nodePalette.colorCount(); ++i) {
-				if (!used[i]) {
-					Log::trace("color %i not used, skip it for this node", i);
-					continue;
-				}
-				uint8_t index = 0;
-				const core::RGBA rgba = nodePalette.color(i);
-				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
-				if (palette.tryAdd(rgba, true, &index, true, skipIndex)) {
-					if (nodePalette.hasEmit(i)) {
-						palette.setEmit(index, nodePalette.material(i).emit);
-					}
+				if (used[i]) {
+					allColors.push_back(nodePalette.color(i));
 				}
 			}
 		}
+		palette.quantize(allColors.data(), allColors.size());
 	}
 	palette.markDirty();
 	return palette;

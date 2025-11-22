@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
 #include "math/OBB.h"
+#include "palette/FormatConfig.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "palette/tests/TestHelper.h"
@@ -19,7 +20,13 @@
 
 namespace scenegraph {
 
-class SceneGraphTest : public app::AbstractTest {};
+class SceneGraphTest : public app::AbstractTest {
+public:
+	void SetUp() override {
+		app::AbstractTest::SetUp();
+		palette::FormatConfig::init();
+	}
+};
 
 TEST_F(SceneGraphTest, testSize) {
 	SceneGraph sceneGraph;
