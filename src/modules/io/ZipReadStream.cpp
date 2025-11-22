@@ -113,7 +113,6 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		readStream.readUInt32(isize);
 		_uncompressedSize = isize;
 		readStream.seek(curPos, SEEK_SET);
-		readStream.skip(10); // Skip header
 	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED && ((gzipHeader[0] >> 4) >= 7 && (gzipHeader[0] >> 4) <= 15) &&
 			   ((gzipHeader[0] << 8 | gzipHeader[1]) % 31 == 0)) {
 		type = CompressionType::Zlib;
@@ -125,7 +124,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	state->type = type;
 
 	int64_t readSize = size;
-	if (readSize == -1) {
+	if (readSize == -1 || readStream.remaining() < readSize) {
 		readSize = readStream.remaining();
 	}
 	state->compressedSize = readSize;
