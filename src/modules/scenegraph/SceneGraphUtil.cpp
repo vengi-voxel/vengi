@@ -127,6 +127,7 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 		core_assert(node.owns());
 		newNode.setVolume(node.volume(), true);
 		node.releaseOwnership();
+		node.setVolume(nullptr, false);
 	}
 	int newNodeId = addToGraph(sceneGraph, core::move(newNode), parent);
 	if (onNodeAdded && newNodeId != InvalidNodeId) {
@@ -365,47 +366,48 @@ double interpolate(InterpolationType interpolationType, double current, double s
 	if (glm::abs(start - end) < glm::epsilon<double>()) {
 		return start;
 	}
-	double val = 0.0f;
-	switch (interpolationType) {
-	case InterpolationType::Instant:
-		val = util::easing::full(current, start, end);
-		break;
-	case InterpolationType::Linear:
-		val = util::easing::linear(current, start, end);
-		break;
-	case InterpolationType::QuadEaseIn:
-		val = util::easing::quadIn(current, start, end);
-		break;
-	case InterpolationType::QuadEaseOut:
-		val = util::easing::quadOut(current, start, end);
-		break;
-	case InterpolationType::QuadEaseInOut:
-		val = util::easing::quadInOut(current, start, end);
-		break;
-	case InterpolationType::CubicEaseIn:
-		val = util::easing::cubicIn(current, start, end);
-		break;
-	case InterpolationType::CubicEaseOut:
-		val = util::easing::cubicOut(current, start, end);
-		break;
-	case InterpolationType::CubicEaseInOut:
-		val = util::easing::cubicInOut(current, start, end);
-		break;
-	case InterpolationType::CubicBezier:
-		// Default control points for a smooth ease-in-out curve
-		val = util::easing::cubicBezier(current, start, end, 0.1, 1.0);
-		break;
-	case InterpolationType::CatmullRom: {
+	if (interpolationType == InterpolationType::CatmullRom) {
 		// For CatmullRom, we need 4 control points. Using start/end as the middle two points
 		// and extending beyond them for smoother interpolation
 		const double t = (current - start) / (end - start);
-		val = util::easing::catmullRom(start, start, end, end, t);
-		break;
+		return util::easing::catmullRom(start, start, end, end, t);
 	}
+
+	double t = 0.0f;
+	switch (interpolationType) {
+	case InterpolationType::Instant:
+		t = util::easing::full(current, start, end);
+		break;
+	case InterpolationType::Linear:
+		t = util::easing::linear(current, start, end);
+		break;
+	case InterpolationType::QuadEaseIn:
+		t = util::easing::quadIn(current, start, end);
+		break;
+	case InterpolationType::QuadEaseOut:
+		t = util::easing::quadOut(current, start, end);
+		break;
+	case InterpolationType::QuadEaseInOut:
+		t = util::easing::quadInOut(current, start, end);
+		break;
+	case InterpolationType::CubicEaseIn:
+		t = util::easing::cubicIn(current, start, end);
+		break;
+	case InterpolationType::CubicEaseOut:
+		t = util::easing::cubicOut(current, start, end);
+		break;
+	case InterpolationType::CubicEaseInOut:
+		t = util::easing::cubicInOut(current, start, end);
+		break;
+	case InterpolationType::CubicBezier:
+		// Default control points for a smooth ease-in-out curve
+		t = util::easing::cubicBezier(current, start, end, 0.1, 1.0);
+		break;
+	case InterpolationType::CatmullRom:
 	case InterpolationType::Max:
 		break;
 	}
-	return start + val;
+	return start + (end - start) * t;
 }
 
 } // namespace voxel

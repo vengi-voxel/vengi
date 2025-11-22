@@ -28,6 +28,7 @@ General:
    - Fixed debian/ubuntu/mint mimetype errors
    - Added `palette:size()` to lua bindings
    - New lua script `palette-brighten`
+   - Fixed animation interpolation handling
 
 VoxEdit:
 

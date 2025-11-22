@@ -119,4 +119,122 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 	}
 }
 
+TEST_F(SceneGraphUtilTest, testCopyNode) {
+	SceneGraphNode src(SceneGraphNodeType::Model);
+	src.setName("model");
+	src.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+	src.setLocked(true);
+	src.setVisible(false);
+
+	SceneGraphNode target(SceneGraphNodeType::Model);
+	copyNode(src, target, true);
+
+	EXPECT_EQ(src.name(), target.name());
+	EXPECT_EQ(src.locked(), target.locked());
+	EXPECT_EQ(src.visible(), target.visible());
+	EXPECT_NE(src.volume(), target.volume()); // Should be a copy
+	EXPECT_NE(nullptr, target.volume());
+}
+
+TEST_F(SceneGraphUtilTest, testCopyNodeToSceneGraph) {
+	SceneGraph source;
+	int nodeId = -1;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		nodeId = source.emplace(core::move(node));
+	}
+
+	SceneGraph target;
+	int newNodeId = copyNodeToSceneGraph(target, source.node(nodeId), target.root().id());
+	ASSERT_NE(InvalidNodeId, newNodeId);
+	EXPECT_TRUE(target.hasNode(newNodeId));
+	EXPECT_EQ("model", target.node(newNodeId).name());
+}
+
+TEST_F(SceneGraphUtilTest, testMoveNodeToSceneGraph) {
+	SceneGraph source;
+	int nodeId = -1;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		nodeId = source.emplace(core::move(node));
+	}
+
+	SceneGraph target;
+	int newNodeId = moveNodeToSceneGraph(target, source.node(nodeId), target.root().id());
+	ASSERT_NE(InvalidNodeId, newNodeId);
+	EXPECT_TRUE(target.hasNode(newNodeId));
+	EXPECT_EQ("model", target.node(newNodeId).name());
+	EXPECT_EQ(nullptr, source.node(nodeId).volume()); // Ownership transferred
+}
+
+TEST_F(SceneGraphUtilTest, testCreateNodeReference) {
+	SceneGraph sceneGraph;
+	int modelNodeId = -1;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		modelNodeId = sceneGraph.emplace(core::move(node));
+	}
+
+	int refNodeId = createNodeReference(sceneGraph, sceneGraph.node(modelNodeId));
+	ASSERT_NE(InvalidNodeId, refNodeId);
+	EXPECT_TRUE(sceneGraph.hasNode(refNodeId));
+	EXPECT_EQ(SceneGraphNodeType::ModelReference, sceneGraph.node(refNodeId).type());
+	EXPECT_EQ(modelNodeId, sceneGraph.node(refNodeId).reference());
+}
+
+TEST_F(SceneGraphUtilTest, testInterpolate) {
+	EXPECT_DOUBLE_EQ(0.0, interpolate(InterpolationType::Linear, 0.0, 0.0, 10.0));
+	EXPECT_DOUBLE_EQ(5.0, interpolate(InterpolationType::Linear, 5.0, 0.0, 10.0));
+	EXPECT_DOUBLE_EQ(10.0, interpolate(InterpolationType::Linear, 10.0, 0.0, 10.0));
+
+	// Instant (Step at 0.5)
+	EXPECT_DOUBLE_EQ(0.0, interpolate(InterpolationType::Instant, 4.0, 0.0, 10.0));
+	EXPECT_DOUBLE_EQ(10.0, interpolate(InterpolationType::Instant, 6.0, 0.0, 10.0));
+
+	// QuadEaseIn (t^2)
+	// t = 0.5 -> 0.25. Value = 0 + 10 * 0.25 = 2.5
+	EXPECT_DOUBLE_EQ(2.5, interpolate(InterpolationType::QuadEaseIn, 5.0, 0.0, 10.0));
+
+	// QuadEaseOut (t * (2 - t))
+	// t = 0.5 -> 0.5 * 1.5 = 0.75. Value = 0 + 10 * 0.75 = 7.5
+	EXPECT_DOUBLE_EQ(7.5, interpolate(InterpolationType::QuadEaseOut, 5.0, 0.0, 10.0));
+
+	// CatmullRom
+	// t = 0.5 -> 5.0
+	EXPECT_DOUBLE_EQ(5.0, interpolate(InterpolationType::CatmullRom, 5.0, 0.0, 10.0));
+}
+
+TEST_F(SceneGraphUtilTest, testSplitVolumesSkipHidden) {
+	SceneGraph source;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("visible");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		source.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("hidden");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		node.setVisible(false);
+		source.emplace(core::move(node));
+	}
+
+	SceneGraph target;
+	glm::ivec3 maxSize(1, 1, 1);
+	splitVolumes(source, target, false, false, true, maxSize);
+
+	EXPECT_EQ(1u, target.size()); // Root + Visible
+	EXPECT_EQ(1u, target.root().children().size());
+	if (target.root().children().size() > 0) {
+		EXPECT_EQ("visible", target.node(target.root().children()[0]).name());
+	}
+}
+
 } // namespace voxelformat

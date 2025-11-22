@@ -502,7 +502,8 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 			}
 
 			const double deltaFrame = scenegraph::interpolate(interpolationType, (double)frameIdx, (double)source->frameIdx, (double)target->frameIdx);
-			const float lerpFactor = glm::clamp((float)(deltaFrame - (double)source->frameIdx), 0.0f, 1.0f);
+			const double range = (double)target->frameIdx - (double)source->frameIdx;
+			const float lerpFactor = glm::clamp((float)((deltaFrame - (double)source->frameIdx) / range), 0.0f, 1.0f);
 
 			const glm::vec3 translation = glm::mix(source->transform().localTranslation(), target->transform().localTranslation(), lerpFactor);
 			const glm::quat orientation = glm::slerp(srcLocalOrientation, tgtLocalOrientation, lerpFactor);
