@@ -299,20 +299,23 @@ int ZipReadStream::read(void *buf, size_t size) {
 	while (size > 0) {
 		if (stream->avail_in == 0) {
 			int64_t remainingSize = remaining();
-			if (remainingSize < 0) {
-				_err = true;
-				return readCnt;
+			int64_t bytesToRead = (int64_t)sizeof(_buf);
+			if (remainingSize >= 0) {
+				bytesToRead = core_min(remainingSize, bytesToRead);
 			}
+
 			stream->next_in = _buf;
-			stream->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
-			if (remainingSize > 0) {
+			stream->avail_in = (unsigned int)bytesToRead;
+			if (bytesToRead > 0) {
 				const int bytes = _readStream.read(_buf, stream->avail_in);
 				if (bytes == -1) {
 					Log::debug("Failed to read from parent stream");
 					_err = true;
 					return -1;
 				}
-				_remaining -= bytes;
+				if (remainingSize >= 0) {
+					_remaining -= bytes;
+				}
 				stream->avail_in = bytes;
 			}
 		}
