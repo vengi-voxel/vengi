@@ -1065,14 +1065,6 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	const size_t n = size(SceneGraphNodeType::AllModels);
 	if (n == 0) {
 		return MergeResult{};
-	} else if (n == 1) {
-		if (const SceneGraphNode *node = firstModelNode()) {
-			if (skipHidden && !node->visible()) {
-				return MergeResult{};
-			}
-			// TODO: apply the scene graph transform to a single node, too
-			return MergeResult{new voxel::RawVolume(node->volume()), node->palette(), node->normalPalette()};
-		}
 	}
 
 	const FrameIndex frameIdx = 0;
