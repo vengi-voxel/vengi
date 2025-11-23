@@ -1575,7 +1575,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	}
 
 	if (_selectionManager->hasSelection()) {
-		// TODO: only move the selected voxels
+		// TODO: SELECTION: only move the selected voxels
 		Log::warn("Moving only the selected voxels is not implemented yet");
 	} else {
 		v->move(m);
