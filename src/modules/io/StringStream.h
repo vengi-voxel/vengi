@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 
 namespace io {
@@ -16,8 +17,11 @@ namespace io {
 class StringReadStream : public SeekableReadStream {
 protected:
 	SeekableReadStream &_stream;
+	MemoryReadStream _memStream;
+
 public:
 	StringReadStream(SeekableReadStream &stream);
+	StringReadStream(const core::String &str);
 	~StringReadStream();
 
 	core::String readAll();

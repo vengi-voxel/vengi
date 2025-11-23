@@ -6,7 +6,11 @@
 
 namespace io {
 
-StringReadStream::StringReadStream(SeekableReadStream &stream) : _stream(stream) {
+StringReadStream::StringReadStream(SeekableReadStream &stream) : _stream(stream), _memStream(nullptr, 0) {
+}
+
+StringReadStream::StringReadStream(const core::String &str)
+	: _stream(_memStream), _memStream((const uint8_t *)str.c_str(), str.size()) {
 }
 
 StringReadStream::~StringReadStream() {
