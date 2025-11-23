@@ -1070,6 +1070,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			if (skipHidden && !node->visible()) {
 				return MergeResult{};
 			}
+			// TODO: apply the scene graph transform to a single node, too
 			return MergeResult{new voxel::RawVolume(node->volume()), node->palette(), node->normalPalette()};
 		}
 	}
