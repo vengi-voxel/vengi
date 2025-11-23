@@ -12,7 +12,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
-   - Allow to export `ply` vertex positions as integers when `voxformat_transform_mesh` is set to `false` and no scale is applied
+   - Allow one to export `ply` vertex positions as integers when `voxformat_transform_mesh` is set to `false` and no scale is applied
    - Fixed hollowing in some situations
    - Fixed a few `vxl` (Tiberian sun) issues
    - Added spritestack write support
@@ -20,7 +20,7 @@ General:
    - Use own filesystem abstraction for gltf files
    - Implemented missing easing functions
    - Extended blockbench format support regarding external textures
-   - Allow to put rotations into the AceOfSpades `vxl` export (no scaling yet)
+   - Allow one to put rotations into the AceOfSpades `vxl` export (no scaling yet)
    - Performance optimizations for stuff like rotate on axis
    - Added support for loading the palette from animatoon files
    - Added `clouds.lua` to generate parameterized clouds
@@ -64,13 +64,13 @@ General:
    - Optimized voxelization (subdividing triangles)
    - Added support for goxel `txt` file format
    - Added support for the veloren server chunk `dat` files
-   - Allow to export all cvars as json
+   - Allow one to export all cvars as json
    - Optimized loading vengi files
 
 VoxEdit:
 
-   - Allow to animate point and camera nodes, too
-   - Allow to follow an animated camera to fly through a scene
+   - Allow one to animate point and camera nodes, too
+   - Allow one to follow an animated camera to fly through a scene
    - Fixed `resetcamera` when transforms are applied in edit mode
    - Shared voxel editing with client/server collaboration mode
    - Enable undo/redo for big volumes
@@ -78,7 +78,7 @@ VoxEdit:
    - Improved shadow rendering
    - Support translations and lua scripts in the web version
    - Implemented basic physics that allows you to walk through a scene
-   - Allow to move a node in the hierarchy but don't move it in the world
+   - Allow one to move a node in the hierarchy but don't move it in the world
 
 VoxConvert:
 
@@ -89,7 +89,7 @@ VoxConvert:
 Thumbnailer:
 
    - Added isometric thumbnail support
-   - Allow to set sun parameters
+   - Allow one to set sun parameters
 
 ## 0.1.0 (2025-07-19)
 
@@ -110,7 +110,7 @@ VoxEdit:
 
 PalConvert:
 
-   - Allow to use the built-in as well as lospec palettes from the command line, too
+   - Allow one to use the built-in as well as lospec palettes from the command line, too
 
 VoxConvert:
 
@@ -125,12 +125,12 @@ General:
    - Fixed outline rendering in scene mode
    - Fixed `vxl` slab5 loading
    - Support `binvox` version 2 and 3 (unofficial)
-   - Allow to save all three versions of `binvox` files (cvar `voxformat_binvoxversion`)
+   - Allow one to save all three versions of `binvox` files (cvar `voxformat_binvoxversion`)
    - Improved DirectStateAccess (DSA) support for OpenGL
    - Quite a few performance improvements
    - Support colors on apple and windows terminals, too
    - Added lua binding for genland algorithm. See the new `g_algorithm.genland` function
-   - Allow to save scenes as heightmaps (`png`). See the new `voxformat_imagesavetype` cvar
+   - Allow one to save scenes as heightmaps (`png`). See the new `voxformat_imagesavetype` cvar
    - Added support for writing Luanti/Minecraft `mts` files
 
 VoxEdit:
@@ -162,7 +162,7 @@ VoxEdit:
    - Fixed showing a few keybinding hints
    - Refactored the node inspector
    - Improved the camera panel
-   - Allow to change the cvar `ve_regionsizes` from within the UI
+   - Allow one to change the cvar `ve_regionsizes` from within the UI
    - Fixed crash in memento panel tooltip handling
    - Optimized lua script panel
 
@@ -186,14 +186,14 @@ General:
    - Use a faster binary-greedy-mesher
    - Optimizations
    - Fixed node merging with pivots
-   - Allow to load other palette image dimensions than 1x256
+   - Allow one to load other palette image dimensions than 1x256
 
 VoxEdit:
 
    - Implemented selection invert
    - Added palette options to file dialog
-   - Allow to execute palette actions on multiple colors
-   - Allow to reduce multiple colors at once
+   - Allow one to execute palette actions on multiple colors
+   - Allow one to reduce multiple colors at once
    - Fixed missing font glyphs in some cases
 
 PalConvert:
@@ -233,13 +233,13 @@ VoxConvert:
    - Added script support to the ui
    - `--usage` shows lua script details now
    - Removed `--slice` (see `png` format)
-   - Allow to specify multiple `--script` parameters
+   - Allow one to specify multiple `--script` parameters
 
 VoxEdit:
 
    - Added the possibility to render a plane to the viewport for easier orientation
    - Show the normals in scene mode, too
-   - Allow to edit models in-place in edit mode
+   - Allow one to edit models in-place in edit mode
 
 ## 0.0.34 (2024-11-14)
 
@@ -271,7 +271,7 @@ VoxConvert:
 
 VoxEdit:
 
-   - Allow to change the local directory for the asset panel
+   - Allow one to change the local directory for the asset panel
    - Add more online sources to the asset panel
    - Added support to apply a checkboard pattern to your voxels just for rendering
    - Improved handling for max allowed voxels
@@ -457,7 +457,7 @@ VoxEdit:
    - Fixed missing outline for dark voxels
    - Update paint features
    - Added more features to the palette panel (e.g. duplicating and removing colors)
-   - Allow to bind the left- and right-scrolling mouse wheel
+   - Allow one to bind the left- and right-scrolling mouse wheel
    - Improved draw color brush darken/brighten to create new colors if needed (and possible)
    - Fixed voxel placing on using the camera view manipulator
    - Fixed grid culling for orthographic projections
@@ -471,7 +471,7 @@ VoxEdit:
 Thumbnailer:
 
    - Don't render camera frustums for the thumbnails
-   - Allow to change the camera mode (top, left, right, ...)
+   - Allow one to change the camera mode (top, left, right, ...)
 
 ## 0.0.28 (2024-01-17)
 
@@ -527,7 +527,7 @@ VoxEdit:
    - Allow one to switch between cubes and marching cubes rendering in the editor
    - Added `clear` and `fill` commands
    - Preview for the line brush
-   - Allow to render the bones
+   - Allow one to render the bones
 
 Thumbnailer:
 
