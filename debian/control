@@ -37,6 +37,8 @@ Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Recommends: vengi-thumbnailer, vengi-voxconvert, vengi-palconvert
 Description: Voxel editor
+ Voxel editor that supports many different formats. It features a lot of
+ tools to modify, create and animate voxel models.
 
 Package: vengi-thumbnailer
 Architecture: any
@@ -44,6 +46,8 @@ Multi-Arch: foreign
 Recommends: vengi-voxedit, vengi-voxconvert, vengi-palconvert
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
+ Thumbnailer for voxel models that supports many different formats. It can
+ be used to generate thumbnails for your file manager.
 
 Package: vengi-voxconvert
 Architecture: any
@@ -51,6 +55,8 @@ Multi-Arch: foreign
 Recommends: vengi-voxedit, vengi-thumbnailer, vengi-palconvert
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Convert, export or modify voxel volumes
+ Command line tool to convert, export or modify voxel volumes. It supports
+ many different formats and can be used to batch process files.
 
 Package: vengi-palconvert
 Architecture: any
@@ -58,3 +64,5 @@ Multi-Arch: foreign
 Recommends: vengi-voxedit, vengi-thumbnailer, vengi-voxconvert
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Load palette formats
+ Command line tool to load palette formats and convert them to other formats.
+ It supports many different formats and can be used to batch process files.
