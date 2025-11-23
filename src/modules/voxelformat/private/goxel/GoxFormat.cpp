@@ -467,9 +467,10 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "dist")) {
 			// "dist" float
 			io::MemoryReadStream subStream(dictValue, valueLength);
-			float farPlane;
-			subStream.readFloat(farPlane);
-			node.setFarPlane(farPlane);
+			float farPlane = 0.0f;
+			if (subStream.readFloat(farPlane)) {
+				node.setFarPlane(farPlane);
+			}
 		} else if (!strcmp(dictKey, "ortho")) {
 			// "ortho" bool
 			const bool ortho = *(const bool *)dictValue;
