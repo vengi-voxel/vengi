@@ -17,6 +17,9 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 	endif()
 endif()
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
+
 check_library_exists(m pow "" HAVE_LIBM)
 if(HAVE_LIBM)
 	set(CMAKE_REQUIRED_LIBRARIES m)
