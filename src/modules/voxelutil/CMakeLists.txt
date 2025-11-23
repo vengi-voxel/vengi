@@ -11,7 +11,7 @@ set(SRCS
 	Shadow.h
 	VolumeMerger.h VolumeMerger.cpp
 	VolumeMover.h
-	VolumeRescaler.h
+	VolumeRescaler.h VolumeRescaler.cpp
 	VolumeRotator.h VolumeRotator.cpp
 	VolumeResizer.h VolumeResizer.cpp
 	VolumeCropper.h VolumeCropper.cpp
