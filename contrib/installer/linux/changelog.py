@@ -2,6 +2,7 @@
 
 import re
 import sys
+import textwrap
 from dateutil.parser import parse
 from datetime import datetime, timezone
 
@@ -37,7 +38,9 @@ def parse_markdown_changelog(markdown_changelog: str) -> str:
                 firstchange = False
                 change = change.replace("`", "")
                 change = re.sub(url_regex, r"\1", change)
-                output += f"  * {change}\n"
+                wrapped_lines = textwrap.wrap(change, width=79, initial_indent="  * ", subsequent_indent="    ")
+                for line in wrapped_lines:
+                    output += f"{line}\n"
         output += f"\n -- Martin Gerhardy <martin.gerhardy@gmail.com>  {formatted_date}\n\n"
 
     return output
