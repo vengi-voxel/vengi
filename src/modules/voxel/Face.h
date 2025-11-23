@@ -90,7 +90,9 @@ enum class FaceBits : uint8_t {
 	Front = NegativeZ,
 	Back = PositiveZ,
 	Left = NegativeX,
-	Right = PositiveX
+	Right = PositiveX,
+
+	All = PositiveX | NegativeX | PositiveY | NegativeY | PositiveZ | NegativeZ
 };
 CORE_ENUM_BIT_OPERATIONS(FaceBits)
 
