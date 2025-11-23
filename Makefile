@@ -58,7 +58,7 @@ release:
 
 tests-voxedit:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR)-$@ $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DUSE_IMGUITESTENGINE=On
-	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target codegen
+	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target engine_codegen
 	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target $@
 	$(Q)cd $(BUILDDIR)-$@ && ctest -V -R '^$@$$'
 
@@ -186,7 +186,7 @@ release-%:
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
-formatprinter thumbnailer voxedit voxconvert palconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
+formatprinter thumbnailer voxedit voxconvert palconvert update-videobindings engine_codegen: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@/usr
 ifneq ($(OS),Windows_NT)
@@ -263,7 +263,7 @@ build/emsdk/emsdk_env.sh:
 	$(BUILDDIR)/emsdk/emsdk activate latest
 
 emscripten-%: $(BUILDDIR)/CMakeCache.txt build/emsdk/emsdk_env.sh
-	$(Q)$(CMAKE) --build $(BUILDDIR) --target codegen
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target engine_codegen
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
 	$(Q)cp -r $(BUILDDIR)/generated build/emscripten

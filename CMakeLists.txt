@@ -46,7 +46,7 @@ set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(GENERATE_DIR ${CMAKE_BINARY_DIR}/generated CACHE STRING "Generated code dir")
 set(PKGDATABASEDIR "" CACHE STRING "System directory to search for data files (must end on /)")
 set(PKGDATADIR "" CACHE STRING "System directory to search for data files (must end on /)")
-add_custom_target(codegen)
+add_custom_target(engine_codegen)
 
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -180,6 +180,6 @@ if (DOXYGEN_FOUND)
 	add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMENT "Generating API documentation with Doxygen" VERBATIM
-		DEPENDS codegen
+		DEPENDS engine_codegen
 	)
 endif(DOXYGEN_FOUND)

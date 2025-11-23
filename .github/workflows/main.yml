@@ -149,7 +149,7 @@ jobs:
             mkdir build
             cd build
             cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_IMGUITESTENGINE=On
-            cmake --build . --target codegen
+            cmake --build . --target engine_codegen
             cmake --build . --target tests-voxedit
 
     linux:
@@ -270,7 +270,7 @@ jobs:
         - name: Emscripten
           run: |
             cmake -H. -Bbuild -GNinja -DUSE_SANITIZERS=ON
-            cmake --build build --target codegen
+            cmake --build build --target engine_codegen
             mkdir -p build/emscripten
             cp -r build/generated build/emscripten
             emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On

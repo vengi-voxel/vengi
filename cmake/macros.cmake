@@ -28,7 +28,7 @@ function(engine_generated_library TARGET)
 	write_file(${GENERATE_DIR}/${TARGET}.cpp "#include <stdio.h>")
 	set_source_files_properties(${GENERATE_DIR}/${TARGET}.cpp PROPERTIES GENERATED TRUE)
 	target_sources(${TARGET} PRIVATE ${GENERATE_DIR}/${TARGET}.cpp)
-	add_dependencies(codegen ${TARGET})
+	add_dependencies(engine_codegen ${TARGET})
 endfunction()
 
 function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)

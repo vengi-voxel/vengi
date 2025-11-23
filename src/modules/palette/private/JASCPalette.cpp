@@ -4,7 +4,6 @@
 
 #include "JASCPalette.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 
 namespace palette {
 

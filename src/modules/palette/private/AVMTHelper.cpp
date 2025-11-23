@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AVMTHelper.h"
 #include "core/Color.h"
 

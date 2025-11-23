@@ -14,7 +14,7 @@ namespace palette {
 
 namespace priv {
 
-enum BlockTypes { COLOR_START = 0x0001, GROUP_START = 0xc001, GROUP_END = 0xc002 };
+enum BlockTypes : uint16_t { COLOR_START = 0x0001, GROUP_START = 0xc001, GROUP_END = 0xc002 };
 
 }
 
