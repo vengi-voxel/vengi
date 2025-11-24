@@ -53,17 +53,21 @@ void StampBrush::construct() {
 
 	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
 		Modifier &modifier = _sceneMgr->modifier();
-		if (modifier.selectionMgr()->hasSelection()) {
-			if (const scenegraph::SceneGraphNode *node =
-					_sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
-				const SelectionManagerPtr &selectionMgr = modifier.selectionMgr();
-				voxel::RawVolume stampVolume(node->volume(), selectionMgr->region());
-				setVolume(stampVolume, node->palette());
-				// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
-				// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
-				command::executeCommands("select none");
-			}
+		if (!modifier.selectionMgr()->hasSelection()) {
+			Log::warn("There's no selection to use as stamp");
+			return;
 		}
+		const int nodeId = _sceneMgr->sceneGraph().activeNode();
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+		if (!node) {
+			return;
+		}
+		const SelectionManagerPtr &selectionMgr = modifier.selectionMgr();
+		voxel::RawVolume stampVolume(node->volume(), selectionMgr->region());
+		setVolume(stampVolume, node->palette());
+		// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
+		// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
+		command::executeCommands("select none");
 	}).setHelp(_("Use the current selection as new stamp"));
 
 	command::Command::registerCommand("stampbrushusenode", [this](const command::CmdArgs &) {
