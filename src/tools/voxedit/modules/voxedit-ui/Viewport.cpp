@@ -235,13 +235,17 @@ void Viewport::renderCursorDetails() const {
 	if (const voxel::RawVolume *v = _sceneMgr->volume(activeNode)) {
 		const glm::ivec3 &mins = v->region().getLowerCorner();
 		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
-		if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
-			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i"), mins.x, mins.y, mins.z, size.x,
-							   size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
-		} else {
-			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i"), mins.x,
-							   mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
-							   cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
+		ImGui::TooltipText(_("pos: %i:%i:%i"), mins.x, mins.y, mins.z);
+		ImGui::TooltipText(_("size: %i:%i:%i"), size.x, size.y, size.z);
+		ImGui::TooltipText(_("cursor: %i:%i:%i"), cursorPos.x, cursorPos.y, cursorPos.z);
+		if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
+			const glm::ivec3 relativePos = cursorPos - mins;
+			ImGui::TooltipText(_("rel cursor: %i:%i:%i"), relativePos.x, relativePos.y, relativePos.z);
+		}
+		if (cursorDetailsLevel == 3) {
+			const glm::ivec3 &refPos = modifier.referencePosition();
+			const glm::ivec3 delta = glm::abs(cursorPos - refPos);
+			ImGui::TooltipText(_("dist: %i:%i:%i"), delta.x, delta.y, delta.z);
 		}
 	}
 }

@@ -1680,7 +1680,7 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditHideInactive, "false", _("Hide the inactive nodes"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditViewdistance, "5000", _("Far plane for the camera"));
 	core::Var::get(cfg::VoxEditShowaxis, "true", _("Show the axis"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditCursorDetails, "1", _("Print cursor details in edit mode"), core::Var::minMaxValidator<0, 2>);
+	core::Var::get(cfg::VoxEditCursorDetails, "1", _("Print cursor details in edit mode - measure distance to reference position in mode 3"), core::Var::minMaxValidator<0, 3>);
 	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", _("Automatically create keyframes when changing transforms"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoOperations, "3", _("Bitmask of gizmo operations in scene mode"));
 	core::Var::get(cfg::VoxEditGizmoPivot, "false", core::CV_NOPERSIST, _("Activate the pivot mode for the gizmo in scene mode"), core::Var::boolValidator);

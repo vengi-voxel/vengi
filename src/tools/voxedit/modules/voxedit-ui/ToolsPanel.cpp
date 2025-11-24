@@ -167,7 +167,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
-		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
+		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 3);
 	}
 }
 
