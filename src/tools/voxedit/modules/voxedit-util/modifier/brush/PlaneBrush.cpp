@@ -82,8 +82,8 @@ void PlaneBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vol
 	_secondPosValid = true;
 }
 
-void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &ctx, const voxel::Region &region) {
+void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region) {
 	const int thickness = calculateThickness(ctx);
 	if (thickness <= 0) {
 		return;

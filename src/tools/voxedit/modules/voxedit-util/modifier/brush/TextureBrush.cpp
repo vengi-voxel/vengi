@@ -28,14 +28,15 @@ bool TextureBrush::needsAdditionalAction(const BrushContext &ctx) const {
 	return Super::needsAdditionalAction(ctx);
 }
 
-void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-							const BrushContext &ctx, const voxel::Region &region) {
+void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+							const voxel::Region &region) {
 	if (!_image || !_image->isLoaded()) {
 		Log::error("Can't perform action: No image loaded for texture brush");
 		return;
 	}
 
-	voxelutil::applyTextureToFace(wrapper, region, wrapper.node().palette(), _aabbFace, _image, _uv0, _uv1, _projectOntoSurface);
+	voxelutil::applyTextureToFace(wrapper, region, wrapper.node().palette(), _aabbFace, _image, _uv0, _uv1,
+								  _projectOntoSurface);
 }
 
 void TextureBrush::setImage(const image::ImagePtr &texture) {

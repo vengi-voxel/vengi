@@ -38,8 +38,7 @@ public:
 	}
 	virtual ~TextureBrush() = default;
 
-	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-					 const BrushContext &ctx) override;
+	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 
 	void construct() override;
 	void shutdown() override;

@@ -3,9 +3,9 @@
  */
 
 #include "AABBBrush.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "app/I18N.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
@@ -19,7 +19,7 @@ AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType 
 
 void AABBBrush::construct() {
 	Super::construct();
-	// TODO: some aabb brushes don't support center or single mode (e.g. the plane brush)
+	// TODO: BRUSH: some aabb brushes don't support center or single mode (e.g. the plane brush)
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
 		setCenterMode();
@@ -114,15 +114,13 @@ voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegio
 			break;
 		}
 		Log::debug("extend region in fixed ortho side view: %s to mins: %i:%i:%i, maxs: %i:%i:%i, face: %i",
-				   brushRegion.toString().c_str(), mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z,
-				   (int)ctx.cursorFace);
+				   brushRegion.toString().c_str(), mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)ctx.cursorFace);
 		return voxel::Region{mins, maxs};
 	}
 	return brushRegion;
 }
 
-bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						const BrushContext &ctx) {
+bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	setErrorReason("");
 	voxel::Region region = calcRegion(ctx);
 	region = extendRegionInOrthoMode(region, wrapper.region(), ctx);
@@ -235,7 +233,7 @@ void AABBBrush::setRadius(int radius) {
 }
 
 voxel::Region AABBBrush::calcRegion(const BrushContext &ctx) const {
-	// TODO: locked axis support
+	// TODO: BRUSH: locked axis support
 	const glm::ivec3 &pos = currentCursorPosition(ctx);
 	if (!anySingleMode() && centerMode()) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, ctx.gridResolution);
@@ -245,7 +243,7 @@ voxel::Region AABBBrush::calcRegion(const BrushContext &ctx) const {
 	const glm::ivec3 &first = anySingleMode() ? pos : applyGridResolution(_aabbFirstPos, ctx.gridResolution);
 	const int rad = radius();
 	if (rad > 0) {
-		// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
+		// TODO: BRUSH: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
 		return voxel::Region(first - rad, first + rad);
 	}
 

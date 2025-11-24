@@ -86,8 +86,7 @@ public:
 	void reset() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
-	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-				 const BrushContext &ctx) override;
+	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 	/**
 	 * @return the current position in a multi action execution
 	 * @sa needsAdditionalAction()

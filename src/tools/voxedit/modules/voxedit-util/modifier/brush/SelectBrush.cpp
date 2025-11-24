@@ -10,7 +10,7 @@ namespace voxedit {
 
 void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						   const voxel::Region &region) {
-	// TODO: this doesn't work for preview
+	// TODO: BRUSH: this doesn't work for preview
 	voxel::Region selectionRegion = region;
 	if (_brushClamping) {
 		selectionRegion.cropTo(ctx.targetVolumeRegion);

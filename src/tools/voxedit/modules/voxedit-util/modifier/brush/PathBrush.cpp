@@ -3,6 +3,7 @@
  */
 
 #include "PathBrush.h"
+#include "app/I18N.h"
 #include "core/collection/List.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -10,7 +11,6 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/AStarPathfinder.h"
 #include "voxelutil/VoxelUtil.h"
-#include "app/I18N.h"
 
 namespace voxedit {
 
@@ -18,8 +18,8 @@ voxel::Region PathBrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region::InvalidRegion;
 }
 
-void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &ctx, const voxel::Region &region) {
+void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						 const voxel::Region &region) {
 	core::List<glm::ivec3> listResult(4096);
 	const glm::ivec3 &start = ctx.referencePos;
 	const glm::ivec3 &end = ctx.cursorPosition;

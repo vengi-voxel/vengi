@@ -3,9 +3,9 @@
  */
 
 #include "ShapeBrush.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "app/I18N.h"
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
@@ -34,7 +34,7 @@ void ShapeBrush::setShapeType(ShapeType type) {
 }
 
 math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,
-											   int &height, int &depth) const {
+												int &height, int &depth) const {
 	core_assert(face != voxel::FaceNames::Max);
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
@@ -64,8 +64,8 @@ math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm
 	return math::Axis::None;
 }
 
-void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &ctx, const voxel::Region &region) {
+void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region) {
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
 	int height = 0;

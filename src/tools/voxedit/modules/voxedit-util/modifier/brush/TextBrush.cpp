@@ -46,8 +46,8 @@ voxel::Region TextBrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region(mins, maxs);
 }
 
-void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &ctx, const voxel::Region &region) {
+void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						 const voxel::Region &region) {
 	if (!_voxelFont.init(_font)) {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return;

@@ -112,8 +112,8 @@ voxel::Region StampBrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region(mins, maxs);
 }
 
-void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &ctx, const voxel::Region &region) {
+void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region) {
 	const glm::ivec3 &offset = region.isValid() ? region.getLowerCorner() : ctx.cursorPosition;
 	if (!_volume) {
 		wrapper.setVoxel(offset.x, offset.y, offset.z, ctx.cursorVoxel);

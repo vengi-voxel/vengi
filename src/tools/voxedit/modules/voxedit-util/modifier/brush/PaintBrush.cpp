@@ -51,7 +51,8 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	return voxel::createVoxel(_palette, index, old.getFlags());
 }
 
-static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from, const voxel::Voxel &to, float factor) {
+static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from, const voxel::Voxel &to,
+						float factor) {
 	const palette::Palette &palette = wrapper.node().palette();
 	const glm::vec4 colorA = palette.color4(from.getColor());
 	const glm::vec4 colorB = palette.color4(to.getColor());
@@ -63,8 +64,8 @@ static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from
 	return voxel::createVoxel(palette, index);
 }
 
-void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &ctx, const voxel::Region &region) {
+void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region) {
 	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _factor, _variationThreshold);
 	if (plane()) {
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,

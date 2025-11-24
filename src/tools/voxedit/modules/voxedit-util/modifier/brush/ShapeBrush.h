@@ -17,6 +17,7 @@ namespace voxedit {
 class ShapeBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
+
 protected:
 	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
 										int &depth) const;

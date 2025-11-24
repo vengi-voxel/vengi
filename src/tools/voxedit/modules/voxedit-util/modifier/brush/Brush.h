@@ -13,8 +13,8 @@
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "math/Axis.h"
-#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -90,7 +90,8 @@ protected:
 	/**
 	 * @brief Generate the voxels here
 	 *
-	 * @sa execute() - this method is called by execute() but if mirroring is supported, the regions might differ for each call
+	 * @sa execute() - this method is called by execute() but if mirroring is supported, the regions might differ for
+	 * each call
 	 *
 	 * @param[in] sceneGraph The scene graph to operate on
 	 * @param[in] wrapper The volume wrapper to operate on
@@ -123,8 +124,7 @@ public:
 	 * @param[in] ctx The brush context
 	 * @return @c true if the brush action was successful
 	 */
-	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &ctx);
+	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 
 	virtual void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
 	}

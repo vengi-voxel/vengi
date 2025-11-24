@@ -9,7 +9,8 @@
 
 namespace voxedit {
 
-void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx, const voxel::Region &region) {
+void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						 const voxel::Region &region) {
 	const glm::ivec3 &start = ctx.referencePos;
 	const glm::ivec3 &end = ctx.cursorPosition;
 	voxel::Voxel voxel = ctx.cursorVoxel;
