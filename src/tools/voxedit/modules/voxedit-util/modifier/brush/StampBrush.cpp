@@ -83,6 +83,8 @@ void StampBrush::construct() {
 			setVolume(*clipBoard.volume, *clipBoard.palette);
 		}
 	}).setHelp(_("Paste the current clipboard content as stamp"));
+
+	_maxVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSizePreview);
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &ctx) const {
@@ -135,7 +137,7 @@ void StampBrush::reset() {
 }
 
 void StampBrush::setSize(const glm::ivec3 &size) {
-	if (glm::any(glm::greaterThan(size, glm::ivec3(MaxSize)))) {
+	if (glm::any(glm::greaterThan(size, glm::ivec3(_maxVolumeSize->intVal())))) {
 		return;
 	}
 	if (_volume) {
@@ -151,9 +153,14 @@ void StampBrush::setVolume(const voxel::RawVolume &volume, const palette::Palett
 		_volume = new voxel::RawVolume(volume);
 	}
 	if (_volume) {
-		if (glm::any(glm::greaterThan(_volume->region().getDimensionsInVoxels(), glm::ivec3(MaxSize)))) {
-			Log::warn("Stamp size exceeds the max allowed size of 32x32x32");
-			_volume = voxelutil::resize(_volume, voxel::Region(0, MaxSize));
+		const int maxSize = _maxVolumeSize->intVal();
+		const voxel::Region region = _volume->region();
+		if (region.voxels() > maxSize * maxSize * maxSize) {
+			Log::warn("Stamp size exceeds the max allowed size of %ix%ix%i (check cvar %s)", maxSize, maxSize, maxSize,
+					  cfg::VoxEditMaxSuggestedVolumeSizePreview);
+			const glm::ivec3 &mins = region.getLowerCorner();
+			const voxel::Region resize(mins, mins + maxSize - 1);
+			_volume = new voxel::RawVolume(*_volume, resize);
 		}
 		_volume->translate(-_volume->region().getLowerCorner());
 	}

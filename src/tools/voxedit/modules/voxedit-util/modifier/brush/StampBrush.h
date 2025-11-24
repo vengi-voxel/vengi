@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Brush.h"
+#include "app/App.h"
 #include "core/ScopedPtr.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -30,12 +31,12 @@ protected:
 	bool _center = true;
 	bool _continuous = false;
 	SceneManager *_sceneMgr;
+	core::VarPtr _maxVolumeSize;
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
-	static constexpr int MaxSize = 32;
 	StampBrush(SceneManager *sceneMgr) : Super(BrushType::Stamp), _sceneMgr(sceneMgr) {
 	}
 	virtual ~StampBrush() = default;
