@@ -72,13 +72,12 @@ void StampBrush::construct() {
 
 	command::Command::registerCommand("stampbrushusenode", [this](const command::CmdArgs &) {
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
-			if (glm::all(glm::lessThan(node->region().getDimensionsInVoxels(), glm::ivec3(64)))) {
-				setVolume(*node->volume(), node->palette());
-			} else {
-				Log::warn("Node is too large to be used as stamp");
-			}
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		if (node == nullptr) {
+			Log::warn("No active model node to use as stamp");
+			return;
 		}
+		setVolume(*node->volume(), node->palette());
 	}).setHelp(_("Use the current selected node volume as new stamp"));
 
 	command::Command::registerCommand("stampbrushpaste", [this](const command::CmdArgs &) {
