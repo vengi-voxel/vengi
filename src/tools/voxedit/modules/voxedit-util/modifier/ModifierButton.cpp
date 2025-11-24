@@ -30,7 +30,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 			modifier.setModifierType(_newType);
 			_sceneMgr->trace(false, true);
 		}
-		modifier.start();
+		modifier.beginBrush();
 	}
 	return initialDown;
 }
@@ -69,7 +69,7 @@ void ModifierButton::execute(bool single) {
 				return;
 			}
 			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
+				if (isModifying(type)) {
 					_sceneMgr->modified(nodeId, region, flags);
 				}
 			};
@@ -84,7 +84,7 @@ void ModifierButton::execute(bool single) {
 		_oldType = ModifierType::None;
 	}
 	if (!single) {
-		modifier.stop();
+		modifier.endBrush();
 	}
 	if (nodes == 0) {
 		Log::warn("Could not execute the desired action on any visible node");

@@ -18,7 +18,7 @@ protected:
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		brushContext.cursorPosition = mins;
 		brushContext.cursorFace = voxel::FaceNames::PositiveX;
-		EXPECT_TRUE(brush.start(brushContext));
+		EXPECT_TRUE(brush.beginBrush(brushContext));
 		if (brush.singleMode()) {
 			EXPECT_FALSE(brush.active());
 		} else {
@@ -45,7 +45,6 @@ protected:
 		ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
 		brush.preExecute(brushContext, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, brushContext);
-		brush.postExecute(brushContext);
 		const voxel::Region dirtyRegion = wrapper.dirtyRegion();
 		EXPECT_TRUE(dirtyRegion.isValid());
 		EXPECT_NE(voxel::Voxel(), brushContext.cursorVoxel);
@@ -87,9 +86,9 @@ TEST_F(ShapeBrushTest, testModifierStartStop) {
 	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
-	EXPECT_TRUE(brush.start(brushContext));
+	EXPECT_TRUE(brush.beginBrush(brushContext));
 	EXPECT_TRUE(brush.active());
-	brush.stop(brushContext);
+	brush.endBrush(brushContext);
 	EXPECT_FALSE(brush.active());
 	brush.shutdown();
 }

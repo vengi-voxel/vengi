@@ -55,7 +55,6 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 
 	brush.preExecute(brushContext, wrapper.volume());
 	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
-	brush.postExecute(brushContext);
 
 	const voxel::Voxel voxel = wrapper.voxel(brushContext.cursorPosition);
 	EXPECT_EQ((int)voxel.getColor(), (int)paintColorIndex) << "Voxel color was not changed by the paint brush";

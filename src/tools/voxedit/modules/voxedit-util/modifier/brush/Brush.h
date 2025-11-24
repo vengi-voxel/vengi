@@ -118,17 +118,49 @@ public:
 	}
 
 	/**
+	 * @brief Start the brush action
+	 * @sa preExecute()
+	 * @sa execute()
+	 * @sa endBrush()
+	 */
+	virtual bool beginBrush(const BrushContext &ctx);
+
+	/**
+	 * @brief Prepare the brush state
+	 * @param[in] ctx The brush context
+	 * @param[in] volume The volume that is currently active - can be null
+	 * @sa beginBrush()
+	 * @sa execute()
+	 * @sa endBrush()
+	 */
+	virtual void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume);
+
+	/**
 	 * @brief Execute the brush action on the given volume and also handles mirroring
 	 * @param[in] sceneGraph The scene graph to operate on
 	 * @param[in] wrapper The volume wrapper to operate on
 	 * @param[in] ctx The brush context
 	 * @return @c true if the brush action was successful
+	 * @sa beginBrush()
+	 * @sa preExecute()
+	 * @sa endBrush()
 	 */
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 
-	virtual void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
-	}
-	virtual void postExecute(const BrushContext &ctx) {
+	/**
+	 * @brief Called when brush action was executed
+	 * @sa beginBrush()
+	 * @sa preExecute()
+	 * @sa execute()
+	 */
+	virtual void endBrush(BrushContext &ctx);
+
+	/**
+	 * @brief Abort the brush lifecycle
+	 * @sa beginBrush()
+	 * @sa execute()
+	 */
+	virtual void abort(BrushContext &ctx) {
 	}
 
 	/**

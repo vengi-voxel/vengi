@@ -52,7 +52,6 @@ protected:
 			brushContext.cursorPosition[math::getIndexForAxis(voxel::faceToAxis(brushContext.cursorFace))] = coord;
 			brush.preExecute(brushContext, &volume);
 			ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext)) << "for coord: " << i;
-			brush.postExecute(brushContext);
 			ASSERT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()))
 				<< "for coord: " << i;
 			brushContext.hitCursorVoxel = wrapper.voxel(brushContext.cursorPosition);

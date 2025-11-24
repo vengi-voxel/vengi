@@ -41,7 +41,7 @@ protected:
 		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
-		if (!modifier.start()) {
+		if (!modifier.beginBrush()) {
 			return false;
 		}
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -65,10 +65,10 @@ protected:
 
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		Modifier &modifier = _sceneMgr->modifier();
-		modifier.stop();
+		modifier.endBrush();
 		modifier.setBrushType(BrushType::Select);
 		modifier.setCursorPosition(mins, voxel::FaceNames::NegativeX);
-		EXPECT_TRUE(modifier.start());
+		EXPECT_TRUE(modifier.beginBrush());
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier.executeAdditionalAction();
 		scenegraph::SceneGraph sceneGraph;

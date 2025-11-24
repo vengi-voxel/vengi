@@ -79,15 +79,6 @@ protected:
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
-	void preExecuteBrush(const voxel::RawVolume *volume);
-	void postExecuteBrush();
-
-	/**
-	 * @brief Execute the brush operation on the given node volume
-	 */
-	bool executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
-					  const voxel::Voxel &voxel, const ModifiedRegionCallback &callback = {});
-
 public:
 	Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionManager);
 
@@ -134,7 +125,16 @@ public:
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
-	bool start();
+	bool beginBrush();
+protected:
+	void preExecuteBrush(const voxel::RawVolume *volume);
+
+	/**
+	 * @brief Execute the brush operation on the given node volume
+	 */
+	bool executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
+					  const voxel::Voxel &voxel, const ModifiedRegionCallback &callback = {});
+public:
 	/**
 	 * @brief End the current ModifierType execution and modify the given volume according to the type.
 	 * @param[out,in] node The model node to modify
@@ -143,7 +143,8 @@ public:
 	 */
 	bool execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 				 const ModifiedRegionCallback &callback = {});
-	void stop();
+	void endBrush();
+	void abort();
 	/**
 	 * @brief Actions could get aborted by some external action like hitting esc
 	 */
@@ -160,6 +161,7 @@ public:
 
 	ShapeBrush &shapeBrush();
 	TextBrush &textBrush();
+	LineBrush &lineBrush();
 	StampBrush &stampBrush();
 	PlaneBrush &planeBrush();
 	PathBrush &pathBrush();
@@ -228,6 +230,10 @@ inline BrushType Modifier::brushType() const {
 
 inline TextBrush &Modifier::textBrush() {
 	return _textBrush;
+}
+
+inline LineBrush &Modifier::lineBrush() {
+	return _lineBrush;
 }
 
 inline ShapeBrush &Modifier::shapeBrush() {

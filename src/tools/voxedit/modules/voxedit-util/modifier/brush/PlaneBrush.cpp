@@ -3,7 +3,6 @@
  */
 
 #include "PlaneBrush.h"
-#include "core/Log.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -14,8 +13,8 @@
 
 namespace voxedit {
 
-bool PlaneBrush::start(const BrushContext &ctx) {
-	if (!Super::start(ctx)) {
+bool PlaneBrush::beginBrush(const BrushContext &ctx) {
+	if (!Super::beginBrush(ctx)) {
 		return false;
 	}
 	_hitVoxel = ctx.hitCursorVoxel;

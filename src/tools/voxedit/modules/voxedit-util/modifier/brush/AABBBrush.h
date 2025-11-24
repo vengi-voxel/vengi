@@ -99,19 +99,22 @@ public:
 	 * @brief Will set the first position of the aabb
 	 * @note This is used in input methods or @c ActionButton implementations
 	 * @sa step()
-	 * @sa stop()
+	 * @sa endBrush()
 	 */
-	virtual bool start(const BrushContext &ctx);
+	bool beginBrush(const BrushContext &ctx) override;
 	/**
-	 * @brief Will set the second position of the aabb (only after @c start() was called).
+	 * @brief Will set the second position of the aabb (only after @c beginBrush() was called).
 	 * @note This is used in input methods or @c ActionButton implementations
-	 * @sa start()
-	 * @sa stop()
+	 * @sa beginBrush()
+	 * @sa endBrush()
 	 */
 	void step(const BrushContext &ctx);
-	void stop(const BrushContext &ctx);
+	void endBrush(BrushContext &ctx) override;
+	void abort(BrushContext &ctx) override {
+		endBrush(ctx);
+	}
 	/**
-	 * @return @c true if @c start() was called without calling @c stop() or aborting the action otherwise
+	 * @return @c true if @c beginBrush() was called without calling @c endBrush() or aborting the action otherwise
 	 */
 	bool active() const override;
 	bool aborted(const BrushContext &ctx) const;

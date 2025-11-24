@@ -20,7 +20,7 @@ protected:
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		brushContext.cursorPosition = mins;
 		brushContext.cursorFace = voxel::FaceNames::PositiveX;
-		EXPECT_TRUE(brush.start(brushContext));
+		EXPECT_TRUE(brush.beginBrush(brushContext));
 		if (brush.singleMode()) {
 			EXPECT_FALSE(brush.active());
 		} else {
@@ -56,8 +56,6 @@ TEST_F(TextureBrushTest, testExecuteFilled) {
 
 	brush.preExecute(brushContext, wrapper.volume());
 	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
-	brush.postExecute(brushContext);
-
 	EXPECT_EQ(wrapper.voxel({20, 10, 10}).getColor(), 253);
 
 	brush.shutdown();

@@ -29,7 +29,7 @@ public:
 	virtual ~PlaneBrush() = default;
 
 	void reset() override;
-	bool start(const BrushContext &ctx) override;
+	bool beginBrush(const BrushContext &ctx) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 };
 

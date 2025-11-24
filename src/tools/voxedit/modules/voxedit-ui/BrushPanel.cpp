@@ -21,6 +21,7 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/modifier/brush/LineBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
@@ -164,11 +165,14 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	const float buttonWidth = ImGui::GetFontSize() * 4.0f;
 	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotateonaxis");
-		ImGui::AxisCommandButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth,
+								 &listener);
 		ImGui::SameLine();
-		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "stampbrushrotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::Y, _("Y"), "stampbrushrotate y", ICON_LC_REPEAT, nullptr, buttonWidth,
+								 &listener);
 		ImGui::SameLine();
-		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "stampbrushrotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::AxisCommandButton(math::Axis::Z, _("Z"), "stampbrushrotate z", ICON_LC_REPEAT, nullptr, buttonWidth,
+								 &listener);
 		ImGui::PopID();
 	}
 
@@ -197,6 +201,28 @@ void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listen
 
 void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listener) {
 	ImGui::TextWrappedUnformatted(_("Draws a line from the reference position to the current cursor position"));
+	Modifier &modifier = _sceneMgr->modifier();
+	LineBrush &brush = modifier.lineBrush();
+	bool continuous = brush.continuous();
+	if (ImGui::Checkbox(_("Continuous"), &continuous)) {
+		brush.setContinuous(continuous);
+	}
+	ImGui::TooltipCommand("togglelinebrushcontinuous");
+
+	ImGui::TextUnformatted(_("Stipple Pattern:"));
+	LineStipplePattern &stipplePattern = brush.stipplePattern();
+	ui::ScopedStyle style;
+	style.setItemSpacing({0.0f, 0.0f});
+	for (int i = 0; i < stipplePattern.bits(); ++i) {
+		ImGui::PushID(i);
+		bool bit = stipplePattern[i];
+		if (ImGui::Checkbox("", &bit)) {
+			brush.setStippleBit(i, bit);
+		}
+		ImGui::PopID();
+		ImGui::SameLine();
+	}
+	ImGui::TooltipTextUnformatted(_("Length of the stipple pattern <= 1 to disable"));
 }
 
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
@@ -473,7 +499,8 @@ static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &m
 	bool hovered = false, held = false;
 	/*bool clicked = */ ImGui::ButtonBehavior(rect, id, &hovered, &held);
 
-	ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f, 0, hovered ? 2.0f : 1.0f);
+	ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f, 0,
+										hovered ? 2.0f : 1.0f);
 	if (held && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
 		const glm::ivec2 &pixelPos = image::Image::pixels({u, v}, uiImageSize.x, uiImageSize.y);
 		const ImVec2 &mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
@@ -607,7 +634,8 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	if (core::countSetBits(core::enumVal(supported)) > 1) {
 		ui::Toolbar toolbarModifiers("modifiers", &listener);
 		if ((supported & ModifierType::Select) != ModifierType::None) {
-			toolbarModifiers.button(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, "actionselect", !modifier.isMode(ModifierType::Select));
+			toolbarModifiers.button(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, "actionselect",
+									!modifier.isMode(ModifierType::Select));
 		}
 		if ((supported & ModifierType::ColorPicker) != ModifierType::None) {
 			toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
@@ -631,7 +659,8 @@ void BrushPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 	const core::String title = makeTitle(ICON_LC_BRUSH, _("Brush"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
-			ImGui::TextWrappedUnformatted(_("Brushes are only available in edit mode - you are currently in scene mode"));
+			ImGui::TextWrappedUnformatted(
+				_("Brushes are only available in edit mode - you are currently in scene mode"));
 		} else {
 			addModifiers(listener);
 			brushSettings(listener);

@@ -57,6 +57,13 @@ bool Brush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 	return true;
 }
 
+bool Brush::beginBrush(const BrushContext &ctx) {
+	return false;
+}
+
+void Brush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
+}
+
 bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	voxel::Region region = calcRegion(ctx);
 	glm::ivec3 minsMirror = region.getLowerCorner();
@@ -74,6 +81,9 @@ bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &w
 		}
 	}
 	return true;
+}
+
+void Brush::endBrush(BrushContext &ctx) {
 }
 
 bool Brush::getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const {

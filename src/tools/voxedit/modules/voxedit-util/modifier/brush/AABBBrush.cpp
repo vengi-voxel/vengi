@@ -161,7 +161,7 @@ bool AABBBrush::wantAABB() const {
 	return !anySingleMode();
 }
 
-bool AABBBrush::start(const BrushContext &ctx) {
+bool AABBBrush::beginBrush(const BrushContext &ctx) {
 	if (_aabbMode) {
 		return false;
 	}
@@ -208,7 +208,7 @@ void AABBBrush::step(const BrushContext &ctx) {
 	_secondPosValid = true;
 }
 
-void AABBBrush::stop(const BrushContext &ctx) {
+void AABBBrush::endBrush(BrushContext &ctx) {
 	_secondPosValid = false;
 	_aabbMode = false;
 	_aabbFace = voxel::FaceNames::Max;

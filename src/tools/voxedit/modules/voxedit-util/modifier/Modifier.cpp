@@ -141,8 +141,7 @@ void Modifier::shutdown() {
 void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	_nowSeconds = nowSeconds;
 	_brushContext.fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
-	AABBBrush *aabbBrush = currentAABBBrush();
-	if (aabbBrush) {
+	if (AABBBrush *aabbBrush = currentAABBBrush()) {
 		if (aabbBrush->anySingleMode()) {
 			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
 				_actionExecuteButton.execute(true);
@@ -177,9 +176,9 @@ void Modifier::reset() {
 	setModifierType(ModifierType::Place);
 }
 
-bool Modifier::start() {
-	if (AABBBrush *brush = currentAABBBrush()) {
-		return brush->start(_brushContext);
+bool Modifier::beginBrush() {
+	if (Brush *brush = currentBrush()) {
+		return brush->beginBrush(_brushContext);
 	}
 	return false;
 }
@@ -280,7 +279,6 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 
 	preExecuteBrush(volume);
 	executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
-	postExecuteBrush();
 
 	return true;
 }
@@ -325,54 +323,48 @@ static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region 
 }
 
 void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
-	if (Brush *brush = currentBrush()) {
-		_brushContext.targetVolumeRegion = volume->region();
-		_brushContext.prevCursorPosition = _brushContext.cursorPosition;
-		if (brush->brushClamping()) {
-			const voxel::Region brushRegion = brush->calcRegion(_brushContext);
-			_brushContext.cursorPosition =
-				updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
-		}
-		brush->preExecute(_brushContext, volume);
+	Brush *brush = currentBrush();
+	if (!brush) {
+		return;
 	}
-}
-
-void Modifier::postExecuteBrush() {
-	if (Brush *brush = currentBrush()) {
-		if (brush->brushClamping()) {
-			_brushContext.cursorPosition = _brushContext.prevCursorPosition;
-		}
-		brush->postExecute(_brushContext);
+	_brushContext.targetVolumeRegion = volume->region();
+	_brushContext.prevCursorPosition = _brushContext.cursorPosition;
+	if (brush->brushClamping()) {
+		const voxel::Region brushRegion = brush->calcRegion(_brushContext);
+		_brushContext.cursorPosition =
+			updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
 	}
+	brush->preExecute(_brushContext, volume);
 }
 
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel,
 							const ModifiedRegionCallback &callback) {
-	if (Brush *brush = currentBrush()) {
-		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager);
-		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
-		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
-		if (brush->brushClamping()) {
-			const voxel::Region brushRegion = brush->calcRegion(_brushContext);
-			_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, prevCursorPos);
-		}
-		_brushContext.cursorVoxel = voxel;
-		brush->execute(sceneGraph, wrapper, _brushContext);
-		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-		if (modifiedRegion.isValid()) {
-			voxel::logRegion("Dirty region", modifiedRegion);
-			if (callback) {
-				SceneModifiedFlags flags = brush->sceneModifiedFlags();
-				flags |= SceneModifiedFlags::MarkUndo;
-				callback(modifiedRegion, _brushContext.modifierType, flags);
-			}
-		}
-		_brushContext.cursorPosition = prevCursorPos;
-		_brushContext.cursorVoxel = prevVoxel;
-		return true;
+	Brush *brush = currentBrush();
+	if (!brush) {
+		return false;
 	}
-	return false;
+	ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager);
+	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
+	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
+	if (brush->brushClamping()) {
+		const voxel::Region brushRegion = brush->calcRegion(_brushContext);
+		_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, prevCursorPos);
+	}
+	_brushContext.cursorVoxel = voxel;
+	brush->execute(sceneGraph, wrapper, _brushContext);
+	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+	if (modifiedRegion.isValid()) {
+		voxel::logRegion("Dirty region", modifiedRegion);
+		if (callback) {
+			SceneModifiedFlags flags = brush->sceneModifiedFlags();
+			flags |= SceneModifiedFlags::MarkUndo;
+			callback(modifiedRegion, _brushContext.modifierType, flags);
+		}
+	}
+	_brushContext.cursorPosition = prevCursorPos;
+	_brushContext.cursorVoxel = prevVoxel;
+	return true;
 }
 
 Brush *Modifier::currentBrush() {
@@ -431,9 +423,15 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 	return nullptr;
 }
 
-void Modifier::stop() {
-	if (AABBBrush *brush = currentAABBBrush()) {
-		brush->stop(_brushContext);
+void Modifier::endBrush() {
+	if (Brush* brush = currentBrush()) {
+		brush->endBrush(_brushContext);
+	}
+}
+
+void Modifier::abort() {
+	if (Brush* brush = currentBrush()) {
+		brush->abort(_brushContext);
 	}
 }
 

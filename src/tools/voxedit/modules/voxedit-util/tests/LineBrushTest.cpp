@@ -35,7 +35,6 @@ TEST_F(LineBrushTest, testExecute) {
 
 	brush.preExecute(brushContext, &volume);
 	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
-	brush.postExecute(brushContext);
 
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << wrapper.dirtyRegion().toString();
 	// TODO: fails on linux - but not on mac or windows. need to investigate...

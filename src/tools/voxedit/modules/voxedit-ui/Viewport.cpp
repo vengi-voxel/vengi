@@ -173,7 +173,7 @@ void Viewport::dragAndDrop(float headerSize) {
 					updateViewportTrace(headerSize);
 					ModifierFacade &modifier = _sceneMgr->modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
-					modifier.start();
+					modifier.beginBrush();
 					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type,
 												   SceneModifiedFlags flags) {
 						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
@@ -181,7 +181,7 @@ void Viewport::dragAndDrop(float headerSize) {
 						}
 					};
 					modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
-					modifier.stop();
+					modifier.endBrush();
 				}
 			}
 		}

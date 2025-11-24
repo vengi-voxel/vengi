@@ -100,7 +100,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		existingVolume = activeVolume;
 	}
 
-	// TODO: for erase we have to use the existing volume
+	// TODO: BRUSH: for erase we have to use the existing volume
 	// and hide the real volume to show the modification only.
 	if (const Brush *brush = currentBrush()) {
 		preExecuteBrush(activeVolume);
@@ -135,7 +135,6 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 				_modifierRenderer->updateBrushVolume(0, region, color);
 			}
 		}
-		postExecuteBrush();
 	}
 }
 

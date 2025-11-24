@@ -1949,7 +1949,7 @@ void SceneManager::construct() {
 	}).setHelp(_("Move the voxels of the current selected palette index or the given index into a new node"));
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
-		_modifierFacade.stop();
+		_modifierFacade.abort();
 	}).setHelp(_("Aborts the current modifier action"));
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {

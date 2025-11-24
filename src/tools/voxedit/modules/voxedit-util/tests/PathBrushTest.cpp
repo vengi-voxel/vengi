@@ -46,7 +46,6 @@ TEST_F(PathBrushTest, testExecute) {
 
 	brush.preExecute(brushContext, wrapper.volume());
 	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
-	brush.postExecute(brushContext);
 
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << wrapper.dirtyRegion().toString();
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.referencePos).getMaterial())) << wrapper.dirtyRegion().toString();

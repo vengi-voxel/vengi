@@ -29,7 +29,7 @@ protected:
 		_brushContext.hitCursorVoxel = _brushContext.cursorVoxel;
 		_brushContext.cursorPosition = mins;
 		_brushContext.cursorFace = face;
-		EXPECT_TRUE(_brush.start(_brushContext));
+		EXPECT_TRUE(_brush.beginBrush(_brushContext));
 		ASSERT_FALSE(_brush.singleMode());
 		EXPECT_TRUE(_brush.active());
 		_brushContext.cursorPosition = maxs;
@@ -37,9 +37,7 @@ protected:
 
 	bool execute(ModifierVolumeWrapper &wrapper) {
 		_brush.preExecute(_brushContext, &_volume);
-		const bool state = _brush.execute(_sceneGraph, wrapper, _brushContext);
-		_brush.postExecute(_brushContext);
-		return state;
+		return _brush.execute(_sceneGraph, wrapper, _brushContext);
 	}
 
 	void SetUp() override {
@@ -74,7 +72,7 @@ TEST_F(PlaneBrushTest, testExtrude) {
 		EXPECT_TRUE(execute(wrapper)) << "for z: " << z;
 		EXPECT_TRUE(voxel::isBlocked(_volume.voxel(_brushContext.cursorPosition).getMaterial()))
 			<< "for z: " << z << " " << wrapper.dirtyRegion().toString();
-		_brush.stop(_brushContext);
+		_brush.endBrush(_brushContext);
 	}
 }
 
@@ -98,7 +96,7 @@ TEST_F(PlaneBrushTest, testExtrudeThickness) {
 		EXPECT_TRUE(voxel::isBlocked(_volume.voxel(glm::ivec3(1, y, 1)).getMaterial())) << "for y: " << y;
 		EXPECT_FALSE(voxel::isBlocked(_volume.voxel(glm::ivec3(3, y, 3)).getMaterial())) << "for y: " << y;
 	}
-	_brush.stop(_brushContext);
+	_brush.endBrush(_brushContext);
 }
 
 } // namespace voxedit

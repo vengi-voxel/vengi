@@ -26,7 +26,7 @@ protected:
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setGridResolution(1);
 		modifier.setCursorPosition(mins, voxel::FaceNames::PositiveX); // mins for aabb
-		EXPECT_TRUE(modifier.start());
+		EXPECT_TRUE(modifier.beginBrush());
 		if (brushType == BrushType::Shape) {
 			if (modifier.shapeBrush().singleMode()) {
 				EXPECT_FALSE(modifier.shapeBrush().active())
@@ -46,7 +46,7 @@ protected:
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
 		modifier.execute(sceneGraph, node);
-		modifier.stop();
+		modifier.endBrush();
 	}
 };
 
