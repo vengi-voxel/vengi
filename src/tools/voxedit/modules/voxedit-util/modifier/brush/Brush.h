@@ -155,7 +155,7 @@ public:
 	/**
 	 * @brief The region that this brush is modifying (without mirroring or anything like that)
 	 */
-	virtual voxel::Region calcRegion(const BrushContext &context) const = 0;
+	virtual voxel::Region calcRegion(const BrushContext &ctx) const = 0;
 
 	/**
 	 * @brief allow to change the modifier type if the brush doesn't support the given mode

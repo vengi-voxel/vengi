@@ -9,10 +9,10 @@
 
 namespace voxedit {
 
-void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &context, const voxel::Region &region) {
-	const glm::ivec3 &start = context.referencePos;
-	const glm::ivec3 &end = context.cursorPosition;
-	voxel::Voxel voxel = context.cursorVoxel;
+void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx, const voxel::Region &region) {
+	const glm::ivec3 &start = ctx.referencePos;
+	const glm::ivec3 &end = ctx.cursorPosition;
+	voxel::Voxel voxel = ctx.cursorVoxel;
 	voxelutil::raycastWithEndpoints(&wrapper, start, end, [&](auto &sampler) {
 		const glm::ivec3 &pos = sampler.position();
 		wrapper.setVoxel(pos.x, pos.y, pos.z, voxel);
@@ -29,9 +29,9 @@ void LineBrush::update(const BrushContext &ctx, double nowSeconds) {
 	}
 }
 
-voxel::Region LineBrush::calcRegion(const BrushContext &context) const {
-	const glm::ivec3 mins = glm::min(context.referencePos, context.cursorPosition);
-	const glm::ivec3 maxs = glm::max(context.referencePos, context.cursorPosition);
+voxel::Region LineBrush::calcRegion(const BrushContext &ctx) const {
+	const glm::ivec3 mins = glm::min(ctx.referencePos, ctx.cursorPosition);
+	const glm::ivec3 maxs = glm::max(ctx.referencePos, ctx.cursorPosition);
 	return voxel::Region(mins, maxs);
 }
 

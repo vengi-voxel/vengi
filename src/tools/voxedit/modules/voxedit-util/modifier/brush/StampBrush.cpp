@@ -85,16 +85,16 @@ void StampBrush::construct() {
 	}).setHelp(_("Paste the current clipboard content as stamp"));
 }
 
-voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
+voxel::Region StampBrush::calcRegion(const BrushContext &ctx) const {
 	if (_volume == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
-	glm::ivec3 mins = context.cursorPosition;
+	glm::ivec3 mins = ctx.cursorPosition;
 	const glm::ivec3 &dim = _volume->region().getDimensionsInVoxels();
 	if (_center) {
 		mins -= dim / 2;
 	} else {
-		switch (context.cursorFace) {
+		switch (ctx.cursorFace) {
 		case voxel::FaceNames::NegativeX:
 			mins.x -= (dim.x - 1);
 			break;
@@ -113,14 +113,14 @@ voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
 }
 
 void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &context, const voxel::Region &region) {
-	const glm::ivec3 &offset = region.isValid() ? region.getLowerCorner() : context.cursorPosition;
+						 const BrushContext &ctx, const voxel::Region &region) {
+	const glm::ivec3 &offset = region.isValid() ? region.getLowerCorner() : ctx.cursorPosition;
 	if (!_volume) {
-		wrapper.setVoxel(offset.x, offset.y, offset.z, context.cursorVoxel);
+		wrapper.setVoxel(offset.x, offset.y, offset.z, ctx.cursorVoxel);
 		return;
 	}
 
-	// TODO: context.lockedAxis support
+	// TODO: BRUSH: context.lockedAxis support
 	auto func = [&](int x, int y, int z, const voxel::Voxel &v) {
 		wrapper.setVoxel(offset.x + x, offset.y + y, offset.z + z, v);
 	};

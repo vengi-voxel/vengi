@@ -20,9 +20,9 @@ private:
 
 protected:
 	voxel::Connectivity _connectivity = voxel::Connectivity::EighteenConnected;
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
-	voxel::Region calcRegion(const BrushContext &context) const override;
+	voxel::Region calcRegion(const BrushContext &ctx) const override;
 
 public:
 	PathBrush() : Super(BrushType::Path, ModifierType::Place, ModifierType::Place) {

@@ -13,23 +13,23 @@
 namespace voxedit {
 
 bool TextureBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						   const BrushContext &context) {
+						   const BrushContext &ctx) {
 	if (!_image || !_image->isLoaded()) {
 		setErrorReason(_("No image loaded for texture brush"));
 		return false;
 	}
-	return Super::execute(sceneGraph, wrapper, context);
+	return Super::execute(sceneGraph, wrapper, ctx);
 }
 
-bool TextureBrush::needsAdditionalAction(const BrushContext &context) const {
+bool TextureBrush::needsAdditionalAction(const BrushContext &ctx) const {
 	if (!_projectOntoSurface) {
 		return false;
 	}
-	return Super::needsAdditionalAction(context);
+	return Super::needsAdditionalAction(ctx);
 }
 
 void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-							const BrushContext &context, const voxel::Region &region) {
+							const BrushContext &ctx, const voxel::Region &region) {
 	if (!_image || !_image->isLoaded()) {
 		Log::error("Can't perform action: No image loaded for texture brush");
 		return;

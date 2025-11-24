@@ -66,7 +66,8 @@ protected:
 	glm::ivec3 _aabbSecondPos{0};
 
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
-	voxel::Region extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion, const BrushContext &context) const;
+	voxel::Region extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion,
+										  const BrushContext &ctx) const;
 
 	bool isMode(uint32_t flag) const;
 	void setMode(uint32_t flag);
@@ -86,40 +87,40 @@ public:
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-				 const BrushContext &context) override;
+				 const BrushContext &ctx) override;
 	/**
 	 * @return the current position in a multi action execution
 	 * @sa needsAdditionalAction()
 	 * @sa executeAdditionalAction()
 	 */
-	glm::ivec3 currentCursorPosition(const BrushContext &brushContext) const;
+	glm::ivec3 currentCursorPosition(const BrushContext &ctx) const;
 
-	voxel::Region calcRegion(const BrushContext &context) const override;
+	voxel::Region calcRegion(const BrushContext &ctx) const override;
 	/**
 	 * @brief Will set the first position of the aabb
 	 * @note This is used in input methods or @c ActionButton implementations
 	 * @sa step()
 	 * @sa stop()
 	 */
-	virtual bool start(const BrushContext &context);
+	virtual bool start(const BrushContext &ctx);
 	/**
 	 * @brief Will set the second position of the aabb (only after @c start() was called).
 	 * @note This is used in input methods or @c ActionButton implementations
 	 * @sa start()
 	 * @sa stop()
 	 */
-	void step(const BrushContext &context);
-	void stop(const BrushContext &context);
+	void step(const BrushContext &ctx);
+	void stop(const BrushContext &ctx);
 	/**
 	 * @return @c true if @c start() was called without calling @c stop() or aborting the action otherwise
 	 */
 	bool active() const override;
-	bool aborted(const BrushContext &context) const;
+	bool aborted(const BrushContext &ctx) const;
 	/**
 	 * @return @c true if the aabb has the size of 1 in one direction. This means that the last
 	 * position can still be modified to span a full volume on all three axes.
 	 */
-	virtual bool needsAdditionalAction(const BrushContext &context) const;
+	virtual bool needsAdditionalAction(const BrushContext &ctx) const;
 
 	/**
 	 * @brief The modifier can build the aabb from the center of the current

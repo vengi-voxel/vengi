@@ -25,7 +25,7 @@ void TextBrush::construct() {
 	}).setHelp(_("Change the text brush axis"));
 }
 
-voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
+voxel::Region TextBrush::calcRegion(const BrushContext &ctx) const {
 	if (!_voxelFont.init(_font)) {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return voxel::Region::InvalidRegion;
@@ -37,7 +37,7 @@ voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
 	const int w = core_max(0, (l - 1)) * _spacing + dimX;
 	const int h = dimY;
 	const int d = _thickness;
-	const glm::ivec3 &mins = context.cursorPosition;
+	const glm::ivec3 &mins = ctx.cursorPosition;
 	glm::ivec3 maxs = mins;
 	const int widthIndex = math::getIndexForAxis(_axis);
 	maxs[(widthIndex + 0) % 3] += (w - 1);
@@ -47,7 +47,7 @@ voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
 }
 
 void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &context, const voxel::Region &region) {
+						 const BrushContext &ctx, const voxel::Region &region) {
 	if (!_voxelFont.init(_font)) {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return;
@@ -58,7 +58,7 @@ void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 	const int widthIndex = math::getIndexForAxis(_axis);
 
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
-		pos[widthIndex] += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, context.cursorVoxel, _axis);
+		pos[widthIndex] += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, ctx.cursorVoxel, _axis);
 		pos[widthIndex] += _spacing;
 	}
 }

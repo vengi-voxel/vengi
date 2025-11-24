@@ -19,16 +19,16 @@ private:
 	glm::ivec3 _initialPlanePos{0};
 
 protected:
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
-	int calculateThickness(const BrushContext &context) const;
+	int calculateThickness(const BrushContext &ctx) const;
 public:
 	PlaneBrush() : Super(BrushType::Plane) {
 	}
 	virtual ~PlaneBrush() = default;
 
 	void reset() override;
-	bool start(const BrushContext &context) override;
+	bool start(const BrushContext &ctx) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 };
 

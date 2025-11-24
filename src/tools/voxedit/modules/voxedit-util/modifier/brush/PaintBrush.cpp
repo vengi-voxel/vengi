@@ -64,18 +64,18 @@ static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from
 }
 
 void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &context, const voxel::Region &region) {
-	VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode, _factor, _variationThreshold);
+						  const BrushContext &ctx, const voxel::Region &region) {
+	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _factor, _variationThreshold);
 	if (plane()) {
-		voxelutil::paintPlane(wrapper, region.getLowerCorner(), context.cursorFace, context.hitCursorVoxel,
-							  voxelColor.evaluate(context.hitCursorVoxel));
+		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,
+							  voxelColor.evaluate(ctx.hitCursorVoxel));
 	} else if (gradient()) {
-		const glm::ivec3 start = context.cursorPosition;
+		const glm::ivec3 start = ctx.cursorPosition;
 		const glm::ivec3 size = region.getDimensionsInVoxels();
 		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const float factor = glm::distance(glm::vec3(x, y, z), glm::vec3(start)) / glm::length(glm::vec3(size));
 			const voxel::Voxel evalVoxel = voxelColor.evaluate(voxel);
-			const voxel::Voxel newVoxel = mix(wrapper, context.hitCursorVoxel, evalVoxel, factor);
+			const voxel::Voxel newVoxel = mix(wrapper, ctx.hitCursorVoxel, evalVoxel, factor);
 			wrapper.setVoxel(x, y, z, newVoxel);
 		};
 		voxelutil::visitVolumeParallel(wrapper, region, func);

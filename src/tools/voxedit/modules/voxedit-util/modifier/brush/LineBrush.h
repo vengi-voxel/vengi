@@ -19,7 +19,7 @@ private:
 
 protected:
 	LineState _state;
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
@@ -27,7 +27,7 @@ public:
 	}
 	virtual ~LineBrush() = default;
 	void update(const BrushContext &ctx, double nowSeconds) override;
-	voxel::Region calcRegion(const BrushContext &context) const override;
+	voxel::Region calcRegion(const BrushContext &ctx) const override;
 };
 
 } // namespace voxedit

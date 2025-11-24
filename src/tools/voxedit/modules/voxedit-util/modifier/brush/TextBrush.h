@@ -28,7 +28,7 @@ protected:
 	int _thickness = 1;
 	mutable voxelfont::VoxelFont _voxelFont;
 	math::Axis _axis = math::Axis::X;
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
@@ -41,7 +41,7 @@ public:
 	void update(const BrushContext &ctx, double nowSeconds) override;
 	void shutdown() override;
 
-	voxel::Region calcRegion(const BrushContext &context) const override;
+	voxel::Region calcRegion(const BrushContext &ctx) const override;
 
 	/**
 	 * @brief The font to use for rendering. This is a path to the ttf file

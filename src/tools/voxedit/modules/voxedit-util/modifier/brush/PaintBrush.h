@@ -56,7 +56,7 @@ protected:
 		voxel::Voxel evaluate(const voxel::Voxel &old);
 	};
 
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:

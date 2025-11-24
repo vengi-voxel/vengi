@@ -31,7 +31,7 @@ protected:
 	bool _continuous = false;
 	SceneManager *_sceneMgr;
 
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
@@ -46,7 +46,7 @@ public:
 	void reset() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
-	voxel::Region calcRegion(const BrushContext &context) const override;
+	voxel::Region calcRegion(const BrushContext &ctx) const override;
 
 	void setCenterMode(bool center);
 	bool centerMode() const;

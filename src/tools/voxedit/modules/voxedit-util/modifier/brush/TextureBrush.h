@@ -30,7 +30,7 @@ private:
 	bool _projectOntoSurface = true;
 
 protected:
-	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
@@ -39,12 +39,12 @@ public:
 	virtual ~TextureBrush() = default;
 
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-					 const BrushContext &context) override;
+					 const BrushContext &ctx) override;
 
 	void construct() override;
 	void shutdown() override;
 
-	bool needsAdditionalAction(const BrushContext &context) const override;
+	bool needsAdditionalAction(const BrushContext &ctx) const override;
 
 	void setImage(const image::ImagePtr &texture);
 	const image::ImagePtr &image() const;

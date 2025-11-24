@@ -14,27 +14,27 @@
 
 namespace voxedit {
 
-bool PlaneBrush::start(const BrushContext &context) {
-	if (!Super::start(context)) {
+bool PlaneBrush::start(const BrushContext &ctx) {
+	if (!Super::start(ctx)) {
 		return false;
 	}
-	_hitVoxel = context.hitCursorVoxel;
-	_initialPlanePos = context.cursorPosition;
+	_hitVoxel = ctx.hitCursorVoxel;
+	_initialPlanePos = ctx.cursorPosition;
 	return true;
 }
 
-int PlaneBrush::calculateThickness(const BrushContext &context) const {
+int PlaneBrush::calculateThickness(const BrushContext &ctx) const {
 	const math::Axis axis = voxel::faceToAxis(_aabbFace);
 	const int idx = math::getIndexForAxis(axis);
-	const voxel::Region region = Super::calcRegion(context);
-	if (context.modifierType == ModifierType::Place) {
+	const voxel::Region region = Super::calcRegion(ctx);
+	if (ctx.modifierType == ModifierType::Place) {
 		// don't allow negative direction - only allow growth into the face direction
 		if (voxel::isNegativeFace(_aabbFace)) {
-			if (_initialPlanePos[idx] < context.cursorPosition[idx]) {
+			if (_initialPlanePos[idx] < ctx.cursorPosition[idx]) {
 				return 0;
 			}
 		} else {
-			if (_initialPlanePos[idx] > context.cursorPosition[idx]) {
+			if (_initialPlanePos[idx] > ctx.cursorPosition[idx]) {
 				return 0;
 			}
 		}
@@ -48,8 +48,8 @@ void PlaneBrush::reset() {
 	_initialPlanePos = glm::ivec3(0);
 }
 
-void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume *volume) {
-	Super::preExecute(context, volume);
+void PlaneBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
+	Super::preExecute(ctx, volume);
 	if (!_aabbMode) {
 		_secondPosValid = false;
 		return;
@@ -68,12 +68,12 @@ void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume 
 	// might even be air
 
 	voxel::Region region;
-	if (context.modifierType == ModifierType::Place) {
-		region = voxelutil::extrudePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel, context.cursorVoxel, 1);
-	} else if (context.modifierType == ModifierType::Erase) {
+	if (ctx.modifierType == ModifierType::Place) {
+		region = voxelutil::extrudePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel, ctx.cursorVoxel, 1);
+	} else if (ctx.modifierType == ModifierType::Erase) {
 		region = voxelutil::erasePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel);
-	} else if (context.modifierType == ModifierType::Override) {
-		region = voxelutil::overridePlaneRegion(*volume, _initialPlanePos, _aabbFace, context.cursorVoxel);
+	} else if (ctx.modifierType == ModifierType::Override) {
+		region = voxelutil::overridePlaneRegion(*volume, _initialPlanePos, _aabbFace, ctx.cursorVoxel);
 	}
 	_aabbFirstPos = region.getLowerCorner();
 	_aabbSecondPos = region.getUpperCorner();
@@ -83,21 +83,21 @@ void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume 
 }
 
 void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &context, const voxel::Region &region) {
-	const int thickness = calculateThickness(context);
+						  const BrushContext &ctx, const voxel::Region &region) {
+	const int thickness = calculateThickness(ctx);
 	if (thickness <= 0) {
 		return;
 	}
 	if (_aabbFace == voxel::FaceNames::Max) {
-		_aabbFace = context.cursorFace;
+		_aabbFace = ctx.cursorFace;
 	}
-	if (context.modifierType == ModifierType::Place) {
-		voxelutil::extrudePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, context.cursorVoxel, thickness);
-	} else if (context.modifierType == ModifierType::Erase) {
-		// TODO: support erasing more than one voxel - support thickness
+	if (ctx.modifierType == ModifierType::Place) {
+		voxelutil::extrudePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, ctx.cursorVoxel, thickness);
+	} else if (ctx.modifierType == ModifierType::Erase) {
+		// TODO: BRUSH: support erasing more than one voxel - support thickness
 		voxelutil::erasePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel);
-	} else if (context.modifierType == ModifierType::Override) {
-		// TODO: support overriding more than one voxel - support thickness
+	} else if (ctx.modifierType == ModifierType::Override) {
+		// TODO: BRUSH: support overriding more than one voxel - support thickness
 		voxelutil::overridePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel);
 	}
 }

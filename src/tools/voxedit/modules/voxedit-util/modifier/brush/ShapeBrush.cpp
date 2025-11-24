@@ -65,7 +65,7 @@ math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm
 }
 
 void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &context, const voxel::Region &region) {
+						  const BrushContext &ctx, const voxel::Region &region) {
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
 	int height = 0;
@@ -83,7 +83,7 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	glm::ivec3 centerBottom = center;
 	centerBottom[axisIdx] = region.getLowerCorner()[axisIdx];
 
-	const voxel::Voxel &voxel = context.cursorVoxel;
+	const voxel::Voxel &voxel = ctx.cursorVoxel;
 	if (!voxel::isAir(voxel.getMaterial())) {
 		const palette::Palette &palette = wrapper.node().palette();
 		if (palette.color(voxel.getColor()).a == 0) {

@@ -14,15 +14,15 @@
 
 namespace voxedit {
 
-voxel::Region PathBrush::calcRegion(const BrushContext &context) const {
+voxel::Region PathBrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region::InvalidRegion;
 }
 
 void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &context, const voxel::Region &region) {
+						 const BrushContext &ctx, const voxel::Region &region) {
 	core::List<glm::ivec3> listResult(4096);
-	const glm::ivec3 &start = context.referencePos;
-	const glm::ivec3 &end = context.cursorPosition;
+	const glm::ivec3 &start = ctx.referencePos;
+	const glm::ivec3 &end = ctx.cursorPosition;
 	const int activeNode = sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 	auto func = [=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
@@ -43,7 +43,7 @@ void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 		return;
 	}
 	for (const glm::ivec3 &p : listResult) {
-		wrapper.setVoxel(p.x, p.y, p.z, context.cursorVoxel);
+		wrapper.setVoxel(p.x, p.y, p.z, ctx.cursorVoxel);
 	}
 }
 
