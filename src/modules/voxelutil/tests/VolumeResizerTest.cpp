@@ -23,8 +23,9 @@ TEST_F(VolumeResizerTest, testResize) {
 	newRegion.grow(5);
 	core::ScopedPtr<voxel::RawVolume> v(voxelutil::resize(&volume, newRegion));
 	ASSERT_TRUE(v);
-	ASSERT_TRUE(voxel::isBlocked(v->voxel(volume.region().getLowerCorner()).getMaterial()))	;
-	ASSERT_FALSE(voxel::isBlocked(v->voxel(volume.region().getUpperCorner() + 1).getMaterial()))	;
+	ASSERT_TRUE(voxel::isBlocked(v->voxel(volume.region().getLowerCorner()).getMaterial()));
+	ASSERT_FALSE(voxel::isBlocked(v->voxel(volume.region().getUpperCorner() + 1).getMaterial()));
+	ASSERT_TRUE(newRegion.voxels() == v->region().voxels());
 }
 
 } // namespace voxelutil
