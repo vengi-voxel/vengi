@@ -102,39 +102,42 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 
 	// TODO: BRUSH: for erase we have to use the existing volume
 	// and hide the real volume to show the modification only.
-	if (const Brush *brush = currentBrush()) {
-		preExecuteBrush(activeVolume);
-		const voxel::Region &region = brush->calcRegion(_brushContext);
-		if (region.isValid()) {
-			const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
-			bool simplePreview = generateSimplePreview(brush, region);
-			if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
-				glm::ivec3 minsMirror = region.getLowerCorner();
-				glm::ivec3 maxsMirror = region.getUpperCorner();
-				if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
-					createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
-					scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
-					mirrorDummyNode.setVolume(_previewMirrorVolume, false);
-					executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
-					_modifierRenderer->updateBrushVolume(1, _previewMirrorVolume, &activePalette);
-				}
-				createOrClearPreviewVolume(existingVolume, _previewVolume, region);
-				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-				dummyNode.setVolume(_previewVolume, false);
-				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-				_modifierRenderer->updateBrushVolume(0, _previewVolume, &activePalette);
-			} else if (simplePreview) {
-				_modifierRenderer->updateBrushVolume(0, nullptr, nullptr);
-				_modifierRenderer->updateBrushVolume(1, nullptr, nullptr);
-				glm::ivec3 minsMirror = region.getLowerCorner();
-				glm::ivec3 maxsMirror = region.getUpperCorner();
-				core::RGBA color = activePalette.color(_brushContext.cursorVoxel.getColor());
-				if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
-					_modifierRenderer->updateBrushVolume(1, {minsMirror, maxsMirror}, color);
-				}
-				_modifierRenderer->updateBrushVolume(0, region, color);
-			}
+	const Brush *brush = currentBrush();
+	if (!brush) {
+		return;
+	}
+	preExecuteBrush(activeVolume);
+	const voxel::Region &region = brush->calcRegion(_brushContext);
+	if (!region.isValid()) {
+		return;
+	}
+	const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
+	bool simplePreview = generateSimplePreview(brush, region);
+	if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
+		glm::ivec3 minsMirror = region.getLowerCorner();
+		glm::ivec3 maxsMirror = region.getUpperCorner();
+		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
+			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
+			mirrorDummyNode.setVolume(_previewMirrorVolume, false);
+			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
+			_modifierRenderer->updateBrushVolume(1, _previewMirrorVolume, &activePalette);
 		}
+		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
+		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+		dummyNode.setVolume(_previewVolume, false);
+		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+		_modifierRenderer->updateBrushVolume(0, _previewVolume, &activePalette);
+	} else if (simplePreview) {
+		_modifierRenderer->updateBrushVolume(0, nullptr, nullptr);
+		_modifierRenderer->updateBrushVolume(1, nullptr, nullptr);
+		glm::ivec3 minsMirror = region.getLowerCorner();
+		glm::ivec3 maxsMirror = region.getUpperCorner();
+		core::RGBA color = activePalette.color(_brushContext.cursorVoxel.getColor());
+		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+			_modifierRenderer->updateBrushVolume(1, {minsMirror, maxsMirror}, color);
+		}
+		_modifierRenderer->updateBrushVolume(0, region, color);
 	}
 }
 
