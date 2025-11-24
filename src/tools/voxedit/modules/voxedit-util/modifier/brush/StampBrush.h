@@ -28,6 +28,7 @@ protected:
 	core::ScopedPtr<voxel::RawVolume> _volume;
 	palette::Palette _palette;
 	glm::ivec3 _lastCursorPosition{0};
+	glm::ivec3 _offset{0};
 	bool _center = true;
 	bool _continuous = false;
 	SceneManager *_sceneMgr;
@@ -62,6 +63,8 @@ public:
 	void convertToPalette(const palette::Palette &palette);
 
 	void setSize(const glm::ivec3 &size);
+	void setOffset(const glm::ivec3 &offset);
+	const glm::ivec3 &offset() const;
 
 	bool load(const core::String &filename);
 };
@@ -71,6 +74,9 @@ inline bool StampBrush::centerMode() const {
 }
 
 inline void StampBrush::setCenterMode(bool center) {
+	if (center != _center) {
+		markDirty();
+	}
 	_center = center;
 }
 
@@ -88,6 +94,18 @@ inline voxel::RawVolume *StampBrush::volume() const {
 
 inline bool StampBrush::active() const {
 	return _volume != nullptr;
+}
+
+inline void StampBrush::setOffset(const glm::ivec3 &offset) {
+	if (offset == _offset) {
+		return;
+	}
+	_offset = offset;
+	markDirty();
+}
+
+inline const glm::ivec3 &StampBrush::offset() const {
+	return _offset;
 }
 
 } // namespace voxedit

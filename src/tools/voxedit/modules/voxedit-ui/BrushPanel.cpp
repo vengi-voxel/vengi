@@ -138,6 +138,12 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 		command::executeCommands("togglestampbrushcontinuous", &listener);
 	}
 	ImGui::TooltipCommand("togglestampbrushcontinuous");
+
+	glm::ivec3 offset = brush.offset();
+	if (ImGui::InputXYZ(_("Offset"), offset)) {
+		brush.setOffset(offset);
+	}
+
 	addBrushClampingOption(brush);
 
 	if (_stampPaletteIndex >= 0 && _stampPaletteIndex < palette.colorCount()) {
