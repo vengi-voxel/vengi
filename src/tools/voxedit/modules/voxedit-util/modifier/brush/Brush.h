@@ -50,7 +50,7 @@ struct BrushContext {
 	// used for clamping the brush region to the volume region
 	voxel::Region targetVolumeRegion;
 
-	// only used internally
+	// the position of the cursor before any clamping was applied or the brush was executed
 	glm::ivec3 prevCursorPosition{0};
 
 	ModifierType modifierType = ModifierType::Place;
