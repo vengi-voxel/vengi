@@ -42,7 +42,7 @@ void StampBrush::construct() {
 
 	command::Command::registerCommand("stampbrushrotate", [this](const command::CmdArgs &args) {
 		if (args.size() < 1) {
-			Log::info("Usage: rotate <x|y|z>");
+			Log::info("Usage: stampbrushrotate <x|y|z>");
 			return;
 		}
 		const math::Axis axis = math::toAxis(args[0]);
