@@ -37,7 +37,7 @@ VoxEdit:
    - Allow editing in game mode, too (there were key binding conflicts before)
    - Stamp brush can get an offset applied which is useful when e.g. placing trees
    - Line brush got a continuous mode where the last end is the next start of a line
-   - Line brush got support for a stipple pattern of width 8
+   - Line brush got support for a stipple pattern
    - Fixed unclear stamp volume size checks
    - The cursor details can now also measure the distance from the reference position (value 3 in the ui)
 

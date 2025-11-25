@@ -11,7 +11,7 @@
 
 namespace voxedit {
 
-using LineStipplePattern = core::BitSet<8>;
+using LineStipplePattern = core::BitSet<9>;
 
 /**
  * @ingroup Brushes
