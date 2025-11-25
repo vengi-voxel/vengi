@@ -15,10 +15,32 @@ namespace voxedit {
 class SceneManager;
 
 /**
- * @brief A brush that places other volumes as stamps into the target volume.
- * @ingroup Brushes
+ * @brief Places pre-loaded volumes as stamps into the target volume
  *
- * You first have to load a volume into the brush - otherwise you can only place one voxel at a time.
+ * The StampBrush allows copying entire voxel volumes (stamps) and placing them
+ * repeatedly in the scene. The stamp can be:
+ *
+ * - **Loaded from file**: Import any supported voxel format as a stamp
+ * - **Created from voxel**: Generate a simple stamp from a single voxel type
+ * - **Sized manually**: Define the dimensions for a new stamp
+ *
+ * # Modes
+ *
+ * - **Center Mode**: Stamp is centered on cursor position
+ * - **Corner Mode**: Stamp's corner aligns with cursor position
+ * - **Continuous Mode**: Keep placing the same stamp on each click
+ *
+ * # Offset
+ *
+ * An offset can be applied to shift the stamp relative to the cursor position,
+ * useful for precise alignment or creating patterns.
+ *
+ * The stamp requires loading a volume before it can be used. Without a loaded
+ * volume, the brush is inactive and shows an error in the UI.
+ *
+ * @ingroup Brushes
+ * @sa setVolume() to load a stamp
+ * @sa load() to import from a file
  */
 class StampBrush : public Brush {
 private:
