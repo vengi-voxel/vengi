@@ -113,6 +113,10 @@ public:
 		core::DirtyState::markDirty();
 	}
 
+	/**
+	 * @brief Get the error reason if the brush is not usable - this can be shown as
+	 * tooltip for the cursor in the viewport
+	 */
 	const core::String &errorReason() const {
 		return _errorReason;
 	}
