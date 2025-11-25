@@ -317,6 +317,12 @@ msgstr "Fehler beim Abrufen des Befehls für %s"
 msgid "Reset to default"
 msgstr "Auf Standard zurücksetzen"
 
+msgid "FPS"
+msgstr "FPS"
+
+msgid "Pause"
+msgstr "Pause"
+
 msgid "Configuration variables"
 msgstr "Konfigurationsvariablen"
 
@@ -512,6 +518,12 @@ msgstr "Aktivieren des Schattenrenderings"
 msgid "Activate checkerboard rendering"
 msgstr "Schachbrett-Rendering aktivieren"
 
+msgid "Activate culling for buffer parts"
+msgstr ""
+
+msgid "Activate culling for scene nodes"
+msgstr ""
+
 msgid "Activate bloom post processing"
 msgstr "Bloom-Nachbearbeitung aktivieren"
 
@@ -687,6 +699,22 @@ msgid "Merge face parts into single volume for Minecraft skins"
 msgstr ""
 
 msgid "Simplify the mesh when voxelizing a mesh format"
+msgstr ""
+
+msgid "Movement speed in game mode"
+msgstr ""
+
+msgid "Jump velocity in game mode"
+msgstr ""
+
+#, fuzzy
+msgid "Height of the body in game mode"
+msgstr "Knochen im Szenenmodus anzeigen"
+
+msgid "Enable camera clipping"
+msgstr ""
+
+msgid "Enable gravity"
 msgstr ""
 
 msgid "Back"
@@ -1061,9 +1089,6 @@ msgstr "Maximale Anzahl von Bildern für diese Animation: %i"
 msgid "Loop"
 msgstr "Schleife"
 
-msgid "FPS"
-msgstr "FPS"
-
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr "Keyframe %i, Interpolation: %s"
@@ -1114,6 +1139,9 @@ msgstr "Zentriert"
 msgid "Continuous"
 msgstr "Kontinuierlich"
 
+msgid "Offset"
+msgstr ""
+
 msgid "Replace"
 msgstr "Ersetzen"
 
@@ -1138,6 +1166,12 @@ msgstr "Voxel überschreiben"
 msgid "Draws a line from the reference position to the current cursor position"
 msgstr ""
 "Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
+
+msgid "Stipple Pattern:"
+msgstr ""
+
+msgid "Length of the stipple pattern <= 1 to disable"
+msgstr ""
 
 msgid "None"
 msgstr "Keine"
@@ -1332,6 +1366,33 @@ msgstr "Doppelklick zum Erstellen der Miniaturansicht"
 
 msgid "No match for filter found"
 msgstr "Keine Übereinstimmung für den Filter gefunden"
+
+msgid "Game mode"
+msgstr "Spielmodus"
+
+msgid ""
+"Activating the game mode will enable clipping and switch the eye mode camera "
+"that is controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
+"+move_backward>, <cmd:+move_right> and <cmd:+jump> for jumping"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Movement Speed"
+msgstr ""
+
+msgid "Jump Velocity"
+msgstr ""
+
+msgid "Body Height"
+msgstr "Körperhöhe"
+
+msgid "Minecraft"
+msgstr "Minecraft"
+
+msgid "Ace Of Spades"
+msgstr "Ace Of Spades"
 
 msgid "L-System"
 msgstr "L-System"
@@ -1651,6 +1712,9 @@ msgid "All"
 msgstr "Alles"
 
 msgid "UI"
+msgstr ""
+
+msgid "Show FPS stats"
 msgstr ""
 
 msgid "Welcome screen"
@@ -2074,6 +2138,36 @@ msgstr "Szeneninterna"
 msgid "Pending extractions: %i"
 msgstr ""
 
+#, c-format
+msgid "Camera position: %.2f %.2f %.2f"
+msgstr ""
+
+#, c-format
+msgid "Camera velocity: %.2f %.2f %.2f"
+msgstr ""
+
+#, c-format
+msgid "Collided on x axis: %s"
+msgstr ""
+
+#, c-format
+msgid "Collided on y axis: %s"
+msgstr ""
+
+#, c-format
+msgid "Collided on z axis: %s"
+msgstr ""
+
+msgid "Camera extents"
+msgstr ""
+
+msgid "Camera friction decay"
+msgstr ""
+
+#, c-format
+msgid "Recent contact point: %.2f %.2f %.2f"
+msgstr ""
+
 msgid "Rename"
 msgstr "Umbenennen"
 
@@ -2188,6 +2282,9 @@ msgstr "%s auf %s zusammenführen"
 msgid "Move below"
 msgstr "Unterhalb verschieben"
 
+msgid "Move below but keep position"
+msgstr ""
+
 msgid "Ambient color"
 msgstr "Umgebungslichtfarbe"
 
@@ -2292,6 +2389,10 @@ msgstr "Befehl: %s"
 #, c-format
 msgid "Command: %s (%s)"
 msgstr "Befehl: %s (%s)"
+
+#, c-format
+msgid "FPS: %.2f"
+msgstr ""
 
 msgid ""
 "Switch between scene and edit mode (not in simple UI mode) by pressing the "
@@ -2630,34 +2731,29 @@ msgstr "Command & Conquer"
 msgid "Minecraft Skin"
 msgstr "Minecraft Skin"
 
-msgid "Ace Of Spades"
-msgstr "Ace Of Spades"
-
 #, c-format
 msgid "Slice at %s: %i"
 msgstr ""
 
 #, c-format
-msgid ""
-"pos: %i:%i:%i\n"
-"size: %i:%i:%i\n"
-"absolute: %i:%i:%i"
+msgid "pos: %i:%i:%i"
 msgstr ""
-"Position: %i:%i:%i\n"
-"Größe: %i:%i:%i\n"
-"Absolut: %i:%i:%i"
 
 #, c-format
-msgid ""
-"pos: %i:%i:%i\n"
-"size: %i:%i:%i\n"
-"absolute: %i:%i:%i\n"
-"relative: %i:%i:%i"
+msgid "size: %i:%i:%i"
 msgstr ""
-"Position: %i:%i:%i\n"
-"Größe: %i:%i:%i\n"
-"Absolut: %i:%i:%i\n"
-"Relativ: %i:%i:%i"
+
+#, c-format
+msgid "cursor: %i:%i:%i"
+msgstr ""
+
+#, c-format
+msgid "rel cursor: %i:%i:%i"
+msgstr ""
+
+#, c-format
+msgid "dist: %i:%i:%i"
+msgstr ""
 
 msgid "Slice view"
 msgstr ""
@@ -2715,12 +2811,6 @@ msgstr "Szenenmodus"
 
 msgid "Create a reference node"
 msgstr "Referenzknoten erstellen"
-
-msgid "Enable camera clipping"
-msgstr ""
-
-msgid "Enable gravity"
-msgstr ""
 
 msgid "Use the color wheel in the palette color editing"
 msgstr "Verwenden Sie das Farbrad zur Bearbeitung der Farben in der Palette"
@@ -2788,8 +2878,10 @@ msgstr ""
 msgid "Show the axis"
 msgstr "Achsen anzeigen"
 
-msgid "Print cursor details in edit mode"
-msgstr "Zeige Details am Cursor im Editiermodus"
+msgid ""
+"Print cursor details in edit mode - measure distance to reference position "
+"in mode 3"
+msgstr ""
 
 msgid "Automatically create keyframes when changing transforms"
 msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
@@ -3195,6 +3287,9 @@ msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
 msgid "Disable mirror axis"
 msgstr "Deaktiviert die Spiegelachse"
 
+msgid "Change the modifier shape type"
+msgstr "Ändert den Modifier-Formtyp"
+
 msgid "Brighten"
 msgstr "Aufhellen"
 
@@ -3211,9 +3306,6 @@ msgid ""
 "Failed to execute pathfinder - is the reference position correctly placed on "
 "another voxel?"
 msgstr ""
-
-msgid "Change the modifier shape type"
-msgstr "Ändert den Modifier-Formtyp"
 
 msgid "Toggle center at cursor"
 msgstr "Schaltet das Zentrum am Cursor um"

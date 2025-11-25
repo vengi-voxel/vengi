@@ -293,6 +293,12 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
+msgid "FPS"
+msgstr ""
+
+msgid "Pause"
+msgstr ""
+
 msgid "Configuration variables"
 msgstr ""
 
@@ -482,6 +488,12 @@ msgstr ""
 msgid "Activate checkerboard rendering"
 msgstr ""
 
+msgid "Activate culling for buffer parts"
+msgstr ""
+
+msgid "Activate culling for scene nodes"
+msgstr ""
+
 msgid "Activate bloom post processing"
 msgstr ""
 
@@ -657,6 +669,21 @@ msgid "Merge face parts into single volume for Minecraft skins"
 msgstr ""
 
 msgid "Simplify the mesh when voxelizing a mesh format"
+msgstr ""
+
+msgid "Movement speed in game mode"
+msgstr ""
+
+msgid "Jump velocity in game mode"
+msgstr ""
+
+msgid "Height of the body in game mode"
+msgstr ""
+
+msgid "Enable camera clipping"
+msgstr ""
+
+msgid "Enable gravity"
 msgstr ""
 
 msgid "Back"
@@ -1030,9 +1057,6 @@ msgstr ""
 msgid "Loop"
 msgstr ""
 
-msgid "FPS"
-msgstr ""
-
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr ""
@@ -1083,6 +1107,9 @@ msgstr ""
 msgid "Continuous"
 msgstr ""
 
+msgid "Offset"
+msgstr ""
+
 msgid "Replace"
 msgstr ""
 
@@ -1105,6 +1132,12 @@ msgid "Override voxels"
 msgstr ""
 
 msgid "Draws a line from the reference position to the current cursor position"
+msgstr ""
+
+msgid "Stipple Pattern:"
+msgstr ""
+
+msgid "Length of the stipple pattern <= 1 to disable"
 msgstr ""
 
 msgid "None"
@@ -1304,7 +1337,7 @@ msgstr ""
 msgid ""
 "Activating the game mode will enable clipping and switch the eye mode camera "
 "that is controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
-"+move_right>, <cmd:+move_backward> and <cmd:+jump> for jumping"
+"+move_backward>, <cmd:+move_right> and <cmd:+jump> for jumping"
 msgstr ""
 
 msgid "Enable"
@@ -1317,6 +1350,12 @@ msgid "Jump Velocity"
 msgstr ""
 
 msgid "Body Height"
+msgstr ""
+
+msgid "Minecraft"
+msgstr ""
+
+msgid "Ace Of Spades"
 msgstr ""
 
 msgid "L-System"
@@ -1624,6 +1663,9 @@ msgid "All"
 msgstr ""
 
 msgid "UI"
+msgstr ""
+
+msgid "Show FPS stats"
 msgstr ""
 
 msgid "Welcome screen"
@@ -2275,6 +2317,10 @@ msgstr ""
 msgid "Command: %s (%s)"
 msgstr ""
 
+#, c-format
+msgid "FPS: %.2f"
+msgstr ""
+
 msgid ""
 "Switch between scene and edit mode (not in simple UI mode) by pressing the "
 "<cmd:togglescene> key."
@@ -2580,26 +2626,28 @@ msgstr ""
 msgid "Minecraft Skin"
 msgstr ""
 
-msgid "Ace Of Spades"
-msgstr ""
-
 #, c-format
 msgid "Slice at %s: %i"
 msgstr ""
 
 #, c-format
-msgid ""
-"pos: %i:%i:%i\n"
-"size: %i:%i:%i\n"
-"absolute: %i:%i:%i"
+msgid "pos: %i:%i:%i"
 msgstr ""
 
 #, c-format
-msgid ""
-"pos: %i:%i:%i\n"
-"size: %i:%i:%i\n"
-"absolute: %i:%i:%i\n"
-"relative: %i:%i:%i"
+msgid "size: %i:%i:%i"
+msgstr ""
+
+#, c-format
+msgid "cursor: %i:%i:%i"
+msgstr ""
+
+#, c-format
+msgid "rel cursor: %i:%i:%i"
+msgstr ""
+
+#, c-format
+msgid "dist: %i:%i:%i"
 msgstr ""
 
 msgid "Slice view"
@@ -2655,18 +2703,6 @@ msgid "SceneMode"
 msgstr ""
 
 msgid "Create a reference node"
-msgstr ""
-
-msgid "Jump velocity in eye mode"
-msgstr ""
-
-msgid "Height of the body in eye mode"
-msgstr ""
-
-msgid "Enable camera clipping"
-msgstr ""
-
-msgid "Enable gravity"
 msgstr ""
 
 msgid "Use the color wheel in the palette color editing"
@@ -2728,7 +2764,9 @@ msgstr ""
 msgid "Show the axis"
 msgstr ""
 
-msgid "Print cursor details in edit mode"
+msgid ""
+"Print cursor details in edit mode - measure distance to reference position "
+"in mode 3"
 msgstr ""
 
 msgid "Automatically create keyframes when changing transforms"
@@ -3081,6 +3119,9 @@ msgstr ""
 msgid "Disable mirror axis"
 msgstr ""
 
+msgid "Change the modifier shape type"
+msgstr ""
+
 msgid "Brighten"
 msgstr ""
 
@@ -3096,9 +3137,6 @@ msgstr ""
 msgid ""
 "Failed to execute pathfinder - is the reference position correctly placed on "
 "another voxel?"
-msgstr ""
-
-msgid "Change the modifier shape type"
 msgstr ""
 
 msgid "Toggle center at cursor"
