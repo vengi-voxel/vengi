@@ -264,6 +264,8 @@ void Viewport::renderCursor() {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 	} else if (modifier.brushType() == BrushType::Plane) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+	} else if (modifier.brushType() == BrushType::Text) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_TextInput);
 	}
 
 	if (const Brush *brush = modifier.currentBrush()) {
