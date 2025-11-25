@@ -232,7 +232,11 @@ void Viewport::renderCursorDetails() const {
 	}
 
 	const int activeNode = _sceneMgr->sceneGraph().activeNode();
-	if (const voxel::RawVolume *v = _sceneMgr->volume(activeNode)) {
+	const voxel::RawVolume *v = _sceneMgr->volume(activeNode);
+	if (v == nullptr) {
+		return;
+	}
+	if (cursorDetailsLevel == 2) {
 		const glm::ivec3 &mins = v->region().getLowerCorner();
 		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
 		ImGui::TooltipText(_("pos: %i:%i:%i"), mins.x, mins.y, mins.z);
@@ -242,11 +246,10 @@ void Viewport::renderCursorDetails() const {
 			const glm::ivec3 relativePos = cursorPos - mins;
 			ImGui::TooltipText(_("rel cursor: %i:%i:%i"), relativePos.x, relativePos.y, relativePos.z);
 		}
-		if (cursorDetailsLevel == 3) {
-			const glm::ivec3 &refPos = modifier.referencePosition();
-			const glm::ivec3 delta = glm::abs(cursorPos - refPos);
-			ImGui::TooltipText(_("dist: %i:%i:%i"), delta.x, delta.y, delta.z);
-		}
+	} else if (cursorDetailsLevel == 3) {
+		const glm::ivec3 &refPos = modifier.referencePosition();
+		const glm::ivec3 delta = glm::abs(cursorPos - refPos);
+		ImGui::TooltipText(_("dist: %i:%i:%i"), delta.x, delta.y, delta.z);
 	}
 }
 
