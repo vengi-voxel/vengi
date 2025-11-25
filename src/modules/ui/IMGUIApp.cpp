@@ -557,7 +557,7 @@ void IMGUIApp::renderFPSDialog() {
 			return ImPlotPoint(idx, app->_fpsData[idx]);
 		};
 
-		if (ImPlot::BeginPlot(_("##fpsplot"), ImVec2(-1, 300), ImPlotFlags_NoMenus | ImPlotFlags_Crosshairs)) {
+		if (ImPlot::BeginPlot("##fpsplot", ImVec2(-1, 300), ImPlotFlags_NoMenus | ImPlotFlags_Crosshairs)) {
 			ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
 			ImPlot::SetupAxis(ImAxis_Y1, _("FPS"));
 			if (!paused) {
