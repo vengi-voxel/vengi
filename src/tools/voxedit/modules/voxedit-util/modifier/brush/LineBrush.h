@@ -12,7 +12,7 @@
 namespace voxedit {
 
 /**
- * @brief Type alias for line stipple patterns (9-bit pattern for dashed lines)
+ * @brief Type alias for line stipple patterns (bit pattern for dashed lines)
  */
 using LineStipplePattern = core::BitSet<9>;
 
@@ -22,7 +22,7 @@ using LineStipplePattern = core::BitSet<9>;
  * The LineBrush uses raycasting to place voxels along a straight line from the
  * reference position to the cursor position. It supports:
  *
- * - **Stipple Patterns**: Create dashed or dotted lines using a 9-bit pattern
+ * - **Stipple Patterns**: Create dashed or dotted lines using a bit pattern
  * - **Continuous Mode**: Chain multiple line segments without releasing the action button
  *
  * # Usage
@@ -94,7 +94,7 @@ public:
 
 	/**
 	 * @brief Set a specific bit in the stipple pattern
-	 * @param[in] index Bit index (0-8)
+	 * @param[in] index Bit index
 	 * @param[in] value True to place voxel, false to skip
 	 */
 	void setStippleBit(int index, bool value);
