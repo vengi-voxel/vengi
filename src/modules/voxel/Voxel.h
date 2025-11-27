@@ -45,11 +45,11 @@ static_assert(lengthof(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string 
 class Voxel {
 public:
 	CORE_FORCE_INLINE constexpr Voxel()
-		: _material(VoxelType::Air), _flags(0), _unused(0), _colorIndex(0), _normalIndex(NO_NORMAL), _unused2(0) {
+		: _material(VoxelType::Air), _flags(0), _unused(0), _colorIndex(0), _normalIndex(NO_NORMAL), _boneIdx(0) {
 	}
 
-	CORE_FORCE_INLINE constexpr Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u)
-		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _unused2(0) {
+	CORE_FORCE_INLINE constexpr Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u, uint8_t boneIdx = 0u)
+		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _boneIdx(boneIdx) {
 	}
 
 	/**
@@ -101,6 +101,14 @@ public:
 		return _flags;
 	}
 
+	CORE_FORCE_INLINE uint8_t getBoneIdx() const {
+		return _boneIdx;
+	}
+
+	CORE_FORCE_INLINE void setBoneIdx(uint8_t boneIdx) {
+		_boneIdx = boneIdx;
+	}
+
 	void setFlags(uint8_t flags);
 
 	void setOutline() {
@@ -113,17 +121,16 @@ private:
 	uint8_t _unused:5; // VoxelVertex::padding
 	uint8_t _colorIndex;
 	uint8_t _normalIndex; // 255 is not set
-public:
-	uint8_t _unused2; // used to store the ambient occlusion value for the voxel in the VoxelVertex struct
+	uint8_t _boneIdx;
 };
 static_assert(sizeof(Voxel) == 4, "Voxel size is expected to be 4 bytes");
 
-CORE_NO_SANITIZE_ADDRESS constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = 0u, uint8_t flags = 0u) {
-	return Voxel(type, colorIndex, normalIndex, flags);
+CORE_NO_SANITIZE_ADDRESS constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = 0u, uint8_t flags = 0u, uint8_t boneIdx = 0u) {
+	return Voxel(type, colorIndex, normalIndex, flags, boneIdx);
 }
 
 voxel::Voxel createVoxelFromColor(const palette::Palette &pal, core::RGBA color);
-CORE_NO_SANITIZE_ADDRESS voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = 0u, uint8_t flags = 0u);
+CORE_NO_SANITIZE_ADDRESS voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = 0u, uint8_t flags = 0u, uint8_t boneIdx = 0u);
 
 CORE_FORCE_INLINE bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;

@@ -25,17 +25,17 @@ voxel::Voxel createVoxelFromColor(const palette::Palette &pal, core::RGBA color)
 	return createVoxel(pal, idx);
 }
 
-voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex, uint8_t flags) {
+voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex, uint8_t flags, uint8_t boneIdx) {
 	if (index < pal.size()) {
 		const core::RGBA color = pal.color(index);
 		if (color.rgba == 0) {
 			return {};
 		}
 		if (color.a != 255) {
-			return createVoxel(VoxelType::Transparent, index, normalIndex, flags);
+			return createVoxel(VoxelType::Transparent, index, normalIndex, flags, boneIdx);
 		}
 	}
-	return createVoxel(VoxelType::Generic, index, normalIndex, flags);
+	return createVoxel(VoxelType::Generic, index, normalIndex, flags, boneIdx);
 }
 
 }

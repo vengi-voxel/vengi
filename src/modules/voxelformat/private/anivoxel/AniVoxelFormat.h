@@ -13,7 +13,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class AniVoxelFormat : public RGBAFormat {
+class AniVoxelFormat : public PaletteFormat {
 protected:
 	struct ChunkHeader {
 		uint32_t id;
@@ -36,8 +36,9 @@ protected:
 	bool readModel(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 				   const LoadContext &ctx, int version);
 
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-						const palette::Palette &palette, const LoadContext &ctx) override;
+	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+						   const LoadContext &ctx) override;
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
@@ -46,7 +47,7 @@ protected:
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"anivoxel", {"voxa"}, {"VOXA"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED /* | FORMAT_FLAG_SAVE*/};
+			"anivoxel", {"voxa"}, {"VOXA"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED /* | FORMAT_FLAG_SAVE */};
 		return f;
 	}
 };

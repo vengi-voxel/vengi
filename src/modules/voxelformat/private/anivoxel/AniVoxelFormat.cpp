@@ -3,17 +3,22 @@
  */
 
 #include "AniVoxelFormat.h"
+#include "core/Assert.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "io/StreamUtil.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -38,9 +43,9 @@ void AniVoxelFormat::seek(const ChunkHeader &header, io::SeekableReadStream &str
 	Log::debug("End of chunk at position %d", (int)stream.pos());
 }
 
-bool AniVoxelFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-									scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-									const LoadContext &ctx) {
+bool AniVoxelFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
+									   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+									   const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open stream for file: %s", filename.c_str());
@@ -76,14 +81,13 @@ bool AniVoxelFormat::loadGroupsRGBA(const core::String &filename, const io::Arch
 		return false;
 	}
 
-	palette::Palette modelPalette = palette;
 	if (version >= 102) {
-		if (!readPalette(*stream, modelPalette, ctx)) {
+		if (!readPalette(*stream, palette, ctx)) {
 			return false;
 		}
 	}
 
-	if (!readModel(*stream, sceneGraph, modelPalette, ctx, version)) {
+	if (!readModel(*stream, sceneGraph, palette, ctx, version)) {
 		return false;
 	}
 #if 0
@@ -166,7 +170,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 			Log::debug("VOXA sub-model has %d voxels", numVoxels);
 			const voxel::Region region(0, 0, 0, w - 1, h - 1, d - 1);
 			if (!region.isValid()) {
-				Log::error("Invalid region in VOXA model");
+				Log::error("Invalid region in VOXA model %s: %i:%i:%i", name.c_str(), w, h, d);
 				return false;
 			}
 			voxel::SparseVolume v;
@@ -176,7 +180,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 				wrap(stream.readInt32(y));
 				wrap(stream.readInt32(z));
 				int32_t boneId;
-				wrap(stream.readInt32(boneId)); // TODO: VOXELFORMAT
+				wrap(stream.readInt32(boneId));
 				int32_t palIdx;
 				if (version >= 102) {
 					wrap(stream.readInt32(palIdx));
@@ -185,7 +189,8 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 					wrapBool(io::readColor(stream, color));
 					palIdx = palette.getClosestMatch(color);
 				}
-				v.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
+				const int boneIdx = boneId - 1;
+				v.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx, 0u, 0u, boneIdx));
 			}
 			seek(subHeader, stream);
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -222,7 +227,9 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 			core::RGBA color;
 			wrapBool(io::readColor(stream, color));
 			const int palIdx = palette.getClosestMatch(color);
-			v.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
+			// the root bone has id 1
+			const int boneIdx = boneId - 1;
+			v.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx, 0u, 0u, boneIdx));
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		voxel::RawVolume *vol = new voxel::RawVolume(v.calculateRegion());
@@ -462,10 +469,6 @@ size_t AniVoxelFormat::loadPalette(const core::String &filename, const io::Archi
 
 	uint32_t version;
 	wrap(stream->readUInt32(version));
-	if (version < 102) {
-		Log::warn("VOXA file version %u does not contain a palette: %s", version, filename.c_str());
-		return 0u;
-	}
 
 	ChunkHeader header = readChunk(*stream);
 	if (header.id == 0) {
@@ -478,25 +481,229 @@ size_t AniVoxelFormat::loadPalette(const core::String &filename, const io::Archi
 	if (!skipChunk(*stream)) {
 		return false;
 	}
-	if (!readPalette(*stream, palette, ctx)) {
-		return false;
+
+	if (version >= 102) {
+		if (!readPalette(*stream, palette, ctx)) {
+			return false;
+		}
+	} else {
+		Log::warn("VOXA file version %u does not contain a palette: %s", version, filename.c_str());
+		// TODO: VOXELFORMAT: load all rgba colors from the voxel data
+		return 0u;
 	}
 	return palette.colorCount();
 }
 
+#undef wrap
+#undef wrapBool
+
+#define wrapBool(write)                                                                                                \
+	if ((write) != true) {                                                                                             \
+		Log::error("Could not save voxa file: Failed to write to stream " CORE_STRINGIFY(write) " (line %i)",           \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
+	}
+
+struct ScopedChunk {
+	ScopedChunk(io::SeekableWriteStream &stream, uint32_t id, ScopedChunk *parent) : _stream(stream), _parent(parent) {
+		_startPos = stream.pos();
+		_stream.writeUInt32(id);
+		_stream.writeUInt32(0); // chunksize
+		_stream.writeUInt32(0); // childsize
+	}
+	~ScopedChunk() {
+		const int64_t endPos = _stream.pos();
+		const uint32_t chunkSize = endPos - _startPos - 12 - _childSize;
+		_stream.seek(_startPos + 4, SEEK_SET);
+		_stream.writeUInt32(_childSize);
+		_stream.writeUInt32(chunkSize);
+		_stream.seek(endPos, SEEK_SET);
+		if (_parent) {
+			_parent->addChildSize(endPos - _startPos);
+		}
+	}
+
+private:
+	io::SeekableWriteStream &_stream;
+	int64_t _startPos;
+	size_t _childSize = 0;
+	ScopedChunk *_parent;
+	inline void addChildSize(uint32_t size) {
+		_childSize += size;
+		if (_parent) {
+			_parent->addChildSize(size);
+		}
+	}
+};
+
 bool AniVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								const io::ArchivePtr &archive, const SaveContext &ctx) {
-#if 0
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
+
+	wrapBool(stream->writeUInt32(FourCC('V', 'O', 'X', 'A')))
+	wrapBool(stream->writeUInt32(103)) // version
+
+	ScopedChunk mainChunk(*stream, FourCC('M', 'A', 'I', 'N'), nullptr);
+	{
+		ScopedChunk armatureChunk(*stream, FourCC('A', 'R', 'M', 'A'), &mainChunk);
+		int bonesCnt = 0;
+		wrapBool(stream->writeInt32(bonesCnt))
+		int animationsCnt = 0;
+		wrapBool(stream->writeInt32(animationsCnt))
+		for (int i = 0; i < bonesCnt; ++i) {
+#if 0
+			ScopedChunk boneChunk(*stream, FourCC('B', 'O', 'N', 'E'), &armatureChunk);
+			wrapBool(stream->writeInt32(boneId))
+			wrapBool(stream->writeInt32(boneParentId))
+			wrapBool(stream->writePascalStringUInt32LE(boneName))
+			wrapBool(stream->writeFloat(boneLength))
+			wrapBool(io::writeVec3(stream, boneOffset))
+			wrapBool(io::writeVec3(stream, boneRotation))
+			wrapBool(io::writeColor(stream, boneColor))
+			wrapBool(io::writeColor(stream, boneColor2))
 #endif
-	return false;
+		}
+		for (int i = 0; i < animationsCnt; ++i) {
+#if 0
+			ScopedChunk animationChunk(*stream, FourCC('A', 'N', 'I', 'M'), &armatureChunk);
+			wrapBool(stream->writeInt32(animId))
+			wrapBool(stream->writeInt32(animParentId))
+			wrapBool(stream->writePascalStringUInt32LE(animName))
+			wrapBool(stream->writeInt32(fps))
+			wrapBool(stream->writeInt32(frameLength))
+			wrapBool(stream->writeInt32(boneGraphCnt))
+			wrapBool(stream->writeInt32(meshGraphCnt))
+			for (int i = 0; i < boneGraphCnt; ++i) {
+				ScopedChunk boneGraphCollectionChunk(*stream, FourCC('A', 'B', 'G', 'C'), &animationChunk);
+				wrapBool(stream->writeInt32(boneId))
+				// write translation, rotation and scale values (GRS chunks)
+				// TODO: VOXELFORMAT: finish me
+			}
+			for (int i = 0; i < meshGraphCnt; ++i) {
+				ScopedChunk meshGraphCollectionChunk(*stream, FourCC('A', 'M', 'G', 'C'), &animationChunk);
+				wrapBool(stream->writeInt32(meshId))
+				wrapBool(stream->writePascalStringUInt32LE("vi"))
+				wrapBool(stream->writeInt32(visibleCnt))
+				for (int j = 0; j < visibleCnt; ++j) {
+					wrapBool(stream->writeBool(true)) // visible
+				}
+				wrapBool(stream->writePascalStringUInt32LE("sm"))
+				wrapBool(stream->writeInt32(smearFrameCnt))
+				for (int j = 0; j < smearFrameCnt; ++j) {
+					wrapBool(stream->writeUInt8(smearFrameStrength))
+				}
+			}
+#endif
+		}
+	}
+	const palette::Palette &pal = sceneGraph.mergePalettes(true);
+	{
+		ScopedChunk paletteChunk(*stream, FourCC('M', 'A', 'T', 'P'), &mainChunk);
+		wrapBool(stream->writeInt32(pal.colorCount()))
+
+		for (int i = 0; i < pal.colorCount(); ++i) {
+			ScopedChunk palEntryChunk(*stream, FourCC('M', 'A', 'T', 'E'), &paletteChunk);
+			wrapBool(stream->writeUInt32(i))
+			const core::RGBA color = pal.color(i);
+			wrapBool(stream->writeUInt8(color.r))
+			wrapBool(stream->writeUInt8(color.g))
+			wrapBool(stream->writeUInt8(color.b))
+			wrapBool(stream->writeUInt8(color.a))
+			const palette::Material &material = pal.material(i);
+			const bool rough = material.has(palette::MaterialProperty::MaterialRoughness);
+			const bool ior = material.has(palette::MaterialProperty::MaterialIndexOfRefraction);
+			// TODO: MATERIAL: map me - in ogt_vox this is mapped to ior, too
+			// const bool ri = material.has(palette::MaterialProperty::MaterialXXX);
+			const bool d = material.has(palette::MaterialProperty::MaterialDensity);
+			if (rough || ior || d) {
+				stream->writeBool(true);
+				uint32_t propCnt = 0;
+				if (rough) {
+					++propCnt;
+				}
+				if (ior) {
+					++propCnt;
+				}
+				if (d) {
+					++propCnt;
+				}
+				stream->writeUInt32(propCnt);
+				if (rough) {
+					core::String roughStr =
+						core::string::toString(material.value(palette::MaterialProperty::MaterialRoughness));
+					wrapBool(stream->writePascalStringUInt32LE("_rough"))
+					wrapBool(stream->writePascalStringUInt32LE(roughStr))
+				}
+				if (ior) {
+					core::String iorStr =
+						core::string::toString(material.value(palette::MaterialProperty::MaterialIndexOfRefraction));
+					wrapBool(stream->writePascalStringUInt32LE("_ior"))
+					wrapBool(stream->writePascalStringUInt32LE(iorStr))
+				}
+				if (d) {
+					core::String dStr =
+						core::string::toString(material.value(palette::MaterialProperty::MaterialDensity));
+					wrapBool(stream->writePascalStringUInt32LE("_d"))
+					wrapBool(stream->writePascalStringUInt32LE(dStr))
+				}
+			} else {
+				wrapBool(stream->writeBool(false))
+			}
+		}
+	}
+
+	{
+		ScopedChunk header(*stream, FourCC('M', 'O', 'D', 'L'), &mainChunk);
+		core::DynamicArray<const scenegraph::SceneGraphNode *> modelNodes;
+		modelNodes.reserve(sceneGraph.nodes().size());
+		for (const auto &e : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = e->value;
+			if (!node.isAnyModelNode()) {
+				continue;
+			}
+			modelNodes.push_back(&node);
+		}
+
+		wrapBool(stream->writeInt32((int32_t)modelNodes.size()))
+		palette::PaletteLookup palLookup(pal);
+		for (const scenegraph::SceneGraphNode *node : modelNodes) {
+			core_assert_always(node->isAnyModelNode());
+			ScopedChunk headerMesh(*stream, FourCC('M', 'E', 'S', 'H'), &header);
+			wrapBool(stream->writeUInt32(node->id()))
+			wrapBool(stream->writePascalStringUInt32LE(node->name()))
+			const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
+			const voxel::Region &region = v->region();
+			const palette::Palette &originalPalette = node->palette();
+			// TODO: VOXELFORMAT: not empty bounds - but we aren't cropping here yet
+			const glm::ivec3 &bounds = region.getDimensionsInVoxels();
+			wrapBool(stream->writeInt32(bounds.x))
+			wrapBool(stream->writeInt32(bounds.y))
+			wrapBool(stream->writeInt32(bounds.z))
+			core_assert_always(v != nullptr);
+			const int numVoxels = voxelutil::countVoxels(*v);
+			wrapBool(stream->writeInt32(numVoxels))
+			auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+				stream->writeInt32(x);
+				stream->writeInt32(y);
+				stream->writeInt32(z);
+				const int boneId = voxel.getBoneIdx() + 1;
+				stream->writeInt32(boneId);
+				const int palIdx = voxel.getColor();
+				const core::RGBA rgba = originalPalette.color(palIdx);
+				const int mappedPalIdx = palLookup.findClosestIndex(rgba);
+				stream->writeInt32(mappedPalIdx);
+			};
+			voxelutil::visitVolume(*v, func);
+		}
+	}
+
+	return true;
 }
 
-#undef wrap
 #undef wrapBool
 
 } // namespace voxelformat

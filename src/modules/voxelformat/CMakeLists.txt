@@ -123,6 +123,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric ${LI
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
 	tests/AnimaToonFormatTest.cpp
+	tests/AniVoxelFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
 	tests/Autodesk3DSFormatTest.cpp
@@ -313,6 +314,7 @@ set(TEST_FILES
 	"tests/rgb.vxm"
 	"tests/robo.qb"
 	"tests/robo.vox"
+	"tests/robo.voxa"
 	"tests/sandbox-block2.vxb"
 	"tests/save_2022_Mar_09_13_43_20_Anima Toon.pscn"
 	"tests/save_2022_Mar_09_13_43_20_Anima Toon.scn"
