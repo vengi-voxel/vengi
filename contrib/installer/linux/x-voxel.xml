@@ -28,6 +28,13 @@
 			<match type="string" offset="0" value="VOX "/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-anivoxel">
+		<comment>anivoxel</comment>
+		<glob pattern="*.voxa"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VOXA"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-qubicle-binary-tree">
 		<comment>Qubicle Binary Tree</comment>
 		<glob pattern="*.qbt"/>

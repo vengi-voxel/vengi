@@ -9,6 +9,7 @@
 | AceOfSpades                | kv6         | X       | X      |            | X       |            |
 | AceOfSpades                | vxl         | X       | X      |            | X       |            |
 | AnimaToon                  | scn         | X       |        |            |         | X          |
+| anivoxel                   | voxa        | X       |        |            | X       |            |
 | aseprite                   | aseprite    | X       |        |            | X       |            |
 | BenVoxel                   | ben.json    | X       | X      |            | X       |            |
 | BinVox                     | binvox      | X       | X      |            |         |            |

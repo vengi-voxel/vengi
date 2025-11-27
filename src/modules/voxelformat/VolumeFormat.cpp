@@ -22,6 +22,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
+#include "voxelformat/private/anivoxel/AniVoxelFormat.h"
 #include "voxelformat/private/benvoxel/BenVoxelFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/chronovox/CSMFormat.h"
@@ -86,6 +87,7 @@ const io::FormatDescription *voxelFormats() {
 												 QBFormat::format(),
 												 BenVoxelFormat::format(),
 												 VoxFormat::format(),
+												 AniVoxelFormat::format(),
 												 QBTFormat::format(),
 												 QBCLFormat::format(),
 												 VXTFormat::format(),
@@ -291,6 +293,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<SpriteStackFormat>();
 		} else if (io::isA(BenVoxelFormat::format(), desc, ext, magic)) {
 			return core::make_shared<BenVoxelFormat>();
+		} else if (io::isA(AniVoxelFormat::format(), desc, ext, magic)) {
+			return core::make_shared<AniVoxelFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
 		}

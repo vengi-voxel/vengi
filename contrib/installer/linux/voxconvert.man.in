@@ -339,6 +339,8 @@ AceOfSpades (*.vxl)
 .TP
 AnimaToon (*.scn)
 .TP
+anivoxel (*.voxa)
+.TP
 aseprite (*.aseprite, *.ase)
 .TP
 Autodesk 3D Studio (*.3ds)

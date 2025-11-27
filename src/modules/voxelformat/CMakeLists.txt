@@ -35,6 +35,7 @@ set(SRCS
 
 	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
+	private/anivoxel/AniVoxelFormat.h        private/anivoxel/AniVoxelFormat.cpp
 	private/benvoxel/BenVoxelFormat.h        private/benvoxel/BenVoxelFormat.cpp
 	private/benvoxel/BenBinary.h             private/benvoxel/BenBinary.cpp
 	private/benvoxel/BenJson.h               private/benvoxel/BenJson.cpp

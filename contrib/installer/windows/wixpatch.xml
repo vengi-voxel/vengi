@@ -34,6 +34,9 @@
 		<RegistryKey Root="HKCR" Key=".vox">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".voxa">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".qbt">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -294,6 +297,15 @@
 		<RegistryValue Root="HKCR" Key=".vox\OpenWithProgids" Name="vengi-voxedit.vox" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vox" Description="MagicaVoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vox" ContentType="application/x-magicavoxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".voxa" Value="vengi-voxedit.voxa" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".voxa" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".voxa\OpenWithProgids" Name="vengi-voxedit.voxa" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.voxa" Description="anivoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="voxa" ContentType="application/x-anivoxel">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

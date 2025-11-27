@@ -2402,8 +2402,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
-"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."

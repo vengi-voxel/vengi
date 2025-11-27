@@ -300,6 +300,22 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "anivoxel",
+      "extensions": [
+        "voxa"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x564F5841"
+        }
+      ],
+      "mimetype": "application/x-anivoxel",
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Qubicle Binary Tree",
       "extensions": [
         "qbt"

@@ -29,6 +29,7 @@ General:
    - Added `palette:size()` to lua bindings
    - New lua script `palette-brighten`
    - Fixed animation interpolation handling
+   - Added anivoxel `voxa` support
 
 VoxEdit:
 

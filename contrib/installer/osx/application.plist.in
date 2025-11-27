@@ -122,6 +122,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>anivoxel</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-anivoxel</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>voxa</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Qubicle Binary Tree</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
