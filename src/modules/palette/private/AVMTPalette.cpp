@@ -5,7 +5,6 @@
 #include "AVMTPalette.h"
 #include "AVMTHelper.h"
 #include "core/Log.h"
-#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Material.h"
 
@@ -23,24 +22,10 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 		return false;
 	}
 
-	core::Buffer<core::RGBA> colorBuffer;
-	colorBuffer.reserve(materials.size());
+	palette.reserve(materials.size());
 	for (const auto &e : materials) {
-		colorBuffer.push_back(e.rgba);
+		palette.add(e.rgba, e.name, e.mat);
 	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	Log::debug("Palette has %i colors from %i materials", palette.colorCount(), (int)materials.size());
-
-	for (size_t i = 0; i < materials.size(); ++i) {
-		const AVMTMaterial &m = materials[i];
-		const int palIdx = palette.getClosestMatch(m.rgba);
-		if (palIdx == PaletteColorNotFound) {
-			continue;
-		}
-		palette.setColorName(palIdx, m.name);
-		palette.setMaterial(palIdx, m.mat);
-	}
-
 	return true;
 }
 
@@ -64,7 +49,8 @@ bool AVMTPalette::save(const palette::ColorPalette &palette, const core::String 
 			stream.writeString(",\n", false);
 		}
 		++added;
-		const glm::vec4 &c = palette.color4(i);
+		const core::RGBA &color = palette.color(i);
+		const glm::vec4 c = core::Color::fromRGBA(color);
 		stream.writeString("\t\t\t\t{\n", false);
 		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.6f\n", c.r);
 		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.6f\n", c.g);

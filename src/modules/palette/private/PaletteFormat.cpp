@@ -27,7 +27,7 @@
 
 namespace palette {
 
-static palette::Palette toPalette(const palette::ColorPalette &colorPalette) {
+palette::Palette toPalette(const palette::ColorPalette &colorPalette) {
 	palette::Palette palette;
 	if (colorPalette.size() < PaletteMaxColors) {
 		palette.setSize(colorPalette.size());
@@ -48,17 +48,26 @@ static palette::Palette toPalette(const palette::ColorPalette &colorPalette) {
 		if ((int)colorBuffer.size() != (int)palette.colorCount()) {
 			Log::info("Loaded %i colors and quanitized to %i", (int)colorCount, palette.colorCount());
 		}
+
+		for (const auto &entry : colorPalette) {
+			const int palIdx = palette.getClosestMatch(entry.color);
+			if (palIdx == PaletteColorNotFound) {
+				continue;
+			}
+			palette.setColorName(palIdx, entry.name);
+			palette.setMaterial(palIdx, entry.material);
+		}
 	}
 	palette.markDirty();
 	return palette;
 }
 
-static palette::ColorPalette toColorPalette(const palette::Palette &palette) {
+palette::ColorPalette toColorPalette(const palette::Palette &palette) {
 	palette::ColorPalette colorPalette;
 	colorPalette.setSize(palette.size());
 	colorPalette.setName(palette.name());
 	for (size_t i = 0; i < palette.size(); ++i) {
-		colorPalette.add(palette.color(i), palette.colorName(i), palette.material(i));
+		colorPalette.set(i, palette.color(i), palette.colorName(i), palette.material(i));
 	}
 	colorPalette.markDirty();
 	return colorPalette;

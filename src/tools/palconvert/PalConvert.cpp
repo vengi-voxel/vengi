@@ -59,9 +59,7 @@ app::AppState PalConvert::onConstruct() {
 		.setShort("-i")
 		.setDescription("Allow to specify input files")
 		.addFlag(ARGUMENT_FLAG_FILE | ARGUMENT_FLAG_MANDATORY);
-	registerArg("--type")
-		.setShort("-t")
-		.setDescription("Specify the output type (ansi, json, hex)");
+	registerArg("--type").setShort("-t").setDescription("Specify the output type (ansi, json, hex)");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--output")
 		.setShort("-o")
@@ -73,7 +71,7 @@ app::AppState PalConvert::onConstruct() {
 	return state;
 }
 
-static void printJsonPalette(const palette::Palette &palette) {
+static void printJsonPalette(const palette::ColorPalette &palette) {
 	Log::printf("{");
 	Log::printf("\"name\":\"%s\",", palette.name().c_str());
 	Log::printf("\"colors\":[");
@@ -111,7 +109,7 @@ static void printJsonPalette(const palette::Palette &palette) {
 	Log::printf("}\n");
 }
 
-static void printHexPalette(const palette::Palette &palette) {
+static void printHexPalette(const palette::ColorPalette &palette) {
 	for (int i = 0; i < (int)palette.size(); ++i) {
 		const core::RGBA color = palette.color(i);
 		Log::printf("0x%02x%02x%02x%02x", color.r, color.g, color.b, color.a);
@@ -124,12 +122,14 @@ static void printHexPalette(const palette::Palette &palette) {
 
 bool PalConvert::handleInputFile(const core::String &infile, const core::String &outfile) {
 	Log::info("-- current input file: %s", infile.c_str());
-	palette::Palette palette;
+	palette::ColorPalette palette;
 	if (palette::Palette::isBuiltIn(infile) || palette::Palette::isLospec(infile)) {
-		if (!palette.load(infile.c_str())) {
+		palette::Palette pal;
+		if (!pal.load(infile.c_str())) {
 			Log::error("Failed to load palette from '%s'", infile.c_str());
 			return false;
 		}
+		palette = palette::toColorPalette(pal);
 	} else {
 		const io::FilePtr &file = _filesystem->open(infile);
 		io::FileStream stream(file);
@@ -157,7 +157,7 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 			if (!paletteName.empty()) {
 				Log::printf("Palette name: %s\n", paletteName.c_str());
 			}
-			const core::String palStr = palette::Palette::print(palette);
+			const core::String palStr = palette::ColorPalette::print(palette);
 			Log::printf("%s", palStr.c_str());
 			Log::printf("\n");
 
@@ -170,7 +170,9 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 			}
 		}
 	} else {
-		if (!palette.save(outfile.c_str())) {
+		const io::FilePtr &file = _filesystem->open(outfile, io::FileMode::SysWrite);
+		io::FileStream stream(file);
+		if (!palette::savePalette(palette, outfile, stream)) {
 			Log::error("Failed to save palette to '%s'", outfile.c_str());
 			return false;
 		}

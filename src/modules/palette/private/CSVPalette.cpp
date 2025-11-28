@@ -17,10 +17,6 @@ bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
-		if (colorCount >= PaletteMaxColors) {
-			Log::warn("Not all colors were loaded");
-			break;
-		}
 		palette.setColor(colorCount, core::RGBA(r, g, b));
 		++colorCount;
 	}
@@ -28,7 +24,8 @@ bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return colorCount > 0;
 }
 
-bool CSVPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool CSVPalette::save(const palette::ColorPalette &palette, const core::String &filename,
+					  io::SeekableWriteStream &stream) {
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const core::RGBA &color = palette.color(i);
 		if (!stream.writeStringFormat(false, "%i, %i, %i\n", color.r, color.g, color.b)) {
@@ -39,4 +36,4 @@ bool CSVPalette::save(const palette::ColorPalette &palette, const core::String &
 	return true;
 }
 
-} // namespace voxel
+} // namespace palette

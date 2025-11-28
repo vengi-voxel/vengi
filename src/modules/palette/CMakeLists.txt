@@ -18,6 +18,7 @@ set(SRCS
 	private/PixeloramaPalette.cpp private/PixeloramaPalette.h
 	private/VPLPalette.cpp private/VPLPalette.h
 
+	ColorPalette.cpp ColorPalette.h
 	FormatConfig.cpp FormatConfig.h
 	Material.cpp Material.h
 	NormalPalette.cpp NormalPalette.h
@@ -36,6 +37,7 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image)
 
 set(TEST_SRCS
+	tests/ColorPaletteTest.cpp
 	tests/NormalPaletteTest.cpp
 	tests/PaletteTest.cpp
 )
