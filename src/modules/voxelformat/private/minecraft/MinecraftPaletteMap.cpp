@@ -318,15 +318,20 @@ namespace voxelformat {
 		MCENTRY("minecraft:comparator", 118, 0xFF),                                                                    \
 		MCENTRY("minecraft:composter", 32, 0xFF),                                                                      \
 		MCENTRY("minecraft:conduit", 43, 0xFF),                                                                        \
+		MCENTRY("minecraft:copper_bars", 162, 0xFF),                                                                   \
 		MCENTRY("minecraft:copper_block", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_bulb,lit=false", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:copper_bulb,lit=true", 162, 0xFF),                                                          \
+		MCENTRY("minecraft:copper_chain", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_chest", 162, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_door", 162, 0xFF),                                                                   \
 		MCENTRY("minecraft:copper_golem_statue", 162, 0xFF),                                                           \
 		MCENTRY("minecraft:copper_grate", 162, 0xFF),                                                                  \
+		MCENTRY("minecraft:copper_lantern", 29, 0xFF),                                                                 \
 		MCENTRY("minecraft:copper_ore", 190, 0xFF),                                                                    \
+		MCENTRY("minecraft:copper_torch", 104, 0xFF),                                                                  \
 		MCENTRY("minecraft:copper_trapdoor", 162, 0xFF),                                                               \
+		MCENTRY("minecraft:copper_wall_torch", 104, 0xFF),                                                             \
 		MCENTRY("minecraft:cornflower", 120, 0xFF),                                                                    \
 		MCENTRY("minecraft:cracked_deepslate_bricks", 118, 0xFF),                                                      \
 		MCENTRY("minecraft:cracked_deepslate_tiles", 118, 0xFF),                                                       \
@@ -603,12 +608,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:end_stone_brick_wall", 121, 0xFF),                                                          \
 		MCENTRY("minecraft:exposed_chiseled_copper", 73, 0xFF),                                                        \
 		MCENTRY("minecraft:exposed_copper", 73, 0xFF),                                                                 \
+		MCENTRY("minecraft:exposed_copper_bars", 73, 0xFF),                                                            \
 		MCENTRY("minecraft:exposed_copper_bulb,lit=false", 73, 0xFF),                                                  \
 		MCENTRY("minecraft:exposed_copper_bulb,lit=true", 162, 0xFF),                                                  \
+		MCENTRY("minecraft:exposed_copper_chain", 73, 0xFF),                                                           \
 		MCENTRY("minecraft:exposed_copper_chest", 73, 0xFF),                                                           \
 		MCENTRY("minecraft:exposed_copper_door", 73, 0xFF),                                                            \
 		MCENTRY("minecraft:exposed_copper_golem_statue", 73, 0xFF),                                                    \
 		MCENTRY("minecraft:exposed_copper_grate", 73, 0xFF),                                                           \
+		MCENTRY("minecraft:exposed_copper_lantern", 29, 0xFF),                                                         \
 		MCENTRY("minecraft:exposed_copper_trapdoor", 73, 0xFF),                                                        \
 		MCENTRY("minecraft:exposed_cut_copper", 73, 0xFF),                                                             \
 		MCENTRY("minecraft:exposed_cut_copper_slab", 73, 0xFF),                                                        \
@@ -902,6 +910,7 @@ namespace voxelformat {
 		MCENTRY("minecraft:infested_stone_bricks", 111, 0xFF),                                                         \
 		MCENTRY("minecraft:iron_bars", 35, 0xFF),                                                                      \
 		MCENTRY("minecraft:iron_block", 35, 0xFF),                                                                     \
+		MCENTRY("minecraft:iron_chain", 118, 0xFF),                                                                    \
 		MCENTRY("minecraft:iron_door", 35, 0xFF),                                                                      \
 		MCENTRY("minecraft:iron_ore", 15, 0xFF),                                                                       \
 		MCENTRY("minecraft:iron_trapdoor", 35, 0xFF),                                                                  \
@@ -1384,12 +1393,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:oxeye_daisy", 128, 0xFF),                                                                   \
 		MCENTRY("minecraft:oxidized_chiseled_copper", 48, 0xFF),                                                       \
 		MCENTRY("minecraft:oxidized_copper", 48, 0xFF),                                                                \
+		MCENTRY("minecraft:oxidized_copper_bars", 48, 0xFF),                                                           \
 		MCENTRY("minecraft:oxidized_copper_bulb,lit=false", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:oxidized_copper_bulb,lit=true", 162, 0xFF),                                                 \
+		MCENTRY("minecraft:oxidized_copper_chain", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:oxidized_copper_chest", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:oxidized_copper_door", 48, 0xFF),                                                           \
 		MCENTRY("minecraft:oxidized_copper_golem_statue", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:oxidized_copper_grate", 48, 0xFF),                                                          \
+		MCENTRY("minecraft:oxidized_copper_lantern", 29, 0xFF),                                                        \
 		MCENTRY("minecraft:oxidized_copper_trapdoor", 48, 0xFF),                                                       \
 		MCENTRY("minecraft:oxidized_cut_copper", 48, 0xFF),                                                            \
 		MCENTRY("minecraft:oxidized_cut_copper_slab", 48, 0xFF),                                                       \
@@ -2185,25 +2197,31 @@ namespace voxelformat {
 		MCENTRY("minecraft:water_cauldron", 145, 0xFF),                                                                \
 		MCENTRY("minecraft:waxed_chiseled_copper", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:waxed_chiseled_exposed_copper", 73, 0xFF),                                                  \
+		MCENTRY("minecraft:waxed_copper_bars", 162, 0xFF),                                                             \
 		MCENTRY("minecraft:waxed_copper_block", 162, 0xFF),                                                            \
 		MCENTRY("minecraft:waxed_copper_bulb,lit=false", 162, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_copper_bulb,lit=true", 162, 0xFF),                                                    \
+		MCENTRY("minecraft:waxed_copper_chain", 162, 0xFF),                                                            \
 		MCENTRY("minecraft:waxed_copper_chest", 162, 0xFF),                                                            \
 		MCENTRY("minecraft:waxed_copper_door", 162, 0xFF),                                                             \
 		MCENTRY("minecraft:waxed_copper_golem_statue", 162, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_copper_grate", 162, 0xFF),                                                            \
+		MCENTRY("minecraft:waxed_copper_lantern", 29, 0xFF),                                                           \
 		MCENTRY("minecraft:waxed_copper_trapdoor", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:waxed_cut_copper", 162, 0xFF),                                                              \
 		MCENTRY("minecraft:waxed_cut_copper_slab", 162, 0xFF),                                                         \
 		MCENTRY("minecraft:waxed_cut_copper_stairs", 162, 0xFF),                                                       \
 		MCENTRY("minecraft:waxed_exposed_chiseled_copper", 73, 0xFF),                                                  \
 		MCENTRY("minecraft:waxed_exposed_copper", 73, 0xFF),                                                           \
+		MCENTRY("minecraft:waxed_exposed_copper_bars", 73, 0xFF),                                                      \
 		MCENTRY("minecraft:waxed_exposed_copper_bulb,lit=false", 73, 0xFF),                                            \
 		MCENTRY("minecraft:waxed_exposed_copper_bulb,lit=true", 162, 0xFF),                                            \
+		MCENTRY("minecraft:waxed_exposed_copper_chain", 73, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_exposed_copper_chest", 73, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_exposed_copper_door", 73, 0xFF),                                                      \
 		MCENTRY("minecraft:waxed_exposed_copper_golem_statue", 73, 0xFF),                                              \
 		MCENTRY("minecraft:waxed_exposed_copper_grate", 73, 0xFF),                                                     \
+		MCENTRY("minecraft:waxed_exposed_copper_lantern", 29, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_exposed_copper_trapdoor", 73, 0xFF),                                                  \
 		MCENTRY("minecraft:waxed_exposed_cut_copper", 73, 0xFF),                                                       \
 		MCENTRY("minecraft:waxed_exposed_cut_copper_slab", 73, 0xFF),                                                  \
@@ -2212,12 +2230,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:waxed_lightning_rod", 162, 0xFF),                                                           \
 		MCENTRY("minecraft:waxed_oxidized_chiseled_copper", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:waxed_oxidized_copper", 48, 0xFF),                                                          \
+		MCENTRY("minecraft:waxed_oxidized_copper_bars", 48, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_oxidized_copper_bulb,lit=false", 48, 0xFF),                                           \
 		MCENTRY("minecraft:waxed_oxidized_copper_bulb,lit=true", 162, 0xFF),                                           \
+		MCENTRY("minecraft:waxed_oxidized_copper_chain", 48, 0xFF),                                                    \
 		MCENTRY("minecraft:waxed_oxidized_copper_chest", 48, 0xFF),                                                    \
 		MCENTRY("minecraft:waxed_oxidized_copper_door", 48, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_oxidized_copper_golem_statue", 48, 0xFF),                                             \
 		MCENTRY("minecraft:waxed_oxidized_copper_grate", 48, 0xFF),                                                    \
+		MCENTRY("minecraft:waxed_oxidized_copper_lantern", 29, 0xFF),                                                  \
 		MCENTRY("minecraft:waxed_oxidized_copper_trapdoor", 48, 0xFF),                                                 \
 		MCENTRY("minecraft:waxed_oxidized_cut_copper", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:waxed_oxidized_cut_copper_slab", 48, 0xFF),                                                 \
@@ -2225,12 +2246,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:waxed_oxidized_lightning_rod", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_weathered_chiseled_copper", 48, 0xFF),                                                \
 		MCENTRY("minecraft:waxed_weathered_copper", 48, 0xFF),                                                         \
+		MCENTRY("minecraft:waxed_weathered_copper_bars", 48, 0xFF),                                                    \
 		MCENTRY("minecraft:waxed_weathered_copper_bulb,lit=false", 48, 0xFF),                                          \
 		MCENTRY("minecraft:waxed_weathered_copper_bulb,lit=true", 162, 0xFF),                                          \
+		MCENTRY("minecraft:waxed_weathered_copper_chain", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_weathered_copper_chest", 48, 0xFF),                                                   \
 		MCENTRY("minecraft:waxed_weathered_copper_door", 48, 0xFF),                                                    \
 		MCENTRY("minecraft:waxed_weathered_copper_golem_statue", 48, 0xFF),                                            \
 		MCENTRY("minecraft:waxed_weathered_copper_grate", 48, 0xFF),                                                   \
+		MCENTRY("minecraft:waxed_weathered_copper_lantern", 29, 0xFF),                                                 \
 		MCENTRY("minecraft:waxed_weathered_copper_trapdoor", 48, 0xFF),                                                \
 		MCENTRY("minecraft:waxed_weathered_cut_copper", 48, 0xFF),                                                     \
 		MCENTRY("minecraft:waxed_weathered_cut_copper_slab", 48, 0xFF),                                                \
@@ -2238,12 +2262,15 @@ namespace voxelformat {
 		MCENTRY("minecraft:waxed_weathered_lightning_rod", 48, 0xFF),                                                  \
 		MCENTRY("minecraft:weathered_chiseled_copper", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:weathered_copper", 48, 0xFF),                                                               \
+		MCENTRY("minecraft:weathered_copper_bars", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:weathered_copper_bulb,lit=false", 48, 0xFF),                                                \
 		MCENTRY("minecraft:weathered_copper_bulb,lit=true", 162, 0xFF),                                                \
+		MCENTRY("minecraft:weathered_copper_chain", 48, 0xFF),                                                         \
 		MCENTRY("minecraft:weathered_copper_chest", 48, 0xFF),                                                         \
 		MCENTRY("minecraft:weathered_copper_door", 48, 0xFF),                                                          \
 		MCENTRY("minecraft:weathered_copper_golem_statue", 48, 0xFF),                                                  \
 		MCENTRY("minecraft:weathered_copper_grate", 48, 0xFF),                                                         \
+		MCENTRY("minecraft:weathered_copper_lantern", 29, 0xFF),                                                       \
 		MCENTRY("minecraft:weathered_copper_trapdoor", 48, 0xFF),                                                      \
 		MCENTRY("minecraft:weathered_cut_copper", 48, 0xFF),                                                           \
 		MCENTRY("minecraft:weathered_cut_copper_slab", 48, 0xFF),                                                      \
