@@ -12,7 +12,7 @@
 
 namespace palette {
 
-bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	core::String jsonStr;
 	if (!stream.readString(stream.size(), jsonStr)) {
 		Log::error("Failed to read json file");
@@ -43,7 +43,7 @@ bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStrea
 	return true;
 }
 
-bool PixeloramaPalette::save(const palette::Palette &palette, const core::String &filename,
+bool PixeloramaPalette::save(const palette::ColorPalette &palette, const core::String &filename,
 							 io::SeekableWriteStream &stream) {
 	stream.writeString("{\n \"colors\": [\n", false);
 	for (int i = 0; i < palette.colorCount(); ++i) {

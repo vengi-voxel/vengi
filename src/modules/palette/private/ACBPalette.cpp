@@ -8,13 +8,18 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "palette/private/AdobeColorSpace.h"
+#include "palette/private/PaletteFormat.h"
 #include <glm/common.hpp>
 
 namespace palette {
 
-#define wrapBool(x) if (!(x)) { Log::error("Failed to write to stream"); return false; }
+#define wrapBool(x)                                                                                                    \
+	if (!(x)) {                                                                                                        \
+		Log::error("Failed to write to stream");                                                                       \
+		return false;                                                                                                  \
+	}
 
-bool ACBPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool ACBPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	wrapBool(stream.writeUInt32(FourCC('8', 'B', 'C', 'B')))
 	wrapBool(stream.writeUInt16BE(1)) // version
 	wrapBool(stream.writeUInt16BE(0)) // bookid
@@ -32,7 +37,7 @@ bool ACBPalette::save(const palette::Palette &palette, const core::String &filen
 		const core::String &name = palette.colorName(i);
 		wrapBool(stream.writeUInt32BE(name.size()))
 		wrapBool(stream.writeUTF16BE(name))
-		uint8_t code[6]	= {0};
+		uint8_t code[6] = {0};
 		if (stream.write(code, 6) != 6) {
 			Log::error("Failed to write to stream");
 			return false;
@@ -46,7 +51,7 @@ bool ACBPalette::save(const palette::Palette &palette, const core::String &filen
 }
 #undef wrapBool
 
-bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::RGBABuffer &colors) {
+bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &colors) {
 	uint32_t magic;
 	if (stream.readUInt32(magic) == -1) {
 		Log::error("ACBPalette: Failed to read magic");
@@ -171,7 +176,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 				Log::error("ACBPalette: Failed to read RGB color");
 				return false;
 			}
-			colors.put(core::RGBA{rgb[0], rgb[1], rgb[2], 255}, true);
+			colors.add(core::RGBA{rgb[0], rgb[1], rgb[2], 255}, colorName);
 		} else if (space == adobe::ColorSpace::CMYK) {
 			uint8_t cmyk[4];
 			if (stream.read(cmyk, sizeof(cmyk)) == -1) {
@@ -194,7 +199,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			const uint8_t r = (uint8_t)(glm::round(255 * (1 - C) * (1 - K)));
 			const uint8_t g = (uint8_t)(glm::round(255 * (1 - M) * (1 - K)));
 			const uint8_t b = (uint8_t)(glm::round(255 * (1 - Y) * (1 - K)));
-			colors.put(core::RGBA{r, g, b, 255}, true);
+			colors.add(core::RGBA{r, g, b, 255}, colorName);
 		} else if (space == adobe::ColorSpace::Lab) {
 			uint8_t lab[3];
 			if (stream.read(lab, sizeof(lab)) == -1) {
@@ -205,7 +210,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			float L = lab[0] / 2.55f;
 			float a = lab[1] / 2.55f - 128.0f;
 			float b = lab[2] / 2.55f - 128.0f;
-			colors.put(core::Color::fromCIELab(glm::vec4(L, a, b, 1.0f)), true);
+			colors.add(core::Color::fromCIELab(glm::vec4(L, a, b, 1.0f)), colorName);
 		} else {
 			// TODO: PALETTE: support grayscale...
 			Log::error("Unsupported color space %d", colorSpace);

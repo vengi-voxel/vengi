@@ -1,7 +1,6 @@
 set(LIB palette)
 set(SRCS
 	private/PaletteFormat.cpp private/PaletteFormat.h
-	private/QuantizedPalette.cpp private/QuantizedPalette.h
 
 	private/AdobeColorSpace.h
 	private/ACBPalette.cpp private/ACBPalette.h

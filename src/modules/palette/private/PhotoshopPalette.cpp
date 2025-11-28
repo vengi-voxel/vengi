@@ -10,7 +10,7 @@
 
 namespace palette {
 
-static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette, uint16_t version) {
+static bool readColor(io::SeekableReadStream &stream, palette::ColorPalette &palette, uint16_t version) {
 	uint16_t colorSpace;
 	if (stream.readUInt16BE(colorSpace) == -1) {
 		Log::error("PhotoshopPalette: Failed to read color space");
@@ -93,7 +93,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::Palette &palette,
 	return true;
 }
 
-bool PhotoshopPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool PhotoshopPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	// Load the ACO Photoshop palette file
 	uint16_t version;
 	if (stream.readUInt16BE(version) == -1) {
@@ -141,7 +141,7 @@ bool PhotoshopPalette::load(const core::String &filename, io::SeekableReadStream
 	return true;
 }
 
-bool PhotoshopPalette::save(const palette::Palette &palette, const core::String &filename,
+bool PhotoshopPalette::save(const palette::ColorPalette &palette, const core::String &filename,
 							io::SeekableWriteStream &stream) {
 	// save version 1
 	stream.writeUInt16BE(1);

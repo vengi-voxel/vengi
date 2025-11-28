@@ -84,7 +84,7 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgb
 	return true;
 }
 
-bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	int colorCount = 0;
 
 	uint32_t magic;
@@ -149,7 +149,7 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return colorCount > 0;
 }
 
-bool ASEPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeUInt32(FourCC('A', 'S', 'E', 'F'));
 	stream.writeUInt16BE(1);						// versionMajor
 	stream.writeUInt16BE(0);						// versionMinor

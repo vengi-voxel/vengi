@@ -7,7 +7,7 @@
 
 namespace palette {
 
-bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	char line[512];
 	if (!stream.readLine(sizeof(line), line)) {
 		Log::error("Failed to read first line of JASC palette file %s", filename.c_str());
@@ -47,7 +47,7 @@ bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &str
 	return colorCount > 0;
 }
 
-bool JASCPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool JASCPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeLine("JASC-PAL");
 	stream.writeLine("0100");
 	stream.writeLine(core::String::format("%i", (int)palette.size()));

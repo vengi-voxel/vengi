@@ -22,8 +22,8 @@ class VPLPalette : public PaletteFormat {
 private:
 	core::Buffer<core::Array<uint8_t, 256>> _luts;
 public:
-	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) override;
-	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override {
+	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) override;
+	bool save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) override {
 		return false;
 	}
 

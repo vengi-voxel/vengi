@@ -14,7 +14,7 @@ namespace palette {
 		return false;                                                                                                  \
 	}
 
-bool VPLPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool VPLPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	uint32_t remapStart;
 	wrap(stream.readUInt32(remapStart))
 	uint32_t remapEnd;

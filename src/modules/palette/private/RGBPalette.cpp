@@ -8,7 +8,7 @@
 
 namespace palette {
 
-bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	for (int i = 0; i < PaletteMaxColors; ++i) {
 		core::RGBA color;
 		if (stream.readUInt8(color.r) == -1) {
@@ -55,7 +55,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return true;
 }
 
-bool RGBPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool RGBPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	const bool to6Bit = core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal();
 	const float scale = (255.0f / 63.0f);
 	for (size_t i = 0; i < palette.size(); ++i) {

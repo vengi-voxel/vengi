@@ -11,7 +11,7 @@
 
 namespace palette {
 
-bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	core::DynamicArray<AVMTMaterial> materials;
 	core::String paletteName;
 	if (!parseMaterials(stream, materials, paletteName)) {
@@ -44,7 +44,7 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 	return true;
 }
 
-bool AVMTPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool AVMTPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeString("VoxelMaterialArray =\t{\n", false);
 	stream.writeString("\tmaterials =\t[\n", false);
 	stream.writeString("\t\t{\n", false);
