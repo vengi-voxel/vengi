@@ -15,6 +15,7 @@
 #include "io/ZipWriteStream.h"
 #include "palette/Material.h"
 #include "palette/NormalPalette.h"
+#include "palette/PaletteView.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
@@ -346,11 +347,11 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	wrap(stream.readUInt32(colorCount))
 	Log::debug("Load node palette with %u color", colorCount);
 	palette.setSize((int)colorCount);
-	palette::PaletteColorArray colors;
+	core::RGBA colors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(colors[i].rgba))
 	}
-	palette::PaletteColorArray emitColors;
+	core::RGBA emitColors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(emitColors[i].rgba))
 	}

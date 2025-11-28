@@ -139,8 +139,8 @@ glm::vec4 Palette::color4(uint8_t i) const {
 void Palette::reduce(uint8_t targetColors) {
 	core::Color::ColorReductionType reductionType =
 		core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
-	PaletteColorArray oldcolors;
-	core_memcpy(oldcolors, _colors, sizeof(PaletteColorArray));
+	core::RGBA oldcolors[PaletteMaxColors];
+	core_memcpy(oldcolors, _colors, sizeof(oldcolors));
 	_colorCount = core::Color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
 	markDirty();
 }

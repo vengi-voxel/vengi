@@ -21,10 +21,6 @@ namespace palette {
 
 static const int PaletteColorNotFound = -1;
 
-// RGBA color values in the range [0-255]
-using PaletteColorArray = core::RGBA[PaletteMaxColors];
-using MaterialArray = Material[PaletteMaxColors];
-
 /**
  * @brief A 256 color palette
  */
@@ -38,9 +34,9 @@ private:
 		uint64_t _hash;
 	} _hash{};
 	PaletteView _view;
-	PaletteColorArray _colors{};
+	core::RGBA _colors[PaletteMaxColors]{};
 	core::Optional<core::Array<core::String, PaletteMaxColors>> _names;
-	MaterialArray _materials{};
+	Material _materials[PaletteMaxColors]{};
 	int _colorCount = 0;
 
 	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
