@@ -16,7 +16,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::ColorPalette &pal
 		Log::error("PhotoshopPalette: Failed to read color space");
 		return false;
 	}
-	uint8_t paletteColorIdx = palette.colorCount();
+	int paletteColorIdx = palette.colorCount();
 	uint16_t colorComponents[4];
 	for (int j = 0; j < 4; ++j) {
 		if (stream.readUInt16BE(colorComponents[j]) == -1) {

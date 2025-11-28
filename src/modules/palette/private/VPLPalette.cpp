@@ -24,6 +24,7 @@ bool VPLPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	uint32_t unknown;
 	wrap(stream.readUInt32(unknown))
 
+	palette.setSize(PaletteMaxColors);
 	for (int i = 0; i < PaletteMaxColors; ++i) {
 		core::RGBA color;
 		wrap(stream.readUInt8(color.r))
@@ -32,8 +33,6 @@ bool VPLPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		color.a = 255;
 		palette.setColor(i, color);
 	}
-
-	palette.setSize(PaletteMaxColors);
 
 	// normal lookup tables (1-32)
 	_luts.resize(sectionCount);

@@ -36,10 +36,6 @@ bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &str
 			Log::error("Failed to parse JASC color line '%s'", line);
 			continue;
 		}
-		if (colorCount >= PaletteMaxColors) {
-			Log::warn("Not all colors were loaded");
-			break;
-		}
 		palette.setColor(colorCount, core::RGBA(r, g, b));
 		++colorCount;
 	}

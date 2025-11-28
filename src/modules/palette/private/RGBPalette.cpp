@@ -9,27 +9,26 @@
 namespace palette {
 
 bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
-	for (int i = 0; i < PaletteMaxColors; ++i) {
+	while (!stream.eos()) {
 		core::RGBA color;
 		if (stream.readUInt8(color.r) == -1) {
-			Log::error("Failed to read color %i", i);
+			Log::error("Failed to read color r");
 			return false;
 		}
 		if (stream.readUInt8(color.g) == -1) {
-			Log::error("Failed to read color %i", i);
+			Log::error("Failed to read color g");
 			return false;
 		}
 		if (stream.readUInt8(color.b) == -1) {
-			Log::error("Failed to read color %i", i);
+			Log::error("Failed to read color b");
 			return false;
 		}
 		color.a = 255;
-		palette.setColor(i, color);
+		palette.setColor(palette.colorCount(), color);
 	}
-	palette.setSize(PaletteMaxColors);
 
 	int maxColor = 0;
-	for (int i = 0; i < PaletteMaxColors; ++i) {
+	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA rgba = palette.color(i);
 		maxColor = core_max(rgba.r, maxColor);
 		maxColor = core_max(rgba.g, maxColor);
@@ -39,7 +38,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	if (is6Bit) {
 		if (core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal()) {
 			const float scale = (255.0f / 63.0f);
-			for (int i = 0; i < PaletteMaxColors; ++i) {
+			for (int i = 0; i < palette.colorCount(); ++i) {
 				core::RGBA rgba = palette.color(i);
 				rgba.r = (float)rgba.r * scale;
 				rgba.g = (float)rgba.g * scale;

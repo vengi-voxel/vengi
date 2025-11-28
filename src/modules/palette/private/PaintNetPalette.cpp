@@ -13,6 +13,10 @@ bool PaintNetPalette::load(const core::String &filename, io::SeekableReadStream 
 	int n = 0;
 	while (stream.readLine(sizeof(line), line)) {
 		if (line[0] == ';') {
+			if (strncmp("; Palette Name:", line, 15) == 0) {
+				core::String name = core::String(line + 15).trim();
+				palette.setName(name);
+			}
 			continue;
 		}
 		core::RGBA argb = core::Color::fromHex(line);

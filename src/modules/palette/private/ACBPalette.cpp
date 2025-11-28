@@ -92,6 +92,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		return false;
 	}
 	Log::debug("ACBPalette: Title: %s", title.c_str());
+	colors.setName(title);
 
 	core::String prefix;
 	if (stream.readUInt32BE(len) == -1) {
@@ -155,6 +156,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	Log::debug("ACBPalette: Color space: %d", colorSpace);
 
 	const adobe::ColorSpace space = (adobe::ColorSpace)colorSpace;
+	colors.reserve(colorCount);
 	for (uint16_t i = 0; i < colorCount; ++i) {
 		core::String colorName;
 		if (stream.readUInt32BE(len) == -1) {
