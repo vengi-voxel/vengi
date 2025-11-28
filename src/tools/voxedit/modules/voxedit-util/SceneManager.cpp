@@ -1653,13 +1653,6 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 }
 
 void SceneManager::construct() {
-	_modifierFacade.construct();
-	_mementoHandler.construct();
-	_sceneRenderer->construct();
-	_camMovement.construct();
-	_server.construct();
-	_client.construct();
-
 	core::Var::get(cfg::VoxEditColorWheel, "false", _("Use the color wheel in the palette color editing"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowColorPicker, "false", _("Always show the color picker below the palette"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
@@ -1707,6 +1700,13 @@ void SceneManager::construct() {
 	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
 
 	voxelformat::FormatConfig::init();
+
+	_modifierFacade.construct();
+	_mementoHandler.construct();
+	_sceneRenderer->construct();
+	_camMovement.construct();
+	_server.construct();
+	_client.construct();
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
 		const voxel::Region &region = modifier().selectionMgr()->region();
