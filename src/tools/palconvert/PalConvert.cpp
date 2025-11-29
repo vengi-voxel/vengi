@@ -66,6 +66,7 @@ app::AppState PalConvert::onConstruct() {
 		.setDescription("Allow to specify the output file")
 		.addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--quantize").setShort("-q").setDescription("Quantize the input palette to 256 colors");
+	registerArg("--optimize").setDescription("Optimize the palette by removing duplicated or full transparent colors");
 
 	palette::FormatConfig::init();
 
@@ -154,6 +155,11 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 
 	Log::info("Palette with %i colors loaded from '%s' with name '%s'\n", (int)palette.size(), infile.c_str(),
 			  palette.name().c_str());
+
+	if (hasArg("--optimize")) {
+		palette.optimize();
+		Log::info("Optimized palette to %i colors", palette.colorCount());
+	}
 
 	if (outfile.empty()) {
 		const core::String type = getArgVal("--type", "ansi");

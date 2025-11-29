@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "image/Image.h"
+#include "palette/RGBABuffer.h"
 
 namespace palette {
 
@@ -51,6 +52,23 @@ void ColorPalette::setMaterial(size_t index, const palette::Material &material) 
 
 void ColorPalette::setName(const core::String &name) {
 	_name = name;
+	markDirty();
+}
+
+void ColorPalette::optimize() {
+	RGBABuffer uniqueColors;
+	core::DynamicArray<ColorPaletteEntry> optimizedEntries;
+	optimizedEntries.reserve(_entries.size());
+	for (const auto &entry : _entries) {
+		if (entry.color.a == 0) {
+			continue;
+		}
+		if (!uniqueColors.has(entry.color)) {
+			uniqueColors.insert(entry.color);
+			optimizedEntries.push_back(entry);
+		}
+	}
+	_entries = optimizedEntries;
 	markDirty();
 }
 

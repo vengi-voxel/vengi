@@ -47,6 +47,12 @@ VoxConvert:
    - `--image` (and `--isometric`) is now also able to write `png` files
    - `--image` is now executed after all other steps are executed (so script output can directly go to images)
 
+PalConvert:
+
+  - Allow to load more than 256 colors for palettes
+  - Added `--quantize` option to produce 8 bit palettes
+  - Added `--optimize` option that duplicates and empty (no opacity) colors
+
 ## 0.2.1 (2025-10-24)
 
 General:

@@ -46,6 +46,11 @@ public:
 
 	int colorCount() const;
 
+	/**
+	 * @brief Remove duplicated or full transparent colors
+	 */
+	void optimize();
+
 	const core::String &name() const;
 
 	size_t size() const;
