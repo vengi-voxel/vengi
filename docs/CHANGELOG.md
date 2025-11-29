@@ -55,7 +55,7 @@ PalConvert:
 
   - Allow to load more than 256 colors for palettes
   - Added `--quantize` option to produce 8 bit palettes
-  - Added `--optimize` option that duplicates and empty (no opacity) colors
+  - Added `--optimize` option that removes duplicates and fully transparent colors
 
 ## 0.2.1 (2025-10-24)
 
