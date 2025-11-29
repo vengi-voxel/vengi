@@ -65,6 +65,7 @@ app::AppState PalConvert::onConstruct() {
 		.setShort("-o")
 		.setDescription("Allow to specify the output file")
 		.addFlag(ARGUMENT_FLAG_FILE);
+	registerArg("--quantize").setShort("-q").setDescription("Quantize the input palette to 256 colors");
 
 	palette::FormatConfig::init();
 
@@ -137,7 +138,15 @@ bool PalConvert::handleInputFile(const core::String &infile, const core::String 
 			Log::error("Failed to open input file '%s'", infile.c_str());
 			return false;
 		}
-		if (!palette::loadPalette(infile, stream, palette)) {
+		if (hasArg("--quantize")) {
+			palette::Palette pal;
+			if (!palette::loadPalette(infile, stream, pal)) {
+				Log::error("Failed to load palette from '%s'", infile.c_str());
+				return false;
+			}
+			palette = palette::toColorPalette(pal);
+			Log::info("Quantized palette to %i colors", palette.colorCount());
+		} else if (!palette::loadPalette(infile, stream, palette)) {
 			Log::error("Failed to load palette from '%s'", infile.c_str());
 			return false;
 		}

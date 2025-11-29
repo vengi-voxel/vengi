@@ -8,7 +8,6 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "palette/private/AdobeColorSpace.h"
-#include "palette/private/PaletteFormat.h"
 #include <glm/common.hpp>
 
 namespace palette {
