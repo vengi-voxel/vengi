@@ -91,6 +91,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | Name                          | Description                                                                              | Example      |
 | ----------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
 | `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. | Octree       |
+| `palformat_gimprgba`          | Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)                  | true/false   |
 | `palformat_maxsize`           | The maximum size of an image in x and y direction to quantize to a palette               | 512          |
 | `palformat_rgb6bit`           | Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files               | true/false   |
 | `voxel_meshmode`              | Set to 1 to use the marching cubes algorithm to produce the mesh                         | 0/1          |

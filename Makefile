@@ -281,3 +281,7 @@ find-undocumented-cvars:
 		grep -q $$i docs/Configuration.md; \
 		if [ $$? -ne 0 ]; then echo $$i; fi; \
 	done
+	$(Q)for i in $$(cat ./src/modules/core/ConfigVar.h | grep Palformat | awk -F '"' '{ print $$2 }'); do \
+		grep -q $$i docs/Configuration.md; \
+		if [ $$? -ne 0 ]; then echo $$i; fi; \
+	done
