@@ -75,7 +75,7 @@ bool parseMaterials(io::SeekableReadStream &stream, core::DynamicArray<AVMTMater
 			}
 		} else {
 			if (currentMatColorFound) {
-				currentMaterial.rgba = color::getRGBA(currentMaterial.color);
+				currentMaterial.rgba = color::toRGBA(currentMaterial.color);
 				materials.push_back(currentMaterial);
 				currentMaterial = {};
 				currentMatColorFound = false;

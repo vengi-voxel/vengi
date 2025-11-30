@@ -191,7 +191,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA2)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(ColorBenchmark, getRGBA4)(benchmark::State &state) {
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::getRGBA({0.0f, 0.0f, 0.0f, 0.0f}));
+		benchmark::DoNotOptimize(color::toRGBA({0.0f, 0.0f, 0.0f, 0.0f}));
 	}
 }
 

@@ -38,7 +38,7 @@ PaletteLookup::PaletteLookup(const palette::Palette &palette)
 }
 
 uint8_t PaletteLookup::findClosestIndex(const glm::vec4 &color) {
-	return findClosestIndex(color::getRGBA(color));
+	return findClosestIndex(color::toRGBA(color));
 }
 
 uint8_t PaletteLookup::findClosestIndex(color::RGBA rgba) {

@@ -584,7 +584,7 @@ void Palette::changeIntensity(float scale) {
 	for (int i = 0; i < _colorCount; ++i) {
 		const glm::vec4 &color = color::fromRGBA(_colors[i]);
 		const glm::vec4 &newColor = scale < 0.0f ? color::darker(color, f) : color::brighter(color, f);
-		_colors[i] = color::getRGBA(newColor);
+		_colors[i] = color::toRGBA(newColor);
 	}
 	markDirty();
 	markSave();

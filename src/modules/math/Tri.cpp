@@ -24,7 +24,7 @@ bool Tri::flat() const {
 }
 
 void Tri::setColor(const glm::vec4 &c) {
-	setColor(color::getRGBA(c));
+	setColor(color::toRGBA(c));
 }
 
 glm::vec3 Tri::normal() const {

@@ -96,7 +96,7 @@ core::String toHex(const RGBA rgba, bool hashPrefix = true);
 /**
  * @brief Converts vec4 to RGBA.
  */
-RGBA getRGBA(const glm::vec4 &);
+RGBA toRGBA(const glm::vec4 &);
 /**
  * @brief Converts vec3 to RGBA.
  */

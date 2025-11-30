@@ -82,7 +82,7 @@ image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::Sce
 			frontFace = dir.z > 0.0f ? voxel::FaceNames::NegativeZ : voxel::FaceNames::PositiveZ;
 		}
 	}
-	const color::RGBA background = color::getRGBA(ctx.clearColor);
+	const color::RGBA background = color::toRGBA(ctx.clearColor);
 	const int imgW = ctx.outputSize.x;
 	const int imgH = ctx.outputSize.y;
 	return voxelutil::renderToImage(v, merged.palette, frontFace, background, imgW, imgH, true, ctx.depthFactor2D);

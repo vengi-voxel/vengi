@@ -26,7 +26,7 @@ TEST(ColorTest, testRGBA) {
 	EXPECT_FLOAT_EQ(color.a / color::magnitudef, fcolor.a);
 	EXPECT_FLOAT_EQ(1.0f, fcolor.a);
 
-	color::RGBA convertedBack = color::getRGBA(fcolor);
+	color::RGBA convertedBack = color::toRGBA(fcolor);
 	EXPECT_EQ(0xfe, convertedBack.r);
 	EXPECT_EQ(0x99, convertedBack.g);
 	EXPECT_EQ(0x66, convertedBack.b);
