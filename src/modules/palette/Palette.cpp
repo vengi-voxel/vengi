@@ -4,6 +4,7 @@
 
 #include "Palette.h"
 #include "app/App.h"
+#include "color/ColorUtil.h"
 #include "color/Quantize.h"
 #include "core/ArrayLength.h"
 #include "color/Color.h"
@@ -134,7 +135,7 @@ void Palette::markDirty() {
 }
 
 glm::vec4 Palette::color4(uint8_t i) const {
-	return color::Color::fromRGBA(color(i));
+	return color::fromRGBA(color(i));
 }
 
 void Palette::reduce(uint8_t targetColors) {
@@ -265,7 +266,7 @@ int Palette::findInsignificant(int skipSlotIndex) const {
 			if (_colors[k].a == 0) {
 				continue;
 			}
-			const float val = color::Color::getDistance(_colors[k], _colors[i], color::Color::Distance::Approximation);
+			const float val = color::getDistance(_colors[k], _colors[i], color::Distance::Approximation);
 			if (val < minDistance) {
 				minDistance = val;
 				closestColorIdx = (int)i;
@@ -302,7 +303,7 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 			if (abs(_colors[i].a - rgba.a) > 10) {
 				continue;
 			}
-			const float dist = color::Color::getDistance(_colors[i], rgba, color::Color::Distance::HSB);
+			const float dist = color::getDistance(_colors[i], rgba, color::Distance::HSB);
 			if (dist < MaxHSBThreshold) {
 				if (index) {
 					*index = i;
@@ -342,7 +343,7 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 		// will replace that color with the new rgba value
 		int bestIndex = findInsignificant(skipPaletteColorIdx);
 		if (bestIndex != PaletteColorNotFound) {
-			const float dist = color::Color::getDistance(_colors[bestIndex], rgba, color::Color::Distance::HSB);
+			const float dist = color::getDistance(_colors[bestIndex], rgba, color::Distance::HSB);
 			if (dist > MaxHSBThreshold) {
 				if (index) {
 					*index = bestIndex;
@@ -369,7 +370,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
 			line = "";
 		}
-		const core::String c = color::Color::print(palette._colors[i], colorAsHex);
+		const core::String c = color::print(palette._colors[i], colorAsHex);
 		line += c;
 	}
 	if (!line.empty()) {
@@ -378,7 +379,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	return palStr;
 }
 
-int Palette::getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx, color::Color::Distance distance) const {
+int Palette::getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx, color::Distance distance) const {
 	if (size() == 0) {
 		return PaletteColorNotFound;
 	}
@@ -410,7 +411,7 @@ int Palette::getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx, color::C
 		if (_colors[i].a == 0) {
 			continue;
 		}
-		const float val = color::Color::getDistance(_colors[i], rgba, distance);
+		const float val = color::getDistance(_colors[i], rgba, distance);
 		if (val < minDistance) {
 			minDistance = val;
 			minIndex = (int)i;
@@ -419,7 +420,7 @@ int Palette::getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx, color::C
 	return minIndex;
 }
 
-uint8_t Palette::findReplacement(uint8_t paletteColorIdx, color::Color::Distance distance) const {
+uint8_t Palette::findReplacement(uint8_t paletteColorIdx, color::Distance distance) const {
 	if (size() == 0) {
 		return paletteColorIdx;
 	}
@@ -446,11 +447,11 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx, color::Color::Distance
 	float minDistance = FLT_MAX;
 	int minIndex = paletteColorIdx;
 
-	if (distance == color::Color::Distance::HSB) {
+	if (distance == color::Distance::HSB) {
 		float hue;
 		float saturation;
 		float brightness;
-		color::Color::getHSB(rgba, hue, saturation, brightness);
+		color::getHSB(rgba, hue, saturation, brightness);
 
 		for (int i = 0; i < _colorCount; ++i) {
 			if (i == skip) {
@@ -459,7 +460,7 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx, color::Color::Distance
 			if (_colors[i].a == 0) {
 				continue;
 			}
-			const float val = color::Color::getDistance(_colors[i], hue, saturation, brightness);
+			const float val = color::getDistance(_colors[i], hue, saturation, brightness);
 			if (val < minDistance) {
 				minDistance = val;
 				minIndex = (int)i;
@@ -473,7 +474,7 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx, color::Color::Distance
 			if (_colors[i].a == 0) {
 				continue;
 			}
-			const float val = color::Color::getDistance(_colors[i], rgba, distance);
+			const float val = color::getDistance(_colors[i], rgba, distance);
 			if (val < minDistance) {
 				minDistance = val;
 				minIndex = (int)i;
@@ -581,9 +582,9 @@ void Palette::constrastStretching() {
 void Palette::changeIntensity(float scale) {
 	const float f = glm::abs(scale) + 1.0f;
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &color = color::Color::fromRGBA(_colors[i]);
-		const glm::vec4 &newColor = scale < 0.0f ? color::Color::darker(color, f) : color::Color::brighter(color, f);
-		_colors[i] = color::Color::getRGBA(newColor);
+		const glm::vec4 &color = color::fromRGBA(_colors[i]);
+		const glm::vec4 &newColor = scale < 0.0f ? color::darker(color, f) : color::brighter(color, f);
+		_colors[i] = color::getRGBA(newColor);
 	}
 	markDirty();
 	markSave();
@@ -1152,7 +1153,7 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 void Palette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		vec4f.push_back(color::Color::fromRGBA(_colors[i]));
+		vec4f.push_back(color::fromRGBA(_colors[i]));
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f.emplace_back(0.0f);
@@ -1161,7 +1162,7 @@ void Palette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
 
 void Palette::toVec4f(glm::highp_vec4 *vec4f) const {
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &color = color::Color::fromRGBA(_colors[i]);
+		const glm::vec4 &color = color::fromRGBA(_colors[i]);
 		vec4f[i] = {color.x, color.y, color.z, color.a};
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
@@ -1196,7 +1197,7 @@ void Palette::emitToVec4f(const core::Buffer<glm::vec4> &materialColors, core::B
 void Palette::emitToVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 c(color::Color::fromRGBA(_colors[i]));
+		const glm::vec4 c(color::fromRGBA(_colors[i]));
 		const Material &mat = _materials[i];
 		vec4f.emplace_back(c * mat.emit);
 	}

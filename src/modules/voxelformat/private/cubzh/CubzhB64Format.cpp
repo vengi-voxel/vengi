@@ -175,7 +175,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 			const int y = i / 1000 % 1000;
 			const int z = i / 1000000;
 			v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, color));
-			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, color::Color::toHex(color).c_str());
+			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, color::toHex(color).c_str());
 		}
 	}
 

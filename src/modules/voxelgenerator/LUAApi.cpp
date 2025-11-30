@@ -674,7 +674,7 @@ static int luaVoxel_palette_colors(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	lua_createtable(s, palette->colorCount(), 0);
 	for (int i = 0; i < palette->colorCount(); ++i) {
-		const glm::vec4& c = color::Color::fromRGBA(palette->color(i));
+		const glm::vec4& c = color::fromRGBA(palette->color(i));
 		lua_pushinteger(s, i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
@@ -722,7 +722,7 @@ static int luaVoxel_palette_rgba(lua_State* s) {
 static int luaVoxel_palette_color(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
-	const glm::vec4& rgba = color::Color::fromRGBA(palette->color(color));
+	const glm::vec4& rgba = color::fromRGBA(palette->color(color));
 	return clua_push(s, rgba);
 }
 
@@ -763,7 +763,7 @@ static int luaVoxel_palette_delta_e(lua_State* s) {
 	if (idx != idx2) {
 		const color::RGBA c1 = palette->color(idx);
 		const color::RGBA c2 = palette->color(idx2);
-		distance = color::Color::deltaE76(c1, c2);
+		distance = color::deltaE76(c1, c2);
 	}
 	lua_pushnumber(s, distance);
 	return 1;
@@ -772,7 +772,7 @@ static int luaVoxel_palette_delta_e(lua_State* s) {
 static int luaVoxel_palette_color_to_string(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t idx = luaL_checkinteger(s, 2);
-	const core::String c = color::Color::print(palette->color(idx));
+	const core::String c = color::print(palette->color(idx));
 	lua_pushstring(s, c.c_str());
 	return 1;
 }

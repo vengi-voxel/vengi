@@ -59,7 +59,7 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, color::RGBA &rg
 		stream.readFloatBE(color[1]);
 		stream.readFloatBE(color[2]);
 		color[3] = 1.0f;
-		rgba = color::Color::getRGBA(color);
+		rgba = color::getRGBA(color);
 	} else if (mode.colorMode == FourCC('L', 'A', 'B', ' ')) {
 		stream.readFloatBE(color[0]);
 		stream.readFloatBE(color[1]);
@@ -67,12 +67,12 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, color::RGBA &rg
 		color[3] = 1.0f;
 		// L goes from 0 to 100 percent
 		color[0] *= 100.0f;
-		rgba = color::Color::fromCIELab(color);
+		rgba = color::fromCIELab(color);
 	} else if (mode.colorMode == FourCC('G', 'R', 'A', 'Y')) {
 		stream.readFloatBE(color[0]);
 		color[1] = color[2] = color[0];
 		color[3] = 1.0f;
-		rgba = color::Color::getRGBA(color);
+		rgba = color::getRGBA(color);
 	} else {
 		Log::error("ASEPalette: Unknown color mode %s", colorModeStr.c_str());
 		return false;
@@ -157,7 +157,7 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 	// TODO: write group with palette name
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const color::RGBA &color = palette.color(i);
-		const glm::vec4 scaled = color::Color::fromRGBA(color);
+		const glm::vec4 scaled = color::fromRGBA(color);
 		stream.writeUInt16BE(priv::COLOR_START);		// blocktype
 		stream.writeUInt32BE(18);						// blocksize
 		stream.writeUInt16BE(0);						// namelength

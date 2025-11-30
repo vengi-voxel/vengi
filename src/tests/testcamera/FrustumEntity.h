@@ -22,7 +22,7 @@ private:
 	bool _result = false;
 
 public:
-	FrustumEntity(const glm::vec4& color = color::Color::Red(), float radius = 5.0f) :
+	FrustumEntity(const glm::vec4& color = color::Red(), float radius = 5.0f) :
 			_color(color), _radius(radius) {
 	}
 
@@ -66,7 +66,7 @@ public:
 		_result = result;
 
 		Log::debug("culling result changed to %i", (int)result);
-		const glm::vec4& color = result ? color::Color::Green() : _color;
+		const glm::vec4& color = result ? color::Green() : _color;
 
 		_shapeBuilder.clear();
 		_shapeBuilder.setPosition(_position);

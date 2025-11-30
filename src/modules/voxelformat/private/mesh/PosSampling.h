@@ -58,7 +58,7 @@ public:
 	 * @param weightedAverage If @c true, the function computes a weighted average of the colors based on the area of
 	 * each entry. If @c false, the function returns the color of the entry with the largest area.
 	 *
-	 * @sa color::Color::flattenRGB()
+	 * @sa color::flattenRGB()
 	 *
 	 * @return The computed color as a color::RGBA value.
 	 */

@@ -46,7 +46,7 @@ app::AppState TestGLSLGeom::onInit() {
 	_buffer.addAttribute(_testShader.getPosAttribute(bufIndex, &Buf::pos));
 	_buffer.addAttribute(_testShader.getColorAttribute(bufIndex, &Buf::color));
 
-	video::clearColor(color::Color::Black());
+	video::clearColor(color::Black());
 	return state;
 }
 

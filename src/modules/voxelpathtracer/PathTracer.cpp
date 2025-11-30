@@ -123,7 +123,7 @@ bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegr
 		shape->positions.push_back(priv::toVec3f(pos1));
 		shape->positions.push_back(priv::toVec3f(pos2));
 		const color::RGBA rgba = palette.color(vertex0.colorIndex);
-		const glm::vec4 &color = color::Color::fromRGBA(rgba);
+		const glm::vec4 &color = color::fromRGBA(rgba);
 		shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
 		shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
 		shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
@@ -225,10 +225,10 @@ static void setupMaterial(yocto::scene_data &scene, const palette::Palette &pale
 
 	yocto::material_data material;
 	material.type = mapMaterialType(ownMaterial.type);
-	const glm::vec4 color = color::Color::fromRGBA(palette.color(i));
+	const glm::vec4 color = color::fromRGBA(palette.color(i));
 	material.color = priv::toVec3f(color);
 	if (ownMaterial.has(palette::MaterialProperty::MaterialEmit)) {
-		material.scattering = priv::toVec3f(color::Color::fromRGBA(palette.emitColor(i)));
+		material.scattering = priv::toVec3f(color::fromRGBA(palette.emitColor(i)));
 		if (material.type == yocto::material_type::matte) {
 			material.type = yocto::material_type::volumetric;
 		}

@@ -1,6 +1,6 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "benchmark/benchmark.h"
-#include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "color/Quantize.h"
 #include "color/RGBA.h"
 
@@ -179,25 +179,25 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeNeuQuant)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA)(benchmark::State &state) {
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::Color::fromRGBA(buf[0]));
+		benchmark::DoNotOptimize(color::fromRGBA(buf[0]));
 	}
 }
 
 BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA2)(benchmark::State &state) {
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::Color::fromRGBA(buf[0].r, buf[0].g, buf[0].b, buf[0].a));
+		benchmark::DoNotOptimize(color::fromRGBA(buf[0].r, buf[0].g, buf[0].b, buf[0].a));
 	}
 }
 
 BENCHMARK_DEFINE_F(ColorBenchmark, getRGBA4)(benchmark::State &state) {
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::Color::getRGBA({0.0f, 0.0f, 0.0f, 0.0f}));
+		benchmark::DoNotOptimize(color::getRGBA({0.0f, 0.0f, 0.0f, 0.0f}));
 	}
 }
 
 BENCHMARK_DEFINE_F(ColorBenchmark, getRGBA3)(benchmark::State &state) {
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::Color::getRGBA({0.0f, 0.0f, 0.0f}));
+		benchmark::DoNotOptimize(color::getRGBA({0.0f, 0.0f, 0.0f}));
 	}
 }
 
@@ -205,7 +205,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, getHSB)(benchmark::State &state) {
 	for (auto _ : state) {
 		float hue, saturation, brightness;
 		glm::vec4 c(0.5f, 0.6f, 0.7f, 1.0f);
-		color::Color::getHSB(c, hue, saturation, brightness);
+		color::getHSB(c, hue, saturation, brightness);
 		benchmark::DoNotOptimize(hue);
 		benchmark::DoNotOptimize(saturation);
 		benchmark::DoNotOptimize(brightness);
@@ -214,7 +214,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, getHSB)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(ColorBenchmark, fromHSB)(benchmark::State &state) {
 	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::Color::fromHSB(0.5f, 0.5f, 0.5f, 1.0f));
+		benchmark::DoNotOptimize(color::fromHSB(0.5f, 0.5f, 0.5f, 1.0f));
 	}
 }
 

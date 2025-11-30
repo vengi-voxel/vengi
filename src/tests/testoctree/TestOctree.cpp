@@ -102,11 +102,11 @@ void TestOctree::handleDirtyState() {
 	// build AABBs
 	_octree.visit([this] (const Node& node) {
 		static const core::Array<glm::vec4, 5> colors {
-			color::Color::Blue(),
-			color::Color::Red(),
-			color::Color::Green(),
-			color::Color::Yellow(),
-			color::Color::Cyan()
+			color::Blue(),
+			color::Red(),
+			color::Green(),
+			color::Yellow(),
+			color::Cyan()
 		};
 		_shapeBuilder.setColor(colors[node.depth() % colors.size()]);
 		_shapeBuilder.aabb(node.aabb());
@@ -163,7 +163,7 @@ void TestOctree::onRenderUI() {
 				_queryMins.x, _queryMins.y, _queryMins.z, _queryMaxs.x, _queryMaxs.y, _queryMaxs.z, (int)_results.size());
 	}
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(color::Color::White());
+	_shapeBuilder.setColor(color::White());
 	_shapeBuilder.aabb(_queryAABB);
 	_shapeRenderer.createOrUpdate(_queryMeshes, _shapeBuilder);
 	_shapeBuilder.clear();

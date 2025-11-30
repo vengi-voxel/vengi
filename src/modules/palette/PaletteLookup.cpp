@@ -4,6 +4,7 @@
 
 #include "PaletteLookup.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "palette/Palette.h"
 #if defined(_MSC_VER)
 #define WIN32_LEAN_AND_MEAN
@@ -37,7 +38,7 @@ PaletteLookup::PaletteLookup(const palette::Palette &palette)
 }
 
 uint8_t PaletteLookup::findClosestIndex(const glm::vec4 &color) {
-	return findClosestIndex(color::Color::getRGBA(color));
+	return findClosestIndex(color::getRGBA(color));
 }
 
 uint8_t PaletteLookup::findClosestIndex(color::RGBA rgba) {

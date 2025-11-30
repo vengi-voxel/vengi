@@ -4,11 +4,12 @@
 
 #include "ShapeBuilder.h"
 #include "Camera.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
 #include "math/Frustum.h"
-#include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/GLM.h"
 #include "core/ArrayLength.h"
 #include "video/Types.h"
@@ -27,7 +28,7 @@
 namespace video {
 
 ShapeBuilder::ShapeBuilder(int initialSize) :
-		_initialSize(initialSize), _color(color::Color::White()) {
+		_initialSize(initialSize), _color(color::White()) {
 	if (_initialSize > 0) {
 		reserve(initialSize, initialSize);
 	}
@@ -43,7 +44,7 @@ void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float st
 	const glm::vec3& width = aabb.getWidth();
 	const float wz = near ? 0.0f : width.z;
 	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
-	const glm::vec4 darkerColor = color::Color::darker(_color);
+	const glm::vec4 darkerColor = color::darker(_color);
 	const glm::vec4 color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
@@ -64,7 +65,7 @@ void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float st
 	const glm::vec3& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
 	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
-	const glm::vec4 darkerColor = color::Color::darker(_color);
+	const glm::vec4 darkerColor = color::darker(_color);
 	const glm::vec4 color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
@@ -85,7 +86,7 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 	const glm::vec3& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
 	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
-	const glm::vec4 darkerColor = color::Color::darker(_color);
+	const glm::vec4 darkerColor = color::darker(_color);
 	const glm::vec4 color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
@@ -358,7 +359,7 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 
 	reserve(lengthof(corners) + 2, 16);
 
-	setColor(color::Color::Green());
+	setColor(color::Green());
 	for (uint32_t i = 0; i < lengthof(corners); ++i) {
 		const glm::vec4& v = result * corners[i];
 		addVertex(glm::vec3(v), planeNormal);
@@ -367,7 +368,7 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	if (normals) {
 		const float normalVecScale = 10.0f;
 		const glm::vec3& pvn = planeNormal * normalVecScale;
-		setColor(color::Color::Red());
+		setColor(color::Red());
 		addVertex(glm::zero<glm::vec3>(), planeNormal);
 		addVertex(pvn, planeNormal);
 	}
@@ -590,10 +591,10 @@ void ShapeBuilder::diamond(float length1, float length2) {
 		const glm::vec3 v5(0.0f, 0.0f, length1 + length2);
 
 		math::Tri tris[8];
-		tris[0].setColor(color::Color::darker(_color, 2.0f));
+		tris[0].setColor(color::darker(_color, 2.0f));
 		tris[0].setVertices(v0, v1, v2);
 
-		tris[1].setColor(color::Color::brighter(_color, 2.0f));
+		tris[1].setColor(color::brighter(_color, 2.0f));
 		tris[1].setVertices(v0, v2, v3);
 
 		tris[2].setColor(_color);
@@ -602,10 +603,10 @@ void ShapeBuilder::diamond(float length1, float length2) {
 		tris[3].setColor(_color);
 		tris[3].setVertices(v0, v4, v1);
 
-		tris[4].setColor(color::Color::darker(_color));
+		tris[4].setColor(color::darker(_color));
 		tris[4].setVertices(v5, v2, v1);
 
-		tris[5].setColor(color::Color::brighter(_color));
+		tris[5].setColor(color::brighter(_color));
 		tris[5].setVertices(v5, v3, v2);
 
 		tris[6].setColor(_color);
@@ -624,11 +625,11 @@ void ShapeBuilder::diamond(float length1, float length2) {
 void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 	const glm::vec3 &n = calcNormal ? glm::normalize(tri.normal()) : glm::zero<glm::vec3>();
 	glm::vec4 copy = _color;
-	setColor(color::Color::fromRGBA(tri.color0()));
+	setColor(color::fromRGBA(tri.color0()));
 	addIndex(addVertex(tri.vertex0(), n));
-	setColor(color::Color::fromRGBA(tri.color1()));
+	setColor(color::fromRGBA(tri.color1()));
 	addIndex(addVertex(tri.vertex1(), n));
-	setColor(color::Color::fromRGBA(tri.color2()));
+	setColor(color::fromRGBA(tri.color2()));
 	addIndex(addVertex(tri.vertex2(), n));
 	setColor(copy);
 }
@@ -754,19 +755,19 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	}
 
 	if (camera.rotationType() == CameraRotationType::Target) {
-		setColor(color::Color::Green());
+		setColor(color::Green());
 		line(camera.worldPosition(), camera.target());
 	}
 }
 
 void ShapeBuilder::axis(const glm::vec3& scale) {
-	setColor(color::Color::Red());
+	setColor(color::Red());
 	line(glm::zero<glm::vec3>(), glm::right() * scale);
 
-	setColor(color::Color::Green());
+	setColor(color::Green());
 	line(glm::zero<glm::vec3>(), glm::up() * scale);
 
-	setColor(color::Color::Blue());
+	setColor(color::Blue());
 	line(glm::zero<glm::vec3>(), glm::forward() * scale);
 }
 

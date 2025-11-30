@@ -50,7 +50,7 @@ bool AVMTPalette::save(const palette::ColorPalette &palette, const core::String 
 		}
 		++added;
 		const color::RGBA &color = palette.color(i);
-		const glm::vec4 c = color::Color::fromRGBA(color);
+		const glm::vec4 c = color::fromRGBA(color);
 		stream.writeString("\t\t\t\t{\n", false);
 		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.6f\n", c.r);
 		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.6f\n", c.g);

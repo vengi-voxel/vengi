@@ -1,5 +1,6 @@
 set(SRCS
 	Color.cpp Color.h
+	ColorUtil.cpp ColorUtil.h
 	CMYK.cpp CMYK.h
 	Quantize.cpp Quantize.h
 	RGBA.h RGBA.cpp

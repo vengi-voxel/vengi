@@ -4,7 +4,7 @@
 
 #include "voxelformat/private/mesh/MeshTri.h"
 #include "app/tests/AbstractTest.h"
-#include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "image/Image.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 
@@ -43,8 +43,8 @@ TEST_F(MeshTriTest, testColorAt4x4) {
 				const color::RGBA color = colorAt(meshTri, meshMaterialArray, uv, originUpperLeft);
 				const int texIndex = y * w + x;
 				ASSERT_EQ(buffer[texIndex], color)
-					<< "pixel(" << x << "/" << y << "), " << color::Color::print(buffer[texIndex]) << " vs "
-					<< color::Color::print(color) << " ti: " << texIndex;
+					<< "pixel(" << x << "/" << y << "), " << color::print(buffer[texIndex]) << " vs "
+					<< color::print(color) << " ti: " << texIndex;
 			}
 		}
 	}

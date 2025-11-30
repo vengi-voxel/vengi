@@ -70,7 +70,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 										srcSampler3.movePositiveX();
 										continue;
 									}
-									const glm::vec4 &color = color::Color::fromRGBA(palette.color(child.getColor()));
+									const glm::vec4 &color = color::fromRGBA(palette.color(child.getColor()));
 									avgColorRed += color.r;
 									avgColorGreen += color.g;
 									avgColorBlue += color.b;
@@ -87,7 +87,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 					// means that higher LOD meshes actually shrink away which ensures cracks aren't visible.
 					if (solidVoxels >= 7.0f) {
 						if (colorContributors <= 0.0f) {
-							const glm::vec4 &color = color::Color::fromRGBA(palette.color(colorGuardVoxel.getColor()));
+							const glm::vec4 &color = color::fromRGBA(palette.color(colorGuardVoxel.getColor()));
 							avgColorRed += color.r;
 							avgColorGreen += color.g;
 							avgColorBlue += color.b;
@@ -95,7 +95,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 						}
 						const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors,
 												avgColorBlue / colorContributors, 1.0f);
-						color::RGBA avgRGBA = color::Color::getRGBA(avgColor);
+						color::RGBA avgRGBA = color::getRGBA(avgColor);
 						const int index = palette.getClosestMatch(avgRGBA);
 						voxel::Voxel voxel = voxel::createVoxel(palette, index);
 						destVolume.setVoxel(dstPos, voxel);
@@ -182,7 +182,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 									++exposedFaces;
 								}
 
-								const glm::vec4 &color = color::Color::fromRGBA(palette.color(child.getColor()));
+								const glm::vec4 &color = color::fromRGBA(palette.color(child.getColor()));
 								totalRed += color.r * exposedFaces;
 								totalGreen += color.g * exposedFaces;
 								totalBlue += color.b * exposedFaces;
@@ -202,7 +202,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 
 					const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces,
 											totalBlue / totalExposedFaces, 1.0f);
-					color::RGBA avgRGBA = color::Color::getRGBA(avgColor);
+					color::RGBA avgRGBA = color::getRGBA(avgColor);
 					const int index = palette.getClosestMatch(avgRGBA);
 					const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 					dstSampler3.setVoxel(voxel);

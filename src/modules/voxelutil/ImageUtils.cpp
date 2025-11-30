@@ -319,8 +319,8 @@ const int VoxelSpriteHeight = 4;
 } // namespace
 
 static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const color::RGBA palCol) {
-	const color::RGBA darkerCol = color::Color::darker(palCol);
-	const color::RGBA lighterCol = color::Color::brighter(palCol);
+	const color::RGBA darkerCol = color::darker(palCol);
+	const color::RGBA lighterCol = color::brighter(palCol);
 	/**
 	 * Each voxel is rendered as a 4x4 sprite with the following pattern:
 	 *
@@ -481,7 +481,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		}
 
 		if (depthFactor > 0.0f) {
-			rgba = color::Color::darker(rgba, depth);
+			rgba = color::darker(rgba, depth);
 		}
 		image->setColor(rgba, px, py);
 	}, VisitorOrder::Max, true);

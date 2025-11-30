@@ -684,7 +684,7 @@ bool GoxFormat::saveChunk_DictColor(io::WriteStream &stream, const core::String 
 	if (!saveChunk_DictEntryHeader(stream, key, 4 * sizeof(float))) {
 		return false;
 	}
-	const glm::vec4 &color = color::Color::fromRGBA(value);
+	const glm::vec4 &color = color::fromRGBA(value);
 	return stream.writeFloat(color.r) && stream.writeFloat(color.g) && stream.writeFloat(color.b) &&
 		   stream.writeFloat(color.a);
 }
@@ -759,7 +759,7 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(saveChunk_DictColor(stream, "color", rgba));
 		const palette::Material &material = palette.material(i);
 		const color::RGBA emitRGBA = palette.emitColor(i);
-		const glm::vec3 &emitColor = glm::clamp(color::Color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
+		const glm::vec3 &emitColor = glm::clamp(color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
 		wrapBool(saveChunk_DictFloat(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
 		wrapBool(saveChunk_DictFloat(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
 		wrapBool(saveChunk_DictVec3(stream, "emission", emitColor))

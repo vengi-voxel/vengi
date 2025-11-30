@@ -53,8 +53,8 @@ static bool readColor(io::SeekableReadStream &stream, palette::ColorPalette &pal
 	case adobe::ColorSpace::HSB: {
 		//  The first three values in the color data are hue, saturation, and brightness. They are full unsigned 16-bit
 		//  values as in Apple's HSVColor data structure. Pure red = 0,65535,65535.
-		rgba = color::Color::fromHSB(colorComponents[0] / 65535.0f * 360.0f, colorComponents[1] / 65535.0f * 100.0f,
-									colorComponents[2] / 65535.0f * 100.0f);
+		rgba = color::fromHSB(colorComponents[0] / 65535.0f * 360.0f, colorComponents[1] / 65535.0f * 100.0f,
+							  colorComponents[2] / 65535.0f * 100.0f);
 		break;
 	}
 	case adobe::ColorSpace::CMYK: {

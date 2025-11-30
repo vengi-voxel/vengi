@@ -88,7 +88,7 @@ app::AppState TestApp::onInit() {
 	camera().setWorldPosition(glm::vec3(0.0f, 50.0f, 100.0f));
 	camera().lookAt(glm::vec3(0.0f));
 
-	video::clearColor(::color::Color::Black());
+	video::clearColor(::color::Black());
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);

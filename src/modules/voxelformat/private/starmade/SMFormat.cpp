@@ -213,7 +213,7 @@ size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 				continue;
 			}
 			const color::RGBA emit = BLOCKEMITCOLOR[j].color;
-			const float factor = color::Color::getDistance(emit, rgba, color::Color::Distance::HSB);
+			const float factor = color::getDistance(emit, rgba, color::Distance::HSB);
 			palette.setEmit(index, 1.0f - factor);
 		}
 	}

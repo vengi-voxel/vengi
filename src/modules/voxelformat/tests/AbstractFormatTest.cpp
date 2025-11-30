@@ -176,8 +176,8 @@ void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core
 
 void AbstractFormatTest::checkColor(color::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
 	const color::RGBA c2 = palette.color(index);
-	const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
-	ASSERT_LE(delta, maxDelta) << "color1[" << color::Color::print(c1) << "], color2[" << color::Color::print(c2)
+	const float delta = color::getDistance(c1, c2, color::Distance::HSB);
+	ASSERT_LE(delta, maxDelta) << "color1[" << color::print(c1) << "], color2[" << color::print(c2)
 							   << "], delta[" << delta << "]";
 }
 
@@ -226,8 +226,8 @@ void AbstractFormatTest::testLoadScreenshot(const core::String &filename, int wi
 	ASSERT_EQ(image->width(), width) << image::print(image);
 	ASSERT_EQ(image->height(), height) << image::print(image);
 	const color::RGBA color = image->colorAt(expectedX, expectedY);
-	ASSERT_EQ(color, expectedColor) << "expected " << color::Color::print(expectedColor) << " but got "
-									<< color::Color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
+	ASSERT_EQ(color, expectedColor) << "expected " << color::print(expectedColor) << " but got "
+									<< color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
 									<< image::print(image);
 }
 

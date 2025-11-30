@@ -4,6 +4,7 @@
 
 #include "ColorPalette.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/Log.h"
 #include "image/Image.h"
 #include "palette/RGBABuffer.h"
@@ -174,7 +175,7 @@ core::String ColorPalette::print(const ColorPalette &palette, bool colorAsHex) {
 			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
 			line = "";
 		}
-		const core::String c = color::Color::print(palette.color(i), colorAsHex);
+		const core::String c = color::print(palette.color(i), colorAsHex);
 		line += c;
 	}
 	if (!line.empty()) {

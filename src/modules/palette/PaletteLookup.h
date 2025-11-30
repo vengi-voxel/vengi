@@ -38,13 +38,13 @@ public:
 	/**
 	 * @brief Find the closed index in the currently in-use palette for the given color
 	 * @param color Normalized color value [0.0-1.0]
-	 * @sa color::Color::getClosestMatch()
+	 * @sa color::getClosestMatch()
 	 */
 	uint8_t findClosestIndex(const glm::vec4 &color);
 
 	/**
 	 * @brief Find the closed index in the currently in-use palette for the given color
-	 * @sa color::Color::getClosestMatch()
+	 * @sa color::getClosestMatch()
 	 */
 	uint8_t findClosestIndex(color::RGBA rgba);
 };

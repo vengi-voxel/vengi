@@ -3,7 +3,6 @@
  */
 
 #include "PaintNetPalette.h"
-#include "color/Color.h"
 #include "engine-config.h"
 
 namespace palette {
@@ -19,7 +18,7 @@ bool PaintNetPalette::load(const core::String &filename, io::SeekableReadStream 
 			}
 			continue;
 		}
-		color::RGBA argb = color::Color::fromHex(line);
+		color::RGBA argb = color::fromHex(line);
 		if (argb.r == 0) {
 			continue;
 		}

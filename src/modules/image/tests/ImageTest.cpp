@@ -35,8 +35,8 @@ protected:
 			for (int y = 0; y < h; ++y) {
 				const color::RGBA c = image->colorAt(x, y);
 				if (c != data[y * w + x]) {
-					Log::error("Color mismatch at %i, %i: %s vs %s", x, y, color::Color::print(c).c_str(),
-							   color::Color::print(data[y * w + x]).c_str());
+					Log::error("Color mismatch at %i, %i: %s vs %s", x, y, color::print(c).c_str(),
+							   color::print(data[y * w + x]).c_str());
 					return false;
 				}
 			}

@@ -534,7 +534,7 @@ bool SceneGraphNode::setProperty(const core::String& key, uint32_t value) {
 }
 
 bool SceneGraphNode::setProperty(const core::String& key, color::RGBA value) {
-	return setProperty(key, color::Color::toHex(value, true));
+	return setProperty(key, color::toHex(value, true));
 }
 
 bool SceneGraphNode::setProperty(const core::String &key, const core::String &value) {

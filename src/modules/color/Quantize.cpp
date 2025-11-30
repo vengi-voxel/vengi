@@ -3,6 +3,7 @@
  */
 
 #include "Quantize.h"
+#include "color/ColorUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/Pair.h"
@@ -238,7 +239,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dis(0, (int)inputBufColors - 1);
 	for (int i = 0; i < (int)maxTargetBufColors; i++) {
-		centers.emplace_back(color::Color::fromRGBA(inputBuf[dis(gen)]));
+		centers.emplace_back(color::fromRGBA(inputBuf[dis(gen)]));
 	}
 
 	bool changed = true;
@@ -246,7 +247,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 		changed = false;
 		core::DynamicArray<core::Buffer<glm::vec4>> clusters(maxTargetBufColors);
 		for (size_t i = 0; i < inputBufColors; ++i) {
-			const glm::vec4 point = color::Color::fromRGBA(inputBuf[i]);
+			const glm::vec4 point = color::fromRGBA(inputBuf[i]);
 			int closest = 0;
 			float closestDistance = getDistance(point, centers[0]);
 			for (int n = 1; n < (int)maxTargetBufColors; n++) {
@@ -276,7 +277,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 
 	size_t n = 0;
 	for (const glm::vec4 &c : centers) {
-		targetBuf[n++] = color::Color::getRGBA(c);
+		targetBuf[n++] = color::getRGBA(c);
 	}
 	for (size_t i = n; i < maxTargetBufColors; ++i) {
 		targetBuf[i] = RGBA(0xFFFFFFFFU);
@@ -522,6 +523,8 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 					box2.pixels.push_back(pixel);
 				}
 			}
+			break;
+		default:
 			break;
 		}
 

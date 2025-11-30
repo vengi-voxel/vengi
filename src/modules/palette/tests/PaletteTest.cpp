@@ -30,9 +30,9 @@ protected:
 			const color::RGBA &c1 = pal1.color(i);
 			const color::RGBA &c2 = pal2.color(i);
 			if (c1 != c2) {
-				const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
-				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::Color::print(c1)
-										   << "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]"
+				const float delta = color::getDistance(c1, c2, color::Distance::HSB);
+				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::print(c1)
+										   << "], color2[" << color::print(c2) << "], delta[" << delta << "]"
 										   << "\nPalette 1:\n"
 										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
 										   << palette::Palette::print(pal2);
@@ -162,14 +162,14 @@ TEST_F(PaletteTest, testReduce) {
 TEST_F(PaletteTest, testFindReplacement) {
 	Palette pal;
 	pal.nippon();
-	const int r1 = pal.findReplacement(0, color::Color::Distance::Approximation);
-	const int r2 = pal.findReplacement(0, color::Color::Distance::HSB);
+	const int r1 = pal.findReplacement(0, color::Distance::Approximation);
+	const int r2 = pal.findReplacement(0, color::Distance::HSB);
 	EXPECT_NE(r1, 0);
 	EXPECT_NE(r2, 0);
-	const float delta = color::Color::getDistance(pal.color(r1), pal.color(r2), color::Color::Distance::HSB);
-	EXPECT_LT(delta, 0.025f) << "The replacement for the first color " << color::Color::print(pal.color(0))
-							 << " should be similar for both distance methods " << color::Color::print(pal.color(r1))
-							 << " vs " << color::Color::print(pal.color(r2));
+	const float delta = color::getDistance(pal.color(r1), pal.color(r2), color::Distance::HSB);
+	EXPECT_LT(delta, 0.025f) << "The replacement for the first color " << color::print(pal.color(0))
+							 << " should be similar for both distance methods " << color::print(pal.color(r1))
+							 << " vs " << color::print(pal.color(r2));
 }
 
 TEST_F(PaletteTest, testSaveBuiltInPalette) {

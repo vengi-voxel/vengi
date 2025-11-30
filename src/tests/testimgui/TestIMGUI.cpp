@@ -56,7 +56,7 @@ app::AppState TestIMGUI::onInit() {
 	_logLevelVar->setVal((int)Log::Level::Debug);
 	Log::init();
 
-	video::clearColor(::color::Color::Black());
+	video::clearColor(::color::Black());
 	//video::enableDebug(video::DebugSeverity::Medium);
 	return state;
 }

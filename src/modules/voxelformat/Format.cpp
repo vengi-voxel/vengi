@@ -82,7 +82,7 @@ image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::Sce
 			frontFace = dir.z > 0.0f ? voxel::FaceNames::NegativeZ : voxel::FaceNames::PositiveZ;
 		}
 	}
-	const color::RGBA background = color::Color::getRGBA(ctx.clearColor);
+	const color::RGBA background = color::getRGBA(ctx.clearColor);
 	const int imgW = ctx.outputSize.x;
 	const int imgH = ctx.outputSize.y;
 	return voxelutil::renderToImage(v, merged.palette, frontFace, background, imgW, imgH, true, ctx.depthFactor2D);
@@ -296,7 +296,7 @@ static void palettesRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::
 				Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
 							"them. We need to find a replacement for %i",
 							palette::PaletteMaxColors, emptyIndex);
-				uint8_t replacement = palette.findReplacement(emptyIndex, color::Color::Distance::HSB);
+				uint8_t replacement = palette.findReplacement(emptyIndex, color::Distance::HSB);
 				Log::debug("Looking for a similar color in the palette: %d", replacement);
 				if (replacement != emptyIndex) {
 					Log::debug("Replace %i with %i", emptyIndex, replacement);
@@ -334,11 +334,11 @@ Format::Format() {
 }
 
 color::RGBA Format::flattenRGB(color::RGBA rgba) const {
-	return color::Color::flattenRGB(rgba.r, rgba.g, rgba.b, rgba.a, _flattenFactor);
+	return color::flattenRGB(rgba.r, rgba.g, rgba.b, rgba.a, _flattenFactor);
 }
 
 color::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const {
-	return color::Color::flattenRGB(r, g, b, a, _flattenFactor);
+	return color::flattenRGB(r, g, b, a, _flattenFactor);
 }
 
 int Format::createPalette(const palette::RGBABuffer &colors, palette::Palette &palette) const {

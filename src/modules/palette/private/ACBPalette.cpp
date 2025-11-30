@@ -211,7 +211,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			float L = lab[0] / 2.55f;
 			float a = lab[1] / 2.55f - 128.0f;
 			float b = lab[2] / 2.55f - 128.0f;
-			colors.add(color::Color::fromCIELab(glm::vec4(L, a, b, 1.0f)), colorName);
+			colors.add(color::fromCIELab(glm::vec4(L, a, b, 1.0f)), colorName);
 		} else {
 			// TODO: PALETTE: support grayscale...
 			Log::error("Unsupported color space %d", colorSpace);

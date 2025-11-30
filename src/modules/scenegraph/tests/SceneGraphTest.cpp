@@ -98,7 +98,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 	for (int i = 0; i < pal.colorCount(); ++i) {
 		const color::RGBA c1 = palette.color(i);
 		const color::RGBA c2 = pal.color(i);
-		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::Color::print(c1, true) << " != " << color::Color::print(c2, true);
+		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::print(c1, true) << " != " << color::print(c2, true);
 	}
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
@@ -159,7 +159,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 	for (int i = 0; i < pal.colorCount(); ++i) {
 		const color::RGBA c1 = palette.color(i);
 		const color::RGBA c2 = pal.color(i);
-		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::Color::print(c1, true) << " != " << color::Color::print(c2, true);
+		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::print(c1, true) << " != " << color::print(c2, true);
 	}
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }

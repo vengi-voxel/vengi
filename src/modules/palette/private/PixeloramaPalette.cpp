@@ -32,7 +32,7 @@ bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStrea
 		if (SDL_sscanf(colorString.c_str(), "(%f, %f, %f, %f)", &c.r, &c.g, &c.b, &c.a) != 4) {
 			Log::warn("Unexpected color format: '%s'", colorString.c_str());
 		}
-		palette.setColor(idx, color::Color::getRGBA(c));
+		palette.setColor(idx, color::getRGBA(c));
 		maxIdx = core_max(idx, maxIdx);
 	}
 	if (json.contains("comment")) {
@@ -48,7 +48,7 @@ bool PixeloramaPalette::save(const palette::ColorPalette &palette, const core::S
 	stream.writeString("{\n \"colors\": [\n", false);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const color::RGBA &rgba = palette.color(i);
-		const glm::vec4 &color = color::Color::fromRGBA(rgba);
+		const glm::vec4 &color = color::fromRGBA(rgba);
 		stream.writeStringFormat(false, "  {\n   \"color\": \"(%f, %f, %f, %f)\",\n   \"index\": %d\n  }", color.r,
 								 color.g, color.b, color.a, i);
 		if (i + 1 < palette.colorCount()) {

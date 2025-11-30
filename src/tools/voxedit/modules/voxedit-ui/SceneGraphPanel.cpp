@@ -158,10 +158,10 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		{ // column 3
 			ImGui::TableNextColumn();
 			color::RGBA color = node.color();
-			glm::vec4 colvec = color::Color::fromRGBA(color);
+			glm::vec4 colvec = color::fromRGBA(color);
 			core::String::formatBuf(idbuf, sizeof(idbuf), _("Color##node-%i"), nodeId);
 			if (ImGui::ColorEdit4(idbuf, glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
-				node.setColor(color::Color::getRGBA(colvec));
+				node.setColor(color::getRGBA(colvec));
 			}
 		}
 		{ // column 4

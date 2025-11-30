@@ -42,9 +42,9 @@ public:
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 * @param[in] color The color of the plane.
 	 */
-	bool plane(const glm::vec3& position, int tesselation = 0, const glm::vec4& color = color::Color::White());
+	bool plane(const glm::vec3& position, int tesselation = 0, const glm::vec4& color = color::White());
 
-	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = color::Color::White());
+	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = color::White());
 };
 
 }

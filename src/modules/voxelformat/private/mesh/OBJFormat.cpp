@@ -171,7 +171,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				pos *= scale;
 				stream->writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 				if (withColor) {
-					const glm::vec4 &color = color::Color::fromRGBA(palette.color(v.colorIndex));
+					const glm::vec4 &color = color::fromRGBA(palette.color(v.colorIndex));
 					stream->writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 				}
 				wrapBool(stream->writeStringFormat(false, "\n"))
@@ -293,7 +293,7 @@ void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &
 			const float r0 = tinyAttrib.colors[3 * idx0.vertex_index + 0];
 			const float g0 = tinyAttrib.colors[3 * idx0.vertex_index + 1];
 			const float b0 = tinyAttrib.colors[3 * idx0.vertex_index + 2];
-			pointCloud[i].color = color::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f));
+			pointCloud[i].color = color::getRGBA(glm::vec4(r0, g0, b0, 1.0f));
 		}
 	}
 }
@@ -335,9 +335,9 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 			const float r2 = tinyAttrib.colors[3 * idx2.vertex_index + 0];
 			const float g2 = tinyAttrib.colors[3 * idx2.vertex_index + 1];
 			const float b2 = tinyAttrib.colors[3 * idx2.vertex_index + 2];
-			meshTri.setColor(color::Color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
-							 color::Color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
-							 color::Color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
+			meshTri.setColor(color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
+							 color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
+							 color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
 		}
 		if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0) {
 			const glm::vec2 &uv0{tinyAttrib.texcoords[2 * idx0.texcoord_index + 0],

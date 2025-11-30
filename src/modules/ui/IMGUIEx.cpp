@@ -9,10 +9,9 @@
 #include "ScopedStyle.h"
 #include "Style.h"
 #include "app/App.h"
+#include "color/ColorUtil.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
-#include "color/Color.h"
-#include "core/StringUtil.h"
 #include "dearimgui/imgui_internal.h"
 #include "io/FormatDescription.h"
 #include "math/Axis.h"
@@ -63,19 +62,19 @@ static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X: {
 		const glm::vec4 &c = style::color(style::ColorAxisX);
-		style.setColor(ImGuiCol_Text, color::Color::contrastTextColor(c));
+		style.setColor(ImGuiCol_Text, color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
 	case math::Axis::Y: {
 		const glm::vec4 &c = style::color(style::ColorAxisY);
-		style.setColor(ImGuiCol_Text, color::Color::contrastTextColor(c));
+		style.setColor(ImGuiCol_Text, color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
 	case math::Axis::Z: {
 		const glm::vec4 &c = style::color(style::ColorAxisZ);
-		style.setColor(ImGuiCol_Text, color::Color::contrastTextColor(c));
+		style.setColor(ImGuiCol_Text, color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
@@ -628,8 +627,8 @@ bool ToggleButton(const char *label, bool state) {
 	if (state) {
 		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-		ImGui::PushStyleColor(ImGuiCol_Button, color::Color::brighter(buttonColor));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::Color::brighter(buttonHoveredColor));
+		ImGui::PushStyleColor(ImGuiCol_Button, color::brighter(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::brighter(buttonHoveredColor));
 	}
 	const bool pressed = ImGui::Button(label);
 	if (state) {
@@ -642,8 +641,8 @@ bool DisabledButton(const char *label, bool disabled, const ImVec2 &size) {
 	if (disabled) {
 		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-		ImGui::PushStyleColor(ImGuiCol_Button, color::Color::gray(buttonColor));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::Color::gray(buttonHoveredColor));
+		ImGui::PushStyleColor(ImGuiCol_Button, color::gray(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 	}
 	const bool pressed = ImGui::Button(label, size);

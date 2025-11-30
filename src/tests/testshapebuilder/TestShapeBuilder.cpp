@@ -19,7 +19,7 @@
 #include <glm/gtx/euler_angles.hpp>
 
 TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
-	: Super(filesystem, timeProvider), _color(color::Color::DarkGreen()) {
+	: Super(filesystem, timeProvider), _color(color::DarkGreen()) {
 	init(ORGANISATION, "testshapebuilder");
 	setCameraMotion(false);
 	setRenderPlane(true, glm::vec4(1.0f, 1.0f, 1.0f, 0.8f));
@@ -44,7 +44,7 @@ app::AppState TestShapeBuilder::onInit() {
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setPosition(glm::vec3(0.0f));
-	_shapeBuilder.setColor(color::Color::Red());
+	_shapeBuilder.setColor(color::Red());
 	_shapeBuilder.cube(glm::vec3(-0.5f), glm::vec3(0.5f));
 	_meshUnitCube = _shapeRenderer.create(_shapeBuilder);
 	_shapeBuilder.clear();

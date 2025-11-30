@@ -767,7 +767,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 		}
 		if (_state[idx]._dirtyNormals) {
 			_shapeBuilder.clear();
-			_shapeBuilder.setColor(color::Color::Red());
+			_shapeBuilder.setColor(color::Red());
 			if (const voxel::RawVolume *v = meshState->volume(idx)) {
 				if (v->region().voxels() < 128 * 128 * 128) {
 					const int n = v->region().stride();

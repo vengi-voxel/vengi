@@ -195,7 +195,7 @@ static color::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, cons
 		} else {
 			color.a = 1.0f;
 		}
-		return color::Color::getRGBA(color);
+		return color::getRGBA(color);
 	} else if (gltfAttributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 		io::MemoryReadStream colorStream(buf, hasAlpha ? 4 * sizeof(float) : 3 * sizeof(float));
 		color::RGBA color;
@@ -451,7 +451,7 @@ uint32_t GLTFFormat::writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::Seeka
 		} else if (withColor) {
 			const color::RGBA paletteColor = palette.color(vertices[i].colorIndex);
 			if (colorAsFloat) {
-				const glm::vec4 &color = color::Color::fromRGBA(paletteColor);
+				const glm::vec4 &color = color::fromRGBA(paletteColor);
 				for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
 					os.writeFloat(color[colorIdx]);
 				}
@@ -638,7 +638,7 @@ void GLTFFormat::save_KHR_materials_volume(const palette::Material &material, co
 	}
 	const float attenuation = material.value(palette::MaterialProperty::MaterialAttenuation);
 	tinygltf::Value::Object sg;
-	const glm::vec4 &fcolor = color::Color::fromRGBA(color);
+	const glm::vec4 &fcolor = color::fromRGBA(color);
 	std::vector<tinygltf::Value> attenuationColor(3);
 	attenuationColor[0] = tinygltf::Value(fcolor[0] * attenuation);
 	attenuationColor[1] = tinygltf::Value(fcolor[1] * attenuation);
@@ -668,7 +668,7 @@ void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, 
 	}
 	const float specular = material.value(palette::MaterialProperty::MaterialSpecular);
 	tinygltf::Value::Object sg;
-	const glm::vec4 &fcolor = color::Color::fromRGBA(color);
+	const glm::vec4 &fcolor = color::fromRGBA(color);
 	std::vector<tinygltf::Value> specularFactor(3);
 	specularFactor[0] = tinygltf::Value(fcolor[0] * specular);
 	specularFactor[1] = tinygltf::Value(fcolor[1] * specular);
@@ -686,7 +686,7 @@ bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 		return false;
 	}
 	tinygltf::Value::Object sg;
-	const glm::vec4 &fcolor = color::Color::fromRGBA(color);
+	const glm::vec4 &fcolor = color::fromRGBA(color);
 
 	// The reflected diffuse factor of the material
 	if (material.has(palette::MaterialProperty::MaterialDensity)) {
@@ -1534,7 +1534,7 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr
 							 gltfMaterial.pbrMetallicRoughness.metallicFactor);
 	// TODO: MATERIAL: load baseColor
 	// const glm::vec4 color = glm::make_vec4(&gltfMaterial.pbrMetallicRoughness.baseColorFactor[0]);
-	// meshMaterial->baseColor = color::Color::getRGBA(color);
+	// meshMaterial->baseColor = color::getRGBA(color);
 	// meshMaterial->baseColorFactor = gltfMaterial.pbrMetallicRoughness.baseColorFactor[0];
 	// TODO: MATERIAL: load emissiveTexture
 	// TODO: MATERIAL: maybe load it as average - there is no 1:1 mapping here

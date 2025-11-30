@@ -423,57 +423,57 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	switch (color) {
 	case style::ColorAxisX:
 		if (style == ImGui::StyleLight) {
-			return color::Color::LightRed();
+			return color::LightRed();
 		}
-		return color::Color::DarkRed();
+		return color::DarkRed();
 	case style::ColorAxisY:
 		if (style == ImGui::StyleLight) {
-			return color::Color::LightGreen();
+			return color::LightGreen();
 		}
-		return color::Color::DarkGreen();
+		return color::DarkGreen();
 	case style::ColorAxisZ:
 		if (style == ImGui::StyleLight) {
-			return color::Color::LightBlue();
+			return color::LightBlue();
 		}
-		return color::Color::DarkBlue();
+		return color::DarkBlue();
 	case style::ColorLockedNode:
-		return color::Color::Red();
+		return color::Red();
 	case style::ColorInactiveNode:
-		return color::Color::Gray();
+		return color::Gray();
 	case style::ColorSliceRegion:
 	case style::ColorGridBorder:
 		if (style == ImGui::StyleLight) {
-			return color::Color::DarkGray();
+			return color::DarkGray();
 		}
-		return color::Color::White();
+		return color::White();
 	case style::ColorReferenceNode:
-		return color::Color::LightGreen();
+		return color::LightGreen();
 	case style::ColorHighlightArea: {
-		static const glm::vec4 c = color::Color::alpha(color::Color::Green(), 0.2f);
+		static const glm::vec4 c = color::alpha(color::Green(), 0.2f);
 		return c;
 	}
 	case style::ColorUVEditor: {
 		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
-			return color::Color::DarkRed();
+			return color::DarkRed();
 		}
-		return color::Color::LightRed();
+		return color::LightRed();
 	}
 	case style::ColorGroupNode:
-		return color::Color::LightYellow();
+		return color::LightYellow();
 	case style::ColorActiveNode:
 		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
-			return color::Color::DarkGreen();
+			return color::DarkGreen();
 		}
-		return color::Color::White();
+		return color::White();
 	case style::ColorBone:
-		return color::Color::LightGray();
+		return color::LightGray();
 	case style::ColorActiveBrush:
 		if (style == ImGui::StyleLight) {
-			return color::Color::Green();
+			return color::Green();
 		}
-		return color::Color::DarkGreen();
+		return color::DarkGreen();
 	}
-	return color::Color::White();
+	return color::White();
 }
 
 void IMGUIApp::beforeUI() {
@@ -528,7 +528,7 @@ void IMGUIApp::renderBindingsDialog() {
 				ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
 				ImGui::TableNextColumn();
 				if (!cmd) {
-					ImGui::TextColored(color::Color::Red(), _("Failed to get command for %s"), command.c_str());
+					ImGui::TextColored(color::Red(), _("Failed to get command for %s"), command.c_str());
 				} else {
 					ImGui::TextUnformatted(cmd->help().c_str());
 				}

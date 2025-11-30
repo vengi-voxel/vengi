@@ -4,6 +4,7 @@
 
 #include "Image.h"
 #include "app/App.h"
+#include "color/ColorUtil.h"
 #include "core/Assert.h"
 #include "color/Color.h"
 #include "core/Log.h"
@@ -502,7 +503,7 @@ core::String print(const image::ImagePtr &image, bool limited) {
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
 			const color::RGBA color = image->colorAt(x, y);
-			str.append(color::Color::print(color, false));
+			str.append(color::print(color, false));
 		}
 		str.append("\n");
 	}

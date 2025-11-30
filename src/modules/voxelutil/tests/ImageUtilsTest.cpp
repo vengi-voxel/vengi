@@ -28,9 +28,9 @@ protected:
 		const color::RGBA expectedColor = image->colorAt(x, y);
 		const voxel::Voxel &voxel = volume.voxel(x, y, 0);
 		const color::RGBA actualColor = palette.color(voxel.getColor());
-		EXPECT_LT(color::Color::getDistance(expectedColor, actualColor, color::Color::Distance::HSB), 0.04f)
-			<< "Expected color: " << color::Color::print(expectedColor)
-			<< ", but got: " << color::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
+		EXPECT_LT(color::getDistance(expectedColor, actualColor, color::Distance::HSB), 0.04f)
+			<< "Expected color: " << color::print(expectedColor)
+			<< ", but got: " << color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
 	}
 
 	void validateHeightmap(voxel::Voxel underground) {
@@ -63,9 +63,9 @@ protected:
 				const int expectedY = getHeightValueFromAlpha(expectedColor.a, true, volumeHeight, minHeight) - 1;
 				const voxel::Voxel &voxel = volume.voxel(x, expectedY, z);
 				const color::RGBA actualColor = palette.color(voxel.getColor());
-				ASSERT_LT(color::Color::getDistance(expectedColor, actualColor, color::Color::Distance::HSB), 0.04f)
-					<< "Expected color: " << color::Color::print(expectedColor)
-					<< ", but got: " << color::Color::print(actualColor) << " for voxel at (" << x << ", " << expectedY
+				ASSERT_LT(color::getDistance(expectedColor, actualColor, color::Distance::HSB), 0.04f)
+					<< "Expected color: " << color::print(expectedColor)
+					<< ", but got: " << color::print(actualColor) << " for voxel at (" << x << ", " << expectedY
 					<< ", " << z << ") with height alpha value " << (int)expectedColor.a << " and min height "
 					<< minHeight << " and height in voxels " << volumeHeight;
 				if (expectedY > 0) {
@@ -230,9 +230,9 @@ TEST_F(ImageUtilsTest, testRenderToImage) {
 			}
 			const color::RGBA expectedColor = palette.color(voxel.getColor());
 			const color::RGBA actualColor = img->colorAt(x, y);
-			ASSERT_LT(color::Color::getDistance(expectedColor, actualColor, color::Color::Distance::HSB), 0.04f)
-				<< "Expected color: " << color::Color::print(expectedColor)
-				<< ", but got: " << color::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ") "
+			ASSERT_LT(color::getDistance(expectedColor, actualColor, color::Distance::HSB), 0.04f)
+				<< "Expected color: " << color::print(expectedColor)
+				<< ", but got: " << color::print(actualColor) << " for voxel at (" << x << ", " << y << ") "
 				<< image::print(img);
 			++pixelCount;
 		}

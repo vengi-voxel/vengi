@@ -364,7 +364,7 @@ Objects: {
 				for (int j = 0; j < ni; j++) {
 					const uint32_t index = indices[j];
 					const voxel::VoxelVertex &v = vertices[index];
-					const glm::vec4 &color = color::Color::fromRGBA(palette.color(v.colorIndex));
+					const glm::vec4 &color = color::fromRGBA(palette.color(v.colorIndex));
 					if (j > 0) {
 						wrapBool(stream.writeString(",", false))
 					}
@@ -567,7 +567,7 @@ static color::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
 	} else if (materialMap.value_components == 4) {
 		color = _ufbx_to_vec4(materialMap.value_vec4);
 	}
-	return color::Color::getRGBA(color);
+	return color::getRGBA(color);
 }
 
 } // namespace priv
@@ -740,9 +740,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx1);
 					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx2);
 					// TODO: VOXELFORMAT: this is sRGB - need to convert to linear
-					meshTri.setColor(color::Color::getRGBA(priv::_ufbx_to_vec4(color0)),
-									 color::Color::getRGBA(priv::_ufbx_to_vec4(color1)),
-									 color::Color::getRGBA(priv::_ufbx_to_vec4(color2)));
+					meshTri.setColor(color::getRGBA(priv::_ufbx_to_vec4(color0)),
+									 color::getRGBA(priv::_ufbx_to_vec4(color1)),
+									 color::getRGBA(priv::_ufbx_to_vec4(color2)));
 				}
 				if (useUVs) {
 					const ufbx_vec2 &uv0 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx0);

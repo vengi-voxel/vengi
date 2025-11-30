@@ -101,7 +101,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			return false;
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
-		palette.setColor(i, color::Color::getRGBA(color));
+		palette.setColor(i, color::getRGBA(color));
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -148,7 +148,7 @@ bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	stream->writeStringFormat(false, "%i\n", palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const color::RGBA c = palette.color(i);
-		const glm::vec4 &cv = color::Color::fromRGBA(c);
+		const glm::vec4 &cv = color::fromRGBA(c);
 		stream->writeStringFormat(false, "%f %f %f\n", cv.r, cv.g, cv.b);
 	}
 

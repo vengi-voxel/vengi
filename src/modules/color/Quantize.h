@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "color/Color.h"
+#include "color/RGBA.h"
 #include <stddef.h>
 
 namespace color {
 
-enum class ColorReductionType {
+enum class ColorReductionType : uint8_t {
 	Octree,
 	Wu,
 	MedianCut,

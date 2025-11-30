@@ -46,7 +46,7 @@ static core::String resolveParent(const scenegraph::SceneGraph &sceneGraph, cons
 
 // https://docs.godotengine.org/de/4.x/classes/class_color.html
 static core::String createColor(const color::RGBA &color) {
-	const glm::vec4 &colorf = color::Color::fromRGBA(color);
+	const glm::vec4 &colorf = color::fromRGBA(color);
 	return core::String::format("Color(%f, %f, %f, %f)", colorf.r, colorf.g, colorf.b, colorf.a);
 }
 

@@ -3,6 +3,7 @@
  */
 
 #include "CameraFrustum.h"
+#include "color/ColorUtil.h"
 #include "core/Trace.h"
 #include "video/Renderer.h"
 #include "math/AABB.h"
@@ -39,7 +40,7 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 	if (_renderAABB) {
 		const math::AABB<float>& aabb = frustumCamera.aabb();
 		_shapeBuilder.clear();
-		_shapeBuilder.setColor(color::Color::brighter(_color));
+		_shapeBuilder.setColor(color::brighter(_color));
 		_shapeBuilder.aabb(aabb);
 		_shapeRenderer.createOrUpdate(_aabbMesh, _shapeBuilder);
 	} else if (_aabbMesh >= 0) {

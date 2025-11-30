@@ -40,7 +40,7 @@ static bool loadMetadataJson(const nlohmann::json &json, Metadata &metadata) {
 						return false;
 					}
 					const std::string &rgba = paletteColorJson["rgba"];
-					color::RGBA colorRGBA = color::Color::fromHex(rgba.c_str());
+					color::RGBA colorRGBA = color::fromHex(rgba.c_str());
 					palette.setColor(idx, colorRGBA);
 					++idx;
 				}
@@ -192,7 +192,7 @@ static bool writeMetadataJson(nlohmann::json &json, const scenegraph::SceneGraph
 		for (int i = 0; i < (int)palette.size(); ++i) {
 			const color::RGBA &color = palette.color(i);
 			nlohmann::json &colorJson = colorsJson[i];
-			colorJson["rgba"] = color::Color::toHex(color);
+			colorJson["rgba"] = color::toHex(color);
 		}
 	}
 

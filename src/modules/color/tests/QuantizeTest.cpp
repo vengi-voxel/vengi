@@ -3,7 +3,7 @@
  */
 
 #include "color/Quantize.h"
-#include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "color/RGBA.h"
 #include "core/ArrayLength.h"
 #include "core/Endian.h"
@@ -21,7 +21,7 @@ inline std::ostream &operator<<(::std::ostream &os, const core::BufferView<RGBA>
 			palStr.append(core::String::format("%03i %s\n", (int)i - 16, line.c_str()));
 			line = "";
 		}
-		const core::String c = color::Color::print(dt[i], false);
+		const core::String c = color::print(dt[i], false);
 		line += c;
 	}
 	if (!line.empty()) {

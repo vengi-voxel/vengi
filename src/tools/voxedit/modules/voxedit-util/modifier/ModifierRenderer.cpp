@@ -45,7 +45,7 @@ bool ModifierRenderer::init() {
 	}
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(color::Color::alpha(color::Color::SteelBlue(), 0.8f));
+	_shapeBuilder.setColor(color::alpha(color::SteelBlue(), 0.8f));
 	_shapeBuilder.sphere(8, 6, 0.5f);
 	_shapeRenderer.createOrUpdate(_referencePointMesh, _shapeBuilder);
 
@@ -118,14 +118,14 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 	case voxel::FaceNames::Max:
 		return;
 	}
-	_shapeBuilder.setColor(color::Color::alpha(color::Color::Red(), 0.6f));
+	_shapeBuilder.setColor(color::alpha(color::Red(), 0.6f));
 	_shapeBuilder.cube(glm::vec3(0.0f), glm::vec3(1.0f), flags);
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
 void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(color::Color::Yellow());
+	_shapeBuilder.setColor(color::Yellow());
 	for (const Selection &selection : selections) {
 		if (!selection.isValid()) {
 			continue;
@@ -153,7 +153,7 @@ void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, pale
 void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color) {
 	core_assert(idx >= 0 && idx < lengthof(_aabbMeshes));
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(color::Color::fromRGBA(color));
+	_shapeBuilder.setColor(color::fromRGBA(color));
 	_shapeBuilder.cube(region.getLowerCorner(), region.getUpperCorner() + glm::one<glm::ivec3>());
 	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
 }
@@ -207,7 +207,7 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirr
 		return;
 	}
 
-	const glm::vec4 color = color::Color::alpha(color::Color::LightGray(), 0.3f);
+	const glm::vec4 color = color::alpha(color::LightGray(), 0.3f);
 	updateShapeBuilderForPlane(_shapeBuilder, region, true, mirrorPos, axis, color);
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }

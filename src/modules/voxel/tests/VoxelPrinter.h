@@ -56,7 +56,7 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &vo
 					os << ".";
 				} else {
 					const color::RGBA rgba = palette.color(voxel.getColor());
-					os << color::Color::print(rgba, false).c_str();
+					os << color::print(rgba, false).c_str();
 				}
 			}
 			os << std::endl;

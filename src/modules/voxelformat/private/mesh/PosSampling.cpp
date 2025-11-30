@@ -3,7 +3,7 @@
  */
 
 #include "PosSampling.h"
-#include "color/Color.h"
+#include "color/ColorUtil.h"
 
 namespace voxelformat {
 
@@ -100,7 +100,7 @@ bool PosSampling::add(uint32_t area, color::RGBA color, uint8_t normal, MeshMate
 
 color::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
 	if (entries[1].area == 0) {
-		return color::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
+		return color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
 									   flattenFactor);
 	}
 	if (weightedAverage) {
@@ -118,7 +118,7 @@ color::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) c
 			}
 			color = color::RGBA::mix(color, pe.color, (float)pe.area / (float)sumArea);
 		}
-		return color::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
+		return color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 	}
 	color::RGBA color(0, 0, 0, AlphaThreshold);
 	uint32_t area = 0;
@@ -131,7 +131,7 @@ color::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) c
 			color = pe.color;
 		}
 	}
-	return color::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
+	return color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 }
 
 } // namespace voxelformat

@@ -4,6 +4,7 @@
 
 #include "Tri.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include <glm/ext/scalar_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
@@ -23,7 +24,7 @@ bool Tri::flat() const {
 }
 
 void Tri::setColor(const glm::vec4 &c) {
-	setColor(color::Color::getRGBA(c));
+	setColor(color::getRGBA(c));
 }
 
 glm::vec3 Tri::normal() const {

@@ -129,9 +129,9 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 
 void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, color::RGBA c1, color::RGBA c2, uint8_t palIdx, float maxDelta) {
 	if (c1 != c2) {
-		const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
-		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << (int)palIdx << ", color1[" << color::Color::print(c1)
-									<< "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]"
+		const float delta = color::getDistance(c1, c2, color::Distance::HSB);
+		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << (int)palIdx << ", color1[" << color::print(c1)
+									<< "], color2[" << color::print(c2) << "], delta[" << delta << "]"
 									<< "\nPalette 1:\n"
 									<< palette::Palette::print(pal1) << "\nPalette 2:\n"
 									<< palette::Palette::print(pal2);
@@ -139,21 +139,21 @@ void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2,
 }
 
 void colorComparator(color::RGBA c1, color::RGBA c2, int maxDelta) {
-	EXPECT_NEAR(c1.r, c2.r, maxDelta) << "color1[" << color::Color::print(c1)
-									<< "], color2[" << color::Color::print(c2) << "]";
-	EXPECT_NEAR(c1.g, c2.g, maxDelta) << "color1[" << color::Color::print(c1)
-									<< "], color2[" << color::Color::print(c2) << "]";
-	EXPECT_NEAR(c1.b, c2.b, maxDelta) << "color1[" << color::Color::print(c1)
-									<< "], color2[" << color::Color::print(c2) << "]";
-	EXPECT_NEAR(c1.a, c2.a, maxDelta) << "color1[" << color::Color::print(c1)
-									<< "], color2[" << color::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.r, c2.r, maxDelta) << "color1[" << color::print(c1)
+									<< "], color2[" << color::print(c2) << "]";
+	EXPECT_NEAR(c1.g, c2.g, maxDelta) << "color1[" << color::print(c1)
+									<< "], color2[" << color::print(c2) << "]";
+	EXPECT_NEAR(c1.b, c2.b, maxDelta) << "color1[" << color::print(c1)
+									<< "], color2[" << color::print(c2) << "]";
+	EXPECT_NEAR(c1.a, c2.a, maxDelta) << "color1[" << color::print(c1)
+									<< "], color2[" << color::print(c2) << "]";
 }
 
 void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta) {
 	if (c1 != c2) {
-		const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
-		ASSERT_LT(delta, maxDelta) << "Color differ: color1[" << color::Color::print(c1)
-									<< "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]";
+		const float delta = color::getDistance(c1, c2, color::Distance::HSB);
+		ASSERT_LT(delta, maxDelta) << "Color differ: color1[" << color::print(c1)
+									<< "], color2[" << color::print(c2) << "], delta[" << delta << "]";
 	}
 }
 
@@ -187,7 +187,7 @@ void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette
 			}
 		}
 
-		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << color::Color::print(c1)
+		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << color::print(c1)
 						   << "] wasn't found in second palette 2:\n"
 						   << palette::Palette::print(pal2);
 	}
@@ -205,9 +205,9 @@ void partialPaletteComparator(const palette::Palette &pal1, const palette::Palet
 				EXPECT_NEAR(c1.b, c2.b, (int)maxDelta);
 				EXPECT_NEAR(c1.a, c2.a, (int)maxDelta);
 			} else {
-				const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
-				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::Color::print(c1)
-										<< "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]"
+				const float delta = color::getDistance(c1, c2, color::Distance::HSB);
+				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::print(c1)
+										<< "], color2[" << color::print(c2) << "], delta[" << delta << "]"
 										<< "\nPalette 1:\n"
 										<< palette::Palette::print(pal1) << "\nPalette 2:\n"
 										<< palette::Palette::print(pal2);
@@ -320,8 +320,8 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":" << z2
 					<< " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 					<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
-					<< (int)voxel2.getColor() << "], color1[" << color::Color::print(voxel1.getColor()) << "], color2["
-					<< color::Color::print(voxel2.getColor()) << "]";
+					<< (int)voxel2.getColor() << "], color1[" << color::print(voxel1.getColor()) << "], color2["
+					<< color::print(voxel2.getColor()) << "]";
 				if (voxel::isAir(voxel1.getMaterial())) {
 					continue;
 				}
@@ -339,14 +339,14 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 				const color::RGBA &c1 = pal1.color(voxel1.getColor());
 				const color::RGBA &c2 = pal2.color(voxel2.getColor());
 				if (c1 != c2) {
-					const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
+					const float delta = color::getDistance(c1, c2, color::Distance::HSB);
 					if (pal1.hash() != pal2.hash()) {
 						ASSERT_LT(delta, maxDelta)
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"
 							<< z2 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 							<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
-							<< ", " << (int)voxel2.getColor() << "], color1[" << color::Color::print(c1) << "], color2["
-							<< color::Color::print(c2) << "], delta[" << delta << "]\n"
+							<< ", " << (int)voxel2.getColor() << "], color1[" << color::print(c1) << "], color2["
+							<< color::print(c2) << "], delta[" << delta << "]\n"
 							<< palette::Palette::print(pal1) << "\n"
 							<< palette::Palette::print(pal2);
 					} else {
@@ -354,8 +354,8 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"
 							<< z2 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 							<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
-							<< ", " << (int)voxel2.getColor() << "], color1[" << color::Color::print(c1) << "], color2["
-							<< color::Color::print(c2) << "], delta[" << delta << "]\n";
+							<< ", " << (int)voxel2.getColor() << "], color1[" << color::print(c1) << "], color2["
+							<< color::print(c2) << "], delta[" << delta << "]\n";
 					}
 				}
 			}
