@@ -277,11 +277,11 @@ server-emscripten-%: emscripten-%
 	$(Q)contrib/installer/emscripten/server.py -d build/emscripten/$(subst server-emscripten-,,$@)
 
 find-undocumented-cvars:
-	$(Q)for i in $$(cat ./src/modules/core/ConfigVar.h | grep Voxformat | awk -F '"' '{ print $$2 }'); do \
+	$(Q)for i in $$(cat ./src/modules/core/ConfigVar.h | grep -i Voxformat | awk -F '"' '{ print $$2 }'); do \
 		grep -q $$i docs/Configuration.md; \
 		if [ $$? -ne 0 ]; then echo $$i; fi; \
 	done
-	$(Q)for i in $$(cat ./src/modules/core/ConfigVar.h | grep Palformat | awk -F '"' '{ print $$2 }'); do \
+	$(Q)for i in $$(cat ./src/modules/core/ConfigVar.h | grep -i Palformat | awk -F '"' '{ print $$2 }'); do \
 		grep -q $$i docs/Configuration.md; \
 		if [ $$? -ne 0 ]; then echo $$i; fi; \
 	done
