@@ -225,9 +225,34 @@ void getCIELab(RGBA color, float &L, float &a, float &b) {
 }
 
 RGBA fromCIELab(const glm::vec4 &in) {
-	float x = in.r / 100.0f;
-	float y = (in.g + 16.0f) / 116.0f;
-	float z = in.b / 200.0f;
+	float fy = (in.r + 16.0f) / 116.0f;
+	float fx = in.g / 500.0f + fy;
+	float fz = fy - in.b / 200.0f;
+
+	float x, y, z;
+	const float delta = 6.0f / 29.0f;
+
+	if (fx > delta) {
+		x = fx * fx * fx;
+	} else {
+		x = (fx - 16.0f / 116.0f) / 7.787f;
+	}
+
+	if (fy > delta) {
+		y = fy * fy * fy;
+	} else {
+		y = (fy - 16.0f / 116.0f) / 7.787f;
+	}
+
+	if (fz > delta) {
+		z = fz * fz * fz;
+	} else {
+		z = (fz - 16.0f / 116.0f) / 7.787f;
+	}
+
+	x *= 95.047f / 100.0f;
+	y *= 100.000f / 100.0f;
+	z *= 108.883f / 100.0f;
 
 	float r = x * 3.2406f + y * -1.5372f + z * -0.4986f;
 	float g = x * -0.9689f + y * 1.8758f + z * 0.0415f;
@@ -251,7 +276,9 @@ RGBA fromCIELab(const glm::vec4 &in) {
 		b = 12.92f * b;
 	}
 
-	return RGBA((uint8_t)(r * color::magnitude), (uint8_t)(g * color::magnitude), (uint8_t)(b * color::magnitude),
+	return RGBA((uint8_t)glm::clamp(r * color::magnitude, 0.0f, 255.0f),
+				(uint8_t)glm::clamp(g * color::magnitude, 0.0f, 255.0f),
+				(uint8_t)glm::clamp(b * color::magnitude, 0.0f, 255.0f),
 				255u);
 }
 

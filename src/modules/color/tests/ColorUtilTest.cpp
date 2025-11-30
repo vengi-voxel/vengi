@@ -2,9 +2,9 @@
  * @file
  */
 
-#include "color/Color.h"
-#include "app/tests/AbstractTest.h"
 #include "color/ColorUtil.h"
+#include "app/tests/AbstractTest.h"
+#include "color/Color.h"
 #include "color/RGBA.h"
 #include "core/Endian.h"
 #include "core/collection/BufferView.h"
@@ -49,6 +49,14 @@ TEST_F(ColorUtilTest, testHex) {
 	EXPECT_EQ(color::RGBA(255, 0, 0, 255), color::fromHex("#ff0000ff"));
 }
 
+TEST_F(ColorUtilTest, testToHex) {
+	EXPECT_EQ("#ffffffff", color::toHex(color::RGBA(255, 255, 255, 255), true));
+	EXPECT_EQ("ffffffff", color::toHex(color::RGBA(255, 255, 255, 255), false));
+	EXPECT_EQ("#ff0000ff", color::toHex(color::RGBA(255, 0, 0, 255), true));
+	EXPECT_EQ("#00ff00ff", color::toHex(color::RGBA(0, 255, 0, 255), true));
+	EXPECT_EQ("#0000ffff", color::toHex(color::RGBA(0, 0, 255, 255), true));
+}
+
 TEST_F(ColorUtilTest, testDistanceMin) {
 	const color::RGBA color1(255, 0, 0, 255);
 	const color::RGBA color2(255, 0, 0, 255);
@@ -62,4 +70,94 @@ TEST_F(ColorUtilTest, testDistanceMax) {
 	EXPECT_FLOAT_EQ(0.1f, color::getDistance(color1, color2, color::Distance::HSB));
 	EXPECT_FLOAT_EQ(584970.0f, color::getDistance(color1, color2, color::Distance::Approximation));
 }
+
+TEST_F(ColorUtilTest, testHSB) {
+	float h, s, b;
+	color::getHSB(color::RGBA(255, 0, 0), h, s, b);
+	EXPECT_FLOAT_EQ(0.0f, h);
+	EXPECT_FLOAT_EQ(1.0f, s);
+	EXPECT_FLOAT_EQ(1.0f, b);
+
+	color::getHSB(color::RGBA(0, 255, 0), h, s, b);
+	EXPECT_NEAR(0.333333f, h, 0.0001f);
+	EXPECT_FLOAT_EQ(1.0f, s);
+	EXPECT_FLOAT_EQ(1.0f, b);
+
+	color::getHSB(color::RGBA(0, 0, 255), h, s, b);
+	EXPECT_NEAR(0.666666f, h, 0.0001f);
+	EXPECT_FLOAT_EQ(1.0f, s);
+	EXPECT_FLOAT_EQ(1.0f, b);
+
+	color::RGBA rgba = color::fromHSB(0.0f, 1.0f, 1.0f);
+	EXPECT_EQ(255, rgba.r);
+	EXPECT_EQ(0, rgba.g);
+	EXPECT_EQ(0, rgba.b);
+	EXPECT_EQ(255, rgba.a);
+}
+
+TEST_F(ColorUtilTest, testCIELab) {
+	float l, a, b;
+	color::getCIELab(color::RGBA(255, 0, 0), l, a, b);
+	EXPECT_NEAR(53.2328f, l, 0.01f);
+	EXPECT_NEAR(80.1093f, a, 0.01f);
+	EXPECT_NEAR(67.2200f, b, 0.01f);
+
+	color::RGBA rgba = color::fromCIELab(glm::vec4(l, a, b, 1.0f));
+	EXPECT_NEAR(255, (int)rgba.r, 1);
+	EXPECT_NEAR(0, (int)rgba.g, 1);
+	EXPECT_NEAR(0, (int)rgba.b, 1);
+	EXPECT_EQ(255, rgba.a);
+}
+
+TEST_F(ColorUtilTest, testDeltaE76) {
+	EXPECT_NEAR(0.0, color::deltaE76(color::RGBA(255, 0, 0), color::RGBA(255, 0, 0)), 0.001);
+	EXPECT_NEAR(0.0, color::deltaE76(color::RGBA(0, 255, 0), color::RGBA(0, 255, 0)), 0.001);
+	EXPECT_NEAR(0.0, color::deltaE76(color::RGBA(0, 0, 255), color::RGBA(0, 0, 255)), 0.001);
+	EXPECT_GT(color::deltaE76(color::RGBA(255, 0, 0), color::RGBA(0, 255, 0)), 0.0);
+}
+
+TEST_F(ColorUtilTest, testGray) {
+	glm::vec3 g = color::gray(glm::vec3(1.0f, 0.0f, 0.0f));
+	EXPECT_NEAR(0.21f, g.r, 0.001f);
+	EXPECT_NEAR(0.21f, g.g, 0.001f);
+	EXPECT_NEAR(0.21f, g.b, 0.001f);
+}
+
+TEST_F(ColorUtilTest, testBrightness) {
+	EXPECT_EQ(255, color::brightness(color::RGBA(255, 255, 255)));
+	EXPECT_EQ(0, color::brightness(color::RGBA(0, 0, 0)));
+	EXPECT_EQ(255, color::brightness(color::RGBA(255, 0, 0)));
+}
+
+TEST_F(ColorUtilTest, testDarkerBrighter) {
+	color::RGBA red(255, 0, 0);
+	color::RGBA darkRed = color::darker(red, 0.5f);
+	EXPECT_LT(darkRed.r, red.r);
+	EXPECT_EQ(darkRed.g, red.g);
+	EXPECT_EQ(darkRed.b, red.b);
+
+	color::RGBA brightRed = color::brighter(darkRed, 2.0f); // approximate inverse
+	EXPECT_GT(brightRed.r, darkRed.r);
+}
+
+TEST_F(ColorUtilTest, testFlattenRGB) {
+	color::RGBA c(100, 150, 200, 255);
+	color::RGBA flattened = color::flattenRGB(c.r, c.g, c.b, c.a, 10);
+	EXPECT_EQ(100, flattened.r);
+	EXPECT_EQ(150, flattened.g);
+	EXPECT_EQ(200, flattened.b);
+
+	flattened = color::flattenRGB(c.r, c.g, c.b, c.a, 255);
+	EXPECT_EQ(0, flattened.r);
+	EXPECT_EQ(0, flattened.g);
+	EXPECT_EQ(0, flattened.b);
+}
+
+TEST_F(ColorUtilTest, testContrastTextColor) {
+	glm::vec4 white(1.0f);
+	glm::vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
+	EXPECT_EQ(black, color::contrastTextColor(white));
+	EXPECT_EQ(white, color::contrastTextColor(black));
+}
+
 } // namespace color
