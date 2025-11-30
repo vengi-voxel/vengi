@@ -68,7 +68,7 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDefaultValue("135")
 		.setDescription("Set the sun azimuth");
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
-	registerArg("--image").setDescription("Create a 2d image of the scene");
+	registerArg("--image").setDescription("Create a simple 2d side view image of the scene - doesn't take any camera settings or lighting settings into account");
 	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used");
 	Argument &cameraMode =
 		registerArg("--camera-mode")
