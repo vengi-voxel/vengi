@@ -179,7 +179,7 @@ bool BenchmarkFamilies::FindBenchmarks(
 
           ++per_family_instance_index;
 
-          // Only bump the next family index once we've estabilished that
+          // Only bump the next family index once we've established that
           // at least one instance of this family will be run.
           if (next_family_index == family_index) {
             ++next_family_index;
@@ -330,7 +330,8 @@ Benchmark* Benchmark::Args(const std::vector<int64_t>& args) {
   return this;
 }
 
-Benchmark* Benchmark::Apply(void (*custom_arguments)(Benchmark* benchmark)) {
+Benchmark* Benchmark::Apply(
+    const std::function<void(Benchmark* benchmark)>& custom_arguments) {
   custom_arguments(this);
   return this;
 }
