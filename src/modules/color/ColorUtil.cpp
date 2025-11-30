@@ -373,12 +373,12 @@ float intensity(const glm::vec4 &color) {
 }
 
 glm::vec4 gray(const glm::vec4 &color) {
-	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b) / 3.0f;
+	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b);
 	return glm::vec4(gray, gray, gray, color.a);
 }
 
 glm::vec3 gray(const glm::vec3 &color) {
-	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b) / 3.0f;
+	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b);
 	return glm::vec3(gray, gray, gray);
 }
 
