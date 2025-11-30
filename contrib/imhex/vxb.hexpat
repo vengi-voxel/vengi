@@ -36,27 +36,3 @@ struct Header {
 };
 
 Header hdr @0x00;
-
-	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		const int uniqueFace = indices[i];
-		const voxel::FaceNames faceName = faceNames[uniqueFace];
-		image::writeImage(diffuseImages[i], core::String::format("diffuse-r-%s.png", voxel::faceNameString(faceName)));
-	}
-
-
-		core::Buffer<core::RGBA> colors;
-		colors.reserve(blockSize * blockSize);
-		const voxel::FaceNames faceName = faceNames[indices[i]];
-		Log::error("Save face %s", voxel::faceNameString(faceName));
-		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA color = palette.color(voxel.getColor());
-			stream->writeUInt8(color.r);
-			stream->writeUInt8(color.g);
-			stream->writeUInt8(color.b);
-			stream->writeUInt8(color.a);
-			colors.push_back(color);
-		});
-		core_assert(colors.size() == blockSize * blockSize);
-		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(core::RGBA));
-		image::ImagePtr img = image::loadRGBAImageFromStream("diffuse", memStream, blockSize, blockSize);
-		image::writeImage(img, core::String::format("diffuse-w-%s.png", voxel::faceNameString(faceName)));
