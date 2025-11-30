@@ -4,6 +4,7 @@
 
 #include "Palette.h"
 #include "app/App.h"
+#include "color/Quantize.h"
 #include "core/ArrayLength.h"
 #include "color/Color.h"
 #include "core/Common.h"
@@ -141,7 +142,7 @@ void Palette::reduce(uint8_t targetColors) {
 		color::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	color::RGBA oldcolors[PaletteMaxColors];
 	core_memcpy(oldcolors, _colors, sizeof(oldcolors));
-	_colorCount = color::Color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
+	_colorCount = color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
 	markDirty();
 }
 
@@ -149,7 +150,7 @@ void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCo
 	Log::debug("quantize %i colors", (int)inputColorCount);
 	color::Color::ColorReductionType reductionType =
 		color::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
-	_colorCount = color::Color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
+	_colorCount = color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
 	markDirty();
 }
 

@@ -92,12 +92,6 @@ public:
 	static ColorReductionType toColorReductionType(const char *str);
 	static const char *toColorReductionTypeString(Color::ColorReductionType type);
 
-	/**
-	 * @return @c -1 on error or the amount of @code colors <= maxTargetBufColors @endcode
-	 */
-	static int quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors,
-						ColorReductionType type = ColorReductionType::MedianCut);
-
 	static inline glm::vec4 fromRGBA(const RGBA rgba) {
 		return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 	}

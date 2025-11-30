@@ -1,10 +1,11 @@
 set(SRCS
 	Color.cpp Color.h
 	CMYK.cpp CMYK.h
+	Quantize.cpp Quantize.h
 	RGBA.h RGBA.cpp
 )
 set(LIB color)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES app)
 
 set(TEST_SRCS
 	tests/ColorTest.cpp

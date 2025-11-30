@@ -1,6 +1,7 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "benchmark/benchmark.h"
 #include "color/Color.h"
+#include "color/Quantize.h"
 #include "color/RGBA.h"
 
 class ColorBenchmark : public app::AbstractBenchmark {
@@ -134,7 +135,7 @@ protected:
 BENCHMARK_DEFINE_F(ColorBenchmark, quantizeKMeans)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
 									  color::Color::ColorReductionType::KMeans);
 		benchmark::DoNotOptimize(n);
 	}
@@ -143,7 +144,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeKMeans)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(ColorBenchmark, quantizeWu)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
 									  color::Color::ColorReductionType::Wu);
 		benchmark::DoNotOptimize(n);
 	}
@@ -152,7 +153,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeWu)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(ColorBenchmark, quantizeOctree)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
 									  color::Color::ColorReductionType::Octree);
 		benchmark::DoNotOptimize(n);
 	}
@@ -161,7 +162,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeOctree)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(ColorBenchmark, quantizeMedianCut)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
 									  color::Color::ColorReductionType::MedianCut);
 		benchmark::DoNotOptimize(n);
 	}
@@ -170,7 +171,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeMedianCut)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(ColorBenchmark, quantizeNeuQuant)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
 									  color::Color::ColorReductionType::NeuQuant);
 		benchmark::DoNotOptimize(n);
 	}
