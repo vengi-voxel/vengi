@@ -10,7 +10,9 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.4.0 (2025-XX-XX)
 
-General:
+Thumbnailer:
+
+   - Fixed missing `--angles` radians conversion
 
 ## 0.3.0 (2025-11-29)
 
