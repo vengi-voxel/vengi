@@ -3,7 +3,7 @@
  */
 
 #include "MarchingCubesSurfaceExtractor.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/collection/Array2DView.h"

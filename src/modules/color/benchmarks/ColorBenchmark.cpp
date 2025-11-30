@@ -1,6 +1,7 @@
 #include "app/benchmark/AbstractBenchmark.h"
-#include "core/Color.h"
-#include "core/RGBA.h"
+#include "benchmark/benchmark.h"
+#include "color/Color.h"
+#include "color/RGBA.h"
 
 class ColorBenchmark : public app::AbstractBenchmark {
 protected:
@@ -227,3 +228,4 @@ BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA4);
 BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA3);
 BENCHMARK_REGISTER_F(ColorBenchmark, getHSB);
 BENCHMARK_REGISTER_F(ColorBenchmark, fromHSB);
+BENCHMARK_MAIN();

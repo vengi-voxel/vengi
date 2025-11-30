@@ -3,7 +3,7 @@
  */
 
 #include "ColorPalette.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "image/Image.h"
 #include "palette/RGBABuffer.h"

@@ -4,7 +4,7 @@
 
 #include "voxelformat/private/mesh/MeshTri.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "image/Image.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 

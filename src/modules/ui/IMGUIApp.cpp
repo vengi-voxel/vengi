@@ -18,7 +18,7 @@
 
 #include "command/Command.h"
 #include "core/BindingContext.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"

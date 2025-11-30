@@ -5,7 +5,7 @@
 #include "Format.h"
 #include "VolumeFormat.h"
 #include "app/App.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"

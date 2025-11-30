@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/DirtyState.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"

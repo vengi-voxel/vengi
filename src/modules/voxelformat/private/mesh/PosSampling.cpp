@@ -3,7 +3,7 @@
  */
 
 #include "PosSampling.h"
-#include "core/Color.h"
+#include "color/Color.h"
 
 namespace voxelformat {
 

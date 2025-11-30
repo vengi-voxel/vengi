@@ -4,7 +4,7 @@
 
 #include "BenJson.h"
 #include "BenShared.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"

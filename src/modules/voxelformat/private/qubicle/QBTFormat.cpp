@@ -3,7 +3,7 @@
  */
 
 #include "QBTFormat.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"

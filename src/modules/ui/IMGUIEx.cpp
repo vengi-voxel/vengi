@@ -11,7 +11,7 @@
 #include "app/App.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/StringUtil.h"
 #include "dearimgui/imgui_internal.h"
 #include "io/FormatDescription.h"

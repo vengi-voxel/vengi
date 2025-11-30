@@ -3,7 +3,7 @@
  */
 
 #include "PalettePanel.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "memento/MementoHandler.h"

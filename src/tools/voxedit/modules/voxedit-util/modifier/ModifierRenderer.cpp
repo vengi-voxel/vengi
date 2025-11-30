@@ -3,7 +3,7 @@
  */
 
 #include "ModifierRenderer.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "math/Axis.h"
 #include "core/Log.h"
 #include "video/Camera.h"

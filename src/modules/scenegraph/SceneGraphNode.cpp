@@ -4,7 +4,7 @@
 
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/GLM.h"
 #include "core/Hash.h"
 #include "core/UUID.h"

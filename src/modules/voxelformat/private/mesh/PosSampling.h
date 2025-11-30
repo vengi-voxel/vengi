@@ -5,7 +5,7 @@
 #pragma once
 
 #include "MeshMaterial.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/collection/Array.h"
 
 #define MaxTriangleColorContributions 4

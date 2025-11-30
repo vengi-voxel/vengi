@@ -4,7 +4,7 @@
 
 #include "scenegraph/SceneGraphTransform.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

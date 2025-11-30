@@ -3,7 +3,7 @@
  */
 
 #include "voxelformat/private/mesh/MeshFormat.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/Archive.h"

@@ -4,7 +4,7 @@
 
 #include "PixeloramaPalette.h"
 #include "SDL_stdinc.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "glm/fwd.hpp"

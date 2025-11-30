@@ -4,7 +4,7 @@
 
 #include "PaletteView.h"
 #include "app/Async.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "palette/Palette.h"

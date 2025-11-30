@@ -6,7 +6,7 @@
 
 #include "render/ShapeRenderer.h"
 #include "core/Common.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "video/ShapeBuilder.h"
 
 namespace video {

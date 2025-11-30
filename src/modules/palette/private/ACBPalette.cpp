@@ -3,7 +3,7 @@
  */
 
 #include "ACBPalette.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"

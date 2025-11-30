@@ -5,7 +5,7 @@
 #include "image/AVI.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/File.h"

@@ -8,7 +8,7 @@
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
 #include "math/Frustum.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/GLM.h"
 #include "core/ArrayLength.h"
 #include "video/Types.h"

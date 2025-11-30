@@ -3,7 +3,7 @@
  */
 
 #include "PaintNetPalette.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "engine-config.h"
 
 namespace palette {

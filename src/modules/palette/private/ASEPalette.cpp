@@ -3,8 +3,8 @@
  */
 
 #include "ASEPalette.h"
-#include "core/CMYK.h"
-#include "core/Color.h"
+#include "color/CMYK.h"
+#include "color/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"

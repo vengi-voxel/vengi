@@ -4,7 +4,7 @@
 
 #include "scenegraph/SceneGraph.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/ScopedPtr.h"
 #include "math/OBB.h"
 #include "palette/FormatConfig.h"

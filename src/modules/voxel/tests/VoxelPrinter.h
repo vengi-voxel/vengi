@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "core/Color.h"
-#include "core/RGBA.h"
+#include "color/Color.h"
+#include "color/RGBA.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"

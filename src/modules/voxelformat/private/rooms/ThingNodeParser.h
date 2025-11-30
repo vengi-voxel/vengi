@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/vec3.hpp>

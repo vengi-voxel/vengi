@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/Camera.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "math/Plane.h"
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"

@@ -1,5 +1,5 @@
 #include "app/Async.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "core/collection/Queue.h"
 #include "palette/Palette.h"

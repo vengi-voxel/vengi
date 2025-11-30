@@ -3,9 +3,9 @@
  */
 
 #include "VBXFormat.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"

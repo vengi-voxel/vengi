@@ -5,7 +5,7 @@
 #include "palette/Palette.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/ConfigVar.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"

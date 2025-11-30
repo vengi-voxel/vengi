@@ -5,7 +5,7 @@
 #include "TestApp.h"
 #include "IMGUIEx.h"
 #include "app/i18n/Language.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "command/Command.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/ConfigVar.h"

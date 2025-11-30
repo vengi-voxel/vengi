@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include "core/ArrayLength.h"
 #include "core/Common.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 
 namespace palette {
 class Palette;

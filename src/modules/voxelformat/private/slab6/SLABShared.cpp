@@ -4,7 +4,7 @@
 
 #include "SLABShared.h"
 #include "core/Log.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "io/Stream.h"
 
 namespace voxelformat {

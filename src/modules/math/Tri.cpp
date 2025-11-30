@@ -3,7 +3,7 @@
  */
 
 #include "Tri.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include <glm/ext/scalar_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>

@@ -43,9 +43,7 @@ set(SRCS
 	Assert.cpp Assert.h
 	BindingContext.cpp BindingContext.h
 	Bits.h
-	Color.cpp Color.h
 	Common.cpp Common.h
-	CMYK.cpp CMYK.h
 	DirtyState.h
 	Endian.h
 	Enum.h
@@ -64,7 +62,6 @@ set(SRCS
 	Path.cpp Path.h
 	PoolAllocator.h
 	Process.cpp Process.h
-	RGBA.h RGBA.cpp
 	SharedPtr.h
 	Singleton.h
 	StandardLib.h
@@ -130,7 +127,6 @@ set(TEST_SRCS
 	tests/BitsTest.cpp
 	tests/BitSetTest.cpp
 	tests/BufferTest.cpp
-	tests/ColorTest.cpp
 	tests/ConcurrentDynamicArrayTest.cpp
 	tests/ConcurrentPriorityQueueTest.cpp
 	tests/ConcurrentQueueTest.cpp
@@ -168,7 +164,6 @@ gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
 	benchmarks/CollectionBenchmark.cpp
-	benchmarks/ColorBenchmark.cpp
 	benchmarks/StringBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)

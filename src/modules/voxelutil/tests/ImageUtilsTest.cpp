@@ -4,7 +4,7 @@
 
 #include "voxelutil/ImageUtils.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/tests/TestColorHelper.h"

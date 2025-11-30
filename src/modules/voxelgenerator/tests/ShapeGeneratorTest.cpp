@@ -3,7 +3,7 @@
  */
 
 #include "app/App.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/ScopedPtr.h"
 #include "io/FilesystemArchive.h"
 #include "app/tests/AbstractTest.h"

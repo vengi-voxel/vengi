@@ -3,7 +3,7 @@
  */
 #include "TestOctree.h"
 #include "ui/IMGUIEx.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"

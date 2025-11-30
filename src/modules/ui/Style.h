@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Color.h"
+#include "color/Color.h"
 
 namespace style {
 

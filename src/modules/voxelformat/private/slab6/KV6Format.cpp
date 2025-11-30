@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"

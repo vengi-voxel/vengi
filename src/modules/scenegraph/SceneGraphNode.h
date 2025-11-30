@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Optional.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/String.h"
 #include "core/UUID.h"
 #include "core/ArrayLength.h"

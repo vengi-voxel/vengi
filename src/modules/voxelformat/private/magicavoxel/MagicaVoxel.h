@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"

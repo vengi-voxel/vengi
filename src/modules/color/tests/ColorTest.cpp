@@ -3,8 +3,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "core/Color.h"
-#include "core/RGBA.h"
+#include "color/Color.h"
+#include "color/RGBA.h"
 #include "core/ArrayLength.h"
 #include "core/StringUtil.h"
 #include "core/collection/BufferView.h"

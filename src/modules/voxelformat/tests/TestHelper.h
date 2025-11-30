@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/Enum.h"
 #include "palette/Palette.h"

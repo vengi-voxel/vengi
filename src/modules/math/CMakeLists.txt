@@ -18,7 +18,7 @@ set(SRCS
 	Math.h Math.cpp
 )
 set(LIB math)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core color)
 
 set(TEST_SRCS
 	tests/AABBTest.cpp

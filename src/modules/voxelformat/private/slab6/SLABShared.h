@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Enum.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "io/Stream.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"

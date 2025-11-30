@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 
 #include <glm/vec2.hpp>
 

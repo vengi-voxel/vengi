@@ -3,7 +3,7 @@
  */
 
 #include "OBJFormat.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"

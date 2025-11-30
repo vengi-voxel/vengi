@@ -146,7 +146,7 @@ if __name__ == "__main__":
     print("")
     print("#pragma once")
     print("")
-    print("#include \"core/RGBA.h\"")
+    print("#include \"color/RGBA.h\"")
     print("#include \"palette/Palette.h\"")
     print("")
     print("namespace voxelformat {")

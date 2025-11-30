@@ -9,7 +9,7 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Log.h"

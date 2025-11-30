@@ -3,7 +3,7 @@
  */
 
 #include "SceneGraphRenderer.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "scenegraph/SceneGraph.h"

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "IMGUIApp.h"
-#include "core/Color.h"
+#include "color/Color.h"
 
 namespace ui {
 

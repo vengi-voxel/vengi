@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Log.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "io/TokenStream.h"
 #include "palette/Material.h"
 #include <glm/vec4.hpp>

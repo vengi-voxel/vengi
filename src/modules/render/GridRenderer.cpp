@@ -3,7 +3,7 @@
  */
 
 #include "GridRenderer.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/GLM.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"

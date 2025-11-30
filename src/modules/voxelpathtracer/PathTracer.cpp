@@ -3,7 +3,7 @@
  */
 
 #include "PathTracer.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "image/Image.h"

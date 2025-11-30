@@ -6,7 +6,7 @@
 #include "video/Camera.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedState.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/GLM.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL

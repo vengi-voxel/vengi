@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/NonCopyable.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/SharedPtr.h"
 #include "image/ImageType.h"
 #include "io/File.h"

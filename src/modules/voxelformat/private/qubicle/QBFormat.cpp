@@ -3,7 +3,7 @@
  */
 
 #include "QBFormat.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Enum.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"

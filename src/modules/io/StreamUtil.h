@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "io/Stream.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/vec2.hpp>

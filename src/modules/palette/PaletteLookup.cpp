@@ -3,7 +3,7 @@
  */
 
 #include "PaletteLookup.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "palette/Palette.h"
 #if defined(_MSC_VER)
 #define WIN32_LEAN_AND_MEAN

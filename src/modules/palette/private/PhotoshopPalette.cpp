@@ -4,8 +4,8 @@
 
 #include "PhotoshopPalette.h"
 #include "AdobeColorSpace.h"
-#include "core/CMYK.h"
-#include "core/Color.h"
+#include "color/CMYK.h"
+#include "color/Color.h"
 #include "core/Log.h"
 
 namespace palette {

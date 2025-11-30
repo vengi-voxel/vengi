@@ -6,7 +6,7 @@
 #include "MCRFormat.h"
 #include "NamedBinaryTag.h"
 #include "app/Async.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"

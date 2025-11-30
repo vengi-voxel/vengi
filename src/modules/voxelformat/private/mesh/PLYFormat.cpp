@@ -3,7 +3,7 @@
  */
 
 #include "PLYFormat.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"

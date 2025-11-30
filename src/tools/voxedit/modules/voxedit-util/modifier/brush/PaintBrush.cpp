@@ -3,7 +3,7 @@
  */
 
 #include "PaintBrush.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"

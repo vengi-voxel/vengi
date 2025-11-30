@@ -9,7 +9,7 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/ArrayLength.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Var.h"

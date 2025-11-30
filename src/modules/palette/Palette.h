@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/DirtyState.h"
 #include "core/Optional.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/String.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"

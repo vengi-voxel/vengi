@@ -6,7 +6,7 @@
 #include "app/App.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/StringUtil.h"
 #include "core/UTF8.h"
 #include "image/Image.h"

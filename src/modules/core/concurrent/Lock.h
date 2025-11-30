@@ -21,6 +21,7 @@ using core_mutex = SDL_mutex;
 
 namespace core {
 
+// use core_trace_mutex to define a mutex
 class core_thread_capability("mutex") Lock {
 private:
 	mutable core_mutex *_mutex;

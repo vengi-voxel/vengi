@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/SharedPtr.h"
 #include "math/Axis.h"
 #include "video/Camera.h"

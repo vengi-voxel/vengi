@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/DirtyState.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "core/collection/Buffer.h"
 #include "image/Image.h"
 #include <glm/fwd.hpp>

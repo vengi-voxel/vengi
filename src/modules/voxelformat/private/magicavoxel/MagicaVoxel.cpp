@@ -4,7 +4,7 @@
 
 #include "MagicaVoxel.h"
 #include "app/Async.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"

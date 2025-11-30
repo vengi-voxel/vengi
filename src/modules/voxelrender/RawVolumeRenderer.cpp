@@ -9,7 +9,7 @@
 #include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"

@@ -5,7 +5,7 @@
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
 #include "command/CommandHandler.h"
-#include "core/Color.h"
+#include "color/Color.h"
 #include "core/Log.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"

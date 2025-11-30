@@ -5,7 +5,7 @@
 #include "image/external/jo_mpeg.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
-#include "core/RGBA.h"
+#include "color/RGBA.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 
