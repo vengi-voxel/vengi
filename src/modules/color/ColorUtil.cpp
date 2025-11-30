@@ -41,32 +41,32 @@ RGBA fromHSB(const float hue, const float saturation, const float brightness, co
 	color.a = alpha * 255.0f;
 	switch (static_cast<int>(h)) {
 	case 0:
-		color.r = brightness;
+		color.r = brightness * 255.0f;
 		color.g = t;
 		color.b = p;
 		break;
 	case 1:
 		color.r = q;
-		color.g = brightness;
+		color.g = brightness * 255.0f;
 		color.b = p;
 		break;
 	case 2:
 		color.r = p;
-		color.g = brightness;
+		color.g = brightness * 255.0f;
 		color.b = t;
 		break;
 	case 3:
 		color.r = p;
 		color.g = q;
-		color.b = brightness;
+		color.b = brightness * 255.0f;
 		break;
 	case 4:
 		color.r = t;
 		color.g = p;
-		color.b = brightness;
+		color.b = brightness * 255.0f;
 		break;
 	case 5:
-		color.r = brightness;
+		color.r = brightness * 255.0f;
 		color.g = p;
 		color.b = q;
 		break;
