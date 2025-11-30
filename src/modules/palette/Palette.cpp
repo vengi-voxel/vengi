@@ -138,8 +138,8 @@ glm::vec4 Palette::color4(uint8_t i) const {
 }
 
 void Palette::reduce(uint8_t targetColors) {
-	color::Color::ColorReductionType reductionType =
-		color::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+	color::ColorReductionType reductionType =
+		color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	color::RGBA oldcolors[PaletteMaxColors];
 	core_memcpy(oldcolors, _colors, sizeof(oldcolors));
 	_colorCount = color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
@@ -148,8 +148,8 @@ void Palette::reduce(uint8_t targetColors) {
 
 void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCount) {
 	Log::debug("quantize %i colors", (int)inputColorCount);
-	color::Color::ColorReductionType reductionType =
-		color::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+	color::ColorReductionType reductionType =
+		color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	_colorCount = color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
 	markDirty();
 }

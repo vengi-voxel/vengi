@@ -9,6 +9,7 @@
 #include "ScopedStyle.h"
 #include "Style.h"
 #include "app/i18n/Language.h"
+#include "color/Quantize.h"
 #include "core/ConfigVar.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
@@ -967,10 +968,10 @@ bool IMGUIApp::keyMapOption() {
 void IMGUIApp::colorReductionOptions() {
 	const core::VarPtr &colorReduction = core::Var::getSafe(cfg::CoreColorReduction);
 	if (ImGui::BeginCombo(_("Color reduction"), colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
-		color::Color::ColorReductionType type = color::Color::toColorReductionType(colorReduction->strVal().c_str());
-		for (int i = 0; i < (int)color::Color::ColorReductionType::Max; ++i) {
+		color::ColorReductionType type = color::toColorReductionType(colorReduction->strVal().c_str());
+		for (int i = 0; i < (int)color::ColorReductionType::Max; ++i) {
 			const bool selected = i == (int)type;
-			const char *str = color::Color::toColorReductionTypeString((color::Color::ColorReductionType)i);
+			const char *str = color::toColorReductionTypeString((color::ColorReductionType)i);
 			if (ImGui::Selectable(str, selected)) {
 				colorReduction->setVal(str);
 			}

@@ -137,24 +137,6 @@ const glm::vec4 &Color::DarkBrown() {
 const float Color::magnitudef = 255.0f;
 const float Color::scaleFactor = 0.7f;
 
-static constexpr const char *ColorReductionAlgorithmStr[]{"Octree", "Wu", "MedianCut", "KMeans", "NeuQuant"};
-static_assert((int)color::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr),
-			  "Array size doesn't match with enum");
-
-const char *Color::toColorReductionTypeString(Color::ColorReductionType type) {
-	return ColorReductionAlgorithmStr[(int)type];
-}
-
-Color::ColorReductionType Color::toColorReductionType(const char *str) {
-	for (int i = 0; i < lengthof(ColorReductionAlgorithmStr); ++i) {
-		if (!SDL_strcasecmp(str, ColorReductionAlgorithmStr[i])) {
-			return (Color::ColorReductionType)i;
-		}
-	}
-	Log::warn("Could not find a color reduction algorithm for '%s'", str);
-	return ColorReductionType::Max;
-}
-
 glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return glm::aligned_vec4(r, g, b, a) / Color::magnitudef;
 }

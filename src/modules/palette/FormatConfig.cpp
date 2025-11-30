@@ -5,6 +5,7 @@
 #include "FormatConfig.h"
 #include "app/I18N.h"
 #include "color/Color.h"
+#include "color/Quantize.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "palette/NormalPalette.h"
@@ -13,12 +14,12 @@
 namespace palette {
 
 static bool colorReductionValidator(const core::String &value) {
-	return color::Color::toColorReductionType(value.c_str()) != color::Color::ColorReductionType::Max;
+	return color::toColorReductionType(value.c_str()) != color::ColorReductionType::Max;
 }
 
 bool FormatConfig::init() {
 	core::Var::get(cfg::CoreColorReduction,
-				   color::Color::toColorReductionTypeString(color::Color::ColorReductionType::MedianCut),
+				   color::toColorReductionTypeString(color::ColorReductionType::MedianCut),
 				   _("Controls the algorithm that is used to perform the color reduction"), colorReductionValidator);
 
 	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,

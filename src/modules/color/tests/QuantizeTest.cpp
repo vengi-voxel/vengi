@@ -157,21 +157,21 @@ TEST(QuantizeTest, testQuantize) {
 		color::RGBA(0x24, 0x21, 0x32), color::RGBA(0x24, 0x21, 0x32), color::RGBA(0x24, 0x21, 0x32)};
 	color::RGBA targetBuf[256]{};
 	int n;
-	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::Color::ColorReductionType::Octree);
+	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::Octree);
 	EXPECT_EQ(256, n) << "Failed with octree.\n"
 					  << core::BufferView<RGBA>(targetBuf, n) << "\n"
 					  << core::BufferView<RGBA>(buf, lengthof(buf));
 
-	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::Color::ColorReductionType::Wu);
+	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::Wu);
 	EXPECT_EQ(161, n) << "Failed with Wu.\n"
 					  << core::BufferView<RGBA>(targetBuf, n) << "\n"
 					  << core::BufferView<RGBA>(buf, lengthof(buf));
 
 	// n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-	// color::Color::ColorReductionType::MedianCut); EXPECT_EQ(72, n) << "Failed with median cut.\n" <<
+	// color::ColorReductionType::MedianCut); EXPECT_EQ(72, n) << "Failed with median cut.\n" <<
 	// core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
 
-	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::Color::ColorReductionType::KMeans);
+	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::KMeans);
 	EXPECT_EQ(256, n) << "Failed with k-means.\n"
 					  << core::BufferView<RGBA>(targetBuf, n) << "\n"
 					  << core::BufferView<RGBA>(buf, lengthof(buf));

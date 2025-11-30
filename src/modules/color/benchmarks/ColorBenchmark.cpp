@@ -136,7 +136,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeKMeans)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
 		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::Color::ColorReductionType::KMeans);
+									  color::ColorReductionType::KMeans);
 		benchmark::DoNotOptimize(n);
 	}
 }
@@ -145,7 +145,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeWu)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
 		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::Color::ColorReductionType::Wu);
+									  color::ColorReductionType::Wu);
 		benchmark::DoNotOptimize(n);
 	}
 }
@@ -154,7 +154,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeOctree)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
 		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::Color::ColorReductionType::Octree);
+									  color::ColorReductionType::Octree);
 		benchmark::DoNotOptimize(n);
 	}
 }
@@ -163,7 +163,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeMedianCut)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
 		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::Color::ColorReductionType::MedianCut);
+									  color::ColorReductionType::MedianCut);
 		benchmark::DoNotOptimize(n);
 	}
 }
@@ -172,7 +172,7 @@ BENCHMARK_DEFINE_F(ColorBenchmark, quantizeNeuQuant)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
 		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::Color::ColorReductionType::NeuQuant);
+									  color::ColorReductionType::NeuQuant);
 		benchmark::DoNotOptimize(n);
 	}
 }

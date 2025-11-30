@@ -3,6 +3,8 @@
  */
 
 #include "Quantize.h"
+#include "core/ArrayLength.h"
+#include "core/Log.h"
 #include "core/Pair.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -18,6 +20,24 @@
 #include <glm/gtx/type_aligned.hpp>
 
 namespace color {
+
+static constexpr const char *ColorReductionAlgorithmStr[]{"Octree", "Wu", "MedianCut", "KMeans", "NeuQuant"};
+static_assert((int)ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr),
+			  "Array size doesn't match with enum");
+
+const char *toColorReductionTypeString(ColorReductionType type) {
+	return ColorReductionAlgorithmStr[(int)type];
+}
+
+ColorReductionType toColorReductionType(const char *str) {
+	for (int i = 0; i < lengthof(ColorReductionAlgorithmStr); ++i) {
+		if (!SDL_strcasecmp(str, ColorReductionAlgorithmStr[i])) {
+			return (ColorReductionType)i;
+		}
+	}
+	Log::warn("Could not find a color reduction algorithm for '%s'", str);
+	return ColorReductionType::Max;
+}
 
 struct ColorBox {
 	RGBA min, max;
@@ -535,7 +555,7 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 }
 
 int quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors,
-			 Color::ColorReductionType type) {
+			 ColorReductionType type) {
 	if (inputBufColors <= maxTargetBufColors) {
 		size_t n;
 		for (n = 0; n < inputBufColors; ++n) {
@@ -547,15 +567,15 @@ int quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, s
 		return (int)n;
 	}
 	switch (type) {
-	case Color::ColorReductionType::Wu:
+	case ColorReductionType::Wu:
 		return quantizeWu(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	case Color::ColorReductionType::KMeans:
+	case ColorReductionType::KMeans:
 		return quantizeKMeans(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	case Color::ColorReductionType::NeuQuant:
+	case ColorReductionType::NeuQuant:
 		return quantizeNeuQuant(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	case Color::ColorReductionType::Octree:
+	case ColorReductionType::Octree:
 		return quantizeOctree(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	case Color::ColorReductionType::MedianCut:
+	case ColorReductionType::MedianCut:
 		return quantizeMedianCut(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
 	default:
 		break;

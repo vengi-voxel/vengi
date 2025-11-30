@@ -80,18 +80,6 @@ public:
 
 	static color::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f);
 
-	enum class ColorReductionType {
-		Octree,
-		Wu,
-		MedianCut,
-		KMeans,
-		NeuQuant,
-
-		Max
-	};
-	static ColorReductionType toColorReductionType(const char *str);
-	static const char *toColorReductionTypeString(Color::ColorReductionType type);
-
 	static inline glm::vec4 fromRGBA(const RGBA rgba) {
 		return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 	}
