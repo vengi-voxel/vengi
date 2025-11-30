@@ -3,6 +3,7 @@
  */
 
 #include "Quantize.h"
+#include "app/Async.h"
 #include "color/ColorUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
@@ -49,23 +50,7 @@ struct ColorBox {
 	}
 };
 
-static int medianCutFindMedian(const core::Buffer<RGBA> &colors, int axis) {
-	core::Buffer<int> values;
-	values.reserve(colors.size());
-	for (const color::RGBA &color : colors) {
-		if (axis == 0) {
-			values.push_back(color.r);
-		} else if (axis == 1) {
-			values.push_back(color.g);
-		} else {
-			values.push_back(color.b);
-		}
-	}
-	core::sort(values.begin(), values.end(), core::Less<int>());
-	return values[values.size() / 2];
-}
-
-static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
+static core::Pair<ColorBox, ColorBox> medianCutSplitBox(ColorBox &box) {
 	int longestAxis = 0;
 	if ((box.max.g - box.min.g) > (box.max.r - box.min.r)) {
 		longestAxis = 1;
@@ -74,30 +59,34 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
 		longestAxis = 2;
 	}
 
-	int median = medianCutFindMedian(box.pixels, longestAxis);
-	ColorBox box1, box2;
-	box1.pixels.reserve(box.pixels.size());
-	box2.pixels.reserve(box.pixels.size());
-	for (const color::RGBA &color : box.pixels) {
+	app::sort_parallel(box.pixels.begin(), box.pixels.end(), [longestAxis](const RGBA &lhs, const RGBA &rhs) {
 		if (longestAxis == 0) {
-			if (color.r < median) {
-				box1.pixels.push_back(color);
-			} else {
-				box2.pixels.push_back(color);
-			}
+			return lhs.r < rhs.r;
 		} else if (longestAxis == 1) {
-			if (color.g < median) {
-				box1.pixels.push_back(color);
-			} else {
-				box2.pixels.push_back(color);
-			}
-		} else {
-			if (color.b < median) {
-				box1.pixels.push_back(color);
-			} else {
-				box2.pixels.push_back(color);
-			}
+			return lhs.g < rhs.g;
 		}
+		return lhs.b < rhs.b;
+	});
+
+	const size_t mid = box.pixels.size() / 2;
+	int median;
+	if (longestAxis == 0) {
+		median = box.pixels[mid].r;
+	} else if (longestAxis == 1) {
+		median = box.pixels[mid].g;
+	} else {
+		median = box.pixels[mid].b;
+	}
+
+	ColorBox box1, box2;
+	box1.pixels.reserve(mid);
+	box2.pixels.reserve(box.pixels.size() - mid);
+
+	if (mid > 0) {
+		box1.pixels.append(box.pixels.data(), mid);
+	}
+	if (box.pixels.size() > mid) {
+		box2.pixels.append(box.pixels.data() + mid, box.pixels.size() - mid);
 	}
 
 	box1.min.r = box.min.r;
@@ -156,23 +145,35 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 		boxes.push_back(boxesPair.second);
 	}
 
+	core::DynamicArray<RGBA> averages(boxes.size());
+	app::for_parallel(0, (int)boxes.size(), [&](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const ColorBox &box = boxes[i];
+			if (box.pixels.empty()) {
+				averages[i] = RGBA(0, 0, 0, 0);
+				continue;
+			}
+			uint32_t r = 0, g = 0, b = 0, a = 0;
+			for (const color::RGBA &color : box.pixels) {
+				r += color.r;
+				g += color.g;
+				b += color.b;
+				a += color.a;
+			}
+			r /= box.pixels.size();
+			g /= box.pixels.size();
+			b /= box.pixels.size();
+			a /= box.pixels.size();
+			averages[i] = color::RGBA(r, g, b, a);
+		}
+	});
+
 	size_t n = 0;
-	for (const ColorBox &box : boxes) {
-		if (box.pixels.empty()) {
+	for (size_t i = 0; i < boxes.size(); ++i) {
+		if (boxes[i].pixels.empty()) {
 			continue;
 		}
-		uint32_t r = 0, g = 0, b = 0, a = 0;
-		for (const color::RGBA &color : box.pixels) {
-			r += color.r;
-			g += color.g;
-			b += color.b;
-			a += color.a;
-		}
-		r /= box.pixels.size();
-		g /= box.pixels.size();
-		b /= box.pixels.size();
-		a /= box.pixels.size();
-		targetBuf[n++] = color::RGBA(r, g, b, a);
+		targetBuf[n++] = averages[i];
 		if (n >= maxTargetBufColors) {
 			return (int)n;
 		}
@@ -242,35 +243,59 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 		centers.emplace_back(color::fromRGBA(inputBuf[dis(gen)]));
 	}
 
+	struct ClusterSum {
+		glm::vec4 sum{0.0f};
+		int count = 0;
+	};
+
 	bool changed = true;
 	while (changed) {
 		changed = false;
-		core::DynamicArray<core::Buffer<glm::vec4>> clusters(maxTargetBufColors);
-		for (size_t i = 0; i < inputBufColors; ++i) {
-			const glm::vec4 point = color::fromRGBA(inputBuf[i]);
-			int closest = 0;
-			float closestDistance = getDistance(point, centers[0]);
-			for (int n = 1; n < (int)maxTargetBufColors; n++) {
-				float d = getDistance(point, centers[n]);
-				if (d < closestDistance) {
-					closest = n;
-					closestDistance = d;
+		const int numChunks = app::for_parallel_size(0, (int)inputBufColors);
+		core::DynamicArray<core::DynamicArray<ClusterSum>> threadSums(numChunks);
+		for (auto &sums : threadSums) {
+			sums.resize(maxTargetBufColors);
+		}
+
+		app::for_parallel(0, numChunks, [&](int chunkStart, int chunkEnd) {
+			for (int c = chunkStart; c < chunkEnd; ++c) {
+				const size_t start = (size_t)c * inputBufColors / numChunks;
+				size_t end = (size_t)(c + 1) * inputBufColors / numChunks;
+				if (c == numChunks - 1) {
+					end = inputBufColors;
+				}
+				auto &sums = threadSums[c];
+				for (size_t i = start; i < end; ++i) {
+					const glm::vec4 point = color::fromRGBA(inputBuf[i]);
+					int closest = 0;
+					float closestDistance = getDistance(point, centers[0]);
+					for (int n = 1; n < (int)maxTargetBufColors; n++) {
+						float d = getDistance(point, centers[n]);
+						if (d < closestDistance) {
+							closest = n;
+							closestDistance = d;
+						}
+					}
+					sums[closest].sum += point;
+					sums[closest].count++;
 				}
 			}
-			clusters[closest].push_back(point);
-		}
+		});
+
 		for (int i = 0; i < (int)maxTargetBufColors; i++) {
-			if (clusters[i].empty()) {
-				continue;
+			glm::vec4 totalSum(0.0f);
+			int totalCount = 0;
+			for (int c = 0; c < numChunks; ++c) {
+				totalSum += threadSums[c][i].sum;
+				totalCount += threadSums[c][i].count;
 			}
-			glm::vec4 newCenter(0.0f);
-			for (const glm::vec4 &point : clusters[i]) {
-				newCenter += point;
-			}
-			newCenter /= clusters[i].size();
-			if (getDistance(newCenter, centers[i]) > 0.0001f) {
-				centers[i] = newCenter;
-				changed = true;
+
+			if (totalCount > 0) {
+				glm::vec4 newCenter = totalSum / (float)totalCount;
+				if (getDistance(newCenter, centers[i]) > 0.0001f) {
+					centers[i] = newCenter;
+					changed = true;
+				}
 			}
 		}
 	}
@@ -482,47 +507,84 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 		}
 
 		ColorBox box1, box2;
-		box1.pixels.reserve(pixelCount / 2);
-		box2.pixels.reserve(pixelCount / 2);
+
+		const int numChunks = app::for_parallel_size(0, (int)pixelCount);
+		struct ThreadResult {
+			core::Buffer<RGBA> p1;
+			core::Buffer<RGBA> p2;
+		};
+		core::DynamicArray<ThreadResult> results(numChunks);
+
+		app::for_parallel(0, numChunks, [&](int chunkStart, int chunkEnd) {
+			for (int c = chunkStart; c < chunkEnd; ++c) {
+				const size_t start = (size_t)c * pixelCount / numChunks;
+				size_t end = (size_t)(c + 1) * pixelCount / numChunks;
+				if (c == numChunks - 1) {
+					end = pixelCount;
+				}
+				auto &res = results[c];
+				res.p1.reserve((end - start) / 2);
+				res.p2.reserve((end - start) / 2);
+				for (size_t i = start; i < end; ++i) {
+					const RGBA &pixel = box.pixels[i];
+					bool toBox1 = false;
+					if (component == 0) {
+						if (pixel.r <= midpoint) {
+							toBox1 = true;
+						}
+					} else if (component == 1) {
+						if (pixel.g <= midpoint) {
+							toBox1 = true;
+						}
+					} else {
+						if (pixel.b <= midpoint) {
+							toBox1 = true;
+						}
+					}
+					if (toBox1) {
+						res.p1.push_back(pixel);
+					} else {
+						res.p2.push_back(pixel);
+					}
+				}
+			}
+		});
+
+		size_t s1 = 0;
+		size_t s2 = 0;
+		for (const auto &res : results) {
+			s1 += res.p1.size();
+			s2 += res.p2.size();
+		}
+		box1.pixels.reserve(s1);
+		box2.pixels.reserve(s2);
+		for (const auto &res : results) {
+			if (!res.p1.empty()) {
+				box1.pixels.append(res.p1.data(), res.p1.size());
+			}
+			if (!res.p2.empty()) {
+				box2.pixels.append(res.p2.data(), res.p2.size());
+			}
+		}
+
 		switch (component) {
 		case 0:
 			box1.min = box.min;
 			box1.max = RGBA(midpoint, box.max.g, box.max.b, 255);
 			box2.min = RGBA(midpoint + 1, box.min.g, box.min.b, 255);
 			box2.max = box.max;
-			for (const RGBA &pixel : box.pixels) {
-				if (pixel.r <= midpoint) {
-					box1.pixels.push_back(pixel);
-				} else {
-					box2.pixels.push_back(pixel);
-				}
-			}
 			break;
 		case 1:
 			box1.min = box.min;
 			box1.max = RGBA(box.max.r, midpoint, box.max.b, 255);
 			box2.min = RGBA(box.min.r, midpoint + 1, box.min.b, 255);
 			box2.max = box.max;
-			for (const RGBA &pixel : box.pixels) {
-				if (pixel.g <= midpoint) {
-					box1.pixels.push_back(pixel);
-				} else {
-					box2.pixels.push_back(pixel);
-				}
-			}
 			break;
 		case 2:
 			box1.min = box.min;
 			box1.max = RGBA(box.max.r, box.max.g, midpoint);
 			box2.min = RGBA(box.min.r, box.min.g, midpoint + 1);
 			box2.max = box.max;
-			for (const RGBA &pixel : box.pixels) {
-				if (pixel.b <= midpoint) {
-					box1.pixels.push_back(pixel);
-				} else {
-					box2.pixels.push_back(pixel);
-				}
-			}
 			break;
 		default:
 			break;
@@ -534,21 +596,33 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 		boxes.emplace_back(core::move(box2));
 	}
 
+	core::DynamicArray<RGBA> averages(boxes.size());
+	app::for_parallel(0, (int)boxes.size(), [&](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const ColorBox &box = boxes[i];
+			if (box.pixels.empty()) {
+				averages[i] = RGBA(0, 0, 0, 0);
+				continue;
+			}
+			RGBA average(0, 0, 0, 255);
+			for (const RGBA &pixel : box.pixels) {
+				average.r += pixel.r;
+				average.g += pixel.g;
+				average.b += pixel.b;
+			}
+			average.r /= box.pixels.size();
+			average.g /= box.pixels.size();
+			average.b /= box.pixels.size();
+			averages[i] = average;
+		}
+	});
+
 	size_t n = 0;
-	for (const ColorBox &box : boxes) {
-		if (box.pixels.empty()) {
+	for (size_t i = 0; i < boxes.size(); ++i) {
+		if (boxes[i].pixels.empty()) {
 			continue;
 		}
-		RGBA average(0, 0, 0, 255);
-		for (const RGBA &pixel : box.pixels) {
-			average.r += pixel.r;
-			average.g += pixel.g;
-			average.b += pixel.b;
-		}
-		average.r /= box.pixels.size();
-		average.g /= box.pixels.size();
-		average.b /= box.pixels.size();
-		targetBuf[n++] = average;
+		targetBuf[n++] = averages[i];
 	}
 
 	for (size_t i = n; i < maxTargetBufColors; ++i) {

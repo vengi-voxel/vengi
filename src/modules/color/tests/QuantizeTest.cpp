@@ -174,9 +174,10 @@ TEST_F(QuantizeTest, testQuantize) {
 					  << core::BufferView<RGBA>(targetBuf, n) << "\n"
 					  << core::BufferView<RGBA>(buf, lengthof(buf));
 
-	// n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-	// color::ColorReductionType::MedianCut); EXPECT_EQ(72, n) << "Failed with median cut.\n" <<
-	// core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
+	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::MedianCut);
+	EXPECT_EQ(256, n) << "Failed with median cut.\n"
+					  << core::BufferView<RGBA>(targetBuf, n) << "\n"
+					  << core::BufferView<RGBA>(buf, lengthof(buf));
 
 	n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::KMeans);
 	EXPECT_EQ(256, n) << "Failed with k-means.\n"
