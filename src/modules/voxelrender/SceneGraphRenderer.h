@@ -32,6 +32,8 @@ static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode:
 
 /**
  * @brief Tries to place the camera in a way that most of the scene region is visible in the viewport of the camera.
+ * @param[in,out] camera The camera to configure
+ * @param[in] angles The angles to set the camera to (pitch, yaw, roll in radians)
  */
 void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
 					 const glm::vec3 &angles = {0.0f, 0.0f, 0.0f});

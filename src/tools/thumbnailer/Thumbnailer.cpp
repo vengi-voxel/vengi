@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include <glm/trigonometric.hpp>
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FileStream.h"
@@ -59,7 +60,7 @@ app::AppState Thumbnailer::onConstruct() {
 	registerArg("--angles")
 		.setShort("-a")
 		.setDefaultValue("0:0:0")
-		.setDescription("Set the camera angles (pitch:yaw:roll))");
+		.setDescription("Set the camera angles (pitch:yaw:roll) in degrees");
 	registerArg("--sunelevation")
 		.setDefaultValue("45")
 		.setDescription("Set the sun elevation");
@@ -147,10 +148,10 @@ app::AppState Thumbnailer::onRunning() {
 		const core::String &anglesStr = getArgVal("--angles");
 		glm::vec3 angles(0.0f);
 		core::string::parseVec3(anglesStr, glm::value_ptr(angles), ":");
-		ctx.pitch = angles.x;
-		ctx.yaw = angles.y;
-		ctx.roll = angles.z;
-		Log::info("Use euler angles %f:%f:%f", ctx.pitch, ctx.yaw, ctx.roll);
+		ctx.pitch = glm::radians(angles.x);
+		ctx.yaw = glm::radians(angles.y);
+		ctx.roll = glm::radians(angles.z);
+		Log::info("Use euler angles %f:%f:%f", angles.x, angles.y, angles.z);
 	}
 	if (hasArg("--sunelevation")) {
 		ctx.sunElevation = core::string::toFloat(getArgVal("--sunelevation"));

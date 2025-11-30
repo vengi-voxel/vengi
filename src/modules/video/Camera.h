@@ -250,9 +250,9 @@ public:
 	float targetDistance() const;
 
 	/**
-	 * @param[in] pitch rotation in modelspace
-	 * @param[in] yaw rotation in modelspace
-	 * @param[in] roll rotation in modelspace
+	 * @param[in] pitch rotation in modelspace in radians
+	 * @param[in] yaw rotation in modelspace in radians
+	 * @param[in] roll rotation in modelspace in radians
 	 */
 	void setAngles(float pitch, float yaw, float roll);
 

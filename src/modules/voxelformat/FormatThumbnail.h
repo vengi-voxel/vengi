@@ -19,9 +19,9 @@ namespace voxelformat {
 struct ThumbnailContext {
 	glm::ivec2 outputSize{128, 128};
 	glm::vec4 clearColor{0.0f, 0.0f, 0.0f, 1.0f};
-	float pitch = 0.0f;
-	float yaw = 0.0f;
-	float roll = 0.0f;
+	float pitch = 0.0f; // given in radians
+	float yaw = 0.0f; // given in radians
+	float roll = 0.0f; // given in radians
 	float distance = -1.0f;
 	float farPlane = 5000.0f;
 	float sunElevation = 45.0f;
