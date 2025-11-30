@@ -160,4 +160,125 @@ TEST_F(ColorUtilTest, testContrastTextColor) {
 	EXPECT_EQ(white, color::contrastTextColor(black));
 }
 
+TEST_F(ColorUtilTest, testPrint) {
+	color::RGBA red(255, 0, 0, 255);
+	core::String output = color::print(red, true);
+	EXPECT_TRUE(output.contains("#ff0000ff"));
+	EXPECT_TRUE(output.contains("\033[38;2;255;0;0m"));
+	EXPECT_TRUE(output.contains("\033[48;2;255;0;0m"));
+
+	output = color::print(red, false);
+	EXPECT_FALSE(output.contains("#ff0000ff"));
+	EXPECT_TRUE(output.contains("\033[38;2;255;0;0m"));
+}
+
+TEST_F(ColorUtilTest, testSrgbToLinear) {
+	EXPECT_NEAR(0.0, color::srgbToLinear(0), 0.0001);
+	EXPECT_NEAR(1.0, color::srgbToLinear(255), 0.0001);
+	// 127/255 = ~0.498. Linear approx ~0.2122
+	EXPECT_NEAR(0.2122, color::srgbToLinear(127), 0.001);
+}
+
+TEST_F(ColorUtilTest, testRgbToXyz) {
+	double X, Y, Z;
+	color::rgbToXyz(255, 0, 0, X, Y, Z);
+	// Red in sRGB to XYZ (D65)
+	// X ~ 0.4124, Y ~ 0.2126, Z ~ 0.0193
+	EXPECT_NEAR(0.4124, X, 0.001);
+	EXPECT_NEAR(0.2126, Y, 0.001);
+	EXPECT_NEAR(0.0193, Z, 0.001);
+}
+
+TEST_F(ColorUtilTest, testXyzToLab) {
+	double L, a, b;
+	// D65 White point XYZ -> Lab (100, 0, 0)
+	// X=0.95047, Y=1.00000, Z=1.08883
+	color::xyzToLab(0.95047, 1.00000, 1.08883, L, a, b);
+	EXPECT_NEAR(100.0, L, 0.01);
+	EXPECT_NEAR(0.0, a, 0.01);
+	EXPECT_NEAR(0.0, b, 0.01);
+}
+
+TEST_F(ColorUtilTest, testGetDistanceHSBValues) {
+	color::RGBA red(255, 0, 0, 255);
+	// Distance to itself should be 0
+	EXPECT_FLOAT_EQ(0.0f, color::getDistance(red, 0.0f, 1.0f, 1.0f));
+	// Distance to Green (Hue 0.333)
+	EXPECT_GT(color::getDistance(red, 0.333f, 1.0f, 1.0f), 0.0f);
+}
+
+TEST_F(ColorUtilTest, testGetRGBAFromVec3) {
+	glm::vec3 v(1.0f, 0.0f, 0.0f);
+	color::RGBA c = color::getRGBA(v);
+	EXPECT_EQ(255, c.r);
+	EXPECT_EQ(0, c.g);
+	EXPECT_EQ(0, c.b);
+	EXPECT_EQ(255, c.a);
+}
+
+TEST_F(ColorUtilTest, testGetHSBVec4) {
+	glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+	float h, s, b;
+	color::getHSB(v, h, s, b);
+	EXPECT_FLOAT_EQ(0.0f, h);
+	EXPECT_FLOAT_EQ(1.0f, s);
+	EXPECT_FLOAT_EQ(1.0f, b);
+}
+
+TEST_F(ColorUtilTest, testGetCIELabVec4) {
+	glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+	float l, a, b;
+	color::getCIELab(v, l, a, b);
+	EXPECT_NEAR(53.2328f, l, 0.01f);
+	EXPECT_NEAR(80.1093f, a, 0.01f);
+	EXPECT_NEAR(67.2200f, b, 0.01f);
+}
+
+TEST_F(ColorUtilTest, testAlpha) {
+	glm::vec4 v(1.0f, 1.0f, 1.0f, 0.5f);
+	glm::vec4 v2 = color::alpha(v, 0.8f);
+	EXPECT_FLOAT_EQ(0.8f, v2.a);
+	EXPECT_FLOAT_EQ(1.0f, v2.r);
+
+	color::RGBA c(255, 255, 255, 128);
+	color::RGBA c2 = color::alpha(c, 200);
+	EXPECT_EQ(200, c2.a);
+	EXPECT_EQ(255, c2.r);
+}
+
+TEST_F(ColorUtilTest, testBrightnessVec4) {
+	glm::vec4 v(1.0f, 0.5f, 0.0f, 1.0f);
+	// Brightness is max(r, g, b)
+	EXPECT_FLOAT_EQ(1.0f, color::brightness(v));
+
+	glm::vec4 v2(0.1f, 0.5f, 0.2f, 1.0f);
+	EXPECT_FLOAT_EQ(0.5f, color::brightness(v2));
+}
+
+TEST_F(ColorUtilTest, testIntensity) {
+	glm::vec4 v(1.0f, 0.5f, 0.0f, 1.0f);
+	// Intensity is average(r, g, b)
+	EXPECT_FLOAT_EQ(0.5f, color::intensity(v));
+}
+
+TEST_F(ColorUtilTest, testGrayVec4) {
+	glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec4 g = color::gray(v);
+	EXPECT_NEAR(0.21f, g.r, 0.01f);
+	EXPECT_NEAR(0.21f, g.g, 0.01f);
+	EXPECT_NEAR(0.21f, g.b, 0.01f);
+	EXPECT_FLOAT_EQ(1.0f, g.a);
+}
+
+TEST_F(ColorUtilTest, testDarkerBrighterVec4) {
+	glm::vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec4 darkRed = color::darker(red, 0.5f);
+	EXPECT_LT(darkRed.r, red.r);
+	EXPECT_FLOAT_EQ(darkRed.g, red.g);
+	EXPECT_FLOAT_EQ(darkRed.b, red.b);
+
+	glm::vec4 brightRed = color::brighter(darkRed, 2.0f);
+	EXPECT_GT(brightRed.r, darkRed.r);
+}
+
 } // namespace color
