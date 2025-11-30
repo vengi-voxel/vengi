@@ -25,3 +25,7 @@ A number of formats and tools were expanded or fixed as well. Support for Tiberi
 Improvements were also made to hollowing, animation interpolation, culling, and several platform-specific issues. Additionally, the voxel editor’s brush system received updates to both the stamp brush and the line brush. The stamp brush now supports a user-provided offset to easily shift the placement of the stamp volume by a fixed distance. The line brush, in turn, gained a continuous mode and a stipple pattern that can be applied to each line.
 
 [youtube video](https://www.youtube.com/watch?v=LhzUZAtqx-s)
+
+# vxl-output
+
+While trying to fix the `vxl` issues I've extracted the relevant code from a project called `vxl-renderer` and published it as a new tool [on github](https://github.com/mgerhardy/vxl-output) - this tool is able to output the loaded matrices and print them to the console. It can be a useful tool to debug the issues in vengi. If you are willing to support here, I need some sort of quality check that those values are really correct.
