@@ -9,7 +9,7 @@ set(LIB color)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES app)
 
 set(TEST_SRCS
-	tests/ColorTest.cpp
+	tests/ColorUtilTest.cpp
 	tests/QuantizeTest.cpp
 )
 
@@ -19,7 +19,8 @@ gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 gtest_suite_end(tests-${LIB})
 
 set(BENCHMARK_SRCS
-	benchmarks/ColorBenchmark.cpp
+	benchmarks/ColorUtilBenchmark.cpp
+	benchmarks/QuantizeBenchmark.cpp
 )
 engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})

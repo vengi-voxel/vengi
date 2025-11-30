@@ -4,7 +4,7 @@
 #include "color/Quantize.h"
 #include "color/RGBA.h"
 
-class ColorBenchmark : public app::AbstractBenchmark {
+class QuantizeBenchmark : public app::AbstractBenchmark {
 protected:
 	static constexpr color::RGBA buf[]{
 		color::RGBA(0x00, 0x00, 0x00), color::RGBA(0x7d, 0x7d, 0x7d), color::RGBA(0x4c, 0xb3, 0x76),
@@ -132,101 +132,50 @@ protected:
 		color::RGBA(0x24, 0x21, 0x32), color::RGBA(0x24, 0x21, 0x32), color::RGBA(0x24, 0x21, 0x32)};
 };
 
-BENCHMARK_DEFINE_F(ColorBenchmark, quantizeKMeans)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(QuantizeBenchmark, quantizeKMeans)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::ColorReductionType::KMeans);
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::KMeans);
 		benchmark::DoNotOptimize(n);
 	}
 }
 
-BENCHMARK_DEFINE_F(ColorBenchmark, quantizeWu)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(QuantizeBenchmark, quantizeWu)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::ColorReductionType::Wu);
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::Wu);
 		benchmark::DoNotOptimize(n);
 	}
 }
 
-BENCHMARK_DEFINE_F(ColorBenchmark, quantizeOctree)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(QuantizeBenchmark, quantizeOctree)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::ColorReductionType::Octree);
+		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::Octree);
 		benchmark::DoNotOptimize(n);
 	}
 }
 
-BENCHMARK_DEFINE_F(ColorBenchmark, quantizeMedianCut)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(QuantizeBenchmark, quantizeMedianCut)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::ColorReductionType::MedianCut);
+		int n =
+			color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::MedianCut);
 		benchmark::DoNotOptimize(n);
 	}
 }
 
-BENCHMARK_DEFINE_F(ColorBenchmark, quantizeNeuQuant)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(QuantizeBenchmark, quantizeNeuQuant)(benchmark::State &state) {
 	for (auto _ : state) {
 		color::RGBA targetBuf[256]{};
-		int n = color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf),
-									  color::ColorReductionType::NeuQuant);
+		int n =
+			color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), color::ColorReductionType::NeuQuant);
 		benchmark::DoNotOptimize(n);
 	}
 }
 
-BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA)(benchmark::State &state) {
-	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::fromRGBA(buf[0]));
-	}
-}
-
-BENCHMARK_DEFINE_F(ColorBenchmark, fromRGBA2)(benchmark::State &state) {
-	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::fromRGBA(buf[0].r, buf[0].g, buf[0].b, buf[0].a));
-	}
-}
-
-BENCHMARK_DEFINE_F(ColorBenchmark, getRGBA4)(benchmark::State &state) {
-	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::toRGBA({0.0f, 0.0f, 0.0f, 0.0f}));
-	}
-}
-
-BENCHMARK_DEFINE_F(ColorBenchmark, getRGBA3)(benchmark::State &state) {
-	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::getRGBA({0.0f, 0.0f, 0.0f}));
-	}
-}
-
-BENCHMARK_DEFINE_F(ColorBenchmark, getHSB)(benchmark::State &state) {
-	for (auto _ : state) {
-		float hue, saturation, brightness;
-		glm::vec4 c(0.5f, 0.6f, 0.7f, 1.0f);
-		color::getHSB(c, hue, saturation, brightness);
-		benchmark::DoNotOptimize(hue);
-		benchmark::DoNotOptimize(saturation);
-		benchmark::DoNotOptimize(brightness);
-	}
-}
-
-BENCHMARK_DEFINE_F(ColorBenchmark, fromHSB)(benchmark::State &state) {
-	for (auto _ : state) {
-		benchmark::DoNotOptimize(color::fromHSB(0.5f, 0.5f, 0.5f, 1.0f));
-	}
-}
-
-BENCHMARK_REGISTER_F(ColorBenchmark, quantizeKMeans);
-BENCHMARK_REGISTER_F(ColorBenchmark, quantizeWu);
-BENCHMARK_REGISTER_F(ColorBenchmark, quantizeOctree);
-BENCHMARK_REGISTER_F(ColorBenchmark, quantizeMedianCut);
-BENCHMARK_REGISTER_F(ColorBenchmark, quantizeNeuQuant);
-BENCHMARK_REGISTER_F(ColorBenchmark, fromRGBA);
-BENCHMARK_REGISTER_F(ColorBenchmark, fromRGBA2);
-BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA4);
-BENCHMARK_REGISTER_F(ColorBenchmark, getRGBA3);
-BENCHMARK_REGISTER_F(ColorBenchmark, getHSB);
-BENCHMARK_REGISTER_F(ColorBenchmark, fromHSB);
-BENCHMARK_MAIN();
+BENCHMARK_REGISTER_F(QuantizeBenchmark, quantizeKMeans);
+BENCHMARK_REGISTER_F(QuantizeBenchmark, quantizeWu);
+BENCHMARK_REGISTER_F(QuantizeBenchmark, quantizeOctree);
+BENCHMARK_REGISTER_F(QuantizeBenchmark, quantizeMedianCut);
+BENCHMARK_REGISTER_F(QuantizeBenchmark, quantizeNeuQuant);

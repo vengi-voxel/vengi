@@ -2,16 +2,23 @@
  * @file
  */
 
-#include <gtest/gtest.h>
 #include "color/Color.h"
+#include "app/tests/AbstractTest.h"
 #include "color/ColorUtil.h"
 #include "color/RGBA.h"
-#include "core/collection/BufferView.h"
 #include "core/Endian.h"
+#include "core/collection/BufferView.h"
+#include <gtest/gtest.h>
 
 namespace color {
 
-TEST(ColorTest, testRGBA) {
+class ColorUtilTest : public app::AbstractTest {
+public:
+	ColorUtilTest() : app::AbstractTest() {
+	}
+};
+
+TEST_F(ColorUtilTest, testRGBA) {
 	color::RGBA color;
 	color.rgba = core_swap32le(0xff6699fe);
 	EXPECT_EQ(0xfe, color.r);
@@ -33,7 +40,7 @@ TEST(ColorTest, testRGBA) {
 	EXPECT_EQ(0xff, convertedBack.a);
 }
 
-TEST(ColorTest, testHex) {
+TEST_F(ColorUtilTest, testHex) {
 	EXPECT_EQ(color::RGBA(255, 255, 255, 255), color::fromHex("#ffffff"));
 	EXPECT_EQ(color::RGBA(255, 255, 255, 255), color::fromHex("0xffffff"));
 	EXPECT_EQ(color::RGBA(255, 255, 255, 255), color::fromHex("0xffffffff"));
@@ -42,14 +49,14 @@ TEST(ColorTest, testHex) {
 	EXPECT_EQ(color::RGBA(255, 0, 0, 255), color::fromHex("#ff0000ff"));
 }
 
-TEST(ColorTest, testDistanceMin) {
+TEST_F(ColorUtilTest, testDistanceMin) {
 	const color::RGBA color1(255, 0, 0, 255);
 	const color::RGBA color2(255, 0, 0, 255);
 	EXPECT_FLOAT_EQ(0.0f, color::getDistance(color1, color2, color::Distance::HSB));
 	EXPECT_FLOAT_EQ(0.0f, color::getDistance(color1, color2, color::Distance::Approximation));
 }
 
-TEST(ColorTest, testDistanceMax) {
+TEST_F(ColorUtilTest, testDistanceMax) {
 	const color::RGBA color1(0, 0, 0, 255);
 	const color::RGBA color2(255, 255, 255, 255);
 	EXPECT_FLOAT_EQ(0.1f, color::getDistance(color1, color2, color::Distance::HSB));
