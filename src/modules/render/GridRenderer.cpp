@@ -75,11 +75,11 @@ void GridRenderer::createPlane() {
 	_shapeBuilder.clear();
 	for (int i = -_planeGridSize; i <= _planeGridSize; ++i) {
 		if (glm::abs(i) % 100 == 0) {
-			_shapeBuilder.setColor(core::Color::DarkGray());
+			_shapeBuilder.setColor(color::Color::DarkGray());
 		} else if (glm::abs(i) % 10 == 0) {
-			_shapeBuilder.setColor(core::Color::Gray());
+			_shapeBuilder.setColor(color::Color::Gray());
 		} else {
-			_shapeBuilder.setColor(core::Color::LightGray());
+			_shapeBuilder.setColor(color::Color::LightGray());
 		}
 		for (int dir = 0; dir < 2; dir++) {
 			glm::vec3 start(dir ? -_planeGridSize : i, 0.f, dir ? i : -_planeGridSize);

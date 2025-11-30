@@ -27,12 +27,12 @@ protected:
 		// TODO: name ASSERT_EQ(pal1.name(), pal2.name());
 		// TODO: materials
 		for (int i = 0; i < pal1.colorCount(); ++i) {
-			const core::RGBA &c1 = pal1.color(i);
-			const core::RGBA &c2 = pal2.color(i);
+			const color::RGBA &c1 = pal1.color(i);
+			const color::RGBA &c2 = pal2.color(i);
 			if (c1 != c2) {
-				const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
-										   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+				const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
+				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::Color::print(c1)
+										   << "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]"
 										   << "\nPalette 1:\n"
 										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
 										   << palette::Palette::print(pal2);
@@ -55,15 +55,15 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	palette::Palette pal;
 	pal.nippon();
 	palette::PaletteLookup palLookup(pal);
-	const core::RGBA white(255, 255, 255, 255);
+	const color::RGBA white(255, 255, 255, 255);
 	EXPECT_EQ(0u, palLookup.findClosestIndex(white));
-	const core::RGBA red(255, 0, 0, 255);
+	const color::RGBA red(255, 0, 0, 255);
 	EXPECT_EQ(37u, palLookup.findClosestIndex(red));
-	const core::RGBA green(0, 255, 0, 255);
+	const color::RGBA green(0, 255, 0, 255);
 	EXPECT_EQ(149u, palLookup.findClosestIndex(green));
-	const core::RGBA blue(0, 0, 255, 255);
+	const color::RGBA blue(0, 0, 255, 255);
 	EXPECT_EQ(197u, palLookup.findClosestIndex(blue));
-	const core::RGBA black(0, 0, 0, 255);
+	const color::RGBA black(0, 0, 0, 255);
 	EXPECT_EQ(255u, palLookup.findClosestIndex(black));
 }
 
@@ -71,7 +71,7 @@ TEST_F(PaletteTest, testGimpRGBAPalette) {
 	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "true");
 	Palette pal;
 	pal.nippon();
-	pal.setColor(0, core::RGBA{0, 0, 0, 127});
+	pal.setColor(0, color::RGBA{0, 0, 0, 127});
 	const int cnt = pal.colorCount();
 	ASSERT_TRUE(pal.save("test.gpl"));
 	EXPECT_TRUE(pal.load("test.gpl"));
@@ -162,14 +162,14 @@ TEST_F(PaletteTest, testReduce) {
 TEST_F(PaletteTest, testFindReplacement) {
 	Palette pal;
 	pal.nippon();
-	const int r1 = pal.findReplacement(0, core::Color::Distance::Approximation);
-	const int r2 = pal.findReplacement(0, core::Color::Distance::HSB);
+	const int r1 = pal.findReplacement(0, color::Color::Distance::Approximation);
+	const int r2 = pal.findReplacement(0, color::Color::Distance::HSB);
 	EXPECT_NE(r1, 0);
 	EXPECT_NE(r2, 0);
-	const float delta = core::Color::getDistance(pal.color(r1), pal.color(r2), core::Color::Distance::HSB);
-	EXPECT_LT(delta, 0.025f) << "The replacement for the first color " << core::Color::print(pal.color(0))
-							 << " should be similar for both distance methods " << core::Color::print(pal.color(r1))
-							 << " vs " << core::Color::print(pal.color(r2));
+	const float delta = color::Color::getDistance(pal.color(r1), pal.color(r2), color::Color::Distance::HSB);
+	EXPECT_LT(delta, 0.025f) << "The replacement for the first color " << color::Color::print(pal.color(0))
+							 << " should be similar for both distance methods " << color::Color::print(pal.color(r1))
+							 << " vs " << color::Color::print(pal.color(r2));
 }
 
 TEST_F(PaletteTest, testSaveBuiltInPalette) {
@@ -198,19 +198,19 @@ TEST_F(PaletteTest, testCopyPalette) {
 TEST_F(PaletteTest, testAddColor1) {
 	int emptySlot = 0;
 	Palette pal;
-	EXPECT_TRUE(pal.tryAdd(core::RGBA(0), true, nullptr, false, emptySlot));
+	EXPECT_TRUE(pal.tryAdd(color::RGBA(0), true, nullptr, false, emptySlot));
 	ASSERT_EQ(1, pal.colorCount());
-	EXPECT_TRUE(pal.tryAdd(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
+	EXPECT_TRUE(pal.tryAdd(color::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
 	ASSERT_EQ(2, pal.colorCount());
 }
 
 TEST_F(PaletteTest, testAddColor2) {
 	int emptySlot = 0;
 	Palette pal;
-	EXPECT_TRUE(pal.tryAdd(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
+	EXPECT_TRUE(pal.tryAdd(color::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
 	ASSERT_EQ(2, pal.colorCount()) << "Empty slot was not taken into account";
 	uint8_t index = -1;
-	EXPECT_FALSE(pal.tryAdd(core::RGBA(0), true, &index, false, emptySlot));
+	EXPECT_FALSE(pal.tryAdd(color::RGBA(0), true, &index, false, emptySlot));
 	ASSERT_EQ(0, index);
 }
 
@@ -332,7 +332,7 @@ TEST_F(PaletteTest, testPixeloramaPalette) {
 
 TEST_F(PaletteTest, testHasEmit) {
 	Palette pal;
-	pal.setColor(0, core::RGBA{255, 0, 0, 255});
+	pal.setColor(0, color::RGBA{255, 0, 0, 255});
 	EXPECT_EQ(pal.size(), 1u);
 	EXPECT_FALSE(pal.hasEmit(0));
 	pal.setMaterialValue(0, MaterialEmit, 0.5f);

@@ -65,7 +65,7 @@ namespace palette {
  */
 class ASEPalette : public PaletteFormat {
 protected:
-	bool parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgba, core::String &name) const;
+	bool parseColorBlock(io::SeekableReadStream &stream, color::RGBA &rgba, core::String &name) const;
 public:
 	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) override;
 	bool save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;

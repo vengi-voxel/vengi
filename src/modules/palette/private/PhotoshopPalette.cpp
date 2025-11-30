@@ -38,7 +38,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::ColorPalette &pal
 		palette.setColorName(paletteColorIdx, colorName);
 	}
 
-	core::RGBA rgba;
+	color::RGBA rgba;
 	// Convert the color space to RGBA
 	switch (colorSpace) {
 	case adobe::ColorSpace::RGB: {
@@ -53,7 +53,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::ColorPalette &pal
 	case adobe::ColorSpace::HSB: {
 		//  The first three values in the color data are hue, saturation, and brightness. They are full unsigned 16-bit
 		//  values as in Apple's HSVColor data structure. Pure red = 0,65535,65535.
-		rgba = core::Color::fromHSB(colorComponents[0] / 65535.0f * 360.0f, colorComponents[1] / 65535.0f * 100.0f,
+		rgba = color::Color::fromHSB(colorComponents[0] / 65535.0f * 360.0f, colorComponents[1] / 65535.0f * 100.0f,
 									colorComponents[2] / 65535.0f * 100.0f);
 		break;
 	}
@@ -61,7 +61,7 @@ static bool readColor(io::SeekableReadStream &stream, palette::ColorPalette &pal
 		//  The four values in the color data are cyan , magenta , yellow , and black. They are full unsigned 16-bit
 		//  values. 0 = 100% ink. For example, pure cyan = 0,65535,65535,65535.
 		// TODO: multiply by 100.0f is correct?
-		core::CMYK cmyk(
+		color::CMYK cmyk(
 			1.0f - colorComponents[0] / 65535.0f, 1.0f - colorComponents[1] / 65535.0f,
 			1.0f - colorComponents[2] / 65535.0f, 1.0f - colorComponents[3] / 65535.0f);
 		rgba = cmyk.toRGB();
@@ -147,7 +147,7 @@ bool PhotoshopPalette::save(const palette::ColorPalette &palette, const core::St
 	stream.writeUInt16BE(1);
 	stream.writeUInt16BE(palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA &rgba = palette.color(i);
+		const color::RGBA &rgba = palette.color(i);
 		stream.writeUInt16BE(0); // RGB
 		stream.writeUInt16BE((uint16_t)(rgba.r / 255.0f * 65535.0f));
 		stream.writeUInt16BE((uint16_t)(rgba.g / 255.0f * 65535.0f));
@@ -158,7 +158,7 @@ bool PhotoshopPalette::save(const palette::ColorPalette &palette, const core::St
 	stream.writeUInt16BE(2);
 	stream.writeUInt16BE(palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA &rgba = palette.color(i);
+		const color::RGBA &rgba = palette.color(i);
 		stream.writeUInt16BE(0); // RGB
 		stream.writeUInt16BE((uint16_t)(rgba.r / 255.0f * 65535.0f));
 		stream.writeUInt16BE((uint16_t)(rgba.g / 255.0f * 65535.0f));

@@ -125,7 +125,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 			for (int y = 0; y < imageHeight; ++y) {
 				voxel::RawVolume::Sampler sampler2 = sampler;
 				for (int x = 0; x < imageWidth; ++x) {
-					const core::RGBA &color = flattenRGB(image->colorAt(x, y));
+					const color::RGBA &color = flattenRGB(image->colorAt(x, y));
 					if (color.a == 0) {
 						sampler2.movePositiveX();
 						continue;
@@ -341,7 +341,7 @@ bool PNGFormat::saveHeightmaps(const scenegraph::SceneGraph &sceneGraph, const c
 					voxel::RawVolume::Sampler sampler3 = sampler2;
 					for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
 						if (isBlocked(sampler3.voxel().getMaterial())) {
-							core::RGBA color = palette.color(sampler3.voxel().getColor());
+							color::RGBA color = palette.color(sampler3.voxel().getColor());
 							color.a = (y + 1) * heightScale;
 							image.setColor(color, x - region.getLowerX(),
 										z - region.getLowerZ());
@@ -391,7 +391,7 @@ bool PNGFormat::saveSlices(const scenegraph::SceneGraph &sceneGraph, const core:
 			const core::String &layerFilename =
 				core::String::format("%s-%s-%i.png", basename.c_str(), uuidStr.c_str(), z);
 			image::Image image(layerFilename);
-			core::Buffer<core::RGBA> rgba;
+			core::Buffer<color::RGBA> rgba;
 			rgba.resize(region.getWidthInVoxels() * region.getHeightInVoxels());
 			bool empty = true;
 			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
@@ -400,7 +400,7 @@ bool PNGFormat::saveSlices(const scenegraph::SceneGraph &sceneGraph, const core:
 					if (voxel::isAir(v.getMaterial())) {
 						continue;
 					}
-					const core::RGBA color = palette.color(v.getColor());
+					const color::RGBA color = palette.color(v.getColor());
 					const int idx = (region.getUpperY() - y) * region.getWidthInVoxels() + (x - region.getLowerX());
 					rgba[idx] = color;
 					empty = false;

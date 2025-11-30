@@ -72,9 +72,9 @@ void partialPaletteComparator(const palette::Palette &pal1, const palette::Palet
 void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palette &pal2, int maxDelta = 4);
 void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
 void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
-void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, core::RGBA c1, core::RGBA c2, uint8_t palIdx, float maxDelta = 0.001f);
-void colorComparator(core::RGBA c1, core::RGBA c2, int maxDelta = 1);
-void colorComparatorDistance(core::RGBA c1, core::RGBA c2, float maxDelta = 0.001f);
+void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, color::RGBA c1, color::RGBA c2, uint8_t palIdx, float maxDelta = 0.001f);
+void colorComparator(color::RGBA c1, color::RGBA c2, int maxDelta = 1);
+void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta = 0.001f);
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);

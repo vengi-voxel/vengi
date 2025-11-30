@@ -270,7 +270,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 	wrapBool(stream.writeUInt8(16)) // startPaletteRemap
 	wrapBool(stream.writeUInt8(31)) // endPaletteRemap
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA &rgba = palette.color(i);
+		const color::RGBA &rgba = palette.color(i);
 		wrapBool(stream.writeUInt8(rgba.r))
 		wrapBool(stream.writeUInt8(rgba.g))
 		wrapBool(stream.writeUInt8(rgba.b))
@@ -627,7 +627,7 @@ bool VXLFormat::readHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, p
 	if (valid) {
 		for (int i = 0; i < palette.colorCount(); ++i) {
 			const uint8_t *p = hdr.palette.palette[i];
-			palette.setColor(i, core::RGBA(p[0], p[1], p[2]));
+			palette.setColor(i, color::RGBA(p[0], p[1], p[2]));
 		}
 	} else {
 		palette.commandAndConquer();

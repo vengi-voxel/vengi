@@ -30,7 +30,7 @@ app::AppState TestTexture::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	video::clearColor(::core::Color::White());
+	video::clearColor(::color::Color::White());
 
 	return state;
 }

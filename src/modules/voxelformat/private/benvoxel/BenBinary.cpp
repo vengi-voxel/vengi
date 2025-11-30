@@ -85,7 +85,7 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 				Log::debug("Palette %i/%i with name: '%s' and %i entries", (int)(i + 1), (int)amountPalettes,
 						   name.c_str(), entries);
 				for (int j = 0; j < colors; ++j) {
-					core::RGBA color;
+					color::RGBA color;
 					if (stream.readUInt8(color.r) != 0) {
 						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
 						return false;
@@ -318,7 +318,7 @@ static bool saveMetadataBinary(const scenegraph::SceneGraph &sceneGraph, const s
 			}
 			Log::debug("Palette '%s' with %i entries", name.c_str(), entries);
 			for (int i = 0; i < colors; ++i) {
-				const core::RGBA &color = palette.color(i);
+				const color::RGBA &color = palette.color(i);
 				if (!stream.writeUInt8(color.a) || !stream.writeUInt8(color.b) || !stream.writeUInt8(color.g) ||
 					!stream.writeUInt8(color.r)) {
 					Log::error("Failed to write color %i for palette %s", i, name.c_str());

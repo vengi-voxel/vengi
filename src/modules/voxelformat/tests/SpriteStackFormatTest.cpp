@@ -24,8 +24,8 @@ TEST_F(SpriteStackFormatTest, testLoad) {
 	// Validate palette
 	const palette::Palette &palette = node->palette();
 	ASSERT_EQ(2, palette.colorCount()) << palette;
-	EXPECT_EQ(core::RGBA(0, 0, 0, 0), palette.color(0));
-	EXPECT_EQ(core::RGBA(0xa4, 0x2d, 0x27, 0xff), palette.color(1));
+	EXPECT_EQ(color::RGBA(0, 0, 0, 0), palette.color(0));
+	EXPECT_EQ(color::RGBA(0xa4, 0x2d, 0x27, 0xff), palette.color(1));
 
 	// slices.json: 70 slices, 352x244 per slice
 	const voxel::Region &region = v->region();

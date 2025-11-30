@@ -126,7 +126,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		}
 		palette::Palette &palette = node.palette();
 		for (size_t i = 0; i < palette.size(); ++i) {
-			core::RGBA rgba = palette.color(i);
+			color::RGBA rgba = palette.color(i);
 			const float alpha = 255.0f * nodeSpec.opacity;
 			rgba.a = (uint8_t)alpha;
 			palette.setColor(i, rgba);

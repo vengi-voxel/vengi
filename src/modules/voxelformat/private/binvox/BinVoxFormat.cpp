@@ -210,8 +210,8 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	glm::ivec3 pos = mins;
 	const uint8_t emptyColorReplacement = node->palette().findReplacement(0);
 	Log::debug("found replacement for %s at index %u: %s at index %u",
-			   core::Color::print(node->palette().color(0)).c_str(), 0,
-			   core::Color::print(node->palette().color(emptyColorReplacement)).c_str(), emptyColorReplacement);
+			   color::Color::print(node->palette().color(0)).c_str(), 0,
+			   color::Color::print(node->palette().color(emptyColorReplacement)).c_str(), emptyColorReplacement);
 	for (int idx = 0; idx < maxIndex; ++idx) {
 		if (!sampler.setPosition(pos)) {
 			Log::error("Failed to set position for index %i (%i:%i:%i) (w:%i,h:%i,d:%i)", idx, pos.x, pos.y, pos.z,

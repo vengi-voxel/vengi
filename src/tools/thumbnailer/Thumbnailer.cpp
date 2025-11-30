@@ -94,7 +94,7 @@ app::AppState Thumbnailer::onInit() {
 			}
 			Log::warn("Use fallback (black) image");
 			image::ImagePtr image = image::createEmptyImage(_outfile);
-			core::RGBA black(0, 0, 0, 255);
+			color::RGBA black(0, 0, 0, 255);
 			image->loadRGBA((const uint8_t *)&black, 1, 1);
 			saveImage(image);
 			return app::AppState::Cleanup;

@@ -367,7 +367,7 @@ int fillPlane(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, con
 
 	auto exec = [&](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
 		const glm::vec2 &uv = calcUV(p, region, face);
-		const core::RGBA rgba = image->colorAt(uv);
+		const color::RGBA rgba = image->colorAt(uv);
 		if (rgba.a == 0) {
 			return true;
 		}
@@ -386,7 +386,7 @@ voxel::Region remapToPalette(voxel::RawVolume *volume, const palette::Palette &o
 	}
 	voxel::RawVolumeWrapper wrapper(volume);
 	auto func = [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
-		const core::RGBA rgba = oldPalette.color(voxel.getColor());
+		const color::RGBA rgba = oldPalette.color(voxel.getColor());
 		const int newColor = newPalette.getClosestMatch(rgba, skipColorIndex);
 		if (newColor != palette::PaletteColorNotFound) {
 			voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor, voxel.getNormal(), voxel.getFlags());

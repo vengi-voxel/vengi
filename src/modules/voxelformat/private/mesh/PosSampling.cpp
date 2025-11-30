@@ -38,7 +38,7 @@ MeshMaterialIndex PosSampling::getMaterialIndex() const {
 
 }
 
-bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx) {
+bool PosSampling::add(uint32_t area, color::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx) {
 	// TODO: VOXELFORMAT: why?
 	if (entries[0].color == color) {
 		return false;
@@ -98,9 +98,9 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, MeshMater
 	return false;
 }
 
-core::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
+color::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
 	if (entries[1].area == 0) {
-		return core::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
+		return color::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
 									   flattenFactor);
 	}
 	if (weightedAverage) {
@@ -108,7 +108,7 @@ core::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) co
 		for (const PosSamplingEntry &pe : entries) {
 			sumArea += pe.area;
 		}
-		core::RGBA color(0, 0, 0, 255);
+		color::RGBA color(0, 0, 0, 255);
 		if (sumArea == 0) {
 			return color;
 		}
@@ -116,11 +116,11 @@ core::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) co
 			if (pe.area == 0) {
 				break;
 			}
-			color = core::RGBA::mix(color, pe.color, (float)pe.area / (float)sumArea);
+			color = color::RGBA::mix(color, pe.color, (float)pe.area / (float)sumArea);
 		}
-		return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
+		return color::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 	}
-	core::RGBA color(0, 0, 0, AlphaThreshold);
+	color::RGBA color(0, 0, 0, AlphaThreshold);
 	uint32_t area = 0;
 	for (const PosSamplingEntry &pe : entries) {
 		if (pe.area == 0) {
@@ -131,7 +131,7 @@ core::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) co
 			color = pe.color;
 		}
 	}
-	return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
+	return color::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 }
 
 } // namespace voxelformat

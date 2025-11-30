@@ -18,7 +18,7 @@ class Image;
 namespace palette {
 
 struct ColorPaletteEntry {
-	core::RGBA color;
+	color::RGBA color;
 	core::String name;
 	palette::Material material;
 };
@@ -36,7 +36,7 @@ public:
 
 	void reserve(size_t size);
 
-	void setColor(size_t index, const core::RGBA &color);
+	void setColor(size_t index, const color::RGBA &color);
 
 	void setColorName(size_t index, const core::String &name);
 
@@ -59,13 +59,13 @@ public:
 
 	bool load(const core::SharedPtr<image::Image> &img);
 
-	core::RGBA color(size_t index) const;
+	color::RGBA color(size_t index) const;
 
 	const palette::Material &material(size_t index) const;
 
-	void add(const core::RGBA &color, const core::String &name = core::String::Empty,
+	void add(const color::RGBA &color, const core::String &name = core::String::Empty,
 			 const palette::Material &material = {});
-	void set(size_t index, const core::RGBA &color, const core::String &name = core::String::Empty,
+	void set(size_t index, const color::RGBA &color, const core::String &name = core::String::Empty,
 			 const palette::Material &material = {});
 
 	using iterator = core::DynamicArray<ColorPaletteEntry>::iterator;

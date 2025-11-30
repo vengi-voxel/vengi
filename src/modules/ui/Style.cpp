@@ -12,7 +12,7 @@ const glm::vec4 &color(StyleColor color) {
 	if (app) {
 		return app->color(color);
 	}
-	return core::Color::White();
+	return color::Color::White();
 }
 
 } // namespace style

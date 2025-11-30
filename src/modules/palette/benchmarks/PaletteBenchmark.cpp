@@ -25,7 +25,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, getClosestMatch)(benchmark::State &state) {
 	palette.nippon();
 	for (auto _ : state) {
 		palette::PaletteLookup palLookup(palette);
-		benchmark::DoNotOptimize(palette.getClosestMatch(core::RGBA(13, 39, 26, 255)));
+		benchmark::DoNotOptimize(palette.getClosestMatch(color::RGBA(13, 39, 26, 255)));
 	}
 }
 
@@ -35,7 +35,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, paletteLookup)(benchmark::State &state) {
 	palette.nippon();
 	for (auto _ : state) {
 		palette::PaletteLookup palLookup(palette);
-		benchmark::DoNotOptimize(palLookup.findClosestIndex(core::RGBA((255 + i) % 255, (124 + 3 * i) % 255, (34 * i) % 255)));
+		benchmark::DoNotOptimize(palLookup.findClosestIndex(color::RGBA((255 + i) % 255, (124 + 3 * i) % 255, (34 * i) % 255)));
 		++i;
 	}
 }

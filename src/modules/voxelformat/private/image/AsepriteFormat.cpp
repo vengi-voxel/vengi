@@ -64,7 +64,7 @@ bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::St
 					sampler2.movePositiveX();
 					continue;
 				}
-				const core::RGBA color = flattenRGB(pixel.r, pixel.g, pixel.b, pixel.a);
+				const color::RGBA color = flattenRGB(pixel.r, pixel.g, pixel.b, pixel.a);
 				const int index = palLookup.findClosestIndex(color);
 				sampler2.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, index));
 				sampler2.movePositiveX();

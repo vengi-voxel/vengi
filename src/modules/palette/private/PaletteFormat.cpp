@@ -39,7 +39,7 @@ palette::Palette toPalette(const palette::ColorPalette &colorPalette) {
 		}
 	} else {
 		const size_t colorCount = (int)colorPalette.size();
-		core::Buffer<core::RGBA> colorBuffer;
+		core::Buffer<color::RGBA> colorBuffer;
 		colorBuffer.reserve(colorCount);
 		for (const auto &e : colorPalette) {
 			colorBuffer.push_back(e.color);

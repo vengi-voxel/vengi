@@ -79,7 +79,7 @@ protected:
 						<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["
 						<< voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", " << (int)voxel1.getColor() << "], voxel2["
 						<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "], color1["
-						<< core::Color::print(voxel1.getColor()) << "], color2[" << core::Color::print(voxel2.getColor())
+						<< color::Color::print(voxel1.getColor()) << "], color2[" << color::Color::print(voxel2.getColor())
 						<< "]";
 				}
 			}

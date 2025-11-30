@@ -21,9 +21,9 @@ TEST_F(AVITest, testCreate) {
 	io::FileStream stream(avifile);
 	ASSERT_TRUE(stream.valid());
 
-	const core::RGBA r = core::RGBA(255, 0, 0);
-	const core::RGBA b = core::RGBA(0, 0, 0);
-	const core::RGBA img1[]{
+	const color::RGBA r = color::RGBA(255, 0, 0);
+	const color::RGBA b = color::RGBA(0, 0, 0);
+	const color::RGBA img1[]{
 		r, r, b, b, b, b,
 		r, r, b, b, b, b,
 		b, b, b, b, b, b,
@@ -31,7 +31,7 @@ TEST_F(AVITest, testCreate) {
 		b, b, b, b, b, b,
 		b, b, b, b, b, b,
 	};
-	const core::RGBA img2[]{
+	const color::RGBA img2[]{
 		b, b, b, b, b, b,
 		b, b, b, b, b, b,
 		r, r, b, b, b, b,
@@ -39,7 +39,7 @@ TEST_F(AVITest, testCreate) {
 		b, b, b, b, b, b,
 		b, b, b, b, b, b,
 	};
-	const core::RGBA img3[]{
+	const color::RGBA img3[]{
 		b, b, b, b, b, b,
 		b, b, b, b, b, b,
 		b, b, b, b, b, b,

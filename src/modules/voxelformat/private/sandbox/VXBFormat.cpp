@@ -150,7 +150,7 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		wrap(stream->readUInt8(alpha));
 		uint8_t emissive;
 		wrap(stream->readUInt8(emissive));
-		palette.setColor(i, core::RGBA(red, green, blue, alpha));
+		palette.setColor(i, color::RGBA(red, green, blue, alpha));
 		if (emissive) {
 			palette.setEmit(i, emissive);
 		}
@@ -192,12 +192,12 @@ void VXBFormat::faceTexture(voxel::RawVolume &volume, const palette::Palette &pa
 			}
 			// we are running in a different x-direction compared to the original
 			const glm::ivec3 posFromIndex(width - (voxelIdx % width) - 1, (voxelIdx / width) % width, voxelIdx / area);
-			const core::RGBA color = diffuse->colorAt(x, y);
-			const core::RGBA emit = emissive->colorAt(x, y);
+			const color::RGBA color = diffuse->colorAt(x, y);
+			const color::RGBA emit = emissive->colorAt(x, y);
 
 			if (color.a == 0) {
 				// no voxel at all
-			} else if (emit.a == 0 || emit == core::RGBA(0, 0, 0, 255)) {
+			} else if (emit.a == 0 || emit == color::RGBA(0, 0, 0, 255)) {
 				int mat = palette.getClosestMatch(color);
 				if (mat == palette::PaletteColorNotFound) {
 					mat = 0;
@@ -306,7 +306,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		wrap(stream->readUInt8(alpha));
 		uint8_t hasEmissive;
 		wrap(stream->readUInt8(hasEmissive));
-		palette.setColor(i, core::RGBA(red, green, blue, alpha));
+		palette.setColor(i, color::RGBA(red, green, blue, alpha));
 		if (hasEmissive) {
 			palette.setEmit(i, emissive);
 		}
@@ -381,7 +381,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const palette::Palette &palette = model->palette();
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
 #if VXB_PRINT_IMAGES
-		core::Buffer<core::RGBA> colors;
+		core::Buffer<color::RGBA> colors;
 		colors.reserve(blockSize * blockSize);
 #endif
 		const int uniqueFace = indices[i];
@@ -389,7 +389,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		voxelutil::VisitorOrder visitorOrder = priv::visitorOrderForFace(faceName);
 		Log::debug("Save face %s for index %i (uniqueFace: %i)", voxel::faceNameString(faceName), (int)i, uniqueFace);
 		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA color = palette.color(voxel.getColor());
+			const color::RGBA color = palette.color(voxel.getColor());
 			stream->writeUInt8(color.r);
 			stream->writeUInt8(color.g);
 			stream->writeUInt8(color.b);
@@ -399,7 +399,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 #endif
 		}, visitorOrder);
 #if VXB_PRINT_IMAGES
-		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(core::RGBA));
+		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(color::RGBA));
 		image::ImagePtr img = image::loadRGBAImageFromStream("diffuse", memStream, blockSize, blockSize);
 		const core::String imgPrint = image::print(img, false);
 		Log::printf("%s\n", imgPrint.c_str());
@@ -410,7 +410,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		const voxel::FaceNames faceName = priv::faceNamesSave[indices[i]];
 		voxelutil::VisitorOrder visitorOrder = priv::visitorOrderForFace(faceName);
 		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA color = palette.emitColor(voxel.getColor());
+			const color::RGBA color = palette.emitColor(voxel.getColor());
 			stream->writeUInt8(color.r);
 			stream->writeUInt8(color.g);
 			stream->writeUInt8(color.b);
@@ -421,7 +421,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	uint8_t materialAmount = palette.colorCount();
 	wrapBool(stream->writeUInt8(materialAmount))
 	for (int i = 0; i < (int)materialAmount; ++i) {
-		const core::RGBA color = palette.color(i);
+		const color::RGBA color = palette.color(i);
 		wrapBool(stream->writeUInt8(color.b))
 		wrapBool(stream->writeUInt8(color.g))
 		wrapBool(stream->writeUInt8(color.r))

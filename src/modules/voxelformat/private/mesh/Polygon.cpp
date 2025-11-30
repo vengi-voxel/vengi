@@ -16,7 +16,7 @@ Polygon &Polygon::setMaterialIndex(MeshMaterialIndex materialIdx) {
 	return *this;
 }
 
-Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color) {
+Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, color::RGBA color) {
 	_vertices.push_back(vertex);
 	_uvs.push_back(uv);
 	_colors.push_back(color);

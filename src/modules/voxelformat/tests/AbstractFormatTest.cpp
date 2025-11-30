@@ -174,10 +174,10 @@ void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core
 	}
 }
 
-void AbstractFormatTest::checkColor(core::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
-	const core::RGBA c2 = palette.color(index);
-	const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-	ASSERT_LE(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
+void AbstractFormatTest::checkColor(color::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
+	const color::RGBA c2 = palette.color(index);
+	const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
+	ASSERT_LE(delta, maxDelta) << "color1[" << color::Color::print(c1) << "], color2[" << color::Color::print(c2)
 							   << "], delta[" << delta << "]";
 }
 
@@ -192,9 +192,9 @@ void AbstractFormatTest::testRGBSmall(const core::String &filename, const io::Ar
 	palette::Palette palette;
 	EXPECT_TRUE(palette.nippon());
 
-	const core::RGBA red(255, 0, 0);
-	const core::RGBA green(0, 255, 0);
-	const core::RGBA blue(0, 0, 255);
+	const color::RGBA red(255, 0, 0);
+	const color::RGBA green(0, 255, 0);
+	const color::RGBA blue(0, 0, 255);
 
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -219,15 +219,15 @@ void AbstractFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
 }
 
 void AbstractFormatTest::testLoadScreenshot(const core::String &filename, int width, int height,
-											const core::RGBA expectedColor, int expectedX, int expectedY) {
+											const color::RGBA expectedColor, int expectedX, int expectedY) {
 	SCOPED_TRACE(filename.c_str());
 	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, helper_filesystemarchive(), testLoadCtx);
 	ASSERT_TRUE(image);
 	ASSERT_EQ(image->width(), width) << image::print(image);
 	ASSERT_EQ(image->height(), height) << image::print(image);
-	const core::RGBA color = image->colorAt(expectedX, expectedY);
-	ASSERT_EQ(color, expectedColor) << "expected " << core::Color::print(expectedColor) << " but got "
-									<< core::Color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
+	const color::RGBA color = image->colorAt(expectedX, expectedY);
+	ASSERT_EQ(color, expectedColor) << "expected " << color::Color::print(expectedColor) << " but got "
+									<< color::Color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
 									<< image::print(image);
 }
 
@@ -262,9 +262,9 @@ void AbstractFormatTest::testRGB(const core::String &filename, float maxDelta) {
 	palette::Palette palette;
 	EXPECT_TRUE(palette.nippon());
 
-	const core::RGBA red = palette.color(37);
-	const core::RGBA green = palette.color(149);
-	const core::RGBA blue = palette.color(197);
+	const color::RGBA red = palette.color(37);
+	const color::RGBA green = palette.color(149);
+	const color::RGBA blue = palette.color(197);
 
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -359,7 +359,7 @@ void AbstractFormatTest::testSaveSingleVoxel(const core::String &filename, Forma
 	scenegraph::SceneGraph sceneGraphsave;
 	{
 		palette::Palette pal;
-		pal.tryAdd(core::RGBA(127, 127, 255, 255));
+		pal.tryAdd(color::RGBA(127, 127, 255, 255));
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&original, false);
 		node.setPalette(pal);
@@ -415,7 +415,7 @@ void AbstractFormatTest::testSaveMultipleModels(const core::String &filename, Fo
 	SCOPED_TRACE(filename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	palette::Palette pal;
-	pal.tryAdd(core::RGBA(127, 127, 255, 255));
+	pal.tryAdd(color::RGBA(127, 127, 255, 255));
 	voxel::RawVolume model1(region);
 	voxel::RawVolume model2(region);
 	voxel::RawVolume model3(region);

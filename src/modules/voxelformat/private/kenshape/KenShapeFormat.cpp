@@ -82,7 +82,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	int n = 0;
 	for (const auto &color : colors) {
 		const std::string &hex = color.get<std::string>();
-		core::RGBA rgba(0, 0, 0, 255);
+		color::RGBA rgba(0, 0, 0, 255);
 		core::string::parseHex(hex.c_str(), rgba.r, rgba.g, rgba.b, rgba.a);
 		palette.setColor(n, rgba);
 		++n;
@@ -193,7 +193,7 @@ size_t KenShapeFormat::loadPalette(const core::String &filename, const io::Archi
 	int n = 0;
 	for (const auto &color : colors) {
 		const std::string &hex = color.get<std::string>();
-		core::RGBA rgba(0, 0, 0, 255);
+		color::RGBA rgba(0, 0, 0, 255);
 		core::string::parseHex(hex.c_str(), rgba.r, rgba.g, rgba.b, rgba.a);
 		palette.setColor(n, rgba);
 		++n;

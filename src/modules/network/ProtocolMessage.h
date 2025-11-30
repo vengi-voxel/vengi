@@ -83,7 +83,7 @@ protected:
 			return false;
 		}
 		for (int i = 0; i < palette.colorCount(); ++i) {
-			const core::RGBA color = palette.color(i);
+			const color::RGBA color = palette.color(i);
 			const palette::Material &material = palette.material(i);
 			if (!writeUInt32(color.rgba)) {
 				Log::error("Failed to write color for palette index %d/%d", (int)i, (int)palette.size());
@@ -141,7 +141,7 @@ protected:
 		}
 		palette.setSize(paletteSize);
 		for (uint16_t i = 0; i < paletteSize; ++i) {
-			core::RGBA color;
+			color::RGBA color;
 			if (in.readUInt32(color.rgba) == -1) {
 				Log::error("Failed to read color for palette index %d/%d", i, paletteSize);
 				return false;

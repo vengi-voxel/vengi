@@ -101,11 +101,11 @@ def texture_color_lookup(texture_id):
         return None
 
 def rgba_out(rgba):
-    return f"core::RGBA({rgba[0]}, {rgba[1]}, {rgba[2]}, {rgba[3]})"
+    return f"color::RGBA({rgba[0]}, {rgba[1]}, {rgba[2]}, {rgba[3]})"
 
 def float_color_out(color):
     color = color.split(",")
-    return f"core::RGBA({int(float(color[0])*255.0)}, {int(float(color[1])*255.0)}, {int(float(color[2])*255.0)}, {int(float(color[3])*255.0)})"
+    return f"color::RGBA({int(float(color[0])*255.0)}, {int(float(color[1])*255.0)}, {int(float(color[2])*255.0)}, {int(float(color[3])*255.0)})"
 
 def print_colors(root, block_properties, emit):
     if emit:
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     print("")
     print("struct BlockColor {")
     print("	int blockId;")
-    print("	core::RGBA color;")
+    print("	color::RGBA color;")
     print("};")
     print_colors(root, block_properties, False)
     print_colors(root, block_properties, True)

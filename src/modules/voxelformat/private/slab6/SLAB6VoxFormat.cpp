@@ -44,7 +44,7 @@ size_t SLAB6VoxFormat::loadPalette(const core::String &filename, const io::Archi
 	stream->skip((int64_t)width * height * depth);
 	palette.setSize(palette::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		core::RGBA color;
+		color::RGBA color;
 		wrapBool(priv::readRGBScaledColor(*stream, color))
 		palette.setColor(i, color);
 	}
@@ -79,7 +79,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::A
 	stream->skip((int64_t)width * height * depth);
 	palette.setSize(palette::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		core::RGBA color;
+		color::RGBA color;
 		wrapBool(priv::readRGBScaledColor(*stream, color))
 		palette.setColor(i, color);
 	}
@@ -147,11 +147,11 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	}
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA &color = palette.color(i);
+		const color::RGBA &color = palette.color(i);
 		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
-		core::RGBA color(0);
+		color::RGBA color(0);
 		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 

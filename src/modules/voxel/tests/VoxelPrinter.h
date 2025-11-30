@@ -55,8 +55,8 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &vo
 				if (voxel.getMaterial() == VoxelType::Air) {
 					os << ".";
 				} else {
-					const core::RGBA rgba = palette.color(voxel.getColor());
-					os << core::Color::print(rgba, false).c_str();
+					const color::RGBA rgba = palette.color(voxel.getColor());
+					os << color::Color::print(rgba, false).c_str();
 				}
 			}
 			os << std::endl;

@@ -71,17 +71,17 @@ bool Axis::init() {
 		return false;
 	}
 
-	_shapeBuilder.setColor(core::Color::Red());
+	_shapeBuilder.setColor(color::Color::Red());
 	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::right());
 	_meshXIndex = _shapeRenderer.create(_shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Green());
+	_shapeBuilder.setColor(color::Color::Green());
 	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::up());
 	_meshYIndex = _shapeRenderer.create(_shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Blue());
+	_shapeBuilder.setColor(color::Color::Blue());
 	_shapeBuilder.line(glm::zero<glm::vec3>(), _flipZ ? glm::backward() : glm::forward());
 	_meshZIndex = _shapeRenderer.create(_shapeBuilder);
 
@@ -91,21 +91,21 @@ bool Axis::init() {
 
 void Axis::createCones() {
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Red());
+	_shapeBuilder.setColor(color::Color::Red());
 	_shapeBuilder.setRotation(glm::rotate(glm::three_over_two_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f)));
 	_shapeBuilder.setPosition(glm::vec3(_pos.x + _size.x, _pos.y, _pos.z));
 	_shapeBuilder.cone(0.3f, 1.0f);
 	_shapeRenderer.createOrUpdate(_coneXIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Green());
+	_shapeBuilder.setColor(color::Color::Green());
 	_shapeBuilder.setRotation(glm::rotate(glm::half_pi<float>(), glm::vec3( 1.0f,  0.0f,  0.0f)));
 	_shapeBuilder.setPosition(glm::vec3(_pos.x, _pos.y + _size.y, _pos.z));
 	_shapeBuilder.cone(0.3f, 1.0f);
 	_shapeRenderer.createOrUpdate(_coneYIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Blue());
+	_shapeBuilder.setColor(color::Color::Blue());
 	_shapeBuilder.setRotation(glm::rotate(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f)));
 	_shapeBuilder.setPosition(glm::vec3(_pos.x, _pos.y, _pos.z + _size.z));
 	_shapeBuilder.cone(0.3f, 1.0f);

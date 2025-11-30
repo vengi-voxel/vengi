@@ -19,11 +19,11 @@ bool PaintNetPalette::load(const core::String &filename, io::SeekableReadStream 
 			}
 			continue;
 		}
-		core::RGBA argb = core::Color::fromHex(line);
+		color::RGBA argb = color::Color::fromHex(line);
 		if (argb.r == 0) {
 			continue;
 		}
-		palette.setColor(n++, core::RGBA(argb.g, argb.b, argb.a, argb.r));
+		palette.setColor(n++, color::RGBA(argb.g, argb.b, argb.a, argb.r));
 	}
 
 	return true;
@@ -39,7 +39,7 @@ bool PaintNetPalette::save(const palette::ColorPalette &palette, const core::Str
 	stream.writeStringFormat(false, "; Colors: %i\n", (int)palette.size());
 
 	for (size_t i = 0; i < palette.size(); ++i) {
-		const core::RGBA &rgba = palette.color(i);
+		const color::RGBA &rgba = palette.color(i);
 		stream.writeStringFormat(false, "%02x%02x%02x%02x\n", rgba.a, rgba.r, rgba.g, rgba.b);
 	}
 	return true;

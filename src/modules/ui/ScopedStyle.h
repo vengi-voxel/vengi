@@ -33,16 +33,16 @@ public:
 		_color -= n;
 	}
 	inline void darker(ImGuiCol idx, float f = 1.0f) {
-		setColor(idx, core::Color::darker(ImGui::GetStyle().Colors[idx], f));
+		setColor(idx, color::Color::darker(ImGui::GetStyle().Colors[idx], f));
 	}
 	inline void brighter(ImGuiCol idx, float f = 1.0f) {
-		setColor(idx, core::Color::brighter(ImGui::GetStyle().Colors[idx], f));
+		setColor(idx, color::Color::brighter(ImGui::GetStyle().Colors[idx], f));
 	}
 	inline ImVec4 highlight(const ImVec4 &c, float f = 1.0f) {
 		if (c.x < 0.1f && c.y < 0.1f && c.z < 0.1f) {
-			return core::Color::brighter(c, f);
+			return color::Color::brighter(c, f);
 		}
-		return core::Color::darker(c, f);
+		return color::Color::darker(c, f);
 	}
 	/**
 	 * Does either make the color brighter or darker depending on the current color

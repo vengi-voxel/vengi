@@ -361,7 +361,7 @@ bool Autodesk3DSFormat::readMesh(io::SeekableReadStream *stream, Chunk3ds &paren
 			if (flags & 0x01) { // vertex colors are available
 				Log::debug("Found vertex colors in 3ds file");
 				for (uint32_t i = 0; i < vertexCount; ++i) {
-					core::RGBA rgba(0, 0, 0, 255);
+					color::RGBA rgba(0, 0, 0, 255);
 					wrap(stream->readUInt8(rgba.r))
 					wrap(stream->readUInt8(rgba.g))
 					wrap(stream->readUInt8(rgba.b))
@@ -380,7 +380,7 @@ bool Autodesk3DSFormat::readMesh(io::SeekableReadStream *stream, Chunk3ds &paren
 	return true;
 }
 
-bool Autodesk3DSFormat::readDataColor(io::SeekableReadStream *stream, Chunk3ds &parent, core::RGBA &color) const {
+bool Autodesk3DSFormat::readDataColor(io::SeekableReadStream *stream, Chunk3ds &parent, color::RGBA &color) const {
 	const int64_t currentPos = stream->pos();
 	const int64_t endOfChunk = currentPos + parent.length - 6;
 

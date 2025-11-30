@@ -17,7 +17,7 @@ private:
 public:
 	MeshTri() = default;
 	inline MeshTri(const glm::vec3 (&v)[3], const glm::vec2 (&uv)[3], MeshMaterialIndex _materialIdx,
-				   const core::RGBA (&c)[3])
+				   const color::RGBA (&c)[3])
 		: math::Tri::Tri(v, c) {
 		setUVs(uv[0], uv[1], uv[2]);
 		this->materialIdx = _materialIdx;
@@ -67,8 +67,8 @@ inline void subdivide(const MESHTRI &in, MESHTRI out[4]) {
 						   glm::mix(in.vertex2(), in.vertex0(), 0.5f)};
 	const glm::vec2 miduv[]{glm::mix(in.uv0(), in.uv1(), 0.5f), glm::mix(in.uv1(), in.uv2(), 0.5f),
 							glm::mix(in.uv2(), in.uv0(), 0.5f)};
-	const core::RGBA midc[]{core::RGBA::mix(in.color0(), in.color1()), core::RGBA::mix(in.color1(), in.color2()),
-							core::RGBA::mix(in.color2(), in.color0())};
+	const color::RGBA midc[]{color::RGBA::mix(in.color0(), in.color1()), color::RGBA::mix(in.color1(), in.color2()),
+							color::RGBA::mix(in.color2(), in.color0())};
 
 	// the subdivided new three triangles
 	out[0] = MESHTRI{
@@ -82,20 +82,20 @@ inline void subdivide(const MESHTRI &in, MESHTRI out[4]) {
 		MESHTRI{{midv[0], midv[1], midv[2]}, {miduv[0], miduv[1], miduv[2]}, in.materialIdx, {midc[0], midc[1], midc[2]}};
 }
 
-inline core::RGBA colorAt(const MeshTri &tri, const MeshMaterialArray &meshMaterialArray, const glm::vec2 &uv, bool originUpperLeft = false) {
+inline color::RGBA colorAt(const MeshTri &tri, const MeshMaterialArray &meshMaterialArray, const glm::vec2 &uv, bool originUpperLeft = false) {
 	MeshMaterial* material;
 	if (tri.materialIdx >= 0 && tri.materialIdx < (int)meshMaterialArray.size()) {
 		material = meshMaterialArray[tri.materialIdx].get();
 	} else {
 		material = nullptr;
 	}
-	core::RGBA rgba;
+	color::RGBA rgba;
 	if (material && material->colorAt(rgba, uv, originUpperLeft)) {
 		return rgba;
 	}
 
-	const auto mixColors = [](const core::RGBA &a, const core::RGBA &b, const core::RGBA &c) {
-		return core::RGBA::mix(core::RGBA::mix(a, b), c);
+	const auto mixColors = [](const color::RGBA &a, const color::RGBA &b, const color::RGBA &c) {
+		return color::RGBA::mix(color::RGBA::mix(a, b), c);
 	};
 
 	if (material) {

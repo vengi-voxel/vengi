@@ -110,7 +110,7 @@ private:
 	bool saveChunk_DictMat4(io::WriteStream &stream, const core::String &key, const glm::mat4 &value);
 	bool saveChunk_DictVec3(io::WriteStream &stream, const core::String &key, const glm::vec3 &value);
 	bool saveChunk_DictInt(io::WriteStream &stream, const core::String &key, int32_t value);
-	bool saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const core::RGBA &value);
+	bool saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const color::RGBA &value);
 
 	// Write image info and preview pic.
 	bool saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,

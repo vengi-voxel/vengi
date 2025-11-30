@@ -35,7 +35,7 @@ public:
 	/**
 	 * @param[in] splitFrustum The amount of splits that should be rendered.
 	 */
-	bool init(const glm::vec4& color = core::Color::Red(), int splitFrustum = 0);
+	bool init(const glm::vec4& color = color::Color::Red(), int splitFrustum = 0);
 
 	void shutdown();
 

@@ -78,7 +78,7 @@ static void printJsonPalette(const palette::ColorPalette &palette) {
 	Log::printf("\"name\":\"%s\",", palette.name().c_str());
 	Log::printf("\"colors\":[");
 	for (int i = 0; i < (int)palette.size(); ++i) {
-		const core::RGBA color = palette.color(i);
+		const color::RGBA color = palette.color(i);
 		Log::printf("{");
 		Log::printf("\"r\":%u,\"g\":%u,\"b\":%u,\"a\":%u", color.r, color.g, color.b, color.a);
 		if (!palette.colorName(i).empty()) {
@@ -113,7 +113,7 @@ static void printJsonPalette(const palette::ColorPalette &palette) {
 
 static void printHexPalette(const palette::ColorPalette &palette) {
 	for (int i = 0; i < (int)palette.size(); ++i) {
-		const core::RGBA color = palette.color(i);
+		const color::RGBA color = palette.color(i);
 		Log::printf("0x%02x%02x%02x%02x", color.r, color.g, color.b, color.a);
 		if (i != (int)palette.size() - 1) {
 			Log::printf(", ");

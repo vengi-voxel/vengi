@@ -34,7 +34,7 @@ private:
 		uint64_t _hash;
 	} _hash{};
 	PaletteView _view;
-	core::RGBA _colors[PaletteMaxColors]{};
+	color::RGBA _colors[PaletteMaxColors]{};
 	core::Optional<core::Array<core::String, PaletteMaxColors>> _names;
 	Material _materials[PaletteMaxColors]{};
 	int _colorCount = 0;
@@ -57,9 +57,9 @@ public:
 	void copy(uint8_t fromPaletteColorIdx, uint8_t toPaletteColorIdx);
 
 	const Material &material(uint8_t paletteColorIdx) const;
-	core::RGBA color(uint8_t paletteColorIdx) const;
+	color::RGBA color(uint8_t paletteColorIdx) const;
 	glm::vec4 color4(uint8_t paletteColorIdx) const;
-	void setColor(uint8_t paletteColorIdx, const core::RGBA &rgba);
+	void setColor(uint8_t paletteColorIdx, const color::RGBA &rgba);
 	void setMaterial(uint8_t i, const Material &material);
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
@@ -68,7 +68,7 @@ public:
 	void toVec4f(core::Buffer<glm::vec4> &rgba) const;
 	void toVec4f(glm::highp_vec4 *vec4f) const;
 
-	core::RGBA emitColor(uint8_t paletteColorIdx) const;
+	color::RGBA emitColor(uint8_t paletteColorIdx) const;
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries
@@ -163,18 +163,18 @@ public:
 	 * e.g. search for replacements
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
-	int getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx = -1, core::Color::Distance distance = core::Color::Distance::Approximation) const;
-	uint8_t findReplacement(uint8_t paletteColorIdx, core::Color::Distance distance = core::Color::Distance::Approximation) const;
+	int getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx = -1, color::Color::Distance distance = color::Color::Distance::Approximation) const;
+	uint8_t findReplacement(uint8_t paletteColorIdx, color::Color::Distance distance = color::Color::Distance::Approximation) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to match the color to another already existing color in the palette.
 	 * @note Only use this for single colors - not for a lot of them. This method is quite slow
 	 * @param[in] skipPaletteColorIdx This slot is not filled with any color value - if it's @c -1 every slot is filled
 	 */
-	bool tryAdd(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true,
+	bool tryAdd(color::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true,
 				int skipPaletteColorIdx = -1);
-	bool hasColor(core::RGBA rgba);
-	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
+	bool hasColor(color::RGBA rgba);
+	void quantize(const color::RGBA *inputColors, const size_t inputColorCount);
 	void constrastStretching();
 	void whiteBalance();
 
@@ -219,15 +219,15 @@ inline void Palette::markSaved() {
 	_needsSave = false;
 }
 
-inline core::RGBA Palette::color(uint8_t paletteColorIdx) const {
+inline color::RGBA Palette::color(uint8_t paletteColorIdx) const {
 	return _colors[paletteColorIdx];
 }
 
-inline core::RGBA Palette::emitColor(uint8_t paletteColorIdx) const {
+inline color::RGBA Palette::emitColor(uint8_t paletteColorIdx) const {
 	if (hasEmit(paletteColorIdx)) {
 		return _colors[paletteColorIdx];
 	}
-	return core::RGBA{};
+	return color::RGBA{};
 }
 
 inline const Material &Palette::material(uint8_t paletteColorIdx) const {

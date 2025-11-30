@@ -12,7 +12,7 @@ namespace voxelformat {
 struct MeshVertex {
 	glm::vec3 pos{0.0f};
 	glm::vec2 uv{0.0f};
-	core::RGBA color{0};
+	color::RGBA color{0};
 	glm::vec3 normal{0.0f};
 	MeshMaterialIndex materialIdx = -1;
 };

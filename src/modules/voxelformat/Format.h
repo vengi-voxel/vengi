@@ -107,8 +107,8 @@ protected:
 	 */
 	void calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
 
-	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
-	core::RGBA flattenRGB(core::RGBA rgba) const;
+	color::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
+	color::RGBA flattenRGB(color::RGBA rgba) const;
 	/**
 	 * @brief This can be used for rgb color formats to create a palette. Just read
 	 * all the colors and add then add them to the palette.

@@ -15,7 +15,7 @@ class MeshTriTest : public app::AbstractTest {};
 TEST_F(MeshTriTest, testColorAt4x4) {
 	constexpr int h = 4;
 	constexpr int w = 4;
-	constexpr core::RGBA buffer[w * h]{
+	constexpr color::RGBA buffer[w * h]{
 		{255, 0, 0, 255},	{255, 255, 0, 255},	  {255, 0, 255, 255},	{255, 255, 255, 255},
 		{0, 255, 0, 255},	{13, 255, 50, 255},	  {127, 127, 127, 255}, {255, 127, 0, 255},
 		{255, 0, 0, 255},	{255, 60, 0, 255},	  {255, 0, 30, 255},	{127, 69, 255, 255},
@@ -40,11 +40,11 @@ TEST_F(MeshTriTest, testColorAt4x4) {
 							  image::Image::uv(x, y + 1, w, h, originUpperLeft),
 							  image::Image::uv(x + 1, y, w, h, originUpperLeft));
 				const glm::vec2 &uv = meshTri.centerUV();
-				const core::RGBA color = colorAt(meshTri, meshMaterialArray, uv, originUpperLeft);
+				const color::RGBA color = colorAt(meshTri, meshMaterialArray, uv, originUpperLeft);
 				const int texIndex = y * w + x;
 				ASSERT_EQ(buffer[texIndex], color)
-					<< "pixel(" << x << "/" << y << "), " << core::Color::print(buffer[texIndex]) << " vs "
-					<< core::Color::print(color) << " ti: " << texIndex;
+					<< "pixel(" << x << "/" << y << "), " << color::Color::print(buffer[texIndex]) << " vs "
+					<< color::Color::print(color) << " ti: " << texIndex;
 			}
 		}
 	}

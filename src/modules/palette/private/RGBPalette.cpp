@@ -10,7 +10,7 @@ namespace palette {
 
 bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::ColorPalette &palette) {
 	while (!stream.eos()) {
-		core::RGBA color;
+		color::RGBA color;
 		if (stream.readUInt8(color.r) == -1) {
 			Log::error("Failed to read color r");
 			return false;
@@ -29,7 +29,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 
 	int maxColor = 0;
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA rgba = palette.color(i);
+		const color::RGBA rgba = palette.color(i);
 		maxColor = core_max(rgba.r, maxColor);
 		maxColor = core_max(rgba.g, maxColor);
 		maxColor = core_max(rgba.b, maxColor);
@@ -39,7 +39,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		if (core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal()) {
 			const float scale = (255.0f / 63.0f);
 			for (int i = 0; i < palette.colorCount(); ++i) {
-				core::RGBA rgba = palette.color(i);
+				color::RGBA rgba = palette.color(i);
 				rgba.r = (float)rgba.r * scale;
 				rgba.g = (float)rgba.g * scale;
 				rgba.b = (float)rgba.b * scale;
@@ -58,7 +58,7 @@ bool RGBPalette::save(const palette::ColorPalette &palette, const core::String &
 	const bool to6Bit = core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal();
 	const float scale = (255.0f / 63.0f);
 	for (size_t i = 0; i < palette.size(); ++i) {
-		core::RGBA color = palette.color(i);
+		color::RGBA color = palette.color(i);
 		if (to6Bit) {
 			stream.writeUInt8((uint8_t)((float)color.r / scale));
 			stream.writeUInt8((uint8_t)((float)color.g / scale));

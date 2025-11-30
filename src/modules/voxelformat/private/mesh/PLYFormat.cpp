@@ -337,7 +337,7 @@ bool PLYFormat::parseVerticesAscii(const Element &element, io::SeekableReadStrea
 			return false;
 		}
 		MeshVertex vertex;
-		vertex.color = core::RGBA(0, 0, 0, 255);
+		vertex.color = color::RGBA(0, 0, 0, 255);
 		for (size_t i = 0; i < element.properties.size(); ++i) {
 			const Property &prop = element.properties[i];
 			Log::trace("%s: %s", prop.name.c_str(), tokens[i].c_str());
@@ -753,7 +753,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					stream->writeStringFormat(false, " %f %f", uv.x, uv.y);
 				}
 				if (withColor) {
-					const core::RGBA color = palette.color(v.colorIndex);
+					const color::RGBA color = palette.color(v.colorIndex);
 					stream->writeStringFormat(false, " %u %u %u %u", color.r, color.g, color.b, color.a);
 				}
 				stream->writeStringFormat(false, "\n");

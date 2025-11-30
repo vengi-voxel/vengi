@@ -61,7 +61,7 @@ static bool loadVoxels(const core::String &voxels, FUNC func) {
 		const int x = core::string::toInt(tokens[0]);
 		const int y = core::string::toInt(tokens[1]);
 		const int z = core::string::toInt(tokens[2]);
-		const core::RGBA color = core::Color::fromHex(tokens[3].c_str());
+		const color::RGBA color = color::Color::fromHex(tokens[3].c_str());
 		const glm::ivec3 pos(x, y, z);
 		func(pos, color);
 	}
@@ -103,7 +103,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		if (iter->first == "voxels") {
 			glm::ivec3 mins(INT_MAX);
 			glm::ivec3 maxs(INT_MIN);
-			if (!loadVoxels(iter->second, [&mins, &maxs](const glm::ivec3 &pos, const core::RGBA &color) {
+			if (!loadVoxels(iter->second, [&mins, &maxs](const glm::ivec3 &pos, const color::RGBA &color) {
 					mins = glm::min(mins, pos);
 					maxs = glm::max(maxs, pos);
 				})) {
@@ -117,7 +117,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 				continue;
 			}
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			if (!loadVoxels(iter->second, [volume, &palette](const glm::ivec3 &pos, const core::RGBA &color) {
+			if (!loadVoxels(iter->second, [volume, &palette](const glm::ivec3 &pos, const color::RGBA &color) {
 					volume->setVoxel(pos, voxel::createVoxel(palette, palette.getClosestMatch(color)));
 				})) {
 				Log::error("Failed to load voxel volume from: %s", iter->second.c_str());
@@ -163,7 +163,7 @@ size_t VBXFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		for (auto iter : data->second) {
 			if (iter->first == "voxels") {
 				if (!loadVoxels(iter->second,
-								[&colors](const glm::ivec3 &pos, const core::RGBA &color) { colors.put(color, true); })) {
+								[&colors](const glm::ivec3 &pos, const color::RGBA &color) { colors.put(color, true); })) {
 					Log::error("Failed to load voxel volume dimensions from: %s", iter->second.c_str());
 					return 0;
 				}

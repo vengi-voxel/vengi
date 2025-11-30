@@ -18,12 +18,12 @@ namespace voxelformat {
  * during voxelization
  */
 struct PosSamplingEntry {
-	inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal, MeshMaterialIndex _materialIdx)
+	inline PosSamplingEntry(uint32_t _area, color::RGBA _color, uint8_t _normal, MeshMaterialIndex _materialIdx)
 		: area(_area), color(_color), normal(_normal), materialIdx(_materialIdx) {
 	}
 	PosSamplingEntry() = default;
 	uint32_t area = 0u;
-	core::RGBA color;
+	color::RGBA color;
 	uint8_t normal = 0u;
 	MeshMaterialIndex materialIdx = 0u;
 };
@@ -38,14 +38,14 @@ private:
 	core::Array<PosSamplingEntry, MaxTriangleColorContributions> entries;
 
 public:
-	PosSampling(uint32_t area, core::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx) {
+	PosSampling(uint32_t area, color::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx) {
 		entries[0].area = area;
 		entries[0].color = color;
 		entries[0].normal = normal;
 		entries[0].materialIdx = materialIdx;
 	}
 
-	bool add(uint32_t area, core::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx);
+	bool add(uint32_t area, color::RGBA color, uint8_t normal, MeshMaterialIndex materialIdx);
 	/**
 	 * @brief Computes the color based on the position sampling entries.
 	 *
@@ -58,11 +58,11 @@ public:
 	 * @param weightedAverage If @c true, the function computes a weighted average of the colors based on the area of
 	 * each entry. If @c false, the function returns the color of the entry with the largest area.
 	 *
-	 * @sa core::Color::flattenRGB()
+	 * @sa color::Color::flattenRGB()
 	 *
-	 * @return The computed color as a core::RGBA value.
+	 * @return The computed color as a color::RGBA value.
 	 */
-	core::RGBA getColor(uint8_t flattenFactor, bool weightedAverage) const;
+	color::RGBA getColor(uint8_t flattenFactor, bool weightedAverage) const;
 	uint8_t getNormal() const;
 	MeshMaterialIndex getMaterialIndex() const;
 };

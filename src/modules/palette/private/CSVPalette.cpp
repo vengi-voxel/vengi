@@ -17,7 +17,7 @@ bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
-		palette.setColor(colorCount, core::RGBA(r, g, b));
+		palette.setColor(colorCount, color::RGBA(r, g, b));
 		++colorCount;
 	}
 	palette.setSize(colorCount);
@@ -27,7 +27,7 @@ bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stre
 bool CSVPalette::save(const palette::ColorPalette &palette, const core::String &filename,
 					  io::SeekableWriteStream &stream) {
 	for (size_t i = 0; i < palette.size(); ++i) {
-		const core::RGBA &color = palette.color(i);
+		const color::RGBA &color = palette.color(i);
 		if (!stream.writeStringFormat(false, "%i, %i, %i\n", color.r, color.g, color.b)) {
 			Log::error("Failed to write color line");
 			return false;

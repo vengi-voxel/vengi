@@ -11,7 +11,7 @@
 #include "ui/dearimgui/imgui_test_engine/imgui_te_context.h"
 #include "color/RGBA.h"
 
-template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, core::RGBA v)       { buf->appendf("%i:%i:%i:%i", v.r, v.g, v.b, v.a); }
+template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, color::RGBA v)       { buf->appendf("%i:%i:%i:%i", v.r, v.g, v.b, v.a); }
 
 #endif
 

@@ -127,7 +127,7 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return {u, v};
 }
 
-void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, color::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
 							 MeshMaterialIndex materialIdx) const {
 	if (rgba.a <= AlphaThreshold) {
 		return;
@@ -155,7 +155,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			}
 			const voxelformat::MeshTri &meshTri = tris[i];
 			const glm::vec2 &uv = meshTri.centerUV();
-			const core::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
+			const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
@@ -187,7 +187,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 			}
 			const voxelformat::MeshTri &meshTri = tris[i];
 			const glm::vec2 &uv = meshTri.centerUV();
-			const core::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
+			const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
@@ -349,12 +349,12 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 				voxelizeTriangle(
 					trisMins, meshTri,
 					[this, &colorMaterials, &meshMaterialArray](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-						const core::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+						const color::RGBA rgba = flattenRGB(colorAt(tri, meshMaterialArray, uv));
 						colorMaterials.put(rgba, tri.materialIdx > 0 && tri.materialIdx < (int)meshMaterialArray.size() ? &meshMaterialArray[tri.materialIdx]->material : nullptr);
 					});
 #else
 				const glm::vec2 &uv = meshTri.centerUV();
-				const core::RGBA rgba = flattenRGB(colorAt(meshTri, materials, uv));
+				const color::RGBA rgba = flattenRGB(colorAt(meshTri, materials, uv));
 				colorMaterials.put(rgba, meshTri.material > 0 && meshTri.material < (int)materials.size() ? &materials[meshTri.material]->material : nullptr);
 #endif
 			}
@@ -370,7 +370,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		palette::NormalPaletteLookup normalLookup(normalPalette);
 		for (const voxelformat::MeshTri &meshTri : tris) {
 			auto fn = [&](const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-				const core::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
+				const color::RGBA color = flattenRGB(colorAt(tri, meshMaterialArray, uv));
 				const glm::vec3 &normal = tri.normal();
 				int normalIdx = normalLookup.getClosestMatch(normal);
 				if (normalIdx == palette::PaletteNormalNotFound) {
@@ -384,7 +384,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		tris.release();
 
 		if (palette.colorCount() == 1) {
-			core::RGBA c = palette.color(0);
+			color::RGBA c = palette.color(0);
 			if (c.a == 0) {
 				c.a = 255;
 				palette.setColor(0, c);
@@ -494,7 +494,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			}
 			const PosSampling &pos = entry->second;
 			// TODO: PERF: don't do pos.getColor call twice
-			const core::RGBA rgba = pos.getColor(_flattenFactor, _weightedAverage);
+			const color::RGBA rgba = pos.getColor(_flattenFactor, _weightedAverage);
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
@@ -513,7 +513,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		if (stopExecution()) {
 			return;
 		}
-		const core::RGBA rgba = posSampling.getColor(_flattenFactor, _weightedAverage);
+		const color::RGBA rgba = posSampling.getColor(_flattenFactor, _weightedAverage);
 		if (rgba.a <= AlphaThreshold) {
 			return;
 		}
@@ -527,7 +527,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	};
 	posMap.for_parallel(fn);
 	if (palette.colorCount() == 1) {
-		core::RGBA c = palette.color(0);
+		color::RGBA c = palette.color(0);
 		if (c.a == 0) {
 			c.a = 255;
 			palette.setColor(0, c);

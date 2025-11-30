@@ -191,7 +191,7 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 
 // check the image for importing the skin
 static bool isSlim(const image::ImagePtr &image) {
-	core::RGBA pixel = image->colorAt(54, 20);
+	color::RGBA pixel = image->colorAt(54, 20);
 	return pixel.a == 0;
 }
 
@@ -265,7 +265,7 @@ static void importPart(const image::ImagePtr &image, const SkinBox &box, int fac
 	const palette::Palette &palette = node.palette();
 	auto readFromImage = [palette, v = node.volume()](int x, int y, int z, const voxel::Voxel &voxel,
 													  const image::ImagePtr &img, int px, int py) {
-		const core::RGBA color = img->colorAt(px, py);
+		const color::RGBA color = img->colorAt(px, py);
 		if (color.a == 0) {
 			return;
 		}
@@ -297,7 +297,7 @@ size_t SkinFormat::loadPalette(const core::String &filename, const io::ArchivePt
 
 	for (int y = 0; y < image->height(); ++y) {
 		for (int x = 0; x < image->width(); ++x) {
-			const core::RGBA rgba = image->colorAt(x, y);
+			const color::RGBA rgba = image->colorAt(x, y);
 			if (rgba.a == 0) {
 				continue; // skip transparent pixels
 			}
@@ -391,7 +391,7 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	image->resize(64, 64);
 	for (int y = 0; y < image->height(); ++y) {
 		for (int x = 0; x < image->width(); ++x) {
-			image->setColor(core::RGBA(0, 0, 0, 0), x, y);
+			image->setColor(color::RGBA(0, 0, 0, 0), x, y);
 		}
 	}
 
@@ -420,7 +420,7 @@ bool SkinFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				if (voxel::isAir(voxel.getMaterial())) {
 					return;
 				}
-				const core::RGBA &color = palette.color(voxel.getColor());
+				const color::RGBA &color = palette.color(voxel.getColor());
 				if (color.a == 0) {
 					return;
 				}

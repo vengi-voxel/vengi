@@ -176,7 +176,7 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 		color = style::color(style::ColorAxisZ);
 	}
 	updateShapeBuilderForPlane(_shapeBuilder, node.region(), false, cursorPosition, axis,
-							   core::Color::alpha(color, 0.4f));
+							   color::Color::alpha(color, 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 

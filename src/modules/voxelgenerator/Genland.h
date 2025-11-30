@@ -33,10 +33,10 @@ struct GenlandSettings {
 	double riverWidth = 0.02;
 	double freqGround = 9.5;
 	double freqRiver = 13.2;
-	core::RGBA ground{140, 125, 115};
-	core::RGBA grass{72, 80, 32};
-	core::RGBA grass2{68, 78, 40};
-	core::RGBA water{60, 100, 120};
+	color::RGBA ground{140, 125, 115};
+	color::RGBA grass{72, 80, 32};
+	color::RGBA grass2{68, 78, 40};
+	color::RGBA water{60, 100, 120};
 	// Apply shadows to the generated land
 	bool shadow = true;
 	// Generate a river in the land

@@ -57,7 +57,7 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 			if (i > 0) {
 				Log::printf(",");
 			}
-			const core::RGBA &color = palette.color(i);
+			const color::RGBA &color = palette.color(i);
 			Log::printf("{");
 			Log::printf("\"r\": %i", color.r);
 			Log::printf(",\"g\": %i", color.g);

@@ -117,8 +117,8 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 						continue;
 					}
 					const float shadowFactor = (float)maxLight / (float)MAX_SHADOW;
-					core::RGBA color = core::Color::darker(palette.color(voxel.getColor()), shadowFactor);
-					const int palIdx = palette.getClosestMatch(color, voxel.getColor(), core::Color::Distance::HSB);
+					color::RGBA color = color::Color::darker(palette.color(voxel.getColor()), shadowFactor);
+					const int palIdx = palette.getClosestMatch(color, voxel.getColor(), color::Color::Distance::HSB);
 					sampler3.setVoxel(voxel::createVoxel(palette, palIdx));
 					sampler3.movePositiveX();
 				}

@@ -110,7 +110,7 @@ public:
 		return false;                                                                                                  \
 	}
 
-static bool saveColor(io::WriteStream &stream, core::RGBA color) {
+static bool saveColor(io::WriteStream &stream, color::RGBA color) {
 	// VisibilityMask::AlphaChannelVisibleByValue
 	wrapSave(stream.writeUInt8(color.r))
 	wrapSave(stream.writeUInt8(color.g))
@@ -119,7 +119,7 @@ static bool saveColor(io::WriteStream &stream, core::RGBA color) {
 	return true;
 }
 
-static bool writeRLE(io::WriteStream &stream, core::RGBA color, uint8_t count) {
+static bool writeRLE(io::WriteStream &stream, color::RGBA color, uint8_t count) {
 	if (count == 0) {
 		return true;
 	}
@@ -178,7 +178,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 	const palette::Palette &palette = node.palette();
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
-			core::RGBA currentColor;
+			color::RGBA currentColor;
 			uint16_t rleEntries = 0;
 			uint8_t count = 0;
 
@@ -188,7 +188,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			for (int y = mins.y; y <= maxs.y; ++y) {
 				const voxel::Voxel &voxel = v->voxel(x, y, z);
-				core::RGBA newColor;
+				color::RGBA newColor;
 				if (voxel == Empty) {
 					newColor = 0;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
@@ -303,7 +303,7 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			wrapSave(stream->writeUInt32(image->height()))
 			for (int x = 0; x < image->width(); ++x) {
 				for (int y = 0; y < image->height(); ++y) {
-					const core::RGBA color = image->colorAt(x, y);
+					const color::RGBA color = image->colorAt(x, y);
 					stream->writeUInt8(color.b);
 					stream->writeUInt8(color.g);
 					stream->writeUInt8(color.r);
@@ -432,7 +432,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
+					const color::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
 					if (header.loadPalette) {
 						palette.tryAdd(color, false);
 					} else {
@@ -455,7 +455,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				++y;
 			} else {
 				// Uncompressed
-				const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
+				const color::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
 				if (header.loadPalette) {
 					palette.tryAdd(color, false);
 				} else {

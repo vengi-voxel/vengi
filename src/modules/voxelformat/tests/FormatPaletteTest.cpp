@@ -65,8 +65,8 @@ protected:
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
 			ASSERT_EQ(rgbPalette.color(i), palPalette.color(i))
-				<< i << ": rgb " << core::Color::print(rgbPalette.color(i)) << " versus pal "
-				<< core::Color::print(palPalette.color(i)) << "\n"
+				<< i << ": rgb " << color::Color::print(rgbPalette.color(i)) << " versus pal "
+				<< color::Color::print(palPalette.color(i)) << "\n"
 				<< palette::Palette::print(rgbPalette) << "\n"
 				<< palette::Palette::print(palPalette);
 		}
@@ -98,7 +98,7 @@ protected:
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
 			ASSERT_TRUE(palPalette.hasColor(rgbPalette.color(i)))
-				<< i << ": Could not find color " << core::Color::print(rgbPalette.color(i)) << " in pal palette\n"
+				<< i << ": Could not find color " << color::Color::print(rgbPalette.color(i)) << " in pal palette\n"
 				<< palette::Palette::print(palPalette);
 		}
 	}
@@ -128,7 +128,7 @@ protected:
 		// the colors might have a different ordering here it depends on the order we read the volume for the rgb format
 		for (size_t i = 0; i < expectedColors; ++i) {
 			ASSERT_TRUE(rgbPalette1.hasColor(rgbPalette2.color(i)))
-				<< i << ": Could not find color " << core::Color::print(rgbPalette2.color(i)) << " in rgb palette\n"
+				<< i << ": Could not find color " << color::Color::print(rgbPalette2.color(i)) << " in rgb palette\n"
 				<< palette::Palette::print(rgbPalette1);
 		}
 	}
@@ -158,8 +158,8 @@ protected:
 
 		for (size_t i = 0; i < expectedColors; ++i) {
 			ASSERT_EQ(palPalette1.color(i), palPalette2.color(i))
-				<< i << ": pal " << core::Color::print(palPalette1.color(i)) << " versus pal "
-				<< core::Color::print(palPalette2.color(i)) << "\n"
+				<< i << ": pal " << color::Color::print(palPalette1.color(i)) << " versus pal "
+				<< color::Color::print(palPalette2.color(i)) << "\n"
 				<< palette::Palette::print(palPalette1) << "\n"
 				<< palette::Palette::print(palPalette2);
 		}

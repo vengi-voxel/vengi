@@ -39,18 +39,18 @@ void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, s
 	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 	if (existingColor) {
-		const core::RGBA color = normalPalette.normal(paletteColorIdx);
+		const color::RGBA color = normalPalette.normal(paletteColorIdx);
 		if (color.a != 255) {
-			core::RGBA own = color;
+			color::RGBA own = color;
 			own.a = 127;
-			core::RGBA other = color;
+			color::RGBA other = color;
 			other.a = 255;
 			drawList->AddRectFilledMultiColor(v1, v2, own, own, own, other);
 		} else {
 			drawList->AddRectFilled(v1, v2, color);
 		}
 	} else {
-		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
+		drawList->AddRect(v1, v2, color::RGBA(0, 0, 0, 255));
 	}
 	ui::ScopedID id(paletteColorIdx);
 	ImGui::InvisibleButton("", colorButtonSize);

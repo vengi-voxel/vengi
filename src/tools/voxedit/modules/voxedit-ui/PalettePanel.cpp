@@ -25,9 +25,9 @@
 namespace voxedit {
 
 PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, palette::PaletteCache &paletteCache)
-	: Super(app, "palette"), _redColor(ImGui::GetColorU32(core::Color::Red())),
-	  _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
-	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())), _paletteCache(paletteCache),
+	: Super(app, "palette"), _redColor(ImGui::GetColorU32(color::Color::Red())),
+	  _yellowColor(ImGui::GetColorU32(color::Color::Yellow())),
+	  _darkRedColor(ImGui::GetColorU32(color::Color::DarkRed())), _paletteCache(paletteCache),
 	  _sceneMgr(sceneMgr) {
 	_currentSelectedPalette = palette::Palette::getDefaultPaletteName();
 }
@@ -146,7 +146,7 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
-			_sceneMgr->nodeSetColor(node.id(), paletteColorIdx, core::Color::getRGBA(color));
+			_sceneMgr->nodeSetColor(node.id(), paletteColorIdx, color::Color::getRGBA(color));
 		}
 
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
@@ -175,18 +175,18 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	const bool usableColor = palette.color(paletteColorIdx).a > 0;
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 	if (existingColor) {
-		const core::RGBA color = palette.color(paletteColorIdx);
+		const color::RGBA color = palette.color(paletteColorIdx);
 		if (color.a != 255) {
-			core::RGBA own = color;
+			color::RGBA own = color;
 			own.a = 127;
-			core::RGBA other = color;
+			color::RGBA other = color;
 			other.a = 255;
 			drawList->AddRectFilledMultiColor(v1, v2, own, own, own, other);
 		} else {
 			drawList->AddRectFilled(v1, v2, color);
 		}
 	} else {
-		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
+		drawList->AddRect(v1, v2, color::RGBA(0, 0, 0, 255));
 	}
 
 	ImGui::PushID(paletteColorIdx);
@@ -403,7 +403,7 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 	palette::Palette &palette = node.palette();
 	if (ImGui::ColorEdit4(_("Color closest match"), glm::value_ptr(_closestColor),
 						  ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs)) {
-		const core::RGBA rgba = core::Color::getRGBA(_closestColor);
+		const color::RGBA rgba = color::Color::getRGBA(_closestColor);
 		_closestMatchPaletteColorIdx = palette.getClosestMatch(rgba);
 	}
 	ImGui::TooltipTextUnformatted(_("Select a color to find the closest match in the current loaded palette"));
@@ -480,13 +480,13 @@ bool PalettePanel::showColorPicker(uint8_t paletteColorIdx, scenegraph::SceneGra
 	} else {
 		flags |= ImGuiColorEditFlags_PickerHueBar;
 	}
-	glm::vec4 color = core::Color::fromRGBA(palette.color(paletteColorIdx));
+	glm::vec4 color = color::Color::fromRGBA(palette.color(paletteColorIdx));
 	const int maxPaletteEntries = palette.colorCount();
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 
 	if (ImGui::ColorPicker4(_("Color"), glm::value_ptr(color), flags)) {
 		const bool hasAlpha = palette.color(paletteColorIdx).a != 255;
-		palette.setColor(paletteColorIdx, core::Color::getRGBA(color));
+		palette.setColor(paletteColorIdx, color::Color::getRGBA(color));
 		if (existingColor) {
 			if (hasAlpha && palette.color(paletteColorIdx).a == 255) {
 				_sceneMgr->nodeUpdateVoxelType(node.id(), paletteColorIdx, voxel::VoxelType::Generic);

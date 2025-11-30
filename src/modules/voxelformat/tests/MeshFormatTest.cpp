@@ -48,9 +48,9 @@ TEST_F(MeshFormatTest, testColorAt) {
 	for (int i = 0; i < 256; ++i) {
 		const glm::vec2 uv = texture->uv(i, 0);
 		meshTri.setUVs(uv, uv, uv);
-		const core::RGBA color = colorAt(meshTri, meshMaterialArray, meshTri.centerUV());
-		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
-									   << core::Color::print(color);
+		const color::RGBA color = colorAt(meshTri, meshMaterialArray, meshTri.centerUV());
+		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << color::Color::print(pal.color(i)) << " vs "
+									   << color::Color::print(color);
 	}
 }
 
@@ -122,11 +122,11 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	palette::Palette pal;
 	pal.nippon();
-	const core::RGBA nipponRed = pal.color(37);
-	const core::RGBA nipponBlue = pal.color(202);
+	const color::RGBA nipponRed = pal.color(37);
+	const color::RGBA nipponBlue = pal.color(202);
 	const float size = 10.0f;
 	b.setPosition({size, 0.0f, size});
-	b.setColor(core::Color::fromRGBA(nipponRed));
+	b.setColor(color::Color::fromRGBA(nipponRed));
 	b.pyramid({size, size, size});
 
 	const video::ShapeBuilder::Indices &indices = b.getIndices();
@@ -134,17 +134,17 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	// color of the tip is green
 	video::ShapeBuilder::Colors colors = b.getColors();
-	const core::RGBA nipponGreen = pal.color(145);
-	colors[0] = core::Color::fromRGBA(nipponGreen);
-	colors[1] = core::Color::fromRGBA(nipponBlue);
+	const color::RGBA nipponGreen = pal.color(145);
+	colors[0] = color::Color::fromRGBA(nipponGreen);
+	colors[1] = color::Color::fromRGBA(nipponBlue);
 
 	const int n = (int)indices.size();
 	for (int i = 0; i < n; i += 3) {
 		voxelformat::MeshTri meshTri;
 		meshTri.setVertices(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
-		meshTri.setColor(core::Color::getRGBA(colors[indices[i]]),
-						 core::Color::getRGBA(colors[indices[i + 1]]),
-						 core::Color::getRGBA(colors[indices[i + 2]]));
+		meshTri.setColor(color::Color::getRGBA(colors[indices[i]]),
+						 color::Color::getRGBA(colors[indices[i + 1]]),
+						 color::Color::getRGBA(colors[indices[i + 2]]));
 		mesh.addTriangle(meshTri);
 	}
 	testMesh.voxelize(sceneGraph, core::move(mesh));

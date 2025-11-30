@@ -7,13 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace core {
+namespace color {
 
 union alignas(4) RGBA {
 	constexpr RGBA(uint32_t val = 0) : rgba(val) {
 	}
-	constexpr RGBA(uint8_t valr, uint8_t valg, uint8_t valb, uint8_t vala = 255)
-		: r(valr), g(valg), b(valb), a(vala) {
+	constexpr RGBA(uint8_t valr, uint8_t valg, uint8_t valb, uint8_t vala = 255) : r(valr), g(valg), b(valb), a(vala) {
 	}
 	struct {
 		uint8_t r, g, b, a;
@@ -60,7 +59,7 @@ union alignas(4) RGBA {
 		return rgba != other;
 	}
 
-	static core::RGBA mix(const core::RGBA rgba1, const core::RGBA rgba2, float t = 0.5f);
+	static color::RGBA mix(const color::RGBA rgba1, const color::RGBA rgba2, float t = 0.5f);
 
 	constexpr double brightness() const {
 		return 0.299 * (double)r + 0.587 * (double)g + 0.114 * (double)b;
@@ -70,9 +69,9 @@ union alignas(4) RGBA {
 static_assert(sizeof(RGBA) == sizeof(uint32_t), "Expected RGBA union size");
 
 struct RGBAHasher {
-	inline size_t operator() (const RGBA& o) const {
+	inline size_t operator()(const RGBA &o) const {
 		return (size_t)o.rgba;
 	}
 };
 
-} // namespace core
+} // namespace color

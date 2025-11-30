@@ -162,7 +162,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			continue;
 		}
 
-		core::Buffer<core::RGBA> buffer;
+		core::Buffer<color::RGBA> buffer;
 		buffer.resize(pixelSize);
 		for (int j = 0; j < pixelSize; ++j) {
 			buffer[j] = pal.color(pixels[j]);

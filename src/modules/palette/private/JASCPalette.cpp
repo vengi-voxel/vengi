@@ -36,7 +36,7 @@ bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &str
 			Log::error("Failed to parse JASC color line '%s'", line);
 			continue;
 		}
-		palette.setColor(colorCount, core::RGBA(r, g, b));
+		palette.setColor(colorCount, color::RGBA(r, g, b));
 		++colorCount;
 	}
 	palette.setSize(colorCount);
@@ -48,7 +48,7 @@ bool JASCPalette::save(const palette::ColorPalette &palette, const core::String 
 	stream.writeLine("0100");
 	stream.writeLine(core::String::format("%i", (int)palette.size()));
 	for (size_t i = 0; i < palette.size(); ++i) {
-		const core::RGBA &color = palette.color(i);
+		const color::RGBA &color = palette.color(i);
 		stream.writeLine(core::String::format("%i %i %i", color.r, color.g, color.b));
 	}
 	return true;

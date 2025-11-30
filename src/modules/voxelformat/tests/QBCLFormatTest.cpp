@@ -34,7 +34,7 @@ TEST_F(QBCLFormatTest, testLoadRGBSmallSaveLoad) {
 }
 
 TEST_F(QBCLFormatTest, testLoadScreenshot) {
-	testLoadScreenshot("chr_knight.qbcl", 100, 100, core::RGBA(147, 53, 53), 59, 1);
+	testLoadScreenshot("chr_knight.qbcl", 100, 100, color::RGBA(147, 53, 53), 59, 1);
 }
 
 TEST_F(QBCLFormatTest, testLoadCrabby) {

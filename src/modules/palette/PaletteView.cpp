@@ -46,8 +46,8 @@ void PaletteView::sortHue() {
 		float rhsaturation = 0.0f;
 		float rhbrightness = 0.0f;
 
-		core::Color::getHSB(_palette->color(lhs), lhhue, lhsaturation, lhbrightness);
-		core::Color::getHSB(_palette->color(rhs), rhhue, rhsaturation, rhbrightness);
+		color::Color::getHSB(_palette->color(lhs), lhhue, lhsaturation, lhbrightness);
+		color::Color::getHSB(_palette->color(rhs), rhhue, rhsaturation, rhbrightness);
 		return lhhue < rhhue;
 	});
 	_palette->markDirty();
@@ -63,8 +63,8 @@ void PaletteView::sortSaturation() {
 		float rhsaturation = 0.0f;
 		float rhbrightness = 0.0f;
 
-		core::Color::getHSB(_palette->color(lhs), lhhue, lhsaturation, lhbrightness);
-		core::Color::getHSB(_palette->color(rhs), rhhue, rhsaturation, rhbrightness);
+		color::Color::getHSB(_palette->color(lhs), lhhue, lhsaturation, lhbrightness);
+		color::Color::getHSB(_palette->color(rhs), rhhue, rhsaturation, rhbrightness);
 		return lhsaturation < rhsaturation;
 	});
 	_palette->markDirty();
@@ -72,7 +72,7 @@ void PaletteView::sortSaturation() {
 
 void PaletteView::sortBrightness() {
 	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
-		return core::Color::brightness(_palette->color(lhs)) < core::Color::brightness(_palette->color(rhs));
+		return color::Color::brightness(_palette->color(lhs)) < color::Color::brightness(_palette->color(rhs));
 	});
 	_palette->markDirty();
 }
@@ -81,8 +81,8 @@ void PaletteView::sortCIELab() {
 	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
 		glm::vec3 lcielab;
 		glm::vec3 rcielab;
-		core::Color::getCIELab(_palette->color(lhs), lcielab.x, lcielab.y, lcielab.z);
-		core::Color::getCIELab(_palette->color(rhs), rcielab.x, rcielab.y, rcielab.z);
+		color::Color::getCIELab(_palette->color(lhs), lcielab.x, lcielab.y, lcielab.z);
+		color::Color::getCIELab(_palette->color(rhs), rcielab.x, rcielab.y, rcielab.z);
 		return glm::length2(lcielab) < glm::length2(rcielab);
 	});
 	_palette->markDirty();

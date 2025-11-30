@@ -182,7 +182,7 @@ static image::TextureWrap convertTextureWrap(int wrap) {
 	return image::TextureWrap::Repeat;
 }
 
-static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const uint8_t *buf) {
+static color::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const uint8_t *buf) {
 	const bool hasAlpha = gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC4;
 	if (gltfAttributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
 		io::MemoryReadStream colorStream(buf, hasAlpha ? 4 * sizeof(float) : 3 * sizeof(float));
@@ -195,10 +195,10 @@ static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const
 		} else {
 			color.a = 1.0f;
 		}
-		return core::Color::getRGBA(color);
+		return color::Color::getRGBA(color);
 	} else if (gltfAttributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 		io::MemoryReadStream colorStream(buf, hasAlpha ? 4 * sizeof(float) : 3 * sizeof(float));
-		core::RGBA color;
+		color::RGBA color;
 		colorStream.readUInt8(color.r);
 		colorStream.readUInt8(color.g);
 		colorStream.readUInt8(color.b);
@@ -220,11 +220,11 @@ static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const
 		} else {
 			color.a = 255u;
 		}
-		return core::RGBA(color.r / 256u, color.g / 256u, color.b / 256u, color.a);
+		return color::RGBA(color.r / 256u, color.g / 256u, color.b / 256u, color.a);
 	} else {
 		Log::warn("Skip unknown type for vertex colors (%i)", gltfAttributeAccessor->componentType);
 	}
-	return core::RGBA(0, 0, 0, 255);
+	return color::RGBA(0, 0, 0, 255);
 }
 
 static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &camera) {
@@ -449,9 +449,9 @@ uint32_t GLTFFormat::writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::Seeka
 			os.writeFloat(uv.x);
 			os.writeFloat(uv.y);
 		} else if (withColor) {
-			const core::RGBA paletteColor = palette.color(vertices[i].colorIndex);
+			const color::RGBA paletteColor = palette.color(vertices[i].colorIndex);
 			if (colorAsFloat) {
-				const glm::vec4 &color = core::Color::fromRGBA(paletteColor);
+				const glm::vec4 &color = color::Color::fromRGBA(paletteColor);
 				for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
 					os.writeFloat(color[colorIdx]);
 				}
@@ -631,14 +631,14 @@ void GLTFFormat::save_KHR_materials_emissive_strength(const palette::Material &m
 #endif
 }
 
-void GLTFFormat::save_KHR_materials_volume(const palette::Material &material, const core::RGBA &color,
+void GLTFFormat::save_KHR_materials_volume(const palette::Material &material, const color::RGBA &color,
 										   tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialAttenuation)) {
 		return;
 	}
 	const float attenuation = material.value(palette::MaterialProperty::MaterialAttenuation);
 	tinygltf::Value::Object sg;
-	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
+	const glm::vec4 &fcolor = color::Color::fromRGBA(color);
 	std::vector<tinygltf::Value> attenuationColor(3);
 	attenuationColor[0] = tinygltf::Value(fcolor[0] * attenuation);
 	attenuationColor[1] = tinygltf::Value(fcolor[1] * attenuation);
@@ -661,14 +661,14 @@ void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinyg
 	addExtension(gltfModel, "KHR_materials_ior");
 }
 
-void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
+void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, const color::RGBA &color,
 											 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialSpecular)) {
 		return;
 	}
 	const float specular = material.value(palette::MaterialProperty::MaterialSpecular);
 	tinygltf::Value::Object sg;
-	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
+	const glm::vec4 &fcolor = color::Color::fromRGBA(color);
 	std::vector<tinygltf::Value> specularFactor(3);
 	specularFactor[0] = tinygltf::Value(fcolor[0] * specular);
 	specularFactor[1] = tinygltf::Value(fcolor[1] * specular);
@@ -678,7 +678,7 @@ void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, 
 	addExtension(gltfModel, "KHR_materials_specular");
 }
 
-bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
+bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const color::RGBA &color,
 														  tinygltf::Material &gltfMaterial,
 														  tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialDensity) &&
@@ -686,7 +686,7 @@ bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 		return false;
 	}
 	tinygltf::Value::Object sg;
-	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
+	const glm::vec4 &fcolor = color::Color::fromRGBA(color);
 
 	// The reflected diffuse factor of the material
 	if (material.has(palette::MaterialProperty::MaterialDensity)) {
@@ -725,7 +725,7 @@ bool GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 
 int GLTFFormat::saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const {
 	bool hasEmit = false;
-	core::RGBA colors[palette::PaletteMaxColors];
+	color::RGBA colors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette::PaletteMaxColors; i++) {
 		if (palette.hasEmit(i)) {
 			hasEmit = true;
@@ -763,7 +763,7 @@ int GLTFFormat::saveTexture(tinygltf::Model &gltfModel, const palette::Palette &
 
 	tinygltf::Image gltfPaletteImage;
 	image::Image image("pal");
-	core::RGBA colors[palette::PaletteMaxColors];
+	color::RGBA colors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette::PaletteMaxColors; i++) {
 		colors[i] = palette.color(i);
 	}
@@ -804,7 +804,7 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 				continue;
 			}
 			const palette::Material &material = palette.material(i);
-			const core::RGBA color = palette.color(i);
+			const color::RGBA color = palette.color(i);
 			tinygltf::Material gltfMaterial;
 			if (withTexCoords) {
 				gltfMaterial.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
@@ -1534,7 +1534,7 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr
 							 gltfMaterial.pbrMetallicRoughness.metallicFactor);
 	// TODO: MATERIAL: load baseColor
 	// const glm::vec4 color = glm::make_vec4(&gltfMaterial.pbrMetallicRoughness.baseColorFactor[0]);
-	// meshMaterial->baseColor = core::Color::getRGBA(color);
+	// meshMaterial->baseColor = color::Color::getRGBA(color);
 	// meshMaterial->baseColorFactor = gltfMaterial.pbrMetallicRoughness.baseColorFactor[0];
 	// TODO: MATERIAL: load emissiveTexture
 	// TODO: MATERIAL: maybe load it as average - there is no 1:1 mapping here
@@ -1625,7 +1625,7 @@ bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Mo
 	}
 	if (!foundColor) {
 		for (int i = 0; i < foundPositions; i++) {
-			vertices[verticesOffset + i].color = core::RGBA(127, 127, 127, 255);
+			vertices[verticesOffset + i].color = color::RGBA(127, 127, 127, 255);
 		}
 	}
 	return foundPositions > 0;

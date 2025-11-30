@@ -24,7 +24,7 @@ namespace voxelformat {
 
 struct PointCloudVertex {
 	glm::vec3 position{0.0f};
-	core::RGBA color{0, 0, 0, 255};
+	color::RGBA color{0, 0, 0, 255};
 };
 using PointCloud = core::Buffer<PointCloudVertex, 4096>;
 using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri>;
@@ -149,7 +149,7 @@ protected:
 	/**
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
-	void addToPosMap(PosMap &posMap, const voxel::Region &region, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+	void addToPosMap(PosMap &posMap, const voxel::Region &region, color::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
 					 MeshMaterialIndex material) const;
 
 	/**

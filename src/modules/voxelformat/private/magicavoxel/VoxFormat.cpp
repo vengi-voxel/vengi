@@ -166,7 +166,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (layer.name != nullptr) {
 			node.setProperty("layer", layer.name);
 		}
-		const core::RGBA color(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
+		const color::RGBA color(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 		node.setColor(color);
 	}
 	node.setName(name);
@@ -342,7 +342,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			core_memset(&ogt_layer, 0, sizeof(ogt_layer));
 			ogt_layer.name = node.name().c_str();
 			ogt_layer.hidden = !node.visible();
-			const core::RGBA layerRGBA = node.color();
+			const color::RGBA layerRGBA = node.color();
 			ogt_layer.color.r = layerRGBA.r;
 			ogt_layer.color.g = layerRGBA.g;
 			ogt_layer.color.b = layerRGBA.b;
@@ -482,7 +482,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		output_scene.color_names[i] = palette.colorName(i).c_str();
 
-		const core::RGBA &rgba = palette.color(i);
+		const color::RGBA &rgba = palette.color(i);
 		pal.color[i].r = rgba.r;
 		pal.color[i].g = rgba.g;
 		pal.color[i].b = rgba.b;

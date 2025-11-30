@@ -22,7 +22,7 @@ static inline uint16_t quantizeChannel(uint8_t value) {
 	return value >> (8 - Q_BITS); // shift to keep top Q_BITS
 }
 
-static inline size_t computeIndex(core::RGBA rgba) {
+static inline size_t computeIndex(color::RGBA rgba) {
 	uint16_t r = quantizeChannel(rgba.r);
 	uint16_t g = quantizeChannel(rgba.g);
 	uint16_t b = quantizeChannel(rgba.b);
@@ -37,10 +37,10 @@ PaletteLookup::PaletteLookup(const palette::Palette &palette)
 }
 
 uint8_t PaletteLookup::findClosestIndex(const glm::vec4 &color) {
-	return findClosestIndex(core::Color::getRGBA(color));
+	return findClosestIndex(color::Color::getRGBA(color));
 }
 
-uint8_t PaletteLookup::findClosestIndex(core::RGBA rgba) {
+uint8_t PaletteLookup::findClosestIndex(color::RGBA rgba) {
 	size_t idx = priv::computeIndex(rgba);
 
 #if defined(_MSC_VER)

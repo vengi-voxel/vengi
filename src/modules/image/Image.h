@@ -54,7 +54,7 @@ public:
 		}
 		for (int y = 0; y < h; ++y) {
 			for (int x = 0; x < w; ++x) {
-				core::RGBA rgba;
+				color::RGBA rgba;
 				func(x, y, rgba);
 				setColor(rgba, x, y);
 			}
@@ -99,13 +99,13 @@ public:
 						  int quality = 100);
 	bool writeJPEG(io::SeekableWriteStream &stream, int quality = 100) const;
 	core::String pngBase64() const;
-	core::RGBA colorAt(int x, int y) const;
-	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
+	color::RGBA colorAt(int x, int y) const;
+	color::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					   TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 
 	bool isGrayScale() const;
 
-	bool setColor(core::RGBA rgba, int x, int y);
+	bool setColor(color::RGBA rgba, int x, int y);
 
 	const uint8_t *at(int x, int y) const;
 

@@ -62,20 +62,20 @@ static core::String getId(const char *icon, const char *label) {
 static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X: {
-		const glm::vec4 &c = color(style::ColorAxisX);
-		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		const glm::vec4 &c = style::color(style::ColorAxisX);
+		style.setColor(ImGuiCol_Text, color::Color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
 	case math::Axis::Y: {
-		const glm::vec4 &c = color(style::ColorAxisY);
-		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		const glm::vec4 &c = style::color(style::ColorAxisY);
+		style.setColor(ImGuiCol_Text, color::Color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
 	case math::Axis::Z: {
-		const glm::vec4 &c = color(style::ColorAxisZ);
-		style.setColor(ImGuiCol_Text, core::Color::contrastTextColor(c));
+		const glm::vec4 &c = style::color(style::ColorAxisZ);
+		style.setColor(ImGuiCol_Text, color::Color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
@@ -308,13 +308,13 @@ bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
 void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X:
-		style.setColor(ImGuiCol_Text, color(style::ColorAxisX));
+		style.setColor(ImGuiCol_Text, style::color(style::ColorAxisX));
 		break;
 	case math::Axis::Y:
-		style.setColor(ImGuiCol_Text, color(style::ColorAxisY));
+		style.setColor(ImGuiCol_Text, style::color(style::ColorAxisY));
 		break;
 	case math::Axis::Z:
-		style.setColor(ImGuiCol_Text, color(style::ColorAxisZ));
+		style.setColor(ImGuiCol_Text, style::color(style::ColorAxisZ));
 		break;
 	default:
 		break;
@@ -628,8 +628,8 @@ bool ToggleButton(const char *label, bool state) {
 	if (state) {
 		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::brighter(buttonColor));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::brighter(buttonHoveredColor));
+		ImGui::PushStyleColor(ImGuiCol_Button, color::Color::brighter(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::Color::brighter(buttonHoveredColor));
 	}
 	const bool pressed = ImGui::Button(label);
 	if (state) {
@@ -642,8 +642,8 @@ bool DisabledButton(const char *label, bool disabled, const ImVec2 &size) {
 	if (disabled) {
 		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
-		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::gray(buttonColor));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::gray(buttonHoveredColor));
+		ImGui::PushStyleColor(ImGuiCol_Button, color::Color::gray(buttonColor));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::Color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 	}
 	const bool pressed = ImGui::Button(label, size);

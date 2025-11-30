@@ -45,8 +45,8 @@ static core::String resolveParent(const scenegraph::SceneGraph &sceneGraph, cons
 }
 
 // https://docs.godotengine.org/de/4.x/classes/class_color.html
-static core::String createColor(const core::RGBA &color) {
-	const glm::vec4 &colorf = core::Color::fromRGBA(color);
+static core::String createColor(const color::RGBA &color) {
+	const glm::vec4 &colorf = color::Color::fromRGBA(color);
 	return core::String::format("Color(%f, %f, %f, %f)", colorf.r, colorf.g, colorf.b, colorf.a);
 }
 
@@ -56,7 +56,7 @@ static bool saveMaterial(const scenegraph::SceneGraphNode &node, io::SeekableWri
 	for (size_t i = 0; i < palette.size(); ++i) {
 		wrapBool(stream.writeStringFormat(false, "[sub_resource type=\"StandardMaterial3D\" id=\"mat-%i\"]\n",
 										  subResourceId))
-		const core::RGBA &color = palette.color(i);
+		const color::RGBA &color = palette.color(i);
 		const core::String &colorStr = createColor(color);
 		wrapBool(stream.writeStringFormat(false, "albedo_color = %s\n", colorStr.c_str()))
 		if (color.a < 255) {

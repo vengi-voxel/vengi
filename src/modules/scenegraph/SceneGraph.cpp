@@ -976,7 +976,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 		}
 		const palette::Palette &nodePalette = node.palette();
 		for (int i = 0; i < nodePalette.colorCount(); ++i) {
-			const core::RGBA rgba = nodePalette.color(i);
+			const color::RGBA rgba = nodePalette.color(i);
 			if (palette.hasColor(rgba)) {
 				continue;
 			}
@@ -1002,7 +1002,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 			palette.setMaterial(i, palette::Material{});
 		}
-		core::DynamicArray<core::RGBA> allColors;
+		core::DynamicArray<color::RGBA> allColors;
 		for (const auto &e : nodes()) {
 			const SceneGraphNode &node = e->second;
 			if (!node.isAnyModelNode()) {
@@ -1102,7 +1102,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			if (isAir(voxel.getMaterial())) {
 				return false;
 			}
-			const core::RGBA color = pal.color(voxel.getColor());
+			const color::RGBA color = pal.color(voxel.getColor());
 			const uint8_t index = mergedPaletteLookup.findClosestIndex(color);
 			voxel.setColor(index);
 			return true;

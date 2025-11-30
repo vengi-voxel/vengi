@@ -326,7 +326,7 @@ bool VENGIFormat::loadNodePaletteNormals(scenegraph::SceneGraph &sceneGraph, sce
 	uint32_t normalCount;
 	wrap(stream.readUInt32(normalCount))
 	Log::debug("Load node normal palette with %u normals", normalCount);
-	core::Array<core::RGBA, palette::NormalPaletteMaxNormals> normals;
+	core::Array<color::RGBA, palette::NormalPaletteMaxNormals> normals;
 	for (size_t i = 0; i < normalCount; ++i) {
 		wrap(stream.readUInt32(normals[i].rgba))
 	}
@@ -347,11 +347,11 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	wrap(stream.readUInt32(colorCount))
 	Log::debug("Load node palette with %u color", colorCount);
 	palette.setSize((int)colorCount);
-	core::RGBA colors[palette::PaletteMaxColors];
+	color::RGBA colors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(colors[i].rgba))
 	}
-	core::RGBA emitColors[palette::PaletteMaxColors];
+	color::RGBA emitColors[palette::PaletteMaxColors];
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(emitColors[i].rgba))
 	}
@@ -517,7 +517,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	}
 	node.setVisible(stream.readBool());
 	node.setLocked(stream.readBool());
-	core::RGBA color;
+	color::RGBA color;
 	wrap(stream.readUInt32(color.rgba))
 	node.setColor(color);
 	glm::vec3 pivot(0.0f);

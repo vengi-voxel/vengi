@@ -160,7 +160,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 					zipStream.writeUInt8(0);
 					zipStream.writeUInt8(0);
 				} else {
-					const core::RGBA voxelColor = palette.color(voxel.getColor());
+					const color::RGBA voxelColor = palette.color(voxel.getColor());
 					// const uint8_t alpha = voxelColor.a * 255.0f;
 					zipStream.writeUInt8(voxelColor.r);
 					zipStream.writeUInt8(voxelColor.g);
@@ -454,7 +454,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 					const voxel::Voxel &voxel = voxel::createVoxel(palette, red);
 					volume->setVoxel(x, y, z, voxel);
 				} else {
-					const core::RGBA color = flattenRGB(red, green, blue);
+					const color::RGBA color = flattenRGB(red, green, blue);
 					uint8_t index = 1;
 					palette.tryAdd(color, false, &index);
 					const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
@@ -571,7 +571,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream &stream, palette::Palette &p
 		wrap(stream.readUInt8(colorByteG));
 		wrap(stream.readUInt8(colorByteB));
 		wrap(stream.readUInt8(colorByteVisMask));
-		palette.setColor(i, core::RGBA(colorByteR, colorByteG, colorByteB));
+		palette.setColor(i, color::RGBA(colorByteR, colorByteG, colorByteB));
 	}
 	return true;
 }

@@ -26,7 +26,7 @@ bool VPLPalette::load(const core::String &filename, io::SeekableReadStream &stre
 
 	palette.setSize(PaletteMaxColors);
 	for (int i = 0; i < PaletteMaxColors; ++i) {
-		core::RGBA color;
+		color::RGBA color;
 		wrap(stream.readUInt8(color.r))
 		wrap(stream.readUInt8(color.g))
 		wrap(stream.readUInt8(color.b))

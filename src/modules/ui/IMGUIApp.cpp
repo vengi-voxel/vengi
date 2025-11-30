@@ -422,57 +422,57 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	switch (color) {
 	case style::ColorAxisX:
 		if (style == ImGui::StyleLight) {
-			return core::Color::LightRed();
+			return color::Color::LightRed();
 		}
-		return core::Color::DarkRed();
+		return color::Color::DarkRed();
 	case style::ColorAxisY:
 		if (style == ImGui::StyleLight) {
-			return core::Color::LightGreen();
+			return color::Color::LightGreen();
 		}
-		return core::Color::DarkGreen();
+		return color::Color::DarkGreen();
 	case style::ColorAxisZ:
 		if (style == ImGui::StyleLight) {
-			return core::Color::LightBlue();
+			return color::Color::LightBlue();
 		}
-		return core::Color::DarkBlue();
+		return color::Color::DarkBlue();
 	case style::ColorLockedNode:
-		return core::Color::Red();
+		return color::Color::Red();
 	case style::ColorInactiveNode:
-		return core::Color::Gray();
+		return color::Color::Gray();
 	case style::ColorSliceRegion:
 	case style::ColorGridBorder:
 		if (style == ImGui::StyleLight) {
-			return core::Color::DarkGray();
+			return color::Color::DarkGray();
 		}
-		return core::Color::White();
+		return color::Color::White();
 	case style::ColorReferenceNode:
-		return core::Color::LightGreen();
+		return color::Color::LightGreen();
 	case style::ColorHighlightArea: {
-		static const glm::vec4 c = core::Color::alpha(core::Color::Green(), 0.2f);
+		static const glm::vec4 c = color::Color::alpha(color::Color::Green(), 0.2f);
 		return c;
 	}
 	case style::ColorUVEditor: {
 		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
-			return core::Color::DarkRed();
+			return color::Color::DarkRed();
 		}
-		return core::Color::LightRed();
+		return color::Color::LightRed();
 	}
 	case style::ColorGroupNode:
-		return core::Color::LightYellow();
+		return color::Color::LightYellow();
 	case style::ColorActiveNode:
 		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
-			return core::Color::DarkGreen();
+			return color::Color::DarkGreen();
 		}
-		return core::Color::White();
+		return color::Color::White();
 	case style::ColorBone:
-		return core::Color::LightGray();
+		return color::Color::LightGray();
 	case style::ColorActiveBrush:
 		if (style == ImGui::StyleLight) {
-			return core::Color::Green();
+			return color::Color::Green();
 		}
-		return core::Color::DarkGreen();
+		return color::Color::DarkGreen();
 	}
-	return core::Color::White();
+	return color::Color::White();
 }
 
 void IMGUIApp::beforeUI() {
@@ -527,7 +527,7 @@ void IMGUIApp::renderBindingsDialog() {
 				ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
 				ImGui::TableNextColumn();
 				if (!cmd) {
-					ImGui::TextColored(core::Color::Red(), _("Failed to get command for %s"), command.c_str());
+					ImGui::TextColored(color::Color::Red(), _("Failed to get command for %s"), command.c_str());
 				} else {
 					ImGui::TextUnformatted(cmd->help().c_str());
 				}
@@ -967,10 +967,10 @@ bool IMGUIApp::keyMapOption() {
 void IMGUIApp::colorReductionOptions() {
 	const core::VarPtr &colorReduction = core::Var::getSafe(cfg::CoreColorReduction);
 	if (ImGui::BeginCombo(_("Color reduction"), colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
-		core::Color::ColorReductionType type = core::Color::toColorReductionType(colorReduction->strVal().c_str());
-		for (int i = 0; i < (int)core::Color::ColorReductionType::Max; ++i) {
+		color::Color::ColorReductionType type = color::Color::toColorReductionType(colorReduction->strVal().c_str());
+		for (int i = 0; i < (int)color::Color::ColorReductionType::Max; ++i) {
 			const bool selected = i == (int)type;
-			const char *str = core::Color::toColorReductionTypeString((core::Color::ColorReductionType)i);
+			const char *str = color::Color::toColorReductionTypeString((color::Color::ColorReductionType)i);
 			if (ImGui::Selectable(str, selected)) {
 				colorReduction->setVal(str);
 			}

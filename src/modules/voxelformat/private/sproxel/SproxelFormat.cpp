@@ -103,7 +103,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 					return 0u;
 				}
 				if (a != 0) {
-					const core::RGBA color(r, g, b, a);
+					const color::RGBA color(r, g, b, a);
 					colors.put(color, true);
 				}
 				if (x != size.x - 1) {
@@ -173,7 +173,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 					return false;
 				}
 				if (a != 0) {
-					const core::RGBA color = flattenRGB(r, g, b, a);
+					const color::RGBA color = flattenRGB(r, g, b, a);
 					const uint8_t index = palLookup.findClosestIndex(color);
 					const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 					volume->setVoxel(x, y, z, voxel);
@@ -229,7 +229,7 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 				if (voxel.getMaterial() == voxel::VoxelType::Air) {
 					stream->writeString("#00000000", false);
 				} else {
-					const core::RGBA rgba = palette.color(voxel.getColor());
+					const color::RGBA rgba = palette.color(voxel.getColor());
 					stream->writeStringFormat(false, "#%02X%02X%02X%02X", rgba.r, rgba.g, rgba.b, rgba.a);
 				}
 				if (x != width - 1) {

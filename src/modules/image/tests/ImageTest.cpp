@@ -13,30 +13,30 @@ namespace image {
 
 class ImageTest : public app::AbstractTest {
 private:
-	static constexpr core::RGBA r = core::RGBA(255, 0, 0);
-	static constexpr core::RGBA b = core::RGBA(0, 0, 0);
+	static constexpr color::RGBA r = color::RGBA(255, 0, 0);
+	static constexpr color::RGBA b = color::RGBA(0, 0, 0);
 
 protected:
-	static constexpr core::RGBA img1[]{
+	static constexpr color::RGBA img1[]{
 		r, r, b, b, b, b, r, r, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b,
 	};
-	static constexpr core::RGBA img2[]{
+	static constexpr color::RGBA img2[]{
 		b, b, b, b, b, b, b, b, b, b, b, b, r, r, b, b, b, b, r, r, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b,
 	};
-	static constexpr core::RGBA img3[]{
+	static constexpr color::RGBA img3[]{
 		b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, b, r, r, b, b, b, b, r, r, b, b,
 	};
 
-	bool validate(const image::ImagePtr &image, const core::RGBA *data, int w, int h, int d) {
+	bool validate(const image::ImagePtr &image, const color::RGBA *data, int w, int h, int d) {
 		if (image->width() != w || image->height() != h || image->components() != d) {
 			return false;
 		}
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
-				const core::RGBA c = image->colorAt(x, y);
+				const color::RGBA c = image->colorAt(x, y);
 				if (c != data[y * w + x]) {
-					Log::error("Color mismatch at %i, %i: %s vs %s", x, y, core::Color::print(c).c_str(),
-							   core::Color::print(data[y * w + x]).c_str());
+					Log::error("Color mismatch at %i, %i: %s vs %s", x, y, color::Color::print(c).c_str(),
+							   color::Color::print(data[y * w + x]).c_str());
 					return false;
 				}
 			}
@@ -96,8 +96,8 @@ TEST_F(ImageTest, testWritePng) {
 TEST_F(ImageTest, testGet) {
 	io::FilePtr file = _testApp->filesystem()->open("test-palette-in.png");
 	const image::ImagePtr &img = image::loadImage(file);
-	const core::RGBA rgba = img->colorAt(33, 7);
-	const core::RGBA expected(243, 238, 236);
+	const color::RGBA rgba = img->colorAt(33, 7);
+	const color::RGBA expected(243, 238, 236);
 	EXPECT_EQ(rgba, expected) << image::print(img);
 }
 

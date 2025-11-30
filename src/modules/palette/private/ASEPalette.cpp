@@ -18,7 +18,7 @@ enum BlockTypes : uint16_t { COLOR_START = 0x0001, GROUP_START = 0xc001, GROUP_E
 
 }
 
-bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgba, core::String &name) const {
+bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, color::RGBA &rgba, core::String &name) const {
 	uint16_t nameLength;
 	if (stream.readUInt16BE(nameLength) == -1) {
 		Log::error("ASEPalette: Failed to read name length");
@@ -52,14 +52,14 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgb
 		stream.readFloatBE(color[1]);
 		stream.readFloatBE(color[2]);
 		stream.readFloatBE(color[3]);
-		const core::CMYK cmyk(color[0], color[1], color[2], color[3]);
+		const color::CMYK cmyk(color[0], color[1], color[2], color[3]);
 		rgba = cmyk.toRGB();
 	} else if (mode.colorMode == FourCC('R', 'G', 'B', ' ')) {
 		stream.readFloatBE(color[0]);
 		stream.readFloatBE(color[1]);
 		stream.readFloatBE(color[2]);
 		color[3] = 1.0f;
-		rgba = core::Color::getRGBA(color);
+		rgba = color::Color::getRGBA(color);
 	} else if (mode.colorMode == FourCC('L', 'A', 'B', ' ')) {
 		stream.readFloatBE(color[0]);
 		stream.readFloatBE(color[1]);
@@ -67,12 +67,12 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, core::RGBA &rgb
 		color[3] = 1.0f;
 		// L goes from 0 to 100 percent
 		color[0] *= 100.0f;
-		rgba = core::Color::fromCIELab(color);
+		rgba = color::Color::fromCIELab(color);
 	} else if (mode.colorMode == FourCC('G', 'R', 'A', 'Y')) {
 		stream.readFloatBE(color[0]);
 		color[1] = color[2] = color[0];
 		color[3] = 1.0f;
-		rgba = core::Color::getRGBA(color);
+		rgba = color::Color::getRGBA(color);
 	} else {
 		Log::error("ASEPalette: Unknown color mode %s", colorModeStr.c_str());
 		return false;
@@ -130,7 +130,7 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			return false;
 		}
 		if (blockType == priv::COLOR_START) {
-			core::RGBA rgba;
+			color::RGBA rgba;
 			core::String name;
 			if (!parseColorBlock(stream, rgba, name)) {
 				Log::error("ASEPalette: Failed to parse color block %d/%d", i, blocks);
@@ -156,8 +156,8 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 	stream.writeUInt32BE((uint16_t)palette.size()); // blocks
 	// TODO: write group with palette name
 	for (size_t i = 0; i < palette.size(); ++i) {
-		const core::RGBA &color = palette.color(i);
-		const glm::vec4 scaled = core::Color::fromRGBA(color);
+		const color::RGBA &color = palette.color(i);
+		const glm::vec4 scaled = color::Color::fromRGBA(color);
 		stream.writeUInt16BE(priv::COLOR_START);		// blocktype
 		stream.writeUInt32BE(18);						// blocksize
 		stream.writeUInt16BE(0);						// namelength

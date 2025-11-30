@@ -30,10 +30,10 @@ bool QBCLPalette::load(const core::String &filename, io::SeekableReadStream &str
 	stream.readUInt8(unknown7);
 
 	struct entry {
-		core::RGBA palColor = 0;
+		color::RGBA palColor = 0;
 		bool valid = false;
-		core::RGBA color1 = 0;
-		core::RGBA color2 = 0;
+		color::RGBA color1 = 0;
+		color::RGBA color2 = 0;
 	};
 
 	int colorCount = 0;
@@ -53,7 +53,7 @@ bool QBCLPalette::load(const core::String &filename, io::SeekableReadStream &str
 		}
 
 		// ignore alpha here
-		palette.setColor(colorCount, core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b));
+		palette.setColor(colorCount, color::RGBA(e.palColor.r, e.palColor.g, e.palColor.b));
 		colorCount++;
 	}
 	palette.setSize(colorCount);

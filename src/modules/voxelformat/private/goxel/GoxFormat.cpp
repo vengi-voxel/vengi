@@ -274,7 +274,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 							sampler3.movePositiveX();
 							continue;
 						}
-						const core::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
+						const color::RGBA color = flattenRGB(v[0], v[1], v[2], v[3]);
 						const uint8_t palIdx = palLookup.findClosestIndex(color);
 						voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
 						sampler3.setVoxel(voxel);
@@ -343,7 +343,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			io::MemoryReadStream subStream(dictValue, sizeof(uint32_t));
 			uint32_t color;
 			subStream.readUInt32(color);
-			node.setColor(core::RGBA(color));
+			node.setColor(color::RGBA(color));
 		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
 			// "box" 4x4 bounding box float
 			// "shape" - currently unsupported TODO
@@ -582,7 +582,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	for (image::ImagePtr &img : state.images) {
 		for (int x = 0; x < img->width(); ++x) {
 			for (int y = 0; y < img->height(); ++y) {
-				const core::RGBA rgba = img->colorAt(x, y);
+				const color::RGBA rgba = img->colorAt(x, y);
 				if (rgba.a == 0) {
 					continue;
 				}
@@ -680,11 +680,11 @@ bool GoxFormat::saveChunk_DictInt(io::WriteStream &stream, const core::String &k
 	return stream.writeInt32(value);
 }
 
-bool GoxFormat::saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const core::RGBA &value) {
+bool GoxFormat::saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const color::RGBA &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, 4 * sizeof(float))) {
 		return false;
 	}
-	const glm::vec4 &color = core::Color::fromRGBA(value);
+	const glm::vec4 &color = color::Color::fromRGBA(value);
 	return stream.writeFloat(color.r) && stream.writeFloat(color.g) && stream.writeFloat(color.b) &&
 		   stream.writeFloat(color.a);
 }
@@ -755,11 +755,11 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::String &name = core::String::format("mat%i", i);
 		wrapBool(saveChunk_DictString(stream, "name", name))
-		const core::RGBA rgba = palette.color(i);
+		const color::RGBA rgba = palette.color(i);
 		wrapBool(saveChunk_DictColor(stream, "color", rgba));
 		const palette::Material &material = palette.material(i);
-		const core::RGBA emitRGBA = palette.emitColor(i);
-		const glm::vec3 &emitColor = glm::clamp(core::Color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
+		const color::RGBA emitRGBA = palette.emitColor(i);
+		const glm::vec3 &emitColor = glm::clamp(color::Color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
 		wrapBool(saveChunk_DictFloat(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
 		wrapBool(saveChunk_DictFloat(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
 		wrapBool(saveChunk_DictVec3(stream, "emission", emitColor))
@@ -817,7 +817,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 		glm::mat4 mat(1.0f);
 		wrapBool(saveChunk_DictMat4(stream, "mat", mat))
 		wrapBool(saveChunk_DictInt(stream, "id", layerId))
-		const core::RGBA layerRGBA = node.color();
+		const color::RGBA layerRGBA = node.color();
 		wrapBool(saveChunk_DictColor(stream, "color", layerRGBA.rgba))
 #if 0
 		wrapBool(saveChunk_DictEntry(stream, "base_id", &layer->base_id))

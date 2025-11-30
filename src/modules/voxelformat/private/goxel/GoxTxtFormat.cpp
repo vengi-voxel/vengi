@@ -57,7 +57,7 @@ size_t GoxTxtFormat::loadPalette(const core::String &filename, const io::Archive
 			Log::error("Failed to parse voxel data line");
 			return false;
 		}
-		const core::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
+		const color::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
 		colors.insert(rgba);
 	}
 	if (colors.empty()) {
@@ -66,7 +66,7 @@ size_t GoxTxtFormat::loadPalette(const core::String &filename, const io::Archive
 	}
 	Log::debug("Found %i colors", (int)colors.size());
 
-	core::Buffer<core::RGBA> colorsBuf;
+	core::Buffer<color::RGBA> colorsBuf;
 	colorsBuf.reserve(colors.size());
 	for (const auto &e : colors) {
 		colorsBuf.push_back(e->first);
@@ -102,7 +102,7 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 			Log::error("Failed to parse voxel data line");
 			return false;
 		}
-		const core::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
+		const color::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
 		mins = glm::min(mins, glm::ivec3(x, y, z));
 		maxs = glm::max(maxs, glm::ivec3(x, y, z));
 	}
@@ -136,7 +136,7 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 			return false;
 		}
 
-		const core::RGBA color(rgb[0], rgb[1], rgb[2], 255);
+		const color::RGBA color(rgb[0], rgb[1], rgb[2], 255);
 		const uint8_t idx = palLookup.findClosestIndex(color);
 		const voxel::Voxel voxel = voxel::createVoxel(palette, idx);
 		volume->setVoxel(x, y, z, voxel);
@@ -162,7 +162,7 @@ bool GoxTxtFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		return false;
 	}
 	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		const core::RGBA rgba = node->palette().color(voxel.getColor());
+		const color::RGBA rgba = node->palette().color(voxel.getColor());
 		if (!stream->writeStringFormat(false, "%i %i %i %02x%02x%02x\n", x, z, y, rgba.r, rgba.g, rgba.b)) {
 			Log::error("Could not write voxel data");
 			return;

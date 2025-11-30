@@ -25,18 +25,18 @@ namespace voxelformat {
 class CubzhB64Format : public RGBAFormat {
 protected:
 	struct Ambience {
-		core::RGBA skyColor;
-		core::RGBA skyHorizonColor;
-		core::RGBA skyAbyssColor;
-		core::RGBA skyLightColor;
+		color::RGBA skyColor;
+		color::RGBA skyHorizonColor;
+		color::RGBA skyAbyssColor;
+		color::RGBA skyLightColor;
 		float skyLightIntensity;
 
-		core::RGBA fogColor;
+		color::RGBA fogColor;
 		float fogNear;
 		float fogFar;
 		float fogAbsorbtion;
 
-		core::RGBA sunColor;
+		color::RGBA sunColor;
 		float sunIntensity;
 		float sunRotation[2];
 

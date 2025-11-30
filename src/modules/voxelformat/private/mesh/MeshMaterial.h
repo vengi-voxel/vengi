@@ -21,16 +21,16 @@ public:
 	image::TextureWrap wrapS = image::TextureWrap::Repeat;
 	image::TextureWrap wrapT = image::TextureWrap::Repeat;
 	palette::Material material;
-	core::RGBA baseColor{255, 255, 255, 255};
-	core::RGBA emitColor{0, 0, 0, 0};
+	color::RGBA baseColor{255, 255, 255, 255};
+	color::RGBA emitColor{0, 0, 0, 0};
 	float baseColorFactor = 0.0f;
 	float transparency = 0.0f;
 	int16_t uvIndex = 0; // the index of the texture coordinate set used by this material
 
 	int width() const;
 	int height() const;
-	[[nodiscard]] core::RGBA apply(core::RGBA color) const;
-	[[nodiscard]] bool colorAt(core::RGBA &color, const glm::vec2 &uv, bool originUpperLeft = false) const;
+	[[nodiscard]] color::RGBA apply(color::RGBA color) const;
+	[[nodiscard]] bool colorAt(color::RGBA &color, const glm::vec2 &uv, bool originUpperLeft = false) const;
 };
 
 using MeshMaterialPtr = core::SharedPtr<MeshMaterial>;

@@ -38,7 +38,7 @@ private:
 		core::Buffer<glm::vec3> normals;
 		core::Buffer<glm::vec2> texcoords;
 		core::DynamicArray<Face3ds> faces;
-		core::Buffer<core::RGBA> colors;
+		core::Buffer<color::RGBA> colors;
 	};
 
 	struct Chunk3ds {
@@ -61,9 +61,9 @@ private:
 
 	struct Material3ds {
 		core::String name;
-		core::RGBA diffuseColor{0, 0, 0};
-		core::RGBA ambientColor{0, 0, 0};
-		core::RGBA specularColor{0, 0, 0};
+		color::RGBA diffuseColor{0, 0, 0};
+		color::RGBA ambientColor{0, 0, 0};
+		color::RGBA specularColor{0, 0, 0};
 		float shininess = 0.0f;	 // Specular intensity (specular factor)
 		float shininess2 = 0.0f; // controls the size/shape of the specular highlight
 		float transparency = 0.0f;
@@ -113,7 +113,7 @@ private:
 	void skipUnknown(io::SeekableReadStream *stream, const Chunk3ds &chunk, const char *section) const;
 
 	bool readDataFactor(io::SeekableReadStream *stream, Chunk3ds &parent, float &factor) const;
-	bool readDataColor(io::SeekableReadStream *stream, Chunk3ds &parent, core::RGBA &color) const;
+	bool readDataColor(io::SeekableReadStream *stream, Chunk3ds &parent, color::RGBA &color) const;
 
 	bool readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &parent, Mesh3ds &mesh) const;
 	bool readMesh(io::SeekableReadStream *stream, Chunk3ds &parent, Mesh3ds &mesh) const;

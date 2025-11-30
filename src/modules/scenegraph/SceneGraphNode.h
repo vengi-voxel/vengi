@@ -89,7 +89,7 @@ protected:
 	int _referenceId = InvalidNodeId;
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
-	core::RGBA _color;
+	color::RGBA _color;
 	glm::vec3 _pivot {0.0f};
 
 	core::UUID _uuid;
@@ -133,8 +133,8 @@ public:
 	void fixErrors();
 	bool validate() const;
 
-	core::RGBA color() const;
-	void setColor(core::RGBA color);
+	color::RGBA color() const;
+	void setColor(color::RGBA color);
 
 	int id() const;
 	int parent() const;
@@ -253,7 +253,7 @@ public:
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, float value);
 	bool setProperty(const core::String& key, uint32_t value);
-	bool setProperty(const core::String& key, core::RGBA value);
+	bool setProperty(const core::String& key, color::RGBA value);
 	bool setProperty(const core::String& key, const core::String& value);
 
 	FrameIndex maxFrame() const;
@@ -306,11 +306,11 @@ inline bool SceneGraphNode::owns() const {
 	return _volume;
 }
 
-inline core::RGBA SceneGraphNode::color() const {
+inline color::RGBA SceneGraphNode::color() const {
 	return _color;
 }
 
-inline void SceneGraphNode::setColor(core::RGBA color) {
+inline void SceneGraphNode::setColor(color::RGBA color) {
 	_color = color;
 }
 

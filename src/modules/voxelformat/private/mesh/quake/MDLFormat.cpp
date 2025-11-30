@@ -96,7 +96,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		core::ScopedPtr<io::SeekableReadStream> palStream(archive->readStream("palette.lmp"));
 		if (palStream && palStream->size() == 768) {
 			for (int i = 0; i < 256; ++i) {
-				core::RGBA rgba(0, 0, 0, 255);
+				color::RGBA rgba(0, 0, 0, 255);
 				wrap(palStream->readUInt8(rgba.r))
 				wrap(palStream->readUInt8(rgba.g))
 				wrap(palStream->readUInt8(rgba.b))
@@ -127,7 +127,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 		for (int32_t j = 0; j < numberOfTextures; ++j) {
 			const image::ImagePtr &image = image::createEmptyImage("skin_" + core::string::toString(j));
-			if (!image->load(hdr.skinWidth, hdr.skinHeight, [&](int x, int y, core::RGBA &rgba) -> void {
+			if (!image->load(hdr.skinWidth, hdr.skinHeight, [&](int x, int y, color::RGBA &rgba) -> void {
 					uint8_t index = 0;
 					if (stream->readUInt8(index) == -1) {
 						Log::error("Could not load mdl file: Failed to load skin");

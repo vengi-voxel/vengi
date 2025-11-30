@@ -30,12 +30,12 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 		brighten = rand() % 2 == 0;
 	}
 
-	const core::RGBA voxelColor = _palette.color(old.getColor());
-	core::RGBA newColor;
+	const color::RGBA voxelColor = _palette.color(old.getColor());
+	color::RGBA newColor;
 	if (brighten) {
-		newColor = core::Color::brighter(voxelColor, _factor);
+		newColor = color::Color::brighter(voxelColor, _factor);
 	} else {
-		newColor = core::Color::darker(voxelColor, _factor);
+		newColor = color::Color::darker(voxelColor, _factor);
 	}
 	const int index = _palette.getClosestMatch(newColor, old.getColor());
 	if (index == palette::PaletteColorNotFound) {
@@ -57,7 +57,7 @@ static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from
 	const glm::vec4 colorA = palette.color4(from.getColor());
 	const glm::vec4 colorB = palette.color4(to.getColor());
 	const glm::vec4 newColor = glm::mix(colorA, colorB, factor);
-	const int index = palette.getClosestMatch(core::Color::getRGBA(newColor), from.getColor());
+	const int index = palette.getClosestMatch(color::Color::getRGBA(newColor), from.getColor());
 	if (index == palette::PaletteColorNotFound) {
 		return from;
 	}

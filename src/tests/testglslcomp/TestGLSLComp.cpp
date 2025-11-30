@@ -43,7 +43,7 @@ app::AppState TestGLSLComp::onInit() {
 	_texture->upload(nullptr);
 	video::bindImage(_texture->handle(), video::AccessMode::Write, _testShader.getImageFormatImgOutput());
 
-	video::clearColor(::core::Color::White());
+	video::clearColor(::color::Color::White());
 	return state;
 }
 

@@ -33,7 +33,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 			return image::ImagePtr();
 		}
 		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
-		const core::RGBA bgColor(0, 0, 0, 255);
+		const color::RGBA bgColor(0, 0, 0, 255);
 		const float depthFactor2D = 0.0f;
 		return isometric2d ? voxelutil::renderIsometricImage(v, merged.palette, image2dFace, bgColor, ctx.outputSize.x,
 															 ctx.outputSize.y)

@@ -70,7 +70,7 @@ size_t VelorenTerrainFormat::loadPalette(const core::String &filename, const io:
 		}
 
 		uint8_t blockType = BlockType::Air;
-		core::RGBA rgba(0, 0, 0, 255);
+		color::RGBA rgba(0, 0, 0, 255);
 		wrap(stream->readUInt8(blockType))
 		wrap(stream->readUInt8(rgba.r))
 		wrap(stream->readUInt8(rgba.g))
@@ -123,7 +123,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 		}
 
 		uint8_t blockType = BlockType::Air;
-		core::RGBA rgba(0, 0, 0, 255);
+		color::RGBA rgba(0, 0, 0, 255);
 		wrap(stream->readUInt8(blockType))
 		wrap(stream->readUInt8(rgba.r))
 		wrap(stream->readUInt8(rgba.g))
@@ -187,7 +187,7 @@ bool VelorenTerrainFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, 
 	for (uint32_t i = 0; i < count; ++i) {
 		const glm::ivec3 pos = region.fromIndex(i);
 		const voxel::Voxel voxel = volume->voxel(pos);
-		const core::RGBA color = palette.color(voxel.getColor());
+		const color::RGBA color = palette.color(voxel.getColor());
 		uint8_t blockType = BlockType::Earth;
 		if (voxel::isAir(voxel.getMaterial())) {
 			blockType = BlockType::Air;

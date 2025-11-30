@@ -23,7 +23,7 @@ TEST_F(GoxFormatTest, testLoadRGB) {
 }
 
 TEST_F(GoxFormatTest, testLoadScreenshot) {
-	testLoadScreenshot("chr_knight.gox", 128, 128, core::RGBA(158, 59, 59), 65, 27);
+	testLoadScreenshot("chr_knight.gox", 128, 128, color::RGBA(158, 59, 59), 65, 27);
 }
 
 } // namespace voxelformat

@@ -82,7 +82,7 @@ void checkRotation(const ogt_vox_transform &transform);
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
-core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
+color::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 
 inline glm::vec3 ogtVolumeSize(const ogt_vox_model *model) {
 	return glm::vec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);

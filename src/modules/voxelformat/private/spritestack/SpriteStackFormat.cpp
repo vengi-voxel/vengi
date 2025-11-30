@@ -211,7 +211,7 @@ bool SpriteStackFormat::loadGroupsPalette(const core::String &filename, const io
 				const int px = sx + xx;
 				const int py = sy + yy;
 
-				const core::RGBA color = image->colorAt(px, py);
+				const color::RGBA color = image->colorAt(px, py);
 				// skip fully transparent pixels
 				if (color.a == 0) {
 					continue;
@@ -338,14 +338,14 @@ bool SpriteStackFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, con
 			for (int y = 0; y < height; ++y) {
 				for (int x = 0; x < width; ++x) {
 					const voxel::Voxel &voxel = volume->voxel(x, y, z);
-					core::RGBA color;
+					color::RGBA color;
 					if (voxel::isAir(voxel.getMaterial())) {
-						color = core::RGBA(0, 0, 0, 0);
+						color = color::RGBA(0, 0, 0, 0);
 					} else {
 						color = palette.color(voxel.getColor());
 					}
 					// Flip Y coordinate for image (images are top-down)
-					image->setColor(core::RGBA(color), x, yOffset + (height - 1 - y));
+					image->setColor(color::RGBA(color), x, yOffset + (height - 1 - y));
 				}
 			}
 		}

@@ -28,7 +28,7 @@
 #include <random>
 #include <stdio.h>
 
-namespace core {
+namespace color {
 
 const glm::vec4 &Color::Clear() {
 	static const glm::vec4 v = glm::vec4(0.f, 0, 0, 0) / glm::vec4(Color::magnitudef);
@@ -146,7 +146,7 @@ const float Color::magnitudef = 255.0f;
 const float Color::scaleFactor = 0.7f;
 
 static constexpr const char *ColorReductionAlgorithmStr[]{"Octree", "Wu", "MedianCut", "KMeans", "NeuQuant"};
-static_assert((int)core::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr),
+static_assert((int)color::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr),
 			  "Array size doesn't match with enum");
 
 const char *Color::toColorReductionTypeString(Color::ColorReductionType type) {
@@ -175,7 +175,7 @@ struct ColorBox {
 static int medianCutFindMedian(const core::Buffer<RGBA> &colors, int axis) {
 	core::Buffer<int> values;
 	values.reserve(colors.size());
-	for (const core::RGBA &color : colors) {
+	for (const color::RGBA &color : colors) {
 		if (axis == 0) {
 			values.push_back(color.r);
 		} else if (axis == 1) {
@@ -201,7 +201,7 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
 	ColorBox box1, box2;
 	box1.pixels.reserve(box.pixels.size());
 	box2.pixels.reserve(box.pixels.size());
-	for (const core::RGBA &color : box.pixels) {
+	for (const color::RGBA &color : box.pixels) {
 		if (longestAxis == 0) {
 			if (color.r < median) {
 				box1.pixels.push_back(color);
@@ -255,8 +255,8 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 	core::DynamicArray<ColorBox> boxes;
 	boxes.reserve(maxTargetBufColors + 1);
 	{
-		core::RGBA white{0, 0, 0, 255};
-		core::RGBA black{255, 255, 255, 255};
+		color::RGBA white{0, 0, 0, 255};
+		color::RGBA black{255, 255, 255, 255};
 		core::Buffer<RGBA> pixels;
 		pixels.append(inputBuf, inputBufColors);
 		boxes.emplace_back(white, black, core::move(pixels));
@@ -285,7 +285,7 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 			continue;
 		}
 		uint32_t r = 0, g = 0, b = 0, a = 0;
-		for (const core::RGBA &color : box.pixels) {
+		for (const color::RGBA &color : box.pixels) {
 			r += color.r;
 			g += color.g;
 			b += color.b;
@@ -295,7 +295,7 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 		g /= box.pixels.size();
 		b /= box.pixels.size();
 		a /= box.pixels.size();
-		targetBuf[n++] = core::RGBA(r, g, b, a);
+		targetBuf[n++] = color::RGBA(r, g, b, a);
 		if (n >= maxTargetBufColors) {
 			return (int)n;
 		}
@@ -310,8 +310,8 @@ static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	core_assert(glm::isPowerOfTwo(maxTargetBufColors));
 	using BBox = math::AABB<uint8_t>;
 	struct ColorNode {
-		inline ColorNode(core::RGBA c) : color(c){};
-		core::RGBA color;
+		inline ColorNode(color::RGBA c) : color(c) {};
+		color::RGBA color;
 		inline BBox aabb() const {
 			return BBox(color.r, color.g, color.b, color.r + 1, color.g + 1, color.b + 1);
 		}
@@ -362,7 +362,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> dis(0, (int)inputBufColors - 1);
 	for (int i = 0; i < (int)maxTargetBufColors; i++) {
-		centers.emplace_back(core::Color::fromRGBA(inputBuf[dis(gen)]));
+		centers.emplace_back(color::Color::fromRGBA(inputBuf[dis(gen)]));
 	}
 
 	bool changed = true;
@@ -370,7 +370,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 		changed = false;
 		core::DynamicArray<core::Buffer<glm::vec4>> clusters(maxTargetBufColors);
 		for (size_t i = 0; i < inputBufColors; ++i) {
-			const glm::vec4 point = core::Color::fromRGBA(inputBuf[i]);
+			const glm::vec4 point = color::Color::fromRGBA(inputBuf[i]);
 			int closest = 0;
 			float closestDistance = getDistance(point, centers[0]);
 			for (int n = 1; n < (int)maxTargetBufColors; n++) {
@@ -400,7 +400,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 
 	size_t n = 0;
 	for (const glm::vec4 &c : centers) {
-		targetBuf[n++] = core::Color::getRGBA(c);
+		targetBuf[n++] = color::Color::getRGBA(c);
 	}
 	for (size_t i = n; i < maxTargetBufColors; ++i) {
 		targetBuf[i] = RGBA(0xFFFFFFFFU);
@@ -564,8 +564,8 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 	{
 		core::Buffer<RGBA> pixels;
 		pixels.append(inputBuf, inputBufColors);
-		core::RGBA white{0, 0, 0, 255};
-		core::RGBA black{255, 255, 255, 255};
+		color::RGBA white{0, 0, 0, 255};
+		color::RGBA black{255, 255, 255, 255};
 		boxes.emplace_back(white, black, core::move(pixels));
 	}
 
@@ -711,19 +711,19 @@ glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return glm::aligned_vec4(r, g, b, a) / Color::magnitudef;
 }
 
-core::RGBA Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
+color::RGBA Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
 	if (0.00001f > brightness) {
-		return core::RGBA(0, 0, 0, alpha * 255.0f);
+		return color::RGBA(0, 0, 0, alpha * 255.0f);
 	}
 	if (0.00001f > saturation) {
-		return core::RGBA(brightness * 255.0f, brightness * 255.0f, brightness * 255.0f, alpha * 255.0f);
+		return color::RGBA(brightness * 255.0f, brightness * 255.0f, brightness * 255.0f, alpha * 255.0f);
 	}
 	const float h = (hue - SDL_floorf(hue)) * 6.0f;
 	const float f = h - SDL_floorf(h);
 	const uint8_t p = (uint8_t)(brightness * (1.f - saturation) * 255.0f);
 	const uint8_t q = (uint8_t)(brightness * (1.f - saturation * f) * 255.0f);
 	const uint8_t t = (uint8_t)(brightness * (1.f - (saturation * (1.f - f))) * 255.0f);
-	core::RGBA color;
+	color::RGBA color;
 	color.a = alpha * 255.0f;
 	switch (static_cast<int>(h)) {
 	case 0:
@@ -769,7 +769,7 @@ core::String Color::toHex(const RGBA rgba, bool hashPrefix) {
 	return hex;
 }
 
-core::RGBA Color::fromHex(const char *hex) {
+color::RGBA Color::fromHex(const char *hex) {
 	uint32_t r = 0x00;
 	uint32_t g = 0x00;
 	uint32_t b = 0x00;
@@ -782,7 +782,7 @@ core::RGBA Color::fromHex(const char *hex) {
 	if (sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
 		a = 0xff;
 	}
-	return core::RGBA(r, g, b, a);
+	return color::RGBA(r, g, b, a);
 }
 
 core::String Color::print(RGBA rgba, bool colorAsHex) {
@@ -807,7 +807,7 @@ core::String Color::print(RGBA rgba, bool colorAsHex) {
 }
 
 // https://www.compuphase.com/cmetric.htm
-static float getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
+static float getDistanceApprox(color::RGBA rgba, color::RGBA rgba2) {
 	const int rmean = (rgba2.r + rgba.r) / 2;
 	const int r = rgba2.r - rgba.r;
 	const int g = rgba2.g - rgba.g;
@@ -815,11 +815,11 @@ static float getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
 	return (float)(((512 + rmean) * r * r) >> 8) + 4.0f * g * g + (float)(((767 - rmean) * b * b) >> 8);
 }
 
-static float getDistanceHSB(const core::RGBA &rgba, float hue, float saturation, float brightness) {
+static float getDistanceHSB(const color::RGBA &rgba, float hue, float saturation, float brightness) {
 	float chue;
 	float csaturation;
 	float cbrightness;
-	core::Color::getHSB(rgba, chue, csaturation, cbrightness);
+	color::Color::getHSB(rgba, chue, csaturation, cbrightness);
 
 	const float weightHue = 0.8f;
 	const float weightSaturation = 0.1f;
@@ -830,11 +830,11 @@ static float getDistanceHSB(const core::RGBA &rgba, float hue, float saturation,
 	return weightHue * dH * dH + weightValue * dV * dV + weightSaturation * dS * dS;
 }
 
-static float getDistanceHSB(const core::RGBA &rgba, RGBA rgba2) {
+static float getDistanceHSB(const color::RGBA &rgba, RGBA rgba2) {
 	float hue;
 	float saturation;
 	float brightness;
-	core::Color::getHSB(core::Color::fromRGBA(rgba), hue, saturation, brightness);
+	color::Color::getHSB(color::Color::fromRGBA(rgba), hue, saturation, brightness);
 	return getDistanceHSB(rgba2, hue, saturation, brightness);
 }
 
@@ -899,18 +899,18 @@ float Color::getDistance(RGBA rgba, float hue, float saturation, float brightnes
 	return getDistanceHSB(rgba, hue, saturation, brightness);
 }
 
-core::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f) {
+color::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f) {
 	if (f <= 1u) {
-		return core::RGBA(r, g, b, a);
+		return color::RGBA(r, g, b, a);
 	}
-	return core::RGBA(r / f * f, g / f * f, b / f * f, a);
+	return color::RGBA(r / f * f, g / f * f, b / f * f, a);
 }
 
-void Color::getCIELab(core::RGBA color, float &L, float &a, float &b) {
+void Color::getCIELab(color::RGBA color, float &L, float &a, float &b) {
 	getCIELab(fromRGBA(color), L, a, b);
 }
 
-core::RGBA Color::fromCIELab(const glm::vec4 &in) {
+color::RGBA Color::fromCIELab(const glm::vec4 &in) {
 	float x = in.r / 100.0f;
 	float y = (in.g + 16.0f) / 116.0f;
 	float z = in.b / 200.0f;
@@ -937,7 +937,7 @@ core::RGBA Color::fromCIELab(const glm::vec4 &in) {
 		b = 12.92f * b;
 	}
 
-	return core::RGBA((uint8_t)(r * magnitude), (uint8_t)(g * magnitude), (uint8_t)(b * magnitude), 255u);
+	return color::RGBA((uint8_t)(r * magnitude), (uint8_t)(g * magnitude), (uint8_t)(b * magnitude), 255u);
 }
 
 void Color::getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
@@ -1003,11 +1003,10 @@ RGBA Color::getRGBA(const glm::vec4 &color) {
 }
 
 RGBA Color::getRGBA(const glm::vec3 &color) {
-	return RGBA{(uint8_t)(color.r * magnitude), (uint8_t)(color.g * magnitude), (uint8_t)(color.b * magnitude),
-				255u};
+	return RGBA{(uint8_t)(color.r * magnitude), (uint8_t)(color.g * magnitude), (uint8_t)(color.b * magnitude), 255u};
 }
 
-void Color::getHSB(core::RGBA color, float &chue, float &csaturation, float &cbrightness) {
+void Color::getHSB(color::RGBA color, float &chue, float &csaturation, float &cbrightness) {
 	getHSB(fromRGBA(color), chue, csaturation, cbrightness);
 }
 
@@ -1049,7 +1048,7 @@ float Color::brightness(const glm::vec4 &color) {
 	return core_max(color.r, core_max(color.g, color.b));
 }
 
-uint8_t Color::brightness(const core::RGBA &color) {
+uint8_t Color::brightness(const color::RGBA &color) {
 	return core_max(color.r, core_max(color.g, color.b));
 }
 
@@ -1067,9 +1066,9 @@ glm::vec3 Color::gray(const glm::vec3 &color) {
 	return glm::vec3(gray, gray, gray);
 }
 
-core::RGBA Color::darker(const core::RGBA &color, float f) {
+color::RGBA Color::darker(const color::RGBA &color, float f) {
 	f = (float)SDL_pow(scaleFactor, f);
-	core::RGBA result = color;
+	color::RGBA result = color;
 	result.r = (uint8_t)((float)result.r * f);
 	result.g = (uint8_t)((float)result.g * f);
 	result.b = (uint8_t)((float)result.b * f);
@@ -1081,7 +1080,7 @@ const glm::vec4 &Color::contrastTextColor(const glm::vec4 &background) {
 	float luminance = 0.2126f * background.r + 0.7152f * background.g + 0.0722f * background.b;
 
 	// Use white text on dark backgrounds, black text on light backgrounds
-	return (luminance < 0.5f) ? core::Color::White() : core::Color::Black();
+	return (luminance < 0.5f) ? color::Color::White() : color::Color::Black();
 }
 
 glm::vec4 Color::darker(const glm::vec4 &color, float f) {
@@ -1089,7 +1088,7 @@ glm::vec4 Color::darker(const glm::vec4 &color, float f) {
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
 }
 
-core::RGBA Color::brighter(const core::RGBA color, float f) {
+color::RGBA Color::brighter(const color::RGBA color, float f) {
 	return getRGBA(brighter(fromRGBA(color), f));
 }
 
@@ -1112,4 +1111,4 @@ glm::vec4 Color::brighter(const glm::vec4 &color, float f) {
 	return glm::vec4(glm::clamp(result / f, 0.f, 1.f), color.a);
 }
 
-} // namespace core
+} // namespace color

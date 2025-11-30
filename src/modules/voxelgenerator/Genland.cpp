@@ -151,13 +151,13 @@ private:
 	const int _bufSize;
 
 public:
-	core::RGBA *buf; // 2d heightmap colors for writing out the voxels or the heightmap image
-	core::RGBA *amb; // ambient
+	color::RGBA *buf; // 2d heightmap colors for writing out the voxels or the heightmap image
+	color::RGBA *amb; // ambient
 	float *hgt;		 // height values
 	uint8_t *sh;	 // shadows
 	TempBuffer(int size) : _bufSize(size * size) {
-		buf = new core::RGBA[_bufSize];
-		amb = new core::RGBA[_bufSize];
+		buf = new color::RGBA[_bufSize];
+		amb = new color::RGBA[_bufSize];
 		hgt = new float[_bufSize];
 		sh = new uint8_t[_bufSize];
 	}
@@ -366,20 +366,20 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	palette::PaletteLookup paletteLookup(palette);
 	app::for_parallel(0, settings.size, [&paletteLookup, &tempBuffer, &settings, volume] (int start, int end) {
-		const core::RGBA *heightmap = tempBuffer.buf + start * settings.size;
+		const color::RGBA *heightmap = tempBuffer.buf + start * settings.size;
 		// TODO: PERF: use volume sampler
 		for (int vz = start; vz < end; ++vz) {
 			for (int vx = 0; vx < settings.size; ++vx, ++heightmap) {
 				const int maxsy = glm::clamp((int)heightmap->a, 0, settings.height);
 				if (maxsy == 0) {
-					const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
+					const color::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
 					const int palIdx = paletteLookup.findClosestIndex(color);
 					volume->setVoxel(vx, 0, vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
 					continue;
 				} else if (maxsy < 0) {
 					continue;
 				}
-				const core::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
+				const color::RGBA color{heightmap->r, heightmap->g, heightmap->b, 255};
 				const int palIdx = paletteLookup.findClosestIndex(color);
 				core::Array<voxel::Voxel, 256> voxels;
 				voxels.fill(voxel::createVoxel(voxel::VoxelType::Generic, palIdx));

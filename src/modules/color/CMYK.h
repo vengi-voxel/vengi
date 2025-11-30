@@ -6,7 +6,7 @@
 
 #include "color/RGBA.h"
 
-namespace core {
+namespace color {
 
 // Cyan, Magenta, Yellow und Key (Black)
 struct CMYK {
@@ -15,8 +15,8 @@ struct CMYK {
 	float cmyk[4];
 
 	CMYK &operator=(const CMYK &other);
-	core::RGBA toRGB() const;
-	static CMYK fromRGB(const core::RGBA &rgb);
+	color::RGBA toRGB() const;
+	static CMYK fromRGB(const color::RGBA &rgb);
 };
 
-} // namespace core
+} // namespace color

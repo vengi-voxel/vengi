@@ -25,12 +25,12 @@ class ImageUtilsTest : public app::AbstractTest {
 protected:
 	void validateVoxel(const voxel::RawVolume &volume, const palette::Palette &palette, const image::ImagePtr &image,
 					   int x, int y) {
-		const core::RGBA expectedColor = image->colorAt(x, y);
+		const color::RGBA expectedColor = image->colorAt(x, y);
 		const voxel::Voxel &voxel = volume.voxel(x, y, 0);
-		const core::RGBA actualColor = palette.color(voxel.getColor());
-		EXPECT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
-			<< "Expected color: " << core::Color::print(expectedColor)
-			<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
+		const color::RGBA actualColor = palette.color(voxel.getColor());
+		EXPECT_LT(color::Color::getDistance(expectedColor, actualColor, color::Color::Distance::HSB), 0.04f)
+			<< "Expected color: " << color::Color::print(expectedColor)
+			<< ", but got: " << color::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ")";
 	}
 
 	void validateHeightmap(voxel::Voxel underground) {
@@ -58,14 +58,14 @@ protected:
 		EXPECT_EQ(expectedVoxelCount, voxelutil::countVoxels(volume));
 		for (int x = 0; x < image->width(); ++x) {
 			for (int z = 0; z < image->height(); ++z) {
-				const core::RGBA expectedColor = image->colorAt(x, z);
+				const color::RGBA expectedColor = image->colorAt(x, z);
 				const int volumeHeight = region.getHeightInVoxels();
 				const int expectedY = getHeightValueFromAlpha(expectedColor.a, true, volumeHeight, minHeight) - 1;
 				const voxel::Voxel &voxel = volume.voxel(x, expectedY, z);
-				const core::RGBA actualColor = palette.color(voxel.getColor());
-				ASSERT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
-					<< "Expected color: " << core::Color::print(expectedColor)
-					<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", " << expectedY
+				const color::RGBA actualColor = palette.color(voxel.getColor());
+				ASSERT_LT(color::Color::getDistance(expectedColor, actualColor, color::Color::Distance::HSB), 0.04f)
+					<< "Expected color: " << color::Color::print(expectedColor)
+					<< ", but got: " << color::Color::print(actualColor) << " for voxel at (" << x << ", " << expectedY
 					<< ", " << z << ") with height alpha value " << (int)expectedColor.a << " and min height "
 					<< minHeight << " and height in voxels " << volumeHeight;
 				if (expectedY > 0) {
@@ -125,7 +125,7 @@ TEST_F(ImageUtilsTest, testImportAsVolumeSingleSided) {
 TEST_F(ImageUtilsTest, testImportHeightMaxHeightAlpha) {
 	constexpr int h = 4;
 	constexpr int w = 4;
-	constexpr core::RGBA buffer[w * h]{{255, 0, 0, 127},  {255, 255, 0, 128},  {255, 0, 255, 129},	{255, 255, 255, 1},
+	constexpr color::RGBA buffer[w * h]{{255, 0, 0, 127},  {255, 255, 0, 128},  {255, 0, 255, 129},	{255, 255, 255, 1},
 									   {0, 255, 0, 0},	  {13, 255, 50, 45},   {127, 127, 127, 45}, {255, 127, 0, 32},
 									   {255, 0, 0, 45},	  {255, 60, 0, 45},	   {255, 0, 30, 45},	{127, 69, 255, 45},
 									   {127, 127, 0, 45}, {255, 127, 127, 45}, {255, 0, 127, 45},	{0, 127, 80, 45}};
@@ -228,11 +228,11 @@ TEST_F(ImageUtilsTest, testRenderToImage) {
 			if (voxel::isAir(voxel.getMaterial())) {
 				continue;
 			}
-			const core::RGBA expectedColor = palette.color(voxel.getColor());
-			const core::RGBA actualColor = img->colorAt(x, y);
-			ASSERT_LT(core::Color::getDistance(expectedColor, actualColor, core::Color::Distance::HSB), 0.04f)
-				<< "Expected color: " << core::Color::print(expectedColor)
-				<< ", but got: " << core::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ") "
+			const color::RGBA expectedColor = palette.color(voxel.getColor());
+			const color::RGBA actualColor = img->colorAt(x, y);
+			ASSERT_LT(color::Color::getDistance(expectedColor, actualColor, color::Color::Distance::HSB), 0.04f)
+				<< "Expected color: " << color::Color::print(expectedColor)
+				<< ", but got: " << color::Color::print(actualColor) << " for voxel at (" << x << ", " << y << ") "
 				<< image::print(img);
 			++pixelCount;
 		}

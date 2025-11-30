@@ -236,7 +236,7 @@ bool SceneGraphNode::removeUnusedColors(bool reindexPalette) {
 	} else {
 		for (size_t i = 0; i < pal.size(); ++i) {
 			if (!usedColors[i]) {
-				pal.setColor(i, core::RGBA(127, 127, 127, 255));
+				pal.setColor(i, color::RGBA(127, 127, 127, 255));
 			}
 		}
 		pal.markDirty();
@@ -533,8 +533,8 @@ bool SceneGraphNode::setProperty(const core::String& key, uint32_t value) {
 	return setProperty(key, core::string::toString(value));
 }
 
-bool SceneGraphNode::setProperty(const core::String& key, core::RGBA value) {
-	return setProperty(key, core::Color::toHex(value, true));
+bool SceneGraphNode::setProperty(const core::String& key, color::RGBA value) {
+	return setProperty(key, color::Color::toHex(value, true));
 }
 
 bool SceneGraphNode::setProperty(const core::String &key, const core::String &value) {

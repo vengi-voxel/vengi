@@ -104,7 +104,7 @@ bool Palette::hasMaterials() const {
 
 void Palette::fill() {
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		_colors[i] = core::RGBA(64, 64, 64, 255);
+		_colors[i] = color::RGBA(64, 64, 64, 255);
 	}
 	_colorCount = PaletteMaxColors;
 }
@@ -133,27 +133,27 @@ void Palette::markDirty() {
 }
 
 glm::vec4 Palette::color4(uint8_t i) const {
-	return core::Color::fromRGBA(color(i));
+	return color::Color::fromRGBA(color(i));
 }
 
 void Palette::reduce(uint8_t targetColors) {
-	core::Color::ColorReductionType reductionType =
-		core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
-	core::RGBA oldcolors[PaletteMaxColors];
+	color::Color::ColorReductionType reductionType =
+		color::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+	color::RGBA oldcolors[PaletteMaxColors];
 	core_memcpy(oldcolors, _colors, sizeof(oldcolors));
-	_colorCount = core::Color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
+	_colorCount = color::Color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
 	markDirty();
 }
 
-void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
+void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCount) {
 	Log::debug("quantize %i colors", (int)inputColorCount);
-	core::Color::ColorReductionType reductionType =
-		core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
-	_colorCount = core::Color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
+	color::Color::ColorReductionType reductionType =
+		color::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+	_colorCount = color::Color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
 	markDirty();
 }
 
-bool Palette::hasColor(core::RGBA rgba) {
+bool Palette::hasColor(color::RGBA rgba) {
 	for (int i = 0; i < _colorCount; ++i) {
 		if (_colors[i] == rgba) {
 			return true;
@@ -183,9 +183,9 @@ void Palette::exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2) {
 	if (paletteColorIdx1 == paletteColorIdx2) {
 		return;
 	}
-	const core::RGBA lhs = color(paletteColorIdx1);
+	const color::RGBA lhs = color(paletteColorIdx1);
 	const palette::Material lhsM = material(paletteColorIdx1);
-	const core::RGBA rhs = color(paletteColorIdx2);
+	const color::RGBA rhs = color(paletteColorIdx2);
 	const palette::Material rhsM = material(paletteColorIdx2);
 	setColor(paletteColorIdx1, rhs);
 	setMaterial(paletteColorIdx1, rhsM);
@@ -210,7 +210,7 @@ bool Palette::removeColor(uint8_t paletteColorIdx) {
 		for (int i = paletteColorIdx; i < _colorCount - 1; ++i) {
 			_view._uiIndices[i] = _view._uiIndices[i + 1];
 		}
-		_colors[paletteColorIdx] = core::RGBA(0, 0, 0, 0);
+		_colors[paletteColorIdx] = color::RGBA(0, 0, 0, 0);
 		if (paletteColorIdx == _colorCount - 1) {
 			--_colorCount;
 		}
@@ -233,7 +233,7 @@ bool Palette::hasFreeSlot() const {
 	return false;
 }
 
-void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
+void Palette::setColor(uint8_t i, const color::RGBA &rgba) {
 	_colors[i] = rgba;
 	if (rgba.a != 0) {
 		setSize(core_max((int)size(), i + 1));
@@ -264,7 +264,7 @@ int Palette::findInsignificant(int skipSlotIndex) const {
 			if (_colors[k].a == 0) {
 				continue;
 			}
-			const float val = core::Color::getDistance(_colors[k], _colors[i], core::Color::Distance::Approximation);
+			const float val = color::Color::getDistance(_colors[k], _colors[i], color::Color::Distance::Approximation);
 			if (val < minDistance) {
 				minDistance = val;
 				closestColorIdx = (int)i;
@@ -286,7 +286,7 @@ int Palette::findInsignificant(int skipSlotIndex) const {
 	return bestIndex;
 }
 
-bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipPaletteColorIdx) {
+bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipPaletteColorIdx) {
 	for (int i = 0; i < _colorCount; ++i) {
 		if (_colors[i] == rgba) {
 			if (index) {
@@ -301,7 +301,7 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 			if (abs(_colors[i].a - rgba.a) > 10) {
 				continue;
 			}
-			const float dist = core::Color::getDistance(_colors[i], rgba, core::Color::Distance::HSB);
+			const float dist = color::Color::getDistance(_colors[i], rgba, color::Color::Distance::HSB);
 			if (dist < MaxHSBThreshold) {
 				if (index) {
 					*index = i;
@@ -341,7 +341,7 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 		// will replace that color with the new rgba value
 		int bestIndex = findInsignificant(skipPaletteColorIdx);
 		if (bestIndex != PaletteColorNotFound) {
-			const float dist = core::Color::getDistance(_colors[bestIndex], rgba, core::Color::Distance::HSB);
+			const float dist = color::Color::getDistance(_colors[bestIndex], rgba, color::Color::Distance::HSB);
 			if (dist > MaxHSBThreshold) {
 				if (index) {
 					*index = bestIndex;
@@ -368,7 +368,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
 			line = "";
 		}
-		const core::String c = core::Color::print(palette._colors[i], colorAsHex);
+		const core::String c = color::Color::print(palette._colors[i], colorAsHex);
 		line += c;
 	}
 	if (!line.empty()) {
@@ -377,7 +377,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	return palStr;
 }
 
-int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx, core::Color::Distance distance) const {
+int Palette::getClosestMatch(color::RGBA rgba, int skipPaletteColorIdx, color::Color::Distance distance) const {
 	if (size() == 0) {
 		return PaletteColorNotFound;
 	}
@@ -409,7 +409,7 @@ int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx, core::Col
 		if (_colors[i].a == 0) {
 			continue;
 		}
-		const float val = core::Color::getDistance(_colors[i], rgba, distance);
+		const float val = color::Color::getDistance(_colors[i], rgba, distance);
 		if (val < minDistance) {
 			minDistance = val;
 			minIndex = (int)i;
@@ -418,11 +418,11 @@ int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx, core::Col
 	return minIndex;
 }
 
-uint8_t Palette::findReplacement(uint8_t paletteColorIdx, core::Color::Distance distance) const {
+uint8_t Palette::findReplacement(uint8_t paletteColorIdx, color::Color::Distance distance) const {
 	if (size() == 0) {
 		return paletteColorIdx;
 	}
-	const core::RGBA rgba = color(paletteColorIdx);
+	const color::RGBA rgba = color(paletteColorIdx);
 	const int skip = paletteColorIdx;
 	for (int i = 0; i < _colorCount; ++i) {
 		if (i == skip) {
@@ -445,11 +445,11 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx, core::Color::Distance 
 	float minDistance = FLT_MAX;
 	int minIndex = paletteColorIdx;
 
-	if (distance == core::Color::Distance::HSB) {
+	if (distance == color::Color::Distance::HSB) {
 		float hue;
 		float saturation;
 		float brightness;
-		core::Color::getHSB(rgba, hue, saturation, brightness);
+		color::Color::getHSB(rgba, hue, saturation, brightness);
 
 		for (int i = 0; i < _colorCount; ++i) {
 			if (i == skip) {
@@ -458,7 +458,7 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx, core::Color::Distance 
 			if (_colors[i].a == 0) {
 				continue;
 			}
-			const float val = core::Color::getDistance(_colors[i], hue, saturation, brightness);
+			const float val = color::Color::getDistance(_colors[i], hue, saturation, brightness);
 			if (val < minDistance) {
 				minDistance = val;
 				minIndex = (int)i;
@@ -472,7 +472,7 @@ uint8_t Palette::findReplacement(uint8_t paletteColorIdx, core::Color::Distance 
 			if (_colors[i].a == 0) {
 				continue;
 			}
-			const float val = core::Color::getDistance(_colors[i], rgba, distance);
+			const float val = color::Color::getDistance(_colors[i], rgba, distance);
 			if (val < minDistance) {
 				minDistance = val;
 				minIndex = (int)i;
@@ -491,7 +491,7 @@ void Palette::whiteBalance() {
 	double totalB = 0.0;
 
 	for (int i = 0; i < _colorCount; ++i) {
-		const core::RGBA &color = _colors[i];
+		const color::RGBA &color = _colors[i];
 		if (color.a == 0) {
 			continue;
 		}
@@ -512,7 +512,7 @@ void Palette::whiteBalance() {
 
 	// Apply the white balance by scaling each color's channels
 	for (int i = 0; i < _colorCount; ++i) {
-		core::RGBA &color = _colors[i];
+		color::RGBA &color = _colors[i];
 		color.r = static_cast<uint8_t>(glm::clamp(color.r * scaleR, 0.0, 255.0));
 		color.g = static_cast<uint8_t>(glm::clamp(color.g * scaleG, 0.0, 255.0));
 		color.b = static_cast<uint8_t>(glm::clamp(color.b * scaleB, 0.0, 255.0));
@@ -531,7 +531,7 @@ void Palette::constrastStretching() {
 
 	// Find per-channel min and max
 	for (int i = 0; i < _colorCount; ++i) {
-		const core::RGBA &color = _colors[i];
+		const color::RGBA &color = _colors[i];
 		if (color.r < minR) {
 			minR = color.r;
 		}
@@ -567,7 +567,7 @@ void Palette::constrastStretching() {
 
 	// Stretch each channel
 	for (int i = 0; i < _colorCount; ++i) {
-		core::RGBA &color = _colors[i];
+		color::RGBA &color = _colors[i];
 
 		color.r = (uint8_t)((color.r - minR) * 255.0 / (double)(maxR - minR));
 		color.g = (uint8_t)((color.g - minG) * 255.0 / (double)(maxG - minG));
@@ -580,9 +580,9 @@ void Palette::constrastStretching() {
 void Palette::changeIntensity(float scale) {
 	const float f = glm::abs(scale) + 1.0f;
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &color = core::Color::fromRGBA(_colors[i]);
-		const glm::vec4 &newColor = scale < 0.0f ? core::Color::darker(color, f) : core::Color::brighter(color, f);
-		_colors[i] = core::Color::getRGBA(newColor);
+		const glm::vec4 &color = color::Color::fromRGBA(_colors[i]);
+		const glm::vec4 &newColor = scale < 0.0f ? color::Color::darker(color, f) : color::Color::brighter(color, f);
+		_colors[i] = color::Color::getRGBA(newColor);
 	}
 	markDirty();
 	markSave();
@@ -654,7 +654,7 @@ bool Palette::load(const image::ImagePtr &img) {
 		_colors[i] = img->colorAt(x, y);
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
-		_colors[i] = core::RGBA(0);
+		_colors[i] = color::RGBA(0);
 	}
 	_name = img->name();
 	markDirty();
@@ -1013,16 +1013,16 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 			maxSize, maxSize, cfg::PalformatMaxSize);
 		return false;
 	}
-	core::Set<core::RGBA, 521> colorSet(imageWidth * imageHeight);
+	core::Set<color::RGBA, 521> colorSet(imageWidth * imageHeight);
 	Log::debug("Create palette for image: %s (%i:%i)", image->name().c_str(), imageWidth, imageHeight);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
-			const core::RGBA data = image->colorAt(x, y);
+			const color::RGBA data = image->colorAt(x, y);
 			colorSet.insert(data);
 		}
 	}
 
-	core::Buffer<core::RGBA> colors;
+	core::Buffer<color::RGBA> colors;
 	colors.reserve(colorSet.size());
 	for (const auto &e : colorSet) {
 		colors.push_back(e->first);
@@ -1151,7 +1151,7 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 void Palette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		vec4f.push_back(core::Color::fromRGBA(_colors[i]));
+		vec4f.push_back(color::Color::fromRGBA(_colors[i]));
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f.emplace_back(0.0f);
@@ -1160,7 +1160,7 @@ void Palette::toVec4f(core::Buffer<glm::vec4> &vec4f) const {
 
 void Palette::toVec4f(glm::highp_vec4 *vec4f) const {
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &color = core::Color::fromRGBA(_colors[i]);
+		const glm::vec4 &color = color::Color::fromRGBA(_colors[i]);
 		vec4f[i] = {color.x, color.y, color.z, color.a};
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
@@ -1195,7 +1195,7 @@ void Palette::emitToVec4f(const core::Buffer<glm::vec4> &materialColors, core::B
 void Palette::emitToVec4f(core::Buffer<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 c(core::Color::fromRGBA(_colors[i]));
+		const glm::vec4 c(color::Color::fromRGBA(_colors[i]));
 		const Material &mat = _materials[i];
 		vec4f.emplace_back(c * mat.emit);
 	}

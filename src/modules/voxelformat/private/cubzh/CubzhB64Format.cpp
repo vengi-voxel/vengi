@@ -168,14 +168,14 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 		uint8_t blockAction;
 		wrap(stream.readUInt8(blockAction))
 		if (blockAction == 1) {
-			core::RGBA color;
+			color::RGBA color;
 			wrapBool(io::readColor(stream, color))
 			// the index is an encoded position using: X + Y * 1000 + Z * 1000000
 			const int x = i % 1000;
 			const int y = i / 1000 % 1000;
 			const int z = i / 1000000;
 			v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, color));
-			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, core::Color::toHex(color).c_str());
+			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, color::Color::toHex(color).c_str());
 		}
 	}
 

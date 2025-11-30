@@ -13,12 +13,12 @@
 namespace palette {
 
 static bool colorReductionValidator(const core::String &value) {
-	return core::Color::toColorReductionType(value.c_str()) != core::Color::ColorReductionType::Max;
+	return color::Color::toColorReductionType(value.c_str()) != color::Color::ColorReductionType::Max;
 }
 
 bool FormatConfig::init() {
 	core::Var::get(cfg::CoreColorReduction,
-				   core::Color::toColorReductionTypeString(core::Color::ColorReductionType::MedianCut),
+				   color::Color::toColorReductionTypeString(color::Color::ColorReductionType::MedianCut),
 				   _("Controls the algorithm that is used to perform the color reduction"), colorReductionValidator);
 
 	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,

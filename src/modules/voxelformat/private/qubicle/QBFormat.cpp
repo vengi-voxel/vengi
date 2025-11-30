@@ -61,10 +61,10 @@ private:
 	const bool _leftHanded;
 	const bool _rleCompressed;
 	bool _error = false;
-	core::RGBA _currentColor;
+	color::RGBA _currentColor;
 	uint32_t _count = 0;
 
-	bool saveColor(io::WriteStream &stream, core::RGBA color) {
+	bool saveColor(io::WriteStream &stream, color::RGBA color) {
 		// VisibilityMask::AlphaChannelVisibleByValue
 		wrapSave(stream.writeUInt8(color.r))
 		wrapSave(stream.writeUInt8(color.g))
@@ -85,7 +85,7 @@ public:
 			return;
 		}
 		if (!_rleCompressed) {
-			core::RGBA color(0, 0, 0, 0);
+			color::RGBA color(0, 0, 0, 0);
 			if (voxel::isAir(voxel.getMaterial())) {
 				wrapSaveWriter(saveColor(_stream, color))
 			} else {
@@ -95,7 +95,7 @@ public:
 			return;
 		}
 		constexpr voxel::Voxel Empty;
-		core::RGBA newColor;
+		color::RGBA newColor;
 		if (voxel == Empty) {
 			newColor = 0u;
 			Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
@@ -217,7 +217,7 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 }
 
 voxel::Voxel QBFormat::getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup) {
-	core::RGBA color(0);
+	color::RGBA color(0);
 	if (!readColor(state, stream, color)) {
 		return voxel::Voxel();
 	}
@@ -229,7 +229,7 @@ voxel::Voxel QBFormat::getVoxel(State &state, io::SeekableReadStream &stream, pa
 	return v;
 }
 
-bool QBFormat::readColor(State &state, io::SeekableReadStream &stream, core::RGBA &color) {
+bool QBFormat::readColor(State &state, io::SeekableReadStream &stream, color::RGBA &color) {
 	if (state._colorFormat == ColorFormat::RGBA) {
 		wrap(stream.readUInt8(color.r))
 		wrap(stream.readUInt8(color.g))
@@ -438,7 +438,7 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
-					core::RGBA color(0);
+					color::RGBA color(0);
 					wrapBool(readColor(state, stream, color))
 					if (color.a == 0) {
 						continue;
@@ -463,12 +463,12 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 					uint32_t count;
 					wrap(stream.readUInt32(count))
 				}
-				core::RGBA color(0);
+				color::RGBA color(0);
 				wrapBool(readColor(state, stream, color))
 				if (color.a == 0) {
 					continue;
 				}
-				const core::RGBA flattened = flattenRGB(color.r, color.g, color.b);
+				const color::RGBA flattened = flattenRGB(color.r, color.g, color.b);
 				colors.put(flattened, true);
 			}
 			++z;

@@ -187,7 +187,7 @@ bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	stream->writePascalStringUInt16BE("air");
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA rgba = palette.color(i);
+		const color::RGBA rgba = palette.color(i);
 		const int palIdx = mcpal.getClosestMatch(rgba);
 		const core::String &name = findPaletteName(palIdx);
 		wrapBool(stream->writePascalStringUInt16BE(name))

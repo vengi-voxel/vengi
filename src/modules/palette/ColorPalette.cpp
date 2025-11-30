@@ -25,7 +25,7 @@ void ColorPalette::reserve(size_t size) {
 	_entries.reserve(size);
 }
 
-void ColorPalette::setColor(size_t index, const core::RGBA &color) {
+void ColorPalette::setColor(size_t index, const color::RGBA &color) {
 	if (index >= _entries.size()) {
 		reserve(index + 256);
 		setSize(index + 1);
@@ -111,7 +111,7 @@ bool ColorPalette::load(const image::ImagePtr &img) {
 	return true;
 }
 
-core::RGBA ColorPalette::color(size_t index) const {
+color::RGBA ColorPalette::color(size_t index) const {
 	const ColorPaletteEntry *e = entry(index);
 	if (e == nullptr) {
 		return _empty.color;
@@ -127,7 +127,7 @@ const palette::Material &ColorPalette::material(size_t index) const {
 	return e->material;
 }
 
-void ColorPalette::add(const core::RGBA &color, const core::String &name, const palette::Material &material) {
+void ColorPalette::add(const color::RGBA &color, const core::String &name, const palette::Material &material) {
 	ColorPaletteEntry e;
 	e.color = color;
 	e.name = name;
@@ -135,7 +135,7 @@ void ColorPalette::add(const core::RGBA &color, const core::String &name, const 
 	_entries.push_back(e);
 }
 
-void ColorPalette::set(size_t index, const core::RGBA &color, const core::String &name,
+void ColorPalette::set(size_t index, const color::RGBA &color, const core::String &name,
 					   const palette::Material &material) {
 	if (index >= _entries.size()) {
 		reserve(index + 256);
@@ -174,7 +174,7 @@ core::String ColorPalette::print(const ColorPalette &palette, bool colorAsHex) {
 			palStr.append(core::String::format("%03i %s\n", i - 16, line.c_str()));
 			line = "";
 		}
-		const core::String c = core::Color::print(palette.color(i), colorAsHex);
+		const core::String c = color::Color::print(palette.color(i), colorAsHex);
 		line += c;
 	}
 	if (!line.empty()) {

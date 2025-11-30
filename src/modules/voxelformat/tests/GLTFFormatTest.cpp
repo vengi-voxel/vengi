@@ -85,8 +85,8 @@ TEST_P(VoxelizeLantern, exec) {
 	EXPECT_EQ(286, voxelutil::countVoxels(*v));
 	// TODO: VOXELFORMAT: https://github.com/vengi-voxel/vengi/issues/620
 	// EXPECT_EQ(89, v->voxel(-8, 9, 0).getColor());
-	const core::RGBA expected(69, 58, 46, 255);
-	const core::RGBA is = node->palette().color(v->voxel(-8, 9, 0).getColor());
+	const color::RGBA expected(69, 58, 46, 255);
+	const color::RGBA is = node->palette().color(v->voxel(-8, 9, 0).getColor());
 	voxel::colorComparatorDistance(expected, is, 0.01f);
 }
 

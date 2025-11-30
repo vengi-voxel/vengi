@@ -53,7 +53,7 @@ bool importFace(VOLUME &volume, const voxel::Region &region, const palette::Pale
 												  flipV ? -uv1[axisIdxUV1] : uv1[axisIdxUV1], axis1Factor);
 						uv[axisIdxUV2] = glm::mix(flipU ? -uv0[axisIdxUV2] : uv0[axisIdxUV2],
 												  flipV ? -uv1[axisIdxUV2] : uv1[axisIdxUV2], axis2Factor);
-						const core::RGBA color = image->colorAt(uv, wrapS, wrapT);
+						const color::RGBA color = image->colorAt(uv, wrapS, wrapT);
 						if (color.a == 0) {
 							continue;
 						}
@@ -117,7 +117,7 @@ void applyTextureToFace(VOLUME &wrapper, const voxel::Region &region, const pale
 		glm::vec2 uv;
 		uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
 		uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
-		const core::RGBA color = image->colorAt(uv, image::TextureWrap::Repeat, image::TextureWrap::Repeat, true);
+		const color::RGBA color = image->colorAt(uv, image::TextureWrap::Repeat, image::TextureWrap::Repeat, true);
 		if (color.a == 0) {
 			return;
 		}

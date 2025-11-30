@@ -41,7 +41,7 @@ bool ACBPalette::save(const palette::ColorPalette &palette, const core::String &
 			Log::error("Failed to write to stream");
 			return false;
 		}
-		const core::RGBA &color = palette.color(i);
+		const color::RGBA &color = palette.color(i);
 		wrapBool(stream.writeUInt8(color.r))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.b))
@@ -177,7 +177,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 				Log::error("ACBPalette: Failed to read RGB color");
 				return false;
 			}
-			colors.add(core::RGBA{rgb[0], rgb[1], rgb[2], 255}, colorName);
+			colors.add(color::RGBA{rgb[0], rgb[1], rgb[2], 255}, colorName);
 		} else if (space == adobe::ColorSpace::CMYK) {
 			uint8_t cmyk[4];
 			if (stream.read(cmyk, sizeof(cmyk)) == -1) {
@@ -200,7 +200,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			const uint8_t r = (uint8_t)(glm::round(255 * (1 - C) * (1 - K)));
 			const uint8_t g = (uint8_t)(glm::round(255 * (1 - M) * (1 - K)));
 			const uint8_t b = (uint8_t)(glm::round(255 * (1 - Y) * (1 - K)));
-			colors.add(core::RGBA{r, g, b, 255}, colorName);
+			colors.add(color::RGBA{r, g, b, 255}, colorName);
 		} else if (space == adobe::ColorSpace::Lab) {
 			uint8_t lab[3];
 			if (stream.read(lab, sizeof(lab)) == -1) {
@@ -211,7 +211,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			float L = lab[0] / 2.55f;
 			float a = lab[1] / 2.55f - 128.0f;
 			float b = lab[2] / 2.55f - 128.0f;
-			colors.add(core::Color::fromCIELab(glm::vec4(L, a, b, 1.0f)), colorName);
+			colors.add(color::Color::fromCIELab(glm::vec4(L, a, b, 1.0f)), colorName);
 		} else {
 			// TODO: PALETTE: support grayscale...
 			Log::error("Unsupported color space %d", colorSpace);

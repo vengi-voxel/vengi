@@ -270,14 +270,14 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 void SMTPLFormat::loadPalette(palette::Palette &palette) {
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
 		uint8_t index = 0;
-		const core::RGBA rgba = BLOCKCOLOR[i].color;
+		const color::RGBA rgba = BLOCKCOLOR[i].color;
 		palette.tryAdd(rgba, true, &index);
 		for (int j = 0; j < lengthof(BLOCKEMITCOLOR); ++j) {
 			if (BLOCKEMITCOLOR[j].blockId != BLOCKCOLOR[i].blockId) {
 				continue;
 			}
-			const core::RGBA emit = BLOCKEMITCOLOR[j].color;
-			const float factor = core::Color::getDistance(emit, rgba, core::Color::Distance::HSB);
+			const color::RGBA emit = BLOCKEMITCOLOR[j].color;
+			const float factor = color::Color::getDistance(emit, rgba, color::Color::Distance::HSB);
 			palette.setEmit(index, 1.0f - factor);
 		}
 	}

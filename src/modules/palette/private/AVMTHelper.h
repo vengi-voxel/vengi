@@ -59,7 +59,7 @@ public:
 };
 
 struct AVMTMaterial {
-	core::RGBA rgba;
+	color::RGBA rgba;
 	glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
 	core::String name;
 	palette::Material mat;

@@ -127,41 +127,41 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 	return os;
 }
 
-void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, core::RGBA c1, core::RGBA c2, uint8_t palIdx, float maxDelta) {
+void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, color::RGBA c1, color::RGBA c2, uint8_t palIdx, float maxDelta) {
 	if (c1 != c2) {
-		const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << (int)palIdx << ", color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+		const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
+		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << (int)palIdx << ", color1[" << color::Color::print(c1)
+									<< "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]"
 									<< "\nPalette 1:\n"
 									<< palette::Palette::print(pal1) << "\nPalette 2:\n"
 									<< palette::Palette::print(pal2);
 	}
 }
 
-void colorComparator(core::RGBA c1, core::RGBA c2, int maxDelta) {
-	EXPECT_NEAR(c1.r, c2.r, maxDelta) << "color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "]";
-	EXPECT_NEAR(c1.g, c2.g, maxDelta) << "color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "]";
-	EXPECT_NEAR(c1.b, c2.b, maxDelta) << "color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "]";
-	EXPECT_NEAR(c1.a, c2.a, maxDelta) << "color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "]";
+void colorComparator(color::RGBA c1, color::RGBA c2, int maxDelta) {
+	EXPECT_NEAR(c1.r, c2.r, maxDelta) << "color1[" << color::Color::print(c1)
+									<< "], color2[" << color::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.g, c2.g, maxDelta) << "color1[" << color::Color::print(c1)
+									<< "], color2[" << color::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.b, c2.b, maxDelta) << "color1[" << color::Color::print(c1)
+									<< "], color2[" << color::Color::print(c2) << "]";
+	EXPECT_NEAR(c1.a, c2.a, maxDelta) << "color1[" << color::Color::print(c1)
+									<< "], color2[" << color::Color::print(c2) << "]";
 }
 
-void colorComparatorDistance(core::RGBA c1, core::RGBA c2, float maxDelta) {
+void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta) {
 	if (c1 != c2) {
-		const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-		ASSERT_LT(delta, maxDelta) << "Color differ: color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]";
+		const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
+		ASSERT_LT(delta, maxDelta) << "Color differ: color1[" << color::Color::print(c1)
+									<< "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]";
 	}
 }
 
 void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
-		const core::RGBA &c1 = pal1.color(i);
-		const core::RGBA &c2 = pal2.color(i);
+		const color::RGBA &c1 = pal1.color(i);
+		const color::RGBA &c2 = pal2.color(i);
 		colorComparator(pal1, pal2, c1, c2, (uint8_t)i, maxDelta);
 	}
 }
@@ -169,8 +169,8 @@ void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal
 void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palette &pal2, int maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
-		const core::RGBA &c1 = pal1.color(i);
-		const core::RGBA &c2 = pal2.color(i);
+		const color::RGBA &c1 = pal1.color(i);
+		const color::RGBA &c2 = pal2.color(i);
 		colorComparator(c1, c2, maxDelta);
 	}
 }
@@ -178,7 +178,7 @@ void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palett
 void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
-		const core::RGBA &c1 = pal1.color(i);
+		const color::RGBA &c1 = pal1.color(i);
 		bool found = false;
 		for (int j = 0; j < pal2.colorCount(); ++j) {
 			if (pal2.color(j) == c1) {
@@ -187,7 +187,7 @@ void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette
 			}
 		}
 
-		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << core::Color::print(c1)
+		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << color::Color::print(c1)
 						   << "] wasn't found in second palette 2:\n"
 						   << palette::Palette::print(pal2);
 	}
@@ -196,8 +196,8 @@ void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette
 void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, voxel::ValidateFlags flags, float maxDelta) {
 	const int n = glm::min(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < n; ++i) {
-		const core::RGBA &c1 = pal1.color(i);
-		const core::RGBA &c2 = pal2.color(i);
+		const color::RGBA &c1 = pal1.color(i);
+		const color::RGBA &c2 = pal2.color(i);
 		if (c1 != c2) {
 			if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
 				EXPECT_NEAR(c1.r, c2.r, (int)maxDelta);
@@ -205,9 +205,9 @@ void partialPaletteComparator(const palette::Palette &pal1, const palette::Palet
 				EXPECT_NEAR(c1.b, c2.b, (int)maxDelta);
 				EXPECT_NEAR(c1.a, c2.a, (int)maxDelta);
 			} else {
-				const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
-										<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+				const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
+				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << color::Color::print(c1)
+										<< "], color2[" << color::Color::print(c2) << "], delta[" << delta << "]"
 										<< "\nPalette 1:\n"
 										<< palette::Palette::print(pal1) << "\nPalette 2:\n"
 										<< palette::Palette::print(pal2);
@@ -320,8 +320,8 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":" << z2
 					<< " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 					<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
-					<< (int)voxel2.getColor() << "], color1[" << core::Color::print(voxel1.getColor()) << "], color2["
-					<< core::Color::print(voxel2.getColor()) << "]";
+					<< (int)voxel2.getColor() << "], color1[" << color::Color::print(voxel1.getColor()) << "], color2["
+					<< color::Color::print(voxel2.getColor()) << "]";
 				if (voxel::isAir(voxel1.getMaterial())) {
 					continue;
 				}
@@ -336,17 +336,17 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 					}
 				}
 
-				const core::RGBA &c1 = pal1.color(voxel1.getColor());
-				const core::RGBA &c2 = pal2.color(voxel2.getColor());
+				const color::RGBA &c1 = pal1.color(voxel1.getColor());
+				const color::RGBA &c2 = pal2.color(voxel2.getColor());
 				if (c1 != c2) {
-					const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
+					const float delta = color::Color::getDistance(c1, c2, color::Color::Distance::HSB);
 					if (pal1.hash() != pal2.hash()) {
 						ASSERT_LT(delta, maxDelta)
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"
 							<< z2 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 							<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
-							<< ", " << (int)voxel2.getColor() << "], color1[" << core::Color::print(c1) << "], color2["
-							<< core::Color::print(c2) << "], delta[" << delta << "]\n"
+							<< ", " << (int)voxel2.getColor() << "], color1[" << color::Color::print(c1) << "], color2["
+							<< color::Color::print(c2) << "], delta[" << delta << "]\n"
 							<< palette::Palette::print(pal1) << "\n"
 							<< palette::Palette::print(pal2);
 					} else {
@@ -354,8 +354,8 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"
 							<< z2 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
 							<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
-							<< ", " << (int)voxel2.getColor() << "], color1[" << core::Color::print(c1) << "], color2["
-							<< core::Color::print(c2) << "], delta[" << delta << "]\n";
+							<< ", " << (int)voxel2.getColor() << "], color1[" << color::Color::print(c1) << "], color2["
+							<< color::Color::print(c2) << "], delta[" << delta << "]\n";
 					}
 				}
 			}

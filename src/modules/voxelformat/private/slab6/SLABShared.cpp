@@ -40,7 +40,7 @@ SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int 
 	return vis;
 }
 
-bool readColor(io::SeekableReadStream &stream, core::RGBA &color, bool bgr, bool scale) {
+bool readColor(io::SeekableReadStream &stream, color::RGBA &color, bool bgr, bool scale) {
 	uint8_t v1, v2, v3;
 	if ((stream.readUInt8(v1)) != 0) {
 		Log::error("Failed to read color");
@@ -65,14 +65,14 @@ bool readColor(io::SeekableReadStream &stream, core::RGBA &color, bool bgr, bool
 	}
 
 	if (bgr) {
-		color = core::RGBA(v3, v2, v1);
+		color = color::RGBA(v3, v2, v1);
 	} else {
-		color = core::RGBA(v1, v2, v3);
+		color = color::RGBA(v1, v2, v3);
 	}
 	return true;
 }
 
-bool writeColor(io::SeekableWriteStream &stream, core::RGBA color, bool bgr, bool scale) {
+bool writeColor(io::SeekableWriteStream &stream, color::RGBA color, bool bgr, bool scale) {
 	uint8_t v1, v2, v3;
 	if (bgr) {
 		v1 = color.b;

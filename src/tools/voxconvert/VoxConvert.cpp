@@ -535,7 +535,7 @@ app::AppState VoxConvert::onInit() {
 		if (!saveToPng) {
 			width = terminalWidth();
 		}
-		const core::RGBA bgColor(0, 0, 0, 255);
+		const color::RGBA bgColor(0, 0, 0, 255);
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
 		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);

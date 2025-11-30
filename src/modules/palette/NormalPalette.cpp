@@ -19,7 +19,7 @@
 namespace palette {
 namespace priv {
 
-static const core::RGBA tsnormals[]{
+static const color::RGBA tsnormals[]{
 	{213, 152, 36},	 {161, 202, 29},  {122, 139, 0},   {54, 115, 23},  {105, 54, 25},  {173, 88, 15},
 	{230, 83, 67},	 {140, 247, 85},  {86, 202, 32},   {25, 170, 64},  {42, 52, 69},   {167, 25, 62},
 	{251, 146, 104}, {214, 214, 94},  {61, 233, 100},  {4, 104, 100},  {94, 7, 98},	   {155, 3, 139},
@@ -28,7 +28,7 @@ static const core::RGBA tsnormals[]{
 	{202, 113, 229}, {183, 185, 226}, {122, 138, 254}, {51, 155, 225}, {62, 76, 225},  {136, 66, 239},
 };
 
-static const core::RGBA ra2normals[]{
+static const color::RGBA ra2normals[]{
 	{194, 81, 29},	 {146, 183, 240}, {180, 221, 59},  {137, 244, 77},	{87, 246, 104},	 {28, 206, 113},
 	{12, 182, 118},	 {0, 126, 133},	  {2, 107, 111},   {11, 81, 102},	{47, 35, 89},	 {87, 24, 63},
 	{146, 23, 56},	 {36, 38, 118},	  {191, 112, 18},  {185, 238, 105}, {126, 112, 0},	 {114, 85, 7},
@@ -73,7 +73,7 @@ static const core::RGBA ra2normals[]{
 };
 
 // normals from slab6
-static const core::RGBA slab6normals[]{
+static const color::RGBA slab6normals[]{
 	{138, 127, 0},	 {113, 140, 1},	  {129, 102, 2},   {145, 151, 3},	{94, 121, 4},	 {158, 107, 5},
 	{117, 166, 6},	 {107, 89, 7},	  {170, 143, 8},   {82, 145, 9},	{148, 81, 10},	 {143, 177, 11},
 	{79, 99, 12},	 {183, 115, 13},  {93, 175, 14},   {119, 67, 15},	{175, 167, 16},	 {63, 130, 17},
@@ -121,7 +121,7 @@ static const core::RGBA slab6normals[]{
 
 } // namespace priv
 
-core::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
+color::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
 	// Map the normal components back to [0, 1] range
 	const float rf = (normal.x + 1.0f) / 2.0f; // X component to [0, 1]
 	const float gf = (normal.y + 1.0f) / 2.0f; // Y component to [0, 1]
@@ -131,10 +131,10 @@ core::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
 	const uint8_t r = (uint8_t)(rf * 255.0f);
 	const uint8_t g = (uint8_t)(gf * 255.0f);
 	const uint8_t b = (uint8_t)(bf * 255.0f);
-	return core::RGBA(r, g, b);
+	return color::RGBA(r, g, b);
 }
 
-glm::vec3 NormalPalette::toVec3(const core::RGBA &rgba) {
+glm::vec3 NormalPalette::toVec3(const color::RGBA &rgba) {
 	// Normalize RGB values to the range [0, 1]
 	const float r = rgba.r / 255.0f;
 	const float g = rgba.g / 255.0f;
@@ -175,19 +175,19 @@ void NormalPalette::loadNormalMap(const glm::vec3 *normals, int size) {
 		_normals[i] = toRGBA(normals[i]);
 	}
 	for (int i = size; i < NormalPaletteMaxNormals; i++) {
-		_normals[i] = core::RGBA(0);
+		_normals[i] = color::RGBA(0);
 	}
 	_size = size;
 	markDirty();
 }
 
-void NormalPalette::loadNormalMap(const core::RGBA *normals, int size) {
+void NormalPalette::loadNormalMap(const color::RGBA *normals, int size) {
 	size = core_min(size, NormalPaletteMaxNormals);
 	for (int i = 0; i < size; i++) {
 		_normals[i] = normals[i];
 	}
 	for (int i = size; i < NormalPaletteMaxNormals; i++) {
-		_normals[i] = core::RGBA(0);
+		_normals[i] = color::RGBA(0);
 	}
 	_size = size;
 	markDirty();
@@ -320,7 +320,7 @@ bool NormalPalette::load(const char *paletteName) {
 		_normals[i] = paletteToLoad.color(i);
 	}
 	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
-		_normals[i] = core::RGBA(0);
+		_normals[i] = color::RGBA(0);
 	}
 	markDirty();
 	return true;
@@ -345,7 +345,7 @@ bool NormalPalette::load(const image::ImagePtr &img) {
 		_normals[i] = img->colorAt(i, 0);
 	}
 	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
-		_normals[i] = core::RGBA(0);
+		_normals[i] = color::RGBA(0);
 	}
 	_name = img->name();
 	markDirty();

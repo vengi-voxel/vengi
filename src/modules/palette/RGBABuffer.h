@@ -17,8 +17,8 @@ namespace palette {
  * the map with almost identical colors (this speeds up the process of quantizing
  * the colors later on)
  */
-using RGBABuffer = core::DynamicSet<core::RGBA, 1031, core::RGBAHasher, core::privdynamicmap::EqualCompare, 4096>;
+using RGBABuffer = core::DynamicSet<color::RGBA, 1031, color::RGBAHasher, core::privdynamicmap::EqualCompare, 4096>;
 // TODO: PERF: MEM: this is doing a lot of small memory allocations - use a better allocator or quantize the colors directly into the palette
-using RGBAMaterialMap = core::DynamicMap<core::RGBA, const palette::Material *, 1031, core::RGBAHasher, core::privdynamicmap::EqualCompare, 4096>;
+using RGBAMaterialMap = core::DynamicMap<color::RGBA, const palette::Material *, 1031, color::RGBAHasher, core::privdynamicmap::EqualCompare, 4096>;
 
 }

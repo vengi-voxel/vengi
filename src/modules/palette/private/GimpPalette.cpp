@@ -56,7 +56,7 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
-		palette.setColor(colorCount, core::RGBA(r, g, b, a));
+		palette.setColor(colorCount, color::RGBA(r, g, b, a));
 		++colorCount;
 	}
 	palette.setSize(colorCount);
@@ -73,7 +73,7 @@ bool GimpPalette::save(const palette::ColorPalette &palette, const core::String 
 		stream.writeLine("Channels: RGBA");
 	}
 	for (size_t i = 0; i < palette.size(); ++i) {
-		const core::RGBA &color = palette.color(i);
+		const color::RGBA &color = palette.color(i);
 		core::String name = palette.colorName(i);
 		if (name.empty()) {
 			name = core::String::format("color index %i", (int)i);

@@ -446,7 +446,7 @@ size_t AnimaToonFormat::loadPalette(const core::String &filename, const io::Arch
 		const uint8_t b = (uint8_t)(e.value("b", 0.0f) * 255.0f);
 		const uint8_t a = (uint8_t)(e.value("a", 1.0f) * 255.0f);
 		if (idx < palette::PaletteMaxColors) {
-			palette.setColor(idx++, core::RGBA(r, g, b, a));
+			palette.setColor(idx++, color::RGBA(r, g, b, a));
 		} else {
 			break;
 		}

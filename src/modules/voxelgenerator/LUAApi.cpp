@@ -674,7 +674,7 @@ static int luaVoxel_palette_colors(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	lua_createtable(s, palette->colorCount(), 0);
 	for (int i = 0; i < palette->colorCount(); ++i) {
-		const glm::vec4& c = core::Color::fromRGBA(palette->color(i));
+		const glm::vec4& c = color::Color::fromRGBA(palette->color(i));
 		lua_pushinteger(s, i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
@@ -711,7 +711,7 @@ static int luaVoxel_palette_load(lua_State* s) {
 static int luaVoxel_palette_rgba(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
-	const core::RGBA rgba = palette->color(color);
+	const color::RGBA rgba = palette->color(color);
 	lua_pushinteger(s, rgba.r);
 	lua_pushinteger(s, rgba.g);
 	lua_pushinteger(s, rgba.b);
@@ -722,7 +722,7 @@ static int luaVoxel_palette_rgba(lua_State* s) {
 static int luaVoxel_palette_color(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
-	const glm::vec4& rgba = core::Color::fromRGBA(palette->color(color));
+	const glm::vec4& rgba = color::Color::fromRGBA(palette->color(color));
 	return clua_push(s, rgba);
 }
 
@@ -733,7 +733,7 @@ static int luaVoxel_palette_setcolor(lua_State* s) {
 	const uint8_t g = luaL_checkinteger(s, 4);
 	const uint8_t b = luaL_checkinteger(s, 5);
 	const uint8_t a = luaL_optinteger(s, 6, 255);
-	palette->setColor(color, core::RGBA(r, g, b, a));
+	palette->setColor(color, color::RGBA(r, g, b, a));
 	return 0;
 }
 
@@ -761,9 +761,9 @@ static int luaVoxel_palette_delta_e(lua_State* s) {
 	const uint8_t idx2 = luaL_checkinteger(s, 3);
 	float distance = 0.0f;
 	if (idx != idx2) {
-		const core::RGBA c1 = palette->color(idx);
-		const core::RGBA c2 = palette->color(idx2);
-		distance = core::Color::deltaE76(c1, c2);
+		const color::RGBA c1 = palette->color(idx);
+		const color::RGBA c2 = palette->color(idx2);
+		distance = color::Color::deltaE76(c1, c2);
 	}
 	lua_pushnumber(s, distance);
 	return 1;
@@ -772,7 +772,7 @@ static int luaVoxel_palette_delta_e(lua_State* s) {
 static int luaVoxel_palette_color_to_string(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t idx = luaL_checkinteger(s, 2);
-	const core::String c = core::Color::print(palette->color(idx));
+	const core::String c = color::Color::print(palette->color(idx));
 	lua_pushstring(s, c.c_str());
 	return 1;
 }
@@ -790,7 +790,7 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const float g = (float)luaL_checkinteger(s, 3) / 255.0f;
 	const float b = (float)luaL_checkinteger(s, 4) / 255.0f;
 	const int skipIndex = luaL_optinteger(s, 5, -1);
-	core::RGBA rgba(r * 255.0f, g * 255.0f, b * 255.0f, 255);
+	color::RGBA rgba(r * 255.0f, g * 255.0f, b * 255.0f, 255);
 	const int match = palette->getClosestMatch(rgba, skipIndex);
 	if (match < 0 || match > palette->colorCount()) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
@@ -819,7 +819,7 @@ static int luaVoxel_palette_similar(lua_State* s) {
 		if (materialIndex <= palette::PaletteColorNotFound) {
 			break;
 		}
-		palette.setColor(materialIndex, core::RGBA(0));
+		palette.setColor(materialIndex, color::RGBA(0));
 		newColorIndices[maxColorIndices] = materialIndex;
 	}
 	if (maxColorIndices <= 0) {

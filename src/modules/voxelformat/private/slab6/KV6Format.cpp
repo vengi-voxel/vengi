@@ -212,7 +212,7 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 				// slab6 suggest palette
 				palette.setSize(palette::PaletteMaxColors);
 				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
-					core::RGBA color;
+					color::RGBA color;
 					wrapBool(priv::readRGBScaledColor(*stream, color))
 					palette.setColor(i, color);
 				}
@@ -226,7 +226,7 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 
 	palette::RGBABuffer colors;
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
-		core::RGBA color;
+		color::RGBA color;
 		wrapBool(priv::readBGRColor(*stream, color));
 		colors.put(color, true);
 		wrap2(stream->skip(5));
@@ -556,7 +556,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 				slab5 = false; // slab6
 				palette.setSize(palette::PaletteMaxColors);
 				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
-					core::RGBA color;
+					color::RGBA color;
 					wrapBool(priv::readRGBScaledColor(*stream, color));
 					palette.setColor(i, color);
 				}
@@ -573,7 +573,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	core::ScopedPtr<priv::State> state(new priv::State());
 	palette::PaletteLookup paletteLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
-		core::RGBA color;
+		color::RGBA color;
 		wrapBool(priv::readBGRColor(*stream, color));
 		wrap2(stream->skip(1)) // slab6 always 128
 		wrap(stream->readUInt8(state->voxdata[c].z))
@@ -716,7 +716,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeUInt32(numvoxs))
 
 	for (const priv::VoxtypeKV6 &data : voxdata) {
-		const core::RGBA color = node->palette().color(data.col);
+		const color::RGBA color = node->palette().color(data.col);
 		wrapBool(priv::writeBGRColor(*stream, color)) // range 0.255
 		wrapBool(stream->writeUInt8(128))			 // 128 as we save slab6
 		wrapBool(stream->writeUInt8(data.z))
@@ -741,11 +741,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const uint32_t palMagic = FourCC('S', 'P', 'a', 'l');
 	wrapBool(stream->writeUInt32(palMagic))
 	for (int i = 0; i < node->palette().colorCount(); ++i) {
-		const core::RGBA color = node->palette().color(i);
+		const color::RGBA color = node->palette().color(i);
 		wrapBool(priv::writeRGBScaledColor(*stream, color)) // range 0..63
 	}
 	for (int i = node->palette().colorCount(); i < palette::PaletteMaxColors; ++i) {
-		core::RGBA color(0);
+		color::RGBA color(0);
 		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 

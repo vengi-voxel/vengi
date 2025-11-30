@@ -55,10 +55,10 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel
 	if (voxel::isAir(voxel.getMaterial())) {
 		wrapBool(stream.writeUInt8(EMPTY_PALETTE))
 	} else {
-		const core::RGBA color = nodePalette.color(voxel.getColor());
+		const color::RGBA color = nodePalette.color(voxel.getColor());
 		const int palIndex = palette.getClosestMatch(color, EMPTY_PALETTE);
 		if (palIndex < 0) {
-			Log::error("Got palette index %i for %s", palIndex, core::Color::print(color, true).c_str());
+			Log::error("Got palette index %i for %s", palIndex, color::Color::print(color, true).c_str());
 		}
 		core_assert(palIndex != EMPTY_PALETTE);
 		wrapBool(stream.writeUInt8(palIndex))
@@ -157,7 +157,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	// albedo palette
 	for (int i = 0; i < numColors; ++i) {
-		const core::RGBA &matcolor = palette.color(i);
+		const color::RGBA &matcolor = palette.color(i);
 		wrapBool(stream->writeUInt8(matcolor.r))
 		wrapBool(stream->writeUInt8(matcolor.g))
 		wrapBool(stream->writeUInt8(matcolor.b))
@@ -173,7 +173,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	for (int i = 0; i < numColors; ++i) {
 		const bool emissive = palette.hasEmit(i);
 		if (emissive) {
-			const core::RGBA &glowcolor = palette.emitColor(i);
+			const color::RGBA &glowcolor = palette.emitColor(i);
 			wrapBool(stream->writeUInt8(glowcolor.r))
 			wrapBool(stream->writeUInt8(glowcolor.g))
 			wrapBool(stream->writeUInt8(glowcolor.b))
@@ -206,7 +206,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	wrapBool(stream->writeUInt8(numColors))
 	for (int i = 0; i < numColors; ++i) {
-		const core::RGBA &matcolor = palette.color(i);
+		const color::RGBA &matcolor = palette.color(i);
 		wrapBool(stream->writeUInt8(matcolor.b))
 		wrapBool(stream->writeUInt8(matcolor.g))
 		wrapBool(stream->writeUInt8(matcolor.r))
@@ -497,7 +497,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		if (version > 3) {
 			uint8_t emissive;
 			wrap(stream->readUInt8(emissive));
-			palette.setColor(i, core::RGBA(red, green, blue, alpha));
+			palette.setColor(i, color::RGBA(red, green, blue, alpha));
 			if (emissive) {
 				palette.setEmit(i, 1.0f);
 			}

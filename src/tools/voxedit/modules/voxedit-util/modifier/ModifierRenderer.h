@@ -41,7 +41,7 @@ public:
 	 * But it is keeping a pointer to the volume!
 	 */
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) override;
-	void updateBrushVolume(int idx, const voxel::Region &region, core::RGBA color) override;
+	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion) override;
 	void updateSelectionBuffers(const Selections &selections) override;

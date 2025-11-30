@@ -43,7 +43,7 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		wrapBool(sub.writeUInt8(0)) // default color
 		wrapBool(sub.writeUInt8(0)) // default background color
 		for (uint8_t i = 0; i < colorCount; ++i) {
-			const core::RGBA rgba = palette.color(i);
+			const color::RGBA rgba = palette.color(i);
 			wrapBool(sub.writeUInt8(rgba.r))
 			wrapBool(sub.writeUInt8(rgba.g))
 			wrapBool(sub.writeUInt8(rgba.b))

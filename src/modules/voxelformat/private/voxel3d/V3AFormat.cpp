@@ -142,7 +142,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 			const int g = core::string::toInt(tokens[i + 1]);
 			const int b = core::string::toInt(tokens[i + 2]);
 			const int a = core::string::toInt(tokens[i + 3]);
-			const core::RGBA rgba = flattenRGB(r, g, b, a);
+			const color::RGBA rgba = flattenRGB(r, g, b, a);
 			const int index = palLookup.findClosestIndex(rgba);
 			const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 			// we have to flip depth with height for our own coordinate system
@@ -209,7 +209,7 @@ bool V3AFormat::saveToStream(const scenegraph::SceneGraph &sceneGraph, io::Write
 				if (voxel::isAir(voxel.getMaterial())) {
 					wrapBool(stream->writeString("-1 -1 -1 -1 ", false))
 				} else {
-					const core::RGBA color = palette.color(voxel.getColor());
+					const color::RGBA color = palette.color(voxel.getColor());
 					if (!stream->writeStringFormat(false, "%d %d %d %d ", color.r, color.g, color.b, color.a)) {
 						Log::error("Failed to write voxel data");
 						return false;

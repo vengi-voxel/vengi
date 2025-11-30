@@ -122,8 +122,8 @@ bool PathTracer::addNode(const scenegraph::SceneGraph &sceneGraph, const scenegr
 		shape->positions.push_back(priv::toVec3f(pos0));
 		shape->positions.push_back(priv::toVec3f(pos1));
 		shape->positions.push_back(priv::toVec3f(pos2));
-		const core::RGBA rgba = palette.color(vertex0.colorIndex);
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+		const color::RGBA rgba = palette.color(vertex0.colorIndex);
+		const glm::vec4 &color = color::Color::fromRGBA(rgba);
 		shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
 		shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
 		shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
@@ -225,10 +225,10 @@ static void setupMaterial(yocto::scene_data &scene, const palette::Palette &pale
 
 	yocto::material_data material;
 	material.type = mapMaterialType(ownMaterial.type);
-	const glm::vec4 color = core::Color::fromRGBA(palette.color(i));
+	const glm::vec4 color = color::Color::fromRGBA(palette.color(i));
 	material.color = priv::toVec3f(color);
 	if (ownMaterial.has(palette::MaterialProperty::MaterialEmit)) {
-		material.scattering = priv::toVec3f(core::Color::fromRGBA(palette.emitColor(i)));
+		material.scattering = priv::toVec3f(color::Color::fromRGBA(palette.emitColor(i)));
 		if (material.type == yocto::material_type::matte) {
 			material.type = yocto::material_type::volumetric;
 		}
@@ -259,7 +259,7 @@ static int addEmissiveTexture(yocto::scene_data &scene, const palette::Palette &
 	texture.height = 1;
 	texture.width = palette::PaletteMaxColors;
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA color = palette.emitColor(i);
+		const color::RGBA color = palette.emitColor(i);
 		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
 	}
 	for (int i = palette.colorCount(); i < texture.width; ++i) {
@@ -274,7 +274,7 @@ static int addPaletteTexture(yocto::scene_data &scene, const palette::Palette &p
 	texture.height = 1;
 	texture.width = palette::PaletteMaxColors;
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA color = palette.color(i);
+		const color::RGBA color = palette.color(i);
 		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
 	}
 	for (int i = palette.colorCount(); i < texture.width; ++i) {

@@ -14,7 +14,7 @@ void Voxel::setFlags(uint8_t flags) {
 	core_assert(flags <= 7);
 }
 
-voxel::Voxel createVoxelFromColor(const palette::Palette &pal, core::RGBA color) {
+voxel::Voxel createVoxelFromColor(const palette::Palette &pal, color::RGBA color) {
 	if (color.rgba == 0) {
 		return {};
 	}
@@ -27,7 +27,7 @@ voxel::Voxel createVoxelFromColor(const palette::Palette &pal, core::RGBA color)
 
 voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex, uint8_t flags, uint8_t boneIdx) {
 	if (index < pal.size()) {
-		const core::RGBA color = pal.color(index);
+		const color::RGBA color = pal.color(index);
 		if (color.rgba == 0) {
 			return {};
 		}

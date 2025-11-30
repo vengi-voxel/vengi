@@ -48,17 +48,17 @@ protected:
 		palette::Palette palette;
 		palette.setName("TestPalette");
 		palette.setSize(palette::PaletteMaxColors);
-		palette.setColor(0, core::RGBA(255, 0, 0, 255));
-		palette.setColor(1, core::RGBA(0, 255, 0, 255));
-		palette.setColor(2, core::RGBA(0, 0, 255, 255));
-		palette.setColor(3, core::RGBA(255, 255, 255, 255));
+		palette.setColor(0, color::RGBA(255, 0, 0, 255));
+		palette.setColor(1, color::RGBA(0, 255, 0, 255));
+		palette.setColor(2, color::RGBA(0, 0, 255, 255));
+		palette.setColor(3, color::RGBA(255, 255, 255, 255));
 		palette.setColorName(0, "Red");
 		palette.setColorName(1, "Green");
 		palette.setColorName(2, "Blue");
 		palette.setColorName(3, "White");
 
 		for (int i = 4; i < palette::PaletteMaxColors; ++i) {
-			palette.setColor(i, core::RGBA(0, 0, 0, 255));
+			palette.setColor(i, color::RGBA(0, 0, 0, 255));
 			palette.setColorName(i, "Empty");
 		}
 
@@ -116,9 +116,9 @@ protected:
 		// Set up a simple palette
 		palette::Palette palette;
 		palette.setSize(8);
-		palette.setColor(0, core::RGBA(255, 0, 0, 255)); // Red
-		palette.setColor(1, core::RGBA(0, 255, 0, 255)); // Green
-		palette.setColor(2, core::RGBA(0, 0, 255, 255)); // Blue
+		palette.setColor(0, color::RGBA(255, 0, 0, 255)); // Red
+		palette.setColor(1, color::RGBA(0, 255, 0, 255)); // Green
+		palette.setColor(2, color::RGBA(0, 0, 255, 255)); // Blue
 		palette.setColorName(0, "Red");
 		palette.setColorName(1, "Green");
 		palette.setColorName(2, "Blue");

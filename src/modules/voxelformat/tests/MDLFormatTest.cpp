@@ -30,7 +30,7 @@ TEST_F(MDLFormatTest, testVoxelize) {
 	EXPECT_EQ(178, voxelutil::countVoxels(*v));
 	EXPECT_GT(node->palette().colorCount(), 50);
 	EXPECT_LT(node->palette().colorCount(), 250);
-	// EXPECT_EQ(core::RGBA(0x25, 0x1b, 0x0d), node->palette().color(0));
+	// EXPECT_EQ(color::RGBA(0x25, 0x1b, 0x0d), node->palette().color(0));
 }
 
 } // namespace voxelformat

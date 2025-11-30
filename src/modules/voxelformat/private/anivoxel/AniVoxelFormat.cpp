@@ -134,7 +134,7 @@ bool AniVoxelFormat::readBuffers(io::SeekableReadStream &stream, scenegraph::Sce
 				wrapBool(io::readVec3(stream, pos));
 				glm::vec3 normal;
 				wrapBool(io::readVec3(stream, normal));
-				core::RGBA color;
+				color::RGBA color;
 				wrapBool(io::readColor(stream, color));
 			}
 		}
@@ -185,7 +185,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 				if (version >= 102) {
 					wrap(stream.readInt32(palIdx));
 				} else {
-					core::RGBA color;
+					color::RGBA color;
 					wrapBool(io::readColor(stream, color));
 					palIdx = palette.getClosestMatch(color);
 				}
@@ -224,7 +224,7 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 			wrap(stream.readInt32(z));
 			int32_t boneId;
 			wrap(stream.readInt32(boneId));
-			core::RGBA color;
+			color::RGBA color;
 			wrapBool(io::readColor(stream, color));
 			const int palIdx = palette.getClosestMatch(color);
 			// the root bone has id 1
@@ -284,9 +284,9 @@ bool AniVoxelFormat::readBone(io::SeekableReadStream &stream, scenegraph::SceneG
 	wrapBool(io::readVec3(stream, offset));
 	glm::vec3 rotation;
 	wrapBool(io::readVec3(stream, rotation));
-	core::RGBA color;
+	color::RGBA color;
 	wrapBool(io::readColor(stream, color));
-	core::RGBA color2;
+	color::RGBA color2;
 	wrapBool(io::readColor(stream, color2));
 	seek(header, stream);
 	return true;
@@ -401,7 +401,7 @@ bool AniVoxelFormat::readMaterial(io::SeekableReadStream &stream, palette::Palet
 	ChunkHeader header = readChunk(stream);
 	uint32_t palIdx;
 	wrap(stream.readUInt32(palIdx))
-	core::RGBA color;
+	color::RGBA color;
 	wrapBool(io::readColor(stream, color))
 	palette.setColor(palIdx, color);
 	const bool hasMaterialProps = stream.readBool();
@@ -608,7 +608,7 @@ bool AniVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 		for (int i = 0; i < pal.colorCount(); ++i) {
 			ScopedChunk palEntryChunk(*stream, FourCC('M', 'A', 'T', 'E'), &paletteChunk);
 			wrapBool(stream->writeUInt32(i))
-			const core::RGBA color = pal.color(i);
+			const color::RGBA color = pal.color(i);
 			wrapBool(stream->writeUInt8(color.r))
 			wrapBool(stream->writeUInt8(color.g))
 			wrapBool(stream->writeUInt8(color.b))
@@ -693,7 +693,7 @@ bool AniVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 				const int boneId = voxel.getBoneIdx() + 1;
 				stream->writeInt32(boneId);
 				const int palIdx = voxel.getColor();
-				const core::RGBA rgba = originalPalette.color(palIdx);
+				const color::RGBA rgba = originalPalette.color(palIdx);
 				const int mappedPalIdx = palLookup.findClosestIndex(rgba);
 				stream->writeInt32(mappedPalIdx);
 			};

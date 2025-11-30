@@ -505,7 +505,7 @@ private:
 	 */
 	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material,
 						 float value);
-	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const core::RGBA &color);
+	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
 public:
@@ -562,7 +562,7 @@ public:
 	 * representation of the palette)
 	 */
 	bool nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value);
-	bool nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &color);
+	bool nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color);
 	void nodeResize(int nodeId, const voxel::Region &region);
 	void nodeResize(int nodeId, const glm::ivec3 &size);
 	/**

@@ -84,7 +84,7 @@ inline bool readColor(io::ReadStream &s, glm::vec4 &color) {
 		   s.readFloat(color.a) == 0;
 }
 
-inline bool readColor(io::ReadStream &s, core::RGBA &color) {
+inline bool readColor(io::ReadStream &s, color::RGBA &color) {
 	return s.readUInt8(color.r) == 0 && s.readUInt8(color.g) == 0 && s.readUInt8(color.b) == 0 &&
 		   s.readUInt8(color.a) == 0;
 }

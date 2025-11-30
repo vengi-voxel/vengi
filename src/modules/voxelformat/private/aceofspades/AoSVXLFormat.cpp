@@ -45,7 +45,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-static inline uint32_t vxl_color(core::RGBA rgba) {
+static inline uint32_t vxl_color(color::RGBA rgba) {
 	return (rgba.r << 16) | (rgba.g << 8) | rgba.b;
 }
 static inline uint8_t vxl_blue(uint32_t c) {
@@ -170,7 +170,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 						continue;
 					}
 					const uint32_t color = libvxl_map_get(&map, x, z, (int)mapHeight - 1 - y);
-					const core::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
+					const color::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
 					const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
 					sampler3.setVoxel(voxel::createVoxel(palette, paletteIndex));
 					sampler3.movePositiveX();
@@ -368,7 +368,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 				if (color == 0u) {
 					continue;
 				}
-				const core::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
+				const color::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
 				colors.put(rgba, true);
 			}
 		}
@@ -448,7 +448,7 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	const palette::Palette &palette = node->palette();
 	const voxel::RawVolume *v = node->volume();
 	auto func = [&map, &palette, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
-		const core::RGBA rgba = palette.color(voxel.getColor());
+		const color::RGBA rgba = palette.color(voxel.getColor());
 		const uint32_t color = vxl_color(rgba);
 		libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
 	};

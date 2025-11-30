@@ -26,19 +26,19 @@ private:
 	core::String _name;
 	mutable uint32_t _hash = 0u;
 	int _size = 0u;
-	core::RGBA _normals[NormalPaletteMaxNormals]{};
+	color::RGBA _normals[NormalPaletteMaxNormals]{};
 
 public:
-	static core::RGBA toRGBA(const glm::vec3 &normal);
-	static glm::vec3 toVec3(const core::RGBA &rgba);
+	static color::RGBA toRGBA(const glm::vec3 &normal);
+	static glm::vec3 toVec3(const color::RGBA &rgba);
 
 	int getClosestMatch(const glm::vec3 &normal) const;
-	void loadNormalMap(const core::RGBA *normals, int size);
+	void loadNormalMap(const color::RGBA *normals, int size);
 	void loadNormalMap(const glm::vec3 *normals, int size);
 
-	const core::RGBA &normal(uint8_t index) const;
+	const color::RGBA &normal(uint8_t index) const;
 	glm::vec3 normal3f(uint8_t index) const;
-	void setNormal(uint8_t index, const core::RGBA &normal);
+	void setNormal(uint8_t index, const color::RGBA &normal);
 	void setNormal(uint8_t index, const glm::vec3 &normal);
 
 	void toVec4f(core::Buffer<glm::vec4> &normals) const;
@@ -90,11 +90,11 @@ inline size_t NormalPalette::size() const {
 	return _size;
 }
 
-inline void NormalPalette::setNormal(uint8_t index, const core::RGBA &normal) {
+inline void NormalPalette::setNormal(uint8_t index, const color::RGBA &normal) {
 	_normals[index] = normal;
 }
 
-inline const core::RGBA &NormalPalette::normal(uint8_t index) const {
+inline const color::RGBA &NormalPalette::normal(uint8_t index) const {
 	return _normals[index];
 }
 

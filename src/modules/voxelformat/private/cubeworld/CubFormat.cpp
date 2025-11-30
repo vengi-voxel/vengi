@@ -54,7 +54,7 @@ size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 					// empty voxel
 					continue;
 				}
-				const core::RGBA color = flattenRGB(r, g, b);
+				const color::RGBA color = flattenRGB(r, g, b);
 				colors.put(color, true);
 			}
 		}
@@ -106,7 +106,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 					sampler3.movePositiveX();
 					continue;
 				}
-				const core::RGBA color = flattenRGB(r, g, b);
+				const color::RGBA color = flattenRGB(r, g, b);
 				const int index = palLookup.findClosestIndex(color);
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 				sampler3.setVoxel(voxel);
@@ -160,7 +160,7 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 					continue;
 				}
 
-				core::RGBA rgba = palette.color(voxel.getColor());
+				color::RGBA rgba = palette.color(voxel.getColor());
 				if (rgba.r == 0u && rgba.g == 0u && rgba.b == 0u) {
 					rgba = palette.color(palette.findReplacement(voxel.getColor()));
 				}

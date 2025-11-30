@@ -17,38 +17,38 @@ enum class SLABVisibility : uint8_t { None = 0, Left = 1, Right = 2, Front = 4, 
 CORE_ENUM_BIT_OPERATIONS(SLABVisibility)
 SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int z);
 
-bool readColor(io::SeekableReadStream &stream, core::RGBA &color, bool bgr, bool scale);
-bool writeColor(io::SeekableWriteStream &stream, core::RGBA color, bool bgr, bool scale);
+bool readColor(io::SeekableReadStream &stream, color::RGBA &color, bool bgr, bool scale);
+bool writeColor(io::SeekableWriteStream &stream, color::RGBA color, bool bgr, bool scale);
 
-inline bool readBGRScaledColor(io::SeekableReadStream &stream, core::RGBA &color) {
+inline bool readBGRScaledColor(io::SeekableReadStream &stream, color::RGBA &color) {
 	return readColor(stream, color, true, true);
 }
 
-inline bool writeBGRScaledColor(io::SeekableWriteStream &stream, core::RGBA color) {
+inline bool writeBGRScaledColor(io::SeekableWriteStream &stream, color::RGBA color) {
 	return writeColor(stream, color, true, true);
 }
 
-inline bool readRGBScaledColor(io::SeekableReadStream &stream, core::RGBA &color) {
+inline bool readRGBScaledColor(io::SeekableReadStream &stream, color::RGBA &color) {
 	return readColor(stream, color, false, true);
 }
 
-inline bool writeRGBScaledColor(io::SeekableWriteStream &stream, core::RGBA color) {
+inline bool writeRGBScaledColor(io::SeekableWriteStream &stream, color::RGBA color) {
 	return writeColor(stream, color, false, true);
 }
 
-inline bool readRGBColor(io::SeekableReadStream &stream, core::RGBA &color) {
+inline bool readRGBColor(io::SeekableReadStream &stream, color::RGBA &color) {
 	return readColor(stream, color, false, false);
 }
 
-inline bool writeRGBColor(io::SeekableWriteStream &stream, core::RGBA color) {
+inline bool writeRGBColor(io::SeekableWriteStream &stream, color::RGBA color) {
 	return writeColor(stream, color, false, false);
 }
 
-inline bool readBGRColor(io::SeekableReadStream &stream, core::RGBA &color) {
+inline bool readBGRColor(io::SeekableReadStream &stream, color::RGBA &color) {
 	return readColor(stream, color, true, false);
 }
 
-inline bool writeBGRColor(io::SeekableWriteStream &stream, core::RGBA color) {
+inline bool writeBGRColor(io::SeekableWriteStream &stream, color::RGBA color) {
 	return writeColor(stream, color, true, false);
 }
 

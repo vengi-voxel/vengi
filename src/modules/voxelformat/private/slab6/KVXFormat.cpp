@@ -159,7 +159,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	 * from 0-63.
 	 */
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		core::RGBA color;
+		color::RGBA color;
 		wrapBool(priv::readRGBScaledColor(*stream, color))
 		palette.setColor(i, color);
 	}
@@ -317,11 +317,11 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	// palette is last
 	const palette::Palette &palette = node->palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA color = palette.color(i);
+		const color::RGBA color = palette.color(i);
 		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
-		core::RGBA color(0);
+		color::RGBA color(0);
 		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 

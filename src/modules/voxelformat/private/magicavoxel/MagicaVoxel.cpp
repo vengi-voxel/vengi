@@ -95,7 +95,7 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 			}
 		}
 		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
-		palette.setColor(palIdx, core::RGBA(color.r, color.g, color.b, color.a));
+		palette.setColor(palIdx, color::RGBA(color.r, color.g, color.b, color.a));
 		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
 		if (matl.content_flags & k_ogt_vox_matl_have_metal) {
 			palette.setMetal(palIdx, matl.metal);
@@ -278,12 +278,12 @@ const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &ins
 	return name;
 }
 
-core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
+color::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
 	if (instance.layer_index >= scene->num_layers) {
-		return core::RGBA(255, 255, 255, 255);
+		return color::RGBA(255, 255, 255, 255);
 	}
 	const ogt_vox_layer &layer = scene->layers[instance.layer_index];
-	const core::RGBA col(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
+	const color::RGBA col(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 	return col;
 }
 

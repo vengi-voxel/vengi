@@ -15,7 +15,7 @@ namespace voxelformat {
 
 class AbstractFormatTest : public voxel::AbstractVoxelTest {
 private:
-	void checkColor(core::RGBA, const palette::Palette &palette, uint8_t index, float maxDelta);
+	void checkColor(color::RGBA, const palette::Palette &palette, uint8_t index, float maxDelta);
 	static image::ImagePtr helper_testThumbnailCreator(const scenegraph::SceneGraph &sceneGraph, const ThumbnailContext &ctx);
 	io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read);
 
@@ -54,7 +54,7 @@ protected:
 	void testRGBSmall(const core::String &filename);
 	// save as the same format
 	void testRGBSmallSaveLoad(const core::String &filename);
-	void testLoadScreenshot(const core::String &filename, int width, int height, const core::RGBA expectedColor,
+	void testLoadScreenshot(const core::String &filename, int width, int height, const color::RGBA expectedColor,
 							int expectedX, int expectedY);
 
 	// load test_material.vox and check the material for the given target format (identified by the filename)

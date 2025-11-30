@@ -17,13 +17,13 @@ class Polygon {
 private:
 	core::Buffer<glm::vec2> _uvs;
 	core::Buffer<glm::vec3> _vertices;
-	core::Buffer<core::RGBA> _colors;
+	core::Buffer<color::RGBA> _colors;
 	MeshMaterialIndex _materialIdx = -1;
 	void addTriangle(MeshTriCollection &tris, int idx0, int idx1, int idx2) const;
 
 public:
 	Polygon &setMaterialIndex(MeshMaterialIndex materialIdx);
-	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color = core::RGBA(0, 0, 0));
+	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, color::RGBA color = color::RGBA(0, 0, 0));
 	bool toTris(MeshTriCollection &tris) const;
 	bool toTris(Mesh &mesh) const;
 

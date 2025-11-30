@@ -2241,7 +2241,7 @@ void SceneManager::construct() {
 		const uint8_t red = core::string::toInt(args[0]);
 		const uint8_t green = core::string::toInt(args[1]);
 		const uint8_t blue = core::string::toInt(args[2]);
-		const core::RGBA color(red, green, blue);
+		const color::RGBA color(red, green, blue);
 		const int index = activePalette().getClosestMatch(color);
 		const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
 		_modifierFacade.setCursorVoxel(voxel);
@@ -3694,7 +3694,7 @@ bool SceneManager::nodeDuplicateColor(int nodeId, uint8_t palIdx) {
 
 bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
 	palette::Palette &palette = node.palette();
-	core::RGBA c = palette.color(palIdx);
+	color::RGBA c = palette.color(palIdx);
 	if (c.a == 255) {
 		return false;
 	}
@@ -3728,7 +3728,7 @@ bool SceneManager::nodeSetMaterial(int nodeId, uint8_t palIdx, palette::Material
 	return false;
 }
 
-bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const core::RGBA &color) {
+bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color) {
 	palette::Palette &palette = node.palette();
 	const bool existingColor = palIdx < palette.colorCount();
 	const bool oldHasAlpha = palette.color(palIdx).a != 255;
@@ -3746,7 +3746,7 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 	return true;
 }
 
-bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &color) {
+bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeSetColor(*node, palIdx, color);
 	}

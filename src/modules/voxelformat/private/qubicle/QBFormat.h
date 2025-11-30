@@ -43,7 +43,7 @@ private:
 	// left shift values for the vis mask for the single faces
 	enum class VisMaskSides : uint8_t { Invisble, Left, Right, Top, Bottom, Front, Back };
 
-	bool readColor(State &state, io::SeekableReadStream &stream, core::RGBA &color);
+	bool readColor(State &state, io::SeekableReadStream &stream, color::RGBA &color);
 	voxel::Voxel getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup);
 	bool readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					palette::PaletteLookup &palLookup);

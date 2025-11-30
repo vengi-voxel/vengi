@@ -170,7 +170,7 @@ bool CubzhFormat::loadPalettePCubes(io::ReadStream &stream, palette::Palette &pa
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 		wrap(stream.readUInt8(a))
-		palette.setColor(i, core::RGBA(r, g, b, a));
+		palette.setColor(i, color::RGBA(r, g, b, a));
 	}
 	for (uint8_t i = 0; i < colorCount; ++i) {
 		const bool emissive = stream.readBool();
@@ -219,7 +219,7 @@ bool CubzhFormat::loadPalette5(io::ReadStream &stream, palette::Palette &palette
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 		wrap(stream.readUInt8(a))
-		palette.setColor(i, core::RGBA(r, g, b, a));
+		palette.setColor(i, color::RGBA(r, g, b, a));
 	}
 	// default color
 	// default background color
@@ -241,7 +241,7 @@ bool CubzhFormat::loadPalette6(io::ReadStream &stream, palette::Palette &palette
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 		wrap(stream.readUInt8(a))
-		palette.setColor(i, core::RGBA(r, g, b, a));
+		palette.setColor(i, color::RGBA(r, g, b, a));
 	}
 	for (uint8_t i = 0; i < colorCount; ++i) {
 		const bool emissive = stream.readBool();
@@ -940,7 +940,7 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 		const uint8_t colorCount = palette.colorCount();
 		sub.writeUInt8(colorCount);
 		for (uint8_t i = 0; i < colorCount; ++i) {
-			const core::RGBA rgba = palette.color(i);
+			const color::RGBA rgba = palette.color(i);
 			wrapBool(sub.writeUInt8(rgba.r))
 			wrapBool(sub.writeUInt8(rgba.g))
 			wrapBool(sub.writeUInt8(rgba.b))
@@ -1027,7 +1027,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		const uint8_t colorCount = palette.colorCount();
 		ws.writeUInt8(colorCount);
 		for (uint8_t i = 0; i < colorCount; ++i) {
-			const core::RGBA rgba = palette.color(i);
+			const color::RGBA rgba = palette.color(i);
 			wrapBool(ws.writeUInt8(rgba.r))
 			wrapBool(ws.writeUInt8(rgba.g))
 			wrapBool(ws.writeUInt8(rgba.b))

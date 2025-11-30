@@ -44,7 +44,7 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
  */
 [[nodiscard]] image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
 											voxel::FaceNames frontFace = voxel::FaceNames::Front,
-											core::RGBA background = {}, int imgW = -1, int imgH = -1,
+											color::RGBA background = {}, int imgW = -1, int imgH = -1,
 											bool upScale = true, float depthFactor = 0.0f);
 
 /**
@@ -53,6 +53,6 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
  */
 [[nodiscard]] image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
 												   voxel::FaceNames frontFace = voxel::FaceNames::Front,
-												   core::RGBA background = {}, int imgW = -1, int imgH = -1,
+												   color::RGBA background = {}, int imgW = -1, int imgH = -1,
 												   bool upScale = true);
 } // namespace voxelutil

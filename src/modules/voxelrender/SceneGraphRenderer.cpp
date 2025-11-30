@@ -118,7 +118,7 @@ void SceneGraphRenderer::construct() {
 }
 
 bool SceneGraphRenderer::init(bool normals) {
-	if (!_cameraRenderer.init(core::Color::White(), 0)) {
+	if (!_cameraRenderer.init(color::Color::White(), 0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
 	return _volumeRenderer.init(normals);

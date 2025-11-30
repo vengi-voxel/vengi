@@ -45,7 +45,7 @@ bool Image::isGrayScale() const {
 	}
 	for (int x = 0; x < _width; ++x) {
 		for (int y = 0; y < _height; ++y) {
-			const core::RGBA c = colorAt(x, y);
+			const color::RGBA c = colorAt(x, y);
 			if (c.r != c.g || c.r != c.b) {
 				return false;
 			}
@@ -62,7 +62,7 @@ const uint8_t *Image::at(int x, int y) const {
 	return _colors + offset;
 }
 
-bool Image::setColor(core::RGBA rgba, int x, int y) {
+bool Image::setColor(color::RGBA rgba, int x, int y) {
 	if (x < 0 || x >= _width) {
 		return false;
 	}
@@ -83,20 +83,20 @@ bool Image::setColor(core::RGBA rgba, int x, int y) {
 	return true;
 }
 
-core::RGBA Image::colorAt(int x, int y) const {
+color::RGBA Image::colorAt(int x, int y) const {
 	const uint8_t *ptr = at(x, y);
 	const int d = components();
 	if (d == 4) {
-		return core::RGBA{ptr[0], ptr[1], ptr[2], ptr[3]};
+		return color::RGBA{ptr[0], ptr[1], ptr[2], ptr[3]};
 	}
 	if (d == 3) {
-		return core::RGBA{ptr[0], ptr[1], ptr[2], 255};
+		return color::RGBA{ptr[0], ptr[1], ptr[2], 255};
 	}
 	core_assert(d == 1);
-	return core::RGBA{ptr[0], ptr[0], ptr[0], 255};
+	return color::RGBA{ptr[0], ptr[0], ptr[0], 255};
 }
 
-core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
+color::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
 	const glm::ivec2 pc = pixels(uv, wrapS, wrapT, originUpperLeft);
 	return colorAt(pc.x, pc.y);
 }
@@ -301,8 +301,8 @@ bool Image::loadBGRA(io::ReadStream &stream, int w, int h) {
 	}
 	for (int x = 0; x < w; ++x) {
 		for (int y = 0; y < h; ++y) {
-			core::RGBA rgba = colorAt(x, y);
-			setColor(core::RGBA(rgba.b, rgba.g, rgba.r, rgba.a), x, y);
+			color::RGBA rgba = colorAt(x, y);
+			setColor(color::RGBA(rgba.b, rgba.g, rgba.r, rgba.a), x, y);
 		}
 	}
 	return true;
@@ -339,7 +339,7 @@ void Image::makeOpaque() {
 	}
 	for (int x = 0; x < _width; ++x) {
 		for (int y = 0; y < _height; ++y) {
-			core::RGBA rgba = colorAt(x, y);
+			color::RGBA rgba = colorAt(x, y);
 			rgba.a = 255;
 			setColor(rgba, x, y);
 		}
@@ -501,8 +501,8 @@ core::String print(const image::ImagePtr &image, bool limited) {
 	str.reserve(40 * width * height);
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
-			const core::RGBA color = image->colorAt(x, y);
-			str.append(core::Color::print(color, false));
+			const color::RGBA color = image->colorAt(x, y);
+			str.append(color::Color::print(color, false));
 		}
 		str.append("\n");
 	}

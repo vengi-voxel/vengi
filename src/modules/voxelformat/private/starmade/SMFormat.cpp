@@ -204,7 +204,7 @@ size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 							 const LoadContext &ctx) {
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
 		uint8_t index = 0;
-		const core::RGBA rgba = BLOCKCOLOR[i].color;
+		const color::RGBA rgba = BLOCKCOLOR[i].color;
 		if (!palette.tryAdd(rgba, true, &index)) {
 			continue;
 		}
@@ -212,8 +212,8 @@ size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 			if (BLOCKEMITCOLOR[j].blockId != BLOCKCOLOR[i].blockId) {
 				continue;
 			}
-			const core::RGBA emit = BLOCKEMITCOLOR[j].color;
-			const float factor = core::Color::getDistance(emit, rgba, core::Color::Distance::HSB);
+			const color::RGBA emit = BLOCKEMITCOLOR[j].color;
+			const float factor = color::Color::getDistance(emit, rgba, color::Color::Distance::HSB);
 			palette.setEmit(index, 1.0f - factor);
 		}
 	}

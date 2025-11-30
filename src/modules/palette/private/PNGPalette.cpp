@@ -27,7 +27,7 @@ bool PNGPalette::load(const core::String &filename, io::SeekableReadStream &stre
 
 bool PNGPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	image::Image img(filename);
-	core::DynamicArray<core::RGBA> colors;
+	core::DynamicArray<color::RGBA> colors;
 	colors.resize(palette.size());
 	for (size_t i = 0; i < palette.size(); i++) {
 		colors[i] = palette.color(i);
@@ -42,7 +42,7 @@ bool PNGPalette::save(const palette::ColorPalette &palette, const core::String &
 
 bool PNGPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	image::Image img(filename);
-	core::RGBA colors[PaletteMaxColors];
+	color::RGBA colors[PaletteMaxColors];
 	for (int i = 0; i < PaletteMaxColors; i++) {
 		colors[i] = palette.color(i);
 	}

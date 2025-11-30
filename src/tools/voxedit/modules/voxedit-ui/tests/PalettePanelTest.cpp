@@ -37,16 +37,16 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		saveFile(ctx, "palette-lospec.png");
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		IM_CHECK_EQ(activePalette.colorCount(), 16);
-		IM_CHECK_EQ(activePalette.color(0), core::RGBA(0, 0, 0, 255));
-		IM_CHECK_EQ(activePalette.color(4), core::RGBA(255, 255, 255, 255));
+		IM_CHECK_EQ(activePalette.color(0), color::RGBA(0, 0, 0, 255));
+		IM_CHECK_EQ(activePalette.color(4), color::RGBA(255, 255, 255, 255));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
-		const core::RGBA slot0 = activePalette.color(0);
-		const core::RGBA slot1 = activePalette.color(1);
+		const color::RGBA slot0 = activePalette.color(0);
+		const color::RGBA slot1 = activePalette.color(1);
 		ctx->ItemDragAndDrop("$$0", "$$1");
 		ctx->Yield();
 		IM_CHECK_EQ(activePalette.color(0), slot1);
@@ -57,8 +57,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
-		const core::RGBA slot0 = activePalette.color(0);
-		const core::RGBA slot1 = activePalette.color(1);
+		const color::RGBA slot0 = activePalette.color(0);
+		const color::RGBA slot1 = activePalette.color(1);
 		const int index0 = activePalette.view().uiIndex(0);
 		const int index1 = activePalette.view().uiIndex(1);
 		ctx->KeyDown(ImGuiMod_Ctrl);

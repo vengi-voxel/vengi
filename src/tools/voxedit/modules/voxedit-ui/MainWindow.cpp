@@ -567,7 +567,7 @@ void MainWindow::popupMinecraftMapping() {
 			ImGui::TableHeadersRow();
 			for (int i = 0; i < minecraftPaletteMap.size(); ++i) {
 				const core::String &name = minecraftPaletteMap[i].name;
-				const core::RGBA &color = mcPal.color(minecraftPaletteMap[i].palIdx);
+				const color::RGBA &color = mcPal.color(minecraftPaletteMap[i].palIdx);
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(name.c_str());
 				ImGui::TableNextColumn();

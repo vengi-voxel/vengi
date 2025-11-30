@@ -80,10 +80,10 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 		for (int z = start; z < end; ++z, imageY += stepWidthY) {
 			float imageX = 0.0f;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
-				const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
+				const color::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
 				const uint8_t heightValue =
 					getHeightValueFromAlpha(heightmapPixel.a, adoptHeight, volumeHeight, minHeight);
-				const core::RGBA rgba(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b);
+				const color::RGBA rgba(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b);
 				const uint8_t palidx = palLookup.findClosestIndex(rgba);
 				const voxel::Voxel surfaceVoxel = voxel::createVoxel(palLookup.palette(), palidx);
 				if (voxel::isAir(underground.getMaterial())) {
@@ -134,7 +134,7 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 			voxel::RawVolumeWrapper::Sampler sampler2 = sampler;
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
 				voxel::RawVolumeWrapper::Sampler sampler3 = sampler2;
-				const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
+				const color::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
 				uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
 				if (heightValue < minHeight) {
 					heightValue = minHeight;
@@ -195,7 +195,7 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 		for (int x = start; x < end; ++x) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int y = 0; y < imageHeight; ++y) {
-				const core::RGBA data = image->colorAt(x, y);
+				const color::RGBA data = image->colorAt(x, y);
 				if (data.a == 0) {
 					continue;
 				}
@@ -276,14 +276,14 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 		for (int y = start; y < end; ++y) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
 			for (int x = 0; x < imageWidth; ++x) {
-				const core::RGBA data = image->colorAt(x, y);
+				const color::RGBA data = image->colorAt(x, y);
 				if (data.a == 0 /* AlphaThreshold */) {
 					sampler2.movePositiveX();
 					continue;
 				}
 				const uint8_t index = palLookup.findClosestIndex(data);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, index);
-				const core::RGBA heightdata = depthmap->colorAt(x, y);
+				const color::RGBA heightdata = depthmap->colorAt(x, y);
 				const float thickness = (float)heightdata.r;
 				const float maxthickness = maxDepth;
 				const float height = thickness * maxthickness / 255.0f;
@@ -318,9 +318,9 @@ const int VoxelSpriteWidth = 4;
 const int VoxelSpriteHeight = 4;
 } // namespace
 
-static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const core::RGBA palCol) {
-	const core::RGBA darkerCol = core::Color::darker(palCol);
-	const core::RGBA lighterCol = core::Color::brighter(palCol);
+static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const color::RGBA palCol) {
+	const color::RGBA darkerCol = color::Color::darker(palCol);
+	const color::RGBA lighterCol = color::Color::brighter(palCol);
 	/**
 	 * Each voxel is rendered as a 4x4 sprite with the following pattern:
 	 *
@@ -343,7 +343,7 @@ static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const
 		const int py = y + j;
 		for (int i = 0; i < VoxelSpriteWidth; ++i) {
 			const int px = x + i;
-			core::RGBA c;
+			color::RGBA c;
 			if (i < VoxelSpriteWidth / 2) {
 				c = darkerCol;
 			} else {
@@ -355,7 +355,7 @@ static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const
 }
 
 image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-									 voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH,
+									 voxel::FaceNames frontFace, color::RGBA background, int imgW, int imgH,
 									 bool upScale) {
 	const voxel::Region &r = volume->region();
 
@@ -389,7 +389,7 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 		const int z = vz - r.getLowerZ();
 		const int imgX = 2 * (sizeZ - 1) + (x - z) * 2;
 		const int imgY = image->height() - 2 + x + z - sizeX - sizeZ - (vy - minY) * (VoxelSpriteHeight - 1);
-		const core::RGBA palCol = palette.color(v.getColor());
+		const color::RGBA palCol = palette.color(v.getColor());
 		renderIsometricVoxel(image, imgX, imgY, palCol);
 	};
 	voxelutil::visitSurfaceVolume(*volume, func, visitorOrder);
@@ -419,7 +419,7 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 }
 
 image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-							  voxel::FaceNames frontFace, core::RGBA background, int imgW, int imgH, bool upScale,
+							  voxel::FaceNames frontFace, color::RGBA background, int imgW, int imgH, bool upScale,
 							  float depthFactor) {
 	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
 	const voxel::Region &region = volume->region();
@@ -447,7 +447,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 
 	// now render the voxels to the image
 	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height, depthFactor] (int x, int y, int z, const voxel::Voxel& voxel) {
-		core::RGBA rgba = palette.color(voxel.getColor());
+		color::RGBA rgba = palette.color(voxel.getColor());
 		int px = 0;
 		int py = 0;
 		float depth = 0.0f;
@@ -481,7 +481,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 		}
 
 		if (depthFactor > 0.0f) {
-			rgba = core::Color::darker(rgba, depth);
+			rgba = color::Color::darker(rgba, depth);
 		}
 		image->setColor(rgba, px, py);
 	}, VisitorOrder::Max, true);

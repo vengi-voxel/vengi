@@ -133,7 +133,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		_modifierRenderer->updateBrushVolume(1, nullptr, nullptr);
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
-		core::RGBA color = activePalette.color(_brushContext.cursorVoxel.getColor());
+		color::RGBA color = activePalette.color(_brushContext.cursorVoxel.getColor());
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
 			_modifierRenderer->updateBrushVolume(1, {minsMirror, maxsMirror}, color);
 		}
