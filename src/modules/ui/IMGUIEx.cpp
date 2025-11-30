@@ -641,6 +641,7 @@ bool DisabledButton(const char *label, bool disabled, const ImVec2 &size) {
 	if (disabled) {
 		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+		// TODO: STYLE: if the button color is already gray, the effect is not visible
 		ImGui::PushStyleColor(ImGuiCol_Button, color::gray(buttonColor));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
