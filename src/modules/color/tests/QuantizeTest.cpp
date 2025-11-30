@@ -3,6 +3,7 @@
  */
 
 #include "color/Quantize.h"
+#include "app/tests/AbstractTest.h"
 #include "color/ColorUtil.h"
 #include "color/RGBA.h"
 #include "core/ArrayLength.h"
@@ -30,7 +31,13 @@ inline std::ostream &operator<<(::std::ostream &os, const core::BufferView<RGBA>
 	return os << palStr.c_str();
 }
 
-TEST(QuantizeTest, testQuantize) {
+class QuantizeTest : public app::AbstractTest {
+public:
+	QuantizeTest() : app::AbstractTest(8) {
+	}
+};
+
+TEST_F(QuantizeTest, testQuantize) {
 	const color::RGBA buf[]{
 		color::RGBA(0x00, 0x00, 0x00), color::RGBA(0x7d, 0x7d, 0x7d), color::RGBA(0x4c, 0xb3, 0x76),
 		color::RGBA(0x43, 0x60, 0x86), color::RGBA(0x7a, 0x7a, 0x7a), color::RGBA(0x4e, 0x7f, 0x9c),
