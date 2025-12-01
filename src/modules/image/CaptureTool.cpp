@@ -48,7 +48,7 @@ int CaptureTool::encodeFrame(CaptureTool *inst) {
 			if (inst->_type == CaptureType::AVI) {
 				inst->_avi.writeFrame(*s.get(), image->data(), image->width(), image->height());
 			} else {
-				jo_write_mpeg(*s.get(), image->data(), image->width(), image->height(), inst->_fps);
+				jo_write_mpeg(s.get(), image->data(), image->width(), image->height(), inst->_fps);
 			}
 		}
 		if (!processed) {

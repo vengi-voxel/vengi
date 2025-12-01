@@ -144,15 +144,15 @@ static void jo_writeBits(jo_bits_t *b, int value, int count) {
 	}
 }
 
-static void jo_DCT(float &d0, float &d1, float &d2, float &d3, float &d4, float &d5, float &d6, float &d7) {
-	float tmp0 = d0 + d7;
-	float tmp7 = d0 - d7;
-	float tmp1 = d1 + d6;
-	float tmp6 = d1 - d6;
-	float tmp2 = d2 + d5;
-	float tmp5 = d2 - d5;
-	float tmp3 = d3 + d4;
-	float tmp4 = d3 - d4;
+static void jo_DCT(float *d0, float *d1, float *d2, float *d3, float *d4, float *d5, float *d6, float *d7) {
+	float tmp0 = *d0 + *d7;
+	float tmp7 = *d0 - *d7;
+	float tmp1 = *d1 + *d6;
+	float tmp6 = *d1 - *d6;
+	float tmp2 = *d2 + *d5;
+	float tmp5 = *d2 - *d5;
+	float tmp3 = *d3 + *d4;
+	float tmp4 = *d3 - *d4;
 
 	// Even part
 	float tmp10 = tmp0 + tmp3; // phase 2
@@ -160,12 +160,12 @@ static void jo_DCT(float &d0, float &d1, float &d2, float &d3, float &d4, float 
 	float tmp11 = tmp1 + tmp2;
 	float tmp12 = tmp1 - tmp2;
 
-	d0 = tmp10 + tmp11; // phase 3
-	d4 = tmp10 - tmp11;
+	*d0 = tmp10 + tmp11; // phase 3
+	*d4 = tmp10 - tmp11;
 
 	float z1 = (tmp12 + tmp13) * 0.707106781f; // c4
-	d2 = tmp13 + z1;						   // phase 5
-	d6 = tmp13 - z1;
+	*d2 = tmp13 + z1;						   // phase 5
+	*d6 = tmp13 - z1;
 
 	// Odd part
 	tmp10 = tmp4 + tmp5; // phase 2
@@ -181,20 +181,20 @@ static void jo_DCT(float &d0, float &d1, float &d2, float &d3, float &d4, float 
 	float z11 = tmp7 + z3; // phase 5
 	float z13 = tmp7 - z3;
 
-	d5 = z13 + z2; // phase 6
-	d3 = z13 - z2;
-	d1 = z11 + z4;
-	d7 = z11 - z4;
+	*d5 = z13 + z2; // phase 6
+	*d3 = z13 - z2;
+	*d1 = z11 + z4;
+	*d7 = z11 - z4;
 }
 
 static int jo_processDU(jo_bits_t *bits, float A[64], const unsigned char htdc[9][2], int DC) {
 	for (int dataOff = 0; dataOff < 64; dataOff += 8) {
-		jo_DCT(A[dataOff], A[dataOff + 1], A[dataOff + 2], A[dataOff + 3], A[dataOff + 4], A[dataOff + 5],
-			   A[dataOff + 6], A[dataOff + 7]);
+		jo_DCT(&A[dataOff], &A[dataOff + 1], &A[dataOff + 2], &A[dataOff + 3], &A[dataOff + 4], &A[dataOff + 5],
+			   &A[dataOff + 6], &A[dataOff + 7]);
 	}
 	for (int dataOff = 0; dataOff < 8; ++dataOff) {
-		jo_DCT(A[dataOff], A[dataOff + 8], A[dataOff + 16], A[dataOff + 24], A[dataOff + 32], A[dataOff + 40],
-			   A[dataOff + 48], A[dataOff + 56]);
+		jo_DCT(&A[dataOff], &A[dataOff + 8], &A[dataOff + 16], &A[dataOff + 24], &A[dataOff + 32], &A[dataOff + 40],
+			   &A[dataOff + 48], &A[dataOff + 56]);
 	}
 	int Q[64];
 	for (int i = 0; i < 64; ++i) {
@@ -251,9 +251,9 @@ static int jo_processDU(jo_bits_t *bits, float A[64], const unsigned char htdc[9
 	return Q[0];
 }
 
-bool jo_write_mpeg(io::WriteStream &fp, const uint8_t *rgbx, int width, int height, int fps) {
+bool jo_write_mpeg(io::WriteStream *fp, const uint8_t *rgbx, int width, int height, int fps) {
 	int lastDCY = 128, lastDCCR = 128, lastDCCB = 128;
-	jo_bits_t bits = {&fp};
+	jo_bits_t bits = {fp};
 
 	// Sequence Header
 	stream_fwrite("\x00\x00\x01\xB3", 4, 1, fp);
@@ -276,7 +276,7 @@ bool jo_write_mpeg(io::WriteStream &fp, const uint8_t *rgbx, int width, int heig
 
 	stream_fwrite("\x00\x00\x01\xB8\x80\x08\x00\x40", 8, 1, fp); // GOP header
 	stream_fwrite("\x00\x00\x01\x00\x00\x0C\x00\x00", 8, 1, fp); // PIC header
-	stream_fwrite("\x00\x00\x01\x01", 4, 1, fp);				  // Slice header
+	stream_fwrite("\x00\x00\x01\x01", 4, 1, fp);				 // Slice header
 	jo_writeBits(&bits, 0x10, 6);
 
 	for (int vblock = 0; vblock < (height + 15) / 16; vblock++) {
@@ -291,7 +291,7 @@ bool jo_write_mpeg(io::WriteStream &fp, const uint8_t *rgbx, int width, int heig
 				y = y >= height ? height - 1 : y;
 				const unsigned char *c = rgbx + y * width * 4 + x * 4;
 				float r = c[0], g = c[1], b = c[2];
-				Y[i] = (0.59f * r + 0.30f * g + 0.11f * b) * (219.f / 255) + 16;
+				Y[i] = (0.59f * g + 0.30f * r + 0.11f * b) * (219.f / 255) + 16;
 				CBx[i] = (-0.17f * r - 0.33f * g + 0.50f * b) * (224.f / 255) + 128;
 				CRx[i] = (0.50f * r - 0.42f * g - 0.08f * b) * (224.f / 255) + 128;
 			}

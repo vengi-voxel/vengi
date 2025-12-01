@@ -45,9 +45,9 @@ TEST_F(MPEG2Test, testCreate) {
 		b, b, r, r, b, b,
 	};
 	for (int i = 0; i < 100; ++i) {
-		ASSERT_TRUE(jo_write_mpeg(stream, (const uint8_t *)img1, 6, 6, 3));
-		ASSERT_TRUE(jo_write_mpeg(stream, (const uint8_t *)img2, 6, 6, 3));
-		ASSERT_TRUE(jo_write_mpeg(stream, (const uint8_t *)img3, 6, 6, 3));
+		ASSERT_TRUE(jo_write_mpeg(&stream, (const uint8_t *)img1, 6, 6, 3));
+		ASSERT_TRUE(jo_write_mpeg(&stream, (const uint8_t *)img2, 6, 6, 3));
+		ASSERT_TRUE(jo_write_mpeg(&stream, (const uint8_t *)img3, 6, 6, 3));
 	}
 }
 

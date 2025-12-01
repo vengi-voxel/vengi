@@ -3,6 +3,8 @@
  * Converted to C by Wladislav Artsimovich https://blog.frost.kiwi/jo-mpeg-in-c
  *
  * Latest revisions:
+ * 	1.04 (21-01-2025) YUV math fix, this time for real ( thx @r-lyeh, again )
+ *                    as per https://github.com/FrostKiwi/treasurechest/issues/5
  * 	1.03 (15-08-2024) Reverted color space change from 1.02, as it resulted in
  *                    overscaled color vectors and thus oversaturated colors
  * 	1.02 (22-03-2017) Fixed AC encoding bug.
@@ -36,4 +38,5 @@
 
 #include "io/Stream.h"
 
-bool jo_write_mpeg(io::WriteStream &fp, const uint8_t *rgbx, int width, int height, int fps);
+// Returns false on failure
+bool jo_write_mpeg(io::WriteStream *fp, const uint8_t *rgbx, int width, int height, int fps);
