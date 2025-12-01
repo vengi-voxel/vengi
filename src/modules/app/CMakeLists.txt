@@ -55,3 +55,9 @@ set(BENCHMARK_SRCS
 	benchmark/AbstractBenchmark.cpp
 )
 engine_add_module(TARGET benchmark-${LIB} SRCS ${BENCHMARK_SRCS} DEPENDENCIES benchmark ${LIB})
+
+set(BENCHMARK_APP_SRCS
+	benchmarks/DictionaryBenchmark.cpp
+)
+engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_APP_SRCS} NOINSTALL)
+engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
