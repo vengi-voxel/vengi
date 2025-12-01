@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Assert.h"
 #include <stdint.h>
 #include <string.h>
