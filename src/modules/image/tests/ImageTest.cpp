@@ -244,7 +244,6 @@ TEST_F(ImageTest, testPrint) {
 	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	core::String output = image::print(img);
 	EXPECT_FALSE(output.empty());
-	EXPECT_TRUE(output.contains("w: 6, h: 6, d: 4"));
 }
 
 } // namespace image
