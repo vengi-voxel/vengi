@@ -38,8 +38,8 @@ TEST_F(RGBATest, testOperators) {
 	c1 = c3;
 	EXPECT_TRUE(c1 == c3);
 
-	c1 = 0x12345678;
-	EXPECT_EQ(0x12345678, c1.rgba);
+	c1 = 0x12345678u;
+	EXPECT_EQ(0x12345678u, c1.rgba);
 }
 
 TEST_F(RGBATest, testIndexOperator) {
