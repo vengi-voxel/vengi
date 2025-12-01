@@ -20,6 +20,7 @@ private:
 	core::SharedPtr<io::FileStream> _videoWriteStream = nullptr;
 	core::ConcurrentQueue<image::ImagePtr> _frameQueue;
 	core::AtomicBool _stop = false;
+	core::AtomicBool _running = false;
 
 	static int encodeFrame(CaptureTool *data);
 

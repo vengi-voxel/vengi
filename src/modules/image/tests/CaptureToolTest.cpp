@@ -13,7 +13,7 @@ namespace image {
 class CaptureToolTest : public app::AbstractTest {
 };
 
-TEST_F(CaptureToolTest, DISABLED_testRecordAVI) {
+TEST_F(CaptureToolTest, testRecordAVI) {
 	CaptureTool tool(CaptureType::AVI);
 	const core::String filename = "test.avi";
 	ASSERT_TRUE(tool.startRecording(filename.c_str(), 64, 64));
@@ -35,7 +35,7 @@ TEST_F(CaptureToolTest, DISABLED_testRecordAVI) {
 	EXPECT_TRUE(_testApp->filesystem()->exists(filename));
 }
 
-TEST_F(CaptureToolTest, DISABLED_testRecordMPEG2) {
+TEST_F(CaptureToolTest, testRecordMPEG2) {
 	CaptureTool tool(CaptureType::MPEG2);
 	const core::String filename = "test.mpg";
 	ASSERT_TRUE(tool.startRecording(filename.c_str(), 64, 64));

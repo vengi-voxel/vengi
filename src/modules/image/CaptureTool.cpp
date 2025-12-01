@@ -8,6 +8,7 @@
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/concurrent/Thread.h"
 #include "external/jo_mpeg.h"
 #include "io/Filesystem.h"
 
@@ -41,14 +42,20 @@ int CaptureTool::encodeFrame(CaptureTool *inst) {
 	core::SharedPtr<io::FileStream> s = inst->_videoWriteStream;
 	while (!inst->_stop) {
 		image::ImagePtr image;
+		bool processed = false;
 		while (inst->_frameQueue.pop(image)) {
+			processed = true;
 			if (inst->_type == CaptureType::AVI) {
 				inst->_avi.writeFrame(*s.get(), image->data(), image->width(), image->height());
 			} else {
 				jo_write_mpeg(*s.get(), image->data(), image->width(), image->height(), inst->_fps);
 			}
 		}
+		if (!processed) {
+			app::App::getInstance()->wait(10);
+		}
 	}
+	inst->_running = false;
 	return 0;
 }
 
@@ -68,7 +75,9 @@ bool CaptureTool::startRecording(const char *filename, int width, int height) {
 			return false;
 		}
 	}
+	_stop = false;
 	Log::debug("Starting avirecorder thread");
+	_running = true;
 	app::schedule([this]() { encodeFrame(this); });
 	return true;
 }
@@ -82,18 +91,22 @@ bool CaptureTool::stopRecording() {
 }
 
 bool CaptureTool::hasFinished() const {
-	if (!isRecording()) {
-		return false;
+	if (_videoWriteStream == nullptr) {
+		return true;
 	}
 	if (!_stop) {
 		return false;
 	}
-	return _frameQueue.empty();
+	return _frameQueue.empty() && !_running;
 }
 
 bool CaptureTool::flush() {
-	if (!isRecording()) {
+	if (_videoWriteStream == nullptr) {
 		return true;
+	}
+	_stop = true;
+	while (_running) {
+		app::App::getInstance()->wait(10);
 	}
 	bool closed;
 	if (_type == CaptureType::AVI)
