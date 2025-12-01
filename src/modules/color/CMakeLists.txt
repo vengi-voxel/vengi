@@ -11,6 +11,8 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES app)
 set(TEST_SRCS
 	tests/ColorUtilTest.cpp
 	tests/QuantizeTest.cpp
+	tests/CMYKTest.cpp
+	tests/RGBATest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
