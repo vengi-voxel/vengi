@@ -41,6 +41,7 @@ set(TEST_SRCS
 	tests/ImageTest.cpp
 	tests/AVITest.cpp
 	tests/MPEG2Test.cpp
+	tests/CaptureToolTest.cpp
 )
 
 set(TEST_FILES
