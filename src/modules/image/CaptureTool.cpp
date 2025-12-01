@@ -39,6 +39,7 @@ uint32_t CaptureTool::pendingFrames() const {
 }
 
 int CaptureTool::encodeFrame(CaptureTool *inst) {
+	// make a copy of the shared ptr to keep it alive
 	core::SharedPtr<io::FileStream> s = inst->_videoWriteStream;
 	while (!inst->_stop) {
 		image::ImagePtr image;
@@ -60,7 +61,8 @@ int CaptureTool::encodeFrame(CaptureTool *inst) {
 }
 
 bool CaptureTool::startRecording(const char *filename, int width, int height) {
-	_videoWriteStream = core::make_shared<io::FileStream>(io::filesystem()->open(filename, io::FileMode::SysWrite));
+	const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+	_videoWriteStream = core::make_shared<io::FileStream>(file);
 	if (!_videoWriteStream->valid()) {
 		Log::error("Failed to open filestream for %s", filename);
 		_videoWriteStream = nullptr;
