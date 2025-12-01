@@ -94,7 +94,7 @@ TEST_F(ImageTest, testWritePng) {
 }
 
 TEST_F(ImageTest, testGet) {
-	io::FilePtr file = _testApp->filesystem()->open("test-palette-in.png");
+	const io::FilePtr &file = _testApp->filesystem()->open("test-palette-in.png");
 	const image::ImagePtr &img = image::loadImage(file);
 	const color::RGBA rgba = img->colorAt(33, 7);
 	const color::RGBA expected(243, 238, 236);
@@ -138,12 +138,12 @@ TEST_F(ImageTest, testUVPixelConversion) {
 
 TEST_F(ImageTest, testIsGrayScale) {
 	image::ImagePtr img = image::createEmptyImage("gray");
-	img->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	EXPECT_FALSE(img->isGrayScale());
 
 	// Create a grayscale image manually
 	image::ImagePtr grayImg = image::createEmptyImage("gray2");
-	grayImg->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(grayImg->loadRGBA((const uint8_t *)img1, 6, 6));
 	for (int x = 0; x < 6; ++x) {
 		for (int y = 0; y < 6; ++y) {
 			grayImg->setColor(color::RGBA(128, 128, 128, 255), x, y);
@@ -154,7 +154,7 @@ TEST_F(ImageTest, testIsGrayScale) {
 
 TEST_F(ImageTest, testSetColor) {
 	image::ImagePtr img = image::createEmptyImage("setcolor");
-	img->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	color::RGBA c(10, 20, 30, 40);
 	EXPECT_TRUE(img->setColor(c, 0, 0));
 	EXPECT_EQ(c, img->colorAt(0, 0));
@@ -166,7 +166,7 @@ TEST_F(ImageTest, testSetColor) {
 
 TEST_F(ImageTest, testMakeOpaque) {
 	image::ImagePtr img = image::createEmptyImage("opaque");
-	img->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	// Set a pixel with alpha < 255
 	img->setColor(color::RGBA(255, 0, 0, 128), 0, 0);
 	EXPECT_EQ(128, img->colorAt(0, 0).a);
@@ -194,7 +194,7 @@ TEST_F(ImageTest, testFlipVerticalRGBA) {
 
 TEST_F(ImageTest, testResize) {
 	image::ImagePtr img = image::createEmptyImage("resize");
-	img->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	EXPECT_TRUE(img->resize(12, 12));
 	EXPECT_EQ(12, img->width());
 	EXPECT_EQ(12, img->height());
@@ -205,7 +205,7 @@ TEST_F(ImageTest, testResize) {
 
 TEST_F(ImageTest, testPngBase64) {
 	image::ImagePtr img = image::createEmptyImage("base64");
-	img->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	core::String base64 = img->pngBase64();
 	EXPECT_FALSE(base64.empty());
 	// Basic check for PNG header in base64 (iVBORw0KGgo)
@@ -218,7 +218,7 @@ TEST_F(ImageTest, testLoadRGBA) {
 		255, 0, 0, 255,
 		0, 255, 0, 255
 	};
-	EXPECT_TRUE(img->loadRGBA(data, 2, 1));
+	ASSERT_TRUE(img->loadRGBA(data, 2, 1));
 	EXPECT_EQ(2, img->width());
 	EXPECT_EQ(1, img->height());
 	EXPECT_EQ(color::RGBA(255, 0, 0, 255), img->colorAt(0, 0));
@@ -232,7 +232,7 @@ TEST_F(ImageTest, testLoadBGRA) {
 		0, 255, 0, 255  // Green in BGRA
 	};
 	io::MemoryReadStream stream(data, sizeof(data));
-	EXPECT_TRUE(img->loadBGRA(stream, 2, 1));
+	ASSERT_TRUE(img->loadBGRA(stream, 2, 1));
 	EXPECT_EQ(2, img->width());
 	EXPECT_EQ(1, img->height());
 	EXPECT_EQ(color::RGBA(255, 0, 0, 255), img->colorAt(0, 0));
@@ -241,7 +241,7 @@ TEST_F(ImageTest, testLoadBGRA) {
 
 TEST_F(ImageTest, testPrint) {
 	image::ImagePtr img = image::createEmptyImage("print");
-	img->loadRGBA((const uint8_t *)img1, 6, 6);
+	ASSERT_TRUE(img->loadRGBA((const uint8_t *)img1, 6, 6));
 	core::String output = image::print(img);
 	EXPECT_FALSE(output.empty());
 	EXPECT_TRUE(output.contains("w: 6, h: 6, d: 4"));
