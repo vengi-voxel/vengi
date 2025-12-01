@@ -64,9 +64,7 @@ public:
 	}
 	bool load(ImageType type, io::SeekableReadStream &stream, int length);
 
-	void markLoaded() {
-		_state = io::IOSTATE_LOADED;
-	}
+	void markLoaded();
 
 	/**
 	 * Loads a raw RGBA buffer
@@ -102,45 +100,54 @@ public:
 	color::RGBA colorAt(int x, int y) const;
 	color::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					   TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
-
 	bool isGrayScale() const;
-
 	bool setColor(color::RGBA rgba, int x, int y);
-
 	const uint8_t *at(int x, int y) const;
-
-	void setName(const core::String &name) {
-		_name = name;
-	}
-
-	inline const core::String &name() const {
-		return _name;
-	}
-
-	inline const uint8_t *data() const {
-		return _colors;
-	}
-
-	inline glm::vec2 size() const {
-		return {_width, _height};
-	}
-
-	inline int width() const {
-		return _width;
-	}
-
-	inline int height() const {
-		return _height;
-	}
-
-	inline int components() const {
-		return _colorComponents;
-	}
-
-	inline float aspect() const {
-		return (float)_width / (float)_height;
-	}
+	void setName(const core::String &name);
+	const core::String &name() const;
+	const uint8_t *data() const;
+	glm::vec2 size() const;
+	int width() const;
+	int height() const;
+	int components() const;
+	float aspect() const;
 };
+
+inline void Image::markLoaded() {
+	_state = io::IOSTATE_LOADED;
+}
+
+inline void Image::setName(const core::String &name) {
+	_name = name;
+}
+
+inline const core::String &Image::name() const {
+	return _name;
+}
+
+inline const uint8_t *Image::data() const {
+	return _colors;
+}
+
+inline glm::vec2 Image::size() const {
+	return {_width, _height};
+}
+
+inline int Image::width() const {
+	return _width;
+}
+
+inline int Image::height() const {
+	return _height;
+}
+
+inline int Image::components() const {
+	return _colorComponents;
+}
+
+inline float Image::aspect() const {
+	return (float)_width / (float)_height;
+}
 
 typedef core::SharedPtr<Image> ImagePtr;
 
