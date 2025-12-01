@@ -21,7 +21,7 @@ TEST_F(CaptureToolTest, testRecordAVI) {
 
 	image::ImagePtr img = image::createEmptyImage("frame");
 	uint8_t buffer[64 * 64 * 4];
-	SDL_memset(buffer, 255, sizeof(buffer));
+	core_memset(buffer, 255, sizeof(buffer));
 	img->loadRGBA(buffer, 64, 64);
 
 	tool.enqueueFrame(img);
@@ -43,7 +43,7 @@ TEST_F(CaptureToolTest, testRecordMPEG2) {
 
 	image::ImagePtr img = image::createEmptyImage("frame");
 	uint8_t buffer[64 * 64 * 4];
-	SDL_memset(buffer, 255, sizeof(buffer));
+	core_memset(buffer, 255, sizeof(buffer));
 	img->loadRGBA(buffer, 64, 64);
 
 	tool.enqueueFrame(img);
@@ -65,7 +65,7 @@ TEST_F(CaptureToolTest, testAbort) {
 
 	image::ImagePtr img = image::createEmptyImage("frame");
 	uint8_t buffer[64 * 64 * 4];
-	SDL_memset(buffer, 255, sizeof(buffer));
+	core_memset(buffer, 255, sizeof(buffer));
 	img->loadRGBA(buffer, 64, 64);
 
 	tool.enqueueFrame(img);
