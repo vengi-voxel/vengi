@@ -2,8 +2,8 @@
  * @file
  */
 
-#include <gtest/gtest.h>
 #include "math/Rect.h"
+#include <gtest/gtest.h>
 
 namespace math {
 
@@ -32,4 +32,4 @@ TEST(RectTest, testIntersectswith) {
 	ASSERT_FALSE(aabb.intersectsWith(RectuInt(100, 100, 101, 101)));
 }
 
-}
+} // namespace math

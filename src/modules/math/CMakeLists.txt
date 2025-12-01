@@ -22,13 +22,18 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core color)
 
 set(TEST_SRCS
 	tests/AABBTest.cpp
+	tests/AxisTest.cpp
+	tests/BezierTest.cpp
 	tests/CoordinateSystemTest.cpp
+	tests/EasingTest.cpp
 	tests/FrustumTest.cpp
 	tests/MathTest.cpp
 	tests/OBBTest.cpp
 	tests/OctreeTest.cpp
 	tests/PlaneTest.cpp
 	tests/QuadTreeTest.cpp
+	tests/RandomTest.cpp
+	tests/RayTest.cpp
 	tests/RectTest.cpp
 	tests/TriTest.cpp
 )
