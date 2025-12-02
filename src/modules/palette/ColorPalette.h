@@ -30,6 +30,7 @@ private:
 	const ColorPaletteEntry *entry(size_t index) const;
 	ColorPaletteEntry _empty;
 	core::String _name;
+	core::String _filename;
 
 public:
 	void setSize(size_t size);
@@ -43,6 +44,9 @@ public:
 	void setMaterial(size_t index, const palette::Material &material);
 
 	void setName(const core::String &name);
+	void setFilename(const core::String &filename);
+	const core::String &name() const;
+	const core::String &filename() const;
 
 	int colorCount() const;
 
@@ -50,8 +54,6 @@ public:
 	 * @brief Remove duplicated or full transparent colors
 	 */
 	void optimize();
-
-	const core::String &name() const;
 
 	size_t size() const;
 
@@ -81,5 +83,13 @@ public:
 
 	static core::String print(const ColorPalette &palette, bool colorAsHex = false);
 };
+
+inline const core::String &ColorPalette::filename() const {
+	return _filename;
+}
+
+inline void ColorPalette::setFilename(const core::String &filename) {
+	_filename = filename;
+}
 
 } // namespace palette

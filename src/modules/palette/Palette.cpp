@@ -40,7 +40,7 @@ Palette::Palette() : _view(this) {
 }
 
 Palette::Palette(const Palette &other)
-	: DirtyState(other), _needsSave(other._needsSave), _name(other._name), _view(this),
+	: DirtyState(other), _needsSave(other._needsSave), _name(other._name), _filename(other._filename), _view(this),
 	  _colorCount(other._colorCount) {
 	_hash._hash = other._hash._hash;
 	core_memcpy(_colors, other._colors, sizeof(_colors));
@@ -55,6 +55,7 @@ Palette &Palette::operator=(const Palette &other) {
 		_needsSave = other._needsSave;
 		_hashDirty = other._hashDirty;
 		_name = other._name;
+		_filename = other._filename;
 		_hash._hash = other._hash._hash;
 		_colorCount = other._colorCount;
 		core_memcpy(_colors, other._colors, sizeof(_colors));
@@ -66,8 +67,8 @@ Palette &Palette::operator=(const Palette &other) {
 }
 
 Palette::Palette(Palette &&other) noexcept
-	: DirtyState(other), _needsSave(other._needsSave), _hashDirty(other._hashDirty), _name(core::move(other._name)), _view(this),
-	  _colorCount(other._colorCount) {
+	: DirtyState(other), _needsSave(other._needsSave), _hashDirty(other._hashDirty), _name(core::move(other._name)),
+	  _filename(core::move(_filename)), _view(this), _colorCount(other._colorCount) {
 	_hash._hash = other._hash._hash;
 	core_memcpy(_colors, other._colors, sizeof(_colors));
 	core_memcpy(_materials, other._materials, sizeof(_materials));
@@ -81,6 +82,7 @@ Palette &Palette::operator=(Palette &&other) noexcept {
 		_needsSave = other._needsSave;
 		_hashDirty = other._hashDirty;
 		_name = core::move(other._name);
+		_filename = core::move(other._filename);
 		_hash._hash = other._hash._hash;
 		_colorCount = other._colorCount;
 		core_memcpy(_colors, other._colors, sizeof(_colors));
@@ -193,6 +195,9 @@ void Palette::exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2) {
 	setMaterial(paletteColorIdx1, rhsM);
 	setColor(paletteColorIdx2, lhs);
 	setMaterial(paletteColorIdx2, lhsM);
+	if (_names.hasValue()) {
+		core::exchange((*_names.value())[paletteColorIdx1], (*_names.value())[paletteColorIdx2]);
+	}
 	markSave();
 	markDirty();
 }
@@ -203,6 +208,9 @@ void Palette::copy(uint8_t fromPaletteColorIdx, uint8_t toPaletteColorIdx) {
 	}
 	_colors[toPaletteColorIdx] = _colors[fromPaletteColorIdx];
 	_materials[toPaletteColorIdx] = _materials[fromPaletteColorIdx];
+	if (_names.hasValue()) {
+		(*_names.value())[toPaletteColorIdx] = (*_names.value())[fromPaletteColorIdx];
+	}
 	markDirty();
 	markSave();
 }
@@ -213,6 +221,10 @@ bool Palette::removeColor(uint8_t paletteColorIdx) {
 			_view._uiIndices[i] = _view._uiIndices[i + 1];
 		}
 		_colors[paletteColorIdx] = color::RGBA(0, 0, 0, 0);
+		_materials[paletteColorIdx] = Material{};
+		if (_names.hasValue()) {
+			setColorName(paletteColorIdx, "");
+		}
 		if (paletteColorIdx == _colorCount - 1) {
 			--_colorCount;
 		}
@@ -233,6 +245,30 @@ bool Palette::hasFreeSlot() const {
 		}
 	}
 	return false;
+}
+
+void Palette::setName(const core::String &name) {
+	_name = name;
+}
+
+void Palette::setFilename(const core::String &filename) {
+	_filename = filename;
+}
+
+const core::String &Palette::filename() const {
+	return _filename;
+}
+
+core::String Palette::extractPaletteName(const core::String &file) {
+	if (!core::string::startsWith(file, "palette-")) {
+		return core::String::Empty;
+	}
+	const core::String &nameWithExtension = file.substr(8);
+	const size_t extPos = nameWithExtension.rfind('.');
+	if (extPos != core::String::npos) {
+		return nameWithExtension.substr(0, extPos);
+	}
+	return nameWithExtension;
 }
 
 void Palette::setColor(uint8_t i, const color::RGBA &rgba) {
@@ -629,7 +665,8 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 	if (!img->loadRGBA(rgbaBuf, ncolors, 1)) {
 		return false;
 	}
-	_name = "";
+	_name = name;
+	_filename = "";
 	return load(img);
 }
 
@@ -659,6 +696,7 @@ bool Palette::load(const image::ImagePtr &img) {
 		_colors[i] = color::RGBA(0);
 	}
 	_name = img->name();
+	_filename = img->name();
 	markDirty();
 	Log::debug("Set up %i material colors", _colorCount);
 	return true;
@@ -691,6 +729,7 @@ bool Palette::load(const char *paletteName) {
 			nippon();
 		}
 		_name = paletteName + 5;
+		_filename = "";
 		return false;
 	}
 
@@ -982,18 +1021,6 @@ bool Palette::nippon() {
 	return load((const uint8_t *)palette, sizeof(palette), "built-in:nippon");
 }
 
-core::String Palette::extractPaletteName(const core::String &file) {
-	if (!core::string::startsWith(file, "palette-")) {
-		return core::String::Empty;
-	}
-	const core::String &nameWithExtension = file.substr(8);
-	const size_t extPos = nameWithExtension.rfind('.');
-	if (extPos != core::String::npos) {
-		return nameWithExtension.substr(0, extPos);
-	}
-	return nameWithExtension;
-}
-
 bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &palette, int imageWidth, int imageHeight) {
 	if (!image || !image->isLoaded()) {
 		return false;
@@ -1030,7 +1057,7 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 		colors.push_back(e->first);
 	}
 	colorSet.clear();
-	palette.setName(image->name());
+	palette.setFilename(image->name());
 	palette.quantize(colors.data(), colors.size());
 	palette.markDirty();
 	return true;

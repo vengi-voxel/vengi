@@ -361,6 +361,8 @@ size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, 
 		Log::warn("Format %s isn't supported", filename.c_str());
 		return 0;
 	}
+	palette.setName(desc->name);
+	palette.setFilename(filename);
 	if (const core::SharedPtr<Format> &f = getFormat(*desc, magic)) {
 		const size_t n = f->loadPalette(filename, archive, palette, ctx);
 		palette.markDirty();

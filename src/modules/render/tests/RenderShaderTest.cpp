@@ -2,14 +2,13 @@
  * @file
  */
 
-#include "video/tests/AbstractGLTest.h"
 #include "ColorShader.h"
 #include "TextureShader.h"
+#include "video/tests/AbstractGLTest.h"
+
 namespace render {
 
-
-class RenderShaderTest : public video::AbstractShaderTest {
-};
+class RenderShaderTest : public video::AbstractShaderTest {};
 
 TEST_P(RenderShaderTest, testTextureShader) {
 	shader::TextureShader shader;
@@ -25,4 +24,4 @@ TEST_P(RenderShaderTest, testColorShader) {
 
 VIDEO_SHADERTEST(RenderShaderTest)
 
-}
+} // namespace render

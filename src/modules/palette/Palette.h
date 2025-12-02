@@ -30,6 +30,7 @@ private:
 	bool _needsSave = false;
 	mutable bool _hashDirty = false;
 	core::String _name;
+	core::String _filename;
 	mutable union hash {
 		uint32_t _hashColors[2];
 		uint64_t _hash;
@@ -106,7 +107,9 @@ public:
 	 */
 	int duplicateColor(uint8_t paletteColorIdx);
 	/**
-	 * @brief Tries to remove the given color from the palette
+	 * @brief Tries to remove the given color from the palette. This does not change the indices itself
+	 * because that would break existing models using this palette. It tries to set the color slot to empty
+	 * and changes the ui ordering accordingly.
 	 * @note Always keeps at least one color in the palette
 	 */
 	bool removeColor(uint8_t paletteColorIdx);
@@ -117,7 +120,9 @@ public:
 	void setColorName(uint8_t paletteColorIdx, const core::String &name);
 
 	const core::String &name() const;
+	const core::String &filename() const;
 	void setName(const core::String &name);
+	void setFilename(const core::String &filename);
 
 	uint64_t hash() const;
 	int colorCount() const;
@@ -194,10 +199,6 @@ inline const PaletteView &Palette::view() const {
 
 inline const core::String &Palette::name() const {
 	return _name;
-}
-
-inline void Palette::setName(const core::String &name) {
-	_name = name;
 }
 
 inline int Palette::colorCount() const {

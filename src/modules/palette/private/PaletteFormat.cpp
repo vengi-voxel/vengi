@@ -29,9 +29,10 @@ namespace palette {
 
 palette::Palette toPalette(const palette::ColorPalette &colorPalette) {
 	palette::Palette palette;
+	palette.setName(colorPalette.name());
+	palette.setFilename(colorPalette.filename());
 	if (colorPalette.size() < PaletteMaxColors) {
 		palette.setSize(colorPalette.size());
-		palette.setName(colorPalette.name());
 		for (size_t i = 0; i < colorPalette.size(); ++i) {
 			palette.setColor(i, colorPalette.color(i));
 			palette.setColorName(i, colorPalette.colorName(i));
@@ -66,6 +67,7 @@ palette::ColorPalette toColorPalette(const palette::Palette &palette) {
 	palette::ColorPalette colorPalette;
 	colorPalette.setSize(palette.size());
 	colorPalette.setName(palette.name());
+	colorPalette.setFilename(palette.filename());
 	for (size_t i = 0; i < palette.size(); ++i) {
 		colorPalette.set(i, palette.color(i), palette.colorName(i), palette.material(i));
 	}
@@ -80,6 +82,7 @@ bool PaletteFormat::save(const palette::Palette &palette, const core::String &fi
 
 bool PaletteFormat::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	palette::ColorPalette colorPalette;
+	colorPalette.setFilename(filename);
 	if (!load(filename, stream, colorPalette)) {
 		return false;
 	}
@@ -139,6 +142,7 @@ static bool loadPaletteInternal(const core::String &filename, io::SeekableReadSt
 	if (const core::SharedPtr<PaletteFormat> &f = getFormat(*desc, magic)) {
 		stream.seek(0);
 		palette.setSize(0);
+		palette.setFilename(core::string::extractFilenameWithExtension(filename));
 		palette.setName(core::string::extractFilename(filename));
 		if (f->load(filename, stream, palette)) {
 			palette.markDirty();

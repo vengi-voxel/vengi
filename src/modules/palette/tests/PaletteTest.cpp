@@ -4,14 +4,23 @@
 
 #include "palette/Palette.h"
 #include "app/tests/AbstractTest.h"
-#include "core/ArrayLength.h"
 #include "color/Color.h"
+#include "core/ArrayLength.h"
 #include "core/ConfigVar.h"
+#include "core/Enum.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"
 #include "util/VarUtil.h"
 
 namespace palette {
+
+enum class ValidateFlags : uint8_t {
+	All = 0,
+	SkipMaterial = 1 << 0,
+	SkipName = 1 << 1
+};
+
+CORE_ENUM_BIT_OPERATIONS(ValidateFlags)
 
 class PaletteTest : public app::AbstractTest {
 protected:
@@ -22,10 +31,12 @@ protected:
 		return FormatConfig::init();
 	}
 
-	static void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f) {
+	static void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2,
+								  ValidateFlags flags = ValidateFlags::All, float maxDelta = 0.001f) {
 		ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
-		// TODO: name ASSERT_EQ(pal1.name(), pal2.name());
-		// TODO: materials
+		if ((flags & ValidateFlags::SkipName) != ValidateFlags::SkipName) {
+			ASSERT_EQ(pal1.name(), pal2.name());
+		}
 		for (int i = 0; i < pal1.colorCount(); ++i) {
 			const color::RGBA &c1 = pal1.color(i);
 			const color::RGBA &c2 = pal2.color(i);
@@ -37,17 +48,20 @@ protected:
 										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
 										   << palette::Palette::print(pal2);
 			}
-			// TODO: color names
+			EXPECT_EQ(pal1.colorName(i), pal2.colorName(i)) << "Color name differs at " << i;
+			if ((flags & ValidateFlags::SkipMaterial) != ValidateFlags::SkipMaterial) {
+				EXPECT_EQ(pal1.material(i), pal2.material(i)) << "Material differs at " << i;
+			}
 		}
 	}
 
-	void testSaveLoad(const char *filename, float maxDelta = 0.001f) {
+	void testSaveLoad(const char *filename, ValidateFlags flags = ValidateFlags::All, float maxDelta = 0.001f) {
 		Palette pal;
 		pal.nippon();
 		ASSERT_TRUE(pal.save(filename));
 		Palette pal2;
 		EXPECT_TRUE(pal2.load(filename));
-		paletteComparator(pal, pal2, maxDelta);
+		paletteComparator(pal, pal2, flags, maxDelta);
 	}
 };
 
@@ -105,7 +119,7 @@ TEST_F(PaletteTest, testAdobeColorBookPalette) {
 }
 
 TEST_F(PaletteTest, testPNGPalette) {
-	testSaveLoad("test.png");
+	testSaveLoad("test.png", ValidateFlags::SkipName);
 }
 
 TEST_F(PaletteTest, testPaintNetPalette) {
@@ -135,7 +149,7 @@ TEST_F(PaletteTest, testPhotoshopPalette) {
 }
 
 TEST_F(PaletteTest, testASEPalette) {
-	testSaveLoad("test.ase");
+	testSaveLoad("test.ase", ValidateFlags::SkipName);
 }
 
 TEST_F(PaletteTest, testVPLPalette) {
@@ -145,11 +159,11 @@ TEST_F(PaletteTest, testVPLPalette) {
 }
 
 TEST_F(PaletteTest, testCSVPalette) {
-	testSaveLoad("test.csv");
+	testSaveLoad("test.csv", ValidateFlags::SkipName);
 }
 
 TEST_F(PaletteTest, testRGBPalette) {
-	testSaveLoad("test.pal");
+	testSaveLoad("test.pal", ValidateFlags::SkipName);
 }
 
 TEST_F(PaletteTest, testReduce) {
@@ -168,8 +182,8 @@ TEST_F(PaletteTest, testFindReplacement) {
 	EXPECT_NE(r2, 0);
 	const float delta = color::getDistance(pal.color(r1), pal.color(r2), color::Distance::HSB);
 	EXPECT_LT(delta, 0.025f) << "The replacement for the first color " << color::print(pal.color(0))
-							 << " should be similar for both distance methods " << color::print(pal.color(r1))
-							 << " vs " << color::print(pal.color(r2));
+							 << " should be similar for both distance methods " << color::print(pal.color(r1)) << " vs "
+							 << color::print(pal.color(r2));
 }
 
 TEST_F(PaletteTest, testSaveBuiltInPalette) {
@@ -337,6 +351,99 @@ TEST_F(PaletteTest, testHasEmit) {
 	EXPECT_FALSE(pal.hasEmit(0));
 	pal.setMaterialValue(0, MaterialEmit, 0.5f);
 	EXPECT_TRUE(pal.hasEmit(0));
+}
+
+TEST_F(PaletteTest, testMaterialProperties) {
+	Palette pal;
+	pal.nippon();
+	const int idx = 0;
+	pal.setMaterialType(idx, MaterialType::Metal);
+	EXPECT_EQ(MaterialType::Metal, pal.material(idx).type);
+
+	pal.setEmit(idx, 0.5f);
+	EXPECT_FLOAT_EQ(0.5f, pal.material(idx).emit);
+	EXPECT_TRUE(pal.hasEmit(idx));
+
+	pal.setMetal(idx, 0.8f);
+	EXPECT_FLOAT_EQ(0.8f, pal.material(idx).metal);
+
+	pal.setRoughness(idx, 0.2f);
+	EXPECT_FLOAT_EQ(0.2f, pal.material(idx).roughness);
+
+	pal.setSpecular(idx, 0.9f);
+	EXPECT_FLOAT_EQ(0.9f, pal.material(idx).specular);
+
+	EXPECT_TRUE(pal.hasMaterials());
+}
+
+TEST_F(PaletteTest, testColorNames) {
+	Palette pal;
+	pal.nippon();
+	const int idx = 0;
+	const core::String name = "MyColor";
+	pal.setColorName(idx, name);
+	EXPECT_EQ(name, pal.colorName(idx));
+}
+
+TEST_F(PaletteTest, testExchange) {
+	Palette pal;
+	pal.nippon();
+	const int idx1 = 0;
+	const int idx2 = 1;
+	const color::RGBA c1 = pal.color(idx1);
+	const color::RGBA c2 = pal.color(idx2);
+	pal.setColorName(idx1, "Color1");
+	pal.setColorName(idx2, "Color2");
+
+	pal.exchange(idx1, idx2);
+
+	EXPECT_EQ(c2, pal.color(idx1));
+	EXPECT_EQ(c1, pal.color(idx2));
+	EXPECT_EQ("Color2", pal.colorName(idx1));
+	EXPECT_EQ("Color1", pal.colorName(idx2));
+}
+
+TEST_F(PaletteTest, testCopy) {
+	Palette pal;
+	pal.nippon();
+	const int src = 0;
+	const int dst = 1;
+	const color::RGBA c1 = pal.color(src);
+	pal.setColorName(src, "Color1");
+
+	pal.copy(src, dst);
+
+	EXPECT_EQ(c1, pal.color(dst));
+	EXPECT_EQ("Color1", pal.colorName(dst));
+}
+
+TEST_F(PaletteTest, testSize) {
+	Palette pal;
+	pal.setSize(10);
+	EXPECT_EQ(10, pal.colorCount());
+	pal.changeSize(5);
+	EXPECT_EQ(15, pal.colorCount());
+	pal.changeSize(-5);
+	EXPECT_EQ(10, pal.colorCount());
+}
+
+TEST_F(PaletteTest, testBuiltIn) {
+	Palette pal;
+	pal.nippon();
+	EXPECT_TRUE(pal.isBuiltIn());
+	EXPECT_TRUE(pal.nippon());
+
+	pal.setName("Custom");
+	EXPECT_FALSE(pal.isBuiltIn());
+}
+
+TEST_F(PaletteTest, testHash) {
+	Palette pal;
+	pal.nippon();
+	const uint64_t h1 = pal.hash();
+	pal.setColor(0, color::RGBA(0, 0, 0, 0));
+	const uint64_t h2 = pal.hash();
+	EXPECT_NE(h1, h2);
 }
 
 } // namespace palette

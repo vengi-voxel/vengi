@@ -13,23 +13,24 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 	char line[2048];
 	bool alpha = false;
 	int colorCount = 0;
+	core::String name;
 	while (stream.readLine(sizeof(line), line)) {
 		if (strncmp("#Palette Name", line, 13) == 0) {
-			// _name = line + 13;
-			// if (_name[0] == ':') {
-			// 	_name = _name.substr(1);
-			// }
-			// _name = _name.trim();
-			// Log::debug("found name %s", _name.c_str());
+			name = line + 13;
+			if (name[0] == ':') {
+				name = name.substr(1);
+			}
+			name = name.trim();
+			Log::debug("found name %s", name.c_str());
 			continue;
 		}
 		if (strncmp("Name", line, 4) == 0) {
-			// _name = line + 4;
-			// if (_name[0] == ':') {
-			// 	_name = _name.substr(1);
-			// }
-			// _name = _name.trim();
-			// Log::debug("found name %s", _name.c_str());
+			name = line + 4;
+			if (name[0] == ':') {
+				name = name.substr(1);
+			}
+			name = name.trim();
+			Log::debug("found name %s", name.c_str());
 			continue;
 		}
 		if (line[0] == '#') {
@@ -59,6 +60,7 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 		palette.setColor(colorCount, color::RGBA(r, g, b, a));
 		++colorCount;
 	}
+	palette.setName(name);
 	palette.setSize(colorCount);
 	return colorCount > 0;
 }
