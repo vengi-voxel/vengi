@@ -139,13 +139,12 @@ TEST_F(PaletteTest, testPhotoshopPalette) {
 	Palette pal;
 	EXPECT_TRUE(pal.load("test.aco"));
 	EXPECT_EQ(pal.colorCount(), 5);
-	const uint64_t hash1 = pal.hash();
-
+	pal.setName("foo");
+	pal.setColorName(0, "foo");
 	ASSERT_TRUE(pal.save("photoshoptest.aco"));
-	EXPECT_TRUE(pal.load("photoshoptest.aco"));
-	EXPECT_EQ(pal.colorCount(), 5);
-	const uint64_t hash2 = pal.hash();
-	EXPECT_EQ(hash2, hash1);
+	palette::Palette pal2;
+	EXPECT_TRUE(pal2.load("photoshoptest.aco"));
+	paletteComparator(pal, pal2);
 }
 
 TEST_F(PaletteTest, testASEPalette) {
