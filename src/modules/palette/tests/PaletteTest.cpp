@@ -149,7 +149,15 @@ TEST_F(PaletteTest, testPhotoshopPalette) {
 }
 
 TEST_F(PaletteTest, testASEPalette) {
-	testSaveLoad("test.ase", ValidateFlags::SkipName);
+	const char* filename = "test.ase";
+	Palette pal;
+	pal.nippon();
+	pal.setColorName(0, "TestASE1");
+	pal.setColorName(1, "TestASE2");
+	ASSERT_TRUE(pal.save(filename));
+	Palette pal2;
+	EXPECT_TRUE(pal2.load(filename));
+	paletteComparator(pal, pal2);
 }
 
 TEST_F(PaletteTest, testVPLPalette) {

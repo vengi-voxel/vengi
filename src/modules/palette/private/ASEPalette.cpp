@@ -8,6 +8,8 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/UTF8.h"
+#include "core/collection/Buffer.h"
 #include "palette/Palette.h"
 
 namespace palette {
@@ -140,6 +142,18 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			palette.setColorName(colorCount, name);
 			++colorCount;
 			continue;
+		} else if (blockType == priv::GROUP_START) {
+			const int64_t pos = stream.pos();
+			uint16_t nameLength;
+			if (stream.readUInt16BE(nameLength) != -1 && nameLength > 0) {
+				core::String name;
+				stream.readUTF16BE(nameLength, name);
+				if (palette.name().empty()) {
+					palette.setName(name);
+				}
+			}
+			stream.seek(pos + blockLength);
+			continue;
 		}
 		// only extract the colors
 		stream.skip(blockLength);
@@ -149,25 +163,77 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return colorCount > 0;
 }
 
-bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &filename,
+					  io::SeekableWriteStream &stream) {
 	stream.writeUInt32(FourCC('A', 'S', 'E', 'F'));
-	stream.writeUInt16BE(1);						// versionMajor
-	stream.writeUInt16BE(0);						// versionMinor
-	stream.writeUInt32BE((uint16_t)palette.size()); // blocks
-	// TODO: write group with palette name
+	stream.writeUInt16BE(1); // versionMajor
+	stream.writeUInt16BE(0); // versionMinor
+
+	// Calculate number of blocks
+	uint32_t blocks = (uint32_t)palette.size();
+	const bool hasGroup = !palette.name().empty();
+	if (hasGroup) {
+		blocks += 2; // GROUP_START and GROUP_END
+	}
+	stream.writeUInt32BE(blocks);
+
+	if (hasGroup) {
+		// Write GROUP_START
+		core::Buffer<uint16_t> utf16Name;
+		utf16Name.resize(palette.name().size() * 2 + 2);
+		const int nameLen =
+			core::utf8::toUtf16(palette.name().c_str(), palette.name().size(), utf16Name.data(), utf16Name.size());
+		// Name length includes null terminator
+		const uint16_t aseNameLen = nameLen + 1;
+
+		const uint32_t blockLen = 2 + (aseNameLen * 2); // NameLen + Name
+
+		stream.writeUInt16BE(priv::GROUP_START);
+		stream.writeUInt32BE(blockLen);
+		stream.writeUInt16BE(aseNameLen);
+		for (int i = 0; i < nameLen; ++i) {
+			stream.writeUInt16BE(utf16Name[i]);
+		}
+		stream.writeUInt16BE(0); // Null terminator
+	}
+
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const color::RGBA &color = palette.color(i);
+		const core::String &name = palette.colorName(i);
+
+		core::Buffer<uint16_t> utf16Name;
+		utf16Name.resize(name.size() * 2 + 2);
+		const int nameLen = core::utf8::toUtf16(name.c_str(), name.size(), utf16Name.data(), utf16Name.size());
+		const uint16_t aseNameLen = nameLen + 1;
+
 		const glm::vec4 scaled = color::fromRGBA(color);
-		stream.writeUInt16BE(priv::COLOR_START);		// blocktype
-		stream.writeUInt32BE(18);						// blocksize
-		stream.writeUInt16BE(0);						// namelength
+
+		// Block Length: NameLen(2) + Name(aseNameLen*2) + Mode(4) + Values(12) + Type(2)
+		const uint32_t blockLen = 2 + (aseNameLen * 2) + 4 + 12 + 2;
+
+		stream.writeUInt16BE(priv::COLOR_START); // blocktype
+		stream.writeUInt32BE(blockLen);			 // blocksize
+		stream.writeUInt16BE(aseNameLen);		 // namelength
+		for (int j = 0; j < nameLen; ++j) {
+			stream.writeUInt16BE(utf16Name[j]);
+		}
+		stream.writeUInt16BE(0); // Null terminator
+
 		stream.writeUInt32(FourCC('R', 'G', 'B', ' ')); // colormode
 		stream.writeFloatBE(scaled.r);
 		stream.writeFloatBE(scaled.g);
 		stream.writeFloatBE(scaled.b);
-		stream.writeInt16BE(0); // colorType
+		stream.writeInt16BE(0); // colorType (Global)
 	}
+
+	if (hasGroup) {
+		// Write GROUP_END
+		// Block Length: 0
+		stream.writeUInt16BE(priv::GROUP_END);
+		stream.writeUInt32BE(0);
+	}
+
 	return true;
 }
 
-} // namespace voxel
+} // namespace palette
