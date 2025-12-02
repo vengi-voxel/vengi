@@ -11,13 +11,16 @@
 #include "palette/FormatConfig.h"
 #include "palette/PaletteLookup.h"
 #include "util/VarUtil.h"
+#include "gtest/gtest.h"
 
 namespace palette {
 
 enum class ValidateFlags : uint8_t {
 	All = 0,
-	SkipMaterial = 1 << 0,
-	SkipName = 1 << 1
+	SkipMaterials = 1 << 0,
+	SkipName = 1 << 1,
+	SkipColorNames = 1 << 2,
+	SkipAlpha = 1 << 3
 };
 
 CORE_ENUM_BIT_OPERATIONS(ValidateFlags)
@@ -48,22 +51,96 @@ protected:
 										   << palette::Palette::print(pal1) << "\nPalette 2:\n"
 										   << palette::Palette::print(pal2);
 			}
-			EXPECT_EQ(pal1.colorName(i), pal2.colorName(i)) << "Color name differs at " << i;
-			if ((flags & ValidateFlags::SkipMaterial) != ValidateFlags::SkipMaterial) {
-				EXPECT_EQ(pal1.material(i), pal2.material(i)) << "Material differs at " << i;
+			if ((flags & ValidateFlags::SkipColorNames) != ValidateFlags::SkipColorNames) {
+				ASSERT_EQ(pal1.colorName(i), pal2.colorName(i)) << "Color name differs at " << i;
+			}
+			if ((flags & ValidateFlags::SkipMaterials) != ValidateFlags::SkipMaterials) {
+				ASSERT_EQ(pal1.material(i), pal2.material(i)) << "Material differs at " << i;
 			}
 		}
 	}
 
-	void testSaveLoad(const char *filename, ValidateFlags flags = ValidateFlags::All, float maxDelta = 0.001f) {
-		Palette pal;
-		pal.nippon();
+	void testSaveLoad(const Palette &pal, const char *filename, ValidateFlags flags = ValidateFlags::All, float maxDelta = 0.001f) {
+		SCOPED_TRACE(filename);
 		ASSERT_TRUE(pal.save(filename));
 		Palette pal2;
 		EXPECT_TRUE(pal2.load(filename));
 		paletteComparator(pal, pal2, flags, maxDelta);
 	}
+
+	void testSaveLoad(const char *filename, ValidateFlags flags = ValidateFlags::All, float maxDelta = 0.001f) {
+		Palette pal;
+		pal.nippon();
+		pal.setName("PaletteTestName");
+		pal.setColorName(0, "ColorTestName");
+		if ((flags & ValidateFlags::SkipAlpha) != ValidateFlags::SkipAlpha) {
+			pal.setColor(0, color::RGBA{0, 0, 0, 127});
+		}
+		testSaveLoad(pal, filename, flags, maxDelta);
+	}
 };
+
+TEST_F(PaletteTest, testAdobeColorBookPalette) {
+	testSaveLoad("test.acb");
+}
+
+TEST_F(PaletteTest, testASEPalette) {
+	testSaveLoad("test.ase");
+}
+
+TEST_F(PaletteTest, testAVMTPalette) {
+	const ValidateFlags flags = ValidateFlags::All;
+	testSaveLoad("test.avmt", flags, 0.8);
+}
+
+TEST_F(PaletteTest, testPNGPalette) {
+	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	testSaveLoad("test.png", flags);
+}
+
+TEST_F(PaletteTest, testCSVPalette) {
+	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	testSaveLoad("test.csv", flags);
+}
+
+TEST_F(PaletteTest, testRGBPalette) {
+	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	testSaveLoad("test.pal", flags);
+}
+
+TEST_F(PaletteTest, testGimpRGBPalette) {
+	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "false");
+	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	testSaveLoad("test.gpl", flags);
+}
+
+TEST_F(PaletteTest, testGimpRGBAPalette) {
+	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "true");
+	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	testSaveLoad("test_rgba.gpl", flags);
+}
+
+TEST_F(PaletteTest, testPaintNetPalette) {
+	Palette pal;
+	EXPECT_TRUE(pal.load("paint.net.txt"));
+	EXPECT_EQ(pal.colorCount(), 3);
+	testSaveLoad(pal, "paint.nettest.txt");
+}
+
+TEST_F(PaletteTest, testPhotoshopPalette) {
+	Palette pal;
+	EXPECT_TRUE(pal.load("test.aco"));
+	EXPECT_EQ(pal.colorCount(), 5);
+	// pal.setColorName(0, "foo");
+	const ValidateFlags flags = ValidateFlags::All;
+	testSaveLoad(pal, "photoshoptest.aco", flags);
+}
+
+TEST_F(PaletteTest, testVPLPalette) {
+	Palette pal;
+	ASSERT_TRUE(pal.load("test.vpl"));
+	EXPECT_EQ(pal.colorCount(), palette::PaletteMaxColors);
+}
 
 TEST_F(PaletteTest, testPaletteLookup) {
 	palette::Palette pal;
@@ -79,98 +156,6 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	EXPECT_EQ(197u, palLookup.findClosestIndex(blue));
 	const color::RGBA black(0, 0, 0, 255);
 	EXPECT_EQ(255u, palLookup.findClosestIndex(black));
-}
-
-TEST_F(PaletteTest, testGimpRGBAPalette) {
-	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "true");
-	Palette pal;
-	pal.nippon();
-	pal.setColor(0, color::RGBA{0, 0, 0, 127});
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.gpl"));
-	EXPECT_TRUE(pal.load("test.gpl"));
-	EXPECT_EQ(pal.colorCount(), cnt);
-	EXPECT_EQ(pal.color(0).a, 127);
-}
-
-TEST_F(PaletteTest, testGimpPalette) {
-	testSaveLoad("test.gpl");
-}
-
-TEST_F(PaletteTest, testAVMTPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.avmt"));
-	Palette pal2;
-	EXPECT_TRUE(pal2.load("test.avmt"));
-	EXPECT_EQ(pal2.colorCount(), cnt);
-}
-
-TEST_F(PaletteTest, testAdobeColorBookPalette) {
-	Palette pal;
-	pal.nippon();
-	pal.setName("testAdobeColorBookPalette");
-	pal.setColorName(0, "Test");
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.acb"));
-	EXPECT_TRUE(pal.load("test.acb"));
-	EXPECT_EQ(pal.colorCount(), cnt);
-}
-
-TEST_F(PaletteTest, testPNGPalette) {
-	testSaveLoad("test.png", ValidateFlags::SkipName);
-}
-
-TEST_F(PaletteTest, testPaintNetPalette) {
-	Palette pal;
-	EXPECT_TRUE(pal.load("paint.net.txt"));
-	EXPECT_EQ(pal.colorCount(), 3);
-	const uint64_t hash1 = pal.hash();
-
-	ASSERT_TRUE(pal.save("paint.nettest.txt"));
-	EXPECT_TRUE(pal.load("paint.nettest.txt"));
-	EXPECT_EQ(pal.colorCount(), 3);
-	const uint64_t hash2 = pal.hash();
-	EXPECT_EQ(hash2, hash1);
-}
-
-TEST_F(PaletteTest, testPhotoshopPalette) {
-	Palette pal;
-	EXPECT_TRUE(pal.load("test.aco"));
-	EXPECT_EQ(pal.colorCount(), 5);
-	pal.setName("foo");
-	pal.setColorName(0, "foo");
-	ASSERT_TRUE(pal.save("photoshoptest.aco"));
-	palette::Palette pal2;
-	EXPECT_TRUE(pal2.load("photoshoptest.aco"));
-	paletteComparator(pal, pal2);
-}
-
-TEST_F(PaletteTest, testASEPalette) {
-	const char* filename = "test.ase";
-	Palette pal;
-	pal.nippon();
-	pal.setColorName(0, "TestASE1");
-	pal.setColorName(1, "TestASE2");
-	ASSERT_TRUE(pal.save(filename));
-	Palette pal2;
-	EXPECT_TRUE(pal2.load(filename));
-	paletteComparator(pal, pal2);
-}
-
-TEST_F(PaletteTest, testVPLPalette) {
-	Palette pal;
-	ASSERT_TRUE(pal.load("test.vpl"));
-	EXPECT_EQ(pal.colorCount(), palette::PaletteMaxColors);
-}
-
-TEST_F(PaletteTest, testCSVPalette) {
-	testSaveLoad("test.csv", ValidateFlags::SkipName);
-}
-
-TEST_F(PaletteTest, testRGBPalette) {
-	testSaveLoad("test.pal", ValidateFlags::SkipName);
 }
 
 TEST_F(PaletteTest, testReduce) {

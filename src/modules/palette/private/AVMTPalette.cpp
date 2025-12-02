@@ -22,6 +22,7 @@ bool AVMTPalette::load(const core::String &filename, io::SeekableReadStream &str
 		return false;
 	}
 
+	palette.setName(paletteName);
 	palette.reserve(materials.size());
 	for (const auto &e : materials) {
 		palette.add(e.rgba, e.name, e.mat);
