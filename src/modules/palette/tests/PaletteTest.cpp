@@ -90,7 +90,7 @@ TEST_F(PaletteTest, testASEPalette) {
 
 TEST_F(PaletteTest, testAVMTPalette) {
 	const ValidateFlags flags = ValidateFlags::SkipMaterials;
-	testSaveLoad("test.avmt", flags, 0.8);
+	testSaveLoad("test.avmt", flags);
 }
 
 TEST_F(PaletteTest, testPNGPalette) {
