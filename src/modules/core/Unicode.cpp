@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "UTF8.h"
+#include "Unicode.h"
 #include "core/StandardLib.h"
 
 namespace core {

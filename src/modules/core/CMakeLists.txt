@@ -72,7 +72,7 @@ set(SRCS
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
 	Tuple.h
-	UTF8.cpp UTF8.h
+	Unicode.cpp Unicode.h
 	UUID.cpp UUID.h
 	Var.cpp Var.h
 )

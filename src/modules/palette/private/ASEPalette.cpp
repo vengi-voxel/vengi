@@ -7,7 +7,7 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/UTF8.h"
+#include "core/Unicode.h"
 #include "core/collection/Buffer.h"
 
 namespace palette {

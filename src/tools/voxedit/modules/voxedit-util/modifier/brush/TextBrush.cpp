@@ -6,7 +6,7 @@
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "core/UTF8.h"
+#include "core/Unicode.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include <glm/vector_relational.hpp>

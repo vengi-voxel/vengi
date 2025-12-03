@@ -3,7 +3,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "TextEditor.h"
 #include "core/Common.h"
-#include "core/UTF8.h"
+#include "core/Unicode.h"
 #include <glm/common.hpp>
 
 const core::Map<char, char> TextEditor::OPEN_TO_CLOSE_CHAR {{

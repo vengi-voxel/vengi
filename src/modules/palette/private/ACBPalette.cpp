@@ -3,12 +3,10 @@
  */
 
 #include "ACBPalette.h"
-#include "color/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"
-#include "core/UTF8.h"
-#include "core/collection/Buffer.h"
+#include "core/Unicode.h"
 #include "palette/private/AdobeColorSpace.h"
 #include <glm/common.hpp>
 

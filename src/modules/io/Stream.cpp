@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/Assert.h"
-#include "core/UTF8.h"
+#include "core/Unicode.h"
 #include "core/UUID.h"
 #include "core/collection/Buffer.h"
 #include "core/Endian.h"

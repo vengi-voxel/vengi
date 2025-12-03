@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/UTF8.h"
+#include "core/Unicode.h"
 #include "io/Filesystem.h"
 #include "voxel/RawVolumeWrapper.h"
 

@@ -8,7 +8,7 @@
 #include "commonlua/LUAFunctions.h"
 #include "color/Color.h"
 #include "core/StringUtil.h"
-#include "core/UTF8.h"
+#include "core/Unicode.h"
 #include "image/Image.h"
 #include "io/FilesystemArchive.h"
 #include "io/Stream.h"
