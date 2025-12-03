@@ -69,8 +69,10 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 		if (sel.containsRegion(s)) {
 			_selections.erase(i);
 		} else if (voxel::intersects(sel, s)) {
-			// TODO: SELECTION: slice
-			++i;
+			const Selections newRegions = voxel::Region::subtract(s, sel);
+			_selections.erase(i);
+			_selections.insert(_selections.begin() + i, newRegions.begin(), newRegions.end());
+			i += newRegions.size();
 		} else {
 			++i;
 		}
