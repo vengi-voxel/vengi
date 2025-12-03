@@ -105,11 +105,6 @@ public:
 
 	void shutdown() override;
 
-	// TODO: SELECTION: move into SelectionManager? or keep it here?
-	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
-	void unselect(voxel::RawVolume &volume);
-	void invert(voxel::RawVolume &volume);
-
 	const SelectionManagerPtr &selectionMgr() const;
 
 	ModifierType modifierType() const;

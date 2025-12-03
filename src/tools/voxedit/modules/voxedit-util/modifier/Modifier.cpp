@@ -192,22 +192,6 @@ void Modifier::executeAdditionalAction() {
 	}
 }
 
-void Modifier::invert(voxel::RawVolume &volume) {
-	_selectionManager->invert(volume);
-}
-
-void Modifier::unselect(voxel::RawVolume &volume) {
-	_selectionManager->unselect(volume);
-}
-
-bool Modifier::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
-	if (_locked) {
-		return false;
-	}
-	_selectionManager->select(volume, mins, maxs);
-	return true;
-}
-
 void Modifier::setReferencePosition(const glm::ivec3 &pos) {
 	_brushContext.referencePos = pos;
 }

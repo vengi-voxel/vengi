@@ -1838,11 +1838,11 @@ void SceneManager::construct() {
 		}
 		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
 			if (args[0] == "none") {
-				_modifierFacade.unselect(*node->volume());
+				_selectionManager->unselect(*node->volume());
 			} else if (args[0] == "all") {
-				_modifierFacade.select(*node->volume(), node->region().getLowerCorner(), node->region().getUpperCorner());
+				_selectionManager->select(*node->volume(), node->region().getLowerCorner(), node->region().getUpperCorner());
 			} else if (args[0] == "invert") {
-				_modifierFacade.invert(*node->volume());
+				_selectionManager->invert(*node->volume());
 			}
 		}
 	}).setHelp(_("Select all nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
