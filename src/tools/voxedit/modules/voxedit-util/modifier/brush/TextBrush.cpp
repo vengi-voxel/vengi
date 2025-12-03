@@ -30,7 +30,7 @@ voxel::Region TextBrush::calcRegion(const BrushContext &ctx) const {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return voxel::Region::InvalidRegion;
 	}
-	const int l = core::utf8::length(_input.c_str());
+	const int l = core::unicode::length(_input.c_str());
 	int dimX = 0;
 	int dimY = 0;
 	_voxelFont.dimensions(_input.c_str(), _size, dimX, dimY);
@@ -57,7 +57,7 @@ void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 	glm::ivec3 pos = region.getLowerCorner();
 	const int widthIndex = math::getIndexForAxis(_axis);
 
-	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
+	for (int c = core::unicode::next(s); c != -1; c = core::unicode::next(s)) {
 		pos[widthIndex] += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, ctx.cursorVoxel, _axis);
 		pos[widthIndex] += _spacing;
 	}

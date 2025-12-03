@@ -78,7 +78,7 @@ void VoxelFont::dimensions(const char *string, uint8_t size, int &w, int &h) con
 	int ix0, iy0, ix1, iy1;
 	w = 0;
 	h = 0;
-	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
+	for (int c = core::unicode::next(s); c != -1; c = core::unicode::next(s)) {
 		stbtt_GetCodepointBitmapBox(_font, c, scale, scale, &ix0, &iy0, &ix1, &iy1);
 		w += (ix1 - ix0);
 		h = core_max(h, iy1 - iy0);

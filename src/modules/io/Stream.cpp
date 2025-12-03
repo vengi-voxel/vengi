@@ -135,7 +135,7 @@ bool WriteStream::writeUTF16BE(const core::String &str) {
 	}
 	core::Buffer<uint16_t> utf16str;
 	utf16str.resize(str.size());
-	const int utf16Len = core::utf8::toUtf16(str.c_str(), str.size(), utf16str.data(), utf16str.size());
+	const int utf16Len = core::unicode::toUtf16(str.c_str(), str.size(), utf16str.data(), utf16str.size());
 	reserve(utf16Len * sizeof(uint16_t));
 	for (int i = 0; i < utf16Len; ++i) {
 		if (!writeUInt16BE(utf16str[i])) {
@@ -476,7 +476,7 @@ bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
 
 	core::Buffer<uint8_t> utf8str;
 	utf8str.resize((size_t)characters * 4);
-	const int len = core::utf8::toUtf8(utf16str.data(), characters, (char *)utf8str.data(), utf8str.size());
+	const int len = core::unicode::toUtf8(utf16str.data(), characters, (char *)utf8str.data(), utf8str.size());
 	if (len == -1) {
 		return false;
 	}

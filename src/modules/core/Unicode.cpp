@@ -6,7 +6,7 @@
 #include "core/StandardLib.h"
 
 namespace core {
-namespace utf8 {
+namespace unicode {
 
 int toUtf8(const uint16_t *wchars, size_t wcharSize, char *buf, size_t bufSize) {
 	if (wcharSize == 0) {

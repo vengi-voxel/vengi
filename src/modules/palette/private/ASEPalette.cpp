@@ -180,7 +180,7 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 		core::Buffer<uint16_t> utf16Name;
 		utf16Name.resize(palette.name().size() * 2 + 2);
 		const int nameLen =
-			core::utf8::toUtf16(palette.name().c_str(), palette.name().size(), utf16Name.data(), utf16Name.size());
+			core::unicode::toUtf16(palette.name().c_str(), palette.name().size(), utf16Name.data(), utf16Name.size());
 		// Name length includes null terminator
 		const uint16_t aseNameLen = nameLen + 1;
 
@@ -201,7 +201,7 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 
 		core::Buffer<uint16_t> utf16Name;
 		utf16Name.resize(name.size() * 2 + 2);
-		const int nameLen = core::utf8::toUtf16(name.c_str(), name.size(), utf16Name.data(), utf16Name.size());
+		const int nameLen = core::unicode::toUtf16(name.c_str(), name.size(), utf16Name.data(), utf16Name.size());
 		const uint16_t aseNameLen = nameLen + 1;
 
 		const glm::vec4 scaled = color::fromRGBA(color);

@@ -451,7 +451,7 @@ static int luaVoxel_volumewrapper_text(lua_State *s) {
 	const char **str = &text;
 	glm::ivec3 pos(x, y, z);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
-	for (int c = core::utf8::next(str); c != -1; c = core::utf8::next(str)) {
+	for (int c = core::unicode::next(str); c != -1; c = core::unicode::next(str)) {
 		pos.x += font.renderCharacter(c, size, thickness, pos, *volume, voxel);
 		pos.x += spacing;
 	}
