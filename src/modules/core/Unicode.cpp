@@ -262,11 +262,20 @@ int toUtf16(const char *utf8, size_t utf8Size, uint16_t *utf16, size_t utf16Size
 			if (utf8Pos + 3 >= utf8Size) {
 				return -1;
 			}
-			if (utf16Pos + 1 >= utf16Size) {
-				return -1;
+			uint32_t cp = ((utf8[utf8Pos] & 0x07) << 18) | ((utf8[utf8Pos + 1] & 0x3f) << 12) | ((utf8[utf8Pos + 2] & 0x3f) << 6) | (utf8[utf8Pos + 3] & 0x3f);
+			if (cp > 0xFFFF) {
+				if (utf16Pos + 2 >= utf16Size) {
+					return -1;
+				}
+				cp -= 0x10000;
+				utf16[utf16Pos++] = (uint16_t)(0xD800 + (cp >> 10));
+				utf16[utf16Pos++] = (uint16_t)(0xDC00 + (cp & 0x3FF));
+			} else {
+				if (utf16Pos + 1 >= utf16Size) {
+					return -1;
+				}
+				utf16[utf16Pos++] = (uint16_t)cp;
 			}
-			utf16[utf16Pos++] = ((utf8[utf8Pos] & 0x07) << 18) | ((utf8[utf8Pos + 1] & 0x3f) << 12) | ((utf8[utf8Pos + 2] & 0x3f) <<
-				6) | (utf8[utf8Pos + 3] & 0x3f);
 			utf8Pos += 4;
 		} else {
 			return -1;

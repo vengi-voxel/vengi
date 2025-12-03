@@ -152,6 +152,7 @@ set(TEST_SRCS
 	tests/ThreadPoolTest.cpp
 	tests/TokenizerTest.cpp
 	tests/TupleTest.cpp
+	tests/UnicodeTest.cpp
 	tests/UUIDTest.cpp
 	tests/VarTest.cpp
 	tests/VectorTest.cpp
