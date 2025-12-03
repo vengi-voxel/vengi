@@ -29,6 +29,8 @@ extern int toUtf8(const uint16_t *wchars, size_t wcharSize, char *buf, size_t bu
 
 extern size_t length(const char* str);
 
+extern size_t lengthUTF16(const char* str);
+
 extern size_t lengthChar(uint8_t c);
 
 extern size_t lengthInt(int c);

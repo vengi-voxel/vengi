@@ -7,6 +7,8 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "core/UTF8.h"
+#include "core/collection/Buffer.h"
 #include "palette/private/AdobeColorSpace.h"
 #include <glm/common.hpp>
 
@@ -22,8 +24,11 @@ bool ACBPalette::save(const palette::ColorPalette &palette, const core::String &
 	wrapBool(stream.writeUInt32(FourCC('8', 'B', 'C', 'B')))
 	wrapBool(stream.writeUInt16BE(1)) // version
 	wrapBool(stream.writeUInt16BE(0)) // bookid
-	wrapBool(stream.writeUInt32BE(palette.name().size()))
+
+	const size_t nameLen = core::utf8::lengthUTF16(palette.name().c_str());
+	wrapBool(stream.writeUInt32BE(nameLen))
 	wrapBool(stream.writeUTF16BE(palette.name()))
+
 	wrapBool(stream.writeUInt32BE(0)) // prefix
 	wrapBool(stream.writeUInt32BE(0)) // suffix
 	wrapBool(stream.writeUInt32BE(0)) // description
@@ -34,8 +39,10 @@ bool ACBPalette::save(const palette::ColorPalette &palette, const core::String &
 	wrapBool(stream.writeUInt16BE((uint16_t)adobe::ColorSpace::RGB))
 	for (int i = 0; i < colorCount; ++i) {
 		const core::String &name = palette.colorName(i);
-		wrapBool(stream.writeUInt32BE(name.size()))
+		const size_t colorNameLen = core::utf8::lengthUTF16(name.c_str());
+		wrapBool(stream.writeUInt32BE(colorNameLen))
 		wrapBool(stream.writeUTF16BE(name))
+
 		uint8_t code[6] = {0};
 		if (stream.write(code, 6) != 6) {
 			Log::error("Failed to write to stream");

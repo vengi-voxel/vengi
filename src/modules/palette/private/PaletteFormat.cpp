@@ -31,7 +31,7 @@ palette::Palette toPalette(const palette::ColorPalette &colorPalette) {
 	palette::Palette palette;
 	palette.setName(colorPalette.name());
 	palette.setFilename(colorPalette.filename());
-	if (colorPalette.size() < PaletteMaxColors) {
+	if (colorPalette.size() <= PaletteMaxColors) {
 		palette.setSize(colorPalette.size());
 		for (size_t i = 0; i < colorPalette.size(); ++i) {
 			palette.setColor(i, colorPalette.color(i));

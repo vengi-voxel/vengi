@@ -53,17 +53,17 @@ bool AVMTPalette::save(const palette::ColorPalette &palette, const core::String 
 		const color::RGBA &color = palette.color(i);
 		const glm::vec4 c = color::fromRGBA(color);
 		stream.writeString("\t\t\t\t{\n", false);
-		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.6f\n", c.r);
-		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.6f\n", c.g);
-		stream.writeStringFormat(false, "\t\t\t\t\tb =\t%0.6f\n", c.b);
+		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.9f\n", c.r);
+		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.9f\n", c.g);
+		stream.writeStringFormat(false, "\t\t\t\t\tb =\t%0.9f\n", c.b);
 		const Material &mat = palette.material(i);
-		stream.writeStringFormat(false, "\t\t\t\t\tmetallic =\t%f\n", mat.metal);
-		stream.writeStringFormat(false, "\t\t\t\t\tsmooth =\t%f\n", 1.0f - mat.roughness);
-		stream.writeStringFormat(false, "\t\t\t\t\temissive =\t%f\n", mat.emit);
+		stream.writeStringFormat(false, "\t\t\t\t\tmetallic =\t%0.9f\n", mat.metal);
+		stream.writeStringFormat(false, "\t\t\t\t\tsmooth =\t%0.9f\n", 1.0f - mat.roughness);
+		stream.writeStringFormat(false, "\t\t\t\t\temissive =\t%0.9f\n", mat.emit);
 		stream.writeString("\t\t\t\t\tmaterialTransparency =\t{\n", false);
 		if (mat.type == palette::MaterialType::Glass || mat.type == palette::MaterialType::Blend) {
 			// TODO: MATERIAL: not really the alpha value...
-			stream.writeStringFormat(false, "\t\t\t\t\t\tsurfaceTransmission =\t%f\n", c.a);
+			stream.writeStringFormat(false, "\t\t\t\t\t\tsurfaceTransmission =\t%0.9f\n", c.a);
 		} else if (mat.type == palette::MaterialType::Media) {
 			stream.writeString("\t\t\t\t\t\tsurfaceTransmission =\t1.0\n", false);
 		} else {
@@ -71,9 +71,9 @@ bool AVMTPalette::save(const palette::ColorPalette &palette, const core::String 
 		}
 		// stream.writeStringFormat(false, "\t\t\t\t\t\tabsorptionLength =\t%f\n", mat.absorptionLength);
 		// stream.writeStringFormat(false, "\t\t\t\t\t\tscatterLength =\t%f\n", mat.scatterLength);
-		stream.writeStringFormat(false, "\t\t\t\t\t\tindexOfRefraction =\t%f\n", 1.0f + mat.indexOfRefraction);
+		stream.writeStringFormat(false, "\t\t\t\t\t\tindexOfRefraction =\t%0.9f\n", 1.0f + mat.indexOfRefraction);
 		if (mat.media == 1.0f) {
-			stream.writeStringFormat(false, "\t\t\t\t\t\tphase =\t%f\n", mat.phase);
+			stream.writeStringFormat(false, "\t\t\t\t\t\tphase =\t%0.9f\n", mat.phase);
 		} else {
 			stream.writeString("\t\t\t\t\t\tphase =\t0.0\n", false);
 		}

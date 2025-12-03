@@ -19,6 +19,9 @@ bool parseMaterials(io::SeekableReadStream &stream, core::DynamicArray<AVMTMater
 		if (avmtStream.arrayDepth() == 1 && avmtStream.blockDepth() == 2) {
 			if (token == "Name") {
 				paletteName = avmtStream.nextStringValue();
+				if (paletteName.size() >= 2 && paletteName.first() == '"' && paletteName.last() == '"') {
+					paletteName = paletteName.substr(1, paletteName.size() - 2);
+				}
 			}
 		} else if (avmtStream.arrayDepth() == 2 && avmtStream.blockDepth() >= 3) {
 			if (token == "r") {
@@ -64,6 +67,9 @@ bool parseMaterials(io::SeekableReadStream &stream, core::DynamicArray<AVMTMater
 				currentMaterial.mat.setValue(MaterialProperty::MaterialEmit, v);
 			} else if (token == "name") {
 				currentMaterial.name = avmtStream.nextStringValue();
+				if (currentMaterial.name.size() >= 2 && currentMaterial.name.first() == '"' && currentMaterial.name.last() == '"') {
+					currentMaterial.name = currentMaterial.name.substr(1, currentMaterial.name.size() - 2);
+				}
 			} else if (token == "materialTransparency") {
 				// skip =
 				if (avmtStream.next() != "=") {

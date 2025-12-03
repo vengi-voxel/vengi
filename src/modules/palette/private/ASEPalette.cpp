@@ -4,13 +4,11 @@
 
 #include "ASEPalette.h"
 #include "color/CMYK.h"
-#include "color/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/UTF8.h"
 #include "core/collection/Buffer.h"
-#include "palette/Palette.h"
 
 namespace palette {
 

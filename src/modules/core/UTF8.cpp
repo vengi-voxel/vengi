@@ -148,8 +148,25 @@ size_t length(const char *str) {
 
 	while (str[0] != '\0') {
 		const size_t n = lengthChar((uint8_t)*str);
+		if (n == 0) {
+			return 0;
+		}
 		str += n;
 		result++;
+	}
+	return result;
+}
+
+size_t lengthUTF16(const char *str) {
+	size_t result = 0;
+
+	while (str[0] != '\0') {
+		const size_t n = lengthChar((uint8_t)*str);
+		if (n == 0) {
+			return 0;
+		}
+		str += n;
+		result += (n == 4 ? 2 : 1);
 	}
 	return result;
 }
