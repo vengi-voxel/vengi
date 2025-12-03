@@ -33,5 +33,9 @@ const network::ProtocolId PROTO_NODE_KEYFRAMES = 10;
 const network::ProtocolId PROTO_INIT_SESSION = 11;
 // allow to send commands to the server
 const network::ProtocolId PROTO_COMMAND = 12;
+// node normal palette was changed
+const network::ProtocolId PROTO_NODE_NORMAL_PALETTE_CHANGED = 13;
+// scene graph animation list changed
+const network::ProtocolId PROTO_SCENE_GRAPH_ANIMATION = 14;
 
 } // namespace voxedit

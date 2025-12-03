@@ -11,12 +11,14 @@
 #include "voxedit-util/network/handler/client/NodeKeyFramesHandler.h"
 #include "voxedit-util/network/handler/client/NodeMovedHandler.h"
 #include "voxedit-util/network/handler/client/NodePaletteChangedHandler.h"
+#include "voxedit-util/network/handler/client/NodeNormalPaletteChangedHandler.h"
 #include "voxedit-util/network/handler/client/NodePropertiesHandler.h"
 #include "voxedit-util/network/handler/client/NodeRemovedHandler.h"
 #include "voxedit-util/network/handler/client/NodeRenamedHandler.h"
 #include "voxedit-util/network/handler/client/SceneStateHandlerClient.h"
 #include "voxedit-util/network/handler/client/SceneStateRequestHandler.h"
 #include "voxedit-util/network/handler/client/VoxelModificationHandler.h"
+#include "voxedit-util/network/handler/client/SceneGraphAnimationHandler.h"
 #include <stdint.h>
 
 namespace network {
@@ -35,11 +37,13 @@ protected:
 	NodeKeyFramesHandler _nodeKeyFramesHandle;
 	NodeMovedHandler _nodeMovedHandler;
 	NodePaletteChangedHandler _nodePaletteChangedHandle;
+	NodeNormalPaletteChangedHandler _nodeNormalPaletteChangedHandle;
 	NodePropertiesHandler _nodePropertiesHandler;
 	NodeRemovedHandler _nodeRemovedHandler;
 	NodeRenamedHandler _nodeRenamedHandler;
 	SceneStateRequestHandler _sceneStateRequestHandler;
 	SceneStateHandlerClient _sceneStateHandler;
+	SceneGraphAnimationHandler _sceneGraphAnimationHandler;
 	network::MessageStream in;
 
 public:

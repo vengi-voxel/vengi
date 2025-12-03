@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "io/BufferedReadWriteStream.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -116,6 +117,54 @@ protected:
 				}
 			}
 		}
+		return true;
+	}
+
+	bool serializeNormalPalette(const palette::NormalPalette &palette) {
+		ScopedProtocolMessageSerialization s(this, "NormalPalette");
+		if (!writePascalStringUInt16LE(palette.name())) {
+			Log::error("Failed to write normal palette name");
+			return false;
+		}
+		if (!writeUInt16((uint16_t)palette.size())) {
+			Log::error("Failed to write normal palette size");
+			return false;
+		}
+		for (int i = 0; i < (int)palette.size(); ++i) {
+			const color::RGBA color = palette.normal(i);
+			if (!writeUInt32(color.rgba)) {
+				Log::error("Failed to write normal for palette index %d/%d", i, (int)palette.size());
+				return false;
+			}
+		}
+		return true;
+	}
+
+	static bool deserializeNormalPalette(MessageStream &in, palette::NormalPalette &palette) {
+		ScopedProtocolStreamDeserialization s(in, "NormalPalette");
+		core::String paletteName;
+		if (!in.readPascalStringUInt16LE(paletteName)) {
+			Log::error("Failed to read normal palette name");
+			return false;
+		}
+		palette.setName(paletteName);
+
+		uint16_t paletteSize = 0;
+		if (in.readUInt16(paletteSize) == -1) {
+			Log::error("Failed to read normal palette size");
+			return false;
+		}
+		core::Buffer<color::RGBA> normals;
+		normals.reserve(paletteSize);
+		for (uint16_t i = 0; i < paletteSize; ++i) {
+			color::RGBA color;
+			if (in.readUInt32(color.rgba) == -1) {
+				Log::error("Failed to read normal for palette index %d/%d", i, paletteSize);
+				return false;
+			}
+			normals.push_back(color);
+		}
+		palette.loadNormalMap(normals.data(), (int)paletteSize);
 		return true;
 	}
 

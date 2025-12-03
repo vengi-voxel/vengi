@@ -36,10 +36,12 @@ set(SRCS
 	network/protocol/NodeKeyFramesMessage.h
 	network/protocol/NodeMovedMessage.h
 	network/protocol/NodePaletteChangedMessage.h
+	network/protocol/NodeNormalPaletteChangedMessage.h
 	network/protocol/NodePropertiesMessage.h
 	network/protocol/NodeRemovedMessage.h
 	network/protocol/NodeRenamedMessage.h
 	network/protocol/PingMessage.h
+	network/protocol/SceneGraphAnimationMessage.h
 	network/protocol/SceneStateMessage.h
 	network/protocol/SceneStateRequestMessage.h
 	network/protocol/VoxelModificationMessage.h
@@ -49,11 +51,13 @@ set(SRCS
 	network/handler/client/NodeKeyFramesHandler.h network/handler/client/NodeKeyFramesHandler.cpp
 	network/handler/client/NodeMovedHandler.h network/handler/client/NodeMovedHandler.cpp
 	network/handler/client/NodePaletteChangedHandler.h network/handler/client/NodePaletteChangedHandler.cpp
+	network/handler/client/NodeNormalPaletteChangedHandler.h network/handler/client/NodeNormalPaletteChangedHandler.cpp
 	network/handler/client/NodePropertiesHandler.h network/handler/client/NodePropertiesHandler.cpp
 	network/handler/client/NodeRemovedHandler.h network/handler/client/NodeRemovedHandler.cpp
 	network/handler/client/NodeRenamedHandler.h network/handler/client/NodeRenamedHandler.cpp
 	network/handler/client/SceneStateRequestHandler.h network/handler/client/SceneStateRequestHandler.cpp
 	network/handler/client/SceneStateHandlerClient.h network/handler/client/SceneStateHandlerClient.cpp
+	network/handler/client/SceneGraphAnimationHandler.h network/handler/client/SceneGraphAnimationHandler.cpp
 
 	network/handler/server/CommandHandlerServer.h
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp

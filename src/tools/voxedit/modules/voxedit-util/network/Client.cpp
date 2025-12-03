@@ -15,6 +15,8 @@
 #include "protocol/SceneStateMessage.h"
 #include "protocol/VoxelModificationMessage.h"
 #include "voxedit-util/SceneManager.h"
+#include "protocol/NodeNormalPaletteChangedMessage.h"
+#include "protocol/SceneGraphAnimationMessage.h"
 
 namespace voxedit {
 
@@ -111,14 +113,16 @@ void Client::onMementoStateAdded(const memento::MementoState &state) {
 		_network.sendMessage(msg);
 		break;
 	}
-	case memento::MementoType::SceneNodeNormalPaletteChanged:
-		// TODO: NETWORK: add protocol message for this - see SceneNodePaletteChanged - just for the normal palette
-		Log::warn("Unhandled memento state type SceneNodeNormalPaletteChanged");
+	case memento::MementoType::SceneNodeNormalPaletteChanged: {
+		NodeNormalPaletteChangedMessage msg(state);
+		_network.sendMessage(msg);
 		break;
-	case memento::MementoType::SceneGraphAnimation:
-		// TODO: NETWORK: add protocol message for this - this is basically a list of animation names from the scene graph
-		Log::warn("Unhandled memento state type SceneGraphAnimation");
+	}
+	case memento::MementoType::SceneGraphAnimation: {
+		SceneGraphAnimationMessage msg(state);
+		_network.sendMessage(msg);
 		break;
+	}
 	case memento::MementoType::Max:
 		break;
 	}

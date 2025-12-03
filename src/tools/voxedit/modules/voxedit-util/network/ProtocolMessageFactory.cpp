@@ -11,6 +11,8 @@
 #include "protocol/NodePropertiesMessage.h"
 #include "protocol/NodeRemovedMessage.h"
 #include "protocol/NodeRenamedMessage.h"
+#include "protocol/NodeNormalPaletteChangedMessage.h"
+#include "protocol/SceneGraphAnimationMessage.h"
 #include "protocol/PingMessage.h"
 #include "protocol/SceneStateMessage.h"
 #include "protocol/SceneStateRequestMessage.h"
@@ -93,6 +95,12 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 		break;
 	case PROTO_NODE_KEYFRAMES:
 		msg = new NodeKeyFramesMessage(in);
+		break;
+	case PROTO_NODE_NORMAL_PALETTE_CHANGED:
+		msg = new NodeNormalPaletteChangedMessage(in);
+		break;
+	case PROTO_SCENE_GRAPH_ANIMATION:
+		msg = new SceneGraphAnimationMessage(in);
 		break;
 	default:
 		Log::error("Unknown protocol message type: %u with size %u", type, size);
