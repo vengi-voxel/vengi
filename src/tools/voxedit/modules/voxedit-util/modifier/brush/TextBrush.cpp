@@ -30,7 +30,7 @@ voxel::Region TextBrush::calcRegion(const BrushContext &ctx) const {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return voxel::Region::InvalidRegion;
 	}
-	const int l = core::unicode::length(_input.c_str());
+	const int l = core::unicode::charLengthUtf8(_input.c_str());
 	int dimX = 0;
 	int dimY = 0;
 	_voxelFont.dimensions(_input.c_str(), _size, dimX, dimY);

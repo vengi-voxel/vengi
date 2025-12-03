@@ -110,7 +110,7 @@ void TextEditor::Advance(Coordinates &aCoordinates) const {
 		auto cindex = GetCharacterIndex(aCoordinates);
 
 		if (cindex + 1 < (int)line.size()) {
-			const size_t delta = core::unicode::lengthInt(line[cindex].mChar);
+			const size_t delta = core::unicode::byteLengthInt(line[cindex].mChar);
 			cindex = core_min(cindex + (int)delta, (int)line.size() - 1);
 		} else {
 			++aCoordinates.mLine;
@@ -183,7 +183,7 @@ int TextEditor::InsertTextAt(Coordinates & /* inout */ aWhere, const char *aValu
 			++aValue;
 		} else {
 			auto &line = _lines[aWhere.mLine];
-			auto d = core::unicode::lengthInt((int)*aValue);
+			auto d = core::unicode::byteLengthInt((int)*aValue);
 			while (d-- > 0 && *aValue != '\0')
 				line.insert(line.begin() + cindex++, Glyph(*aValue++, PaletteIndex::Default));
 			++aWhere.mColumn;
@@ -240,7 +240,7 @@ TextEditor::Coordinates TextEditor::ScreenPosToCoordinates(const ImVec2 &aPositi
 				columnIndex++;
 			} else {
 				char buf[7];
-				auto d = core::unicode::lengthInt((int)line[columnIndex].mChar);
+				auto d = core::unicode::byteLengthInt((int)line[columnIndex].mChar);
 				int i = 0;
 				while (i < 6 && d-- > 0)
 					buf[i++] = line[columnIndex++].mChar;
@@ -308,7 +308,7 @@ TextEditor::Coordinates TextEditor::FindWordEnd(const Coordinates &aFrom) const 
 	PaletteIndex cstart = (PaletteIndex)line[cindex].mColorIndex;
 	while (cindex < (int)line.size()) {
 		Char c = line[cindex].mChar;
-		size_t d = core::unicode::lengthInt((int)c);
+		size_t d = core::unicode::byteLengthInt((int)c);
 		if (cstart != (PaletteIndex)line[cindex].mColorIndex)
 			break;
 
@@ -380,7 +380,7 @@ int TextEditor::GetCharacterIndex(const Coordinates &aCoordinates) const {
 		} else {
 			++c;
 		}
-		i += core::unicode::lengthInt((int)line[i].mChar);
+		i += core::unicode::byteLengthInt((int)line[i].mChar);
 	}
 	return i;
 }
@@ -394,7 +394,7 @@ int TextEditor::GetCharacterColumn(int aLine, int aIndex) const {
 	int i = 0;
 	while (i < aIndex && i < (int)line.size()) {
 		Char c = line[i].mChar;
-		i += core::unicode::lengthInt((int)c);
+		i += core::unicode::byteLengthInt((int)c);
 		if (c == '\t') {
 			col = (col / _tabSize) * _tabSize + _tabSize;
 		} else {
@@ -411,7 +411,7 @@ int TextEditor::GetLineCharacterCount(int aLine) const {
 	auto &line = _lines[aLine];
 	int c = 0;
 	for (size_t i = 0; i < line.size(); ++c) {
-		i += core::unicode::lengthInt((int)line[i].mChar);
+		i += core::unicode::byteLengthInt((int)line[i].mChar);
 	}
 	return c;
 }
@@ -429,7 +429,7 @@ int TextEditor::GetLineMaxColumn(int aLine) const {
 		} else {
 			++col;
 		}
-		i += core::unicode::lengthInt((int)c);
+		i += core::unicode::byteLengthInt((int)c);
 	}
 	return col;
 }
@@ -994,7 +994,7 @@ void TextEditor::Render() {
 					bufferOffset.x += spaceSize;
 					i++;
 				} else {
-					int l = core::unicode::lengthInt((int)glyph.mChar);
+					int l = core::unicode::byteLengthInt((int)glyph.mChar);
 					while (l-- > 0) {
 						_lineBuffer += line[i++].mChar;
 					}
@@ -1241,7 +1241,7 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift) {
 		int cindex = GetCharacterIndex(coord);
 
 		if (_overwrite && cindex < (int)line.size()) {
-			size_t d = core::unicode::lengthInt((int)line[cindex].mChar);
+			size_t d = core::unicode::byteLengthInt((int)line[cindex].mChar);
 
 			u.mRemovedStart = _state.mCursorPosition;
 			u.mRemovedEnd = Coordinates(coord.mLine, GetCharacterColumn(coord.mLine, cindex + (int)d));
@@ -1486,7 +1486,7 @@ void TextEditor::MoveRight(int aAmount, bool aSelect, bool aWordMode) {
 			} else
 				return;
 		} else {
-			cindex += core::unicode::lengthInt((int)line[cindex].mChar);
+			cindex += core::unicode::byteLengthInt((int)line[cindex].mChar);
 			_state.mCursorPosition = Coordinates(lindex, GetCharacterColumn(lindex, cindex));
 			if (aWordMode)
 				_state.mCursorPosition = FindNextWord(_state.mCursorPosition);
@@ -1613,7 +1613,7 @@ void TextEditor::Delete() {
 			u.mRemovedEnd.mColumn++;
 			u.mRemoved = GetText(u.mRemovedStart, u.mRemovedEnd);
 
-			auto d = core::unicode::lengthInt((int)line[cindex].mChar);
+			auto d = core::unicode::byteLengthInt((int)line[cindex].mChar);
 			while (d-- > 0 && cindex < (int)line.size())
 				line.erase(line.begin() + cindex);
 		}
@@ -2112,7 +2112,7 @@ void TextEditor::ColorizeInternal() {
 				}
 				if (currentIndex < (int)line.size())
 					line[currentIndex].mPreprocessor = withinPreproc;
-				currentIndex += core::unicode::lengthInt((int)c);
+				currentIndex += core::unicode::byteLengthInt((int)c);
 				if (currentIndex >= (int)line.size()) {
 					currentIndex = 0;
 					++currentLine;
@@ -2150,7 +2150,7 @@ float TextEditor::TextDistanceToLineStart(const Coordinates &aFrom) const {
 				(1.0f + glm::floor((1.0f + distance) / (float(_tabSize) * spaceSize))) * (float(_tabSize) * spaceSize);
 			++it;
 		} else {
-			auto d = core::unicode::lengthInt((int)line[it].mChar);
+			auto d = core::unicode::byteLengthInt((int)line[it].mChar);
 			char tempCString[7];
 			int i = 0;
 			for (; i < 6 && d-- > 0 && it < line.size(); i++, it++)

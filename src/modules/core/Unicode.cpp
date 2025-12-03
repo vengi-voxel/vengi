@@ -107,7 +107,7 @@ int toUtf8(uint32_t c, char *buf, size_t bufSize) {
 	return 3;
 }
 
-size_t lengthChar(uint8_t c) {
+size_t byteLength(uint8_t c) {
 	if (c < 0x80) {
 		return 1;
 	}
@@ -127,7 +127,7 @@ size_t lengthChar(uint8_t c) {
 	return 0;
 }
 
-size_t lengthInt(int c) {
+size_t byteLengthInt(int c) {
 	if (c <= 0x7F) {
 		return 1;
 	}
@@ -143,11 +143,11 @@ size_t lengthInt(int c) {
 	return 0;
 }
 
-size_t length(const char *str) {
+size_t charLengthUtf8(const char *str) {
 	size_t result = 0;
 
 	while (str[0] != '\0') {
-		const size_t n = lengthChar((uint8_t)*str);
+		const size_t n = byteLength((uint8_t)*str);
 		if (n == 0) {
 			return 0;
 		}
@@ -157,11 +157,11 @@ size_t length(const char *str) {
 	return result;
 }
 
-size_t lengthUTF16(const char *str) {
+size_t charLengthUtf16(const char *str) {
 	size_t result = 0;
 
 	while (str[0] != '\0') {
-		const size_t n = lengthChar((uint8_t)*str);
+		const size_t n = byteLength((uint8_t)*str);
 		if (n == 0) {
 			return 0;
 		}

@@ -23,7 +23,7 @@ bool ACBPalette::save(const palette::ColorPalette &palette, const core::String &
 	wrapBool(stream.writeUInt16BE(1)) // version
 	wrapBool(stream.writeUInt16BE(0)) // bookid
 
-	const size_t nameLen = core::unicode::lengthUTF16(palette.name().c_str());
+	const size_t nameLen = core::unicode::charLengthUtf16(palette.name().c_str());
 	wrapBool(stream.writeUInt32BE(nameLen))
 	wrapBool(stream.writeUTF16BE(palette.name()))
 
@@ -37,7 +37,7 @@ bool ACBPalette::save(const palette::ColorPalette &palette, const core::String &
 	wrapBool(stream.writeUInt16BE((uint16_t)adobe::ColorSpace::RGB))
 	for (int i = 0; i < colorCount; ++i) {
 		const core::String &name = palette.colorName(i);
-		const size_t colorNameLen = core::unicode::lengthUTF16(name.c_str());
+		const size_t colorNameLen = core::unicode::charLengthUtf16(name.c_str());
 		wrapBool(stream.writeUInt32BE(colorNameLen))
 		wrapBool(stream.writeUTF16BE(name))
 

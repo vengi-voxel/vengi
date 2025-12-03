@@ -26,7 +26,7 @@ Tokenizer::Tokenizer(const TokenizerConfig &cfg_, const char* s, size_t len, con
 		// TODO: check that " is not sep or split
 quote:
 		if (c == '"') {
-			size_t cl = core::unicode::lengthChar(c);
+			size_t cl = core::unicode::byteLength(c);
 			if (cl == 0u) {
 				return;
 			}
@@ -38,7 +38,7 @@ quote:
 			for (;;) {
 				// don't skip comments or whitespaces here, an inner string should be preserved
 				c = *s;
-				cl = core::unicode::lengthChar(c);
+				cl = core::unicode::byteLength(c);
 				if (cl == 0u) {
 					return;
 				}
@@ -85,7 +85,7 @@ quote:
 		lastCharIsSep = isSeparator(c, sep);
 		if (lastCharIsSep) {
 			_tokens.push_back(token);
-			const size_t cl = core::unicode::lengthChar(c);
+			const size_t cl = core::unicode::byteLength(c);
 			if (cl == 0u) {
 				return;
 			}
@@ -100,7 +100,7 @@ quote:
 			}
 			token += c;
 			_tokens.push_back(token);
-			const size_t cl = core::unicode::lengthChar(c);
+			const size_t cl = core::unicode::byteLength(c);
 			if (cl == 0u) {
 				return;
 			}
@@ -110,7 +110,7 @@ quote:
 		}
 		token += c;
 		for (;;) {
-			size_t cl = core::unicode::lengthChar(c);
+			size_t cl = core::unicode::byteLength(c);
 			if (cl == 0u) {
 				return;
 			}
@@ -128,7 +128,7 @@ quote:
 			}
 			lastCharIsSep = isSeparator(c, sep);
 			if (lastCharIsSep) {
-				cl = core::unicode::lengthChar(c);
+				cl = core::unicode::byteLength(c);
 				if (cl == 0u) {
 					return;
 				}
@@ -213,7 +213,7 @@ char Tokenizer::skip(const char **s, bool skipWhitespace) {
 			if (c == '\0' || _len <= 0) {
 				return '\0';
 			}
-			const size_t cl = core::unicode::lengthChar(c);
+			const size_t cl = core::unicode::byteLength(c);
 			if (cl == 0u) {
 				return '\0';
 			}
@@ -226,7 +226,7 @@ char Tokenizer::skip(const char **s, bool skipWhitespace) {
 	}
 
 	if (!skipComments(s, skipWhitespace)) {
-		const size_t cl = core::unicode::lengthChar(c);
+		const size_t cl = core::unicode::byteLength(c);
 		if (cl == 0u) {
 			return '\0';
 		}
