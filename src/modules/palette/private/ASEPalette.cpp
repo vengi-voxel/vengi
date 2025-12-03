@@ -177,33 +177,19 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 
 	if (hasGroup) {
 		// Write GROUP_START
-		core::Buffer<uint16_t> utf16Name;
-		utf16Name.resize(palette.name().size() * 2 + 2);
-		const int nameLen =
-			core::unicode::toUtf16(palette.name().c_str(), palette.name().size(), utf16Name.data(), utf16Name.size());
-		// Name length includes null terminator
-		const uint16_t aseNameLen = nameLen + 1;
-
+		const uint16_t aseNameLen = core::unicode::charLengthUtf16(palette.name().c_str());
 		const uint32_t blockLen = 2 + (aseNameLen * 2); // NameLen + Name
-
 		stream.writeUInt16BE(priv::GROUP_START);
 		stream.writeUInt32BE(blockLen);
 		stream.writeUInt16BE(aseNameLen);
-		for (int i = 0; i < nameLen; ++i) {
-			stream.writeUInt16BE(utf16Name[i]);
-		}
-		stream.writeUInt16BE(0); // Null terminator
+		stream.writeUTF16BE(palette.name());
 	}
 
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const color::RGBA &color = palette.color(i);
 		const core::String &name = palette.colorName(i);
 
-		core::Buffer<uint16_t> utf16Name;
-		utf16Name.resize(name.size() * 2 + 2);
-		const int nameLen = core::unicode::toUtf16(name.c_str(), name.size(), utf16Name.data(), utf16Name.size());
-		const uint16_t aseNameLen = nameLen + 1;
-
+		const int aseNameLen = core::unicode::charLengthUtf16(name.c_str());
 		const glm::vec4 scaled = color::fromRGBA(color);
 
 		// Block Length: NameLen(2) + Name(aseNameLen*2) + Mode(4) + Values(12) + Type(2)
@@ -212,10 +198,7 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 		stream.writeUInt16BE(priv::COLOR_START); // blocktype
 		stream.writeUInt32BE(blockLen);			 // blocksize
 		stream.writeUInt16BE(aseNameLen);		 // namelength
-		for (int j = 0; j < nameLen; ++j) {
-			stream.writeUInt16BE(utf16Name[j]);
-		}
-		stream.writeUInt16BE(0); // Null terminator
+		stream.writeUTF16BE(name);
 
 		stream.writeUInt32(FourCC('R', 'G', 'B', ' ')); // colormode
 		stream.writeFloatBE(scaled.r);
