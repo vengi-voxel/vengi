@@ -236,6 +236,10 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	SelectBrush &brush = modifier.selectBrush();
 	aabbBrushOptions(listener, brush);
 	aabbBrushModeOptions(brush);
+	bool remove = brush.remove();
+	if (ImGui::Checkbox(_("Unselect"), &remove)) {
+		brush.setRemove(remove);
+	}
 }
 
 void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &listener) {

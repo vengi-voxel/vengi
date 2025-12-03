@@ -15,7 +15,11 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	if (_brushClamping) {
 		selectionRegion.cropTo(ctx.targetVolumeRegion);
 	}
-	_selectionManager->select(wrapper, selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
+	if (_remove) {
+		_selectionManager->unselect(wrapper, selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
+	} else {
+		_selectionManager->select(wrapper, selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
+	}
 }
 
 } // namespace voxedit
