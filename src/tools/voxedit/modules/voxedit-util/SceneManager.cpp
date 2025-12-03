@@ -1840,7 +1840,7 @@ void SceneManager::construct() {
 			if (args[0] == "none") {
 				_selectionManager->unselect(*node->volume());
 			} else if (args[0] == "all") {
-				_selectionManager->select(*node->volume(), node->region().getLowerCorner(), node->region().getUpperCorner());
+				_selectionManager->selectAll(*node->volume());
 			} else if (args[0] == "invert") {
 				_selectionManager->invert(*node->volume());
 			}
