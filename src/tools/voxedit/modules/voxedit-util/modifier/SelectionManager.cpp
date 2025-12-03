@@ -83,7 +83,34 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 }
 
 bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &pos) {
-	return false;
+	return unselect(volume, pos, pos);
+}
+
+bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	const Selection sel{mins, maxs};
+	if (!sel.isValid()) {
+		return false;
+	}
+	bool changed = false;
+	for (size_t i = 0; i < _selections.size();) {
+		Selection &s = _selections[i];
+		if (sel.containsRegion(s)) {
+			_selections.erase(i);
+			changed = true;
+		} else if (voxel::intersects(sel, s)) {
+			const Selections newRegions = voxel::Region::subtract(s, sel);
+			_selections.erase(i);
+			_selections.insert(_selections.begin() + i, newRegions.begin(), newRegions.end());
+			i += newRegions.size();
+			changed = true;
+		} else {
+			++i;
+		}
+	}
+	if (changed) {
+		markDirty();
+	}
+	return changed;
 }
 
 bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &pos) {
