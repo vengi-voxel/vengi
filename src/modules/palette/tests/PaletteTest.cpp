@@ -110,13 +110,13 @@ TEST_F(PaletteTest, testRGBPalette) {
 
 TEST_F(PaletteTest, testGimpRGBPalette) {
 	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "false");
-	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	const ValidateFlags flags = ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
 	testSaveLoad("test.gpl", flags);
 }
 
 TEST_F(PaletteTest, testGimpRGBAPalette) {
 	util::ScopedVarChange scoped(cfg::PalformatGimpRGBA, "true");
-	const ValidateFlags flags = ValidateFlags::SkipName | ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
+	const ValidateFlags flags = ValidateFlags::SkipColorNames | ValidateFlags::SkipMaterials;
 	testSaveLoad("test_rgba.gpl", flags);
 }
 
