@@ -112,10 +112,13 @@ void Client::onMementoStateAdded(const memento::MementoState &state) {
 		break;
 	}
 	case memento::MementoType::SceneNodeNormalPaletteChanged:
-		// TODO:
-		Log::warn("Unhandled memento state type: %d", (int)state.type);
+		// TODO: NETWORK: add protocol message for this - see SceneNodePaletteChanged - just for the normal palette
+		Log::warn("Unhandled memento state type SceneNodeNormalPaletteChanged");
 		break;
 	case memento::MementoType::SceneGraphAnimation:
+		// TODO: NETWORK: add protocol message for this - this is basically a list of animation names from the scene graph
+		Log::warn("Unhandled memento state type SceneGraphAnimation");
+		break;
 	case memento::MementoType::Max:
 		break;
 	}
