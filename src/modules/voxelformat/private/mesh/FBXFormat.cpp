@@ -10,6 +10,7 @@
 #include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Map.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -25,6 +26,8 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
+#include <glm/ext/quaternion_trigonometric.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define ufbx_assert core_assert
 #include "voxelformat/external/ufbx.h"
@@ -163,15 +166,16 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 void FBXFormat::writeTransformToProperties(io::SeekableWriteStream &stream,
 										   const scenegraph::SceneGraphTransform &transform) {
 	const glm::vec3 &lclTranslation = transform.localTranslation();
-	stream.writeStringFormat(false, "\t\tProperty: \"Lcl Translation\", \"Lcl Translation\", \"\",%f,%f,%f\n",
+	stream.writeStringFormat(false, "\t\t\tProperty: \"Lcl Translation\", \"Lcl Translation\", \"\",%f,%f,%f\n",
 							 lclTranslation.x, lclTranslation.y, lclTranslation.z);
 	const glm::quat &lclRotationQuat = transform.localOrientation();
 	const glm::vec3 lclRotationEulerDegrees(glm::degrees(glm::eulerAngles(lclRotationQuat)));
-	stream.writeStringFormat(false, "\t\tProperty: \"Lcl Rotation\", \"Lcl Rotation\", \"\",%f,%f,%f\n",
+	stream.writeStringFormat(false, "\t\t\tProperty: \"Lcl Rotation\", \"Lcl Rotation\", \"\",%f,%f,%f\n",
 							 lclRotationEulerDegrees.x, lclRotationEulerDegrees.y, lclRotationEulerDegrees.z);
 	const glm::vec3 &lclScaling = transform.localScale();
-	stream.writeStringFormat(false, "\t\tProperty: \"Lcl Scaling\", \"Lcl Scaling\", \"\",%f,%f,%f\n", lclScaling.x,
+	stream.writeStringFormat(false, "\t\t\tProperty: \"Lcl Scaling\", \"Lcl Scaling\", \"\",%f,%f,%f\n", lclScaling.x,
 							 lclScaling.y, lclScaling.z);
+	stream.writeStringFormat(false, "\t\t\tProperty: \"InheritType\", \"enum\", \"\",1\n");
 }
 
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
@@ -192,7 +196,6 @@ bool FBXFormat::saveMeshesAscii(const ChunkMeshes &meshes, const core::String &f
 	stream.writeLine("; FBX 6.1.0 project file");
 	stream.writeLine("; ----------------------------------------------------");
 
-	// TODO: VOXELFORMAT: support keyframes (takes)
 	stream.writeStringFormat(false, R"(FBXHeaderExtension:  {
 	FBXHeaderVersion: 1003
 	FBXVersion: 6100
@@ -210,15 +213,66 @@ Definitions: {
 	ObjectType: "Model" {
 		Count: %i
 	}
+	ObjectType: "Geometry" {
+		Count: %i
+	}
 	ObjectType: "Material" {
+		Count: %i
+		PropertyTemplate: "FbxSurfacePhong" {
+			Properties60:  {
+				Property: "ShadingModel", "KString", "", "Phong"
+				Property: "MultiLayer", "bool", "", 0
+				Property: "EmissiveColor", "ColorRGB", "", 0, 0, 0
+				Property: "EmissiveFactor", "double", "", 1
+				Property: "AmbientColor", "ColorRGB", "", 0.2, 0.2, 0.2
+				Property: "AmbientFactor", "double", "", 1
+				Property: "DiffuseColor", "ColorRGB", "", 0.8, 0.8, 0.8
+				Property: "DiffuseFactor", "double", "", 1
+				Property: "Bump", "Vector3D", "", 0, 0, 0
+				Property: "NormalMap", "Vector3D", "", 0, 0, 0
+				Property: "BumpFactor", "double", "", 1
+				Property: "TransparentColor", "ColorRGB", "", 0, 0, 0
+				Property: "TransparencyFactor", "double", "", 0
+				Property: "DisplacementColor", "ColorRGB", "", 0, 0, 0
+				Property: "DisplacementFactor", "double", "", 1
+				Property: "VectorDisplacementColor", "ColorRGB", "", 0, 0, 0
+				Property: "VectorDisplacementFactor", "double", "", 1
+				Property: "SpecularColor", "ColorRGB", "", 0.2, 0.2, 0.2
+				Property: "SpecularFactor", "double", "", 1
+				Property: "ShininessExponent", "double", "", 20
+				Property: "ReflectionColor", "ColorRGB", "", 0, 0, 0
+				Property: "ReflectionFactor", "double", "", 1
+			}
+		}
+	}
+	ObjectType: "GlobalSettings" {
 		Count: 1
 	}
 }
 
 Objects: {
+	GlobalSettings:  {
+		Version: 1000
+		Properties60:  {
+			Property: "UpAxis", "int", "",1
+			Property: "UpAxisSign", "int", "",1
+			Property: "FrontAxis", "int", "",2
+			Property: "FrontAxisSign", "int", "",1
+			Property: "CoordAxis", "int", "",0
+			Property: "CoordAxisSign", "int", "",1
+			Property: "OriginalUpAxis", "int", "",1
+			Property: "OriginalUpAxisSign", "int", "",1
+			Property: "UnitScaleFactor", "double", "",1.0
+			Property: "OriginalUnitScaleFactor", "double", "",1.0
+			Property: "AmbientColor", "ColorRGB", "",0,0,0
+			Property: "DefaultCamera", "KString", "", "Producer Perspective"
+			Property: "TimeMode", "enum", "",6
+			Property: "TimeSpan", "time", "",0,4611686018427387904
+		}
+	}
 )",
 							 PROJECT_VERSION, app::App::getInstance()->fullAppname().c_str(), PROJECT_VERSION,
-							 meshCount);
+							 meshCount, meshCount, meshCount);
 
 	Log::debug("Exporting %i models", meshCount);
 
@@ -226,6 +280,7 @@ Objects: {
 
 	uint32_t objectIndex = 0;
 	core::DynamicArray<core::String> connections;
+	core::Map<int, core::DynamicArray<core::String>> nodeModelNames;
 
 	for (const ChunkMeshExt &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
@@ -258,17 +313,73 @@ Objects: {
 			}
 
 			const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
-			connections.push_back(modelName);
+			auto iter = nodeModelNames.find(meshExt.nodeId);
+			if (iter == nodeModelNames.end()) {
+				core::DynamicArray<core::String> names;
+				names.push_back(modelName);
+				nodeModelNames.put(meshExt.nodeId, names);
+			} else {
+				iter->value.push_back(modelName);
+			}
+			const core::String geometryName = core::String::format("Geometry::%s-%u", objectName, objectIndex);
+			connections.push_back(
+				core::String::format("\tConnect: \"OO\", \"%s\", \"%s\"\n", geometryName.c_str(), modelName.c_str()));
+			const core::String materialName = core::String::format("Material::Material-%u", objectIndex);
+			connections.push_back(
+				core::String::format("\tConnect: \"OO\", \"%s\", \"%s\"\n", materialName.c_str(), modelName.c_str()));
+
+			// TODO: MATERIAL: implement palette material export
+			stream.writeStringFormat(false, "\tMaterial: \"%s\", \"\" {\n", materialName.c_str());
+			wrapBool(stream.writeLine("\t\tVersion: 102"))
+			wrapBool(stream.writeLine("\t\tShadingModel: \"Phong\""))
+			wrapBool(stream.writeLine("\t\tMultiLayer: 0"))
+			wrapBool(stream.writeLine("\t\tProperties60:  {"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"ShadingModel\", \"KString\", \"\", \"Phong\""))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"MultiLayer\", \"bool\", \"\",0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"EmissiveColor\", \"ColorRGB\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"EmissiveFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"AmbientColor\", \"ColorRGB\", \"\",0.2,0.2,0.2"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"AmbientFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"DiffuseColor\", \"ColorRGB\", \"\",0.8,0.8,0.8"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"DiffuseFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"Bump\", \"Vector3D\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"NormalMap\", \"Vector3D\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"BumpFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"TransparentColor\", \"ColorRGB\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"TransparencyFactor\", \"double\", \"\",0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"DisplacementColor\", \"ColorRGB\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"DisplacementFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"VectorDisplacementColor\", \"ColorRGB\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"VectorDisplacementFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"SpecularColor\", \"ColorRGB\", \"\",0.2,0.2,0.2"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"SpecularFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"ShininessExponent\", \"double\", \"\",20"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"ReflectionColor\", \"ColorRGB\", \"\",0,0,0"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"ReflectionFactor\", \"double\", \"\",1"))
+			wrapBool(stream.writeLine("\t\t}"))
+			wrapBool(stream.writeLine("\t}"))
+
 			stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", modelName.c_str());
 			wrapBool(stream.writeLine("\t\tVersion: 232"))
-			wrapBool(stream.writeLine("\t\tCulling: \"CullingOff\""))
 			wrapBool(stream.writeLine("\t\tProperties60:  {"))
 			stream.writeStringFormat(false, "\t\t\tProperty: \"Show\", \"bool\", \"\",%u\n",
 									 graphNode.visible() ? 1 : 0);
-			// scenegraph::KeyFrameIndex keyFrameIndex = 0;
-			// writeTransformToProperties(stream, graphNode.transform(keyFrameIndex));
+			stream.writeStringFormat(false, "\t\t\tProperty: \"DefaultAttributeIndex\", \"int\", \"\",0\n");
+			if (meshExt.applyTransform) {
+				writeTransformToProperties(stream, scenegraph::SceneGraphTransform());
+			} else {
+				writeTransformToProperties(stream, graphNode.transform(keyFrameIdx));
+			}
 			wrapBool(stream.writeLine("\t\t}"))
-			// TODO: VOXELFORMAT: add more properties like Color, Lcl Translation, Lcl Rotation, Lcl Scaling ...
+			wrapBool(stream.writeLine("\t\tShading: Y"))
+			wrapBool(stream.writeLine("\t\tCulling: \"CullingOff\""))
+			wrapBool(stream.writeLine("\t}"))
+
+			stream.writeStringFormat(false, "\tGeometry: \"%s\", \"Mesh\" {\n", geometryName.c_str());
+			wrapBool(stream.writeLine("\t\tProperties60:  {"))
+			wrapBool(stream.writeLine("\t\t\tProperty: \"Color\", \"ColorRGB\", \"\",0.8,0.8,0.8"))
+			wrapBool(stream.writeLine("\t\t}"))
+
 			wrapBool(stream.writeString("\t\tVertices: ", false))
 			for (int j = 0; j < nv; ++j) {
 				const voxel::VoxelVertex &v = vertices[j];
@@ -301,6 +412,23 @@ Objects: {
 			wrapBool(stream.writeString("\n", false))
 			wrapBool(stream.writeLine("\t\tGeometryVersion: 124"))
 
+			wrapBool(stream.writeString("\t\tLayerElementMaterial: 0 {\n"
+										"\t\t\tVersion: 101\n"
+										"\t\t\tName: \"\"\n"
+										"\t\t\tMappingInformationType: \"ByPolygon\"\n"
+										"\t\t\tReferenceInformationType: \"IndexToDirect\"\n"
+										"\t\t\tMaterials: ",
+										false))
+			const int polyCount = ni / 3;
+			stream.writeStringFormat(false, "*%i {\n\t\t\t\ta: ", polyCount);
+			for (int k = 0; k < polyCount; ++k) {
+				if (k > 0) {
+					stream.writeString(",", false);
+				}
+				stream.writeString("0", false);
+			}
+			wrapBool(stream.writeString("\n\t\t\t}\n\t\t}\n", false))
+
 			if (exportNormals) {
 				stream.writeString("\t\tLayerElementNormal: 0 {\n"
 								   "\t\t\tVersion: 101\n"
@@ -311,8 +439,7 @@ Objects: {
 
 				wrapBool(stream.writeString("\t\t\tNormals: ", false))
 				for (size_t j = 0; j < normals.size(); j++) {
-					const uint32_t index = indices[j];
-					const glm::vec3 &norm = normals[index];
+					const glm::vec3 &norm = normals[j];
 					if (j > 0) {
 						wrapBool(stream.writeString(",", false))
 					}
@@ -339,31 +466,17 @@ Objects: {
 					stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
 				}
 				wrapBool(stream.writeString("\n\t\t}\n", false))
-				// TODO: VOXELFORMAT: UVIndex needed or only for IndexToDirect?
-
-				wrapBool(stream.writeString("\t\tLayerElementTexture: 0 {\n"
-											"\t\t\tVersion: 101\n"
-											"\t\t\tName: \"\"\n"
-											"\t\t\tMappingInformationType: \"AllSame\"\n"
-											"\t\t\tReferenceInformationType: \"Direct\"\n"
-											"\t\t\tBlendMode: \"Translucent\"\n"
-											"\t\t\tTextureAlpha: 1\n"
-											"\t\t\tTextureId: 0\n"
-											"\t\t}\n",
-											false))
 			}
-
 			if (withColor) {
 				wrapBool(stream.writeString("\t\tLayerElementColor: 0 {\n"
 											"\t\t\tVersion: 101\n"
 											"\t\t\tName: \"\"\n"
-											"\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
+											"\t\t\tMappingInformationType: \"ByVertice\"\n"
 											"\t\t\tReferenceInformationType: \"Direct\"\n"
 											"\t\t\tColors: ",
 											false))
-				for (int j = 0; j < ni; j++) {
-					const uint32_t index = indices[j];
-					const voxel::VoxelVertex &v = vertices[index];
+				for (int j = 0; j < nv; j++) {
+					const voxel::VoxelVertex &v = vertices[j];
 					const glm::vec4 &color = color::fromRGBA(palette.color(v.colorIndex));
 					if (j > 0) {
 						wrapBool(stream.writeString(",", false))
@@ -373,17 +486,22 @@ Objects: {
 				// close LayerElementColor
 
 				wrapBool(stream.writeLine("\n\t\t}"))
-				// TODO: VOXELFORMAT: ColorIndex needed or only for IndexToDirect?
 			}
 
 			wrapBool(stream.writeString("\t\tLayer: 0 {\n"
 										"\t\t\tVersion: 100\n",
 										false))
 
-			if (withColor) {
+			wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
+										"\t\t\t\tTypedIndex: 0\n"
+										"\t\t\t\tType: \"LayerElementMaterial\"\n"
+										"\t\t\t}\n",
+										false))
+
+			if (exportNormals) {
 				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
 											"\t\t\t\tTypedIndex: 0\n"
-											"\t\t\t\tType: \"LayerElementColor\"\n"
+											"\t\t\t\tType: \"LayerElementNormal\"\n"
 											"\t\t\t}\n",
 											false))
 			}
@@ -393,18 +511,17 @@ Objects: {
 											"\t\t\t\tType: \"LayerElementUV\"\n"
 											"\t\t\t}\n",
 											false))
-				// TODO: VOXELFORMAT: LayerElementTexture
 			}
-			if (exportNormals) {
+			if (withColor) {
 				wrapBool(stream.writeString("\t\t\tLayerElement: {\n"
 											"\t\t\t\tTypedIndex: 0\n"
-											"\t\t\t\tType: \"LayerElementNormal\"\n"
+											"\t\t\t\tType: \"LayerElementColor\"\n"
 											"\t\t\t}\n",
 											false))
 			}
 			wrapBool(stream.writeLine("\t\t}"))
 
-			// close the model
+			// close the geometry
 			wrapBool(stream.writeLine("\t}"))
 			++objectIndex;
 		}
@@ -412,7 +529,7 @@ Objects: {
 
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &graphNode = e->second;
-		if (!graphNode.isCameraNode()) {
+		if (nodeModelNames.find(graphNode.id()) != nodeModelNames.end()) {
 			continue;
 		}
 		const char *objectName = graphNode.name().c_str();
@@ -421,21 +538,54 @@ Objects: {
 			objectName = uuidStr.c_str();
 		}
 		const core::String modelName = core::String::format("Model::%s-%u", objectName, objectIndex);
-		connections.push_back(modelName);
-		stream.writeStringFormat(false, "\tModel: \"%s\", \"Camera\" {\n", modelName.c_str());
+		core::DynamicArray<core::String> names;
+		names.push_back(modelName);
+		nodeModelNames.put(graphNode.id(), names);
+
+		const char *type = "Null";
+		if (graphNode.isCameraNode()) {
+			type = "Camera";
+		}
+		stream.writeStringFormat(false, "\tModel: \"%s\", \"%s\" {\n", modelName.c_str(), type);
 		wrapBool(stream.writeLine("\t\tVersion: 232"))
 		wrapBool(stream.writeLine("\t\tProperties60:  {"))
 		scenegraph::KeyFrameIndex keyFrameIndex = 0;
 		writeTransformToProperties(stream, graphNode.transform(keyFrameIndex));
 		stream.writeStringFormat(false, "\t\t\tProperty: \"Show\", \"bool\", \"\",%u\n", graphNode.visible() ? 1 : 0);
-		// TODO: VOXELFORMAT:
-		// Property: "NearPlane", "double", "",0.100000
-		// Property: "FarPlane", "double", "",99.999994
-		// Property: "CameraProjectionType", "enum", "",0
+
+		if (graphNode.isCameraNode()) {
+			const scenegraph::SceneGraphNodeCamera &camera = scenegraph::toCameraNode(graphNode);
+			stream.writeStringFormat(false, "\t\t\tProperty: \"NearPlane\", \"double\", \"\",%f\n", camera.nearPlane());
+			stream.writeStringFormat(false, "\t\t\tProperty: \"FarPlane\", \"double\", \"\",%f\n", camera.farPlane());
+			stream.writeStringFormat(false, "\t\t\tProperty: \"CameraProjectionType\", \"enum\", \"\",%d\n",
+									 camera.isPerspective() ? 0 : 1);
+		}
+
 		wrapBool(stream.writeLine("\t\t}"))
-		// close the model
 		wrapBool(stream.writeLine("\t}"))
 		++objectIndex;
+	}
+
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &graphNode = e->second;
+		auto iter = nodeModelNames.find(graphNode.id());
+		if (iter == nodeModelNames.end()) {
+			continue;
+		}
+		const core::DynamicArray<core::String> &myModels = iter->value;
+		int parentId = graphNode.parent();
+		core::String parentModelName = "Model::Scene";
+		if (parentId != -1) {
+			auto parentIter = nodeModelNames.find(parentId);
+			if (parentIter != nodeModelNames.end() && !parentIter->value.empty()) {
+				parentModelName = parentIter->value[0];
+			}
+		}
+
+		for (const core::String &modelName : myModels) {
+			connections.push_back(core::String::format("\tConnect: \"OO\", \"%s\", \"%s\"\n", modelName.c_str(),
+													   parentModelName.c_str()));
+		}
 	}
 
 	// close objects
@@ -443,9 +593,90 @@ Objects: {
 
 	wrapBool(stream.writeLine("Connections:  {"))
 	for (const core::String &connection : connections) {
-		stream.writeStringFormat(false, "\tConnect: \"OO\", \"%s\", \"Model::Scene\"\n", connection.c_str());
+		stream.writeString(connection, false);
 	}
 	wrapBool(stream.writeLine("}"))
+
+	wrapBool(stream.writeLine("Takes:  {"))
+	wrapBool(stream.writeLine("\tCurrent: \"Default\""))
+	for (const core::String &anim : sceneGraph.animations()) {
+		stream.writeStringFormat(false, "\tTake: \"%s\" {\n", anim.c_str());
+		if (!stream.writeStringFormat(false, "\t\tFileName: \"%s.tak\"\n", anim.c_str())) {
+			Log::error("Failed to write take filename");
+			return false;
+		}
+		scenegraph::FrameIndex maxFrame = 0;
+		for (const auto &e : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &graphNode = e->second;
+			if (!graphNode.allKeyFrames().hasKey(anim)) {
+				continue;
+			}
+			const scenegraph::SceneGraphKeyFrames &keyFrames = graphNode.keyFrames(anim);
+			for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
+				maxFrame = core_max(maxFrame, kf.frameIdx);
+			}
+		}
+		const int64_t endTime = (int64_t)maxFrame * 1539538600L;
+		stream.writeStringFormat(false, "\t\tLocalTime: 0, %" SDL_PRIs64 "\n", endTime);
+		stream.writeStringFormat(false, "\t\tReferenceTime: 0, %" SDL_PRIs64 "\n", endTime);
+
+		for (const auto &e : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &graphNode = e->second;
+			if (!graphNode.allKeyFrames().hasKey(anim)) {
+				continue;
+			}
+			const scenegraph::SceneGraphKeyFrames &keyFrames = graphNode.keyFrames(anim);
+			if (keyFrames.empty()) {
+				continue;
+			}
+			core::DynamicArray<core::String> modelNames;
+			if (!nodeModelNames.get(graphNode.id(), modelNames)) {
+				continue;
+			}
+			for (const core::String &modelName : modelNames) {
+				stream.writeStringFormat(false, "\t\tModel: \"%s\" {\n", modelName.c_str());
+				wrapBool(stream.writeLine("\t\t\tVersion: 100"))
+				wrapBool(stream.writeLine("\t\t\tChannel: \"Transform\" {"))
+
+				// Translation
+				wrapBool(stream.writeLine("\t\t\t\tChannel: \"T\" {"))
+				for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
+					const int64_t time = (int64_t)kf.frameIdx * 1539538600L;
+					const glm::vec3 &pos = kf.transform().localTranslation();
+					stream.writeStringFormat(false, "\t\t\t\t\tKey: %" SDL_PRIs64 ",%f,%f,%f,L\n", time, pos.x, pos.y,
+											 pos.z);
+				}
+				wrapBool(stream.writeLine("\t\t\t\t}"))
+
+				// Rotation
+				wrapBool(stream.writeLine("\t\t\t\tChannel: \"R\" {"))
+				for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
+					const int64_t time = (int64_t)kf.frameIdx * 1539538600L;
+					const glm::quat &rot = kf.transform().localOrientation();
+					const glm::vec3 euler = glm::degrees(glm::eulerAngles(rot));
+					stream.writeStringFormat(false, "\t\t\t\t\tKey: %" SDL_PRIs64 ",%f,%f,%f,L\n", time, euler.x, euler.y,
+											 euler.z);
+				}
+				wrapBool(stream.writeLine("\t\t\t\t}"))
+
+				// Scaling
+				wrapBool(stream.writeLine("\t\t\t\tChannel: \"S\" {"))
+				for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
+					const int64_t time = (int64_t)kf.frameIdx * 1539538600L;
+					const glm::vec3 &localScale = kf.transform().localScale();
+					stream.writeStringFormat(false, "\t\t\t\t\tKey: %" SDL_PRIs64 ",%f,%f,%f,L\n", time, localScale.x,
+											 localScale.y, localScale.z);
+				}
+				wrapBool(stream.writeLine("\t\t\t\t}"))
+
+				wrapBool(stream.writeLine("\t\t\t}")) // Channel: Transform
+				wrapBool(stream.writeLine("\t\t}"))	  // Model
+			}
+		}
+		wrapBool(stream.writeLine("\t}")) // Take
+	}
+	wrapBool(stream.writeLine("}")) // Takes
+
 	return true;
 }
 
