@@ -340,7 +340,6 @@ public:
 		size_t s = _size - 1;
 		size_t t = s + n;
 
-		// TODO: this can be optimized by only calling the move ctor once
 		checkBufferSize(_size + n);
 
 		const size_t cnt = _size - startIdx;
@@ -387,7 +386,6 @@ public:
 
 		size_t startIdx = index(pos);
 
-		// TODO: this can be optimized by only calling the move ctor once
 		checkBufferSize(_size + n);
 
 		size_t s = _size - 1;
