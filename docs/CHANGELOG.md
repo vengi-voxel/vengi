@@ -10,6 +10,11 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.4.0 (2025-XX-XX)
 
+VoxEdit:
+
+   - Bump network protocol version - added two missing messages
+   - Implemented unselecting and intersections
+
 Thumbnailer:
 
    - Fixed missing `--angles` radians conversion
