@@ -838,9 +838,14 @@ void App::zshCompletion() const {
 		} else if (arg.needsDirectory()) {
 			Log::printf(":filename:_files -/");
 		} else if (!arg.validValues().empty()) {
-			// TODO: add validValue string to zsh completion for the current argument
-			// for (const core::String &validValue : arg.validValues()) {
-			// }
+			Log::printf(":values:(");
+			for (size_t n = 0; n < arg.validValues().size(); ++n) {
+				if (n > 0) {
+					Log::printf(" ");
+				}
+				Log::printf("%s", arg.validValues()[n].c_str());
+			}
+			Log::printf(")");
 		}
 		Log::printf("'\n");
 		if (!arg.shortArg().empty()) {
