@@ -24,4 +24,61 @@ TEST_F(SelectionManagerTest, testSelectAndInvert) {
 	EXPECT_EQ(6u, mgr.selections().size());
 }
 
+TEST_F(SelectionManagerTest, testUnselectHole) {
+	voxel::Region region(0, 32);
+	voxel::RawVolume volume(region);
+	SelectionManager mgr;
+
+	const glm::ivec3 mins(10, 10, 10);
+	const glm::ivec3 maxs(20, 20, 20);
+	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+	EXPECT_EQ(1u, mgr.selections().size());
+	EXPECT_EQ(voxel::Region(mins, maxs), mgr.selections()[0]);
+
+	const glm::ivec3 unselectMins(12, 12, 12);
+	const glm::ivec3 unselectMaxs(18, 18, 18);
+	EXPECT_TRUE(mgr.unselect(volume, unselectMins, unselectMaxs));
+
+	// Check that the hole is indeed unselected
+	for (int x = unselectMins.x; x <= unselectMaxs.x; ++x) {
+		for (int y = unselectMins.y; y <= unselectMaxs.y; ++y) {
+			for (int z = unselectMins.z; z <= unselectMaxs.z; ++z) {
+				EXPECT_FALSE(mgr.isSelected(glm::ivec3(x, y, z)))
+					<< "Position at " << x << ", " << y << ", " << z << " should not be selected";
+			}
+		}
+	}
+
+	// Check that the border is still selected
+	EXPECT_TRUE(mgr.isSelected(mins));
+	EXPECT_TRUE(mgr.isSelected(maxs));
+
+	// Check that we didn't select anything outside the original bounds
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(9, 10, 10)));
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(21, 20, 20)));
+}
+
+TEST_F(SelectionManagerTest, testUnselectCorner) {
+	voxel::Region region(0, 32);
+	voxel::RawVolume volume(region);
+	SelectionManager mgr;
+
+	const glm::ivec3 mins(10, 10, 10);
+	const glm::ivec3 maxs(20, 20, 20);
+	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+
+	const glm::ivec3 unselectMins(15, 15, 15);
+	const glm::ivec3 unselectMaxs(25, 25, 25); // Goes outside
+	EXPECT_TRUE(mgr.unselect(volume, unselectMins, unselectMaxs));
+
+	// Check unselected part inside original
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(16, 16, 16)));
+
+	// Check selected part
+	EXPECT_TRUE(mgr.isSelected(glm::ivec3(10, 10, 10)));
+
+	// Check outside original (should still be unselected)
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(22, 22, 22)));
+}
+
 } // namespace voxedit
