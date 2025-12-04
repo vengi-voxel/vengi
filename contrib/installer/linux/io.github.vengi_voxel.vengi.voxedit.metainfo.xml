@@ -27,6 +27,9 @@
     <category>Utility</category>
   </categories>
   <releases>
+    <release version="v0.3.0" date="2025-11-29" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.3.0</url>
+    </release>
     <release version="v0.2.1" date="2025-10-24" type="stable">
       <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.2.1</url>
     </release>
