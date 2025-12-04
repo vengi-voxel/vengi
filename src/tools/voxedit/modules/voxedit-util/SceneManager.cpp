@@ -1845,7 +1845,7 @@ void SceneManager::construct() {
 				_selectionManager->invert(*node->volume());
 			}
 		}
-	}).setHelp(_("Select all nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
+	}).setHelp(_("Select all, nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
 	command::Command::registerCommand("presentation", [] (const command::CmdArgs& args) {
 		command::Command::execute("hideall; animate 2000 true true");

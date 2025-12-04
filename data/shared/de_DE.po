@@ -1173,6 +1173,9 @@ msgstr ""
 msgid "Length of the stipple pattern <= 1 to disable"
 msgstr ""
 
+msgid "Unselect"
+msgstr "Auswahl entfernen"
+
 msgid "None"
 msgstr "Keine"
 
@@ -2960,7 +2963,7 @@ msgstr "Die aktuelle Palette auf alle Knoten anwenden"
 msgid "Switch active node to hovered from scene graph mode"
 msgstr "Wechselt den aktiven Knoten vom Szenengraph-Modus zum Hovern"
 
-msgid "Select all nothing or invert"
+msgid "Select all, nothing or invert"
 msgstr "Alles auswählen, nichts oder invertieren"
 
 msgid "Cycle through all scene objects"

@@ -1140,6 +1140,9 @@ msgstr ""
 msgid "Length of the stipple pattern <= 1 to disable"
 msgstr ""
 
+msgid "Unselect"
+msgstr ""
+
 msgid "None"
 msgstr ""
 
