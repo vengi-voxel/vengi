@@ -81,4 +81,30 @@ TEST_F(SelectionManagerTest, testUnselectCorner) {
 	EXPECT_FALSE(mgr.isSelected(glm::ivec3(22, 22, 22)));
 }
 
+TEST_F(SelectionManagerTest, testUnselectExtendsOutside) {
+	voxel::Region region(0, 32);
+	voxel::RawVolume volume(region);
+	SelectionManager mgr;
+
+	const glm::ivec3 mins(0, 0, 0);
+	const glm::ivec3 maxs(10, 10, 10);
+	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+
+	// Unselect region that extends outside in Z
+	const glm::ivec3 unselectMins(0, 0, -5);
+	const glm::ivec3 unselectMaxs(10, 5, 15);
+	EXPECT_TRUE(mgr.unselect(volume, unselectMins, unselectMaxs));
+
+	// Check that we didn't select anything outside the original bounds
+	// The bug would cause (0, 6, -5) to be selected.
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 8, -1)));
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 8, 11)));
+
+	// Check that the remaining part is correct
+	EXPECT_TRUE(mgr.isSelected(glm::ivec3(5, 8, 5)));
+
+	// Check that the unselected part is unselected
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 2, 5)));
+}
+
 } // namespace voxedit

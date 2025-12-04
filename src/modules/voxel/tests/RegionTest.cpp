@@ -249,4 +249,14 @@ TEST_F(RegionTest, testIndexBackAndForth) {
 	}
 }
 
+TEST_F(RegionTest, testSubtractExtendsOutside) {
+	voxel::Region a(0, 10);
+	voxel::Region b(0, 0, -5, 10, 5, 15);
+	const core::Buffer<voxel::Region> &remainingSelections = voxel::Region::subtract(a, b);
+	EXPECT_EQ(1u, remainingSelections.size());
+	if (!remainingSelections.empty()) {
+		EXPECT_EQ(voxel::Region(0, 6, 0, 10, 10, 10), remainingSelections[0]);
+	}
+}
+
 } // namespace voxel

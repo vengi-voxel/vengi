@@ -19,49 +19,54 @@ static core::Buffer<Region> subtractRegion(const Region &box, const Region &sub)
 	core::Buffer<Region> result;
 	result.reserve(6);
 
-	// Ensure the subtraction region is inside the box
-	if (sub.getLowerCorner().x > box.getUpperCorner().x || sub.getUpperCorner().x < box.getLowerCorner().x ||
-		sub.getLowerCorner().y > box.getUpperCorner().y || sub.getUpperCorner().y < box.getLowerCorner().y ||
-		sub.getLowerCorner().z > box.getUpperCorner().z || sub.getUpperCorner().z < box.getLowerCorner().z) {
+	Region clampedSub = sub;
+	if (!clampedSub.cropTo(box)) {
 		// No overlap, box remains unchanged
 		result.push_back(box);
 		return result;
 	}
 
 	// Top part (above the selected region)
-	if (sub.getUpperCorner().z < box.getUpperCorner().z) {
-		result.emplace_back(glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, sub.getUpperCorner().z + 1),
-							glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, box.getUpperCorner().z));
+	if (clampedSub.getUpperCorner().z < box.getUpperCorner().z) {
+		result.emplace_back(
+			glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, clampedSub.getUpperCorner().z + 1),
+			glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, box.getUpperCorner().z));
 	}
 
 	// Bottom part (below the selected region)
-	if (sub.getLowerCorner().z > box.getLowerCorner().z) {
-		result.emplace_back(glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, box.getLowerCorner().z),
-							glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, sub.getLowerCorner().z - 1));
+	if (clampedSub.getLowerCorner().z > box.getLowerCorner().z) {
+		result.emplace_back(
+			glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, box.getLowerCorner().z),
+			glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, clampedSub.getLowerCorner().z - 1));
 	}
 
 	// Front part (in front of the selected region)
-	if (sub.getUpperCorner().y < box.getUpperCorner().y) {
-		result.emplace_back(glm::ivec3(box.getLowerCorner().x, sub.getUpperCorner().y + 1, sub.getLowerCorner().z),
-							glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, sub.getUpperCorner().z));
+	if (clampedSub.getUpperCorner().y < box.getUpperCorner().y) {
+		result.emplace_back(
+			glm::ivec3(box.getLowerCorner().x, clampedSub.getUpperCorner().y + 1, clampedSub.getLowerCorner().z),
+			glm::ivec3(box.getUpperCorner().x, box.getUpperCorner().y, clampedSub.getUpperCorner().z));
 	}
 
 	// Back part (behind the selected region)
-	if (sub.getLowerCorner().y > box.getLowerCorner().y) {
-		result.emplace_back(glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, sub.getLowerCorner().z),
-							glm::ivec3(box.getUpperCorner().x, sub.getLowerCorner().y - 1, sub.getUpperCorner().z));
+	if (clampedSub.getLowerCorner().y > box.getLowerCorner().y) {
+		result.emplace_back(
+			glm::ivec3(box.getLowerCorner().x, box.getLowerCorner().y, clampedSub.getLowerCorner().z),
+			glm::ivec3(box.getUpperCorner().x, clampedSub.getLowerCorner().y - 1, clampedSub.getUpperCorner().z));
 	}
 
 	// Left part (left of the selected region)
-	if (sub.getLowerCorner().x > box.getLowerCorner().x) {
-		result.emplace_back(glm::ivec3(box.getLowerCorner().x, sub.getLowerCorner().y, sub.getLowerCorner().z),
-							glm::ivec3(sub.getLowerCorner().x - 1, sub.getUpperCorner().y, sub.getUpperCorner().z));
+	if (clampedSub.getLowerCorner().x > box.getLowerCorner().x) {
+		result.emplace_back(
+			glm::ivec3(box.getLowerCorner().x, clampedSub.getLowerCorner().y, clampedSub.getLowerCorner().z),
+			glm::ivec3(clampedSub.getLowerCorner().x - 1, clampedSub.getUpperCorner().y,
+					   clampedSub.getUpperCorner().z));
 	}
 
 	// Right part (right of the selected region)
-	if (sub.getUpperCorner().x < box.getUpperCorner().x) {
-		result.emplace_back(glm::ivec3(sub.getUpperCorner().x + 1, sub.getLowerCorner().y, sub.getLowerCorner().z),
-							glm::ivec3(box.getUpperCorner().x, sub.getUpperCorner().y, sub.getUpperCorner().z));
+	if (clampedSub.getUpperCorner().x < box.getUpperCorner().x) {
+		result.emplace_back(
+			glm::ivec3(clampedSub.getUpperCorner().x + 1, clampedSub.getLowerCorner().y, clampedSub.getLowerCorner().z),
+			glm::ivec3(box.getUpperCorner().x, clampedSub.getUpperCorner().y, clampedSub.getUpperCorner().z));
 	}
 
 	return result;
