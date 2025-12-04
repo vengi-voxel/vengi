@@ -546,26 +546,18 @@ void clua_quatregister(lua_State* s) {
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
 }
 
-#define ISSUE_602 0
-#if ISSUE_602
-struct SleepState {
-	uint64_t wakeupTime;
-};
-
-static int clua_yield_sleep(lua_State *s) {
-	SleepState *sleepState = (SleepState *)lua_touserdata(s, lua_upvalueindex(1));
+static int clua_sleep_continuation(lua_State *s, int status, lua_KContext ctx) {
 	app::App *app = app::App::getInstance();
 	const core::TimeProviderPtr &timeProvider = app->timeProvider();
+	const uint64_t currentMillis = timeProvider->systemMillis();
+	const uint64_t wakeupTime = (uint64_t)lua_tointeger(s, 2);
 
-	if (timeProvider->systemMillis() >= sleepState->wakeupTime) {
-		// Time is up, resume the coroutine
+	if (currentMillis >= wakeupTime) {
 		return 0;
 	}
 
-	// Not yet ready, re-yield
-	return lua_yield(s, 0);
+	return lua_yieldk(s, 0, 0, clua_sleep_continuation);
 }
-#endif
 
 static int clua_syssleep(lua_State *s) {
 	const int ms = luaL_checkinteger(s, 1);
@@ -574,23 +566,14 @@ static int clua_syssleep(lua_State *s) {
 		app->wait(ms);
 		return 0;
 	}
-#if ISSUE_602
-	// TODO: implement me: https://github.com/vengi-voxel/vengi/issues/602
+
 	const core::TimeProviderPtr &timeProvider = app->timeProvider();
 	const uint64_t currentMillis = timeProvider->systemMillis();
 
 	if (ms > 0) {
-		// Calculate when the coroutine should wake up
-		SleepState *sleepState = (SleepState *)lua_newuserdata(s, sizeof(SleepState));
-		sleepState->wakeupTime = currentMillis + ms;
-
-		// Register a continuation for this coroutine with the userdata as an upvalue
-		lua_pushcclosure(s, clua_yield_sleep, 1);  // Set 1 upvalue (userdata)
-
-		return lua_yield(s, 0);
+		lua_pushinteger(s, (lua_Integer)(currentMillis + (uint64_t)ms));
+		return lua_yieldk(s, 0, 0, clua_sleep_continuation);
 	}
-#endif
-	app->wait(ms);
 	return 0;
 }
 
