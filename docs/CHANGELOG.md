@@ -10,6 +10,10 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.4.0 (2025-XX-XX)
 
+General:
+
+   - Fixed invalid scaling for fbx imports
+
 VoxEdit:
 
    - Bump network protocol version - added two missing messages

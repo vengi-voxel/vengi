@@ -1077,7 +1077,6 @@ static void configureUFBXOpts(ufbx_load_opts &ufbxOpts, const core::String &file
 
 	// TODO: VOXELFORMAT: see issue https://github.com/vengi-voxel/vengi/issues/227
 	ufbxOpts.target_axes = ufbx_axes_right_handed_y_up;
-	ufbxOpts.target_unit_meters = 1.0f;
 	ufbxOpts.target_light_axes = ufbxOpts.target_axes;
 	ufbxOpts.target_camera_axes = ufbxOpts.target_axes;
 	ufbxOpts.space_conversion = UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY;
