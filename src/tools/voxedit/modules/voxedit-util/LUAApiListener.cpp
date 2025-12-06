@@ -18,7 +18,6 @@ void LUAApiListener::onNodeAdded(int nodeId) {
 
 void LUAApiListener::onNodeRemove(int nodeId) {
 	_mementoHandler.markNodeRemove(_sceneGraph, _sceneGraph.node(nodeId));
-	// TODO: this doesn't handle reference nodes and the like - see SceneManager::nodeRemove()
 	_sceneMgr->markDirty();
 }
 
