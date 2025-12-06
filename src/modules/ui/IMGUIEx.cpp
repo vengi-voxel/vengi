@@ -114,11 +114,8 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 		const ImVec2 size(h - 2.0f, h);
 		bool modified = false;
 
-		if constexpr (isFloat) {
-			ui::ScopedID id(label);
-		} else {
-			ImGui::PushID(ImGui::GetCurrentTable()->CurrentRow);
-		}
+		ui::ScopedID id(label);
+		ImGui::PushID(ImGui::GetCurrentTable()->CurrentRow);
 
 		if (AxisButtonX(size, ImGuiButtonFlags_AlignTextBaseLine)) {
 			vec.x = ValueType(0);
@@ -163,9 +160,7 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 		ImGui::SetNextItemWidth(-1);
 		ImGui::TextUnformatted(label);
 
-		if constexpr (!isFloat) {
-			ImGui::PopID();
-		}
+		ImGui::PopID();
 
 		ImGui::EndGroup();
 		return modified;
