@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "core/Assert.h"
 #include "core/Log.h"
+#include "engine-config.h"
 
 extern "C" {
 
@@ -86,6 +88,20 @@ inline void LUA::setError(const core::String& error) {
 inline const core::String& LUA::error() const {
 	return _error;
 }
+
+class StackChecker {
+private:
+	lua_State *_state;
+	const int _startStackDepth;
+public:
+	StackChecker(lua_State *state) :
+			_state(state), _startStackDepth(lua_gettop(_state)) {
+	}
+	~StackChecker() {
+		core_assert_msg(_startStackDepth == lua_gettop(_state), "Lua stack imbalance: started with %i, ended with %i",
+						_startStackDepth, lua_gettop(_state));
+	}
+};
 
 }
 

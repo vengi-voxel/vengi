@@ -2031,16 +2031,19 @@ core::String LUAApi::description(const core::String &luaScript) const {
 }
 
 core::String LUAApi::description(lua::LUA &lua) const {
+	lua::StackChecker stackCheck(lua);
 	// get description method
 	lua_getglobal(lua, "description");
 	if (!lua_isfunction(lua, -1)) {
 		// this is no error - just no description...
+		lua_pop(lua, 1);
 		return "";
 	}
 
 	const int error = lua_pcall(lua, 0, 1, 0);
 	if (error != LUA_OK) {
 		Log::error("LUA generate description script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
+		lua_pop(lua, 1);
 		return "";
 	}
 
@@ -2050,15 +2053,20 @@ core::String LUAApi::description(lua::LUA &lua) const {
 	} else {
 		Log::error("Expected to get a string return value");
 	}
+	lua_pop(lua, 1);
 
 	return desc;
 }
 
 bool LUAApi::prepare(lua::LUA &lua, const core::String &luaScript) const {
+	lua::StackChecker stackCheck(lua);
+	const int top = lua_gettop(lua);
 	if (luaL_dostring(lua, luaScript.c_str())) {
 		Log::error("%s", lua_tostring(lua, -1));
+		lua_pop(lua, 1);
 		return false;
 	}
+	lua_settop(lua, top);
 	return true;
 }
 
@@ -2071,28 +2079,39 @@ bool LUAApi::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAP
 }
 
 bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescription>& params) {
+	lua::StackChecker stackCheck(lua);
 	const int preTop = lua_gettop(lua);
 
 	// get arguments method
 	lua_getglobal(lua, "arguments");
 	if (!lua_isfunction(lua, -1)) {
 		// this is no error - just no parameters are needed...
+		lua_pop(lua, 1); // pop non-function
 		return true;
 	}
 
+	// Call arguments() -> should push return values on stack
 	const int error = lua_pcall(lua, 0, LUA_MULTRET, 0);
 	if (error != LUA_OK) {
 		Log::error("LUA generate arguments script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
+		lua_pop(lua, 1); // pop error message
 		return false;
 	}
 
-	const int top = lua_gettop(lua);
-	if (top <= preTop) {
+	const int retCount = lua_gettop(lua) - preTop;
+	if (retCount <= 0) {
+		// arguments() returned nothing — treat as optional
 		return true;
+	}
+
+	// use ONLY the first returned value; pop the rest
+	for (int i = 1; i < retCount; ++i) {
+		lua_pop(lua, 1);
 	}
 
 	if (!lua_istable(lua, -1)) {
 		Log::error("Expected to get a table return value");
+		lua_pop(lua, 1);
 		return false;
 	}
 
@@ -2103,6 +2122,7 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		lua_gettable(lua, -2);
 		if (!lua_istable(lua, -1)) {
 			Log::error("Expected to return tables of { name = 'name', desc = 'description', type = 'int' } at %i", i);
+			lua_settop(lua, preTop);
 			return false;
 		}
 
@@ -2116,36 +2136,56 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		bool minSet = false;
 		bool maxSet = false;
 		LUAParameterType type = LUAParameterType::Max;
+
+		// iterate key/value pairs
+		int n = -1;
 		lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
 		while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
-			if (!lua_isstring(lua, -1) || !lua_isstring(lua, -2)) {
-				Log::error("Expected to find string as parameter key and value");
-				// only store stuff with string key and value
-				return false;
+			++n;
+			// stack now: -1 = value, -2 = key
+			core::String key;
+			if (lua_type(lua, -2) == LUA_TSTRING) {
+				key = lua_tostring(lua, -2);
+			} else {
+				Log::error("Invalid key found in argument list");
+				lua_pop(lua, 1); // pop value
+				continue;        // skip unsupported keys
 			}
-			const char *key = lua_tostring(lua, -2);
-			const char *value = lua_tostring(lua, -1);
-			if (!SDL_strcmp(key, "name")) {
+			core::String value;
+
+			const int luaType = lua_type(lua, -1);
+			if (luaType == LUA_TSTRING) {
+				value = lua_tostring(lua, -1);
+			} else if (luaType == LUA_TNUMBER) {
+				value = core::String::format("%g", lua_tonumber(lua, -1));
+			} else if (luaType == LUA_TBOOLEAN) {
+				value = lua_toboolean(lua, -1) ? "true" : "false";
+			} else {
+				Log::warn("Unsupported value type for key '%s' in argument '%s'", key.c_str(), name.c_str());
+				lua_pop(lua, 1); // pop value
+				continue;        // skip unsupported values
+			}
+			if (key == "name") {
 				name = value;
-			} else if (!SDL_strncmp(key, "desc", 4)) {
+			} else if (core::string::startsWith(key, "desc")) {
 				description = value;
-			} else if (!SDL_strncmp(key, "enum", 4)) {
+			} else if (core::string::startsWith(key, "enum")) {
 				enumValues = value;
-			} else if (!SDL_strcmp(key, "default")) {
+			} else if (key == "default") {
 				defaultValue = value;
 				defaultSet = true;
-			} else if (!SDL_strcmp(key, "min")) {
-				minValue = SDL_atof(value);
+			} else if (core::string::startsWith(key, "min")) {
+				minValue = value.toFloat();
 				minSet = true;
-			} else if (!SDL_strcmp(key, "max")) {
-				maxValue = SDL_atof(value);
+			} else if (core::string::startsWith(key, "max")) {
+				maxValue = value.toFloat();
 				maxSet = true;
-			} else if (!SDL_strcmp(key, "type")) {
-				if (!SDL_strcmp(value, "int")) {
+			} else if (key == "type") {
+				if (core::string::startsWith(value, "int")) {
 					type = LUAParameterType::Integer;
-				} else if (!SDL_strcmp(value, "float")) {
+				} else if (value == "float") {
 					type = LUAParameterType::Float;
-				} else if (!SDL_strcmp(value, "colorindex")) {
+				} else if (value == "colorindex") {
 					type = LUAParameterType::ColorIndex;
 					if (!minSet) {
 						minValue = -1; // empty voxel is lua bindings
@@ -2156,42 +2196,47 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 					if (!defaultSet) {
 						defaultValue = "1";
 					}
-				} else if (!SDL_strncmp(value, "str", 3)) {
+				} else if (core::string::startsWith(value, "str")) {
 					type = LUAParameterType::String;
-				} else if (!SDL_strncmp(value, "file", 4)) {
+				} else if (value == "file") {
 					type = LUAParameterType::File;
-				} else if (!SDL_strncmp(value, "enum", 4)) {
+				} else if (core::string::startsWith(value, "enum")) {
 					type = LUAParameterType::Enum;
-				} else if (!SDL_strncmp(value, "bool", 4)) {
+				} else if (core::string::startsWith(value, "bool")) {
 					type = LUAParameterType::Boolean;
 				} else {
-					Log::error("Invalid type found: %s", value);
+					Log::error("Invalid type found: %s", value.c_str());
+					lua_settop(lua, preTop);
 					return false;
 				}
 			} else {
-				Log::warn("Invalid key found: %s", key);
+				Log::warn("Invalid key found: %s", key.c_str());
 			}
 			lua_pop(lua, 1); // remove value, keep key for lua_next
 		}
 
 		if (name.empty()) {
 			Log::error("No name = 'myname' key given");
+			lua_settop(lua, preTop);
 			return false;
 		}
 
 		if (type == LUAParameterType::Max) {
 			Log::error("No type = 'int', 'float', 'str', 'bool', 'enum' or 'colorindex' key given for '%s'", name.c_str());
+			lua_settop(lua, preTop);
 			return false;
 		}
 
 		if (type == LUAParameterType::Enum && enumValues.empty()) {
 			Log::error("No enum property given for argument '%s', but type is 'enum'", name.c_str());
+			lua_settop(lua, preTop);
 			return false;
 		}
 
 		params.emplace_back(name, description, defaultValue, enumValues, minValue, maxValue, type);
 		lua_pop(lua, 1); // remove table
 	}
+	lua_pop(lua, 1); // pop return table
 	return true;
 }
 
@@ -2261,6 +2306,7 @@ void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s) {
 }
 
 void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::String &luaScript) {
+	lua::StackChecker stackCheck(_lua);
 	s.valid = false;
 	s.parameterDescription.clear();
 	s.parameters.clear();

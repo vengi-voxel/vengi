@@ -8,24 +8,11 @@
 #include "core/StringUtil.h"
 #include "LUAFunctions.h"
 #include "Trace.h"
-#include "engine-config.h"
 
 namespace lua {
 
-class StackChecker {
-private:
-	lua_State *_state;
-	const int _startStackDepth;
-public:
-	StackChecker(lua_State *state) :
-			_state(state), _startStackDepth(lua_gettop(_state)) {
-	}
-	~StackChecker() {
-		core_assert(_startStackDepth == lua_gettop(_state));
-	}
-};
-
 namespace {
+
 int panicCB(lua_State *L) {
 	const char *error = lua_isnil(L, -1) ? "" : lua_tostring(L, -1);
 	Log::error("Lua panic. Error message: %s", error);
