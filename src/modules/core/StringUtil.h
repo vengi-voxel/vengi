@@ -238,20 +238,12 @@ inline core::String toString(const double& v) {
 
 template<>
 inline core::String toString(const int64_t& v) {
-#ifdef _MSC_VER
-	return core::String::format("%lld", (long long)v);
-#else
-	return core::String::format("%" PRId64, v);
-#endif
+	return core::String::format("%" SDL_PRIs64, v);
 }
 
 template<>
 inline core::String toString(const uint64_t& v) {
-#ifdef _MSC_VER
-	return core::String::format("%llu", (long long)v);
-#else
-	return core::String::format("%" PRIu64, v);
-#endif
+	return core::String::format("%" SDL_PRIu64, v);
 }
 
 inline core::String trim(const core::String& str) {
