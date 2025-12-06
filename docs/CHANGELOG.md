@@ -14,11 +14,13 @@ General:
 
    - Fixed invalid scaling for fbx imports
    - Fixed a lua integration bug for Windows
+   - Improved palette name support
 
 VoxEdit:
 
    - Bump network protocol version - added two missing messages
    - Implemented unselecting and intersections
+   - Fixed input fields for xyz values in the ui
 
 Thumbnailer:
 
