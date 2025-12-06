@@ -36,6 +36,10 @@ private:
 				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
+	int addGroupNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
+					 int parent) const;
+	void importAnimation(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
+						 scenegraph::SceneGraphNode &sceneGraphNode) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					  int parent) const;
 	bool saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
@@ -47,8 +51,10 @@ public:
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
+
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+		static io::FormatDescription f{
+			"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 		return f;
 	}
 };
