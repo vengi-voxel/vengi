@@ -48,6 +48,7 @@ bool ToolsPanel::init() {
 	_showGizmoModel = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
+	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	return true;
 }
 
@@ -121,17 +122,16 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 						 &listener);
 	}
 
-	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ui::ScopedID id("##translatevolume");
+	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Move voxels"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ui::ScopedID id("##movevoxels");
 		static glm::ivec3 translate{0};
-		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
-		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
-		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
-		const core::String &shiftCmd = core::String::format("shift %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
-		ImGui::SameLine();
+		const int minStep = _gridSize->intVal();
+		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, minStep);
+		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, minStep);
+		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, minStep);
+
 		const core::String &moveCmd = core::String::format("move %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
+		ImGui::CommandIconButton(ICON_LC_BOXES, _("Move"), moveCmd.c_str(), listener);
 	}
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
