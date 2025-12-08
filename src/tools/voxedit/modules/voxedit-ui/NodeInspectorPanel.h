@@ -27,6 +27,7 @@ private:
 	using Super = ui::Panel;
 	core::VarPtr _localSpace;
 	core::VarPtr _regionSizes;
+	core::VarPtr _gridSize;
 	core::Buffer<glm::ivec3> _validRegionSizes;
 	glm::ivec3 _newRegionSize{32, 32, 32};
 	SceneManagerPtr _sceneMgr;

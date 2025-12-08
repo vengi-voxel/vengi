@@ -368,8 +368,8 @@ bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputT
 	return _priv::InputXYZImpl(label, vec, format, flags, step, step_fast);
 }
 
-bool InputXYZ(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags, int step, int step_fast) {
-	return _priv::InputXYZImpl(label, vec, nullptr, flags, step, step_fast);
+bool InputXYZ(const char *label, glm::ivec3 &vec, const char *format, ImGuiInputTextFlags flags, int step, int step_fast) {
+	return _priv::InputXYZImpl(label, vec, format, flags, step, step_fast);
 }
 
 bool InputFloat(const char *label, float &v, const char *format, ImGuiInputTextFlags flags) {

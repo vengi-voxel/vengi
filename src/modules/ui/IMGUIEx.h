@@ -41,7 +41,7 @@ IMGUI_API bool InputVec3(const char *label, glm::vec3 &vec, const char *format =
 IMGUI_API bool InputVec3(const char *label, const glm::vec3 &vec);
 IMGUI_API bool InputXYZ(const char *label, const glm::vec3 &vec);
 IMGUI_API bool InputXYZ(const char *label, glm::vec3 &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0, float step = 0.0f, float step_fast = 0.0f);
-IMGUI_API bool InputXYZ(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags = 0, int step = 0, int step_fast = 0);
+IMGUI_API bool InputXYZ(const char *label, glm::ivec3 &vec, const char *format = nullptr, ImGuiInputTextFlags flags = 0, int step = 0, int step_fast = 0);
 // extension for optional in-table input
 IMGUI_API bool InputFloat(const char *label, float &v, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 

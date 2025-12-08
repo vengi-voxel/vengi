@@ -31,6 +31,7 @@ namespace voxedit {
 bool NodeInspectorPanel::init() {
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
+	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	return true;
 }
 
@@ -74,15 +75,17 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 		ImGui::TableHeadersRow();
 
 		glm::ivec3 position = region.getLowerCorner();
-		ImGui::InputXYZ(_("Position"), position);
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
+		const int minStep = _gridSize->intVal();
+		const int maxStep = 10;
+		const bool posChange = ImGui::InputXYZ(_("Position"), position, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
+		if (posChange || ImGui::IsItemDeactivatedAfterEdit()) {
 			const glm::ivec3 &f = position - region.getLowerCorner();
 			_sceneMgr->nodeShift(node.id(), f);
 		}
 
 		glm::ivec3 dimensions = region.getDimensionsInVoxels();
-		ImGui::InputXYZ(_("Size"), dimensions);
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
+		const bool sizeChange = ImGui::InputXYZ(_("Size"), dimensions, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
+		if (sizeChange || ImGui::IsItemDeactivatedAfterEdit()) {
 			voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + dimensions - 1);
 			_sceneMgr->nodeResize(node.id(), newRegion);
 		}
@@ -289,7 +292,9 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
 		}
-		ImGui::InputXYZ(_("Translation"), matrixTranslation);
+		const float minStep = _gridSize->floatVal();
+		const float maxStep = 10.0f;
+		ImGui::InputXYZ(_("Translation"), matrixTranslation, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		change |= ImGui::IsItemDeactivatedAfterEdit();
 
 		// ------------------

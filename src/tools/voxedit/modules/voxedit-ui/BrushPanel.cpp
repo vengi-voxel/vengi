@@ -185,7 +185,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	if (ImGui::CollapsingHeader(_("Reduce size"))) {
 		voxel::Region region = brush.volume()->region();
 		glm::ivec3 size = region.getDimensionsInVoxels();
-		if (ImGui::InputXYZ(_("Size"), size, ImGuiInputTextFlags_EnterReturnsTrue)) {
+		if (ImGui::InputXYZ(_("Size"), size, nullptr, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (glm::any(glm::greaterThan(size, region.getDimensionsInVoxels()))) {
 				size = glm::min(size, region.getDimensionsInVoxels());
 			}
