@@ -2138,10 +2138,8 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		LUAParameterType type = LUAParameterType::Max;
 
 		// iterate key/value pairs
-		int n = -1;
 		lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
 		while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
-			++n;
 			// stack now: -1 = value, -2 = key
 			core::String key;
 			if (lua_type(lua, -2) == LUA_TSTRING) {
@@ -2157,7 +2155,7 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 			if (luaType == LUA_TSTRING) {
 				value = lua_tostring(lua, -1);
 			} else if (luaType == LUA_TNUMBER) {
-				value = core::String::format("%g", lua_tonumber(lua, -1));
+				value = core::String::format("%f", (float)lua_tonumber(lua, -1));
 			} else if (luaType == LUA_TBOOLEAN) {
 				value = lua_toboolean(lua, -1) ? "true" : "false";
 			} else {
