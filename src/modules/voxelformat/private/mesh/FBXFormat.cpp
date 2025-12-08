@@ -990,8 +990,6 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 	scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
 	sceneGraphNode.setVisible(ufbxNode->visible);
 
-	importAnimation(ufbxScene, ufbxNode, sceneGraph, sceneGraphNode);
-
 	for (const ufbx_prop &ufbxProp : ufbxNode->props.props) {
 		if ((ufbxProp.flags & UFBX_PROP_FLAG_NO_VALUE) != 0) {
 			continue;
@@ -1050,8 +1048,6 @@ int FBXFormat::addGroupNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNo
 	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, getInputScale());
 	node.setTransform(keyFrameIdx, transform);
 
-	importAnimation(ufbxScene, ufbxNode, sceneGraph, node);
-
 	return sceneGraph.emplace(core::move(node), parent);
 }
 
@@ -1079,8 +1075,6 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	camNode.setTransform(keyFrameIdx, transform);
 
-	importAnimation(ufbxScene, ufbxNode, sceneGraph, camNode);
-
 	return sceneGraph.emplace(core::move(camNode), parent);
 }
 
@@ -1098,6 +1092,9 @@ int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 		Log::error("Failed to add node with parent %i", parent);
 		return nodeId;
 	}
+
+	importAnimation(ufbxScene, ufbxNode, sceneGraph, sceneGraph.node(nodeId));
+
 	for (const ufbx_node *ufbxChildNode : ufbxNode->children) {
 		const int newNodeId = addNode_r(ufbxScene, ufbxChildNode, filename, archive, sceneGraph, nodeId);
 		if (newNodeId == InvalidNodeId) {
