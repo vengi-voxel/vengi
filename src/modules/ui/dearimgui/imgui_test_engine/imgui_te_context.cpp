@@ -1238,6 +1238,9 @@ void    ImGuiTestContext::ScrollToTop(ImGuiTestRef ref)
     if (IsError())
         return;
 
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    LogDebug("ScrollToTop");
+
     ImGuiWindow* window = GetWindowByRef(ref);
     IM_CHECK_SILENT(window != nullptr);
     if (window->Scroll.y == 0.0f)
@@ -1251,6 +1254,9 @@ void    ImGuiTestContext::ScrollToBottom(ImGuiTestRef ref)
     if (IsError())
         return;
 
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    LogDebug("ScrollToBottom");
+
     ImGuiWindow* window = GetWindowByRef(ref);
     IM_CHECK_SILENT(window != nullptr);
     if (window->Scroll.y == window->ScrollMax.y)
@@ -1259,9 +1265,9 @@ void    ImGuiTestContext::ScrollToBottom(ImGuiTestRef ref)
     Yield();
 }
 
-bool    ImGuiTestContext::ScrollErrorCheck(ImGuiAxis axis, float expected, float actual, int* remaining_attempts)
+bool    ScrollErrorCheck(ImGuiTestContext* ctx, ImGuiAxis axis, float expected, float actual, int* remaining_attempts)
 {
-    if (IsError())
+    if (ctx->IsError())
     {
         (*remaining_attempts)--;
         return false;
@@ -1274,7 +1280,7 @@ bool    ImGuiTestContext::ScrollErrorCheck(ImGuiAxis axis, float expected, float
     (*remaining_attempts)--;
     if (*remaining_attempts > 0)
     {
-        LogInfo("Failed to set Scroll%c. Requested %.2f, got %.2f. Will try again.", 'X' + axis, expected, actual);
+        ctx->LogInfo("Failed to set Scroll%c. Requested %.2f, got %.2f. Will try again.", 'X' + axis, expected, actual);
         return true;
     }
     else
@@ -1417,7 +1423,7 @@ void    ImGuiTestContext::ScrollTo(ImGuiTestRef ref, ImGuiAxis axis, float scrol
 
         // Error handling to avoid getting stuck in this function.
         Yield();
-        if (!ScrollErrorCheck(axis, scroll_next, window->Scroll[axis], &remaining_failures))
+        if (!ScrollErrorCheck(this, axis, scroll_next, window->Scroll[axis], &remaining_failures))
             break;
     }
 
@@ -1558,7 +1564,7 @@ void    ImGuiTestContext::ScrollToTabItem(ImGuiTabBar* tab_bar, ImGuiID tab_id)
 // - One of the net visible effect of an unstable ScrollMax is that the End key would put you at a spot that's not exactly the lowest spot,
 //   and so a second press to End would you move again by a few pixels.
 // FIXME-TESTS: Make this an iterative, smooth scroll.
-void    ImGuiTestContext::ScrollVerifyScrollMax(ImGuiTestRef ref)
+void    ImGuiTestContext::_ScrollVerifyScrollMax(ImGuiTestRef ref)
 {
     ImGuiWindow* window = GetWindowByRef(ref);
     ImGui::SetScrollY(window, 0.0f);

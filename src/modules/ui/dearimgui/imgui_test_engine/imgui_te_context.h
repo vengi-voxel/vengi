@@ -409,8 +409,6 @@ struct IMGUI_API ImGuiTestContext
     void        ScrollToItemX(ImGuiTestRef ref);
     void        ScrollToItemY(ImGuiTestRef ref);
     void        ScrollToTabItem(ImGuiTabBar* tab_bar, ImGuiID tab_id);
-    bool        ScrollErrorCheck(ImGuiAxis axis, float expected, float actual, int* remaining_attempts);
-    void        ScrollVerifyScrollMax(ImGuiTestRef ref);
 
     // Low-level queries
     // - ItemInfo queries never returns nullptr! Instead they return an empty instance (info->IsEmpty(), info->ID == 0) and set contexted as errored.
@@ -536,6 +534,7 @@ struct IMGUI_API ImGuiTestContext
 #endif
 
     // [Internal]
+    void        _ScrollVerifyScrollMax(ImGuiTestRef ref);
     void        _MakeAimingSpaceOverPos(ImGuiViewport* viewport, ImGuiWindow* over_window, const ImVec2& over_pos); // Move windows covering 'window' at pos.
     void        _ForeignWindowsHideOverPos(const ImVec2& pos, ImGuiWindow** ignore_list);  // FIXME: Aim to remove this system...
     void        _ForeignWindowsUnhideAll();                                                // FIXME: Aim to remove this system...

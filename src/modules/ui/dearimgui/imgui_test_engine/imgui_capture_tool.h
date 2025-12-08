@@ -65,7 +65,7 @@ struct ImGuiCaptureArgs
     ImGuiCaptureFlags       InFlags = 0;                    // Flags for customizing behavior of screenshot tool.
     ImVector<ImGuiWindow*>  InCaptureWindows;               // Windows to capture. All other windows will be hidden. May be used with InCaptureRect to capture only some windows in specified rect.
     ImRect                  InCaptureRect;                  // Screen rect to capture. Does not include padding.
-    float                   InPadding = 16.0f;              // Extra padding at the edges of the screenshot. Ensure that there is available space around capture rect horizontally, also vertically if ImGuiCaptureFlags_StitchFullContents is not used.
+    float                   InPadding = 16.0f;              // Extra padding at the edges of the screenshot. Ensure that there is available space around capture rect horizontally, also vertically if ImGuiCaptureFlags_StitchAll is not used.
     char                    InOutputFile[256] = "";         // Output will be saved to a file if InOutputImageBuf is nullptr.
     ImGuiCaptureImageBuf*   InOutputImageBuf = nullptr;     // _OR_ Output will be saved to image buffer if specified.
     int                     InRecordFPSTarget = 30;         // FPS target for recording videos.
