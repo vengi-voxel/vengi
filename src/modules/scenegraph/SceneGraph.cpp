@@ -1155,11 +1155,17 @@ void SceneGraph::align(int padding) {
 
 	stbrp_context context;
 	int divisor = 16;
+	const int w = width / divisor;
+	const int d = depth / divisor;
+	if (w == 0 || d == 0) {
+		Log::warn("Could not align scene graph nodes - too small dimensions");
+		return;
+	}
 	for (int i = 0; i < 5; ++i) {
 		core_memset(&context, 0, sizeof(context));
-		stbrp_init_target(&context, width / divisor, depth / divisor, stbNodes.data(), (int)stbNodes.size());
+		stbrp_init_target(&context, w, d, stbNodes.data(), (int)stbNodes.size());
 		if (stbrp_pack_rects(&context, stbRects.data(), (int)stbRects.size()) == 1) {
-			Log::debug("Used width: %i, depth: %i for packing", width / divisor, depth / divisor);
+			Log::debug("Used width: %i, depth: %i for packing", w, d);
 			break;
 		}
 		if (divisor == 1) {
