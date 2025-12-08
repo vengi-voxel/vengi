@@ -47,6 +47,7 @@ bool ToolsPanel::init() {
 	_showGizmoScene = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_showGizmoModel = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
+	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
 	return true;
 }
 
@@ -167,7 +168,13 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);
 		}
-		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 3);
+
+		const char *cursorDetails[] = {_("Disabled"), _("Position"), _("Details"), _("Distance")};
+		const int cursorDetailValue = _cursorDetails->intVal();
+		const char *cursorDetailName = (cursorDetailValue >= 0 && cursorDetailValue < lengthof(cursorDetails))
+										   ? cursorDetails[cursorDetailValue]
+										   : _("Unknown");
+		ImGui::SliderVarInt(_("Cursor details"), _cursorDetails, 0, lengthof(cursorDetails) - 1, cursorDetailName);
 	}
 }
 

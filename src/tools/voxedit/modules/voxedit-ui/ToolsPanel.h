@@ -23,6 +23,8 @@ private:
 	core::VarPtr _showGizmoScene;
 	core::VarPtr _showGizmoModel;
 	core::VarPtr _localSpace;
+	core::VarPtr _cursorDetails;
+
 	void updateSceneMode(command::CommandExecutionListener &listener);
 	void updateEditMode(command::CommandExecutionListener &listener);
 
