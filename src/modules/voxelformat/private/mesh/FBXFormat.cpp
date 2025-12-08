@@ -19,6 +19,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -765,18 +766,6 @@ static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
 	return glm::quat::wxyz((float)v.w, (float)v.x, (float)v.y, (float)v.z);
 }
 
-#if 0
-static inline glm::mat4 _ufbx_to_mat(const ufbx_matrix& v) {
-	glm::mat4 mat(1.0f);
-	for (int column = 0; column < 4; ++column) {
-		mat[column].x = v.cols[column].x;
-		mat[column].y = v.cols[column].y;
-		mat[column].z = v.cols[column].z;
-	}
-	return mat;
-}
-#endif
-
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_transform &ufbxTransform,
 									  const glm::vec3 &scale) {
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
@@ -785,14 +774,8 @@ static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *ufbxScene,
 									  const ufbx_node *ufbxNode, const glm::vec3 &scale) {
-#if 0
-	transform.setWorldMatrix(priv::_ufbx_to_mat(ufbxNode->unscaled_node_to_world));
-#else
 	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(ufbxScene->anim, ufbxNode, 1.0);
 	_ufbx_to_transform(transform, ufbxTransform, scale);
-#endif
-	// transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale)); // UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY is
-	// used - localScale not needed
 }
 
 static color::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
@@ -1009,46 +992,52 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 
 	importAnimation(ufbxScene, ufbxNode, sceneGraph, sceneGraphNode);
 
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	scenegraph::SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
-	priv::_ufbx_to_transform(transform, ufbxScene, ufbxNode, getInputScale());
 	for (const ufbx_prop &ufbxProp : ufbxNode->props.props) {
 		if ((ufbxProp.flags & UFBX_PROP_FLAG_NO_VALUE) != 0) {
 			continue;
 		}
 		sceneGraphNode.setProperty(priv::_ufbx_to_string(ufbxProp.name), priv::_ufbx_to_string(ufbxProp.value_str));
 	}
-	sceneGraphNode.setTransform(keyFrameIdx, transform);
 	return nodeId;
 }
 
 void FBXFormat::importAnimation(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode,
 								scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &sceneGraphNode) const {
 	for (const ufbx_anim_stack *stack : ufbxScene->anim_stacks) {
-		const core::String animId = priv::_ufbx_to_string(stack->name);
+		const core::String &animId = priv::_ufbx_to_string(stack->name);
 		const double duration = stack->time_end - stack->time_begin;
 		if (duration <= 0.0) {
+			Log::warn("Could not import animation '%s' with non-positive duration %f", animId.c_str(), duration);
 			continue;
 		}
-		sceneGraph.addAnimation(animId);
-		sceneGraphNode.addAnimation(animId);
-		sceneGraphNode.setAnimation(animId);
+		if (!sceneGraphNode.setAnimation(animId)) {
+			Log::warn("Failed to set animation '%s' for node '%s'", animId.c_str(), sceneGraphNode.name().c_str());
+			continue;
+		}
 
 		const int fps = ufbxScene->settings.frames_per_second > 0 ? (int)ufbxScene->settings.frames_per_second : 30;
 		const int frames = (int)(duration * fps);
+		Log::debug("Import %i frames for animation '%s' on node '%s' (duration: %f, fps: %i)", frames, animId.c_str(),
+				   sceneGraphNode.name().c_str(), duration, fps);
 		for (int i = 0; i < frames; ++i) {
 			const double time = stack->time_begin + (double)i / (double)fps;
 			const ufbx_transform ufbxTransform = ufbx_evaluate_transform(stack->anim, ufbxNode, time);
-			scenegraph::SceneGraphTransform transform;
-			priv::_ufbx_to_transform(transform, ufbxTransform, getInputScale());
-			const scenegraph::KeyFrameIndex kfIdx = sceneGraphNode.addKeyFrame(i);
-			if (kfIdx != InvalidKeyFrame) {
-				sceneGraphNode.setTransform(kfIdx, transform);
-				sceneGraphNode.keyFrame(kfIdx).interpolation = scenegraph::InterpolationType::Linear;
+			scenegraph::KeyFrameIndex keyFrameIdx = sceneGraphNode.addKeyFrame(i);
+			if (keyFrameIdx == InvalidKeyFrame) {
+				keyFrameIdx = sceneGraphNode.keyFrameForFrame(i);
+				if (keyFrameIdx == InvalidKeyFrame) {
+					Log::warn("Failed to add or get keyframe %i/%i for animation '%s' on node '%s'", i, frames,
+							  animId.c_str(), sceneGraphNode.name().c_str());
+					continue;
+				}
 			}
+			Log::debug("Import frame %i/%i for animation '%s' on node '%s'", i, frames, animId.c_str(),
+					   sceneGraphNode.name().c_str());
+			scenegraph::SceneGraphKeyFrame &keyFrame = sceneGraphNode.keyFrame(keyFrameIdx);
+			keyFrame.interpolation = scenegraph::InterpolationType::Linear;
+			priv::_ufbx_to_transform(keyFrame.transform(), ufbxTransform, getInputScale());
 		}
 	}
-	sceneGraphNode.setAnimation(DEFAULT_ANIMATION);
 }
 
 int FBXFormat::addGroupNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, scenegraph::SceneGraph &sceneGraph,
