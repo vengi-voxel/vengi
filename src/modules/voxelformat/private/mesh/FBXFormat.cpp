@@ -27,6 +27,7 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
 #include <glm/ext/quaternion_trigonometric.hpp>
+#include <glm/gtc/color_space.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #define ufbx_assert core_assert
@@ -975,10 +976,16 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 					const ufbx_vec4 &color0 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx0);
 					const ufbx_vec4 &color1 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx1);
 					const ufbx_vec4 &color2 = ufbx_get_vertex_vec4(&ufbxMesh->vertex_color, idx2);
-					// TODO: VOXELFORMAT: this is sRGB - need to convert to linear
+					// TODO: VOXELFORMAT: this is sRGB - need to convert to linear ??
+#if 1
 					meshTri.setColor(color::getRGBA(priv::_ufbx_to_vec4(color0)),
 									 color::getRGBA(priv::_ufbx_to_vec4(color1)),
 									 color::getRGBA(priv::_ufbx_to_vec4(color2)));
+#else
+					meshTri.setColor(color::getRGBA(glm::convertSRGBToLinear(priv::_ufbx_to_vec4(color0))),
+									 color::getRGBA(glm::convertSRGBToLinear(priv::_ufbx_to_vec4(color1))),
+									 color::getRGBA(glm::convertSRGBToLinear(priv::_ufbx_to_vec4(color2))));
+#endif
 				}
 				if (useUVs) {
 					const ufbx_vec2 &uv0 = ufbx_get_vertex_vec2(&ufbxMesh->vertex_uv, idx0);
@@ -1178,11 +1185,16 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	Log::debug("right: %i, up: %i, front: %i", ufbxScene->settings.axes.right, ufbxScene->settings.axes.up,
 			   ufbxScene->settings.axes.front);
 
+	for (const ufbx_anim_stack *stack : ufbxScene->anim_stacks) {
+		sceneGraph.addAnimation(priv::_ufbx_to_string(stack->name));
+	}
+
 	if (addNode_r(ufbxScene, ufbxScene->root_node, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
 		Log::error("Failed to add root child node");
 		ufbx_free_scene(ufbxScene);
 		return false;
 	}
+	sceneGraph.setAnimation(DEFAULT_ANIMATION);
 
 	ufbx_free_scene(ufbxScene);
 	return !sceneGraph.empty();

@@ -647,6 +647,7 @@ bool SceneGraphNode::hasKeyFrame(FrameIndex frameIdx) const {
 KeyFrameIndex SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	SceneGraphKeyFrames *kfs = keyFrames();
 	if (kfs == nullptr) {
+		Log::debug("There is no animation active for node %s (%i)", _name.c_str(), _id);
 		return InvalidKeyFrame;
 	}
 	for (size_t i = 0; i < kfs->size(); ++i) {
