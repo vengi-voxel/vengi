@@ -244,6 +244,7 @@ def update_dearimgui():
             (f"im*.h", "src/modules/ui/dearimgui"),
             (f"im*.cpp", "src/modules/ui/dearimgui"),
             (f"misc/cpp/*", "src/modules/ui/dearimgui"),
+            (f"backends/imgui_impl_null.*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_sdl2.*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_sdl3.*", "src/modules/ui/dearimgui/backends"),
             (f"backends/imgui_impl_opengl3*", "src/modules/ui/dearimgui/backends"),

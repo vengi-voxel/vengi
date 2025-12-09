@@ -21,6 +21,16 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->MenuClick("File/Save as");
 		IM_CHECK(cancelSaveFile(ctx));
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "execute script")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/New");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, "test_run.lua"));
+		ctx->SetRef(id);
+		ctx->ComboClick("##script/test_run.lua");
+		ctx->ItemClick("Run");
+	};
 }
 
 } // namespace voxedit
