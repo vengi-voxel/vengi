@@ -4,6 +4,7 @@
 
 #include "CommandHandler.h"
 #include "core/BindingContext.h"
+#include "core/Pair.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "command/Command.h"
@@ -14,18 +15,22 @@
 
 namespace command {
 
-static core::String findPotentialMatch(const core::String& arg) {
+using Match = core::Pair<core::String, uint32_t>;
+static Match findPotentialMatch(const core::String& arg) {
 	core::String match;
-	size_t leastCost = 1000000u;
+	uint32_t leastCost = 1000000u;
 	command::Command::visit([&] (const command::Command& c) {
 		const size_t cost = core::string::levenshteinDistance(arg, c.name());
 		if (cost < leastCost) {
-			leastCost = cost;
+			leastCost = (uint32_t)cost;
 			match = c.name();
+		} else if (cost == leastCost && !match.empty()) {
+			match.clear();
 		}
 	});
 
-	return match;
+	Log::debug("least cost for '%s' is %u (match: '%s')", arg.c_str(), leastCost, match.c_str());
+	return {match, leastCost};
 }
 
 int executeCommands(const core::String& commandLine, CommandExecutionListener *listener) {
@@ -70,9 +75,9 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
 			Log::info("unknown command: %s in binding context %i", cmd.c_str(), (int)core::bindingContext());
-			const core::String& potentialMatch = findPotentialMatch(cmd);
-			if (!potentialMatch.empty()) {
-				Log::info("did you mean: %s", potentialMatch.c_str());
+			const Match& potentialMatch = findPotentialMatch(cmd);
+			if (!potentialMatch.first.empty()) {
+				Log::info("did you mean: %s (%u)", potentialMatch.first.c_str(), potentialMatch.second);
 			}
 			n = -1;
 		} else {
