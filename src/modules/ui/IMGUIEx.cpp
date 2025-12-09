@@ -152,7 +152,8 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 		if constexpr (isFloat) {
 			modified |= ImGui::InputFloat("", &vec.z, step, step_fast, format, flags);
 		} else {
-			modified |= ImGui::InputInt("", &vec.z, step, step_fast, flags);
+			ImGui::InputInt("", &vec.z, step, step_fast, flags);
+			modified |= ImGui::IsItemDeactivatedAfterEdit();
 		}
 		ImGui::PopID();
 

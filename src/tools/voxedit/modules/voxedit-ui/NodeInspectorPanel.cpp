@@ -294,7 +294,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 		}
 		const float minStep = _gridSize->floatVal();
 		const float maxStep = 10.0f;
-		ImGui::InputXYZ(_("Translation"), matrixTranslation, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
+		change |= ImGui::InputXYZ(_("Translation"), matrixTranslation, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		change |= ImGui::IsItemDeactivatedAfterEdit();
 
 		// ------------------
@@ -316,7 +316,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
 		}
-		ImGui::InputXYZ(_("Rotation"), matrixRotation);
+		change |= ImGui::InputXYZ(_("Rotation"), matrixRotation, nullptr, ImGuiInputTextFlags_None, 0.1f, 1.0f);
 		change |= ImGui::IsItemDeactivatedAfterEdit();
 
 		// ------------------
@@ -338,7 +338,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
 		}
-		ImGui::InputXYZ(_("Scale"), matrixScale);
+		change |= ImGui::InputXYZ(_("Scale"), matrixScale, nullptr, ImGuiInputTextFlags_None, 0.1f, 1.0f);
 		change |= ImGui::IsItemDeactivatedAfterEdit();
 
 		// ------------------
@@ -354,7 +354,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			_sceneMgr->nodeUpdatePivotGroup(pivot);
 		}
 		ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
-		ImGui::InputXYZ(_("Pivot"), pivot);
+		pivotChanged |= ImGui::InputXYZ(_("Pivot"), pivot, nullptr, ImGuiInputTextFlags_None, 0.1f, 0.1f);
 		pivotChanged |= ImGui::IsItemDeactivatedAfterEdit();
 		change |= pivotChanged;
 
