@@ -197,6 +197,7 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 												   const scenegraph::FrameIndex &frame,
 												   const scenegraph::SceneGraphNode &node, int idx,
 												   const voxel::Region &region) const {
+	core_trace_scoped(PrepareMeshStateTransform);
 	const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 	const glm::vec3 &scale = transform.worldScale();
 	const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) + (int)std::signbit(scale.z);
