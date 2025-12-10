@@ -230,6 +230,39 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	meshState->setModelMatrix(idx, worldMatrix, transformedMins, transformedMaxs);
 }
 
+bool SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, int activeNodeId,
+										 scenegraph::SceneGraphNode &node, int idx,
+										 const voxel::RawVolume *nodeVolume) {
+	if (node.id() != activeNodeId) {
+		return false;
+	}
+	if (!_sliceRegion.isValid()) {
+		_sliceVolume = nullptr;
+		_sliceVolumeDirty = false;
+		_sliceVolumeNodeId = -1;
+		return false;
+	}
+
+	// check several things to re-create the slice volume
+	// * a new activated node
+	// * the region changed
+	// * we don't yet have a sliced volume view but requested one
+	if (_sliceVolumeDirty || _sliceVolumeNodeId != activeNodeId || !_sliceVolume ||
+		_sliceVolume->region() != _sliceRegion) {
+		// this enforces the lock on the volume renderer if the volume is currently extracted
+		core::SharedPtr<voxel::RawVolume> newVolume(core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion));
+		const voxel::RawVolume *oldV = _volumeRenderer.setVolume(meshState, idx, newVolume.get(), &node.palette(),
+																 &node.normalPalette(), !_sliceVolumeDirty);
+		if (_sliceVolumeDirty || oldV != nullptr) {
+			_volumeRenderer.scheduleRegionExtraction(meshState, idx, newVolume->region());
+		}
+		_sliceVolume = newVolume;
+		_sliceVolumeNodeId = activeNodeId;
+	}
+	_sliceVolumeDirty = false;
+	return true;
+}
+
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
@@ -249,6 +282,8 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 
 	const int activeNodeId = sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
+	// TODO: PERF: remove direct access to gpu buffers and use for_parallel here
+	// TODO: for this we have to handle the slice region outside of this loop
 	for (auto entry : sceneGraph.nodes()) {
 		scenegraph::SceneGraphNode &node = entry->value;
 		if (renderContext.onlyModels && !node.isModelNode()) {
@@ -275,45 +310,20 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			continue;
 		}
 		const voxel::RawVolume *v = meshState->volume(idx);
-		const voxel::RawVolume *nodeVolume = sceneGraph.resolveVolume(node);
+		const bool sliceView = handleSliceView(meshState, activeNodeId, node, idx, v);
 
-		bool sliceView = false;
 		voxel::Region region;
-		if (node.id() == activeNodeId) {
-			if (_sliceRegion.isValid()) {
-				sliceView = true;
-				// check several things to re-create the slice volume
-				// * a new activated node
-				// * the region changed
-				// * we don't yet have a sliced volume view but requested one
-				if (_sliceVolumeDirty || _sliceVolumeNodeId != activeNodeId || !_sliceVolume || _sliceVolume->region() != _sliceRegion) {
-					// this enforces the lock on the volume renderer if the volume is currently extracted
-					core::SharedPtr<voxel::RawVolume> newVolume(core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion));
-					const voxel::RawVolume *oldV = _volumeRenderer.setVolume(meshState, idx, newVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
-					if (_sliceVolumeDirty || oldV != nullptr) {
-						_volumeRenderer.scheduleRegionExtraction(meshState, idx, newVolume->region());
-					}
-					_sliceVolume = newVolume;
-					_sliceVolumeNodeId = activeNodeId;
-				}
-				_sliceVolumeDirty = false;
-
-				region = _sliceVolume->region();
-				v = _sliceVolume.get();
-			} else {
-				_sliceVolume = nullptr;
-				_sliceVolumeDirty = false;
-				_sliceVolumeNodeId = -1;
-			}
-		}
-
-		if (!sliceView) {
+		if (sliceView) {
+			region = _sliceVolume->region();
+		} else {
+			const voxel::RawVolume *nodeVolume = sceneGraph.resolveVolume(node);
 			_volumeRenderer.setVolume(meshState, idx, node, true);
 			region = node.region();
 			if (v != nodeVolume) {
 				_volumeRenderer.scheduleRegionExtraction(meshState, idx, region);
 			}
 		}
+
 		if (renderContext.applyTransforms()) {
 			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, region);
 		} else {

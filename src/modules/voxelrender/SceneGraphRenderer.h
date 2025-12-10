@@ -49,6 +49,8 @@ protected:
 	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
 								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx,
 								   const voxel::Region &region) const;
+	bool handleSliceView(const voxel::MeshStatePtr &meshState, int activeNodeId, scenegraph::SceneGraphNode &node,
+						 int idx, const voxel::RawVolume *nodeVolume);
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
