@@ -48,7 +48,7 @@ protected:
 	core::Buffer<video::Camera> _cameras;
 	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
 								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx,
-								   const voxel::Region &region);
+								   const voxel::Region &region) const;
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;

@@ -42,6 +42,11 @@ Mesh::Mesh(Mesh &&other) noexcept {
 	other._compressedIndexSize = 0u;
 	_offset = other._offset;
 	_mayGetResized = other._mayGetResized;
+	_mins = other._mins;
+	_maxs = other._maxs;
+	_lastCameraPos = other._lastCameraPos;
+	_initialVertices = other._initialVertices;
+	_initialIndices = other._initialIndices;
 }
 
 Mesh::Mesh(const Mesh &other) {
@@ -57,6 +62,11 @@ Mesh::Mesh(const Mesh &other) {
 	}
 	_offset = other._offset;
 	_mayGetResized = other._mayGetResized;
+	_mins = other._mins;
+	_maxs = other._maxs;
+	_lastCameraPos = other._lastCameraPos;
+	_initialVertices = other._initialVertices;
+	_initialIndices = other._initialIndices;
 }
 
 Mesh &Mesh::operator=(const Mesh &other) {
@@ -76,6 +86,11 @@ Mesh &Mesh::operator=(const Mesh &other) {
 	}
 	_offset = other._offset;
 	_mayGetResized = other._mayGetResized;
+	_mins = other._mins;
+	_maxs = other._maxs;
+	_lastCameraPos = other._lastCameraPos;
+	_initialVertices = other._initialVertices;
+	_initialIndices = other._initialIndices;
 	return *this;
 }
 
@@ -87,9 +102,15 @@ Mesh &Mesh::operator=(Mesh &&other) noexcept {
 	_compressedIndices = other._compressedIndices;
 	other._compressedIndices = nullptr;
 	_compressedIndexSize = other._compressedIndexSize;
-	other._compressedIndexSize = 4u;
+	other._compressedIndexSize = 0u;
 	_offset = other._offset;
 	_mayGetResized = other._mayGetResized;
+	_mins = other._mins;
+	_maxs = other._maxs;
+	_lastCameraPos = other._lastCameraPos;
+	_initialVertices = other._initialVertices;
+	_initialIndices = other._initialIndices;
+
 	return *this;
 }
 

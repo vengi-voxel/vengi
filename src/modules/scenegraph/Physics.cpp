@@ -180,7 +180,9 @@ void Physics::update(double deltaSeconds, const CollisionNodes &nodes, Kinematic
 	// Apply gravity to the body.
 	body.velocity.y -= gravity * (float)deltaSeconds;
 	body.contactPoint = {0.0f, 0.0f, 0.0f};
-	// Calculate the next potential position of the body.
+	// Calculate the next potential position and velocity of the body using explicit euler integration.
+	// Xn+1 = Xn + Vn * dt
+	// Vn+1 = Vn + An * dt
 	const glm::vec3 nextPos = body.position + (body.velocity * (float)deltaSeconds);
 
 	// First, handle vertical collision (Y axis)
