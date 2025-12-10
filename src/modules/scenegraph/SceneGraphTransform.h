@@ -98,7 +98,7 @@ public:
 
 	const glm::mat4x4 calculateLocalMatrix() const;
 
-	void update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren);
+	bool update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren);
 
 	bool validate() const;
 

@@ -517,13 +517,17 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 	return transform;
 }
 
-void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
+bool SceneGraph::updateTransforms_r(SceneGraphNode &n) {
+	bool changed = false;
 	for (SceneGraphKeyFrame &keyframe : *n.keyFrames()) {
-		keyframe.transform().update(*this, n, keyframe.frameIdx, true);
+		if (keyframe.transform().update(*this, n, keyframe.frameIdx, true)) {
+			changed = true;
+		}
 	}
 	for (int childrenId : n.children()) {
-		updateTransforms_r(node(childrenId));
+		changed |= updateTransforms_r(node(childrenId));
 	}
+	return changed;
 }
 
 void SceneGraph::updateTransforms() {

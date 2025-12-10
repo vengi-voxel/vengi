@@ -259,15 +259,15 @@ const glm::mat4x4 SceneGraphTransform::calculateLocalMatrix() const {
 	return glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
 }
 
-void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx,
+bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx,
 								 bool updateChildren) {
 	if (_dirty == 0u) {
-		return;
+		return false;
 	}
 
 	if (node.id() == InvalidNodeId) {
 		Log::warn("Node not yet part of the scene graph - don't perform any update");
-		return;
+		return false;
 	}
 
 	if (_dirty & DIRTY_WORLDVALUES) {
@@ -375,6 +375,7 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 	}
 
 	_dirty = 0u;
+	return true;
 }
 
 glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &pivot) const {

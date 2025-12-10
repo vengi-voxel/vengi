@@ -60,7 +60,7 @@ protected:
 	core::Buffer<SceneGraphListener*> _listeners;
 	mutable core::DynamicMap<int, FrameTransform> _frameTransforms;
 
-	void updateTransforms_r(SceneGraphNode &node);
+	bool updateTransforms_r(SceneGraphNode &node);
 	voxel::Region calcRegion() const;
 
 public:
