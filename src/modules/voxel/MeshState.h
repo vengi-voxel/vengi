@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include "core/Optional.h"
 #include "core/SharedPtr.h"
 #include "core/Var.h"
@@ -65,7 +66,7 @@ private:
 		ExtractionResult() {
 		}
 		ExtractionResult(const glm::ivec3 &_mins, int _idx, voxel::ChunkMesh &&_mesh)
-			: mins(_mins), idx(_idx), mesh(_mesh) {
+			: mins(_mins), idx(_idx), mesh(core::move(_mesh)) {
 		}
 		glm::ivec3 mins{};
 		int idx = -1;
