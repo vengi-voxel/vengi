@@ -23,12 +23,15 @@ namespace voxelrender {
  * @see voxelformat::toCameraNode()
  */
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
-video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNodeCamera &cameraNode, scenegraph::FrameIndex frameIdx);
+video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sceneGraph,
+					   const scenegraph::SceneGraphNodeCamera &cameraNode, scenegraph::FrameIndex frameIdx);
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
 enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
 // I18N: These are not translated, because they are also the values of configuration variables
-static constexpr const char *SceneCameraModeStr[] = {N_("Free"), N_("Top"), N_("Bottom"), N_("Left"), N_("Right"), N_("Front"), N_("Back")};
-static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode::Max, "Array size doesn't match enum values");
+static constexpr const char *SceneCameraModeStr[] = {N_("Free"),  N_("Top"),   N_("Bottom"), N_("Left"),
+													 N_("Right"), N_("Front"), N_("Back")};
+static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode::Max,
+			  "Array size doesn't match enum values");
 
 /**
  * @brief Tries to place the camera in a way that most of the scene region is visible in the viewport of the camera.
@@ -51,6 +54,15 @@ protected:
 								   const voxel::Region &region) const;
 	bool handleSliceView(const voxel::MeshStatePtr &meshState, int activeNodeId, scenegraph::SceneGraphNode &node,
 						 int idx, const voxel::RawVolume *nodeVolume);
+	void updateNodeState(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
+						 const scenegraph::SceneGraphNode &activeNode, const scenegraph::SceneGraphNode &node,
+						 int idx) const;
+	void prepareModelNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
+	void prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) const;
+	void prepareCameraNodes(const RenderContext &renderContext);
+
+	/** @brief remove those volumes that are no longer part of the scene graph */
+	void resetVolumes(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph);
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
@@ -83,8 +95,8 @@ public:
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is
 	 * false, you have to call @c update() manually!
 	 */
-	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow = true,
-				bool waitPending = false);
+	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
+				bool shadow = true, bool waitPending = false);
 	void clear(const voxel::MeshStatePtr &meshState);
 
 	const voxel::Region &sliceRegion() const;
@@ -92,17 +104,19 @@ public:
 	bool isSliceModeActive() const;
 
 	static inline int getVolumeIdx(int nodeId) {
-		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+		// TODO: using the node id here is not good as they are increasing when you modify the scene graph - and there
+		// is a max limit that could get reached here even though you only have one node active
 		return nodeId;
+	}
+
+	static inline int getNodeId(int volumeIdx) {
+		// TODO: using the node id here is not good as they are increasing when you modify the scene graph - and there
+		// is a max limit that could get reached here even though you only have one node active
+		return volumeIdx;
 	}
 
 	static inline int getVolumeIdx(const scenegraph::SceneGraphNode &node) {
 		return getVolumeIdx(node.id());
-	}
-
-	static inline int getNodeId(int volumeIdx) {
-		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-		return volumeIdx;
 	}
 };
 

@@ -233,6 +233,7 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 bool SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, int activeNodeId,
 										 scenegraph::SceneGraphNode &node, int idx,
 										 const voxel::RawVolume *nodeVolume) {
+	core_trace_scoped(HandleSliceView);
 	if (node.id() != activeNodeId) {
 		return false;
 	}
@@ -251,8 +252,9 @@ bool SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, i
 		_sliceVolume->region() != _sliceRegion) {
 		// this enforces the lock on the volume renderer if the volume is currently extracted
 		core::SharedPtr<voxel::RawVolume> newVolume(core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion));
+		const bool meshDelete = !_sliceVolumeDirty;
 		const voxel::RawVolume *oldV = _volumeRenderer.setVolume(meshState, idx, newVolume.get(), &node.palette(),
-																 &node.normalPalette(), !_sliceVolumeDirty);
+																 &node.normalPalette(), meshDelete);
 		if (_sliceVolumeDirty || oldV != nullptr) {
 			_volumeRenderer.scheduleRegionExtraction(meshState, idx, newVolume->region());
 		}
@@ -263,45 +265,43 @@ bool SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, i
 	return true;
 }
 
-void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
-	core_trace_scoped(Prepare);
-	core_assert_always(renderContext.sceneGraph != nullptr);
-	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
-	const scenegraph::FrameIndex frame = renderContext.frame;
-	const bool hideInactive = renderContext.hideInactive;
-	const bool grayInactive = renderContext.grayInactive;
-	// remove those volumes that are no longer part of the scene graph
-	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
-		const int nodeId = getNodeId(i);
-		if (!sceneGraph.hasNode(nodeId)) {
-			// ignore the return value because the volume is owned by the node
-			(void)_volumeRenderer.resetVolume(meshState, nodeId);
+void SceneGraphRenderer::updateNodeState(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
+										 const scenegraph::SceneGraphNode &activeNode,
+										 const scenegraph::SceneGraphNode &node, int idx) const {
+	core_trace_scoped(UpdateNodeState);
+	bool hideNode = false;
+	if (renderContext.hideInactive) {
+		if (activeNode.isGroupNode() || activeNode.isRootNode()) {
+			if (node.parent() != activeNode.id()) {
+				hideNode = true;
+			}
+		} else {
+			hideNode = node.id() != activeNode.id();
 		}
+	} else {
+		hideNode = !node.visible();
 	}
-	_cameras.clear();
+	meshState->hide(idx, hideNode);
 
+	if (renderContext.grayInactive) {
+		meshState->gray(idx, node.id() != activeNode.id());
+	} else {
+		meshState->gray(idx, false);
+	}
+}
+
+void SceneGraphRenderer::prepareReferenceNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) const {
+	core_trace_scoped(PrepareReferenceNodes);
+	meshState->resetReferences();
+	if (!renderContext.isSceneMode()) {
+		return;
+	}
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	const int activeNodeId = sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
-	// TODO: PERF: remove direct access to gpu buffers and use for_parallel here
-	// TODO: for this we have to handle the slice region outside of this loop
 	for (auto entry : sceneGraph.nodes()) {
-		scenegraph::SceneGraphNode &node = entry->value;
-		if (renderContext.onlyModels && !node.isModelNode()) {
-			continue;
-		}
-
-		if (node.isCameraNode()) {
-			const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
-			if (!cameraNode.visible()) {
-				continue;
-			}
-			const glm::ivec2 size(cameraNode.width(), cameraNode.height());
-			// TODO: we need the node id here, to colorize the camera frustum rendering according to the node color
-			_cameras.emplace_back(toCamera(size, sceneGraph, cameraNode, frame));
-			// TODO: see https://github.com/vengi-voxel/vengi/issues/254 - if the node is the current active node, we
-			// should lerp to the camera
-			continue;
-		} else if (!node.isModelNode()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (!node.isReferenceNode()) {
 			continue;
 		}
 
@@ -309,6 +309,78 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		if (idx >= voxel::MAX_VOLUMES) {
 			continue;
 		}
+		updateNodeState(meshState, renderContext, activeNode, node, idx);
+		if (meshState->hidden(idx)) {
+			continue;
+		}
+		const int referencedIdx = getVolumeIdx(node.reference());
+		meshState->setReference(idx, referencedIdx);
+		prepareMeshStateTransform(meshState, sceneGraph, renderContext.frame, node, idx,
+									sceneGraph.resolveRegion(node));
+	}
+}
+
+void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) {
+	core_trace_scoped(PrepareCameraNodes);
+	_cameras.clear();
+	if (renderContext.onlyModels) {
+		return;
+	}
+
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
+	for (auto entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isCameraNode()) {
+			continue;
+		}
+		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
+		if (!cameraNode.visible()) {
+			continue;
+		}
+		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
+		const video::Camera &camera = toCamera(size, sceneGraph, cameraNode, renderContext.frame);
+		// TODO: we need the node id here, to colorize the camera frustum rendering according to the node color
+		_cameras.emplace_back(camera);
+		// TODO: see https://github.com/vengi-voxel/vengi/issues/254 - if the node is the current active node, we
+		// should lerp to the camera
+	}
+}
+
+void SceneGraphRenderer::resetVolumes(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph) {
+	core_trace_scoped(ResetVolumes);
+	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
+		const int nodeId = getNodeId(i);
+		if (sceneGraph.hasNode(nodeId)) {
+			continue;
+		}
+		// ignore the return value because the volume is owned by the node
+		(void)_volumeRenderer.resetVolume(meshState, nodeId);
+	}
+}
+
+void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
+	core_trace_scoped(PrepareModelNodes);
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
+	const int activeNodeId = sceneGraph.activeNode();
+	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
+	// TODO: PERF: remove direct access to gpu buffers and use for_parallel here
+	// TODO: for this we have to handle the slice region outside of this loop
+	for (auto entry : sceneGraph.nodes()) {
+		scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isModelNode()) {
+			continue;
+		}
+
+		const int idx = getVolumeIdx(node);
+		if (idx >= voxel::MAX_VOLUMES) {
+			continue;
+		}
+
+		updateNodeState(meshState, renderContext, activeNode, node, idx);
+		if (meshState->hidden(idx)) {
+			continue;
+		}
+
 		const voxel::RawVolume *v = meshState->volume(idx);
 		const bool sliceView = handleSliceView(meshState, activeNodeId, node, idx, v);
 
@@ -325,69 +397,22 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		}
 
 		if (renderContext.applyTransforms()) {
-			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, region);
+			prepareMeshStateTransform(meshState, sceneGraph, renderContext.frame, node, idx, region);
 		} else {
 			meshState->setCullFace(idx, video::Face::Back);
 			meshState->setModelMatrix(idx, glm::mat4(1.0f), region.getLowerCorner(), region.getUpperCorner());
 		}
-
-		bool hideNode = false;
-		if (hideInactive) {
-			if (activeNode.isGroupNode() || activeNode.isRootNode()) {
-				if (node.parent() != activeNode.id()) {
-					hideNode = true;
-				}
-			} else {
-				hideNode = node.id() != activeNodeId;
-			}
-		} else {
-			hideNode = !node.visible();
-		}
-		meshState->hide(idx, hideNode);
-
-		if (grayInactive) {
-			meshState->gray(idx, node.id() != activeNodeId);
-		} else {
-			meshState->gray(idx, false);
-		}
 	}
+}
 
-	meshState->resetReferences();
-	if (renderContext.isSceneMode()) {
-		for (auto entry : sceneGraph.nodes()) {
-			const scenegraph::SceneGraphNode &node = entry->second;
-			if (!node.isReferenceNode()) {
-				continue;
-			}
-			const int idx = getVolumeIdx(node);
-			if (idx >= voxel::MAX_VOLUMES) {
-				continue;
-			}
-			const int referencedIdx = getVolumeIdx(node.reference());
-			meshState->setReference(idx, referencedIdx);
-			prepareMeshStateTransform(meshState, sceneGraph, frame, node, idx, sceneGraph.resolveRegion(node));
-
-			bool hideNode = false;
-			if (hideInactive) {
-				if (activeNode.isGroupNode() || activeNode.isRootNode()) {
-					if (node.parent() != activeNode.id()) {
-						hideNode = true;
-					}
-				} else {
-					hideNode = node.id() != activeNodeId;
-				}
-			} else {
-				hideNode = !node.visible();
-			}
-			meshState->hide(idx, hideNode);
-
-			if (grayInactive) {
-				meshState->gray(idx, node.id() != activeNodeId);
-			} else {
-				meshState->gray(idx, false);
-			}
-		}
-	}
+void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
+	core_trace_scoped(Prepare);
+	core_assert_always(renderContext.sceneGraph != nullptr);
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
+	resetVolumes(meshState, sceneGraph);
+	prepareCameraNodes(renderContext);
+	prepareModelNodes(meshState, renderContext);
+	prepareReferenceNodes(meshState, renderContext);
 }
 
 void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow,

@@ -1126,6 +1126,7 @@ voxel::RawVolume *RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshSt
 }
 
 void RawVolumeRenderer::deleteMeshes(int idx) {
+	core_trace_scoped(DeleteMeshes);
 	for (int i = 0; i < voxel::MeshType_Max; ++i) {
 		deleteMesh(idx, (voxel::MeshType)i);
 	}
@@ -1133,6 +1134,7 @@ void RawVolumeRenderer::deleteMeshes(int idx) {
 }
 
 void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
+	core_trace_scoped(DeleteMesh);
 	RenderState &state = _state[idx];
 	video::Buffer &vertexBuffer = state._vertexBuffer[meshType];
 	Log::debug("clear vertexbuffer: %i", idx);
