@@ -383,6 +383,7 @@ scenegraph::SceneGraphNodeCamera *SceneGraph::activeCameraNode() const {
 }
 
 math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	core_trace_scoped(CalculateGroupAABB);
 	const FrameTransform &transform = transformForFrame(node, frameIdx);
 	math::AABB<float> aabb;
 	if (node.isAnyModelNode()) {
@@ -421,6 +422,7 @@ glm::mat4 SceneGraph::worldMatrix(const scenegraph::SceneGraphNode &node, sceneg
 
 // TODO: PERF: sweeping
 void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
+	core_trace_scoped(GetCollisionNodes);
 	if (frameIdx == InvalidFrame) {
 		out.reserve(nodes().size());
 		for (const auto &e : nodes()) {
@@ -462,6 +464,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 }
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	core_trace_scoped(TransformForFrame);
 	// TODO: SCENEGRAPH: ik solver https://github.com/vengi-voxel/vengi/issues/182
 	// and https://github.com/vengi-voxel/vengi/issues/265
 	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
@@ -524,6 +527,7 @@ void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 }
 
 void SceneGraph::updateTransforms() {
+	core_trace_scoped(UpdateTransforms);
 	const core::String animId = _activeAnimation;
 	for (const core::String &animation : animations()) {
 		core_assert_always(setAnimation(animation));
@@ -597,6 +601,7 @@ voxel::Region SceneGraph::sceneRegion(FrameIndex frameIdx, bool onlyVisible) con
 }
 
 math::OBBF SceneGraph::sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	core_trace_scoped(SceneOBB);
 	const auto &transform = transformForFrame(node, frameIdx);
 	const voxel::Region &region = resolveRegion(node);
 	const math::OBBF &obb = toOBB(true, region, node.pivot(), transform);
