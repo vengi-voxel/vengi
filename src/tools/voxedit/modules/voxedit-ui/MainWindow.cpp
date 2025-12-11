@@ -498,7 +498,7 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 	fileDesc.desc = voxelformat::VENGIFormat::format();
 	ImGui::TableNextColumn();
 	const video::TexturePtr &texture = _texturePool->get(name);
-	const ImVec2 size((float)texture->width(), (float)texture->height());
+	const ImVec2 size(ImGui::Size(18.0f), ImGui::Size(18.0f));
 	const core::String id = "##" + name;
 	if (ImGui::ImageButton(id.c_str(), texture->handle(), size)) {
 		ImGui::CloseCurrentPopup();
