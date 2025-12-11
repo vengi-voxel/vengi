@@ -2,6 +2,7 @@ set(LIB scenegraph)
 set(SRCS
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	FrameTransform.h FrameTransform.cpp
+	FrameTransformCache.h FrameTransformCache.cpp
 	JsonExporter.h JsonExporter.cpp
 	Physics.h Physics.cpp
 	SceneGraph.h SceneGraph.cpp

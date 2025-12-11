@@ -12,6 +12,7 @@
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/Lock.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/FrameTransform.h"
@@ -465,6 +466,19 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	core_trace_scoped(TransformForFrame);
+	if (node.keyFrames().size() == 1) {
+		frameIdx = 0;
+	}
+	FrameTransformCacheKey nf{node.id(), frameIdx};
+	{
+		core_trace_scoped(CachePath);
+		core::ScopedLock scoped(_mutex);
+		auto cacheIter = _frameTransformCache.find(nf);
+		if (cacheIter != _frameTransformCache.end()) {
+			return cacheIter->second;
+		}
+	}
+	core_trace_scoped(NoneCachePath);
 	// TODO: SCENEGRAPH: ik solver https://github.com/vengi-voxel/vengi/issues/182
 	// and https://github.com/vengi-voxel/vengi/issues/265
 	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
@@ -514,6 +528,8 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 			transform.setWorldMatrix(parentTransform.worldMatrix() * (glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale)));
 		}
 	}
+	core::ScopedLock scoped(_mutex);
+	_frameTransformCache.put(nf, transform);
 	return transform;
 }
 
@@ -533,11 +549,15 @@ bool SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 void SceneGraph::updateTransforms() {
 	core_trace_scoped(UpdateTransforms);
 	const core::String animId = _activeAnimation;
+	bool clearCache = false;
 	for (const core::String &animation : animations()) {
 		core_assert_always(setAnimation(animation));
-		updateTransforms_r(node(0));
+		clearCache |= updateTransforms_r(node(0));
 	}
 	core_assert_always(setAnimation(animId));
+	if (clearCache) {
+		_frameTransformCache.clear();
+	}
 }
 
 voxel::Region SceneGraph::maxRegion() const {

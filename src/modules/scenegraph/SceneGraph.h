@@ -10,13 +10,17 @@
 
 #include "SceneGraphNode.h"
 #include "FrameTransform.h"
+#include "core/Common.h"
 #include "core/DirtyState.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicParallelMap.h"
+#include "core/concurrent/Lock.h"
 #include "math/AABB.h"
 #include "math/OBB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
+#include "scenegraph/FrameTransformCache.h"
 #include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphListener.h"
@@ -58,7 +62,8 @@ protected:
 	mutable FrameIndex _cachedMaxFrame = -1;
 	const core::UUID _emptyUUID;
 	core::Buffer<SceneGraphListener*> _listeners;
-	mutable core::DynamicMap<int, FrameTransform> _frameTransforms;
+	mutable core_trace_mutex(core::Lock, _mutex, "FrameTransformCache");
+	mutable FrameTransformCache _frameTransformCache;
 
 	bool updateTransforms_r(SceneGraphNode &node);
 	voxel::Region calcRegion() const;
