@@ -466,10 +466,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	core_trace_scoped(TransformForFrame);
-	if (node.keyFrames().size() == 1) {
-		frameIdx = 0;
-	}
-	FrameTransformCacheKey nf{node.id(), frameIdx};
+	const FrameTransformCacheKey nf{node.id(), frameIdx};
 	{
 		core_trace_scoped(CachePath);
 		core::ScopedLock scoped(_mutex);
