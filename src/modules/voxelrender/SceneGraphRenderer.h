@@ -50,10 +50,10 @@ protected:
 	render::CameraFrustum _cameraRenderer;
 	core::Buffer<video::Camera> _cameras;
 	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
-								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx,
-								   const voxel::Region &region) const;
-	bool handleSliceView(const voxel::MeshStatePtr &meshState, int activeNodeId, scenegraph::SceneGraphNode &node,
-						 int idx, const voxel::RawVolume *nodeVolume);
+								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx) const;
+	void handleSliceView(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node);
+	bool sliceViewActiveForNode(int nodeId) const;
+	bool sliceViewActive() const;
 	void updateNodeState(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
 						 const scenegraph::SceneGraphNode &activeNode, const scenegraph::SceneGraphNode &node,
 						 int idx) const;
