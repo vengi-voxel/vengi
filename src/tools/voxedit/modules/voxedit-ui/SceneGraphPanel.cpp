@@ -129,6 +129,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 	const bool filtered = isFiltered(node);
 
 	// TODO: PERF: this is not using the ImGuiListClipper or similar approach - for large scene graphs this will be slow
+	// https://github.com/ocornut/imgui/issues/3823
 	if (!filtered) {
 		ImGui::TableNextRow();
 		char idbuf[64];
