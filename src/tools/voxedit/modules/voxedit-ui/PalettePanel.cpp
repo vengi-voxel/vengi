@@ -44,8 +44,7 @@ static bool dragAndDropSortColors() {
 
 void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 									 command::CommandExecutionListener &listener, palette::Palette &palette) {
-	char buf[64];
-	core::String::formatBuf(buf, sizeof(buf), "Actions##context-palitem-%i", paletteColorIdx);
+	const char buf[2] = {(char)paletteColorIdx, '\0'};
 	if (ImGui::BeginPopupContextItem(buf)) {
 		if (showColorPicker(paletteColorIdx, node, listener)) {
 			_colorPickerChange = true;
@@ -54,7 +53,8 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
 
-		const bool usableColor = palette.color(paletteColorIdx).a > 0;
+		const color::RGBA color = palette.color(paletteColorIdx);
+		const bool usableColor = color.a > 0;
 		const bool singleSelection = _selectedIndices.size() == 1;
 		// we might open the context menu for a color that is not in the selection
 		const bool isCurrentInSelection = _selectedIndices.has(paletteColorIdx);
@@ -79,7 +79,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 				}
 			}
 
-			if (palette.color(paletteColorIdx).a != 255) {
+			if (color.a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove alpha"))) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "removealpha");
 					if (isCurrentInSelection) {
@@ -172,10 +172,10 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
-	const bool usableColor = palette.color(paletteColorIdx).a > 0;
+	const color::RGBA color = palette.color(paletteColorIdx);
+	const bool usableColor = color.a > 0;
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 	if (existingColor) {
-		const color::RGBA color = palette.color(paletteColorIdx);
 		if (color.a != 255) {
 			color::RGBA own = color;
 			own.a = 127;
@@ -220,7 +220,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 			const float size = 20;
 			const ImVec2 rectMins = ImGui::GetCursorScreenPos();
 			const ImVec2 rectMaxs(rectMins.x + size, rectMins.y + size);
-			ImGui::GetWindowDrawList()->AddRectFilled(rectMins, rectMaxs, ImGui::GetColorU32(palette.color(paletteColorIdx)));
+			ImGui::GetWindowDrawList()->AddRectFilled(rectMins, rectMaxs, ImGui::GetColorU32(color));
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size + 5);
 			if (dragAndDropSortColors()) {
 				ImGui::TextUnformatted(_("Release CTRL to change the voxel color"));
@@ -254,7 +254,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 			}
 		}
 	} else if (paletteColorIdx == currentSceneColor()) {
-		if (palette.color(paletteColorIdx).a > 0) {
+		if (color.a > 0) {
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
 		}
 	} else if (paletteColorIdx == currentPaletteColorIndex()) {
