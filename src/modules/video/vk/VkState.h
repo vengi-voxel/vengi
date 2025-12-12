@@ -27,7 +27,7 @@ struct VkState {
 	uint32_t graphicsQueueFamily = UINT32_MAX;
 	uint32_t presentQueueFamily = UINT32_MAX;
 
-	core::BitSet states{core::enumVal(State::Max)};
+	core::BitSet<core::enumVal(State::Max)> states;
 
 	// Viewport and scissor
 	int viewportX = 0;
@@ -99,7 +99,7 @@ struct VkState {
 	bool needValidation = true;
 
 	// Vendor detection
-	core::BitSet vendor{core::enumVal(Vendor::Max)};
+	core::BitSet<core::enumVal(Vendor::Max)> vendor;
 };
 
 } // namespace _priv

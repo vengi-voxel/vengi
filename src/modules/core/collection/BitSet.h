@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <limits.h>
 #include <stdint.h>
 
