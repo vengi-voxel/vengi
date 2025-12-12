@@ -264,10 +264,12 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	}
 
 	if (!palette.colorName(paletteColorIdx).empty()) {
-		const ImVec2 trianglePos(v2.x - borderWidth, v1.y + borderWidth);
 		const int size = colorButtonSize.x / 3;
-		drawList->AddTriangleFilled(trianglePos, ImVec2(trianglePos.x - size, trianglePos.y),
-									ImVec2(trianglePos.x, trianglePos.y + size), ImGui::GetColorU32(ImGuiCol_Text));
+		const ImVec2 t1(v2.x - borderWidth, v1.y + borderWidth);
+		const ImVec2 t2(t1.x - size, t1.y);
+		const ImVec2 t3(t1.x, t1.y + size);
+		const ImU32 col = ImGui::GetColorU32(ImGuiCol_Text);
+		drawList->AddTriangleFilled(t1, t2, t3, col);
 	}
 
 	globalCursorPos.x += colorButtonSize.x;
