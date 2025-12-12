@@ -157,24 +157,19 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 	}
 }
 
-void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
-							command::CommandExecutionListener &listener) {
+void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, float colorButtonSize,
+							scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	palette::Palette &palette = node.palette();
 	const int maxPaletteEntries = palette.colorCount();
 	const float borderWidth = 1.0f;
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
-	const ImDrawListFlags backupFlags = drawList->Flags;
-	drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
-	const ImVec2 available = ImGui::GetContentRegionAvail();
-	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
-	const ImVec2 colorButtonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+
 	ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
-	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
-	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
+	const ImVec2 v2(globalCursorPos.x + colorButtonSize, globalCursorPos.y + colorButtonSize);
 	const color::RGBA color = palette.color(paletteColorIdx);
-	const bool usableColor = color.a > 0;
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
+
 	if (existingColor) {
 		if (color.a != 255) {
 			color::RGBA own = color;
@@ -189,6 +184,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 		drawList->AddRect(v1, v2, color::RGBA(0, 0, 0, 255));
 	}
 
+	const bool usableColor = color.a > 0;
 	ImGui::PushID(paletteColorIdx);
 	if (ImGui::InvisibleButton("", colorButtonSize)) {
 		if (usableColor) {
@@ -264,7 +260,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	}
 
 	if (!palette.colorName(paletteColorIdx).empty()) {
-		const int size = colorButtonSize.x / 3;
+		const int size = colorButtonSize / 3;
 		const ImVec2 t1(v2.x - borderWidth, v1.y + borderWidth);
 		const ImVec2 t2(t1.x - size, t1.y);
 		const ImVec2 t3(t1.x, t1.y + size);
@@ -272,14 +268,15 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 		drawList->AddTriangleFilled(t1, t2, t3, col);
 	}
 
-	globalCursorPos.x += colorButtonSize.x;
-	if (globalCursorPos.x > windowPos.x + contentRegionWidth - colorButtonSize.x) {
+	globalCursorPos.x += colorButtonSize;
+	const float windowPosX = ImGui::GetWindowPos().x;
+	const float availableX = ImGui::GetContentRegionAvail().x;
+	const float contentRegionWidth = availableX + ImGui::GetCursorPosX();
+	if (globalCursorPos.x > windowPosX + contentRegionWidth - colorButtonSize) {
 		globalCursorPos.x = startingPosX;
-		globalCursorPos.y += colorButtonSize.y;
+		globalCursorPos.y += colorButtonSize;
 	}
 	ImGui::SetCursorScreenPos(globalCursorPos);
-	// restore the draw list flags from above
-	drawList->Flags = backupFlags;
 }
 
 uint8_t PalettePanel::currentPaletteColorIndex() const {
@@ -439,10 +436,19 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 			paletteMenuBar(node, listener);
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
 			const palette::Palette &palette = node.palette();
+
+			ImDrawList *drawList = ImGui::GetWindowDrawList();
+			const ImDrawListFlags backupFlags = drawList->Flags;
+			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
+			const float frameHeight = ImGui::GetFrameHeight();
+
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
 				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
-				addColor(pos.x, paletteColorIdx, node, listener);
+				addColor(pos.x, paletteColorIdx, frameHeight, node, listener);
 			}
+
+			drawList->Flags = backupFlags;
+
 			ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
 			ImGui::Text(_("Palette index: %i (scene voxel index %i)"), selectedPaletteColorIdx,
 						sceneHoveredPaletteColorIdx);

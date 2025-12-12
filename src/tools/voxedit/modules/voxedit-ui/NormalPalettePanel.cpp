@@ -22,21 +22,16 @@ NormalPalettePanel::NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr 
 	: Super(app, "normalpalette"), _sceneMgr(sceneMgr) {
 }
 
-void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
+void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
 								  command::CommandExecutionListener &listener) {
 	palette::NormalPalette &normalPalette = node.normalPalette();
 	const int maxPaletteEntries = normalPalette.size();
 	const float borderWidth = 1.0f;
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
-	const ImDrawListFlags backupFlags = drawList->Flags;
-	drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
-	const ImVec2 available = ImGui::GetContentRegionAvail();
-	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
-	const ImVec2 colorButtonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+
 	ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
-	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
-	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
+	const ImVec2 v2(globalCursorPos.x + colorButtonSize, globalCursorPos.y + colorButtonSize);
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 	if (existingColor) {
 		const color::RGBA color = normalPalette.normal(paletteColorIdx);
@@ -54,14 +49,15 @@ void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, s
 	}
 	ui::ScopedID id(paletteColorIdx);
 	ImGui::InvisibleButton("", colorButtonSize);
-	globalCursorPos.x += colorButtonSize.x;
-	if (globalCursorPos.x > windowPos.x + contentRegionWidth - colorButtonSize.x) {
+	globalCursorPos.x += colorButtonSize;
+	const float availableX = ImGui::GetContentRegionAvail().x;
+	const float contentRegionWidth = availableX + ImGui::GetCursorPosX();
+	const float windowPosX = ImGui::GetWindowPos().x;
+	if (globalCursorPos.x > windowPosX + contentRegionWidth - colorButtonSize) {
 		globalCursorPos.x = startingPosX;
-		globalCursorPos.y += colorButtonSize.y;
+		globalCursorPos.y += colorButtonSize;
 	}
 	ImGui::SetCursorScreenPos(globalCursorPos);
-	// restore the draw list flags from above
-	drawList->Flags = backupFlags;
 }
 
 void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
@@ -151,10 +147,17 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			paletteMenuBar(node, listener);
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
 			const palette::Palette &palette = node.palette();
+			ImDrawList *drawList = ImGui::GetWindowDrawList();
+			const ImDrawListFlags backupFlags = drawList->Flags;
+			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
+			const float frameHeight = ImGui::GetFrameHeight();
+
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
 				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
-				addColor(pos.x, paletteColorIdx, node, listener);
+				addColor(pos.x, paletteColorIdx, frameHeight, node, listener);
 			}
+
+			drawList->Flags = backupFlags;
 		}
 	}
 

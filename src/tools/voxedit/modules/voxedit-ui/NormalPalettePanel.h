@@ -29,7 +29,7 @@ private:
 	bool _onlySurfaceVoxels = true;
 
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
-	void addColor(float startingPosX, uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
+	void addColor(float startingPosX, uint8_t paletteColorIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
 				  command::CommandExecutionListener &listener);
 
 public:
