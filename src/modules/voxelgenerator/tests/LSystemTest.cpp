@@ -2,13 +2,15 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
 #include "voxelgenerator/LSystem.h"
+#include "app/tests/AbstractTest.h"
 
 namespace voxelgenerator {
 namespace lsystem {
 
-TEST(LSystemTests, testParse) {
+class LSystemTests : public app::AbstractTest {};
+
+TEST_F(LSystemTests, testParse) {
 	const core::String rulesString = R"(
 		{
 			F
