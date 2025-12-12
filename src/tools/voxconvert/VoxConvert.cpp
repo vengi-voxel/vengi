@@ -666,6 +666,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 	io::FileDescription fileDesc;
 	fileDesc.set(infile);
 	if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
+		Log::error("Failed to load input file '%s'", infile.c_str());
 		return false;
 	}
 
