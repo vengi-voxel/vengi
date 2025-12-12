@@ -485,6 +485,7 @@ struct IMGUI_API ImGuiTestContext
     // Helpers for Tables
     void                        TableOpenContextMenu(ImGuiTestRef ref, int column_n = -1);
     ImGuiSortDirection          TableClickHeader(ImGuiTestRef ref, const char* label, ImGuiKeyChord key_mods = 0);
+    void                        TableSetColumnEnabled(ImGuiTestRef ref, int column_n, bool enabled);
     void                        TableSetColumnEnabled(ImGuiTestRef ref, const char* label, bool enabled);
     void                        TableResizeColumn(ImGuiTestRef ref, int column_n, float width);
     const ImGuiTableSortSpecs*  TableGetSortSpecs(ImGuiTestRef ref);

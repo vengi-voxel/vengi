@@ -3742,6 +3742,34 @@ ImGuiSortDirection ImGuiTestContext::TableClickHeader(ImGuiTestRef ref, const ch
     return (ImGuiSortDirection)column->SortDirection;
 }
 
+void ImGuiTestContext::TableSetColumnEnabled(ImGuiTestRef ref, int column_n, bool enabled)
+{
+    if (IsError())
+        return;
+
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    ImGuiTestRefDesc desc(ref);
+    LogDebug("TableSetColumnEnabled %s idx %d enabled = %d", desc.c_str(), column_n, enabled);
+
+    ImGuiTable* table = ImGui::TableFindByID(GetID(ref));
+    IM_CHECK_SILENT(table != NULL);
+    IM_CHECK_SILENT(column_n >= 0 && column_n < table->ColumnsCount);
+    IM_CHECK_SILENT(table->Flags & ImGuiTableFlags_Hideable);
+    ImGuiTableColumn* column = &table->Columns[column_n];
+    int menu_column_n = column->IsEnabled ? table->Columns.index_from_ptr(column) : -1;
+    TableOpenContextMenu(ref, menu_column_n);
+
+    ImGuiTestRef backup_ref = GetRef();
+    SetRef("//$FOCUSED");
+    const char* label = ImGui::TableGetColumnName(table, column_n);
+    if (enabled)
+        ItemCheck(label);
+    else
+        ItemUncheck(label);
+    PopupCloseOne();
+    SetRef(backup_ref);
+}
+
 void ImGuiTestContext::TableSetColumnEnabled(ImGuiTestRef ref, const char* label, bool enabled)
 {
     if (IsError())
