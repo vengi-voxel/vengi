@@ -796,6 +796,8 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera) {
 	core_trace_scoped(RenderOpaque);
 	const video::PolygonMode mode = camera.polygonMode();
+	const video::Face oldCullFace = video::currentCullFace();
+	video::ScopedPolygonMode polygonMode(mode);
 	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
 		if (!isVisible(meshState, idx)) {
 			continue;
@@ -815,10 +817,8 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
-		video::ScopedPolygonMode polygonMode(mode);
-		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
-		core_assert(scopedBuf.success());
+		video::cullFace(meshState->cullFace(idx));
+		_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
 		if (_voxelNormShader.isActive()) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
@@ -834,6 +834,8 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
+	video::bindVertexArray(video::InvalidId);
+	video::cullFace(oldCullFace);
 }
 
 void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera) {
@@ -854,6 +856,9 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 			}
 
 			sorted.push_back(idx);
+		}
+		if (sorted.empty()) {
+			return;
 		}
 
 		const glm::vec3 &camPos = camera.worldPosition();
