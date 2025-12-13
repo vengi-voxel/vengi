@@ -21,6 +21,8 @@ VoxEdit:
    - Bump network protocol version - added two missing messages
    - Implemented unselecting and intersections
    - Fixed input fields for xyz values in the ui
+   - Optimized some ui panels
+   - Optimized node transform calculation
 
 Thumbnailer:
 
