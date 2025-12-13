@@ -662,4 +662,37 @@ TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
 	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(5.0f, 5.0f, 5.0f), 0.001f);
 }
 
+TEST_F(SceneManagerTest, testNodeTransformMirror) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+	const int nodeId = _sceneMgr->sceneGraph().emplace(core::move(node));
+	scenegraph::SceneGraphNode &n = _sceneMgr->sceneGraph().node(nodeId);
+
+	// set initial transform
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldTranslation(glm::vec3(10.0f, 20.0f, 30.0f));
+	n.keyFrame(0).setTransform(transform);
+	_sceneMgr->sceneGraph().updateTransforms();
+
+	// validate initial state
+	const scenegraph::FrameTransform &ft0 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
+	EXPECT_VEC_NEAR(ft0.worldTranslation(), glm::vec3(10.0f, 20.0f, 30.0f), 0.001f);
+
+	// perform action X
+	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(nodeId, 0, math::Axis::X));
+
+	// validate mirrored state X
+	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
+	EXPECT_VEC_NEAR(ft1.worldTranslation(), glm::vec3(-10.0f, 20.0f, 30.0f), 0.001f);
+
+	// perform action XZ (mirror X and Z)
+	// Current state: (-10, 20, 30)
+	// Mirror XZ: X -> -X, Z -> -Z
+	// Expected: (10, 20, -30)
+	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(nodeId, 0, math::Axis::X | math::Axis::Z));
+
+	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
+	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(10.0f, 20.0f, -30.0f), 0.001f);
+}
+
 } // namespace voxedit
