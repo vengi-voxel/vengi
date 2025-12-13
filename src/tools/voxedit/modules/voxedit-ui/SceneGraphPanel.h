@@ -7,6 +7,7 @@
 #include "ui/Panel.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
+#include "core/collection/Set.h"
 #include "scenegraph/SceneGraphNode.h"
 
 namespace video {
@@ -37,19 +38,32 @@ private:
 	int _lastActivedNodeId = InvalidNodeId;
 	SceneManagerPtr _sceneMgr;
 
+	struct DisplayNode {
+		DisplayNode(int _nodeId, int _depth, bool _hasChildren) :
+			nodeId(_nodeId), depth(_depth), hasChildren(_hasChildren) {
+		}
+		int nodeId;
+		int depth;
+		bool hasChildren;
+	};
+	core::DynamicArray<DisplayNode> _displayNodes;
+	core::Set<int> _collapsedNodes;
+
 	core::String _filterName;
 	int _filterType = 0;
 	bool isFiltered(const scenegraph::SceneGraphNode &node) const;
 
 	void registerPopups();
 	void detailView(scenegraph::SceneGraphNode &node);
-	void recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
-							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth, int referencedNodeId);
+	void renderNode(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
+							  const DisplayNode &displayNode, command::CommandExecutionListener &listener,
+							  int referencedNodeId);
+	void rebuildDisplayList(const scenegraph::SceneGraph &sceneGraph, int nodeId, int depth);
 	void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 public:
 	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "scenegraph"), _sceneMgr(sceneMgr) {
 	}
+
 	bool _popupNewModelNode = false;
 	bool init();
 	void update(video::Camera &camera, const char *id, ModelNodeSettings *modelNodeSettings,

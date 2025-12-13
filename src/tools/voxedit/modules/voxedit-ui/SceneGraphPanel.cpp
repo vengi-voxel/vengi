@@ -4,11 +4,12 @@
 
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
-#include "command/CommandHandler.h"
 #include "color/Color.h"
+#include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -115,172 +116,188 @@ bool SceneGraphPanel::isFiltered(const scenegraph::SceneGraphNode &node) const {
 	return false;
 }
 
-void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
-							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth, int referencedNodeId) {
-	core_trace_scoped(RecursiveAddNodes);
-	const int nodeId = node.id();
-	bool open = false;
+void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
+							  const DisplayNode &displayNode, command::CommandExecutionListener &listener,
+							  int referencedNodeId) {
+	core_trace_scoped(RenderNode);
+	const int nodeId = displayNode.nodeId;
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const int activeNode = sceneGraph.activeNode();
 	const bool referenceNode = node.reference() == activeNode;
 	const bool referencedNode = referencedNodeId == nodeId;
 	const bool referenceHighlight = referenceNode || referencedNode;
 
-	const bool filtered = isFiltered(node);
-
-	// TODO: PERF: this is not using the ImGuiListClipper or similar approach - for large scene graphs this will be slow
-	// https://github.com/ocornut/imgui/issues/3823
-	if (!filtered) {
-		ImGui::TableNextRow();
-		char idbuf[64];
-		{ // column 1
-			ImGui::TableNextColumn();
-			core::String::formatBuf(idbuf, sizeof(idbuf), "##visible-node-%i", nodeId);
-			bool visible = node.visible();
-			{
-				ui::ScopedStyle style;
-				ImGui::BeginDisabled(_hideInactive->boolVal());
-				if (ImGui::Checkbox(idbuf, &visible)) {
-					command::executeCommands("nodetogglevisible " + core::string::toString(nodeId), &listener);
-				}
-				ImGui::EndDisabled();
+	ImGui::TableNextRow();
+	char idbuf[64];
+	int l = core::String::formatBuf(idbuf, sizeof(idbuf), "##%ic", nodeId);
+	{ // column 1
+		ImGui::TableNextColumn();
+		bool visible = node.visible();
+		{
+			ui::ScopedStyle style;
+			ImGui::BeginDisabled(_hideInactive->boolVal());
+			idbuf[l - 1] = 'v';
+			if (ImGui::Checkbox(idbuf, &visible)) {
+				command::executeCommands("nodetogglevisible " + core::string::toString(nodeId), &listener);
 			}
-			if (_hideInactive->boolVal()) {
-				ImGui::TooltipTextUnformatted(_("Disabled because inactive nodes are hidden and the active node is always visible"));
-			}
+			ImGui::EndDisabled();
 		}
-		{ // column 2
-			ImGui::TableNextColumn();
-			core::String::formatBuf(idbuf, sizeof(idbuf), "##locked-node-%i", nodeId);
-			bool locked = node.locked();
-			if (ImGui::Checkbox(idbuf, &locked)) {
-				command::executeCommands("nodetogglelock " + core::string::toString(nodeId), &listener);
-			}
-		}
-		{ // column 3
-			ImGui::TableNextColumn();
-			color::RGBA color = node.color();
-			glm::vec4 colvec = color::fromRGBA(color);
-			core::String::formatBuf(idbuf, sizeof(idbuf), _("Color##node-%i"), nodeId);
-			if (ImGui::ColorEdit4(idbuf, glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
-				node.setColor(color::getRGBA(colvec));
-			}
-		}
-		{ // column 4
-			ui::ScopedStyle refStyle;
-			if (referenceHighlight) {
-				refStyle.darker(ImGuiCol_Text);
-			}
-
-			ImGui::TableNextColumn();
-
-			const char *icon = "";
-			switch (node.type()) {
-			case scenegraph::SceneGraphNodeType::ModelReference:
-				icon = ICON_LC_CODESANDBOX;
-				break;
-			case scenegraph::SceneGraphNodeType::Model:
-				icon = ICON_LC_BOXES;
-				break;
-			case scenegraph::SceneGraphNodeType::Point:
-				icon = ICON_LC_POINTER;
-				break;
-			case scenegraph::SceneGraphNodeType::Root:
-			case scenegraph::SceneGraphNodeType::Group:
-				icon = ICON_LC_GROUP;
-				break;
-			case scenegraph::SceneGraphNodeType::Camera:
-				icon = ICON_LC_CAMERA;
-				break;
-			case scenegraph::SceneGraphNodeType::Unknown:
-				icon = ICON_LC_CIRCLE_QUESTION_MARK;
-				break;
-			case scenegraph::SceneGraphNodeType::AllModels:
-			case scenegraph::SceneGraphNodeType::All:
-			case scenegraph::SceneGraphNodeType::Max:
-				break;
-			}
-			const core::String &name = core::String::format("%s##%i", node.name().c_str(), nodeId);
-			const bool selected = nodeId == sceneGraph.activeNode();
-			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
-			if (node.isLeaf()) {
-				treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-			} else {
-				treeFlags |= ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-			}
-			if (selected) {
-				treeFlags |= ImGuiTreeNodeFlags_Selected;
-			}
-
-			const float indent = (float)depth * (ImGui::GetStyle().FramePadding.x + 4.0f);
-			ImGui::Indent(indent);
-			if (node.isLeaf()) {
-				ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
-			} else {
-				open = ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
-			}
-			ImGui::Unindent(indent);
-
-			if (activeNode != _lastActivedNodeId && nodeId == activeNode) {
-				ImGui::SetScrollHereY();
-				_lastActivedNodeId = activeNode;
-			}
-
-			if (nodeId != sceneGraph.root().id()) {
-				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-					ImGui::TextUnformatted(name.c_str());
-					const int sourceNodeId = nodeId;
-					ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void *)&sourceNodeId, sizeof(int),
-											ImGuiCond_Always);
-					ImGui::EndDragDropSource();
-				}
-			}
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
-					_dragDropSourceNodeId = *(int *)payload->Data;
-					_dragDropTargetNodeId = nodeId;
-					_popupDragAndDrop = true;
-				}
-				ImGui::EndDragDropTarget();
-			}
-			contextMenu(camera, sceneGraph, node, listener);
-			if (ImGui::IsItemActivated()) {
-				_sceneMgr->nodeActivate(nodeId);
-				_lastActivedNodeId = nodeId;
-			}
-			if (referenceNode) {
-				ImGui::TooltipTextUnformatted(_("Reference Node"));
-			} else if (referencedNode) {
-				ImGui::TooltipTextUnformatted(_("Reference Target Node"));
-			}
-		}
-		{ // column 5
-			ImGui::TableNextColumn();
-
-			core::String::formatBuf(idbuf, sizeof(idbuf), ICON_LC_TRASH"##delete-node-%i", nodeId);
-			if (ImGui::Button(idbuf)) {
-				_sceneMgr->nodeRemove(nodeId, false);
-			}
-			ImGui::TooltipTextUnformatted(_("Delete this model"));
+		if (_hideInactive->boolVal()) {
+			ImGui::TooltipTextUnformatted(_("Disabled because inactive nodes are hidden and the active node is always visible"));
 		}
 	}
+	{ // column 2
+		ImGui::TableNextColumn();
+		bool locked = node.locked();
+		idbuf[l - 1] = 'l';
+		if (ImGui::Checkbox(idbuf, &locked)) {
+			command::executeCommands("nodetogglelock " + core::string::toString(nodeId), &listener);
+		}
+	}
+	{ // column 3
+		ImGui::TableNextColumn();
+		color::RGBA color = node.color();
+		glm::vec4 colvec = color::fromRGBA(color);
+		idbuf[l - 1] = 'c';
+		if (ImGui::ColorEdit4(idbuf, glm::value_ptr(colvec),
+							  ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+			node.setColor(color::getRGBA(colvec));
+		}
+	}
+	{ // column 4
+		ui::ScopedStyle refStyle;
+		if (referenceHighlight) {
+			refStyle.darker(ImGuiCol_Text);
+		}
 
-	if (open || filtered) {
-		for (int nodeIdx : node.children()) {
-			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx), listener, depth + 1, referencedNodeId);
+		ImGui::TableNextColumn();
+
+		const char *icon = "";
+		switch (node.type()) {
+		case scenegraph::SceneGraphNodeType::ModelReference:
+			icon = ICON_LC_CODESANDBOX;
+			break;
+		case scenegraph::SceneGraphNodeType::Model:
+			icon = ICON_LC_BOXES;
+			break;
+		case scenegraph::SceneGraphNodeType::Point:
+			icon = ICON_LC_POINTER;
+			break;
+		case scenegraph::SceneGraphNodeType::Root:
+		case scenegraph::SceneGraphNodeType::Group:
+			icon = ICON_LC_GROUP;
+			break;
+		case scenegraph::SceneGraphNodeType::Camera:
+			icon = ICON_LC_CAMERA;
+			break;
+		case scenegraph::SceneGraphNodeType::Unknown:
+			icon = ICON_LC_CIRCLE_QUESTION_MARK;
+			break;
+		case scenegraph::SceneGraphNodeType::AllModels:
+		case scenegraph::SceneGraphNodeType::All:
+		case scenegraph::SceneGraphNodeType::Max:
+			break;
 		}
-		if (open) {
-			ImGui::TreePop();
+		const core::String &name = core::String::format("%s##%i", node.name().c_str(), nodeId);
+		const bool selected = nodeId == sceneGraph.activeNode();
+		ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+		if (node.isLeaf()) {
+			treeFlags |= ImGuiTreeNodeFlags_Leaf;
+		} else {
+			treeFlags |= ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
 		}
+		if (selected) {
+			treeFlags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		const float indent = (float)displayNode.depth * ImGui::GetStyle().IndentSpacing;
+		if (displayNode.depth > 0) {
+			ImGui::Indent(indent);
+		}
+
+		bool isOpen = !_collapsedNodes.has(nodeId);
+		ImGui::SetNextItemOpen(isOpen);
+
+		bool visible = ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
+		if (!node.isLeaf()) {
+			if (visible != isOpen) {
+				if (visible)
+					_collapsedNodes.remove(nodeId);
+				else
+					_collapsedNodes.insert(nodeId);
+			}
+		}
+		if (displayNode.depth > 0) {
+			ImGui::Unindent(indent);
+		}
+
+		if (activeNode != _lastActivedNodeId && nodeId == activeNode) {
+			ImGui::SetScrollHereY();
+			_lastActivedNodeId = activeNode;
+		}
+
+		if (nodeId != sceneGraph.root().id()) {
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+				ImGui::TextUnformatted(name.c_str());
+				const int sourceNodeId = nodeId;
+				ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void *)&sourceNodeId, sizeof(int),
+										  ImGuiCond_Always);
+				ImGui::EndDragDropSource();
+			}
+		}
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
+				_dragDropSourceNodeId = *(int *)payload->Data;
+				_dragDropTargetNodeId = nodeId;
+				_popupDragAndDrop = true;
+			}
+			ImGui::EndDragDropTarget();
+		}
+		contextMenu(camera, sceneGraph, node, listener);
+		if (ImGui::IsItemActivated()) {
+			_sceneMgr->nodeActivate(nodeId);
+			_lastActivedNodeId = nodeId;
+		}
+		if (referenceNode) {
+			ImGui::TooltipTextUnformatted(_("Reference Node"));
+		} else if (referencedNode) {
+			ImGui::TooltipTextUnformatted(_("Reference Target Node"));
+		}
+	}
+	{ // column 5
+		ImGui::TableNextColumn();
+
+		idbuf[l - 1] = 'd';
+		if (ImGui::Button(idbuf)) {
+			_sceneMgr->nodeRemove(nodeId, false);
+		}
+		ImGui::TooltipTextUnformatted(_("Delete this model"));
 	}
 }
 
 bool SceneGraphPanel::init() {
 	_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
-	const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	_lastActivedNodeId = sceneGraph.activeNode();
 	return true;
+}
+
+void SceneGraphPanel::rebuildDisplayList(const scenegraph::SceneGraph &sceneGraph, int nodeId, int depth) {
+	core_trace_scoped(RebuildDisplayList);
+	const auto &node = sceneGraph.node(nodeId);
+	bool filtered = isFiltered(node);
+	bool expanded = !_collapsedNodes.has(nodeId);
+
+	if (!filtered) {
+		_displayNodes.emplace_back(nodeId, depth, !node.isLeaf());
+	}
+
+	if ((!filtered && expanded) || filtered) {
+		for (int childId : node.children()) {
+			rebuildDisplayList(sceneGraph, childId, depth + 1);
+		}
+	}
 }
 
 void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
@@ -292,17 +309,17 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
-		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;
 		ui::Toolbar toolbar("toolbar");
 
-		toolbar.button(ICON_LC_SQUARE_PLUS, _("Add a new model node"), [&sceneGraph, this, modelNodeSettings] () {
+		toolbar.button(ICON_LC_SQUARE_PLUS, _("Add a new model node"), [&sceneGraph, this, modelNodeSettings]() {
 			const int nodeId = sceneGraph.activeNode();
 			modelNodeSettings->palette.setValue(nullptr);
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			if (node.isModelNode()) {
-				const voxel::RawVolume* v = node.volume();
-				const voxel::Region& region = v->region();
+				const voxel::RawVolume *v = node.volume();
+				const voxel::Region &region = v->region();
 				modelNodeSettings->position = region.getLowerCorner();
 				modelNodeSettings->size = region.getDimensionsInVoxels();
 				modelNodeSettings->palette.setValue(node.palette());
@@ -314,7 +331,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			_popupNewModelNode = true;
 		});
 
-		toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this] () {
+		toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this]() {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 			node.setName("new group");
 			_sceneMgr->moveNodeToSceneGraph(node, sceneGraph.activeNode());
@@ -324,12 +341,12 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			_sceneMgr->nodeRemove(sceneGraph.activeNode(), true);
 		});
 
-		toolbar.button([onlyOneModel, &listener, this] (const ImVec2 &buttonSize) {
+		toolbar.button([onlyOneModel, &listener, this](const ImVec2 &buttonSize) {
 			if (ImGui::DisabledButton(ICON_LC_PLAY, onlyOneModel, buttonSize)) {
 				if (_sceneMgr->animateActive()) {
 					command::executeCommands("animate 0", &listener);
 				} else {
-					const core::String& cmd = core::String::format("animate %f", _animationSpeedVar->floatVal());
+					const core::String &cmd = core::String::format("animate %f", _animationSpeedVar->floatVal());
 					command::executeCommands(cmd.c_str(), &listener);
 				}
 			}
@@ -360,19 +377,19 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 				ImGui::EndCombo();
 			}
 		} else {
-			_filterName = "";
-			_filterType = 0;
+			if (!_filterName.empty() || _filterType != 0) {
+				_filterName = "";
+				_filterType = 0;
+			}
 		}
 
 		static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-											ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
-											ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
-											ImGuiTableFlags_NoSavedSettings;
-		ui::ScopedStyle style;
-		style.setIndentSpacing(0.0f);
+										   ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
+										   ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
+										   ImGuiTableFlags_NoSavedSettings;
 		if (ImGui::BeginTable("##nodelist", 5, tableFlags)) {
 			const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
-										ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
+									  ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
 			ImGui::TableSetupScrollFreeze(0, 1);
 			// TODO: UI: this space is here to align the icon a little bit - maybe there is a better way to do this
@@ -384,12 +401,23 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			ImGui::TableHeadersRow();
 
 			int referencedNode = InvalidNodeId;
-			const scenegraph::SceneGraphNode& activeNode = sceneGraph.node(sceneGraph.activeNode());
+			const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 			if (activeNode.type() == scenegraph::SceneGraphNodeType::ModelReference) {
 				referencedNode = activeNode.reference();
 			}
 
-			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(sceneGraph.root().id()), listener, 0, referencedNode);
+			_displayNodes.clear();
+			_displayNodes.reserve(sceneGraph.nodeSize());
+			rebuildDisplayList(sceneGraph, sceneGraph.root().id(), 0);
+
+			ImGuiListClipper clipper;
+			clipper.Begin((int)_displayNodes.size());
+			while (clipper.Step()) {
+				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+					const DisplayNode &displayNode = _displayNodes[i];
+					renderNode(camera, sceneGraph, displayNode, listener, referencedNode);
+				}
+			}
 			ImGui::EndTable();
 		}
 	}
@@ -406,7 +434,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 void SceneGraphPanel::registerPopups() {
 	ImGuiWindowFlags popupFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENEGRAPHDRAGANDDROP, popupFlags)) {
-		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const scenegraph::SceneGraphNode *sourceNode = _sceneMgr->sceneGraphNode(_dragDropSourceNodeId);
 		const scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphNode(_dragDropTargetNodeId);
 
@@ -429,7 +457,7 @@ void SceneGraphPanel::registerPopups() {
 				flags = scenegraph::NodeMoveFlag::KeepWorldTransform;
 			}
 			if (flags != scenegraph::NodeMoveFlag::None) {
-				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId , flags)) {
+				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId, flags)) {
 					Log::error("Failed to move node");
 				}
 				ImGui::CloseCurrentPopup();
@@ -444,4 +472,4 @@ bool SceneGraphPanel::hasFocus() const {
 	return _hasFocus;
 }
 
-}
+} // namespace voxedit
