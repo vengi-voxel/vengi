@@ -274,6 +274,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableSetupColumn(_("Name"), colFlags);
 		ImGui::TableHeadersRow();
+		const char *reset = _("Reset");
+		const char *updateTooltip = _("Update all locked nodes with this value");
 
 		if (_localSpace->boolVal()) {
 			ImGui::TableNextColumn();
@@ -281,13 +283,13 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 				matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
 				change = true;
 			}
-			ImGui::TooltipTextUnformatted(_("Reset"));
+			ImGui::TooltipTextUnformatted(reset);
 
 			ImGui::TableNextColumn();
 			if (ImGui::Button(ICON_LC_LOCK "##multipletr")) {
 				changeMultiple = true;
 			}
-			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+			ImGui::TooltipTextUnformatted(updateTooltip);
 		} else {
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
@@ -305,13 +307,13 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 				matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
 				change = true;
 			}
-			ImGui::TooltipTextUnformatted(_("Reset"));
+			ImGui::TooltipTextUnformatted(reset);
 
 			ImGui::TableNextColumn();
 			if (ImGui::Button(ICON_LC_LOCK "##multiplert")) {
 				changeMultiple = true;
 			}
-			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+			ImGui::TooltipTextUnformatted(updateTooltip);
 		} else {
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
@@ -327,13 +329,13 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 				matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
 				change = true;
 			}
-			ImGui::TooltipTextUnformatted(_("Reset"));
+			ImGui::TooltipTextUnformatted(reset);
 
 			ImGui::TableNextColumn();
 			if (ImGui::Button(ICON_LC_LOCK "##multiplesc")) {
 				changeMultiple = true;
 			}
-			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+			ImGui::TooltipTextUnformatted(updateTooltip);
 		} else {
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
@@ -348,12 +350,12 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			pivot[0] = pivot[1] = pivot[2] = 0.0f;
 			pivotChanged = change = true;
 		}
-		ImGui::TooltipTextUnformatted(_("Reset"));
+		ImGui::TooltipTextUnformatted(reset);
 		ImGui::TableNextColumn();
 		if (ImGui::Button(ICON_LC_LOCK "##multiplepv")) {
 			_sceneMgr->nodeUpdatePivotGroup(pivot);
 		}
-		ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
+		ImGui::TooltipTextUnformatted(updateTooltip);
 		pivotChanged |= ImGui::InputXYZ(_("Pivot"), pivot, nullptr, ImGuiInputTextFlags_None, 0.1f, 0.1f);
 		pivotChanged |= ImGui::IsItemDeactivatedAfterEdit();
 		change |= pivotChanged;
