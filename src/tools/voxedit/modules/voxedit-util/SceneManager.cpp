@@ -54,6 +54,7 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
+#include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
@@ -2796,7 +2797,22 @@ void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<v
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelgenerator::lsystem::generate(wrapper, referencePosition(), axiom, rules, angle, length, width, widthIncrement, iterations, random, leavesRadius);
+
+	voxelgenerator::lsystem::LSystemConfig conf;
+	conf.position = referencePosition();
+	conf.axiom = axiom;
+	conf.rules = rules;
+	conf.angle = glm::radians(angle);
+	conf.length = length;
+	conf.width = width;
+	conf.widthIncrement = widthIncrement;
+	conf.iterations = iterations;
+	conf.leafRadius = leavesRadius;
+
+	const voxel::Voxel voxel = _modifierFacade.cursorVoxel();
+	voxelgenerator::lsystem::LSystemState state;
+	voxelgenerator::lsystem::prepareState(conf, state);
+	voxelgenerator::lsystem::generate(wrapper, voxel, state);
 	modified(nodeId, wrapper.dirtyRegion());
 }
 

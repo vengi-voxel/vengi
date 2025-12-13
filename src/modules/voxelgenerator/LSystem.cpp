@@ -9,6 +9,38 @@
 namespace voxelgenerator {
 namespace lsystem {
 
+void prepareState(const LSystemConfig &conf, LSystemState &state) {
+	state.sentence = conf.axiom;
+	state.position = conf.position;
+	state.angle = conf.angle;
+	state.length = conf.length;
+	state.width = conf.width;
+	state.widthIncrement = conf.widthIncrement;
+	state.leafRadius = conf.leafRadius;
+
+	for (int i = 0; i < conf.iterations; i++) {
+		core::String nextSentence = "";
+
+		for (size_t j = 0; j < state.sentence.size(); ++j) {
+			const char current = state.sentence[j];
+			bool found = false;
+			for (const auto &rule : conf.rules) {
+				if (rule.a == current) {
+					found = true;
+					nextSentence += rule.b;
+					break;
+				}
+			}
+			if (!found) {
+				nextSentence += current;
+			}
+		}
+
+		state.sentence = nextSentence;
+	}
+}
+
+
 bool parseRules(const core::String& rulesStr, core::DynamicArray<Rule>& rules) {
 	core::Tokenizer tokenizer(rulesStr, " \n");
 	while (tokenizer.hasNext()) {
