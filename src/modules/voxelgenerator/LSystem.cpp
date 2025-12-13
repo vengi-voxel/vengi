@@ -34,6 +34,11 @@ void prepareState(const LSystemConfig &conf, LSystemState &state) {
 			if (!found) {
 				nextSentence += current;
 			}
+			if (nextSentence.size() > 1024 * 1024) {
+				Log::warn("LSystem sentence length exceeded limit");
+				state.sentence = nextSentence;
+				return;
+			}
 		}
 
 		state.sentence = nextSentence;
