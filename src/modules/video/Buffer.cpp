@@ -151,14 +151,18 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	core_assert(video::boundVertexArray() == InvalidId);
 	const size_t oldSize = _size[idx];
 #if VIDEO_BUFFER_HASH_COMPARE
-	if (oldSize == size) {
-		uint32_t newHash = core::hash(data, size);
-		if (newHash == _hash[idx]) {
-			return true;
+	if (data != nullptr) {
+		if (oldSize == size) {
+			const uint32_t newHash = core::hash(data, (int)size);
+			if (newHash == _hash[idx]) {
+				return true;
+			}
+			_hash[idx] = newHash;
+		} else {
+			_hash[idx] = core::hash(data, (int)size);
 		}
-		_hash[idx] = newHash;
 	} else {
-		_hash[idx] = core::hash(data, size);
+		_hash[idx] = 0u;
 	}
 #endif
 	_size[idx] = size;
@@ -212,6 +216,9 @@ int32_t Buffer::create(const void* data, size_t size, BufferType target) {
 	const int idx = _handleIdx;
 	_targets[idx] = target;
 	_handles[idx] = video::genBuffer();
+#if VIDEO_BUFFER_HASH_COMPARE
+	_hash[idx] = 0;
+#endif
 	if (!isValid(idx)) {
 		Log::error("Failed to create buffer (size: %i)", (int)size);
 		return -1;
@@ -455,6 +462,9 @@ void Buffer::shutdown() {
 		_targets[i] = BufferType::Max;
 		_modes[i] = BufferMode::Static;
 		_size[i] = 0u;
+#if VIDEO_BUFFER_HASH_COMPARE
+		_hash[i] = 0u;
+#endif
 	}
 	clearAttributes();
 }
