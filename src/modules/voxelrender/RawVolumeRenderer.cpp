@@ -424,7 +424,7 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 		}
 		++cnt;
 		const uint64_t deltaT = timeProvider->systemMillis() - startTime;
-		if (deltaT > 50u) { // 50ms max
+		if (deltaT > 10u) { // 10ms max
 			Log::debug("Update took too long: %u ms", (int32_t)(deltaT));
 			break;
 		}
