@@ -126,7 +126,6 @@ public:
 	 */
 	Id bufferHandle(int32_t idx) const;
 
-	bool clear(int32_t idx);
 	/**
 	 * @return The vertex array object native handle
 	 */
