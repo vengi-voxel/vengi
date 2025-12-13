@@ -7,6 +7,8 @@
 #include "Renderer.h"
 #include "core/NonCopyable.h"
 
+#define VIDEO_UNIFORM_BUFFER_HASH_COMPARE 0
+
 namespace video {
 
 /**
@@ -29,6 +31,9 @@ class UniformBuffer : public core::NonCopyable {
 private:
 	Id _handle = InvalidId;
 	size_t _size = 0;
+#if VIDEO_UNIFORM_BUFFER_HASH_COMPARE
+	uint32_t _hash = 0u;
+#endif
 
 public:
 	~UniformBuffer();
