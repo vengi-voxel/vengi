@@ -7,7 +7,7 @@
 #include "Renderer.h"
 #include "core/NonCopyable.h"
 
-#define VIDEO_UNIFORM_BUFFER_HASH_COMPARE 0
+#define VIDEO_UNIFORM_BUFFER_HASH_COMPARE 1
 
 namespace video {
 
