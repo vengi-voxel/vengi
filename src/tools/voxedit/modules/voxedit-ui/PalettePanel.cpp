@@ -421,7 +421,8 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	const float contentRegionHeight = available.y + ImGui::GetCursorPosY();
-	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), contentRegionHeight);
+	const float frameHeight = ImGui::GetFrameHeight();
+	const ImVec2 windowSize(10.0f * frameHeight, contentRegionHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int sceneHoveredPaletteColorIdx = currentSceneColor();
 	const int selectedPaletteColorIdx = currentPaletteColorIndex();
@@ -440,7 +441,6 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
 			const ImDrawListFlags backupFlags = drawList->Flags;
 			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
-			const float frameHeight = ImGui::GetFrameHeight();
 
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
 				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
@@ -449,7 +449,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 
 			drawList->Flags = backupFlags;
 
-			ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
+			ImGui::Dummy(ImVec2(0, frameHeight));
 			ImGui::Text(_("Palette index: %i (scene voxel index %i)"), selectedPaletteColorIdx,
 						sceneHoveredPaletteColorIdx);
 
