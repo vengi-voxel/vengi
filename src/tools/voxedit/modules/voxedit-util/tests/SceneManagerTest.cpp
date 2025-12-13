@@ -640,4 +640,26 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 	EXPECT_EQ(0, voxelutil::countVoxelsByColor(*v, targetVoxel));
 }
 
+TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+	const int nodeId = _sceneMgr->sceneGraph().emplace(core::move(node));
+	scenegraph::SceneGraphNode &n = _sceneMgr->sceneGraph().node(nodeId);
+
+	// validate initial state
+	const scenegraph::FrameTransform &ft0 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
+	EXPECT_VEC_NEAR(ft0.worldTranslation(), glm::vec3(0.0f, 0.0f, 0.0f), 0.001f);
+
+	// perform action
+	const glm::vec3 shift(5.0f, 5.0f, 5.0f);
+	EXPECT_TRUE(_sceneMgr->nodeShiftAllKeyframes(nodeId, shift));
+
+	// validate shifted state
+	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
+	EXPECT_VEC_NEAR(ft1.worldTranslation(), glm::vec3(5.0f, 5.0f, 5.0f), 0.001f);
+
+	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n, 10);
+	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(5.0f, 5.0f, 5.0f), 0.001f);
+}
+
 } // namespace voxedit
