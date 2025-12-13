@@ -10,7 +10,6 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
-#include "ui/ScopedID.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
@@ -47,8 +46,7 @@ void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, f
 	} else {
 		drawList->AddRect(v1, v2, color::RGBA(0, 0, 0, 255));
 	}
-	ui::ScopedID id(paletteColorIdx);
-	ImGui::InvisibleButton("", colorButtonSize);
+	ImGui::Dummy(ImVec2(colorButtonSize, colorButtonSize));
 	globalCursorPos.x += colorButtonSize;
 	const float availableX = ImGui::GetContentRegionAvail().x;
 	const float contentRegionWidth = availableX + ImGui::GetCursorPosX();
