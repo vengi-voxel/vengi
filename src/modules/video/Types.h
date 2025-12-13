@@ -251,8 +251,19 @@ enum class BufferType {
 };
 
 enum class BufferMode {
+	/**
+	 * The data store contents will be modified once and used many times.
+	 * Use for static VBOs, IBOs and UBOs.
+	 */
 	Static,
+	/**
+	 * The data store contents will be modified repeatedly and used many times.
+	 * Use for dynamic VBOs, IBOs and UBOs that are updated frequently.
+	 */
 	Dynamic,
+	/**
+	 * Use for streaming VBOs, IBOs and UBOs that are updated every frame.
+	 */
 	Stream,
 
 	Max
