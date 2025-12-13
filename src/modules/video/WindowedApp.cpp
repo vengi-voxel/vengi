@@ -308,15 +308,25 @@ void WindowedApp::onPenAxis(void *windowHandle, uint32_t pen, float x, float y, 
 }
 
 void WindowedApp::onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+	handleKeyPress(eraser ? util::button::CUSTOM_SDLK_PEN_ERASER : util::button::CUSTOM_SDLK_PEN_TIP, SDL_GetModState());
 }
 
 void WindowedApp::onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
+	handleKeyRelease(eraser ? util::button::CUSTOM_SDLK_PEN_ERASER : util::button::CUSTOM_SDLK_PEN_TIP, SDL_GetModState());
 }
 
 void WindowedApp::onPenButtonDown(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) {
+	if (button >= 4) {
+		return;
+	}
+	handleKeyPress(util::button::CUSTOM_SDLK_PEN_BUTTON0 + button, SDL_GetModState());
 }
 
 void WindowedApp::onPenButtonUp(void *windowHandle, uint32_t pen, float x, float y, uint8_t button) {
+	if (button >= 4) {
+		return;
+	}
+	handleKeyRelease(util::button::CUSTOM_SDLK_PEN_BUTTON0 + button, SDL_GetModState());
 }
 
 void WindowedApp::onPenProximityIn(void *windowHandle, uint32_t pen) {
