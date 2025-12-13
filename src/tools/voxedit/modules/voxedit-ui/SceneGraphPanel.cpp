@@ -266,8 +266,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 	}
 	{ // column 5
 		ImGui::TableNextColumn();
-
-		idbuf[l - 1] = 'd';
+		core::String::formatBuf(idbuf, sizeof(idbuf), ICON_LC_TRASH"##delete-node-%i", nodeId);
 		if (ImGui::Button(idbuf)) {
 			_sceneMgr->nodeRemove(nodeId, false);
 		}
