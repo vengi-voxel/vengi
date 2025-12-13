@@ -37,15 +37,22 @@ bool UniformBuffer::update(const void *data, size_t size) {
 		return false;
 	}
 #if VIDEO_UNIFORM_BUFFER_HASH_COMPARE
-	if (size > 0 && _size == size) {
-		uint32_t newHash = core::hash(data, size);
-		if (newHash == _hash) {
-			return true;
+	if (data != nullptr) {
+		if (size > 0 && _size == size) {
+			const uint32_t newHash = core::hash(data, (int)size);
+			if (newHash == _hash) {
+				return true;
+			}
+			_hash = newHash;
+		} else {
+			_hash = core::hash(data, (int)size);
 		}
-		_hash = newHash;
 	} else {
-		_hash = core::hash(data, size);
+		_hash = 0u;
 	}
+#endif
+#ifndef __EMSCRIPTEN__
+	core_assert_16byte_aligned(data);
 #endif
 	video::bufferData(_handle, BufferType::UniformBuffer, BufferMode::Dynamic, data, size);
 	_size = size;
