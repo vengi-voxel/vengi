@@ -507,7 +507,7 @@ private:
 						 float value);
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
-
+	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
 public:
 	void nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume);
 	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,

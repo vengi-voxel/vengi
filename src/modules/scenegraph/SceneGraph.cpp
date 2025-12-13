@@ -88,6 +88,8 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_activeAnimation = core::move(other._activeAnimation);
 		_cachedMaxFrame = other._cachedMaxFrame;
 		_dirty = other.dirty();
+		other._frameTransformCache.clear();
+		_frameTransformCache.clear();
 	}
 	return *this;
 }
@@ -464,6 +466,22 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 	});
 }
 
+void SceneGraph::invalidateFrameTransformCache(int nodeId) {
+	core::DynamicArray<FrameTransformCacheKey> keysToErase;
+	keysToErase.reserve(_frameTransformCache.size());
+
+	core::ScopedLock scoped(_mutex);
+	for (const auto &e : _frameTransformCache) {
+		if (e->first.nodeId == nodeId) {
+			keysToErase.push_back(e->first);
+		}
+	}
+
+	for (const FrameTransformCacheKey &key : keysToErase) {
+		_frameTransformCache.remove(key);
+	}
+}
+
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	core_trace_scoped(TransformForFrame);
 	const FrameTransformCacheKey nf{node.id(), frameIdx};
@@ -553,6 +571,7 @@ void SceneGraph::updateTransforms() {
 	}
 	core_assert_always(setAnimation(animId));
 	if (clearCache) {
+		core::ScopedLock scoped(_mutex);
 		_frameTransformCache.clear();
 	}
 }

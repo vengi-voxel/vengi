@@ -3134,8 +3134,7 @@ bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegr
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(_sceneGraph, node);
-		markDirty();
+		nodeKeyFramesChanged(node);
 	}
 	return true;
 }
@@ -3297,6 +3296,12 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, s
 	return false;
 }
 
+void SceneManager::nodeKeyFramesChanged(scenegraph::SceneGraphNode &node) {
+	_sceneGraph.invalidateFrameTransformCache(node.id());
+	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
+	markDirty();
+}
+
 bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift) {
 	if (node.keyFrames() == nullptr) {
 		return false;
@@ -3307,8 +3312,7 @@ bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const
 		transform.setLocalTranslation(newLocalTranslation);
 		transform.update(_sceneGraph, node, kf.frameIdx, false);
 	}
-	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
-	markDirty();
+	nodeKeyFramesChanged(node);
 	return true;
 }
 
@@ -3336,8 +3340,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(_sceneGraph, node);
-		markDirty();
+		nodeKeyFramesChanged(node);
 	}
 	return true;
 }
@@ -3353,8 +3356,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(_sceneGraph, node);
-		markDirty();
+		nodeKeyFramesChanged(node);
 	}
 
 	return true;

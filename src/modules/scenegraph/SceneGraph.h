@@ -164,6 +164,8 @@ public:
 	 */
 	FrameTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
 
+	void invalidateFrameTransformCache(int nodeId);
+
 	/**
 	 * Calculate the region for the whole scene having the transform for the given frame applied
 	 */
