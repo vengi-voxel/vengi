@@ -4,6 +4,8 @@
 
 #include "voxelgenerator/LSystem.h"
 #include "app/tests/AbstractTest.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 
 namespace voxelgenerator {
 namespace lsystem {
@@ -29,12 +31,36 @@ TEST_F(LSystemTests, testParse) {
 TEST_F(LSystemTests, testTemplates) {
 	const core::DynamicArray<LSystemTemplate> &templates = defaultTemplates();
 	ASSERT_FALSE(templates.empty());
-	for (const auto& t : templates) {
+	for (const auto &t : templates) {
 		LSystemState state;
 		prepareState(t.config, state);
 		ASSERT_FALSE(state.sentence.empty()) << "Template " << t.name << " failed to generate sentence";
 	}
 }
 
+TEST_F(LSystemTests, testInvalidRule) {
+	const core::DynamicArray<LSystemTemplate> &templates = defaultTemplates();
+	LSystemConfig conf;
+	conf = templates[0].config;
+	conf.rules[1].b += "(1";
+	conf.iterations = 2;
+	LSystemState state;
+	prepareState(conf, state);
+	ASSERT_FALSE(state.sentence.empty());
+	voxel::Region r(0, 10);
+	voxel::RawVolume v(r);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	LSystemExecutionState execState;
+	int steps = 0;
+	while (step(v, voxel, state, execState)) {
+		++steps;
+		if (steps > 1000) {
+			break;
+		}
+	}
+	ASSERT_LT(steps, 1000);
 }
-}
+
+} // namespace lsystem
+
+} // namespace voxelgenerator

@@ -215,8 +215,10 @@ bool step(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state, 
 
 	case ']':
 		// Pop
-		execState.step = execState.stack.top();
-		execState.stack.pop();
+		if (!execState.stack.empty()) {
+			execState.step = execState.stack.top();
+			execState.stack.pop();
+		}
 		break;
 	}
 	++execState.index;
