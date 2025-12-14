@@ -15,6 +15,7 @@ General:
    - Fixed invalid scaling for fbx imports
    - Fixed a lua integration bug for Windows
    - Improved palette name support
+   - Converted the tree generators into lua scripts
 
 VoxEdit:
 
@@ -24,6 +25,7 @@ VoxEdit:
    - Optimized some ui panels
    - Optimized node transform calculation
    - Improved the L-System editing support and added templates
+   - Fixed potential memento state corruption
 
 Thumbnailer:
 
