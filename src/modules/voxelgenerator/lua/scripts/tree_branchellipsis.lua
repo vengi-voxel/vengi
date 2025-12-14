@@ -10,11 +10,13 @@ function arguments()
 		{ name = 'branchHeight', desc = 'Height of branches', type = 'int', default = '5' },
 		{ name = 'branchLength', desc = 'Length of branches', type = 'int', default = '5' },
 		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' }
+		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' },
+		{ name = 'seed', desc = 'Random seed', type = 'int', default = '0' }
 	}
 end
 
-function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leavesHeight, leavesDepth, branchHeight, branchLength, trunkColor, leavesColor)
+function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leavesHeight, leavesDepth, branchHeight, branchLength, trunkColor, leavesColor, seed)
+	math.randomseed(seed)
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
@@ -51,11 +53,10 @@ function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leav
 				leavesPos = tree_utils.createL(volume, branch, -branchLength, 0, branchHeight, thickness, trunkVoxel)
 			end
 
-			leavesPos.y = leavesPos.y + math.floor(branchHeight / 2)
 			g_shape.ellipse(volume, leavesPos, 'y', branchHeight, branchHeight, branchHeight, leavesVoxel)
 		end
 	end
 
-	local leavesPos = g_ivec3.new(pos.x + math.floor(trunkStrength / 2), top + math.floor(leavesHeight / 2), pos.z + math.floor(trunkStrength / 2))
+	local leavesPos = g_ivec3.new(pos.x + math.floor(trunkStrength / 2), top, pos.z + math.floor(trunkStrength / 2))
 	g_shape.ellipse(volume, leavesPos, 'y', leavesWidth, leavesHeight, leavesDepth, leavesVoxel)
 end

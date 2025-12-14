@@ -2,7 +2,7 @@ local tree_utils = require "modules.tree_utils"
 
 function arguments()
 	return {
-		{ name = 'trunkHeight', desc = 'Height of the trunk', type = 'int', default = '10' },
+		{ name = 'trunkHeight', desc = 'Height of the trunk', type = 'int', default = '20' },
 		{ name = 'trunkStrength', desc = 'Thickness of the trunk', type = 'int', default = '2' },
 		{ name = 'leavesWidth', desc = 'Width of the leaves', type = 'int', default = '10' },
 		{ name = 'leavesHeight', desc = 'Height of the leaves', type = 'int', default = '10' },
@@ -12,11 +12,13 @@ function arguments()
 		{ name = 'startWidth', desc = 'Start width', type = 'int', default = '2' },
 		{ name = 'startDepth', desc = 'Start depth', type = 'int', default = '2' },
 		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' }
+		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' },
+		{ name = 'seed', desc = 'Random seed', type = 'int', default = '0' }
 	}
 end
 
-function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leavesHeight, leavesDepth, singleLeafHeight, singleStepDelta, startWidth, startDepth, trunkColor, leavesColor)
+function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leavesHeight, leavesDepth, singleLeafHeight, singleStepDelta, startWidth, startDepth, trunkColor, leavesColor, seed)
+	math.randomseed(seed)
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 

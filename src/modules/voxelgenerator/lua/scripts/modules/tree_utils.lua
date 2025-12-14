@@ -10,13 +10,21 @@ end
 function tree_utils.createL(volume, pos, width, depth, height, thickness, voxel)
 	local p = g_ivec3.new(pos.x, pos.y, pos.z)
 	if width ~= 0 then
-		g_shape.cube(volume, p, width, thickness, thickness, voxel)
+		if width < 0 then
+			g_shape.cube(volume, g_ivec3.new(p.x + width, p.y, p.z), -width, thickness, thickness, voxel)
+		else
+			g_shape.cube(volume, p, width, thickness, thickness, voxel)
+		end
 		p.x = p.x + width
 		g_shape.cube(volume, p, thickness, height, thickness, voxel)
 		p.x = p.x + math.floor(thickness / 2)
 		p.z = p.z + math.floor(thickness / 2)
 	elseif depth ~= 0 then
-		g_shape.cube(volume, p, thickness, thickness, depth, voxel)
+		if depth < 0 then
+			g_shape.cube(volume, g_ivec3.new(p.x, p.y, p.z + depth), thickness, thickness, -depth, voxel)
+		else
+			g_shape.cube(volume, p, thickness, thickness, depth, voxel)
+		end
 		p.z = p.z + depth
 		g_shape.cube(volume, p, thickness, height, thickness, voxel)
 		p.x = p.x + math.floor(thickness / 2)

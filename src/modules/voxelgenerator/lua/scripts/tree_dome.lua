@@ -8,11 +8,13 @@ function arguments()
 		{ name = 'leavesHeight', desc = 'Height of the leaves', type = 'int', default = '10' },
 		{ name = 'leavesDepth', desc = 'Depth of the leaves', type = 'int', default = '10' },
 		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' }
+		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' },
+		{ name = 'seed', desc = 'Random seed', type = 'int', default = '0' }
 	}
 end
 
-function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leavesHeight, leavesDepth, trunkColor, leavesColor)
+function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leavesHeight, leavesDepth, trunkColor, leavesColor, seed)
+	math.randomseed(seed)
 	local volume = node:volume()
 	local pos = tree_utils.getCenterBottom(region)
 
@@ -21,6 +23,6 @@ function main(node, region, color, trunkHeight, trunkStrength, leavesWidth, leav
 
 	tree_utils.createTrunk(volume, pos, trunkHeight, trunkStrength, trunkVoxel)
 
-	local leavesCenter = g_ivec3.new(pos.x, pos.y + trunkHeight + math.floor(leavesHeight / 2), pos.z)
+	local leavesCenter = g_ivec3.new(pos.x, pos.y + trunkHeight, pos.z)
 	g_shape.dome(volume, leavesCenter, 'y', false, leavesWidth, leavesHeight, leavesDepth, leavesVoxel)
 end
