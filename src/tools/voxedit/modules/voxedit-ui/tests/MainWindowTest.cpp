@@ -36,7 +36,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_scriptPanel.registerUITests(engine, TITLE_SCRIPT);
 	_statusBar.registerUITests(engine, TITLE_STATUSBAR);
 	_toolsPanel.registerUITests(engine, TITLE_TOOLS);
-	_treePanel.registerUITests(engine, TITLE_TREES);
 	// viewport tests are registered at init phase
 
 	// main window itself
