@@ -99,6 +99,13 @@ protected:
 	bool _needAutoSave = false;
 	bool _traceViaMouse = true;
 
+	voxelgenerator::lsystem::LSystemConfig _lsystemConfig;
+	voxelgenerator::lsystem::LSystemState _lsystemState;
+	voxelgenerator::lsystem::LSystemExecutionState _lsystemExecState;
+	bool _lsystemRunning = false;
+	int _lsystemNodeId = InvalidNodeId;
+	voxel::Voxel _lsystemVoxel;
+
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
 
@@ -157,6 +164,7 @@ protected:
 	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
 	void updateCursor();
 	int traceScene();
+	void stepLSystem();
 
 protected:
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);
@@ -342,8 +350,10 @@ public:
 	bool pasteAsNewNode();
 	bool cut();
 
-	void lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle,
-				 float length, float width, float widthIncrement, int iterations, float leavesRadius);
+	void lsystem(const voxelgenerator::lsystem::LSystemConfig &conf);
+	void lsystemAbort();
+	bool lsystemRunning() const;
+	float lsystemProgress() const;
 
 	void fillPlane(const image::ImagePtr &image);
 
@@ -665,6 +675,10 @@ inline ModifierFacade &SceneManager::modifier() {
 
 inline voxelgenerator::LUAApi &SceneManager::luaApi() {
 	return _luaApi;
+}
+
+inline bool SceneManager::lsystemRunning() const {
+	return _lsystemRunning;
 }
 
 using SceneManagerPtr = core::SharedPtr<SceneManager>;

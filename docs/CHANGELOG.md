@@ -23,6 +23,7 @@ VoxEdit:
    - Fixed input fields for xyz values in the ui
    - Optimized some ui panels
    - Optimized node transform calculation
+   - Improved the L-System editing support and added templates
 
 Thumbnailer:
 

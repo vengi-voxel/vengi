@@ -130,7 +130,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 
 				ImGui::Separator();
 
-				if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy"), nullptr, false, _textEditor.HasSelection())) {
+				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_COPY, _("Copy"), nullptr, false, _textEditor.HasSelection())) {
 					_textEditor.Copy();
 				}
 				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, _("Cut"), nullptr, false, _textEditor.HasSelection())) {

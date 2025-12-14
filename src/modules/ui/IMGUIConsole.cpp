@@ -89,7 +89,7 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 				ImGui::CommandIconMenuItem(ICON_LC_LIST_X, _("Clear"), "con_clear", true, &listener);
 				ImGui::Separator();
-				if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy to clipboard"))) {
+				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_COPY, _("Copy"))) {
 					ImGui::LogToClipboard();
 					for (const Message &msg : _messages) {
 						ImGui::TextUnformatted(msg.message.c_str());

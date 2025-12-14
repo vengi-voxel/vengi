@@ -26,5 +26,15 @@ TEST_F(LSystemTests, testParse) {
 	ASSERT_EQ(2u, rules.size());
 }
 
+TEST_F(LSystemTests, testTemplates) {
+	const core::DynamicArray<LSystemTemplate> &templates = defaultTemplates();
+	ASSERT_FALSE(templates.empty());
+	for (const auto& t : templates) {
+		LSystemState state;
+		prepareState(t.config, state);
+		ASSERT_FALSE(state.sentence.empty()) << "Template " << t.name << " failed to generate sentence";
+	}
+}
+
 }
 }

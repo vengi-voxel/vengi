@@ -7,7 +7,6 @@
 #include "core/GLM.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include "math/Random.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Stack.h"
 #include "voxel/Voxel.h"
@@ -20,10 +19,12 @@
 
 /**
  * Voxel generators
+ *
+ * https://paulbourke.net/fractals/
  */
 namespace voxelgenerator {
 /**
- * L-System
+ * L-System (Lindenmayer Systems)
  */
 namespace lsystem {
 
@@ -39,6 +40,13 @@ struct Rule {
 	core::String b = "B";
 };
 
+struct LSystemCommand {
+	char command;
+	const char* description;
+};
+
+extern const core::DynamicArray<LSystemCommand>& getLSystemCommands();
+
 extern bool parseRules(const core::String& rulesStr, core::DynamicArray<Rule>& rules);
 
 struct LSystemConfig {
@@ -49,7 +57,7 @@ struct LSystemConfig {
 	float length = 1.0f;
 	float width = 1.0f;
 	float widthIncrement = 0.5f;
-	uint8_t iterations = 4;
+	int iterations = 4;
 	float leafRadius = 8.0f;
 };
 
@@ -62,6 +70,20 @@ struct LSystemState {
 	float widthIncrement = 0.5f;
 	float leafRadius = 8.0f;
 };
+
+struct LSystemExecutionState {
+	core::Stack<TurtleStep, 512> stack;
+	TurtleStep step;
+	size_t index = 0;
+	bool initialized = false;
+};
+
+struct LSystemTemplate {
+	core::String name;
+	core::String description;
+	LSystemConfig config;
+};
+core::DynamicArray<LSystemTemplate> defaultTemplates();
 
 void prepareState(const LSystemConfig &conf, LSystemState &state);
 
@@ -82,117 +104,129 @@ void prepareState(const LSystemConfig &conf, LSystemState &state);
  * @li @c ] Pop
  */
 template<class Volume>
-void generate(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state) {
+bool step(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state, LSystemExecutionState& execState) {
 	if (state.sentence.empty()) {
-		return;
+		return false;
 	}
+	if (!execState.initialized) {
+		execState.step.width = state.width;
+		execState.step.voxel = voxel;
+		execState.initialized = true;
+		execState.index = 0;
+	}
+
+	if (execState.index >= state.sentence.size()) {
+		return false;
+	}
+
 	const float leafDistance = glm::round(2.0f * state.leafRadius);
 	// apply a factor to close potential holes
 	const int leavesVoxelCnt = (int)(glm::pow(leafDistance, 3) * 2.0);
 
-	core::Stack<TurtleStep, 512> stack;
-
-	TurtleStep step;
-	step.width = state.width;
-	step.voxel = voxel;
-
-	for (size_t i = 0u; i < state.sentence.size(); ++i) {
-		const char c = state.sentence[i];
-		switch (c) {
-		case 'F': {
-			// Draw line forwards
-			for (int j = 0; j < (int)state.length; j++) {
-				float r = step.width / 2.0f;
-				for (float x = -r; x < r; x++) {
-					for (float y = -r; y < r; y++) {
-						for (float z = -r; z < r; z++) {
-							const glm::ivec3 dest(glm::round(step.pos + glm::vec3(x, y, z)));
-							volume.setVoxel(state.position + dest, step.voxel);
-						}
+	const char c = state.sentence[execState.index];
+	switch (c) {
+	case 'F': {
+		// Draw line forwards
+		for (int j = 0; j < (int)state.length; j++) {
+			float r = execState.step.width / 2.0f;
+			for (float x = -r; x < r; x++) {
+				for (float y = -r; y < r; y++) {
+					for (float z = -r; z < r; z++) {
+						const glm::ivec3 dest(glm::round(execState.step.pos + glm::vec3(x, y, z)));
+						volume.setVoxel(state.position + dest, execState.step.voxel);
 					}
 				}
-				step.pos += 1.0f * step.rotation;
 			}
-			break;
+			execState.step.pos += 1.0f * execState.step.rotation;
 		}
-		case '(': {
-			// Set voxel type
-			++i;
-			size_t begin = i;
-			size_t slength = 0u;
-			while (state.sentence[i] >= '0' && state.sentence[i] <= '9') {
-				++slength;
-				++i;
-			}
-			core::String voxelString(state.sentence.c_str() + begin, slength);
-			const int colorIndex = core::string::toInt(voxelString);
-			if (colorIndex == 0) {
-				step.voxel = voxel::Voxel();
-			} else if (colorIndex > 0 && colorIndex < 256) {
-				step.voxel = voxel::createVoxel(voxel::VoxelType::Generic, colorIndex);
-			}
-			break;
+		break;
+	}
+	case '(': {
+		// Set voxel type
+		++execState.index;
+		size_t begin = execState.index;
+		size_t slength = 0u;
+		while (execState.index < state.sentence.size() && state.sentence[execState.index] >= '0' && state.sentence[execState.index] <= '9') {
+			++slength;
+			++execState.index;
 		}
-		case 'b': {
-			// Move backwards (no drawing)
-			for (int j = 0; j < (int)state.length; j++) {
-				step.pos -= 1.0f * step.rotation;
-			}
-			break;
+		core::String voxelString(state.sentence.c_str() + begin, slength);
+		const int colorIndex = core::string::toInt(voxelString);
+		if (colorIndex == 0) {
+			execState.step.voxel = voxel::Voxel();
+		} else if (colorIndex > 0 && colorIndex < 256) {
+			execState.step.voxel = voxel::createVoxel(voxel::VoxelType::Generic, colorIndex);
 		}
-
-		case 'L': {
-			// Leaf
-			for (int j = 0; j < leavesVoxelCnt; j++) {
-				const glm::vec3& r = glm::ballRand(state.leafRadius);
-				const glm::ivec3 p = state.position + glm::ivec3(glm::round(step.pos + r));
-				volume.setVoxel(p, step.voxel);
-			}
-			break;
+		break;
+	}
+	case 'b': {
+		// Move backwards (no drawing)
+		for (int j = 0; j < (int)state.length; j++) {
+			execState.step.pos -= 1.0f * execState.step.rotation;
 		}
+		break;
+	}
 
-		case '+':
-			// Rotate right
-			step.rotation = glm::rotateZ(step.rotation, state.angle);
-			break;
-
-		case '-':
-			// Rotate left
-			step.rotation = glm::rotateZ(step.rotation, -state.angle);
-			break;
-
-		case '>':
-			// Rotate forward
-			step.rotation = glm::rotateX(step.rotation, state.angle);
-			break;
-
-		case '<':
-			// Rotate back
-			step.rotation = glm::rotateX(step.rotation, -state.angle);
-			break;
-
-		case '#':
-			// Increment width
-			step.width += state.widthIncrement;
-			break;
-
-		case '!':
-			// Decrement width
-			step.width -= state.widthIncrement;
-			step.width = glm::max(1.1f, step.width);
-			break;
-
-		case '[':
-			// Push
-			stack.push(step);
-			break;
-
-		case ']':
-			// Pop
-			step = stack.top();
-			stack.pop();
-			break;
+	case 'L': {
+		// Leaf
+		for (int j = 0; j < leavesVoxelCnt; j++) {
+			const glm::vec3& r = glm::ballRand(state.leafRadius);
+			const glm::ivec3 p = state.position + glm::ivec3(glm::round(execState.step.pos + r));
+			volume.setVoxel(p, execState.step.voxel);
 		}
+		break;
+	}
+
+	case '+':
+		// Rotate right
+		execState.step.rotation = glm::rotateZ(execState.step.rotation, state.angle);
+		break;
+
+	case '-':
+		// Rotate left
+		execState.step.rotation = glm::rotateZ(execState.step.rotation, -state.angle);
+		break;
+
+	case '>':
+		// Rotate forward
+		execState.step.rotation = glm::rotateX(execState.step.rotation, state.angle);
+		break;
+
+	case '<':
+		// Rotate back
+		execState.step.rotation = glm::rotateX(execState.step.rotation, -state.angle);
+		break;
+
+	case '#':
+		// Increment width
+		execState.step.width += state.widthIncrement;
+		break;
+
+	case '!':
+		// Decrement width
+		execState.step.width -= state.widthIncrement;
+		execState.step.width = glm::max(1.1f, execState.step.width);
+		break;
+
+	case '[':
+		// Push
+		execState.stack.push(execState.step);
+		break;
+
+	case ']':
+		// Pop
+		execState.step = execState.stack.top();
+		execState.stack.pop();
+		break;
+	}
+	++execState.index;
+	return execState.index < state.sentence.size();
+}
+
+template<class Volume>
+void generate(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state) {
+	LSystemExecutionState execState;
+	while (step(volume, voxel, state, execState)) {
 	}
 }
 

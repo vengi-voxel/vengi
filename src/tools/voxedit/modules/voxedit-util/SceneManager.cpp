@@ -2682,6 +2682,9 @@ void SceneManager::disconnectFromServer() {
 
 bool SceneManager::update(double nowSeconds) {
 	core_trace_scoped(SceneManagerUpdate);
+	if (_lsystemRunning) {
+		stepLSystem();
+	}
 	updateDelta(nowSeconds);
 	_server.update(nowSeconds);
 	_client.update(nowSeconds);
@@ -2788,32 +2791,52 @@ void SceneManager::shutdown() {
 	command::Command::unregisterActionButton("camera_pan");
 }
 
-void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle, float length,
-		float width, float widthIncrement, int iterations, float leavesRadius) {
-	math::Random random;
-	const int nodeId = activeNode();
-	voxel::RawVolume *v = volume(nodeId);
+void SceneManager::lsystemAbort() {
+	if (_lsystemRunning) {
+		_mementoHandler.endGroup();
+		_lsystemRunning = false;
+	}
+	_lsystemExecState = {};
+	_lsystemNodeId = InvalidNodeId;
+}
+
+void SceneManager::lsystem(const voxelgenerator::lsystem::LSystemConfig &conf) {
+	lsystemAbort();
+	_lsystemConfig = conf;
+	_lsystemNodeId = activeNode();
+	voxel::RawVolume *v = volume(_lsystemNodeId);
 	if (v == nullptr) {
 		return;
 	}
+	_lsystemVoxel = _modifierFacade.cursorVoxel();
+	voxelgenerator::lsystem::prepareState(_lsystemConfig, _lsystemState);
+	_lsystemRunning = true;
+	_mementoHandler.beginGroup("LSystem generation");
+}
+
+void SceneManager::stepLSystem() {
+	if (!_lsystemRunning) {
+		return;
+	}
+	voxel::RawVolume *v = volume(_lsystemNodeId);
+	if (v == nullptr) {
+		_lsystemRunning = false;
+		_mementoHandler.endGroup();
+		return;
+	}
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	if (!voxelgenerator::lsystem::step(wrapper, _lsystemVoxel, _lsystemState, _lsystemExecState)) {
+		_lsystemRunning = false;
+		_mementoHandler.endGroup();
+	}
+	modified(_lsystemNodeId, wrapper.dirtyRegion());
+}
 
-	voxelgenerator::lsystem::LSystemConfig conf;
-	conf.position = referencePosition();
-	conf.axiom = axiom;
-	conf.rules = rules;
-	conf.angle = glm::radians(angle);
-	conf.length = length;
-	conf.width = width;
-	conf.widthIncrement = widthIncrement;
-	conf.iterations = iterations;
-	conf.leafRadius = leavesRadius;
-
-	const voxel::Voxel voxel = _modifierFacade.cursorVoxel();
-	voxelgenerator::lsystem::LSystemState state;
-	voxelgenerator::lsystem::prepareState(conf, state);
-	voxelgenerator::lsystem::generate(wrapper, voxel, state);
-	modified(nodeId, wrapper.dirtyRegion());
+float SceneManager::lsystemProgress() const {
+	if (!_lsystemRunning || _lsystemState.sentence.empty()) {
+		return 0.0f;
+	}
+	return (float)_lsystemExecState.index / (float)_lsystemState.sentence.size();
 }
 
 void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
