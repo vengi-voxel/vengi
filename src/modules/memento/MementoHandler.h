@@ -597,6 +597,14 @@ public:
 	}
 };
 
+inline void MementoHandler::lock() {
+	++_locked;
+}
+
+inline void MementoHandler::unlock() {
+	--_locked;
+}
+
 inline const MementoStateGroup &MementoHandler::stateGroup() const {
 	return _groups[_groupStatePosition];
 }
@@ -611,26 +619,6 @@ inline uint8_t MementoHandler::statePosition() const {
 
 inline size_t MementoHandler::stateSize() const {
 	return _groups.size();
-}
-
-inline bool MementoHandler::canUndo() const {
-	if (_locked > 0) {
-		return false;
-	}
-	if (stateSize() <= 1) {
-		return false;
-	}
-	return _groupStatePosition > 0;
-}
-
-inline bool MementoHandler::canRedo() const {
-	if (_locked > 0) {
-		return false;
-	}
-	if (stateSize() <= 1) {
-		return false;
-	}
-	return _groupStatePosition <= stateSize() - 2;
 }
 
 } // namespace memento

@@ -1062,4 +1062,25 @@ TEST_F(MementoHandlerTest, testMarkModificationWithRotatedVolume) {
 	}
 }
 
+TEST_F(MementoHandlerTest, testCanUndoRedoWhileInGroup) {
+	EXPECT_FALSE(_mementoHandler.canUndo());
+	EXPECT_FALSE(_mementoHandler.canRedo());
+
+	_mementoHandler.markUndo(0, 1, 0, "node", scenegraph::SceneGraphNodeType::Model, nullptr, MementoType::SceneNodeAdded);
+	_mementoHandler.markUndo(0, 1, 0, "node", scenegraph::SceneGraphNodeType::Model, nullptr, MementoType::SceneNodeRenamed);
+
+	EXPECT_EQ(2u, _mementoHandler.stateSize());
+	EXPECT_EQ(1u, _mementoHandler.statePosition());
+
+	EXPECT_TRUE(_mementoHandler.canUndo());
+	EXPECT_FALSE(_mementoHandler.canRedo());
+
+	_mementoHandler.beginGroup("test");
+	EXPECT_FALSE(_mementoHandler.canUndo()) << "Should not be able to undo while in a group";
+	EXPECT_FALSE(_mementoHandler.canRedo()) << "Should not be able to redo while in a group";
+	_mementoHandler.endGroup();
+
+	EXPECT_TRUE(_mementoHandler.canUndo());
+}
+
 } // namespace memento

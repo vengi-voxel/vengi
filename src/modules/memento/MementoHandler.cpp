@@ -304,12 +304,30 @@ void MementoHandler::unregisterListener(IMementoStateListener *listener) {
 	}
 }
 
-void MementoHandler::lock() {
-	++_locked;
+bool MementoHandler::canUndo() const {
+	if (_locked > 0) {
+		return false;
+	}
+	if (_groupState > 0) {
+		return false;
+	}
+	if (stateSize() <= 1) {
+		return false;
+	}
+	return _groupStatePosition > 0;
 }
 
-void MementoHandler::unlock() {
-	--_locked;
+bool MementoHandler::canRedo() const {
+	if (_locked > 0) {
+		return false;
+	}
+	if (_groupState > 0) {
+		return false;
+	}
+	if (stateSize() <= 1) {
+		return false;
+	}
+	return _groupStatePosition <= stateSize() - 2;
 }
 
 void MementoHandler::beginGroup(const core::String &name) {
