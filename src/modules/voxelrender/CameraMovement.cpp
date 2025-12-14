@@ -44,7 +44,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		_clipping->markClean();
 		updateBodyPosition(*camera);
 	}
-	// game mode - see Viewport::isGameMode()
+	// game mode
 	if (_clipping->boolVal()) {
 		glm::vec3 camForward = camera->forward();
 		glm::vec3 camRight = camera->right();

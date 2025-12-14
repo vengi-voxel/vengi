@@ -15,6 +15,19 @@
 
 namespace voxelrender {
 
+/**
+ * @brief Handles camera movement logic including physics-based movement.
+ *
+ * This component manages the camera's position and orientation updates based on user input
+ * and physics simulation. It supports features like:
+ *
+ * @li Walking and running with configurable speed.
+ * @li Jumping and gravity application.
+ * @li Collision detection and response (clipping).
+ * @li "Eye mode" or "Game mode" style control.
+ *
+ * @sa Viewport::isGameMode()
+ */
 class CameraMovement : public core::IComponent {
 protected:
 	core::VarPtr _movementSpeed;
@@ -39,6 +52,9 @@ public:
 	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 				scenegraph::FrameIndex frameIdx);
 	void zoom(video::Camera &camera, float level, double deltaSeconds);
+	/**
+	 * @brief Updates the body position based on the camera's current position.
+	 */
 	void updateBodyPosition(const video::Camera &camera);
 	const scenegraph::KinematicBody &body() const;
 	scenegraph::KinematicBody &body();
