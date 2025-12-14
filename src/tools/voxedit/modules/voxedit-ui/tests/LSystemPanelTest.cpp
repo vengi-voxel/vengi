@@ -20,9 +20,11 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);
 		IM_CHECK(volume != nullptr);
-		_sceneMgr->modifier().setReferencePosition(volume->region().getLowerCenter());
 
+		ctx->ItemInputValue("Iterations", 1);
 		ctx->ItemClick("###Ok");
+		ctx->Yield(1); // give a chance to execute at least one step of the lsystem generation
+		_sceneMgr->lsystemAbort();
 		IM_CHECK(voxelutil::countVoxels(*volume) > 0);
 	};
 }
