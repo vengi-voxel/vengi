@@ -349,11 +349,11 @@ The global `g_shape` supports a few shape generators:
 
 * `cone(centerBottom, axis, negative, width, height, depth, voxel)`: Create a cone at the given position. The position is the center of the bottom plate with the given `axis` (`y` is default) as the direction. `negative`: if true the cone will be placed in the negative direction of the axis.
 
-* `line(start, end, voxel)`: Create a line.
+* `line(start, end, voxel, [thickness])`: Create a line.
 
 * `cube(position, width, height, depth, voxel)`: Create a cube with the given dimensions. The position is the lower left corner.
 
-* `bezier(start, end, control, voxel)`: Create a bezier curve with the given `start`, `end` and `control` point
+* `bezier(start, end, control, voxel, [thickness])`: Create a bezier curve with the given `start`, `end` and `control` point
 
 They are available as e.g. `g_shape.line([...])`, `g_shape.ellipse([...])` and so on.
 

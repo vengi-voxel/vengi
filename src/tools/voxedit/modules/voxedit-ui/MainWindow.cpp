@@ -114,7 +114,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 #if ENABLE_RENDER_PANEL
 	  _renderPanel(app, _sceneMgr),
 #endif
-	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool), _treePanel(app, _sceneMgr),
+	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool),
 	  _sceneGraphPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
@@ -213,7 +213,6 @@ bool MainWindow::init() {
 	_sceneSettingsPanel.init();
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
-	_treePanel.init();
 	_nodeInspectorPanel.init();
 	_nodePropertiesPanel.init();
 	_toolsPanel.init();
@@ -252,7 +251,6 @@ void MainWindow::shutdown() {
 	_renderPanel.shutdown();
 #endif
 	_lsystemPanel.shutdown();
-	_treePanel.shutdown();
 	_nodeInspectorPanel.shutdown();
 	_nodePropertiesPanel.shutdown();
 	_toolsPanel.shutdown();
@@ -435,7 +433,6 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockId);
-	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
 #if ENABLE_RENDER_PANEL
 	ImGui::DockBuilderDockWindow(TITLE_RENDERSETTINGS, dockId);
@@ -472,9 +469,6 @@ void MainWindow::rightWidget() {
 		_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
 	}
 #endif
-	if (viewModeTreePanel(_viewMode->intVal())) {
-		_treePanel.update(TITLE_TREES);
-	}
 	if (viewModeLSystemPanel(_viewMode->intVal())) {
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	}

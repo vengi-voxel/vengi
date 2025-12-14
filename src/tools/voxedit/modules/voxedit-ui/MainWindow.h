@@ -31,7 +31,6 @@
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ToolsPanel.h"
-#include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -83,7 +82,6 @@ private:
 #endif
 	LSystemPanel _lsystemPanel;
 	BrushPanel _brushPanel;
-	TreePanel _treePanel;
 	SceneGraphPanel _sceneGraphPanel;
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;

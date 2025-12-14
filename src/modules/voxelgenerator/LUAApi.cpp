@@ -559,7 +559,8 @@ static int luaVoxel_shape_line(lua_State* s) {
 	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
 	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 4);
-	shape::createLine(*volume, start, end, voxel);
+	const int thickness = (int)luaL_optinteger(s, 5, 1);
+	shape::createLine(*volume, start, end, voxel, thickness);
 	return 0;
 }
 
@@ -569,8 +570,9 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
 	const glm::ivec3& control = clua_tovec<glm::ivec3>(s, 4);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
+	const int thickness = (int)luaL_optinteger(s, 6, 1);
 	shape::createBezierFunc(*volume, start, end, control, voxel, [&] (LuaRawVolumeWrapper& vol, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& v) {
-		shape::createLine(vol, pos, last, v, 1);
+		shape::createLine(vol, pos, last, v, thickness);
 	});
 	return 0;
 }

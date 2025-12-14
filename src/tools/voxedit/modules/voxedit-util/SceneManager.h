@@ -31,7 +31,6 @@
 #include "voxelformat/Format.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
-#include "voxelgenerator/TreeContext.h"
 #include "voxelrender/CameraMovement.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/Picking.h"
@@ -321,11 +320,6 @@ public:
 
 	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
 						  bool fillAndHollow = false);
-
-	/**
-	 * @brief Create a new procgen tree
-	 */
-	void createTree(const voxelgenerator::TreeContext &ctx);
 
 	/**
 	 * @brief Add a new model node as children to the current active node

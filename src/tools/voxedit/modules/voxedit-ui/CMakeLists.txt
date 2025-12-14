@@ -28,7 +28,6 @@ set(SRCS
 	StatusBar.h StatusBar.cpp
 	TipOfTheDay.h
 	ToolsPanel.h ToolsPanel.cpp
-	TreePanel.h TreePanel.cpp
 	ViewMode.h ViewMode.cpp
 	Viewport.h Viewport.cpp
 	QuitDisallowReason.h
@@ -58,7 +57,6 @@ if (USE_IMGUITESTENGINE)
 		tests/BrushPanelTest.cpp
 		tests/StatusBarTest.cpp
 		tests/ToolsPanelTest.cpp
-		tests/TreePanelTest.cpp
 		tests/ViewportTest.cpp
 
 		tests/TestUtil.h tests/TestUtil.cpp

@@ -15,7 +15,6 @@ enum class ViewMode : uint8_t { Default, Simple, All, CommandAndConquer, Minecra
 #define VIEWMODE_FLAG_NORMALPALETTE (1 << 2)
 #define VIEWMODE_FLAG_MEMENTOPANEL  (1 << 3)
 #define VIEWMODE_FLAG_CAMERAPANEL   (1 << 4)
-#define VIEWMODE_FLAG_TREEPANEL     (1 << 5)
 #define VIEWMODE_FLAG_LSYSTEMPANEL  (1 << 6)
 #define VIEWMODE_FLAG_SCRIPTPANEL   (1 << 7)
 #define VIEWMODE_FLAG_ASSETPANEL    (1 << 8)
@@ -45,11 +44,6 @@ inline bool viewModeMementoPanel(T viewMode) {
 template<typename T>
 inline bool viewModeCameraPanel(T viewMode) {
 	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_CAMERAPANEL) != 0u;
-}
-
-template<typename T>
-inline bool viewModeTreePanel(T viewMode) {
-	return (viewModeFlags((ViewMode)viewMode) & VIEWMODE_FLAG_TREEPANEL) != 0u;
 }
 
 template<typename T>

@@ -22,7 +22,6 @@
 #define TITLE_SCENEGRAPH "###scenegraph"
 #define TITLE_RENDER "###renderpanel"
 #define TITLE_RENDERSETTINGS "###rendersettingspanel"
-#define TITLE_TREES "###treepanel"
 #define TITLE_BRUSHPANEL "###brushpanel"
 #define TITLE_LSYSTEMPANEL "###lsystempanel"
 #define TITLE_ANIMATION_SETTINGS "###animationpanel"

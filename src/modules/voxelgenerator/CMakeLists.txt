@@ -5,6 +5,7 @@ set(LUA_SRCS
 	scripts/modules/volume.lua
 	scripts/modules/JSON.lua
 	scripts/modules/stb_aos.lua
+	scripts/modules/tree_utils.lua
 	scripts/modules/url.lua
 	scripts/modules/util.lua
 	scripts/align.lua
@@ -50,17 +51,22 @@ set(LUA_SRCS
 	scripts/splitcolor.lua
 	scripts/splitobjects.lua
 	scripts/thicken.lua
+	scripts/tree_branchellipsis.lua
+	scripts/tree_cone.lua
+	scripts/tree_cube.lua
+	scripts/tree_cubesidecubes.lua
+	scripts/tree_dome.lua
+	scripts/tree_domehanging.lua
+	scripts/tree_ellipsis.lua
+	scripts/tree_fir.lua
+	scripts/tree_palm.lua
+	scripts/tree_pine.lua
 )
 engine_add_module(TARGET ${LIB}-lua LUA_SRCS ${LUA_SRCS})
 
 set(SRCS
 	Genland.h Genland.cpp
-	Spiral.h
 	ShapeGenerator.h
-	SpaceColonization.h SpaceColonization.cpp
-	TreeType.h
-	TreeGenerator.h TreeGenerator.cpp
-	TreeContext.h
 	LSystem.h LSystem.cpp
 	LUAApi.h LUAApi.cpp
 )

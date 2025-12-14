@@ -56,7 +56,6 @@
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
-#include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
@@ -2837,18 +2836,6 @@ float SceneManager::lsystemProgress() const {
 		return 0.0f;
 	}
 	return (float)_lsystemExecState.index / (float)_lsystemState.sentence.size();
-}
-
-void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
-	math::Random random(ctx.cfg.seed);
-	const int nodeId = activeNode();
-	voxel::RawVolume *v = volume(nodeId);
-	if (v == nullptr) {
-		return;
-	}
-	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-	voxelgenerator::tree::createTree(wrapper, activePalette(), ctx, random);
-	modified(nodeId, wrapper.dirtyRegion());
 }
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {

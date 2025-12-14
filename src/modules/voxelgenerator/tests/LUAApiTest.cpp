@@ -495,4 +495,54 @@ TEST_F(LUAApiTest, testScriptImageAsVolume) {
 	}
 }
 
+TEST_F(LUAApiTest, testTreeCube) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_cube.lua", {"10", "2", "10", "10", "10", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeCubeSideCubes) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_cubesidecubes.lua", {"10", "2", "10", "10", "10", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeDome) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_dome.lua", {"10", "2", "10", "10", "10", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeDomeHanging) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_domehanging.lua", {"10", "2", "10", "10", "10", "10", "5", "10", "1", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeCone) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_cone.lua", {"10", "2", "10", "10", "10", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeEllipsis) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_ellipsis.lua", {"10", "2", "10", "10", "10", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeBranchEllipsis) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_branchellipsis.lua", {"10", "2", "10", "10", "10", "5", "5", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreePalm) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_palm.lua", {"10", "2", "0", "0", "5", "0.9", "10", "10", "5", "1.0", "5", "0.9", "2", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreeFir) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_fir.lua", {"10", "2", "5", "5", "2", "5.0", "1", "2", "0.5", "1", "2"});
+}
+
+TEST_F(LUAApiTest, testTreePine) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_pine.lua", {"10", "2", "10", "10", "10", "2", "1", "2", "2", "1", "2"});
+}
+
 } // namespace voxelgenerator
