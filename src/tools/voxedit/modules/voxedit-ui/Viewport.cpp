@@ -36,6 +36,7 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelrender/SceneGraphRenderer.h"
 
@@ -807,8 +808,8 @@ static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, con
 //       The issue can also be in SceneManager::nodeSetPivot() and how to compensate the local matrix
 //       translation to keep the node visually at the same position
 void Viewport::manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix) {
-	// TODO: use the scenegraph to resolve the region for reference nodes?
-	const glm::vec3 size = node.region().getDimensionsInVoxels();
+	const voxel::Region &region = _sceneMgr->sceneGraph().resolveRegion(node);
+	const glm::vec3 size = region.getDimensionsInVoxels();
 	// TODO: extracting just the translation part here is not correct if we have rotation in the deltaMatrix
 	const glm::vec3 deltaTranslation(deltaMatrix[3]);
 	const glm::vec3 pivot = deltaTranslation / size;
