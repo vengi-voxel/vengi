@@ -22,6 +22,7 @@ globals = {
 	"g_palette",
 	"g_region",
 	"g_scenegraph",
+	"g_shape",
 	"g_var",
 
 	"g_bvec2",
