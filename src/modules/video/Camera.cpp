@@ -118,20 +118,27 @@ glm::vec3 Camera::direction() const {
 }
 
 void Camera::lerp(const Camera& targetCam) {
+	if (&targetCam == this) {
+		return;
+	}
 	_lerp = true;
 	core_assert(!targetCam.dirty());
 	_lerpTarget = {targetCam.rotationType(),
 				   targetCam.target(),
 				   targetCam.worldPosition(),
 				   targetCam._panOffset,
-				   targetCam.orientation(),
+				   targetCam.quaternion(),
 				   worldPosition(),
 				   _panOffset,
 				   quaternion(),
 				   target(),
 				   0.0,
 				   targetCam.targetDistance(),
-				   targetDistance()};
+				   targetDistance(),
+				   targetCam.fieldOfView(),
+				   fieldOfView(),
+				   targetCam._orthoZoom,
+				   _orthoZoom};
 	setRotationType(targetCam.rotationType());
 	setTarget(targetCam.target());
 	setMode(targetCam.mode());
@@ -374,8 +381,10 @@ void Camera::updateLerp(double deltaFrameSeconds) {
 	} else {
 		_worldPos = glm::mix(_lerpTarget.fromWorldPos, _lerpTarget.worldPos, t);
 	}
+	_fieldOfView = glm::mix(_lerpTarget.fromFieldOfView, _lerpTarget.fieldOfView, t);
+	_orthoZoom = glm::mix(_lerpTarget.fromOrthoZoom, _lerpTarget.orthoZoom, t);
 	_panOffset = glm::mix(_lerpTarget.fromPanOffset, _lerpTarget.panOffset, t);
-	_dirty |= DIRTY_POSITION;
+	_dirty |= DIRTY_POSITION | DIRTY_PERSPECTIVE;
 	if (_lerpTarget.seconds > 1.0) {
 		_lerp = false;
 	}

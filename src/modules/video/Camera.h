@@ -109,6 +109,10 @@ protected:
 		double seconds;
 		float distance;
 		float fromDistance;
+		float fieldOfView;
+		float fromFieldOfView;
+		float orthoZoom;
+		float fromOrthoZoom;
 	};
 	LerpTarget _lerpTarget;
 
