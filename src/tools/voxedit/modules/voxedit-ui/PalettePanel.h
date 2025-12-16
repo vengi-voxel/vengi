@@ -10,6 +10,7 @@
 #include "core/collection/Set.h"
 #include "palette/PaletteCache.h"
 #include "palette/PaletteView.h"
+#include "ui/dearimgui/imgui.h"
 #include "ui/Panel.h"
 #include <glm/vec4.hpp>
 
