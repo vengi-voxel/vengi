@@ -856,4 +856,41 @@ TEST_F(SceneGraphTest, testChildRotationFlipping) {
 	EXPECT_NEAR(expectedForward.z, actualForward.z, 0.001f);
 }
 
+TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
+	SceneGraph sceneGraph;
+	SceneGraphNode parent(SceneGraphNodeType::Group);
+	parent.setName("parent");
+	int parentId = sceneGraph.emplace(core::move(parent));
+
+	SceneGraphNode child(SceneGraphNodeType::Group);
+	child.setName("child");
+	int childId = sceneGraph.emplace(core::move(child), parentId);
+
+	// Initial transform
+	SceneGraphTransform parentTransform;
+	parentTransform.setTransforms(
+		glm::vec3(10.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f),
+		glm::vec3(10.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f)
+	);
+	sceneGraph.node(parentId).setTransform(0, parentTransform);
+	sceneGraph.invalidateFrameTransformCache(parentId);
+
+	// Query child transform to populate cache
+	const FrameTransform& childTransform1 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
+	EXPECT_EQ(glm::vec3(10.0f, 0.0f, 0.0f), childTransform1.worldTranslation());
+
+	// Change parent transform
+	SceneGraphTransform newParentTransform;
+	newParentTransform.setTransforms(
+		glm::vec3(20.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f),
+		glm::vec3(20.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f)
+	);
+	sceneGraph.node(parentId).setTransform(0, newParentTransform);
+	sceneGraph.invalidateFrameTransformCache(parentId);
+
+	// Query child transform again - should be updated
+	const FrameTransform& childTransform2 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
+	EXPECT_EQ(glm::vec3(20.0f, 0.0f, 0.0f), childTransform2.worldTranslation()) << "Child transform should be updated after parent transform change";
+}
+
 }

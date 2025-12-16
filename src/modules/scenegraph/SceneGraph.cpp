@@ -467,18 +467,33 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 }
 
 void SceneGraph::invalidateFrameTransformCache(int nodeId) {
-	core::DynamicArray<FrameTransformCacheKey> keysToErase;
-	keysToErase.reserve(_frameTransformCache.size());
-
-	core::ScopedLock scoped(_mutex);
-	for (const auto &e : _frameTransformCache) {
-		if (e->first.nodeId == nodeId) {
-			keysToErase.push_back(e->first);
-		}
+	if (nodeId == InvalidNodeId || !hasNode(nodeId)) {
+		core::ScopedLock scoped(_mutex);
+		_frameTransformCache.clear();
+		return;
 	}
 
-	for (const FrameTransformCacheKey &key : keysToErase) {
-		_frameTransformCache.remove(key);
+	// before we go over each and every child, we wipe the cache
+	// completely in case the node has children
+	// we would have to delete all children cache entry recursively
+	// to get the parent transforms exposed to the children
+	if (node(nodeId).children().empty()) {
+		core::DynamicArray<FrameTransformCacheKey> keysToErase;
+		keysToErase.reserve(_frameTransformCache.size());
+
+		core::ScopedLock scoped(_mutex);
+		for (const auto &e : _frameTransformCache) {
+			if (e->first.nodeId == nodeId) {
+				keysToErase.push_back(e->first);
+			}
+		}
+
+		for (const FrameTransformCacheKey &key : keysToErase) {
+			_frameTransformCache.remove(key);
+		}
+	} else {
+		core::ScopedLock scoped(_mutex);
+		_frameTransformCache.clear();
 	}
 }
 
