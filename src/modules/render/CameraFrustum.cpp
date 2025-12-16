@@ -11,13 +11,16 @@
 
 namespace render {
 
+void CameraFrustum::setColor(const glm::vec4& color) {
+	_color = color;
+}
+
 bool CameraFrustum::init(const glm::vec4& color, int splitFrustum) {
 	_splitFrustum = splitFrustum;
-	_color = color;
+	setColor(color);
 	if (!_shapeRenderer.init()) {
 		return false;
 	}
-	_shapeBuilder.setColor(_color);
 	_shapeBuilder.cube(glm::vec3(0), glm::vec3(1));
 	_frustumMesh = _shapeRenderer.create(_shapeBuilder);
 	if (_frustumMesh == -1) {
