@@ -116,9 +116,9 @@ protected:
 	uint32_t _dirtyRenderer = 0u;
 
 	// model animation speed
-	double _animationSpeed = 0.0;
+	double _frameAnimationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
-	int _currentAnimationNodeId = InvalidNodeId;
+	int _frameAnimationNodeId = InvalidNodeId;
 	bool _animationResetCamera = false;
 
 	// timeline animation
@@ -169,7 +169,7 @@ protected:
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);
 	int activeNode() const;
 
-	void animate(double nowSeconds);
+	void animateFrames(double nowSeconds);
 	/**
 	 * @brief Move the cursor relative by the given steps in each direction
 	 */
@@ -411,7 +411,7 @@ public:
 	/**
 	 * @note This is not about the animation scene mode, but the animation of the nodes
 	 */
-	bool animateActive() const;
+	bool frameAnimationActive() const;
 
 	static const uint8_t RenderScene = 1u << 0u;
 	static const uint8_t RenderUI = 1u << 1u;

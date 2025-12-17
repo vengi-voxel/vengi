@@ -2214,13 +2214,13 @@ void SceneManager::construct() {
 		if (args.size() == 2) {
 			_animationResetCamera = false;
 			if (!core::string::toBool(args[1])) {
-				_animationSpeed = 0.0;
+				_frameAnimationSpeed = 0.0;
 				return;
 			}
 		} else if (args.size() == 3) {
 			_animationResetCamera = core::string::toBool(args[2]);
 		}
-		_animationSpeed = core::string::toDouble(args[0]) / 1000.0;
+		_frameAnimationSpeed = core::string::toDouble(args[0]) / 1000.0;
 	}).setHelp(_("Animate all nodes with the given delay in millis between the frames"));
 
 	command::Command::registerCommand("setcolor", [&] (const command::CmdArgs& args) {
@@ -2608,37 +2608,37 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	return true;
 }
 
-bool SceneManager::animateActive() const {
-	return _animationSpeed > 0.0;
+bool SceneManager::frameAnimationActive() const {
+	return _frameAnimationSpeed > 0.0;
 }
 
-void SceneManager::animate(double nowSeconds) {
-	if (!animateActive()) {
+void SceneManager::animateFrames(double nowSeconds) {
+	if (!frameAnimationActive()) {
 		return;
 	}
 	if (_nextFrameSwitch > nowSeconds) {
 		return;
 	}
-	_nextFrameSwitch = nowSeconds + _animationSpeed;
+	_nextFrameSwitch = nowSeconds + _frameAnimationSpeed;
 
-	if (_currentAnimationNodeId == InvalidNodeId) {
-		_currentAnimationNodeId = (*_sceneGraph.beginModel()).id();
+	if (_frameAnimationNodeId == InvalidNodeId) {
+		_frameAnimationNodeId = (*_sceneGraph.beginModel()).id();
 	}
 
-	scenegraph::SceneGraphNode &prev = _sceneGraph.node(_currentAnimationNodeId);
+	scenegraph::SceneGraphNode &prev = _sceneGraph.node(_frameAnimationNodeId);
 	if (prev.isAnyModelNode()) {
 		prev.setVisible(false);
 	}
 
-	_currentAnimationNodeId = _sceneGraph.nextModelNode(_currentAnimationNodeId);
-	if (_currentAnimationNodeId == InvalidNodeId) {
+	_frameAnimationNodeId = _sceneGraph.nextModelNode(_frameAnimationNodeId);
+	if (_frameAnimationNodeId == InvalidNodeId) {
 		if (const auto *node = _sceneGraph.firstModelNode()) {
-			_currentAnimationNodeId = node->id();
+			_frameAnimationNodeId = node->id();
 		} else {
-			_animationSpeed = 0.0f;
+			_frameAnimationSpeed = 0.0f;
 		}
 	}
-	scenegraph::SceneGraphNode &node = _sceneGraph.node(_currentAnimationNodeId);
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(_frameAnimationNodeId);
 	if (node.isAnyModelNode()) {
 		node.setVisible(true);
 	}
@@ -2753,7 +2753,7 @@ bool SceneManager::update(double nowSeconds) {
 		});
 	}
 
-	animate(nowSeconds);
+	animateFrames(nowSeconds);
 	autosave();
 	return loadedNewScene;
 }

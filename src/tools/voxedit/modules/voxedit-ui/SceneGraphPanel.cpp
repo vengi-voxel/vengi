@@ -342,7 +342,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 
 		toolbar.button([onlyOneModel, &listener, this](const ImVec2 &buttonSize) {
 			if (ImGui::DisabledButton(ICON_LC_PLAY, onlyOneModel, buttonSize)) {
-				if (_sceneMgr->animateActive()) {
+				if (_sceneMgr->frameAnimationActive()) {
 					command::executeCommands("animate 0", &listener);
 				} else {
 					const core::String &cmd = core::String::format("animate %f", _animationSpeedVar->floatVal());
