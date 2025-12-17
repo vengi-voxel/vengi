@@ -6,6 +6,7 @@
 #include "color/Color.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "render/CameraRenderer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -118,7 +119,7 @@ void SceneGraphRenderer::construct() {
 }
 
 bool SceneGraphRenderer::init(bool normals) {
-	if (!_cameraRenderer.init(color::White(), 0)) {
+	if (!_cameraRenderer.init(0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
 	return _volumeRenderer.init(normals);
@@ -346,11 +347,7 @@ void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) 
 			continue;
 		}
 		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
-		const video::Camera &camera = toCamera(size, sceneGraph, cameraNode, renderContext.frame);
-		// TODO: we need the node id here, to colorize the camera frustum rendering according to the node color
-		_cameras.emplace_back(camera);
-		// TODO: see https://github.com/vengi-voxel/vengi/issues/254 - if the node is the current active node, we
-		// should lerp to the camera
+		_cameras.emplace_back(node.id(), toCamera(size, sceneGraph, cameraNode, renderContext.frame), node.color());
 	}
 }
 
@@ -443,11 +440,10 @@ void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderCont
 
 	_volumeRenderer.render(meshState, renderContext, camera, shadow);
 	if (renderContext.showCameras()) {
-		for (video::Camera &sceneCamera : _cameras) {
-			sceneCamera.setSize(camera.size());
-			sceneCamera.update(0.0);
-			// TODO: node id to resolv the color _cameraRenderer.setColor(style::color(style::ColorCamera));
-			_cameraRenderer.render(camera, sceneCamera);
+		for (render::CameraRenderer::Node &cameraNode : _cameras) {
+			cameraNode.camera.setSize(camera.size());
+			cameraNode.camera.update(0.0);
+			_cameraRenderer.render(camera, cameraNode);
 		}
 	}
 }

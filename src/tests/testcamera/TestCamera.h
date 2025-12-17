@@ -5,7 +5,7 @@
 #pragma once
 
 #include "testcore/TestApp.h"
-#include "render/CameraFrustum.h"
+#include "render/CameraRenderer.h"
 #include "FrustumEntity.h"
 #include "core/collection/Array.h"
 
@@ -17,7 +17,7 @@ private:
 	using Super = TestApp;
 
 	static constexpr int CAMERAS = 3;
-	render::CameraFrustum _frustums[CAMERAS];
+	render::CameraRenderer _frustums[CAMERAS];
 	// the cameras to render the frustums for
 	video::Camera _renderCamera[CAMERAS];
 

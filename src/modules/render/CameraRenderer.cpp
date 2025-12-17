@@ -2,22 +2,17 @@
  * @file
  */
 
-#include "CameraFrustum.h"
+#include "CameraRenderer.h"
 #include "color/ColorUtil.h"
 #include "core/Trace.h"
-#include "video/Renderer.h"
 #include "math/AABB.h"
 #include "video/Camera.h"
+#include "video/Renderer.h"
 
 namespace render {
 
-void CameraFrustum::setColor(const glm::vec4& color) {
-	_color = color;
-}
-
-bool CameraFrustum::init(const glm::vec4& color, int splitFrustum) {
+bool CameraRenderer::init(int splitFrustum) {
 	_splitFrustum = splitFrustum;
-	setColor(color);
 	if (!_shapeRenderer.init()) {
 		return false;
 	}
@@ -29,21 +24,22 @@ bool CameraFrustum::init(const glm::vec4& color, int splitFrustum) {
 	return true;
 }
 
-void CameraFrustum::shutdown() {
+void CameraRenderer::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 }
 
-void CameraFrustum::render(const video::Camera& camera, const video::Camera& frustumCamera) {
-	core_trace_scoped(CameraFrustumRender);
+void CameraRenderer::render(const video::Camera &camera, const Node &frustumCamera) {
+	core_trace_scoped(CameraRender);
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(_color);
-	_shapeBuilder.frustum(frustumCamera, _splitFrustum);
+	const glm::vec4 color(color::fromRGBA(frustumCamera.color));
+	_shapeBuilder.setColor(color);
+	_shapeBuilder.frustum(frustumCamera.camera, _splitFrustum);
 	_shapeRenderer.update(_frustumMesh, _shapeBuilder);
 	if (_renderAABB) {
-		const math::AABB<float>& aabb = frustumCamera.aabb();
+		const math::AABB<float> &aabb = frustumCamera.camera.aabb();
 		_shapeBuilder.clear();
-		_shapeBuilder.setColor(color::brighter(_color));
+		_shapeBuilder.setColor(color::brighter(color));
 		_shapeBuilder.aabb(aabb);
 		_shapeRenderer.createOrUpdate(_aabbMesh, _shapeBuilder);
 	} else if (_aabbMesh >= 0) {
@@ -53,4 +49,4 @@ void CameraFrustum::render(const video::Camera& camera, const video::Camera& fru
 	_shapeRenderer.renderAll(camera);
 }
 
-}
+} // namespace render

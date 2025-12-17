@@ -3,6 +3,8 @@
  */
 
 #include "TestCamera.h"
+#include "color/ColorUtil.h"
+#include "render/CameraRenderer.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include "util/CustomButtonNames.h"
@@ -37,7 +39,6 @@ app::AppState TestCamera::onInit() {
 		}
 	}
 
-	const glm::vec4 colors[CAMERAS] = { color::Red(), color::Yellow(), color::Pink() };
 	static_assert(CAMERAS == 3, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
 		bool renderAABB = i == 0;
@@ -61,7 +62,7 @@ app::AppState TestCamera::onInit() {
 		}
 		_renderCamera[i].update(0l);
 
-		if (!_frustums[i].init(colors[i], renderSplitFrustum ? 4 : 0)) {
+		if (!_frustums[i].init(renderSplitFrustum ? 4 : 0)) {
 			return app::AppState::InitFailure;
 		}
 		_frustums[i].setRenderAABB(renderAABB);
@@ -79,9 +80,11 @@ void TestCamera::resetCameraPosition() {
 }
 
 void TestCamera::doRender() {
-	video::Camera& c = _renderCamera[_targetCamera];
+	video::Camera c = _renderCamera[_targetCamera];
 	c.update(_deltaFrameSeconds);
-	_frustums[_targetCamera].render(camera(), c);
+	const glm::vec4 colors[CAMERAS] = { color::Red(), color::Yellow(), color::Pink() };
+	render::CameraRenderer::Node node{0, core::move(c), color::toRGBA(colors[_targetCamera])};
+	_frustums[_targetCamera].render(camera(), node);
 	for (FrustumEntity& e : _entities) {
 		e.cull(c);
 		e.render(camera());

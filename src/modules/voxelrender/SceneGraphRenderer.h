@@ -8,7 +8,7 @@
 #include "app/I18N.h"
 #include "core/SharedPtr.h"
 #include "core/collection/Buffer.h"
-#include "render/CameraFrustum.h"
+#include "render/CameraRenderer.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "video/Camera.h"
@@ -47,8 +47,8 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 class SceneGraphRenderer : public core::NonCopyable {
 protected:
 	RawVolumeRenderer _volumeRenderer;
-	render::CameraFrustum _cameraRenderer;
-	core::Buffer<video::Camera> _cameras;
+	render::CameraRenderer _cameraRenderer;
+	core::Buffer<render::CameraRenderer::Node> _cameras;
 	void prepareMeshStateTransform(const voxel::MeshStatePtr &meshState, const scenegraph::SceneGraph &sceneGraph,
 								   const scenegraph::FrameIndex &frame, const scenegraph::SceneGraphNode &node, int idx) const;
 	void handleSliceView(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node);

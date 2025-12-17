@@ -4,14 +4,11 @@
 
 #pragma once
 
-#include "render/ShapeRenderer.h"
-#include "core/Common.h"
 #include "color/Color.h"
+#include "core/Common.h"
+#include "render/ShapeRenderer.h"
+#include "video/Camera.h"
 #include "video/ShapeBuilder.h"
-
-namespace video {
-class Video;
-}
 
 namespace render {
 
@@ -21,22 +18,31 @@ namespace render {
  * @see video::ShapeBuilder
  * @see ShapeRenderer
  */
-class CameraFrustum {
+class CameraRenderer {
 protected:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 
-	glm::vec4 _color;
 	int _splitFrustum = -1;
 	int32_t _frustumMesh = -1;
 	int32_t _aabbMesh = -1;
 	bool _renderAABB = false;
+
 public:
+	struct Node {
+		int nodeId;
+		color::RGBA color;
+		video::Camera camera;
+
+		Node(int nid, video::Camera &&cam, color::RGBA col)
+			: nodeId(nid), color(col.r, col.g, col.b), camera(core::move(cam)) {
+		}
+	};
+
 	/**
 	 * @param[in] splitFrustum The amount of splits that should be rendered.
 	 */
-	bool init(const glm::vec4& color = color::Red(), int splitFrustum = 0);
-	void setColor(const glm::vec4& color);
+	bool init(int splitFrustum = 0);
 	void shutdown();
 
 	/**
@@ -49,15 +55,18 @@ public:
 	 */
 	bool renderAABB() const;
 
-	void render(const video::Camera& camera, const video::Camera& frustumCamera);
+	/**
+	 * @brief Renders the camera frustum and optionally its AABB.
+	 */
+	void render(const video::Camera &camera, const Node &frustumCamera);
 };
 
-inline void CameraFrustum::setRenderAABB(bool renderAABB) {
+inline void CameraRenderer::setRenderAABB(bool renderAABB) {
 	_renderAABB = renderAABB;
 }
 
-inline bool CameraFrustum::renderAABB() const {
+inline bool CameraRenderer::renderAABB() const {
 	return _renderAABB;
 }
 
-}
+} // namespace render

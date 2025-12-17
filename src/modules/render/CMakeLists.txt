@@ -1,7 +1,7 @@
 set(SRCS
 	Axis.cpp Axis.h
 	BloomRenderer.cpp BloomRenderer.h
-	CameraFrustum.cpp CameraFrustum.h
+	CameraRenderer.cpp CameraRenderer.h
 	GridRenderer.cpp GridRenderer.h
 	ShapeRenderer.cpp ShapeRenderer.h
 )
