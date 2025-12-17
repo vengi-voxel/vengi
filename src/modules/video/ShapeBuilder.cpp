@@ -760,6 +760,23 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	}
 }
 
+void ShapeBuilder::camera(const Camera& camera) {
+	setPrimitive(Primitive::Lines);
+	glm::vec3 out[math::FRUSTUM_VERTICES_MAX];
+	uint32_t indices[math::FRUSTUM_VERTICES_MAX * 3];
+	camera.frustumCorners(out, indices);
+
+	camera.splitFrustum(camera.nearPlane(), 10.0f, out);
+
+	for (size_t i = 0; i < lengthof(indices); i += 2) {
+		line(out[indices[i]], out[indices[i + 1]]);
+	}
+
+	if (camera.rotationType() == CameraRotationType::Target) {
+		line(camera.worldPosition(), camera.target());
+	}
+}
+
 void ShapeBuilder::axis(const glm::vec3& scale) {
 	setColor(color::Red());
 	line(glm::zero<glm::vec3>(), glm::right() * scale);

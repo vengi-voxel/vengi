@@ -34,7 +34,11 @@ void CameraRenderer::render(const video::Camera &camera, const Node &frustumCame
 	_shapeBuilder.clear();
 	const glm::vec4 color(color::fromRGBA(frustumCamera.color));
 	_shapeBuilder.setColor(color);
-	_shapeBuilder.frustum(frustumCamera.camera, _splitFrustum);
+	if (_splitFrustum > 0) {
+		_shapeBuilder.frustum(frustumCamera.camera, _splitFrustum);
+	} else {
+		_shapeBuilder.camera(frustumCamera.camera);
+	}
 	_shapeRenderer.update(_frustumMesh, _shapeBuilder);
 	if (_renderAABB) {
 		const math::AABB<float> &aabb = frustumCamera.camera.aabb();

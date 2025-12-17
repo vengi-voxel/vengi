@@ -149,6 +149,7 @@ public:
 	 */
 	void plane(uint32_t tesselation = 10);
 	void frustum(const Camera& camera, int splitFrustum = 0);
+	void camera(const Camera& camera);
 	void geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive = Primitive::Triangles);
 	void geom(const core::Buffer<glm::vec3>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
