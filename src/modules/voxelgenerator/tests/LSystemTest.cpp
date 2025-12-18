@@ -5,6 +5,7 @@
 #include "voxelgenerator/LSystem.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 
 namespace voxelgenerator {
@@ -52,7 +53,8 @@ TEST_F(LSystemTests, testInvalidRule) {
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	LSystemExecutionState execState;
 	int steps = 0;
-	while (step(v, voxel, state, execState)) {
+	voxel::RawVolumeWrapper wrapper(&v);
+	while (step(wrapper, voxel, state, execState)) {
 		++steps;
 		if (steps > 1000) {
 			break;

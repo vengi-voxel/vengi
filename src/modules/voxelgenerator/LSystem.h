@@ -13,9 +13,9 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
+#include <glm/gtc/random.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
-#include <glm/gtc/random.hpp>
 
 /**
  * Voxel generators
@@ -29,7 +29,7 @@ namespace voxelgenerator {
 namespace lsystem {
 
 struct TurtleStep {
-	glm::vec3 pos { 0.0f };
+	glm::vec3 pos{0.0f};
 	glm::vec3 rotation = glm::up();
 	float width;
 	voxel::Voxel voxel;
@@ -42,15 +42,15 @@ struct Rule {
 
 struct LSystemCommand {
 	char command;
-	const char* description;
+	const char *description;
 };
 
-extern const core::DynamicArray<LSystemCommand>& getLSystemCommands();
+extern const core::DynamicArray<LSystemCommand> &getLSystemCommands();
 
-extern bool parseRules(const core::String& rulesStr, core::DynamicArray<Rule>& rules);
+extern bool parseRules(const core::String &rulesStr, core::DynamicArray<Rule> &rules);
 
 struct LSystemConfig {
-	glm::ivec3 position { 0 };
+	glm::ivec3 position{0};
 	core::String axiom;
 	core::DynamicArray<Rule> rules;
 	float angle = glm::radians(25.0f);
@@ -63,7 +63,7 @@ struct LSystemConfig {
 
 struct LSystemState {
 	core::String sentence;
-	glm::ivec3 position { 0 };
+	glm::ivec3 position{0};
 	float angle = glm::radians(25.0f);
 	float length = 1.0f;
 	float width = 1.0f;
@@ -104,7 +104,7 @@ void prepareState(const LSystemConfig &conf, LSystemState &state);
  * @li @c ] Pop
  */
 template<class Volume>
-bool step(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state, LSystemExecutionState& execState) {
+bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, LSystemExecutionState &execState) {
 	if (state.sentence.empty()) {
 		return false;
 	}
@@ -146,7 +146,8 @@ bool step(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state, 
 		++execState.index;
 		size_t begin = execState.index;
 		size_t slength = 0u;
-		while (execState.index < state.sentence.size() && state.sentence[execState.index] >= '0' && state.sentence[execState.index] <= '9') {
+		while (execState.index < state.sentence.size() && state.sentence[execState.index] >= '0' &&
+			   state.sentence[execState.index] <= '9') {
 			++slength;
 			++execState.index;
 		}
@@ -170,7 +171,7 @@ bool step(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state, 
 	case 'L': {
 		// Leaf
 		for (int j = 0; j < leavesVoxelCnt; j++) {
-			const glm::vec3& r = glm::ballRand(state.leafRadius);
+			const glm::vec3 &r = glm::ballRand(state.leafRadius);
 			const glm::ivec3 p = state.position + glm::ivec3(glm::round(execState.step.pos + r));
 			volume.setVoxel(p, execState.step.voxel);
 		}
@@ -225,12 +226,5 @@ bool step(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state, 
 	return execState.index < state.sentence.size();
 }
 
-template<class Volume>
-void generate(Volume& volume, const voxel::Voxel& voxel, const LSystemState &state) {
-	LSystemExecutionState execState;
-	while (step(volume, voxel, state, execState)) {
-	}
-}
-
-}
-}
+} // namespace lsystem
+} // namespace voxelgenerator
