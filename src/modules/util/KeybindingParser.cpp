@@ -79,7 +79,13 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 			key = core::string::replaceAll(key, "gui", "command");
 			keyCode = SDL_GetKeyFromName(key.c_str());
 			if (keyCode == SDLK_UNKNOWN)
+#elif defined _WIN32
+			// see WIN_InitKeyboard
+			key = core::string::replaceAll(key, "gui", "windows");
+			keyCode = SDL_GetKeyFromName(key.c_str());
+			if (keyCode == SDLK_UNKNOWN)
 #endif
+			// TODO: Application -> Menu for linux and windows
 			{
 				_lastError = core::String::format("could not get a valid key code for %s (skip binding for %s): %s",
 												  key.c_str(), command.c_str(), SDL_GetError());
