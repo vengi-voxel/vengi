@@ -31,7 +31,7 @@ jobs:
           run: |
             dnf install -y epel-release
             dnf config-manager --set-enabled crb
-            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build
+            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build zip
 
         - name: ccache
           uses: actions/cache@v4
@@ -50,12 +50,21 @@ jobs:
             cd ..
             rpmbuild -ba build/vengi.spec --build-in-place
             mv ~/rpmbuild/RPMS/x86_64/*.rpm ./
+            zip linux-rpm.zip vengi*.rpm
 
         - name: Upload the rpm artifacts
           uses: actions/upload-artifact@v4
           with:
             name: linux-rpm
             path: vengi*.rpm
+
+        - name: Upload the rockylinux release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          with:
+            args: linux-rpm.zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     pkg-ubuntu:
         timeout-minutes: 45
@@ -67,7 +76,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
+            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build zip
 
         - name: ccache
           uses: actions/cache@v4
@@ -81,6 +90,7 @@ jobs:
           run: |
             make deb
             mv ../*.deb .
+            zip linux-debian.zip vengi*.deb
 
         - name: Upload the ubuntu artifacts
           uses: actions/upload-artifact@v4
@@ -92,7 +102,7 @@ jobs:
           if: startsWith(github.ref, 'refs/tags/')
           uses: Roang-zero1/github-upload-release-artifacts-action@v2
           with:
-            args: vengi*.deb
+            args: linux-debian.zip
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     mac:
@@ -128,6 +138,11 @@ jobs:
           run: |
             cd build
             cmake --build . --target package
+            zip -r mac-dmg.zip *.dmg
+            zip -r mac-voxedit.zip voxedit/vengi-voxedit.app
+            zip -r mac-voxconvert.zip voxconvert/vengi-voxconvert.app
+            zip -r mac-palconvert.zip palconvert/vengi-palconvert.app
+            zip -r mac-thumbnailer.zip thumbnailer/vengi-thumbnailer.app
 
         - name: Upload the dmg
           uses: actions/upload-artifact@v4
@@ -158,6 +173,14 @@ jobs:
           with:
             name: mac-vengi-thumbnailer-app
             path: build/thumbnailer/vengi-thumbnailer.app
+
+        - name: Upload the mac release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          with:
+            args: build/*.zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     linux-ui-tests:
         timeout-minutes: 60
@@ -200,7 +223,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev zip
 
         - name: ccache
           uses: actions/cache@v4
@@ -236,12 +259,21 @@ jobs:
             curl https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20220822-1/linuxdeploy-x86_64.AppImage --output linuxdeploy-x86_64.AppImage --silent -L -f
             chmod +x linuxdeploy-x86_64.AppImage
             ./linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxedit
+            zip linux-appimage-voxedit.zip voxedit*.AppImage
 
         - name: Upload voxedit AppImage artifacts
           uses: actions/upload-artifact@v4
           with:
             name: linux-appimage-voxedit
             path: "voxedit*.AppImage"
+
+        - name: Upload the appimage release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          with:
+            args: linux-appimage-voxedit.zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     emscripten:
         timeout-minutes: 60
@@ -253,7 +285,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install libfreetype-dev libjpeg-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
+            sudo apt-get install libfreetype-dev libjpeg-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache zip
 
         - uses: mymindstorm/setup-emsdk@v13
           with:
@@ -277,6 +309,12 @@ jobs:
             cmake --build build/emscripten --target voxconvert
             cmake --build build/emscripten --target voxedit
 
+        - name: Package
+          run: |
+            cd build/emscripten
+            zip -r voxedit.zip voxedit
+            zip -r voxconvert.zip voxconvert
+
         - name: Upload the build artifacts voxedit
           uses: actions/upload-artifact@v4
           with:
@@ -289,6 +327,14 @@ jobs:
             name: emscripten-voxconvert
             path: build/emscripten/voxconvert
 
+        - name: Upload the release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          with:
+            args: build/emscripten/*.zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     windows:
         timeout-minutes: 45
         runs-on: windows-2025
@@ -298,7 +344,7 @@ jobs:
             include:
               - buildType: Release
                 sanitizers: OFF
-                artifactsPostfix:
+                artifactsPostfix: ""
               - buildType: Debug
                 sanitizers: OFF
                 artifactsPostfix: -debug
@@ -328,6 +374,11 @@ jobs:
             cmake --install . --component voxconvert --prefix voxconvert-install
             cmake --install . --component voxconvertui --prefix voxconvert-install
             cpack
+            Compress-Archive -Path vengi.msi -DestinationPath win-vengi-msi${{ matrix.artifactsPostfix }}.zip
+            Compress-Archive -Path voxedit-install -DestinationPath win-voxedit${{ matrix.artifactsPostfix }}.zip
+            Compress-Archive -Path voxconvert-install -DestinationPath win-voxconvert${{ matrix.artifactsPostfix }}.zip
+            Compress-Archive -Path palconvert-install -DestinationPath win-palconvert${{ matrix.artifactsPostfix }}.zip
+            Compress-Archive -Path thumbnailer-install -DestinationPath win-thumbnailer${{ matrix.artifactsPostfix }}.zip
 
         - name: Upload the cpack logs
           uses: actions/upload-artifact@v4
@@ -372,3 +423,11 @@ jobs:
           with:
             name: win-thumbnailer${{ matrix.artifactsPostfix }}
             path: build/thumbnailer-install/
+
+        - name: Upload the windows release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          with:
+            args: build/*.zip
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
