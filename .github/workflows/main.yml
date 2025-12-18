@@ -18,6 +18,83 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    pkg-rockylinux:
+        runs-on: ubuntu-latest
+        if: startsWith(github.ref, 'refs/tags/')
+        container:
+          image: rockylinux/rockylinux:9
+
+        steps:
+        - uses: actions/checkout@v5
+
+        - name: Setup
+          run: |
+            dnf install -y epel-release
+            dnf config-manager --set-enabled crb
+            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build
+
+        - name: ccache
+          uses: actions/cache@v4
+          with:
+            path: |
+              ~/.ccache
+            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
+
+        - name: rpm
+          run: |
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Release
+            mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+            cd ..
+            rpmbuild -ba build/vengi.spec --build-in-place
+            mv ~/rpmbuild/RPMS/x86_64/*.rpm ./
+
+        - name: Upload the rpm artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: linux-rpm
+            path: vengi*.rpm
+
+    pkg-ubuntu:
+        timeout-minutes: 45
+        if: startsWith(github.ref, 'refs/tags/')
+        runs-on: ubuntu-22.04
+        steps:
+        - uses: actions/checkout@v5
+
+        - name: Setup
+          run: |
+            sudo apt-get update
+            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
+
+        - name: ccache
+          uses: actions/cache@v4
+          with:
+            path: |
+              ~/.ccache
+            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+
+        - name: Ubuntu
+          run: |
+            make deb
+            mv ../*.deb .
+
+        - name: Upload the ubuntu artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: linux-debian
+            path: vengi*.deb
+
+        - name: Upload the ubuntu release artifacts
+          if: startsWith(github.ref, 'refs/tags/')
+          uses: Roang-zero1/github-upload-release-artifacts-action@v2
+          with:
+            args: vengi*.deb
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     mac:
         timeout-minutes: 60
         runs-on: macos-15
@@ -81,45 +158,6 @@ jobs:
           with:
             name: mac-vengi-thumbnailer-app
             path: build/thumbnailer/vengi-thumbnailer.app
-
-    pkg-ubuntu:
-        timeout-minutes: 45
-        if: github.repository == 'vengi-voxel/vengi'
-        runs-on: ubuntu-22.04
-        steps:
-        - uses: actions/checkout@v5
-
-        - name: Setup
-          run: |
-            sudo apt-get update
-            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
-
-        - name: ccache
-          uses: actions/cache@v4
-          with:
-            path: |
-              ~/.ccache
-            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
-            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
-
-        - name: Ubuntu
-          run: |
-            make deb
-            mv ../*.deb .
-
-        - name: Upload the ubuntu artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: linux-debian
-            path: vengi*.deb
-
-        - name: Upload the ubuntu release artifacts
-          if: startsWith(github.ref, 'refs/tags/')
-          uses: Roang-zero1/github-upload-release-artifacts-action@v2
-          with:
-            args: vengi*.deb
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     linux-ui-tests:
         timeout-minutes: 60
@@ -204,44 +242,6 @@ jobs:
           with:
             name: linux-appimage-voxedit
             path: "voxedit*.AppImage"
-
-    pkg-rockylinux:
-        runs-on: ubuntu-latest
-        container:
-          image: rockylinux/rockylinux:9
-
-        steps:
-        - uses: actions/checkout@v5
-
-        - name: Setup
-          run: |
-            dnf install -y epel-release
-            dnf config-manager --set-enabled crb
-            dnf install -y SDL2-devel freetype-devel libjpeg-devel binutils-devel make cmake gcc g++ libasan libubsan ninja-build libcurl-devel rpm-devel rpmdevtools rpm-build
-
-        - name: ccache
-          uses: actions/cache@v4
-          with:
-            path: |
-              ~/.ccache
-            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
-            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-rocky-${{ hashFiles('**/CMakeLists.txt') }}
-
-        - name: rpm
-          run: |
-            mkdir build
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
-            mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-            cd ..
-            rpmbuild -ba build/vengi.spec --build-in-place
-            mv ~/rpmbuild/RPMS/x86_64/*.rpm ./
-
-        - name: Upload the rpm artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: linux-rpm
-            path: vengi*.rpm
 
     emscripten:
         timeout-minutes: 60
