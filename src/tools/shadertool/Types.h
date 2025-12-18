@@ -29,7 +29,7 @@ struct Variable {
 		VEC2, VEC3, VEC4, MAT4,
 		SAMPLER1D, SAMPLER2D, SAMPLER3D, SAMPLER2DMS,
 		SAMPLERCUBEMAP, SAMPLER2DARRAYSHADOW, SAMPLER2DARRAY,
-		SAMPLER1DSHADOW, SAMPLER2DSHADOW, IMAGE2D,
+		SAMPLER1DSHADOW, SAMPLER2DSHADOW, USAMPLER3D, IMAGE2D,
 		MAX
 		// TODO: atomics
 	};
@@ -64,6 +64,7 @@ struct Variable {
 		case SAMPLER2DARRAY:
 		case SAMPLER1DSHADOW:
 		case SAMPLER2DSHADOW:
+		case USAMPLER3D:
 		case IMAGE2D:
 			return "video::DataType::Int";
 		case MAX:
@@ -78,7 +79,7 @@ struct Variable {
 
 	inline bool isSampler() const {
 		return type == Variable::SAMPLER1D || type == Variable::SAMPLER2D || type == Variable::SAMPLER3D || type == Variable::SAMPLER2DMS
-		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP;
+		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP || type == Variable::USAMPLER3D;
 	}
 
 	inline bool isImage() const {

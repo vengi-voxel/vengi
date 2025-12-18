@@ -36,7 +36,8 @@ static const Types cTypes[] = {
 	{ Variable::SAMPLER2DMS,          -1, -1, 1, "video::TextureUnit", Value, "sampler2DMS" },
 	{ Variable::SAMPLERCUBEMAP,       -1, -1, 1, "video::TextureUnit", Value, "samplerCube" },
 	{ Variable::SAMPLER1DSHADOW,      -1, -1, 1, "video::TextureUnit", Value, "sampler1DShadow" },
-	{ Variable::SAMPLER2DSHADOW,      -1, -1, 1, "video::TextureUnit", Value, "sampler2DShadow" }
+	{ Variable::SAMPLER2DSHADOW,      -1, -1, 1, "video::TextureUnit", Value, "sampler2DShadow" },
+	{ Variable::USAMPLER3D,           -1, -1, 1, "video::TextureUnit", Value, "usampler3D" }
 };
 static_assert(Variable::MAX == lengthof(cTypes), "mismatch in glsl types");
 
@@ -209,6 +210,7 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	case Variable::SAMPLER2DSHADOW:
 	case Variable::SAMPLER2DARRAY:
 	case Variable::SAMPLER2DARRAYSHADOW:
+	case Variable::USAMPLER3D:
 		if (amount > 1) {
 			// https://www.opengl.org/wiki/Data_Type_%28GLSL%29#Opaque_arrays
 			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
