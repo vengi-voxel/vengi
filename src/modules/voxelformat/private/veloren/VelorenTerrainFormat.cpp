@@ -56,7 +56,7 @@ size_t VelorenTerrainFormat::loadPalette(const core::String &filename, const io:
 	wrap(stream->readUInt64(count))
 	palette::RGBABuffer colors;
 	for (uint64_t i = 0; i < count; ++i) {
-		if (version == 1) {
+		if constexpr (version == 1) {
 			int32_t x = 0, y = 0, z = 0;
 			wrap(stream->readInt32(x));
 			wrap(stream->readInt32(y));
@@ -107,7 +107,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	voxel::SparseVolume v;
 	for (uint64_t i = 0; i < count; ++i) {
 		int32_t x = 0, y = 0, z = 0;
-		if (version == 1) {
+		if constexpr (version == 1) {
 			wrap(stream->readInt32(x));
 			wrap(stream->readInt32(y));
 			wrap(stream->readInt32(z));

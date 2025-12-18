@@ -15,6 +15,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/dearimgui/imgui_internal.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -187,8 +188,7 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 	}
 
 	const bool usableColor = color.a > 0;
-	ImGuiWindow *window = ImGui::GetCurrentWindow();
-	const ImGuiID id = window->GetID((int)paletteColorIdx);
+	const ImGuiID id = ImGui::GetID((int)paletteColorIdx);
 	const ImRect bb(cursorPos, ImVec2(cursorPos.x + colorButtonSize, cursorPos.y + colorButtonSize));
 
 	bool hovered = false;
@@ -257,10 +257,10 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);
 
 		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_C)) {
-			_copyPaletteColorIdx = paletteColorIdx;
+			_copyPaletteColorIdx = (int)paletteColorIdx;
 		} else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
 			if (_copyPaletteColorIdx != -1) {
-				palette.copy(_copyPaletteColorIdx, paletteColorIdx);
+				palette.copy((uint8_t)_copyPaletteColorIdx, paletteColorIdx);
 				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 			}
 		}

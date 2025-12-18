@@ -79,8 +79,6 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 									 const io::FormatDescription *desc) { normalPalette.save(file.c_str()); },
 								 {}, palette::palettes(), "palette.png");
 			}
-			voxel::RawVolume *v = node.volume();
-			core_assert(v != nullptr);
 			if (ImGui::BeginMenu(_("Auto normals"))) {
 				const char *normalModes[] = {_("Flat"), _("Smooth"), _("Smoother")};
 				const core::VarPtr &normalModeVar = core::Var::getSafe(cfg::VoxEditAutoNormalMode);
