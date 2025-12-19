@@ -626,6 +626,44 @@ void Palette::changeIntensity(float scale) {
 	markSave();
 }
 
+void Palette::changeWarmer(uint8_t value) {
+	for (int i = 0; i < _colorCount; ++i) {
+		color::RGBA &rgba = _colors[i];
+		rgba.r = (uint8_t)core_min(255, (int)rgba.r + value);
+		rgba.b = (uint8_t)core_max(0, (int)rgba.b - value);
+	}
+	markDirty();
+	markSave();
+}
+
+void Palette::changeColder(uint8_t value) {
+	for (int i = 0; i < _colorCount; ++i) {
+		color::RGBA &rgba = _colors[i];
+		rgba.r = (uint8_t)core_max(0, (int)rgba.r - value);
+		rgba.b = (uint8_t)core_min(255, (int)rgba.b + value);
+	}
+	markDirty();
+	markSave();
+}
+
+void Palette::changeBrighter(float factor) {
+	for (int i = 0; i < _colorCount; ++i) {
+		const color::RGBA rgba = _colors[i];
+		_colors[i] = color::brighter(rgba, factor);
+	}
+	markDirty();
+	markSave();
+}
+
+void Palette::changeDarker(float factor) {
+	for (int i = 0; i < _colorCount; ++i) {
+		const color::RGBA rgba = _colors[i];
+		_colors[i] = color::darker(rgba, factor);
+	}
+	markDirty();
+	markSave();
+}
+
 bool Palette::save(const char *name) const {
 	if (name == nullptr || name[0] == '\0') {
 		if (_name.empty()) {

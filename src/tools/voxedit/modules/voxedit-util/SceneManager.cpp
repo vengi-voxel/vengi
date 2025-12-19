@@ -1755,6 +1755,42 @@ void SceneManager::construct() {
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
 	}).setHelp(_("Change intensity by scaling the rgb values of the palette"));
 
+	command::Command::registerCommand("palette_warmer", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		palette::Palette &pal = node.palette();
+		const uint8_t val = args.empty() ? 10 : core::string::toInt(args[0]);
+		pal.changeWarmer(val);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
+	}).setHelp(_("Make the palette colors warmer"));
+
+	command::Command::registerCommand("palette_colder", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		palette::Palette &pal = node.palette();
+		const uint8_t val = args.empty() ? 10 : core::string::toInt(args[0]);
+		pal.changeColder(val);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
+	}).setHelp(_("Make the palette colors colder"));
+
+	command::Command::registerCommand("palette_brighter", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		palette::Palette &pal = node.palette();
+		const float val = args.empty() ? 0.2f : core::string::toFloat(args[0]);
+		pal.changeBrighter(val);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
+	}).setHelp(_("Make the palette colors brighter"));
+
+	command::Command::registerCommand("palette_darker", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		palette::Palette &pal = node.palette();
+		const float val = args.empty() ? 0.2f : core::string::toFloat(args[0]);
+		pal.changeDarker(val);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
+	}).setHelp(_("Make the palette colors darker"));
+
 	command::Command::registerCommand("palette_removeunused", [&] (const command::CmdArgs& args) {
 		const bool updateVoxels = args.empty() ? false : core::string::toBool(args[0]);
 		const int nodeId = activeNode();

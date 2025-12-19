@@ -114,6 +114,10 @@ public:
 	 */
 	bool removeColor(uint8_t paletteColorIdx);
 	void changeIntensity(float scale);
+	void changeWarmer(uint8_t value = 10u);
+	void changeColder(uint8_t value = 10u);
+	void changeBrighter(float factor = 0.2f);
+	void changeDarker(float factor = 0.2f);
 	void reduce(uint8_t targetColors);
 
 	const core::String &colorName(uint8_t paletteColorIdx) const;

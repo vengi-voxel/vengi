@@ -4,6 +4,7 @@
 
 #include "PalettePanel.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "memento/MementoHandler.h"
@@ -129,6 +130,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 						_sceneMgr->nodeSetColor(node.id(), idx, color::getRGBA(randomColor));
 					}
 				}
+				// TODO: add color quantisation to parts of the palette
 			}
 		}
 
@@ -407,7 +409,13 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 				}
 				ImGui::EndMenu();
 			}
-			// TODO: add color quantisation to parts of the palette
+			if (ImGui::BeginMenu(_("Modify"))) {
+				ImGui::CommandMenuItem(_("Warmer"), "palette_warmer", true, &listener);
+				ImGui::CommandMenuItem(_("Colder"), "palette_colder", true, &listener);
+				ImGui::CommandMenuItem(_("Brighter"), "palette_brighter", true, &listener);
+				ImGui::CommandMenuItem(_("Darker"), "palette_darker", true, &listener);
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndMenu();
 		}
