@@ -17,7 +17,7 @@ theme:
 
 markdown_extensions:
   - toc:
-      toc_depth: 2
+      toc_depth: 3
 
 extra:
   social:
@@ -48,7 +48,26 @@ nav:
   - VoxEdit:
       - voxedit/Index.md
       - voxedit/Features.md
-      - voxedit/Usage.md
+      - Usage:
+          - voxedit/usage/SceneAndEditMode.md
+          - voxedit/usage/ReferencePosition.md
+          - voxedit/usage/Brushes.md
+          - voxedit/usage/Modifiers.md
+          - voxedit/usage/Assets.md
+          - voxedit/usage/Camera.md
+          - voxedit/usage/Console.md
+          - voxedit/usage/LSystem.md
+          - voxedit/usage/Memento.md
+          - voxedit/usage/NodeInspector.md
+          - voxedit/usage/Palette.md
+          - voxedit/usage/Renderer.md
+          - voxedit/usage/SceneView.md
+          - voxedit/usage/Scripts.md
+          - voxedit/usage/Animations.md
+          - voxedit/usage/Tools.md
+          - voxedit/usage/Viewport.md
+          - voxedit/usage/ViewModes.md
+          - voxedit/usage/Network.md
       - voxedit/Controls.md
       - voxedit/Configuration.md
       - voxedit/Animation.md

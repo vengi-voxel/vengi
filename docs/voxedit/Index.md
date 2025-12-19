@@ -17,7 +17,6 @@ You can load and save a lot of different [voxel formats](../Formats.md). Its bui
 # Further reading
 
 * [Features](Features.md)
-* [Usage](Usage.md)
 * [Configuration](Configuration.md)
 * [Controls](Controls.md)
 * [Screenshots](Screenshots.md)
