@@ -10,6 +10,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "palette/PaletteView.h"
+#include "math/Random.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
@@ -118,6 +119,15 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 						srcIndiced.push_back(e->key);
 					}
 					_sceneMgr->nodeReduceColors(node.id(), srcIndiced, paletteColorIdx);
+				}
+				if (ImGui::IconMenuItem(ICON_LC_SHUFFLE, _("Randomize selected colors"))) {
+					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "randomizecolors");
+					math::Random random;
+					for (const auto &e : _selectedIndices) {
+						const uint8_t idx = e->key;
+						const glm::vec4 randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
+						_sceneMgr->nodeSetColor(node.id(), idx, color::getRGBA(randomColor));
+					}
 				}
 			}
 		}
