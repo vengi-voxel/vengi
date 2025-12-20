@@ -322,6 +322,7 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 			bbElement.cube.faces[(int)faceType].uvs[1] = uv1;
 		}
 		bbElement.cube.faces[(int)faceType].textureIndex = materialIdx;
+		bbElement.cube.faces[(int)faceType].color = faceData.value("color", -1);
 	}
 	return true;
 }
@@ -476,8 +477,9 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 		if (face.textureIndex >= 0 && meshMaterialArray[face.textureIndex]->texture) {
 			image = meshMaterialArray[face.textureIndex]->texture;
 		}
+		const int faceColor = face.color >= 0 ? face.color : bbElement.color;
 		voxelutil::importFace(*model.volume(), model.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
-							  bbElement.color);
+				      faceColor);
 	}
 	model.volume()->translate(-region.getLowerCorner());
 	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;

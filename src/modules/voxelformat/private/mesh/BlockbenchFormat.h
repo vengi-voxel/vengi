@@ -172,6 +172,7 @@ public:
 	struct BBCubeFace {
 		glm::vec2 uvs[2]{{0.0f, 1.0f}, {0.0f, 1.0f}};
 		int textureIndex = -1;
+		int color = -1;
 	};
 
 	struct BBCube {
