@@ -54,9 +54,9 @@ app::AppState VoxConvertUI::onInit() {
 	_paletteCache.detectPalettes();
 
 	if (_argc >= 2) {
-		_sourceFile = _argv[_argc - 1];
+		_inputFile = _argv[_argc - 1];
 	} else {
-		_sourceFile = loadingDocument();
+		_inputFile = loadingDocument();
 	}
 
 	return state;
@@ -119,33 +119,33 @@ void VoxConvertUI::onRenderUI() {
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::InputFile(_("Source"), true, &_sourceFile, voxelformat::voxelLoad());
+		ImGui::InputFile(_("Input"), true, &_inputFile, voxelformat::voxelLoad());
 		if (ImGui::IsItemHovered()) {
 			if (!_droppedFile.empty()) {
-				_sourceFile = _droppedFile;
+				_inputFile = _droppedFile;
 				_droppedFile.clear();
 			}
 		}
-		ImGui::InputFile(_("Target"), false, &_targetFile, voxelformat::voxelSave());
+		ImGui::InputFile(_("Output"), false, &_outputFile, voxelformat::voxelSave());
 		if (ImGui::IsItemHovered()) {
 			if (!_droppedFile.empty()) {
-				_targetFile = _droppedFile;
+				_outputFile = _droppedFile;
 				_droppedFile.clear();
 			}
 		}
 
-		const io::FormatDescription *sourceDesc = nullptr;
-		if (!_sourceFile.empty()) {
-			sourceDesc = io::getDescription(_sourceFile, 0, voxelformat::voxelLoad());
+		const io::FormatDescription *inputDesc = nullptr;
+		if (!_inputFile.empty()) {
+			inputDesc = io::getDescription(_inputFile, 0, voxelformat::voxelLoad());
 		}
 
-		const io::FormatDescription *targetDesc = nullptr;
-		if (!_targetFile.empty()) {
-			targetDesc = io::getDescription(_targetFile, 0, voxelformat::voxelSave());
+		const io::FormatDescription *outputDesc = nullptr;
+		if (!_outputFile.empty()) {
+			outputDesc = io::getDescription(_outputFile, 0, voxelformat::voxelSave());
 		}
-		if (_oldTargetFile != _targetFile) {
-			_oldTargetFile = _targetFile;
-			_targetFileExists = io::Filesystem::sysExists(_targetFile);
+		if (_oldOutputFile != _outputFile) {
+			_oldOutputFile = _outputFile;
+			_outputFileExists = io::Filesystem::sysExists(_outputFile);
 		}
 
 		if (_voxconvertBinary.empty()) {
@@ -153,26 +153,26 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (_targetFileExists) {
+			if (_outputFileExists) {
 				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
-				ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
+				ImGui::Checkbox(_("Overwrite existing output file"), &_overwriteOutputFile);
 			}
-			if (sourceDesc) {
-				voxelui::genericOptions(sourceDesc);
-			}
-		}
-
-		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (sourceDesc) {
-				const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_sourceFile), _sourceFile};
-				voxelui::loadOptions(sourceDesc, entry, _paletteCache);
+			if (inputDesc) {
+				voxelui::genericOptions(inputDesc);
 			}
 		}
 
-		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (targetDesc) {
-				const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_targetFile), _targetFile};
-				voxelui::saveOptions(targetDesc, entry);
+		if (ImGui::CollapsingHeader(_("Input options"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (inputDesc) {
+				const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_inputFile), _inputFile};
+				voxelui::loadOptions(inputDesc, entry, _paletteCache);
+			}
+		}
+
+		if (ImGui::CollapsingHeader(_("Output options"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (outputDesc) {
+				const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_outputFile), _outputFile};
+				voxelui::saveOptions(outputDesc, entry);
 			}
 		}
 
@@ -182,14 +182,14 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Convert"))) {
-			if (_sourceFile.empty()) {
-				_output = "No source file selected";
-				Log::warn("No source file selected");
-			} else if (_targetFile.empty()) {
-				_output = "No target file selected";
-				Log::warn("No target file selected");
+			if (_inputFile.empty()) {
+				_output = "No input file selected";
+				Log::warn("No input file selected");
+			} else if (_outputFile.empty()) {
+				_output = "No output file selected";
+				Log::warn("No output file selected");
 			} else {
-				core::DynamicArray<core::String> arguments{"--input", _sourceFile, "--output", _targetFile};
+				core::DynamicArray<core::String> arguments{"--input", _inputFile, "--output", _outputFile};
 				// only dirty and non-default variables are set for the voxconvert call
 				core::Var::visit([&](const core::VarPtr &var) {
 					if (var->isDirty()) {
@@ -198,7 +198,7 @@ void VoxConvertUI::onRenderUI() {
 						arguments.push_back(var->strVal());
 					}
 				});
-				if (_overwriteTargetFile) {
+				if (_overwriteOutputFile) {
 					arguments.push_back("-f");
 				}
 
@@ -221,16 +221,16 @@ void VoxConvertUI::onRenderUI() {
 					Log::error("Failed to convert: %s", _output.c_str());
 				} else {
 					Log::info("Converted successfully");
-					_targetFileExists = _filesystem->exists(_targetFile);
+					_outputFileExists = _filesystem->exists(_outputFile);
 					Log::info("%s", _output.c_str());
 				}
 			}
 		}
 		ImGui::TooltipText(_("Found vengi-voxconvert at %s"), _voxconvertBinary.c_str());
-		if (_targetFileExists) {
+		if (_outputFileExists) {
 			ImGui::SameLine();
-			if (ImGui::Button(_("Open target file"))) {
-				command::executeCommands("url \"file://" + _targetFile + "\"");
+			if (ImGui::Button(_("Open output file"))) {
+				command::executeCommands("url \"file://" + _outputFile + "\"");
 			}
 		}
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);

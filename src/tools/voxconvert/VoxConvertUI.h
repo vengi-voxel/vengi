@@ -18,12 +18,12 @@ class VoxConvertUI : public ui::IMGUIApp {
 private:
 	using Super = ui::IMGUIApp;
 	core::String _output;
-	core::String _sourceFile;
+	core::String _inputFile;
 	core::String _voxconvertBinary = "vengi-voxconvert";
-	core::String _targetFile;
-	core::String _oldTargetFile;
-	bool _targetFileExists = false;
-	bool _overwriteTargetFile = false;
+	core::String _outputFile;
+	core::String _oldOutputFile;
+	bool _outputFileExists = false;
+	bool _overwriteOutputFile = false;
 	palette::PaletteCache _paletteCache;
 
 	struct ScriptExecutorContext : public voxelui::LUAApiExecutorContext {
