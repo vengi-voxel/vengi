@@ -38,4 +38,3 @@ Right-click on a color to open the context menu:
 * **Reduce to Selected**: Reduce the palette to only the selected colors.
 * **Randomize Selected Colors**: Assign random colors to the selected slots.
 * **Name**: Rename the color.
-

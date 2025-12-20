@@ -8,4 +8,4 @@ You can hide or show nodes from the viewport or lock them to execute some action
 
 It's also possible to use the play button to loop through all nodes in your scene. Make sure to check out the `Model animation speed` in the options menu to change the animation speed.
 
-Next to these options you can create new nodes - e.g. model or group nodes here.
+Next to these options you can create new nodes - e.g. __model__, __camera__ or __group__ nodes here.

@@ -56,6 +56,7 @@ nav:
           - voxedit/usage/Assets.md
           - voxedit/usage/Camera.md
           - voxedit/usage/Console.md
+          - voxedit/usage/GameMode.md
           - voxedit/usage/LSystem.md
           - voxedit/usage/Memento.md
           - voxedit/usage/NodeInspector.md
