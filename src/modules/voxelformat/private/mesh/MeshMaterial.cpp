@@ -32,7 +32,7 @@ int MeshMaterial::width() const {
 }
 
 int MeshMaterial::height() const {
-	return texture ? texture->width() : 0;
+	return texture ? texture->height() : 0;
 }
 
 color::RGBA MeshMaterial::apply(color::RGBA color) const {
