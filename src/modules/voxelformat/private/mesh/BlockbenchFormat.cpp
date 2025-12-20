@@ -528,6 +528,40 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 	return true;
 }
 
+void BlockbenchFormat::fixNode(BBNode &n) const {
+	n.rotation.z = -n.rotation.z;
+	for (BBNode &c : n.children) {
+		fixNode(c);
+	}
+}
+
+void BlockbenchFormat::processCompatibility(const BBMeta &meta, BBElementMap &elementMap, BBNode &root) const {
+	// Compatibility notes:
+	// The handling here is based on observed differences in historical Blockbench bbmodel formats.
+	// See Blockbench bbmodel docs and the Blockbench source for format handling:
+	//  - https://www.blockbench.net/wiki/docs/bbmodel
+	//  - https://github.com/JannisX11/blockbench/blob/master/js/io/formats/bbmodel.js
+	// Historically (pre-3.2) the Z-axis rotation was inverted compared to later versions; apply an inversion
+	// for older format versions so models authored in those versions appear correctly.
+
+	const int maj = meta.version.majorVersion;
+	const int min = meta.version.minorVersion;
+	if (maj <= 0 && min <= 0) {
+		// unknown version, nothing to do
+		return;
+	}
+	if (maj < 3 || (maj == 3 && min < 2)) {
+		// Flip Z rotation for elements
+		for (auto iter = elementMap.begin(); iter != elementMap.end(); ++iter) {
+			auto *kv = *iter; // KeyValue*
+			kv->value.rotation.z = -kv->value.rotation.z;
+		}
+
+		// Flip Z rotation recursively for nodes.
+		fixNode(root);
+	}
+}
+
 static bool parseAnimations(const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta, nlohmann::json &json,
 							scenegraph::SceneGraph &sceneGraph) {
 	// no animations found
@@ -847,6 +881,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			bbRoot.referenced.emplace_back(core::UUID(uuid));
 		}
 	}
+
+	// Apply compatibility fixes for older Blockbench versions before creating scene nodes
+	processCompatibility(bbMeta, bbElementMap, bbRoot);
 
 	if (!addNode(bbRoot, bbElementMap, sceneGraph, meshMaterialArray, 0)) {
 		Log::error("Failed to add node");

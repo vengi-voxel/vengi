@@ -239,6 +239,8 @@ public:
 	}
 
 private:
+	void processCompatibility(const BBMeta &meta, BBElementMap &elementMap, BBNode &root) const;
+	void fixNode(BBNode &node) const;
 	bool addNode(const BBNode &node, const BBElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
 				 const MeshMaterialArray &meshMaterialArray, int parent) const;
 	bool generateCube(const BBNode &node, const BBElement &element, const MeshMaterialArray &meshMaterialArray,
