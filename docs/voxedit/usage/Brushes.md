@@ -4,7 +4,7 @@
 
 VoxEdit provides several specialized brushes for different types of voxel editing.
 
-### Shape brush
+## Shape brush
 
 The shape brush creates geometric primitives by spanning an axis-aligned bounding box (AABB) in the viewport. Click and drag to define the size of the shape. The orientation is determined by which face you clicked on initially.
 
@@ -20,7 +20,7 @@ The shape brush creates geometric primitives by spanning an axis-aligned boundin
 The shape is automatically oriented based on the surface normal of the face where you started dragging.
 This allows you to naturally create shapes aligned with your viewing direction.
 
-### Paint brush
+## Paint brush
 
 The paint brush provides various methods for coloring and modifying existing voxels. The brush only affects existing voxels and won't place new ones, making it ideal for recoloring models without changing their geometry.
 
@@ -42,13 +42,13 @@ The paint brush provides various methods for coloring and modifying existing vox
 - **Factor**: Controls the brightness adjustment for Brighten/Darken modes (1.0 = no change)
 - **Variation Threshold**: For Variation mode, sets the 1 in N chance to modify each voxel
 
-### Plane brush
+## Plane brush
 
 The plane brush creates or extrudes entire planar surfaces in a single action. When you click a face, it generates voxels across that entire plane. If you drag after clicking, you can extrude the plane outward to create thickness.
 
 This brush is particularly useful for quickly creating walls, floors, or large flat surfaces without having to manually span regions.
 
-### Stamp brush
+## Stamp brush
 
 The stamp brush allows you to place pre-loaded voxel volumes repeatedly into your scene. Think of it as a copy-paste tool that keeps the copied content ready for multiple placements.
 
@@ -66,7 +66,7 @@ The stamp brush allows you to place pre-loaded voxel volumes repeatedly into you
 
 **Offset**: You can configure an offset vector to shift where the stamp is placed relative to the cursor. This is useful for precise alignment or creating regular patterns.
 
-### Line brush
+## Line brush
 
 The line brush draws straight lines of voxels from the reference position to wherever you click. The reference position (shown as a blue dot in edit mode) must be set first before using this brush.
 
@@ -77,7 +77,7 @@ The line brush draws straight lines of voxels from the reference position to whe
 
 Lines are drawn using raycasting, ensuring a clean voxel path between the two points.
 
-### Path brush
+## Path brush
 
 The path brush creates paths that follow existing voxel surfaces from the reference position to the cursor position. Unlike the line brush which draws straight lines through empty space, the path brush walks along solid voxels.
 
@@ -89,7 +89,7 @@ The path brush creates paths that follow existing voxel surfaces from the refere
 
 This brush requires existing voxels to walk on and won't work in empty volumes. It's useful for creating roads, pipes, or other features that need to follow terrain.
 
-### Text brush
+## Text brush
 
 The text brush voxelizes TrueType fonts into your volume, allowing you to add text labels or create text-based voxel art.
 
@@ -103,7 +103,7 @@ The text brush voxelizes TrueType fonts into your volume, allowing you to add te
 
 The text is placed at the cursor position.
 
-### Texture brush
+## Texture brush
 
 The texture brush projects image textures onto voxel surfaces, automatically mapping colors from the image to the closest matching colors in your palette.
 
@@ -115,13 +115,13 @@ The texture brush projects image textures onto voxel surfaces, automatically map
 
 The texture brush is excellent for adding detailed patterns, logos, or textures to models by converting pixel art into voxels.
 
-### Script brush
+## Script brush
 
 Execute custom [Lua scripts](../../LUAScript.md) with this brush. Scripts can perform complex operations that aren't possible with the standard brushes, like procedural generation, mathematical transformations, or automated editing tasks.
 
 Check the scripts panel to see available scripts and their parameters. Many scripts use the reference position, cursor position, or current selection to define where they operate.
 
-### Select brush
+## Select brush
 
 The select brush doesn't modify voxels directly. Instead, it creates selection regions that limit where other operations can affect voxels (like the [script](../../LUAScript.md) execution) or for copy/pasting.
 
@@ -136,6 +136,6 @@ The select brush doesn't modify voxels directly. Instead, it creates selection r
 
 Selections are useful for protecting parts of your model while editing other areas, or for applying operations to precise regions.
 
-### Color picker
+## Color picker
 
 You can either use it from the modifiers panel or by default with the key `p` to pick the color from the current selected voxel.

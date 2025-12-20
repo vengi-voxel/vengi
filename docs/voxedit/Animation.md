@@ -1,6 +1,6 @@
 # Animation
 
-> **IMPORTANT**: Animations are only saved in the `vengi` format or when exported to `gltf`. You should always save to `vengi` and then export from here to any other format that supports animations, too. See [formats](../Formats.md).
+> **IMPORTANT**: Animations are only saved in the `vengi` format or when exported to [formats](../Formats.md) that support animations. You should always save to `vengi` and then export from here to any other format that supports animations, too.
 
 ## Videos
 
