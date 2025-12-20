@@ -383,7 +383,7 @@ msgstr ""
 msgid "Clear"
 msgstr ""
 
-msgid "Copy to clipboard"
+msgid "Copy"
 msgstr ""
 
 msgid "Debug"
@@ -671,6 +671,42 @@ msgstr ""
 msgid "Simplify the mesh when voxelizing a mesh format"
 msgstr ""
 
+msgid "Draw line forwards"
+msgstr ""
+
+msgid "Set voxel type"
+msgstr ""
+
+msgid "Move backwards (no drawing)"
+msgstr ""
+
+msgid "Leaf"
+msgstr ""
+
+msgid "Rotate right"
+msgstr ""
+
+msgid "Rotate left"
+msgstr ""
+
+msgid "Rotate forward"
+msgstr ""
+
+msgid "Rotate back"
+msgstr ""
+
+msgid "Increment width"
+msgstr ""
+
+msgid "Decrement width"
+msgstr ""
+
+msgid "Push"
+msgstr ""
+
+msgid "Pop"
+msgstr ""
+
 msgid "Movement speed in game mode"
 msgstr ""
 
@@ -686,25 +722,25 @@ msgstr ""
 msgid "Enable gravity"
 msgstr ""
 
-msgid "Back"
-msgstr ""
-
 msgid "Bottom"
 msgstr ""
 
 msgid "Free"
 msgstr ""
 
-msgid "Front"
-msgstr ""
-
 msgid "Left"
 msgstr ""
 
-msgid "Right"
+msgid "Top"
 msgstr ""
 
-msgid "Top"
+msgid "Back"
+msgstr ""
+
+msgid "Front"
+msgstr ""
+
+msgid "Right"
 msgstr ""
 
 msgid "6 bit colors"
@@ -953,22 +989,22 @@ msgstr ""
 msgid "Show console"
 msgstr ""
 
-msgid "Source"
+msgid "Input"
 msgstr ""
 
-msgid "Target"
+msgid "Output"
 msgstr ""
 
 msgid "vengi-voxconvert not found in current dir or PATH"
 msgstr ""
 
-msgid "Overwrite existing target file"
+msgid "Overwrite existing output file"
 msgstr ""
 
-msgid "Source options"
+msgid "Input options"
 msgstr ""
 
-msgid "Target options"
+msgid "Output options"
 msgstr ""
 
 msgid "Script options"
@@ -981,7 +1017,7 @@ msgstr ""
 msgid "Found vengi-voxconvert at %s"
 msgstr ""
 
-msgid "Open target file"
+msgid "Open output file"
 msgstr ""
 
 msgid "Save the current viewport as screenshot"
@@ -1059,9 +1095,6 @@ msgstr ""
 
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
-msgstr ""
-
-msgid "Copy"
 msgstr ""
 
 msgid "Paste"
@@ -1279,6 +1312,9 @@ msgstr ""
 msgid "Nearplane"
 msgstr ""
 
+msgid "Target"
+msgstr ""
+
 msgid "Target distance"
 msgstr ""
 
@@ -1320,6 +1356,9 @@ msgid "Hide thumbnails"
 msgstr ""
 
 msgid "Show thumbnails"
+msgstr ""
+
+msgid "Open target file"
 msgstr ""
 
 msgid "Open target dir"
@@ -1367,61 +1406,77 @@ msgstr ""
 msgid "Axiom"
 msgstr ""
 
+msgid "The initial state of the L-System"
+msgstr ""
+
 msgid "Rules"
+msgstr ""
+
+msgid "The production rules for the L-System"
+msgstr ""
+
+msgid "Predecessor"
+msgstr ""
+
+msgid "Successor"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Add Rule"
 msgstr ""
 
 msgid "Angle"
 msgstr ""
 
+msgid "The angle in degrees"
+msgstr ""
+
 msgid "Length"
+msgstr ""
+
+msgid "The length of the segments"
 msgstr ""
 
 msgid "Width"
 msgstr ""
 
+msgid "The initial width of the segments"
+msgstr ""
+
 msgid "Width increment"
+msgstr ""
+
+msgid "The amount to increment/decrement the width"
 msgstr ""
 
 msgid "Iterations"
 msgstr ""
 
+msgid "The number of iterations to run"
+msgstr ""
+
 msgid "Leaves radius"
 msgstr ""
 
-msgid "Draw line forwards"
+msgid "The radius of the leaves"
 msgstr ""
 
-msgid "Set voxel type"
+msgid "Templates"
 msgstr ""
 
-msgid "Move backwards (no drawing)"
+msgid "Select a template"
 msgstr ""
 
-msgid "Leaf"
+msgid "Adopt Dimensions"
 msgstr ""
 
-msgid "Rotate right"
+msgid "Adopt the L-System parameters to the current volume dimensions"
 msgstr ""
 
-msgid "Rotate left"
-msgstr ""
-
-msgid "Rotate forward"
-msgstr ""
-
-msgid "Rotate back"
-msgstr ""
-
-msgid "Increment width"
-msgstr ""
-
-msgid "Decrement width"
-msgstr ""
-
-msgid "Push"
-msgstr ""
-
-msgid "Pop"
+#, c-format
+msgid "Progress: %.1f%%"
 msgstr ""
 
 msgid "Tip of the day"
@@ -1471,9 +1526,6 @@ msgid ""
 msgstr ""
 
 msgid "New Scene"
-msgstr ""
-
-msgid "Templates"
 msgstr ""
 
 msgid "Empty scene"
@@ -1885,6 +1937,9 @@ msgstr ""
 msgid "Reduce to selected"
 msgstr ""
 
+msgid "Randomize selected colors"
+msgstr ""
+
 msgid "Release CTRL to change the voxel color"
 msgstr ""
 
@@ -1962,6 +2017,21 @@ msgid "Apply to all nodes"
 msgstr ""
 
 msgid "Intensity"
+msgstr ""
+
+msgid "Modify"
+msgstr ""
+
+msgid "Warmer"
+msgstr ""
+
+msgid "Colder"
+msgstr ""
+
+msgid "Brighter"
+msgstr ""
+
+msgid "Darker"
 msgstr ""
 
 msgid "Color closest match"
@@ -2163,10 +2233,6 @@ msgstr ""
 msgid ""
 "Disabled because inactive nodes are hidden and the active node is always "
 "visible"
-msgstr ""
-
-#, c-format
-msgid "Color##node-%i"
 msgstr ""
 
 msgid "Reference Node"
@@ -2405,8 +2471,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."
@@ -2446,9 +2512,6 @@ msgid ""
 "Minecraft, ...) in the options menu to enable/disable various features."
 msgstr ""
 
-msgid "Action"
-msgstr ""
-
 msgid "Rotate by 90 degree on the x axis"
 msgstr ""
 
@@ -2461,16 +2524,22 @@ msgstr ""
 msgid "Flip on axis"
 msgstr ""
 
-msgid "Translate"
+msgid "Move voxels"
 msgstr ""
 
-msgid "Volumes"
-msgstr ""
-
-msgid "Voxels"
+msgid "Move"
 msgstr ""
 
 msgid "Cursor"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Distance"
 msgstr ""
 
 msgid "Cursor details"
@@ -2485,6 +2554,9 @@ msgstr ""
 msgid "Activate the rotate operation"
 msgstr ""
 
+msgid "Translate"
+msgstr ""
+
 msgid "Activate the translate operation"
 msgstr ""
 
@@ -2492,132 +2564,6 @@ msgid "Snap to grid"
 msgstr ""
 
 msgid "Flip axis"
-msgstr ""
-
-msgid "Pine"
-msgstr ""
-
-msgid "Dome"
-msgstr ""
-
-msgid "Dome Hanging Leaves"
-msgstr ""
-
-msgid "Cone"
-msgstr ""
-
-msgid "Fir"
-msgstr ""
-
-msgid "Branches Ellipsis"
-msgstr ""
-
-msgid "Ellipsis"
-msgstr ""
-
-msgid "Cube"
-msgstr ""
-
-msgid "Cube Sides"
-msgstr ""
-
-msgid "Palm"
-msgstr ""
-
-msgid "SpaceColonization"
-msgstr ""
-
-msgid "Trees"
-msgstr ""
-
-msgid "Seed"
-msgstr ""
-
-msgid "Trunk strength"
-msgstr ""
-
-msgid "Trunk height"
-msgstr ""
-
-msgid "Leaves width"
-msgstr ""
-
-msgid "Leaves height"
-msgstr ""
-
-msgid "Leaves depth"
-msgstr ""
-
-msgid "Branch length"
-msgstr ""
-
-msgid "Branch height"
-msgstr ""
-
-msgid "Branch size"
-msgstr ""
-
-msgid "Trunk width"
-msgstr ""
-
-msgid "Trunk depth"
-msgstr ""
-
-msgid "Branch reduction"
-msgstr ""
-
-msgid "Trunk reduction"
-msgstr ""
-
-msgid "Leaves"
-msgstr ""
-
-msgid "Bezier leaf"
-msgstr ""
-
-msgid "Bezier trunk"
-msgstr ""
-
-msgid "Leaves h-offset"
-msgstr ""
-
-msgid "Branches"
-msgstr ""
-
-msgid "W"
-msgstr ""
-
-msgid "Amount"
-msgstr ""
-
-msgid "Branch position factor"
-msgstr ""
-
-msgid "Branch strength"
-msgstr ""
-
-msgid "Branch downward offset"
-msgstr ""
-
-msgid "Start width"
-msgstr ""
-
-msgid "Start depth"
-msgstr ""
-
-msgid "Leaf height"
-msgstr ""
-
-msgid "Step delta"
-msgstr ""
-
-msgid "Leaves min length"
-msgstr ""
-
-msgid "Leaves max length"
-msgstr ""
-
-msgid "Leaves thickness"
 msgstr ""
 
 msgid "Simple"
@@ -2828,6 +2774,18 @@ msgstr ""
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr ""
 
+msgid "Make the palette colors warmer"
+msgstr ""
+
+msgid "Make the palette colors colder"
+msgstr ""
+
+msgid "Make the palette colors brighter"
+msgstr ""
+
+msgid "Make the palette colors darker"
+msgstr ""
+
 msgid "Remove unused colors from palette"
 msgstr ""
 
@@ -2843,7 +2801,7 @@ msgstr ""
 msgid "Switch active node to hovered from scene graph mode"
 msgstr ""
 
-msgid "Select all nothing or invert"
+msgid "Select all, nothing or invert"
 msgstr ""
 
 msgid "Cycle through all scene objects"

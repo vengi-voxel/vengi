@@ -411,8 +411,8 @@ msgstr ""
 msgid "Clear"
 msgstr "Löschen"
 
-msgid "Copy to clipboard"
-msgstr "In die Zwischenablage kopieren"
+msgid "Copy"
+msgstr "Kopieren"
 
 msgid "Debug"
 msgstr "Debug"
@@ -701,6 +701,42 @@ msgstr ""
 msgid "Simplify the mesh when voxelizing a mesh format"
 msgstr ""
 
+msgid "Draw line forwards"
+msgstr "Linie nach vorne zeichnen"
+
+msgid "Set voxel type"
+msgstr "Voxeltyp festlegen"
+
+msgid "Move backwards (no drawing)"
+msgstr "Rückwärts bewegen (kein Zeichnen)"
+
+msgid "Leaf"
+msgstr "Blatt"
+
+msgid "Rotate right"
+msgstr "Nach rechts drehen"
+
+msgid "Rotate left"
+msgstr "Nach links drehen"
+
+msgid "Rotate forward"
+msgstr "Nach vorne drehen"
+
+msgid "Rotate back"
+msgstr "Nach hinten drehen"
+
+msgid "Increment width"
+msgstr "Breite erhöhen"
+
+msgid "Decrement width"
+msgstr "Breite verringern"
+
+msgid "Push"
+msgstr "Drücken"
+
+msgid "Pop"
+msgstr "Herausnehmen"
+
 msgid "Movement speed in game mode"
 msgstr ""
 
@@ -717,26 +753,26 @@ msgstr ""
 msgid "Enable gravity"
 msgstr ""
 
-msgid "Back"
-msgstr "Rückseite"
-
 msgid "Bottom"
 msgstr "Unten"
 
 msgid "Free"
 msgstr "Frei"
 
-msgid "Front"
-msgstr "Front"
-
 msgid "Left"
 msgstr "Links"
 
-msgid "Right"
-msgstr "Rechts"
-
 msgid "Top"
 msgstr "Oben"
+
+msgid "Back"
+msgstr "Rückseite"
+
+msgid "Front"
+msgstr "Front"
+
+msgid "Right"
+msgstr "Rechts"
 
 msgid "6 bit colors"
 msgstr "6-Bit Farbwerte"
@@ -985,22 +1021,22 @@ msgstr "Benachrichtigungen"
 msgid "Show console"
 msgstr "Konsole anzeigen"
 
-msgid "Source"
-msgstr "Quelle"
+msgid "Input"
+msgstr ""
 
-msgid "Target"
-msgstr "Ziel"
+msgid "Output"
+msgstr ""
 
 msgid "vengi-voxconvert not found in current dir or PATH"
 msgstr ""
 
-msgid "Overwrite existing target file"
+msgid "Overwrite existing output file"
 msgstr "Überschreibe existierende Zieldatei"
 
-msgid "Source options"
+msgid "Input options"
 msgstr "Quelloptionen"
 
-msgid "Target options"
+msgid "Output options"
 msgstr "Zieloptionen"
 
 msgid "Script options"
@@ -1013,7 +1049,7 @@ msgstr "Konvertieren"
 msgid "Found vengi-voxconvert at %s"
 msgstr "vengi-voxconvert unter %s gefunden"
 
-msgid "Open target file"
+msgid "Open output file"
 msgstr "Öffne Zieldatei"
 
 msgid "Save the current viewport as screenshot"
@@ -1092,9 +1128,6 @@ msgstr "Schleife"
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr "Keyframe %i, Interpolation: %s"
-
-msgid "Copy"
-msgstr "Kopieren"
 
 msgid "Paste"
 msgstr "Einfügen"
@@ -1313,6 +1346,9 @@ msgstr "Farplane"
 msgid "Nearplane"
 msgstr "Nearplane"
 
+msgid "Target"
+msgstr "Ziel"
+
 msgid "Target distance"
 msgstr "Entfernung zum Ziel"
 
@@ -1357,6 +1393,9 @@ msgstr "Miniaturansicht verstecken"
 
 msgid "Show thumbnails"
 msgstr "Miniaturansicht anzeigen"
+
+msgid "Open target file"
+msgstr "Öffne Zieldatei"
 
 msgid "Open target dir"
 msgstr "Öffne Zielverzeichnis"
@@ -1403,62 +1442,78 @@ msgstr "L-System"
 msgid "Axiom"
 msgstr "Axiom"
 
+msgid "The initial state of the L-System"
+msgstr ""
+
 msgid "Rules"
 msgstr "Regeln"
+
+msgid "The production rules for the L-System"
+msgstr ""
+
+msgid "Predecessor"
+msgstr ""
+
+msgid "Successor"
+msgstr ""
+
+msgid "Action"
+msgstr "Aktion"
+
+msgid "Add Rule"
+msgstr "Regel hinzufügen"
 
 msgid "Angle"
 msgstr "Winkel"
 
+msgid "The angle in degrees"
+msgstr ""
+
 msgid "Length"
 msgstr "Länge"
+
+msgid "The length of the segments"
+msgstr ""
 
 msgid "Width"
 msgstr "Breite"
 
+msgid "The initial width of the segments"
+msgstr ""
+
 msgid "Width increment"
 msgstr "Breiteninkrement"
+
+msgid "The amount to increment/decrement the width"
+msgstr ""
 
 msgid "Iterations"
 msgstr "Iterationen"
 
+msgid "The number of iterations to run"
+msgstr ""
+
 msgid "Leaves radius"
 msgstr "Blattradius"
 
-msgid "Draw line forwards"
-msgstr "Linie nach vorne zeichnen"
+msgid "The radius of the leaves"
+msgstr ""
 
-msgid "Set voxel type"
-msgstr "Voxeltyp festlegen"
+msgid "Templates"
+msgstr "Vorlagen"
 
-msgid "Move backwards (no drawing)"
-msgstr "Rückwärts bewegen (kein Zeichnen)"
+msgid "Select a template"
+msgstr "Wähle die Vorlage aus"
 
-msgid "Leaf"
-msgstr "Blatt"
+msgid "Adopt Dimensions"
+msgstr "Dimensionen anpassen"
 
-msgid "Rotate right"
-msgstr "Nach rechts drehen"
+msgid "Adopt the L-System parameters to the current volume dimensions"
+msgstr ""
 
-msgid "Rotate left"
-msgstr "Nach links drehen"
-
-msgid "Rotate forward"
-msgstr "Nach vorne drehen"
-
-msgid "Rotate back"
-msgstr "Nach hinten drehen"
-
-msgid "Increment width"
-msgstr "Breite erhöhen"
-
-msgid "Decrement width"
-msgstr "Breite verringern"
-
-msgid "Push"
-msgstr "Drücken"
-
-msgid "Pop"
-msgstr "Herausnehmen"
+#, c-format
+msgid "Progress: %.1f%%"
+msgstr ""
 
 msgid "Tip of the day"
 msgstr "Tipp des Tages"
@@ -1516,9 +1571,6 @@ msgstr ""
 
 msgid "New Scene"
 msgstr "Neue Szene"
-
-msgid "Templates"
-msgstr "Vorlagen"
 
 msgid "Empty scene"
 msgstr "Leere Szene"
@@ -1943,6 +1995,9 @@ msgstr "Farbe entfernen"
 msgid "Reduce to selected"
 msgstr "Auf Auswahl reduzieren"
 
+msgid "Randomize selected colors"
+msgstr ""
+
 msgid "Release CTRL to change the voxel color"
 msgstr "Lassen Sie die STRG-Taste los, um die Voxel-Farbe zu ändern"
 
@@ -2027,6 +2082,21 @@ msgstr "Auf alle Knoten anwenden"
 
 msgid "Intensity"
 msgstr ""
+
+msgid "Modify"
+msgstr ""
+
+msgid "Warmer"
+msgstr "Wärmer"
+
+msgid "Colder"
+msgstr "Kälter"
+
+msgid "Brighter"
+msgstr "Aufhellen"
+
+msgid "Darker"
+msgstr "Abdunkeln"
 
 msgid "Color closest match"
 msgstr "Nächste Farbe"
@@ -2237,10 +2307,6 @@ msgid ""
 msgstr ""
 "Deaktiviert, da inaktive Knoten ausgeblendet werden und der aktive Knoten "
 "immer sichtbar ist"
-
-#, c-format
-msgid "Color##node-%i"
-msgstr "Farbe##Knoten-%i"
 
 msgid "Reference Node"
 msgstr "Referenzknoten"
@@ -2551,9 +2617,6 @@ msgid ""
 "Minecraft, ...) in the options menu to enable/disable various features."
 msgstr ""
 
-msgid "Action"
-msgstr "Aktion"
-
 msgid "Rotate by 90 degree on the x axis"
 msgstr "Um 90 Grad um die x-Achse drehen"
 
@@ -2566,17 +2629,23 @@ msgstr "Um 90 Grad um die z-Achse drehen"
 msgid "Flip on axis"
 msgstr "Auf Achse umdrehen"
 
-msgid "Translate"
-msgstr "Verschieben"
+msgid "Move voxels"
+msgstr "Voxel verschieben"
 
-msgid "Volumes"
-msgstr "Volumen"
-
-msgid "Voxels"
-msgstr "Voxel"
+msgid "Move"
+msgstr ""
 
 msgid "Cursor"
 msgstr "Cursor"
+
+msgid "Details"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Distance"
+msgstr "Entfernung"
 
 msgid "Cursor details"
 msgstr "Cursor-Details"
@@ -2590,6 +2659,9 @@ msgstr "Drehen"
 msgid "Activate the rotate operation"
 msgstr "Die Drehoperation aktivieren"
 
+msgid "Translate"
+msgstr "Verschieben"
+
 msgid "Activate the translate operation"
 msgstr "Die Verschiebeoperation aktivieren"
 
@@ -2598,132 +2670,6 @@ msgstr "Am Raster ausrichten"
 
 msgid "Flip axis"
 msgstr "Achse umkehren"
-
-msgid "Pine"
-msgstr "Kiefer"
-
-msgid "Dome"
-msgstr "Kuppel"
-
-msgid "Dome Hanging Leaves"
-msgstr "Kuppel Hängende Blätter"
-
-msgid "Cone"
-msgstr "Kegel"
-
-msgid "Fir"
-msgstr "Tanne"
-
-msgid "Branches Ellipsis"
-msgstr "Äste Ellipse"
-
-msgid "Ellipsis"
-msgstr "Ellipse"
-
-msgid "Cube"
-msgstr "Würfel"
-
-msgid "Cube Sides"
-msgstr "Würfel Seiten"
-
-msgid "Palm"
-msgstr "Palme"
-
-msgid "SpaceColonization"
-msgstr "SpaceColonization"
-
-msgid "Trees"
-msgstr "Bäume"
-
-msgid "Seed"
-msgstr "Seed"
-
-msgid "Trunk strength"
-msgstr "Stammstärke"
-
-msgid "Trunk height"
-msgstr "Stammhöhe"
-
-msgid "Leaves width"
-msgstr "Blattbreite"
-
-msgid "Leaves height"
-msgstr "Blatthöhe"
-
-msgid "Leaves depth"
-msgstr "Blatttiefe"
-
-msgid "Branch length"
-msgstr "Astlänge"
-
-msgid "Branch height"
-msgstr "Asthöhe"
-
-msgid "Branch size"
-msgstr "Astgröße"
-
-msgid "Trunk width"
-msgstr "Stammweite"
-
-msgid "Trunk depth"
-msgstr "Stammtiefe"
-
-msgid "Branch reduction"
-msgstr "Astreduktion"
-
-msgid "Trunk reduction"
-msgstr "Stammreduktion"
-
-msgid "Leaves"
-msgstr "Blätter"
-
-msgid "Bezier leaf"
-msgstr "Bezier-Blatt"
-
-msgid "Bezier trunk"
-msgstr "Bezier-Stamm"
-
-msgid "Leaves h-offset"
-msgstr "Blatt-H-Offset"
-
-msgid "Branches"
-msgstr "Äste"
-
-msgid "W"
-msgstr "W"
-
-msgid "Amount"
-msgstr "Menge"
-
-msgid "Branch position factor"
-msgstr "Astpositions-Faktor"
-
-msgid "Branch strength"
-msgstr "Aststärke"
-
-msgid "Branch downward offset"
-msgstr "Ast-Abwärtsversatz"
-
-msgid "Start width"
-msgstr "Startbreite"
-
-msgid "Start depth"
-msgstr "Starttiefe"
-
-msgid "Leaf height"
-msgstr "Blatthöhe"
-
-msgid "Step delta"
-msgstr "Schritt-Delta"
-
-msgid "Leaves min length"
-msgstr "Minimale Blattlänge"
-
-msgid "Leaves max length"
-msgstr "Maximale Blattlänge"
-
-msgid "Leaves thickness"
-msgstr "Blattdicke"
 
 msgid "Simple"
 msgstr "Einfach"
@@ -2947,6 +2893,18 @@ msgstr ""
 
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr "Ändert die Intensität durch Skalierung der RGB-Werte der Palette"
+
+msgid "Make the palette colors warmer"
+msgstr ""
+
+msgid "Make the palette colors colder"
+msgstr ""
+
+msgid "Make the palette colors brighter"
+msgstr ""
+
+msgid "Make the palette colors darker"
+msgstr ""
 
 msgid "Remove unused colors from palette"
 msgstr "Entfernt unbenutzte Farben aus der Palette"
