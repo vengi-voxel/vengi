@@ -8,7 +8,7 @@ Place new voxels in your volume.
 
 ## Erase
 
-Erase voxels from your volume. There is a shortcut when you are in the other modes to delete voxels: Press the right mouse button (at least in the default binding).
+Erase voxels from your volume. There is a shortcut when you are in the other modes to delete voxels: Press the `shift` key while clicking the left mouse button (at least in the default binding).
 
 ## Override
 

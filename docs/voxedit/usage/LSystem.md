@@ -45,10 +45,10 @@ VoxEdit comes with several built-in templates to get you started:
 
 ## Usage
 
-- **Select a Template**: Start by selecting a template from the dropdown menu to see how it works.
-- **Modify Parameters**: Adjust the angle, length, and iterations to change the shape and size of the generated structure.
-- **Edit Rules**: Add or modify rules to create custom branching patterns.
-- **Adopt Dimensions**: Use the "Adopt Dimensions" button to automatically adjust the length and width parameters based on the current selection or volume size.
-- **Generate**: Click "OK" to generate the voxel structure at the reference position.
+* **Select a Template**: Start by selecting a template from the dropdown menu to see how it works.
+* **Modify Parameters**: Adjust the angle, length, and iterations to change the shape and size of the generated structure.
+* **Edit Rules**: Add or modify rules to create custom branching patterns.
+* **Adopt Dimensions**: Use the "Adopt Dimensions" button to automatically adjust the length and width parameters based on the current selection or volume size.
+* **Generate**: Click "OK" to generate the voxel structure at the reference position.
 
 > **Tip**: Use the `[` and `]` commands to create branching structures. `[` saves the current position and direction, allowing you to draw a branch, and `]` restores the saved state to continue from the branching point.
