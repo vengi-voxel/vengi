@@ -51,8 +51,8 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 	Log::debug("Message of type %d with size %u", type, size);
 	const int64_t startPos = in.pos();
 	if (in.remaining() < size) {
-		Log::error("Not enough data in the stream to read the full message. Remaining: %zu, expected: %u",
-				   in.remaining(), size);
+		Log::error("Not enough data in the stream to read the full message. Remaining: %d, expected: %u",
+				   (int)in.remaining(), size);
 		return nullptr;
 	}
 	network::ProtocolMessage *msg = nullptr;

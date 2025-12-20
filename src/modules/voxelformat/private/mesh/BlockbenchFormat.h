@@ -34,12 +34,14 @@ namespace voxelformat {
  * @subsection bbmodel_structure File Structure
  *
  * @par Meta Section
+ * Metadata and file-level properties for the model.
  * @li @c format_version: Version string (e.g., "4.5", "4.10", "5.0")
  * @li @c model_format: Format type ("free", "bedrock", "java_block", etc.). Only "free" is fully supported.
  * @li @c box_uv: Boolean indicating if box UV mapping is used
  * @li @c creation_time: Unix timestamp (optional)
  *
  * @par Resolution
+ * Defines the texture resolution used by the model (in pixels).
  * @li @c width: Texture width in pixels (default: 16)
  * @li @c height: Texture height in pixels (default: 16)
  *
@@ -73,6 +75,7 @@ namespace voxelformat {
  * @li @c color: Color index
  *
  * @par Textures Array
+ * List of texture resources referenced by the model.
  * @li @c uuid: Unique identifier
  * @li @c name: Display name
  * @li @c path: Absolute file path (optional)
@@ -82,6 +85,7 @@ namespace voxelformat {
  * @li @c uv_width / @c uv_height: UV space dimensions (for per-texture UV sizing)
  *
  * @par Animations Array (optional)
+ * Optional animation blocks defining keyframes and animators.
  * @li @c uuid: Unique identifier
  * @li @c name: Animation name
  * @li @c loop: "once", "loop", or "hold"
@@ -153,6 +157,7 @@ namespace voxelformat {
  * Priority order (first overwrites later): front/back (Z) > up/down (Y) > left/right (X)
  *
  * @par Version Compatibility
+ * Notes about older Blockbench format versions and compatibility fixes.
  * @li Pre-3.2: Z-axis rotation was inverted (handled in processCompatibility)
  * @li Pre-4.10: Texture paths had different handling
  * @li Pre-5.0: Animation data_points used inverted molang expressions for X/Y
