@@ -71,7 +71,7 @@ set(SRCS
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
-	private/mesh/TextureLookup.h private/mesh/TextureLookup.cpp
+	private/mesh/TextureLookup.h             private/mesh/TextureLookup.cpp
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
 	private/mesh/quake/MapFormat.h           private/mesh/quake/MapFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp

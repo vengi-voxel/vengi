@@ -6,12 +6,14 @@
 
 #include "VoxelVertex.h"
 #include "core/collection/Buffer.h"
+#include <glm/vec2.hpp>
 
 namespace voxel {
 
 using VertexArray = core::Buffer<voxel::VoxelVertex, 1024>;
 using IndexArray = core::Buffer<voxel::IndexType, 1024>;
 using NormalArray = core::Buffer<glm::vec3, 1024>;
+using UVArray = core::Buffer<glm::vec2, 1024>;
 
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
@@ -38,9 +40,11 @@ public:
 	const IndexArray& getIndexVector() const;
 	const VertexArray& getVertexVector() const;
 	const NormalArray& getNormalVector() const;
+	const UVArray& getUVVector() const;
 	IndexArray& getIndexVector();
 	VertexArray& getVertexVector();
 	NormalArray& getNormalVector();
+	UVArray& getUVVector();
 
 	// e.g. for transparency
 	// returns true if sorting was needed
@@ -50,6 +54,7 @@ public:
 	void setOffset(const glm::ivec3& offset);
 
 	IndexType addVertex(const VoxelVertex& vertex);
+	IndexType addVertex(const VoxelVertex& vertex, const glm::vec2 &uv);
 	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
 	void setNormal(IndexType index, const glm::vec3 &normal);
 
@@ -72,6 +77,7 @@ private:
 	alignas(16) IndexArray _vecIndices;
 	alignas(16) VertexArray _vecVertices;
 	alignas(16) NormalArray _normals; // marching cubes only
+	alignas(16) UVArray _uvs;
 	glm::highp_vec3 _mins {0};
 	glm::highp_vec3 _maxs {0};
 	uint8_t *_compressedIndices = nullptr;

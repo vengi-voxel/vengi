@@ -35,6 +35,7 @@ Mesh::Mesh(int vertices, int indices, bool mayGetResized)
 Mesh::Mesh(Mesh &&other) noexcept {
 	_vecIndices = core::move(other._vecIndices);
 	_normals = core::move(other._normals);
+	_uvs = core::move(other._uvs);
 	_vecVertices = core::move(other._vecVertices);
 	_compressedIndices = other._compressedIndices;
 	other._compressedIndices = nullptr;
@@ -52,6 +53,7 @@ Mesh::Mesh(Mesh &&other) noexcept {
 Mesh::Mesh(const Mesh &other) {
 	_vecIndices = other._vecIndices;
 	_normals = other._normals;
+	_uvs = other._uvs;
 	_vecVertices = other._vecVertices;
 	_compressedIndexSize = other._compressedIndexSize;
 	if (other._compressedIndices != nullptr) {
@@ -75,6 +77,7 @@ Mesh &Mesh::operator=(const Mesh &other) {
 	}
 	_vecIndices = other._vecIndices;
 	_normals = other._normals;
+	_uvs = other._uvs;
 	_vecVertices = other._vecVertices;
 	_compressedIndexSize = other._compressedIndexSize;
 	core_free(_compressedIndices);
@@ -97,6 +100,7 @@ Mesh &Mesh::operator=(const Mesh &other) {
 Mesh &Mesh::operator=(Mesh &&other) noexcept {
 	_vecIndices = core::move(other._vecIndices);
 	_normals = core::move(other._normals);
+	_uvs = core::move(other._uvs);
 	_vecVertices = core::move(other._vecVertices);
 	core_free(_compressedIndices);
 	_compressedIndices = other._compressedIndices;
@@ -142,6 +146,14 @@ VertexArray &Mesh::getVertexVector() {
 
 NormalArray &Mesh::getNormalVector() {
 	return _normals;
+}
+
+const UVArray& Mesh::getUVVector() const {
+	return _uvs;
+}
+
+UVArray& Mesh::getUVVector() {
+	return _uvs;
 }
 
 size_t Mesh::getNoOfVertices() const {
@@ -226,6 +238,16 @@ IndexType Mesh::addVertex(const VoxelVertex &vertex) {
 	}
 	_vecVertices.push_back(vertex);
 	return (IndexType)_vecVertices.size() - 1;
+}
+
+IndexType Mesh::addVertex(const VoxelVertex &vertex, const glm::vec2 &uv) {
+	IndexType idx = addVertex(vertex);
+	// keep UVs in sync
+	if (_uvs.capacity() < _uvs.size() + 1) {
+		_uvs.reserve(_uvs.capacity() + _initialVertices);
+	}
+	_uvs.push_back(uv);
+	return idx;
 }
 
 void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {

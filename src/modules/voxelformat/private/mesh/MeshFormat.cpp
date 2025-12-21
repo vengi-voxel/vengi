@@ -809,14 +809,11 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			// we are increasing the region by one voxel to ensure the inclusion of the boundary voxels in this mesh
 			regionExt.shiftUpperCorner(1, 1, 1);
 			voxel::SurfaceExtractionContext ctx = voxel::createContext(
-				type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion);
+				type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads, reuseVertices, ambientOcclusion, optimizeMesh);
 			voxel::extractSurface(ctx);
 			if (withNormals) {
 				Log::debug("Calculate normals");
 				mesh->calculateNormals();
-			}
-			if (optimizeMesh) {
-				mesh->optimize();
 			}
 
 			meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));
