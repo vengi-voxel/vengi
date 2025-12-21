@@ -17,6 +17,10 @@ General:
    - Improved palette name support
    - Converted the tree generators into lua scripts
 
+VoxConvert:
+
+   - Renamed source and target to input and output in the ui to match the command line parameters
+
 VoxEdit:
 
    - Bump network protocol version - added two missing messages
