@@ -70,6 +70,8 @@ public:
 	void toVec4f(core::Buffer<glm::vec4> &rgba) const;
 	void toVec4f(glm::highp_vec4 *vec4f) const;
 
+	image::ImagePtr asImage() const;
+
 	color::RGBA emitColor(uint8_t paletteColorIdx) const;
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]

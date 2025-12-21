@@ -259,6 +259,20 @@ const core::String &Palette::filename() const {
 	return _filename;
 }
 
+image::ImagePtr Palette::asImage() const {
+	// see MeshFormat::paletteUV() on why this is PaletteMaxColors
+	image::ImagePtr img = image::createEmptyImage(filename());
+	img->resize(PaletteMaxColors, 1);
+	for (int i = 0; i < _colorCount; ++i) {
+		img->setColor(_colors[i], i, 0);
+	}
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
+		img->setColor(color::RGBA(0, 0, 0, 0), i, 0);
+	}
+	img->markLoaded();
+	return img;
+}
+
 core::String Palette::extractPaletteName(const core::String &file) {
 	if (!core::string::startsWith(file, "palette-")) {
 		return core::String::Empty;
