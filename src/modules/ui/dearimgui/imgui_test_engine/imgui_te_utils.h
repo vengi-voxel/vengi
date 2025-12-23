@@ -210,4 +210,8 @@ IMGUI_API ImFont*   FindFontByPrefix(const char* name);
 IMGUI_API const char* TabBarGetTabName(ImGuiTabBar* tab_bar, ImGuiTabItem* tab);
 #endif
 
+#if IMGUI_VERSION_NUM < 19256 && !defined(IM_COUNTOF)
+#define IM_COUNTOF  IM_ARRAYSIZE
+#endif
+
 }

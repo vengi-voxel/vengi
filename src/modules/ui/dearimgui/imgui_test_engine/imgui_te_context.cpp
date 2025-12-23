@@ -26,21 +26,21 @@
 ImGuiTestRefDesc::ImGuiTestRefDesc(const ImGuiTestRef& ref)
 {
     if (ref.Path && ref.ID != 0)
-        ImFormatString(Buf, IM_ARRAYSIZE(Buf), "'%s' (id 0x%08X)", ref.Path, ref.ID);
+        ImFormatString(Buf, IM_COUNTOF(Buf), "'%s' (id 0x%08X)", ref.Path, ref.ID);
     else if (ref.Path)
-        ImFormatString(Buf, IM_ARRAYSIZE(Buf), "'%s'", ref.Path);
+        ImFormatString(Buf, IM_COUNTOF(Buf), "'%s'", ref.Path);
     else
-        ImFormatString(Buf, IM_ARRAYSIZE(Buf), "0x%08X", ref.ID);
+        ImFormatString(Buf, IM_COUNTOF(Buf), "0x%08X", ref.ID);
 }
 
 ImGuiTestRefDesc::ImGuiTestRefDesc(const ImGuiTestRef& ref, const ImGuiTestItemInfo& item)
 {
     if (ref.Path && item.ID != 0)
-        ImFormatString(Buf, IM_ARRAYSIZE(Buf), "'%s' (id 0x%08X)", ref.Path, item.ID);
+        ImFormatString(Buf, IM_COUNTOF(Buf), "'%s' (id 0x%08X)", ref.Path, item.ID);
     else if (ref.Path)
-        ImFormatString(Buf, IM_ARRAYSIZE(Buf), "'%s'", ref.Path);
+        ImFormatString(Buf, IM_COUNTOF(Buf), "'%s'", ref.Path);
     else
-        ImFormatString(Buf, IM_ARRAYSIZE(Buf), "0x%08X (label \"%s\")", ref.ID, item.DebugLabel);
+        ImFormatString(Buf, IM_COUNTOF(Buf), "0x%08X (label \"%s\")", ref.ID, item.DebugLabel);
 }
 
 //-------------------------------------------------------------------------
@@ -303,7 +303,7 @@ void    ImGuiTestContext::Finish(ImGuiTestStatus status)
 {
     if (ActiveFunc == ImGuiTestActiveFunc_GuiFunc)
     {
-        IM_ASSERT(status == ImGuiTestStatus_Success || status == ImGuiTestStatus_Unknown);
+        IM_ASSERT(status == ImGuiTestStatus_Success || status == ImGuiTestStatus_Unknown); // Use IM_CHECK(false) or IM_CHECK(some_express) to set an error
         if (RunFlags & ImGuiTestRunFlags_GuiFuncOnly)
             return;
         if (TestOutput->Status == ImGuiTestStatus_Running)
@@ -454,10 +454,22 @@ void    ImGuiTestContext::SleepStandard()
         Sleep(EngineIO->ActionDelayStandard);
 }
 
+static const char* GetInputSourceName(ImGuiInputSource input_mode)
+{
+    switch (input_mode)
+    {
+    case ImGuiInputSource_None:     return "None";
+    case ImGuiInputSource_Mouse:    return "Mouse";
+    case ImGuiInputSource_Keyboard: return "Keyboard";
+    case ImGuiInputSource_Gamepad:  return "Gamepad";
+    default: return "n/a";
+    }
+}
+
 void ImGuiTestContext::SetInputMode(ImGuiInputSource input_mode)
 {
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
-    LogDebug("SetInputMode %d", input_mode);
+    LogDebug("SetInputMode '%s'", GetInputSourceName(input_mode));
 
     IM_ASSERT(input_mode == ImGuiInputSource_Mouse || input_mode == ImGuiInputSource_Keyboard || input_mode == ImGuiInputSource_Gamepad);
     InputMode = input_mode;
@@ -493,7 +505,7 @@ void ImGuiTestContext::SetRef(ImGuiWindow* window)
 
     // We grab the ID directly and avoid ImHashDecoratedPath so "/" in window names are not ignored.
     size_t len = strlen(window->Name);
-    IM_ASSERT(len < IM_ARRAYSIZE(RefStr) - 1);
+    IM_ASSERT(len < IM_COUNTOF(RefStr) - 1);
     strcpy(RefStr, window->Name);
     RefID = RefWindowID = window->ID;
 
@@ -515,7 +527,7 @@ void ImGuiTestContext::SetRef(ImGuiTestRef ref)
     if (ref.Path)
     {
         size_t len = strlen(ref.Path);
-        IM_ASSERT(len < IM_ARRAYSIZE(RefStr) - 1);
+        IM_ASSERT(len < IM_COUNTOF(RefStr) - 1);
 
         strcpy(RefStr, ref.Path);
         RefID = GetID(ref.Path, ImGuiTestRef());
@@ -792,7 +804,7 @@ void ImGuiTestContext::CaptureSetExtension(const char* ext)
     ImGuiCaptureArgs* args = CaptureArgs;
     if (args->InOutputFile[0] == 0)
     {
-        ImFormatString(args->InOutputFile, IM_ARRAYSIZE(args->InOutputFile), "output/captures/%s_%04d%s", Test->Name, CaptureCounter, ext);
+        ImFormatString(args->InOutputFile, IM_COUNTOF(args->InOutputFile), "output/captures/%s_%04d%s", Test->Name, CaptureCounter, ext);
         CaptureCounter++;
     }
     else
@@ -2574,7 +2586,7 @@ void    ImGuiTestContext::KeyDown(ImGuiKeyChord key_chord)
     const char* chord_desc = ImGui::GetKeyChordName(key_chord);
 #else
     char chord_desc[32];
-    ImGui::GetKeyChordName(key_chord, chord_desc, IM_ARRAYSIZE(chord_desc));
+    ImGui::GetKeyChordName(key_chord, chord_desc, IM_COUNTOF(chord_desc));
 #endif
     LogDebug("KeyDown(%s)", chord_desc);
     if (EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Cinematic)
@@ -2595,7 +2607,7 @@ void    ImGuiTestContext::KeyUp(ImGuiKeyChord key_chord)
     const char* chord_desc = ImGui::GetKeyChordName(key_chord);
 #else
     char chord_desc[32];
-    ImGui::GetKeyChordName(key_chord, chord_desc, IM_ARRAYSIZE(chord_desc));
+    ImGui::GetKeyChordName(key_chord, chord_desc, IM_COUNTOF(chord_desc));
 #endif
     LogDebug("KeyUp(%s)", chord_desc);
     if (EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Cinematic)
@@ -2616,7 +2628,7 @@ void    ImGuiTestContext::KeyPress(ImGuiKeyChord key_chord, int count)
     const char* chord_desc = ImGui::GetKeyChordName(key_chord);
 #else
     char chord_desc[32];
-    ImGui::GetKeyChordName(key_chord, chord_desc, IM_ARRAYSIZE(chord_desc));
+    ImGui::GetKeyChordName(key_chord, chord_desc, IM_COUNTOF(chord_desc));
 #endif
     LogDebug("KeyPress(%s, %d)", chord_desc, count);
     if (EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Cinematic)
@@ -2648,7 +2660,7 @@ void    ImGuiTestContext::KeyHold(ImGuiKeyChord key_chord, float time)
     const char* chord_desc = ImGui::GetKeyChordName(key_chord);
 #else
     char chord_desc[32];
-    ImGui::GetKeyChordName(key_chord, chord_desc, IM_ARRAYSIZE(chord_desc));
+    ImGui::GetKeyChordName(key_chord, chord_desc, IM_COUNTOF(chord_desc));
 #endif
     LogDebug("KeyHold(%s, %.2f sec)", chord_desc, time);
     if (EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Cinematic)
@@ -2671,7 +2683,7 @@ void    ImGuiTestContext::KeySetEx(ImGuiKeyChord key_chord, bool is_down, float 
     const char* chord_desc = ImGui::GetKeyChordName(key_chord);
 #else
     char chord_desc[32];
-    ImGui::GetKeyChordName(key_chord, chord_desc, IM_ARRAYSIZE(chord_desc));
+    ImGui::GetKeyChordName(key_chord, chord_desc, IM_COUNTOF(chord_desc));
 #endif
     LogDebug("KeySetEx(%s, is_down=%d, time=%.f)", chord_desc, is_down, time);
     Inputs->Queue.push_back(ImGuiTestInput::ForKeyChord(key_chord, is_down));
@@ -3044,7 +3056,7 @@ void    ImGuiTestContext::ItemActionAll(ImGuiTestAction action, ImGuiTestRef ref
 
             if (filter && filter->MaxItemCountPerDepth != nullptr)
             {
-                if (item.Depth < IM_ARRAYSIZE(processed_count_per_depth))
+                if (item.Depth < IM_COUNTOF(processed_count_per_depth))
                 {
                     if (processed_count_per_depth[item.Depth] >= filter->MaxItemCountPerDepth[item.Depth])
                         continue;
@@ -3126,7 +3138,7 @@ void    ImGuiTestContext::ItemCloseAll(ImGuiTestRef ref_parent, int max_depth, i
 void    ImGuiTestContext::ItemInputValue(ImGuiTestRef ref, int value)
 {
     char buf[32];
-    ImFormatString(buf, IM_ARRAYSIZE(buf), "%d", value);
+    ImFormatString(buf, IM_COUNTOF(buf), "%d", value);
     ItemInput(ref);
     KeyCharsReplaceEnter(buf);
 }
@@ -3134,7 +3146,7 @@ void    ImGuiTestContext::ItemInputValue(ImGuiTestRef ref, int value)
 void    ImGuiTestContext::ItemInputValue(ImGuiTestRef ref, float value)
 {
     char buf[32];
-    ImFormatString(buf, IM_ARRAYSIZE(buf), "%f", value);
+    ImFormatString(buf, IM_COUNTOF(buf), "%f", value);
     ItemInput(ref);
     KeyCharsReplaceEnter(buf);
 }
@@ -3435,7 +3447,7 @@ bool    ImGuiTestContext::TabBarCompareOrder(ImGuiTabBar* tab_bar, const char** 
 
     // Display
     char buf[256];
-    char* buf_end = buf + IM_ARRAYSIZE(buf);
+    char* buf_end = buf + IM_COUNTOF(buf);
 
     char* p = buf;
     for (int i = 0; i < tab_bar->Tabs.Size; i++)
@@ -3976,6 +3988,8 @@ void    ImGuiTestContext::WindowMove(ImGuiTestRef ref, ImVec2 input_pos, ImVec2 
     MouseSetViewport(window); // Update in case window has changed viewport
 }
 
+// Pass == 0.0f on an axis to preserve current size.
+// Pass <  0.0f on an axis to auto-resize.
 void    ImGuiTestContext::WindowResize(ImGuiTestRef ref, ImVec2 size)
 {
     if (IsError())
@@ -3983,7 +3997,9 @@ void    ImGuiTestContext::WindowResize(ImGuiTestRef ref, ImVec2 size)
 
     ImGuiWindow* window = GetWindowByRef(ref);
     IM_CHECK_SILENT(window != nullptr);
-    size = ImFloor(size);
+
+    size.x = (size.x == 0.0f) ? window->Size.x : ImFloor(size.x);
+    size.y = (size.y == 0.0f) ? window->Size.y : ImFloor(size.y);
 
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
     LogDebug("WindowResize '%s' (%.1f,%.1f)", window->Name, size.x, size.y);

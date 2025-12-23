@@ -424,7 +424,7 @@ static void RenderFilterInput(ImGuiPerfTool* perf, const char* hint, float width
     if (ImGui::IsWindowAppearing())
         strcpy(perf->_Filter, "");
     ImGui::SetNextItemWidth(width);
-    ImGui::InputTextWithHint("##filter", hint, perf->_Filter, IM_ARRAYSIZE(perf->_Filter));
+    ImGui::InputTextWithHint("##filter", hint, perf->_Filter, IM_COUNTOF(perf->_Filter));
     if (ImGui::IsWindowAppearing())
         ImGui::SetKeyboardFocusHere();
 }
@@ -546,9 +546,9 @@ ImGuiPerfTool::~ImGuiPerfTool()
 void ImGuiPerfTool::AddEntry(ImGuiPerfToolEntry* entry)
 {
     if (strcmp(_FilterDateFrom, entry->Date) > 0)
-        ImStrncpy(_FilterDateFrom, entry->Date, IM_ARRAYSIZE(_FilterDateFrom));
+        ImStrncpy(_FilterDateFrom, entry->Date, IM_COUNTOF(_FilterDateFrom));
     if (strcmp(_FilterDateTo, entry->Date) < 0)
-        ImStrncpy(_FilterDateTo, entry->Date, IM_ARRAYSIZE(_FilterDateTo));
+        ImStrncpy(_FilterDateTo, entry->Date, IM_COUNTOF(_FilterDateTo));
 
     _SrcData.push_back(*entry);
     _Batches.clear_destruct();
@@ -710,7 +710,7 @@ void ImGuiPerfTool::_Rebuild()
         }
 
         int visible_label_i = 0;
-        for (int i = 0; i < IM_ARRAYSIZE(mean_labels); i++)
+        for (int i = 0; i < IM_COUNTOF(mean_labels); i++)
         {
             if (!_IsVisibleTest(mean_labels[i]))
                 continue;
@@ -810,8 +810,8 @@ void ImGuiPerfTool::Clear()
     _SrcData.clear_destruct();
     _CsvParser->Clear();
 
-    ImStrncpy(_FilterDateFrom, "9999-99-99", IM_ARRAYSIZE(_FilterDateFrom));
-    ImStrncpy(_FilterDateTo, "0000-00-00", IM_ARRAYSIZE(_FilterDateFrom));
+    ImStrncpy(_FilterDateFrom, "9999-99-99", IM_COUNTOF(_FilterDateFrom));
+    ImStrncpy(_FilterDateTo, "0000-00-00", IM_COUNTOF(_FilterDateFrom));
 }
 
 bool ImGuiPerfTool::LoadCSV(const char* filename)
@@ -989,7 +989,7 @@ bool ImGuiPerfTool::SaveHtmlReport(const char* file_name, const char* image_file
             continue;
 
         ImGuiPerfToolEntry* baseline_entry = GetEntryByBatchIdx(_BaselineBatchIndex, test_name);
-        for (int i = 0; i < IM_ARRAYSIZE(PerfToolColumnInfo); i++)
+        for (int i = 0; i < IM_COUNTOF(PerfToolColumnInfo); i++)
         {
             Str30f label("");
             const ImGuiPerfToolColumnInfo& column_info = PerfToolColumnInfo[i];
@@ -1000,7 +1000,7 @@ bool ImGuiPerfTool::SaveHtmlReport(const char* file_name, const char* image_file
                 case 0:
                 {
                     char date[64];
-                    FormatDateAndTime(entry->Timestamp, date, IM_ARRAYSIZE(date));
+                    FormatDateAndTime(entry->Timestamp, date, IM_COUNTOF(date));
                     fprintf(fp, "| %s ", date);
                     break;
                 }
@@ -1072,14 +1072,14 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
     ImGui::SameLine();
 
     bool dirty = _Batches.empty();
-    bool date_changed = InputDate("##date-from", _FilterDateFrom, IM_ARRAYSIZE(_FilterDateFrom),
+    bool date_changed = InputDate("##date-from", _FilterDateFrom, IM_COUNTOF(_FilterDateFrom),
                                   (strcmp(_FilterDateFrom, _FilterDateTo) <= 0 || !*_FilterDateTo));
     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
         ImGui::OpenPopup("InputDate From Menu");
     ImGui::SameLine(0, 0.0f);
     ImGui::TextUnformatted("..");
     ImGui::SameLine(0, 0.0f);
-    date_changed |= InputDate("##date-to", _FilterDateTo, IM_ARRAYSIZE(_FilterDateTo),
+    date_changed |= InputDate("##date-to", _FilterDateTo, IM_COUNTOF(_FilterDateTo),
                               (strcmp(_FilterDateFrom, _FilterDateTo) <= 0 || !*_FilterDateFrom));
     if (date_changed)
     {
@@ -1096,7 +1096,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
         if (ImGui::BeginPopup(i == 0 ? "InputDate From Menu" : "InputDate To Menu"))
         {
             char* date = i == 0 ? _FilterDateFrom : _FilterDateTo;
-            int date_size = i == 0 ? IM_ARRAYSIZE(_FilterDateFrom) : IM_ARRAYSIZE(_FilterDateTo);
+            int date_size = i == 0 ? IM_COUNTOF(_FilterDateFrom) : IM_COUNTOF(_FilterDateTo);
             if (i == 0 && ImGui::MenuItem("Set Min"))
             {
                 for (ImGuiPerfToolEntry& entry : _SrcData)
@@ -1187,9 +1187,9 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
         bool show_all = ImGui::Button("Show All");
         ImGui::SameLine();
         bool hide_all = ImGui::Button("Hide All");
-        if (ImGui::BeginTable("Builds", IM_ARRAYSIZE(columns), ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit))
+        if (ImGui::BeginTable("Builds", IM_COUNTOF(columns), ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit))
         {
-            for (int i = 0; i < IM_ARRAYSIZE(columns); i++)
+            for (int i = 0; i < IM_COUNTOF(columns); i++)
                 ImGui::TableSetupColumn(columns[i]);
             ImGui::TableHeadersRow();
 
@@ -1198,7 +1198,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
             for (ImGuiPerfToolEntry& entry : _SrcData)
             {
                 const char* properties[] = { entry.GitBranchName, entry.BuildType, entry.Cpu, entry.OS, entry.Compiler };
-                for (int i = 0; i < IM_ARRAYSIZE(properties); i++)
+                for (int i = 0; i < IM_COUNTOF(properties); i++)
                 {
                     ImGuiID hash = ImHashStr(properties[i]);
                     checked_any[i] |= _Visibility.GetBool(hash, true);
@@ -1215,7 +1215,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
             };
 
             ImGui::TableNextRow();
-            for (int i = 0; i < IM_ARRAYSIZE(property_offsets); i++)
+            for (int i = 0; i < IM_COUNTOF(property_offsets); i++)
             {
                 ImGui::TableSetColumnIndex(i);
                 for (ImGuiPerfToolEntry& entry : _SrcData)
@@ -1516,7 +1516,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
     ImGuiTableFlags table_flags = ImGuiTableFlags_Hideable | ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable |
         ImGuiTableFlags_SortMulti | ImGuiTableFlags_SortTristate | ImGuiTableFlags_Resizable |
         ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY;
-    if (!ImGui::BeginTable("PerfInfo", IM_ARRAYSIZE(PerfToolColumnInfo), table_flags))
+    if (!ImGui::BeginTable("PerfInfo", IM_COUNTOF(PerfToolColumnInfo), table_flags))
         return;
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -1524,7 +1524,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
 
     // Test name column is not sorted because we do sorting only within perf runs of a particular tests,
     // so as far as sorting function is concerned all items in first column are identical.
-    for (int i = 0; i < IM_ARRAYSIZE(PerfToolColumnInfo); i++)
+    for (int i = 0; i < IM_COUNTOF(PerfToolColumnInfo); i++)
     {
         const ImGuiPerfToolColumnInfo& info = PerfToolColumnInfo[i];
         ImGuiTableColumnFlags column_flags = info.Flags;
@@ -1600,7 +1600,7 @@ void ImGuiPerfTool::_ShowEntriesTable()
         if (ImGui::TableNextColumn())
         {
             char date[64];
-            FormatDateAndTime(entry->Timestamp, date, IM_ARRAYSIZE(date));
+            FormatDateAndTime(entry->Timestamp, date, IM_COUNTOF(date));
             ImGui::TextUnformatted(date);
         }
 
@@ -1753,7 +1753,7 @@ static void PerflogSettingsHandler_WriteAll(ImGuiContext*, ImGuiSettingsHandler*
     for (ImGuiPerfToolEntry& entry : perftool->_SrcData)
     {
         const char* properties[] = { entry.GitBranchName, entry.BuildType, entry.Cpu, entry.OS, entry.Compiler };
-        for (int i = 0; i < IM_ARRAYSIZE(properties); i++)
+        for (int i = 0; i < IM_COUNTOF(properties); i++)
         {
             ImGuiID hash = ImHashStr(properties[i]);
             if (!temp_set.GetBool(hash))
@@ -1883,8 +1883,8 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->MouseMoveToPos(plot_child->Rect().GetCenter());
         ctx->MouseDoubleClick(ImGuiMouseButton_Left);               // Fit plot to original data
 #endif
-        ImStrncpy(perftool->_FilterDateFrom, min_date_bkp.c_str(), IM_ARRAYSIZE(perftool->_FilterDateFrom));
-        ImStrncpy(perftool->_FilterDateTo, max_date_bkp.c_str(), IM_ARRAYSIZE(perftool->_FilterDateTo));
+        ImStrncpy(perftool->_FilterDateFrom, min_date_bkp.c_str(), IM_COUNTOF(perftool->_FilterDateFrom));
+        ImStrncpy(perftool->_FilterDateTo, max_date_bkp.c_str(), IM_COUNTOF(perftool->_FilterDateTo));
         ImGui::SetWindowPos(window, pos_bkp);
         ImGui::SetWindowSize(window, size_bkp);
         SetPerfToolWindowOpen(ctx, perf_was_open);                   // Restore window visibility
@@ -1903,8 +1903,8 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         }
 
         char min_date_bkp[sizeof(perftool->_FilterDateFrom)], max_date_bkp[sizeof(perftool->_FilterDateTo)];
-        ImStrncpy(min_date_bkp, perftool->_FilterDateFrom, IM_ARRAYSIZE(min_date_bkp));
-        ImStrncpy(max_date_bkp, perftool->_FilterDateTo, IM_ARRAYSIZE(max_date_bkp));
+        ImStrncpy(min_date_bkp, perftool->_FilterDateFrom, IM_COUNTOF(min_date_bkp));
+        ImStrncpy(max_date_bkp, perftool->_FilterDateTo, IM_COUNTOF(max_date_bkp));
         bool perf_was_open = SetPerfToolWindowOpen(ctx, true);
         ctx->Yield();
 
@@ -1941,8 +1941,8 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->ItemDragWithDelta("splitter", ImVec2(0, -180));        // Show info table
         perf_report_image = args->InOutputFile;
 #endif
-        ImStrncpy(perftool->_FilterDateFrom, min_date_bkp, IM_ARRAYSIZE(min_date_bkp));
-        ImStrncpy(perftool->_FilterDateTo, max_date_bkp, IM_ARRAYSIZE(max_date_bkp));
+        ImStrncpy(perftool->_FilterDateFrom, min_date_bkp, IM_COUNTOF(min_date_bkp));
+        ImStrncpy(perftool->_FilterDateTo, max_date_bkp, IM_COUNTOF(max_date_bkp));
         ImGui::SetWindowPos(window, pos_bkp);
         ImGui::SetWindowSize(window, size_bkp);
         SetPerfToolWindowOpen(ctx, perf_was_open);                   // Restore window visibility

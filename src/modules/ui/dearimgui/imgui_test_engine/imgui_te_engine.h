@@ -166,6 +166,11 @@ struct ImGuiTestEngineResultSummary
 // Functions
 //-------------------------------------------------------------------------
 
+// Legacy version support
+#if IMGUI_VERSION_NUM < 19256 && !defined(IM_COUNTOF)
+#define IM_COUNTOF  IM_ARRAYSIZE
+#endif
+
 // Hooks for core imgui/ library (generally called via macros)
 extern void         ImGuiTestEngineHook_ItemAdd(ImGuiContext* ui_ctx, ImGuiID id, const ImRect& bb, const ImGuiLastItemData* item_data);
 #if IMGUI_VERSION_NUM < 18934

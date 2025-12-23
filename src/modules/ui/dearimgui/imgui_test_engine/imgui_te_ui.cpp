@@ -578,8 +578,13 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter,
                 ImGuiTestEngine_AbortCurrentTest(e);
             else if (queue_gui_func_toggle && !e->IO.IsRunningTests)
                 ImGuiTestEngine_QueueTest(e, test, ImGuiTestRunFlags_RunFromGui | ImGuiTestRunFlags_GuiFuncOnly);
-            if (queue_test && !e->IO.IsRunningTests)
-                ImGuiTestEngine_QueueTest(e, test, ImGuiTestRunFlags_RunFromGui);
+            if (queue_test)
+            {
+                if (e->IO.IsRunningTests)
+                    ImGuiTestEngine_AbortCurrentTest(e);
+                else
+                    ImGuiTestEngine_QueueTest(e, test, ImGuiTestRunFlags_RunFromGui);
+            }
 
             ImGui::PopID();
         }
@@ -665,7 +670,7 @@ static void ImGuiTestEngine_ShowLogAndTools(ImGuiTestEngine* engine)
             engine->ToolDebugRebootUiContext = true;
 
         const ImGuiInputTextCallback filter_callback = [](ImGuiInputTextCallbackData* data) { return (data->EventChar == ',' || data->EventChar == ';') ? 1 : 0; };
-        ImGui::InputText("Branch/Annotation", engine->IO.GitBranchName, IM_ARRAYSIZE(engine->IO.GitBranchName), ImGuiInputTextFlags_CallbackCharFilter, filter_callback, nullptr);
+        ImGui::InputText("Branch/Annotation", engine->IO.GitBranchName, IM_COUNTOF(engine->IO.GitBranchName), ImGuiInputTextFlags_CallbackCharFilter, filter_callback, nullptr);
         ImGui::SetItemTooltip("This will be stored in the CSV file for performance tools.");
 
         ImGui::Separator();

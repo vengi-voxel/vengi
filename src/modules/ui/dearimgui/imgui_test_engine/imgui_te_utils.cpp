@@ -867,7 +867,7 @@ const ImBuildInfo* ImBuildGetCompilationInfo()
 #endif
 
         // Date/Time
-        ImBuildParseDateFromCompilerIntoYMD(__DATE__, build_info.Date, IM_ARRAYSIZE(build_info.Date));
+        ImBuildParseDateFromCompilerIntoYMD(__DATE__, build_info.Date, IM_COUNTOF(build_info.Date));
         build_info.Time = __TIME__;
     }
 
@@ -884,7 +884,7 @@ bool ImBuildFindGitBranchName(const char* git_repo_path, Str* branch_name)
     if (char* git_head = (char*)ImFileLoadToMemory(head_path.c_str(), "r", &head_size, 1))
     {
         const char prefix[] = "ref: refs/heads/";       // Branch name is prefixed with this in HEAD file.
-        const int prefix_length = IM_ARRAYSIZE(prefix) - 1;
+        const int prefix_length = IM_COUNTOF(prefix) - 1;
         strtok(git_head, "\r\n");                       // Trim new line
         if (head_size > prefix_length && strncmp(git_head, prefix, prefix_length) == 0)
         {
@@ -1049,9 +1049,9 @@ bool    ImOsIsDebuggerPresent()
     FILE* fp = fopen("/proc/self/status", "rb");    // Can not use ImFileLoadToMemory because size detection of /proc/self/status would fail.
     if (fp == nullptr)
         return false;
-    fread(buf, 1, IM_ARRAYSIZE(buf), fp);
+    fread(buf, 1, IM_COUNTOF(buf), fp);
     fclose(fp);
-    buf[IM_ARRAYSIZE(buf) - 1] = 0;
+    buf[IM_COUNTOF(buf) - 1] = 0;
     if (char* tracer_pid = strstr(buf, "TracerPid:"))
     {
         tracer_pid += 10;   // Skip label

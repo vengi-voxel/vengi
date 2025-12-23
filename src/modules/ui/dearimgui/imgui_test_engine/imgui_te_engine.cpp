@@ -394,13 +394,13 @@ void    ImGuiTestEngine_PostSwap(ImGuiTestEngine* engine)
     engine->CaptureContext.ScreenCaptureFunc = engine->IO.ScreenCaptureFunc;
     engine->CaptureContext.ScreenCaptureUserData = engine->IO.ScreenCaptureUserData;
     engine->CaptureContext.VideoCaptureEncoderPath = engine->IO.VideoCaptureEncoderPath;
-    engine->CaptureContext.VideoCaptureEncoderPathSize = IM_ARRAYSIZE(engine->IO.VideoCaptureEncoderPath);
+    engine->CaptureContext.VideoCaptureEncoderPathSize = IM_COUNTOF(engine->IO.VideoCaptureEncoderPath);
     engine->CaptureContext.VideoCaptureEncoderParams = engine->IO.VideoCaptureEncoderParams;
-    engine->CaptureContext.VideoCaptureEncoderParamsSize = IM_ARRAYSIZE(engine->IO.VideoCaptureEncoderParams);
+    engine->CaptureContext.VideoCaptureEncoderParamsSize = IM_COUNTOF(engine->IO.VideoCaptureEncoderParams);
     engine->CaptureContext.GifCaptureEncoderParams = engine->IO.GifCaptureEncoderParams;
-    engine->CaptureContext.GifCaptureEncoderParamsSize = IM_ARRAYSIZE(engine->IO.GifCaptureEncoderParams);
+    engine->CaptureContext.GifCaptureEncoderParamsSize = IM_COUNTOF(engine->IO.GifCaptureEncoderParams);
     engine->CaptureTool.VideoCaptureExtension = engine->IO.VideoCaptureExtension;
-    engine->CaptureTool.VideoCaptureExtensionSize = IM_ARRAYSIZE(engine->IO.VideoCaptureExtension);
+    engine->CaptureTool.VideoCaptureExtensionSize = IM_COUNTOF(engine->IO.VideoCaptureExtension);
 
     // Capture a screenshot from main thread while coroutine waits
     if (engine->CaptureCurrentArgs != nullptr)
@@ -409,7 +409,7 @@ void    ImGuiTestEngine_PostSwap(ImGuiTestEngine* engine)
         if (status != ImGuiCaptureStatus_InProgress)
         {
             if (status == ImGuiCaptureStatus_Done)
-                ImStrncpy(engine->CaptureTool.OutputLastFilename, engine->CaptureCurrentArgs->InOutputFile, IM_ARRAYSIZE(engine->CaptureTool.OutputLastFilename));
+                ImStrncpy(engine->CaptureTool.OutputLastFilename, engine->CaptureCurrentArgs->InOutputFile, IM_COUNTOF(engine->CaptureTool.OutputLastFilename));
             engine->CaptureCurrentArgs = nullptr;
         }
     }
@@ -488,16 +488,16 @@ ImGuiTestItemInfo* ImGuiTestEngine_FindItemInfo(ImGuiTestEngine* engine, ImGuiID
     if (debug_id)
     {
         size_t debug_id_sz = strlen(debug_id);
-        if (debug_id_sz < IM_ARRAYSIZE(task->DebugName) - 1)
+        if (debug_id_sz < IM_COUNTOF(task->DebugName) - 1)
         {
             memcpy(task->DebugName, debug_id, debug_id_sz + 1);
         }
         else
         {
-            size_t header_sz = (size_t)(IM_ARRAYSIZE(task->DebugName) * 0.30f);
-            size_t footer_sz = IM_ARRAYSIZE(task->DebugName) - 2 - header_sz;
+            size_t header_sz = (size_t)(IM_COUNTOF(task->DebugName) * 0.30f);
+            size_t footer_sz = IM_COUNTOF(task->DebugName) - 2 - header_sz;
             IM_ASSERT(header_sz > 0 && footer_sz > 0);
-            ImFormatString(task->DebugName, IM_ARRAYSIZE(task->DebugName), "%.*s..%.*s", (int)header_sz, debug_id, (int)footer_sz, debug_id + debug_id_sz - footer_sz);
+            ImFormatString(task->DebugName, IM_COUNTOF(task->DebugName), "%.*s..%.*s", (int)header_sz, debug_id, (int)footer_sz, debug_id + debug_id_sz - footer_sz);
         }
     }
     engine->InfoTasks.push_back(task);
@@ -1049,8 +1049,8 @@ int ImGuiTestEngine_GetFrameCount(ImGuiTestEngine* engine)
 const char* ImGuiTestEngine_GetStatusName(ImGuiTestStatus v)
 {
     static const char* names[ImGuiTestStatus_COUNT] = { "Unknown", "Success", "Queued", "Running", "Error", "Suspended" };
-    IM_STATIC_ASSERT(IM_ARRAYSIZE(names) == ImGuiTestStatus_COUNT);
-    if (v >= 0 && v < IM_ARRAYSIZE(names))
+    IM_STATIC_ASSERT(IM_COUNTOF(names) == ImGuiTestStatus_COUNT);
+    if (v >= 0 && v < IM_COUNTOF(names))
         return names[v];
     return "N/A";
 }
@@ -1058,8 +1058,8 @@ const char* ImGuiTestEngine_GetStatusName(ImGuiTestStatus v)
 const char* ImGuiTestEngine_GetRunSpeedName(ImGuiTestRunSpeed v)
 {
     static const char* names[ImGuiTestRunSpeed_COUNT] = { "Fast", "Normal", "Cinematic" };
-    IM_STATIC_ASSERT(IM_ARRAYSIZE(names) == ImGuiTestRunSpeed_COUNT);
-    if (v >= 0 && v < IM_ARRAYSIZE(names))
+    IM_STATIC_ASSERT(IM_COUNTOF(names) == ImGuiTestRunSpeed_COUNT);
+    if (v >= 0 && v < IM_COUNTOF(names))
         return names[v];
     return "N/A";
 }
@@ -1067,8 +1067,8 @@ const char* ImGuiTestEngine_GetRunSpeedName(ImGuiTestRunSpeed v)
 const char* ImGuiTestEngine_GetVerboseLevelName(ImGuiTestVerboseLevel v)
 {
     static const char* names[ImGuiTestVerboseLevel_COUNT] = { "Silent", "Error", "Warning", "Info", "Debug", "Trace" };
-    IM_STATIC_ASSERT(IM_ARRAYSIZE(names) == ImGuiTestVerboseLevel_COUNT);
-    if (v >= 0 && v < IM_ARRAYSIZE(names))
+    IM_STATIC_ASSERT(IM_COUNTOF(names) == ImGuiTestVerboseLevel_COUNT);
+    if (v >= 0 && v < IM_COUNTOF(names))
         return names[v];
     return "N/A";
 }
@@ -1566,7 +1566,7 @@ struct ImGuiTestContextUiContextBackup
         ErrorCallbackUserData = g.ErrorCallbackUserData;
 #endif
         memset(IO.MouseDown, 0, sizeof(IO.MouseDown));
-        for (int n = 0; n < IM_ARRAYSIZE(IO.KeysData); n++)
+        for (int n = 0; n < IM_COUNTOF(IO.KeysData); n++)
             IO.KeysData[n].Down = false;
     }
 
@@ -1841,7 +1841,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
             args.InFlags = ImGuiCaptureFlags_Instant;
             args.InCaptureRect.Min = ImGui::GetMainViewport()->Pos;
             args.InCaptureRect.Max = args.InCaptureRect.Min + ImGui::GetMainViewport()->Size;
-            ImFormatString(args.InOutputFile, IM_ARRAYSIZE(args.InOutputFile), "output/failures/%s_%04d.png", ctx->Test->Name, ctx->ErrorCounter);
+            ImFormatString(args.InOutputFile, IM_COUNTOF(args.InOutputFile), "output/failures/%s_%04d.png", ctx->Test->Name, ctx->ErrorCounter);
             if (ImGuiTestEngine_CaptureScreenshot(engine, &args))
                 ctx->LogDebug("Saved '%s' (%d*%d pixels)", args.InOutputFile, (int)args.OutImageSize.x, (int)args.OutImageSize.y);
         }
@@ -2346,7 +2346,7 @@ void ImGuiTestEngineHook_ItemInfo(ImGuiContext* ui_ctx, ImGuiID id, const char* 
         item->TimestampStatus = g.FrameCount;
         item->StatusFlags = flags;
         if (label)
-            ImStrncpy(item->DebugLabel, label, IM_ARRAYSIZE(item->DebugLabel));
+            ImStrncpy(item->DebugLabel, label, IM_COUNTOF(item->DebugLabel));
     }
 
     // Update Gather Task status flags
@@ -2356,7 +2356,7 @@ void ImGuiTestEngineHook_ItemInfo(ImGuiContext* ui_ctx, ImGuiID id, const char* 
         item->TimestampStatus = g.FrameCount;
         item->StatusFlags = flags;
         if (label)
-            ImStrncpy(item->DebugLabel, label, IM_ARRAYSIZE(item->DebugLabel));
+            ImStrncpy(item->DebugLabel, label, IM_COUNTOF(item->DebugLabel));
     }
 
     // Update Find by Label Task
@@ -2588,10 +2588,10 @@ static void     ImGuiTestEngine_SettingsReadLine(ImGuiContext* ui_ctx, ImGuiSett
     else if (sscanf(line, "StackTool=%d", &n) == 1)                                                                                 { e->UiStackToolOpen = (n != 0); }
     else if (sscanf(line, "CaptureEnabled=%d", &n) == 1)                                                                            { e->IO.ConfigCaptureEnabled = (n != 0); }
     else if (sscanf(line, "CaptureOnError=%d", &n) == 1)                                                                            { e->IO.ConfigCaptureOnError = (n != 0); }
-    else if (SettingsTryReadString(line, "VideoCapturePathToEncoder=", e->IO.VideoCaptureEncoderPath, IM_ARRAYSIZE(e->IO.VideoCaptureEncoderPath))) { }
-    else if (SettingsTryReadString(line, "VideoCaptureParamsToEncoder=", e->IO.VideoCaptureEncoderParams, IM_ARRAYSIZE(e->IO.VideoCaptureEncoderParams))) { }
-    else if (SettingsTryReadString(line, "GifCaptureParamsToEncoder=", e->IO.GifCaptureEncoderParams, IM_ARRAYSIZE(e->IO.GifCaptureEncoderParams))) { }
-    else if (SettingsTryReadString(line, "VideoCaptureExtension=", e->IO.VideoCaptureExtension, IM_ARRAYSIZE(e->IO.VideoCaptureExtension))) { }
+    else if (SettingsTryReadString(line, "VideoCapturePathToEncoder=", e->IO.VideoCaptureEncoderPath, IM_COUNTOF(e->IO.VideoCaptureEncoderPath))) { }
+    else if (SettingsTryReadString(line, "VideoCaptureParamsToEncoder=", e->IO.VideoCaptureEncoderParams, IM_COUNTOF(e->IO.VideoCaptureEncoderParams))) { }
+    else if (SettingsTryReadString(line, "GifCaptureParamsToEncoder=", e->IO.GifCaptureEncoderParams, IM_COUNTOF(e->IO.GifCaptureEncoderParams))) { }
+    else if (SettingsTryReadString(line, "VideoCaptureExtension=", e->IO.VideoCaptureExtension, IM_COUNTOF(e->IO.VideoCaptureExtension))) { }
 }
 
 static void     ImGuiTestEngine_SettingsWriteAll(ImGuiContext* ui_ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* buf)
