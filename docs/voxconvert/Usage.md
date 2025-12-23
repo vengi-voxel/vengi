@@ -16,16 +16,22 @@ vengi-voxconvert --help
 * `--export-models`: export all the models of a scene into single files. It is suggested to name the models properly to get reasonable file names.
 * `--export-palette`: will save the palette file for the given input file.
 * `--filter <filter>`: will filter out models not mentioned in the expression. E.g. `1-2,4` will handle model 1, 2 and 4. It is the same as `1,2,4`. The first model is `0`. See the models note below.
+* `--filter-property <property:value>`: Model filter by property. For example `name:foo`.
 * `--force`: overwrite existing files
 * `--image`: print the scene voxels to the text console. Useful if you don't have a graphical user interface available but still need to visually compare voxel models.
 * `--input <file>`: allows to specify input files. You can specify more than one file
+* `--isometric`: Create an isometric thumbnail of the input file when `--image` is used.
+* `--json`: Print the scene graph of the input file. Give `full` as argument to also get mesh details.
 * `--merge`: will merge a multi model volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
+* `--print-formats`: Print supported formats as json for easier parsing in other tools.
+* `--print-scripts`: Print found lua scripts as json for easier parsing in other tools.
 * `--resize <x:y:z>`: resize the volume by the given x (right), y (up) and z (back) values
 * `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis. Specify e.g. `x:180` to rotate around x by 180 degree.
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
+* `--scriptcolor <index>`: Set the palette index that is given to the color script parameters of the main function.
 * `--split <x:y:z>`: slices the volumes into pieces of the given size
 * `--surface-only`: Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.
 * `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
@@ -59,12 +65,13 @@ source <(vengi-voxconvert --completion bash)
 * export models
 * merge
 * scale
+* resize
 * mirror
 * rotate
 * translate
 * script
-* pivot
 * crop
+* surface-only
 * split
 
 ## Models
