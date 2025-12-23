@@ -441,6 +441,9 @@ void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderCont
 	_volumeRenderer.render(meshState, renderContext, camera, shadow);
 	if (renderContext.showCameras()) {
 		for (render::CameraRenderer::Node &cameraNode : _cameras) {
+			if (cameraNode.camera == camera) {
+				continue;
+			}
 			cameraNode.camera.setSize(camera.size());
 			cameraNode.camera.update(0.0);
 			_cameraRenderer.render(camera, cameraNode);
