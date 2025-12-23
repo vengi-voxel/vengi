@@ -79,6 +79,7 @@ nav:
       - palconvert/Examples.md
   - Thumbnailer:
       - thumbnailer/Index.md
+      - thumbnailer/Usage.md
       - thumbnailer/Examples.md
   - Blog:
       - blog/devlog_25_11.md
