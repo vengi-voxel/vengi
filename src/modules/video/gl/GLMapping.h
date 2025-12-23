@@ -58,6 +58,16 @@ static const GLenum ShaderTypes[] {
 };
 static_assert(core::enumVal(ShaderType::Max) == lengthof(ShaderTypes), "Array sizes don't match Max");
 
+static const GLenum QueryTypes[] = {
+	GL_SAMPLES_PASSED,
+	GL_ANY_SAMPLES_PASSED,
+	GL_TIME_ELAPSED,
+	GL_TIMESTAMP,
+	GL_PRIMITIVES_GENERATED,
+	GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN
+};
+static_assert(core::enumVal(QueryType::Max) == lengthof(QueryTypes), "Array sizes don't match Max");
+
 static const GLenum MemoryBarrierTypes[] {
 	0,
 	GL_SHADER_IMAGE_ACCESS_BARRIER_BIT,

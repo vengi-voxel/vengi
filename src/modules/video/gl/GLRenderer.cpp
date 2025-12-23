@@ -702,6 +702,65 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 	}
 }
 
+void genQueries(uint8_t amount, Id *ids) {
+	core_assert(glGenQueries != nullptr);
+	glGenQueries((GLsizei)amount, (GLuint *)ids);
+	checkError();
+}
+
+void deleteQueries(uint8_t amount, Id *ids) {
+	core_assert(glDeleteQueries != nullptr);
+	glDeleteQueries((GLsizei)amount, (GLuint *)ids);
+	checkError();
+	for (uint8_t i = 0u; i < amount; ++i) {
+		ids[i] = InvalidId;
+	}
+}
+
+void beginQuery(QueryType type, Id query) {
+	const GLenum glType = _priv::QueryTypes[core::enumVal(type)];
+	core_assert(glBeginQuery != nullptr);
+	glBeginQuery(glType, (GLuint)query);
+	checkError();
+}
+
+void endQuery(QueryType type) {
+	const GLenum glType = _priv::QueryTypes[core::enumVal(type)];
+	core_assert(glEndQuery != nullptr);
+	glEndQuery(glType);
+	checkError();
+}
+
+bool isQueryAvailable(Id query) {
+	GLuint available = 0;
+	core_assert(glGetQueryObjectuiv != nullptr);
+	glGetQueryObjectuiv((GLuint)query, GL_QUERY_RESULT_AVAILABLE, &available);
+	checkError();
+	return available != GL_FALSE;
+}
+
+uint32_t getQueryResult(Id query) {
+	GLuint result = 0;
+	core_assert(glGetQueryObjectuiv != nullptr);
+	glGetQueryObjectuiv((GLuint)query, GL_QUERY_RESULT, &result);
+	checkError();
+	return result;
+}
+
+uint64_t getQueryResult64(Id query) {
+	GLuint64 result = 0;
+	if (glGetQueryObjectui64v != nullptr) {
+		glGetQueryObjectui64v((GLuint)query, GL_QUERY_RESULT, &result);
+	} else {
+		GLuint res = 0;
+		core_assert(glGetQueryObjectuiv != nullptr);
+		glGetQueryObjectuiv((GLuint)query, GL_QUERY_RESULT, &res);
+		result = res;
+	}
+	checkError();
+	return result;
+}
+
 void genVertexArrays(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
