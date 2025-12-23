@@ -57,9 +57,9 @@ detail message line 2
 | Name             | Description                                                                |
 | ---------------- | -------------------------------------------------------------------------- |
 | app              | Basic application classes                                                  |
+| color            | Color conversions and helpers                                              |
 | command          | Bind c++ functionality to console commands                                 |
 | commonlua        | Basic [lua](LUAScript.md) bindings and helper                              |
-| color            | Color conversions and helpers                                              |
 | core             | String, collections and other foundation classes                           |
 | http             | Http download module                                                       |
 | image            | Image loading and writing                                                  |
@@ -67,6 +67,7 @@ detail message line 2
 | math             | Based on glm                                                               |
 | memento          | The undo/redo states for a scene graph instance                            |
 | metric           | telegraf, influx and other metrics                                         |
+| network          | Network util functions used for voxedit network mode                       |
 | noise            | Different noise implementations                                            |
 | palette          | Palette formats and helper                                                 |
 | render           | General renderer implementations and helpers                               |
@@ -82,4 +83,5 @@ detail message line 2
 | voxelgenerator   | LUA generator, space colonization, tree- and shape generators              |
 | voxelpathtracer  | Path tracer                                                                |
 | voxelrender      | Voxel renderer                                                             |
+| voxelui          | Lua and file dialog panels                                                 |
 | voxelutil        | Pathfinding, raycasting, image and general util functions                  |
