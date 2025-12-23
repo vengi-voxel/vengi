@@ -51,14 +51,29 @@ SOFTWARE.
 
 namespace voxel {
 
-// CS = chunk size (max 62)
-// Limited to 62 because we use 64-bit masks with border padding
+/**
+ * @name Chunk Size Constants
+ * @{
+ *
+ * These constants define the chunk dimensions for binary greedy meshing.
+ * The chunk size is limited to 62 because we use 64-bit masks with 1-voxel
+ * border padding on each side (62 + 2 = 64 bits fits in uint64_t).
+ */
+
+/// Chunk size in voxels (maximum 62 due to 64-bit mask constraints)
 static constexpr int CS = 62;
 
-// Padded chunk size - includes 1-voxel border on each side for neighbor sampling
+/// Padded chunk size - includes 1-voxel border on each side for neighbor sampling
+/// This is 64, which is a power of 2 for efficient index calculation
 static constexpr int CS_P = CS + 2;
+
+/// Padded chunk area (CS_P squared) - used for 2D indexing within a slice
 static constexpr int CS_P2 = CS_P * CS_P;
+
+/// Padded chunk volume (CS_P cubed) - total voxels including border padding
 static constexpr int CS_P3 = CS_P * CS_P * CS_P;
+
+/** @} */
 
 /**
  * @brief Converts 3D coordinates to linear index based on axis orientation
@@ -67,11 +82,24 @@ static constexpr int CS_P3 = CS_P * CS_P * CS_P;
  * The reordering ensures that the "depth" axis (the one being checked for faces)
  * is always in the same position, simplifying the meshing logic.
  *
- * @param axis Which axis is being processed (0=X, 1=Y, 2=Z)
- * @param a First coordinate (interpretation depends on axis)
- * @param b Second coordinate (interpretation depends on axis)
- * @param c Third coordinate (interpretation depends on axis)
- * @return Linear index into the voxel array
+ * This is a key optimization from the binary greedy meshing algorithm:
+ * by rotating coordinates based on the current face direction, the same
+ * merging code can be used for all 6 face directions.
+ *
+ * The memory layout uses ZXY ordering (Z in the innermost loop) because
+ * Z is the primary axis for 64-bit column operations. Each 64-bit integer
+ * represents occupancy along the Z axis.
+ *
+ * @param axis Which axis is being processed (0=X faces, 1=Y faces, 2=Z faces)
+ * @param a First coordinate ("right" direction in face plane)
+ * @param b Second coordinate ("forward" direction in face plane)
+ * @param c Third coordinate (depth perpendicular to face)
+ * @return Linear index into the voxel array using ZXY ordering
+ *
+ * @note The different formulas for each axis rotate the coordinate system:
+ * - Axis 0 (X faces): index = b + a*CS_P + c*CS_P2  (YZX rotation)
+ * - Axis 1 (Y faces): index = a + c*CS_P + b*CS_P2  (XZY rotation)
+ * - Axis 2 (Z faces): index = c + b*CS_P + a*CS_P2  (ZXY - native order)
  */
 CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const int c) {
 	if (axis == 0)
@@ -106,8 +134,19 @@ CORE_FORCE_INLINE bool solid_check<0>(const voxel::Voxel &voxel) {
 	return voxel.getMaterial() == VoxelType::Generic;
 }
 
-// Direction vectors for ambient occlusion sampling
-// Includes cardinal directions (first 4) and diagonal directions (last 4)
+/**
+ * @brief Direction vectors for ambient occlusion neighbor sampling
+ *
+ * These 8 directions represent all neighbors in the 2D plane perpendicular to a face:
+ * - First 4: Cardinal directions (up, down, left, right)
+ * - Last 4: Diagonal directions (corners)
+ *
+ * Used by compare_ao() to check if two adjacent voxels have the same AO environment,
+ * which determines if they can be merged into a single quad.
+ *
+ * The AO calculation samples these neighbors to determine how much ambient light
+ * reaches each vertex of a face.
+ */
 static const glm::ivec2 ao_dirs[8] = {
 	glm::ivec2(-1, 0),	glm::ivec2(0, -1), glm::ivec2(0, 1),  glm::ivec2(1, 0),
 	glm::ivec2(-1, -1), glm::ivec2(-1, 1), glm::ivec2(1, -1), glm::ivec2(1, 1),
@@ -116,14 +155,33 @@ static const glm::ivec2 ao_dirs[8] = {
 /**
  * @brief Calculates ambient occlusion value for a vertex
  *
- * Uses a simple but effective AO formula based on neighboring voxel occupancy.
- * If both adjacent sides are occupied, the vertex is fully occluded (0).
- * Otherwise, occlusion is based on how many of the three neighbors are occupied.
+ * Uses the standard voxel AO formula based on neighboring voxel occupancy.
+ *
+ * The formula considers three neighbors around each vertex:
+ * - Two adjacent (side) voxels
+ * - One diagonal (corner) voxel
+ *
+ * Special case: If both side voxels are occupied, the corner is fully occluded
+ * regardless of whether the diagonal voxel exists. This prevents light bleeding
+ * through diagonal gaps.
+ *
+ * Visual representation (top-down view of a vertex):
+ * @code
+ *     [side2]
+ *        |
+ * [corner]--[VERTEX]--[face]
+ *        |
+ *     [side1]
+ * @endcode
  *
  * @param side1 Is the first adjacent side occupied? (0 or 1)
  * @param side2 Is the second adjacent side occupied? (0 or 1)
  * @param corner Is the diagonal corner occupied? (0 or 1)
- * @return AO value from 0 (fully occluded) to 3 (no occlusion)
+ * @return AO value from 0 (fully occluded/dark) to 3 (no occlusion/bright)
+ *
+ * @note The corner is only checked if at least one side is empty.
+ *       This is because if both sides are solid, light cannot reach
+ *       the corner anyway (prevents light leaking).
  */
 CORE_FORCE_INLINE int vertexAO(uint8_t side1, uint8_t side2, uint8_t corner) {
 	return (side1 && side2) ? 0 : (3 - (side1 + side2 + corner));
@@ -162,17 +220,36 @@ CORE_FORCE_INLINE bool compare_ao(const BinaryMesherInput &voxels, int axis, int
 }
 
 /**
- * @brief Inserts a quad (two triangles) into the mesh
+ * @brief Inserts a quad (two triangles) into the mesh with AO-aware triangulation
  *
- * The quad is triangulated based on ambient occlusion to avoid lighting artifacts.
- * Quads are split along the diagonal with the least AO difference.
+ * The quad is triangulated based on ambient occlusion values to avoid the
+ * "anisotropy" artifact where different diagonal splits produce visually
+ * different results due to AO interpolation.
+ *
+ * The optimal split is along the diagonal where the AO values are most similar.
+ * This is determined by comparing: ao_LB + ao_RF vs ao_RB + ao_LF
+ *
+ * Visual representation:
+ * @code
+ * Normal triangulation:       Flipped triangulation:
+ *   v1----v2                    v1----v2
+ *   | \   |                     |   / |
+ *   |  \  |                     |  /  |
+ *   |   \ |                     | /   |
+ *   v4----v3                    v4----v3
+ * Triangles: (v1,v2,v4),(v4,v2,v3)  Triangles: (v1,v2,v3),(v3,v4,v1)
+ * @endcode
  *
  * @param mesh The mesh to add triangles to
- * @param v1 First vertex index
- * @param v2 Second vertex index
- * @param v3 Third vertex index
- * @param v4 Fourth vertex index
- * @param flipped If true, flip the triangulation diagonal
+ * @param v1 First vertex index (top-left)
+ * @param v2 Second vertex index (top-right)
+ * @param v3 Third vertex index (bottom-right)
+ * @param v4 Fourth vertex index (bottom-left)
+ * @param flipped If true, split along v1-v3 diagonal; if false, split along v2-v4
+ *
+ * @note The flipped parameter is typically calculated as:
+ *       flipped = (ao_LB + ao_RF > ao_RB + ao_LF)
+ *       This chooses the diagonal that produces smoother AO gradients.
  */
 CORE_FORCE_INLINE void insert_quad(Mesh &mesh, uint32_t v1, uint32_t v2, uint32_t v3, uint32_t v4, bool flipped) {
 	if (flipped) {
@@ -211,20 +288,51 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t 
 	return index;
 }
 
-// Masks for boundary detection in 64-bit columns
-static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));			   // Top boundary bit
-static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1))); // Top and bottom boundary bits
+/**
+ * @name Boundary Detection Masks
+ * @{
+ *
+ * These masks are used during face culling to handle chunk boundaries correctly.
+ * They prevent faces from being generated at the padded border voxels.
+ *
+ * In the binary greedy meshing algorithm, face visibility is determined by
+ * comparing adjacent bits in a 64-bit column. However, at the boundaries
+ * (bits 0 and 63), there are no valid neighbors to compare against.
+ */
+
+/// CULL_MASK: Marks the top boundary bit (bit 63)
+/// Used in face culling: col & ~((col >> 1) | CULL_MASK)
+/// This prevents detecting a "visible" face at the top boundary where
+/// shifting would bring in zeros from outside the valid range.
+static const uint64_t CULL_MASK = (1ULL << (CS_P - 1));
+
+/// BORDER_MASK: Marks both top (bit 63) and bottom (bit 0) boundary bits
+/// Used to exclude border voxels from face generation, as these are
+/// padding from neighboring chunks used only for AO and visibility testing.
+static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
+
+/** @} */
 
 /**
  * @brief Prepares chunk data by copying and reordering voxels
  *
  * This function extracts a chunk from the volume and reorganizes it into
  * a format optimized for binary meshing. The voxels are reordered from
- * XYZ layout to YXZ layout, which improves cache coherency during processing.
+ * the volume's native XYZ layout to ZXY layout (Z innermost).
  *
- * @param map The source voxel volume
- * @param voxels Output buffer for reordered voxel data
- * @param chunkPos Position of the chunk in world space (includes padding)
+ * @section prepare_why Why ZXY Order?
+ *
+ * The binary greedy meshing algorithm uses 64-bit integers to represent
+ * columns of voxels. Each bit in a uint64_t represents one voxel along an axis.
+ * By storing Z in the innermost loop, we can:
+ *
+ * 1. Build Z-axis columns by setting bits: `column |= 1ULL << z`
+ * 2. Perform face culling on 64 Z-voxels simultaneously
+ * 3. Access voxels in cache-friendly order during column building
+ *
+ * @param map The source voxel volume (XYZ order)
+ * @param voxels Output buffer for reordered voxel data (ZXY order)
+ * @param chunkPos Position of the chunk in world space (includes padding offset)
  */
 // TODO: PERF: the binary mesher would be way faster if we would not convert this from xyz to zxy order
 void prepareChunk(const voxel::RawVolume &map, BinaryMesherInput &voxels, const glm::ivec3 &chunkPos) {
@@ -286,14 +394,32 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 								 Mesh &mesh) {
 	core_trace_scoped(ExtractBinaryGreedyMeshType);
 
-	// Storage for face visibility masks for all 6 directions
-	// Each entry is a 64-bit mask representing one "column" of voxels
+	/**
+	 * @section phase1_storage Phase 1 Data Structures
+	 *
+	 * col_face_masks: Storage for face visibility masks for all 6 directions.
+	 * Organized as 6 slices of CS_P2 entries each (one per face direction).
+	 * Each 64-bit entry represents which voxels in a column have visible faces.
+	 *
+	 * Memory layout: [face0: CS_P2 entries][face1: CS_P2 entries]...[face5: CS_P2 entries]
+	 *
+	 * Face indices:
+	 * - 0, 1: X-axis faces (negative, positive)
+	 * - 2, 3: Y-axis faces (negative, positive)
+	 * - 4, 5: Z-axis faces (negative, positive)
+	 */
 	alignas(16) core::Array<uint64_t, CS_P2 * 6> col_face_masks({});
 
-	// Temporary storage for accumulated column masks along first axis
+	/**
+	 * a_axis_cols: Temporary accumulator for column masks along the first axis.
+	 * As we iterate through voxels, we build up 64-bit columns incrementally.
+	 * This allows us to perform face culling on complete columns.
+	 */
 	alignas(16) core::Array<uint64_t, CS_P2> a_axis_cols({});
 
 	// === PHASE 1: Build binary columns and cull faces ===
+	// This phase iterates through all voxels once, building 64-bit occupancy
+	// columns and simultaneously performing face culling via bitwise operations.
 
 	auto p = voxels.begin();
 	for (int a = 0; a < CS_P; a++) {
@@ -342,37 +468,78 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 	}
 
 	// === PHASE 2 & 3: Greedy meshing for each face direction ===
+	//
+	// For each of the 6 face directions, we perform greedy merging to combine
+	// adjacent visible faces into larger quads. This dramatically reduces
+	// triangle count compared to rendering each voxel face individually.
+	//
+	// The greedy algorithm works in two passes:
+	// 1. Forward merging: Extends quads along the "forward" sweep direction
+	// 2. Right merging: Extends quads perpendicular to forward direction
 
 	for (uint8_t face = 0; face < 6; face++) {
-		const int axis = face / 2;					// Which axis this face is perpendicular to
-		const int air_dir = face % 2 == 0 ? 1 : -1; // Direction to check for air
+		const int axis = face / 2;					// Which axis this face is perpendicular to (0=X, 1=Y, 2=Z)
+		const int air_dir = face % 2 == 0 ? 1 : -1; // Direction to sample for AO (+1 for negative faces, -1 for positive)
 
-		// Tracks how many steps forward each position has been merged
+		/**
+		 * merged_forward: Tracks how many consecutive voxels in the "forward"
+		 * direction have been merged with each position.
+		 *
+		 * For position (right, forward), merged_forward[right * CS_P + bit_pos]
+		 * indicates how many steps backward (toward lower forward indices)
+		 * this face has been merged.
+		 */
 		alignas(16) core::Array<uint64_t, CS_P2> merged_forward({});
 
 		for (int forward = 1; forward < CS_P - 1; forward++) {
-			// Tracks which bits are actively being extended rightward
+			/**
+			 * bits_walking_right: Tracks which bit positions are currently being
+			 * extended in the "right" direction. A set bit means that position
+			 * is in the middle of a rightward merge and shouldn't start a new
+			 * forward merge or generate geometry yet.
+			 */
 			uint64_t bits_walking_right = 0;
 			const int forwardIndex = (forward * CS_P) + (face * CS_P2);
 
-			// Tracks how many steps right each bit position has been merged
+			/**
+			 * merged_right: Tracks how many steps right each bit position has
+			 * been merged. Reset at the start of each forward row.
+			 */
 			alignas(16) core::Array<uint64_t, CS_P> merged_right({});
 
 			for (int right = 1; right < CS_P - 1; right++) {
 				const int rightxCS_P = right * CS_P;
 
-				// Get visibility bits for current, right, and forward positions
+				/**
+				 * Get visibility bits for current position and neighbors.
+				 * The BORDER_MASK excludes the padding voxels from generating faces.
+				 *
+				 * bits_here: Current column's visible faces
+				 * bits_right: Next column's visible faces (for right merging)
+				 * bits_forward: Next row's visible faces (for forward merging)
+				 */
 				const uint64_t bits_here = col_face_masks[forwardIndex + right] & ~BORDER_MASK;
 				const uint64_t bits_right = right >= CS ? 0 : col_face_masks[forwardIndex + right + 1];
 				const uint64_t bits_forward = forward >= CS ? 0 : col_face_masks[forwardIndex + right + CS_P];
 
-				// Determine which faces can continue merging
+				/**
+				 * Determine which faces can continue merging:
+				 * - bits_merging_forward: Can extend in forward direction AND not currently merging right
+				 * - bits_merging_right: Can extend in right direction
+				 */
 				uint64_t bits_merging_forward = bits_here & bits_forward & ~bits_walking_right;
 				const uint64_t bits_merging_right = bits_here & bits_right;
 
 				unsigned long bit_pos;
 
-				// Process faces that can merge forward
+				/**
+				 * Process faces that can merge forward.
+				 *
+				 * Uses __builtin_ctzll (Count Trailing Zeros) to efficiently find
+				 * the position of the lowest set bit. This is a key optimization
+				 * that allows processing only the bits that are actually set,
+				 * skipping empty positions entirely.
+				 */
 				uint64_t copy_front = bits_merging_forward;
 				while (copy_front) {
 #ifdef _MSC_VER
@@ -383,7 +550,14 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 
 					copy_front &= ~(1ULL << bit_pos);
 
-					// Check if voxel types match and AO is compatible
+					/**
+					 * Check merge compatibility:
+					 * 1. Voxel types must match (same color/material)
+					 * 2. If AO is enabled, AO environments must match
+					 *
+					 * If compatible, increment the forward merge counter.
+					 * Otherwise, remove from the merging set.
+					 */
 					if (voxels[get_axis_i(axis, right, forward, bit_pos)].isSame(
 							voxels[get_axis_i(axis, right, forward + 1, bit_pos)]) &&
 						(!ambientOcclusion ||
@@ -395,7 +569,16 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 					}
 				}
 
-				// Process faces that have stopped merging forward
+				/**
+				 * Process faces that have stopped merging forward.
+				 *
+				 * These are faces that either:
+				 * 1. Reached the end of a compatible run
+				 * 2. Were never able to merge forward
+				 *
+				 * For each of these, we try to continue merging rightward,
+				 * or generate the final quad geometry.
+				 */
 				uint64_t bits_stopped_forward = bits_here & ~bits_merging_forward;
 				while (bits_stopped_forward) {
 #ifdef _MSC_VER
@@ -408,7 +591,15 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 
 					const voxel::Voxel &type = voxels[get_axis_i(axis, right, forward, bit_pos)];
 
-					// Try to continue merging rightward
+					/**
+					 * Try to continue merging rightward.
+					 *
+					 * Conditions for rightward merge:
+					 * 1. The right neighbor has a visible face at this position
+					 * 2. Forward merge counts match (same quad shape)
+					 * 3. Voxel types match
+					 * 4. AO environments match (if enabled)
+					 */
 					if ((bits_merging_right & (1ULL << bit_pos)) != 0 &&
 						(merged_forward[(right * CS_P) + bit_pos] == merged_forward[(right + 1) * CS_P + bit_pos]) &&
 						(type.isSame(voxels[get_axis_i(axis, right + 1, forward, bit_pos)])) &&
@@ -422,14 +613,30 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 
 					bits_walking_right &= ~(1ULL << bit_pos);
 
-					// Calculate final quad dimensions
+					/**
+					 * Generate final quad geometry.
+					 *
+					 * Calculate quad dimensions from merge counters:
+					 * - Width: (right - mesh_left) = merged_right[bit_pos] + 1
+					 * - Height: (forward - mesh_front) = merged_forward + 1
+					 */
 					const uint8_t mesh_left = right - merged_right[bit_pos];
 					const uint8_t mesh_right = right + 1;
 					const uint8_t mesh_front = forward - merged_forward[rightxCS_P + bit_pos];
 					const uint8_t mesh_back = forward + 1;
 					const uint8_t mesh_up = bit_pos + (face % 2 == 0 ? 1 : 0);
 
-					// Calculate ambient occlusion for all four corners
+					/**
+					 * Calculate ambient occlusion for all four corners of the quad.
+					 *
+					 * AO is sampled from the voxel layer on the "air" side of the face
+					 * (bit_pos + air_dir). For each corner, we check:
+					 * - Two adjacent cardinal neighbors (ao_L, ao_R, ao_F, ao_B)
+					 * - One diagonal neighbor (only if both adjacent are empty)
+					 *
+					 * The corner neighbors (ao_LFC, ao_RBC, etc.) are only checked
+					 * when both adjacent sides are empty, as per the vertexAO formula.
+					 */
 					uint8_t ao_LB = 3, ao_RB = 3, ao_RF = 3, ao_LF = 3;
 					if (ambientOcclusion) {
 						const int c = bit_pos + air_dir;
@@ -441,6 +648,7 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 						const uint8_t ao_R = solid_check<MeshType>(voxels[get_axis_i(axis, right + 1, forward, c)]);
 
 						// Sample diagonal corners (only if both adjacent sides are empty)
+						// This optimization prevents unnecessary lookups and matches the AO formula
 						uint8_t ao_LFC = !ao_L && !ao_F &&
 										 solid_check<MeshType>(voxels[get_axis_i(axis, right - 1, forward - 1, c)]);
 						uint8_t ao_LBC = !ao_L && !ao_B &&
@@ -457,11 +665,22 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 						ao_LF = vertexAO(ao_L, ao_F, ao_LFC);
 					}
 
-					// Reset merge counters
+					// Reset merge counters for next iteration
 					merged_forward[rightxCS_P + bit_pos] = 0;
 					merged_right[bit_pos] = 0;
 
-					// Create vertices with correct orientation based on face direction
+					/**
+					 * Create vertices with correct orientation based on face direction.
+					 *
+					 * Each face direction requires different vertex coordinate mappings
+					 * to ensure consistent winding order for proper backface culling.
+					 *
+					 * The vertex positions are rotated based on the face to map the
+					 * local (left, up, front) coordinates to world (x, y, z).
+					 *
+					 * Face pairs (0/1, 2/3, 4/5) share an axis but have opposite
+					 * vertex orderings to flip the face normal direction.
+					 */
 					uint32_t v1, v2, v3, v4;
 					if (face == 0) {
 						v1 = get_vertex(mesh, mesh_left, mesh_up, mesh_back, type, face, ao_LB, translate);
@@ -495,7 +714,13 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 						v4 = get_vertex(mesh, mesh_back, mesh_right, mesh_up, type, face, ao_RB, translate);
 					}
 
-					// Insert quad with optimal triangulation to avoid AO artifacts
+					/**
+					 * Insert the final quad with AO-aware triangulation.
+					 *
+					 * The diagonal split is chosen to produce smoother AO interpolation.
+					 * If ao_LB + ao_RF > ao_RB + ao_LF, we flip the triangulation
+					 * to split along the other diagonal.
+					 */
 					insert_quad(mesh, v1, v2, v3, v4, ao_LB + ao_RF > ao_RB + ao_LF);
 				}
 			}
@@ -526,8 +751,16 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	const glm::ivec3 &offset = region.getLowerCorner();
 	result->setOffset(offset);
 
-	// Prepare voxel data with 1-voxel border padding for neighbor access
-	// TODO: use the RawVolumeView
+	/**
+	 * Prepare voxel data with 1-voxel border padding for neighbor access.
+	 *
+	 * The padding is required for:
+	 * 1. Face visibility testing at chunk boundaries
+	 * 2. Ambient occlusion calculation (needs to sample neighbors)
+	 *
+	 * The chunkPos is offset by -1 to include the border padding from
+	 * neighboring chunks in the negative direction.
+	 */
 	BinaryMesherInput voxels;
 	const glm::ivec3 chunkPos = offset - 1;
 	prepareChunk(*volData, voxels, chunkPos);
