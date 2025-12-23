@@ -619,4 +619,15 @@ bool Camera::isVisible(const math::AABB<float>& aabb) const {
 	return isVisible(aabb.getLowerCorner(), aabb.getUpperCorner());
 }
 
+bool Camera::operator==(const Camera &other) const {
+	return _type == other._type && _mode == other._mode && _rotationType == other._rotationType &&
+		   _windowSize == other._windowSize && glm::epsilonEqual(_distance, other._distance, 0.0001f) &&
+		   glm::epsilonEqual(_fieldOfView, other._fieldOfView, 0.0001f) &&
+		   glm::epsilonEqual(_orthoZoom, other._orthoZoom, 0.0001f) &&
+		   glm::all(glm::epsilonEqual(_worldPos, other._worldPos, 0.0001f)) &&
+		   glm::all(glm::epsilonEqual(_target, other._target, 0.0001f)) &&
+		   glm::all(glm::epsilonEqual(_panOffset, other._panOffset, 0.0001f)) &&
+		   glm::all(glm::epsilonEqual(_quat, other._quat, 0.0001f));
+}
+
 }

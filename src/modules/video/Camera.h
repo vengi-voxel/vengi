@@ -292,6 +292,11 @@ public:
 	bool isVisible(const glm::vec3& mins, const glm::vec3& maxs) const;
 	math::AABB<float> aabb() const;
 	glm::vec4 sphereBoundingBox() const;
+
+	bool operator==(const Camera& other) const;
+	inline bool operator!=(const Camera& other) const {
+		return !(*this == other);
+	}
 };
 
 inline glm::vec3 Camera::eye() const {
