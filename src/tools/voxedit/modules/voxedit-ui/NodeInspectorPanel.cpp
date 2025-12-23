@@ -476,7 +476,7 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 
 		if (ImGui::BeginCombo(id.c_str(), scenegraph::SceneGraphNodeCamera::Modes[currentMode])) {
-			for (int n = 0; n < IM_ARRAYSIZE(scenegraph::SceneGraphNodeCamera::Modes); n++) {
+			for (int n = 0; n < lengthof(scenegraph::SceneGraphNodeCamera::Modes); n++) {
 				const bool isSelected = (currentMode == n);
 				if (ImGui::Selectable(scenegraph::SceneGraphNodeCamera::Modes[n], isSelected)) {
 					_sceneMgr->nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
