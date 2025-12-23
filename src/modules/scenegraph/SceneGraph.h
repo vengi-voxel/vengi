@@ -425,4 +425,8 @@ public:
 	}
 };
 
+inline int SceneGraph::activeNode() const {
+	return _activeNodeId;
+}
+
 } // namespace voxel

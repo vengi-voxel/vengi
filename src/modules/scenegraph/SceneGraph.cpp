@@ -252,10 +252,6 @@ FrameIndex SceneGraph::maxFrames() const {
 	return _cachedMaxFrame;
 }
 
-int SceneGraph::activeNode() const {
-	return _activeNodeId;
-}
-
 bool SceneGraph::setActiveNode(int nodeId) {
 	if (!hasNode(nodeId)) {
 		return false;
