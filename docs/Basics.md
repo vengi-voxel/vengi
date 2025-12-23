@@ -59,6 +59,7 @@ detail message line 2
 | app              | Basic application classes                                                  |
 | command          | Bind c++ functionality to console commands                                 |
 | commonlua        | Basic [lua](LUAScript.md) bindings and helper                              |
+| color            | Color conversions and helpers                                              |
 | core             | String, collections and other foundation classes                           |
 | http             | Http download module                                                       |
 | image            | Image loading and writing                                                  |
