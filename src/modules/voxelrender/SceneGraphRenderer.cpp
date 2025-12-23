@@ -347,7 +347,7 @@ void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) 
 			continue;
 		}
 		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
-		_cameras.emplace_back(node.id(), toCamera(size, sceneGraph, cameraNode, renderContext.frame), node.color());
+		_cameras.emplace_back(cameraNode.id(), toCamera(size, sceneGraph, cameraNode, renderContext.frame), cameraNode.color());
 	}
 }
 
