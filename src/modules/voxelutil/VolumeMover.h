@@ -12,14 +12,14 @@
 namespace voxelutil {
 
 template<class Volume1, class Volume2>
-int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets, const voxel::Voxel& skipVoxel = voxel::Voxel()) {
+int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets) {
 	core_trace_scoped(MoveVolume);
 	int cnt = 0;
 
 	const voxel::Region& destReg = destination->region();
 	const voxel::Region& sourceReg = source->region();
 
-	app::for_parallel(sourceReg.getLowerZ(), sourceReg.getUpperZ() + 1, [&destination, &source, &destReg, &sourceReg, &offsets, &skipVoxel, &cnt] (int start, int end) {
+	app::for_parallel(sourceReg.getLowerZ(), sourceReg.getUpperZ() + 1, [&destination, &source, &destReg, &sourceReg, &offsets, &cnt] (int start, int end) {
 		typename Volume1::Sampler destSampler(destination);
 		typename Volume2::Sampler sourceSampler(source);
 		for (int32_t z = start; z < end; ++z) {
@@ -30,7 +30,7 @@ int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& of
 				destSampler.setPosition(destReg.getLowerX() + offsets.x, y + offsets.y, destReg.getLowerZ() + offsets.z);
 				for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
 					const voxel::Voxel& voxel = sourceSampler.voxel();
-					if (voxel.isSame(skipVoxel)) {
+					if (voxel::isAir(voxel.getMaterial())) {
 						sourceSampler.movePositiveX();
 						destSampler.movePositiveX();
 						continue;
