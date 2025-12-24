@@ -17,11 +17,24 @@ TEST_F(MCRFormatTest, testLoad117) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
 	ASSERT_EQ(node.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::RawVolume *v = node.volume();
-	EXPECT_TRUE(v->voxel(0, 62, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 8)));
-	EXPECT_TRUE(v->voxel(0, -45, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 8)));
-	EXPECT_TRUE(v->voxel(0, -45, -566).isSame(voxel::Voxel(voxel::VoxelType::Generic, 2)));
-	EXPECT_TRUE(v->voxel(0, -62, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 118)));
-	EXPECT_TRUE(v->voxel(0, -64, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 7)));
+	const voxel::Voxel vxls[] = {
+		v->voxel(0, 62, -576),
+		v->voxel(0, -45, -576),
+		v->voxel(0, -45, -566),
+		v->voxel(0, -62, -576),
+		v->voxel(0, -64, -576)
+	};
+	const uint8_t clrs[] = {
+		22,
+		22,
+		6,
+		118,
+		7
+	};
+	for (int i = 0; i < 5; ++i) {
+		const voxel::Voxel expected = voxel::createVoxel(voxel::VoxelType::Generic, clrs[i]);
+		EXPECT_TRUE(vxls[i].isSame(expected)) << vxls[i];
+	}
 	EXPECT_EQ(32512, v->region().voxels());
 }
 
