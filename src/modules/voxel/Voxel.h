@@ -52,20 +52,6 @@ public:
 		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _boneIdx(boneIdx) {
 	}
 
-	/**
-	 * @brief Compares by the material type
-	 */
-	CORE_FORCE_INLINE bool operator==(const Voxel& rhs) const {
-		return _material == rhs._material;
-	}
-
-	/**
-	 * @brief Compares by the material type
-	 */
-	CORE_FORCE_INLINE bool operator!=(const Voxel& rhs) const {
-		return !(*this == rhs);
-	}
-
 	CORE_FORCE_INLINE bool isSame(const Voxel& other) const {
 		return _material == other._material && _colorIndex == other._colorIndex && _normalIndex == other._normalIndex;
 	}
