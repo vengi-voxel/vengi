@@ -125,12 +125,12 @@ private:
 };
 static_assert(sizeof(Voxel) == 4, "Voxel size is expected to be 4 bytes");
 
-CORE_NO_SANITIZE_ADDRESS constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = 0u, uint8_t flags = 0u, uint8_t boneIdx = 0u) {
+CORE_NO_SANITIZE_ADDRESS constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u, uint8_t boneIdx = 0u) {
 	return Voxel(type, colorIndex, normalIndex, flags, boneIdx);
 }
 
 voxel::Voxel createVoxelFromColor(const palette::Palette &pal, color::RGBA color);
-CORE_NO_SANITIZE_ADDRESS voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = 0u, uint8_t flags = 0u, uint8_t boneIdx = 0u);
+CORE_NO_SANITIZE_ADDRESS voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u, uint8_t boneIdx = 0u);
 
 CORE_FORCE_INLINE bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;
