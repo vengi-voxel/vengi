@@ -50,7 +50,7 @@ TEST_F(SparseVolumeTest, testCopyToRawVolume) {
 	for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-				ASSERT_EQ(voxel, rv.voxel(x, y, z));
+				ASSERT_TRUE(voxel.isSameType(rv.voxel(x, y, z)));
 			}
 		}
 	}

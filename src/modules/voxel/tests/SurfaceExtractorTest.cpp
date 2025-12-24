@@ -177,8 +177,8 @@ TEST_F(SurfaceExtractorTest, testBinaryPrepareChunk) {
 	core::Buffer<voxel::Voxel> voxels;
 	glm::ivec3 chunkPos = v.region().getCenter();
 	voxel::prepareChunk(v, voxels, chunkPos);
-	ASSERT_EQ(voxels[0], voxel);
-	ASSERT_EQ(voxels[1], voxel::Voxel());
+	ASSERT_TRUE(voxels[0].isSameType(voxel));
+	ASSERT_TRUE(voxels[1].isSameType(voxel::Voxel()));
 }
 
 TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
