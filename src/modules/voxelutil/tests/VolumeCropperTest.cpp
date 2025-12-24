@@ -19,7 +19,7 @@ TEST_F(VolumeCropperTest, testCropSmall) {
 	const voxel::Region& croppedRegion = croppedVolume->region();
 	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3(0)) << croppedRegion.toString();
 	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3(0)) << croppedRegion.toString();
-	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	EXPECT_TRUE(croppedVolume->voxel(croppedRegion.getLowerCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	delete croppedVolume;
 }
 
@@ -32,7 +32,7 @@ TEST_F(VolumeCropperTest, testCropBigger) {
 	const voxel::Region& croppedRegion = croppedVolume->region();
 	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getCenter()) << croppedRegion.toString();
 	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCenter()) << croppedRegion.toString();
-	EXPECT_EQ(croppedVolume->voxel(region.getCenter()), voxel::createVoxel(voxel::VoxelType::Generic, 1)) << *croppedVolume;
+	EXPECT_TRUE(croppedVolume->voxel(region.getCenter()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1))) << *croppedVolume;
 	delete croppedVolume;
 }
 
@@ -46,8 +46,8 @@ TEST_F(VolumeCropperTest, testCropBiggerMultiple) {
 	const voxel::Region& croppedRegion = croppedVolume->region();
 	EXPECT_EQ(croppedRegion.getUpperCorner(), region.getUpperCorner()) << croppedRegion.toString();
 	EXPECT_EQ(croppedRegion.getLowerCorner(), region.getCenter()) << croppedRegion.toString();
-	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getLowerCorner()), voxel::createVoxel(voxel::VoxelType::Generic, 1)) << *croppedVolume;
-	EXPECT_EQ(croppedVolume->voxel(croppedRegion.getUpperCorner()), voxel::createVoxel(voxel::VoxelType::Generic, 1)) << *croppedVolume;
+	EXPECT_TRUE(croppedVolume->voxel(croppedRegion.getLowerCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1))) << *croppedVolume;
+	EXPECT_TRUE(croppedVolume->voxel(croppedRegion.getUpperCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1))) << *croppedVolume;
 	delete croppedVolume;
 }
 

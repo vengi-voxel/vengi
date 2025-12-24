@@ -30,7 +30,7 @@ int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& of
 				destSampler.setPosition(destReg.getLowerX() + offsets.x, y + offsets.y, destReg.getLowerZ() + offsets.z);
 				for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
 					const voxel::Voxel& voxel = sourceSampler.voxel();
-					if (voxel == skipVoxel) {
+					if (voxel.isSame(skipVoxel)) {
 						sourceSampler.movePositiveX();
 						destSampler.movePositiveX();
 						continue;

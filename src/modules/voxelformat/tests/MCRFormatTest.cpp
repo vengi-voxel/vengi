@@ -17,11 +17,11 @@ TEST_F(MCRFormatTest, testLoad117) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
 	ASSERT_EQ(node.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::RawVolume *v = node.volume();
-	EXPECT_EQ(v->voxel(0, 62, -576), voxel::Voxel(voxel::VoxelType::Generic, 8));
-	EXPECT_EQ(v->voxel(0, -45, -576), voxel::Voxel(voxel::VoxelType::Generic, 8));
-	EXPECT_EQ(v->voxel(0, -45, -566), voxel::Voxel(voxel::VoxelType::Generic, 2));
-	EXPECT_EQ(v->voxel(0, -62, -576), voxel::Voxel(voxel::VoxelType::Generic, 118));
-	EXPECT_EQ(v->voxel(0, -64, -576), voxel::Voxel(voxel::VoxelType::Generic, 7));
+	EXPECT_TRUE(v->voxel(0, 62, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 8)));
+	EXPECT_TRUE(v->voxel(0, -45, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 8)));
+	EXPECT_TRUE(v->voxel(0, -45, -566).isSame(voxel::Voxel(voxel::VoxelType::Generic, 2)));
+	EXPECT_TRUE(v->voxel(0, -62, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 118)));
+	EXPECT_TRUE(v->voxel(0, -64, -576).isSame(voxel::Voxel(voxel::VoxelType::Generic, 7)));
 	EXPECT_EQ(32512, v->region().voxels());
 }
 

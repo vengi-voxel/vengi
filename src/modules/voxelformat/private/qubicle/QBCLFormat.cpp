@@ -189,7 +189,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 			for (int y = mins.y; y <= maxs.y; ++y) {
 				const voxel::Voxel &voxel = v->voxel(x, y, z);
 				color::RGBA newColor;
-				if (voxel == Empty) {
+				if (voxel.isSameType(Empty)) {
 					newColor = 0;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {

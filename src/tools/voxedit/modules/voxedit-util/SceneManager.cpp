@@ -3078,7 +3078,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 			_result.firstValidPosition = true;
 		}
 
-		if (sampler.voxel() != air) {
+		if (!sampler.voxel().isSameType(air)) {
 			_result.didHit = true;
 			_result.hitVoxel = sampler.position();
 			_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f).face;

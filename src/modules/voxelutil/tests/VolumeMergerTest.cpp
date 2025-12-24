@@ -35,9 +35,9 @@ TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 			for (int32_t x = lowerX; x <= upperX; ++x) {
 				const glm::ivec3 pos(x, y, z);
 				if (pos == mergedPos) {
-					EXPECT_EQ(bigVolume.voxel(pos), vox);
+					EXPECT_TRUE(bigVolume.voxel(pos).isSame(vox));
 				} else {
-					EXPECT_NE(bigVolume.voxel(pos), vox);
+					EXPECT_FALSE(bigVolume.voxel(pos).isSame(vox));
 				}
 			}
 		}
@@ -54,8 +54,8 @@ TEST_F(VolumeMergerTest, testOffsets) {
 	const voxel::Region srcRegion(regionBig.getCenter(), regionBig.getUpperCorner());
 	const voxel::Region& destRegion = smallVolume.region();
 	ASSERT_EQ(2, voxelutil::mergeVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
-	ASSERT_EQ(smallVolume.voxel(regionSmall.getLowerCorner()), voxel::createVoxel(voxel::VoxelType::Generic, 1)) << smallVolume << ", " << bigVolume;
-	ASSERT_EQ(smallVolume.voxel(regionSmall.getUpperCorner()), voxel::createVoxel(voxel::VoxelType::Generic, 1)) << smallVolume << ", " << bigVolume;
+	ASSERT_TRUE(smallVolume.voxel(regionSmall.getLowerCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1))) << smallVolume << ", " << bigVolume;
+	ASSERT_TRUE(smallVolume.voxel(regionSmall.getUpperCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1))) << smallVolume << ", " << bigVolume;
 }
 
 }

@@ -96,7 +96,7 @@ public:
 		}
 		constexpr voxel::Voxel Empty;
 		color::RGBA newColor;
-		if (voxel == Empty) {
+		if (voxel.isSameType(Empty)) {
 			newColor = 0u;
 			Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 		} else {
