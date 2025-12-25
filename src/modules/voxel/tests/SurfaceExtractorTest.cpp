@@ -4,6 +4,7 @@
 
 #include "voxel/SurfaceExtractor.h"
 #include "app/tests/AbstractTest.h"
+#include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
@@ -11,7 +12,7 @@
 #include "voxel/Voxel.h"
 
 namespace voxel {
-void prepareChunk(const RawVolume &map, core::Buffer<Voxel> &voxels, const glm::ivec3 &chunkPos);
+void prepareChunk(const RawVolume &map, core::DynamicArray<Voxel> &voxels, const glm::ivec3 &chunkPos);
 
 class SurfaceExtractorTest : public app::AbstractTest {
 protected:
@@ -174,7 +175,7 @@ TEST_F(SurfaceExtractorTest, testBinaryPrepareChunk) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 1);
 	v.setVoxel(region.getCenter(), voxel);
-	core::Buffer<voxel::Voxel> voxels;
+	core::DynamicArray<voxel::Voxel> voxels;
 	glm::ivec3 chunkPos = v.region().getCenter();
 	voxel::prepareChunk(v, voxels, chunkPos);
 	ASSERT_TRUE(voxels[0].isSameType(voxel));

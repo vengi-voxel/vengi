@@ -187,7 +187,7 @@ CORE_FORCE_INLINE int vertexAO(uint8_t side1, uint8_t side2, uint8_t corner) {
 	return (side1 && side2) ? 0 : (3 - (side1 + side2 + corner));
 }
 
-using BinaryMesherInput = core::Buffer<Voxel>;
+using BinaryMesherInput = core::DynamicArray<Voxel>;
 
 /**
  * @brief Checks if ambient occlusion values match between two positions

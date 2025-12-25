@@ -56,6 +56,27 @@ public:
 		return _material == other._material && _colorIndex == other._colorIndex && _normalIndex == other._normalIndex;
 	}
 
+	CORE_FORCE_INLINE Voxel(const Voxel& other) {
+		_material = other._material;
+		_flags = other._flags;
+		_colorIndex = other._colorIndex;
+		_normalIndex = other._normalIndex;
+		_boneIdx = other._boneIdx;
+	}
+
+	CORE_FORCE_INLINE constexpr Voxel &operator=(const Voxel &other) {
+		uint8_t nidx = other._normalIndex;
+		if (_normalIndex != NO_NORMAL) {
+			nidx = _normalIndex;
+		}
+		_material = other._material;
+		_flags = other._flags;
+		_colorIndex = other._colorIndex;
+		_normalIndex = nidx;
+		_boneIdx = other._boneIdx;
+		return *this;
+	}
+
 	/**
 	 * @brief Compares by the material type
 	 */

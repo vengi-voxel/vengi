@@ -3,6 +3,7 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
@@ -111,12 +112,12 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, Cubic)(benchmark::State &state) {
 }
 
 namespace voxel {
-void prepareChunk(const voxel::RawVolume &map, core::Buffer<voxel::Voxel> &voxels, const glm::ivec3 &chunkPos);
+void prepareChunk(const voxel::RawVolume &map, core::DynamicArray<voxel::Voxel> &voxels, const glm::ivec3 &chunkPos);
 }
 
 BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, BinaryPrepareChunk)(benchmark::State &state) {
 	for (auto _ : state) {
-		core::Buffer<voxel::Voxel> voxels;
+		core::DynamicArray<voxel::Voxel> voxels;
 		glm::ivec3 chunkPos = v.region().getLowerCorner() - 1;
 		voxel::prepareChunk(v, voxels, chunkPos);
 	}
