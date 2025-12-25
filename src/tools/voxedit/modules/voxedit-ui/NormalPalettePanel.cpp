@@ -4,16 +4,18 @@
 
 #include "NormalPalettePanel.h"
 #include "app/I18N.h"
+#include "color/Color.h"
 #include "command/CommandHandler.h"
+#include "core/Trace.h"
+#include "imgui.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "ui/dearimgui/imgui_internal.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxel/RawVolume.h"
-#include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
 
@@ -21,19 +23,25 @@ NormalPalettePanel::NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr 
 	: Super(app, "normalpalette"), _sceneMgr(sceneMgr) {
 }
 
-void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
+void NormalPalettePanel::init() {
+	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
+}
+
+void NormalPalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge,
+								  uint8_t paletteColorIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
 								  command::CommandExecutionListener &listener) {
+	core_trace_scoped(AddColor);
 	palette::NormalPalette &normalPalette = node.normalPalette();
 	const int maxPaletteEntries = normalPalette.size();
 	const float borderWidth = 1.0f;
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
 
-	ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
-	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
-	const ImVec2 v2(globalCursorPos.x + colorButtonSize, globalCursorPos.y + colorButtonSize);
+	const ImVec2 v1(cursorPos.x + borderWidth, cursorPos.y + borderWidth);
+	const ImVec2 v2(cursorPos.x + colorButtonSize, cursorPos.y + colorButtonSize);
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
+	color::RGBA color;
 	if (existingColor) {
-		const color::RGBA color = normalPalette.normal(paletteColorIdx);
+		color = normalPalette.normal(paletteColorIdx);
 		if (color.a != 255) {
 			color::RGBA own = color;
 			own.a = 127;
@@ -44,18 +52,39 @@ void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, f
 			drawList->AddRectFilled(v1, v2, color);
 		}
 	} else {
+		color = color::RGBA(0, 0, 0, 0);
 		drawList->AddRect(v1, v2, color::RGBA(0, 0, 0, 255));
 	}
-	ImGui::Dummy(ImVec2(colorButtonSize, colorButtonSize));
-	globalCursorPos.x += colorButtonSize;
-	const float availableX = ImGui::GetContentRegionAvail().x;
-	const float contentRegionWidth = availableX + ImGui::GetCursorPosX();
-	const float windowPosX = ImGui::GetWindowPos().x;
-	if (globalCursorPos.x > windowPosX + contentRegionWidth - colorButtonSize) {
-		globalCursorPos.x = startingPosX;
-		globalCursorPos.y += colorButtonSize;
+
+	const bool usableColor = color.a > 0;
+	const ImGuiID id = ImGui::GetID((int)paletteColorIdx);
+	const ImRect bb(cursorPos, ImVec2(cursorPos.x + colorButtonSize, cursorPos.y + colorButtonSize));
+
+	bool hovered = false;
+	bool held = false;
+	const bool isMouseHovering = bb.Contains(ImGui::GetMousePos());
+	const bool isActive = (id == ImGui::GetActiveID());
+
+	if (isMouseHovering || isActive) {
+		if (ImGui::ItemAdd(bb, id)) {
+			if (usableColor && ImGui::ButtonBehavior(bb, id, &hovered, &held)) {
+				_selectedIndex = paletteColorIdx;
+				_sceneMgr->modifier().setNormalColorIndex(paletteColorIdx);
+			}
+		}
 	}
-	ImGui::SetCursorScreenPos(globalCursorPos);
+
+	if (hovered) {
+		drawList->AddRect(v1, v2, ImGui::GetColorU32(color::Red()), 0.0f, 0, 2.0f);
+	} else if (_selectedIndex == paletteColorIdx) {
+		drawList->AddRect(v1, v2, ImGui::GetColorU32(color::Yellow()), 0.0f, 0, 2.0f);
+	}
+
+	cursorPos.x += colorButtonSize;
+	if (cursorPos.x > contentRegionRightEdge - colorButtonSize) {
+		cursorPos.x = startingPosX;
+		cursorPos.y += colorButtonSize;
+	}
 }
 
 void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
@@ -101,8 +130,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 					ImGui::EndCombo();
 				}
 				ImGui::Checkbox(_("Recalculate all normals"), &_recalcAll);
-				ImGui::SetItemTooltipUnformatted(
-					_("If the model already has normals and you want to replace them"));
+				ImGui::SetItemTooltipUnformatted(_("If the model already has normals and you want to replace them"));
 				ImGui::Checkbox(_("Model is hollow"), &_onlySurfaceVoxels);
 				ImGui::SetItemTooltipUnformatted(
 					_("Fill hollows to re-calculate the normals and\nhollow the model afterwards again.\n\n"
@@ -138,22 +166,27 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), contentRegionHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const core::String title = makeTitle(ICON_LC_PALETTE, _("Normals"), id);
+	_sceneMgr->modifier().setNormalPaint(_renderNormals->boolVal());
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
 		if (node.isModelNode()) {
 			paletteMenuBar(node, listener);
-			const ImVec2 &pos = ImGui::GetCursorScreenPos();
-			const palette::Palette &palette = node.palette();
+			ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+			const float startingPosX = cursorPos.x;
+			const float availableX = ImGui::GetContentRegionAvail().x;
+			const float contentRegionRightEdge = availableX + cursorPos.x;
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
 			const ImDrawListFlags backupFlags = drawList->Flags;
 			drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
 			const float frameHeight = ImGui::GetFrameHeight();
 
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
-				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
-				addColor(pos.x, paletteColorIdx, frameHeight, node, listener);
+				addColor(cursorPos, startingPosX, contentRegionRightEdge, (uint8_t)palettePanelIdx, frameHeight, node,
+						 listener);
 			}
 
 			drawList->Flags = backupFlags;
+
+			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
 		}
 	}
 

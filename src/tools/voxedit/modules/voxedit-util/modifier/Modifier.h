@@ -198,6 +198,10 @@ public:
 	const voxel::Voxel &hitCursorVoxel() const;
 	void setHitCursorVoxel(const voxel::Voxel &);
 	void setVoxelAtCursor(const voxel::Voxel &voxel);
+	void setNormalColorIndex(uint8_t paletteIndex);
+	uint8_t normalColorIndex() const;
+	void setNormalPaint(bool enableNormalPaint);
+	bool normalPaint() const;
 
 	voxel::FaceNames cursorFace() const;
 
@@ -206,6 +210,22 @@ public:
 
 	void reset();
 };
+
+inline void Modifier::setNormalPaint(bool enableNormalPaint) {
+	_brushContext.normalPaint = enableNormalPaint;
+}
+
+inline bool Modifier::normalPaint() const {
+	return _brushContext.normalPaint;
+}
+
+inline uint8_t Modifier::normalColorIndex() const {
+	return _brushContext.normalColorIndex;
+}
+
+inline void Modifier::setNormalColorIndex(uint8_t paletteIndex) {
+	_brushContext.normalColorIndex = paletteIndex;
+}
 
 inline math::Axis Modifier::lockedAxis() const {
 	return _brushContext.lockedAxis;

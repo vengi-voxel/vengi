@@ -4,9 +4,12 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "ui/Panel.h"
+#include "ui/dearimgui/imgui.h"
+#include "voxel/Voxel.h"
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -27,14 +30,17 @@ private:
 	SceneManagerPtr _sceneMgr;
 	bool _recalcAll = false;
 	bool _onlySurfaceVoxels = true;
+	int _selectedIndex = NO_NORMAL;
+	core::VarPtr _renderNormals;
 
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
-	void addColor(float startingPosX, uint8_t paletteColorIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
-				  command::CommandExecutionListener &listener);
+	void addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge, uint8_t paletteColorIdx,
+				  float colorButtonSize, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 
 public:
 	NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
 	virtual ~NormalPalettePanel() = default;
+	void init();
 	void update(const char *id, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
