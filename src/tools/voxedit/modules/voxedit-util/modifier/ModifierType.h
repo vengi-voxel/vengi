@@ -12,11 +12,12 @@ enum class ModifierType {
 	Paint = (1 << 0),
 	Place = (1 << 1),
 	Erase = (1 << 2),
+	NormalPaint = (1 << 3),
 	Override = (1 << 4),
 	Select = (1 << 5),
 
-	Mask = (Paint | Place | Erase | Override | Select),
-	ExistingVoxelMask = (Select | Paint | Erase | Override),
+	Mask = (Paint | NormalPaint | Place | Erase | Override | Select),
+	ExistingVoxelMask = (Paint | NormalPaint | Erase | Override | Select),
 
 	ColorPicker = (1 << 6)
 };

@@ -29,6 +29,7 @@ private:
 	bool _erase;
 	bool _override;
 	bool _paint;
+	bool _normalPaint;
 
 	// if we have a selection, we only handle voxels inside the selection
 	bool skip(const glm::aligned_ivec4 &pos) const {
@@ -52,7 +53,7 @@ public:
 			if (!_volume->_override) {
 				const voxel::Voxel existingVoxel = this->voxel();
 				const bool empty = voxel::isAir(existingVoxel.getMaterial());
-				if (_volume->_paint || _volume->_erase) {
+				if (_volume->_paint || _volume->_normalPaint || _volume->_erase) {
 					if (empty) {
 						return false;
 					}
@@ -65,9 +66,17 @@ public:
 				return false;
 			}
 			if (_volume->_erase) {
-				*_currentVoxel = {};
+				if (_volume->_normalPaint) {
+					_currentVoxel->setNormal(NO_NORMAL);
+				} else {
+					*_currentVoxel = {};
+				}
 			} else {
-				*_currentVoxel = voxel;
+				if (_volume->_normalPaint) {
+					_currentVoxel->setNormal(voxel.getNormal());
+				} else {
+					*_currentVoxel = voxel;
+				}
 			}
 			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
 			if (dirtyRegion.isValid()) {
@@ -84,6 +93,7 @@ public:
 		_erase = _modifierType == ModifierType::Erase;
 		_override = _modifierType == ModifierType::Override;
 		_paint = _modifierType == ModifierType::Paint;
+		_normalPaint = _modifierType == ModifierType::NormalPaint;
 	}
 
 	inline scenegraph::SceneGraphNode &node() const {
