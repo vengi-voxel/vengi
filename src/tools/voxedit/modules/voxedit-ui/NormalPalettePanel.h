@@ -31,11 +31,15 @@ private:
 	bool _recalcAll = false;
 	bool _onlySurfaceVoxels = true;
 	int _selectedIndex = NO_NORMAL;
+	const uint32_t _redColor;
+	const uint32_t _yellowColor;
+	const uint32_t _darkRedColor;
 	core::VarPtr _renderNormals;
 
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge, uint8_t paletteColorIdx,
 				  float colorButtonSize, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	uint8_t currentSceneNormal() const;
 
 public:
 	NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);

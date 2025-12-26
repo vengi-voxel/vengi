@@ -20,7 +20,9 @@
 namespace voxedit {
 
 NormalPalettePanel::NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)
-	: Super(app, "normalpalette"), _sceneMgr(sceneMgr) {
+	: Super(app, "normalpalette"), _sceneMgr(sceneMgr), _redColor(ImGui::GetColorU32(color::Red())),
+	  _yellowColor(ImGui::GetColorU32(color::Yellow())),
+	  _darkRedColor(ImGui::GetColorU32(color::DarkRed())) {
 }
 
 void NormalPalettePanel::init() {
@@ -75,9 +77,13 @@ void NormalPalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float c
 	}
 
 	if (hovered) {
-		drawList->AddRect(v1, v2, ImGui::GetColorU32(color::Red()), 0.0f, 0, 2.0f);
+		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);
+	} else if (paletteColorIdx == currentSceneNormal()) {
+		if (color.a > 0) {
+			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
+		}
 	} else if (_selectedIndex == paletteColorIdx) {
-		drawList->AddRect(v1, v2, ImGui::GetColorU32(color::Yellow()), 0.0f, 0, 2.0f);
+		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
 
 	cursorPos.x += colorButtonSize;
@@ -156,6 +162,10 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 	}
 }
 
+uint8_t NormalPalettePanel::currentSceneNormal() const {
+	return _sceneMgr->hitCursorVoxel().getNormal();
+}
+
 void NormalPalettePanel::update(const char *id, command::CommandExecutionListener &listener) {
 	core_trace_scoped(NormalPalettePanel);
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -169,6 +179,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 	_sceneMgr->modifier().setNormalPaint(_renderNormals->boolVal());
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
 		if (node.isModelNode()) {
+			_selectedIndex = _sceneMgr->modifier().normalColorIndex();
 			paletteMenuBar(node, listener);
 			ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 			const float startingPosX = cursorPos.x;
@@ -188,6 +199,11 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 
 			drawList->Flags = backupFlags;
 			ImGui::Dummy(ImVec2(0, frameHeight));
+
+			const int sceneHoveredPaletteNormalIdx = currentSceneNormal();
+			ImGui::Text(_("Normal index: %i (scene normal index %i)"), _selectedIndex,
+						sceneHoveredPaletteNormalIdx);
+
 
 			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
 		}
