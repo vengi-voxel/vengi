@@ -345,7 +345,7 @@ bool RawVolume::setVoxel(int idx, const Voxel &voxel) {
 	if (idx < 0 || idx >= _region.stride() * depth()) {
 		return false; // Index out of bounds
 	}
-	if (_data[idx].isSame(voxel)) {
+	if (_data[idx] == voxel) {
 		return false;
 	}
 	_data[idx] = voxel;
@@ -368,7 +368,7 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
 	const int index = localPos.x + localPos.y * width() + localPos.z * _region.stride();
-	if (_data[index].isSame(voxel)) {
+	if (_data[index] == voxel) {
 		return false;
 	}
 	_data[index] = voxel;

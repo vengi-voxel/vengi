@@ -53,6 +53,11 @@ public:
 		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _boneIdx(boneIdx) {
 	}
 
+	CORE_FORCE_INLINE constexpr bool operator==(const Voxel& other) const {
+		return _material == other._material && _colorIndex == other._colorIndex &&
+			   _normalIndex == other._normalIndex && _flags == other._flags && _boneIdx == other._boneIdx;
+	}
+
 	CORE_FORCE_INLINE bool isSame(const Voxel& other) const {
 		return _material == other._material && _colorIndex == other._colorIndex;
 	}
