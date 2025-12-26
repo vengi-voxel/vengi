@@ -296,7 +296,7 @@ inline ModifierType Modifier::modifierType() const {
 }
 
 inline bool Modifier::isMode(ModifierType modifierType) const {
-	return (_brushContext.modifierType & modifierType) == modifierType;
+	return (_brushContext.modifierType & modifierType) != ModifierType::None;
 }
 
 inline bool Modifier::aborted() const {
