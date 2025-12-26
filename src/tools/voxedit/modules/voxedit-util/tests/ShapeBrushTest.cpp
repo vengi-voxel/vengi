@@ -47,7 +47,7 @@ protected:
 		brush.execute(sceneGraph, wrapper, brushContext);
 		const voxel::Region dirtyRegion = wrapper.dirtyRegion();
 		EXPECT_TRUE(dirtyRegion.isValid());
-		EXPECT_FALSE(voxel::Voxel().isSame(brushContext.cursorVoxel));
+		EXPECT_FALSE(voxel::isAir(brushContext.cursorVoxel.getMaterial()));
 		EXPECT_TRUE(brushContext.cursorVoxel.isSame(volume.voxel(regMins)));
 		EXPECT_EQ(dirtyRegion.getLowerCorner(), expectedMins);
 		EXPECT_EQ(dirtyRegion.getUpperCorner(), expectedMaxs);

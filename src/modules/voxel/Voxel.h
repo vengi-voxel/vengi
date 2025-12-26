@@ -71,14 +71,12 @@ public:
 	}
 
 	CORE_FORCE_INLINE constexpr Voxel &operator=(const Voxel &other) {
-		uint8_t nidx = other._normalIndex;
-		if (_normalIndex != NO_NORMAL) {
-			nidx = _normalIndex;
+		if (other._normalIndex != NO_NORMAL) {
+			_normalIndex = other._normalIndex;
 		}
 		_material = other._material;
 		_flags = other._flags;
 		_colorIndex = other._colorIndex;
-		_normalIndex = nidx;
 		_boneIdx = other._boneIdx;
 		return *this;
 	}

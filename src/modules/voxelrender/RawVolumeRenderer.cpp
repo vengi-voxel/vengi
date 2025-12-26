@@ -698,9 +698,9 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 	const palette::NormalPalette &normalsPalette = meshState->normalsPalette(bufferIndex);
 	if (normalsPalette.hash() != _normalsPaletteHash) {
 		_normalsPaletteHash = normalsPalette.hash();
-		_voxelShaderVertData.normals[NO_NORMAL] = glm::vec4(0.0f);
+		_voxelShaderVertData.normals[NO_NORMAL] = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 		normalsPalette.toVec4f(&_voxelShaderVertData.normals[NORMAL_OFFSET]);
-		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + 1);
+		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + NORMAL_OFFSET);
 	}
 }
 

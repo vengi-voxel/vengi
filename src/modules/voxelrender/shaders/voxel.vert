@@ -21,14 +21,13 @@ void main(void) {
 
 	int normalIndex = int(a_normalindex);
 	vec4 normal = u_normals[normalIndex];
-	if (normalIndex < 255) {
-		v_normal = normal.xyz;
+	v_normal = normal.xyz;
+	v_flags = 0u;
+
+	if (normalIndex > 0) { // NO_NORMAL
 		v_flags |= FLAGHASNORMALPALETTECOLOR;
-	} else {
-		v_normal = vec3(0.0, 0.0, 0.0);
 	}
 
-	v_flags = 0u;
 #if r_renderoutline == 0
 	if ((a_flags & FLAGOUTLINE) != 0u)
 #endif
