@@ -408,6 +408,9 @@ void RawVolume::clear() {
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {
+	if (!_region.isValid()) {
+		return;
+	}
 	const size_t size = _region.stride() * depth();
 	core_memset4((void *)_data, *(uint32_t*)&voxel, size);
 	static_assert(sizeof(Voxel) == 4);
