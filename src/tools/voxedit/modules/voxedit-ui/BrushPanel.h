@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "core/SharedPtr.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -29,6 +30,8 @@ private:
 	int _stampPaletteIndex = 0;
 	SceneManagerPtr _sceneMgr;
 	video::TexturePoolPtr _texturePool;
+	core::VarPtr _renderNormals;
+	core::VarPtr _viewMode;
 
 	void createPopups(command::CommandExecutionListener &listener);
 
@@ -48,6 +51,7 @@ private:
 	void updatePathBrushPanel(command::CommandExecutionListener &listener);
 	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextureBrushPanel(command::CommandExecutionListener &listener);
+	void updateNormalBrushPanel(command::CommandExecutionListener &listener);
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
@@ -60,6 +64,7 @@ public:
 	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)
 		: Super(app, "brush"), _sceneMgr(sceneMgr), _texturePool(texturePool) {
 	}
+	void init();
 	void update(const char *id, bool sceneMode, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;

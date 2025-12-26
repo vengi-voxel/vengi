@@ -223,6 +223,7 @@ bool MainWindow::init() {
 	_networkPanel.init();
 	_gameModePanel.init();
 	_normalPalettePanel.init();
+	_brushPanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,

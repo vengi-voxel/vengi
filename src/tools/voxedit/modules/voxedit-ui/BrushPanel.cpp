@@ -16,6 +16,7 @@
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "voxedit-ui/ViewMode.h"
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -39,8 +40,13 @@ static constexpr const char *BrushTypeIcons[] = {
 	ICON_LC_PIPETTE,	ICON_LC_BOXES,	   ICON_LC_GROUP,
 	ICON_LC_STAMP,		ICON_LC_PEN_LINE,  ICON_LC_FOOTPRINTS,
 	ICON_LC_PAINTBRUSH, ICON_LC_TEXT_WRAP, ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
-	ICON_LC_IMAGE};
+	ICON_LC_IMAGE,		ICON_LC_MOVE_UP_RIGHT};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
+
+void BrushPanel::init() {
+	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
+	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
+}
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
@@ -240,6 +246,17 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	if (ImGui::Checkbox(_("Unselect"), &remove)) {
 		brush.setRemove(remove);
 	}
+}
+
+void BrushPanel::updateNormalBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	NormalBrush &brush = modifier.normalBrush();
+	if (!_renderNormals->boolVal()) {
+		ImGui::TextWrappedUnformatted(_("Enable normal rendering to see your changes"));
+	}
+	// TODO: BRUSH: see https://github.com/vengi-voxel/vengi/issues/253
+	// TODO: BRUSH: brush.setPaintMode()
+	// TODO: BRUSH: show current normal
 }
 
 void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &listener) {
@@ -606,6 +623,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateSelectBrushPanel(listener);
 		} else if (brushType == BrushType::Texture) {
 			updateTextureBrushPanel(listener);
+		} else if (brushType == BrushType::Normal) {
+			updateNormalBrushPanel(listener);
 		}
 	}
 
@@ -620,9 +639,13 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 
 	voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
+	const bool normalPaletteMode = viewModeNormalPalette(_viewMode->intVal());
 
 	ui::Toolbar toolbarBrush("brushes", &listener);
 	for (int i = 0; i < (int)BrushType::Max; ++i) {
+		if (i == (int)BrushType::Normal && !normalPaletteMode) {
+			continue;
+		}
 		core::String cmd = core::String::format("brush%s", BrushTypeStr[i]).toLower();
 		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
 		core::String tooltip = command::help(cmd);

@@ -176,7 +176,6 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), contentRegionHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const core::String title = makeTitle(ICON_LC_PALETTE, _("Normals"), id);
-	_sceneMgr->modifier().setNormalPaint(_renderNormals->boolVal());
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
 		if (node.isModelNode()) {
 			_selectedIndex = _sceneMgr->modifier().normalColorIndex();

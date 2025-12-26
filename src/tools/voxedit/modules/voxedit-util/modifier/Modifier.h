@@ -23,6 +23,7 @@
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -75,6 +76,7 @@ protected:
 	TextBrush _textBrush;
 	SelectBrush _selectBrush;
 	TextureBrush _textureBrush;
+	NormalBrush _normalBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -164,6 +166,7 @@ public:
 	BrushContext &brushContext();
 	SelectBrush &selectBrush();
 	TextureBrush &textureBrush();
+	NormalBrush &normalBrush();
 	const BrushContext &brushContext() const;
 
 	/**
@@ -200,8 +203,6 @@ public:
 	void setVoxelAtCursor(const voxel::Voxel &voxel);
 	void setNormalColorIndex(uint8_t paletteIndex);
 	uint8_t normalColorIndex() const;
-	void setNormalPaint(bool enableNormalPaint);
-	bool normalPaint() const;
 
 	voxel::FaceNames cursorFace() const;
 
@@ -210,14 +211,6 @@ public:
 
 	void reset();
 };
-
-inline void Modifier::setNormalPaint(bool enableNormalPaint) {
-	_brushContext.normalPaint = enableNormalPaint;
-}
-
-inline bool Modifier::normalPaint() const {
-	return _brushContext.normalPaint;
-}
 
 inline uint8_t Modifier::normalColorIndex() const {
 	return _brushContext.normalColorIndex;
@@ -269,6 +262,10 @@ inline PathBrush &Modifier::pathBrush() {
 
 inline PaintBrush &Modifier::paintBrush() {
 	return _paintBrush;
+}
+
+inline NormalBrush &Modifier::normalBrush() {
+	return _normalBrush;
 }
 
 inline SelectBrush &Modifier::selectBrush() {

@@ -37,6 +37,7 @@ Modifier::Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionM
 	_brushes.push_back(&_textBrush);
 	_brushes.push_back(&_selectBrush);
 	_brushes.push_back(&_textureBrush);
+	_brushes.push_back(&_normalBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -262,8 +263,12 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	}
 
 	preExecuteBrush(volume);
+	const voxel::Voxel cursorVoxel = _brushContext.cursorVoxel;
+	if (_brushContext.modifierType == ModifierType::NormalPaint) {
+		_brushContext.cursorVoxel.setNormal(_brushContext.normalColorIndex);
+	}
 	executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
-
+	_brushContext.cursorVoxel = cursorVoxel; // set back the original voxel
 	return true;
 }
 
@@ -385,6 +390,9 @@ AABBBrush *Modifier::currentAABBBrush() {
 	if (_brushType == BrushType::Texture) {
 		return &_textureBrush;
 	}
+	if (_brushType == BrushType::Normal) {
+		return &_normalBrush;
+	}
 	return nullptr;
 }
 
@@ -403,6 +411,9 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 	}
 	if (_brushType == BrushType::Texture) {
 		return &_textureBrush;
+	}
+	if (_brushType == BrushType::Normal) {
+		return &_normalBrush;
 	}
 	return nullptr;
 }
