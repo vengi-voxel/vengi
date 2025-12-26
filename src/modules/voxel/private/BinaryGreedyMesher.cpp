@@ -281,6 +281,7 @@ CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t 
 	vertex.ambientOcclusion = ao;
 	vertex.colorIndex = voxel.getColor();
 	vertex.flags = voxel.getFlags();
+	vertex.normalIndex = voxel.getNormal();
 	vertex.padding = 0u; // Voxel::_unused
 	vertex.padding2 = 0u;
 	IndexType index = mesh.addVertex(vertex);

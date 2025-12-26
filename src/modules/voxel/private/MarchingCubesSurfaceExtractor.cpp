@@ -86,7 +86,7 @@ static void generateVertex(math::Axis axis, const palette::Palette &palette, Raw
 	surfaceVertex.position = sampler.position();
 	surfaceVertex.position[idx] += interpolate;
 	surfaceVertex.colorIndex = blendedVoxel.getColor();
-	surfaceVertex.normalIndex = 255;
+	surfaceVertex.normalIndex = NO_NORMAL;
 	surfaceVertex.padding2 = 0;
 	surfaceVertex.info = 0;
 	surfaceVertex.flags = blendedVoxel.getFlags();

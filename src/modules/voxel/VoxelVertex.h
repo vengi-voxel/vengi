@@ -26,7 +26,7 @@ struct VoxelVertex {
 		uint8_t info;
 	};
 	uint8_t colorIndex;
-	uint8_t normalIndex; // 255 means not set
+	uint8_t normalIndex; // NO_NORMAL means not set
 	uint8_t padding2;
 };
 static_assert(sizeof(VoxelVertex) == 16, "Unexpected size of the vertex struct");

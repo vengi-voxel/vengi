@@ -1067,6 +1067,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	}
 
 	_paletteHash = 0;
+	_normalsPaletteHash = 0;
 
 	// --- opaque pass
 	renderOpaque(meshState, camera);
