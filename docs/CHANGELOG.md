@@ -31,6 +31,7 @@ VoxEdit:
    - Improved the L-System editing support and added templates
    - Fixed potential memento state corruption
    - Added more features to the palette panel
+   - Fixed normal rendering with binary mesher
 
 Thumbnailer:
 
