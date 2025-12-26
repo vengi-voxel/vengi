@@ -33,7 +33,8 @@ enum class VoxelType : uint8_t {
 	Max
 };
 
-#define NO_NORMAL 255u
+#define NO_NORMAL 0
+#define NORMAL_OFFSET 1
 
 static constexpr const char* VoxelTypeStr[] = {
 	"Air",
@@ -88,6 +89,9 @@ public:
 		return _colorIndex;
 	}
 
+	/**
+	 * @param[in] normalIndex @c 0 means no normal
+	 */
 	CORE_FORCE_INLINE void setNormal(uint8_t normalIndex) {
 		_normalIndex = normalIndex;
 	}
@@ -131,7 +135,7 @@ private:
 	uint8_t _flags:1;
 	uint8_t _unused:5; // VoxelVertex::padding
 	uint8_t _colorIndex;
-	uint8_t _normalIndex; // 255 is not set
+	uint8_t _normalIndex; // 0 == no normal
 	uint8_t _boneIdx;
 };
 static_assert(sizeof(Voxel) == 4, "Voxel size is expected to be 4 bytes");

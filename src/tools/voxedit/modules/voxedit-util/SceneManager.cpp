@@ -186,6 +186,8 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 			int normalIdx = normalPalette.getClosestMatch(normal);
 			if (normalIdx == palette::PaletteNormalNotFound) {
 				normalIdx = NO_NORMAL;
+			} else {
+				normalIdx += NORMAL_OFFSET;
 			}
 			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalIdx, voxel.getFlags());
 			wrapper.setVoxel(x, y, z, newVoxel);

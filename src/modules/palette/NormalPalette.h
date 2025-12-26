@@ -12,7 +12,7 @@
 
 namespace palette {
 
-static const int NormalPaletteMaxNormals = 256;
+static const int NormalPaletteMaxNormals = 255;
 static const int PaletteNormalNotFound = -1;
 
 /**

@@ -33,6 +33,7 @@
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -697,8 +698,9 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 	const palette::NormalPalette &normalsPalette = meshState->normalsPalette(bufferIndex);
 	if (normalsPalette.hash() != _normalsPaletteHash) {
 		_normalsPaletteHash = normalsPalette.hash();
-		normalsPalette.toVec4f(_voxelShaderVertData.normals);
-		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals);
+		_voxelShaderVertData.normals[NO_NORMAL] = glm::vec4(0.0f);
+		normalsPalette.toVec4f(&_voxelShaderVertData.normals[NORMAL_OFFSET]);
+		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + 1);
 	}
 }
 
