@@ -33,6 +33,14 @@ void main(void) {
 #endif
 		v_flags |= FLAGOUTLINE;
 
+#if r_normals != 0
+	// Map the normal components back to [0, 1] range
+	float rf = (normal.x + 1.0f) / 2.0f;
+	float gf = (normal.y + 1.0f) / 2.0f;
+	float bf = (normal.z + 1.0f) / 2.0f;
+	materialColor = vec4(rf, gf, bf, materialColor.a);
+#endif
+
 	if (u_gray != 0) {
 		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;
 		v_color = vec4(gray, gray, gray, materialColor.a);

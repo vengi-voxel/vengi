@@ -26,12 +26,7 @@ vec4 calcColor(void) {
 	float ndotl = max(ndotl1, ndotl2);
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
 	float bias = max(0.0015 * (1.0 - ndotl), 0.00035);
-#if r_normals == 0
-	vec3 color3 = v_color.rgb;
-#else
-	vec3 color3 = v_normal;
-#endif
-	vec3 shadowColor = shadow(bias, normal, lightDir, color3, diffuse, u_ambient_color);
+	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
 	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion));
 	return vec4(color, v_color.a);
 }
