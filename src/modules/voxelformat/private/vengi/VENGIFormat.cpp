@@ -120,6 +120,8 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 				streamBuf.writeUInt8(voxel.getColor());
 			}
 			streamBuf.writeUInt8(voxel.getNormal());
+			// TODO: bone indices are not supported yet
+			// streamBuf.writeUInt8(voxel.getBoneIdx());
 		}
 	};
 	voxelutil::visitVolumeParallel(*v, func, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
