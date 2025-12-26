@@ -403,15 +403,14 @@ void RawVolume::initialise(const Region &regValidRegion) {
 }
 
 void RawVolume::clear() {
-	const size_t size = RawVolume::size(_region);
-	core_memset((void*)_data, 0, size);
+	Voxel voxel;
+	fill(voxel);
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {
 	const size_t size = _region.stride() * depth();
-	for (size_t i = 0; i < size; ++i) {
-		_data[i] = voxel;
-	}
+	core_memset4((void *)_data, *(uint32_t*)&voxel, size);
+	static_assert(sizeof(Voxel) == 4);
 }
 
 } // namespace voxel
