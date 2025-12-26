@@ -30,13 +30,13 @@ TEST_F(RawVolumeViewTest, testOperator) {
 	for (int x = viewRegion.getLowerX(); x <= viewRegion.getUpperX(); ++x) {
 		for (int y = viewRegion.getLowerY(); y <= viewRegion.getUpperY(); ++y) {
 			for (int z = viewRegion.getLowerZ(); z <= viewRegion.getUpperZ(); ++z) {
-				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Air, 0));
+				ASSERT_TRUE(v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Air, 0)));
 			}
 		}
 	}
 	const glm::ivec3 pos{viewRegion.getLowerX(), viewRegion.getUpperY() - 1, viewRegion.getLowerZ()};
 	const voxel::Voxel expectedVoxel = voxel::createVoxel(VoxelType::Generic, 1);
-	v.setVoxel(pos, expectedVoxel);
+	ASSERT_TRUE(v.setVoxel(pos, expectedVoxel));
 
 	RawVolumeView view(&v, viewRegion);
 
@@ -45,23 +45,24 @@ TEST_F(RawVolumeViewTest, testOperator) {
 	ASSERT_EQ(view.viewPosFromIndex(2), glm::ivec3(2, 0, 0));
 	ASSERT_EQ(view.viewPosFromIndex(3), glm::ivec3(3, 0, 0));
 
-	ASSERT_TRUE(view[0].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[1].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[2].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[3].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[5].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[6].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[7].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[8].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[9].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[10].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[11].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[12].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
+	ASSERT_TRUE(voxel::isAir(view[0].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[1].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[2].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[3].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[5].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[6].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[7].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[8].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[9].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[10].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[11].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[12].getMaterial()));
 
 	const glm::ivec3 expectedPos(0, 1, 0);
 	ASSERT_EQ(view.viewPosFromIndex(4), expectedPos);
 	ASSERT_EQ(viewRegion.getLowerCorner() + view.viewPosFromIndex(4), pos);
-	ASSERT_TRUE(v.voxel(viewRegion.getLowerCorner() + view.viewPosFromIndex(4)).isSame(expectedVoxel));
+	const voxel::Voxel& actualVoxel = v.voxel(viewRegion.getLowerCorner() + view.viewPosFromIndex(4));
+	ASSERT_TRUE(actualVoxel.isSame(expectedVoxel)) << actualVoxel << " vs " << expectedVoxel;
 	ASSERT_TRUE(view[4].isSame(expectedVoxel)) << "pos in volume: " << pos << ", pos in view: " << expectedPos;
 }
 
@@ -72,13 +73,13 @@ TEST_F(RawVolumeViewTest, testOperatorWithNegativeRegion) {
 	for (int x = viewRegion.getLowerX(); x <= viewRegion.getUpperX(); ++x) {
 		for (int y = viewRegion.getLowerY(); y <= viewRegion.getUpperY(); ++y) {
 			for (int z = viewRegion.getLowerZ(); z <= viewRegion.getUpperZ(); ++z) {
-				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Air, 0));
+				ASSERT_TRUE(v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Air, 0)));
 			}
 		}
 	}
 	const glm::ivec3 pos{viewRegion.getLowerX(), viewRegion.getUpperY() - 1, viewRegion.getLowerZ()};
 	const voxel::Voxel expectedVoxel = voxel::createVoxel(VoxelType::Generic, 1);
-	v.setVoxel(pos, expectedVoxel);
+	ASSERT_TRUE(v.setVoxel(pos, expectedVoxel));
 
 	RawVolumeView view(&v, viewRegion);
 
@@ -87,23 +88,24 @@ TEST_F(RawVolumeViewTest, testOperatorWithNegativeRegion) {
 	ASSERT_EQ(view.viewPosFromIndex(2), glm::ivec3(2, 0, 0));
 	ASSERT_EQ(view.viewPosFromIndex(3), glm::ivec3(3, 0, 0));
 
-	ASSERT_TRUE(view[0].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[1].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[2].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[3].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[5].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[6].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[7].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[8].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[9].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[10].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[11].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
-	ASSERT_TRUE(view[12].isSameType(voxel::createVoxel(VoxelType::Air, 0)));
+	ASSERT_TRUE(voxel::isAir(view[0].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[1].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[2].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[3].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[5].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[6].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[7].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[8].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[9].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[10].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[11].getMaterial()));
+	ASSERT_TRUE(voxel::isAir(view[12].getMaterial()));
 
 	const glm::ivec3 expectedPos(0, 1, 0);
 	ASSERT_EQ(view.viewPosFromIndex(4), expectedPos);
 	ASSERT_EQ(viewRegion.getLowerCorner() + view.viewPosFromIndex(4), pos);
-	ASSERT_TRUE(v.voxel(viewRegion.getLowerCorner() + view.viewPosFromIndex(4)).isSame(expectedVoxel));
+	const voxel::Voxel& actualVoxel = v.voxel(viewRegion.getLowerCorner() + view.viewPosFromIndex(4));
+	ASSERT_TRUE(actualVoxel.isSame(expectedVoxel)) << actualVoxel << " vs " << expectedVoxel;
 	ASSERT_TRUE(view[4].isSame(expectedVoxel)) << "pos in volume: " << pos << ", pos in view: " << expectedPos;
 }
 

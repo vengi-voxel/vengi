@@ -31,7 +31,8 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::Region &regio
 }
 
 inline ::std::ostream &operator<<(::std::ostream &os, const voxel::Voxel &voxel) {
-	return os << "voxel[" << voxel::VoxelTypeStr[(int)voxel.getMaterial()] << ", " << (int)voxel.getColor() << "]";
+	return os << "voxel[" << voxel::VoxelTypeStr[(int)voxel.getMaterial()] << ", " << (int)voxel.getColor() << ", "
+			  << (int)voxel.getNormal() << ", " << (int)voxel.getBoneIdx() << "]";
 }
 
 inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &volume) {
