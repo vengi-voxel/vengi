@@ -184,7 +184,10 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 						 listener);
 			}
 
+			ImGui::SetCursorScreenPos(cursorPos);
+
 			drawList->Flags = backupFlags;
+			ImGui::Dummy(ImVec2(0, frameHeight));
 
 			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
 		}
