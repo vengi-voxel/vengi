@@ -1085,7 +1085,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	if (_bloom->boolVal()) {
 		// If multisampling is enabled, resolve the multisampled framebuffer to regular textures first
 		if (renderContext.enableMultisampling) {
-			const glm::ivec2 fbDim = renderContext.frameBuffer.dimension();
+			const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();
 			// Resolve color attachments
 			video::blitFramebuffer(renderContext.frameBuffer.handle(), renderContext.resolveFrameBuffer.handle(),
 								 video::ClearFlag::Color, fbDim.x, fbDim.y);
