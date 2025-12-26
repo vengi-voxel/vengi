@@ -60,6 +60,10 @@ static inline void* debug_core_malloc(size_t size, const char* file, int line) {
 #define core_memset SDL_memset
 #endif
 
+#ifndef core_memset4
+#define core_memset4 SDL_memset4
+#endif
+
 #ifndef core_memcpy
 #define core_memcpy SDL_memcpy
 #endif
