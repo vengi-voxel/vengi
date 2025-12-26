@@ -420,8 +420,7 @@ void Modifier::abort() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return isMode(ModifierType::Select) || isMode(ModifierType::Paint) || isMode(ModifierType::Erase) ||
-		   isMode(ModifierType::Override);
+	return isMode(ModifierType::ExistingVoxelMask);
 }
 
 BrushType Modifier::setBrushType(BrushType type) {
