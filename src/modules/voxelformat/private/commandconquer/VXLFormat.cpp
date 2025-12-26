@@ -59,7 +59,7 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 	for (uint8_t i = 0; i < voxelCount; ++i) {
 		const voxel::Voxel &voxel = sampler.voxel();
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		wrapBool(stream.writeUInt8(voxel.getNormal() - NORMAL_OFFSET))
+		wrapBool(stream.writeUInt8(voxel.getNormal() == NO_NORMAL ? 0 : voxel.getNormal() - NORMAL_OFFSET))
 		sampler.movePositiveY();
 	}
 	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
