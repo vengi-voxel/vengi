@@ -88,6 +88,10 @@ public:
 		return _colorIndex;
 	}
 
+	CORE_FORCE_INLINE void setNormal(uint8_t normalIndex) {
+		_normalIndex = normalIndex;
+	}
+
 	CORE_FORCE_INLINE uint8_t getNormal() const {
 		return _normalIndex;
 	}
