@@ -859,6 +859,15 @@ int visitSurfaceVolume(const Volume &volume, Visitor &&visitor = Visitor(), Visi
 }
 
 /**
+ * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
+ * @sa visitInvisibleVolume()
+ */
+template<class Volume, class Visitor = EmptyVisitor>
+int visitSurfaceVolumeParallel(const Volume &volume, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::ZYX) {
+	return visitVolumeParallel(volume, visitor, VisitVisible(), order);
+}
+
+/**
  * @return The number of voxels visited.
  */
 template<class Volume, class Visitor = EmptyVisitor>
