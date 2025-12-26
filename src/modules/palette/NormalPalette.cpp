@@ -204,7 +204,7 @@ void NormalPalette::redAlert2() {
 }
 
 void NormalPalette::slab6() {
-	// NO_NORMAL isn't working here - this palette uses 256 entries
+	// this palette uses 256 entries - more than we support
 	loadNormalMap(priv::slab6normals, lengthof(priv::slab6normals));
 	_name = builtIn[2];
 }
