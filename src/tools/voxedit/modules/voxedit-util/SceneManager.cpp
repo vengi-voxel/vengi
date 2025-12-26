@@ -176,7 +176,7 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 			voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
 		}
 		const palette::NormalPalette &normalPalette = node->normalPalette();
-		voxelutil::visitSurfaceVolume(*node->volume(), [&] (int x, int y, int z, const voxel::Voxel &voxel) {
+		voxelutil::visitSurfaceVolumeParallel(*node->volume(), [&] (int x, int y, int z, const voxel::Voxel &voxel) {
 			if (!recalcAll && voxel.getNormal() != NO_NORMAL) {
 				return;
 			}
