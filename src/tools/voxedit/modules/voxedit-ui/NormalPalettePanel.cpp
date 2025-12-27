@@ -156,6 +156,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 				ImGui::EndMenu();
 			}
 			ImGui::TooltipTextUnformatted(_("Calculate normals for the model"));
+			ImGui::CommandMenuItem(_("Remove all normals"), "normpalette_removenormals", node.id(), &listener);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

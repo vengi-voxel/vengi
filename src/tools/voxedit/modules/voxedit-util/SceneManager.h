@@ -541,6 +541,7 @@ public:
 	bool nodeSetLocked(int nodeId, bool locked);
 	bool nodeActivate(int nodeId);
 	bool nodeUnreference(int nodeId);
+	bool nodeRemoveNormals(int nodeId);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)

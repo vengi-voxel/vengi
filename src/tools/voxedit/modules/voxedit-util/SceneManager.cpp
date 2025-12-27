@@ -1857,6 +1857,11 @@ void SceneManager::construct() {
 	}).setHelp(_("Change intensity by scaling the rgb values of the palette")).
 		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab", "original"}));
 
+	command::Command::registerCommand("normpalette_removenormals", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		nodeRemoveNormals(nodeId);
+	}).setHelp(_("Remove normal information from the palette"));
+
 	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
 	command::Command::registerActionButton("zoom_out", _zoomOut, "Zoom out");
 	command::Command::registerActionButton("camera_rotate", _rotate, "Rotate the camera");
@@ -3822,6 +3827,30 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &c
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "group");
 	_sceneGraph.foreachGroup(f);
+}
+
+bool SceneManager::nodeRemoveNormals(int nodeId) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		if (!node->isAnyModelNode()) {
+			return false;
+		}
+		voxel::RawVolume *v = _sceneGraph.resolveVolume(*node);
+		if (v == nullptr) {
+			return false;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		auto func = [&wrapper](int x, int y, int z, voxel::Voxel voxel) {
+			if (voxel.getNormal() == NO_NORMAL) {
+				return;
+			}
+			voxel.setNormal(NO_NORMAL);
+			wrapper.setVoxel(x, y, z, voxel);
+		};
+		voxelutil::visitVolumeParallel(wrapper, func);
+		modified(node->id(), wrapper.dirtyRegion());
+		return true;
+	}
+	return false;
 }
 
 bool SceneManager::nodeActivate(int nodeId) {
