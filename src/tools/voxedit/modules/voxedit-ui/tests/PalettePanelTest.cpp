@@ -47,6 +47,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		const color::RGBA slot0 = activePalette.color(0);
 		const color::RGBA slot1 = activePalette.color(1);
+		// TODO: these items don't exist anymore due to performance optimizations. Only that one item which is hovered is submitted. Everything else is just a drawlist draw command
+		// this means that this call doesn't work anymore
 		ctx->ItemDragAndDrop("$$0", "$$1");
 		ctx->Yield();
 		IM_CHECK_EQ(activePalette.color(0), slot1);
@@ -62,6 +64,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int index0 = activePalette.view().uiIndex(0);
 		const int index1 = activePalette.view().uiIndex(1);
 		ctx->KeyDown(ImGuiMod_Ctrl);
+		// TODO: these items don't exist anymore due to performance optimizations. Only that one item which is hovered is submitted. Everything else is just a drawlist draw command
+		// this means that this call doesn't work anymore
 		ctx->ItemDragAndDrop("$$0", "$$1");
 		ctx->KeyUp(ImGuiMod_Ctrl);
 		IM_CHECK_EQ(activePalette.color(0), slot0);
