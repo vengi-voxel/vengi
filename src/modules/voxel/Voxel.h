@@ -59,7 +59,8 @@ public:
 	}
 
 	CORE_FORCE_INLINE bool isSame(const Voxel& other) const {
-		return _material == other._material && _colorIndex == other._colorIndex;
+		return _material == other._material && _colorIndex == other._colorIndex &&
+			   _normalIndex == other._normalIndex;
 	}
 
 	CORE_FORCE_INLINE Voxel(const Voxel& other) {
