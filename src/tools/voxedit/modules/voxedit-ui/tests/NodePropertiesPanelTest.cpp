@@ -3,10 +3,6 @@
  */
 
  #include "../NodePropertiesPanel.h"
- #include "scenegraph/SceneGraphNode.h"
- #include "util/VarUtil.h"
- #include "voxedit-ui/Viewport.h"
- #include "voxedit-util/Config.h"
  #include "voxedit-util/SceneManager.h"
  #include "TestUtil.h"
 
