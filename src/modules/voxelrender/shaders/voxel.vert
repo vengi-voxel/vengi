@@ -24,22 +24,21 @@ void main(void) {
 	v_normal = normal.xyz;
 	v_flags = 0u;
 
-	if (normalIndex > 0) { // NO_NORMAL
-		v_flags |= FLAGHASNORMALPALETTECOLOR;
-	}
-
 #if r_renderoutline == 0
 	if ((a_flags & FLAGOUTLINE) != 0u)
 #endif
 		v_flags |= FLAGOUTLINE;
 
+	if (normalIndex > 0) { // NO_NORMAL
+		v_flags |= FLAGHASNORMALPALETTECOLOR;
 #if r_normals != 0
-	// Map the normal components back to [0, 1] range
-	float rf = (normal.x + 1.0f) / 2.0f;
-	float gf = (normal.y + 1.0f) / 2.0f;
-	float bf = (normal.z + 1.0f) / 2.0f;
-	materialColor = vec4(rf, gf, bf, materialColor.a);
+		// Map the normal components back to [0, 1] range
+		float rf = (normal.x + 1.0) / 2.0;
+		float gf = (normal.y + 1.0) / 2.0;
+		float bf = (normal.z + 1.0) / 2.0;
+		materialColor = vec4(rf, gf, bf, materialColor.a);
 #endif
+	}
 
 	if (u_gray != 0) {
 		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;

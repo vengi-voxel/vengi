@@ -777,7 +777,15 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 					voxelutil::visitSurfaceVolume(
 						*v, [this, &normalPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 							const glm::vec3 &center = centerPos(x, y, z);
-							const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
+							uint8_t normalIndex = voxel.getNormal();
+							if (normalIndex == NO_NORMAL) {
+								return;
+							}
+							normalIndex -= NORMAL_OFFSET;
+							if (normalIndex >= normalPalette.size()) {
+								return;
+							}
+							const glm::vec3 &norm = normalPalette.normal3f(normalIndex);
 							_shapeBuilder.line(center, center + norm * 3.0f);
 						});
 				} else {
