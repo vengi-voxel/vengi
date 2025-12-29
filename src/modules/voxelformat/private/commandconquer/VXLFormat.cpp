@@ -212,8 +212,10 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
 	// TODO: VOXELFORMAT: check pivot handling (https://github.com/vengi-voxel/vengi/issues/537)
-	const glm::vec3 mins = node.pivot() * glm::vec3(-size);
-	const vxl::VXLMatrix &vxlMatrix = vxl::convertVXLWrite(transform.localMatrix());
+	const glm::mat4 &localMatrix = transform.localMatrix();
+	const glm::vec3 scale(glm::length(localMatrix[0]), glm::length(localMatrix[1]), glm::length(localMatrix[2]));
+	const glm::vec3 mins = node.pivot() * glm::vec3(-size) * scale;
+	const vxl::VXLMatrix &vxlMatrix = vxl::convertVXLWrite(localMatrix);
 
 	// this is always the same and NOT the transform scale
 	// the transform scale is calculated by the bounding box when loading the model
@@ -226,16 +228,12 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(stream.writeFloat(val))
 	}
 
-	// TODO: VOXELFORMAT: apply the section scale to get the correct bounds here
-	//                    get the first frame and extract the local scale from the transform
-	//                    and apply it to the bounds given by the region to get the correct values
-	//                    maybe also the translation must be taken into account here
 	// swap y and z here
 	wrapBool(stream.writeFloat(mins.x))
 	wrapBool(stream.writeFloat(mins.z))
 	wrapBool(stream.writeFloat(mins.y))
 
-	const glm::vec3 maxs = mins + glm::vec3(size);
+	const glm::vec3 maxs = mins + glm::vec3(size) * scale;
 	wrapBool(stream.writeFloat(maxs.x))
 	wrapBool(stream.writeFloat(maxs.z))
 	wrapBool(stream.writeFloat(maxs.y))

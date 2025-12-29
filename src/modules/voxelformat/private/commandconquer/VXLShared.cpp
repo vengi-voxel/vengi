@@ -33,15 +33,22 @@ glm::mat4 convertVXLRead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &foote
 	// The per-section scale is applied here to the base matrix.
 	const glm::mat4 vengiMatrix = matrix.toVengi();
 	const glm::vec3 sectionScale = footer.calcScale();
-	const glm::vec3 offset = footer.offset();
+	// The offset is handled by the pivot
 	const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), sectionScale);
-	const glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), offset);
-	return translateMatrix * scaleMatrix * vengiMatrix;
+	return scaleMatrix * vengiMatrix;
 }
 
 vxl::VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix) {
 	vxl::VXLMatrix vxlMatrix;
 	glm::mat4 originalMatrix = vengiMatrix;
+	// Remove the scale from the matrix before converting to VXL
+	// We assume uniform scale for now
+	const glm::vec3 scale(glm::length(originalMatrix[0]), glm::length(originalMatrix[1]), glm::length(originalMatrix[2]));
+	if (scale.x > glm::epsilon<float>()) {
+		originalMatrix[0] /= scale.x;
+		originalMatrix[1] /= scale.y;
+		originalMatrix[2] /= scale.z;
+	}
 	vxlMatrix.fromVengi(originalMatrix);
 	Log::debug("ConvertWrite: vxl translation: %f %f %f", vxlMatrix.matrix[3].x, vxlMatrix.matrix[3].y,
 			   vxlMatrix.matrix[3].z);
@@ -51,6 +58,16 @@ vxl::VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix) {
 VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 	VXLMatrix vxlMatrix;
 	glm::mat4 originalMatrix = vengiMatrix;
+
+	// Remove the scale from the matrix before converting to HVA
+	// We assume uniform scale for now
+	const glm::vec3 scale(glm::length(originalMatrix[0]), glm::length(originalMatrix[1]), glm::length(originalMatrix[2]));
+	if (scale.x > glm::epsilon<float>()) {
+		originalMatrix[0] /= scale.x;
+		originalMatrix[1] /= scale.y;
+		originalMatrix[2] /= scale.z;
+	}
+
 	glm::vec4 &translation = originalMatrix[3];
 	translation.x /= vxl::Scale;
 	translation.y /= vxl::Scale;
@@ -70,7 +87,7 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 // The HVA transformation is applied as follows:
 // 1. The HVA matrix is converted from VXL to vengi coordinate system.
 // 2. The translation part of the resulting matrix is scaled by the global `footer.scale` (typically 1.0/12.0).
-// 3. The per-section scale and offset are already baked into the base VXL transform, so they are NOT applied here.
+// 3. The per-section scale is applied.
 //
 // See https://github.com/vengi-voxel/vengi/issues/537 and https://github.com/vengi-voxel/vengi/issues/636
 glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
@@ -85,13 +102,19 @@ glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &foote
 	glm::vec3 scaledTranslation = hvaTranslation * footer.scale;
 
 	// Rebuild matrix with original rotation + scaled translation
-	glm::mat4 result = glm::mat4(rotation);
-	result[3] = glm::vec4(scaledTranslation, 1.0f);
+	glm::mat4 hvaTransform = glm::mat4(rotation);
+	hvaTransform[3] = glm::vec4(scaledTranslation, 1.0f);
 
 	Log::debug("ConvertRead HVA: translation (leptons): %f %f %f -> scaled: %f %f %f",
 	           hvaTranslation.x, hvaTranslation.y, hvaTranslation.z,
 	           scaledTranslation.x, scaledTranslation.y, scaledTranslation.z);
-	return result;
+
+	// Apply section scale
+	// The offset is handled by the pivot
+	const glm::vec3 sectionScale = footer.calcScale();
+	const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), sectionScale);
+
+	return hvaTransform * scaleMatrix;
 }
 
 // y and z flipped to bring it into vengi space
