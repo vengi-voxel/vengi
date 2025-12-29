@@ -92,6 +92,9 @@ IMGUI_API void AxisStyleText(ui::ScopedStyle &style, math::Axis axis);
 
 IMGUI_API bool AxisCommandButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip,
 	float width, command::CommandExecutionListener *listener);
+IMGUI_API bool AxisButtonX(const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
+IMGUI_API bool AxisButtonY(const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
+IMGUI_API bool AxisButtonZ(const ImVec2& size_arg = ImVec2(0, 0), ImGuiButtonFlags flags = 0);
 IMGUI_API bool InputAxisInt(math::Axis axis, const char *name, int* value, int step = 1);
 IMGUI_API bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value);
 

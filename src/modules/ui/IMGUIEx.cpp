@@ -83,24 +83,6 @@ static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	}
 }
 
-bool AxisButtonX(const ImVec2& size_arg, ImGuiButtonFlags flags) {
-	ui::ScopedStyle style;
-	AxisStyleButton(style, math::Axis::X);
-	return ImGui::ButtonEx(_("X"), size_arg, flags);
-}
-
-bool AxisButtonY(const ImVec2& size_arg, ImGuiButtonFlags flags) {
-	ui::ScopedStyle style;
-	AxisStyleButton(style, math::Axis::Y);
-	return ImGui::ButtonEx(_("Y"), size_arg, flags);
-}
-
-bool AxisButtonZ(const ImVec2& size_arg, ImGuiButtonFlags flags) {
-	ui::ScopedStyle style;
-	AxisStyleButton(style, math::Axis::Z);
-	return ImGui::ButtonEx(_("Z"), size_arg, flags);
-}
-
 template<typename ValueType>
 static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const char *format, ImGuiInputTextFlags flags, ValueType step, ValueType step_fast) {
 	constexpr bool isFloat = std::is_same<ValueType, float>::value;
@@ -314,6 +296,24 @@ void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 	default:
 		break;
 	}
+}
+
+bool AxisButtonX(const ImVec2& size_arg, ImGuiButtonFlags flags) {
+	ui::ScopedStyle style;
+	_priv::AxisStyleButton(style, math::Axis::X);
+	return ImGui::ButtonEx(_("X"), size_arg, flags);
+}
+
+bool AxisButtonY(const ImVec2& size_arg, ImGuiButtonFlags flags) {
+	ui::ScopedStyle style;
+	_priv::AxisStyleButton(style, math::Axis::Y);
+	return ImGui::ButtonEx(_("Y"), size_arg, flags);
+}
+
+bool AxisButtonZ(const ImVec2& size_arg, ImGuiButtonFlags flags) {
+	ui::ScopedStyle style;
+	_priv::AxisStyleButton(style, math::Axis::Z);
+	return ImGui::ButtonEx(_("Z"), size_arg, flags);
 }
 
 bool AxisCommandButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip, float width,
