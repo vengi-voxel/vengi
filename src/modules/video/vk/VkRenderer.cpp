@@ -486,6 +486,10 @@ void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length,
 	return nullptr;
 }
 
+void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
+	return nullptr;
+}
+
 void unmapBuffer(Id handle, BufferType type) {
 }
 
