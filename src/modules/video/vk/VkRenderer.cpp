@@ -40,8 +40,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		const char *const *extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
 #else
 		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
-		const char **extensions = (const char **)core_malloc(sizeof(const char *) * extensionCount);
-		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensions);
+		char **extensions = (char **)core_malloc(sizeof(char *) * extensionCount);
+		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, (const char**)extensions);
 #endif
 
 		for (unsigned int i = 0; i < extensionCount; ++i) {
@@ -61,7 +61,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		vkCreateInstance(&createInfo, nullptr, &instance);
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 #else
-		core_free(names);
+		core_free((void*)extensions);
 #endif
 	}
 
@@ -480,6 +480,13 @@ void traceVideoEnd() {
 
 Face currentCullFace() {
 	return vkstate().cullFace;
+}
+
+void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {
+	return nullptr;
+}
+
+void unmapBuffer(Id handle, BufferType type) {
 }
 
 } // namespace video

@@ -8,7 +8,6 @@
 #include "core/StringUtil.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IMGUIApp.h"
-#include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelcollection/Downloader.h"

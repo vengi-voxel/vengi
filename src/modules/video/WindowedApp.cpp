@@ -27,6 +27,9 @@
 #include <SDL_hints.h>
 #include <SDL_mouse.h>
 #include <glm/common.hpp>
+#ifdef USE_VK_RENDERER
+#include <SDL_vulkan.h>
+#endif
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
@@ -123,6 +126,8 @@ bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 			int frameBufferWidth, frameBufferHeight;
 #ifdef USE_GL_RENDERER
 			SDL_GL_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
+#elif defined(USE_VK_RENDERER)
+			SDL_Vulkan_GetDrawableSize(_window, &frameBufferWidth, &frameBufferHeight);
 #else
 #error "renderer not supported"
 #endif

@@ -13,7 +13,6 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "video/Texture.h"
-#include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelui/DragAndDropPayload.h"
 

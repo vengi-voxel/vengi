@@ -6,7 +6,6 @@
 
 #include "math/Math.h"
 #include "video/Types.h"
-#include "video/gl/GLTypes.h"
 
 namespace video {
 
