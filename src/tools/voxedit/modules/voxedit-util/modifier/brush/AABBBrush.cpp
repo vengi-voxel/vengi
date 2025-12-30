@@ -233,7 +233,6 @@ void AABBBrush::setRadius(int radius) {
 }
 
 voxel::Region AABBBrush::calcRegion(const BrushContext &ctx) const {
-	// TODO: BRUSH: locked axis support
 	const glm::ivec3 &pos = currentCursorPosition(ctx);
 	if (!anySingleMode() && centerMode()) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, ctx.gridResolution);
