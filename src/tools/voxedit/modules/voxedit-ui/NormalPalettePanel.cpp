@@ -21,8 +21,7 @@ namespace voxedit {
 
 NormalPalettePanel::NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)
 	: Super(app, "normalpalette"), _sceneMgr(sceneMgr), _redColor(ImGui::GetColorU32(color::Red())),
-	  _yellowColor(ImGui::GetColorU32(color::Yellow())),
-	  _darkRedColor(ImGui::GetColorU32(color::DarkRed())) {
+	  _yellowColor(ImGui::GetColorU32(color::Yellow())), _darkRedColor(ImGui::GetColorU32(color::DarkRed())) {
 }
 
 void NormalPalettePanel::init() {
@@ -71,6 +70,7 @@ void NormalPalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float c
 		if (ImGui::ItemAdd(bb, id)) {
 			if (usableColor && ImGui::ButtonBehavior(bb, id, &hovered, &held)) {
 				_selectedIndex = paletteColorIdx;
+				_targetNormal = normalPalette.toVec3(color);
 				_sceneMgr->modifier().setNormalColorIndex(paletteColorIdx);
 			}
 		}
@@ -201,15 +201,61 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			ImGui::Dummy(ImVec2(0, frameHeight));
 
 			const int sceneHoveredPaletteNormalIdx = currentSceneNormal();
-			ImGui::Text(_("Normal index: %i (scene normal index %i)"), _selectedIndex,
-						sceneHoveredPaletteNormalIdx);
-
+			ImGui::Text(_("Normal index: %i (scene normal index %i)"), _selectedIndex, sceneHoveredPaletteNormalIdx);
 
 			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
+
+			if (ImGui::InputFloat3(_("Normal"), glm::value_ptr(_targetNormal))) {
+				setTargetNormal(node.normalPalette(), _targetNormal);
+			}
+			float longitude, latitude;
+			math::vectorToPolar(_targetNormal, longitude, latitude);
+			bool polarChanged = false;
+			polarChanged |= ImGui::SliderAngle(_("Longitude"), &longitude, -180, 179, "%.0f");
+			polarChanged |= ImGui::SliderAngle(_("Latitude"), &latitude, -90, 89, "%.0f");
+			if (polarChanged) {
+				setTargetNormal(node.normalPalette(), math::polarToVector(longitude, latitude));
+			}
+
+			ImGui::TextUnformatted(_("Flip"));
+			ImGui::PushID("##flipnormal");
+			if (ImGui::AxisButtonX()) {
+				setTargetNormal(node.normalPalette(), glm::vec3(-_targetNormal.x, _targetNormal.y, _targetNormal.z));
+			}
+			ImGui::SameLine();
+			if (ImGui::AxisButtonY()) {
+				setTargetNormal(node.normalPalette(), glm::vec3(_targetNormal.x, -_targetNormal.y, _targetNormal.z));
+			}
+			ImGui::SameLine();
+			if (ImGui::AxisButtonZ()) {
+				setTargetNormal(node.normalPalette(), glm::vec3(_targetNormal.x, _targetNormal.y, -_targetNormal.z));
+			}
+			ImGui::PopID();
+
+			ImGui::TextUnformatted(_("Rotate 90 deg"));
+			ImGui::PushID("##rotnormal");
+			if (ImGui::AxisButtonX()) {
+				setTargetNormal(node.normalPalette(), glm::vec3(_targetNormal.x, _targetNormal.z, -_targetNormal.y));
+			}
+			ImGui::SameLine();
+			if (ImGui::AxisButtonY()) {
+				setTargetNormal(node.normalPalette(), glm::vec3(_targetNormal.z, _targetNormal.y, -_targetNormal.x));
+			}
+			ImGui::SameLine();
+			if (ImGui::AxisButtonZ()) {
+				setTargetNormal(node.normalPalette(), glm::vec3(_targetNormal.y, -_targetNormal.x, _targetNormal.z));
+			}
+			ImGui::PopID();
 		}
 	}
 
 	ImGui::End();
+}
+
+void NormalPalettePanel::setTargetNormal(const palette::NormalPalette &normalPalette, const glm::vec3 &normal) {
+	_targetNormal = normal;
+	_selectedIndex = normalPalette.getClosestMatch(_targetNormal);
+	_sceneMgr->modifier().setNormalColorIndex(_selectedIndex);
 }
 
 } // namespace voxedit

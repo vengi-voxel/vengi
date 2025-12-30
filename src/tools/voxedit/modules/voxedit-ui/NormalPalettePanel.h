@@ -10,6 +10,7 @@
 #include "ui/Panel.h"
 #include "ui/dearimgui/imgui.h"
 #include "voxel/Voxel.h"
+#include <glm/vec3.hpp>
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -35,11 +36,13 @@ private:
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;
 	core::VarPtr _renderNormals;
+	glm::vec3 _targetNormal{0.0f, 1.0f, 0.0f};
 
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge, uint8_t paletteColorIdx,
 				  float colorButtonSize, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	uint8_t currentSceneNormal() const;
+	void setTargetNormal(const palette::NormalPalette &normalPalette, const glm::vec3 &normal);
 
 public:
 	NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
