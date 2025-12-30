@@ -10,6 +10,7 @@
 #include "ShaderTypes.h"
 #include "core/SharedPtr.h"
 #include "core/collection/DynamicSet.h"
+#include "video/RendererState.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -22,6 +23,8 @@ typedef core::SharedPtr<Image> ImagePtr;
 } // namespace image
 
 namespace video {
+
+RendererState &rendererState();
 
 class Texture;
 typedef core::SharedPtr<Texture> TexturePtr;

@@ -18,7 +18,6 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"
@@ -46,17 +45,21 @@ namespace video {
 
 #define SANITY_CHECKS_GL 0
 
-static inline _priv::GLState &glstate() {
+static inline _priv::GLState &glState() {
 	static _priv::GLState s;
 	return s;
 }
 
+RendererState &rendererState() {
+	return (RendererState &)glState();
+}
+
 static void validate(Id handle) {
 #ifdef DEBUG
-	if (!glstate().needValidation) {
+	if (!rendererState().needValidation) {
 		return;
 	}
-	glstate().needValidation = false;
+	rendererState().needValidation = false;
 	const GLuint lid = (GLuint)handle;
 	core_assert(glValidateProgram != nullptr);
 	glValidateProgram(lid);
@@ -138,116 +141,116 @@ void readBuffer(GBufferTextureType textureType) {
 
 float lineWidth(float width) {
 	// line width > 1.0 is deprecated in core profile context
-	if (glstate().glVersion.isAtLeast(3, 2)) {
-		return glstate().lineWidth;
+	if (glState().glVersion.isAtLeast(3, 2)) {
+		return rendererState().lineWidth;
 	}
 	video_trace_scoped(LineWidth);
-	if (glstate().smoothedLineWidth.x < 0.0f) {
+	if (rendererState().smoothedLineWidth.x < 0.0f) {
 #ifdef USE_OPENGLES
 		GLfloat buf[2];
 		core_assert(glGetFloatv != nullptr);
 		glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		glstate().smoothedLineWidth.x = buf[0];
-		glstate().smoothedLineWidth.y = buf[1];
+		rendererState().smoothedLineWidth.x = buf[0];
+		rendererState().smoothedLineWidth.y = buf[1];
 		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		glstate().aliasedLineWidth.x = buf[0];
-		glstate().aliasedLineWidth.y = buf[1];
+		rendererState().aliasedLineWidth.x = buf[0];
+		rendererState().aliasedLineWidth.y = buf[1];
 #else
 		GLdouble buf[2];
 		core_assert(glGetDoublev != nullptr);
 		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		glstate().smoothedLineWidth.x = (float)buf[0];
-		glstate().smoothedLineWidth.y = (float)buf[1];
+		rendererState().smoothedLineWidth.x = (float)buf[0];
+		rendererState().smoothedLineWidth.y = (float)buf[1];
 		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		glstate().aliasedLineWidth.x = (float)buf[0];
-		glstate().aliasedLineWidth.y = (float)buf[1];
+		rendererState().aliasedLineWidth.x = (float)buf[0];
+		rendererState().aliasedLineWidth.y = (float)buf[1];
 #endif
 		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
 	}
-	if (glm::abs(glstate().pendingLineWidth - width) < glm::epsilon<float>()) {
-		return glstate().pendingLineWidth;
+	if (glm::abs(rendererState().pendingLineWidth - width) < glm::epsilon<float>()) {
+		return rendererState().pendingLineWidth;
 	}
-	const float oldWidth = glstate().pendingLineWidth;
-	glstate().pendingLineWidth = width;
+	const float oldWidth = rendererState().pendingLineWidth;
+	rendererState().pendingLineWidth = width;
 	return oldWidth;
 }
 
 float currentLineWidth() {
-	return glstate().pendingLineWidth;
+	return rendererState().pendingLineWidth;
 }
 
 const glm::vec4 &currentClearColor() {
-	return glstate().pendingClearColor;
+	return rendererState().pendingClearColor;
 }
 
 bool clearColor(const glm::vec4 &clearColor) {
-	if (glstate().pendingClearColor == clearColor) {
+	if (rendererState().pendingClearColor == clearColor) {
 		return false;
 	}
-	glstate().pendingClearColor = clearColor;
+	rendererState().pendingClearColor = clearColor;
 	return true;
 }
 
 static void syncState() {
-	if (glstate().clearColor != glstate().pendingClearColor) {
-		glstate().clearColor = glstate().pendingClearColor;
+	if (rendererState().clearColor != rendererState().pendingClearColor) {
+		rendererState().clearColor = rendererState().pendingClearColor;
 		core_assert(glClearColor != nullptr);
-		glClearColor(glstate().clearColor.r, glstate().clearColor.g, glstate().clearColor.b, glstate().clearColor.a);
+		glClearColor(rendererState().clearColor.r, rendererState().clearColor.g, rendererState().clearColor.b, rendererState().clearColor.a);
 		checkError();
 	}
 
-	if (glstate().viewportX != glstate().pendingViewportX || glstate().viewportY != glstate().pendingViewportY ||
-		glstate().viewportW != glstate().pendingViewportW || glstate().viewportH != glstate().pendingViewportH) {
-		glstate().viewportX = glstate().pendingViewportX;
-		glstate().viewportY = glstate().pendingViewportY;
-		glstate().viewportW = glstate().pendingViewportW;
-		glstate().viewportH = glstate().pendingViewportH;
+	if (rendererState().viewportX != rendererState().pendingViewportX || rendererState().viewportY != rendererState().pendingViewportY ||
+		rendererState().viewportW != rendererState().pendingViewportW || rendererState().viewportH != rendererState().pendingViewportH) {
+		rendererState().viewportX = rendererState().pendingViewportX;
+		rendererState().viewportY = rendererState().pendingViewportY;
+		rendererState().viewportW = rendererState().pendingViewportW;
+		rendererState().viewportH = rendererState().pendingViewportH;
 		core_assert(glViewport != nullptr);
-		glViewport((GLint)glstate().viewportX, (GLint)glstate().viewportY, (GLsizei)glstate().viewportW, (GLsizei)glstate().viewportH);
+		glViewport((GLint)rendererState().viewportX, (GLint)rendererState().viewportY, (GLsizei)rendererState().viewportW, (GLsizei)rendererState().viewportH);
 		checkError();
 	}
 
-	if (glstate().colorMask[0] != glstate().pendingColorMask[0] ||
-		glstate().colorMask[1] != glstate().pendingColorMask[1] ||
-		glstate().colorMask[2] != glstate().pendingColorMask[2] ||
-		glstate().colorMask[3] != glstate().pendingColorMask[3]) {
+	if (rendererState().colorMask[0] != rendererState().pendingColorMask[0] ||
+		rendererState().colorMask[1] != rendererState().pendingColorMask[1] ||
+		rendererState().colorMask[2] != rendererState().pendingColorMask[2] ||
+		rendererState().colorMask[3] != rendererState().pendingColorMask[3]) {
 		core_assert(glColorMask != nullptr);
-		glColorMask((GLboolean)glstate().pendingColorMask[0], (GLboolean)glstate().pendingColorMask[1],
-					(GLboolean)glstate().pendingColorMask[2], (GLboolean)glstate().pendingColorMask[3]);
-		glstate().colorMask[0] = glstate().pendingColorMask[0];
-		glstate().colorMask[1] = glstate().pendingColorMask[1];
-		glstate().colorMask[2] = glstate().pendingColorMask[2];
-		glstate().colorMask[3] = glstate().pendingColorMask[3];
+		glColorMask((GLboolean)rendererState().pendingColorMask[0], (GLboolean)rendererState().pendingColorMask[1],
+					(GLboolean)rendererState().pendingColorMask[2], (GLboolean)rendererState().pendingColorMask[3]);
+		rendererState().colorMask[0] = rendererState().pendingColorMask[0];
+		rendererState().colorMask[1] = rendererState().pendingColorMask[1];
+		rendererState().colorMask[2] = rendererState().pendingColorMask[2];
+		rendererState().colorMask[3] = rendererState().pendingColorMask[3];
 		checkError();
 	}
 
-	if (glstate().scissorX != glstate().pendingScissorX || glstate().scissorY != glstate().pendingScissorY ||
-		glstate().scissorW != glstate().pendingScissorW || glstate().scissorH != glstate().pendingScissorH) {
-		glstate().scissorX = glstate().pendingScissorX;
-		glstate().scissorY = glstate().pendingScissorY;
-		glstate().scissorW = glstate().pendingScissorW;
-		glstate().scissorH = glstate().pendingScissorH;
+	if (rendererState().scissorX != rendererState().pendingScissorX || rendererState().scissorY != rendererState().pendingScissorY ||
+		rendererState().scissorW != rendererState().pendingScissorW || rendererState().scissorH != rendererState().pendingScissorH) {
+		rendererState().scissorX = rendererState().pendingScissorX;
+		rendererState().scissorY = rendererState().pendingScissorY;
+		rendererState().scissorW = rendererState().pendingScissorW;
+		rendererState().scissorH = rendererState().pendingScissorH;
 
 		GLint bottom;
-		if (glstate().clipOriginLowerLeft) {
-			bottom = glstate().viewportH - (glstate().scissorY + glstate().scissorH);
+		if (rendererState().clipOriginLowerLeft) {
+			bottom = rendererState().viewportH - (rendererState().scissorY + rendererState().scissorH);
 		} else {
-			bottom = glstate().scissorY;
+			bottom = rendererState().scissorY;
 		}
-		bottom = (GLint)glm::round(bottom * glstate().scaleFactor);
-		const GLint left = (GLint)glm::round(glstate().scissorX * glstate().scaleFactor);
-		const GLsizei width = (GLsizei)glm::round(glstate().scissorW * glstate().scaleFactor);
-		const GLsizei height = (GLsizei)glm::round(glstate().scissorH * glstate().scaleFactor);
+		bottom = (GLint)glm::round(bottom * rendererState().scaleFactor);
+		const GLint left = (GLint)glm::round(rendererState().scissorX * rendererState().scaleFactor);
+		const GLsizei width = (GLsizei)glm::round(rendererState().scissorW * rendererState().scaleFactor);
+		const GLsizei height = (GLsizei)glm::round(rendererState().scissorH * rendererState().scaleFactor);
 		core_assert(glScissor != nullptr);
 		glScissor(left, bottom, width, height);
 		checkError();
 	}
 
-	if (glstate().states != glstate().pendingStates) {
+	if (rendererState().states != rendererState().pendingStates) {
 		for (int i = 0; i < core::enumVal(State::Max); ++i) {
-			if (glstate().states[i] != glstate().pendingStates[i]) {
+			if (rendererState().states[i] != rendererState().pendingStates[i]) {
 				const State state = (State)i;
-				const bool enable = glstate().pendingStates[i];
+				const bool enable = rendererState().pendingStates[i];
 				if (state == State::DepthMask) {
 					core_assert(glDepthMask != nullptr);
 					glDepthMask(enable ? GL_TRUE : GL_FALSE);
@@ -262,92 +265,92 @@ static void syncState() {
 				}
 			}
 		}
-		glstate().states = glstate().pendingStates;
+		rendererState().states = rendererState().pendingStates;
 		checkError();
 	}
 
-	if (glstate().blendEquation != glstate().pendingBlendEquation) {
-		glstate().blendEquation = glstate().pendingBlendEquation;
-		const GLenum convertedFunc = _priv::BlendEquations[core::enumVal(glstate().blendEquation)];
+	if (rendererState().blendEquation != rendererState().pendingBlendEquation) {
+		rendererState().blendEquation = rendererState().pendingBlendEquation;
+		const GLenum convertedFunc = _priv::BlendEquations[core::enumVal(rendererState().blendEquation)];
 		core_assert(glBlendEquation != nullptr);
 		glBlendEquation(convertedFunc);
 		checkError();
 	}
 
-	if (glstate().blendSrcRGB != glstate().pendingBlendSrcRGB || glstate().blendDestRGB != glstate().pendingBlendDestRGB ||
-		glstate().blendSrcAlpha != glstate().pendingBlendSrcAlpha || glstate().blendDestAlpha != glstate().pendingBlendDestAlpha) {
-		glstate().blendSrcRGB = glstate().pendingBlendSrcRGB;
-		glstate().blendDestRGB = glstate().pendingBlendDestRGB;
-		glstate().blendSrcAlpha = glstate().pendingBlendSrcAlpha;
-		glstate().blendDestAlpha = glstate().pendingBlendDestAlpha;
+	if (rendererState().blendSrcRGB != rendererState().pendingBlendSrcRGB || rendererState().blendDestRGB != rendererState().pendingBlendDestRGB ||
+		rendererState().blendSrcAlpha != rendererState().pendingBlendSrcAlpha || rendererState().blendDestAlpha != rendererState().pendingBlendDestAlpha) {
+		rendererState().blendSrcRGB = rendererState().pendingBlendSrcRGB;
+		rendererState().blendDestRGB = rendererState().pendingBlendDestRGB;
+		rendererState().blendSrcAlpha = rendererState().pendingBlendSrcAlpha;
+		rendererState().blendDestAlpha = rendererState().pendingBlendDestAlpha;
 
-		if (glstate().blendSrcRGB == glstate().blendSrcAlpha && glstate().blendDestRGB == glstate().blendDestAlpha) {
-			const GLenum glSrc = _priv::BlendModes[core::enumVal(glstate().blendSrcRGB)];
-			const GLenum glDest = _priv::BlendModes[core::enumVal(glstate().blendDestRGB)];
+		if (rendererState().blendSrcRGB == rendererState().blendSrcAlpha && rendererState().blendDestRGB == rendererState().blendDestAlpha) {
+			const GLenum glSrc = _priv::BlendModes[core::enumVal(rendererState().blendSrcRGB)];
+			const GLenum glDest = _priv::BlendModes[core::enumVal(rendererState().blendDestRGB)];
 			core_assert(glBlendFunc != nullptr);
 			glBlendFunc(glSrc, glDest);
 		} else {
-			const GLenum glSrcRGB = _priv::BlendModes[core::enumVal(glstate().blendSrcRGB)];
-			const GLenum glDestRGB = _priv::BlendModes[core::enumVal(glstate().blendDestRGB)];
-			const GLenum glSrcAlpha = _priv::BlendModes[core::enumVal(glstate().blendSrcAlpha)];
-			const GLenum glDestAlpha = _priv::BlendModes[core::enumVal(glstate().blendDestAlpha)];
+			const GLenum glSrcRGB = _priv::BlendModes[core::enumVal(rendererState().blendSrcRGB)];
+			const GLenum glDestRGB = _priv::BlendModes[core::enumVal(rendererState().blendDestRGB)];
+			const GLenum glSrcAlpha = _priv::BlendModes[core::enumVal(rendererState().blendSrcAlpha)];
+			const GLenum glDestAlpha = _priv::BlendModes[core::enumVal(rendererState().blendDestAlpha)];
 			core_assert(glBlendFuncSeparate != nullptr);
 			glBlendFuncSeparate(glSrcRGB, glDestRGB, glSrcAlpha, glDestAlpha);
 		}
 		checkError();
 	}
 
-	if (glstate().cullFace != glstate().pendingCullFace) {
-		glstate().cullFace = glstate().pendingCullFace;
-		const GLenum glFace = _priv::Faces[core::enumVal(glstate().cullFace)];
+	if (rendererState().cullFace != rendererState().pendingCullFace) {
+		rendererState().cullFace = rendererState().pendingCullFace;
+		const GLenum glFace = _priv::Faces[core::enumVal(rendererState().cullFace)];
 		core_assert(glCullFace != nullptr);
 		glCullFace(glFace);
 		checkError();
 	}
 
-	if (glstate().depthFunc != glstate().pendingDepthFunc) {
-		glstate().depthFunc = glstate().pendingDepthFunc;
+	if (rendererState().depthFunc != rendererState().pendingDepthFunc) {
+		rendererState().depthFunc = rendererState().pendingDepthFunc;
 		core_assert(glDepthFunc != nullptr);
-		glDepthFunc(_priv::CompareFuncs[core::enumVal(glstate().depthFunc)]);
+		glDepthFunc(_priv::CompareFuncs[core::enumVal(rendererState().depthFunc)]);
 		checkError();
 	}
 
-	if (glstate().polygonModeFace != glstate().pendingPolygonModeFace || glstate().polygonMode != glstate().pendingPolygonMode) {
-		glstate().polygonModeFace = glstate().pendingPolygonModeFace;
-		glstate().polygonMode = glstate().pendingPolygonMode;
+	if (rendererState().polygonModeFace != rendererState().pendingPolygonModeFace || rendererState().polygonMode != rendererState().pendingPolygonMode) {
+		rendererState().polygonModeFace = rendererState().pendingPolygonModeFace;
+		rendererState().polygonMode = rendererState().pendingPolygonMode;
 #ifndef USE_OPENGLES
-		const GLenum glMode = _priv::PolygonModes[core::enumVal(glstate().polygonMode)];
-		const GLenum glFace = _priv::Faces[core::enumVal(glstate().polygonModeFace)];
+		const GLenum glMode = _priv::PolygonModes[core::enumVal(rendererState().polygonMode)];
+		const GLenum glFace = _priv::Faces[core::enumVal(rendererState().polygonModeFace)];
 		glPolygonMode(glFace, glMode);
 		checkError();
 #endif
 	}
 
-	if (glstate().polygonOffset != glstate().pendingPolygonOffset) {
-		glstate().polygonOffset = glstate().pendingPolygonOffset;
+	if (rendererState().polygonOffset != rendererState().pendingPolygonOffset) {
+		rendererState().polygonOffset = rendererState().pendingPolygonOffset;
 		core_assert(glPolygonOffset != nullptr);
-		glPolygonOffset(glstate().polygonOffset.x, glstate().polygonOffset.y);
+		glPolygonOffset(rendererState().polygonOffset.x, rendererState().polygonOffset.y);
 		checkError();
 	}
 
-	if (glstate().pointSize != glstate().pendingPointSize) {
-		glstate().pointSize = glstate().pendingPointSize;
+	if (rendererState().pointSize != rendererState().pendingPointSize) {
+		rendererState().pointSize = rendererState().pendingPointSize;
 		core_assert(glPointSize != nullptr);
-		glPointSize(glstate().pointSize);
+		glPointSize(rendererState().pointSize);
 		checkError();
 	}
 
-	if (glm::abs(glstate().lineWidth - glstate().pendingLineWidth) >= glm::epsilon<float>()) {
-		float width = glstate().pendingLineWidth;
-		if (glstate().states[core::enumVal(State::LineSmooth)]) {
-			width = glm::clamp(width, glstate().smoothedLineWidth.x, glstate().smoothedLineWidth.y);
+	if (glm::abs(rendererState().lineWidth - rendererState().pendingLineWidth) >= glm::epsilon<float>()) {
+		float width = rendererState().pendingLineWidth;
+		if (rendererState().states[core::enumVal(State::LineSmooth)]) {
+			width = glm::clamp(width, rendererState().smoothedLineWidth.x, rendererState().smoothedLineWidth.y);
 		} else {
-			width = glm::clamp(width, glstate().aliasedLineWidth.x, glstate().aliasedLineWidth.y);
+			width = glm::clamp(width, rendererState().aliasedLineWidth.x, rendererState().aliasedLineWidth.y);
 		}
 		core_assert(glLineWidth != nullptr);
 		glLineWidth((GLfloat)width);
 		checkError(false);
-		glstate().lineWidth = glstate().pendingLineWidth;
+		rendererState().lineWidth = rendererState().pendingLineWidth;
 	}
 }
 
@@ -383,28 +386,28 @@ void clear(ClearFlag flag) {
 }
 
 bool viewport(int x, int y, int w, int h) {
-	if (glstate().pendingViewportX == x && glstate().pendingViewportY == y && glstate().pendingViewportW == w && glstate().pendingViewportH == h) {
+	if (rendererState().pendingViewportX == x && rendererState().pendingViewportY == y && rendererState().pendingViewportW == w && rendererState().pendingViewportH == h) {
 		return false;
 	}
-	glstate().pendingViewportX = x;
-	glstate().pendingViewportY = y;
-	glstate().pendingViewportW = w;
-	glstate().pendingViewportH = h;
+	rendererState().pendingViewportX = x;
+	rendererState().pendingViewportY = y;
+	rendererState().pendingViewportW = w;
+	rendererState().pendingViewportH = h;
 	return true;
 }
 
 void getViewport(int &x, int &y, int &w, int &h) {
-	x = glstate().pendingViewportX;
-	y = glstate().pendingViewportY;
-	w = glstate().pendingViewportW;
-	h = glstate().pendingViewportH;
+	x = rendererState().pendingViewportX;
+	y = rendererState().pendingViewportY;
+	w = rendererState().pendingViewportW;
+	h = rendererState().pendingViewportH;
 }
 
 void getScissor(int &x, int &y, int &w, int &h) {
-	x = glstate().pendingScissorX;
-	y = glstate().pendingScissorY;
-	w = glstate().pendingScissorW;
-	h = glstate().pendingScissorH;
+	x = rendererState().pendingScissorX;
+	y = rendererState().pendingScissorY;
+	w = rendererState().pendingScissorW;
+	h = rendererState().pendingScissorH;
 }
 
 bool scissor(int x, int y, int w, int h) {
@@ -415,141 +418,141 @@ bool scissor(int x, int y, int w, int h) {
 		h = 0;
 	}
 
-	if (glstate().pendingScissorX == x && glstate().pendingScissorY == y && glstate().pendingScissorW == w && glstate().pendingScissorH == h) {
+	if (rendererState().pendingScissorX == x && rendererState().pendingScissorY == y && rendererState().pendingScissorW == w && rendererState().pendingScissorH == h) {
 		return false;
 	}
-	glstate().pendingScissorX = x;
-	glstate().pendingScissorY = y;
-	glstate().pendingScissorW = w;
-	glstate().pendingScissorH = h;
+	rendererState().pendingScissorX = x;
+	rendererState().pendingScissorY = y;
+	rendererState().pendingScissorW = w;
+	rendererState().pendingScissorH = h;
 	return true;
 }
 
 void colorMask(bool red, bool green, bool blue, bool alpha) {
-	glstate().pendingColorMask[0] = red;
-	glstate().pendingColorMask[1] = green;
-	glstate().pendingColorMask[2] = blue;
-	glstate().pendingColorMask[3] = alpha;
+	rendererState().pendingColorMask[0] = red;
+	rendererState().pendingColorMask[1] = green;
+	rendererState().pendingColorMask[2] = blue;
+	rendererState().pendingColorMask[3] = alpha;
 }
 
 bool enable(State state) {
 	const int stateIndex = core::enumVal(state);
-	if (glstate().pendingStates[stateIndex]) {
+	if (rendererState().pendingStates[stateIndex]) {
 		return true;
 	}
-	glstate().pendingStates.set(stateIndex, true);
+	rendererState().pendingStates.set(stateIndex, true);
 	return false;
 }
 
 bool disable(State state) {
 	const int stateIndex = core::enumVal(state);
-	if (!glstate().pendingStates[stateIndex]) {
+	if (!rendererState().pendingStates[stateIndex]) {
 		return false;
 	}
-	glstate().pendingStates.set(stateIndex, false);
+	rendererState().pendingStates.set(stateIndex, false);
 	return true;
 }
 
 bool currentState(State state) {
 	const int stateIndex = core::enumVal(state);
-	return glstate().pendingStates[stateIndex];
+	return rendererState().pendingStates[stateIndex];
 }
 
 bool cullFace(Face face) {
 	if (face == Face::Max) {
 		return false;
 	}
-	if (glstate().pendingCullFace == face) {
+	if (rendererState().pendingCullFace == face) {
 		return false;
 	}
-	glstate().pendingCullFace = face;
+	rendererState().pendingCullFace = face;
 	return true;
 }
 
 Face currentCullFace() {
-	return glstate().pendingCullFace;
+	return rendererState().pendingCullFace;
 }
 
 bool depthFunc(CompareFunc func) {
-	if (glstate().pendingDepthFunc == func) {
+	if (rendererState().pendingDepthFunc == func) {
 		return false;
 	}
-	glstate().pendingDepthFunc = func;
+	rendererState().pendingDepthFunc = func;
 	return true;
 }
 
 CompareFunc getDepthFunc() {
-	return glstate().pendingDepthFunc;
+	return rendererState().pendingDepthFunc;
 }
 
 bool blendEquation(BlendEquation func) {
-	if (glstate().pendingBlendEquation == func) {
+	if (rendererState().pendingBlendEquation == func) {
 		return false;
 	}
-	glstate().pendingBlendEquation = func;
+	rendererState().pendingBlendEquation = func;
 	return true;
 }
 
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
 	const int stateIndex = core::enumVal(State::Blend);
-	enabled = glstate().pendingStates[stateIndex];
-	src = glstate().pendingBlendSrcRGB;
-	dest = glstate().pendingBlendDestRGB;
-	func = glstate().pendingBlendEquation;
+	enabled = rendererState().pendingStates[stateIndex];
+	src = rendererState().pendingBlendSrcRGB;
+	dest = rendererState().pendingBlendDestRGB;
+	func = rendererState().pendingBlendEquation;
 }
 
 bool blendFunc(BlendMode src, BlendMode dest) {
-	if (glstate().pendingBlendSrcRGB == src && glstate().pendingBlendDestRGB == dest && glstate().pendingBlendSrcAlpha == src &&
-		glstate().pendingBlendDestAlpha == dest) {
+	if (rendererState().pendingBlendSrcRGB == src && rendererState().pendingBlendDestRGB == dest && rendererState().pendingBlendSrcAlpha == src &&
+		rendererState().pendingBlendDestAlpha == dest) {
 		return false;
 	}
-	glstate().pendingBlendSrcRGB = src;
-	glstate().pendingBlendDestRGB = dest;
-	glstate().pendingBlendSrcAlpha = src;
-	glstate().pendingBlendDestAlpha = dest;
+	rendererState().pendingBlendSrcRGB = src;
+	rendererState().pendingBlendDestRGB = dest;
+	rendererState().pendingBlendSrcAlpha = src;
+	rendererState().pendingBlendDestAlpha = dest;
 	return true;
 }
 
 bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha) {
-	if (glstate().pendingBlendSrcRGB == srcRGB && glstate().pendingBlendDestRGB == destRGB && glstate().pendingBlendSrcAlpha == srcAlpha &&
-		glstate().pendingBlendDestAlpha == destAlpha) {
+	if (rendererState().pendingBlendSrcRGB == srcRGB && rendererState().pendingBlendDestRGB == destRGB && rendererState().pendingBlendSrcAlpha == srcAlpha &&
+		rendererState().pendingBlendDestAlpha == destAlpha) {
 		return false;
 	}
-	glstate().pendingBlendSrcRGB = srcRGB;
-	glstate().pendingBlendDestRGB = destRGB;
-	glstate().pendingBlendSrcAlpha = srcAlpha;
-	glstate().pendingBlendDestAlpha = destAlpha;
+	rendererState().pendingBlendSrcRGB = srcRGB;
+	rendererState().pendingBlendDestRGB = destRGB;
+	rendererState().pendingBlendSrcAlpha = srcAlpha;
+	rendererState().pendingBlendDestAlpha = destAlpha;
 	return true;
 }
 
 PolygonMode polygonMode(Face face, PolygonMode mode) {
-	if (glstate().pendingPolygonModeFace == face && glstate().pendingPolygonMode == mode) {
-		return glstate().pendingPolygonMode;
+	if (rendererState().pendingPolygonModeFace == face && rendererState().pendingPolygonMode == mode) {
+		return rendererState().pendingPolygonMode;
 	}
-	glstate().pendingPolygonModeFace = face;
-	const PolygonMode old = glstate().pendingPolygonMode;
-	glstate().pendingPolygonMode = mode;
+	rendererState().pendingPolygonModeFace = face;
+	const PolygonMode old = rendererState().pendingPolygonMode;
+	rendererState().pendingPolygonMode = mode;
 	return old;
 }
 
 bool polygonOffset(const glm::vec2 &offset) {
-	if (glstate().pendingPolygonOffset == offset) {
+	if (rendererState().pendingPolygonOffset == offset) {
 		return false;
 	}
-	glstate().pendingPolygonOffset = offset;
+	rendererState().pendingPolygonOffset = offset;
 	return true;
 }
 
 bool pointSize(float size) {
-	if (glstate().pendingPointSize == size) {
+	if (rendererState().pendingPointSize == size) {
 		return false;
 	}
-	glstate().pendingPointSize = size;
+	rendererState().pendingPointSize = size;
 	return true;
 }
 
 static bool activateTextureUnit(TextureUnit unit) {
-	if (glstate().textureUnit == unit) {
+	if (rendererState().textureUnit == unit) {
 		return false;
 	}
 	core_assert(TextureUnit::Max != unit);
@@ -557,7 +560,7 @@ static bool activateTextureUnit(TextureUnit unit) {
 	core_assert(glActiveTexture != nullptr);
 	glActiveTexture(glUnit);
 	checkError();
-	glstate().textureUnit = unit;
+	rendererState().textureUnit = unit;
 	return true;
 }
 
@@ -565,15 +568,15 @@ Id currentTexture(TextureUnit unit) {
 	if (TextureUnit::Max == unit) {
 		return InvalidId;
 	}
-	return glstate().textureHandle[core::enumVal(unit)];
+	return rendererState().textureHandle[core::enumVal(unit)];
 }
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	core_assert(TextureUnit::Max != unit);
 	core_assert(TextureType::Max != type);
 	if (useFeature(Feature::DirectStateAccess)) {
-		if (glstate().textureHandle[core::enumVal(unit)] != handle) {
-			glstate().textureHandle[core::enumVal(unit)] = handle;
+		if (rendererState().textureHandle[core::enumVal(unit)] != handle) {
+			rendererState().textureHandle[core::enumVal(unit)] = handle;
 			core_assert(glBindTextureUnit != nullptr);
 			glBindTextureUnit(core::enumVal(unit), handle);
 			checkError();
@@ -581,8 +584,8 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 		}
 	} else {
 		const bool changeUnit = activateTextureUnit(unit);
-		if (changeUnit || glstate().textureHandle[core::enumVal(unit)] != handle) {
-			glstate().textureHandle[core::enumVal(unit)] = handle;
+		if (changeUnit || rendererState().textureHandle[core::enumVal(unit)] != handle) {
+			rendererState().textureHandle[core::enumVal(unit)] = handle;
 			core_assert(glBindTexture != nullptr);
 			glBindTexture(_priv::TextureTypes[core::enumVal(type)], handle);
 			checkError();
@@ -670,40 +673,40 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 }
 
 bool useProgram(Id handle) {
-	if (glstate().programHandle == handle) {
+	if (rendererState().programHandle == handle) {
 		return false;
 	}
 	core_assert(handle == InvalidId || glIsProgram(handle));
 	core_assert(glUseProgram != nullptr);
 	glUseProgram(handle);
 	checkError();
-	glstate().programHandle = handle;
-	glstate().needValidation = true;
+	rendererState().programHandle = handle;
+	rendererState().needValidation = true;
 	return true;
 }
 
 Id getProgram() {
-	return glstate().programHandle;
+	return rendererState().programHandle;
 }
 
 bool bindVertexArray(Id handle) {
-	if (glstate().vertexArrayHandle == handle) {
+	if (rendererState().vertexArrayHandle == handle) {
 		return false;
 	}
 	core_assert(glBindVertexArray != nullptr);
 	glBindVertexArray(handle);
 	checkError();
-	glstate().vertexArrayHandle = handle;
+	rendererState().vertexArrayHandle = handle;
 	return true;
 }
 
 Id boundVertexArray() {
-	return glstate().vertexArrayHandle;
+	return rendererState().vertexArrayHandle;
 }
 
 Id boundBuffer(BufferType type) {
 	const int typeIndex = core::enumVal(type);
-	return glstate().bufferHandle[typeIndex];
+	return rendererState().bufferHandle[typeIndex];
 }
 
 void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
@@ -812,11 +815,11 @@ void unmapBuffer(Id handle, BufferType type) {
 bool bindBuffer(BufferType type, Id handle) {
 	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);
-	if (glstate().bufferHandle[typeIndex] == handle) {
+	if (rendererState().bufferHandle[typeIndex] == handle) {
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	glstate().bufferHandle[typeIndex] = handle;
+	rendererState().bufferHandle[typeIndex] = handle;
 	core_assert(handle != InvalidId);
 	core_assert(glBindBuffer != nullptr);
 	glBindBuffer(glType, handle);
@@ -826,11 +829,11 @@ bool bindBuffer(BufferType type, Id handle) {
 
 bool unbindBuffer(BufferType type) {
 	const int typeIndex = core::enumVal(type);
-	if (glstate().bufferHandle[typeIndex] == InvalidId) {
+	if (rendererState().bufferHandle[typeIndex] == InvalidId) {
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	glstate().bufferHandle[typeIndex] = InvalidId;
+	rendererState().bufferHandle[typeIndex] = InvalidId;
 	core_assert(glBindBuffer != nullptr);
 	glBindBuffer(glType, InvalidId);
 	checkError();
@@ -840,11 +843,11 @@ bool unbindBuffer(BufferType type) {
 bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	video_trace_scoped(BindBufferBase);
 	const int typeIndex = core::enumVal(type);
-	if (glstate().bufferHandle[typeIndex] == handle) {
+	if (rendererState().bufferHandle[typeIndex] == handle) {
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	glstate().bufferHandle[typeIndex] = handle;
+	rendererState().bufferHandle[typeIndex] = handle;
 	core_assert(glBindBufferBase != nullptr);
 	glBindBufferBase(glType, (GLuint)index, handle);
 	checkError();
@@ -869,9 +872,9 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 		return;
 	}
 	for (uint8_t i = 0u; i < amount; ++i) {
-		for (int j = 0; j < lengthof(glstate().bufferHandle); ++j) {
-			if (glstate().bufferHandle[j] == ids[i]) {
-				glstate().bufferHandle[j] = InvalidId;
+		for (int j = 0; j < lengthof(rendererState().bufferHandle); ++j) {
+			if (rendererState().bufferHandle[j] == ids[i]) {
+				rendererState().bufferHandle[j] = InvalidId;
 			}
 		}
 	}
@@ -930,8 +933,8 @@ void deleteProgram(Id &id) {
 	glDeleteProgram((GLuint)id);
 	Log::debug("delete %u shader program", (unsigned int)id);
 	checkError();
-	if (glstate().programHandle == id) {
-		glstate().programHandle = InvalidId;
+	if (rendererState().programHandle == id) {
+		rendererState().programHandle = InvalidId;
 	}
 	id = InvalidId;
 }
@@ -950,7 +953,7 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 		return;
 	}
 	for (int i = 0; i < amount; ++i) {
-		if (glstate().vertexArrayHandle == ids[i]) {
+		if (rendererState().vertexArrayHandle == ids[i]) {
 			bindVertexArray(InvalidId);
 			break;
 		}
@@ -968,7 +971,7 @@ void deleteVertexArray(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
-	if (glstate().vertexArrayHandle == id) {
+	if (rendererState().vertexArrayHandle == id) {
 		bindVertexArray(InvalidId);
 	}
 	deleteVertexArrays(1, &id);
@@ -988,7 +991,7 @@ void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 		checkError();
 	}
 	for (int i = 0; i < amount; ++i) {
-		glstate().textures.insert(ids[i]);
+		rendererState().textures.insert(ids[i]);
 	}
 }
 
@@ -1001,11 +1004,11 @@ void deleteTextures(uint8_t amount, Id *ids) {
 	glDeleteTextures((GLsizei)amount, (GLuint *)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
-		glstate().textures.remove(ids[i]);
-		for (int j = 0; j < lengthof(glstate().textureHandle); ++j) {
-			if (glstate().textureHandle[j] == ids[i]) {
+		rendererState().textures.remove(ids[i]);
+		for (int j = 0; j < lengthof(rendererState().textureHandle); ++j) {
+			if (rendererState().textureHandle[j] == ids[i]) {
 				// the texture might still be bound...
-				glstate().textureHandle[j] = InvalidId;
+				rendererState().textureHandle[j] = InvalidId;
 			}
 		}
 		ids[i] = InvalidId;
@@ -1050,7 +1053,7 @@ bool checkFence(IdPtr id, uint64_t timeout) {
 }
 
 const core::DynamicSet<Id> &textures() {
-	return glstate().textures;
+	return rendererState().textures;
 }
 
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
@@ -1086,7 +1089,7 @@ void genFramebuffers(uint8_t amount, Id *ids) {
 }
 
 Id currentFramebuffer() {
-	return glstate().framebufferHandle;
+	return rendererState().framebufferHandle;
 }
 
 void deleteFramebuffers(uint8_t amount, Id *ids) {
@@ -1125,7 +1128,7 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 		return;
 	}
 	for (uint8_t i = 0u; i < amount; ++i) {
-		if (glstate().renderBufferHandle == ids[i]) {
+		if (rendererState().renderBufferHandle == ids[i]) {
 			bindRenderbuffer(InvalidId);
 		}
 	}
@@ -1140,7 +1143,7 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 
 void configureAttribute(const Attribute &a) {
 	video_trace_scoped(ConfigureVertexAttribute);
-	core_assert(glstate().programHandle != InvalidId);
+	core_assert(rendererState().programHandle != InvalidId);
 	core_assert(glEnableVertexAttribArray != nullptr);
 	glEnableVertexAttribArray(a.location);
 	checkError();
@@ -1198,17 +1201,17 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 }
 
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
-	const Id old = glstate().framebufferHandle;
+	const Id old = rendererState().framebufferHandle;
 #if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	core_assert_always(_oldFramebuffer == (GLint)old);
 #endif
-	if (old == handle && mode == glstate().framebufferMode) {
+	if (old == handle && mode == rendererState().framebufferMode) {
 		return handle;
 	}
-	glstate().framebufferHandle = handle;
-	glstate().framebufferMode = mode;
+	rendererState().framebufferHandle = handle;
+	rendererState().framebufferMode = mode;
 	const int typeIndex = core::enumVal(mode);
 	const GLenum glType = _priv::FrameBufferModes[typeIndex];
 	core_assert(glBindFramebuffer != nullptr);
@@ -1223,11 +1226,11 @@ bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) 
 	if (useFeature(Feature::DirectStateAccess)) {
 		if (samples > 0) {
 			core_assert(glNamedRenderbufferStorageMultisample != nullptr);
-			glNamedRenderbufferStorageMultisample(glstate().renderBufferHandle, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glNamedRenderbufferStorageMultisample(rendererState().renderBufferHandle, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
 			checkError();
 		} else {
 			core_assert(glNamedRenderbufferStorage != nullptr);
-			glNamedRenderbufferStorage(glstate().renderBufferHandle, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glNamedRenderbufferStorage(rendererState().renderBufferHandle, _priv::TextureFormats[core::enumVal(format)], w, h);
 			checkError();
 		}
 	} else {
@@ -1245,12 +1248,12 @@ bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) 
 }
 
 Id bindRenderbuffer(Id handle) {
-	if (glstate().renderBufferHandle == handle) {
+	if (rendererState().renderBufferHandle == handle) {
 		return handle;
 	}
-	const Id prev = glstate().renderBufferHandle;
+	const Id prev = rendererState().renderBufferHandle;
 	const GLuint lid = (GLuint)handle;
-	glstate().renderBufferHandle = handle;
+	rendererState().renderBufferHandle = handle;
 	if (!useFeature(Feature::DirectStateAccess)) {
 		core_assert(glBindRenderbuffer != nullptr);
 		glBindRenderbuffer(GL_RENDERBUFFER, lid);
@@ -1287,7 +1290,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 			}
 		}
 	}
-	if (glstate().vendor[core::enumVal(Vendor::Nouveau)]) {
+	if (rendererState().vendor[core::enumVal(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		core_assert(glFlush != nullptr);
 		glFlush(); // TODO: RENDERER: use glFenceSync here glClientWaitSync
@@ -1759,10 +1762,10 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 		return;
 	}
 	syncState();
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	core_assert_msg(rendererState().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	video::validate(glstate().programHandle);
+	video::validate(rendererState().programHandle);
 	core_assert(glDrawElements != nullptr);
 	glDrawElements(glMode, (GLsizei)numIndices, glType, (GLvoid *)offset);
 	checkError();
@@ -1772,7 +1775,7 @@ void drawArrays(Primitive mode, size_t count) {
 	video_trace_scoped(DrawArrays);
 	syncState();
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(glstate().programHandle);
+	video::validate(rendererState().programHandle);
 	core_assert(glDrawArrays != nullptr);
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 	checkError();
@@ -1923,8 +1926,8 @@ bool linkComputeShader(Id program, Id comp, const core::String &name) {
 }
 
 bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
-	if (glstate().imageHandle == textureHandle && glstate().imageFormat == format &&
-		glstate().imageAccessMode == mode) {
+	if (rendererState().imageHandle == textureHandle && rendererState().imageFormat == format &&
+		rendererState().imageAccessMode == mode) {
 		return false;
 	}
 	const GLenum glFormat = _priv::ImageFormatTypes[core::enumVal(format)];
@@ -1937,9 +1940,9 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	glBindImageTexture(unit, (GLuint)textureHandle, level, layered, layer, glAccessMode, glFormat);
 	video::checkError();
 	/* update cached binding so redundant binds can be avoided */
-	glstate().imageHandle = textureHandle;
-	glstate().imageFormat = format;
-	glstate().imageAccessMode = mode;
+	rendererState().imageHandle = textureHandle;
+	rendererState().imageFormat = format;
+	rendererState().imageAccessMode = mode;
 	return true;
 }
 
@@ -2158,17 +2161,17 @@ void setup() {
 }
 
 void resize(int windowWidth, int windowHeight, float scaleFactor) {
-	glstate().windowWidth = windowWidth;
-	glstate().windowHeight = windowHeight;
-	glstate().scaleFactor = scaleFactor;
+	rendererState().windowWidth = windowWidth;
+	rendererState().windowHeight = windowHeight;
+	rendererState().scaleFactor = scaleFactor;
 }
 
 glm::ivec2 getWindowSize() {
-	return glm::ivec2(glstate().windowWidth, glstate().windowHeight);
+	return glm::ivec2(rendererState().windowWidth, rendererState().windowHeight);
 }
 
 float getScaleFactor() {
-	return glstate().scaleFactor;
+	return rendererState().scaleFactor;
 }
 
 static bool setVSync(int value) {
@@ -2208,9 +2211,9 @@ void handleVSync() {
 }
 
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glstate().glVersion.majorVersion);
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glstate().glVersion.minorVersion);
-	Log::debug("got gl context: %i.%i", glstate().glVersion.majorVersion, glstate().glVersion.minorVersion);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glState().glVersion.majorVersion);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glState().glVersion.minorVersion);
+	Log::debug("got gl context: %i.%i", glState().glVersion.majorVersion, glState().glVersion.minorVersion);
 
 	resize(windowWidth, windowHeight, scaleFactor);
 
@@ -2232,12 +2235,12 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		const core::String vendor(glvendor);
 		for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
 			const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
-			glstate().vendor.set(i, match);
+			rendererState().vendor.set(i, match);
 		}
 	}
 
 	for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
-		if (glstate().vendor[i]) {
+		if (rendererState().vendor[i]) {
 			Log::debug("Found vendor: %s", _priv::VendorStrings[i]);
 		} else {
 			Log::debug("Didn't find vendor: %s", _priv::VendorStrings[i]);
@@ -2292,8 +2295,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	// default state
 	// https://www.glprogramming.com/red/appendixb.html
-	glstate().states.set(core::enumVal(video::State::DepthMask), true);
-	glGetFloatv(GL_POINT_SIZE, &glstate().pointSize);
+	rendererState().states.set(core::enumVal(video::State::DepthMask), true);
+	glGetFloatv(GL_POINT_SIZE, &rendererState().pointSize);
 
 	if (multisampling) {
 		video::enable(video::State::MultiSample);

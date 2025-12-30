@@ -22,6 +22,10 @@ static inline _priv::VkState &vkstate() {
 	return s;
 }
 
+RendererState &rendererState() {
+	return (RendererState &)vkstate();
+}
+
 void setup() {
 }
 

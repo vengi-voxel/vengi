@@ -9,12 +9,12 @@ set(VK_SRCS
 set(GL_SRCS
 	gl/flextGL.c gl/flextGL.h
 	gl/GLRenderer.cpp gl/GLRenderer.h
-	gl/GLState.h
 	gl/GLMapping.h
 	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
 )
 set(SRCS
+	RendererState.h
 	Buffer.cpp Buffer.h
 	Camera.cpp Camera.h
 	DriverHints.cpp
