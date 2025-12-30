@@ -76,6 +76,19 @@ public:
 			ref &= ~(Type(1) << elementIdx);
 		}
 	}
+
+	bool operator==(const BitSet<SIZE> &other) const {
+		for (size_t i = 0; i < requiredElements(SIZE); ++i) {
+			if (_buffer[i] != other._buffer[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const BitSet<SIZE> &other) const {
+		return !(*this == other);
+	}
 };
 
 } // namespace core
