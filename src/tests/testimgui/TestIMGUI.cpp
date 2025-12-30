@@ -5,9 +5,8 @@
 #include "implot.h"
 #include "testcore/TestAppMain.h"
 #include "color/Color.h"
-#include "core/StringUtil.h"
 #include "core/Log.h"
-#include "video/RendererInterface.h"
+#include "video/Renderer.h"
 
 TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {

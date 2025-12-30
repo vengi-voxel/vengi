@@ -45,7 +45,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 #else
 		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
 		char **extensions = (char **)core_malloc(sizeof(char *) * extensionCount);
-		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, (const char**)extensions);
+		SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, (const char **)extensions);
 #endif
 
 		for (unsigned int i = 0; i < extensionCount; ++i) {
@@ -65,7 +65,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		vkCreateInstance(&createInfo, nullptr, &instance);
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 #else
-		core_free((void*)extensions);
+		core_free((void *)extensions);
 #endif
 	}
 
@@ -182,107 +182,11 @@ bool checkError(bool triggerAssert) {
 void readBuffer(GBufferTextureType textureType) {
 }
 
-bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha) {
-	return false;
-}
-
-bool pointSize(float size) {
-	return false;
-}
-
 float lineWidth(float width) {
 	return 1.0f;
 }
 
-float currentLineWidth() {
-	return vkstate().lineWidth;
-}
-
-bool clearColor(const glm::vec4 &clearColor) {
-	return false;
-}
-
-const glm::vec4 &currentClearColor() {
-	return vkstate().clearColor;
-}
-
 void clear(ClearFlag flag) {
-}
-
-bool viewport(int x, int y, int w, int h) {
-	return false;
-}
-
-void getScissor(int &x, int &y, int &w, int &h) {
-	x = vkstate().scissorX;
-	y = vkstate().scissorY;
-	w = vkstate().scissorW;
-	h = vkstate().scissorH;
-}
-
-void getViewport(int &x, int &y, int &w, int &h) {
-	x = vkstate().viewportX;
-	y = vkstate().viewportY;
-	w = vkstate().viewportW;
-	h = vkstate().viewportH;
-}
-
-bool scissor(int x, int y, int w, int h) {
-	return false;
-}
-
-bool enable(State state) {
-	return false;
-}
-
-bool currentState(State state) {
-	return vkstate().states[core::enumVal(state)];
-}
-
-bool disable(State state) {
-	return false;
-}
-
-void colorMask(bool red, bool green, bool blue, bool alpha) {
-}
-
-bool cullFace(Face face) {
-	return false;
-}
-
-bool depthFunc(CompareFunc func) {
-	return false;
-}
-
-CompareFunc getDepthFunc() {
-	return vkstate().depthFunc;
-}
-
-void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
-	enabled = vkstate().states[core::enumVal(State::Blend)];
-	src = vkstate().blendSrcRGB;
-	dest = vkstate().blendDestRGB;
-	func = vkstate().blendEquation;
-}
-
-bool blendFunc(BlendMode src, BlendMode dest) {
-	return false;
-}
-
-bool blendEquation(BlendEquation func) {
-	return false;
-}
-
-PolygonMode polygonMode(Face face, PolygonMode mode) {
-	return PolygonMode::Max;
-}
-
-bool polygonOffset(const glm::vec2 &offset) {
-	return false;
-}
-
-Id currentTexture(TextureUnit unit) {
-	return vkstate().textureHandle[core::enumVal(unit)];
 }
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
@@ -480,10 +384,6 @@ void traceVideoBegin(const char *name) {
 
 void traceVideoEnd() {
 	core::traceEnd();
-}
-
-Face currentCullFace() {
-	return vkstate().cullFace;
 }
 
 void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {

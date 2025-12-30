@@ -18,6 +18,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/sdl/SDLSystem.h"
 #include "engine-config.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"
@@ -26,7 +27,6 @@
 #include "video/Trace.h"
 #include "video/Types.h"
 #include "video/gl/flextGL.h"
-#include "core/sdl/SDLSystem.h"
 #include <glm/common.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/constants.hpp>
@@ -175,38 +175,26 @@ float lineWidth(float width) {
 	return oldWidth;
 }
 
-float currentLineWidth() {
-	return rendererState().pendingLineWidth;
-}
-
-const glm::vec4 &currentClearColor() {
-	return rendererState().pendingClearColor;
-}
-
-bool clearColor(const glm::vec4 &clearColor) {
-	if (rendererState().pendingClearColor == clearColor) {
-		return false;
-	}
-	rendererState().pendingClearColor = clearColor;
-	return true;
-}
-
 static void syncState() {
 	if (rendererState().clearColor != rendererState().pendingClearColor) {
 		rendererState().clearColor = rendererState().pendingClearColor;
 		core_assert(glClearColor != nullptr);
-		glClearColor(rendererState().clearColor.r, rendererState().clearColor.g, rendererState().clearColor.b, rendererState().clearColor.a);
+		glClearColor(rendererState().clearColor.r, rendererState().clearColor.g, rendererState().clearColor.b,
+					 rendererState().clearColor.a);
 		checkError();
 	}
 
-	if (rendererState().viewportX != rendererState().pendingViewportX || rendererState().viewportY != rendererState().pendingViewportY ||
-		rendererState().viewportW != rendererState().pendingViewportW || rendererState().viewportH != rendererState().pendingViewportH) {
+	if (rendererState().viewportX != rendererState().pendingViewportX ||
+		rendererState().viewportY != rendererState().pendingViewportY ||
+		rendererState().viewportW != rendererState().pendingViewportW ||
+		rendererState().viewportH != rendererState().pendingViewportH) {
 		rendererState().viewportX = rendererState().pendingViewportX;
 		rendererState().viewportY = rendererState().pendingViewportY;
 		rendererState().viewportW = rendererState().pendingViewportW;
 		rendererState().viewportH = rendererState().pendingViewportH;
 		core_assert(glViewport != nullptr);
-		glViewport((GLint)rendererState().viewportX, (GLint)rendererState().viewportY, (GLsizei)rendererState().viewportW, (GLsizei)rendererState().viewportH);
+		glViewport((GLint)rendererState().viewportX, (GLint)rendererState().viewportY,
+				   (GLsizei)rendererState().viewportW, (GLsizei)rendererState().viewportH);
 		checkError();
 	}
 
@@ -224,8 +212,10 @@ static void syncState() {
 		checkError();
 	}
 
-	if (rendererState().scissorX != rendererState().pendingScissorX || rendererState().scissorY != rendererState().pendingScissorY ||
-		rendererState().scissorW != rendererState().pendingScissorW || rendererState().scissorH != rendererState().pendingScissorH) {
+	if (rendererState().scissorX != rendererState().pendingScissorX ||
+		rendererState().scissorY != rendererState().pendingScissorY ||
+		rendererState().scissorW != rendererState().pendingScissorW ||
+		rendererState().scissorH != rendererState().pendingScissorH) {
 		rendererState().scissorX = rendererState().pendingScissorX;
 		rendererState().scissorY = rendererState().pendingScissorY;
 		rendererState().scissorW = rendererState().pendingScissorW;
@@ -277,14 +267,17 @@ static void syncState() {
 		checkError();
 	}
 
-	if (rendererState().blendSrcRGB != rendererState().pendingBlendSrcRGB || rendererState().blendDestRGB != rendererState().pendingBlendDestRGB ||
-		rendererState().blendSrcAlpha != rendererState().pendingBlendSrcAlpha || rendererState().blendDestAlpha != rendererState().pendingBlendDestAlpha) {
+	if (rendererState().blendSrcRGB != rendererState().pendingBlendSrcRGB ||
+		rendererState().blendDestRGB != rendererState().pendingBlendDestRGB ||
+		rendererState().blendSrcAlpha != rendererState().pendingBlendSrcAlpha ||
+		rendererState().blendDestAlpha != rendererState().pendingBlendDestAlpha) {
 		rendererState().blendSrcRGB = rendererState().pendingBlendSrcRGB;
 		rendererState().blendDestRGB = rendererState().pendingBlendDestRGB;
 		rendererState().blendSrcAlpha = rendererState().pendingBlendSrcAlpha;
 		rendererState().blendDestAlpha = rendererState().pendingBlendDestAlpha;
 
-		if (rendererState().blendSrcRGB == rendererState().blendSrcAlpha && rendererState().blendDestRGB == rendererState().blendDestAlpha) {
+		if (rendererState().blendSrcRGB == rendererState().blendSrcAlpha &&
+			rendererState().blendDestRGB == rendererState().blendDestAlpha) {
 			const GLenum glSrc = _priv::BlendModes[core::enumVal(rendererState().blendSrcRGB)];
 			const GLenum glDest = _priv::BlendModes[core::enumVal(rendererState().blendDestRGB)];
 			core_assert(glBlendFunc != nullptr);
@@ -315,7 +308,8 @@ static void syncState() {
 		checkError();
 	}
 
-	if (rendererState().polygonModeFace != rendererState().pendingPolygonModeFace || rendererState().polygonMode != rendererState().pendingPolygonMode) {
+	if (rendererState().polygonModeFace != rendererState().pendingPolygonModeFace ||
+		rendererState().polygonMode != rendererState().pendingPolygonMode) {
 		rendererState().polygonModeFace = rendererState().pendingPolygonModeFace;
 		rendererState().polygonMode = rendererState().pendingPolygonMode;
 #ifndef USE_OPENGLES
@@ -385,172 +379,6 @@ void clear(ClearFlag flag) {
 	checkError();
 }
 
-bool viewport(int x, int y, int w, int h) {
-	if (rendererState().pendingViewportX == x && rendererState().pendingViewportY == y && rendererState().pendingViewportW == w && rendererState().pendingViewportH == h) {
-		return false;
-	}
-	rendererState().pendingViewportX = x;
-	rendererState().pendingViewportY = y;
-	rendererState().pendingViewportW = w;
-	rendererState().pendingViewportH = h;
-	return true;
-}
-
-void getViewport(int &x, int &y, int &w, int &h) {
-	x = rendererState().pendingViewportX;
-	y = rendererState().pendingViewportY;
-	w = rendererState().pendingViewportW;
-	h = rendererState().pendingViewportH;
-}
-
-void getScissor(int &x, int &y, int &w, int &h) {
-	x = rendererState().pendingScissorX;
-	y = rendererState().pendingScissorY;
-	w = rendererState().pendingScissorW;
-	h = rendererState().pendingScissorH;
-}
-
-bool scissor(int x, int y, int w, int h) {
-	if (w < 0) {
-		w = 0;
-	}
-	if (h < 0) {
-		h = 0;
-	}
-
-	if (rendererState().pendingScissorX == x && rendererState().pendingScissorY == y && rendererState().pendingScissorW == w && rendererState().pendingScissorH == h) {
-		return false;
-	}
-	rendererState().pendingScissorX = x;
-	rendererState().pendingScissorY = y;
-	rendererState().pendingScissorW = w;
-	rendererState().pendingScissorH = h;
-	return true;
-}
-
-void colorMask(bool red, bool green, bool blue, bool alpha) {
-	rendererState().pendingColorMask[0] = red;
-	rendererState().pendingColorMask[1] = green;
-	rendererState().pendingColorMask[2] = blue;
-	rendererState().pendingColorMask[3] = alpha;
-}
-
-bool enable(State state) {
-	const int stateIndex = core::enumVal(state);
-	if (rendererState().pendingStates[stateIndex]) {
-		return true;
-	}
-	rendererState().pendingStates.set(stateIndex, true);
-	return false;
-}
-
-bool disable(State state) {
-	const int stateIndex = core::enumVal(state);
-	if (!rendererState().pendingStates[stateIndex]) {
-		return false;
-	}
-	rendererState().pendingStates.set(stateIndex, false);
-	return true;
-}
-
-bool currentState(State state) {
-	const int stateIndex = core::enumVal(state);
-	return rendererState().pendingStates[stateIndex];
-}
-
-bool cullFace(Face face) {
-	if (face == Face::Max) {
-		return false;
-	}
-	if (rendererState().pendingCullFace == face) {
-		return false;
-	}
-	rendererState().pendingCullFace = face;
-	return true;
-}
-
-Face currentCullFace() {
-	return rendererState().pendingCullFace;
-}
-
-bool depthFunc(CompareFunc func) {
-	if (rendererState().pendingDepthFunc == func) {
-		return false;
-	}
-	rendererState().pendingDepthFunc = func;
-	return true;
-}
-
-CompareFunc getDepthFunc() {
-	return rendererState().pendingDepthFunc;
-}
-
-bool blendEquation(BlendEquation func) {
-	if (rendererState().pendingBlendEquation == func) {
-		return false;
-	}
-	rendererState().pendingBlendEquation = func;
-	return true;
-}
-
-void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
-	const int stateIndex = core::enumVal(State::Blend);
-	enabled = rendererState().pendingStates[stateIndex];
-	src = rendererState().pendingBlendSrcRGB;
-	dest = rendererState().pendingBlendDestRGB;
-	func = rendererState().pendingBlendEquation;
-}
-
-bool blendFunc(BlendMode src, BlendMode dest) {
-	if (rendererState().pendingBlendSrcRGB == src && rendererState().pendingBlendDestRGB == dest && rendererState().pendingBlendSrcAlpha == src &&
-		rendererState().pendingBlendDestAlpha == dest) {
-		return false;
-	}
-	rendererState().pendingBlendSrcRGB = src;
-	rendererState().pendingBlendDestRGB = dest;
-	rendererState().pendingBlendSrcAlpha = src;
-	rendererState().pendingBlendDestAlpha = dest;
-	return true;
-}
-
-bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha) {
-	if (rendererState().pendingBlendSrcRGB == srcRGB && rendererState().pendingBlendDestRGB == destRGB && rendererState().pendingBlendSrcAlpha == srcAlpha &&
-		rendererState().pendingBlendDestAlpha == destAlpha) {
-		return false;
-	}
-	rendererState().pendingBlendSrcRGB = srcRGB;
-	rendererState().pendingBlendDestRGB = destRGB;
-	rendererState().pendingBlendSrcAlpha = srcAlpha;
-	rendererState().pendingBlendDestAlpha = destAlpha;
-	return true;
-}
-
-PolygonMode polygonMode(Face face, PolygonMode mode) {
-	if (rendererState().pendingPolygonModeFace == face && rendererState().pendingPolygonMode == mode) {
-		return rendererState().pendingPolygonMode;
-	}
-	rendererState().pendingPolygonModeFace = face;
-	const PolygonMode old = rendererState().pendingPolygonMode;
-	rendererState().pendingPolygonMode = mode;
-	return old;
-}
-
-bool polygonOffset(const glm::vec2 &offset) {
-	if (rendererState().pendingPolygonOffset == offset) {
-		return false;
-	}
-	rendererState().pendingPolygonOffset = offset;
-	return true;
-}
-
-bool pointSize(float size) {
-	if (rendererState().pendingPointSize == size) {
-		return false;
-	}
-	rendererState().pendingPointSize = size;
-	return true;
-}
-
 static bool activateTextureUnit(TextureUnit unit) {
 	if (rendererState().textureUnit == unit) {
 		return false;
@@ -562,13 +390,6 @@ static bool activateTextureUnit(TextureUnit unit) {
 	checkError();
 	rendererState().textureUnit = unit;
 	return true;
-}
-
-Id currentTexture(TextureUnit unit) {
-	if (TextureUnit::Max == unit) {
-		return InvalidId;
-	}
-	return rendererState().textureHandle[core::enumVal(unit)];
 }
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
@@ -1019,7 +840,7 @@ IdPtr genFenc() {
 	return (IdPtr)glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }
 
-void deleteFence(IdPtr& id) {
+void deleteFence(IdPtr &id) {
 	if (id == InvalidIdPtr) {
 		return;
 	}
@@ -1226,17 +1047,20 @@ bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) 
 	if (useFeature(Feature::DirectStateAccess)) {
 		if (samples > 0) {
 			core_assert(glNamedRenderbufferStorageMultisample != nullptr);
-			glNamedRenderbufferStorageMultisample(rendererState().renderBufferHandle, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glNamedRenderbufferStorageMultisample(rendererState().renderBufferHandle, (GLsizei)samples,
+												  _priv::TextureFormats[core::enumVal(format)], w, h);
 			checkError();
 		} else {
 			core_assert(glNamedRenderbufferStorage != nullptr);
-			glNamedRenderbufferStorage(rendererState().renderBufferHandle, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glNamedRenderbufferStorage(rendererState().renderBufferHandle, _priv::TextureFormats[core::enumVal(format)],
+									   w, h);
 			checkError();
 		}
 	} else {
 		if (samples > 0) {
 			core_assert(glRenderbufferStorageMultisample != nullptr);
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples,
+											 _priv::TextureFormats[core::enumVal(format)], w, h);
 			checkError();
 		} else {
 			core_assert(glRenderbufferStorage != nullptr);
@@ -1267,8 +1091,9 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	if (size <= 0) {
 		return;
 	}
-	core_assert_msg(type != BufferType::UniformBuffer || limiti(Limit::MaxUniformBufferSize) <= 0 || (int)size <= limiti(Limit::MaxUniformBufferSize),
-			"Given size %i exceeds the max allowed of %i", (int)size, limiti(Limit::MaxUniformBufferSize));
+	core_assert_msg(type != BufferType::UniformBuffer || limiti(Limit::MaxUniformBufferSize) <= 0 ||
+						(int)size <= limiti(Limit::MaxUniformBufferSize),
+					"Given size %i exceeds the max allowed of %i", (int)size, limiti(Limit::MaxUniformBufferSize));
 	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[core::enumVal(mode)];
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1372,7 +1197,8 @@ bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(Fr
 				core_assert(textureTarget == TextureType::Texture3D || textureTarget == TextureType::Texture2DArray ||
 							textureTarget == TextureType::Texture2DMultisampleArray);
 				core_assert(glNamedFramebufferTextureLayer != nullptr);
-				glNamedFramebufferTextureLayer(fbo, glAttachmentType, textureId, 0, 0);			}
+				glNamedFramebufferTextureLayer(fbo, glAttachmentType, textureId, 0, 0);
+			}
 			if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
 				attachments.push_back(glAttachmentType);
 			}
@@ -1521,7 +1347,8 @@ void setupTexture(Id texture, const TextureConfig &config) {
 			glTextureParameteri(texture, GL_TEXTURE_WRAP_R, glWrapR);
 			checkError();
 		}
-		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) && config.wrapS() != TextureWrap::Max) {
+		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
+			config.wrapS() != TextureWrap::Max) {
 			const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
 			glTextureParameteri(texture, GL_TEXTURE_WRAP_S, glWrapS);
 			checkError();
@@ -1558,7 +1385,8 @@ void setupTexture(Id texture, const TextureConfig &config) {
 			const GLfloat maxAnisotropy = config.maxAnisotropy();
 			if (maxAnisotropy > 1.0f) {
 				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
-				const GLfloat clampedMaxAnisotropy = core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
+				const GLfloat clampedMaxAnisotropy =
+					core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
 				core_assert(glTextureParameterf != nullptr);
 				glTextureParameterf(texture, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
 				checkError();
@@ -1582,12 +1410,14 @@ void setupTexture(Id texture, const TextureConfig &config) {
 			glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
 			checkError();
 		}
-		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) && config.wrapS() != TextureWrap::Max) {
+		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
+			config.wrapS() != TextureWrap::Max) {
 			const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
 			glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
 			checkError();
 		}
-		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) && config.wrapT() != TextureWrap::Max) {
+		if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&
+			config.wrapT() != TextureWrap::Max) {
 			const GLenum glWrapT = _priv::TextureWraps[core::enumVal(config.wrapT())];
 			glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrapT);
 			checkError();
@@ -1624,7 +1454,8 @@ void setupTexture(Id texture, const TextureConfig &config) {
 			const GLfloat maxAnisotropy = config.maxAnisotropy();
 			if (maxAnisotropy > 1.0f) {
 				const GLfloat limitMaxAnisotropy = limit(Limit::MaxAnisotropy);
-				const GLfloat clampedMaxAnisotropy = core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
+				const GLfloat clampedMaxAnisotropy =
+					core_min(maxAnisotropy, limitMaxAnisotropy > 0.0f ? limitMaxAnisotropy : maxAnisotropy);
 				core_assert(glTexParameterf != nullptr);
 				glTexParameterf(glType, GL_TEXTURE_MAX_ANISOTROPY, clampedMaxAnisotropy);
 				checkError();
@@ -1661,7 +1492,8 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 		wantMipmaps = false;
 	}
 
-	const int levels = wantMipmaps && width > 0 && height > 0 ? (int)glm::floor(glm::log2((float)core_max(width, height))) + 1 : 1;
+	const int levels =
+		wantMipmaps && width > 0 && height > 0 ? (int)glm::floor(glm::log2((float)core_max(width, height))) + 1 : 1;
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glTextureStorage2D != nullptr);
 		core_assert(glTextureStorage3D != nullptr);
@@ -1702,7 +1534,8 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			glTextureStorage3DMultisample(texture, samples, f.internalFormat, width, height, index, false);
 			checkError();
 			if (data) {
-				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType, (const GLvoid *)data);
+				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType,
+									(const GLvoid *)data);
 				checkError();
 			}
 		} else {
@@ -1711,7 +1544,8 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			glTextureStorage3D(texture, levels, f.internalFormat, width, height, index);
 			checkError();
 			if (data) {
-				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType, (const GLvoid *)data);
+				glTextureSubImage3D(texture, 0, 0, 0, 0, width, height, index, f.dataFormat, f.dataType,
+									(const GLvoid *)data);
 				checkError();
 			}
 		}
@@ -1744,7 +1578,8 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 			checkError();
 		} else {
 			core_assert(glTexImage3D != nullptr);
-			glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
+			glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType,
+						 (const GLvoid *)data);
 			checkError();
 		}
 		if (wantMipmaps && levels > 1) {
@@ -2260,7 +2095,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	if (contextFlags & SDL_GL_CONTEXT_DEBUG_FLAG) {
 		const int severity = core::Var::getSafe(cfg::ClientDebugSeverity)->intVal();
 		if (severity < (int)video::DebugSeverity::None || severity >= (int)video::DebugSeverity::Max) {
-			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level", severity);
+			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level",
+					  severity);
 		} else {
 			enableDebug((video::DebugSeverity)severity);
 		}
@@ -2310,7 +2146,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	return true;
 }
 
-void traceVideoBegin(const char* name) {
+void traceVideoBegin(const char *name) {
 	if (glPushDebugGroup == nullptr)
 		return;
 	// glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name);
