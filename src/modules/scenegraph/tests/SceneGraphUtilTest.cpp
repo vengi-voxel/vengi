@@ -237,4 +237,71 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesSkipHidden) {
 	}
 }
 
-} // namespace voxelformat
+TEST_F(SceneGraphUtilTest, testSplitVolumesPreservesNodeTypes) {
+	SceneGraph source;
+	int groupId = -1;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		node.setName("group");
+		groupId = source.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Camera);
+		node.setName("camera");
+		source.emplace(core::move(node), groupId);
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Point);
+		node.setName("point");
+		source.emplace(core::move(node), groupId);
+	}
+	int modelId = -1;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("model");
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		modelId = source.emplace(core::move(node), groupId);
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::ModelReference);
+		node.setName("reference");
+		node.setReference(modelId);
+		source.emplace(core::move(node), groupId);
+	}
+
+	SceneGraph target;
+	glm::ivec3 maxSize(1, 1, 1);
+	splitVolumes(source, target, false, false, false, maxSize);
+
+	int groupCount = 0;
+	for (auto iter = target.begin(SceneGraphNodeType::Group); iter != target.end(); ++iter) {
+		groupCount++;
+	}
+	EXPECT_EQ(1, groupCount);
+
+	int cameraCount = 0;
+	for (auto iter = target.begin(SceneGraphNodeType::Camera); iter != target.end(); ++iter) {
+		cameraCount++;
+	}
+	EXPECT_EQ(1, cameraCount);
+
+	int pointCount = 0;
+	for (auto iter = target.begin(SceneGraphNodeType::Point); iter != target.end(); ++iter) {
+		pointCount++;
+	}
+	EXPECT_EQ(1, pointCount);
+
+	int modelCount = 0;
+	for (auto iter = target.begin(SceneGraphNodeType::Model); iter != target.end(); ++iter) {
+		modelCount++;
+	}
+	EXPECT_EQ(1, modelCount);
+
+	int refCount = 0;
+	for (auto iter = target.begin(SceneGraphNodeType::ModelReference); iter != target.end(); ++iter) {
+		refCount++;
+	}
+	EXPECT_EQ(1, refCount);
+}
+
+} // namespace scenegraph

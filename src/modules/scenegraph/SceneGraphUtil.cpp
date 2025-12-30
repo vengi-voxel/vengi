@@ -327,7 +327,6 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 	destSceneGraph.reserve(srcSceneGraph.size());
 	core::DynamicMap<int, core::Buffer<int>> splitMap;
 
-	// TODO: SCENEGRAPH: any non model node is removed on split
 	for (int childId : srcSceneGraph.root().children()) {
 		splitVolumes_r(srcSceneGraph, destSceneGraph, childId, destSceneGraph.root().id(), splitMap, crop, createEmpty, skipHidden, maxSize);
 	}
