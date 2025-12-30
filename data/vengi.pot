@@ -1176,6 +1176,12 @@ msgstr ""
 msgid "Unselect"
 msgstr ""
 
+msgid "Enable normal rendering to see your changes"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
 msgid "None"
 msgstr ""
 
@@ -1240,9 +1246,6 @@ msgid "Thickness"
 msgstr ""
 
 msgid "Font"
-msgstr ""
-
-msgid "Mode"
 msgstr ""
 
 msgid "Factor"
@@ -1920,6 +1923,31 @@ msgid "Calculate normals"
 msgstr ""
 
 msgid "Calculate normals for the model"
+msgstr ""
+
+msgid "Remove all normals"
+msgstr ""
+
+#, c-format
+msgid "Normal index: %i (scene normal index %i)"
+msgstr ""
+
+msgid "Render normals"
+msgstr ""
+
+msgid "Normal"
+msgstr ""
+
+msgid "Longitude"
+msgstr ""
+
+msgid "Latitude"
+msgstr ""
+
+msgid "Flip"
+msgstr ""
+
+msgid "Rotate 90 deg"
 msgstr ""
 
 msgid "Remove alpha"
@@ -2798,6 +2826,9 @@ msgstr ""
 msgid "Apply the current palette to all model nodes"
 msgstr ""
 
+msgid "Remove normal information from the palette"
+msgstr ""
+
 msgid "Switch active node to hovered from scene graph mode"
 msgstr ""
 
@@ -3081,6 +3112,12 @@ msgid "Disable mirror axis"
 msgstr ""
 
 msgid "Change the modifier shape type"
+msgstr ""
+
+msgid "Auto"
+msgstr ""
+
+msgid "Manual"
 msgstr ""
 
 msgid "Brighten"

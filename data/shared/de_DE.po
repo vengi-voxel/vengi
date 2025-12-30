@@ -1209,6 +1209,12 @@ msgstr ""
 msgid "Unselect"
 msgstr "Auswahl entfernen"
 
+msgid "Enable normal rendering to see your changes"
+msgstr ""
+
+msgid "Mode"
+msgstr "Modus"
+
 msgid "None"
 msgstr "Keine"
 
@@ -1275,9 +1281,6 @@ msgstr "Dicke"
 
 msgid "Font"
 msgstr "Schriftart"
-
-msgid "Mode"
-msgstr "Modus"
 
 msgid "Factor"
 msgstr "Faktor"
@@ -1979,6 +1982,31 @@ msgstr "Normalen berechnen"
 
 msgid "Calculate normals for the model"
 msgstr "Normalen für das Modell berechnen"
+
+msgid "Remove all normals"
+msgstr "All Normalen entfernen"
+
+#, c-format
+msgid "Normal index: %i (scene normal index %i)"
+msgstr "Normalenindex: %i (Szene-Normalenindex %i)"
+
+msgid "Render normals"
+msgstr "Voxelnormalen rendern"
+
+msgid "Normal"
+msgstr "Normale"
+
+msgid "Longitude"
+msgstr ""
+
+msgid "Latitude"
+msgstr ""
+
+msgid "Flip"
+msgstr ""
+
+msgid "Rotate 90 deg"
+msgstr "Um 90 Grad drehen"
 
 msgid "Remove alpha"
 msgstr "Alpha entfernen"
@@ -2918,6 +2946,9 @@ msgstr ""
 msgid "Apply the current palette to all model nodes"
 msgstr "Die aktuelle Palette auf alle Knoten anwenden"
 
+msgid "Remove normal information from the palette"
+msgstr ""
+
 msgid "Switch active node to hovered from scene graph mode"
 msgstr "Wechselt den aktiven Knoten vom Szenengraph-Modus zum Hovern"
 
@@ -3250,6 +3281,12 @@ msgstr "Deaktiviert die Spiegelachse"
 
 msgid "Change the modifier shape type"
 msgstr "Ändert den Modifier-Formtyp"
+
+msgid "Auto"
+msgstr ""
+
+msgid "Manual"
+msgstr ""
 
 msgid "Brighten"
 msgstr "Aufhellen"
