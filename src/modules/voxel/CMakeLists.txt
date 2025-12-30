@@ -26,7 +26,7 @@ set(SRCS
 	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
-	VoxelNormalUtil.h VoxelNormalUtil.cpp
+	VoxelNormalUtil.h
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer app)
 engine_target_optimize(${LIB})
