@@ -193,11 +193,17 @@ bool AniVoxelFormat::readModel(io::SeekableReadStream &stream, scenegraph::Scene
 				v.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx, 0u, 0u, boneIdx));
 			}
 			seek(subHeader, stream);
+
+			const voxel::Region &sparseRegion = v.calculateRegion();
+			if (!sparseRegion.isValid()) {
+				Log::warn("Skipping empty VOXA sub-model: %s", name.c_str());
+				continue;
+			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setName(name);
 			node.setPalette(palette);
 			node.setProperty("id", core::string::toString(id));
-			voxel::RawVolume *vol = new voxel::RawVolume(v.calculateRegion());
+			voxel::RawVolume *vol = new voxel::RawVolume(sparseRegion);
 			v.copyTo(*vol);
 			node.setVolume(vol, true);
 			sceneGraph.emplace(core::move(node));
