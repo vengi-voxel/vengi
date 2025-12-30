@@ -1859,8 +1859,7 @@ void SceneManager::construct() {
 		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab", "original"}));
 
 	command::Command::registerCommand("normpalette_removenormals", [&] (const command::CmdArgs& args) {
-		const int nodeId = activeNode();
-		nodeRemoveNormals(nodeId);
+		nodeRemoveNormals(InvalidNodeId);
 	}).setHelp(_("Remove normal information from the palette"));
 
 	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
@@ -3841,6 +3840,12 @@ void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 }
 
 bool SceneManager::nodeRemoveNormals(int nodeId) {
+	if (nodeId == InvalidNodeId) {
+		nodeForeachGroup([&] (int groupNodeId) {
+			nodeRemoveNormals(groupNodeId);
+		});
+		return true;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (!node->isAnyModelNode()) {
 			return false;
