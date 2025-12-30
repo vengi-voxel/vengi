@@ -43,6 +43,7 @@ private:
 				  float colorButtonSize, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	uint8_t currentSceneNormal() const;
 	void setTargetNormal(const palette::NormalPalette &normalPalette, const glm::vec3 &normal);
+	void drawNormalVisualization(const palette::NormalPalette &normalPalette);
 
 public:
 	NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);

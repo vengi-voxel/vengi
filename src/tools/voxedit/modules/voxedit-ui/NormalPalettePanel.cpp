@@ -14,6 +14,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/dearimgui/imgui_internal.h"
+#include "video/Camera.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -205,7 +206,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 
 			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
 
-			// TODO: NORMAL: show current normal
+			drawNormalVisualization(node.normalPalette());
 
 			if (ImGui::InputFloat3(_("Normal"), glm::value_ptr(_targetNormal))) {
 				setTargetNormal(node.normalPalette(), _targetNormal);
@@ -252,6 +253,84 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 	}
 
 	ImGui::End();
+}
+
+void NormalPalettePanel::drawNormalVisualization(const palette::NormalPalette &normalPalette) {
+	video::Camera *camera = _sceneMgr->activeCamera();
+	if (camera == nullptr) {
+		return;
+	}
+
+	ImDrawList *drawList = ImGui::GetWindowDrawList();
+	const float dpiScale = ImGui::GetStyle().FontScaleDpi;
+	const float radius = 40.0f * dpiScale;
+	const float padding = 10.0f * dpiScale;
+
+	ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+	const ImVec2 centerFace(cursorPos.x + radius, cursorPos.y + radius);
+	const ImVec2 centerBack(cursorPos.x + radius * 3 + padding, cursorPos.y + radius);
+
+	const int steps = 10;
+	for (int i = 0; i < steps; ++i) {
+		float t = (float)i / (float)(steps - 1);
+		float r = radius * (1.0f - t);
+		int valFace = 100 + (int)(155.0f * t);
+		drawList->AddCircleFilled(centerFace, r, IM_COL32(valFace, valFace, valFace, 255));
+		int valBack = 50 + (int)(100.0f * t);
+		drawList->AddCircleFilled(centerBack, r, IM_COL32(valBack, valBack, valBack, 255));
+	}
+	drawList->AddCircle(centerFace, radius, IM_COL32(255, 255, 255, 255));
+	drawList->AddText(ImVec2(centerFace.x - 15, centerFace.y + radius + 2), IM_COL32(255, 255, 255, 255), _("Front"));
+
+	drawList->AddCircle(centerBack, radius, IM_COL32(255, 255, 255, 255));
+	drawList->AddText(ImVec2(centerBack.x - 15, centerBack.y + radius + 2), IM_COL32(255, 255, 255, 255), _("Back"));
+
+	ImGui::Dummy(ImVec2(radius * 4 + padding, radius * 2 + 20));
+
+	const glm::mat4 &viewMatrix = camera->viewMatrix();
+	const glm::vec3 viewNormal = glm::mat3(viewMatrix) * _targetNormal;
+
+	const bool facing = viewNormal.z > 0.0f;
+	const ImVec2 center = facing ? centerFace : centerBack;
+	const ImVec2 pinPos(center.x + viewNormal.x * radius, center.y - viewNormal.y * radius);
+
+	drawList->AddLine(center, pinPos, IM_COL32(255, 0, 0, 255));
+	drawList->AddCircleFilled(pinPos, 4.0f, IM_COL32(255, 0, 0, 255));
+
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+		const ImVec2 mousePos = ImGui::GetMousePos();
+		bool clicked = false;
+		bool front = true;
+		float x = 0.0f;
+		float y = 0.0f;
+
+		auto checkCircle = [&](const ImVec2 &c, bool f) {
+			const float dx = mousePos.x - c.x;
+			const float dy = c.y - mousePos.y; // Invert Y
+			if (dx * dx + dy * dy <= radius * radius) {
+				clicked = true;
+				front = f;
+				x = dx / radius;
+				y = dy / radius;
+			}
+		};
+
+		checkCircle(centerFace, true);
+		checkCircle(centerBack, false);
+
+		if (clicked) {
+			float z = glm::sqrt(1.0f - x * x - y * y);
+			if (!front) {
+				z = -z;
+			}
+			// Transform back to world space
+			// We need inverse view matrix (rotation only)
+			// Inverse of rotation matrix is transpose
+			const glm::mat3 invViewMatrix = glm::transpose(glm::mat3(viewMatrix));
+			const glm::vec3 newNormal = invViewMatrix * glm::vec3(x, y, z);
+			setTargetNormal(normalPalette, glm::normalize(newNormal));
+		}
+	}
 }
 
 void NormalPalettePanel::setTargetNormal(const palette::NormalPalette &normalPalette, const glm::vec3 &normal) {
