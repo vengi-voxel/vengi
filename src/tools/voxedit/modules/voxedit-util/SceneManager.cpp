@@ -167,6 +167,12 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 }
 
 bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
+	if (nodeId == InvalidNodeId) {
+		nodeForeachGroup([&] (int groupNodeId) {
+			calculateNormals(groupNodeId, connectivity, recalcAll, fillAndHollow);
+		});
+		return true;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId)) {
 		if (!node->hasNormalPalette()) {
 			Log::warn("Node %i has no normal palette", nodeId);
