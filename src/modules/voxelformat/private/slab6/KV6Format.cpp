@@ -687,7 +687,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			if (!node->hasNormalPalette() || voxel.getNormal() == NO_NORMAL) {
 				vd.normal = priv::calculateDir(node->volume(), x, y, z, voxel);
 			} else {
-				vd.normal = voxel.getNormal() - NORMAL_OFFSET;
+				vd.normal = voxel.getNormal() - NORMAL_PALETTE_OFFSET;
 			}
 			voxdata.push_back(vd);
 		},

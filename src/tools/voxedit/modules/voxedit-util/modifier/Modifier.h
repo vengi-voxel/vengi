@@ -213,11 +213,11 @@ public:
 };
 
 inline uint8_t Modifier::normalColorIndex() const {
-	return _brushContext.normalColorIndex;
+	return _brushContext.normalIndex;
 }
 
 inline void Modifier::setNormalColorIndex(uint8_t paletteIndex) {
-	_brushContext.normalColorIndex = paletteIndex;
+	_brushContext.normalIndex = paletteIndex;
 }
 
 inline math::Axis Modifier::lockedAxis() const {

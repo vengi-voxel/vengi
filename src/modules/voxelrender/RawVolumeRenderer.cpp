@@ -699,8 +699,8 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 	if (normalsPalette.hash() != _normalsPaletteHash) {
 		_normalsPaletteHash = normalsPalette.hash();
 		_voxelShaderVertData.normals[NO_NORMAL] = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-		normalsPalette.toVec4f(&_voxelShaderVertData.normals[NORMAL_OFFSET]);
-		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + NORMAL_OFFSET);
+		normalsPalette.toVec4f(&_voxelShaderVertData.normals[NORMAL_PALETTE_OFFSET]);
+		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + NORMAL_PALETTE_OFFSET);
 	}
 }
 
@@ -781,11 +781,11 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 							if (normalIndex == NO_NORMAL) {
 								return;
 							}
-							normalIndex -= NORMAL_OFFSET;
-							if (normalIndex >= normalPalette.size()) {
+							size_t normalPaletteIndex = normalIndex - NORMAL_PALETTE_OFFSET;
+							if (normalPaletteIndex >= normalPalette.size()) {
 								return;
 							}
-							const glm::vec3 &norm = normalPalette.normal3f(normalIndex);
+							const glm::vec3 &norm = normalPalette.normal3f(normalPaletteIndex);
 							_shapeBuilder.line(center, center + norm * 3.0f);
 						});
 				} else {

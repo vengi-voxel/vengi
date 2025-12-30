@@ -58,7 +58,7 @@ struct BrushContext {
 	 */
 	bool fixedOrthoSideView = false;
 	bool normalPaint = false;
-	uint8_t normalColorIndex = NO_NORMAL;
+	uint8_t normalIndex = NO_NORMAL;
 	/** Grid resolution for snapping operations - voxels are placed at multiples of this value */
 	int gridResolution = 1;
 

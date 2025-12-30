@@ -183,13 +183,13 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 			voxel::RawVolume::Sampler sampler(wrapper.volume());
 			sampler.setPosition(x, y, z);
 			const glm::vec3 &normal = voxel::calculateNormal(sampler, connectivity);
-			int normalIdx = normalPalette.getClosestMatch(normal);
-			if (normalIdx == palette::PaletteNormalNotFound) {
-				normalIdx = NO_NORMAL;
+			int normalPaletteIndex = normalPalette.getClosestMatch(normal);
+			if (normalPaletteIndex == palette::PaletteNormalNotFound) {
+				normalPaletteIndex = NO_NORMAL;
 			} else {
-				normalIdx += NORMAL_OFFSET;
+				normalPaletteIndex += NORMAL_PALETTE_OFFSET;
 			}
-			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalIdx, voxel.getFlags());
+			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalPaletteIndex, voxel.getFlags());
 			wrapper.setVoxel(x, y, z, newVoxel);
 		});
 		if (fillAndHollow) {
@@ -3844,6 +3844,7 @@ bool SceneManager::nodeRemoveNormals(int nodeId) {
 				return;
 			}
 			voxel.setNormal(NO_NORMAL);
+			Log::error("reset normal at %i:%i:%i", x, y, z);
 			wrapper.setVoxel(x, y, z, voxel);
 		};
 		voxelutil::visitVolumeParallel(wrapper, func);

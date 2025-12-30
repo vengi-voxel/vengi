@@ -34,7 +34,7 @@ enum class VoxelType : uint8_t {
 };
 
 #define NO_NORMAL 0
-#define NORMAL_OFFSET 1
+#define NORMAL_PALETTE_OFFSET 1
 
 static constexpr const char* VoxelTypeStr[] = {
 	"Air",
