@@ -54,6 +54,30 @@ FormatDescription png() {
 	return {"Portable Network Graphics", "image/png", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE};
 }
 
+FormatDescription gif() {
+	return {"Graphics Interchange Format", "image/gif", {"gif"}, {}, 0u};
+}
+
+FormatDescription avi() {
+	return {"Audio Video Interleave", "video/avi", {"avi"}, {"RIFF"}, 0u};
+}
+
+FormatDescription mpeg() {
+	return {"MPEG-2 Video", "video/mpeg", {"mpeg", "mpeg2", "mpg"}, {"\x00\x00\x01\xBA"}, 0u};
+}
+
+const FormatDescription *videos() {
+	// clang-format: off
+	static thread_local FormatDescription desc[] = {
+		avi(),
+		mpeg(),
+		gif(), // more or less - used in the capture tool
+		FormatDescription::END
+	};
+	// clang-format: on
+	return desc;
+}
+
 const FormatDescription *images() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
@@ -65,7 +89,7 @@ const FormatDescription *images() {
 		{"PVR", "image/pvrTexture", {"pvr"}, {}, 0u},
 		{"Bitmap", "image/bmp", {"bmp"}, {}, 0u},
 		{"Photoshop", "image/vnd.adobe.photoshop", {"psd"}, {}, 0u},
-		{"Graphics Interchange Format", "image/gif", {"gif"}, {}, 0u},
+		gif(),
 		{"Radiance rgbE", "image/vnd.radiance", {"hdr"}, {}, 0u},
 		{"Softimage PIC", "image/softimage", {"pic"}, {}, 0u},
 		{"Portable Anymap", "image/x-portable-anymap", {"pnm"}, {}, 0u},

@@ -380,7 +380,12 @@ void Viewport::toggleVideoRecording() {
 		const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
 		_captureTool.startRecording(file.c_str(), dim.x, dim.y);
 	};
-	const char *filename = _captureTool.type() == image::CaptureType::AVI ? "video.avi" : "video.mpeg2";
+	const char *filename = "video.avi";
+	if (_captureTool.type() == image::CaptureType::MPEG2) {
+		filename = "video.mpeg2";
+	} else if (_captureTool.type() == image::CaptureType::GIF) {
+		filename = "video.gif";
+	}
 	video::WindowedApp::getInstance()->saveDialog(callback, {}, nullptr, filename);
 }
 
@@ -408,6 +413,9 @@ void Viewport::menuBarCaptureOptions() {
 	if (_captureTool.isRecording()) {
 		icon = ICON_LC_CIRCLE_STOP;
 		text = _("Stop recording");
+	} else if (!_captureTool.hasFinished()) {
+		icon = ICON_LC_LOADER_CIRCLE;
+		text = _("Finishing...");
 	}
 	if (ImGui::IconMenuItem(icon, text)) {
 		toggleVideoRecording();
@@ -417,8 +425,8 @@ void Viewport::menuBarCaptureOptions() {
 		ImGui::SameLine();
 		ImGui::Text(_("Pending frames: %u"), pendingFrames);
 	} else {
-		ImGui::TooltipText(_("You can control the fps of the video with the cvar %s\nPending frames: %u"),
-						   cfg::CoreMaxFPS, pendingFrames);
+		ImGui::TooltipText(_("Recording at %i fps\nPending frames: %u"),
+						   _captureTool.fps(), pendingFrames);
 	}
 }
 
@@ -514,15 +522,17 @@ void Viewport::update(double nowSeconds, command::CommandExecutionListener *list
 	ImGui::End();
 
 	if (_captureTool.isRecording()) {
-		_captureTool.enqueueFrame(renderToImage("**video**"));
+		if (_captureTool.shouldCaptureFrame(_nowSeconds)) {
+			_captureTool.enqueueFrame(renderToImage("**video**"), _nowSeconds);
+		}
 	} else if (_captureTool.hasFinished()) {
 		_captureTool.flush();
 	}
 }
 
 void Viewport::shutdown() {
-	_renderContext.shutdown();
 	_captureTool.abort();
+	_renderContext.shutdown();
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {

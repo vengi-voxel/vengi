@@ -246,6 +246,12 @@ bool MainWindow::init() {
 	return true;
 }
 
+void MainWindow::stopViewportRecordings() {
+	for (size_t i = 0; i < _viewports.size(); ++i) {
+		_viewports[i]->captureTool().stopRecording();
+	}
+}
+
 void MainWindow::shutdown() {
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		_viewports[i]->shutdown();

@@ -154,6 +154,8 @@ public:
 	void shutdown();
 	static bool _popupModelUnreference;
 
+	void stopViewportRecordings();
+
 	// commands
 	bool save(const core::String &file, const io::FormatDescription *desc);
 	bool load(const core::String &file, const io::FormatDescription *desc);

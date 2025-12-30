@@ -165,11 +165,15 @@ void createGroupPatterns(const FormatDescription *desc, core::DynamicArray<io::F
 
 namespace format {
 
+const FormatDescription *videos();
 const FormatDescription *images();
 const FormatDescription *fonts();
 const FormatDescription *lua();
 
 FormatDescription png();
+FormatDescription avi();
+FormatDescription mpeg();
+FormatDescription gif();
 
 void writeJson(io::WriteStream &stream, const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags);
 void printJson(const FormatDescription *desc, const core::StringMap<uint32_t> &flags = {});

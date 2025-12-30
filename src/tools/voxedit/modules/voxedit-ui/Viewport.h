@@ -167,6 +167,8 @@ public:
 
 	static core::String viewportId(int id, bool printable = false);
 
+	image::CaptureTool &captureTool();
+
 	void toggleScene();
 	bool isSceneMode() const;
 	bool isGameMode() const;
@@ -220,6 +222,10 @@ inline const glm::ivec2 &Viewport::pos() const {
 
 inline const glm::ivec2 &Viewport::size() const {
 	return _size;
+}
+
+inline image::CaptureTool &Viewport::captureTool() {
+	return _captureTool;
 }
 
 } // namespace voxedit
