@@ -16,6 +16,7 @@ General:
    - Fixed a lua integration bug for Windows
    - Improved palette name support
    - Converted the tree generators into lua scripts
+   - Fixed issues regarding `vxl`/`hva` animations (Command & Conquer)
 
 VoxConvert:
 
@@ -32,6 +33,8 @@ VoxEdit:
    - Fixed potential memento state corruption
    - Added more features to the palette panel
    - Fixed normal rendering with binary mesher
+   - Implemented editing of normals and improved the normal palette panel
+   - Improved autonormals
 
 Thumbnailer:
 
