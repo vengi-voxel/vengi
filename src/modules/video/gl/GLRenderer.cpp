@@ -202,6 +202,22 @@ bool clearColor(const glm::vec4 &clearColor) {
 	return true;
 }
 
+static void syncState() {
+	if (glstate().colorMask[0] != glstate().pendingColorMask[0] ||
+		glstate().colorMask[1] != glstate().pendingColorMask[1] ||
+		glstate().colorMask[2] != glstate().pendingColorMask[2] ||
+		glstate().colorMask[3] != glstate().pendingColorMask[3]) {
+		core_assert(glColorMask != nullptr);
+		glColorMask((GLboolean)glstate().pendingColorMask[0], (GLboolean)glstate().pendingColorMask[1],
+					(GLboolean)glstate().pendingColorMask[2], (GLboolean)glstate().pendingColorMask[3]);
+		glstate().colorMask[0] = glstate().pendingColorMask[0];
+		glstate().colorMask[1] = glstate().pendingColorMask[1];
+		glstate().colorMask[2] = glstate().pendingColorMask[2];
+		glstate().colorMask[3] = glstate().pendingColorMask[3];
+		checkError();
+	}
+}
+
 static GLbitfield getBitField(ClearFlag flag) {
 	GLbitfield glValue = 0;
 	if ((flag & ClearFlag::Color) == ClearFlag::Color) {
@@ -222,6 +238,7 @@ void clear(ClearFlag flag) {
 	if (glValue == 0) {
 		return;
 	}
+	syncState();
 	// intel told me so... 5% performance gain if clear is called with disabled scissors.
 	const bool enabled = disable(State::Scissor);
 	core_assert(glClear != nullptr);
@@ -344,10 +361,10 @@ bool scissor(int x, int y, int w, int h) {
 }
 
 void colorMask(bool red, bool green, bool blue, bool alpha) {
-	// TODO: RENDERER: reduce state changes here by putting the real gl call to the draw calls - only cache the desired state here.
-	core_assert(glColorMask != nullptr);
-	glColorMask((GLboolean)red, (GLboolean)green, (GLboolean)blue, (GLboolean)alpha);
-	checkError();
+	glstate().pendingColorMask[0] = red;
+	glstate().pendingColorMask[1] = green;
+	glstate().pendingColorMask[2] = blue;
+	glstate().pendingColorMask[3] = alpha;
 }
 
 bool enable(State state) {
@@ -1145,6 +1162,7 @@ void finish() {
 }
 
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
+	syncState();
 	const GLbitfield glValue = getBitField(flag);
 	GLenum filter = GL_NEAREST;
 	if (flag == ClearFlag::Color) {
@@ -1726,6 +1744,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	if (numIndices <= 0) {
 		return;
 	}
+	syncState();
 	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
@@ -1737,6 +1756,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 
 void drawArrays(Primitive mode, size_t count) {
 	video_trace_scoped(DrawArrays);
+	syncState();
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	video::validate(glstate().programHandle);
 	core_assert(glDrawArrays != nullptr);

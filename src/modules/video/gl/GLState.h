@@ -77,6 +77,9 @@ struct GLState {
 	int scissorW = 0;
 	int scissorH = 0;
 	core::BitSet<core::enumVal(State::Max)> states;
+	// TODO: use glm::bvec4
+	bool colorMask[4] {true, true, true, true};
+	bool pendingColorMask[4] {true, true, true, true};
 	Id bufferHandle[core::enumVal(BufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
 	FrameBufferMode framebufferMode = FrameBufferMode::Default;
