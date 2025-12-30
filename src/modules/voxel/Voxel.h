@@ -74,6 +74,8 @@ public:
 	CORE_FORCE_INLINE constexpr Voxel &operator=(const Voxel &other) {
 		if (other._normalIndex != NO_NORMAL) {
 			_normalIndex = other._normalIndex;
+		} else if (other.resetNormal()) {
+			_normalIndex = NO_NORMAL;
 		}
 		_material = other._material;
 		_flags = other._flags;
@@ -134,10 +136,18 @@ public:
 		setFlags(1); // FlagOutline
 	}
 
+	void setNormalReset() {
+		setFlags(2); // no shader flag for this
+	}
+
+	bool resetNormal() const {
+		return (_flags & 2) != 0;
+	}
+
 private:
 	VoxelType _material:2;
-	uint8_t _flags:1;
-	uint8_t _unused:5; // VoxelVertex::padding
+	uint8_t _flags:2; // not all flags are handled in the shader
+	uint8_t _unused:4; // VoxelVertex::padding
 	uint8_t _colorIndex;
 	uint8_t _normalIndex; // 0 == no normal
 	uint8_t _boneIdx;

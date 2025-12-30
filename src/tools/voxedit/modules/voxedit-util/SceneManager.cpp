@@ -3844,7 +3844,8 @@ bool SceneManager::nodeRemoveNormals(int nodeId) {
 			if (voxel.getNormal() == NO_NORMAL) {
 				return;
 			}
-			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), NO_NORMAL, voxel.getFlags());
+			voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), NO_NORMAL, voxel.getFlags());
+			newVoxel.setNormalReset();
 			wrapper.setVoxel(x, y, z, newVoxel);
 		};
 		voxelutil::visitVolumeParallel(wrapper, func);
