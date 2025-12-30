@@ -17,9 +17,6 @@ class Region;
 
 namespace scenegraph {
 
-// TODO: PERF: this should get cached in the SceneGraph for one frameIdx
-//             see SceneGraph::transformForFrame() - this method is called a lot
-//             if your scenegraph is large
 class FrameTransform {
 private:
 	mutable glm::vec3 _scale;
