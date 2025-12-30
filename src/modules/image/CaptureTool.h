@@ -10,13 +10,18 @@
 
 namespace image {
 
-enum class CaptureType { AVI, MPEG2, Max };
+enum class CaptureType { AVI, MPEG2, GIF, Max };
+
+struct GifWriterWrapper;
 
 class CaptureTool {
 private:
-	CaptureType _type;
+	CaptureType _type = CaptureType::AVI;
 	int _fps = 30;
 	image::AVI _avi{};
+	GifWriterWrapper* _gifWriter = nullptr;
+	int _gifBits = 8;
+	bool _gifDither = false;
 	core::SharedPtr<io::FileStream> _videoWriteStream = nullptr;
 	core::ConcurrentQueue<image::ImagePtr> _frameQueue;
 	core::AtomicBool _stop = false;
@@ -25,7 +30,7 @@ private:
 	static int encodeFrame(CaptureTool *data);
 
 public:
-	CaptureTool(CaptureType type = CaptureType::AVI) : _type(type) {
+	CaptureTool() {
 	}
 	~CaptureTool() {
 		abort();

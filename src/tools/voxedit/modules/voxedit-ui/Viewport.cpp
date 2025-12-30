@@ -380,7 +380,12 @@ void Viewport::toggleVideoRecording() {
 		const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
 		_captureTool.startRecording(file.c_str(), dim.x, dim.y);
 	};
-	const char *filename = _captureTool.type() == image::CaptureType::AVI ? "video.avi" : "video.mpeg2";
+	const char *filename = "video.avi";
+	if (_captureTool.type() == image::CaptureType::MPEG2) {
+		filename = "video.mpeg2";
+	} else if (_captureTool.type() == image::CaptureType::GIF) {
+		filename = "video.gif";
+	}
 	video::WindowedApp::getInstance()->saveDialog(callback, {}, nullptr, filename);
 }
 
