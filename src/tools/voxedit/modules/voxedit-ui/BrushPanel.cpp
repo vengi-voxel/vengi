@@ -23,6 +23,7 @@
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"
+#include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextureBrush.h"
@@ -255,8 +256,12 @@ void BrushPanel::updateNormalBrushPanel(command::CommandExecutionListener &liste
 		ImGui::TextWrappedUnformatted(_("Enable normal rendering to see your changes"));
 	}
 	// TODO: BRUSH: see https://github.com/vengi-voxel/vengi/issues/253
-	// TODO: BRUSH: brush.setPaintMode()
-	// TODO: BRUSH: show current normal
+
+	NormalBrush::PaintMode paintMode = brush.paintMode();
+	int paintModeInt = (int)paintMode;
+	if (ImGui::Combo(_("Mode"), &paintModeInt, NormalBrush::PaintModeStr, (int)NormalBrush::PaintMode::Max)) {
+		brush.setPaintMode((NormalBrush::PaintMode)paintModeInt);
+	}
 }
 
 void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &listener) {

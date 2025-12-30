@@ -23,16 +23,18 @@ class NormalBrush : public AABBBrush {
 public:
 	/**
 	 * @brief Different ways to modify voxel normals
+	 * @li @c Manual: Use the currently selected normal from the palette
+	 * @li @c Auto: Automatically determine the normal based on surrounding voxels
 	 */
-	enum class PaintMode : uint8_t { Auto, Manual, Max };
+	enum class PaintMode : uint8_t { Manual, Auto, Max };
 
-	static constexpr const char *PaintModeStr[] = {N_("Auto"), N_("Manual")};
+	static constexpr const char *PaintModeStr[] = {N_("Manual"), N_("Auto")};
 	static_assert(lengthof(PaintModeStr) == (int)NormalBrush::PaintMode::Max, "PaintModeStr size mismatch");
 
 private:
 	using Super = AABBBrush;
 
-	PaintMode _paintMode = PaintMode::Auto; ///< Active paint mode
+	PaintMode _paintMode = PaintMode::Manual; ///< Active paint mode
 
 protected:
 	/**

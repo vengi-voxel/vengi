@@ -205,6 +205,8 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 
 			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
 
+			// TODO: NORMAL: show current normal
+
 			if (ImGui::InputFloat3(_("Normal"), glm::value_ptr(_targetNormal))) {
 				setTargetNormal(node.normalPalette(), _targetNormal);
 			}
