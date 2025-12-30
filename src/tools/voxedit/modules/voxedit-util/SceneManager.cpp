@@ -42,6 +42,7 @@
 #include "scenegraph/SceneUtil.h"
 #include "video/Camera.h"
 #include "voxedit-util/ModelNodeSettings.h"
+#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
@@ -3839,16 +3840,15 @@ bool SceneManager::nodeRemoveNormals(int nodeId) {
 			return false;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
-		auto func = [&wrapper](int x, int y, int z, voxel::Voxel voxel) {
+		auto func = [&wrapper](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel.getNormal() == NO_NORMAL) {
 				return;
 			}
-			voxel.setNormal(NO_NORMAL);
-			Log::error("reset normal at %i:%i:%i", x, y, z);
-			wrapper.setVoxel(x, y, z, voxel);
+			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), NO_NORMAL, voxel.getFlags());
+			wrapper.setVoxel(x, y, z, newVoxel);
 		};
 		voxelutil::visitVolumeParallel(wrapper, func);
-		modified(node->id(), wrapper.dirtyRegion());
+		modified(node->id(), wrapper.dirtyRegion(), SceneModifiedFlags::NoResetTrace);
 		return true;
 	}
 	return false;
