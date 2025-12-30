@@ -52,7 +52,7 @@ glm::vec3 calculateNormal(SAMPLER &sampler, voxel::Connectivity connectivity) {
 	if (sum.x == 0 && sum.y == 0 && sum.z == 0) {
 		return glm::vec3(0.0f);
 	}
-	return glm::normalize(glm::vec3(sum));
+	return glm::normalize(glm::vec3(-sum));
 }
 
 } // namespace voxel
