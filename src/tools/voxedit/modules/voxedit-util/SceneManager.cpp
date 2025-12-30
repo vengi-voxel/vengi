@@ -3289,12 +3289,22 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 		Log::debug("- keyframe %i", (int)kf.frameIdx);
 	}
 	if (newKeyFrameIdx > 0) {
-		scenegraph::KeyFrameIndex copyFromKeyFrameIdx = node.previousKeyFrameForFrame(frameIdx);
-		core_assert(copyFromKeyFrameIdx != newKeyFrameIdx);
-		scenegraph::SceneGraphTransform copyFromTransform = node.keyFrame(copyFromKeyFrameIdx).transform();
-		Log::debug("Assign transform from key frame %d to frame %d", (int)copyFromKeyFrameIdx, (int)frameIdx);
+		scenegraph::SceneGraphTransform copyFromTransform;
+		if (node.isCameraNode() && activeCamera() != nullptr) {
+			Log::debug("New keyframe for camera node %i at frame %i", node.id(), (int)frameIdx);
+			if (video::Camera* camera = activeCamera()) {
+				copyFromTransform.setWorldTranslation(camera->eye());
+				copyFromTransform.setWorldOrientation(camera->orientation());
+			}
+		} else {
+			scenegraph::KeyFrameIndex copyFromKeyFrameIdx = node.previousKeyFrameForFrame(frameIdx);
+			core_assert(copyFromKeyFrameIdx != newKeyFrameIdx);
+			copyFromTransform = node.keyFrame(copyFromKeyFrameIdx).transform();
+			Log::debug("Assign transform from key frame %d to frame %d", (int)copyFromKeyFrameIdx, (int)frameIdx);
+		}
 		scenegraph::SceneGraphKeyFrame &copyToKeyFrame = node.keyFrame(newKeyFrameIdx);
 		copyToKeyFrame.setTransform(copyFromTransform);
+		_sceneGraph.updateTransforms();
 		core_assert_msg(copyToKeyFrame.frameIdx == frameIdx, "Expected frame idx %d, got %d", (int)frameIdx, (int)copyToKeyFrame.frameIdx);
 		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 		markDirty();
