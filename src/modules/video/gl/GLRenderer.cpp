@@ -140,107 +140,101 @@ void readBuffer(GBufferTextureType textureType) {
 }
 
 float lineWidth(float width) {
+	RendererState &rs = rendererState();
 	// line width > 1.0 is deprecated in core profile context
 	if (glState().glVersion.isAtLeast(3, 2)) {
-		return rendererState().lineWidth;
+		return rs.lineWidth;
 	}
 	video_trace_scoped(LineWidth);
-	if (rendererState().smoothedLineWidth.x < 0.0f) {
+	if (rs.smoothedLineWidth.x < 0.0f) {
 #ifdef USE_OPENGLES
 		GLfloat buf[2];
 		core_assert(glGetFloatv != nullptr);
 		glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		rendererState().smoothedLineWidth.x = buf[0];
-		rendererState().smoothedLineWidth.y = buf[1];
+		rs.smoothedLineWidth.x = buf[0];
+		rs.smoothedLineWidth.y = buf[1];
 		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		rendererState().aliasedLineWidth.x = buf[0];
-		rendererState().aliasedLineWidth.y = buf[1];
+		rs.aliasedLineWidth.x = buf[0];
+		rs.aliasedLineWidth.y = buf[1];
 #else
 		GLdouble buf[2];
 		core_assert(glGetDoublev != nullptr);
 		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		rendererState().smoothedLineWidth.x = (float)buf[0];
-		rendererState().smoothedLineWidth.y = (float)buf[1];
+		rs.smoothedLineWidth.x = (float)buf[0];
+		rs.smoothedLineWidth.y = (float)buf[1];
 		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		rendererState().aliasedLineWidth.x = (float)buf[0];
-		rendererState().aliasedLineWidth.y = (float)buf[1];
+		rs.aliasedLineWidth.x = (float)buf[0];
+		rs.aliasedLineWidth.y = (float)buf[1];
 #endif
 		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
 	}
-	if (glm::abs(rendererState().pendingLineWidth - width) < glm::epsilon<float>()) {
-		return rendererState().pendingLineWidth;
+	if (glm::abs(rs.pendingLineWidth - width) < glm::epsilon<float>()) {
+		return rs.pendingLineWidth;
 	}
-	const float oldWidth = rendererState().pendingLineWidth;
-	rendererState().pendingLineWidth = width;
+	const float oldWidth = rs.pendingLineWidth;
+	rs.pendingLineWidth = width;
 	return oldWidth;
 }
 
 static void syncState() {
-	if (rendererState().clearColor != rendererState().pendingClearColor) {
-		rendererState().clearColor = rendererState().pendingClearColor;
+	RendererState &rs = rendererState();
+	if (rs.clearColor != rs.pendingClearColor) {
+		rs.clearColor = rs.pendingClearColor;
 		core_assert(glClearColor != nullptr);
-		glClearColor(rendererState().clearColor.r, rendererState().clearColor.g, rendererState().clearColor.b,
-					 rendererState().clearColor.a);
+		glClearColor(rs.clearColor.r, rs.clearColor.g, rs.clearColor.b, rs.clearColor.a);
 		checkError();
 	}
 
-	if (rendererState().viewportX != rendererState().pendingViewportX ||
-		rendererState().viewportY != rendererState().pendingViewportY ||
-		rendererState().viewportW != rendererState().pendingViewportW ||
-		rendererState().viewportH != rendererState().pendingViewportH) {
-		rendererState().viewportX = rendererState().pendingViewportX;
-		rendererState().viewportY = rendererState().pendingViewportY;
-		rendererState().viewportW = rendererState().pendingViewportW;
-		rendererState().viewportH = rendererState().pendingViewportH;
+	if (rs.viewportX != rs.pendingViewportX || rs.viewportY != rs.pendingViewportY ||
+		rs.viewportW != rs.pendingViewportW || rs.viewportH != rs.pendingViewportH) {
+		rs.viewportX = rs.pendingViewportX;
+		rs.viewportY = rs.pendingViewportY;
+		rs.viewportW = rs.pendingViewportW;
+		rs.viewportH = rs.pendingViewportH;
 		core_assert(glViewport != nullptr);
-		glViewport((GLint)rendererState().viewportX, (GLint)rendererState().viewportY,
-				   (GLsizei)rendererState().viewportW, (GLsizei)rendererState().viewportH);
+		glViewport((GLint)rs.viewportX, (GLint)rs.viewportY, (GLsizei)rs.viewportW, (GLsizei)rs.viewportH);
 		checkError();
 	}
 
-	if (rendererState().colorMask[0] != rendererState().pendingColorMask[0] ||
-		rendererState().colorMask[1] != rendererState().pendingColorMask[1] ||
-		rendererState().colorMask[2] != rendererState().pendingColorMask[2] ||
-		rendererState().colorMask[3] != rendererState().pendingColorMask[3]) {
+	if (rs.colorMask[0] != rs.pendingColorMask[0] || rs.colorMask[1] != rs.pendingColorMask[1] ||
+		rs.colorMask[2] != rs.pendingColorMask[2] || rs.colorMask[3] != rs.pendingColorMask[3]) {
 		core_assert(glColorMask != nullptr);
-		glColorMask((GLboolean)rendererState().pendingColorMask[0], (GLboolean)rendererState().pendingColorMask[1],
-					(GLboolean)rendererState().pendingColorMask[2], (GLboolean)rendererState().pendingColorMask[3]);
-		rendererState().colorMask[0] = rendererState().pendingColorMask[0];
-		rendererState().colorMask[1] = rendererState().pendingColorMask[1];
-		rendererState().colorMask[2] = rendererState().pendingColorMask[2];
-		rendererState().colorMask[3] = rendererState().pendingColorMask[3];
+		glColorMask((GLboolean)rs.pendingColorMask[0], (GLboolean)rs.pendingColorMask[1],
+					(GLboolean)rs.pendingColorMask[2], (GLboolean)rs.pendingColorMask[3]);
+		rs.colorMask[0] = rs.pendingColorMask[0];
+		rs.colorMask[1] = rs.pendingColorMask[1];
+		rs.colorMask[2] = rs.pendingColorMask[2];
+		rs.colorMask[3] = rs.pendingColorMask[3];
 		checkError();
 	}
 
-	if (rendererState().scissorX != rendererState().pendingScissorX ||
-		rendererState().scissorY != rendererState().pendingScissorY ||
-		rendererState().scissorW != rendererState().pendingScissorW ||
-		rendererState().scissorH != rendererState().pendingScissorH) {
-		rendererState().scissorX = rendererState().pendingScissorX;
-		rendererState().scissorY = rendererState().pendingScissorY;
-		rendererState().scissorW = rendererState().pendingScissorW;
-		rendererState().scissorH = rendererState().pendingScissorH;
+	if (rs.scissorX != rs.pendingScissorX || rs.scissorY != rs.pendingScissorY || rs.scissorW != rs.pendingScissorW ||
+		rs.scissorH != rs.pendingScissorH) {
+		rs.scissorX = rs.pendingScissorX;
+		rs.scissorY = rs.pendingScissorY;
+		rs.scissorW = rs.pendingScissorW;
+		rs.scissorH = rs.pendingScissorH;
 
 		GLint bottom;
-		if (rendererState().clipOriginLowerLeft) {
-			bottom = rendererState().viewportH - (rendererState().scissorY + rendererState().scissorH);
+		if (rs.clipOriginLowerLeft) {
+			bottom = rs.viewportH - (rs.scissorY + rs.scissorH);
 		} else {
-			bottom = rendererState().scissorY;
+			bottom = rs.scissorY;
 		}
-		bottom = (GLint)glm::round(bottom * rendererState().scaleFactor);
-		const GLint left = (GLint)glm::round(rendererState().scissorX * rendererState().scaleFactor);
-		const GLsizei width = (GLsizei)glm::round(rendererState().scissorW * rendererState().scaleFactor);
-		const GLsizei height = (GLsizei)glm::round(rendererState().scissorH * rendererState().scaleFactor);
+		bottom = (GLint)glm::round(bottom * rs.scaleFactor);
+		const GLint left = (GLint)glm::round(rs.scissorX * rs.scaleFactor);
+		const GLsizei width = (GLsizei)glm::round(rs.scissorW * rs.scaleFactor);
+		const GLsizei height = (GLsizei)glm::round(rs.scissorH * rs.scaleFactor);
 		core_assert(glScissor != nullptr);
 		glScissor(left, bottom, width, height);
 		checkError();
 	}
 
-	if (rendererState().states != rendererState().pendingStates) {
+	if (rs.states != rs.pendingStates) {
 		for (int i = 0; i < core::enumVal(State::Max); ++i) {
-			if (rendererState().states[i] != rendererState().pendingStates[i]) {
+			if (rs.states[i] != rs.pendingStates[i]) {
 				const State state = (State)i;
-				const bool enable = rendererState().pendingStates[i];
+				const bool enable = rs.pendingStates[i];
 				if (state == State::DepthMask) {
 					core_assert(glDepthMask != nullptr);
 					glDepthMask(enable ? GL_TRUE : GL_FALSE);
@@ -255,96 +249,92 @@ static void syncState() {
 				}
 			}
 		}
-		rendererState().states = rendererState().pendingStates;
+		rs.states = rs.pendingStates;
 		checkError();
 	}
 
-	if (rendererState().blendEquation != rendererState().pendingBlendEquation) {
-		rendererState().blendEquation = rendererState().pendingBlendEquation;
-		const GLenum convertedFunc = _priv::BlendEquations[core::enumVal(rendererState().blendEquation)];
+	if (rs.blendEquation != rs.pendingBlendEquation) {
+		rs.blendEquation = rs.pendingBlendEquation;
+		const GLenum convertedFunc = _priv::BlendEquations[core::enumVal(rs.blendEquation)];
 		core_assert(glBlendEquation != nullptr);
 		glBlendEquation(convertedFunc);
 		checkError();
 	}
 
-	if (rendererState().blendSrcRGB != rendererState().pendingBlendSrcRGB ||
-		rendererState().blendDestRGB != rendererState().pendingBlendDestRGB ||
-		rendererState().blendSrcAlpha != rendererState().pendingBlendSrcAlpha ||
-		rendererState().blendDestAlpha != rendererState().pendingBlendDestAlpha) {
-		rendererState().blendSrcRGB = rendererState().pendingBlendSrcRGB;
-		rendererState().blendDestRGB = rendererState().pendingBlendDestRGB;
-		rendererState().blendSrcAlpha = rendererState().pendingBlendSrcAlpha;
-		rendererState().blendDestAlpha = rendererState().pendingBlendDestAlpha;
+	if (rs.blendSrcRGB != rs.pendingBlendSrcRGB || rs.blendDestRGB != rs.pendingBlendDestRGB ||
+		rs.blendSrcAlpha != rs.pendingBlendSrcAlpha || rs.blendDestAlpha != rs.pendingBlendDestAlpha) {
+		rs.blendSrcRGB = rs.pendingBlendSrcRGB;
+		rs.blendDestRGB = rs.pendingBlendDestRGB;
+		rs.blendSrcAlpha = rs.pendingBlendSrcAlpha;
+		rs.blendDestAlpha = rs.pendingBlendDestAlpha;
 
-		if (rendererState().blendSrcRGB == rendererState().blendSrcAlpha &&
-			rendererState().blendDestRGB == rendererState().blendDestAlpha) {
-			const GLenum glSrc = _priv::BlendModes[core::enumVal(rendererState().blendSrcRGB)];
-			const GLenum glDest = _priv::BlendModes[core::enumVal(rendererState().blendDestRGB)];
+		if (rs.blendSrcRGB == rs.blendSrcAlpha && rs.blendDestRGB == rs.blendDestAlpha) {
+			const GLenum glSrc = _priv::BlendModes[core::enumVal(rs.blendSrcRGB)];
+			const GLenum glDest = _priv::BlendModes[core::enumVal(rs.blendDestRGB)];
 			core_assert(glBlendFunc != nullptr);
 			glBlendFunc(glSrc, glDest);
 		} else {
-			const GLenum glSrcRGB = _priv::BlendModes[core::enumVal(rendererState().blendSrcRGB)];
-			const GLenum glDestRGB = _priv::BlendModes[core::enumVal(rendererState().blendDestRGB)];
-			const GLenum glSrcAlpha = _priv::BlendModes[core::enumVal(rendererState().blendSrcAlpha)];
-			const GLenum glDestAlpha = _priv::BlendModes[core::enumVal(rendererState().blendDestAlpha)];
+			const GLenum glSrcRGB = _priv::BlendModes[core::enumVal(rs.blendSrcRGB)];
+			const GLenum glDestRGB = _priv::BlendModes[core::enumVal(rs.blendDestRGB)];
+			const GLenum glSrcAlpha = _priv::BlendModes[core::enumVal(rs.blendSrcAlpha)];
+			const GLenum glDestAlpha = _priv::BlendModes[core::enumVal(rs.blendDestAlpha)];
 			core_assert(glBlendFuncSeparate != nullptr);
 			glBlendFuncSeparate(glSrcRGB, glDestRGB, glSrcAlpha, glDestAlpha);
 		}
 		checkError();
 	}
 
-	if (rendererState().cullFace != rendererState().pendingCullFace) {
-		rendererState().cullFace = rendererState().pendingCullFace;
-		const GLenum glFace = _priv::Faces[core::enumVal(rendererState().cullFace)];
+	if (rs.cullFace != rs.pendingCullFace) {
+		rs.cullFace = rs.pendingCullFace;
+		const GLenum glFace = _priv::Faces[core::enumVal(rs.cullFace)];
 		core_assert(glCullFace != nullptr);
 		glCullFace(glFace);
 		checkError();
 	}
 
-	if (rendererState().depthFunc != rendererState().pendingDepthFunc) {
-		rendererState().depthFunc = rendererState().pendingDepthFunc;
+	if (rs.depthFunc != rs.pendingDepthFunc) {
+		rs.depthFunc = rs.pendingDepthFunc;
 		core_assert(glDepthFunc != nullptr);
-		glDepthFunc(_priv::CompareFuncs[core::enumVal(rendererState().depthFunc)]);
+		glDepthFunc(_priv::CompareFuncs[core::enumVal(rs.depthFunc)]);
 		checkError();
 	}
 
-	if (rendererState().polygonModeFace != rendererState().pendingPolygonModeFace ||
-		rendererState().polygonMode != rendererState().pendingPolygonMode) {
-		rendererState().polygonModeFace = rendererState().pendingPolygonModeFace;
-		rendererState().polygonMode = rendererState().pendingPolygonMode;
+	if (rs.polygonModeFace != rs.pendingPolygonModeFace || rs.polygonMode != rs.pendingPolygonMode) {
+		rs.polygonModeFace = rs.pendingPolygonModeFace;
+		rs.polygonMode = rs.pendingPolygonMode;
 #ifndef USE_OPENGLES
-		const GLenum glMode = _priv::PolygonModes[core::enumVal(rendererState().polygonMode)];
-		const GLenum glFace = _priv::Faces[core::enumVal(rendererState().polygonModeFace)];
+		const GLenum glMode = _priv::PolygonModes[core::enumVal(rs.polygonMode)];
+		const GLenum glFace = _priv::Faces[core::enumVal(rs.polygonModeFace)];
 		glPolygonMode(glFace, glMode);
 		checkError();
 #endif
 	}
 
-	if (rendererState().polygonOffset != rendererState().pendingPolygonOffset) {
-		rendererState().polygonOffset = rendererState().pendingPolygonOffset;
+	if (rs.polygonOffset != rs.pendingPolygonOffset) {
+		rs.polygonOffset = rs.pendingPolygonOffset;
 		core_assert(glPolygonOffset != nullptr);
-		glPolygonOffset(rendererState().polygonOffset.x, rendererState().polygonOffset.y);
+		glPolygonOffset(rs.polygonOffset.x, rs.polygonOffset.y);
 		checkError();
 	}
 
-	if (rendererState().pointSize != rendererState().pendingPointSize) {
-		rendererState().pointSize = rendererState().pendingPointSize;
+	if (rs.pointSize != rs.pendingPointSize) {
+		rs.pointSize = rs.pendingPointSize;
 		core_assert(glPointSize != nullptr);
-		glPointSize(rendererState().pointSize);
+		glPointSize(rs.pointSize);
 		checkError();
 	}
 
-	if (glm::abs(rendererState().lineWidth - rendererState().pendingLineWidth) >= glm::epsilon<float>()) {
-		float width = rendererState().pendingLineWidth;
-		if (rendererState().states[core::enumVal(State::LineSmooth)]) {
-			width = glm::clamp(width, rendererState().smoothedLineWidth.x, rendererState().smoothedLineWidth.y);
+	if (glm::abs(rs.lineWidth - rs.pendingLineWidth) >= glm::epsilon<float>()) {
+		float width = rs.pendingLineWidth;
+		if (rs.states[core::enumVal(State::LineSmooth)]) {
+			width = glm::clamp(width, rs.smoothedLineWidth.x, rs.smoothedLineWidth.y);
 		} else {
-			width = glm::clamp(width, rendererState().aliasedLineWidth.x, rendererState().aliasedLineWidth.y);
+			width = glm::clamp(width, rs.aliasedLineWidth.x, rs.aliasedLineWidth.y);
 		}
 		core_assert(glLineWidth != nullptr);
 		glLineWidth((GLfloat)width);
 		checkError(false);
-		rendererState().lineWidth = rendererState().pendingLineWidth;
+		rs.lineWidth = rs.pendingLineWidth;
 	}
 }
 
