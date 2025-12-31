@@ -31,7 +31,7 @@ void setup() {
 
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	if (flextVkInit() == -1) {
-		Log::error("Could not initialize opengl: %s", SDL_GetError());
+		Log::error("Could not initialize vulkan: %s", SDL_GetError());
 		return false;
 	}
 
