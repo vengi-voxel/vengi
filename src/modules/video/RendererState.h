@@ -56,6 +56,8 @@ struct RendererState {
 	BlendEquation pendingBlendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
 	Id textureHandle[core::enumVal(TextureUnit::Max)] { InvalidId };
+	Id pendingTextureHandle[core::enumVal(TextureUnit::Max)] { InvalidId };
+	TextureType pendingTextureType[core::enumVal(TextureUnit::Max)] { TextureType::Max };
 	Id imageHandle = InvalidId;
 	AccessMode imageAccessMode = AccessMode::Max;
 	ImageFormat imageFormat = ImageFormat::Max;

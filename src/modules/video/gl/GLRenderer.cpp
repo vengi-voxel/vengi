@@ -176,8 +176,49 @@ float lineWidth(float width) {
 	return oldWidth;
 }
 
+static bool activateTextureUnit(TextureUnit unit) {
+	if (rendererState().textureUnit == unit) {
+		return false;
+	}
+	core_assert(TextureUnit::Max != unit);
+	const GLenum glUnit = _priv::TextureUnits[core::enumVal(unit)];
+	core_assert(glActiveTexture != nullptr);
+	glActiveTexture(glUnit);
+	checkError();
+	rendererState().textureUnit = unit;
+	return true;
+}
+
+static bool bindTextureForce(TextureUnit unit, TextureType type, Id handle) {
+	if (useFeature(Feature::DirectStateAccess)) {
+		if (rendererState().textureHandle[core::enumVal(unit)] != handle) {
+			rendererState().textureHandle[core::enumVal(unit)] = handle;
+			core_assert(glBindTextureUnit != nullptr);
+			glBindTextureUnit(core::enumVal(unit), handle);
+			checkError();
+			return true;
+		}
+	} else {
+		const bool changeUnit = activateTextureUnit(unit);
+		if (changeUnit || rendererState().textureHandle[core::enumVal(unit)] != handle) {
+			rendererState().textureHandle[core::enumVal(unit)] = handle;
+			core_assert(glBindTexture != nullptr);
+			glBindTexture(_priv::TextureTypes[core::enumVal(type)], handle);
+			checkError();
+			return true;
+		}
+	}
+	return false;
+}
+
 static void syncState() {
 	RendererState &rs = rendererState();
+	for (int i = 0; i < core::enumVal(TextureUnit::Max); ++i) {
+		if (rs.textureHandle[i] != rs.pendingTextureHandle[i]) {
+			bindTextureForce((TextureUnit)i, rs.pendingTextureType[i], rs.pendingTextureHandle[i]);
+		}
+	}
+
 	if (rs.clearColor != rs.pendingClearColor) {
 		rs.clearColor = rs.pendingClearColor;
 		core_assert(glClearColor != nullptr);
@@ -369,41 +410,18 @@ void clear(ClearFlag flag) {
 	checkError();
 }
 
-static bool activateTextureUnit(TextureUnit unit) {
-	if (rendererState().textureUnit == unit) {
-		return false;
-	}
-	core_assert(TextureUnit::Max != unit);
-	const GLenum glUnit = _priv::TextureUnits[core::enumVal(unit)];
-	core_assert(glActiveTexture != nullptr);
-	glActiveTexture(glUnit);
-	checkError();
-	rendererState().textureUnit = unit;
-	return true;
-}
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	core_assert(TextureUnit::Max != unit);
 	core_assert(TextureType::Max != type);
-	if (useFeature(Feature::DirectStateAccess)) {
-		if (rendererState().textureHandle[core::enumVal(unit)] != handle) {
-			rendererState().textureHandle[core::enumVal(unit)] = handle;
-			core_assert(glBindTextureUnit != nullptr);
-			glBindTextureUnit(core::enumVal(unit), handle);
-			checkError();
-			return true;
-		}
-	} else {
-		const bool changeUnit = activateTextureUnit(unit);
-		if (changeUnit || rendererState().textureHandle[core::enumVal(unit)] != handle) {
-			rendererState().textureHandle[core::enumVal(unit)] = handle;
-			core_assert(glBindTexture != nullptr);
-			glBindTexture(_priv::TextureTypes[core::enumVal(type)], handle);
-			checkError();
-			return true;
-		}
+	bool changed = rendererState().pendingTextureHandle[core::enumVal(unit)] != handle;
+	rendererState().pendingTextureHandle[core::enumVal(unit)] = handle;
+	rendererState().pendingTextureType[core::enumVal(unit)] = type;
+
+	if (unit == TextureUnit::Upload) {
+		bindTextureForce(unit, type, handle);
 	}
-	return false;
+	return changed;
 }
 
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
@@ -423,7 +441,7 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 
 		);
 	} else if (!useFeature(Feature::DirectStateAccess) && glGetTexImage != nullptr) {
-		bindTexture(unit, type, handle);
+		bindTextureForce(unit, type, handle);
 		glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void *)*pixels);
 	} else {
 		/* Fallback for WebGL / OpenGLES where glGetTexImage / glGetTextureImage
