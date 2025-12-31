@@ -295,7 +295,7 @@ void NormalPalettePanel::drawNormalVisualization(const palette::NormalPalette &n
 	const ImVec2 pinPos(center.x + viewNormal.x * radius, center.y - viewNormal.y * radius);
 
 	drawList->AddLine(center, pinPos, IM_COL32(255, 0, 0, 255));
-	drawList->AddCircleFilled(pinPos, 4.0f, IM_COL32(255, 0, 0, 255));
+	drawList->AddCircleFilled(pinPos, 4.0f * dpiScale, IM_COL32(255, 0, 0, 255));
 
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 		const ImVec2 mousePos = ImGui::GetMousePos();
