@@ -410,7 +410,6 @@ void clear(ClearFlag flag) {
 	checkError();
 }
 
-
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	core_assert(TextureUnit::Max != unit);
 	core_assert(TextureType::Max != type);
@@ -514,10 +513,6 @@ bool useProgram(Id handle) {
 	return true;
 }
 
-Id getProgram() {
-	return rendererState().programHandle;
-}
-
 bool bindVertexArray(Id handle) {
 	if (rendererState().vertexArrayHandle == handle) {
 		return false;
@@ -527,15 +522,6 @@ bool bindVertexArray(Id handle) {
 	checkError();
 	rendererState().vertexArrayHandle = handle;
 	return true;
-}
-
-Id boundVertexArray() {
-	return rendererState().vertexArrayHandle;
-}
-
-Id boundBuffer(BufferType type) {
-	const int typeIndex = core::enumVal(type);
-	return rendererState().bufferHandle[typeIndex];
 }
 
 void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
@@ -911,10 +897,6 @@ void genFramebuffers(uint8_t amount, Id *ids) {
 		glGenFramebuffers((GLsizei)amount, (GLuint *)ids);
 	}
 	checkError();
-}
-
-Id currentFramebuffer() {
-	return rendererState().framebufferHandle;
 }
 
 void deleteFramebuffers(uint8_t amount, Id *ids) {

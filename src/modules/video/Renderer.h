@@ -388,4 +388,24 @@ Id currentTexture(TextureUnit unit);
  */
 const core::DynamicSet<Id> &textures();
 
+/**
+ * @brief Get the currently bound shader program Id.
+ */
+Id getProgram();
+
+/**
+ * @brief Get the currently bound vertex array handle.
+ */
+Id boundVertexArray();
+
+/**
+ * @brief Get the currently bound buffer handle for a given buffer type.
+ */
+Id boundBuffer(BufferType type);
+
+/**
+ * @brief Get the currently bound framebuffer id.
+ */
+Id currentFramebuffer();
+
 } // namespace video

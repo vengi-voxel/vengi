@@ -274,26 +274,11 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 bool useProgram(Id handle);
 
 /**
- * @brief Get the currently bound shader program Id.
- */
-Id getProgram();
-
-/**
  * @brief Bind a vertex array object.
  *
  * Returns @c true if the bound VAO actually changed.
  */
 bool bindVertexArray(Id handle);
-
-/**
- * @brief Get the currently bound vertex array handle.
- */
-Id boundVertexArray();
-
-/**
- * @brief Get the currently bound buffer handle for a given buffer type.
- */
-Id boundBuffer(BufferType type);
 
 /**
  * @brief Unmap a previously mapped buffer.
@@ -395,11 +380,6 @@ void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids);
  * @brief Delete @p amount textures and invalidate the ids.
  */
 void deleteTextures(uint8_t amount, Id *ids);
-
-/**
- * @brief Get the currently bound framebuffer id.
- */
-Id currentFramebuffer();
 
 /**
  * @brief Generate framebuffer object names and store them into @p ids.

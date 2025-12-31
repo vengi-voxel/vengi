@@ -209,14 +209,6 @@ bool bindVertexArray(Id handle) {
 	return false;
 }
 
-Id boundVertexArray() {
-	return vkstate().vertexArrayHandle;
-}
-
-Id boundBuffer(BufferType type) {
-	return vkstate().bufferHandle[core::enumVal(type)];
-}
-
 bool bindBuffer(BufferType type, Id handle) {
 	return false;
 }
@@ -261,16 +253,7 @@ void deleteVertexArray(Id &id) {
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 }
 
-const core::DynamicSet<Id> &textures() {
-	static core::DynamicSet<Id> todo;
-	return todo;
-}
-
 void deleteTextures(uint8_t amount, Id *ids) {
-}
-
-Id currentFramebuffer() {
-	return vkstate().framebufferHandle;
 }
 
 void genFramebuffers(uint8_t amount, Id *ids) {

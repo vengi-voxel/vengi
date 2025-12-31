@@ -347,4 +347,21 @@ const core::DynamicSet<Id> &textures() {
 	return rendererState().textures;
 }
 
+Id boundVertexArray() {
+	return rendererState().vertexArrayHandle;
+}
+
+Id boundBuffer(BufferType type) {
+	const int typeIndex = core::enumVal(type);
+	return rendererState().bufferHandle[typeIndex];
+}
+
+Id getProgram() {
+	return rendererState().programHandle;
+}
+
+Id currentFramebuffer() {
+	return rendererState().framebufferHandle;
+}
+
 }
