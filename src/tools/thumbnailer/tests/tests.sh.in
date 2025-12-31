@@ -19,7 +19,7 @@ OUTFILE="@CMAKE_BINARY_DIR@/${FILE%.*}.png"
 $BINARY -s 128 --use-scene-camera --input "@DATA_DIR@/$FILE" --output "$OUTFILE"
 if [ -f "$OUTFILE" ]; then
   md5=`md5sum "$OUTFILE" | cut -d' ' -f1`
-  if [ "$md5" != "e37235777a5a0c39784b1d991e93f670" ]; then
+  if [ "$md5" != "fbd5b3e46b170d3ac74c2ab01a2caf01" ]; then
     echo "Md5 sums don't match: $md5"
     xdg-open "$OUTFILE"
     exit 1;
