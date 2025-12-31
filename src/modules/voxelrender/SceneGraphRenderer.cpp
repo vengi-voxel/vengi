@@ -382,6 +382,8 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 		}
 		const int idx = getVolumeIdx(nodeId);
 		updateNodeState(meshState, renderContext, activeNode, node, idx);
+
+		// TODO: https://github.com/vengi-voxel/vengi/issues/690 - the volume is not yet set on the first run...
 		// also check the volume here on the first run, as they are added after this step for the first time
 		if (meshState->hidden(idx) || meshState->volume(idx) == nullptr) {
 			return;
