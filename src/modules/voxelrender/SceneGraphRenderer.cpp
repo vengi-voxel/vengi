@@ -363,6 +363,18 @@ void SceneGraphRenderer::resetVolumes(const voxel::MeshStatePtr &meshState, cons
 	}
 }
 
+void SceneGraphRenderer::applyTransform(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext,
+										const scenegraph::SceneGraph &sceneGraph,
+										const scenegraph::SceneGraphNode &node, int idx) {
+	if (renderContext.applyTransforms()) {
+		prepareMeshStateTransform(meshState, sceneGraph, renderContext.frame, node, idx);
+	} else {
+		meshState->setCullFace(idx, video::Face::Back);
+		const voxel::Region &region = node.region();
+		meshState->setModelMatrix(idx, glm::mat4(1.0f), region.getLowerCorner(), region.getUpperCorner());
+	}
+}
+
 void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(PrepareModelNodes);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
@@ -383,19 +395,16 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 		const int idx = getVolumeIdx(nodeId);
 		updateNodeState(meshState, renderContext, activeNode, node, idx);
 
-		// TODO: https://github.com/vengi-voxel/vengi/issues/690 - the volume is not yet set on the first run...
-		// also check the volume here on the first run, as they are added after this step for the first time
-		if (meshState->hidden(idx) || meshState->volume(idx) == nullptr) {
+		if (meshState->hidden(idx)) {
 			return;
 		}
 
-		if (renderContext.applyTransforms()) {
-			prepareMeshStateTransform(meshState, sceneGraph, renderContext.frame, node, idx);
-		} else {
-			meshState->setCullFace(idx, video::Face::Back);
-			const voxel::Region &region = node.region();
-			meshState->setModelMatrix(idx, glm::mat4(1.0f), region.getLowerCorner(), region.getUpperCorner());
+		// also check the volume here on the first run, as they are added after this step for the first time
+		if (meshState->volume(idx) == nullptr) {
+			return;
 		}
+
+		applyTransform(meshState, renderContext, sceneGraph, node, idx);
 	});
 	for (auto entry : sceneGraph.nodes()) {
 		scenegraph::SceneGraphNode &node = entry->value;
@@ -416,6 +425,11 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 		_volumeRenderer.setVolume(meshState, idx, node, true);
 		if (v != nodeVolume) {
 			_volumeRenderer.scheduleRegionExtraction(meshState, idx, node.region());
+			if (v == nullptr) {
+				// This is needed to setup the model matrix correctly for the first time - otherwise thumbnails wouldn't
+				// work, as they only have one render call
+				applyTransform(meshState, renderContext, sceneGraph, node, idx);
+			}
 		}
 	}
 }
