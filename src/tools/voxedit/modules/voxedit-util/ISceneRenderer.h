@@ -30,6 +30,7 @@ public:
 
 	struct RendererStats {
 		int pendingExtractions = 0;
+		int pendingMeshes = 0;
 	};
 
 	virtual void update() {

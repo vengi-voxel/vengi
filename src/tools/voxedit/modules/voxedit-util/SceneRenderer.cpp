@@ -87,6 +87,7 @@ bool SceneRenderer::isSliceModeActive() const {
 SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
 	RendererStats stats;
 	stats.pendingExtractions = _meshState->pendingExtractions();
+	stats.pendingMeshes = _meshState->pendingMeshes();
 	return stats;
 }
 

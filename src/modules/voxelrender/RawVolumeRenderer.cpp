@@ -571,6 +571,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		if (!normalVector.empty()) {
 			core_assert(vertexVector.size() == normalVector.size());
 			core_memcpy(normalsPos, &normalVector[0], normalVector.size() * sizeof(glm::vec3));
+			normalsPos += normalVector.size();
 		}
 		core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
 
@@ -579,7 +580,6 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		}
 
 		verticesPos += vertexVector.size();
-		normalsPos += normalVector.size();
 		offset += vertexVector.size();
 	}
 	state._dirtyNormals = true;
