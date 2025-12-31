@@ -2043,7 +2043,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		return false;
 	}
 
-	_priv::setupFeatures();
+	_priv::setupFeatures(glState().glVersion);
 	_priv::setupLimitsAndSpecs();
 
 	const char *glvendor = (const char *)glGetString(GL_VENDOR);

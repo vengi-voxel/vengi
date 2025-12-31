@@ -241,7 +241,7 @@ void setupLimitsAndSpecs() {
 	Log::debug("GL_MAX_UNIFORM_BUFFER_BINDINGS: %i", (int)renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)]);
 }
 
-void setupFeatures() {
+void setupFeatures(GLVersion version) {
 	const core::List<const char *> extensionArray[] = {
 		{"GL_ARB_texture_compression_s3tc", "GL_ARB_compressed_texture_s3tc", "GL_ARB_texture_compression_dxt1"},
 		{"GL_ARB_texture_compression_pvrtc", "GL_ARB_compressed_texture_pvrtc"},

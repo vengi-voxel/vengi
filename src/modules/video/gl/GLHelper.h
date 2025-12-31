@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "flextGL.h"
 #include "video/ShaderTypes.h"
+#include "video/gl/GLVersion.h"
 
 #define GL_OFFSET_CAST(i) ((void*)(i))
 
@@ -26,7 +27,7 @@ debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 		const GLchar* message, const GLvoid* userParam);
 extern GLenum checkFramebufferStatus(video::Id fbo);
 extern void setupLimitsAndSpecs();
-extern void setupFeatures();
+extern void setupFeatures(GLVersion version);
 
 }
 
