@@ -333,34 +333,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			methods += "(location, &var[0], var.size());\n";
 			methods += "\treturn true;\n";
 			methods += "}\n";
-		} else if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4) {
-			prototypes += "\n\tbool set";
-			prototypes += uniformName;
-			prototypes += "(";
-			prototypes += "const core::Array<float, ";
-			prototypes += core::string::toString(cType.components);
-			prototypes += ">& var) const;\n\n";
-
-			methods += "\nbool ";
-			methods += filename;
-			methods += "::set";
-			methods += uniformName;
-			methods += "(";
-			methods += "const core::Array<float, ";
-			methods += core::string::toString(cType.components);
-			methods += ">& var) const {\n";
-			methods += "\tconst int location = getUniformLocation(\"";
-			methods += v.name;
-			methods += "\");\n\tif (location == -1) {\n";
-			methods += "\t\treturn false;\n";
-			methods += "\t}\n";
-			methods += "\tsetUniformfv(location, &var[0], ";
-			methods += core::string::toString(cType.components);
-			methods += ", ";
-			methods += core::string::toString(cType.components);
-			methods += ");\n";
-			methods += "\treturn true;\n";
-			methods += "}\n";
 		}
 		if (n < uniformSize - 2) {
 			methods += "\n";
