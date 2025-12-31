@@ -72,7 +72,8 @@ void AssetPanel::update(const char *id, command::CommandExecutionListener &liste
 				}
 				int n = 1;
 				ImGuiStyle &style = ImGui::GetStyle();
-				const int maxImages = core_max(1, ImGui::GetWindowSize().x / (50 + style.ItemSpacing.x) - 1);
+				const float imageSize = 50.0f * style.FontScaleDpi;
+				const int maxImages = core_max(1, ImGui::GetWindowSize().x / (imageSize + style.ItemSpacing.x) - 1);
 				for (const auto &e : _texturePool->cache()) {
 					if (!e->second || !e->second->isLoaded()) {
 						continue;
@@ -80,10 +81,10 @@ void AssetPanel::update(const char *id, command::CommandExecutionListener &liste
 					const video::Id handle = e->second->handle();
 					const image::ImagePtr &image = _texturePool->loadImage(e->first);
 					core::String imgId = core::String::format("%i", n - 1);
-					ImGui::ImageButton(imgId.c_str(), handle, ImVec2(50, 50));
+					ImGui::ImageButton(imgId.c_str(), handle, ImVec2(imageSize, imageSize));
 					ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-						ImGui::ImageButton(imgId.c_str(), handle, ImVec2(50, 50));
+						ImGui::ImageButton(imgId.c_str(), handle, ImVec2(imageSize, imageSize));
 						ImGui::SetDragDropPayload(voxelui::dragdrop::ImagePayload, (const void *)&image, sizeof(image),
 												  ImGuiCond_Always);
 						ImGui::EndDragDropSource();
