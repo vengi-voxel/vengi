@@ -33,7 +33,7 @@ TEST_F(ColorUtilTest, testRGBA) {
 	EXPECT_FLOAT_EQ(color.a / color::magnitudef, fcolor.a);
 	EXPECT_FLOAT_EQ(1.0f, fcolor.a);
 
-	color::RGBA convertedBack = color::toRGBA(fcolor);
+	color::RGBA convertedBack = color::getRGBA(fcolor);
 	EXPECT_EQ(0xfe, convertedBack.r);
 	EXPECT_EQ(0x99, convertedBack.g);
 	EXPECT_EQ(0x66, convertedBack.b);
@@ -209,7 +209,7 @@ TEST_F(ColorUtilTest, testGetDistanceHSBValues) {
 
 TEST_F(ColorUtilTest, testGetRGBAFromVec3) {
 	glm::vec3 v(1.0f, 0.0f, 0.0f);
-	color::RGBA c = color::getRGBA(v);
+	color::RGBA c = color::getRGB(v);
 	EXPECT_EQ(255, c.r);
 	EXPECT_EQ(0, c.g);
 	EXPECT_EQ(0, c.b);

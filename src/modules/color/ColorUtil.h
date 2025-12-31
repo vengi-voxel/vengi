@@ -96,11 +96,11 @@ core::String toHex(const RGBA rgba, bool hashPrefix = true);
 /**
  * @brief Converts vec4 to RGBA.
  */
-RGBA toRGBA(const glm::vec4 &);
+RGBA getRGBA(const glm::vec4 &);
 /**
  * @brief Converts vec3 to RGBA.
  */
-RGBA getRGBA(const glm::vec3 &);
+RGBA getRGB(const glm::vec3 &);
 /**
  * @brief Calculate the Hue, Saturation, and Brightness (HSB) of the given color.
  */

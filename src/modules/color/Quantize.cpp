@@ -302,7 +302,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 
 	size_t n = 0;
 	for (const glm::vec4 &c : centers) {
-		targetBuf[n++] = color::toRGBA(c);
+		targetBuf[n++] = color::getRGBA(c);
 	}
 	for (size_t i = n; i < maxTargetBufColors; ++i) {
 		targetBuf[i] = RGBA(0xFFFFFFFFU);

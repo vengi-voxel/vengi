@@ -339,12 +339,12 @@ void getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
 	b = 200.0f * (fy - fz);
 }
 
-RGBA toRGBA(const glm::vec4 &color) {
+RGBA getRGBA(const glm::vec4 &color) {
 	return RGBA{(uint8_t)(color.r * color::magnitude), (uint8_t)(color.g * color::magnitude),
 				(uint8_t)(color.b * color::magnitude), (uint8_t)(color.a * color::magnitude)};
 }
 
-RGBA getRGBA(const glm::vec3 &color) {
+RGBA getRGB(const glm::vec3 &color) {
 	return RGBA{(uint8_t)(color.r * color::magnitude), (uint8_t)(color.g * color::magnitude),
 				(uint8_t)(color.b * color::magnitude), 255u};
 }
@@ -432,7 +432,7 @@ glm::vec4 darker(const glm::vec4 &color, float f) {
 }
 
 RGBA brighter(const RGBA color, float f) {
-	return toRGBA(brighter(fromRGBA(color), f));
+	return getRGBA(brighter(fromRGBA(color), f));
 }
 
 glm::vec4 brighter(const glm::vec4 &color, float f) {

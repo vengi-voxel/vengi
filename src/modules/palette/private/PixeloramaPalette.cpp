@@ -32,7 +32,7 @@ bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStrea
 		if (SDL_sscanf(colorString.c_str(), "(%f, %f, %f, %f)", &c.r, &c.g, &c.b, &c.a) != 4) {
 			Log::warn("Unexpected color format: '%s'", colorString.c_str());
 		}
-		palette.setColor(idx, color::toRGBA(c));
+		palette.setColor(idx, color::getRGBA(c));
 		maxIdx = core_max(idx, maxIdx);
 	}
 	if (json.contains("comment")) {

@@ -83,7 +83,7 @@ void TestCamera::doRender() {
 	video::Camera c = _renderCamera[_targetCamera];
 	c.update(_deltaFrameSeconds);
 	const glm::vec4 colors[CAMERAS] = { color::Red(), color::Yellow(), color::Pink() };
-	render::CameraRenderer::Node node{0, core::move(c), color::toRGBA(colors[_targetCamera])};
+	render::CameraRenderer::Node node{0, core::move(c), color::getRGBA(colors[_targetCamera])};
 	_frustums[_targetCamera].render(camera(), node);
 	for (FrustumEntity& e : _entities) {
 		e.cull(c);
