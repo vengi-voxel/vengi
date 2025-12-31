@@ -296,6 +296,11 @@ void setupFeatures(GLVersion version) {
 		}
 	}
 
+	// Buffer storage is a core feature in OpenGL 4.4+
+	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 4)) {
+		renderState().features[core::enumVal(Feature::BufferStorage)] = true;
+	}
+
 #ifdef GL_CLIP_ORIGIN
 	GLenum clipOrigin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&clipOrigin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
 	if (clipOrigin == GL_UPPER_LEFT) {
