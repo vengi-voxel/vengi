@@ -173,10 +173,24 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
 	if (size > 0) {
-		// If the requested update fits into the old allocation and the buffer
-		// isn't static, prefer sub-data path if mapping isn't possible.
-		if (oldSize >= size && _modes[idx] != BufferMode::Static) {
-			// try map range
+		if (orphaning) {
+			// Orphaning strategy: allocate new buffer storage to avoid GPU stalls
+			// Always call bufferData with nullptr to orphan the old storage, regardless of size
+			video::bufferData(id, type, _modes[idx], nullptr, size);
+			
+			// Try to map and write directly to avoid extra copy
+			void *ptr = video::mapBufferRange(id, type, 0, size, video::AccessMode::Write,
+											  video::MapBufferFlag::Unsynchronized | video::MapBufferFlag::InvalidateRange);
+			if (ptr != nullptr) {
+				core_memcpy(ptr, data, size);
+				video::unmapBuffer(id, type);
+			} else {
+				// Fallback: use subdata if mapping fails
+				video::bufferSubData(id, type, 0, data, size);
+			}
+		} else if (oldSize >= size && _modes[idx] != BufferMode::Static) {
+			// Update-in-place strategy for dynamic buffers that fit
+			// Try to map the existing buffer range
 			void *ptr = video::mapBufferRange(id, type, 0, size, video::AccessMode::Write,
 											  video::MapBufferFlag::Unsynchronized | video::MapBufferFlag::InvalidateRange);
 			if (ptr != nullptr) {
@@ -187,22 +201,8 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 				video::bufferSubData(id, type, 0, data, size);
 			}
 		} else {
-			if (orphaning) {
-				// ensure buffer has required size
-				if (oldSize < size) {
-					video::bufferData(id, type, _modes[idx], nullptr, size);
-				}
-				void *ptr = video::mapBufferRange(id, type, 0, size, video::AccessMode::Write,
-												  video::MapBufferFlag::Unsynchronized | video::MapBufferFlag::InvalidateRange);
-				if (ptr != nullptr) {
-					core_memcpy(ptr, data, size);
-					video::unmapBuffer(id, type);
-				} else {
-					video::bufferSubData(id, type, 0, data, size);
-				}
-			} else {
-				video::bufferData(id, type, _modes[idx], data, size);
-			}
+			// Full reallocation for static buffers or when size changes
+			video::bufferData(id, type, _modes[idx], data, size);
 		}
 	}
 
