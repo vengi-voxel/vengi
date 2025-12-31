@@ -383,4 +383,9 @@ bool pointSize(float size);
  */
 Id currentTexture(TextureUnit unit);
 
+/**
+ * @brief Get the set of currently allocated texture ids tracked by the backend.
+ */
+const core::DynamicSet<Id> &textures();
+
 } // namespace video

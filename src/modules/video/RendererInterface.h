@@ -392,11 +392,6 @@ void deleteVertexArray(Id &id);
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids);
 
 /**
- * @brief Get the set of currently allocated texture ids tracked by the backend.
- */
-const core::DynamicSet<Id> &textures();
-
-/**
  * @brief Delete @p amount textures and invalidate the ids.
  */
 void deleteTextures(uint8_t amount, Id *ids);

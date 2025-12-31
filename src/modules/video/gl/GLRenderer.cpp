@@ -881,10 +881,6 @@ bool checkFence(IdPtr id, uint64_t timeout) {
 	return false;
 }
 
-const core::DynamicSet<Id> &textures() {
-	return rendererState().textures;
-}
-
 void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 #if 0
 	// TODO: this is throwing a lot of GL_INVALID_VALUE errors

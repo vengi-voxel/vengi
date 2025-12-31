@@ -146,36 +146,40 @@ const glm::vec4 &currentClearColor() {
 }
 
 bool clearColor(const glm::vec4 &clearColor) {
-	if (rendererState().pendingClearColor == clearColor) {
+	RendererState &rs = rendererState();
+	if (rs.pendingClearColor == clearColor) {
 		return false;
 	}
-	rendererState().pendingClearColor = clearColor;
+	rs.pendingClearColor = clearColor;
 	return true;
 }
 
 bool viewport(int x, int y, int w, int h) {
-	if (rendererState().pendingViewportX == x && rendererState().pendingViewportY == y && rendererState().pendingViewportW == w && rendererState().pendingViewportH == h) {
+	RendererState &rs = rendererState();
+	if (rs.pendingViewportX == x && rs.pendingViewportY == y && rs.pendingViewportW == w && rs.pendingViewportH == h) {
 		return false;
 	}
-	rendererState().pendingViewportX = x;
-	rendererState().pendingViewportY = y;
-	rendererState().pendingViewportW = w;
-	rendererState().pendingViewportH = h;
+	rs.pendingViewportX = x;
+	rs.pendingViewportY = y;
+	rs.pendingViewportW = w;
+	rs.pendingViewportH = h;
 	return true;
 }
 
 void getViewport(int &x, int &y, int &w, int &h) {
-	x = rendererState().pendingViewportX;
-	y = rendererState().pendingViewportY;
-	w = rendererState().pendingViewportW;
-	h = rendererState().pendingViewportH;
+	RendererState &rs = rendererState();
+	x = rs.pendingViewportX;
+	y = rs.pendingViewportY;
+	w = rs.pendingViewportW;
+	h = rs.pendingViewportH;
 }
 
 void getScissor(int &x, int &y, int &w, int &h) {
-	x = rendererState().pendingScissorX;
-	y = rendererState().pendingScissorY;
-	w = rendererState().pendingScissorW;
-	h = rendererState().pendingScissorH;
+	RendererState &rs = rendererState();
+	x = rs.pendingScissorX;
+	y = rs.pendingScissorY;
+	w = rs.pendingScissorW;
+	h = rs.pendingScissorH;
 }
 
 bool scissor(int x, int y, int w, int h) {
@@ -186,38 +190,42 @@ bool scissor(int x, int y, int w, int h) {
 		h = 0;
 	}
 
-	if (rendererState().pendingScissorX == x && rendererState().pendingScissorY == y && rendererState().pendingScissorW == w && rendererState().pendingScissorH == h) {
+	RendererState &rs = rendererState();
+	if (rs.pendingScissorX == x && rs.pendingScissorY == y && rs.pendingScissorW == w && rs.pendingScissorH == h) {
 		return false;
 	}
-	rendererState().pendingScissorX = x;
-	rendererState().pendingScissorY = y;
-	rendererState().pendingScissorW = w;
-	rendererState().pendingScissorH = h;
+	rs.pendingScissorX = x;
+	rs.pendingScissorY = y;
+	rs.pendingScissorW = w;
+	rs.pendingScissorH = h;
 	return true;
 }
 
 void colorMask(bool red, bool green, bool blue, bool alpha) {
-	rendererState().pendingColorMask[0] = red;
-	rendererState().pendingColorMask[1] = green;
-	rendererState().pendingColorMask[2] = blue;
-	rendererState().pendingColorMask[3] = alpha;
+	RendererState &rs = rendererState();
+	rs.pendingColorMask[0] = red;
+	rs.pendingColorMask[1] = green;
+	rs.pendingColorMask[2] = blue;
+	rs.pendingColorMask[3] = alpha;
 }
 
 bool enable(State state) {
+	RendererState &rs = rendererState();
 	const int stateIndex = core::enumVal(state);
-	if (rendererState().pendingStates[stateIndex]) {
+	if (rs.pendingStates[stateIndex]) {
 		return true;
 	}
-	rendererState().pendingStates.set(stateIndex, true);
+	rs.pendingStates.set(stateIndex, true);
 	return false;
 }
 
 bool disable(State state) {
+	RendererState &rs = rendererState();
 	const int stateIndex = core::enumVal(state);
-	if (!rendererState().pendingStates[stateIndex]) {
+	if (!rs.pendingStates[stateIndex]) {
 		return false;
 	}
-	rendererState().pendingStates.set(stateIndex, false);
+	rs.pendingStates.set(stateIndex, false);
 	return true;
 }
 
@@ -230,10 +238,11 @@ bool cullFace(Face face) {
 	if (face == Face::Max) {
 		return false;
 	}
-	if (rendererState().pendingCullFace == face) {
+	RendererState &rs = rendererState();
+	if (rs.pendingCullFace == face) {
 		return false;
 	}
-	rendererState().pendingCullFace = face;
+	rs.pendingCullFace = face;
 	return true;
 }
 
@@ -242,10 +251,11 @@ Face currentCullFace() {
 }
 
 bool depthFunc(CompareFunc func) {
-	if (rendererState().pendingDepthFunc == func) {
+	RendererState &rs = rendererState();
+	if (rs.pendingDepthFunc == func) {
 		return false;
 	}
-	rendererState().pendingDepthFunc = func;
+	rs.pendingDepthFunc = func;
 	return true;
 }
 
@@ -254,68 +264,75 @@ CompareFunc getDepthFunc() {
 }
 
 bool blendEquation(BlendEquation func) {
-	if (rendererState().pendingBlendEquation == func) {
+	RendererState &rs = rendererState();
+	if (rs.pendingBlendEquation == func) {
 		return false;
 	}
-	rendererState().pendingBlendEquation = func;
+	rs.pendingBlendEquation = func;
 	return true;
 }
 
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
 	const int stateIndex = core::enumVal(State::Blend);
-	enabled = rendererState().pendingStates[stateIndex];
-	src = rendererState().pendingBlendSrcRGB;
-	dest = rendererState().pendingBlendDestRGB;
-	func = rendererState().pendingBlendEquation;
+	RendererState &rs = rendererState();
+	enabled = rs.pendingStates[stateIndex];
+	src = rs.pendingBlendSrcRGB;
+	dest = rs.pendingBlendDestRGB;
+	func = rs.pendingBlendEquation;
 }
 
 bool blendFunc(BlendMode src, BlendMode dest) {
-	if (rendererState().pendingBlendSrcRGB == src && rendererState().pendingBlendDestRGB == dest && rendererState().pendingBlendSrcAlpha == src &&
-		rendererState().pendingBlendDestAlpha == dest) {
+	RendererState &rs = rendererState();
+	if (rs.pendingBlendSrcRGB == src && rs.pendingBlendDestRGB == dest && rs.pendingBlendSrcAlpha == src &&
+		rs.pendingBlendDestAlpha == dest) {
 		return false;
 	}
-	rendererState().pendingBlendSrcRGB = src;
-	rendererState().pendingBlendDestRGB = dest;
-	rendererState().pendingBlendSrcAlpha = src;
-	rendererState().pendingBlendDestAlpha = dest;
+	rs.pendingBlendSrcRGB = src;
+	rs.pendingBlendDestRGB = dest;
+	rs.pendingBlendSrcAlpha = src;
+	rs.pendingBlendDestAlpha = dest;
 	return true;
 }
 
 bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha) {
-	if (rendererState().pendingBlendSrcRGB == srcRGB && rendererState().pendingBlendDestRGB == destRGB && rendererState().pendingBlendSrcAlpha == srcAlpha &&
-		rendererState().pendingBlendDestAlpha == destAlpha) {
+	RendererState &rs = rendererState();
+	if (rs.pendingBlendSrcRGB == srcRGB && rs.pendingBlendDestRGB == destRGB && rs.pendingBlendSrcAlpha == srcAlpha &&
+		rs.pendingBlendDestAlpha == destAlpha) {
 		return false;
 	}
-	rendererState().pendingBlendSrcRGB = srcRGB;
-	rendererState().pendingBlendDestRGB = destRGB;
-	rendererState().pendingBlendSrcAlpha = srcAlpha;
-	rendererState().pendingBlendDestAlpha = destAlpha;
+	rs.pendingBlendSrcRGB = srcRGB;
+	rs.pendingBlendDestRGB = destRGB;
+	rs.pendingBlendSrcAlpha = srcAlpha;
+	rs.pendingBlendDestAlpha = destAlpha;
 	return true;
 }
 
 PolygonMode polygonMode(Face face, PolygonMode mode) {
-	if (rendererState().pendingPolygonModeFace == face && rendererState().pendingPolygonMode == mode) {
-		return rendererState().pendingPolygonMode;
+	RendererState &rs = rendererState();
+	if (rs.pendingPolygonModeFace == face && rs.pendingPolygonMode == mode) {
+		return rs.pendingPolygonMode;
 	}
-	rendererState().pendingPolygonModeFace = face;
-	const PolygonMode old = rendererState().pendingPolygonMode;
-	rendererState().pendingPolygonMode = mode;
+	rs.pendingPolygonModeFace = face;
+	const PolygonMode old = rs.pendingPolygonMode;
+	rs.pendingPolygonMode = mode;
 	return old;
 }
 
 bool polygonOffset(const glm::vec2 &offset) {
-	if (rendererState().pendingPolygonOffset == offset) {
+	RendererState &rs = rendererState();
+	if (rs.pendingPolygonOffset == offset) {
 		return false;
 	}
-	rendererState().pendingPolygonOffset = offset;
+	rs.pendingPolygonOffset = offset;
 	return true;
 }
 
 bool pointSize(float size) {
-	if (rendererState().pendingPointSize == size) {
+	RendererState &rs = rendererState();
+	if (rs.pendingPointSize == size) {
 		return false;
 	}
-	rendererState().pendingPointSize = size;
+	rs.pendingPointSize = size;
 	return true;
 }
 
@@ -324,6 +341,10 @@ Id currentTexture(TextureUnit unit) {
 		return InvalidId;
 	}
 	return rendererState().textureHandle[core::enumVal(unit)];
+}
+
+const core::DynamicSet<Id> &textures() {
+	return rendererState().textures;
 }
 
 }
