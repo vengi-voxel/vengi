@@ -207,16 +207,6 @@ void readBuffer(GBufferTextureType textureType);
 float lineWidth(float width);
 
 /**
- * @brief Query the current cached line width.
- *
- * Returns the value last set via @c lineWidth(). This is a cached value and
- * may not reflect driver-clamped values for deprecated features.
- *
- * @return Current (requested) line width.
- */
-
-
-/**
  * @brief Clear one or more buffers (color, depth, stencil).
  *
  * Performs a clear of the currently bound framebuffer according to @p flag.
@@ -228,27 +218,13 @@ float lineWidth(float width);
 void clear(ClearFlag flag);
 
 /**
- * @brief Set the drawing viewport in window coordinates.
- *
- * Updates internal cached viewport and issues the backend call to change
- * the mapping from normalized device coordinates to window coordinates.
- *
- * @param x Left (lower-left) x coordinate of the viewport.
- * @param y Left (lower-left) y coordinate of the viewport.
- * @param w Width of the viewport in pixels.
- * @param h Height of the viewport in pixels.
- * @return @c true if the viewport changed, @c false if the values were unchanged.
- */
-
-
-
-/**
  * @brief Bind a texture handle to a texture unit and target.
  *
  * Uses DSA where available; otherwise activates the unit and binds the
  * texture to the appropriate target. Returns @c true on an actual change.
  */
 bool bindTexture(TextureUnit unit, TextureType type, Id handle);
+
 /**
  * @note The returned buffer should be freed with core_free/SDL_free by the caller.
  *
