@@ -38,6 +38,7 @@ void SceneDebugPanel::update(const char *id) {
 		const ISceneRenderer::RendererStats stats = _sceneRenderer->rendererStats();
 		ImGui::Text(_("Pending extractions: %i"), stats.pendingExtractions);
 		ImGui::Text(_("Pending meshes: %i"), stats.pendingMeshes);
+		ImGui::Text(_("Culled volumes: %i"), stats.culledVolumes);
 
 		scenegraph::KinematicBody &body = _sceneMgr->cameraMovement().body();
 		ImGui::Text(_("Camera position: %.2f %.2f %.2f"), body.position.x, body.position.y, body.position.z);

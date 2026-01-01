@@ -165,6 +165,8 @@ public:
 
 	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, int idx, const voxel::Region& region);
 
+	int culledVolumeCount() const;
+
 	/**
 	 * @param[in,out] volume The RawVolume pointer
 	 * @return The old volume that was managed by the class, @c nullptr if there was none

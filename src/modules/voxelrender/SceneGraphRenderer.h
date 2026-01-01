@@ -105,6 +105,10 @@ public:
 	void setSliceRegion(const voxel::Region &region);
 	bool isSliceModeActive() const;
 
+	int culledVolumeCount() const {
+		return _volumeRenderer.culledVolumeCount();
+	}
+
 	static inline int getVolumeIdx(int nodeId) {
 		// TODO: using the node id here is not good as they are increasing when you modify the scene graph - and there
 		// is a max limit that could get reached here even though you only have one node active

@@ -651,6 +651,17 @@ void RawVolumeRenderer::setSunAngle(const glm::vec3 &angle) {
 	_shadow.setPosition(sunPosition, glm::vec3(0.0f), glm::up());
 }
 
+int RawVolumeRenderer::culledVolumeCount() const {
+	int culledCount = 0;
+	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
+		const RenderState &state = _state[i];
+		if (state._culled) {
+			++culledCount;
+		}
+	}
+	return culledCount;
+}
+
 voxel::RawVolume *RawVolumeRenderer::resetVolume(const voxel::MeshStatePtr &meshState, int idx) {
 	return setVolume(meshState, idx, nullptr, nullptr, nullptr, true);
 }

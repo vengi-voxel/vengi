@@ -88,6 +88,7 @@ SceneRenderer::RendererStats SceneRenderer::rendererStats() const {
 	RendererStats stats;
 	stats.pendingExtractions = _meshState->pendingExtractions();
 	stats.pendingMeshes = _meshState->pendingMeshes();
+	stats.culledVolumes = _sceneGraphRenderer.culledVolumeCount();
 	return stats;
 }
 
