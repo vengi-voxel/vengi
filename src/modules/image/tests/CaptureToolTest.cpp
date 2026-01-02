@@ -22,9 +22,10 @@ protected:
 };
 
 TEST_F(CaptureToolTest, testRecordAVI) {
-	CaptureTool tool(CaptureType::AVI);
+	CaptureTool tool;
 	const char *filename = "test.avi";
 	ASSERT_TRUE(tool.startRecording(filename, 64, 64));
+	EXPECT_EQ(tool.type(), CaptureType::AVI);
 	EXPECT_TRUE(tool.isRecording());
 
 	const image::ImagePtr &img = createImage();
@@ -40,9 +41,10 @@ TEST_F(CaptureToolTest, testRecordAVI) {
 }
 
 TEST_F(CaptureToolTest, testRecordMPEG2) {
-	CaptureTool tool(CaptureType::MPEG2);
+	CaptureTool tool;
 	const char *filename = "test.mpg";
 	ASSERT_TRUE(tool.startRecording(filename, 64, 64));
+	EXPECT_EQ(tool.type(), CaptureType::MPEG2);
 	EXPECT_TRUE(tool.isRecording());
 
 	const image::ImagePtr &img = createImage();
@@ -58,15 +60,35 @@ TEST_F(CaptureToolTest, testRecordMPEG2) {
 }
 
 TEST_F(CaptureToolTest, testAbort) {
-	CaptureTool tool(CaptureType::AVI);
+	CaptureTool tool;
 	const char *filename = "test_abort.avi";
 	ASSERT_TRUE(tool.startRecording(filename, 64, 64));
+	EXPECT_EQ(tool.type(), CaptureType::AVI);
 	EXPECT_TRUE(tool.isRecording());
 
 	const image::ImagePtr &img = createImage();
 	tool.enqueueFrame(img);
 	tool.abort();
 	EXPECT_FALSE(tool.isRecording());
+}
+
+TEST_F(CaptureToolTest, testRecordGIF) {
+	CaptureTool tool;
+	const char *filename = "test.gif";
+	ASSERT_TRUE(tool.startRecording(filename, 64, 64));
+	EXPECT_EQ(tool.type(), CaptureType::GIF);
+	EXPECT_TRUE(tool.isRecording());
+
+	const image::ImagePtr &img = createImage();
+	tool.enqueueFrame(img);
+	tool.enqueueFrame(img);
+
+	EXPECT_TRUE(tool.stopRecording());
+	EXPECT_FALSE(tool.isRecording());
+	EXPECT_TRUE(tool.flush());
+	EXPECT_TRUE(tool.hasFinished());
+
+	EXPECT_TRUE(_testApp->filesystem()->exists(filename));
 }
 
 } // namespace image
