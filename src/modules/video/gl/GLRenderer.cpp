@@ -1641,6 +1641,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	if (numIndices <= 0) {
 		return;
 	}
+	rendererState().drawCalls++;
 	syncState();
 	core_assert_msg(rendererState().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
@@ -1652,7 +1653,11 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 }
 
 void drawArrays(Primitive mode, size_t count) {
+	if (count == 0u) {
+		return;
+	}
 	video_trace_scoped(DrawArrays);
+	rendererState().drawCalls++;
 	syncState();
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	video::validate(rendererState().programHandle);
@@ -1981,6 +1986,7 @@ void activateContext(SDL_Window *window, RendererContext &context) {
 }
 
 void startFrame(SDL_Window *window, RendererContext &context) {
+	rendererState().drawCalls = 0;
 	activateContext(window, context);
 }
 

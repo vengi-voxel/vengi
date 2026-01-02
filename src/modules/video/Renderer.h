@@ -408,4 +408,6 @@ Id boundBuffer(BufferType type);
  */
 Id currentFramebuffer();
 
+int drawCalls();
+
 } // namespace video

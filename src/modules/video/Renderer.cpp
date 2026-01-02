@@ -364,4 +364,8 @@ Id currentFramebuffer() {
 	return rendererState().framebufferHandle;
 }
 
+int drawCalls() {
+	return rendererState().drawCalls;
 }
+
+} // namespace video

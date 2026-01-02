@@ -106,6 +106,7 @@ struct RendererState {
 	float lineWidth = 1.0f;
 	float pendingLineWidth = 1.0f;
 	core::BitSet<core::enumVal(Vendor::Max)> vendor;
+	int drawCalls = 0;
 };
 
 }
