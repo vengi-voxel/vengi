@@ -8,6 +8,7 @@
 #include "scenegraph/Physics.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "video/Renderer.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/ISceneRenderer.h"
@@ -39,6 +40,9 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::Text(_("Pending extractions: %i"), stats.pendingExtractions);
 		ImGui::Text(_("Pending meshes: %i"), stats.pendingMeshes);
 		ImGui::Text(_("Culled volumes: %i"), stats.culledVolumes);
+		ImGui::CheckboxVar(_("Cull nodes"), cfg::RenderCullNodes);
+		ImGui::CheckboxVar(_("Cull buffers"), cfg::RenderCullBuffers);
+		ImGui::Text(_("Draw calls: %i"), video::drawCalls());
 
 		scenegraph::KinematicBody &body = _sceneMgr->cameraMovement().body();
 		ImGui::Text(_("Camera position: %.2f %.2f %.2f"), body.position.x, body.position.y, body.position.z);
