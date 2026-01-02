@@ -5,9 +5,10 @@ set(SRCS
 	Shadow.h Shadow.cpp
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	RenderContext.cpp RenderContext.h
+	RenderState.cpp RenderState.h
+	RenderUtil.cpp RenderUtil.h
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
-	RenderUtil.cpp RenderUtil.h
 )
 set(SHADERS
 	voxel
