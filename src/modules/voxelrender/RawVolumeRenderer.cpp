@@ -441,7 +441,7 @@ int RawVolumeRenderer::culledVolumeCount() const {
 	int culledCount = 0;
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		const RenderState &state = _state[i];
-		if (state._culled) {
+		if (state.hasData() && state._culled) {
 			++culledCount;
 		}
 	}
