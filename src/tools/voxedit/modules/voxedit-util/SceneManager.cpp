@@ -223,10 +223,9 @@ void SceneManager::autosave() {
 	if (_lastFilename.empty()) {
 		autoSaveFilename.set(_filesystem->homeWritePath("autosave-noname." + voxelformat::VENGIFormat::format().mainExtension()));
 	} else {
-		const io::FilePtr &file = _filesystem->open(_lastFilename.name);
-		const core::String &filename = file->fileName();
+		const core::String &filename = core::string::extractFilename(_lastFilename.name);
 		const core::String &prefix = core::string::startsWith(filename, "autosave-") ? "" : "autosave-";
-		const core::String &ext = file->extension();
+		const core::String &ext = core::string::extractExtension(_lastFilename.name);
 		const core::String &autosaveFilename =
 			core::String::format("%s%s.%s", prefix.c_str(), filename.c_str(), ext.c_str());
 		autoSaveFilename.set(_filesystem->homeWritePath(autosaveFilename), &_lastFilename.desc);
