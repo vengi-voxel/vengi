@@ -13,11 +13,11 @@
 #include "core/NonCopyable.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
-#include "video/Buffer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelrender/Shadow.h"
 #include "voxelrender/RenderContext.h"
+#include "voxelrender/RenderState.h"
 
 namespace video {
 class Camera;
@@ -44,24 +44,6 @@ namespace voxelrender {
  */
 class RawVolumeRenderer : public core::NonCopyable {
 protected:
-	struct RenderState : public core::NonCopyable {
-		bool _culled = false;
-		bool _empty = false; // this is only updated for non hidden nodes
-		bool _dirtyNormals = false;
-		int32_t _vertexBufferIndex[voxel::MeshType_Max]{-1, -1};
-		int32_t _normalBufferIndex[voxel::MeshType_Max]{-1, -1};
-		int32_t _normalPreviewBufferIndex = -1;
-		int32_t _indexBufferIndex[voxel::MeshType_Max]{-1, -1};
-		video::Buffer _vertexBuffer[voxel::MeshType_Max];
-
-		uint32_t indices(voxel::MeshType type) const {
-			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
-		}
-
-		bool hasData() const {
-			return indices(voxel::MeshType_Opaque) > 0 || indices(voxel::MeshType_Transparency) > 0;
-		}
-	};
 	core::Array<RenderState, voxel::MAX_VOLUMES> _state{};
 
 	uint64_t _paletteHash = 0;
