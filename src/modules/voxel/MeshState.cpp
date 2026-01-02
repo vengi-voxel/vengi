@@ -11,7 +11,6 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
-#include "voxel/VoxelVertex.h"
 
 namespace voxel {
 
