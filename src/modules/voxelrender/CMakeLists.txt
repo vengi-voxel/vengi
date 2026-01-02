@@ -4,6 +4,7 @@ set(SRCS
 	SceneGraphRenderer.cpp SceneGraphRenderer.h
 	Shadow.h Shadow.cpp
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
+	RenderContext.cpp RenderContext.h
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
 	RenderUtil.cpp RenderUtil.h

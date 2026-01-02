@@ -10,7 +10,7 @@
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
 #include "voxelrender/RawVolumeRenderer.h"
-#include "voxelrender/SceneGraphRenderer.h"
+#include "voxelrender/RenderUtil.h"
 
 namespace io {
 class FileStream;

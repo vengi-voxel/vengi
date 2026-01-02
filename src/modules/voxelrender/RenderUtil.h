@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "app/I18N.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNodeCamera.h"

@@ -7,7 +7,7 @@
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "ui/Panel.h"
-#include "voxelrender/SceneGraphRenderer.h"
+#include "voxelrender/RenderUtil.h"
 
 namespace video {
 class Camera;

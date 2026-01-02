@@ -19,7 +19,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxelrender/SceneGraphRenderer.h"
+#include "voxelrender/RenderUtil.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {

@@ -16,7 +16,7 @@
 #include "voxel/Face.h"
 #include "voxelformat/FormatConfig.h"
 #include "engine-git.h"
-#include "voxelrender/SceneGraphRenderer.h"
+#include "voxelrender/RenderUtil.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 

@@ -38,7 +38,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelrender/SceneGraphRenderer.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>

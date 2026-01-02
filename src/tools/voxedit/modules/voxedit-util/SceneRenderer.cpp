@@ -4,6 +4,7 @@
 
 #include "SceneRenderer.h"
 #include "app/App.h"
+#include "app/I18N.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
 #include "core/Trace.h"

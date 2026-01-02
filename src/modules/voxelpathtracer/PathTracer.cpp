@@ -17,7 +17,7 @@
 #include "voxel/Mesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
-#include "voxelrender/SceneGraphRenderer.h"
+#include "voxelrender/RenderUtil.h"
 #include "PathTracerState.h"
 
 #define PATHTRACER_TEXTURES 0
