@@ -140,14 +140,4 @@ void Shader::disableVertexAttribute(int location) const {
 	checkError();
 }
 
-bool Shader::setDivisor(int location, uint32_t divisor) const {
-	if (location == -1) {
-		return false;
-	}
-	core_assert(glVertexAttribDivisor != nullptr);
-	glVertexAttribDivisor((GLuint)location, (GLuint)divisor);
-	checkError();
-	return true;
-}
-
 }

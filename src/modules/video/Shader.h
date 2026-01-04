@@ -233,21 +233,6 @@ public:
 	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
 	void disableVertexAttribute(int location) const;
 	bool enableVertexAttributeArray(int location) const;
-	/**
-	 * In instanced rendering, you draw multiple instances (copies) of the same object with a single command. However,
-	 * you often want each instance to have some unique attributes, like different positions, colors, or sizes. This is
-	 * where @c setDivisor comes into play.
-	 *
-	 * This sets a divisor for an attribute. The divisor determines how often the attribute changes when drawing
-	 * multiple instances.
-	 *
-	 * Example:
-	 * @li If you set the divisor to 0 (default), the attribute changes with each vertex. This is normal for vertex
-	 * attributes.
-	 * @li If you set the divisor to 1, the attribute changes with each instance, not each vertex. This means every
-	 * instance gets a unique value of that attribute.
-	 */
-	bool setDivisor(int location, uint32_t divisor) const;
 };
 
 inline bool Shader::isDirty() const {

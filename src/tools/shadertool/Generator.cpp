@@ -406,21 +406,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		prototypes += ";\n";
 		prototypes += "\t}\n";
 
-		prototypes += "\n\t/**\n\t * @brief Used for instance rendering\n\t */\n";
-		prototypes += "\tbool set";
-		prototypes += attributeName;
-		prototypes += "Divisor(uint32_t divisor) const;\n\n";
-		methods += "\nbool ";
-		methods += filename;
-		methods += "::set";
-		methods += attributeName;
-		methods += "Divisor(uint32_t divisor) const {\n";
-		methods += "\tconst int location = getAttributeLocation(\"";
-		methods += v.name;
-		methods += "\");\n";
-		methods += "\treturn setDivisor(location, divisor);\n";
-		methods += "}\n";
-
 		if (i < attributeSize - 1) {
 			methods += "\n";
 		}
