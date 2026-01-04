@@ -209,7 +209,6 @@ public:
 
 	int checkAttributeLocation(const core::String& name) const;
 	int getAttributeLocation(const core::String& name) const;
-	bool setAttributeLocation(const core::String& name, int location);
 
 	int getUniformLocation(const core::String& name) const;
 

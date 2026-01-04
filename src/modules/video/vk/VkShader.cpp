@@ -12,15 +12,6 @@
 
 namespace video {
 
-bool Shader::setAttributeLocation(const core::String& name, int location) {
-	if (_program == InvalidId) {
-		return false;
-	}
-	// TODO
-	checkError();
-	return true;
-}
-
 int32_t Shader::getUniformBufferOffset(const char *name) {
 	return false;
 }

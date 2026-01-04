@@ -14,16 +14,6 @@
 
 namespace video {
 
-bool Shader::setAttributeLocation(const core::String& name, int location) {
-	if (_program == InvalidId) {
-		return false;
-	}
-	core_assert(glBindAttribLocation != nullptr);
-	glBindAttribLocation(_program, location, name.c_str());
-	checkError();
-	return true;
-}
-
 int32_t Shader::getUniformBufferOffset(const char *name) {
 	GLuint index;
 	const GLchar *uniformNames[1];
