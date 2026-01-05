@@ -97,23 +97,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			++i;
 		}
 		attributes += "});\n";
-
-		for (const Variable& v : shaderStruct.attributes) {
-			attributes += "\tconst int ";
-			attributes += v.name;
-			attributes += "Location = getAttributeLocation(\"";
-			attributes += v.name;
-			attributes += "\");\n";
-			attributes += "\tif (";
-			attributes += v.name;
-			attributes += "Location != -1) {\n";
-			attributes += "\t\tsetAttributeComponents(";
-			attributes += v.name;
-			attributes += "Location, ";
-			attributes += core::string::toString(util::getComponents(v.type));
-			attributes += ");\n";
-			attributes += "\t}\n";
-		}
 	} else {
 		attributes += "// no attributes";
 	}

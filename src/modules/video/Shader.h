@@ -69,9 +69,6 @@ protected:
 
 	ShaderAttributes _attributes;
 
-	typedef core::DynamicMap<int, int> AttributeComponents;
-	AttributeComponents _attributeComponents;
-
 	mutable uint32_t _time = 0u;
 
 	core::String _name;
@@ -197,9 +194,6 @@ public:
 	void addDefine(const core::String& name, const core::String& value);
 
 	void setUniformArraySize(const core::String& name, int size);
-	void setAttributeComponents(int location, int size);
-	int getAttributeComponents(int location) const;
-	int getAttributeComponents(const core::String& name) const;
 
 	/**
 	 * @return -1 if uniform wasn't found, or no size is known. If the uniform is known, but
@@ -213,10 +207,6 @@ public:
 	int getUniformLocation(const core::String& name) const;
 
 	void setUniform(int location, TextureUnit value) const;
-	void setVertexAttribute(const core::String& name, int size, DataType type, bool normalize, int stride, const void* buffer) const;
-	void setVertexAttributeInt(const core::String& name, int size, DataType type, int stride, const void* buffer) const;
-	void disableVertexAttribute(const core::String& name) const;
-	int enableVertexAttributeArray(const core::String& name) const;
 	bool hasAttribute(const core::String& name) const;
 	bool hasUniform(const core::String& name) const;
 	bool isUniformBlock(const core::String& name) const;
@@ -227,12 +217,10 @@ private:
 	// only called from setting the texture units
 	void setUniformi(int location, int value) const;
 public:
+	// validate that the offset is correct for the given uniform buffer name
+	// this happens at shader setup time and is part of the validation layer of a shader
 	int32_t getUniformBufferOffset(const char *name);
 	bool setUniformBuffer(const core::String& name, const UniformBuffer& buffer);
-	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
-	void setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const;
-	void disableVertexAttribute(int location) const;
-	bool enableVertexAttributeArray(int location) const;
 };
 
 inline bool Shader::isDirty() const {

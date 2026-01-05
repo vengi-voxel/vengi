@@ -39,31 +39,4 @@ void Shader::setUniformi(int location, int value) const {
 	addUsedUniform(location);
 }
 
-void Shader::setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const {
-	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
-	// TODO
-	checkError();
-}
-
-void Shader::setVertexAttributeInt(int location, int size, DataType type, int stride, const void* buffer) const {
-	core_assert_msg(getAttributeComponents(location) == -1 || getAttributeComponents(location) == size, "%i expected, but got %i components", getAttributeComponents(location), size);
-	// TODO
-	checkError();
-}
-
-bool Shader::enableVertexAttributeArray(int location) const {
-	if (location < 0) {
-		return false;
-	}
-	// TODO
-	checkError();
-	return true;
-}
-
-void Shader::disableVertexAttribute(int location) const {
-	core_assert(location != -1);
-	// TODO
-	checkError();
-}
-
 }

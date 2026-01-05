@@ -39,59 +39,6 @@ Shader::~Shader() {
 	Shader::shutdown();
 }
 
-void Shader::setVertexAttribute(const core::String& name, int size, DataType type, bool normalize, int stride, const void* buffer) const {
-	core_assert_msg(type == DataType::Float || type == DataType::Double, "unexpected data type given: %i", core::enumVal(type));
-	const int location = getAttributeLocation(name);
-	if (location == -1) {
-		return;
-	}
-	setVertexAttribute(location, size, type, normalize, stride, buffer);
-}
-
-void Shader::setVertexAttributeInt(const core::String& name, int size, DataType type, int stride, const void* buffer) const {
-	core_assert_msg(type != DataType::Float && type != DataType::Double, "unexpected data type given: %i", core::enumVal(type));
-	const int location = getAttributeLocation(name);
-	if (location == -1) {
-		return;
-	}
-	setVertexAttributeInt(location, size, type, stride, buffer);
-}
-
-void Shader::disableVertexAttribute(const core::String& name) const {
-	const int location = getAttributeLocation(name);
-	if (location == -1) {
-		return;
-	}
-	disableVertexAttribute(location);
-}
-
-int Shader::enableVertexAttributeArray(const core::String& name) const {
-	int location = getAttributeLocation(name);
-	if (location == -1) {
-		return -1;
-	}
-	enableVertexAttributeArray(location);
-	return location;
-}
-
-int Shader::getAttributeComponents(int location) const {
-	auto i = _attributeComponents.find(location);
-	if (i != _attributeComponents.end()) {
-		return i->second;
-	}
-	Log::debug("Could not find components for attributes at location %i", location);
-	return -1;
-}
-
-int Shader::getAttributeComponents(const core::String& name) const {
-	const int loc = getAttributeLocation(name);
-	if (loc == -1) {
-		return -1;
-	}
-	Log::debug("Could not find components for attributes at location %s", name.c_str());
-	return getAttributeComponents(loc);
-}
-
 bool Shader::hasAttribute(const core::String& name) const {
 	return _attributes.hasKey(name);
 }
@@ -138,10 +85,6 @@ void Shader::checkUniforms(std::initializer_list<core::String> uniforms) {
 
 void Shader::setUniformArraySize(const core::String& name, int size) {
 	_uniformArraySizes.put(name, size);
-}
-
-void Shader::setAttributeComponents(int location, int size) {
-	_attributeComponents.put(location, size);
 }
 
 int Shader::getUniformArraySize(const core::String& name) const {
