@@ -5,7 +5,6 @@
 #pragma once
 
 #include "GLVersion.h"
-#include "flextGL.h"
 #include "video/RendererState.h"
 
 namespace video {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Types.h"
+#include "SamplerConfig.h"
 #include <glm/vec4.hpp>
 
 namespace video {
@@ -15,26 +16,11 @@ namespace video {
  */
 class TextureConfig {
 private:
-	TextureWrap _wrapR = TextureWrap::Max;
-	TextureWrap _wrapS = TextureWrap::Max;
-	TextureWrap _wrapT = TextureWrap::Max;
-	TextureFilter _filterMag = TextureFilter::Linear;
-	TextureFilter _filterMin = TextureFilter::Linear;
+	SamplerConfig _samplerConfig;
 	TextureType _type = TextureType::Texture2D;
 	TextureFormat _format = TextureFormat::RGBA;
-	CompareFunc _compareFunc = CompareFunc::Max;
-	TextureCompareMode _compareMode = TextureCompareMode::Max;
 	uint8_t _layers = 1u;
 	uint8_t _alignment = 1u;
-	// Reduces blur and shimmering at oblique viewing angles.
-	// typical range is 1.0 (off) to 16.0 (max)
-	float _maxAnisotropy = 0.0f;
-	// Level of Detail bias for mipmapped textures.
-	// A positive bias -> selects lower-resolution mip levels sooner -> blurrier but faster.
-	// A negative bias -> selects higher-resolution mip levels -> sharper but noisier/aliasing.
-	float _lodBias = 0.0f;
-	bool _useBorderColor = false;
-	glm::vec4 _borderColor{0.0f};
 	int _samples = 0;
 
 public:
@@ -64,6 +50,8 @@ public:
 	 */
 	TextureConfig &alignment(uint8_t alignment);
 
+	const SamplerConfig& samplerConfig() const;
+
 	TextureWrap wrapR() const;
 	TextureWrap wrapS() const;
 	TextureWrap wrapT() const;
@@ -82,36 +70,40 @@ public:
 	const glm::vec4 &borderColor() const;
 };
 
+inline const SamplerConfig& TextureConfig::samplerConfig() const {
+	return _samplerConfig;
+}
+
 inline int TextureConfig::samples() const {
 	return _samples;
 }
 
 inline float TextureConfig::maxAnisotropy() const {
-	return _maxAnisotropy;
+	return _samplerConfig.maxAnisotropy;
 }
 
 inline float TextureConfig::lodBias() const {
-	return _lodBias;
+	return _samplerConfig.lodBias;
 }
 
 inline TextureFilter TextureConfig::filterMag() const {
-	return _filterMag;
+	return _samplerConfig.filterMag;
 }
 
 inline TextureFilter TextureConfig::filterMin() const {
-	return _filterMin;
+	return _samplerConfig.filterMin;
 }
 
 inline TextureWrap TextureConfig::wrapR() const {
-	return _wrapR;
+	return _samplerConfig.wrapR;
 }
 
 inline TextureWrap TextureConfig::wrapS() const {
-	return _wrapS;
+	return _samplerConfig.wrapS;
 }
 
 inline TextureWrap TextureConfig::wrapT() const {
-	return _wrapT;
+	return _samplerConfig.wrapT;
 }
 
 inline TextureType TextureConfig::type() const {
@@ -123,11 +115,11 @@ inline TextureFormat TextureConfig::format() const {
 }
 
 inline CompareFunc TextureConfig::compareFunc() const {
-	return _compareFunc;
+	return _samplerConfig.compareFunc;
 }
 
 inline TextureCompareMode TextureConfig::compareMode() const {
-	return _compareMode;
+	return _samplerConfig.compareMode;
 }
 
 inline uint8_t TextureConfig::layers() const {
@@ -139,11 +131,11 @@ inline uint8_t TextureConfig::alignment() const {
 }
 
 inline bool TextureConfig::useBorderColor() const {
-	return _useBorderColor;
+	return _samplerConfig.useBorderColor;
 }
 
 inline const glm::vec4 &TextureConfig::borderColor() const {
-	return _borderColor;
+	return _samplerConfig.borderColor;
 }
 
 video::TextureConfig createDefaultTextureConfig();

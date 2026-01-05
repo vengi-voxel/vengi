@@ -26,6 +26,7 @@ set(SRCS
 	Renderer.cpp Renderer.h
 	RendererInterface.h
 	RenderBuffer.cpp RenderBuffer.h
+	SamplerConfig.h
 	Shader.cpp Shader.h
 	ShaderTypes.h
 	ShapeBuilder.cpp ShapeBuilder.h

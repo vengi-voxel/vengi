@@ -9,9 +9,7 @@
 #include "RenderBuffer.h"
 #include "ShaderTypes.h"
 #include "core/SharedPtr.h"
-#include "core/collection/DynamicSet.h"
 #include "video/RendererState.h"
-#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
