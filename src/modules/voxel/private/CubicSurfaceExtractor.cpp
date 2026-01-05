@@ -11,6 +11,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Enum.h"
+#include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/NonCopyable.h"
 #include "voxel/Region.h"
@@ -253,6 +254,7 @@ static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 	core_trace_scoped(PerformQuadMerging);
 	bool didMerge = false;
 
+	Log::trace("Merge quads: starting with %i quads", (int)quads.size());
 	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		QuadList::iterator innerIter = outerIter;
 		++innerIter;
