@@ -31,6 +31,7 @@ namespace BenVoxel {
 Node::Node(NodeType type, Branch *parent, io::SeekableReadStream &in) : _parent(parent), _type(type) {
 	if (in.peekUInt8(_octant) == -1) {
 		Log::error("Failed to peek at node header byte from input stream.");
+		_octant = 0;
 	}
 	_octant &= 0b111;
 }

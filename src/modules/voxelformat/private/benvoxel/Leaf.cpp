@@ -41,6 +41,7 @@ Leaf::Leaf(Branch *parent, io::SeekableReadStream &in) : Node(NodeType::Leaf, pa
 	uint8_t header;
 	if (in.readUInt8(header) == -1) {
 		Log::error("Failed to read leaf header byte from input stream.");
+		return;
 	}
 	switch (header & TYPE_MASK) {
 	case LEAF_2BYTE: {

@@ -42,6 +42,7 @@ Branch::Branch(Branch *parent, io::SeekableReadStream &in) : Node(NodeType::Bran
 	uint8_t header = 0;
 	if (in.readUInt8(header) == -1) {
 		Log::error("Failed to read branch header byte from input stream.");
+		return;
 	}
 	switch (header & TYPE_MASK) {
 	case BRANCH_REGULAR: {
@@ -50,6 +51,7 @@ Branch::Branch(Branch *parent, io::SeekableReadStream &in) : Node(NodeType::Bran
 			uint8_t val = 0;
 			if (in.peekUInt8(val) == -1) {
 				Log::error("Failed to peek at byte from input stream.");
+				return;
 			}
 			if (val >> 7) {
 				// Check if it's a leaf (both 2-byte and 8-byte start with 1)
