@@ -152,13 +152,6 @@ Id genVertexArray();
 Id genRenderbuffer();
 Id genFramebuffer();
 
-IdPtr genFenc();
-/**
- * @return @c true if the given fence was signaled in the given timeout
- */
-bool checkFence(IdPtr id, uint64_t timeout);
-void deleteFence(IdPtr& id);
-
 inline int limiti(Limit l) {
 	return renderState().limiti(l);
 }
