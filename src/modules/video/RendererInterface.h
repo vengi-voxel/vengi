@@ -588,4 +588,10 @@ void flush();
  */
 void finish();
 
+// shader stuff
+void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBinding);
+void setUniformi(int location, int value);
+// only for validation purposes
+int32_t getUniformBufferOffset(Id program, const char *name);
+
 } // namespace video

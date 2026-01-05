@@ -4,10 +4,6 @@
  * Some great tips here: https://developer.nvidia.com/opengl-vulkan
  */
 
-#include "GLRenderer.h"
-#include "GLHelper.h"
-#include "GLMapping.h"
-#include "GLState.h"
 #include "GLTypes.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
@@ -26,6 +22,7 @@
 #include "video/TextureConfig.h"
 #include "video/Trace.h"
 #include "video/Types.h"
+#include "video/gl/GLVersion.h"
 #include "video/gl/flextGL.h"
 #include <glm/common.hpp>
 #include <glm/fwd.hpp>
@@ -44,6 +41,711 @@ namespace video {
 #endif
 
 #define SANITY_CHECKS_GL 0
+
+namespace _priv {
+
+struct GLState : public RendererState {
+	GLVersion glVersion{0, 0};
+};
+
+static const struct Formats {
+	uint8_t bits;
+	GLenum internalFormat;
+	GLenum dataFormat;
+	GLenum dataType;
+} textureFormats[] = {
+	{32, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
+	{24, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
+	{32, GL_RGBA32F, GL_RGBA, GL_FLOAT},
+	{24, GL_RGB32F, GL_RGB, GL_FLOAT},
+	{16, GL_RGBA16F, GL_RGBA, GL_FLOAT},
+
+	{32, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
+	{32, GL_DEPTH32F_STENCIL8, GL_DEPTH32F_STENCIL8, GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
+	{32, GL_DEPTH_COMPONENT24, GL_DEPTH24_STENCIL8, GL_UNSIGNED_INT_24_8},
+	{32, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},
+	{0, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8, GL_STENCIL_INDEX8},
+	{16, GL_RG16UI, GL_RG, GL_UNSIGNED_BYTE}
+};
+static_assert(core::enumVal(TextureFormat::Max) == lengthof(textureFormats), "Array sizes don't match Max");
+
+static const GLenum TextureFormats[] {
+	GL_RGBA8,
+	GL_RGB8,
+	GL_RGBA32F,
+	GL_RGB32F,
+	GL_RGBA16F,
+
+	GL_DEPTH24_STENCIL8,
+	GL_DEPTH32F_STENCIL8,
+	GL_DEPTH_COMPONENT24,
+	GL_DEPTH_COMPONENT32F,
+	GL_STENCIL_INDEX8,
+
+	GL_RG16UI
+};
+static_assert(core::enumVal(TextureFormat::Max) == lengthof(TextureFormats), "Array sizes don't match Max");
+
+static const GLenum ShaderTypes[] {
+	GL_VERTEX_SHADER,
+	GL_FRAGMENT_SHADER,
+	GL_GEOMETRY_SHADER,
+	GL_COMPUTE_SHADER
+};
+static_assert(core::enumVal(ShaderType::Max) == lengthof(ShaderTypes), "Array sizes don't match Max");
+
+static const GLenum MemoryBarrierTypes[] {
+	0,
+	GL_SHADER_IMAGE_ACCESS_BARRIER_BIT,
+	GL_ALL_BARRIER_BITS
+};
+static_assert(core::enumVal(MemoryBarrierType::Max) == lengthof(MemoryBarrierTypes), "Array sizes don't match Max");
+
+static const GLenum StencilOps[] {
+	GL_KEEP,
+	GL_ZERO,
+	GL_REPLACE,
+	GL_INCR,
+	GL_INCR_WRAP,
+	GL_DECR,
+	GL_DECR_WRAP,
+	GL_INVERT
+};
+static_assert(core::enumVal(StencilOp::Max) == lengthof(StencilOps), "Array sizes don't match Max");
+
+static const GLenum FrameBufferAttachments[] {
+	GL_DEPTH_STENCIL_ATTACHMENT,
+	GL_DEPTH_ATTACHMENT,
+	GL_STENCIL_ATTACHMENT,
+	GL_COLOR_ATTACHMENT0,
+	GL_COLOR_ATTACHMENT1,
+	GL_COLOR_ATTACHMENT2,
+	GL_COLOR_ATTACHMENT3,
+	GL_COLOR_ATTACHMENT4,
+	GL_COLOR_ATTACHMENT5,
+	GL_COLOR_ATTACHMENT6,
+	GL_COLOR_ATTACHMENT7,
+	GL_COLOR_ATTACHMENT8,
+	GL_COLOR_ATTACHMENT9,
+	GL_COLOR_ATTACHMENT10,
+	GL_COLOR_ATTACHMENT11,
+	GL_COLOR_ATTACHMENT12,
+	GL_COLOR_ATTACHMENT13,
+	GL_COLOR_ATTACHMENT14,
+	GL_COLOR_ATTACHMENT15
+};
+static_assert(core::enumVal(FrameBufferAttachment::Max) == lengthof(FrameBufferAttachments), "Array sizes don't match Max");
+
+static const GLenum FrameBufferModes[] {
+	GL_READ_FRAMEBUFFER,
+	GL_DRAW_FRAMEBUFFER,
+	GL_FRAMEBUFFER
+};
+static_assert(core::enumVal(FrameBufferMode::Max) == lengthof(FrameBufferModes), "Array sizes don't match Max");
+
+/**
+ * GL_VENDOR check - case insensitive
+ */
+static const char* VendorStrings[] {
+	"nouveau",
+	"intel",
+	"nvidia",
+	"amd"
+};
+static_assert(core::enumVal(Vendor::Max) == lengthof(VendorStrings), "Array sizes don't match Max");
+
+static const GLenum BufferModes[] {
+	GL_STATIC_DRAW,
+	GL_DYNAMIC_DRAW,
+	GL_STREAM_DRAW
+};
+static_assert(core::enumVal(BufferMode::Max) == lengthof(BufferModes), "Array sizes don't match Max");
+
+static const GLenum AccessModes[] {
+	GL_READ_ONLY,
+	GL_WRITE_ONLY,
+	GL_READ_WRITE
+};
+static_assert(core::enumVal(AccessMode::Max) == lengthof(AccessModes), "Array sizes don't match Max");
+
+static const GLenum BufferTypes[] {
+	GL_ARRAY_BUFFER,
+	GL_ELEMENT_ARRAY_BUFFER,
+	GL_UNIFORM_BUFFER,
+	GL_TRANSFORM_FEEDBACK_BUFFER,
+	GL_PIXEL_UNPACK_BUFFER,
+	GL_SHADER_STORAGE_BUFFER,
+	GL_DRAW_INDIRECT_BUFFER
+};
+static_assert(core::enumVal(BufferType::Max) == lengthof(BufferTypes), "Array sizes don't match Max");
+
+static const GLenum States[] {
+	0,
+	GL_STENCIL_TEST,
+	GL_DEPTH_TEST,
+	GL_CULL_FACE,
+	GL_BLEND,
+	GL_POLYGON_OFFSET_FILL,
+	GL_POLYGON_OFFSET_POINT,
+	GL_POLYGON_OFFSET_LINE,
+	GL_SCISSOR_TEST,
+	GL_MULTISAMPLE,
+	GL_LINE_SMOOTH,
+	GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB,
+	GL_CLIP_DISTANCE0,
+	GL_PRIMITIVE_RESTART,
+	GL_PROGRAM_POINT_SIZE
+};
+static_assert(core::enumVal(State::Max) == lengthof(States), "Array sizes don't match Max");
+
+const GLenum TextureTypes[] {
+	GL_TEXTURE_1D,
+	GL_TEXTURE_2D,
+	GL_TEXTURE_2D_ARRAY,
+	GL_TEXTURE_2D_MULTISAMPLE,
+	GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+	GL_TEXTURE_3D,
+	GL_TEXTURE_CUBE_MAP
+};
+static_assert(core::enumVal(TextureType::Max) == lengthof(TextureTypes), "Array sizes don't match Max");
+
+static const GLenum TextureFilters[] {
+	GL_LINEAR,
+	GL_NEAREST,
+	GL_NEAREST_MIPMAP_NEAREST,
+	GL_NEAREST_MIPMAP_LINEAR,
+	GL_LINEAR_MIPMAP_NEAREST,
+	GL_LINEAR_MIPMAP_LINEAR
+};
+static_assert(core::enumVal(TextureFilter::Max) == lengthof(TextureFilters), "Array sizes don't match Max");
+
+static const GLenum TextureWraps[] {
+	GL_CLAMP_TO_EDGE,
+	GL_CLAMP_TO_BORDER,
+	GL_REPEAT,
+	GL_MIRRORED_REPEAT
+};
+static_assert(core::enumVal(TextureWrap::Max) == lengthof(TextureWraps), "Array sizes don't match Max");
+
+static const GLenum BlendModes[] {
+	GL_ZERO,
+	GL_ONE,
+	GL_SRC_COLOR,
+	GL_ONE_MINUS_SRC_COLOR,
+	GL_SRC_ALPHA,
+	GL_ONE_MINUS_SRC_ALPHA,
+	GL_DST_ALPHA,
+	GL_ONE_MINUS_DST_ALPHA,
+	GL_DST_COLOR,
+	GL_ONE_MINUS_DST_COLOR
+};
+static_assert(core::enumVal(BlendMode::Max) == lengthof(BlendModes), "Array sizes don't match Max");
+
+static const GLenum BlendEquations[] {
+	GL_FUNC_ADD,
+	GL_FUNC_SUBTRACT,
+	GL_FUNC_REVERSE_SUBTRACT,
+	GL_MIN,
+	GL_MAX
+};
+static_assert(core::enumVal(BlendEquation::Max) == lengthof(BlendEquations), "Array sizes don't match Max");
+
+static const GLenum CompareFuncs[] {
+	GL_NEVER,
+	GL_LESS,
+	GL_EQUAL,
+	GL_LEQUAL,
+	GL_GREATER,
+	GL_NOTEQUAL,
+	GL_GEQUAL,
+	GL_ALWAYS
+};
+static_assert(core::enumVal(CompareFunc::Max) == lengthof(CompareFuncs), "Array sizes don't match Max");
+
+static const GLenum TextureCompareModes[] {
+	GL_NONE,
+	GL_COMPARE_REF_TO_TEXTURE
+};
+static_assert(core::enumVal(TextureCompareMode::Max) == lengthof(TextureCompareModes), "Array sizes don't match Max");
+
+static const GLenum PolygonModes[] {
+	GL_POINT,
+	GL_LINE,
+	GL_FILL
+};
+static_assert(core::enumVal(PolygonMode::Max) == lengthof(PolygonModes), "Array sizes don't match Max");
+
+static const GLenum Faces[] {
+	GL_FRONT,
+	GL_BACK,
+	GL_FRONT_AND_BACK
+};
+static_assert(core::enumVal(Face::Max) == lengthof(Faces), "Array sizes don't match Max");
+
+static const GLenum Primitives[] {
+	GL_POINTS,
+	GL_LINES,
+	GL_LINES_ADJACENCY,
+	GL_TRIANGLES,
+	GL_TRIANGLES_ADJACENCY,
+	GL_LINE_STRIP,
+	GL_TRIANGLE_STRIP
+};
+static_assert(core::enumVal(Primitive::Max) == lengthof(Primitives), "Array sizes don't match Max");
+
+static const GLenum TextureUnits[] {
+	GL_TEXTURE0,
+	GL_TEXTURE1,
+	GL_TEXTURE2,
+	GL_TEXTURE3,
+	GL_TEXTURE4,
+	GL_TEXTURE5,
+	GL_TEXTURE6,
+	GL_TEXTURE7,
+	GL_TEXTURE8,
+	GL_TEXTURE9,
+	GL_TEXTURE10
+};
+static_assert(core::enumVal(TextureUnit::Max) == lengthof(TextureUnits), "Array sizes don't match Max");
+
+static const GLenum DataTypes[] {
+	GL_DOUBLE,
+	GL_FLOAT,
+	GL_UNSIGNED_BYTE,
+	GL_BYTE,
+	GL_UNSIGNED_SHORT,
+	GL_SHORT,
+	GL_UNSIGNED_INT,
+	GL_INT
+};
+static_assert(core::enumVal(DataType::Max) == lengthof(DataTypes), "Array sizes don't match Max");
+
+static const GLenum ObjectNameTypes[] = {
+	GL_BUFFER,
+	GL_SHADER,
+	GL_PROGRAM,
+	GL_VERTEX_ARRAY,
+	GL_QUERY,
+	GL_PROGRAM_PIPELINE,
+	GL_TRANSFORM_FEEDBACK,
+	GL_SAMPLER,
+	GL_TEXTURE,
+	GL_RENDERBUFFER,
+	GL_FRAMEBUFFER
+};
+static_assert(core::enumVal(ObjectNameType::Max) == lengthof(ObjectNameTypes), "Array sizes don't match Max");
+
+static const GLenum ImageFormatTypes[] = {
+	GL_RGBA32F,
+	GL_RGBA16F,
+	GL_RG32F,
+	GL_RG16F,
+	GL_R11F_G11F_B10F,
+	GL_R32F,
+	GL_R16F,
+	GL_RGBA16,
+	GL_RGB10_A2,
+	GL_RGBA8,
+	GL_RG16,
+	GL_RG8,
+	GL_R16,
+	GL_R8,
+	GL_RGBA16_SNORM,
+	GL_RGBA8_SNORM,
+	GL_RG16_SNORM,
+	GL_RG8_SNORM,
+	GL_R16_SNORM,
+	GL_R8_SNORM,
+	GL_RGBA32I,
+	GL_RGBA16I,
+	GL_RGBA8I,
+	GL_RG32I,
+	GL_RG16I,
+	GL_RG8I,
+	GL_R32I,
+	GL_R16I,
+	GL_R8I,
+	GL_RGBA32UI,
+	GL_RGBA16UI,
+	GL_RGB10_A2UI,
+	GL_RGBA8UI,
+	GL_RG32UI,
+	GL_RG16UI,
+	GL_RG8UI,
+	GL_R32UI,
+	GL_R16UI,
+	GL_R8UI
+};
+static_assert((size_t)video::ImageFormat::Max == lengthof(ImageFormatTypes), "mismatch in image formats");
+
+static int _recompileErrors = 0;
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+void __stdcall
+#else
+void
+#endif
+debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+	if (id == 131218) {
+		++_recompileErrors;
+		if (_recompileErrors <= 10) {
+			return;
+		}
+		_recompileErrors = 0;
+	} else if (id == 131185) {
+		// ignore hints that GL_STATIC_DRAW is used...
+		return;
+	}
+	void (*log)(const char* msg, ...);
+	const char* sourceStr;
+	switch (source) {
+	case GL_DEBUG_SOURCE_API_ARB:
+		sourceStr = "api";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB:
+		sourceStr = "window";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY_ARB:
+		sourceStr = "third party";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION_ARB:
+		sourceStr = "app";
+		break;
+	case GL_DEBUG_SOURCE_OTHER_ARB:
+		sourceStr = "other";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB:
+		sourceStr = "shader";
+		break;
+	default:
+		sourceStr = "unknown";
+		break;
+	}
+	const char* typeStr;
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR_ARB:
+		typeStr = "ERROR";
+		log = Log::error;
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB:
+		typeStr = "DEPRECATED_BEHAVIOR";
+		log = Log::warn;
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB:
+		typeStr = "UNDEFINED_BEHAVIOR";
+		log = Log::error;
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY_ARB:
+		typeStr = "PORTABILITY";
+		log = Log::warn;
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE_ARB:
+		typeStr = "PERFORMANCE";
+		log = Log::warn;
+		break;
+	case GL_DEBUG_TYPE_OTHER_ARB:
+		typeStr = "OTHER";
+		log = Log::info;
+		break;
+	default:
+		typeStr = "<unknown>";
+		log = Log::debug;
+		break;
+	}
+	const char* sevStr;
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_LOW_ARB:
+		sevStr = "LOW";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM_ARB:
+		sevStr = "MEDIUM";
+		break;
+	case GL_DEBUG_SEVERITY_HIGH_ARB:
+		sevStr = "HIGH";
+		log = Log::error;
+		break;
+	default:
+		sevStr = "<unknown>";
+		break;
+	}
+	//core_assert_msg(type == GL_DEBUG_TYPE_OTHER_ARB, "GL msg type: %s, src: %s, id: %d, severity: %s\nmsg: %s", typeStr, sourceStr, id, sevStr, message);
+	log("GL msg type: %s, src: %s, id: %d, severity: %s\nmsg: %s", typeStr, sourceStr, id, sevStr, message);
+}
+
+GLenum checkFramebufferStatus(video::Id fbo) {
+	GLenum status;
+	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glCheckNamedFramebufferStatus != nullptr);
+		status = glCheckNamedFramebufferStatus(fbo, GL_FRAMEBUFFER);
+	} else {
+		core_assert(glCheckFramebufferStatus != nullptr);
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	}
+	if (status == GL_FRAMEBUFFER_COMPLETE) {
+		return status;
+	}
+	switch (status) {
+	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+		Log::error("FB error, incomplete attachment");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+		Log::error("FB error, incomplete missing attachment");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+		Log::error("FB error, incomplete draw buffer");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+		Log::error("FB error, incomplete read buffer");
+		break;
+	case GL_FRAMEBUFFER_UNSUPPORTED:
+		Log::error("FB error, framebuffer unsupported");
+		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		Log::error("FB error, incomplete multisample");
+		break;
+	default:
+		Log::error("FB error, status: %i", (int)status);
+		break;
+	}
+	return status;
+}
+
+void setupLimitsAndSpecs() {
+	core_assert(glGetIntegerv != nullptr);
+	glGetIntegerv(GL_MAX_SAMPLES, &renderState().limits[core::enumVal(Limit::MaxSamples)]);
+	checkError();
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxTextureSize)]);
+	checkError();
+	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxCubeMapTextureSize)]);
+	checkError();
+	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, &renderState().limits[core::enumVal(Limit::MaxViewPortWidth)]);
+	checkError();
+	glGetIntegerv(GL_MAX_DRAW_BUFFERS, &renderState().limits[core::enumVal(Limit::MaxDrawBuffers)]);
+	checkError();
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &renderState().limits[core::enumVal(Limit::MaxVertexAttribs)]);
+	checkError();
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &renderState().limits[core::enumVal(Limit::MaxCombinedTextureImageUnits)]);
+	checkError();
+	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &renderState().limits[core::enumVal(Limit::MaxVertexTextureImageUnits)]);
+	checkError();
+	glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
+	checkError();
+	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
+	checkError();
+	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)]);
+	checkError();
+	if (hasFeature(Feature::ComputeShaders)) {
+		core_assert(glGetIntegeri_v != nullptr);
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountX)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountY)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountZ)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeX)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeY)]);
+		checkError();
+		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupSizeZ)]);
+		checkError();
+		glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupInvocations)]);
+		checkError();
+	}
+	if (FLEXT_KHR_debug) {
+		glGetIntegerv(GL_MAX_LABEL_LENGTH, &renderState().limits[core::enumVal(Limit::MaxLabelLength)]);
+		checkError();
+	}
+#ifdef GL_MAX_VERTEX_UNIFORM_VECTORS
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &renderState().limits[core::enumVal(Limit::MaxVertexUniformComponents)]);
+	checkError();
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &renderState().limits[core::enumVal(Limit::MaxFragmentUniformComponents)]);
+	checkError();
+#else
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxVertexUniformComponents)]);
+	checkError();
+	glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentUniformComponents)]);
+	checkError();
+#endif
+	if (FLEXT_ARB_texture_filter_anisotropic) {
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &renderState().flimits[core::enumVal(Limit::MaxAnisotropy)]);
+		checkError();
+	}
+	glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &renderState().flimits[core::enumVal(Limit::MaxLodBias)]);
+	checkError();
+
+	GLint uniformBufferAlignment;
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignment);
+	renderState().specs[core::enumVal(Spec::UniformBufferAlignment)] = uniformBufferAlignment;
+	checkError();
+	GLint maxUniformBufferSize;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBufferSize);
+	renderState().limits[core::enumVal(Limit::MaxUniformBufferSize)] = maxUniformBufferSize;
+	checkError();
+	GLint maxUniformBufferBindings;
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUniformBufferBindings);
+	renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)] = maxUniformBufferBindings;
+	checkError();
+
+	if (hasFeature(Feature::ShaderStorageBufferObject)) {
+		GLint shaderStorageBufferOffsetAlignment;
+		glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderStorageBufferOffsetAlignment);
+		renderState().specs[core::enumVal(Spec::ShaderStorageBufferOffsetAlignment)] = shaderStorageBufferOffsetAlignment;
+		checkError();
+		GLint maxShaderStorageBlockSize;
+		glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBlockSize);
+		renderState().limits[core::enumVal(Limit::MaxShaderStorageBufferSize)] = maxShaderStorageBlockSize;
+		checkError();
+	}
+
+	Log::debug("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
+	Log::debug("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
+	Log::debug("GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT: %i", (int)renderState().specs[core::enumVal(Spec::UniformBufferAlignment)]);
+	Log::debug("GL_MAX_UNIFORM_BLOCK_SIZE: %i", (int)renderState().limits[core::enumVal(Limit::MaxUniformBufferSize)]);
+	Log::debug("GL_MAX_UNIFORM_BUFFER_BINDINGS: %i", (int)renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)]);
+}
+
+void setupFeatures(GLVersion version) {
+	const core::List<const char *> extensionArray[] = {
+		{"GL_ARB_texture_compression_s3tc", "GL_ARB_compressed_texture_s3tc", "GL_ARB_texture_compression_dxt1"},
+		{"GL_ARB_texture_compression_pvrtc", "GL_ARB_compressed_texture_pvrtc"},
+		{},
+		{"GL_ARB_compressed_ATC_texture", "GL_ARB_compressed_texture_atc"},
+		{"GL_ARB_texture_float"},
+		{"GL_ARB_texture_half_float"},
+		{"GL_ARB_instanced_arrays"},
+		{"GL_ARB_debug_output"},
+		// the primary difference between ARB and EXT is that ARB requires the use of
+		// glCreateResource rather than working from glGenResource object handles.
+		// https://www.opengl.org/registry/specs/ARB/direct_state_access.txt
+		{"GL_ARB_direct_state_access"},
+		{"GL_ARB_buffer_storage"},
+		{"GL_ARB_multi_draw_indirect"},
+		{"GL_ARB_compute_shader"},
+		{"GL_ARB_transform_feedback2"},
+		{"GL_ARB_shader_storage_buffer_object"}
+	};
+	static_assert(core::enumVal(Feature::Max) == (int)lengthof(extensionArray), "Array sizes don't match for Feature enum");
+
+	int numExts;
+	core_assert(glGetIntegerv != nullptr);
+	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
+	Log::debug("OpenGL extensions:");
+	for (int i = 0; i < numExts; ++i) {
+		const char *extensionStr = (const char *) glGetStringi(GL_EXTENSIONS, i);
+		Log::debug("ext: %s", extensionStr);
+	}
+
+	for (size_t i = 0; i < lengthof(extensionArray); ++i) {
+		const core::List<const char *>& extStrVector = extensionArray[i];
+		for (const char *extStr : extStrVector) {
+			renderState().features[i] = SDL_GL_ExtensionSupported(extStr);
+			if (renderState().features[i]) {
+				Log::debug("Detected feature: %s", extStr);
+				break;
+			}
+		}
+	}
+
+	int mask = 0;
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask)) {
+#else
+	if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &mask) != -1) {
+#endif
+		if ((mask & SDL_GL_CONTEXT_PROFILE_CORE) != 0) {
+			renderState().features[core::enumVal(Feature::TextureCompressionDXT)] = true;
+			renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
+			renderState().features[core::enumVal(Feature::TextureFloat)] = true;
+		}
+	}
+
+	// Buffer storage is a core feature in OpenGL 4.4+
+	if (version.majorVersion > 4 || (version.majorVersion == 4 && version.minorVersion >= 4)) {
+		renderState().features[core::enumVal(Feature::BufferStorage)] = true;
+	}
+
+#ifdef GL_CLIP_ORIGIN
+	GLenum clipOrigin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&clipOrigin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
+	if (clipOrigin == GL_UPPER_LEFT) {
+		s.clipOriginLowerLeft = false;
+	}
+#endif
+
+#ifdef USE_OPENGLES
+	renderState().features[core::enumVal(Feature::TextureFloat)] = true;
+	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = true;
+	renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
+	renderState().features[core::enumVal(Feature::TextureCompressionETC2)] = true;
+#else
+	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = renderState().features[core::enumVal(Feature::TextureFloat)];
+#endif
+}
+
+int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& shaderName, bool block) {
+	GLenum activeEnum;
+	GLenum activeMaxLengthEnum;
+	if (block) {
+		activeEnum = GL_ACTIVE_UNIFORM_BLOCKS;
+		activeMaxLengthEnum = GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH;
+	} else {
+		activeEnum = GL_ACTIVE_UNIFORMS;
+		activeMaxLengthEnum = GL_ACTIVE_UNIFORM_MAX_LENGTH;
+	}
+	GLint numUniforms = 0;
+	glGetProgramiv(program, activeEnum, &numUniforms);
+	GLint uniformNameSize = 0;
+	glGetProgramiv(program, activeMaxLengthEnum, &uniformNameSize);
+	char name[4096];
+	if (uniformNameSize + 1 >= (int)sizeof(name)) {
+		return 0;
+	}
+
+	const char *shaderNameC = shaderName.c_str();
+	for (int i = 0; i < numUniforms; i++) {
+		Uniform uniform;
+		if (block) {
+			core_assert(glGetActiveUniformBlockName != nullptr);
+			glGetActiveUniformBlockName(program, i, uniformNameSize, nullptr, name);
+			core_assert(glGetUniformBlockIndex != nullptr);
+			uint32_t location = glGetUniformBlockIndex(program, name);
+			if (location == GL_INVALID_INDEX) {
+				Log::debug("Could not get uniform block location for %s is %i (shader %s)", name, location, shaderNameC);
+				continue;
+			}
+			uniform.location = location;
+			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+		} else {
+			GLint size = 0;
+			GLenum type = 0;
+			core_assert(glGetActiveUniform != nullptr);
+			glGetActiveUniform(program, i, uniformNameSize, nullptr, &size, &type, name);
+			core_assert(glGetUniformLocation != nullptr);
+			int32_t location = glGetUniformLocation(program, name);
+			if (location < 0) {
+				Log::debug("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+				continue;
+			}
+			uniform.location = location;
+			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+		}
+		char* array = SDL_strchr(name, '[');
+		if (array != nullptr) {
+			*array = '\0';
+		}
+		uniform.block = block;
+		if (block) {
+			core_assert(glGetUniformBlockIndex != nullptr);
+			uniform.blockIndex = glGetUniformBlockIndex(program, name);
+			core_assert(glGetActiveUniformBlockiv != nullptr);
+			glGetActiveUniformBlockiv(program, uniform.location, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform.size);
+			uniform.blockBinding = i;
+		}
+		uniformMap.put(core::String(name), uniform);
+	}
+	return numUniforms;
+}
+
+}
 
 static inline _priv::GLState &glState() {
 	static _priv::GLState s;
@@ -2089,6 +2791,48 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 					  BlendMode::OneMinusSourceAlpha);
 
 	return true;
+}
+
+void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBinding) {
+	core_assert(glUniformBlockBinding != nullptr);
+	glUniformBlockBinding(program, (GLuint)blockIndex, (GLuint)blockBinding);
+	checkError();
+}
+
+void setUniformi(int location, int value) {
+	glUniform1i(location, value);
+	checkError();
+}
+
+int32_t getUniformBufferOffset(Id program, const char *name) {
+	GLuint index;
+	const GLchar *uniformNames[1];
+	uniformNames[0] = name;
+	core_assert(glGetUniformIndices != nullptr);
+	glGetUniformIndices(program, 1, uniformNames, &index);
+	checkError();
+	if (index == GL_INVALID_INDEX) {
+		Log::error("Could not query uniform index for %s", name);
+		return -1;
+	}
+	GLint offset;
+	core_assert(glGetActiveUniformsiv != nullptr);
+	glGetActiveUniformsiv(program, 1, &index, GL_UNIFORM_OFFSET, &offset);
+	checkError();
+	GLint type;
+	glGetActiveUniformsiv(program, 1, &index, GL_UNIFORM_TYPE, &type);
+	checkError();
+	GLint size;
+	glGetActiveUniformsiv(program, 1, &index, GL_UNIFORM_SIZE, &size); // array length, not actual type size;
+	checkError();
+	GLint matrixStride;
+	glGetActiveUniformsiv(program, 1, &index, GL_UNIFORM_MATRIX_STRIDE, &matrixStride);
+	checkError();
+	GLint arrayStride;
+	glGetActiveUniformsiv(program, 1, &index, GL_UNIFORM_ARRAY_STRIDE, &arrayStride);
+	checkError();
+	Log::debug("%s: offset: %i, type: %i, size: %i, matrixStride: %i, arrayStride: %i", name, offset, type, size, matrixStride, arrayStride);
+	return offset;
 }
 
 void traceVideoBegin(const char *name) {

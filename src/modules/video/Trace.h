@@ -8,7 +8,7 @@
 #include "engine-config.h"
 #ifdef TRACY_ENABLE
 #ifdef USE_GL_RENDERER
-#include "video/gl/GLRenderer.h"
+#include "video/gl/flextGL.h"
 #include "core/tracy/public/tracy/TracyOpenGL.hpp"
 #endif
 #ifdef USE_VK_RENDERER

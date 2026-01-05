@@ -12,10 +12,27 @@
 #include "flextVk.h"
 #include "video/Renderer.h"
 #include "video/Types.h"
-#include "video/vk/VkState.h"
 #include <SDL_vulkan.h>
 
 namespace video {
+namespace _priv {
+
+struct VkState : public RenderState {
+	VkInstance instance = VK_NULL_HANDLE;
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkDevice device = VK_NULL_HANDLE;
+	VkQueue graphicsQueue = VK_NULL_HANDLE;
+	VkQueue presentQueue = VK_NULL_HANDLE;
+	VkCommandPool commandPool = VK_NULL_HANDLE;
+	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	VkSurfaceKHR surface = VK_NULL_HANDLE;
+	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+
+	uint32_t graphicsQueueFamily = UINT32_MAX;
+	uint32_t presentQueueFamily = UINT32_MAX;
+};
+
+} // namespace _priv
 
 static inline _priv::VkState &vkstate() {
 	static _priv::VkState s;
@@ -378,6 +395,16 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 }
 
 void unmapBuffer(Id handle, BufferType type) {
+}
+
+void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBinding) {
+}
+
+void setUniformi(int location, int value) {
+}
+
+int32_t getUniformBufferOffset(Id program, const char *name) {
+	return -1;
 }
 
 } // namespace video

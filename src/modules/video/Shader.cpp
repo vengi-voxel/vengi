@@ -481,4 +481,36 @@ ScopedShader::~ScopedShader() {
 	useProgram(_oldShader);
 }
 
+bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buffer) {
+	const Uniform* uniform = getUniform(name);
+	if (uniform == nullptr) {
+		Log::error("%s is no uniform", name.c_str());
+		return false;
+	}
+	if (!uniform->block) {
+		Log::error("%s is no uniform buffer", name.c_str());
+		return false;
+	}
+
+	if (uniform->size != (int)buffer.size()) {
+		Log::error("Uniform buffer %s: size %i differs from uploaded structure size %i", name.c_str(), uniform->size, (int)buffer.size());
+		return false;
+	}
+
+	video::setUniformBufferBinding(_program, uniform->blockIndex, uniform->blockBinding);
+	addUsedUniform(uniform->location);
+	return buffer.bind(uniform->blockIndex);
+}
+
+void Shader::setUniformi(int location, int value) const {
+	if (checkUniformCache(location, &value, sizeof(value))) {
+		video::setUniformi(location, value);
+	}
+	addUsedUniform(location);
+}
+
+int32_t Shader::getUniformBufferOffset(const char *name) {
+	return video::getUniformBufferOffset(_program, name);
+}
+
 }

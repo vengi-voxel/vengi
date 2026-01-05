@@ -1,17 +1,14 @@
 set(VK_SRCS
 	vk/flextVk.c vk/flextVk.h
 	vk/VkRenderer.cpp vk/VkRenderer.h
-	vk/VkShader.cpp
 	vk/VkMapping.h
-	vk/VkState.h
 	vk/VKTypes.h
 )
 set(GL_SRCS
 	gl/flextGL.c gl/flextGL.h
-	gl/GLRenderer.cpp gl/GLRenderer.h
-	gl/GLMapping.h
-	gl/GLShader.cpp
-	gl/GLHelper.cpp gl/GLHelper.h
+	gl/GLRenderer.cpp
+	gl/GLTypes.h
+	gl/GLVersion.h
 )
 set(SRCS
 	RendererState.h
