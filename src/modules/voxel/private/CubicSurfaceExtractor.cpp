@@ -235,6 +235,7 @@ static bool performQuadMergingImpl(QuadList& quads, Mesh* meshCurrent, MergeFunc
 		return false;
 	}
 
+	Log::trace("Merge quads: starting with %i quads", (int)quads.size());
 	if (quads.size() > 1000) {
 		const size_t nBuckets = (quads.size() + 1000 - 1) / 1000;
 		std::vector<QuadList> buckets(nBuckets);
@@ -294,7 +295,6 @@ static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
 }
 
 static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
-	Log::trace("Merge quads: starting with %i quads", (int)quads.size());
 	return performQuadMergingImpl(quads, meshCurrent, mergeQuads);
 }
 
