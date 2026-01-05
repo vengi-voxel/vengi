@@ -3,7 +3,9 @@
  */
 
 #include "CubicSurfaceExtractor.h"
+#include "app/Async.h"
 #include "core/Common.h"
+#include "core/concurrent/Atomic.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -18,6 +20,7 @@
 #include "core/Trace.h"
 #include "voxel/Face.h"
 #include <glm/vec3.hpp>
+#include <iterator>
 #include <list>
 #include <vector>
 
@@ -225,8 +228,44 @@ static bool mergeQuadsAO(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	return false;
 }
 
-static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
+template<typename MergeFunc>
+static bool performQuadMergingImpl(QuadList& quads, Mesh* meshCurrent, MergeFunc&& mergeFunc) {
 	core_trace_scoped(PerformQuadMerging);
+	if (quads.empty()) {
+		return false;
+	}
+
+	if (quads.size() > 1000) {
+		const size_t nBuckets = (quads.size() + 1000 - 1) / 1000;
+		std::vector<QuadList> buckets(nBuckets);
+		auto it = quads.begin();
+		const size_t bucketSize = quads.size() / nBuckets;
+		for (size_t i = 0; i < nBuckets; ++i) {
+			auto end = it;
+			if (i == nBuckets - 1) {
+				end = quads.end();
+			} else {
+				std::advance(end, bucketSize);
+			}
+			buckets[i].splice(buckets[i].begin(), quads, it, end);
+			it = end;
+		}
+
+		core::AtomicBool didMerge { false };
+		app::for_parallel(0, (int)nBuckets, [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				if (performQuadMergingImpl(buckets[i], meshCurrent, mergeFunc)) {
+					didMerge = true;
+				}
+			}
+		});
+
+		for (auto& bucket : buckets) {
+			quads.splice(quads.end(), bucket);
+		}
+		return didMerge;
+	}
+
 	bool didMerge = false;
 
 	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
@@ -236,7 +275,7 @@ static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
 			Quad& q1 = *outerIter;
 			Quad& q2 = *innerIter;
 
-			const bool result = mergeQuadsAO(q1, q2, meshCurrent);
+			const bool result = mergeFunc(q1, q2, meshCurrent);
 
 			if (result) {
 				didMerge = true;
@@ -250,30 +289,13 @@ static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
 	return didMerge;
 }
 
+static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
+	return performQuadMergingImpl(quads, meshCurrent, mergeQuadsAO);
+}
+
 static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
-	core_trace_scoped(PerformQuadMerging);
-	bool didMerge = false;
-
 	Log::trace("Merge quads: starting with %i quads", (int)quads.size());
-	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
-		QuadList::iterator innerIter = outerIter;
-		++innerIter;
-		while (innerIter != quads.end()) {
-			Quad& q1 = *outerIter;
-			Quad& q2 = *innerIter;
-
-			const bool result = mergeQuads(q1, q2, meshCurrent);
-
-			if (result) {
-				didMerge = true;
-				innerIter = quads.erase(innerIter);
-			} else {
-				++innerIter;
-			}
-		}
-	}
-
-	return didMerge;
+	return performQuadMergingImpl(quads, meshCurrent, mergeQuads);
 }
 
 /**
