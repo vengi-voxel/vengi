@@ -1987,20 +1987,6 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
 }
 
-void resize(int windowWidth, int windowHeight, float scaleFactor) {
-	rendererState().windowWidth = windowWidth;
-	rendererState().windowHeight = windowHeight;
-	rendererState().scaleFactor = scaleFactor;
-}
-
-glm::ivec2 getWindowSize() {
-	return glm::ivec2(rendererState().windowWidth, rendererState().windowHeight);
-}
-
-float getScaleFactor() {
-	return rendererState().scaleFactor;
-}
-
 static bool setVSync(int value) {
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	return SDL_GL_SetSwapInterval(value);
@@ -2019,7 +2005,7 @@ static int getVSync() {
 #endif
 }
 
-void handleVSync() {
+static void handleVSync() {
 	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
 	if (vsync) {
 		if (!setVSync(-1)) {

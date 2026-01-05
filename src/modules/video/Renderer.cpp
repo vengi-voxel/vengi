@@ -368,4 +368,18 @@ int drawCalls() {
 	return rendererState().drawCalls;
 }
 
+void resize(int windowWidth, int windowHeight, float scaleFactor) {
+	rendererState().windowWidth = windowWidth;
+	rendererState().windowHeight = windowHeight;
+	rendererState().scaleFactor = scaleFactor;
+}
+
+glm::ivec2 getWindowSize() {
+	return glm::ivec2(rendererState().windowWidth, rendererState().windowHeight);
+}
+
+float getScaleFactor() {
+	return rendererState().scaleFactor;
+}
+
 } // namespace video

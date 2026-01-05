@@ -410,4 +410,33 @@ Id currentFramebuffer();
 
 int drawCalls();
 
+/**
+ * @brief Notify the renderer about a window size or scale change.
+ *
+ * Updates any internal viewport/framebuffer sizes and other sized resources
+ * to match the new window dimensions and scale.
+ *
+ * @param windowWidth New window width in logical pixels.
+ * @param windowHeight New window height in logical pixels.
+ * @param scaleFactor New device pixel scale factor.
+ */
+void resize(int windowWidth, int windowHeight, float scaleFactor);
+
+/**
+ * @brief Get the current device pixel scale factor.
+ *
+ * Returns the scale factor supplied to @c init() or @c resize(). This value
+ * is useful for converting between logical and physical pixels.
+ *
+ * @return Current scale factor.
+ */
+float getScaleFactor();
+
+/**
+ * @brief Get the current window size in logical pixels.
+ *
+ * @return A glm::ivec2 containing {width, height}.
+ */
+glm::ivec2 getWindowSize();
+
 } // namespace video
