@@ -54,17 +54,6 @@ enum class TextureWrap {
 	Max
 };
 
-enum class QueryType {
-	SamplesPassed,
-	AnySamplesPassed,
-	TimeElapsed,
-	Timestamp,
-	PrimitivesGenerated,
-	TransformFeedbackPrimitivesWritten,
-
-	Max
-};
-
 enum class ClearFlag {
 	None = 0,
 	Color = 1,

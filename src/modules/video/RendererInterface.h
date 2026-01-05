@@ -311,41 +311,6 @@ void genBuffers(uint8_t amount, Id *ids);
 void deleteBuffers(uint8_t amount, Id *ids);
 
 /**
- * @brief Generate @p amount query object names and write them into @p ids.
- */
-void genQueries(uint8_t amount, Id *ids);
-
-/**
- * @brief Delete @p amount queries and mark ids as InvalidId.
- */
-void deleteQueries(uint8_t amount, Id *ids);
-
-/**
- * @brief Begin a query object.
- */
-void beginQuery(QueryType type, Id query);
-
-/**
- * @brief End a query object.
- */
-void endQuery(QueryType type);
-
-/**
- * @brief Check if a query result is available.
- */
-bool isQueryAvailable(Id query);
-
-/**
- * @brief Get the result of a query object.
- */
-uint32_t getQueryResult(Id query);
-
-/**
- * @brief Get the result of a query object (64 bit).
- */
-uint64_t getQueryResult64(Id query);
-
-/**
  * @brief Generate @p amount vertex array objects and write them into @p ids.
  */
 void genVertexArrays(uint8_t amount, Id *ids);
