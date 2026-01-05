@@ -10,8 +10,6 @@
 #include "video/ShaderTypes.h"
 #include "video/gl/GLVersion.h"
 
-#define GL_OFFSET_CAST(i) ((void*)(i))
-
 namespace video {
 
 namespace _priv {

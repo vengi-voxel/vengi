@@ -911,6 +911,8 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 	}
 }
 
+#define GL_OFFSET_CAST(i) ((void*)(i))
+
 void configureAttribute(const Attribute &a) {
 	video_trace_scoped(ConfigureVertexAttribute);
 	core_assert(rendererState().programHandle != InvalidId);
@@ -933,6 +935,8 @@ void configureAttribute(const Attribute &a) {
 		checkError();
 	}
 }
+
+#undef GL_OFFSET_CAST
 
 void flush() {
 	video_trace_scoped(Flush);
