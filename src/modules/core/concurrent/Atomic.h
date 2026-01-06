@@ -22,6 +22,7 @@ private:
 	core_atomic _value { 0 };
 public:
 	AtomicBool(bool value);
+	AtomicBool(const AtomicBool& rhs);
 
 	operator bool() const;
 

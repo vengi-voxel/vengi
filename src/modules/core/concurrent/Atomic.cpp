@@ -17,6 +17,10 @@ AtomicBool::AtomicBool(bool value) {
 	SDL_AtomicSet(&_value, (int)value);
 }
 
+AtomicBool::AtomicBool(const AtomicBool& rhs) {
+	SDL_AtomicSet(&_value, SDL_AtomicGet(const_cast<core_atomic*>(&rhs._value)));
+}
+
 AtomicBool::operator bool() const {
 	return SDL_AtomicGet(const_cast<core_atomic*>(&_value)) == 1;
 }
