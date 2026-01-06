@@ -225,35 +225,14 @@ static bool mergeQuadsAO(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	return false;
 }
 
-static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
+template<bool AmbientOcclusion>
+static bool performQuadMerging(QuadList &quads, Mesh *meshCurrent) {
 	core_trace_scoped(PerformQuadMerging);
 	bool didMerge = false;
 
-	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
-		QuadList::iterator innerIter = outerIter;
-		++innerIter;
-		while (innerIter != quads.end()) {
-			Quad& q1 = *outerIter;
-			Quad& q2 = *innerIter;
-
-			const bool result = mergeQuadsAO(q1, q2, meshCurrent);
-
-			if (result) {
-				didMerge = true;
-				innerIter = quads.erase(innerIter);
-			} else {
-				++innerIter;
-			}
-		}
-	}
-
-	return didMerge;
-}
-
-static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
-	core_trace_scoped(PerformQuadMerging);
-	bool didMerge = false;
-
+	// TODO: PERF: this loop is eliminating duplicates in O(n^2)
+	// we could do better with building an edge map or similar structure
+	// and only merge quads that share an edge
 	Log::trace("Merge quads: starting with %i quads", (int)quads.size());
 	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		QuadList::iterator innerIter = outerIter;
@@ -262,7 +241,12 @@ static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 			Quad& q1 = *outerIter;
 			Quad& q2 = *innerIter;
 
-			const bool result = mergeQuads(q1, q2, meshCurrent);
+			bool result;
+			if constexpr (AmbientOcclusion) {
+				result = mergeQuadsAO(q1, q2, meshCurrent);
+			} else {
+				result = mergeQuads(q1, q2, meshCurrent);
+			}
 
 			if (result) {
 				didMerge = true;
@@ -312,10 +296,10 @@ static void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadLi
 			// Repeatedly call this function until it returns
 			// false to indicate nothing more can be done.
 			if (ambientOcclusion) {
-				while (performQuadMergingAO(listQuads, result)) {
+				while (performQuadMerging<true>(listQuads, result)) {
 				}
 			} else {
-				while (performQuadMerging(listQuads, result)) {
+				while (performQuadMerging<false>(listQuads, result)) {
 				}
 			}
 		}
