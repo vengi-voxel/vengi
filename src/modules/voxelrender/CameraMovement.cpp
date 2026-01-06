@@ -44,60 +44,71 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		_clipping->markClean();
 		updateBodyPosition(*camera);
 	}
-	// game mode
-	if (_clipping->boolVal()) {
-		glm::vec3 camForward = camera->forward();
-		glm::vec3 camRight = camera->right();
+	const bool clipping = _clipping->boolVal();
+	glm::vec3 camForward = camera->forward();
+	glm::vec3 camRight = camera->right();
+	if (clipping) {
 		camForward.y = 0.0f;
 		camRight.y = 0.0f;
-		_deltaSeconds += _movement.deltaSeconds();
+	}
+	_deltaSeconds += _movement.deltaSeconds();
 
-		const bool isColliding = _body.isColliding();
+	const bool isColliding = _body.isColliding();
 
-		const float groundAcceleration = speed;
-		const float airAcceleration = speed * 0.1f;
-		const float acceleration = isColliding ? groundAcceleration : airAcceleration;
-		const float maxSpeed = speed;
+	const float groundAcceleration = speed;
+	const float airAcceleration = speed * 0.1f;
+	const float acceleration = isColliding ? groundAcceleration : airAcceleration;
+	const float maxSpeed = speed;
 
-		if (_movement.moving()) {
-			glm::vec3 direction(0);
-			if (_movement.forward()) {
-				direction += camForward;
+	if (_movement.moving()) {
+		glm::vec3 direction(0);
+		if (_movement.forward()) {
+			direction += camForward;
+		}
+		if (_movement.left()) {
+			direction -= camRight;
+		}
+		if (_movement.backward()) {
+			direction -= camForward;
+		}
+		if (_movement.right()) {
+			direction += camRight;
+		}
+
+		if (glm::dot(direction, direction) > 0.0f) {
+			direction = glm::normalize(direction);
+
+			// Apply acceleration in the desired direction
+			const float accelAmount = acceleration * _deltaSeconds;
+			glm::vec3 accelerationVec = direction * accelAmount;
+
+			_body.velocity.x += accelerationVec.x;
+			_body.velocity.z += accelerationVec.z;
+			if (!clipping) {
+				_body.velocity.y += accelerationVec.y;
 			}
-			if (_movement.left()) {
-				direction -= camRight;
-			}
-			if (_movement.backward()) {
-				direction -= camForward;
-			}
-			if (_movement.right()) {
-				direction += camRight;
-			}
 
-			if (glm::dot(direction, direction) > 0.0f) {
-				direction = glm::normalize(direction);
-
-				// Apply acceleration in the desired direction
-				const float accelAmount = acceleration * _deltaSeconds;
-				glm::vec3 accelerationVec = direction * accelAmount;
-
-				_body.velocity.x += accelerationVec.x;
-				_body.velocity.z += accelerationVec.z;
-
-				// Cap the horizontal velocity to max allowed speed
-				const float currentHorizontalSpeed = glm::length(glm::vec2(_body.velocity.x, _body.velocity.z));
-				if (currentHorizontalSpeed > maxSpeed) {
-					const float scale = maxSpeed / currentHorizontalSpeed;
-					_body.velocity.x *= scale;
-					_body.velocity.z *= scale;
+			// Cap the horizontal velocity to max allowed speed
+			const float currentHorizontalSpeed = glm::length(glm::vec2(_body.velocity.x, _body.velocity.z));
+			if (currentHorizontalSpeed > maxSpeed) {
+				const float scale = maxSpeed / currentHorizontalSpeed;
+				_body.velocity.x *= scale;
+				_body.velocity.z *= scale;
+				if (!clipping) {
+					_body.velocity.y *= scale;
 				}
 			}
 		}
+	}
 
-		if (_applyGravity->boolVal() && _movement.jump() && _body.isGrounded()) {
+	// apply collision and gravity
+	if (clipping) {
+		const bool applyGravity = _applyGravity->boolVal();
+
+		if (applyGravity && _movement.jump() && _body.isGrounded()) {
 			_body.velocity.y = _jumpVelocity->floatVal();
 			_body.collidedY = false;
-		} else if (!_applyGravity->boolVal()) {
+		} else if (!applyGravity) {
 			_body.velocity.y = 0.0f;
 		}
 
@@ -105,7 +116,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		sceneGraph.getCollisionNodes(nodes, frameIdx);
 
 		constexpr double hz = 1.0 / 60.0;
-		const float gravity = _applyGravity->boolVal() ? 9.81f : 0.0f;
+		const float gravity = applyGravity ? 9.81f : 0.0f;
 		while (_deltaSeconds > hz) {
 			_physics.update(hz, nodes, _body, gravity);
 			_deltaSeconds -= hz;
@@ -114,8 +125,11 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		const float eyePos = bodyHeight * 0.9f;
 		camera->setWorldPosition(_body.position + glm::vec3(0.0f, eyePos, 0.0f));
 	} else {
-		glm::vec3 moveDelta = _movement.moveDelta(speed);
-		camera->move(moveDelta);
+		_body.position = camera->worldPosition();
+		// no clipping - just move the camera directly
+		_body.position += (_body.velocity * (float)_movement.deltaSeconds());
+		camera->setWorldPosition(_body.position);
+		_body.velocity = {0.0f, 0.0f, 0.0f};
 	}
 }
 

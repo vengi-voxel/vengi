@@ -118,16 +118,6 @@ protected:
 	bool checkCollision(const CollisionNodes &nodes, const glm::vec3 &pos, const KinematicBody &body) const;
 
 	/**
-	 * @brief Applies friction to the kinematic body's velocity.
-	 *
-	 * This is typically called when the body is on the ground to simulate friction, slowing it down over time.
-	 *
-	 * @param[in,out] body The kinematic body to apply friction to. Its velocity will be modified.
-	 * @param[in] deltaSeconds The time elapsed since the last frame.
-	 */
-	void applyFriction(KinematicBody &body, double deltaSeconds) const;
-
-	/**
 	 * @brief Attempts to step up when horizontal movement is blocked by a low obstacle.
 	 *
 	 * This implements automatic stair climbing. If the body is blocked horizontally but the obstacle
@@ -143,6 +133,16 @@ protected:
 	bool tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const;
 
 public:
+	/**
+	 * @brief Applies friction to the kinematic body's velocity.
+	 *
+	 * This is typically called when the body is on the ground to simulate friction, slowing it down over time.
+	 *
+	 * @param[in,out] body The kinematic body to apply friction to. Its velocity will be modified.
+	 * @param[in] deltaSeconds The time elapsed since the last frame.
+	 */
+	void applyFriction(KinematicBody &body, double deltaSeconds) const;
+
 	/**
 	 * @brief Updates the state of a kinematic body.
 	 * @param[in] deltaSeconds The time elapsed since the last update in seconds.

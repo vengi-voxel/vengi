@@ -107,9 +107,6 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 }
 
 void Physics::applyFriction(KinematicBody &body, double deltaSeconds) const {
-	if (!body.collidedY) {
-		return;
-	}
 	// If the body is on the ground, apply friction.
 	const float decay = glm::pow(body.frictionDecay, (float)deltaSeconds);
 	body.velocity.x *= decay;
