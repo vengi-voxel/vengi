@@ -3,8 +3,7 @@
 import re
 import sys
 import xml.etree.ElementTree as ET
-from dateutil.parser import parse
-from datetime import datetime, timezone
+from datetime import datetime
 
 MIN_DATE = datetime(2024, 1, 1)
 
@@ -15,7 +14,7 @@ def parse_markdown_versions(markdown_changelog: str):
 
     for version, date_str in entries:
         try:
-            parsed_date = parse(date_str)
+            parsed_date = datetime.fromisoformat(date_str)
             if parsed_date >= MIN_DATE:
                 results.append(("v" + version, date_str))
         except Exception as e:
