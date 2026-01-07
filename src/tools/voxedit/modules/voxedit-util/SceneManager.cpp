@@ -2521,6 +2521,30 @@ void SceneManager::construct() {
 		video::Camera nodeCamera = voxelrender::toCamera(_camera->size(), sceneGraph(), *cameraNode, currentFrame());
 		camera->lerp(nodeCamera);
 	}).setHelp(_("Interpolate to the camera node position and orientation"));
+
+	command::Command::registerCommand("cam_rotation", [&] (const command::CmdArgs& args) {
+		video::Camera *camera = activeCamera();
+		if (camera == nullptr) {
+			Log::error("No active camera found");
+			return;
+		}
+		if (args.empty()) {
+			if (camera->rotationType() == video::CameraRotationType::Target) {
+				camera->setRotationType(video::CameraRotationType::Eye);
+			} else {
+				camera->setRotationType(video::CameraRotationType::Target);
+			}
+			return;
+		}
+		const core::String &modeStr = args[0];
+		if (modeStr == "target") {
+			camera->setRotationType(video::CameraRotationType::Target);
+		} else if (modeStr == "eye") {
+			camera->setRotationType(video::CameraRotationType::Eye);
+		} else {
+			Log::error("Unknown camera mode: %s (valid are: target, eye)", modeStr.c_str());
+		}
+	}).setHelp(_("Set or toggle the camera rotation mode (target or eye)")).setArgumentCompleter(command::valueCompleter({"target", "eye"}));
 }
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {

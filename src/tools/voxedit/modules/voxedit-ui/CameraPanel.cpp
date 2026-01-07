@@ -36,14 +36,16 @@ void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, vid
 		camera.setOmega(omega);
 	}
 
-	const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
+	const char *camRotTypes[] = {_("Target"), _("Eye")};
+	const char *camRotTypesArgs[] = {"target", "eye"};
 	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
 	const int currentCamRotType = (int)camera.rotationType();
 	if (ImGui::BeginCombo(_("Camera movement"), camRotTypes[currentCamRotType])) {
 		for (int n = 0; n < lengthof(camRotTypes); n++) {
 			const bool isSelected = (currentCamRotType == n);
 			if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-				camera.setRotationType((video::CameraRotationType)n);
+				const core::String &cmd = core::String::format("cam_rotation %s", camRotTypesArgs[n]);
+				command::executeCommands(cmd.c_str(), listener);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();

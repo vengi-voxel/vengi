@@ -92,7 +92,7 @@ bool Viewport::init() {
 		return false;
 	}
 
-	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setRotationType(video::CameraRotationType::Eye);
 	resetCamera();
 
 	return true;
