@@ -1319,8 +1319,8 @@ msgstr "Kamerarotation"
 msgid "Eye"
 msgstr "Auge"
 
-msgid "Reference Point"
-msgstr "Referenzpunkt"
+msgid "Target"
+msgstr "Ziel"
 
 msgid "Camera movement"
 msgstr "Kamerabewegung"
@@ -1348,9 +1348,6 @@ msgstr "Farplane"
 
 msgid "Nearplane"
 msgstr "Nearplane"
-
-msgid "Target"
-msgstr "Ziel"
 
 msgid "Target distance"
 msgstr "Entfernung zum Ziel"
@@ -2237,6 +2234,24 @@ msgstr "Szeneninterna"
 
 #, c-format
 msgid "Pending extractions: %i"
+msgstr ""
+
+#, c-format
+msgid "Pending meshes: %i"
+msgstr "Ausstehende Meshes: %u"
+
+#, c-format
+msgid "Culled volumes: %i"
+msgstr ""
+
+msgid "Cull nodes"
+msgstr ""
+
+msgid "Cull buffers"
+msgstr ""
+
+#, c-format
+msgid "Draw calls: %i"
 msgstr ""
 
 #, c-format
@@ -3197,6 +3212,9 @@ msgstr ""
 "diesen Knoten"
 
 msgid "Interpolate to the camera node position and orientation"
+msgstr ""
+
+msgid "Set or toggle the camera rotation mode (target or eye)"
 msgstr ""
 
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"

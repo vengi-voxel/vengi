@@ -1285,7 +1285,7 @@ msgstr ""
 msgid "Eye"
 msgstr ""
 
-msgid "Reference Point"
+msgid "Target"
 msgstr ""
 
 msgid "Camera movement"
@@ -1313,9 +1313,6 @@ msgid "Farplane"
 msgstr ""
 
 msgid "Nearplane"
-msgstr ""
-
-msgid "Target"
 msgstr ""
 
 msgid "Target distance"
@@ -2166,6 +2163,24 @@ msgstr ""
 
 #, c-format
 msgid "Pending extractions: %i"
+msgstr ""
+
+#, c-format
+msgid "Pending meshes: %i"
+msgstr ""
+
+#, c-format
+msgid "Culled volumes: %i"
+msgstr ""
+
+msgid "Cull nodes"
+msgstr ""
+
+msgid "Cull buffers"
+msgstr ""
+
+#, c-format
+msgid "Draw calls: %i"
 msgstr ""
 
 #, c-format
@@ -3041,6 +3056,9 @@ msgid "Unreference from model and allow to edit the voxels for this node"
 msgstr ""
 
 msgid "Interpolate to the camera node position and orientation"
+msgstr ""
+
+msgid "Set or toggle the camera rotation mode (target or eye)"
 msgstr ""
 
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
