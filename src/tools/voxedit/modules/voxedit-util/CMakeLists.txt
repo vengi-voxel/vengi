@@ -68,6 +68,7 @@ set(SRCS
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
 	Config.h
+	CommandCompleter.h
 
 	LUAApiListener.h LUAApiListener.cpp
 

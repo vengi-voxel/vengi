@@ -9,7 +9,6 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
-#include "color/Color.h"
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Log.h"
@@ -19,14 +18,12 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/File.h"
-#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "io/MemoryArchive.h"
 #include "io/Stream.h"
 #include "math/Axis.h"
-#include "math/Random.h"
 #include "math/Ray.h"
 #include "memento/MementoHandler.h"
 #include "metric/MetricFacade.h"
@@ -76,6 +73,7 @@
 
 #include "Clipboard.h"
 #include "Config.h"
+#include "CommandCompleter.h"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -84,20 +82,6 @@
 #include <glm/gtx/transform.hpp>
 
 namespace voxedit {
-
-inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
-	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		int i = 0;
-		for (const auto &entry : sceneGraph.nodes()) {
-			const scenegraph::SceneGraphNode &node = entry->value;
-			if (!node.isAnyModelNode()) {
-				continue;
-			}
-			matches.push_back(core::string::toString(node.id()));
-		}
-		return i;
-	};
-}
 
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
