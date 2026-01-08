@@ -171,7 +171,7 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm:
 		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f));
 	}
 	_volumeRenderer.update(_meshState);
-	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false/*, model*/);
+	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false, false);
 }
 
 void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &cursor, const glm::mat4& model) {

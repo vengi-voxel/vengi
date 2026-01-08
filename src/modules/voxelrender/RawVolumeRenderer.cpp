@@ -750,7 +750,7 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 }
 
 void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
-							   const video::Camera &camera, bool shadow) {
+							   const video::Camera &camera, bool shadow, bool bloom) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	bool visible = false;
@@ -887,7 +887,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	} else if (mode == video::PolygonMode::Solid) {
 		video::disable(video::State::PolygonOffsetFill);
 	}
-	if (_bloom->boolVal()) {
+	if (bloom && _bloom->boolVal()) {
 		// If multisampling is enabled, resolve the multisampled framebuffer to regular textures first
 		if (renderContext.enableMultisampling) {
 			const glm::ivec2 &fbDim = renderContext.frameBuffer.dimension();

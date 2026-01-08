@@ -101,7 +101,7 @@ public:
 	RawVolumeRenderer();
 
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
-				bool shadow);
+				bool shadow, bool bloom);
 	void clear(const voxel::MeshStatePtr &meshState);
 	/**
 	 * @brief Checks whether the given volume @c idx is visible
