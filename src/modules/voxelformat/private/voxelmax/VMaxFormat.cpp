@@ -424,15 +424,15 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 			uint8_t x, y, z;
 			// the voxels are stored in morton order - use the index to find the voxel position
 			// y and z are swapped here
-			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y)) {
+			if (!voxel::mortonIndexToCoord(mortonStartIdx + mortonIdx, x, z, y)) {
 				Log::error("Failed to lookup voxel position for morton index %i", mortonIdx);
 				return false;
 			}
 			++mortonIdx;
-			if (!wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z,
+			if (!wrapper.setVoxel(x, y, z,
 								  voxel::createVoxel(palette, palIdx))) {
-				Log::warn("Failed to set voxel at %i, %i, %i (morton index: %u)", chunkOffsetX + x, chunkOffsetY + y,
-						  chunkOffsetZ + z, mortonIdx);
+				Log::warn("Failed to set voxel at %i, %i, %i (morton index: %u)", x, y,
+						  z, mortonIdx);
 			}
 		}
 		const glm::ivec3 mins(chunkX * maxChunkSize, chunkY * maxChunkSize, chunkZ * maxChunkSize);
@@ -512,7 +512,13 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 		return false;
 	}
 
-	core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream("palette.settings.vmaxpsb"));
+	core::String settingsName = core::string::stripExtension(paletteName);
+	settingsName.append(".settings.vmaxpsb");
+	core::ScopedPtr<io::SeekableReadStream> paletteSettingsStream(archive->readStream(settingsName));
+	if (!paletteSettingsStream) {
+		paletteSettingsStream = archive->readStream("palette.settings.vmaxpsb");
+	}
+
 	if (paletteSettingsStream) {
 		const util::BinaryPList &plist = util::BinaryPList::parse(*paletteSettingsStream);
 		if (plist.isDict()) {

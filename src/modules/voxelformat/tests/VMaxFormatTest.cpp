@@ -4,6 +4,7 @@
 
 #include "AbstractFormatTest.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -14,7 +15,15 @@ TEST_F(VMaxFormatTest, testLoad) {
 }
 
 TEST_F(VMaxFormatTest, DISABLED_testTransform) {
-	testTransform("test-transform.vmax.zip");
+	// this is the same model as test-transform.vox but in vmax format
+	scenegraph::SceneGraph sceneGraphVMAX;
+	testTransform(sceneGraphVMAX, "test-transform.vmax.zip");
+
+	scenegraph::SceneGraph sceneGraphVOX;
+	testLoad(sceneGraphVOX, "test-transform.vox", 20);
+
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	voxel::sceneGraphComparator(sceneGraphVMAX, sceneGraphVOX, flags);
 }
 
 TEST_F(VMaxFormatTest, testLoad0) {

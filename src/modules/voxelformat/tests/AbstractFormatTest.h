@@ -61,6 +61,7 @@ protected:
 	void testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
 
 	void testTransform(const core::String &filename);
+	void testTransform(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
 
 	// save as any other format
 	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);

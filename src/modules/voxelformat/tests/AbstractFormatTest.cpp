@@ -77,8 +77,12 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 }
 
 void AbstractFormatTest::testTransform(const core::String &filename) {
-	SCOPED_TRACE(filename.c_str());
 	scenegraph::SceneGraph sceneGraph;
+	testTransform(sceneGraph, filename);
+}
+
+void AbstractFormatTest::testTransform(scenegraph::SceneGraph &sceneGraph, const core::String &filename) {
+	SCOPED_TRACE(filename.c_str());
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	const io::ArchivePtr &archive = helper_filesystemarchive();
