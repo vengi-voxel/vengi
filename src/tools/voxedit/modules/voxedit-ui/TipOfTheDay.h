@@ -13,7 +13,7 @@ static const char *tips[]{
 	N_("You can reset the camera simply by pressing <cmd:resetcamera>."),
 	N_("You can animation a camera and then move around in the scene when hitting the play button in the animation timeline."),
 	N_("The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."),
-	N_("You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport."),
+	N_("You can switch the camera scene movement by switching the 'Camera movement' to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:cam_rotation>."),
 	N_("In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel."),
 	N_("When importing meshes, you can switch between different voxelization methods in the options menu."),
 	N_("Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."),
