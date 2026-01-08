@@ -47,7 +47,7 @@ bool CollectionPanel::isFilterActive() const {
 }
 
 void CollectionPanel::updateFilters() {
-	const float itemWidth = ImGui::CalcTextSize("#").x * 9.0;
+	const float itemWidth = ImGui::Size(9.0f);
 	{
 		ImGui::PushItemWidth(itemWidth);
 		ImGui::InputText(_("Name"), &_currentFilterName);

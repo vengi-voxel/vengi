@@ -365,7 +365,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 		toolbar.end();
 
 		if (sceneGraph.nodes().size() > 10) {
-			ImGui::SetNextItemWidth(ImGui::CalcTextWidth("#") * 12.0f);
+			ImGui::SetNextItemWidth(ImGui::Size(12.0f));
 			ImGui::InputText(_("Filter"), &_filterName);
 			ImGui::SameLine();
 			const char *filterTypes[] = {_("All"), _("Models"), _("Groups"), _("Cameras"), _("References"), _("Points")};
