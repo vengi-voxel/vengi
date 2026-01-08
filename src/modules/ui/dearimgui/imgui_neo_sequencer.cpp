@@ -917,7 +917,12 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 		addRes = TimelineBehaviour(id, labelSize);
 	}
 
+	currentTimelineHeight = labelSize.y;
 	if (!ImGui::IsItemVisible()) {
+		context.FilledHeight += currentTimelineHeight;
+		context.ValuesCursor.y += currentTimelineHeight;
+		context.ValuesCursor.x = context.TopBarStartCursor.x;
+		currentTimelineHeight = 0.0f;
 		return false;
 	}
 
@@ -925,7 +930,6 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 		context.ValuesCursor = {context.TopBarStartCursor.x, context.ValuesCursor.y};
 	}
 
-	currentTimelineHeight = labelSize.y;
 	context.FilledHeight += currentTimelineHeight;
 	const bool result = !closable || (*open);
 	context.LastTimelineOpenned = result;
