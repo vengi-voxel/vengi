@@ -35,10 +35,16 @@ VoxEdit:
    - Fixed normal rendering with binary mesher
    - Implemented editing of normals and improved the normal palette panel
    - Improved autonormals
+   - Improved camera movement and make the eye-based movement (`wasd`) the default
+   - Improved game mode settings and allow to tweak more properties
+   - Fixed broken scrolling in the animation timeline
+   - Fixed switching animations (cache invalidation was missing)
+   - Removed tree panel
 
 Thumbnailer:
 
    - Fixed missing `--angles` radians conversion
+   - Fixed missing transform handling
 
 ## 0.3.0 (2025-11-29)
 
