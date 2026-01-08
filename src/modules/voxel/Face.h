@@ -42,6 +42,25 @@ const char *faceNameString(FaceNames face);
 math::Axis faceToAxis(FaceNames face);
 glm::vec3 faceNormal(FaceNames face);
 
+inline constexpr FaceNames oppositeFace(FaceNames face) {
+	switch (face) {
+	case FaceNames::PositiveX:
+		return FaceNames::NegativeX;
+	case FaceNames::NegativeX:
+		return FaceNames::PositiveX;
+	case FaceNames::PositiveY:
+		return FaceNames::NegativeY;
+	case FaceNames::NegativeY:
+		return FaceNames::PositiveY;
+	case FaceNames::PositiveZ:
+		return FaceNames::NegativeZ;
+	case FaceNames::NegativeZ:
+		return FaceNames::PositiveZ;
+	default:
+		return FaceNames::Max;
+	}
+}
+
 inline bool isHorizontalFace(FaceNames face) {
 	return face == FaceNames::PositiveX || face == FaceNames::PositiveZ || face == FaceNames::NegativeX || face == FaceNames::NegativeZ;
 }
