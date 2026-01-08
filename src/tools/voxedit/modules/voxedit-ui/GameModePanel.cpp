@@ -18,6 +18,9 @@ void GameModePanel::init() {
 	_movementSpeed = core::Var::getSafe(cfg::GameModeMovementSpeed);
 	_jumpVelocity = core::Var::getSafe(cfg::GameModeJumpVelocity);
 	_bodyHeight = core::Var::getSafe(cfg::GameModeBodyHeight);
+	_gravity = core::Var::getSafe(cfg::GameModeGravity);
+	_friction = core::Var::getSafe(cfg::GameModeFriction);
+	_bodySize = core::Var::getSafe(cfg::GameModeBodySize);
 }
 
 void GameModePanel::update(const char *id, command::CommandExecutionListener &listener) {
@@ -48,9 +51,9 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		ImGui::InputVarFloat(_("Movement Speed"), _movementSpeed, 0.1f, 100.0f);
 		ImGui::InputVarFloat(_("Jump Velocity"), _jumpVelocity, 0.1f, 100.0f);
 		ImGui::InputVarFloat(_("Body Height"), _bodyHeight, 0.1f, 10.0f);
-		// TODO: make gravity configurable - see voxelrender::CameraMovement
-		// TODO: make friction configurable - see scenegraph::KinematicBody
-		// TODO: make extends/size of the body configurable - see scenegraph::KinematicBody
+		ImGui::InputVarFloat(_("Gravity"), _gravity, 0.01f, 100.0f);
+		ImGui::InputVarFloat(_("Friction"), _friction, 0.001f, 1.0f);
+		ImGui::InputVarFloat(_("Body Size"), _bodySize, 0.2f, 0.4998f);
 
 		if (ImGui::Button(_("Minecraft"))) {
 			_bodyHeight->setVal(1.8f);

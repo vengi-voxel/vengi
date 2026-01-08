@@ -135,5 +135,8 @@ constexpr const char *GameModeApplyGravity = "g_applygravity";
 constexpr const char *GameModeJumpVelocity = "g_jumpvelocity";
 constexpr const char *GameModeBodyHeight = "g_bodyheight";
 constexpr const char *GameModeMovementSpeed = "g_movementspeed";
+constexpr const char *GameModeGravity = "g_gravity";
+constexpr const char *GameModeFriction = "g_friction";
+constexpr const char *GameModeBodySize = "g_bodysize";
 
 }

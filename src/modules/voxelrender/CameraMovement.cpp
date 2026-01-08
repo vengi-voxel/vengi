@@ -14,6 +14,9 @@ void CameraMovement::construct() {
 	_movementSpeed = core::Var::get(cfg::GameModeMovementSpeed, "60.0", _("Movement speed in game mode"));
 	_jumpVelocity = core::Var::get(cfg::GameModeJumpVelocity, "7.0", _("Jump velocity in game mode"));
 	_bodyHeight = core::Var::get(cfg::GameModeBodyHeight, "2.0", _("Height of the body in game mode"));
+	_gravity = core::Var::get(cfg::GameModeGravity, "9.81", _("Gravity in game mode"));
+	_friction = core::Var::get(cfg::GameModeFriction, "0.01", _("Friction in game mode"));
+	_bodySize = core::Var::get(cfg::GameModeBodySize, "0.2", _("Body size in game mode"));
 	_clipping = core::Var::get(cfg::GameModeClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
 							   core::Var::boolValidator);
 	_applyGravity = core::Var::get(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
@@ -104,6 +107,9 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 	// apply collision and gravity
 	if (clipping) {
 		const bool applyGravity = _applyGravity->boolVal();
+		_body.extents.x = _bodySize->floatVal();
+		_body.extents.z = _body.extents.x;
+		_body.frictionDecay = _friction->floatVal();
 
 		if (applyGravity && _movement.jump() && _body.isGrounded()) {
 			_body.velocity.y = _jumpVelocity->floatVal();
@@ -116,7 +122,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		sceneGraph.getCollisionNodes(nodes, frameIdx);
 
 		constexpr double hz = 1.0 / 60.0;
-		const float gravity = applyGravity ? 9.81f : 0.0f;
+		const float gravity = applyGravity ? _gravity->floatVal() : 0.0f;
 		while (_deltaSeconds > hz) {
 			_physics.update(hz, nodes, _body, gravity);
 			_deltaSeconds -= hz;

@@ -23,6 +23,9 @@ private:
 	core::VarPtr _movementSpeed;
 	core::VarPtr _jumpVelocity;
 	core::VarPtr _bodyHeight;
+	core::VarPtr _gravity;
+	core::VarPtr _friction;
+	core::VarPtr _bodySize;
 	core::VarPtr _applyGravity;
 	core::VarPtr _clipping;
 	bool _gameModeEnabled = false;
