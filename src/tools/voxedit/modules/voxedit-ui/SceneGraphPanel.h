@@ -33,6 +33,7 @@ private:
 	core::VarPtr _hideInactive;
 	bool _hasFocus = false;
 	bool _popupDragAndDrop = false;
+	bool _scrollToActiveNode = false;
 	int _dragDropSourceNodeId = InvalidNodeId;
 	int _dragDropTargetNodeId = InvalidNodeId;
 	int _lastActivedNodeId = InvalidNodeId;
@@ -59,6 +60,10 @@ private:
 							  const DisplayNode &displayNode, command::CommandExecutionListener &listener,
 							  int referencedNodeId);
 	void rebuildDisplayList(const scenegraph::SceneGraph &sceneGraph, int nodeId, int depth);
+
+	// remove nodes from collapsed list to ensure visibility of the given node
+	void makeVisible(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+
 	void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 public:
 	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "scenegraph"), _sceneMgr(sceneMgr) {

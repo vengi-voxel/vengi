@@ -231,9 +231,9 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 			ImGui::Unindent(indent);
 		}
 
-		if (activeNode != _lastActivedNodeId && nodeId == activeNode) {
+		if (_scrollToActiveNode && nodeId == activeNode) {
 			ImGui::SetScrollHereY();
-			_lastActivedNodeId = activeNode;
+			_scrollToActiveNode = false;
 		}
 
 		if (nodeId != sceneGraph.root().id()) {
@@ -296,6 +296,15 @@ void SceneGraphPanel::rebuildDisplayList(const scenegraph::SceneGraph &sceneGrap
 		for (int childId : node.children()) {
 			rebuildDisplayList(sceneGraph, childId, depth + 1);
 		}
+	}
+}
+
+void SceneGraphPanel::makeVisible(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
+	int parentId = node.parent();
+	while (parentId != InvalidNodeId) {
+		_collapsedNodes.remove(parentId);
+		const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parentId);
+		parentId = parentNode.parent();
 	}
 }
 
@@ -407,6 +416,13 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 
 			_displayNodes.clear();
 			_displayNodes.reserve(sceneGraph.nodeSize());
+
+			if (_lastActivedNodeId != sceneGraph.activeNode()) {
+				_lastActivedNodeId = sceneGraph.activeNode();
+				_scrollToActiveNode = true;
+				makeVisible(sceneGraph, activeNode);
+			}
+
 			rebuildDisplayList(sceneGraph, sceneGraph.root().id(), 0);
 
 			ImGuiListClipper clipper;
