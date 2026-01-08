@@ -125,7 +125,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 		const float eyePos = bodyHeight * 0.9f;
 		camera->setWorldPosition(_body.position + glm::vec3(0.0f, eyePos, 0.0f));
 	} else {
-		_body.position = camera->worldPosition();
+		updateBodyPosition(*camera);
 		// no clipping - just move the camera directly
 		_body.position += (_body.velocity * (float)_movement.deltaSeconds()) + camera->panOffset();
 		camera->setWorldPosition(_body.position);
