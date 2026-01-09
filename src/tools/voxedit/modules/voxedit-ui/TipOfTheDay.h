@@ -30,6 +30,7 @@ static const char *tips[]{
 	N_("You can use the asset panel to import models from local or remote locations."),
 	N_("The palette panel is able to directly import lospec palettes by the lospec palette identifier."),
 	N_("Check the status bar to see the last executed console command of the last action."),
+	N_("Imported scenes are placed centered around the reference position."),
 	N_("Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features.")
 	// clang-format on
 };

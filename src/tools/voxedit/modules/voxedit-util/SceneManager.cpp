@@ -429,7 +429,10 @@ bool SceneManager::import(const core::String& file) {
 
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
+	const glm::ivec3 &centerOffset = newSceneGraph.sceneRegion().getDimensionsInVoxels() / 2;
+	groupNode.transform(0).setLocalTranslation(referencePosition() - centerOffset);
 	int importGroupNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
+	_sceneGraph.updateTransforms();
 	return scenegraph::addSceneGraphNodes(_sceneGraph, newSceneGraph, importGroupNodeId, [this] (int nodeId) {
 		onNewNodeAdded(nodeId, false);
 	}) > 0;
