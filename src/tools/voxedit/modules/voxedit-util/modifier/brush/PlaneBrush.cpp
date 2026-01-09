@@ -93,11 +93,9 @@ void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	if (ctx.modifierType == ModifierType::Place) {
 		voxelutil::extrudePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, ctx.cursorVoxel, thickness);
 	} else if (ctx.modifierType == ModifierType::Erase) {
-		// TODO: BRUSH: support erasing more than one voxel - support thickness
-		voxelutil::erasePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel);
+		voxelutil::erasePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
 	} else if (ctx.modifierType == ModifierType::Override) {
-		// TODO: BRUSH: support overriding more than one voxel - support thickness
-		voxelutil::overridePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel);
+		voxelutil::overridePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
 	}
 }
 

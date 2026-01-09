@@ -238,18 +238,18 @@ static bool checkOverrideFunc(Volume &volume, const glm::ivec3 &pos, const voxel
 }
 
 int overridePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
-				  const voxel::Voxel &replaceVoxel) {
+				  const voxel::Voxel &replaceVoxel, int thickness) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
 	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
 		return checkOverrideFunc(in, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
-	return voxelutil::walkPlane(volume, pos, face, -1, check, exec, 1);
+	return voxelutil::walkPlane(volume, pos, voxel::oppositeFace(face), -1, check, exec, thickness);
 }
 
 voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
-								  const voxel::Voxel &replaceVoxel) {
+								  const voxel::Voxel &replaceVoxel, int thickness) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
 	auto check = [&](const voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames) {
@@ -257,7 +257,7 @@ voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ive
 	};
 	auto exec = [=](voxel::ModificationRecorder &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
 	voxel::ModificationRecorder recorder(volume);
-	voxelutil::walkPlane(recorder, pos, face, -1, check, exec, 1);
+	voxelutil::walkPlane(recorder, pos, voxel::oppositeFace(face), -1, check, exec, thickness);
 	return recorder.dirtyRegion();
 }
 
@@ -289,17 +289,17 @@ static bool checkEraseFunc(Volume &volume, const glm::ivec3 &p, const voxel::Vox
 }
 
 int erasePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
-			   const voxel::Voxel &groundVoxel) {
+			   const voxel::Voxel &groundVoxel, int thickness) {
 	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
 		return checkEraseFunc(in, p, groundVoxel, face);
 	};
 	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
 		return in.setVoxel(p, voxel::Voxel());
 	};
-	return voxelutil::walkPlane(volume, pos, face, 0, check, exec, 1);
+	return voxelutil::walkPlane(volume, pos, voxel::oppositeFace(face), 0, check, exec, thickness);
 }
 
-voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel) {
+voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel, int thickness) {
 	auto check = [&](const voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames) {
 		return checkEraseFunc(in, p, groundVoxel, face);
 	};
@@ -307,7 +307,7 @@ voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 
 		return in.setVoxel(p, voxel::Voxel());
 	};
 	voxel::ModificationRecorder recorder(volume);
-	voxelutil::walkPlane(recorder, pos, face, 0, check, exec, 1);
+	voxelutil::walkPlane(recorder, pos, voxel::oppositeFace(face), 0, check, exec, thickness);
 	return recorder.dirtyRegion();
 }
 

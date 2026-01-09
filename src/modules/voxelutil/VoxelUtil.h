@@ -70,12 +70,12 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
  * @return The number of voxels that were erased.
  */
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
-			   const voxel::Voxel &groundVoxel);
+			   const voxel::Voxel &groundVoxel, int thickness = 1);
 /**
  * @return The region of the volume that was changed
  */
 voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
-							   const voxel::Voxel &groundVoxel);
+							   const voxel::Voxel &groundVoxel, int thickness = 1);
 
 /**
  * @brief Paints a plane of existing voxels in a voxel volume with a specified voxel.
@@ -103,12 +103,12 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
  * @param replaceVoxel The voxel to override the plane with.
  */
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
-				  const voxel::Voxel &replaceVoxel);
+				  const voxel::Voxel &replaceVoxel, int thickness = 1);
 /**
  * @return The region of the volume that was changed
  */
 voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
-								  const voxel::Voxel &replaceVoxel);
+								  const voxel::Voxel &replaceVoxel, int thickness = 1);
 
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
 void clear(voxel::RawVolumeWrapper &in);
