@@ -3,8 +3,11 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -32,15 +35,27 @@ TEST_F(VMaxFormatTest, testLoad0) {
 }
 
 TEST_F(VMaxFormatTest, testLoad1) {
-	testLoad("1voxel.vmax.zip");
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "1voxel.vmax.zip", 1);
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(node, nullptr);
+	EXPECT_EQ(voxelutil::countVoxels(*node->volume()), 1);
 }
 
 TEST_F(VMaxFormatTest, testLoad2) {
-	testLoad("2voxel.vmax.zip");
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "2voxel.vmax.zip");
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(node, nullptr);
+	EXPECT_EQ(voxelutil::countVoxels(*node->volume()), 2);
 }
 
 TEST_F(VMaxFormatTest, testLoad5) {
-	testLoad("5voxel.vmax.zip");
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "5voxel.vmax.zip");
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(node, nullptr);
+	EXPECT_EQ(voxelutil::countVoxels(*node->volume()), 5);
 }
 
 TEST_F(VMaxFormatTest, testLoad5Screenshot) {
