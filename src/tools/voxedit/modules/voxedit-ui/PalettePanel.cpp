@@ -171,7 +171,7 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 }
 
 void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge,
-							uint8_t paletteColorIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
+							uint8_t paletteColorIdx, uint8_t palettePanelIdx, float colorButtonSize, scenegraph::SceneGraphNode &node,
 							command::CommandExecutionListener &listener) {
 	core_trace_scoped(AddColor);
 	palette::Palette &palette = node.palette();
@@ -217,17 +217,17 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 					if (!_selectedIndices.remove(paletteColorIdx)) {
 						_selectedIndices.insert(paletteColorIdx);
 					}
-					_selectedIndicesLast = paletteColorIdx;
+					_selectedIndicesLast = palettePanelIdx;
 				} else if (ImGui::IsKeyDown(ImGuiMod_Shift) && _selectedIndicesLast != -1) {
-					const int start = core_min(_selectedIndicesLast, paletteColorIdx);
-					const int end = core_max(_selectedIndicesLast, paletteColorIdx);
+					const int start = core_min(_selectedIndicesLast, palettePanelIdx);
+					const int end = core_max(_selectedIndicesLast, palettePanelIdx);
 					for (int i = start; i <= end; ++i) {
 						if (palette.color(i).a > 0) {
-							_selectedIndices.insert(i);
+							_selectedIndices.insert(palette.view().uiIndex(i));
 						}
 					}
 				} else {
-					_selectedIndicesLast = paletteColorIdx;
+					_selectedIndicesLast = palettePanelIdx;
 					_selectedIndices.clear();
 					_selectedIndices.insert(paletteColorIdx);
 					_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, paletteColorIdx));
@@ -478,8 +478,9 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 			const float contentRegionRightEdge = windowPosX + ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x;
 
 			for (int palettePanelIdx = 0; palettePanelIdx < palette::PaletteMaxColors; ++palettePanelIdx) {
+				// handle potential sorting by swapping the ui index
 				const uint8_t paletteColorIdx = palette.view().uiIndex(palettePanelIdx);
-				addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx, frameHeight, node, listener);
+				addColor(cursorPos, pos.x, contentRegionRightEdge, paletteColorIdx, palettePanelIdx, frameHeight, node, listener);
 			}
 
 			ImGui::SetCursorScreenPos(cursorPos);
