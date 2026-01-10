@@ -72,10 +72,12 @@ void Camera::pan(int x, int y) {
 	float zoomFactor = 1.0f;
 	if (mode() == CameraMode::Orthogonal) {
 		zoomFactor = _orthoZoom;
-	}
-	if (_rotationType == CameraRotationType::Target) {
+	} else {
 		const float dist = glm::distance(target(), eye());
 		zoomFactor = dist / 100.0f;
+		if (_rotationType != CameraRotationType::Target) {
+			zoomFactor = glm::max(zoomFactor, 1.0f);
+		}
 	}
 	const glm::vec3 r = right() * ((float)-x) * zoomFactor * 0.1f;
 	const glm::vec3 u = up() * ((float)y) * zoomFactor * 0.1f;
