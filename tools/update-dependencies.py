@@ -279,6 +279,13 @@ def update_opengametools():
         [(f"src/ogt_vox.h", "src/modules/voxelformat/external/ogt_vox.h"),]
     )
 
+def update_gif_h():
+    update_target(
+        "gif-h",
+        "https://github.com/charlietangora/gif-h.git",
+        [(f"gif.h", "src/modules/image/external/gif.h"),]
+    )
+
 def update_sdl2():
     update_target(
         "sdl2",
@@ -447,7 +454,8 @@ def main():
         update_ufbx,
         update_natsort,
         update_miniz,
-        update_opengametools
+        update_opengametools,
+        update_gif_h
     ]
 
     # Filter updates based on the provided filter
