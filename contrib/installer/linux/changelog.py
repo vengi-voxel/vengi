@@ -3,7 +3,6 @@
 import re
 import sys
 import textwrap
-from dateutil.parser import parse
 from datetime import datetime, timezone
 
 def parse_markdown_changelog(markdown_changelog: str) -> str:
@@ -20,8 +19,8 @@ def parse_markdown_changelog(markdown_changelog: str) -> str:
         release = "unstable"
         parsed_date = None
         try:
-            parsed_date = parse(date + " 00:00:00-00:00")
-        except:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        except ValueError:
             release = "UNRELEASED"
             parsed_date = datetime.now(timezone.utc)
         formatted_date = parsed_date.strftime("%a, %-d %b %Y %H:%M:%S %z")
