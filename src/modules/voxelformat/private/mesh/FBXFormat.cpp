@@ -1235,7 +1235,7 @@ image::ImagePtr FBXFormat::loadScreenshot(const core::String &filename, const io
 		const uint8_t *s = src + (size_t)(h - 1 - y) * rowStride;
 		io::MemoryReadStream rowStream(s, rowStride);
 		for (int x = 0; x < w; ++x) {
-			uint8_t r, g, b, a = 255;
+			uint8_t r = 0, g = 0, b = 0, a = 255;
 			if (bpp == 4) {
 				rowStream.readUInt8(r);
 				rowStream.readUInt8(g);
