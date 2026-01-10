@@ -40,6 +40,7 @@ VoxEdit:
    - Fixed broken scrolling in the animation timeline
    - Fixed switching animations (cache invalidation was missing)
    - Removed tree panel
+   - Fixed multi color selection in palette panel after sorting the colors
 
 Thumbnailer:
 
