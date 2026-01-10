@@ -187,7 +187,7 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
             ImGui::PopStyleColor();
 
             ImGui::PushID(line_no);
-            if (ImGui::BeginPopupContextItem("Context", 1))
+            if (ImGui::BeginPopupContextItem("Context"))
             {
                 if (!ParseLineAndDrawFileOpenItem(e, test, line_start, line_end))
                     ImGui::MenuItem("No options", nullptr, false, false);
