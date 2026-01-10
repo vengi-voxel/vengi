@@ -170,6 +170,7 @@ public:
 	const glm::quat& quaternion() const;
 	void setOrientation(const glm::quat& quat);
 
+	float orthoZoom() const;
 	bool isOrthoAligned() const;
 
 	void lerp(const Camera& target);
@@ -453,6 +454,10 @@ inline Camera uiCamera(const glm::ivec2& windowSize) {
 	camera.setFarPlane(1.0f);
 	camera.update(0.0);
 	return camera;
+}
+
+inline float Camera::orthoZoom() const {
+	return _orthoZoom;
 }
 
 }
