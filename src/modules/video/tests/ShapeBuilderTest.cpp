@@ -9,7 +9,7 @@ namespace video {
 
 class ShapeBuilderTest : public app::AbstractTest {};
 
-TEST_F(ShapeBuilderTest, testInclude) {
+TEST_F(ShapeBuilderTest, testOBB) {
 	ShapeBuilder shapeBuilder(100);
 	math::OBBF obb(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3x3(1.0f));
 	shapeBuilder.obb(obb);
