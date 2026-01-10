@@ -568,13 +568,9 @@ void Viewport::resetCamera() {
 
 	const int activeNode = sceneGraph.activeNode();
 	if (_renderContext.applyTransforms()) {
-		if (_hideInactive->boolVal()) {
-			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
-				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
-				region = sceneGraph.sceneRegion(*node, keyFrameIndex);
-			} else {
-				region = sceneGraph.sceneRegion(0, true);
-			}
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
+			scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
+			region = sceneGraph.sceneRegion(*node, keyFrameIndex);
 		} else {
 			region = sceneGraph.sceneRegion(0, true);
 		}
