@@ -2,20 +2,30 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
-#include "core/GLM.h"
-#include "core/StringUtil.h"
-#include "math/Frustum.h"
 #include "video/Camera.h"
+#include "app/tests/AbstractTest.h"
+#include "core/ConfigVar.h"
+#include "core/GLM.h"
+#include "core/Var.h"
+#include "math/Frustum.h"
+#include "util/VarUtil.h"
 
 namespace video {
 
 class CameraTest : public app::AbstractTest {
 public:
-	virtual ~CameraTest() {}
+	virtual ~CameraTest() {
+	}
+
 protected:
+	core::VarPtr _zoomSpeed;
+	core::VarPtr _maxZoom;
+	core::VarPtr _minZoom;
+
 	// looking straight down is the default
-	Camera setup(const glm::vec2& dimension = glm::vec2(1024, 768), const glm::vec3& position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3& lookAt = glm::vec3(0.0), const glm::vec3& lookAlong = glm::forward()) {
+	Camera setup(const glm::vec2 &dimension = glm::vec2(1024, 768),
+				 const glm::vec3 &position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3 &lookAt = glm::vec3(0.0),
+				 const glm::vec3 &lookAlong = glm::forward()) {
 		Camera camera;
 		camera.setNearPlane(0.1f);
 		camera.setFarPlane(100.0f);
@@ -24,6 +34,12 @@ protected:
 		camera.lookAt(lookAt, lookAlong);
 		camera.update(0.0);
 		return camera;
+	}
+
+	void SetUp() override {
+		_zoomSpeed = core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
+		_maxZoom = core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
+		_minZoom = core::Var::get(cfg::ClientCameraMinZoom, "0.01");
 	}
 };
 
@@ -90,7 +106,7 @@ TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
 	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.1, 1.0, 0.1));
 	camera.setMode(CameraMode::Perspective);
 	camera.update(0.0);
-	const math::Frustum& frustum = camera.frustum();
+	const math::Frustum &frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
@@ -154,10 +170,34 @@ TEST_F(CameraTest, DISABLED_testCameraFrustumCullingOrthogonal) {
 	camera.setWorldPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward());
 	camera.update(0.0);
-	const math::Frustum& frustum = camera.frustum();
+	const math::Frustum &frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 }
 
+TEST_F(CameraTest, testOrthoZoom) {
+	util::ScopedVarChange zoomSpeedChange(_zoomSpeed->name(), 0.9f);
+	Camera camera;
+	camera.setMode(CameraMode::Perspective);
+	camera.setSize(glm::ivec2(1024, 768));
+	camera.setMode(CameraMode::Orthogonal);
+	camera.update(0.0);
+
+	const float initialZoom = camera.orthoZoom();
+
+	camera.zoom(1.0f);
+	const float zoomedOut = camera.orthoZoom();
+	EXPECT_GT(zoomedOut, initialZoom);
+	EXPECT_LE(zoomedOut, _maxZoom->floatVal());
+
+	const float expectedFactor = 1.0f + _zoomSpeed->floatVal();
+	EXPECT_NEAR(zoomedOut, initialZoom * expectedFactor, 0.001f) << "Zoom out should match configured speed";
+
+	camera.zoom(-1.0f);
+	const float zoomedIn = camera.orthoZoom();
+	EXPECT_FLOAT_EQ(zoomedIn, initialZoom);
+	EXPECT_GE(zoomedIn, _minZoom->floatVal());
 }
+
+} // namespace video
