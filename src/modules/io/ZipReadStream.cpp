@@ -92,7 +92,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 		_remaining = (int)readStream.remaining();
 	}
 	const int64_t curPos = readStream.pos();
-	uint8_t gzipHeader[2];
+	uint8_t gzipHeader[2] {0, 0};
 	if (readStream.readUInt8(gzipHeader[0]) == -1) {
 		_err = true;
 	}
