@@ -571,7 +571,6 @@ glm::vec4 Camera::sphereBoundingBox() const {
 }
 
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
-	const float zoom = _orthoZoom / 25.0f;
 	if (_type == CameraType::UI) {
 		const float left = 0.0f;
 		const float top = 0.0f;
@@ -579,8 +578,9 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		const float bottom = (float)_windowSize.y;
 		core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
-		return glm::ortho(left * zoom, right * zoom, bottom * zoom, top * zoom, nplane, fplane);
+		return glm::ortho(left, right, bottom, top, nplane, fplane);
 	}
+	const float zoom = _orthoZoom / 25.0f;
 	const float halfWidth = (float)_windowSize.x / 2.0f;
 	const float halfHeight = (float)_windowSize.y / 2.0f;
 	const float left = -halfWidth;
