@@ -573,7 +573,7 @@ app::AppState WindowedApp::onConstruct() {
 		const float fv = core::string::toFloat(val);
 		return fv > 1.0f && fv <= 1000.0f;
 	});
-	core::Var::get(cfg::ClientCameraMinZoom, "0.1", 0u, "", [](const core::String &val) {
+	core::Var::get(cfg::ClientCameraMinZoom, "0.001", 0u, "", [](const core::String &val) {
 		const float fv = core::string::toFloat(val);
 		return fv > 0.0001f && fv < 1000.0f;
 	});

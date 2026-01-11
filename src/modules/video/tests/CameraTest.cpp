@@ -40,7 +40,7 @@ protected:
 	void SetUp() override {
 		_zoomSpeed = core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
 		_maxZoom = core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
-		_minZoom = core::Var::get(cfg::ClientCameraMinZoom, "0.01");
+		_minZoom = core::Var::get(cfg::ClientCameraMinZoom, "0.001");
 	}
 };
 
