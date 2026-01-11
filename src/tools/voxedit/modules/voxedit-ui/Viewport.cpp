@@ -14,7 +14,6 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "image/Image.h"
-#include "imgui.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "math/Axis.h"
