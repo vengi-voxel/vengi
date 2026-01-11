@@ -354,12 +354,7 @@ void Camera::zoom(float value) {
 	}
 
 	const float speed = core::Var::getSafe(cfg::ClientCameraZoomSpeed)->floatVal();
-	const float quant = 1.0f + speed;
-	if (value > 0.1f) {
-		*target *= quant;
-	} else  if (value < -0.1f) {
-		*target /= quant;
-	}
+	*target *= glm::exp(speed * value);
 
 	const float maxZoom = core::Var::getSafe(cfg::ClientCameraMaxZoom)->floatVal();
 	const float minZoom = core::Var::getSafe(cfg::ClientCameraMinZoom)->floatVal();
