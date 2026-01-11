@@ -3,7 +3,9 @@
  */
 
 #include "CubicSurfaceExtractor.h"
+#include "app/Async.h"
 #include "core/Common.h"
+#include "core/concurrent/Atomic.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -227,7 +229,41 @@ static bool mergeQuadsAO(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 
 template<bool AmbientOcclusion>
 static bool performQuadMerging(QuadList &quads, Mesh *meshCurrent) {
+	if (quads.empty()) {
+		return false;
+	}
 	core_trace_scoped(PerformQuadMerging);
+
+	if (quads.size() > 1000) {
+		const size_t nBuckets = (quads.size() + 1000 - 1) / 1000;
+		std::vector<QuadList> buckets(nBuckets);
+		auto it = quads.begin();
+		const size_t bucketSize = quads.size() / nBuckets;
+		for (size_t i = 0; i < nBuckets; ++i) {
+			auto end = it;
+			if (i == nBuckets - 1) {
+				end = quads.end();
+			} else {
+				std::advance(end, bucketSize);
+			}
+			buckets[i].splice(buckets[i].begin(), quads, it, end);
+			it = end;
+		}
+
+		core::AtomicBool didMergeAny{false};
+		app::for_parallel(0, (int)nBuckets, [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				if (performQuadMerging<AmbientOcclusion>(buckets[i], meshCurrent)) {
+					didMergeAny = true;
+				}
+			}
+		});
+
+		for (auto &bucket : buckets) {
+			quads.splice(quads.end(), bucket);
+		}
+		return didMergeAny;
+	}
 	bool didMerge = false;
 
 	// TODO: PERF: this loop is eliminating duplicates in O(n^2)
