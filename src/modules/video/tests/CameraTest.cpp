@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "math/Frustum.h"
+#include "math/Ray.h"
 #include "util/VarUtil.h"
 
 namespace video {
@@ -199,6 +200,54 @@ TEST_F(CameraTest, testOrthoZoom) {
 	const float zoomedIn = camera.orthoZoom();
 	EXPECT_FLOAT_EQ(zoomedIn, initialZoom);
 	EXPECT_GE(zoomedIn, _minZoom->floatVal());
+}
+
+TEST_F(CameraTest, testWorldToScreen) {
+	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+
+	const glm::ivec2 center = camera.worldToScreen(glm::vec3(0.0, 0.0, 0.0));
+	EXPECT_EQ(50, center.x);
+	EXPECT_EQ(50, center.y);
+
+	const glm::ivec2 up = camera.worldToScreen(glm::up());
+	EXPECT_LT(up.y, center.y);
+	EXPECT_EQ(up.x, center.x);
+
+	const glm::ivec2 right = camera.worldToScreen(glm::right());
+	EXPECT_GT(right.x, center.x);
+	EXPECT_EQ(right.y, center.y);
+}
+
+TEST_F(CameraTest, testMouseRay) {
+	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+
+	const math::Ray& ray = camera.mouseRay(glm::ivec2(50, 50));
+	const glm::vec3& dir = ray.direction;
+	EXPECT_NEAR(0.0f, dir.x, 0.001f);
+	EXPECT_NEAR(0.0f, dir.y, 0.001f);
+	EXPECT_NEAR(-1.0f, dir.z, 0.001f);
+
+	const math::Ray& ray2 = camera.mouseRay(glm::ivec2(50, 0));
+	EXPECT_GT(ray2.direction.y, 0.0f);
+	EXPECT_NEAR(0.0f, ray2.direction.x, 0.001f);
+
+	const math::Ray& ray3 = camera.mouseRay(glm::ivec2(100, 50));
+	EXPECT_GT(ray3.direction.x, 0.0f);
+	EXPECT_NEAR(0.0f, ray3.direction.y, 0.001f);
+}
+
+TEST_F(CameraTest, testBillboard) {
+	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+	glm::vec3 right, up;
+	camera.billboard(&right, &up);
+
+	EXPECT_NEAR(1.0f, right.x, 0.001f);
+	EXPECT_NEAR(0.0f, right.y, 0.001f);
+	EXPECT_NEAR(0.0f, right.z, 0.001f);
+
+	EXPECT_NEAR(0.0f, up.x, 0.001f);
+	EXPECT_NEAR(1.0f, up.y, 0.001f);
+	EXPECT_NEAR(0.0f, up.z, 0.001f);
 }
 
 } // namespace video
