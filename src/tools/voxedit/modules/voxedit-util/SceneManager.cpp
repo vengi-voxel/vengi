@@ -2711,14 +2711,6 @@ void SceneManager::animateFrames(double nowSeconds) {
 	}
 }
 
-void SceneManager::zoom(video::Camera& camera, float level) {
-	_camMovement.zoom(camera, level, deltaSeconds());
-}
-
-void SceneManager::pan(video::Camera& camera) {
-	_camMovement.pan(camera, _mouseCursorDelta.x, _mouseCursorDelta.y);
-}
-
 bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
 }
@@ -2808,21 +2800,26 @@ bool SceneManager::update(double nowSeconds) {
 		});
 	}
 	if (_zoomIn.pressed()) {
-		_zoomIn.execute(nowSeconds, 0.01, [&] () {
+		_zoomIn.execute(nowSeconds, 0.02, [&] () {
 			if (_camera != nullptr) {
-				zoom(*_camera, 1.0f);
+				_camMovement.zoom(*_camera, 1.0f);
 			}
 		});
 	} else if (_zoomOut.pressed()) {
-		_zoomOut.execute(nowSeconds, 0.01, [&] () {
+		_zoomOut.execute(nowSeconds, 0.02, [&] () {
 			if (_camera != nullptr) {
-				zoom(*_camera, -1.0f);
+				_camMovement.zoom(*_camera, -1.0f);
 			}
 		});
 	}
 	if (_pan.pressed() && _camera != nullptr) {
-		_pan.execute(nowSeconds, 0.005, [&] () {
-			pan(*_camera);
+		_pan.execute(nowSeconds, 0.0, [&] () {
+			_camMovement.pan(*_camera, _mouseCursorDelta.x, _mouseCursorDelta.y);
+		});
+	}
+	if (_rotate.pressed() && _camera != nullptr && !_fixedCamera) {
+		_rotate.execute(nowSeconds, 0.0, [&] () {
+			_camMovement.rotate(*_camera, (float)_mouseCursorDelta.x, (float)_mouseCursorDelta.y);
 		});
 	}
 
@@ -3947,7 +3944,8 @@ bool SceneManager::cameraRotate() const {
 	return _rotate.pressed();
 }
 
-void SceneManager::setActiveCamera(video::Camera *camera) {
+void SceneManager::setActiveCamera(video::Camera *camera, bool fixedCamera) {
+	_fixedCamera = fixedCamera;
 	if (_camera == camera) {
 		return;
 	}

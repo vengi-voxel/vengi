@@ -85,6 +85,7 @@ protected:
 	 * The @c video::Camera instance of the currently active @c Viewport
 	 */
 	video::Camera *_camera = nullptr;
+	bool _fixedCamera = false;
 
 	core::VarPtr _autoSaveSecondsDelay;
 	core::VarPtr _gridSize;
@@ -160,8 +161,6 @@ protected:
 	void autosave();
 	void setReferencePosition(const glm::ivec3 &pos);
 	void updateDirtyRendererStates();
-	void zoom(video::Camera &camera, float level);
-	void pan(video::Camera& camera);
 	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
 	void updateCursor();
 	int traceScene();
@@ -281,7 +280,7 @@ public:
 	bool duplicateAnimation(const core::String &animation, const core::String &newName);
 	bool removeAnimation(const core::String &animation);
 
-	void setActiveCamera(video::Camera *camera);
+	void setActiveCamera(video::Camera *camera, bool fixedCamera);
 	video::Camera *activeCamera() const;
 
 	core::String getSuggestedFilename(const core::String &extension = "") const;

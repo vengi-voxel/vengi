@@ -144,7 +144,7 @@ void MainWindow::shutdownViewports() {
 	for (size_t i = 0; i < _viewports.size(); ++i) {
 		delete _viewports[i];
 	}
-	_sceneMgr->setActiveCamera(nullptr);
+	_sceneMgr->setActiveCamera(nullptr, false);
 	_viewports.clear();
 	_lastHoveredViewport = nullptr;
 }

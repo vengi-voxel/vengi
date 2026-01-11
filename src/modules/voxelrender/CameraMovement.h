@@ -38,6 +38,8 @@ protected:
 	core::VarPtr _bodySize;
 	core::VarPtr _applyGravity;
 	core::VarPtr _clipping;
+	core::VarPtr _rotationSpeed;
+	core::VarPtr _zoomSpeed;
 	util::Movement _movement;
 	scenegraph::KinematicBody _body;
 	scenegraph::Physics _physics;
@@ -54,8 +56,9 @@ public:
 	 */
 	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 				scenegraph::FrameIndex frameIdx);
-	void zoom(video::Camera &camera, float level, double deltaSeconds);
+	void zoom(video::Camera &camera, float level);
 	void pan(video::Camera &camera, int mouseDeltaX, int mouseDeltaY);
+	void rotate(video::Camera &camera, float yaw, float pitch);
 	/**
 	 * @brief Updates the body position based on the camera's current position.
 	 */

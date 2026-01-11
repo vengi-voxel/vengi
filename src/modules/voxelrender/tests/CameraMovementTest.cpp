@@ -30,6 +30,12 @@ protected:
 		}
 	};
 
+	void SetUp() override {
+		app::AbstractTest::SetUp();
+		core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+		core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
+	}
+
 	bool isInsideSolid(const glm::vec3 &worldPos, const voxel::RawVolume *volume) const {
 		const voxel::Region &region = volume->region();
 		const glm::ivec3 voxelPos = glm::floor(worldPos);

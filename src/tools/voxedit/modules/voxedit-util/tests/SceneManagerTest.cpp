@@ -572,7 +572,7 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	camera.update(0.0);
 
 	// Set this camera as the active camera
-	_sceneMgr->setActiveCamera(&camera);
+	_sceneMgr->setActiveCamera(&camera, false);
 	ASSERT_NE(nullptr, _sceneMgr->activeCamera());
 
 	// Set mouse position to center of screen
@@ -618,7 +618,7 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	EXPECT_TRUE(sm->testMouseRayTrace(true, invModel));
 
 	// Clean up
-	_sceneMgr->setActiveCamera(nullptr);
+	_sceneMgr->setActiveCamera(nullptr, false);
 }
 
 TEST_F(SceneManagerTest, testColorToNewNode) {

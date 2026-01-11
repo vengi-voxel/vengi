@@ -21,6 +21,8 @@ void CameraMovement::construct() {
 							   core::Var::boolValidator);
 	_applyGravity = core::Var::get(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
 								   core::Var::boolValidator);
+	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
+	_zoomSpeed = core::Var::getSafe(cfg::ClientCameraZoomSpeed);
 	_movement.construct();
 }
 
@@ -160,12 +162,15 @@ void CameraMovement::pan(video::Camera &camera, int mouseDeltaX, int mouseDeltaY
 	camera.pan(mouseDeltaX, mouseDeltaY);
 }
 
-void CameraMovement::zoom(video::Camera &camera, float level, double deltaSeconds) {
-	if (camera.rotationType() == video::CameraRotationType::Target) {
-		camera.zoom(level);
-	} else if (!_clipping->boolVal()) {
-		float speed = level * _movementSpeed->floatVal();
-		speed *= (float)deltaSeconds;
+void CameraMovement::rotate(video::Camera &camera, float yaw, float pitch) {
+	const float s = _rotationSpeed->floatVal();
+	camera.turn(yaw * s);
+	camera.setPitch(pitch * s);
+}
+
+void CameraMovement::zoom(video::Camera &camera, float level) {
+	if (!_clipping->boolVal()) {
+		float speed = level * (1.0f + _zoomSpeed->floatVal());
 		camera.move(glm::vec3(0.0f, 0.0f, speed));
 	}
 }

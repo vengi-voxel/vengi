@@ -71,8 +71,6 @@ private:
 	 */
 	void lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
 
-	int _mouseX = 0;
-	int _mouseY = 0;
 	double _nowSeconds = 0.0;
 	double _resizeRequestSeconds = 1.0;
 	glm::ivec2 _resizeRequestSize{0, 0};
@@ -96,7 +94,6 @@ private:
 	core::VarPtr _modelGizmo;
 	core::VarPtr _viewDistance;
 	core::VarPtr _viewMode;
-	core::VarPtr _rotationSpeed;
 	core::VarPtr _cursorDetails;
 	core::VarPtr _pivotMode;
 	core::VarPtr _hideInactive;
@@ -140,7 +137,7 @@ private:
 	 * to get executed in
 	 */
 	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
-	void updateViewportTrace(float headerSize);
+	void updateViewportInput(float headerSize);
 	bool isFixedCamera() const;
 	void renderViewportImage(const glm::ivec2 &contentSize);
 	void dragAndDrop(float headerSize);
@@ -159,7 +156,6 @@ private:
 	void resize(const glm::ivec2 &frameBufferSize);
 	void resizeCamera(const glm::ivec2 &frameBufferSize);
 	void delayResize(const glm::ivec2 &frameBufferSize);
-	void move(bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
 	void setRenderMode(voxelrender::RenderMode renderMode);
 

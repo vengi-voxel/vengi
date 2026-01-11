@@ -69,6 +69,8 @@ protected:
 		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
 													  modifierRenderer, selectionManager);
 		core::Var::get(cfg::UILastDirectory, "", core::CV_NOPERSIST);
+		core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+		core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
 		_sceneMgr->construct();
 		ASSERT_TRUE(_sceneMgr->init());
 

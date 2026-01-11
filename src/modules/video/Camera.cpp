@@ -206,9 +206,8 @@ bool Camera::move(const glm::vec3& delta) {
 	_worldPos += right() * delta.x;
 	_worldPos += up() * delta.y;
 	if (_rotationType == CameraRotationType::Target) {
-		lookAt(_target, glm::up());
-		_distance = glm::max(4.0f, glm::distance(_worldPos, _target));
-		_dirty |= DIRTY_TARGET;
+		const float dist = glm::distance(_worldPos, _target);
+		setTargetDistance(glm::max(4.0f, dist));
 	}
 	_lerp = false;
 	return true;

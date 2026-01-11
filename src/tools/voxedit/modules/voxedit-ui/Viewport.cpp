@@ -71,7 +71,6 @@ Viewport::~Viewport() {
 }
 
 bool Viewport::init() {
-	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
@@ -127,28 +126,12 @@ bool Viewport::isFixedCamera() const {
 	return _camMode != voxelrender::SceneCameraMode::Free;
 }
 
-void Viewport::move(bool rotate, int x, int y) {
-	if (rotate) {
-		if (!isFixedCamera()) {
-			const float yaw = (float)(x - _mouseX);
-			const float pitch = (float)(y - _mouseY);
-			const float s = _rotationSpeed->floatVal();
-			_camera.turn(yaw * s);
-			_camera.setPitch(pitch * s);
-		}
-	}
-	_mouseX = x;
-	_mouseY = y;
-}
-
-void Viewport::updateViewportTrace(float headerSize) {
+void Viewport::updateViewportInput(float headerSize) {
 	const ImVec2 windowPos = ImGui::GetWindowPos();
 	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
-	const bool rotate = _sceneMgr->cameraRotate();
-	move(rotate, mouseX, mouseY);
-	_sceneMgr->setMousePos(_mouseX, _mouseY);
-	_sceneMgr->setActiveCamera(&camera());
+	_sceneMgr->setMousePos(mouseX, mouseY);
+	_sceneMgr->setActiveCamera(&camera(), isFixedCamera());
 	const glm::mat4 &worldToModel = glm::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));
 	_sceneMgr->trace(_renderContext.isSceneMode(), false, worldToModel);
 }
@@ -158,7 +141,7 @@ void Viewport::dragAndDrop(float headerSize) {
 		if (!isSceneMode()) {
 			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
 				const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
-				updateViewportTrace(headerSize);
+				updateViewportInput(headerSize);
 				_sceneMgr->fillPlane(image);
 			}
 		}
@@ -167,7 +150,7 @@ void Viewport::dragAndDrop(float headerSize) {
 			const int nodeId = _sceneMgr->sceneGraph().activeNode();
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 				if (node->visible() && node->isModelNode()) {
-					updateViewportTrace(headerSize);
+					updateViewportInput(headerSize);
 					ModifierFacade &modifier = _sceneMgr->modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
 					modifier.beginBrush();
@@ -344,7 +327,7 @@ void Viewport::renderViewport() {
 			ImGui::LoadingIndicatorCircle(_("Loading"), radius, color::White(), color::Gray());
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();
-			updateViewportTrace(headerSize);
+			updateViewportInput(headerSize);
 			_hovered = true;
 		}
 
