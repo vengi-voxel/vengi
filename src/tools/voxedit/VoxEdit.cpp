@@ -299,9 +299,9 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
-	_keybindingHandler.registerBinding("left_gui",             "+camera_pan",                  "editing");
 
 	if (keymap != KeyBindings::Qubicle) {
+		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("w",                      "+move_forward",              "editing");
 		_keybindingHandler.registerBinding("a",                      "+move_left",                 "editing");
 		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
@@ -317,7 +317,6 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("alt+left_mouse",         "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("shift+middle_mouse",     "+camera_pan",                "editing");
-		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
 	} else if (keymap == KeyBindings::Magicavoxel) {
 		_keybindingHandler.registerBinding("shift+left_mouse",       "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("ctrl+shift+p",           "nodeduplicate",              "editing");
@@ -360,7 +359,6 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("right_mouse",            "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
-		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("right_alt",              "+camera_pan",                "editing");
 	}
 }
