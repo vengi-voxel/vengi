@@ -117,9 +117,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	node.setVolume(volume, true);
 
 	// fill volume
-	glm::ivec3 pos(0);
-	pos.y = h;
-	pos.z = region.getCenter().z;
+	glm::ivec3 pos(0, h, 0);
 	for (const KenTile &tile : kenTiles) {
 		if (!tile.enabled) {
 			continue;
@@ -132,22 +130,22 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 			}
 
 			int stepsBack;
-			if (tile.depthBack >= 0) {
-				stepsBack = tile.depthBack - 1;
+			if (tile.depthBack > 0) {
+				stepsBack = tile.depthBack;
 			} else {
-				stepsBack = tile.depth - 1;
+				stepsBack = tile.depth;
 			}
 
 			const voxel::Voxel backVoxel = voxel::createVoxel(voxel::VoxelType::Generic, backIdx);
 			// TODO: PERF: use volume sampler
-			for (int steps = 0; steps <= stepsBack; steps++) {
+			for (int steps = 0; steps < stepsBack; ++steps) {
 				volume->setVoxel(pos.x, pos.y, pos.z - steps, backVoxel);
 			}
 
-			const int stepsFront = tile.depth - 1;
+			const int stepsFront = tile.depth;
 			const voxel::Voxel frontVoxel = voxel::createVoxel(voxel::VoxelType::Generic, idx);
 			// TODO: PERF: use volume sampler
-			for (int steps = 0; steps <= stepsFront; steps++) {
+			for (int steps = 1; steps <= stepsFront; ++steps) {
 				volume->setVoxel(pos.x, pos.y, pos.z + steps, frontVoxel);
 			}
 		}
