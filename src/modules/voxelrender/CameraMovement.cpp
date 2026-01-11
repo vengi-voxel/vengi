@@ -170,8 +170,12 @@ void CameraMovement::rotate(video::Camera &camera, float yaw, float pitch) {
 
 void CameraMovement::zoom(video::Camera &camera, float level) {
 	if (!_clipping->boolVal()) {
-		float speed = level * (1.0f + _zoomSpeed->floatVal());
-		camera.move(glm::vec3(0.0f, 0.0f, speed));
+		if (camera.mode() == video::CameraMode::Orthogonal) {
+			camera.zoom(level);
+		} else {
+			float speed = level * (1.0f + _zoomSpeed->floatVal());
+			camera.move(glm::vec3(0.0f, 0.0f, speed));
+		}
 	}
 }
 
