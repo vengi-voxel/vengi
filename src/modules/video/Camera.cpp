@@ -202,12 +202,10 @@ bool Camera::move(const glm::vec3& delta) {
 		return false;
 	}
 	_dirty |= DIRTY_POSITION;
-	_worldPos += forward() * -delta.z;
-	_worldPos += right() * delta.x;
-	_worldPos += up() * delta.y;
+	glm::vec3 movement = forward() * -delta.z + right() * delta.x + up() * delta.y;
+	_worldPos += movement;
 	if (_rotationType == CameraRotationType::Target) {
-		const float dist = glm::distance(_worldPos, _target);
-		setTargetDistance(glm::max(4.0f, dist));
+		setTarget(_target + movement);
 	}
 	_lerp = false;
 	return true;

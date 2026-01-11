@@ -4,18 +4,18 @@
 
 #pragma once
 
-#include "math/Frustum.h"
 #include "Types.h"
+#include "math/Frustum.h"
 #include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 
 namespace math {
 template<typename TYPE>
 class AABB;
 class Ray;
-}
+} // namespace math
 
 namespace video {
 
@@ -90,6 +90,7 @@ protected:
 
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
+	// y and in degrees
 	float _fieldOfView = 45.0f;
 
 	glm::vec3 _target{0.0f};
@@ -123,11 +124,12 @@ protected:
 	void updateLerp(double deltaFrameSeconds);
 
 	math::Frustum _frustum;
+
 public:
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	const glm::ivec2& size() const;
-	void setSize(const glm::ivec2& windowSize);
+	const glm::ivec2 &size() const;
+	void setSize(const glm::ivec2 &windowSize);
 	int frameBufferHeight() const;
 
 	inline bool dirty() const {
@@ -159,19 +161,19 @@ public:
 	void setFarPlane(float farPlane);
 
 	glm::vec3 omega() const;
-	void setOmega(const glm::vec3& omega);
+	void setOmega(const glm::vec3 &omega);
 
 	/**
 	 * @return The rotation matrix of the direction the camera is facing to.
 	 */
-	const glm::mat4& orientation() const;
-	const glm::quat& quaternion() const;
-	void setOrientation(const glm::quat& quat);
+	const glm::mat4 &orientation() const;
+	const glm::quat &quaternion() const;
+	void setOrientation(const glm::quat &quat);
 
 	float orthoZoom() const;
 	bool isOrthoAligned() const;
 
-	void lerp(const Camera& target);
+	void lerp(const Camera &target);
 
 	glm::vec3 forward() const;
 	glm::vec3 right() const;
@@ -185,21 +187,21 @@ public:
 	 */
 	const glm::vec3 &worldPosition() const;
 	void setWorldPosition(const glm::vec3 &worldPos);
-	bool move(const glm::vec3& delta);
+	bool move(const glm::vec3 &delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
 	glm::mat4 perspectiveMatrix(float nplane, float fplane) const;
-	const glm::mat4& inverseViewMatrix() const;
+	const glm::mat4 &inverseViewMatrix() const;
 	/**
 	 * from world space to camera space
 	 */
-	const glm::mat4& viewMatrix() const;
+	const glm::mat4 &viewMatrix() const;
 	/**
 	 * camera space to screen space
 	 */
-	const glm::mat4& projectionMatrix() const;
-	const glm::mat4& inverseProjectionMatrix() const;
-	const glm::mat4& viewProjectionMatrix() const;
+	const glm::mat4 &projectionMatrix() const;
+	const glm::mat4 &inverseProjectionMatrix() const;
+	const glm::mat4 &viewProjectionMatrix() const;
 
 	/**
 	 * @return the vertical field of view in degree
@@ -234,19 +236,19 @@ public:
 
 	void pan(int screenDeltaX, int screenDeltaY);
 
-	void rotate(float radians, const glm::vec3& axis);
-	void rotate(const glm::quat& rotation);
-	void rotate(const glm::vec3& radians);
+	void rotate(float radians, const glm::vec3 &axis);
+	void rotate(const glm::quat &rotation);
+	void rotate(const glm::vec3 &radians);
 
-	bool lookAt(const glm::vec3& position);
-	bool lookAt(const glm::vec3& position, const glm::vec3& upDirection);
+	bool lookAt(const glm::vec3 &position);
+	bool lookAt(const glm::vec3 &position, const glm::vec3 &upDirection);
 
 	/**
 	 * @brief Calculates the billboard vectors right and up relative to the camera.
 	 */
 	void billboard(glm::vec3 *right, glm::vec3 *up) const;
 
-	void setTarget(const glm::vec3& target);
+	void setTarget(const glm::vec3 &target);
 	void setTargetDistance(float distance);
 	glm::vec3 target() const;
 	float targetDistance() const;
@@ -258,18 +260,18 @@ public:
 	 */
 	void setAngles(float pitch, float yaw, float roll);
 
-	void slerp(const glm::quat& quat, float factor);
-	void slerp(const glm::vec3& radians, float factor);
+	void slerp(const glm::quat &quat, float factor);
+	void slerp(const glm::vec3 &radians, float factor);
 
 	/**
 	 * @param[in] pixelPos screen pixel position
 	 * @note Basically just a wrapper for @c screenRay() but for mouse coordinates
 	 * @return Ray instance with origin and direction
 	 */
-	math::Ray mouseRay(const glm::ivec2& pixelPos) const;
+	math::Ray mouseRay(const glm::ivec2 &pixelPos) const;
 
-	glm::ivec2 worldToScreen(const glm::vec3& worldPos) const;
-	glm::ivec2 worldToScreen(const glm::mat4& matrix, const glm::vec3& worldPos) const;
+	glm::ivec2 worldToScreen(const glm::vec3 &worldPos) const;
+	glm::ivec2 worldToScreen(const glm::mat4 &matrix, const glm::vec3 &worldPos) const;
 
 	void update(double deltaFrameSeconds);
 
@@ -278,21 +280,21 @@ public:
 	 * @param[out] sliceBuf the target buffer for the near/far plane combos
 	 * @param[in] splits The amount of splits. The bufSize must be at least @code splits * 2 @endcode
 	 */
-	void sliceFrustum(float* sliceBuf, int bufSize, int splits, float sliceWeight = 0.75f) const;
+	void sliceFrustum(float *sliceBuf, int bufSize, int splits, float sliceWeight = 0.75f) const;
 	/**
 	 * @brief Calculates the 8 vertices for a split frustum
 	 */
 	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::FRUSTUM_VERTICES_MAX]) const;
 	void frustumCorners(glm::vec3 out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
-	const math::Frustum& frustum() const;
-	bool isVisible(const glm::vec3& position) const;
-	bool isVisible(const math::AABB<float>& aabb) const;
-	bool isVisible(const glm::vec3& mins, const glm::vec3& maxs) const;
+	const math::Frustum &frustum() const;
+	bool isVisible(const glm::vec3 &position) const;
+	bool isVisible(const math::AABB<float> &aabb) const;
+	bool isVisible(const glm::vec3 &mins, const glm::vec3 &maxs) const;
 	math::AABB<float> aabb() const;
 	glm::vec4 sphereBoundingBox() const;
 
-	bool operator==(const Camera& other) const;
-	inline bool operator!=(const Camera& other) const {
+	bool operator==(const Camera &other) const;
+	inline bool operator!=(const Camera &other) const {
 		return !(*this == other);
 	}
 };
@@ -301,7 +303,7 @@ inline glm::vec3 Camera::eye() const {
 	return _invViewMatrix[3];
 }
 
-inline const glm::ivec2& Camera::size() const {
+inline const glm::ivec2 &Camera::size() const {
 	return _windowSize;
 }
 
@@ -363,43 +365,43 @@ inline float Camera::aspect() const {
 	return (float)_windowSize.y / (float)_windowSize.x;
 }
 
-inline const glm::mat4& Camera::orientation() const {
+inline const glm::mat4 &Camera::orientation() const {
 	return _orientation;
 }
 
-inline const glm::quat& Camera::quaternion() const {
+inline const glm::quat &Camera::quaternion() const {
 	return _quat;
 }
 
-inline const glm::mat4& Camera::inverseViewMatrix() const {
+inline const glm::mat4 &Camera::inverseViewMatrix() const {
 	return _invViewMatrix;
 }
 
-inline const glm::mat4& Camera::viewMatrix() const {
+inline const glm::mat4 &Camera::viewMatrix() const {
 	return _viewMatrix;
 }
 
-inline const glm::mat4& Camera::projectionMatrix() const {
+inline const glm::mat4 &Camera::projectionMatrix() const {
 	return _projectionMatrix;
 }
 
-inline const glm::mat4& Camera::inverseProjectionMatrix() const {
+inline const glm::mat4 &Camera::inverseProjectionMatrix() const {
 	return _invProjectionMatrix;
 }
 
-inline const glm::mat4& Camera::viewProjectionMatrix() const {
+inline const glm::mat4 &Camera::viewProjectionMatrix() const {
 	return _viewProjectionMatrix;
 }
 
-inline const math::Frustum& Camera::frustum() const {
+inline const math::Frustum &Camera::frustum() const {
 	return _frustum;
 }
 
-inline bool Camera::isVisible(const glm::vec3& position) const {
+inline bool Camera::isVisible(const glm::vec3 &position) const {
 	return frustum().isVisible(position);
 }
 
-inline bool Camera::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
+inline bool Camera::isVisible(const glm::vec3 &mins, const glm::vec3 &maxs) const {
 	return frustum().isVisible(mins, maxs);
 }
 
@@ -416,7 +418,7 @@ inline void Camera::setFieldOfView(float angles) {
 	_fieldOfView = angles;
 }
 
-inline const glm::vec3& Camera::worldPosition() const {
+inline const glm::vec3 &Camera::worldPosition() const {
 	return _worldPos;
 }
 
@@ -440,7 +442,7 @@ inline float Camera::targetDistance() const {
 	return _distance;
 }
 
-inline Camera uiCamera(const glm::ivec2& windowSize) {
+inline Camera uiCamera(const glm::ivec2 &windowSize) {
 	Camera camera(CameraType::UI, video::CameraMode::Orthogonal);
 	camera.setSize(windowSize);
 	camera.setNearPlane(-1.0f);
@@ -453,4 +455,4 @@ inline float Camera::orthoZoom() const {
 	return _orthoZoom;
 }
 
-}
+} // namespace video
