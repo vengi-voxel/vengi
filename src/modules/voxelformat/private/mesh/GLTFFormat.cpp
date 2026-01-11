@@ -233,7 +233,7 @@ static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &ca
 	if (camera.isPerspective()) {
 		gltfCamera.type = "perspective";
 		gltfCamera.perspective.aspectRatio = camera.aspectRatio();
-		gltfCamera.perspective.yfov = camera.fieldOfView();
+		gltfCamera.perspective.yfov = glm::radians((double)camera.fieldOfView());
 		gltfCamera.perspective.zfar = camera.farPlane();
 		gltfCamera.perspective.znear = camera.nearPlane();
 	} else if (camera.isOrthographic()) {
@@ -246,36 +246,46 @@ static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &ca
 	return gltfCamera;
 }
 
+// https://github.khronos.org/glTF-Tutorials/gltfTutorial/gltfTutorial_016_Cameras.html
 static bool validateCamera(const tinygltf::Camera &camera) {
 	if (camera.type == "perspective") {
-		if (camera.perspective.aspectRatio <= 0.0) {
+		if (camera.perspective.aspectRatio < 0.0) {
+			Log::debug("Invalid aspect ratio for perspective camera: %f", camera.perspective.aspectRatio);
 			return false;
 		}
 		if (camera.perspective.yfov <= 0.0) {
+			Log::debug("Invalid yfov for perspective camera: %f", camera.perspective.yfov);
 			return false;
 		}
 		if (camera.perspective.znear <= 0.0) {
+			Log::debug("Invalid znear for perspective camera: %f", camera.perspective.znear);
 			return false;
 		}
-		if (camera.perspective.zfar <= 0.0) {
+		if (camera.perspective.zfar > 0.0 && camera.perspective.zfar <= camera.perspective.znear) {
+			Log::debug("Invalid zfar using znear for perspective camera: %f <= %f", camera.perspective.zfar, camera.perspective.znear);
 			return false;
 		}
-		// if (camera.perspective.zfar <= camera.perspective.znear) {
-		// 	return false;
-		// }
 		return true;
 	} else if (camera.type == "orthographic") {
 		if (camera.orthographic.xmag == 0.0) {
+			Log::debug("Invalid xmag for orthographic camera");
 			return false;
 		}
 		if (camera.orthographic.ymag == 0.0) {
+			Log::debug("Invalid ymag for orthographic camera");
+			return false;
+		}
+		if (camera.orthographic.znear < 0.0) {
+			Log::debug("Invalid znear for orthographic camera: %f", camera.orthographic.znear);
 			return false;
 		}
 		if (camera.orthographic.zfar <= camera.orthographic.znear) {
+			Log::debug("Invalid zfar/znear for orthographic camera: %f <= %f", camera.orthographic.zfar, camera.orthographic.znear);
 			return false;
 		}
 		return true;
 	}
+	Log::debug("Unknown camera type: %s", camera.type.c_str());
 	return false;
 }
 
@@ -983,7 +993,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		if (!_priv::validateCamera(gltfCamera)) {
 			continue;
 		}
-		gltfModel.cameras.push_back(gltfCamera);
+		gltfModel.cameras.emplace_back(core::move(gltfCamera));
+		// TODO: CAMERA: save animations for cameras
 	}
 
 	io::StdOStreamBuf buf(*stream);
@@ -1904,35 +1915,41 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			}
 			return true;
 		}
-		Log::debug("Camera node %i", gltfNodeIdx);
 		const tinygltf::Camera &gltfCamera = gltfModel.cameras[gltfNode.camera];
-		scenegraph::SceneGraphNodeCamera node;
-		if (!gltfCamera.name.empty()) {
-			node.setName(gltfCamera.name.c_str());
-		} else {
-			node.setName(gltfNode.name.c_str());
+		if (_priv::validateCamera(gltfCamera)) {
+			Log::debug("Camera node %i", gltfNodeIdx);
+			scenegraph::SceneGraphNodeCamera node;
+			if (!gltfCamera.name.empty()) {
+				node.setName(gltfCamera.name.c_str());
+			} else {
+				node.setName(gltfNode.name.c_str());
+			}
+			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			node.setTransform(keyFrameIdx, transform);
+			if (gltfCamera.type == "orthographic") {
+				node.setOrthographic();
+				node.setWidth((int)(gltfCamera.orthographic.xmag * 2.0));
+				node.setHeight((int)(gltfCamera.orthographic.ymag * 2.0));
+				node.setFarPlane((float)gltfCamera.orthographic.zfar);
+				node.setNearPlane((float)gltfCamera.orthographic.znear);
+			} else if (gltfCamera.type == "perspective") {
+				node.setPerspective();
+				node.setAspectRatio((float)gltfCamera.perspective.aspectRatio);
+				node.setFieldOfView(
+					(int)glm::degrees(gltfCamera.perspective.yfov)); // Field Of View in Y-direction in radians
+				if (gltfCamera.perspective.zfar > 0.0) {
+					node.setFarPlane((float)gltfCamera.perspective.zfar);
+				}
+				node.setNearPlane((float)gltfCamera.perspective.znear);
+			}
+			// TODO: CAMERA: load animations for cameras
+			const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
+			for (int childId : gltfNode.children) {
+				loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, cameraId);
+			}
+			return true;
 		}
-		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
-		if (gltfCamera.type == "orthographic") {
-			node.setOrthographic();
-			node.setWidth((int)(gltfCamera.orthographic.xmag * 2.0));
-			node.setHeight((int)(gltfCamera.orthographic.ymag * 2.0));
-			node.setFarPlane((float)gltfCamera.orthographic.zfar);
-			node.setNearPlane((float)gltfCamera.orthographic.znear);
-		} else if (gltfCamera.type == "perspective") {
-			node.setPerspective();
-			node.setAspectRatio((float)gltfCamera.perspective.aspectRatio);
-			node.setFieldOfView(
-				(int)glm::degrees(gltfCamera.perspective.yfov)); // Field Of View in Y-direction in radians
-			node.setFarPlane((float)gltfCamera.perspective.zfar);
-			node.setNearPlane((float)gltfCamera.perspective.znear);
-		}
-		const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
-		for (int childId : gltfNode.children) {
-			loadNode_r(filename, sceneGraph, gltfModel, meshMaterialArray, childId, cameraId);
-		}
-		return true;
+		Log::warn("Camera %i in node %i is invalid - skipping", gltfNode.camera, gltfNodeIdx);
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)gltfModel.meshes.size()) {
