@@ -223,8 +223,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxel) {
 
 	// Binary mesher creates 4 vertices per quad (no vertex reuse)
 	// 6 faces * 4 vertices = 24 vertices, 6 faces * 2 triangles * 3 indices = 36 indices
-	EXPECT_EQ(opaqueMesh.getNoOfVertices(), 24) << "Single voxel should have 24 vertices (4 per face)";
-	EXPECT_EQ(opaqueMesh.getNoOfIndices(), 36) << "Single voxel should have 36 indices (12 triangles * 3)";
+	EXPECT_EQ(opaqueMesh.getNoOfVertices(), 24u) << "Single voxel should have 24 vertices (4 per face)";
+	EXPECT_EQ(opaqueMesh.getNoOfIndices(), 36u) << "Single voxel should have 36 indices (12 triangles * 3)";
 
 	// Verify all vertices have the correct color
 	const VertexArray &vertices = opaqueMesh.getVertexVector();
