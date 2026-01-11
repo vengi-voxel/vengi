@@ -3,6 +3,7 @@
  */
 
 #include "EventHandler.h"
+#include "core/Log.h"
 #include "video/IEventObserver.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
@@ -510,12 +511,14 @@ void EventHandler::foreground() {
 }
 
 void EventHandler::mouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
+	Log::debug("Mouse wheel: x=%f y=%f (%d)", x, y, mouseId);
 	for (IEventObserver* observer : _observers) {
 		observer->onMouseWheel(windowHandle, x, y, mouseId);
 	}
 }
 
 void EventHandler::mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
+	Log::debug("Mouse motion: x=%d y=%d relX=%d relY=%d (%d)", x, y, relX, relY, mouseId);
 	for (IEventObserver* observer : _observers) {
 		observer->onMouseMotion(windowHandle, x, y, relX, relY, mouseId);
 	}
@@ -534,60 +537,70 @@ void EventHandler::controllerDeviceRemoved(int32_t device) {
 }
 
 void EventHandler::controllerMotion(uint8_t axis, int value, uint32_t id) {
+	Log::debug("Controller axis motion: axis %u value %d (%u)", axis, value, id);
 	for (IEventObserver* observer : _observers) {
 		observer->onControllerMotion(axis, value, id);
 	}
 }
 
 void EventHandler::controllerButtonPress(const core::String& button, uint32_t id) {
+	Log::debug("Controller button pressed: %s (%u)", button.c_str(), id);
 	for (IEventObserver* observer : _observers) {
 		observer->onControllerButtonPress(button, id);
 	}
 }
 
 void EventHandler::controllerButtonRelease(const core::String& button, uint32_t id) {
+	Log::debug("Controller button released: %s (%u)", button.c_str(), id);
 	for (IEventObserver* observer : _observers) {
 		observer->onControllerButtonRelease(button, id);
 	}
 }
 
 void EventHandler::mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
+	Log::debug("Mouse button %d pressed at %d:%d with %d clicks", button, x, y, clicks);
 	for (IEventObserver* observer : _observers) {
 		observer->onMouseButtonPress(windowHandle, x, y, button, clicks, mouseId);
 	}
 }
 
 void EventHandler::mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
+	Log::debug("Mouse button %d released at %d:%d", button, x, y);
 	for (IEventObserver* observer : _observers) {
 		observer->onMouseButtonRelease(windowHandle, x, y, button, mouseId);
 	}
 }
 
 void EventHandler::dropFile(void *windowHandle, const core::String& file) {
+	Log::debug("File dropped: %s", file.c_str());
 	for (IEventObserver* observer : _observers) {
 		observer->onDropFile(windowHandle, file);
 	}
 }
 
 void EventHandler::dropText(void *windowHandle, const core::String& text) {
+	Log::debug("Text dropped: %s", text.c_str());
 	for (IEventObserver* observer : _observers) {
 		observer->onDropText(windowHandle, text);
 	}
 }
 
 void EventHandler::textInput(void *windowHandle, const core::String& text) {
+	Log::debug("Text input: %s", text.c_str());
 	for (IEventObserver* observer : _observers) {
 		observer->onTextInput(windowHandle, text);
 	}
 }
 
 void EventHandler::keyRelease(void *windowHandle, int32_t key, int16_t modifier) {
+	Log::debug("Key released: %d", key);
 	for (IEventObserver* observer : _observers) {
 		observer->onKeyRelease(windowHandle, key, modifier);
 	}
 }
 
 void EventHandler::keyPress(void *windowHandle, int32_t key, int16_t modifier) {
+	Log::debug("Key pressed: %d", key);
 	for (IEventObserver* observer : _observers) {
 		observer->onKeyPress(windowHandle, key, modifier);
 	}
