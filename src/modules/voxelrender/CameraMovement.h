@@ -44,8 +44,6 @@ protected:
 	scenegraph::KinematicBody _body;
 	scenegraph::Physics _physics;
 	double _deltaSeconds = 0.0;
-	void moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
-							 scenegraph::FrameIndex frameIdx);
 
 public:
 	void construct() override;

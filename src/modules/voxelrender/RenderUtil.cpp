@@ -35,8 +35,33 @@ scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
 					 const glm::vec3 &angles) {
 	const glm::vec3 size(sceneRegion.getDimensionsInVoxels());
-	const float maxDim = (float)glm::max(size.x, glm::max(size.y, size.z));
-	const float distance = maxDim * 2.0f;
+
+	// Determine visible dimensions based on camera mode
+	float visibleWidth, visibleHeight;
+	if (mode == SceneCameraMode::Top || mode == SceneCameraMode::Bottom) {
+		// Looking down/up: see XZ plane
+		visibleWidth = glm::max(size.x, size.z);
+		visibleHeight = glm::min(size.x, size.z);
+	} else if (mode == SceneCameraMode::Front || mode == SceneCameraMode::Back) {
+		// Looking front/back: see XY plane
+		visibleWidth = size.x;
+		visibleHeight = size.y;
+	} else if (mode == SceneCameraMode::Left || mode == SceneCameraMode::Right) {
+		// Looking left/right: see ZY plane
+		visibleWidth = size.z;
+		visibleHeight = size.y;
+	} else {
+		// Free mode: diagonal view sees the XZ diagonal for width and Y height
+		visibleWidth = glm::length(glm::vec2(size.x, size.z));
+		visibleHeight = size.y;
+	}
+
+	const float fov = glm::radians(camera.fieldOfView());
+	const float aspect = (float)camera.size().y / (float)camera.size().x;
+	const float distanceVertical = visibleHeight / (2.0f * glm::tan(fov / 2.0f));
+	const float distanceHorizontal = visibleWidth * aspect / (2.0f * glm::tan(fov / 2.0f));
+	const float distance = glm::max(distanceVertical, distanceHorizontal) * 1.2f;
+
 	const glm::vec3 &center = sceneRegion.calcCenterf();
 
 	camera.resetZoom();
@@ -49,19 +74,20 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 		camera.setOmega({0.0f, 0.0f, 0.0f});
 	}
 	if (mode == SceneCameraMode::Free) {
-		camera.setWorldPosition(glm::vec3(center.x - distance, (float)sceneRegion.getUpperY(), center.z - distance));
+		const float diagonalDistance = distance / glm::sqrt(2.0f);
+		camera.setWorldPosition(glm::vec3(center.x - diagonalDistance, (float)sceneRegion.getUpperY(), center.z - diagonalDistance));
 	} else if (mode == SceneCameraMode::Top) {
-		camera.setWorldPosition(glm::vec3(center.x, center.y + size.y, center.z));
+		camera.setWorldPosition(glm::vec3(center.x, center.y + distance, center.z));
 	} else if (mode == SceneCameraMode::Bottom) {
-		camera.setWorldPosition(glm::vec3(center.x, center.y - size.y, center.z));
+		camera.setWorldPosition(glm::vec3(center.x, center.y - distance, center.z));
 	} else if (mode == SceneCameraMode::Right) {
-		camera.setWorldPosition(glm::vec3(center.x + size.x, center.y, center.z));
+		camera.setWorldPosition(glm::vec3(center.x + distance, center.y, center.z));
 	} else if (mode == SceneCameraMode::Left) {
-		camera.setWorldPosition(glm::vec3(center.x - size.x, center.y, center.z));
+		camera.setWorldPosition(glm::vec3(center.x - distance, center.y, center.z));
 	} else if (mode == SceneCameraMode::Back) {
-		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + size.z));
+		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + distance));
 	} else if (mode == SceneCameraMode::Front) {
-		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
+		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - distance));
 	}
 	camera.lookAt(center);
 }

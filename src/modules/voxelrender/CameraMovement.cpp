@@ -42,8 +42,14 @@ void CameraMovement::updateBodyPosition(const video::Camera &camera) {
 	_body.position = camera.worldPosition();
 }
 
-void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
-										 scenegraph::FrameIndex frameIdx) {
+void CameraMovement::update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
+							scenegraph::FrameIndex frameIdx) {
+	_movement.update(nowSeconds);
+	if (camera == nullptr) {
+		return;
+	}
+
+	_body.extents.y = _bodyHeight->floatVal();
 	const float speed = _movementSpeed->floatVal();
 	if (_clipping->isDirty()) {
 		_clipping->markClean();
@@ -135,22 +141,11 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 	} else {
 		updateBodyPosition(*camera);
 		// no clipping - just move the camera directly
-		_body.position += (_body.velocity * (float)_movement.deltaSeconds());
-		camera->setWorldPosition(_body.position);
+		const glm::vec3 delta = (_body.velocity * (float)_movement.deltaSeconds());
+		_body.position += delta;
+		camera->setTarget(camera->target() + delta);
+		camera->setWorldPosition(camera->worldPosition() + delta);
 		_body.velocity = {0.0f, 0.0f, 0.0f};
-	}
-}
-
-void CameraMovement::update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
-							scenegraph::FrameIndex frameIdx) {
-	_movement.update(nowSeconds);
-	if (camera == nullptr) {
-		return;
-	}
-
-	if (camera->rotationType() == video::CameraRotationType::Eye) {
-		_body.extents.y = _bodyHeight->floatVal();
-		moveCameraInEyeMode(camera, sceneGraph, frameIdx);
 	}
 }
 

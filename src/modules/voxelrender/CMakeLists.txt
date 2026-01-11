@@ -32,6 +32,7 @@ engine_generate_shaders(${LIB} ${SHADERS})
 set(TEST_SRCS
 	tests/CameraMovementTest.cpp
 	tests/VoxelRenderShaderTest.cpp
+	tests/RenderUtilTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
