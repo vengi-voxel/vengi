@@ -173,7 +173,9 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	// 0, 1, 0 is now inside because orthogonal mode has a negative near plane
+	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(10.0, 0.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 	// TODO: add math::FrustumResult::Intersect test
 }
@@ -193,7 +195,7 @@ TEST_F(CameraTest, testOrthoZoom) {
 	EXPECT_GT(zoomedOut, initialZoom);
 	EXPECT_LE(zoomedOut, _maxZoom->floatVal());
 
-	const float expectedFactor = 1.0f + _zoomSpeed->floatVal();
+	const float expectedFactor = glm::exp(_zoomSpeed->floatVal());
 	EXPECT_NEAR(zoomedOut, initialZoom * expectedFactor, 0.001f) << "Zoom out should match configured speed";
 
 	camera.zoom(-1.0f);
