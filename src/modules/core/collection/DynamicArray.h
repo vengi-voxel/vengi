@@ -364,7 +364,8 @@ public:
 	void pop() {
 		core_assert(_size > 0u);
 		if (_size > 0u) {
-			_buffer[--_size].~TYPE();
+			_buffer[_size - 1].~TYPE();
+			--_size;
 		}
 	}
 
@@ -406,7 +407,8 @@ public:
 			push_back(type);
 		}
 		while (size < _size) {
-			pop();
+			_buffer[_size - 1].~TYPE();
+			--_size;
 		}
 	}
 
@@ -416,7 +418,8 @@ public:
 			emplace_back(TYPE{});
 		}
 		while (size < _size) {
-			pop();
+			_buffer[_size - 1].~TYPE();
+			--_size;
 		}
 	}
 
