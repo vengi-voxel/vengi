@@ -88,7 +88,6 @@ void Camera::pan(int screenDeltaX, int screenDeltaY) {
 		setWorldPosition(_worldPos + delta);
 	}
 
-	_dirty |= DIRTY_POSITION;
 	_lerp = false;
 }
 
