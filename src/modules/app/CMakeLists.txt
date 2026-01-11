@@ -3,6 +3,7 @@ set(SRCS
 	AppCommand.cpp AppCommand.h
 	Async.cpp Async.h
 	CommandlineApp.h CommandlineApp.cpp
+	Pipe.cpp Pipe.h
 
 	i18n/Dictionary.cpp i18n/Dictionary.h
 	i18n/DictionaryManager.cpp i18n/DictionaryManager.h
@@ -44,6 +45,7 @@ set(TEST_SRCS
 	tests/AsyncTest.cpp
 	tests/CommandCompleterTest.cpp
 	tests/POParserTest.cpp
+	tests/PipeTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

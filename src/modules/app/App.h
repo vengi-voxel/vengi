@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/i18n/DictionaryManager.h"
+#include "app/Pipe.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/Log.h"
@@ -15,6 +16,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
+#include "io/BufferedReadWriteStream.h"
 
 #define ORGANISATION "vengi"
 
@@ -115,6 +117,10 @@ protected:
 	 */
 	int _exitCode = 0;
 	int _availableMemoryMiB = 0;
+
+	app::Pipe _pipe;
+	io::BufferedReadWriteStream _pipeBuffer;
+	int64_t _pipeReadPos = 0;
 
 	static App* _staticInstance;
 

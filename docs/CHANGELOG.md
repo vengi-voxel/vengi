@@ -17,6 +17,7 @@ General:
    - Improved palette name support
    - Converted the tree generators into lua scripts
    - Fixed issues regarding `vxl`/`hva` animations (Command & Conquer)
+   - Added pipe support to send commands from external tools (`app_pipe` needs to be set `true`)
 
 VoxConvert:
 

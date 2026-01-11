@@ -69,6 +69,15 @@ The log level is configured by the `core_loglevel` variable. The lower the value
 * `warn`: 4
 * `error`: 5
 
+## External tools
+
+External tools can e.g. control the editor by first starting it with `app_pipe` being set to `true`. This will open a pipe named `vengi-<app>-input`.
+
+You can e.g. send the command `xs noise` to the pipe of the running editor instance to execute the `noise.lua` [script](LUAScript.md).
+
+> `echo "xs noise" > ~/.local/share/vengi/voxedit/.vengi-<app>-input` (Linux/Mac)
+> `echo "xs noise" > \\.\pipe\vengi-<app>-input` (Windows)
+
 ## General
 
 To get a rough usage overview, you can start any application with `--help`. It will print out the commands and configuration variables

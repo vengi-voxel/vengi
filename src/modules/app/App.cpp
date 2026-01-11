@@ -19,6 +19,7 @@
 #include "http/Request.h"
 #include "io/Filesystem.h"
 #include "io/StdoutWriteStream.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
@@ -620,6 +621,7 @@ AppState App::onConstruct() {
 	core::Var::get(cfg::AppVersion, "");
 	// username for network sessions
 	core::String defaultUsername = "Unknown";
+	_pipe.construct();
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 	const char *username = SDL_getenv("USERNAME");
@@ -757,6 +759,8 @@ AppState App::onInit() {
 
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
+
+	_pipe.init();
 
 	metric::init(fullAppname());
 	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
@@ -1106,6 +1110,17 @@ void App::onAfterRunning() {
 }
 
 void App::onBeforeRunning() {
+	_pipeBuffer.seek(_pipeBuffer.size());
+	if (_pipe.read(_pipeBuffer) > 0) {
+		_pipeBuffer.seek(_pipeReadPos);
+		core::String command;
+		while (_pipeBuffer.readLine(command)) {
+			if (!command.empty()) {
+				command::executeCommands(command);
+			}
+			_pipeReadPos = _pipeBuffer.pos();
+		}
+	}
 }
 
 AppState App::onRunning() {
@@ -1246,6 +1261,8 @@ void App::shutdownTimeout() {
 }
 
 AppState App::onCleanup() {
+	_pipe.shutdown();
+
 	if (_suspendRequested) {
 		addBlocker(AppState::Init);
 		return AppState::Init;

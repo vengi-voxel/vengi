@@ -66,6 +66,7 @@ constexpr const char *CoreLanguage = "core_language";
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
 constexpr const char *VoxelMeshMode = "voxel_meshmode";
 
+constexpr const char *AppPipe = "app_pipe";
 constexpr const char *AppHomePath = "app_homepath";
 constexpr const char *AppVersion = "app_version";
 constexpr const char *AppUserName = "app_username";
