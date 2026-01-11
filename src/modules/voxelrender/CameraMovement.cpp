@@ -133,7 +133,7 @@ void CameraMovement::moveCameraInEyeMode(video::Camera *camera, const scenegraph
 	} else {
 		updateBodyPosition(*camera);
 		// no clipping - just move the camera directly
-		_body.position += (_body.velocity * (float)_movement.deltaSeconds()) + camera->panOffset();
+		_body.position += (_body.velocity * (float)_movement.deltaSeconds());
 		camera->setWorldPosition(_body.position);
 		_body.velocity = {0.0f, 0.0f, 0.0f};
 	}

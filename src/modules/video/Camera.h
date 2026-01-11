@@ -60,6 +60,7 @@ protected:
 
 	constexpr static uint32_t DIRTY_ALL = ~0u;
 	constexpr static float ORTHO_BOXSIZE = 1.0f;
+	constexpr static float ORTHO_ZOOM_FACTOR = 25.0f;
 
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;
@@ -72,7 +73,6 @@ protected:
 
 	glm::ivec2 _windowSize{0};
 	float _orthoZoom = 1.0f;
-	glm::vec3 _panOffset{0.0f};
 	// the position of the camera in the world
 	glm::vec3 _worldPos{0.0f};
 	glm::quat _quat{0.0f, 0.0f, 0.0f, 0.0f};
@@ -100,10 +100,8 @@ protected:
 		CameraRotationType rotationType;
 		glm::vec3 target;
 		glm::vec3 worldPos;
-		glm::vec3 panOffset;
 		glm::quat quat;
 		glm::vec3 fromWorldPos;
-		glm::vec3 fromPanOffset;
 		glm::quat fromQuat;
 		glm::vec3 fromTarget;
 		double seconds;
@@ -186,7 +184,6 @@ public:
 	 * @note Does not include panning offset
 	 */
 	const glm::vec3 &worldPosition() const;
-	const glm::vec3 &panOffset() const;
 	void setWorldPosition(const glm::vec3 &worldPos);
 	bool move(const glm::vec3& delta);
 
@@ -205,11 +202,11 @@ public:
 	const glm::mat4& viewProjectionMatrix() const;
 
 	/**
-	 * @return the field of view in degree
+	 * @return the vertical field of view in degree
 	 */
 	float fieldOfView() const;
 	/**
-	 * @param angles in degree
+	 * @param angles in degree (vertical field of view)
 	 */
 	void setFieldOfView(float angles);
 
@@ -235,7 +232,7 @@ public:
 	 */
 	void turn(float radians);
 
-	void pan(int x, int y);
+	void pan(int screenX, int screenY);
 
 	void rotate(float radians, const glm::vec3& axis);
 	void rotate(const glm::quat& rotation);
@@ -421,10 +418,6 @@ inline void Camera::setFieldOfView(float angles) {
 
 inline const glm::vec3& Camera::worldPosition() const {
 	return _worldPos;
-}
-
-inline const glm::vec3& Camera::panOffset() const {
-	return _panOffset;
 }
 
 inline void Camera::setTargetDistance(float distance) {

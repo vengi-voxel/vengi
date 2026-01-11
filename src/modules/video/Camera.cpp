@@ -68,21 +68,26 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 	rotate(quat);
 }
 
-void Camera::pan(int x, int y) {
+void Camera::pan(int screenX, int screenY) {
 	float zoomFactor = 1.0f;
-	if (mode() == CameraMode::Orthogonal) {
-		zoomFactor = _orthoZoom;
-	} else {
-		const float dist = glm::distance(target(), eye());
-		zoomFactor = dist / 100.0f;
-		if (_rotationType != CameraRotationType::Target) {
-			zoomFactor = glm::max(zoomFactor, 1.0f);
+	if (_rotationType == CameraRotationType::Target) {
+		if (_mode == CameraMode::Orthogonal) {
+			zoomFactor = _orthoZoom / ORTHO_ZOOM_FACTOR;
+		} else {
+			const float rad = glm::radians(_fieldOfView);
+			zoomFactor = (_distance * glm::tan(rad * 0.5f)) / (float)_windowSize.y;
 		}
 	}
-	const glm::vec3 r = right() * ((float)-x) * zoomFactor * 0.1f;
-	const glm::vec3 u = up() * ((float)y) * zoomFactor * 0.1f;
-	_panOffset += r;
-	_panOffset += u;
+	const glm::vec3 r = right() * ((float)-screenX) * zoomFactor;
+	const glm::vec3 u = up() * ((float)screenY) * zoomFactor;
+	const glm::vec3 delta = r + u;
+
+	if (_rotationType == CameraRotationType::Target) {
+		setTarget(_target + delta);
+	} else {
+		setWorldPosition(_worldPos + delta);
+	}
+
 	_dirty |= DIRTY_POSITION;
 	_lerp = false;
 }
@@ -109,7 +114,6 @@ void Camera::setWorldPosition(const glm::vec3& worldPos) {
 	}
 	_dirty |= DIRTY_POSITION;
 	_worldPos = worldPos;
-	_panOffset = glm::vec3(0.0f);
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target);
 	}
@@ -128,10 +132,8 @@ void Camera::lerp(const Camera& targetCam) {
 	_lerpTarget = {targetCam.rotationType(),
 				   targetCam.target(),
 				   targetCam.worldPosition(),
-				   targetCam._panOffset,
 				   targetCam.quaternion(),
 				   worldPosition(),
-				   _panOffset,
 				   quaternion(),
 				   target(),
 				   0.0,
@@ -385,7 +387,6 @@ void Camera::updateLerp(double deltaFrameSeconds) {
 	}
 	_fieldOfView = glm::mix(_lerpTarget.fromFieldOfView, _lerpTarget.fieldOfView, t);
 	_orthoZoom = glm::mix(_lerpTarget.fromOrthoZoom, _lerpTarget.orthoZoom, t);
-	_panOffset = glm::mix(_lerpTarget.fromPanOffset, _lerpTarget.panOffset, t);
 	_dirty |= DIRTY_POSITION | DIRTY_PERSPECTIVE;
 	if (_lerpTarget.seconds > 1.0) {
 		_lerp = false;
@@ -451,7 +452,7 @@ void Camera::updateViewMatrix() {
 	if (!isDirty(DIRTY_ORIENTATION | DIRTY_POSITION)) {
 		return;
 	}
-	_viewMatrix = glm::translate(orientation(), -(_worldPos + _panOffset));
+	_viewMatrix = glm::translate(orientation(), -_worldPos);
 	_invViewMatrix = glm::inverse(_viewMatrix);
 }
 
@@ -580,7 +581,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
 		return glm::ortho(left, right, bottom, top, nplane, fplane);
 	}
-	const float zoom = _orthoZoom / 25.0f;
+	const float zoom = _orthoZoom / ORTHO_ZOOM_FACTOR;
 	const float halfWidth = (float)_windowSize.x / 2.0f;
 	const float halfHeight = (float)_windowSize.y / 2.0f;
 	const float left = -halfWidth;
@@ -628,7 +629,6 @@ bool Camera::operator==(const Camera &other) const {
 		   glm::epsilonEqual(_orthoZoom, other._orthoZoom, 0.0001f) &&
 		   glm::all(glm::epsilonEqual(_worldPos, other._worldPos, 0.0001f)) &&
 		   glm::all(glm::epsilonEqual(_target, other._target, 0.0001f)) &&
-		   glm::all(glm::epsilonEqual(_panOffset, other._panOffset, 0.0001f)) &&
 		   glm::all(glm::epsilonEqual(_quat, other._quat, 0.0001f));
 }
 

@@ -125,9 +125,9 @@ TEST_F(CameraTest, testMoveAndPan) {
 	EXPECT_NE(before, after);
 
 	// panning should change panOffset
-	const glm::vec3 panBefore = camera.panOffset();
+	const glm::vec3 panBefore = camera.worldPosition();
 	camera.pan(10, 20);
-	const glm::vec3 panAfter = camera.panOffset();
+	const glm::vec3 panAfter = camera.worldPosition();
 	EXPECT_NE(panBefore, panAfter);
 }
 
