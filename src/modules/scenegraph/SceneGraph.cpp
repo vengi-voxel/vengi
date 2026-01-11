@@ -652,6 +652,12 @@ voxel::Region SceneGraph::sceneRegion(FrameIndex frameIdx, bool onlyVisible) con
 	return r;
 }
 
+voxel::Region SceneGraph::groupRegion(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	core_trace_scoped(GroupRegion);
+	math::AABB<float> aabb = calculateGroupAABB(node, frameIdx);
+	return toRegion(aabb);
+}
+
 math::OBBF SceneGraph::sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	core_trace_scoped(SceneOBB);
 	const auto &transform = transformForFrame(node, frameIdx);
@@ -661,7 +667,14 @@ math::OBBF SceneGraph::sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx)
 }
 
 voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, FrameIndex frameIdx) const {
-	return toRegion(sceneOBB(node, frameIdx));
+	if (node.isGroupNode()) {
+		return groupRegion(node, frameIdx);
+	} else if (node.isRootNode()) {
+		return sceneRegion(frameIdx, false);
+	} else if (node.isAnyModelNode()) {
+		return toRegion(sceneOBB(node, frameIdx));
+	}
+	return voxel::Region::InvalidRegion;
 }
 
 void SceneGraph::fixErrors() {

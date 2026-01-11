@@ -243,8 +243,11 @@ public:
 	 * @sa region()
 	 */
 	voxel::Region sceneRegion(FrameIndex frameIdx = 0, bool onlyVisible = false) const;
+	// only for model, root and group nodes
 	voxel::Region sceneRegion(const SceneGraphNode &node, FrameIndex frameIdx = 0) const;
+	// only for model nodes
 	math::OBBF sceneOBB(const SceneGraphNode &node, FrameIndex frameIdx) const;
+	voxel::Region groupRegion(const SceneGraphNode &node, FrameIndex frameIdx) const;
 
 	class MergeResult {
 	private:
