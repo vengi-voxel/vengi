@@ -320,6 +320,11 @@ inline void Camera::setMode(CameraMode mode) {
 		return;
 	}
 	_mode = mode;
+	if (_mode == CameraMode::Orthogonal) {
+		_nearPlane = -_farPlane;
+	} else {
+		_nearPlane = 0.1f;
+	}
 	_dirty = DIRTY_ALL;
 }
 
