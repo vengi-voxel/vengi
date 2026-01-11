@@ -60,7 +60,7 @@ protected:
 
 	constexpr static uint32_t DIRTY_ALL = ~0u;
 	constexpr static float ORTHO_BOXSIZE = 1.0f;
-	constexpr static float ORTHO_ZOOM_FACTOR = 25.0f;
+	constexpr static float PIXELS_PER_UNIT = 25.0f;
 
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;

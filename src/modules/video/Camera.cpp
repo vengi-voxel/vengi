@@ -72,7 +72,7 @@ void Camera::pan(int screenDeltaX, int screenDeltaY) {
 	float zoomFactor = 1.0f;
 	if (_rotationType == CameraRotationType::Target) {
 		if (_mode == CameraMode::Orthogonal) {
-			zoomFactor = _orthoZoom / ORTHO_ZOOM_FACTOR;
+			zoomFactor = _orthoZoom / PIXELS_PER_UNIT;
 		} else {
 			const float rad = glm::radians(_fieldOfView);
 			zoomFactor = (_distance * glm::tan(rad * 0.5f)) / (float)_windowSize.y;
@@ -573,7 +573,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
 		return glm::ortho(left, right, bottom, top, nplane, fplane);
 	}
-	const float zoom = _orthoZoom / ORTHO_ZOOM_FACTOR;
+	const float zoom = _orthoZoom / PIXELS_PER_UNIT;
 	const float halfWidth = (float)_windowSize.x / 2.0f;
 	const float halfHeight = (float)_windowSize.y / 2.0f;
 	const float left = -halfWidth;
