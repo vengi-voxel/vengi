@@ -127,7 +127,7 @@ bool Viewport::isFixedCamera() const {
 	return _camMode != voxelrender::SceneCameraMode::Free;
 }
 
-void Viewport::move(bool pan, bool rotate, int x, int y) {
+void Viewport::move(bool rotate, int x, int y) {
 	if (rotate) {
 		if (!isFixedCamera()) {
 			const float yaw = (float)(x - _mouseX);
@@ -136,8 +136,6 @@ void Viewport::move(bool pan, bool rotate, int x, int y) {
 			_camera.turn(yaw * s);
 			_camera.setPitch(pitch * s);
 		}
-	} else if (pan) {
-		_camera.pan(x - _mouseX, y - _mouseY);
 	}
 	_mouseX = x;
 	_mouseY = y;
@@ -148,8 +146,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
 	const bool rotate = _sceneMgr->cameraRotate();
-	const bool pan = _sceneMgr->cameraPan();
-	move(pan, rotate, mouseX, mouseY);
+	move(rotate, mouseX, mouseY);
 	_sceneMgr->setMousePos(_mouseX, _mouseY);
 	_sceneMgr->setActiveCamera(&camera());
 	const glm::mat4 &worldToModel = glm::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));

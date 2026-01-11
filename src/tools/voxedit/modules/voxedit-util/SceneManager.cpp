@@ -513,8 +513,12 @@ bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, si
 
 void SceneManager::setMousePos(int x, int y) {
 	if (_mouseCursor.x == x && _mouseCursor.y == y) {
+		_mouseCursorDelta.x = 0;
+		_mouseCursorDelta.y = 0;
 		return;
 	}
+	_mouseCursorDelta.x = x - _mouseCursor.x;
+	_mouseCursorDelta.y = y - _mouseCursor.y;
 	_mouseCursor.x = x;
 	_mouseCursor.y = y;
 	// moving the mouse would trigger mouse tracing again
@@ -2711,6 +2715,10 @@ void SceneManager::zoom(video::Camera& camera, float level) {
 	_camMovement.zoom(camera, level, deltaSeconds());
 }
 
+void SceneManager::pan(video::Camera& camera) {
+	_camMovement.pan(camera, _mouseCursorDelta.x, _mouseCursorDelta.y);
+}
+
 bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
 }
@@ -2800,16 +2808,21 @@ bool SceneManager::update(double nowSeconds) {
 		});
 	}
 	if (_zoomIn.pressed()) {
-		_zoomIn.execute(nowSeconds, 0.02, [&] () {
+		_zoomIn.execute(nowSeconds, 0.01, [&] () {
 			if (_camera != nullptr) {
 				zoom(*_camera, 1.0f);
 			}
 		});
 	} else if (_zoomOut.pressed()) {
-		_zoomOut.execute(nowSeconds, 0.02, [&] () {
+		_zoomOut.execute(nowSeconds, 0.01, [&] () {
 			if (_camera != nullptr) {
 				zoom(*_camera, -1.0f);
 			}
+		});
+	}
+	if (_pan.pressed() && _camera != nullptr) {
+		_pan.execute(nowSeconds, 0.005, [&] () {
+			pan(*_camera);
 		});
 	}
 
@@ -3932,10 +3945,6 @@ bool SceneManager::empty() const {
 
 bool SceneManager::cameraRotate() const {
 	return _rotate.pressed();
-}
-
-bool SceneManager::cameraPan() const {
-	return _pan.pressed();
 }
 
 void SceneManager::setActiveCamera(video::Camera *camera) {

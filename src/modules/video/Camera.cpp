@@ -68,7 +68,7 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 	rotate(quat);
 }
 
-void Camera::pan(int screenX, int screenY) {
+void Camera::pan(int screenDeltaX, int screenDeltaY) {
 	float zoomFactor = 1.0f;
 	if (_rotationType == CameraRotationType::Target) {
 		if (_mode == CameraMode::Orthogonal) {
@@ -78,8 +78,8 @@ void Camera::pan(int screenX, int screenY) {
 			zoomFactor = (_distance * glm::tan(rad * 0.5f)) / (float)_windowSize.y;
 		}
 	}
-	const glm::vec3 r = right() * ((float)-screenX) * zoomFactor;
-	const glm::vec3 u = up() * ((float)screenY) * zoomFactor;
+	const glm::vec3 r = right() * ((float)-screenDeltaX) * zoomFactor;
+	const glm::vec3 u = up() * ((float)screenDeltaY) * zoomFactor;
 	const glm::vec3 delta = r + u;
 
 	if (_rotationType == CameraRotationType::Target) {

@@ -232,7 +232,7 @@ public:
 	 */
 	void turn(float radians);
 
-	void pan(int screenX, int screenY);
+	void pan(int screenDeltaX, int screenDeltaY);
 
 	void rotate(float radians, const glm::vec3& axis);
 	void rotate(const glm::quat& rotation);

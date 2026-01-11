@@ -55,6 +55,7 @@ public:
 	void update(double nowSeconds, video::Camera *camera, const scenegraph::SceneGraph &sceneGraph,
 				scenegraph::FrameIndex frameIdx);
 	void zoom(video::Camera &camera, float level, double deltaSeconds);
+	void pan(video::Camera &camera, int mouseDeltaX, int mouseDeltaY);
 	/**
 	 * @brief Updates the body position based on the camera's current position.
 	 */

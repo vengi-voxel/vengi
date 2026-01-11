@@ -127,6 +127,7 @@ protected:
 	int _initialized = 0;
 	int _size = 128;
 	glm::ivec2 _mouseCursor{0};
+	glm::ivec2 _mouseCursorDelta{0};
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
 	command::ActionButton _rotate;
@@ -160,6 +161,7 @@ protected:
 	void setReferencePosition(const glm::ivec3 &pos);
 	void updateDirtyRendererStates();
 	void zoom(video::Camera &camera, float level);
+	void pan(video::Camera& camera);
 	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
 	void updateCursor();
 	int traceScene();
@@ -262,7 +264,6 @@ public:
 	bool exceedsMaxSuggestedVolumeSize() const;
 
 	bool cameraRotate() const;
-	bool cameraPan() const;
 
 	scenegraph::SceneGraphNodeCamera *activeCameraNode();
 

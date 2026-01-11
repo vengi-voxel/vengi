@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "ui/Panel.h"
 #include "image/CaptureTool.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
+#include "ui/Panel.h"
 #include "video/Camera.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/RenderUtil.h"
@@ -159,7 +159,7 @@ private:
 	void resize(const glm::ivec2 &frameBufferSize);
 	void resizeCamera(const glm::ivec2 &frameBufferSize);
 	void delayResize(const glm::ivec2 &frameBufferSize);
-	void move(bool pan, bool rotate, int x, int y);
+	void move(bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
 	void setRenderMode(voxelrender::RenderMode renderMode);
 

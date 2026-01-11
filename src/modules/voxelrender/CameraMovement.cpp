@@ -152,6 +152,14 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	}
 }
 
+void CameraMovement::pan(video::Camera &camera, int mouseDeltaX, int mouseDeltaY) {
+	if (_clipping->boolVal()) {
+		return;
+	}
+
+	camera.pan(mouseDeltaX, mouseDeltaY);
+}
+
 void CameraMovement::zoom(video::Camera &camera, float level, double deltaSeconds) {
 	if (camera.rotationType() == video::CameraRotationType::Target) {
 		camera.zoom(level);
@@ -159,7 +167,6 @@ void CameraMovement::zoom(video::Camera &camera, float level, double deltaSecond
 		float speed = level * _movementSpeed->floatVal();
 		speed *= (float)deltaSeconds;
 		camera.move(glm::vec3(0.0f, 0.0f, speed));
-		camera.update(deltaSeconds);
 	}
 }
 
