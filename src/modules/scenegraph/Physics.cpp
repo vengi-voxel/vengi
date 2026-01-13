@@ -74,6 +74,9 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 	constexpr float epsilon = glm::epsilon<float>();
 	const glm::vec3 &extents = body.extents;
 	for (const CollisionNode &node : nodes) {
+		if (!node.volume) {
+			continue;
+		}
 		const voxel::Region &region = node.volume->region();
 		// Transform the body's position into the model space of the collision node.
 		const glm::vec3 &pos = node.calcModelSpace(nextBodyPos);
