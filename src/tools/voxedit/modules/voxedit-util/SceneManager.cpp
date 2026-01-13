@@ -659,6 +659,7 @@ void SceneManager::crop() {
 	modified(nodeId, newVolume->region());
 }
 
+// TODO: not yet working for reference nodes
 void SceneManager::nodeBakeTransform(int nodeId) {
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
@@ -666,7 +667,7 @@ void SceneManager::nodeBakeTransform(int nodeId) {
 	}
 	const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*node, _currentFrameIdx);
 	voxel::RawVolume *newVolume =
-		voxelutil::applyTransformToVolume(node->volume(), transform.worldMatrix(), node->pivot());
+		voxelutil::applyTransformToVolume(_sceneGraph.resolveVolume(*node), transform.worldMatrix(), node->pivot());
 	if (newVolume == nullptr) {
 		return;
 	}
