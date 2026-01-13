@@ -337,9 +337,8 @@ void Camera::updateTarget() {
 void Camera::resetZoom() {
 	_orthoZoom = 1.0f;
 	_distance = 100.0f;
-	_dirty |= DIRTY_TARGET;
-	_fieldOfView = 45.0f;
 	_dirty |= DIRTY_PERSPECTIVE;
+	_dirty |= DIRTY_TARGET;
 }
 
 void Camera::zoom(float value) {
