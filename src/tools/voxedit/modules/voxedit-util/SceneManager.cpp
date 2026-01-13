@@ -30,6 +30,7 @@
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteCompleter.h"
+#include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -658,15 +659,14 @@ void SceneManager::crop() {
 	modified(nodeId, newVolume->region());
 }
 
-
 void SceneManager::nodeBakeTransform(int nodeId) {
-	scenegraph::SceneGraphNode* node = sceneGraphModelNode(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIdx);
-	voxel::RawVolume* newVolume = voxelutil::applyTransformToVolume(node->volume(), transform.worldMatrix(), node->pivot());
+	const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*node, _currentFrameIdx);
+	voxel::RawVolume *newVolume =
+		voxelutil::applyTransformToVolume(node->volume(), transform.worldMatrix(), node->pivot());
 	if (newVolume == nullptr) {
 		return;
 	}
@@ -675,6 +675,7 @@ void SceneManager::nodeBakeTransform(int nodeId) {
 		delete newVolume;
 		return;
 	}
+	scenegraph::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
 	node->transform(keyFrameIdx).setLocalMatrix(glm::mat4(1.0f));
 	node->setPivot(glm::vec3(0.0f));
 	_sceneGraph.updateTransforms();
