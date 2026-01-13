@@ -27,7 +27,8 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 										 const glm::vec3 &normalizedPivot) {
 	// TODO: scaling is not applied properly
 	const glm::ivec3 translation(worldMat[3]);
-	const glm::vec3 angles = glm::eulerAngles(glm::quat_cast(worldMat));
+	glm::quat q = glm::quat_cast(worldMat);
+	const glm::vec3 angles = glm::degrees(glm::eulerAngles(q));
 	Log::debug("Apply transforms: angles: %f %f %f, translation: %i %i %i", glm::degrees(angles.x),
 			   glm::degrees(angles.y), glm::degrees(angles.z), translation.x, translation.y, translation.z);
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
@@ -35,8 +36,8 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 		v->translate(translation);
 		return v;
 	}
-	// TODO: hand over the matrix here to rotate around the correct pivot
-	voxel::RawVolume *rotated = voxelutil::rotateVolumeDegrees(&volume, angles, normalizedPivot);
+	glm::mat4 rotMat = glm::mat4_cast(q);
+	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, rotMat, normalizedPivot);
 	rotated->translate(translation);
 	return rotated;
 }

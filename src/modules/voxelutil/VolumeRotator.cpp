@@ -26,12 +26,8 @@ namespace voxelutil {
  *
  * Uses inverse transformation (backward mapping) with trilinear sampling to avoid holes.
  */
-voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
-									  const glm::vec3 &normalizedPivot) {
-	const float pitch = glm::radians((float)angles.x);
-	const float yaw = glm::radians((float)angles.y);
-	const float roll = glm::radians((float)angles.z);
-	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat4 &mat,
+							   const glm::vec3 &normalizedPivot) {
 	const glm::mat4 &invMat = glm::inverse(mat);
 	const voxel::Region srcRegion = srcVolume->region();
 
@@ -62,6 +58,15 @@ voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const g
 	app::for_parallel(destMins.z, destMaxs.z + 1, func);
 
 	return destVolume;
+}
+
+voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
+									  const glm::vec3 &normalizedPivot) {
+	const float pitch = glm::radians((float)angles.x);
+	const float yaw = glm::radians((float)angles.y);
+	const float roll = glm::radians((float)angles.z);
+	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
+	return rotateVolume(srcVolume, mat, normalizedPivot);
 }
 
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis) {

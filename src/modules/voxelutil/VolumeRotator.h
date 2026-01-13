@@ -17,6 +17,10 @@ class Palette;
 }
 
 namespace voxelutil {
+
+[[nodiscard]] voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat4 &mat,
+											 const glm::vec3 &normalizedPivot);
+
 /**
  * @brief Rotate the given volume by the given angles in degree
  */
