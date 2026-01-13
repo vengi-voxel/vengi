@@ -254,6 +254,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
 	const SceneGraph::MergeResult &mergeResult = sceneGraph.merge(true);
 	core::ScopedPtr<voxel::RawVolume> mergedVolume(mergeResult.volume());
 	ASSERT_NE(nullptr, mergedVolume);
+	ASSERT_EQ(mergedVolume->region(), voxel::Region(-1, 0, 0, 0, 1, 1));
 	EXPECT_EQ(2, mergedVolume->region().getWidthInVoxels());
 	const voxel::Voxel &v1 = mergedVolume->voxel(0, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
