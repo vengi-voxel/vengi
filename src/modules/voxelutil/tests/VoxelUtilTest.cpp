@@ -254,4 +254,23 @@ TEST_F(VoxelUtilTest, copyIntoRegion) {
 	EXPECT_EQ(3, out.voxel(v.region().getUpperCorner()).getColor());
 }
 
+TEST_F(VoxelUtilTest, applyTransformToVolume) {
+	voxel::RawVolume v{voxel::Region{0, 1}};
+	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	v.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 3));
+	v.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 4));
+
+	const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	// rotating around the center of the volume
+	// 0.0 -> results in center of rotation at 0.5 (due to math::transform adding 0.5)
+	voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.0f));
+	ASSERT_NE(rotated, nullptr);
+	EXPECT_EQ(3, rotated->voxel(0, 0, 0).getColor()) << rotated->voxel(0, 0, 0).getColor();
+	EXPECT_EQ(4, rotated->voxel(0, 1, 0).getColor()) << rotated->voxel(0, 1, 0).getColor();
+	EXPECT_EQ(1, rotated->voxel(1, 0, 0).getColor()) << rotated->voxel(1, 0, 0).getColor();
+	EXPECT_EQ(2, rotated->voxel(1, 1, 0).getColor()) << rotated->voxel(1, 1, 0).getColor();
+	delete rotated;
+}
+
 } // namespace voxelutil

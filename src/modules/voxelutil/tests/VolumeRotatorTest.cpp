@@ -8,7 +8,6 @@
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "math/tests/TestMathHelper.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"

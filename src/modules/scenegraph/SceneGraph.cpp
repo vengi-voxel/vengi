@@ -28,6 +28,7 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VoxelUtil.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -1191,15 +1192,9 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
-		// TODO: SCENEGRAPH: scaling is not applied properly
-		const glm::vec3 angles = glm::eulerAngles(node.transform(frameIdx).worldOrientation());
-		if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
-			voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, mergeCondition);
-		} else {
-			voxel::RawVolume *rotated = voxelutil::rotateVolume(v, angles, node.pivot());
-			voxelutil::mergeVolumes(merged, rotated, destRegion, sourceRegion, mergeCondition);
-			delete rotated;
-		}
+		voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(*v, node.transform(frameIdx).worldMatrix(), node.pivot());
+		voxelutil::mergeVolumes(merged, rotated, destRegion, sourceRegion, mergeCondition);
+		delete rotated;
 		Log::debug("Merged node %i/%i", cnt, (int)n);
 		++cnt;
 	}

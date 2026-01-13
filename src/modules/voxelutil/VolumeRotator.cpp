@@ -35,7 +35,9 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ive
 	const voxel::Region srcRegion = srcVolume->region();
 
 	const glm::vec3 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()));
-	const voxel::Region &destRegion = srcRegion.rotate(mat, pivot);
+	voxel::Region destRegion = srcRegion.rotate(mat, pivot);
+	// apply some padding to avoid rounding errors
+	destRegion.grow(1);
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	voxel::RawVolumeWrapper destVolumeWrapper(destVolume);
 	auto func = [&destVolumeWrapper, &mat, &pivot](int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel) {
