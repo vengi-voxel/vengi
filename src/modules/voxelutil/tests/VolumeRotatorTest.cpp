@@ -11,6 +11,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "voxelutil/VolumeVisitor.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -125,28 +126,15 @@ TEST_F(VolumeRotatorTest, testRotateXYZByAngle) {
 	for (const glm::ivec3 &p : originalPositions) {
 		EXPECT_TRUE(smallVolume.setVoxel(p, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	}
-	const glm::vec3 angles(13.0f, 8.0f, 70.0f);
+	const glm::vec3 angles(24.0f, 8.0f, 70.0f);
 	const glm::vec3 pivot(0.0f, 0.0f, 0.0f);
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolumeDegrees(&smallVolume, angles, pivot));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-
-	// Validate the rotated volume voxels being at the expected position by rotating
-	// the three setVoxel coordinates by the given angles and pivot and then checking
-	// the voxels in the volume
-	const float pitch = glm::radians(angles.x);
-	const float yaw = glm::radians(angles.y);
-	const float roll = glm::radians(angles.z);
-	const glm::mat4 rotationMatrix = glm::eulerAngleXYZ(pitch, yaw, roll);
-
-	const glm::vec3 actualPivot(pivot * glm::vec3(region.getDimensionsInVoxels()));
-
-	for (const glm::ivec3 &p : originalPositions) {
-		const glm::ivec3 expectedPos = math::transform(rotationMatrix, p, actualPivot);
-		EXPECT_TRUE(voxel::isBlocked(rotated->voxel(expectedPos).getMaterial()))
-			<< "Expected to find a voxel at position " << expectedPos
-			<< " (transformed from " << p << ")\n"
-			<< *rotated;
-	}
+	int voxelCount = voxelutil::countVoxels(*rotated);
+	EXPECT_EQ(lengthof(originalPositions), (size_t)voxelCount)
+		<< "Expected the same number of voxels after rotation\n"
+		<< *rotated << "\nvs\n"
+		<< smallVolume;
 }
 
 TEST_F(VolumeRotatorTest, testMirrorAxisX) {

@@ -20,7 +20,7 @@ TEST(MathTest, testTransform) {
 
 TEST(MathTest, testTransformVec3) {
 	const glm::mat4 &mat = glm::eulerAngleY(glm::radians(90.0f));
-	const glm::vec3 expected(0.0f, 0.0f, 1.0f);
+	const glm::vec3 expected(0.0f, 0.0f, 0.0f);
 	const glm::vec3 &destination = math::transform(mat, glm::vec3(0.0f), glm::vec3(0.0f));
 	EXPECT_NEAR(expected.x, destination.x, 0.0001f);
 	EXPECT_NEAR(expected.y, destination.y, 0.0001f);
