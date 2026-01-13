@@ -130,6 +130,6 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
 [[nodiscard]] voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
 
 [[nodiscard]] voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &transform,
-														 const glm::vec3 &pivot);
+														 const glm::vec3 &normalizedPivot);
 
 } // namespace voxelutil

@@ -24,13 +24,13 @@
 namespace voxelutil {
 
 voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &transform,
-										 const glm::vec3 &pivot) {
+										 const glm::vec3 &normalizedPivot) {
 	// TODO: SCENEGRAPH: scaling is not applied properly
 	const glm::vec3 angles = glm::degrees(glm::eulerAngles(glm::quat_cast(transform)));
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 		return new voxel::RawVolume(volume);
 	}
-	return voxelutil::rotateVolume(&volume, glm::round(angles), pivot);
+	return voxelutil::rotateVolume(&volume, glm::round(angles), normalizedPivot);
 }
 
 bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Connectivity connectivity) {

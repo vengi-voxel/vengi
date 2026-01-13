@@ -42,6 +42,7 @@ VoxEdit:
    - Fixed switching animations (cache invalidation was missing)
    - Removed tree panel
    - Fixed multi color selection in palette panel after sorting the colors
+   - Added transform baking
 
 Thumbnailer:
 

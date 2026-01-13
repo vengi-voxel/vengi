@@ -49,6 +49,7 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 		ImGui::CommandIconMenuItem(ICON_LC_LOCK_OPEN, _("Unlock all"), "modelunlockall", true, &listener);
 		commandNodeMenu(ICON_LC_COPY, _("Duplicate"), "nodeduplicate", nodeId, true, &listener);
 		commandNodeMenu(ICON_LC_TRASH, _("Delete"), "nodedelete", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_MOVE, _("Bake transform"), "nodebaketransform", nodeId, true, &listener);
 
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 			commandNodeMenu(ICON_LC_COPY, _("Create reference"), "modelref", nodeId, true, &listener);

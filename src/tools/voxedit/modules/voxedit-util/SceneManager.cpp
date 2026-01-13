@@ -658,6 +658,29 @@ void SceneManager::crop() {
 	modified(nodeId, newVolume->region());
 }
 
+
+void SceneManager::nodeBakeTransform(int nodeId) {
+	scenegraph::SceneGraphNode* node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIdx);
+	voxel::RawVolume* newVolume = voxelutil::applyTransformToVolume(node->volume(), transform.worldMatrix(), node->pivot());
+	if (newVolume == nullptr) {
+		return;
+	}
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "applytransform");
+	if (!setNewVolume(nodeId, newVolume, true)) {
+		delete newVolume;
+		return;
+	}
+	node->transform(keyFrameIdx).setLocalMatrix(glm::mat4(1.0f));
+	node->setPivot(glm::vec3(0.0f));
+	_sceneGraph.updateTransforms();
+	modified(nodeId, newVolume->region());
+}
+
 void SceneManager::nodeResize(int nodeId, const glm::ivec3& size) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
@@ -2345,6 +2368,11 @@ void SceneManager::construct() {
 		const int id = core::string::toInt(depth);
 		addModelChild(name, iw, ih, id);
 	}).setHelp(_("Add a new model node (with a given name and width, height, depth - all optional)"));
+
+	command::Command::registerCommand("nodebaketransform", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		nodeBakeTransform(nodeId);
+	}).setHelp(_("Bake the current transform into the voxel data for a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodedelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
