@@ -1177,7 +1177,6 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			++cnt;
 			continue;
 		}
-		const voxel::Region &sourceRegion = resolveRegion(node);
 		const voxel::Region &destRegion = sceneRegion(node, frameIdx);
 		const palette::Palette &pal = node.palette();
 
@@ -1192,8 +1191,9 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
-		voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(*v, node.transform(frameIdx).worldMatrix(), node.pivot());
-		voxelutil::mergeVolumes(merged, rotated, destRegion, sourceRegion, mergeCondition);
+		const FrameTransform &transform = transformForFrame(node, frameIdx);
+		voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(*v, transform.worldMatrix(), node.pivot());
+		voxelutil::mergeVolumes(merged, rotated, destRegion, rotated->region(), mergeCondition);
 		delete rotated;
 		Log::debug("Merged node %i/%i", cnt, (int)n);
 		++cnt;

@@ -17,7 +17,6 @@ class Palette;
 }
 
 namespace voxelutil {
-
 /**
  * @brief Rotate the given volume by the given angles in degree
  */

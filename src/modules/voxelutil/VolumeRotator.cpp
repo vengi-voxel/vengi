@@ -7,11 +7,10 @@
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
+#include "voxel/VolumeSampler.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "voxelutil/VoxelUtil.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -24,27 +23,44 @@ namespace voxelutil {
  * @param[in] angles The angles for the x, y and z axis given in degrees
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
+ *
+ * Uses inverse transformation (backward mapping) with trilinear sampling to avoid holes.
  */
 voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
-	// TODO: implement sampling http://www.leptonica.org/rotation.html
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);
 	const float roll = glm::radians((float)angles.z);
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
+	const glm::mat4 &invMat = glm::inverse(mat);
 	const voxel::Region srcRegion = srcVolume->region();
 
 	const glm::vec3 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()));
-	voxel::Region destRegion = srcRegion.rotate(mat, pivot);
-	// apply some padding to avoid rounding errors
-	destRegion.grow(1);
+	const voxel::Region &destRegion = srcRegion.rotate(mat, pivot);
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
-	voxel::RawVolumeWrapper destVolumeWrapper(destVolume);
-	auto func = [&destVolumeWrapper, &mat, &pivot](int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel) {
-		const glm::ivec3 &destPos = math::transform(mat, glm::ivec3{x, y, z}, pivot);
-		destVolumeWrapper.setVoxel(destPos, voxel);
+
+	// Backward mapping: iterate over destination and sample from source
+	const glm::ivec3 &destMins = destRegion.getLowerCorner();
+	const glm::ivec3 &destMaxs = destRegion.getUpperCorner();
+
+	auto func = [&](int start, int end) {
+		for (int32_t z = start; z < end; ++z) {
+			for (int32_t y = destMins.y; y <= destMaxs.y; ++y) {
+				for (int32_t x = destMins.x; x <= destMaxs.x; ++x) {
+					// Transform destination coordinate back to source space using inverse transformation
+					const glm::vec3 srcPos = math::transform(invMat, glm::vec3(x, y, z), pivot);
+					// Sample from source volume using generic trilinear interpolation via sampler
+					voxel::RawVolume::Sampler srcSampler(srcVolume);
+					const voxel::Voxel voxel = voxel::sampleTrilinear(srcSampler, srcPos);
+					if (!voxel::isAir(voxel.getMaterial())) {
+						destVolume->setVoxel(x, y, z, voxel);
+					}
+				}
+			}
+		}
 	};
-	voxelutil::visitVolumeParallel(*srcVolume, func);
+	app::for_parallel(destMins.z, destMaxs.z + 1, func);
+
 	return destVolume;
 }
 

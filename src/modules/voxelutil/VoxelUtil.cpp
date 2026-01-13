@@ -23,14 +23,22 @@
 
 namespace voxelutil {
 
-voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &transform,
+voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &worldMat,
 										 const glm::vec3 &normalizedPivot) {
-	// TODO: SCENEGRAPH: scaling is not applied properly
-	const glm::vec3 angles = glm::degrees(glm::eulerAngles(glm::quat_cast(transform)));
+	// TODO: scaling is not applied properly
+	const glm::ivec3 translation(worldMat[3]);
+	const glm::vec3 angles = glm::eulerAngles(glm::quat_cast(worldMat));
+	Log::debug("Apply transforms: angles: %f %f %f, translation: %i %i %i", glm::degrees(angles.x),
+			   glm::degrees(angles.y), glm::degrees(angles.z), translation.x, translation.y, translation.z);
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
-		return new voxel::RawVolume(volume);
+		voxel::RawVolume *v = new voxel::RawVolume(volume);
+		v->translate(translation);
+		return v;
 	}
-	return voxelutil::rotateVolume(&volume, glm::round(angles), normalizedPivot);
+	// TODO: hand over the matrix here to rotate around the correct pivot
+	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, angles, normalizedPivot);
+	rotated->translate(translation);
+	return rotated;
 }
 
 bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Connectivity connectivity) {
