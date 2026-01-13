@@ -29,8 +29,8 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 	const glm::ivec3 translation(worldMat[3]);
 	glm::quat q = glm::quat_cast(worldMat);
 	const glm::vec3 angles = glm::degrees(glm::eulerAngles(q));
-	Log::debug("Apply transforms: angles: %f %f %f, translation: %i %i %i", glm::degrees(angles.x),
-			   glm::degrees(angles.y), glm::degrees(angles.z), translation.x, translation.y, translation.z);
+	Log::debug("Apply transforms: angles: %f %f %f, translation: %i %i %i", angles.x, angles.y, angles.z, translation.x,
+			   translation.y, translation.z);
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 		voxel::RawVolume *v = new voxel::RawVolume(volume);
 		v->translate(translation);
