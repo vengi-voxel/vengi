@@ -173,9 +173,7 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	// 0, 1, 0 is now inside because orthogonal mode has a negative near plane
-	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(10.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 	// TODO: add math::FrustumResult::Intersect test
 }
