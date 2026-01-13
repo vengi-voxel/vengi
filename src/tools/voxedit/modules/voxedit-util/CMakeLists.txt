@@ -104,6 +104,7 @@ set(TEST_SRCS
 )
 set(TEST_FILES
 	shared/font.ttf
+	tests/test-merge.vengi
 	tests/test-palette-in.png
 )
 gtest_suite_sources(tests

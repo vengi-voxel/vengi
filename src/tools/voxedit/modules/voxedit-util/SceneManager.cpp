@@ -1228,25 +1228,18 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "merge");
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-	int parent = 0;
-	if (scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
-		scenegraph::copyNode(*firstNode, newNode, false);
-	}
-	scenegraph::SceneGraphTransform &transform = newNode.keyFrame(0).transform();
-	transform.setWorldTranslation(glm::vec3(0.0f));
 	newNode.setVolume(merged.volume(), true);
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
+	int parent = 0;
 	if (const scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
-		newNode.setKeyFrames(firstNode->keyFrames());
 		newNode.setName(firstNode->name());
 		newNode.setVisible(firstNode->visible());
 		newNode.setLocked(firstNode->locked());
 		newNode.setPivot(firstNode->pivot());
 		newNode.setColor(firstNode->color());
 		newNode.addProperties(firstNode->properties());
-		const glm::ivec3 newPos = -newNode.volume()->region().getLowerCorner() + firstNode->volume()->region().getLowerCorner();
-		newNode.volume()->region().shift(newPos);
+		parent = firstNode->parent();
 	}
 
 	int newNodeId = moveNodeToSceneGraph(newNode, parent);
@@ -2233,19 +2226,6 @@ void SceneManager::construct() {
 		int nodeId1;
 		int nodeId2;
 		if (args.size() == 1) {
-			if (args[0] == "all") {
-				const scenegraph::SceneGraph::MergeResult &merged = _sceneGraph.merge();
-				if (!merged.hasVolume()) {
-					Log::warn("Merging failed");
-					return;
-				}
-				newScene(true, "merged", merged.volume());
-				if (auto *node = _sceneGraph.firstModelNode()) {
-					node->setPalette(merged.palette);
-					node->setNormalPalette(merged.normalPalette);
-				}
-				return;
-			}
 			nodeId2 = core::string::toInt(args[0]);
 			nodeId1 = _sceneGraph.prevModelNode(nodeId2);
 		} else if (args.size() == 2) {

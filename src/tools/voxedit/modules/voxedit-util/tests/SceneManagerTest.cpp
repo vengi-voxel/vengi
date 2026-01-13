@@ -2,17 +2,24 @@
  * @file
  */
 
+#include "voxedit-util/SceneManager.h"
 #include "AbstractSceneManagerTest.h"
+#include "io/FilesystemArchive.h"
 #include "math/tests/TestMathHelper.h"
 #include "palette/Palette.h"
 #include "palette/tests/TestHelper.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/tests/TestHelper.h"
 #include "util/VarUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -32,6 +39,17 @@ protected:
 		memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		EXPECT_FALSE(mementoHandler.canUndo());
 		EXPECT_FALSE(mementoHandler.canRedo());
+	}
+
+	void loadVengiFile(const core::String &filename) {
+		voxelformat::VENGIFormat format;
+		const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem());
+		io::FileDescription fileDesc;
+		fileDesc.set(filename);
+		scenegraph::SceneGraph newSceneGraph;
+		voxelformat::LoadContext testLoadCtx;
+		ASSERT_TRUE(loadFormat(fileDesc, archive, newSceneGraph, testLoadCtx)) << "Failed to load " << filename;
+		ASSERT_TRUE(_sceneMgr->loadSceneGraph(core::move(newSceneGraph)));
 	}
 
 	bool testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
@@ -291,6 +309,29 @@ TEST_F(SceneManagerTest, testExceedsMaxSuggestedVolumeSize) {
 	const voxel::Region regionSmall{0, 15};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", regionSmall));
 	ASSERT_FALSE(_sceneMgr->exceedsMaxSuggestedVolumeSize());
+}
+
+TEST_F(SceneManagerTest, testMergeVengiFile) {
+	loadVengiFile("test-merge.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	ASSERT_EQ(2u, _sceneMgr->sceneGraph().size());
+	_sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(16, voxelutil::countVoxels(*v));
+	const voxel::Region region(-2, 0, 0, 3, 1, 1);
+	EXPECT_EQ(region.getDimensionsInVoxels(), v->region().getDimensionsInVoxels());
+	EXPECT_EQ(region.getLowerCorner(), v->region().getLowerCorner());
+	const scenegraph::SceneGraphTransform &transform = node->transform(0);
+	EXPECT_EQ(transform.localTranslation(), glm::vec3(0.0f));
+	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
 }
 
 TEST_F(SceneManagerTest, testMergeSimple) {

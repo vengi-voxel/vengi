@@ -1156,6 +1156,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	if (!mergedRegion.isValid()) {
 		return MergeResult{};
 	}
+	Log::debug("target merged region: %s", mergedRegion.toString().c_str());
 	const size_t bytes = voxel::RawVolume::size(mergedRegion);
 	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
 		Log::error("Not enough memory to merge the scene graph nodes");
@@ -1163,7 +1164,6 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	}
 	const palette::Palette &mergedPalette = mergePalettes(true);
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
-	palette::PaletteLookup mergedPaletteLookup(mergedPalette);
 
 	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
 	int cnt = 0;
@@ -1178,24 +1178,13 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			continue;
 		}
 		const voxel::Region &destRegion = sceneRegion(node, frameIdx);
-		const palette::Palette &pal = node.palette();
-
-		auto mergeCondition = [&pal, &mergedPaletteLookup](const voxel::RawVolume::Sampler &sampler) {
-			voxel::Voxel voxel = sampler.voxel();
-			if (isAir(voxel.getMaterial())) {
-				return false;
-			}
-			const color::RGBA color = pal.color(voxel.getColor());
-			const uint8_t index = mergedPaletteLookup.findClosestIndex(color);
-			voxel.setColor(index);
-			return true;
-		};
 		const voxel::RawVolume *v = resolveVolume(node);
 		const FrameTransform &transform = transformForFrame(node, frameIdx);
 		voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(*v, transform.worldMatrix(), node.pivot());
-		voxelutil::mergeVolumes(merged, rotated, destRegion, rotated->region(), mergeCondition);
+		const voxel::Region &srcRegion = rotated->region();
+		Log::debug("Merging node %i/%i: srcRegion %s destRegion %s", cnt, (int)n, srcRegion.toString().c_str(), destRegion.toString().c_str());
+		voxelutil::mergeVolumes(merged, mergedPalette, rotated, node.palette(), destRegion, srcRegion);
 		delete rotated;
-		Log::debug("Merged node %i/%i", cnt, (int)n);
 		++cnt;
 	}
 	return MergeResult{merged, mergedPalette, normalPalette};

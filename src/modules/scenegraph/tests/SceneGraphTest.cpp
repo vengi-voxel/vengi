@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "color/Color.h"
 #include "core/ScopedPtr.h"
+#include "core/tests/TestColorHelper.h"
 #include "math/OBB.h"
 #include "palette/FormatConfig.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -193,58 +194,54 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 
 TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	SceneGraph sceneGraph;
+	palette::Palette nipponPal;
+	nipponPal.nippon();
 	{
-		palette::Palette pal;
-		pal.nippon();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
-		node.setPalette(pal);
+		node.setPalette(nipponPal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
+	palette::Palette mvPal;
+	mvPal.magicaVoxel();
 	{
-		palette::Palette pal;
-		pal.magicaVoxel();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(1, 1)), true);
 		node.volume()->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
-		node.setPalette(pal);
+		node.setPalette(mvPal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
-	const SceneGraph::MergeResult &mergeResult = sceneGraph.merge(true);
+	const SceneGraph::MergeResult &mergeResult = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> mergedVolume(mergeResult.volume());
 	ASSERT_NE(nullptr, mergedVolume);
 	EXPECT_EQ(2, mergedVolume->region().getWidthInVoxels());
+
 	const voxel::Voxel &v1 = mergedVolume->voxel(0, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
-	EXPECT_EQ(1, v1.getColor());
+	EXPECT_COLOR_NEAR(nipponPal.color(1), mergeResult.palette.color(v1.getColor()), 0.0f);
+
 	const voxel::Voxel &v2 = mergedVolume->voxel(1, 1, 1);
 	EXPECT_TRUE(voxel::isBlocked(v2.getMaterial()));
-	EXPECT_EQ(2, v2.getColor());
+	EXPECT_COLOR_NEAR(mvPal.color(2), mergeResult.palette.color(v2.getColor()), 0.0f);
 }
 
 TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
 	SceneGraph sceneGraph;
 	{
-		palette::Palette pal;
-		pal.nippon();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
-		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
 	{
-		palette::Palette pal;
-		pal.magicaVoxel();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
-		node.setPalette(pal);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(-1, 1, 1));
 		node.setTransform(0, transform);
@@ -256,9 +253,11 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
 	ASSERT_NE(nullptr, mergedVolume);
 	ASSERT_EQ(mergedVolume->region(), voxel::Region(-1, 0, 0, 0, 1, 1));
 	EXPECT_EQ(2, mergedVolume->region().getWidthInVoxels());
+
 	const voxel::Voxel &v1 = mergedVolume->voxel(0, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
 	EXPECT_EQ(1, v1.getColor());
+
 	const voxel::Voxel &v2 = mergedVolume->voxel(-1, 1, 1);
 	EXPECT_TRUE(voxel::isBlocked(v2.getMaterial()));
 	EXPECT_EQ(2, v2.getColor());
