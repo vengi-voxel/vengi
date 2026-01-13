@@ -421,8 +421,10 @@ glm::mat4 SceneGraph::worldMatrix(const scenegraph::SceneGraphNode &node, sceneg
 }
 
 // TODO: PERF: sweeping
-void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const {
+void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, const math::AABB<float> &aabb) const {
 	core_trace_scoped(GetCollisionNodes);
+	const voxel::Region &regionAABB = toRegion(aabb);
+
 	if (frameIdx == InvalidFrame) {
 		out.reserve(nodes().size());
 		for (const auto &e : nodes()) {
@@ -432,6 +434,10 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 			}
 			const voxel::RawVolume *volume = resolveVolume(node);
 			if (!volume) {
+				continue;
+			}
+			const voxel::Region &region = volume->region();
+			if (!voxel::intersects(region, regionAABB)) {
 				continue;
 			}
 			out.emplace_back(volume, glm::mat4(1.0f));
@@ -460,6 +466,11 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) con
 			const voxel::RawVolume *volume = resolveVolume(node);
 			const glm::mat4 &worldMat = worldMatrix(node, frameIdx, true);
 			const glm::mat4 &worldToModel = glm::inverse(worldMat);
+			const voxel::Region &region = volume->region().transform(worldToModel);
+			if (!voxel::intersects(region, regionAABB)) {
+				continue;
+			}
+
 			out[i] = CollisionNode(volume, worldToModel);
 		}
 	});

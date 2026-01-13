@@ -6,6 +6,7 @@
 #include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -32,7 +33,7 @@ protected:
 		modelNode.setName("ground");
 		modelNode.setVolume(_volume, false);
 		_sceneGraph.emplace(core::move(modelNode));
-		_sceneGraph.getCollisionNodes(_nodes, 0);
+		_sceneGraph.getCollisionNodes(_nodes, 0, scenegraph::toAABB(_volume->region()));
 	}
 
 	void createComplexScene() {
@@ -73,7 +74,7 @@ protected:
 		modelNode.setName("complex");
 		modelNode.setVolume(_volume, false);
 		_sceneGraph.emplace(core::move(modelNode));
-		_sceneGraph.getCollisionNodes(_nodes, 0);
+		_sceneGraph.getCollisionNodes(_nodes, 0, scenegraph::toAABB(_volume->region()));
 	}
 
 public:

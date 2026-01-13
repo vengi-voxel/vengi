@@ -127,8 +127,12 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		}
 
 		scenegraph::CollisionNodes nodes;
-		// TODO: PERF: calculate a bounding box for the _body to only get relevant collision nodes
-		sceneGraph.getCollisionNodes(nodes, frameIdx);
+		const float extentsFactor = 10.0f;
+		const math::AABB<float> aabb(
+			_body.position - _body.extents * extentsFactor,
+			_body.position + _body.extents * extentsFactor
+		);
+		sceneGraph.getCollisionNodes(nodes, frameIdx, aabb);
 
 		constexpr double hz = 1.0 / 60.0;
 		const float gravity = applyGravity ? _gravity->floatVal() : 0.0f;

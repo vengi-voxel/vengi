@@ -51,7 +51,7 @@ struct CollisionNode {
 	CollisionNode(const voxel::RawVolume *v, const glm::mat4 &m) : volume(v), worldToModel(m) {
 	}
 	// the volume data to check collisions against
-	const voxel::RawVolume *volume;
+	const voxel::RawVolume *volume = nullptr;
 	// the inverse matrix includes the pivot translation and is used to transform world positions into model space for the given volume
 	glm::mat4 worldToModel;
 

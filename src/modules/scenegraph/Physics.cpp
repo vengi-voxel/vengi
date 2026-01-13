@@ -3,6 +3,7 @@
  */
 
 #include "Physics.h"
+#include "core/Trace.h"
 #include "math/Axis.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"
@@ -15,6 +16,7 @@ namespace scenegraph {
 
 void Physics::binarySearch(const CollisionNodes &nodes, KinematicBody &body, int axisIdx, float low, float high,
 						   int iterations) const {
+	core_trace_scoped(BinarySearch);
 	for (int i = 0; i < iterations; i++) {
 		if (glm::abs(high - low) < glm::epsilon<float>()) {
 			// We have converged to a solution.
@@ -41,6 +43,7 @@ void Physics::binarySearch(const CollisionNodes &nodes, KinematicBody &body, int
 
 bool Physics::checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &nextPos,
 								   math::Axis axis) const {
+	core_trace_scoped(CheckCollisionOnAxis);
 	const int axisIdx = math::getIndexForAxis(axis);
 	const float targetPos = nextPos[axisIdx];
 	const float curPos = body.position[axisIdx];
@@ -71,6 +74,7 @@ bool Physics::checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &b
 
 bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextBodyPos,
 							 const KinematicBody &body) const {
+	core_trace_scoped(CheckCollision);
 	constexpr float epsilon = glm::epsilon<float>();
 	const glm::vec3 &extents = body.extents;
 	for (const CollisionNode &node : nodes) {
@@ -124,6 +128,7 @@ void Physics::applyFriction(KinematicBody &body, double deltaSeconds) const {
 }
 
 bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const {
+	core_trace_scoped(TryStepUp);
 	// Only allow stepping up when grounded
 	if (!body.collidedY) {
 		return false;
@@ -173,6 +178,7 @@ bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const 
 }
 
 void Physics::update(double deltaSeconds, const CollisionNodes &nodes, KinematicBody &body, float gravity) const {
+	core_trace_scoped(PhysicsUpdate);
 	// If there are no collision nodes, there is nothing to do.
 	if (nodes.empty()) {
 		return;

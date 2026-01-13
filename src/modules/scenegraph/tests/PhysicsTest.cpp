@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -36,7 +37,7 @@ TEST_F(PhysicsTest, testGravityAndGroundCollision) {
 
 	// Get collision nodes
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 	ASSERT_EQ(1u, nodes.size()) << "Expected one collision node";
 
 	// Create a body above the ground
@@ -99,7 +100,7 @@ TEST_F(PhysicsTest, testWallCollision) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 	ASSERT_EQ(1u, nodes.size());
 
 	// Create a body moving toward the wall
@@ -138,7 +139,7 @@ TEST_F(PhysicsTest, testNoCollisionInEmptySpace) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	// Create a body
 	KinematicBody body;
@@ -181,7 +182,7 @@ TEST_F(PhysicsTest, testFriction) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	// Create a body on the ground with horizontal velocity
 	KinematicBody body;
@@ -247,7 +248,7 @@ TEST_F(PhysicsTest, testStairWalking_SingleStep) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 	ASSERT_EQ(1u, nodes.size());
 
 	// Create a body with height 2 (extents.y = 1.0) which should allow 1 voxel steps
@@ -323,7 +324,7 @@ TEST_F(PhysicsTest, testStairWalking_TwoVoxelStep) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	// Create a body with height 4 (extents.y = 2.0) which should allow 2 voxel steps
 	KinematicBody body;
@@ -396,7 +397,7 @@ TEST_F(PhysicsTest, testStairWalking_TooHighStep) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	// Create a body with height 2 (extents.y = 1.0) - can only step 1 voxel
 	// But the step is 3 voxels high, so it should NOT be able to climb
@@ -467,7 +468,7 @@ TEST_F(PhysicsTest, testStairWalking_VelocityPreservation) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	KinematicBody body;
 	body.position = glm::vec3(10.0f, 10.0f, 15.0f);
@@ -548,7 +549,7 @@ TEST_F(PhysicsTest, testStairWalking_MultipleSteps) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	KinematicBody body;
 	body.position = glm::vec3(4.0f, 10.0f, 15.0f);
@@ -616,7 +617,7 @@ TEST_F(PhysicsTest, testStairWalking_NoStepInAir) {
 	sceneGraph.emplace(core::move(modelNode));
 
 	CollisionNodes nodes;
-	sceneGraph.getCollisionNodes(nodes, 0);
+	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	KinematicBody body;
 	body.position = glm::vec3(9.0f, 10.0f, 15.0f);

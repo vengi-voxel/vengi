@@ -100,7 +100,7 @@ public:
 		return _nodes;
 	}
 
-	void getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx) const;
+	void getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, const math::AABB<float> &aabb) const;
 
 	void fixErrors();
 	bool validate() const;
