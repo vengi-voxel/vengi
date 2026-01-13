@@ -127,6 +127,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		}
 
 		scenegraph::CollisionNodes nodes;
+		// TODO: PERF: calculate a bounding box for the _body to only get relevant collision nodes
 		sceneGraph.getCollisionNodes(nodes, frameIdx);
 
 		constexpr double hz = 1.0 / 60.0;
