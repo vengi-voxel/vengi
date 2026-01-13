@@ -540,7 +540,7 @@ protected:
 // Generic trilinear sampling
 template<class Sampler>
 static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
-	const glm::ivec3 base = glm::ivec3(glm::floor(pos));
+	const glm::ivec3 base = glm::ivec3(glm::round(pos));
 	if (!sampler.setPosition(base)) {
 		return voxel::Voxel();
 	}
