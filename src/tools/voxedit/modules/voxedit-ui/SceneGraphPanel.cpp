@@ -122,6 +122,10 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 							  int referencedNodeId) {
 	core_trace_scoped(RenderNode);
 	const int nodeId = displayNode.nodeId;
+	if (!sceneGraph.hasNode(nodeId)) {
+		// they might have been removed by a command or action on another node
+		return;
+	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const int activeNode = sceneGraph.activeNode();
 	const bool referenceNode = node.reference() == activeNode;
