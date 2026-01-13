@@ -537,4 +537,69 @@ protected:
 #undef CAN_GO_NEG_Z
 #undef CAN_GO_POS_Z
 
+// Generic trilinear sampling
+template<class Sampler>
+static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
+	const glm::ivec3 base = glm::ivec3(glm::floor(pos));
+	if (!sampler.setPosition(base)) {
+		return voxel::Voxel();
+	}
+
+	const glm::vec3 frac = pos - glm::vec3(base);
+
+	// Fetch 8 corner voxels via peek APIs relative to current sampler position
+	const voxel::Voxel v000 = sampler.peekVoxel0px0py0pz();
+	const voxel::Voxel v100 = sampler.peekVoxel1px0py0pz();
+	const voxel::Voxel v010 = sampler.peekVoxel0px1py0pz();
+	const voxel::Voxel v110 = sampler.peekVoxel1px1py0pz();
+	const voxel::Voxel v001 = sampler.peekVoxel0px0py1pz();
+	const voxel::Voxel v101 = sampler.peekVoxel1px0py1pz();
+	const voxel::Voxel v011 = sampler.peekVoxel0px1py1pz();
+	const voxel::Voxel v111 = sampler.peekVoxel1px1py1pz();
+
+	// Compute trilinear weights
+	const float w000 = (1.0f - frac.x) * (1.0f - frac.y) * (1.0f - frac.z);
+	const float w100 = frac.x * (1.0f - frac.y) * (1.0f - frac.z);
+	const float w010 = (1.0f - frac.x) * frac.y * (1.0f - frac.z);
+	const float w110 = frac.x * frac.y * (1.0f - frac.z);
+	const float w001 = (1.0f - frac.x) * (1.0f - frac.y) * frac.z;
+	const float w101 = frac.x * (1.0f - frac.y) * frac.z;
+	const float w011 = (1.0f - frac.x) * frac.y * frac.z;
+	const float w111 = frac.x * frac.y * frac.z;
+
+	// Select voxel with maximum contribution (discrete nearest in trilinear space)
+	float maxWeight = w000;
+	voxel::Voxel result = v000;
+	if (w100 > maxWeight) {
+		maxWeight = w100;
+		result = v100;
+	}
+	if (w010 > maxWeight) {
+		maxWeight = w010;
+		result = v010;
+	}
+	if (w110 > maxWeight) {
+		maxWeight = w110;
+		result = v110;
+	}
+	if (w001 > maxWeight) {
+		maxWeight = w001;
+		result = v001;
+	}
+	if (w101 > maxWeight) {
+		maxWeight = w101;
+		result = v101;
+	}
+	if (w011 > maxWeight) {
+		maxWeight = w011;
+		result = v011;
+	}
+	if (w111 > maxWeight) {
+		maxWeight = w111;
+		result = v111;
+	}
+
+	return result;
+}
+
 } // namespace voxel
