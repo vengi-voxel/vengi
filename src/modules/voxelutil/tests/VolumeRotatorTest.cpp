@@ -103,7 +103,7 @@ TEST_F(VolumeRotatorTest, testRotateAxisY45) {
 	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	const glm::vec3 angles(0.0f, 45.0f, 0.0f);
 	const glm::vec3 pivot(0.0f, 0.5f, 0.0f);
-	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolume(&smallVolume, angles, pivot));
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolumeDegrees(&smallVolume, angles, pivot));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	const voxel::Region &rotatedRegion = rotated->region();
 	EXPECT_NE(rotatedRegion, region) << "Rotating by 45 degree should increase the size of the volume " << rotatedRegion
@@ -127,7 +127,7 @@ TEST_F(VolumeRotatorTest, testRotateXYZByAngle) {
 	}
 	const glm::vec3 angles(13.0f, 8.0f, 70.0f);
 	const glm::vec3 pivot(0.0f, 0.0f, 0.0f);
-	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolume(&smallVolume, angles, pivot));
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolumeDegrees(&smallVolume, angles, pivot));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 
 	// Validate the rotated volume voxels being at the expected position by rotating

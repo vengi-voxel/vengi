@@ -20,7 +20,7 @@ namespace voxelutil {
 /**
  * @brief Rotate the given volume by the given angles in degree
  */
-[[nodiscard]] voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::ivec3 &angles,
+[[nodiscard]] voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *source, const glm::ivec3 &angles,
 											 const glm::vec3 &normalizedPivot);
 /**
  * @brief Rotate the given volume on the given axis by 90 degree. This method does not lose any voxels

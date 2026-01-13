@@ -36,7 +36,7 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 		return v;
 	}
 	// TODO: hand over the matrix here to rotate around the correct pivot
-	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, angles, normalizedPivot);
+	voxel::RawVolume *rotated = voxelutil::rotateVolumeDegrees(&volume, angles, normalizedPivot);
 	rotated->translate(translation);
 	return rotated;
 }

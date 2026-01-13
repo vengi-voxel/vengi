@@ -26,8 +26,8 @@ namespace voxelutil {
  *
  * Uses inverse transformation (backward mapping) with trilinear sampling to avoid holes.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
-							   const glm::vec3 &normalizedPivot) {
+voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
+									  const glm::vec3 &normalizedPivot) {
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);
 	const float roll = glm::radians((float)angles.z);
