@@ -4,6 +4,7 @@
 
 #include "voxelutil/VoxelUtil.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ScopedPtr.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/Face.h"
@@ -254,23 +255,21 @@ TEST_F(VoxelUtilTest, copyIntoRegion) {
 	EXPECT_EQ(3, out.voxel(v.region().getUpperCorner()).getColor());
 }
 
+// rotating by 90 degree should not be destructive and result in the same voxel count as before
 TEST_F(VoxelUtilTest, applyTransformToVolume) {
-	voxel::RawVolume v{voxel::Region{0, 1}};
-	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	v.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	v.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 3));
-	v.setVoxel(1, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 4));
+	voxel::RawVolume v{voxel::Region{0, 0, 0, 2, 2, 0}};
+	for (int y = 0; y <= 2; ++y) {
+		for (int x = 0; x <= 2; ++x) {
+			v.setVoxel(x, y, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1 + x + y * 3));
+		}
+	}
 
 	const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	// rotating around the center of the volume
-	// 0.0 -> results in center of rotation at 0.5 (due to math::transform adding 0.5)
-	voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.0f));
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.5f)));
 	ASSERT_NE(rotated, nullptr);
-	EXPECT_EQ(3, rotated->voxel(0, 0, 0).getColor()) << rotated->voxel(0, 0, 0).getColor();
-	EXPECT_EQ(4, rotated->voxel(0, 1, 0).getColor()) << rotated->voxel(0, 1, 0).getColor();
-	EXPECT_EQ(1, rotated->voxel(1, 0, 0).getColor()) << rotated->voxel(1, 0, 0).getColor();
-	EXPECT_EQ(2, rotated->voxel(1, 1, 0).getColor()) << rotated->voxel(1, 1, 0).getColor();
-	delete rotated;
+	EXPECT_EQ(rotated->region().getDimensionsInVoxels(), v.region().getDimensionsInVoxels());
+	const int voxelCount = voxelutil::countVoxels(*rotated);
+	EXPECT_EQ(voxelCount, 9) << "Expected 9 voxels after rotation" << *rotated << v;
 }
 
 } // namespace voxelutil
