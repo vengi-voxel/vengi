@@ -36,7 +36,7 @@ VoxEdit:
    - Fixed normal rendering with binary mesher
    - Implemented editing of normals and improved the normal palette panel
    - Improved autonormals
-   - Improved camera movement and make the eye-based movement (`wasd`) the default
+   - Improved camera movement and allow `wasd`-based movement in both rotation modes
    - Improved game mode settings and allow to tweak more properties
    - Fixed broken scrolling in the animation timeline
    - Fixed switching animations (cache invalidation was missing)
