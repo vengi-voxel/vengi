@@ -334,6 +334,20 @@ Region Region::rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const {
 	return {newMins.x, newMins.y, newMins.z, newMaxs.x - 1, newMaxs.y - 1, newMaxs.z - 1};
 }
 
+Region Region::transform(const glm::mat4 &mat) const {
+	const glm::vec3 &rmins = getLowerCornerf();
+	const glm::vec3 &rmaxs = getUpperCornerf();
+	const glm::vec3 transformedRMaxs = mat * glm::vec4(rmaxs, 1.0f);
+	const glm::vec3 transformedRMins = mat * glm::vec4(rmins, 1.0f);
+	return Region(
+		glm::ivec3(glm::floor(glm::min(transformedRMins.x, transformedRMaxs.x)),
+				   glm::floor(glm::min(transformedRMins.y, transformedRMaxs.y)),
+				   glm::floor(glm::min(transformedRMins.z, transformedRMaxs.z))),
+		glm::ivec3(glm::ceil(glm::max(transformedRMins.x, transformedRMaxs.x)),
+				   glm::ceil(glm::max(transformedRMins.y, transformedRMaxs.y)),
+				   glm::ceil(glm::max(transformedRMins.z, transformedRMaxs.z))));
+}
+
 /**
  * Constructs a Region and sets the lower and upper corners to the specified values.
  * @param mins The desired lower corner of the Region.
