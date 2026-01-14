@@ -334,6 +334,29 @@ TEST_F(SceneManagerTest, testMergeVengiFile) {
 	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
 }
 
+TEST_F(SceneManagerTest, DISABLED_testMerge2VengiFile) {
+	loadVengiFile("test-merge2.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	ASSERT_EQ(3u, _sceneMgr->sceneGraph().size());
+	_sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(132, voxelutil::countVoxels(*v));
+	const voxel::Region region(0, 0, 0, 3, 10, 7);
+	EXPECT_EQ(region.getDimensionsInVoxels(), v->region().getDimensionsInVoxels());
+	EXPECT_EQ(region.getLowerCorner(), v->region().getLowerCorner());
+	const scenegraph::SceneGraphTransform &transform = node->transform(0);
+	EXPECT_EQ(transform.localTranslation(), glm::vec3(0.0f));
+	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
+}
+
 TEST_F(SceneManagerTest, testMergeSimple) {
 	Modifier &modifier = _sceneMgr->modifier();
 	int secondNodeId = _sceneMgr->addModelChild("second node", 10, 10, 10);
