@@ -22,8 +22,8 @@ public:
 		EXPECT_EQ(dimensions, rotated.getDimensionsInVoxels());
 		const glm::ivec3 mins = rotated.getLowerCorner();
 		const glm::ivec3 maxs = rotated.getUpperCorner();
-		EXPECT_EQ(-10, mins.y) << "The rotated volume should be at the same height as the original one";
-		EXPECT_EQ(10, maxs.y) << "The rotated volume should be at the same height as the original one";
+		EXPECT_EQ(region.getLowerY(), mins.y) << "The rotated volume should be at the same height as the original one";
+		EXPECT_EQ(region.getUpperY(), maxs.y) << "The rotated volume should be at the same height as the original one";
 	}
 };
 

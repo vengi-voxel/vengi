@@ -2356,8 +2356,9 @@ void SceneManager::construct() {
 	}).setHelp(_("Add a new model node (with a given name and width, height, depth - all optional)"));
 
 	command::Command::registerCommand("nodebaketransform", [&] (const command::CmdArgs& args) {
-		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		nodeBakeTransform(nodeId);
+		nodeForeachGroup([&] (int groupNodeId) {
+			nodeBakeTransform(groupNodeId);
+		});
 	}).setHelp(_("Bake the current transform into the voxel data for a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodedelete", [&] (const command::CmdArgs& args) {
