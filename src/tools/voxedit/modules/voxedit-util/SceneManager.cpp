@@ -3665,6 +3665,8 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	}
 	_sceneRenderer->removeNode(nodeId);
 	if (_sceneGraph.empty()) {
+		// TODO: MEMENTO: during undo - e.g. delete the root node - the memento system is locked and this new node isn't recorded properly.
+		// See https://github.com/vengi-voxel/vengi/issues/699
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setVolume(new voxel::RawVolume(region), true);
