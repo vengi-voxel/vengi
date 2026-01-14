@@ -28,6 +28,7 @@
 
 namespace voxel {
 class RawVolume;
+class SparseVolume;
 }
 
 namespace scenegraph {
@@ -267,6 +268,9 @@ public:
 		palette::Palette palette;
 		palette::NormalPalette normalPalette;
 	};
+
+	void bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node) const;
+
 	/**
 	 * @brief Merge all available nodes into one big volume.
 	 * @note If the graph is empty, this returns @c nullptr for the volume and a dummy value for the palette

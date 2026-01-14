@@ -8,6 +8,7 @@
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
@@ -25,6 +26,8 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/SparseVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -1144,6 +1147,18 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 	return n.volume();
 }
 
+void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node) const {
+	const voxel::RawVolume *v = resolveVolume(node);
+	const FrameTransform &transform = transformForFrame(node, frameIdx);
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(*v, transform.worldMatrix(), node.pivot()));
+	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (!voxel::isAir(voxel.getMaterial())) {
+			merged.setVoxel(x, y, z, voxel);
+		}
+	};
+	voxelutil::visitVolume(*rotated, func);
+}
+
 SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	core_trace_scoped(Merge);
 	const size_t n = size(SceneGraphNodeType::AllModels);
@@ -1152,42 +1167,24 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	}
 
 	const FrameIndex frameIdx = 0;
-	const voxel::Region &mergedRegion = sceneRegion(frameIdx, skipHidden);
-	if (!mergedRegion.isValid()) {
-		return MergeResult{};
-	}
-	Log::debug("target merged region: %s", mergedRegion.toString().c_str());
-	const size_t bytes = voxel::RawVolume::size(mergedRegion);
-	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
-		Log::error("Not enough memory to merge the scene graph nodes");
-		return MergeResult{};
-	}
 	const palette::Palette &mergedPalette = mergePalettes(true);
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
 
-	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
-	int cnt = 0;
+	voxel::SparseVolume merged;
+	// TODO: the order is wrong here - start from root and recursively apply child nodes
 	for (const auto &e : nodes()) {
 		const SceneGraphNode &node = e->second;
 		if (!node.isAnyModelNode()) {
-			++cnt;
 			continue;
 		}
 		if (skipHidden && !node.visible()) {
-			++cnt;
 			continue;
 		}
-		const voxel::Region &destRegion = sceneRegion(node, frameIdx);
-		const voxel::RawVolume *v = resolveVolume(node);
-		const FrameTransform &transform = transformForFrame(node, frameIdx);
-		voxel::RawVolume *rotated = voxelutil::applyTransformToVolume(*v, transform.worldMatrix(), node.pivot());
-		const voxel::Region &srcRegion = rotated->region();
-		Log::debug("Merging node %i/%i: srcRegion %s destRegion %s", cnt, (int)n, srcRegion.toString().c_str(), destRegion.toString().c_str());
-		voxelutil::mergeVolumes(merged, mergedPalette, rotated, node.palette(), destRegion, srcRegion);
-		delete rotated;
-		++cnt;
+		bakeIntoSparse(frameIdx, merged, node);
 	}
-	return MergeResult{merged, mergedPalette, normalPalette};
+	voxel::RawVolume *mergedVolume = new voxel::RawVolume(merged.calculateRegion());
+	merged.copyTo(*mergedVolume);
+	return MergeResult{mergedVolume, mergedPalette, normalPalette};
 }
 
 void SceneGraph::align(int padding) {
