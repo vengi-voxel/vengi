@@ -26,10 +26,10 @@ namespace voxelutil {
 voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &worldMat,
 										 const glm::vec3 &normalizedPivot) {
 	// TODO: scaling is not applied properly
-	const glm::ivec3 translation(worldMat[3]);
+	const glm::vec3 translation(worldMat[3]);
 	glm::quat q = glm::quat_cast(worldMat);
 	const glm::vec3 angles = glm::degrees(glm::eulerAngles(q));
-	Log::debug("Apply transforms: angles: %f %f %f, translation: %i %i %i", angles.x, angles.y, angles.z, translation.x,
+	Log::debug("Apply transforms: angles: %f %f %f, translation: %f %f %f", angles.x, angles.y, angles.z, translation.x,
 			   translation.y, translation.z);
 
 	const glm::vec3 dim(volume.region().getDimensionsInVoxels());
@@ -37,12 +37,12 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 		voxel::RawVolume *v = new voxel::RawVolume(volume);
-		v->translate(translation - glm::ivec3(glm::round(pivot)));
+		v->translate(glm::ivec3(glm::round(translation - pivot)));
 		return v;
 	}
 	glm::mat4 rotMat = glm::mat4_cast(q);
 	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, rotMat, normalizedPivot);
-	rotated->translate(translation - glm::ivec3(glm::round(pivot)));
+	rotated->translate(glm::ivec3(glm::round(translation - pivot)));
 	return rotated;
 }
 
