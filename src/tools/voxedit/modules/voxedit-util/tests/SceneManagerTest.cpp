@@ -484,7 +484,12 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeCoverAndHead) {
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
 	voxel::Region expectedMergedRegion = headRegion;
 	expectedMergedRegion.accumulate(coverRegion);
-	EXPECT_EQ(expectedMergedRegion.getDimensionsInVoxels(), mergedRegion.getDimensionsInVoxels());
+	EXPECT_EQ(expectedMergedRegion.getDimensionsInVoxels(), mergedRegion.getDimensionsInVoxels())
+		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
+	EXPECT_EQ(expectedMergedRegion.getLowerCorner(), mergedRegion.getLowerCorner())
+		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
+	EXPECT_EQ(expectedMergedRegion.getUpperCorner(), mergedRegion.getUpperCorner())
+		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
 	EXPECT_EQ(876, voxelutil::countVoxels(*mergedHeadVolume));
 }
 
