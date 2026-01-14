@@ -31,14 +31,18 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 	const glm::vec3 angles = glm::degrees(glm::eulerAngles(q));
 	Log::debug("Apply transforms: angles: %f %f %f, translation: %i %i %i", angles.x, angles.y, angles.z, translation.x,
 			   translation.y, translation.z);
+
+	const glm::vec3 dim(volume.region().getDimensionsInVoxels());
+	const glm::vec3 pivot = normalizedPivot * dim;
+
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 		voxel::RawVolume *v = new voxel::RawVolume(volume);
-		v->translate(translation);
+		v->translate(translation - glm::ivec3(glm::round(pivot)));
 		return v;
 	}
 	glm::mat4 rotMat = glm::mat4_cast(q);
 	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, rotMat, normalizedPivot);
-	rotated->translate(translation);
+	rotated->translate(translation - glm::ivec3(glm::round(pivot)));
 	return rotated;
 }
 

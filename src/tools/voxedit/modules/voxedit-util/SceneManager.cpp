@@ -677,9 +677,13 @@ void SceneManager::nodeBakeTransform(int nodeId) {
 		return;
 	}
 	scenegraph::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
-	node->transform(keyFrameIdx).setLocalMatrix(glm::mat4(1.0f));
+	scenegraph::SceneGraphTransform &nodeTransform = node->transform(keyFrameIdx);
+	nodeTransform.setWorldMatrix(glm::mat4(1.0f));
 	node->setPivot(glm::vec3(0.0f));
-	_sceneGraph.updateTransforms();
+	if (nodeTransform.dirty()) {
+		nodeTransform.update(_sceneGraph, *node, _currentFrameIdx, false);
+		nodeKeyFramesChanged(*node);
+	}
 	modified(nodeId, newVolume->region());
 }
 

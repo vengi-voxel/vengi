@@ -104,6 +104,7 @@ set(TEST_SRCS
 )
 set(TEST_FILES
 	shared/font.ttf
+	voxedit/chr_knight.vengi
 	tests/test-merge.vengi
 	tests/test-merge2.vengi
 	tests/test-palette-in.png

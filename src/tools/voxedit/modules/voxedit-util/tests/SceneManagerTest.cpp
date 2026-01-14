@@ -357,6 +357,71 @@ TEST_F(SceneManagerTest, DISABLED_testMerge2VengiFile) {
 	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
 }
 
+TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
+	loadVengiFile("test-merge2.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	ASSERT_EQ(3u, _sceneMgr->sceneGraph().size());
+	{
+		SCOPED_TRACE("K_Foot_Right");
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Foot_Right");
+		ASSERT_NE(nullptr, node);
+		ASSERT_TRUE(node->isModelNode());
+		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 3, 5, 3));
+		_sceneMgr->nodeBakeTransform(node->id());
+		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(newRegion, voxel::Region(0, 0, -1, 3, 5, 2));
+		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+	}
+	{
+		SCOPED_TRACE("K_Toe_Right");
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Toe_Right");
+		ASSERT_NE(nullptr, node);
+		ASSERT_TRUE(node->isModelNode());
+		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 3, 2, 2));
+		_sceneMgr->nodeBakeTransform(node->id());
+		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(newRegion, voxel::Region(0, 0, 3, 3, 2, 5));
+		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+	}
+	{
+		SCOPED_TRACE("K_Leg_Right_l");
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Leg_Right_l");
+		ASSERT_NE(nullptr, node);
+		ASSERT_TRUE(node->isModelNode());
+		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 1, 5, 1));
+		_sceneMgr->nodeBakeTransform(node->id());
+		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(newRegion, voxel::Region(1, 4, 0, 2, 9, 1));
+		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+	}
+}
+
+TEST_F(SceneManagerTest, testChrKnightBakeTransform) {
+	loadVengiFile("chr_knight.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	{
+		SCOPED_TRACE("K_Waist");
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByName("K_Waist");
+		ASSERT_NE(nullptr, node);
+		ASSERT_TRUE(node->isModelNode());
+		const voxel::Region originalRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(originalRegion, voxel::Region(0, 0, 0, 8, 3, 6));
+		_sceneMgr->nodeBakeTransform(node->id());
+		const voxel::Region newRegion = _sceneMgr->volume(node->id())->region();
+		ASSERT_EQ(newRegion, voxel::Region(-4, 14, -4, 4, 17, 2));
+		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+	}
+}
+
 TEST_F(SceneManagerTest, testMergeSimple) {
 	Modifier &modifier = _sceneMgr->modifier();
 	int secondNodeId = _sceneMgr->addModelChild("second node", 10, 10, 10);
