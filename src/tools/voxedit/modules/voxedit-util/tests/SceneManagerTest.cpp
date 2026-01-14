@@ -425,6 +425,69 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightBakeTransform) {
 	}
 }
 
+TEST_F(SceneManagerTest, DISABLED_testChrKnightMerge) {
+	loadVengiFile("chr_knight.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	{
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
+		ASSERT_NE(nullptr, node);
+		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+		ASSERT_NE(nullptr, v);
+		EXPECT_EQ(2721, voxelutil::countVoxels(*v));
+	}
+
+	_sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+
+	{
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().firstModelNode();
+		ASSERT_NE(nullptr, node);
+		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
+		ASSERT_NE(nullptr, v);
+		EXPECT_EQ(2721, voxelutil::countVoxels(*v));
+	}
+}
+
+TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeCoverAndHead) {
+	loadVengiFile("chr_knight.vengi");
+	if (HasFailure()) {
+		return;
+	}
+
+	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
+
+	const scenegraph::SceneGraphNode *head = _sceneMgr->sceneGraph().findNodeByName("K_Head");
+	ASSERT_NE(nullptr, head);
+
+	const voxel::RawVolume *headVolume = _sceneMgr->volume(head->id());
+	ASSERT_NE(nullptr, headVolume);
+	const voxel::Region headRegion = headVolume->region();
+	EXPECT_EQ(781, voxelutil::countVoxels(*headVolume));
+
+	const scenegraph::SceneGraphNode *cover = _sceneMgr->sceneGraph().findNodeByName("K_Cover");
+	ASSERT_NE(nullptr, cover);
+	const voxel::RawVolume *coverVolume = _sceneMgr->volume(cover->id());
+	ASSERT_NE(nullptr, coverVolume);
+	const voxel::Region coverRegion = coverVolume->region();
+	EXPECT_EQ(95, voxelutil::countVoxels(*coverVolume));
+
+	_sceneMgr->mergeNodes(head->id(), cover->id());
+	ASSERT_EQ(18u, _sceneMgr->sceneGraph().size());
+
+	const scenegraph::SceneGraphNode *mergedHead = _sceneMgr->sceneGraph().findNodeByName("K_Head");
+	ASSERT_NE(nullptr, mergedHead);
+	const voxel::RawVolume *mergedHeadVolume = _sceneMgr->volume(mergedHead->id());
+	ASSERT_NE(nullptr, mergedHeadVolume);
+	const voxel::Region &mergedRegion = mergedHeadVolume->region();
+	voxel::Region expectedMergedRegion = headRegion;
+	expectedMergedRegion.accumulate(coverRegion);
+	EXPECT_EQ(expectedMergedRegion.getDimensionsInVoxels(), mergedRegion.getDimensionsInVoxels());
+	EXPECT_EQ(876, voxelutil::countVoxels(*mergedHeadVolume));
+}
+
 TEST_F(SceneManagerTest, testMergeSimple) {
 	Modifier &modifier = _sceneMgr->modifier();
 	int secondNodeId = _sceneMgr->addModelChild("second node", 10, 10, 10);
