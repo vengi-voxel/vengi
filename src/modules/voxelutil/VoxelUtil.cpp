@@ -37,12 +37,12 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 
 	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
 		voxel::RawVolume *v = new voxel::RawVolume(volume);
-		v->translate(glm::ivec3(glm::round(translation - pivot)));
+		v->translate(glm::ivec3(translation) - glm::ivec3(glm::round(pivot)));
 		return v;
 	}
 	glm::mat4 rotMat = glm::mat4_cast(q);
 	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, rotMat, normalizedPivot);
-	rotated->translate(glm::ivec3(glm::round(translation - pivot)));
+	rotated->translate(glm::ivec3(translation) - glm::ivec3(glm::round(pivot)));
 	return rotated;
 }
 
