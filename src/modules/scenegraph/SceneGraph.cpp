@@ -1150,7 +1150,13 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node) const {
 	const voxel::RawVolume *v = resolveVolume(node);
 	const FrameTransform &transform = transformForFrame(node, frameIdx);
-	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(*v, transform.worldMatrix(), node.pivot()));
+	if (transform.isIdentity()) {
+		merged.copyFrom(*v);
+		return;
+	}
+
+	const glm::mat4 &worldMat = transform.worldMatrix();
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(*v, worldMat, node.pivot()));
 	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (!voxel::isAir(voxel.getMaterial())) {
 			merged.setVoxel(x, y, z, voxel);
