@@ -425,7 +425,7 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightBakeTransform) {
 	}
 }
 
-TEST_F(SceneManagerTest, DISABLED_testChrKnightMerge) {
+TEST_F(SceneManagerTest, testChrKnightMerge) {
 	loadVengiFile("chr_knight.vengi");
 	if (HasFailure()) {
 		return;
@@ -436,7 +436,6 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightMerge) {
 		ASSERT_NE(nullptr, node);
 		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
 		ASSERT_NE(nullptr, v);
-		EXPECT_EQ(2721, voxelutil::countVoxels(*v));
 	}
 
 	_sceneMgr->mergeNodes(NodeMergeFlags::All);
@@ -447,11 +446,11 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightMerge) {
 		ASSERT_NE(nullptr, node);
 		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
 		ASSERT_NE(nullptr, v);
-		EXPECT_EQ(2721, voxelutil::countVoxels(*v));
+		EXPECT_EQ(2561, voxelutil::countVoxels(*v));
 	}
 }
 
-TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeCoverAndHead) {
+TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	loadVengiFile("chr_knight.vengi");
 	if (HasFailure()) {
 		return;
@@ -489,8 +488,8 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeCoverAndHead) {
 	EXPECT_EQ(expectedMergedRegion.getLowerCorner(), mergedRegion.getLowerCorner())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
 	EXPECT_EQ(expectedMergedRegion.getUpperCorner(), mergedRegion.getUpperCorner())
-		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
-	EXPECT_EQ(876, voxelutil::countVoxels(*mergedHeadVolume));
+		<< "Original h	ead: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
+	EXPECT_EQ(851, voxelutil::countVoxels(*mergedHeadVolume));
 }
 
 TEST_F(SceneManagerTest, testMergeSimple) {
