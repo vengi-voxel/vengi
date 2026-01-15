@@ -269,7 +269,7 @@ public:
 		palette::NormalPalette normalPalette;
 	};
 
-	void bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node) const;
+	void bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node, const palette::Palette &paletteConversion) const;
 
 	/**
 	 * @brief Merge all available nodes into one big volume.

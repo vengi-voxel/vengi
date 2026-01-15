@@ -5,6 +5,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "app/tests/AbstractTest.h"
 #include "color/Color.h"
+#include "color/ColorUtil.h"
 #include "core/ScopedPtr.h"
 #include "core/tests/TestColorHelper.h"
 #include "math/OBB.h"
@@ -224,12 +225,12 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	const voxel::Voxel &v1 = mergedVolume->voxel(0, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
 	const color::RGBA &c1 = mergedPalette.color(v1.getColor());
-	EXPECT_COLOR_NEAR(nipponPal.color(1), c1, 0.0f);
+	EXPECT_COLOR_NEAR(nipponPal.color(1), c1, 0.0f) << mergedPalette << color::print(nipponPal.color(1));
 
 	const voxel::Voxel &v2 = mergedVolume->voxel(1, 1, 1);
 	EXPECT_TRUE(voxel::isBlocked(v2.getMaterial()));
 	const color::RGBA &c2 = mergedPalette.color(v2.getColor());
-	EXPECT_COLOR_NEAR(mvPal.color(2), c2, 0.0f);
+	EXPECT_COLOR_NEAR(mvPal.color(2), c2, 0.0f) << mergedPalette << color::print(mvPal.color(2));
 }
 
 TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
@@ -346,6 +347,7 @@ TEST_F(SceneGraphTest, testMerge) {
 		node.setName("node2");
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 2));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v, true);
 		sceneGraph.emplace(core::move(node));
 	}
@@ -353,7 +355,7 @@ TEST_F(SceneGraphTest, testMerge) {
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(3, v->region().getWidthInVoxels());
+	EXPECT_EQ(3, v->region().getWidthInVoxels()) << v->region().toString();
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()));
 }
 
@@ -479,7 +481,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(26, v->region().getWidthInVoxels());
+	EXPECT_EQ(23, v->region().getWidthInVoxels()) << "the region of both nodes combined and cropped (sparse volume) should be 23 voxels wide";
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-9, -9, -9).getMaterial()));
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(12, 12, 12).getMaterial()));
 }
@@ -508,6 +510,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
 		EXPECT_EQ(expectedWidthNode2, v->region().getWidthInVoxels());
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		v->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v, true);
 		SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3(10));

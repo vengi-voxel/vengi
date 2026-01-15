@@ -5,6 +5,7 @@
 #include "SceneGraph.h"
 #include "SceneUtil.h"
 #include "app/Async.h"
+#include "color/ColorUtil.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
@@ -1147,21 +1148,28 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 	return n.volume();
 }
 
-void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node) const {
+void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &target, const SceneGraphNode &node, const palette::Palette &paletteConversion) const {
 	const voxel::RawVolume *v = resolveVolume(node);
+	palette::PaletteLookup palLookup(paletteConversion);
+	const palette::Palette &nodePalette = node.palette();
+
+	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (voxel::isAir(voxel.getMaterial())) {
+			return;
+		}
+		const color::RGBA color = nodePalette.color(voxel.getColor());
+		const uint8_t newColor = palLookup.findClosestIndex(color);
+		target.setVoxel(x, y, z, voxel::createVoxel(paletteConversion, newColor));
+	};
+
 	const FrameTransform &transform = transformForFrame(node, frameIdx);
 	if (transform.isIdentity()) {
-		merged.copyFrom(*v);
+		voxelutil::visitVolume(*v, func);
 		return;
 	}
 
 	const glm::mat4 &worldMat = transform.worldMatrix();
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(*v, worldMat, node.pivot()));
-	auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		if (!voxel::isAir(voxel.getMaterial())) {
-			merged.setVoxel(x, y, z, voxel);
-		}
-	};
 	voxelutil::visitVolume(*rotated, func);
 }
 
@@ -1186,7 +1194,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		if (skipHidden && !node.visible()) {
 			continue;
 		}
-		bakeIntoSparse(frameIdx, merged, node);
+		bakeIntoSparse(frameIdx, merged, node, mergedPalette);
 	}
 	voxel::RawVolume *mergedVolume = new voxel::RawVolume(merged.calculateRegion());
 	merged.copyTo(*mergedVolume);
