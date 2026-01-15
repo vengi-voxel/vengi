@@ -334,7 +334,7 @@ TEST_F(SceneManagerTest, testMergeVengiFile) {
 	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
 }
 
-TEST_F(SceneManagerTest, DISABLED_testMerge2VengiFile) {
+TEST_F(SceneManagerTest, testMerge2VengiFile) {
 	loadVengiFile("test-merge2.vengi");
 	if (HasFailure()) {
 		return;
@@ -349,7 +349,7 @@ TEST_F(SceneManagerTest, DISABLED_testMerge2VengiFile) {
 	const voxel::RawVolume *v = _sceneMgr->volume(node->id());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(132, voxelutil::countVoxels(*v));
-	const voxel::Region region(0, 0, 0, 3, 10, 7);
+	const voxel::Region region(0, 0, -1, 3, 9, 5);
 	EXPECT_EQ(region.getDimensionsInVoxels(), v->region().getDimensionsInVoxels());
 	EXPECT_EQ(region.getLowerCorner(), v->region().getLowerCorner());
 	const scenegraph::SceneGraphTransform &transform = node->transform(0);
@@ -481,8 +481,8 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	const voxel::RawVolume *mergedHeadVolume = _sceneMgr->volume(mergedHead->id());
 	ASSERT_NE(nullptr, mergedHeadVolume);
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
-	voxel::Region expectedMergedRegion = headRegion;
-	expectedMergedRegion.accumulate(coverRegion);
+	// After baking transforms, the merged region is in world space
+	const voxel::Region expectedMergedRegion(-3, 29, -6, 5, 42, 6);
 	EXPECT_EQ(expectedMergedRegion.getDimensionsInVoxels(), mergedRegion.getDimensionsInVoxels())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
 	EXPECT_EQ(expectedMergedRegion.getLowerCorner(), mergedRegion.getLowerCorner())
