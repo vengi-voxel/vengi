@@ -9,6 +9,7 @@
 #include "core/tests/TestColorHelper.h"
 #include "math/OBB.h"
 #include "palette/FormatConfig.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/tests/TestHelper.h"
@@ -216,16 +217,19 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	}
 	const SceneGraph::MergeResult &mergeResult = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> mergedVolume(mergeResult.volume());
+	const palette::Palette &mergedPalette = mergeResult.palette;
 	ASSERT_NE(nullptr, mergedVolume);
 	EXPECT_EQ(2, mergedVolume->region().getWidthInVoxels());
 
 	const voxel::Voxel &v1 = mergedVolume->voxel(0, 0, 0);
 	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
-	EXPECT_COLOR_NEAR(nipponPal.color(1), mergeResult.palette.color(v1.getColor()), 0.0f);
+	const color::RGBA &c1 = mergedPalette.color(v1.getColor());
+	EXPECT_COLOR_NEAR(nipponPal.color(1), c1, 0.0f);
 
 	const voxel::Voxel &v2 = mergedVolume->voxel(1, 1, 1);
 	EXPECT_TRUE(voxel::isBlocked(v2.getMaterial()));
-	EXPECT_COLOR_NEAR(mvPal.color(2), mergeResult.palette.color(v2.getColor()), 0.0f);
+	const color::RGBA &c2 = mergedPalette.color(v2.getColor());
+	EXPECT_COLOR_NEAR(mvPal.color(2), c2, 0.0f);
 }
 
 TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
