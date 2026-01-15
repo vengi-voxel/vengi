@@ -902,6 +902,19 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 	return true;
 }
 
+bool SceneGraph::isReferenced(int nodeId) const {
+	for (const auto &entry : _nodes) {
+		const SceneGraphNode &n = entry->second;
+		if (!n.isReferenceNode()) {
+			continue;
+		}
+		if (n.reference() == nodeId) {
+			return false;
+		}
+	}
+	return false;
+}
+
 bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
