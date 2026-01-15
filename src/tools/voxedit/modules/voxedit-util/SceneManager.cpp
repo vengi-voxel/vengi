@@ -990,7 +990,7 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 			const core::String &parentUUIDStr = s.parentUUID.str();
 			Log::debug("Memento: remove of node %s (%s) from parent %s", uuidStr.c_str(), s.name.c_str(), parentUUIDStr.c_str());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
-				return nodeRemove(*node, true);
+				return nodeRemove(*node, false);
 			}
 			Log::warn("Failed to handle redo memento remove state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
 			return false;
@@ -1010,7 +1010,7 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 			const core::String &parentUUIDStr = s.parentUUID.str();
 			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), parentUUIDStr.c_str());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
-				return nodeRemove(*node, true);
+				return nodeRemove(*node, false);
 			}
 			const core::String &uuidStr = s.nodeUUID.str();
 			Log::warn("Failed to handle undo memento add state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
@@ -1051,11 +1051,28 @@ bool SceneManager::doUndo() {
 		return false;
 	}
 	const int n = (int)group.states.size() - 1;
+
+	core::DynamicArray<const memento::MementoState*> parentFixupStates;
+	parentFixupStates.reserve(n);
+
 	for (int i = n; i >= 0; --i) {
 		const memento::MementoState& s = group.states[i];
+		if (s.type == memento::MementoType::SceneNodeRemoved) {
+			parentFixupStates.push_back(&s);
+		}
 		if (!mementoStateExecute(s, false)) {
 			Log::error("Failed to undo memento state %i", (int)s.type);
 			return false;
+		}
+	}
+	// When nodes are removed, scene graph re-parents their children, corrupting parent relationships.
+	// During undo, nodes may be restored before their parents, defaulting to root.
+	// Fix parent connections after all nodes are restored.
+	for (const memento::MementoState* state : parentFixupStates) {
+		scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(state->nodeUUID);
+		scenegraph::SceneGraphNode *parentNode = sceneGraphNodeByUUID(state->parentUUID);
+		if (node && parentNode && node->parent() != parentNode->id()) {
+			_sceneGraph.changeParent(node->id(), parentNode->id(), scenegraph::NodeMoveFlag::None);
 		}
 	}
 	return true;
@@ -1260,7 +1277,14 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 		return newNodeId;
 	}
 	for (int nodeId : nodeIds) {
-		nodeRemove(nodeId, false);
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			_mementoHandler.markNodeRemove(_sceneGraph, *node);
+		}
+	}
+	for (int nodeId : nodeIds) {
+		if (_sceneGraph.removeNode(nodeId, false)) {
+			_sceneRenderer->removeNode(nodeId);
+		}
 	}
 	return newNodeId;
 }
@@ -3679,8 +3703,6 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	}
 	_sceneRenderer->removeNode(nodeId);
 	if (_sceneGraph.empty()) {
-		// TODO: MEMENTO: during undo - e.g. delete the root node - the memento system is locked and this new node isn't recorded properly.
-		// See https://github.com/vengi-voxel/vengi/issues/699
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setVolume(new voxel::RawVolume(region), true);

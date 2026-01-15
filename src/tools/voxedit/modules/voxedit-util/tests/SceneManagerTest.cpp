@@ -450,7 +450,7 @@ TEST_F(SceneManagerTest, testChrKnightMerge) {
 	}
 }
 
-TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeUndo) {
+TEST_F(SceneManagerTest, testChrKnightMergeUndo) {
 	loadVengiFile("chr_knight.vengi");
 	if (HasFailure()) {
 		return;
@@ -475,6 +475,11 @@ TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeUndo) {
 		const scenegraph::SceneGraphNode &coreAfter = _sceneMgr->sceneGraph().node(chestAfter->parent());
 		ASSERT_EQ(coreAfter.name(), "K_Core") << "Parent should be K_Core after undo";
 	}
+
+	EXPECT_TRUE(_sceneMgr->redo());
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+	EXPECT_TRUE(_sceneMgr->undo());
+	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
 }
 
 TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
