@@ -1257,8 +1257,7 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "merge");
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-	voxel::RawVolume *mergedVolume = merged.volume();
-	newNode.setVolume(mergedVolume, true);
+	newNode.setVolume(merged.volume(), true);
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
 	int parent = 0;
