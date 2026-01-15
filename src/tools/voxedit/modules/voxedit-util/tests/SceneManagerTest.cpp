@@ -450,6 +450,33 @@ TEST_F(SceneManagerTest, testChrKnightMerge) {
 	}
 }
 
+TEST_F(SceneManagerTest, DISABLED_testChrKnightMergeUndo) {
+	loadVengiFile("chr_knight.vengi");
+	if (HasFailure()) {
+		return;
+	}
+	{
+		ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
+		const scenegraph::SceneGraphNode *chestBefore = _sceneMgr->sceneGraph().findNodeByName("K_Chest");
+		ASSERT_NE(nullptr, chestBefore);
+		const scenegraph::SceneGraphNode &coreBefore = _sceneMgr->sceneGraph().node(chestBefore->parent());
+		ASSERT_EQ(coreBefore.name(), "K_Core");
+	}
+
+	_sceneMgr->mergeNodes(NodeMergeFlags::All);
+	ASSERT_EQ(1u, _sceneMgr->sceneGraph().size());
+	EXPECT_TRUE(_sceneMgr->undo());
+
+	{
+		ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
+		const scenegraph::SceneGraphNode *chestAfter = _sceneMgr->sceneGraph().findNodeByName("K_Chest");
+		ASSERT_NE(nullptr, chestAfter) << "Chest node should be back after undo";
+		ASSERT_NE(chestAfter->parent(), 0) << "Parent should not be the root node, but K_Core";
+		const scenegraph::SceneGraphNode &coreAfter = _sceneMgr->sceneGraph().node(chestAfter->parent());
+		ASSERT_EQ(coreAfter.name(), "K_Core") << "Parent should be K_Core after undo";
+	}
+}
+
 TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	loadVengiFile("chr_knight.vengi");
 	if (HasFailure()) {
