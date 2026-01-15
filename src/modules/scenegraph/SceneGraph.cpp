@@ -927,6 +927,10 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		clear();
 		return true;
 	}
+	if (isReferenced(nodeId)) {
+		Log::error("Could not remove node %i - it is still referenced by other nodes", nodeId);
+		return false;
+	}
 	bool state = true;
 	const int parent = iter->value.parent();
 	core_assert(parent != InvalidNodeId);
