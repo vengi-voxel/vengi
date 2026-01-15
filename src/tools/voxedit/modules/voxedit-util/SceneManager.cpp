@@ -1217,8 +1217,8 @@ static bool shouldGetMerged(const scenegraph::SceneGraphNode &node, NodeMergeFla
 int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
-		const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
-		if (node == nullptr) {
+		const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr || !node->isAnyModelNode()) {
 			continue;
 		}
 		const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*node, _currentFrameIdx);
