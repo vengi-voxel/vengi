@@ -21,6 +21,11 @@ const glm::mat4 &FrameTransform::worldMatrix() const {
 	return _matrix;
 }
 
+bool FrameTransform::isIdentity() const {
+	return glm::all(glm::epsilonEqual(glm::vec3(_matrix[3]), glm::vec3(0.0f), 0.001f)) &&
+		   glm::all(glm::epsilonEqual(glm::vec3(glm::eulerAngles(glm::quat_cast(_matrix))), glm::vec3(0.0f), 0.001f));
+}
+
 glm::mat4 FrameTransform::calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const {
 	return glm::translate(worldMatrix(), -normalizedPivot * dimensions);
 }

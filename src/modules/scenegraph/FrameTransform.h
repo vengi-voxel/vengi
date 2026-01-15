@@ -41,6 +41,11 @@ public:
 	const glm::vec3 &worldScale() const;
 
 	/**
+	 * @brief Check if this is an identity transform
+	 */
+	bool isIdentity() const;
+
+	/**
 	 * @brief World matrix with pivot offset
 	 * @sa worldMatrix()
 	 */
