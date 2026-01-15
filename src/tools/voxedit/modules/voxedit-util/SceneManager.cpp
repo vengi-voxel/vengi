@@ -1238,16 +1238,9 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 		return InvalidNodeId;
 	}
 
-	// Normalize the merged volume to start at (0,0,0)
-	voxel::RawVolume *mergedVolume = merged.volume();
-	const voxel::Region &mergedRegion = mergedVolume->region();
-	const glm::ivec3 offset = -mergedRegion.getLowerCorner();
-	if (offset != glm::ivec3(0)) {
-		mergedVolume->translate(offset);
-	}
-
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "merge");
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	voxel::RawVolume *mergedVolume = merged.volume();
 	newNode.setVolume(mergedVolume, true);
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
