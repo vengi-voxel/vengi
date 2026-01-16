@@ -1107,7 +1107,6 @@ void MainWindow::resetCamera() {
 	voxelrender::CameraMovement &cameraMovement = _sceneMgr->cameraMovement();
 	if (Viewport *viewport = hoveredViewport()) {
 		viewport->resetCamera();
-		cameraMovement.updateBodyPosition(viewport->camera());
 	} else {
 		for (size_t i = 0; i < _viewports.size(); ++i) {
 			_viewports[i]->resetCamera();

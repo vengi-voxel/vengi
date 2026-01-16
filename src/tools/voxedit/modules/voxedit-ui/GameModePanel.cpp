@@ -39,10 +39,9 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 			if (Viewport *viewport = _mainWindow->activeViewport()) {
 				_clipping->setVal(gameModeEnabled);
 				_applyGravity->setVal(gameModeEnabled);
-				viewport->camera().setRotationType(video::CameraRotationType::Eye);
 				if (!_gameModeEnabled && gameModeEnabled) {
+					viewport->camera().setRotationType(video::CameraRotationType::Eye);
 					viewport->resetCamera();
-					_sceneMgr->cameraMovement().updateBodyPosition(viewport->camera());
 				}
 				_gameModeEnabled = gameModeEnabled;
 			}

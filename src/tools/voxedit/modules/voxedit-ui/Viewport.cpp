@@ -567,6 +567,8 @@ void Viewport::resetCamera() {
 	}
 	voxelrender::configureCamera(_camera, region, cameraMode, _viewDistance->floatVal());
 	_camera.setRotationType(rotationType);
+	_sceneMgr->cameraMovement().updateBodyPosition(_camera);
+	_sceneMgr->cameraMovement().body().velocity = glm::vec3(0.0f);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
