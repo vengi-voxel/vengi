@@ -1360,14 +1360,20 @@ bool unbindBuffer(BufferType type) {
 bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	video_trace_scoped(BindBufferBase);
 	const int typeIndex = core::enumVal(type);
-	if (rendererState().bufferHandle[typeIndex] == handle) {
-		return false;
+	// Cache key: combine type and index to track per-binding-point state
+	const uint64_t key = (static_cast<uint64_t>(typeIndex) << 32) | index;
+	Id cachedHandle = InvalidId;
+	if (rendererState().bufferBaseBindings.get(key, cachedHandle)) {
+		if (cachedHandle == handle) {
+			return false; // binding already set, avoid redundant call
+		}
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
 	rendererState().bufferHandle[typeIndex] = handle;
 	core_assert(glBindBufferBase != nullptr);
 	glBindBufferBase(glType, (GLuint)index, handle);
 	checkError();
+	rendererState().bufferBaseBindings.put(key, handle);
 	return true;
 }
 
@@ -1452,6 +1458,19 @@ void deleteProgram(Id &id) {
 	checkError();
 	if (rendererState().programHandle == id) {
 		rendererState().programHandle = InvalidId;
+	}
+	// Clear cached uniform buffer bindings for this program to prevent memory leak
+	// Keys are (program << 32 | blockIndex), so we need to remove all with matching program
+	const uint64_t programMask = static_cast<uint64_t>(id) << 32;
+	const uint64_t programBits = 0xFFFFFFFF00000000ULL;
+	core::DynamicArray<uint64_t> keysToRemove;
+	for (auto it = rendererState().uniformBufferBindings.begin(); it != rendererState().uniformBufferBindings.end(); ++it) {
+		if (((*it)->key & programBits) == programMask) {
+			keysToRemove.push_back((*it)->key);
+		}
+	}
+	for (uint64_t key : keysToRemove) {
+		rendererState().uniformBufferBindings.remove(key);
 	}
 	id = InvalidId;
 }
@@ -2795,8 +2814,17 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBinding) {
 	core_assert(glUniformBlockBinding != nullptr);
+	// Use a combined key: (program << 32 | blockIndex)
+	const uint64_t key = (static_cast<uint64_t>(program) << 32) | blockIndex;
+	uint32_t cachedBinding = 0;
+	if (rendererState().uniformBufferBindings.get(key, cachedBinding)) {
+		if (cachedBinding == blockBinding) {
+			return; // binding already set, avoid redundant call
+		}
+	}
 	glUniformBlockBinding(program, (GLuint)blockIndex, (GLuint)blockBinding);
 	checkError();
+	rendererState().uniformBufferBindings.put(key, blockBinding);
 }
 
 void setUniformi(int location, int value) {
