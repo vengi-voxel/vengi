@@ -59,3 +59,7 @@ If you just double click it from the explorer, it will open a console window and
 ## It doesn't work on my system
 
 Please fill a bug report on the [vengi github](https://github.com/vengi-voxel/vengi/) page. Please include as much information as possible, like your operating system, the version of vengi you are using and the steps to reproduce the issue. There are usually also files called `log.txt` and `crash.txt` in your [vengi data folder](Configuration.md#configuration-file) that you can attach to the issue.
+
+## My voxedit UI layout is broken
+
+This might happen when e.g. switching between versions or running a nightly builds. You can easily reset your layout by going to `Edit`->`Options`->`Reset layout`.
