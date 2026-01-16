@@ -551,7 +551,7 @@ void Viewport::resetCamera() {
 			scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
 			region = sceneGraph.sceneRegion(*node, keyFrameIndex);
 		} else {
-			region = sceneGraph.sceneRegion(0, true);
+			region = sceneGraph.sceneRegion(_sceneMgr->currentFrame(), true);
 		}
 	} else if (const voxel::RawVolume *v = _sceneMgr->volume(activeNode)) {
 		// active node has a volume - use that region
