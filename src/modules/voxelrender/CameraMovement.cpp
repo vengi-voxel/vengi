@@ -62,7 +62,6 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		camForward.y = 0.0f;
 		camRight.y = 0.0f;
 	}
-	_deltaSeconds += _movement.deltaSeconds();
 
 	const bool isColliding = _body.isColliding();
 
@@ -136,6 +135,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 
 		constexpr double hz = 1.0 / 60.0;
 		const float gravity = applyGravity ? _gravity->floatVal() : 0.0f;
+		_deltaSeconds += _movement.deltaSeconds();
 		while (_deltaSeconds > hz) {
 			_physics.update(hz, nodes, _body, gravity);
 			_deltaSeconds -= hz;
