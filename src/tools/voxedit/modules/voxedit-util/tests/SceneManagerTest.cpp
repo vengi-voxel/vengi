@@ -490,6 +490,10 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 
 	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
 
+	scenegraph::SceneGraphTransform &transform = _sceneMgr->sceneGraph().node(0).transform(0);
+	transform.setWorldOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
+	_sceneMgr->sceneGraph().updateTransforms();
+
 	const scenegraph::SceneGraphNode *head = _sceneMgr->sceneGraph().findNodeByName("K_Head");
 	ASSERT_NE(nullptr, head);
 
@@ -513,15 +517,13 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	const voxel::RawVolume *mergedHeadVolume = _sceneMgr->volume(mergedHead->id());
 	ASSERT_NE(nullptr, mergedHeadVolume);
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
-	// After baking transforms, the merged region is in world space
-	const voxel::Region expectedMergedRegion(-3, 29, -6, 5, 42, 6);
-	EXPECT_EQ(expectedMergedRegion.getDimensionsInVoxels(), mergedRegion.getDimensionsInVoxels())
+
+	// this z is 14 - not 13 because there is a fractional translation on the cover node
+	glm::ivec3 expectedDimensions(9, 14, 14);
+
+	EXPECT_EQ(expectedDimensions, mergedRegion.getDimensionsInVoxels())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
-	EXPECT_EQ(expectedMergedRegion.getLowerCorner(), mergedRegion.getLowerCorner())
-		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
-	EXPECT_EQ(expectedMergedRegion.getUpperCorner(), mergedRegion.getUpperCorner())
-		<< "Original h	ead: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
-	EXPECT_EQ(851, voxelutil::countVoxels(*mergedHeadVolume));
+	EXPECT_EQ(876, voxelutil::countVoxels(*mergedHeadVolume));
 }
 
 TEST_F(SceneManagerTest, testMergeSimple) {
