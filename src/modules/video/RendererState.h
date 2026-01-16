@@ -35,6 +35,7 @@ struct RendererState {
 	uint32_t stencilMask = 0xFFFFFFFF;
 	uint32_t stencilValue = 0;
 	Id programHandle = InvalidId;
+	Id pendingProgramHandle = InvalidId;
 	bool needValidation = false;
 	Id vertexArrayHandle = InvalidId;
 	glm::vec2 polygonOffset {0.0f};

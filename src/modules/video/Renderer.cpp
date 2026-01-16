@@ -360,6 +360,14 @@ Id getProgram() {
 	return rendererState().programHandle;
 }
 
+bool useProgram(Id handle) {
+	if (rendererState().pendingProgramHandle == handle) {
+		return false;
+	}
+	rendererState().pendingProgramHandle = handle;
+	return true;
+}
+
 Id currentFramebuffer() {
 	return rendererState().framebufferHandle;
 }

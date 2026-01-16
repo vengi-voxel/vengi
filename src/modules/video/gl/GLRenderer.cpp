@@ -913,8 +913,23 @@ static bool bindTextureForce(TextureUnit unit, TextureType type, Id handle) {
 	return false;
 }
 
+// Sync only the program if it's pending - needed before uniform operations
+static void syncProgram() {
+	RendererState &rs = rendererState();
+	if (rs.programHandle != rs.pendingProgramHandle) {
+		rs.programHandle = rs.pendingProgramHandle;
+		core_assert(glUseProgram != nullptr);
+		glUseProgram(rs.programHandle);
+		checkError();
+		rs.needValidation = true;
+	}
+}
+
 static void syncState() {
 	RendererState &rs = rendererState();
+
+	syncProgram();
+
 	for (int i = 0; i < core::enumVal(TextureUnit::Max); ++i) {
 		if (rs.textureHandle[i] != rs.pendingTextureHandle[i]) {
 			bindTextureForce((TextureUnit)i, rs.pendingTextureType[i], rs.pendingTextureHandle[i]);
@@ -1202,19 +1217,6 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 	return true;
 }
 
-bool useProgram(Id handle) {
-	if (rendererState().programHandle == handle) {
-		return false;
-	}
-	core_assert(handle == InvalidId || glIsProgram(handle));
-	core_assert(glUseProgram != nullptr);
-	glUseProgram(handle);
-	checkError();
-	rendererState().programHandle = handle;
-	rendererState().needValidation = true;
-	return true;
-}
-
 bool bindVertexArray(Id handle) {
 	if (rendererState().vertexArrayHandle == handle) {
 		return false;
@@ -1459,6 +1461,9 @@ void deleteProgram(Id &id) {
 	if (rendererState().programHandle == id) {
 		rendererState().programHandle = InvalidId;
 	}
+	if (rendererState().pendingProgramHandle == id) {
+		rendererState().pendingProgramHandle = InvalidId;
+	}
 	// Clear cached uniform buffer bindings for this program to prevent memory leak
 	// Keys are (program << 32 | blockIndex), so we need to remove all with matching program
 	const uint64_t programMask = static_cast<uint64_t>(id) << 32;
@@ -1636,7 +1641,9 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 
 void configureAttribute(const Attribute &a) {
 	video_trace_scoped(ConfigureVertexAttribute);
-	core_assert(rendererState().programHandle != InvalidId);
+	// The program doesn't need to be bound yet - VAO state is independent
+	// But we should have a program pending to ensure the attributes make sense
+	core_assert(rendererState().pendingProgramHandle != InvalidId || rendererState().programHandle != InvalidId);
 	core_assert(glEnableVertexAttribArray != nullptr);
 	glEnableVertexAttribArray(a.location);
 	checkError();
@@ -2828,6 +2835,7 @@ void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBind
 }
 
 void setUniformi(int location, int value) {
+	syncProgram(); // Ensure program is bound before setting uniforms
 	glUniform1i(location, value);
 	checkError();
 }
