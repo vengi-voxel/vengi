@@ -168,12 +168,14 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	Camera camera;
 	camera.setSize(glm::vec2(100.0f, 100.0f));
 	camera.setMode(CameraMode::Orthogonal);
+	camera.setOrthoDepth(10.0f);
 	camera.setWorldPosition(glm::vec3(0.1, 1.0, 0.1));
 	camera.lookAt(glm::vec3(0.0), glm::forward());
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
+	// A point far above the camera should be outside the frustum when looking down
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 10.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
 	// TODO: add math::FrustumResult::Intersect test
 }
