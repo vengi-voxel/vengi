@@ -108,7 +108,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	Log::debug("author: %s", node.property(scenegraph::PropAuthor).c_str());
 	Log::debug("title: %s", node.name().c_str());
 
-	voxel::Region region(0, 0, -maxDepth, w, h, maxDepth - 1);
+	voxel::Region region(0, 0, -maxDepth, w, h, maxDepth);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
