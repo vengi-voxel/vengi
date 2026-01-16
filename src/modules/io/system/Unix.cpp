@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <mntent.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
@@ -68,6 +69,38 @@ static core::String appleDir(sysdir_search_path_directory_t dir) {
 }
 
 #else // __APPLE__
+
+bool isUserVisiblePath(const char *path) {
+	// root is always added
+	if (!strcmp(path, "/"))
+		return false;
+	if (!strncmp(path, "/proc", 5))
+		return false;
+	if (!strncmp(path, "/sys", 4))
+		return false;
+	if (!strncmp(path, "/dev", 4))
+		return false;
+	if (!strncmp(path, "/boot", 5))
+		return false;
+	if (!strncmp(path, "/run", 4)) {
+		if (!strncmp(path, "/run/media", 10))
+			return true;
+		return false;
+	}
+	return true;
+}
+
+bool isInterestingFilesystemType(const char *type) {
+	static const char *hide[] = {"proc",   "sysfs",	   "devtmpfs", "devpts",	"cgroup",	"cgroup2", "securityfs",
+								 "pstore", "efivarfs", "debugfs",  "tracefs",	"configfs", "autofs",  "binfmt_misc",
+								 "bpf",	   "fusectl",  "mqueue",   "hugetlbfs", "tmpfs", nullptr};
+
+	for (int i = 0; hide[i]; i++)
+		if (strcmp(type, hide[i]) == 0)
+			return false;
+
+	return true;
+}
 
 static core::String load(const core::String &file) {
 	FILE *fp = fopen(file.c_str(), "r");
@@ -183,7 +216,27 @@ bool initState(io::FilesystemState &state) {
 	state._thisPc.push_back({"Root directory", "/"});
 	state._thisPc.push_back({"Home", envHome});
 
+#if defined __APPLE__
 	// TODO: add mounted volumes - https://github.com/vengi-voxel/vengi/issues/701
+#elif defined(__linux__)
+	if (FILE *fp = setmntent("/proc/self/mounts", "r")) {
+		struct mntent *ent;
+		while ((ent = getmntent(fp)) != NULL) {
+			if (ent->mnt_dir == nullptr || ent->mnt_dir[0] == '\0') {
+				continue;
+			}
+			if (!priv::isUserVisiblePath(ent->mnt_dir)) {
+				continue;
+			}
+			if (!priv::isInterestingFilesystemType(ent->mnt_type)) {
+				continue;
+			}
+			state._thisPc.push_back({core::string::extractFilename(ent->mnt_dir), ent->mnt_dir});
+		}
+
+		endmntent(fp);
+	}
+#endif
 #endif // !__EMSCRIPTEN__
 	return true;
 }
