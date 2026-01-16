@@ -325,6 +325,9 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 #endif
 
 	src.append("\n");
+	src.append("// ");
+	src.append(_name);
+	src.append("\n");
 	if (shaderType == ShaderType::Compute) {
 		src.append("#extension GL_ARB_compute_shader : enable\n");
 		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
