@@ -523,6 +523,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 
 	EXPECT_EQ(expectedDimensions, mergedRegion.getDimensionsInVoxels())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
+	// TODO: check the mins of the region here - doesn't currently work
 	EXPECT_EQ(876, voxelutil::countVoxels(*mergedHeadVolume));
 }
 
