@@ -73,6 +73,7 @@ protected:
 
 	glm::ivec2 _windowSize{0};
 	float _orthoZoom = 1.0f;
+	float _orthoDepth = 10000.0f; // total depth span
 	// the position of the camera in the world
 	glm::vec3 _worldPos{0.0f};
 	glm::quat _quat{0.0f, 0.0f, 0.0f, 0.0f};
@@ -153,6 +154,8 @@ public:
 
 	PolygonMode polygonMode() const;
 	void setPolygonMode(PolygonMode polygonMode);
+
+	void setOrthoDepth(float depth);
 
 	float nearPlane() const;
 	void setNearPlane(float nearPlane);
@@ -348,10 +351,16 @@ inline void Camera::setPolygonMode(PolygonMode polygonMode) {
 }
 
 inline float Camera::nearPlane() const {
+	if (_mode == CameraMode::Orthogonal) {
+		return -_orthoDepth * 0.5f;
+	}
 	return _nearPlane;
 }
 
 inline float Camera::farPlane() const {
+	if (_mode == CameraMode::Orthogonal) {
+		return _orthoDepth * 0.5f;
+	}
 	return _farPlane;
 }
 

@@ -446,12 +446,36 @@ void Camera::updateViewMatrix() {
 	_invViewMatrix = glm::inverse(_viewMatrix);
 }
 
-math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
+math::Ray Camera::mouseRay(const glm::ivec2 &pixelPos) const {
 	const glm::vec4 viewport(0.0f, 0.0f, _windowSize.x, _windowSize.y);
-	const glm::vec3 nearPlaneCoords = glm::unProject(glm::vec3(pixelPos.x, _windowSize.y - pixelPos.y, 0.0f), _viewMatrix, _projectionMatrix, viewport);
-	const glm::vec3 farPlaneCoords = glm::unProject(glm::vec3(pixelPos.x, _windowSize.y - pixelPos.y, 1.0f), _viewMatrix, _projectionMatrix, viewport);
-	const glm::vec3 rayDirection = glm::normalize(farPlaneCoords - nearPlaneCoords);
-	return math::Ray(nearPlaneCoords, rayDirection);
+
+	const float winX = (float)pixelPos.x;
+	const float winY = (float)(_windowSize.y - pixelPos.y);
+
+	if (_mode == CameraMode::Orthogonal) {
+		// For orthogonal projection, manually compute the ray origin
+		// Map screen coordinates to normalized device coordinates [-1, 1]
+		const float ndcX = (2.0f * winX) / _windowSize.x - 1.0f;
+		const float ndcY = (2.0f * winY) / _windowSize.y - 1.0f;
+
+		// Apply zoom and transform to view space
+		const float zoom = _orthoZoom / PIXELS_PER_UNIT;
+		const float halfWidth = (float)_windowSize.x / 2.0f;
+		const float halfHeight = (float)_windowSize.y / 2.0f;
+		const glm::vec3 viewPos(ndcX * halfWidth * zoom, ndcY * halfHeight * zoom, 0.0f);
+
+		// Transform to world space
+		const glm::vec3 origin = glm::vec3(_invViewMatrix * glm::vec4(viewPos, 1.0f));
+
+		// Ortho: constant direction
+		return math::Ray(origin, forward());
+	}
+
+	// Perspective: unproject near and far points
+	const glm::vec3 origin = glm::unProject(glm::vec3(winX, winY, 0.0f), _viewMatrix, _projectionMatrix, viewport);
+	const glm::vec3 farPoint = glm::unProject(glm::vec3(winX, winY, 1.0f), _viewMatrix, _projectionMatrix, viewport);
+
+	return math::Ray(origin, glm::normalize(farPoint - origin));
 }
 
 glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {
@@ -578,12 +602,27 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float right = halfWidth;
 	const float bottom = -halfHeight;
 	const float top = halfHeight;
-	return glm::orthoRH_NO(left * zoom, right * zoom, bottom * zoom, top * zoom, nplane, fplane);
+
+	float nearZ = nplane;
+	float farZ = fplane;
+
+	if (_mode == CameraMode::Orthogonal) {
+		// Make depth camera-relative
+		nearZ = -_orthoDepth * 0.5f;
+		farZ =  _orthoDepth * 0.5f;
+	}
+
+	return glm::orthoRH(left * zoom, right * zoom, bottom * zoom, top * zoom, nearZ, farZ);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
 	const float fov = glm::radians(_fieldOfView);
-	return glm::perspectiveFovRH_NO(fov, (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
+	return glm::perspectiveFovRH(fov, (float)_windowSize.x, (float)_windowSize.y, nplane, fplane);
+}
+
+void Camera::setOrthoDepth(float depth) {
+	_orthoDepth = glm::max(depth, 1.0f);
+	_dirty |= DIRTY_PERSPECTIVE;
 }
 
 void Camera::setNearPlane(float nearPlane) {
