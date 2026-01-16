@@ -20,8 +20,8 @@ TEST_F(KenShapeFormatTest, testLoad) {
 	const voxel::RawVolume *volume = node->volume();
 	ASSERT_NE(nullptr, volume);
 	const voxel::Region &region = volume->region();
-	EXPECT_EQ(glm::ivec3(64, 64, 16), region.getDimensionsInVoxels());
-	EXPECT_EQ(42, voxelutil::countVoxels(*volume));
+	EXPECT_EQ(glm::ivec3(64, 64, 17), region.getDimensionsInVoxels());
+	EXPECT_EQ(44, voxelutil::countVoxels(*volume));
 	EXPECT_TRUE(voxel::isAir(volume->voxel(29, 29, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isBlocked(volume->voxel(28, 29, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume->voxel(27, 29, 0).getMaterial()));
