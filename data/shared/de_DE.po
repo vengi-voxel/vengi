@@ -103,6 +103,9 @@ msgstr "Die Liste der bekannten Variablen anzeigen (Platzhalter unterstützt)"
 msgid "Show the list of known commands (wildcards supported)"
 msgstr "Die Liste der bekannten Befehle anzeigen (Platzhalter unterstützt)"
 
+msgid "Enable named pipe for input commands"
+msgstr ""
+
 msgid "Controls the algorithm that is used to perform the color reduction"
 msgstr ""
 
@@ -746,6 +749,15 @@ msgstr ""
 #, fuzzy
 msgid "Height of the body in game mode"
 msgstr "Knochen im Szenenmodus anzeigen"
+
+msgid "Gravity in game mode"
+msgstr ""
+
+msgid "Friction in game mode"
+msgstr ""
+
+msgid "Body size in game mode"
+msgstr ""
 
 msgid "Enable camera clipping"
 msgstr ""
@@ -1429,6 +1441,12 @@ msgstr ""
 
 msgid "Body Height"
 msgstr "Körperhöhe"
+
+msgid "Friction"
+msgstr "Reibung"
+
+msgid "Body Size"
+msgstr "Körpergröße"
 
 msgid "Minecraft"
 msgstr "Minecraft"
@@ -2305,6 +2323,9 @@ msgstr "Alle entsperren"
 msgid "Duplicate"
 msgstr "Duplizieren"
 
+msgid "Bake transform"
+msgstr ""
+
 msgid "Create reference"
 msgstr "Referenz erstellen"
 
@@ -2564,8 +2585,9 @@ msgstr ""
 "an. Sie können diese Befehle verwenden und ihnen Tasten zuweisen."
 
 msgid ""
-"You can use wasd style scene movement by switching the 'Camera movement' to "
-"'Eye' in the 'View' menu of the viewport."
+"You can switch the camera scene movement by switching the 'Camera movement' "
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:cam_rotation>."
 msgstr ""
 "Sie können die Szenenbewegung im WASD-Stil aktivieren, indem Sie die "
 "'Kamerabewegung' im 'Ansicht'-Menü der Ansicht auf 'Auge' umschalten."
@@ -2653,6 +2675,9 @@ msgstr ""
 msgid ""
 "Check the status bar to see the last executed console command of the last "
 "action."
+msgstr ""
+
+msgid "Imported scenes are placed centered around the reference position."
 msgstr ""
 
 msgid ""
@@ -3148,6 +3173,11 @@ msgid ""
 msgstr ""
 "Fügt einen neuen Modellknoten hinzu (mit einem angegebenen Namen und Breite, "
 "Höhe, Tiefe - alle optional)"
+
+msgid ""
+"Bake the current transform into the voxel data for a particular node by id - "
+"or the current active one"
+msgstr ""
 
 msgid "Delete a particular node by id - or the current active one"
 msgstr ""

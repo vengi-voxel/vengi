@@ -81,6 +81,9 @@ msgstr ""
 msgid "Show the list of known commands (wildcards supported)"
 msgstr ""
 
+msgid "Enable named pipe for input commands"
+msgstr ""
+
 msgid "Controls the algorithm that is used to perform the color reduction"
 msgstr ""
 
@@ -714,6 +717,15 @@ msgid "Jump velocity in game mode"
 msgstr ""
 
 msgid "Height of the body in game mode"
+msgstr ""
+
+msgid "Gravity in game mode"
+msgstr ""
+
+msgid "Friction in game mode"
+msgstr ""
+
+msgid "Body size in game mode"
 msgstr ""
 
 msgid "Enable camera clipping"
@@ -1392,6 +1404,12 @@ msgid "Jump Velocity"
 msgstr ""
 
 msgid "Body Height"
+msgstr ""
+
+msgid "Friction"
+msgstr ""
+
+msgid "Body Size"
 msgstr ""
 
 msgid "Minecraft"
@@ -2234,6 +2252,9 @@ msgstr ""
 msgid "Duplicate"
 msgstr ""
 
+msgid "Bake transform"
+msgstr ""
+
 msgid "Create reference"
 msgstr ""
 
@@ -2475,8 +2496,9 @@ msgid ""
 msgstr ""
 
 msgid ""
-"You can use wasd style scene movement by switching the 'Camera movement' to "
-"'Eye' in the 'View' menu of the viewport."
+"You can switch the camera scene movement by switching the 'Camera movement' "
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:cam_rotation>."
 msgstr ""
 
 msgid ""
@@ -2548,6 +2570,9 @@ msgstr ""
 msgid ""
 "Check the status bar to see the last executed console command of the last "
 "action."
+msgstr ""
+
+msgid "Imported scenes are placed centered around the reference position."
 msgstr ""
 
 msgid ""
@@ -3001,6 +3026,11 @@ msgstr ""
 msgid ""
 "Add a new model node (with a given name and width, height, depth - all "
 "optional)"
+msgstr ""
+
+msgid ""
+"Bake the current transform into the voxel data for a particular node by id - "
+"or the current active one"
 msgstr ""
 
 msgid "Delete a particular node by id - or the current active one"
