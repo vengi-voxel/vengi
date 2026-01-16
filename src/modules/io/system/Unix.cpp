@@ -182,6 +182,8 @@ bool initState(io::FilesystemState &state) {
 
 	state._thisPc.push_back({"Root directory", "/"});
 	state._thisPc.push_back({"Home", envHome});
+
+	// TODO: add mounted volumes - https://github.com/vengi-voxel/vengi/issues/701
 #endif // !__EMSCRIPTEN__
 	return true;
 }
