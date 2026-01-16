@@ -41,7 +41,8 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 				_applyGravity->setVal(gameModeEnabled);
 				viewport->camera().setRotationType(video::CameraRotationType::Eye);
 				if (!_gameModeEnabled && gameModeEnabled) {
-					command::executeCommands("resetcamera", &listener);
+					viewport->resetCamera();
+					_sceneMgr->cameraMovement().updateBodyPosition(viewport->camera());
 				}
 				_gameModeEnabled = gameModeEnabled;
 			}

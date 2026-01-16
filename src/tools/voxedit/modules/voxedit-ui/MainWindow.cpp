@@ -1111,7 +1111,6 @@ void MainWindow::resetCamera() {
 	} else {
 		for (size_t i = 0; i < _viewports.size(); ++i) {
 			_viewports[i]->resetCamera();
-			cameraMovement.updateBodyPosition(_viewports[i]->camera());
 		}
 	}
 }
