@@ -18,7 +18,10 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#ifdef __linux__
 #include <mntent.h>
+#endif
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
