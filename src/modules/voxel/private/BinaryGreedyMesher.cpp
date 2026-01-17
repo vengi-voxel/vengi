@@ -729,6 +729,11 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 	}
 }
 
+bool exceedsBinaryMesherRegion(const voxel::Region &region) {
+	const glm::ivec3 size = region.getDimensionsInVoxels();
+	return size.x > CS || size.y > CS || size.z > CS;
+}
+
 /**
  * @brief Main entry point for binary greedy mesh extraction
  *

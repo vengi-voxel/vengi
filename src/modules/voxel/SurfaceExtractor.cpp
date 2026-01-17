@@ -3,6 +3,7 @@
  */
 
 #include "SurfaceExtractor.h"
+#include "core/Log.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
@@ -42,7 +43,14 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
 	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
-		voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion);
+		if (voxel::exceedsBinaryMesherRegion(ctx.region)) {
+			Log::warn("Region %s exceeds the maximum size for the binary mesher - falling back to cubic mesher",
+					  ctx.region.toString().c_str());
+			voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
+								ctx.reuseVertices);
+		} else {
+			voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion);
+		}
 	} else {
 		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
 								ctx.reuseVertices);
