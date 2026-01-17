@@ -769,7 +769,15 @@ size_t MeshFormat::simplify(voxel::IndexArray &indices, const core::DynamicArray
 }
 
 void MeshFormat::simplifyPointCloud(PointCloud &vertices) const {
-	// TODO: VOXELFORMAT: meshopt_simplifyPoints
+	if (!core::Var::getSafe(cfg::VoxformatMeshSimplify)->boolVal()) {
+		return;
+	}
+	if (vertices.empty()) {
+		return;
+	}
+
+	// TODO: VOXELFORMAT: implement point cloud simplification using meshopt_simplifyPoints - our color is unsigned int,
+	// meshoptimizer expects 3 or 4 float values for the color
 }
 
 bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &, scenegraph::SceneGraph &,
