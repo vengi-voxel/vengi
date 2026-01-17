@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
@@ -55,5 +56,6 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 							 const glm::ivec3 &translate, bool ambientOcclusion = true);
 
 bool exceedsBinaryMesherRegion(const voxel::Region &region);
+core::DynamicArray<voxel::Region> getBinaryMesherRegions(const voxel::Region &region);
 
 } // namespace voxel

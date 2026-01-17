@@ -44,10 +44,12 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
 	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
 		if (voxel::exceedsBinaryMesherRegion(ctx.region)) {
-			Log::warn("Region %s exceeds the maximum size for the binary mesher - falling back to cubic mesher",
-					  ctx.region.toString().c_str());
-			voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.mergeQuads,
-								ctx.reuseVertices);
+			const auto &regions = getBinaryMesherRegions(ctx.region);
+			for (const voxel::Region &r : regions) {
+				Log::debug("extract region %s", r.toString().c_str());
+				voxel::extractBinaryGreedyMesh(ctx.volume, r, &ctx.mesh, ctx.translate + r.getLowerCorner(), ctx.ambientOcclusion);
+			}
+			ctx.mesh.setOffset(ctx.region.getLowerCorner());
 		} else {
 			voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion);
 		}

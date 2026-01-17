@@ -42,6 +42,7 @@ SOFTWARE.
 #include "core/Trace.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -727,6 +728,26 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 			}
 		}
 	}
+}
+
+core::DynamicArray<voxel::Region> getBinaryMesherRegions(const voxel::Region &region) {
+	core::DynamicArray<voxel::Region> regions;
+	const glm::ivec3 mins = region.getLowerCorner();
+	const glm::ivec3 maxs = region.getUpperCorner();
+
+	for (int z = mins.z; z < maxs.z; z += CS) {
+		const int cz = core_min(maxs.z - z, CS);
+		for (int y = mins.y; y < maxs.y; y += CS) {
+			const int cy = core_min(maxs.y - y, CS);
+			for (int x = mins.x; x < maxs.x; x += CS) {
+				const int cx = core_min(maxs.x - x, CS);
+				const voxel::Region r(glm::ivec3(x, y, z), glm::ivec3(x + cx, y + cy, z + cz));
+				core_assert(region.isValid());
+				regions.emplace_back(r);
+			}
+		}
+	}
+	return regions;
 }
 
 bool exceedsBinaryMesherRegion(const voxel::Region &region) {
