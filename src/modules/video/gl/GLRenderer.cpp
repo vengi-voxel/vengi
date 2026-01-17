@@ -2835,6 +2835,8 @@ void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBind
 }
 
 void setUniformi(int location, int value) {
+	// TODO: RENDERER: defer until drawcalls - see syncState()
+	// syncProgram() can be merged into syncState() after defer is implemented for glUniformli
 	syncProgram(); // Ensure program is bound before setting uniforms
 	glUniform1i(location, value);
 	checkError();

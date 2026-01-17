@@ -824,6 +824,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 							var.model = meshState->model(idx);
 							_shadowMapUniformBlock.update(var);
 							_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
+							// negative scaling might require to flip the cull face
+							// TODO: RENDERER: does this impact the shadow acne fix in the Shadow class render() function?
 							video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 							static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 							video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
