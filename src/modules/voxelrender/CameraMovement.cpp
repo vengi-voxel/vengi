@@ -63,12 +63,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		camRight.y = 0.0f;
 	}
 
-	const bool isColliding = _body.isColliding();
-
-	const float groundAcceleration = speed;
-	const float airAcceleration = speed * 0.1f;
-	const float acceleration = isColliding ? groundAcceleration : airAcceleration;
-	const float maxSpeed = speed;
+	_deltaSeconds += _movement.deltaSeconds();
 
 	if (_movement.moving()) {
 		glm::vec3 direction(0);
@@ -88,25 +83,30 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		if (glm::dot(direction, direction) > 0.0f) {
 			direction = glm::normalize(direction);
 
-			// Apply acceleration in the desired direction
-			const float accelAmount = acceleration * _deltaSeconds;
-			glm::vec3 accelerationVec = direction * accelAmount;
+			if (clipping) {
+				const bool isColliding = _body.isColliding();
+				const float groundAcceleration = speed;
+				const float airAcceleration = speed * 0.1f;
+				const float acceleration = isColliding ? groundAcceleration : airAcceleration;
+				const float maxSpeed = speed;
 
-			_body.velocity.x += accelerationVec.x;
-			_body.velocity.z += accelerationVec.z;
-			if (!clipping) {
-				_body.velocity.y += accelerationVec.y;
-			}
+				// Apply acceleration in the desired direction
+				const float accelAmount = acceleration * _deltaSeconds;
+				glm::vec3 accelerationVec = direction * accelAmount;
 
-			// Cap the horizontal velocity to max allowed speed
-			const float currentHorizontalSpeed = glm::length(glm::vec2(_body.velocity.x, _body.velocity.z));
-			if (currentHorizontalSpeed > maxSpeed) {
-				const float scale = maxSpeed / currentHorizontalSpeed;
-				_body.velocity.x *= scale;
-				_body.velocity.z *= scale;
-				if (!clipping) {
-					_body.velocity.y *= scale;
+				_body.velocity.x += accelerationVec.x;
+				_body.velocity.z += accelerationVec.z;
+
+				// Cap the horizontal velocity to max allowed speed
+				const float currentHorizontalSpeed = glm::length(glm::vec2(_body.velocity.x, _body.velocity.z));
+				if (currentHorizontalSpeed > maxSpeed) {
+					const float scale = maxSpeed / currentHorizontalSpeed;
+					_body.velocity.x *= scale;
+					_body.velocity.z *= scale;
 				}
+			} else {
+				// In non-clipping mode, set velocity directly based on movement speed
+				_body.velocity = direction * speed;
 			}
 		}
 	}
@@ -135,7 +135,6 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 
 		constexpr double hz = 1.0 / 60.0;
 		const float gravity = applyGravity ? _gravity->floatVal() : 0.0f;
-		_deltaSeconds += _movement.deltaSeconds();
 		while (_deltaSeconds > hz) {
 			_physics.update(hz, nodes, _body, gravity);
 			_deltaSeconds -= hz;
@@ -146,11 +145,12 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	} else {
 		updateBodyPosition(*camera);
 		// no clipping - just move the camera directly
-		const glm::vec3 delta = (_body.velocity * (float)_movement.deltaSeconds());
+		const glm::vec3 delta = (_body.velocity * (float)_deltaSeconds);
 		_body.position += delta;
 		camera->setTarget(camera->target() + delta);
 		camera->setWorldPosition(camera->worldPosition() + delta);
 		_body.velocity = {0.0f, 0.0f, 0.0f};
+		_deltaSeconds = 0.0;
 	}
 }
 
