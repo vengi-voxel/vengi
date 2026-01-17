@@ -467,8 +467,10 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					continue;
 				}
 				if (!core::isSuitableBindingContext(pair.context)) {
+					Log::debug("No suitable context for key %i with command %s", commandKey, pair.command.c_str());
 					continue;
 				}
+				Log::debug("Execute the command %s for key %i", pair.command.c_str(), commandKey);
 				command::Command::execute("%s %i %f", pair.command.c_str(), commandKey, nowSeconds);
 				recheck.insert(commandKey);
 			}
