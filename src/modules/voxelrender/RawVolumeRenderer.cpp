@@ -679,16 +679,17 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 	}
 
 	video::ScopedState scopedBlendTrans(video::State::Blend, true);
+	video::ScopedPolygonMode polygonMode(mode);
+	_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+
 	for (int idx : sorted) {
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
 		updatePalette(meshState, idx);
-		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = meshState->model(idx);
 		_voxelShaderVertData.gray = meshState->grayed(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
-		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
 		core_assert_always(scopedBuf.success());
