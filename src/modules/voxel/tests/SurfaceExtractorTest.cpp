@@ -132,12 +132,11 @@ TEST_F(SurfaceExtractorTest, DISABLED_testMeshExtraction) {
 	const bool mergeQuads = true;
 	const bool reuseVertices = true;
 	const bool ambientOcclusion = false;
-	const bool optimize = true;
 
 	voxel::ChunkMesh mesh;
 
 	SurfaceExtractionContext ctx =
-		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion, optimize);
+		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(48, (int)mesh.mesh[0].getNoOfVertices());
 }
@@ -201,7 +200,7 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
 
 	region.shiftUpperCorner(1, 1, 1);
 	SurfaceExtractionContext ctx =
-		voxel::buildMarchingCubesContext(&v, region, mesh, pal, false);
+		voxel::buildMarchingCubesContext(&v, region, mesh, pal);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(30, (int)mesh.mesh[0].getNoOfVertices());
 }
@@ -216,7 +215,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxel) {
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), true, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), true);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -249,7 +248,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherPlane) {
 	}
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -286,12 +285,12 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherAmbientOcclusion) {
 	volume.setVoxel(2, 2, 0, createVoxel(VoxelType::Generic, cornerColor));
 
 	ChunkMesh meshWithAO;
-	SurfaceExtractionContext ctxWithAO = buildBinaryContext(&volume, region, meshWithAO, glm::ivec3(0), true, false);
+	SurfaceExtractionContext ctxWithAO = buildBinaryContext(&volume, region, meshWithAO, glm::ivec3(0), true);
 	extractSurface(ctxWithAO);
 
 	ChunkMesh meshWithoutAO;
 	SurfaceExtractionContext ctxWithoutAO =
-		buildBinaryContext(&volume, region, meshWithoutAO, glm::ivec3(0), false, false);
+		buildBinaryContext(&volume, region, meshWithoutAO, glm::ivec3(0), false);
 	extractSurface(ctxWithoutAO);
 
 	const Mesh &aoMesh = meshWithAO.mesh[0];
@@ -331,7 +330,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherVertexPositions) {
 
 	const glm::ivec3 translate(10, 20, 30);
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, translate, false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, translate, false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -364,7 +363,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoAdjacentVoxels) {
 	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, color2));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -397,7 +396,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShape) {
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -427,7 +426,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTransparentVoxels) {
 	volume.setVoxel(2, 2, 2, createVoxel(VoxelType::Transparent, transColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -457,7 +456,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherEmptyRegion) {
 	RawVolume volume(region);
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -478,7 +477,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxelDetailedPositions)
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -531,7 +530,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsXAxis) {
 	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -564,7 +563,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsYAxis) {
 	volume.setVoxel(0, 2, 0, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -597,7 +596,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsZAxis) {
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -637,7 +636,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShapeDetailedPositions) {
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -696,7 +695,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherCubeCornerVoxels) {
 	volume.setVoxel(3, 3, 3, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];

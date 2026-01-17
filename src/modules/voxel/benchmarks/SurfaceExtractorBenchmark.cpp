@@ -142,7 +142,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, MarchingCubes)(benchmark::State &s
 		voxel::ChunkMesh mesh{65536, 65536, false};
 
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildMarchingCubesContext(&v, v.region(), mesh, pal, true);
+			voxel::buildMarchingCubesContext(&v, v.region(), mesh, pal);
 		voxel::extractSurface(ctx);
 	}
 }
