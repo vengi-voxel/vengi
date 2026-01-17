@@ -387,6 +387,15 @@ const core::DynamicSet<Id> &textures();
 Id getProgram();
 
 /**
+ * @brief Use (bind) a shader program for subsequent draw/dispatch calls.
+ *
+ * Sets the current program handle. Returns @c true if the program changed.
+ */
+bool useProgram(Id handle);
+
+void setUniformi(int location, int value);
+
+/**
  * @brief Get the currently bound vertex array handle.
  */
 Id boundVertexArray();

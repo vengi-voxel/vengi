@@ -913,9 +913,9 @@ static bool bindTextureForce(TextureUnit unit, TextureType type, Id handle) {
 	return false;
 }
 
-// Sync only the program if it's pending - needed before uniform operations
-static void syncProgram() {
+static void syncState() {
 	RendererState &rs = rendererState();
+
 	if (rs.programHandle != rs.pendingProgramHandle) {
 		rs.programHandle = rs.pendingProgramHandle;
 		core_assert(glUseProgram != nullptr);
@@ -923,12 +923,16 @@ static void syncProgram() {
 		checkError();
 		rs.needValidation = true;
 	}
-}
 
-static void syncState() {
-	RendererState &rs = rendererState();
-
-	syncProgram();
+	// Apply pending uniforms after program is bound
+	if (!rs.pendingUniformi.empty()) {
+		for (const auto& entry : rs.pendingUniformi) {
+			core_assert(glUniform1i != nullptr);
+			glUniform1i(entry->first, entry->second);
+		}
+		checkError();
+		rs.pendingUniformi.clear();
+	}
 
 	for (int i = 0; i < core::enumVal(TextureUnit::Max); ++i) {
 		if (rs.textureHandle[i] != rs.pendingTextureHandle[i]) {
@@ -2832,14 +2836,6 @@ void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBind
 	glUniformBlockBinding(program, (GLuint)blockIndex, (GLuint)blockBinding);
 	checkError();
 	rendererState().uniformBufferBindings.put(key, blockBinding);
-}
-
-void setUniformi(int location, int value) {
-	// TODO: RENDERER: defer until drawcalls - see syncState()
-	// syncProgram() can be merged into syncState() after defer is implemented for glUniformli
-	syncProgram(); // Ensure program is bound before setting uniforms
-	glUniform1i(location, value);
-	checkError();
 }
 
 int32_t getUniformBufferOffset(Id program, const char *name) {

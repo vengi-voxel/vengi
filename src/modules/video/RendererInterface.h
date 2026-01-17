@@ -212,13 +212,6 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle);
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels);
 
 /**
- * @brief Use (bind) a shader program for subsequent draw/dispatch calls.
- *
- * Sets the current program handle. Returns @c true if the program changed.
- */
-bool useProgram(Id handle);
-
-/**
  * @brief Bind a vertex array object.
  *
  * Returns @c true if the bound VAO actually changed.
@@ -590,7 +583,6 @@ void finish();
 
 // shader stuff
 void setUniformBufferBinding(Id program, uint32_t blockIndex, uint32_t blockBinding);
-void setUniformi(int location, int value);
 // only for validation purposes
 int32_t getUniformBufferOffset(Id program, const char *name);
 

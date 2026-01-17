@@ -113,6 +113,8 @@ struct RendererState {
 	core::Map<uint64_t, uint32_t, 64> uniformBufferBindings;
 	// Cache for buffer base bindings: maps (type << 32 | index) to buffer handle
 	core::Map<uint64_t, Id, 64> bufferBaseBindings;
+	// Pending integer uniforms: maps location to value (deferred until draw calls)
+	core::Map<int, int, 32> pendingUniformi;
 };
 
 }

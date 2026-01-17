@@ -364,8 +364,14 @@ bool useProgram(Id handle) {
 	if (rendererState().pendingProgramHandle == handle) {
 		return false;
 	}
+	// Clear pending uniforms when switching programs since uniform locations are program-specific
+	rendererState().pendingUniformi.clear();
 	rendererState().pendingProgramHandle = handle;
 	return true;
+}
+
+void setUniformi(int location, int value) {
+	rendererState().pendingUniformi.put(location, value);
 }
 
 Id currentFramebuffer() {
