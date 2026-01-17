@@ -790,7 +790,6 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	meshes.resize(sceneGraph.nodes().size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
-	// TODO: VOXELFORMAT: the binary mesher needs to have the max chunk size of 62 resp 64 handled - https://github.com/vengi-voxel/vengi/issues/707
 	app::for_parallel(0, sceneGraph.nodes().size(), [&sceneGraph, type, &meshes] (int start, int end) {
 		const bool withNormals = core::Var::getSafe(cfg::VoxformatWithNormals)->boolVal();
 		const bool optimizeMesh = core::Var::getSafe(cfg::VoxformatOptimize)->boolVal();
