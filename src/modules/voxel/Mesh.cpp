@@ -291,12 +291,12 @@ void Mesh::removeUnusedVertices() {
 		++noOfUsedVertices;
 	}
 
-	_vecVertices.resize(noOfUsedVertices);
+	_vecVertices.shrink(noOfUsedVertices);
 
 	for (size_t triCt = 0u; triCt < indices; ++triCt) {
 		_vecIndices[triCt] = newPos[_vecIndices[triCt]];
 	}
-	_vecIndices.resize(indices);
+	_vecIndices.shrink(indices);
 }
 
 void Mesh::compressIndices() {
