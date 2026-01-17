@@ -40,16 +40,32 @@ public:
 		return _maxs.y;
 	}
 
+	constexpr void setMaxZ(TYPE v) {
+		_maxs.y = v;
+	}
+
 	inline constexpr TYPE getMinX() const {
 		return _mins.x;
+	}
+
+	constexpr void setMinX(TYPE v) {
+		_mins.x = v;
 	}
 
 	inline constexpr TYPE getMaxX() const {
 		return _maxs.x;
 	}
 
+	constexpr void setMaxX(TYPE v) {
+		_maxs.x = v;
+	}
+
 	inline constexpr TYPE getMinZ() const {
 		return _mins.y;
+	}
+
+	constexpr void setMinZ(TYPE v) {
+		_mins.y = v;
 	}
 
 	inline constexpr bool operator==(const Rect& other) const {
