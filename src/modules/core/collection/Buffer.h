@@ -357,8 +357,20 @@ public:
 	}
 
 	/**
-	 * @brief This might shrink the buffer capacity. If any new slots were added, they are not initialized
+	 * @brief This might shrink the buffer capacity.
 	 */
+	void shrink(size_t size) {
+		if (size >= _size) {
+			return;
+		}
+		TYPE* newBuffer = (TYPE*)core_malloc(size * sizeof(TYPE));
+		core_memcpy(newBuffer, _buffer, size * sizeof(TYPE));
+		core_free(_buffer);
+		_buffer = newBuffer;
+		_capacity = size;
+		_size = size;
+	}
+
 	void resize(size_t size) {
 		checkBufferSize(size);
 		for (size_t i = _size; i < size; ++i) {
