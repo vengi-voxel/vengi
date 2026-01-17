@@ -166,7 +166,7 @@ def update_stb():
         "https://github.com/nothings/stb.git",
         [
             (f"stb_truetype.h", "src/modules/voxelfont/external/stb_truetype.h"),
-            (f"stb_rect_pack.h", "src/modules/scenegraph/external/stb_rect_pack.h"),
+            (f"stb_rect_pack.h", "src/modules/voxel/external/stb_rect_pack.h"),
             (f"stb_image_resize2.h", "contrib/libs/stb_image/stb_image_resize2.h")
         ]
     )

@@ -5,13 +5,11 @@
 #include "SceneGraph.h"
 #include "SceneUtil.h"
 #include "app/Async.h"
-#include "color/ColorUtil.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
-#include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
@@ -29,7 +27,7 @@
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeMerger.h"
+#include "voxel/external/stb_rect_pack.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
@@ -40,10 +38,6 @@
 #include <glm/gtc/epsilon.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#define STB_RECT_PACK_IMPLEMENTATION
-#define STBRP_ASSERT core_assert
-#include "external/stb_rect_pack.h"
-
 namespace scenegraph {
 
 SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,

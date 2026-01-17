@@ -5,6 +5,8 @@ set(SRCS
 	private/MarchingCubesTables.h
 	private/BinaryGreedyMesher.h private/BinaryGreedyMesher.cpp
 
+	external/stb_rect_pack.h
+
 	Connectivity.h
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
@@ -15,6 +17,7 @@ set(SRCS
 	Mesh.h Mesh.cpp
 	MeshState.h MeshState.cpp
 	ModificationRecorder.h
+	RectPack.cpp
 	RawVolume.h RawVolume.cpp
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
