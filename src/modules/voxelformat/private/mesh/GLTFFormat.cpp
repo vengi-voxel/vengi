@@ -14,6 +14,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringMap.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
@@ -617,6 +618,209 @@ bool GLTFFormat::savePrimitivesPerMaterial(uint8_t idx, const glm::vec3 &pivotOf
 	return true;
 }
 
+uint32_t GLTFFormat::writeTexturedBuffer(const voxel::Mesh *mesh, io::SeekableWriteStream &os, bool withColor,
+										 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
+										 const glm::vec3 &pivotOffset, Bounds &bounds) {
+	const int nv = (int)mesh->getNoOfVertices();
+	const int ni = (int)mesh->getNoOfIndices();
+
+	const voxel::VertexArray &vertices = mesh->getVertexVector();
+	const voxel::NormalArray &normals = mesh->getNormalVector();
+	const voxel::IndexArray &indices = mesh->getIndexVector();
+	const voxel::UVArray &uvs = mesh->getUVVector();
+
+	for (int i = 0; i < ni; i++) {
+		if (bounds.maxIndex < indices[i]) {
+			bounds.maxIndex = indices[i];
+		}
+		if (indices[i] < bounds.minIndex) {
+			bounds.minIndex = indices[i];
+		}
+		os.writeUInt32(indices[i]);
+		++bounds.ni;
+	}
+	static_assert(sizeof(voxel::IndexType) == 4, "if not 4 bytes - we might need padding here");
+	const uint32_t indexOffset = (uint32_t)os.size();
+
+	for (int i = 0; i < nv; i++) {
+		glm::vec3 pos = vertices[i].position;
+		if (applyTransform) {
+			pos += pivotOffset;
+		}
+
+		for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
+			os.writeFloat(pos[coordIndex]);
+			if (bounds.maxVertex[coordIndex] < pos[coordIndex]) {
+				bounds.maxVertex[coordIndex] = pos[coordIndex];
+			}
+			if (bounds.minVertex[coordIndex] > pos[coordIndex]) {
+				bounds.minVertex[coordIndex] = pos[coordIndex];
+			}
+		}
+		++bounds.nv;
+
+		if (exportNormals) {
+			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
+				os.writeFloat(normals[i][coordIndex]);
+			}
+		}
+
+		if (withTexCoords) {
+			const glm::vec2 &uv = i < (int)uvs.size() ? uvs[i] : glm::vec2(0.0f);
+			os.writeFloat(uv.x);
+			os.writeFloat(uv.y);
+		} else if (withColor) {
+			if (colorAsFloat) {
+				for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
+					os.writeFloat(1.0f);
+				}
+			} else {
+				os.writeUInt8(255);
+				os.writeUInt8(255);
+				os.writeUInt8(255);
+				os.writeUInt8(255);
+			}
+		}
+	}
+	return indexOffset;
+}
+
+bool GLTFFormat::saveTexturedPrimitive(const glm::vec3 &pivotOffset, tinygltf::Model &gltfModel,
+									   tinygltf::Mesh &gltfMesh, const voxel::Mesh *mesh, int materialIdx,
+									   bool withColor, bool withTexCoords, bool colorAsFloat, bool exportNormals,
+									   bool applyTransform, int texcoordIndex) {
+
+	const size_t expectedSize =
+		mesh->getNoOfIndices() * sizeof(voxel::IndexType) + mesh->getNoOfVertices() * 10 * sizeof(float);
+	io::BufferedReadWriteStream os((int64_t)expectedSize);
+
+	Bounds bounds;
+	bounds.minIndex = UINT_MAX;
+	bounds.maxVertex = glm::vec3{-FLT_MAX};
+	bounds.minVertex = glm::vec3{FLT_MAX};
+
+	const uint32_t indicesBufferByteLen = writeTexturedBuffer(mesh, os, withColor, withTexCoords, colorAsFloat,
+															  exportNormals, applyTransform, pivotOffset, bounds);
+	if (indicesBufferByteLen == 0u) {
+		return false;
+	}
+	tinygltf::BufferView gltfIndicesBufferView;
+	gltfIndicesBufferView.buffer = (int)gltfModel.buffers.size();
+	gltfIndicesBufferView.byteOffset = 0;
+	gltfIndicesBufferView.byteLength = indicesBufferByteLen;
+	gltfIndicesBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+
+	tinygltf::BufferView gltfVerticesBufferView;
+	gltfVerticesBufferView.buffer = (int)gltfModel.buffers.size();
+	gltfVerticesBufferView.byteOffset = indicesBufferByteLen;
+	gltfVerticesBufferView.byteLength = os.size() - indicesBufferByteLen;
+	gltfVerticesBufferView.byteStride = 3 * sizeof(float);
+	if (exportNormals) {
+		gltfVerticesBufferView.byteStride += 3 * sizeof(float);
+	}
+	if (withTexCoords) {
+		gltfVerticesBufferView.byteStride += 2 * sizeof(float);
+	} else if (withColor) {
+		if (colorAsFloat) {
+			gltfVerticesBufferView.byteStride += 4 * sizeof(float);
+		} else {
+			gltfVerticesBufferView.byteStride += 4 * sizeof(uint8_t);
+		}
+	}
+	gltfVerticesBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+	// Describe the layout of indicesBufferView, the indices of the vertices
+	tinygltf::Accessor gltfIndicesAccessor;
+	gltfIndicesAccessor.bufferView = (int)gltfModel.bufferViews.size();
+	gltfIndicesAccessor.byteOffset = 0;
+	gltfIndicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+	gltfIndicesAccessor.count = bounds.ni;
+	gltfIndicesAccessor.type = TINYGLTF_TYPE_SCALAR;
+	gltfIndicesAccessor.maxValues.push_back(bounds.maxIndex);
+	gltfIndicesAccessor.minValues.push_back(bounds.minIndex);
+
+	// Describe the layout of verticesUvBufferView, the vertices themself
+	tinygltf::Accessor gltfVerticesAccessor;
+	gltfVerticesAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
+	gltfVerticesAccessor.byteOffset = 0;
+	gltfVerticesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+	gltfVerticesAccessor.count = bounds.nv;
+	gltfVerticesAccessor.type = TINYGLTF_TYPE_VEC3;
+	gltfVerticesAccessor.maxValues = {bounds.maxVertex[0], bounds.maxVertex[1], bounds.maxVertex[2]};
+	gltfVerticesAccessor.minValues = {bounds.minVertex[0], bounds.minVertex[1], bounds.minVertex[2]};
+
+	// Describe the layout of normals - they are followed
+	tinygltf::Accessor gltfNormalAccessor;
+	gltfNormalAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
+	gltfNormalAccessor.byteOffset = 3 * sizeof(float);
+	gltfNormalAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+	gltfNormalAccessor.count = bounds.nv;
+	gltfNormalAccessor.type = TINYGLTF_TYPE_VEC3;
+
+	tinygltf::Accessor gltfColorAccessor;
+	if (withTexCoords) {
+		gltfColorAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
+		gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		gltfColorAccessor.count = bounds.nv;
+		gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * 3 * sizeof(float);
+		gltfColorAccessor.type = TINYGLTF_TYPE_VEC2;
+	} else if (withColor) {
+		gltfColorAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
+		gltfColorAccessor.count = bounds.nv;
+		gltfColorAccessor.type = TINYGLTF_TYPE_VEC4;
+		gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * 3 * sizeof(float);
+		if (colorAsFloat) {
+			gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		} else {
+			gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+		}
+	}
+
+	{
+		// Build the mesh meshPrimitive and add it to the mesh
+		tinygltf::Primitive gltfMeshPrimitive;
+		// The index of the accessor for the vertex indices
+		gltfMeshPrimitive.indices = (int)gltfModel.accessors.size();
+		// The index of the accessor for positions
+		gltfMeshPrimitive.attributes["POSITION"] = (int)gltfModel.accessors.size() + 1;
+		if (exportNormals) {
+			gltfMeshPrimitive.attributes["NORMAL"] = (int)gltfModel.accessors.size() + 2;
+		}
+		if (withTexCoords) {
+			const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
+			gltfMeshPrimitive.attributes[texcoordsKey.c_str()] =
+				(int)gltfModel.accessors.size() + (exportNormals ? 3 : 2);
+		} else if (withColor) {
+			gltfMeshPrimitive.attributes["COLOR_0"] = (int)gltfModel.accessors.size() + (exportNormals ? 3 : 2);
+		}
+		gltfMeshPrimitive.material = materialIdx;
+		gltfMeshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+		gltfMesh.primitives.emplace_back(core::move(gltfMeshPrimitive));
+	}
+
+	{
+		// indices and vertices
+		tinygltf::Buffer gltfBuffer;
+		gltfBuffer.data.insert(gltfBuffer.data.end(), os.getBuffer(), os.getBuffer() + os.size());
+		gltfModel.buffers.emplace_back(core::move(gltfBuffer));
+	}
+
+	Log::debug("Index buffer view at %i", (int)gltfModel.bufferViews.size());
+	gltfModel.bufferViews.emplace_back(core::move(gltfIndicesBufferView));
+	Log::debug("vertex buffer view at %i", (int)gltfModel.bufferViews.size());
+	gltfModel.bufferViews.emplace_back(core::move(gltfVerticesBufferView));
+	gltfModel.accessors.emplace_back(core::move(gltfIndicesAccessor));
+	gltfModel.accessors.emplace_back(core::move(gltfVerticesAccessor));
+	if (exportNormals) {
+		gltfModel.accessors.emplace_back(core::move(gltfNormalAccessor));
+	}
+	if (withTexCoords || withColor) {
+		gltfModel.accessors.emplace_back(core::move(gltfColorAccessor));
+	}
+
+	return true;
+}
+
 static void addExtension(tinygltf::Model &gltfModel, const core::String &extension) {
 	std::string ext = extension.c_str();
 	if (core::find(gltfModel.extensionsUsed.begin(), gltfModel.extensionsUsed.end(), ext) ==
@@ -903,6 +1107,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	MaterialMap paletteMaterialIndices((int)sceneGraph.size());
 	core::Map<int, int> nodeMapping((int)sceneGraph.nodeSize());
+	core::StringMap<int> writtenTextures((int)sceneGraph.size());
 	while (!stack.empty()) {
 		const int nodeId = stack.back().first;
 		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -916,15 +1121,47 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int meshExtIdx = 0;
 		core_assert_always(meshIdxNodeMap.get(nodeId, meshExtIdx));
 		const ChunkMeshExt &meshExt = meshes[meshExtIdx];
+		const bool useTexture = meshExt.texture && meshExt.texture->isLoaded();
 
 		int texcoordIndex = 0;
+		int texturedMaterialId = -1;
 		if (node.isAnyModelNode()) {
 			for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 				const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
 				if (mesh->isEmpty()) {
 					continue;
 				}
-				generateMaterials(withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
+				if (useTexture && !mesh->getUVVector().empty()) {
+					const core::String &texName = meshExt.texture->name();
+					auto iter = writtenTextures.find(texName);
+					if (iter == writtenTextures.end()) {
+						tinygltf::Image gltfImage;
+						gltfImage.name = texName.c_str();
+						gltfImage.uri = ("data:image/png;base64," + meshExt.texture->pngBase64()).c_str();
+						int imgIdx = (int)gltfModel.images.size();
+						gltfModel.images.emplace_back(core::move(gltfImage));
+
+						tinygltf::Texture gltfTex;
+						gltfTex.source = imgIdx;
+						gltfTex.name = texName.c_str();
+						int texIdx = (int)gltfModel.textures.size();
+						gltfModel.textures.emplace_back(core::move(gltfTex));
+
+						tinygltf::Material gltfMat;
+						gltfMat.name = texName.c_str();
+						gltfMat.pbrMetallicRoughness.baseColorTexture.index = texIdx;
+						gltfMat.doubleSided = false;
+
+						int matIdx = (int)gltfModel.materials.size();
+						gltfModel.materials.emplace_back(core::move(gltfMat));
+						writtenTextures.put(texName, matIdx);
+						texturedMaterialId = matIdx;
+					} else {
+						texturedMaterialId = iter->value;
+					}
+				} else {
+					generateMaterials(withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
+				}
 			}
 		}
 
@@ -957,13 +1194,20 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			tinygltf::Mesh gltfMesh;
 			gltfMesh.name = objectName;
-			for (int j = 0; j < palette.colorCount(); ++j) {
-				if (palette.color(j).a == 0) {
-					continue;
+
+			if (texturedMaterialId != -1) {
+				saveTexturedPrimitive(pivotOffset, gltfModel, gltfMesh, mesh, texturedMaterialId, withColor,
+									  withTexCoords, colorAsFloat, exportNormals, meshExt.applyTransform,
+									  texcoordIndex);
+			} else {
+				for (int j = 0; j < palette.colorCount(); ++j) {
+					if (palette.color(j).a == 0) {
+						continue;
+					}
+					savePrimitivesPerMaterial(j, pivotOffset, gltfModel, gltfMesh, mesh, palette, withColor,
+											  withTexCoords, colorAsFloat, exportNormals, meshExt.applyTransform,
+											  texcoordIndex, paletteMaterialIndices);
 				}
-				savePrimitivesPerMaterial(j, pivotOffset, gltfModel, gltfMesh, mesh, palette, withColor, withTexCoords,
-										  colorAsFloat, exportNormals, meshExt.applyTransform, texcoordIndex,
-										  paletteMaterialIndices);
 			}
 			saveGltfNode(nodeMapping, gltfModel, gltfScene, node, stack, sceneGraph, scale, exportAnimations);
 			gltfModel.meshes.emplace_back(core::move(gltfMesh));

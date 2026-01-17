@@ -120,6 +120,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	wrapBool(matlstream->writeString("\n", false))
 
 	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
+	core::StringMap<int> writtenTextures((int)sceneGraph.size());
 
 	int idxOffset = 0;
 	int texcoordOffset = 0;
@@ -146,6 +147,9 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const voxel::VertexArray &vertices = mesh->getVertexVector();
 			const voxel::IndexArray &indices = mesh->getIndexVector();
 			const voxel::NormalArray &normals = mesh->getNormalVector();
+			const voxel::UVArray &uvs = mesh->getUVVector();
+
+			const bool useTexture = meshExt.texture && meshExt.texture->isLoaded() && !uvs.empty();
 			const bool withNormals = !normals.empty();
 			const char *objectName = meshExt.name.c_str();
 			if (objectName[0] == '\0') {
@@ -154,8 +158,49 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			stream->writeStringFormat(false, "o %s\n", objectName);
 			stream->writeStringFormat(false, "mtllib %s\n",
 									  core::string::extractFilenameWithExtension(mtlname).c_str());
-			if (!stream->writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
-				Log::error("Failed to write obj usemtl %s\n", hashId.c_str());
+
+			core::String matName = hashId;
+			if (useTexture) {
+				matName = core::string::stripExtension(meshExt.texture->name());
+				if (matName.empty()) {
+					matName = "texture";
+				}
+				if (writtenTextures.find(matName) == writtenTextures.end()) {
+					writtenTextures.put(matName, 1);
+					const core::String &texName = core::string::extractFilenameWithExtension(meshExt.texture->name());
+					if (!writeMtlFile(*matlstream, matName, texName)) {
+						return false;
+					}
+					// Save generated textures (e.g., from greedy texture mode)
+					const core::String texDir = core::string::extractDir(filename);
+					const core::String texPath = texDir + texName;
+					core::ScopedPtr<io::SeekableWriteStream> texStream(archive->writeStream(texPath));
+					if (texStream) {
+						if (!image::writePNG(meshExt.texture, *texStream)) {
+							Log::warn("Failed to save texture %s", texPath.c_str());
+						}
+					} else {
+						Log::warn("Failed to open stream for texture %s", texPath.c_str());
+					}
+				}
+			} else {
+				if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
+					core::String palettename = core::string::stripExtension(filename);
+					palettename.append(hashId);
+					palettename.append(".png");
+					paletteMaterialIndices.put(palette.hash(), 1);
+					const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
+					if (!writeMtlFile(*matlstream, hashId, mapKd)) {
+						return false;
+					}
+					if (!palette.save(palettename.c_str())) {
+						return false;
+					}
+				}
+			}
+
+			if (!stream->writeStringFormat(false, "usemtl %s\n", matName.c_str())) {
+				Log::error("Failed to write obj usemtl %s\n", matName.c_str());
 				return false;
 			}
 
@@ -185,30 +230,53 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 			if (quad) {
 				if (withTexCoords) {
-					for (int j = 0; j < ni; j += 6) {
-						const voxel::VoxelVertex &v = vertices[indices[j]];
-						const glm::vec2 &uv = paletteUV(v.colorIndex);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					if (useTexture) {
+						for (const glm::vec2 &uv : uvs) {
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, 1.0f - uv.y);
+						}
+					} else {
+						for (int j = 0; j < ni; j += 6) {
+							const voxel::VoxelVertex &v = vertices[indices[j]];
+							const glm::vec2 &uv = paletteUV(v.colorIndex);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						}
 					}
 				}
 
 				int uvi = texcoordOffset;
-				for (int j = 0; j < ni - 5; j += 6, uvi += 4) {
+				for (int j = 0; j < ni - 5; j += 6) {
 					const uint32_t one = idxOffset + indices[j + 0] + 1;
 					const uint32_t two = idxOffset + indices[j + 1] + 1;
 					const uint32_t three = idxOffset + indices[j + 2] + 1;
 					const uint32_t four = idxOffset + indices[j + 5] + 1;
+
+					uint32_t uvOne, uvTwo, uvThree, uvFour;
+
 					if (withTexCoords) {
+						if (useTexture) {
+							uvOne = texcoordOffset + indices[j + 0] + 1;
+							uvTwo = texcoordOffset + indices[j + 1] + 1;
+							uvThree = texcoordOffset + indices[j + 2] + 1;
+							uvFour = texcoordOffset + indices[j + 5] + 1;
+						} else {
+							uvOne = uvi + 1;
+							uvTwo = uvi + 2;
+							uvThree = uvi + 3;
+							uvFour = uvi + 4;
+							uvi += 4;
+						}
+
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
-													  uvi + 1, (int)one, (int)two, uvi + 2, (int)two, (int)three,
-													  uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
+													  (int)uvOne, (int)one, (int)two, (int)uvTwo, (int)two, (int)three,
+													  (int)uvThree, (int)three, (int)four, (int)uvFour, (int)four);
 						} else {
-							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two,
-													  uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
+							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, (int)uvOne,
+													  (int)two, (int)uvTwo, (int)three, (int)uvThree, (int)four,
+													  (int)uvFour);
 						}
 					} else {
 						if (withNormals) {
@@ -220,15 +288,26 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 						}
 					}
 				}
-				texcoordOffset += ni / 6 * 4;
+				if (withTexCoords) {
+					if (useTexture)
+						texcoordOffset += (int)uvs.size();
+					else
+						texcoordOffset += ni / 6 * 4;
+				}
 			} else {
 				if (withTexCoords) {
-					for (int j = 0; j < ni; j += 3) {
-						const voxel::VoxelVertex &v = vertices[indices[j]];
-						const glm::vec2 &uv = paletteUV(v.colorIndex);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					if (useTexture) {
+						for (const glm::vec2 &uv : uvs) {
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, 1.0f - uv.y);
+						}
+					} else {
+						for (int j = 0; j < ni; j += 3) {
+							const voxel::VoxelVertex &v = vertices[indices[j]];
+							const glm::vec2 &uv = paletteUV(v.colorIndex);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						}
 					}
 				}
 
@@ -236,16 +315,27 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					const uint32_t one = idxOffset + indices[j + 0] + 1;
 					const uint32_t two = idxOffset + indices[j + 1] + 1;
 					const uint32_t three = idxOffset + indices[j + 2] + 1;
+
 					if (withTexCoords) {
 						if (withNormals) {
-							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
-													  texcoordOffset + j + 1, (int)one, (int)two,
-													  texcoordOffset + j + 2, (int)two, (int)three,
-													  texcoordOffset + j + 3, (int)three);
+							const int uvOne = useTexture ? texcoordOffset + indices[j + 0] + 1
+														 : texcoordOffset + j + 1;
+							const int uvTwo = useTexture ? texcoordOffset + indices[j + 1] + 1
+														 : texcoordOffset + j + 2;
+							const int uvThree = useTexture ? texcoordOffset + indices[j + 2] + 1
+														   : texcoordOffset + j + 3;
+							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, uvOne,
+													  (int)one, (int)two, uvTwo, (int)two, (int)three, uvThree,
+													  (int)three);
 						} else {
-							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + j + 1,
-													  (int)two, texcoordOffset + j + 2, (int)three,
-													  texcoordOffset + j + 3);
+							const int uvOne = useTexture ? texcoordOffset + indices[j + 0] + 1
+														 : texcoordOffset + j + 1;
+							const int uvTwo = useTexture ? texcoordOffset + indices[j + 1] + 1
+														 : texcoordOffset + j + 2;
+							const int uvThree = useTexture ? texcoordOffset + indices[j + 2] + 1
+														   : texcoordOffset + j + 3;
+							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, uvOne, (int)two, uvTwo,
+													  (int)three, uvThree);
 						}
 					} else {
 						if (withNormals) {
@@ -256,23 +346,14 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 						}
 					}
 				}
-				texcoordOffset += ni;
+				if (withTexCoords) {
+					if (useTexture)
+						texcoordOffset += (int)uvs.size();
+					else
+						texcoordOffset += ni;
+				}
 			}
 			idxOffset += nv;
-
-			if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
-				core::String palettename = core::string::stripExtension(filename);
-				palettename.append(hashId);
-				palettename.append(".png");
-				paletteMaterialIndices.put(palette.hash(), 1);
-				const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
-				if (!writeMtlFile(*matlstream, hashId, mapKd)) {
-					return false;
-				}
-				if (!palette.save(palettename.c_str())) {
-					return false;
-				}
-			}
 		}
 	}
 	return true;

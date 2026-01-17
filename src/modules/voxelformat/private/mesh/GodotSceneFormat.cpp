@@ -111,6 +111,11 @@ bool GodotSceneFormat::saveNode(const core::Map<int, int> &meshIdxNodeMap, const
 			}
 
 			const ChunkMeshExt &meshExt = meshes[iter->value];
+			if (meshExt.texture && meshExt.texture->isLoaded()) {
+				Log::error("Godot escn export with textures is not yet supported");
+				return false;
+			}
+
 			Log::debug("Exporting model %s (%i) (%i meshes total)", meshExt.name.c_str(), node.id(),
 					   (int)meshIdxNodeMap.size());
 			wrapBool(stream.writeStringFormat(false, "[sub_resource type=\"ArrayMesh\" id=\"%i\"]\n", node.id()))

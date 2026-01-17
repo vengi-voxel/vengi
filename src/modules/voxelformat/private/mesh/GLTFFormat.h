@@ -99,6 +99,13 @@ private:
 								   tinygltf::Mesh &gltfMesh, const voxel::Mesh *mesh, const palette::Palette &palette,
 								   bool withColor, bool withTexCoords, bool colorAsFloat, bool exportNormals,
 								   bool applyTransform, int texcoordIndex, const MaterialMap &paletteMaterialIndices);
+	uint32_t writeTexturedBuffer(const voxel::Mesh *mesh, io::SeekableWriteStream &os, bool withColor,
+								 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
+								 const glm::vec3 &pivotOffset, Bounds &bounds);
+	bool saveTexturedPrimitive(const glm::vec3 &pivotOffset, tinygltf::Model &gltfModel,
+							   tinygltf::Mesh &gltfMesh, const voxel::Mesh *mesh, int materialIdx,
+							   bool withColor, bool withTexCoords, bool colorAsFloat, bool exportNormals,
+							   bool applyTransform, int texcoordIndex);
 
 	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
 					   tinygltf::Animation &gltfAnimation);

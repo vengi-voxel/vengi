@@ -5,6 +5,7 @@
 #pragma once
 
 #include "math/Math.h"
+#include "core/collection/Buffer.h"
 
 namespace palette {
 class Palette;
@@ -15,7 +16,7 @@ class RawVolume;
 class Region;
 struct ChunkMesh;
 
-enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, Max };
+enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, GreedyTexture, Max };
 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
@@ -34,6 +35,11 @@ struct SurfaceExtractionContext {
 	const bool reuseVertices;	 // used only for Cubic
 	const bool ambientOcclusion; // used only for Cubic and Binary
 	const bool optimize;
+
+	// used only for GreedyTexture
+	int textureWidth = 0;
+	int textureHeight = 0;
+	core::Buffer<uint8_t> textureData;
 };
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
@@ -44,6 +50,8 @@ SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region
 										   bool reuseVertices = true, bool ambientOcclusion = true,
 										   bool optimize = false);
 SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+												   const palette::Palette &palette, bool optimize = false);
+SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette, bool optimize = false);
 
 void extractSurface(SurfaceExtractionContext &ctx);

@@ -189,6 +189,10 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 	int faceCount = 0;
 	for (const auto &meshExt : meshes) {
+		if (meshExt.texture && meshExt.texture->isLoaded()) {
+			Log::error("STL format does not support textures");
+			return false;
+		}
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
 			if (mesh->isEmpty()) {

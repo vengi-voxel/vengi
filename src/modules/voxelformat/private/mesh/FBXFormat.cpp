@@ -191,6 +191,10 @@ bool FBXFormat::saveMeshesAscii(const ChunkMeshes &meshes, const core::String &f
 			if (mesh->isEmpty()) {
 				continue;
 			}
+			if (meshExt.texture && meshExt.texture->isLoaded()) {
+				Log::error("FBX ASCII export with textures is not yet supported");
+				return false;
+			}
 			++meshCount;
 		}
 	}

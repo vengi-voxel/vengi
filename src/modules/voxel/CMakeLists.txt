@@ -4,6 +4,7 @@ set(SRCS
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
 	private/BinaryGreedyMesher.h private/BinaryGreedyMesher.cpp
+	private/TextureSurfaceExtractor.h private/TextureSurfaceExtractor.cpp
 
 	external/stb_rect_pack.h
 
@@ -48,6 +49,7 @@ set(TEST_SRCS
 	tests/RegionTest.cpp
 	tests/SparseVolumeTest.cpp
 	tests/SurfaceExtractorTest.cpp
+	tests/TextureSurfaceExtractorTest.cpp
 	tests/RawVolumeWrapperTest.cpp
 	tests/VolumeCompressionTest.cpp
 	tests/VolumeSamplerTest.cpp

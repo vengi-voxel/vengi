@@ -12,6 +12,7 @@
 #include "voxel/private/BinaryGreedyMesher.h"
 #include "voxel/private/CubicSurfaceExtractor.h"
 #include "voxel/private/MarchingCubesSurfaceExtractor.h"
+#include "voxel/private/TextureSurfaceExtractor.h"
 
 namespace voxel {
 
@@ -29,6 +30,12 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 									false, false, false, optimize);
 }
 
+SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+												   const palette::Palette &palette, bool optimize) {
+	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::GreedyTexture,
+									false, false, false, optimize);
+}
+
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 										   const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
 	static palette::Palette unused;
@@ -42,6 +49,8 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	ctx.mesh.clear();
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
+	} else if (ctx.type == voxel::SurfaceExtractionType::GreedyTexture) {
+		voxel::extractTextureMesh(ctx);
 	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
 		if (voxel::exceedsBinaryMesherRegion(ctx.region)) {
 			const auto &regions = getBinaryMesherRegions(ctx.region);
@@ -72,6 +81,8 @@ voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type,
 		return voxel::buildMarchingCubesContext(volume, region, mesh, palette, optimize);
 	} else if (type == voxel::SurfaceExtractionType::Binary) {
 		return voxel::buildBinaryContext(volume, region, mesh, translate, ambientOcclusion, optimize);
+	} else if (type == voxel::SurfaceExtractionType::GreedyTexture) {
+		return voxel::buildGreedyTextureContext(volume, region, mesh, palette, optimize);
 	}
 	return voxel::buildCubicContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion,
 									optimize);

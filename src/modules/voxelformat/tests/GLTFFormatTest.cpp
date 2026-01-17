@@ -21,6 +21,16 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 	helper_saveSceneGraph(sceneGraph, "exportrgb.gltf");
 }
 
+TEST_F(GLTFFormatTest, testSaveChrKnight) {
+	GLTFFormat format;
+	testSaveMesh("chr_knight.qbcl", "chr_knight.gltf", &format);
+}
+
+TEST_F(GLTFFormatTest, testSaveCC) {
+	GLTFFormat format;
+	testSaveMesh("cc.vxl", "cc.gltf", &format);
+}
+
 TEST_F(GLTFFormatTest, testImportAnimation) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "glTF/BoxAnimated.glb", 2);

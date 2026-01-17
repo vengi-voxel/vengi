@@ -726,6 +726,10 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	stream->writeStringFormat(false, "end_header\n");
 
 	for (const auto &meshExt : meshes) {
+		if (meshExt.texture && meshExt.texture->isLoaded()) {
+			Log::error("PLY format does not support textures");
+			return false;
+		}
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh &mesh = meshExt.mesh->mesh[i];
 			if (mesh.isEmpty()) {

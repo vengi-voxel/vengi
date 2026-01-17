@@ -825,6 +825,16 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			}
 
 			meshes[i] = core::move(ChunkMeshExt(mesh, node, applyTransform));
+			if (!ctx.textureData.empty()) {
+				core::String texName = node.name();
+				if (texName.empty()) {
+					texName = core::String::format("texture%i", i);
+				}
+				texName = core::string::sanitizeFilename(texName);
+				texName += ".png";
+				meshes[i].texture = image::createEmptyImage(texName);
+				meshes[i].texture->loadRGBA(ctx.textureData.data(), ctx.textureWidth, ctx.textureHeight);
+			}
 		}
 	});
 	ChunkMeshes nonEmptyMeshes;

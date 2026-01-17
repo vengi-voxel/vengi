@@ -86,6 +86,7 @@ protected:
 		ChunkMeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
 		voxel::ChunkMesh *mesh;
 		core::String name;
+		image::ImagePtr texture;
 		bool applyTransform = false;
 
 		glm::vec3 size{0.0f};

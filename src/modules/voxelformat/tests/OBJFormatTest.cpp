@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/private/mesh/OBJFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -9,7 +10,6 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "voxelutil/VoxelUtil.h"
 
 namespace voxelformat {
 
@@ -17,6 +17,16 @@ class OBJFormatTest : public AbstractFormatTest {};
 
 TEST_F(OBJFormatTest, testVoxelize) {
 	testLoad("cube.obj", 6);
+}
+
+TEST_F(OBJFormatTest, testSaveChrKnight) {
+	OBJFormat format;
+	testSaveMesh("chr_knight.qbcl", "chr_knight.obj", &format);
+}
+
+TEST_F(OBJFormatTest, testSaveCC) {
+	OBJFormat format;
+	testSaveMesh("cc.vxl", "cc.obj", &format);
 }
 
 // https://github.com/vengi-voxel/vengi/issues/393

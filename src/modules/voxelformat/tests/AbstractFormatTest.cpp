@@ -21,8 +21,10 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "util/VarUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
@@ -31,6 +33,7 @@
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "gtest/gtest.h"
 
 #define WRITE_TO_FILE 1
 
@@ -76,6 +79,29 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 	voxel::sceneGraphComparator(sceneGraphsave, sceneGraphLoad, flags, 0.001f);
 }
 
+void AbstractFormatTest::testSaveMesh(const core::String &inputFile, const core::String &filename, Format *format,
+											   voxel::ValidateFlags flags) {
+	io::FileDescription fileDesc;
+	fileDesc.set(inputFile);
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
+		<< "Failed to load " << fileDesc.c_str();
+
+	for (int i = 0; i < (int)voxel::SurfaceExtractionType::Max; ++i) {
+		SCOPED_TRACE(core::String::format("Mesh extraction type: %i", i));
+		util::ScopedVarChange scoped(cfg::VoxelMeshMode, core::string::toString(i));
+		const core::String modeFilename = core::String::format("%i_%s", i, filename.c_str());
+		ASSERT_TRUE(format->save(sceneGraph, modeFilename, archive, testSaveCtx))
+			<< "Could not save " << modeFilename.c_str();
+
+		scenegraph::SceneGraph sceneGraphLoad;
+		ASSERT_TRUE(format->load(modeFilename, archive, sceneGraphLoad, testLoadCtx))
+			<< "Could not load " << modeFilename.c_str();
+		// TODO: VOXELFORMAT: enable this: voxel::sceneGraphComparator(sceneGraph, sceneGraphLoad, flags, 0.001f);
+	}
+}
+
 void AbstractFormatTest::testTransform(const core::String &filename) {
 	scenegraph::SceneGraph sceneGraph;
 	testTransform(sceneGraph, filename);
@@ -112,7 +138,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0u)));
 	EXPECT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255u)));
 	const io::ArchivePtr &archive = helper_archive();
-	scenegraph::SceneGraph sceneGraphsave1	;
+	scenegraph::SceneGraph sceneGraphsave1;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&original, false);
@@ -181,8 +207,8 @@ void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core
 void AbstractFormatTest::checkColor(color::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
 	const color::RGBA c2 = palette.color(index);
 	const float delta = color::getDistance(c1, c2, color::Distance::HSB);
-	ASSERT_LE(delta, maxDelta) << "color1[" << color::print(c1) << "], color2[" << color::print(c2)
-							   << "], delta[" << delta << "]";
+	ASSERT_LE(delta, maxDelta) << "color1[" << color::print(c1) << "], color2[" << color::print(c2) << "], delta["
+							   << delta << "]";
 }
 
 void AbstractFormatTest::testRGBSmall(const core::String &filename, const io::ArchivePtr &archive,
@@ -230,8 +256,8 @@ void AbstractFormatTest::testLoadScreenshot(const core::String &filename, int wi
 	ASSERT_EQ(image->width(), width) << image::print(image);
 	ASSERT_EQ(image->height(), height) << image::print(image);
 	const color::RGBA color = image->colorAt(expectedX, expectedY);
-	ASSERT_EQ(color, expectedColor) << "expected " << color::print(expectedColor) << " but got "
-									<< color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
+	ASSERT_EQ(color, expectedColor) << "expected " << color::print(expectedColor) << " but got " << color::print(color)
+									<< "at " << expectedX << ":" << expectedY << "\n"
 									<< image::print(image);
 }
 
