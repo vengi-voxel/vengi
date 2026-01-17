@@ -414,12 +414,45 @@ bool AniVoxelFormat::readMaterial(io::SeekableReadStream &stream, palette::Palet
 	if (hasMaterialProps) {
 		uint32_t cnt;
 		wrap(stream.readUInt32(cnt))
+		palette.setMaterialType(palIdx, palette::MaterialType::Diffuse);
 		for (uint32_t i = 0; i < cnt; ++i) {
-			core::String matName;
-			core::String matValue;
-			wrapBool(stream.readPascalStringUInt32LE(matName))
-			wrapBool(stream.readPascalStringUInt32LE(matValue))
-			// TODO: MATERIAL: implement me
+			core::String propName;
+			core::String propValue;
+			wrapBool(stream.readPascalStringUInt32LE(propName))
+			wrapBool(stream.readPascalStringUInt32LE(propValue))
+			if (propName == "_type") {
+				if (propValue == "_metal") {
+					palette.setMaterialType(palIdx, palette::MaterialType::Metal);
+				} else if (propValue == "_glass") {
+					palette.setMaterialType(palIdx, palette::MaterialType::Glass);
+				} else if (propValue == "_emit") {
+					palette.setMaterialType(palIdx, palette::MaterialType::Emit);
+				} else if (propValue == "_blend") {
+					palette.setMaterialType(palIdx, palette::MaterialType::Blend);
+				} else if (propValue == "_media") {
+					palette.setMaterialType(palIdx, palette::MaterialType::Media);
+				} else {
+					Log::debug("VOXA: Unknown material type: %s", propValue.c_str());
+				}
+			} else {
+				const float value = core::string::toFloat(propValue);
+				if (propName == "_rough") {
+					palette.setRoughness(palIdx, value);
+				} else if (propName == "_ior") {
+					palette.setIndexOfRefraction(palIdx, value);
+				} else if (propName == "_spec") {
+					palette.setSpecular(palIdx, value);
+				} else if (propName == "_emit") {
+					palette.setEmit(palIdx, value);
+				} else if (propName == "_metal") {
+					palette.setMetal(palIdx, value);
+				} else if (propName == "_d") {
+					palette.setDensity(palIdx, value);
+				} else {
+					// TODO: MATERIAL: _alpha, _flux, _ldr, _media, _g, _d, _ri
+					Log::debug("VOXA: Material property is not supported yet: %s=%s", propName.c_str(), propValue.c_str());
+				}
+			}
 		}
 	}
 	seek(header, stream);
