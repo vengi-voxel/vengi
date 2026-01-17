@@ -96,7 +96,7 @@ bool isUserVisiblePath(const char *path) {
 bool isInterestingFilesystemType(const char *type) {
 	static const char *hide[] = {"proc",   "sysfs",	   "devtmpfs", "devpts",	"cgroup",	"cgroup2", "securityfs",
 								 "pstore", "efivarfs", "debugfs",  "tracefs",	"configfs", "autofs",  "binfmt_misc",
-								 "bpf",	   "fusectl",  "mqueue",   "hugetlbfs", "tmpfs", nullptr};
+								 "bpf",	   "fusectl",  "mqueue",   "hugetlbfs", "tmpfs", "squashfs", nullptr};
 
 	for (int i = 0; hide[i]; i++)
 		if (strcmp(type, hide[i]) == 0)
