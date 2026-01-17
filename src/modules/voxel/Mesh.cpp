@@ -568,6 +568,8 @@ void Mesh::optimize() {
 	if (isEmpty()) {
 		return;
 	}
+#if 0
+	// TODO: https://github.com/vengi-voxel/vengi/issues/707
 	core_trace_scoped(MeshOptimize);
 	meshopt_optimizeVertexCache(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.size());
 	meshopt_optimizeOverdraw(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), &_vecVertices.data()->position.x, _vecVertices.size(), sizeof(VoxelVertex), 1.05f);
@@ -579,6 +581,9 @@ void Mesh::optimize() {
 						 _vecVertices.size(), sizeof(VoxelVertex), oldIndices.size() / 2, 0.1f, options, nullptr);
 	Log::debug("newSize: %i, oldsize: %i", (int)newSize, (int)oldIndices.size());
 	_vecIndices.shrink(newSize);
+#else
+	Log::warn("Mesh optimization is currently disabled");
+#endif
 }
 
 } // namespace voxel
