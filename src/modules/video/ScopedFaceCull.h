@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Types.h"
-#include "video/RendererInterface.h"
+#include "video/Renderer.h"
 
 namespace video {
 
