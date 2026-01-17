@@ -309,24 +309,24 @@ bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, scenegraph::S
 	wrap(stream.readInt32(fps));
 	int32_t frameLength;
 	wrap(stream.readInt32(frameLength));
-	int cnt;
-	wrap(stream.readInt32(cnt));
-	int cnt2;
+	int boneCnt;
+	wrap(stream.readInt32(boneCnt));
+	int meshCnt = 0;
 	if (version >= 101) {
-		wrap(stream.readInt32(cnt2));
+		wrap(stream.readInt32(meshCnt));
 	}
-	for (int i = 0; i < cnt; ++i) {
-		ChunkHeader header2 = readChunk(stream);
-		int num4;
-		wrap(stream.readInt32(num4));
-		int num5 = (version >= 103) ? 9 : 6;
-		for (int j = 0; j < num5; ++j) {
+	for (int i = 0; i < boneCnt; ++i) {
+		ChunkHeader bonesChunk = readChunk(stream);
+		int boneId;
+		wrap(stream.readInt32(boneId));
+		const int propAmount = (version >= 103) ? 9 : 6;
+		for (int j = 0; j < propAmount; ++j) {
 			ChunkHeader header3 = readChunk(stream);
-			core::String id;
-			wrapBool(stream.readPascalStringUInt32LE(id));
-			int num6;
-			wrap(stream.readInt32(num6));
-			for (int k = 0; k < num6; ++k) {
+			core::String propName; // tX, tY, tZ, rX, rY, rZ, sX, sY, sZ
+			wrapBool(stream.readPascalStringUInt32LE(propName));
+			int points;
+			wrap(stream.readInt32(points));
+			for (int k = 0; k < points; ++k) {
 				float x, y;
 				wrap(stream.readFloat(x));
 				wrap(stream.readFloat(y));
@@ -355,22 +355,22 @@ bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, scenegraph::S
 			}
 			seek(header3, stream);
 		}
-		seek(header2, stream);
+		seek(bonesChunk, stream);
 	}
-	for (int i = 0; i < cnt2; ++i) {
-		ChunkHeader header2 = readChunk(stream);
-		int num4;
-		wrap(stream.readInt32(num4));
+	for (int i = 0; i < meshCnt; ++i) {
+		ChunkHeader meshesChunk = readChunk(stream);
+		int meshId;
+		wrap(stream.readInt32(meshId));
 		for (int j = 0; j < 2; ++j) {
-			core::String id;
-			wrapBool(stream.readPascalStringUInt32LE(id));
-			if (id == "vi") {
+			core::String propName;
+			wrapBool(stream.readPascalStringUInt32LE(propName));
+			if (propName == "vi") {
 				int visibleCnt;
 				wrap(stream.readInt32(visibleCnt));
 				for (int k = 0; k < visibleCnt; ++k) {
 					/* bool visible = */ stream.readBool();
 				}
-			} else if (id == "sm") {
+			} else if (propName == "sm") {
 				int smearFrameCnt;
 				wrap(stream.readInt32(smearFrameCnt));
 				for (int k = 0; k < smearFrameCnt; ++k) {
@@ -379,7 +379,7 @@ bool AniVoxelFormat::readAnimation(io::SeekableReadStream &stream, scenegraph::S
 				}
 			}
 		}
-		seek(header2, stream);
+		seek(meshesChunk, stream);
 	}
 	seek(header, stream);
 	return true;
