@@ -38,6 +38,8 @@ nav:
       - LUAScript.md
       - Palette.md
       - Material.md
+      - Meshing.md
+      - Voxelization.md
       - Translation.md
   - VoxConvert:
       - voxconvert/Index.md
