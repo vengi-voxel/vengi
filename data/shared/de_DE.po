@@ -560,7 +560,7 @@ msgstr "Das Fenster minimieren"
 msgid "Merge similar quads to optimize the mesh"
 msgstr ""
 
-msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
 msgstr ""
 
 msgid "Reuse vertices or always create new ones"
@@ -980,6 +980,9 @@ msgstr ""
 
 msgid "Cubes"
 msgstr "Würfel"
+
+msgid "Greedy texture"
+msgstr ""
 
 msgid "Marching cubes"
 msgstr "Marching Cubes"
@@ -2742,8 +2745,8 @@ msgstr "Achse umkehren"
 msgid "Simple"
 msgstr "Einfach"
 
-msgid "Command & Conquer"
-msgstr "Command & Conquer"
+msgid "Tiberian Sun/Red Alert 2"
+msgstr ""
 
 msgid "Minecraft Skin"
 msgstr "Minecraft Skin"

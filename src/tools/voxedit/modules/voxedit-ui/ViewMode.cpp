@@ -44,7 +44,7 @@ const char *getViewModeString(ViewMode viewMode) {
 	case ViewMode::All:
 		return _("All");
 	case ViewMode::CommandAndConquer:
-		return _("Command & Conquer");
+		return _("Tiberian Sun/Red Alert 2");
 	case ViewMode::MinecraftSkin:
 		return _("Minecraft Skin");
 	case ViewMode::AceOfSpades:

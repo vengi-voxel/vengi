@@ -143,7 +143,7 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBpalformat_rgb6bit\fP: Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files
 .PP
-\fBvoxel_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher
+\fBvoxel_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture
 .PP
 \fBvoxformat_ambientocclusion\fP: Extra vertices for ambient occlusion
 .PP
