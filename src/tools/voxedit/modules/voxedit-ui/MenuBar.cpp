@@ -70,13 +70,8 @@ void MenuBar::viewModeOption() {
 		getViewModeString(ViewMode::AceOfSpades)		// AceOfSpades
 	};
 	static_assert(7 == (size_t)ViewMode::Max, "Unexpected viewmode array size");
-	if (ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes)) {
-		if (ViewMode::AceOfSpades == (ViewMode)core::Var::getSafe(cfg::VoxEditViewMode)->intVal()) {
-			core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(512);
-		} else {
-			core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(128);
-		}
-	}
+	const core::VarPtr &viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
+	ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {

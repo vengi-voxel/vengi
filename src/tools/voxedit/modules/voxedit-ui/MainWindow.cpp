@@ -966,6 +966,19 @@ void MainWindow::updateViewMode() {
 	} else {
 		core::Var::getSafe(cfg::RenderNormals)->setVal(false);
 	}
+
+	const ViewMode vMode = (ViewMode)_viewMode->intVal();
+	if (ViewMode::AceOfSpades == vMode) {
+		core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(512);
+	} else {
+		core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(128);
+	}
+
+	if (ViewMode::RedAlert2 == vMode) {
+		core::Var::getSafe(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[0]);
+	} else if (ViewMode::TiberianSun == vMode) {
+		core::Var::getSafe(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[1]);
+	}
 }
 
 void MainWindow::update(double nowSeconds) {

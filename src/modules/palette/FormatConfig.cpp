@@ -32,8 +32,8 @@ bool FormatConfig::init() {
 
 	core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
 				   _("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"));
-	core::Var::get(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(), core::CV_NOPERSIST,
-				   _("The normal palette to use for voxelization"));
+	core::Var::get(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(),
+				   _("The normal palette"));
 
 	return true;
 }
