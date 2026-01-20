@@ -607,6 +607,10 @@ void WindowedApp::resetKeybindings() {
 	_keybindingHandler.reset(_keybindingsVersion);
 }
 
+void WindowedApp::openKeybindings() {
+	_keybindingHandler.openKeybindings(_keybindingsVersion);
+}
+
 void WindowedApp::showCursor(bool show) {
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (show) {

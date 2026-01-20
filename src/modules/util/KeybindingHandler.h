@@ -12,7 +12,7 @@
 
 namespace util {
 
-extern bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
+bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
 
 /**
  * @brief Component that executes commands for key/modifier combinations.
@@ -37,7 +37,7 @@ private:
 	 * @brief Tries to identify commands with several modifier masks.
 	 */
 	bool executeCommands(int32_t key, int16_t modifier, double nowSeconds, uint16_t count);
-
+	void saveKeybindings(int version);
 	static core::String getKeyName(int32_t key, uint16_t count = 1u);
 	static const char* getModifierName(int16_t modifier);
 public:
@@ -46,6 +46,7 @@ public:
 	bool init();
 	void clear();
 	void reset(int version);
+	void openKeybindings(int version);
 	void removeApplicationKeyBindings(int version);
 
 	bool registerBinding(const core::String &command, int32_t key, int16_t modifier,
