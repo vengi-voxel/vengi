@@ -196,7 +196,7 @@ static void extractFace(SurfaceExtractionContext &ctx, TexturSurfaceMesherState 
 	mask.resize(uDim * vDim);
 
 	for (int s = 0; s < sDim; ++s) {
-		mask.clear();
+		mask.fill(color::RGBA(0));
 
 		int voxelS = s;
 

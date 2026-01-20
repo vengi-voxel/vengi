@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "io/Filesystem.h"
-#include "core/StringUtil.h"
 #endif
 
 namespace app {
