@@ -37,8 +37,8 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	core::registerBindingContext("game", core::BindingContext::Context3);
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2 + core::BindingContext::Context3);
 	_allowRelativeMouseMode = false;
-	_iniVersion = 8;
-	_keybindingsVersion = 2;
+	_iniVersion = 9;
+	_keybindingsVersion = 3;
 	_wantCrashLogs = true;
 
 	// see KeyBindings enum
