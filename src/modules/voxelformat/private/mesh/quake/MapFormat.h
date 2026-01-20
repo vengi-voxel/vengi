@@ -34,7 +34,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Quake Map", {"map"}, {}, VOX_FORMAT_FLAG_MESH};
+		static io::FormatDescription f{"Quake Map", "", {"map"}, {}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 };

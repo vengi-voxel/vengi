@@ -82,7 +82,7 @@ protected:
 	}
 public:
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Cubzh World", {"b64"}, {}, 0u};
+		static io::FormatDescription f{"Cubzh World", "", {"b64"}, {}, 0u};
 		return f;
 	}
 };

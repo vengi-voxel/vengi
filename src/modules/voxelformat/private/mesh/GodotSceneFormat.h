@@ -37,6 +37,7 @@ protected:
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Godot Scene",
+									   "",
 									   {"escn"},
 									   {"[gd_"},
 									   VOX_FORMAT_FLAG_MESH | /* TODO: VOX_FORMAT_FLAG_ANIMATION | */ FORMAT_FLAG_SAVE | FORMAT_FLAG_NO_LOAD};

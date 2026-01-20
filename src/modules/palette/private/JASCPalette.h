@@ -22,6 +22,7 @@ public:
 	static const io::FormatDescription &format() {
 		static const io::FormatDescription desc = {
 			"JASC Palette",
+			"",
 			{"pal"},
 			{"JASC"},
 			FORMAT_FLAG_SAVE

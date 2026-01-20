@@ -66,7 +66,7 @@ public:
 	static constexpr int SECTOR_INTS = SECTOR_BYTES / 4;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Minecraft region", {"mca", "mcr"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		static io::FormatDescription f{"Minecraft region", "", {"mca", "mcr"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 		return f;
 	}
 private:

@@ -26,7 +26,7 @@ protected:
 	}
 public:
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Minecraft level dat", {"dat"}, {}, 0u};
+		static io::FormatDescription f{"Minecraft level dat", "", {"dat"}, {}, 0u};
 		return f;
 	}
 };

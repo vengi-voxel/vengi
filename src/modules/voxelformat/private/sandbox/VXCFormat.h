@@ -24,7 +24,7 @@ public:
 								   const LoadContext &ctx) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Sandbox VoxEdit Collection", {"vxc"}, {}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+		static io::FormatDescription f{"Sandbox VoxEdit Collection", "", {"vxc"}, {}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 		return f;
 	}
 };

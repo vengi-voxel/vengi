@@ -53,7 +53,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-aseprite</string>
+          <string>image/aseprite</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
@@ -325,7 +325,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-goxel-txt</string>
+          <string>text/plain</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
@@ -599,7 +599,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-sproxel-csv</string>
+          <string>text/csv</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
@@ -709,7 +709,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-wavefront-object</string>
+          <string>text/plain</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
@@ -929,7 +929,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-aceofspades-vxl</string>
+          <string>application/x-aceofspades</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
@@ -947,7 +947,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-qubicle-exchange</string>
+          <string>text/plain</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>
@@ -1074,7 +1074,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-portable-network-graphics</string>
+          <string>image/png</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>

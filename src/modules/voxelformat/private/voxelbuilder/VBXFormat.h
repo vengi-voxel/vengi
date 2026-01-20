@@ -33,7 +33,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"VoxelBuilder", {"vbx"}, {"; Voxel Builder file format (VBX)"}, VOX_FORMAT_FLAG_RGB};
+		static io::FormatDescription f{"VoxelBuilder", "", {"vbx"}, {"; Voxel Builder file format (VBX)"}, VOX_FORMAT_FLAG_RGB};
 		return f;
 	}
 };

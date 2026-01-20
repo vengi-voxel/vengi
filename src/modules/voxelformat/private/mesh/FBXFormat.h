@@ -54,7 +54,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+			"FBX", "", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 		return f;
 	}
 };

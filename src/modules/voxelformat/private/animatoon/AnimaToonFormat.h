@@ -56,7 +56,7 @@ protected:
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"AnimaToon", {"scn"}, {}, VOX_FORMAT_FLAG_ANIMATION};
+			"AnimaToon", "", {"scn"}, {}, VOX_FORMAT_FLAG_ANIMATION};
 		return f;
 	}
 };

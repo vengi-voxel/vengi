@@ -7,7 +7,7 @@
 			<match type="string" offset="0" value="VENG"/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-aseprite">
+	<mime-type type="image/aseprite">
 		<comment>aseprite</comment>
 		<glob pattern="*.aseprite"/>
 		<glob pattern="*.ase"/>
@@ -150,7 +150,7 @@
 			<match type="string" offset="0" value="GOX "/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-goxel-txt">
+	<mime-type type="text/plain">
 		<comment>Goxel txt</comment>
 		<glob pattern="*.txt"/>
 		<magic priority="50">
@@ -232,7 +232,7 @@
 		<comment>Autodesk 3D Studio</comment>
 		<glob pattern="*.3ds"/>
 	</mime-type>
-	<mime-type type="application/x-sproxel-csv">
+	<mime-type type="text/csv">
 		<comment>Sproxel csv</comment>
 		<glob pattern="*.csv"/>
 	</mime-type>
@@ -264,7 +264,7 @@
 			<match type="string" offset="0" value="; Vo"/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-wavefront-object">
+	<mime-type type="text/plain">
 		<comment>Wavefront Object</comment>
 		<glob pattern="*.obj"/>
 	</mime-type>
@@ -328,11 +328,11 @@
 			<match type="string" offset="0" value="Voxe"/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-aceofspades-vxl">
+	<mime-type type="application/x-aceofspades">
 		<comment>AceOfSpades</comment>
 		<glob pattern="*.vxl"/>
 	</mime-type>
-	<mime-type type="application/x-qubicle-exchange">
+	<mime-type type="text/plain">
 		<comment>Qubicle Exchange</comment>
 		<glob pattern="*.qef"/>
 		<magic priority="50">
@@ -388,7 +388,7 @@
 			<match type="byte" offset="3" value="0xa7"/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-portable-network-graphics">
+	<mime-type type="image/png">
 		<comment>Portable Network Graphics</comment>
 		<glob pattern="*.png"/>
 		<magic priority="50">

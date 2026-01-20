@@ -79,6 +79,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Qubicle Project",
+									"",
 									{"qbcl"},
 									{"QBCL"},
 									VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |

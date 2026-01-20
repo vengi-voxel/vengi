@@ -140,6 +140,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Goxel",
+									"",
 									{"gox"},
 									{"GOX "},
 									VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |

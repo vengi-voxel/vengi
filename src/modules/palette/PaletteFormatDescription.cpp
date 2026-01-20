@@ -3,6 +3,7 @@
  */
 
 #include "PaletteFormatDescription.h"
+#include "io/FormatDescription.h"
 #include "palette/private/ACBPalette.h"
 #include "palette/private/ASEPalette.h"
 #include "palette/private/AVMTPalette.h"
@@ -34,7 +35,7 @@ const io::FormatDescription *palettes() {
 		RGBPalette::format(),
 		VPLPalette::format(),
 		io::format::png(),
-		{"", {}, {}, 0u}};
+		io::FormatDescription::END};
 	// clang-format: on
 	return desc;
 }

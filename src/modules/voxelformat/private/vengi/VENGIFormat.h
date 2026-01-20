@@ -60,7 +60,7 @@ public:
 					const LoadContext &ctx) override;
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"Vengi", {"vengi"}, {"VENG"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
+			"Vengi", "", {"vengi"}, {"VENG"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

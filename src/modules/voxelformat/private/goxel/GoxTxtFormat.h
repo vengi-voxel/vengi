@@ -39,7 +39,7 @@ public:
 					   const LoadContext &ctx) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Goxel txt", {"txt"}, {"# Go"}, FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Goxel txt", "text/plain", {"txt"}, {"# Go"}, FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

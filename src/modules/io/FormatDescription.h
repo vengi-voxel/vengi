@@ -74,6 +74,7 @@ using FormatDescriptionMagics = core::Vector<Magic, MAX_FORMATDESCRIPTION_MAGICS
 
 struct FormatDescription {
 	core::String name;				  /**< the name of the format */
+	core::String mimetype;			  /**< the mimetype of the format */
 	FormatDescriptionExtensions exts; /**< the file extension - all lower case */
 	FormatDescriptionMagics magics;	  /**< magic bytes for the format description */
 	uint32_t flags = 0u;			  /**< flags for user defined properties */
@@ -98,9 +99,9 @@ struct FormatDescription {
 	}
 
 	core::String mainExtension(bool includeDot = false) const;
-
-	// TODO: maybe add a mimetype to the format description
-	// TODO: e.g. image/png or application/x-gimp-palette could be a problem here
+	/**
+	 * @brief Either return the defined mimetype or create one from the name
+	 */
 	core::String mimeType() const;
 
 	/**
@@ -113,6 +114,8 @@ struct FormatDescription {
 	 * it might still match
 	 */
 	bool matchesExtension(const core::String &fileExt) const;
+
+	static const FormatDescription END;
 };
 
 struct FileDescription {
@@ -133,7 +136,7 @@ struct FileDescription {
 };
 
 inline const io::FormatDescription &ALL_SUPPORTED() {
-	static const io::FormatDescription v{"All supported", {}, {}, FORMAT_FLAG_ALL};
+	static const io::FormatDescription v{"All supported", "", {}, {}, FORMAT_FLAG_ALL};
 	return v;
 }
 

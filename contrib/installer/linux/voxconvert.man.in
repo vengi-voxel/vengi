@@ -133,7 +133,7 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBcore_colorreduction\fP: Controls the algorithm that is used to perform the color reduction
 .PP
-\fBnormalpalette\fP: The normal palette to use for voxelization
+\fBnormalpalette\fP: The normal palette
 .PP
 \fBpalette\fP: This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)
 .PP

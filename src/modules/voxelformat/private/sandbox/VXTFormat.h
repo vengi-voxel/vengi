@@ -22,7 +22,7 @@ protected:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 public:
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Sandbox VoxEdit Tilemap", {"vxt"}, {"VXT1"}, 0u};
+		static io::FormatDescription f{"Sandbox VoxEdit Tilemap", "", {"vxt"}, {"VXT1"}, 0u};
 		return f;
 	}
 };

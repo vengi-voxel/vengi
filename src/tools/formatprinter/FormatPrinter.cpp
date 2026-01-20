@@ -132,11 +132,6 @@ app::AppState FormatPrinter::onRunning() {
 core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	core::String name = desc.name.toLower();
 	core::String mt = desc.mimeType();
-	if (_uniqueMimetypes.has(mt)) {
-		mt += "-" + desc.mainExtension();
-	}
-	core::string::replaceAllChars(mt, '.', '-');
-	_uniqueMimetypes.insert(mt);
 	return mt;
 }
 

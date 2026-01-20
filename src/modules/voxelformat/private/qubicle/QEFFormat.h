@@ -34,7 +34,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Qubicle Exchange", {"qef"}, {"Qubicle Exchange Format"}, FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Qubicle Exchange", "text/plain", {"qef"}, {"Qubicle Exchange Format"}, FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

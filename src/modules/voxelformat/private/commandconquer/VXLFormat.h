@@ -264,6 +264,7 @@ protected:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Tiberian Sun",
+									"",
 									{"vxl"},
 									{"Voxel Animation"},
 									VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};

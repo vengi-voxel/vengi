@@ -71,7 +71,7 @@ public:
 	bool save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
 
 	static const io::FormatDescription &format() {
-		static const io::FormatDescription desc = {"Adobe Swatch Exchange", {"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE};
+		static const io::FormatDescription desc = {"Adobe Swatch Exchange", "",{"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE};
 		return desc;
 	}
 };
