@@ -119,19 +119,6 @@ RendererContext createContext(SDL_Window *window);
 void activateContext(SDL_Window *window, RendererContext &context);
 
 /**
- * @brief Begin a new frame on @p window using @p context.
- *
- * Make @p context the current backend context for this frame and perform any
- * minimal per-frame backend setup. Note: the GL implementation currently only
- * makes the context current; callers are responsible for per-frame clears and
- * other per-frame state initialization.
- *
- * @param window The SDL window being rendered to.
- * @param context The renderer context to use for this frame.
- */
-void startFrame(SDL_Window *window, RendererContext &context);
-
-/**
  * @brief End the current frame for @p window.
  *
  * Completes rendering for the current frame and performs any presentation or
@@ -303,11 +290,6 @@ Id genProgram();
  * @brief Delete @p amount vertex arrays and invalidate the ids.
  */
 void deleteVertexArrays(uint8_t amount, Id *ids);
-
-/**
- * @brief Delete a single vertex array and set @p id to InvalidId.
- */
-void deleteVertexArray(Id &id);
 
 /**
  * @brief Create @p amount textures appropriate for @p cfg and write them to @p ids.

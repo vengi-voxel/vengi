@@ -441,4 +441,22 @@ float getScaleFactor();
  */
 glm::ivec2 getWindowSize();
 
+/**
+ * @brief Delete a single vertex array and set @p id to InvalidId.
+ */
+void deleteVertexArray(Id &id);
+
+/**
+ * @brief Begin a new frame on @p window using @p context.
+ *
+ * Make @p context the current backend context for this frame and perform any
+ * minimal per-frame backend setup. Note: the GL implementation currently only
+ * makes the context current; callers are responsible for per-frame clears and
+ * other per-frame state initialization.
+ *
+ * @param window The SDL window being rendered to.
+ * @param context The renderer context to use for this frame.
+ */
+void startFrame(SDL_Window *window, RendererContext &context);
+
 } // namespace video
