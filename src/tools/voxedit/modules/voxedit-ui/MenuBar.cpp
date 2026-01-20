@@ -64,11 +64,12 @@ void MenuBar::viewModeOption() {
 		getViewModeString(ViewMode::Default),			// Default
 		getViewModeString(ViewMode::Simple),			// Simple
 		getViewModeString(ViewMode::All),				// All
-		getViewModeString(ViewMode::CommandAndConquer), // CommandAndConquer
+		getViewModeString(ViewMode::TiberianSun),		// TiberianSun
+		getViewModeString(ViewMode::RedAlert2),		// RedAlert2
 		getViewModeString(ViewMode::MinecraftSkin),	// MinecraftSkin
 		getViewModeString(ViewMode::AceOfSpades)		// AceOfSpades
 	};
-	static_assert(viewModes.size() == (size_t)ViewMode::Max, "Unexpected viewmode array size");
+	static_assert(7 == (size_t)ViewMode::Max, "Unexpected viewmode array size");
 	if (ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes)) {
 		if (ViewMode::AceOfSpades == (ViewMode)core::Var::getSafe(cfg::VoxEditViewMode)->intVal()) {
 			core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(512);

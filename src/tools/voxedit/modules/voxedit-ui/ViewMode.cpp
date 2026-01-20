@@ -24,7 +24,8 @@ static const uint64_t s_viewModeFlags[] = {
 	DEFAULT_FLAGS,			 // Default
 	SIMLPE_FLAGS,			 // Simple
 	ALL_FLAGS,				 // All
-	COMMANDANDCONQUER_FLAGS, // CommandAndConquer
+	COMMANDANDCONQUER_FLAGS, // TiberianSun
+	COMMANDANDCONQUER_FLAGS, // RedAlert2
 	MINECRAFTSKIN_FLAGS,	 // MinecraftSkin
 	ACEOFSPADES_FLAGS		 // AceOfSpades
 };
@@ -43,8 +44,10 @@ const char *getViewModeString(ViewMode viewMode) {
 		return _("Simple");
 	case ViewMode::All:
 		return _("All");
-	case ViewMode::CommandAndConquer:
-		return _("Tiberian Sun/Red Alert 2");
+	case ViewMode::TiberianSun:
+		return _("Tiberian Sun");
+	case ViewMode::RedAlert2:
+		return _("Red Alert 2");
 	case ViewMode::MinecraftSkin:
 		return _("Minecraft Skin");
 	case ViewMode::AceOfSpades:
