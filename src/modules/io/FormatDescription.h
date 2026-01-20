@@ -99,6 +99,10 @@ struct FormatDescription {
 
 	core::String mainExtension(bool includeDot = false) const;
 
+	// TODO: maybe add a mimetype to the format description
+	// TODO: e.g. image/png or application/x-gimp-palette could be a problem here
+	core::String mimeType() const;
+
 	/**
 	 * @brief Return the comma separated wildcard for the extensions of this format description
 	 */

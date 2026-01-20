@@ -97,6 +97,17 @@ const FormatDescription *lua() {
 
 } // namespace format
 
+core::String FormatDescription::mimeType() const {
+	core::String lname = name.toLower();
+	core::string::replaceAllChars(lname, ' ', '-');
+	core::string::replaceAllChars(lname, ':', '-');
+	core::string::replaceAllChars(lname, '.', '-');
+	core::string::replaceAllChars(lname, '/', '-');
+	lname = core::string::eraseAllChars(lname, '(');
+	lname = core::string::eraseAllChars(lname, ')');
+	return core::String::format("application/x-%s", lname.c_str());
+}
+
 core::String FormatDescription::mainExtension(bool includeDot) const {
 	if (exts.empty()) {
 		return core::String::Empty;

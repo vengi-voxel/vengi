@@ -130,16 +130,8 @@ app::AppState FormatPrinter::onRunning() {
 }
 
 core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
-	// TODO: maybe add a mimetype to the format description
-	// TODO: e.g. image/png or application/x-gimp-palette could be a problem here
 	core::String name = desc.name.toLower();
-	core::string::replaceAllChars(name, ' ', '-');
-	core::string::replaceAllChars(name, ':', '-');
-	core::string::replaceAllChars(name, '.', '-');
-	core::string::replaceAllChars(name, '/', '-');
-	name = core::string::eraseAllChars(name, '(');
-	name = core::string::eraseAllChars(name, ')');
-	core::String mt = core::String::format("application/x-%s", name.c_str());
+	core::String mt = desc.mimeType();
 	if (_uniqueMimetypes.has(mt)) {
 		mt += "-" + desc.mainExtension();
 	}
