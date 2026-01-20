@@ -121,6 +121,10 @@ static const color::RGBA slab6normals[]{
 
 } // namespace priv
 
+const char *NormalPalette::getDefaultPaletteName() {
+	return builtIn[0];
+}
+
 color::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
 	// Map the normal components back to [0, 1] range
 	const float rf = (normal.x + 1.0f) / 2.0f; // X component to [0, 1]

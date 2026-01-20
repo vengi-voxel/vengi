@@ -159,10 +159,7 @@ bool SceneGraphNode::hasNormalPalette() const {
 
 palette::NormalPalette &SceneGraphNode::normalPalette() const {
 	if (!hasNormalPalette()) {
-		palette::NormalPalette normalPalette;
-		// TODO: let this be based on the current view mode - see https://github.com/vengi-voxel/vengi/issues/708
-		normalPalette.redAlert2();
-		_normalPalette.setValue(normalPalette);
+		_normalPalette.setValue(voxel::getNormalPalette());
 	}
 	return *_normalPalette.value();
 }
@@ -181,9 +178,7 @@ void SceneGraphNode::setPalette(const palette::Palette &palette) {
 
 palette::Palette &SceneGraphNode::palette() const {
 	if (!_palette.hasValue()) {
-		palette::Palette palette;
-		palette.nippon();
-		_palette.setValue(palette);
+		_palette.setValue(voxel::getPalette());
 	}
 	return *_palette.value();
 }

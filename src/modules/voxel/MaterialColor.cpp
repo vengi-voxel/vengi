@@ -7,14 +7,35 @@
 #include "core/Trace.h"
 #include "core/Var.h"
 #include "core/concurrent/Lock.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 
 namespace voxel {
 
 namespace _priv {
 core::Optional<palette::Palette> globalPalette;
+core::Optional<palette::NormalPalette> globalNormalPalette;
 core_trace_mutex(core::Lock, _lock, "MaterialColor");
 } // namespace _priv
+
+static bool hasNormalPalette() {
+	return _priv::globalNormalPalette.hasValue();
+}
+
+palette::NormalPalette &getNormalPalette() {
+	core::ScopedLock lock(_priv::_lock);
+	if (!hasNormalPalette()) {
+		palette::NormalPalette normalPalette;
+		const core::VarPtr &var = core::Var::get(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName());
+		const core::String &defaultNormalPalette = var->strVal();
+		if (!normalPalette.load(defaultNormalPalette.c_str())) {
+			normalPalette.redAlert2();
+			var->setVal(palette::NormalPalette::getDefaultPaletteName());
+		}
+		_priv::globalNormalPalette.setValue(normalPalette);
+	}
+	return *_priv::globalNormalPalette.value();
+}
 
 static bool hasPalette() {
 	return _priv::globalPalette.hasValue();

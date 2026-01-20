@@ -31,6 +31,7 @@ private:
 public:
 	static color::RGBA toRGBA(const glm::vec3 &normal);
 	static glm::vec3 toVec3(const color::RGBA &rgba);
+	static const char *getDefaultPaletteName();
 
 	int getClosestMatch(const glm::vec3 &normal) const;
 	void loadNormalMap(const color::RGBA *normals, int size);
