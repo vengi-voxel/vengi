@@ -115,6 +115,8 @@ struct RendererState {
 	core::Map<uint64_t, Id, 64> bufferBaseBindings;
 	// Pending integer uniforms: maps location to value (deferred until draw calls)
 	core::Map<int, int, 32> pendingUniformi;
+
+	void startFrame();
 };
 
 }

@@ -408,7 +408,8 @@ float getScaleFactor() {
 }
 
 void startFrame(SDL_Window *window, RendererContext &context) {
-	rendererState().drawCalls = 0;
+	rendererState().startFrame();
+
 	activateContext(window, context);
 }
 
