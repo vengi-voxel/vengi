@@ -137,8 +137,7 @@ IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_
 IMGUI_API bool TooltipTextUnformatted(const char *text);
 
 template<class Collection>
-bool ComboVar(const char *label, const char *varName, const Collection &items) {
-	const core::VarPtr &var = core::Var::getSafe(varName);
+bool ComboVar(const char *label, const core::VarPtr &var, const Collection &items) {
 	int currentItem = var->intVal();
 	const bool retVal = ComboItems(label, &currentItem, items);
 	if (retVal) {
@@ -149,6 +148,12 @@ bool ComboVar(const char *label, const char *varName, const Collection &items) {
 		TooltipTextUnformatted(var->help());
 	}
 	return false;
+}
+
+template<class Collection>
+bool ComboVar(const char *label, const char *varName, const Collection &items) {
+	const core::VarPtr &var = core::Var::getSafe(varName);
+	return ComboVar(label, var, items);
 }
 
 IMGUI_API void TextCentered(const char *text, bool reset = false);
