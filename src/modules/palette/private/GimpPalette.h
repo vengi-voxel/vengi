@@ -13,6 +13,7 @@ namespace palette {
  * Gimp format with Aseprite extension for alpha channels
  *
  * https://github.com/LibreSprite/LibreSprite/tree/master/data/palettes
+ * https://developer.gimp.org/core/standards/
  *
  * @ingroup Formats
  */
