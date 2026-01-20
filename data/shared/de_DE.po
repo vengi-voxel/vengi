@@ -2745,9 +2745,6 @@ msgstr "Achse umkehren"
 msgid "Simple"
 msgstr "Einfach"
 
-msgid "Tiberian Sun/Red Alert 2"
-msgstr ""
-
 msgid "Minecraft Skin"
 msgstr "Minecraft Skin"
 
