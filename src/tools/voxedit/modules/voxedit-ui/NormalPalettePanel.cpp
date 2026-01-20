@@ -99,15 +99,15 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, _("File"))) {
 			if (ImGui::MenuItem(_("Tiberian Sun"))) {
-				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[1]);
+				const core::String &cmd = core::String::format("loadnormalpalette %s", palette::NormalPalette::builtIn[1]);
 				command::executeCommands(cmd, &listener);
 			}
 			if (ImGui::MenuItem(_("Red Alert 2"))) {
-				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[0]);
+				const core::String &cmd = core::String::format("loadnormalpalette %s", palette::NormalPalette::builtIn[0]);
 				command::executeCommands(cmd, &listener);
 			}
 			if (ImGui::MenuItem(_("Slab6"))) {
-				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[2]);
+				const core::String &cmd = core::String::format("loadnormalpalette %s", palette::NormalPalette::builtIn[2]);
 				command::executeCommands(cmd, &listener);
 			}
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export"))) {

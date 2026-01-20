@@ -2095,7 +2095,7 @@ void SceneManager::construct() {
 		moveCursor(x, y, z);
 	}).setHelp(_("Move the cursor by the specified offsets"));
 
-	command::Command::registerCommand("normalpalette", [this] (const command::CmdArgs& args) {
+	command::Command::registerCommand("loadnormalpalette", [this] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Expected to get the normal palette name");
 			return;
