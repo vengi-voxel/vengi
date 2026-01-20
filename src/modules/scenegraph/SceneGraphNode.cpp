@@ -160,6 +160,7 @@ bool SceneGraphNode::hasNormalPalette() const {
 palette::NormalPalette &SceneGraphNode::normalPalette() const {
 	if (!hasNormalPalette()) {
 		palette::NormalPalette normalPalette;
+		// TODO: let this be based on the current view mode - see https://github.com/vengi-voxel/vengi/issues/708
 		normalPalette.redAlert2();
 		_normalPalette.setValue(normalPalette);
 	}
