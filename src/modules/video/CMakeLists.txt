@@ -18,6 +18,7 @@ set(SRCS
 	FileDialogOptions.h
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
+	KeyboardLayout.cpp KeyboardLayout.h
 	OpenFileMode.h
 	PenAxis.h
 	Renderer.cpp Renderer.h
