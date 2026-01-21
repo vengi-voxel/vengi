@@ -11,7 +11,7 @@ def extract_mimetypes(xml_file):
     ns = {'x': 'http://www.freedesktop.org/standards/shared-mime-info'}
     tree = ET.parse(xml_file)
     root = tree.getroot()
-    mimetypes = sorted([elem.attrib['type'] for elem in root.findall(".//x:mime-type", ns)])
+    mimetypes = sorted(set(elem.attrib['type'] for elem in root.findall(".//x:mime-type", ns)))
     return ';'.join(mimetypes)
 
 def replace_mimetype_line(file_path, mimetypes):
