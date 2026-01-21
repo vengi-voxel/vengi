@@ -1,6 +1,5 @@
 /**
- * @file Parser.cpp
- * @brief Shader parser implementation for layout and structure parsing
+ * @file
  */
 
 #include "Parser.h"
@@ -21,141 +20,15 @@ static const char* PrimitiveStr[] {
 	"line_strip",
 	"triangle_strip"
 };
-static_assert(core::enumVal(video::Primitive::Max) == lengthof(PrimitiveStr),
-	"PrimitiveStr size doesn't match video::Primitive enum");
+static_assert(lengthof(PrimitiveStr) == core::enumVal(video::Primitive::Max), "PrimitiveStr doesn't match enum");
 
 static video::Primitive layoutPrimitiveType(const core::String& token) {
 	for (int i = 0; i < lengthof(PrimitiveStr); ++i) {
 		if (token == PrimitiveStr[i]) {
-			return static_cast<video::Primitive>(i);
+			return (video::Primitive)i;
 		}
 	}
 	return video::Primitive::Max;
-}
-
-static bool parseLayoutParameter(TokenIterator& tok, Layout& layout) {
-	const core::String token = tok.next();
-	Log::trace("layout token: %s", token.c_str());
-	
-	if (token == ")") {
-		return false; // Signal end of layout parameters
-	}
-	
-	if (token == ",") {
-		return true; // Continue parsing
-	}
-	
-	// Handle layout parameters with assignment
-	struct LayoutParam {
-		const char* name;
-		bool requiresAssignment;
-		std::function<bool(const core::String&, Layout&)> handler;
-	};
-	
-	static const LayoutParam layoutParams[] = {
-		{"std140", false, [](const core::String&, Layout& l) { l.blockLayout = BlockLayout::std140; return true; }},
-		{"std430", false, [](const core::String&, Layout& l) { l.blockLayout = BlockLayout::std140; return true; }},
-		{"origin_upper_left", false, [](const core::String&, Layout& l) { l.originUpperLeft = true; return true; }},
-		{"pixel_center_integer", false, [](const core::String&, Layout& l) { l.pixelCenterInteger = true; return true; }},
-		{"early_fragment_tests", false, [](const core::String&, Layout& l) { l.earlyFragmentTests = true; return true; }},
-		
-		{"location", true, [&tok](const core::String&, Layout& l) {
-			l.location = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"offset", true, [&tok](const core::String&, Layout& l) {
-			l.offset = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"binding", true, [&tok](const core::String&, Layout& l) {
-			l.binding = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"index", true, [&tok](const core::String&, Layout& l) {
-			l.index = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"xfb_buffer", true, [&tok](const core::String&, Layout& l) {
-			l.transformFeedbackBuffer = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"xfb_offset", true, [&tok](const core::String&, Layout& l) {
-			l.transformFeedbackOffset = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"vertices", true, [&tok](const core::String&, Layout& l) {
-			l.tesselationVertices = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"max_vertices", true, [&tok](const core::String&, Layout& l) {
-			l.maxGeometryVertices = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"local_size_x", true, [&tok](const core::String&, Layout& l) {
-			l.localSize.x = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"local_size_y", true, [&tok](const core::String&, Layout& l) {
-			l.localSize.y = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"local_size_z", true, [&tok](const core::String&, Layout& l) {
-			l.localSize.z = core::string::toInt(tok.next());
-			return true;
-		}},
-		{"primitive_type", true, [&tok](const core::String&, Layout& l) {
-			l.primitiveType = layoutPrimitiveType(tok.next());
-			return true;
-		}}
-	};
-	
-	// Check for known layout parameters
-	for (const auto& param : layoutParams) {
-		if (token == param.name) {
-			if (param.requiresAssignment) {
-				if (!tok.hasNext() || tok.next() != "=") {
-					Log::error("Expected = for %s", param.name);
-					return false;
-				}
-				if (!tok.hasNext()) {
-					Log::error("Missing value for %s", param.name);
-					return false;
-				}
-			}
-			return param.handler(token, layout);
-		}
-	}
-	
-	// Handle typo in "components" (present in original code)
-	if (token == "compontents") {
-		if (!tok.hasNext() || tok.next() != "=") {
-			Log::error("Expected = for components");
-			return false;
-		}
-		if (!tok.hasNext()) {
-			return false;
-		}
-		layout.components = core::string::toInt(tok.next());
-		return true;
-	}
-	
-	// Check for image format
-	video::ImageFormat format = util::getImageFormat(token, tok.line());
-	if (format != video::ImageFormat::Max) {
-		layout.imageFormat = format;
-		return true;
-	}
-	
-	// Check for primitive type without explicit primitive_type= prefix
-	video::Primitive primitiveType = layoutPrimitiveType(token);
-	if (primitiveType != video::Primitive::Max) {
-		layout.primitiveType = primitiveType;
-		return true;
-	}
-	
-	Log::warn("Warning in %s:%i:%i. Unknown layout qualifier: %s", 
-		tok.file(), tok.line(), tok.col(), token.c_str());
-	return true;
 }
 
 static bool parseLayout(TokenIterator& tok, Layout& layout) {
@@ -163,30 +36,201 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 		return false;
 	}
 
-	const core::String token = tok.next();
+	core::String token = tok.next();
 	if (token != "(") {
-		Log::warn("Warning in %s:%i:%i. Unexpected layout syntax - expected (, got %s", 
-			tok.file(), tok.line(), tok.col(), token.c_str());
+		Log::warn("Warning in %s:%i:%i. Unexpected layout syntax - expected {, got %s", tok.file(), tok.line(), tok.col(), token.c_str());
 		return false;
 	}
-	
 	do {
 		if (!tok.hasNext()) {
-			Log::error("Unexpected end of layout qualifiers");
 			return false;
 		}
-		
-		if (!parseLayoutParameter(tok, layout)) {
-			break; // Reached closing parenthesis
+		token = tok.next();
+		Log::trace("token: %s", token.c_str());
+		if (token == ")") {
+			break;
 		}
-	} while (true);
-	
+		if (token == ",") {
+			continue;
+		}
+		if (token == "std140") {
+			layout.blockLayout = BlockLayout::std140;
+		} else if (token == "std430") {
+			// std430 is used for SSBOs (shader storage buffers) in compute shaders
+			layout.blockLayout = BlockLayout::std140; // Treat like std140 for now
+		} else if (token == "location") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for location");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.location = core::string::toInt(tok.next());
+		} else if (token == "offset") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for offset");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.offset = core::string::toInt(tok.next());
+		} else if (token == "component") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for component");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.components = core::string::toInt(tok.next());
+		} else if (token == "index") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for index");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.index = core::string::toInt(tok.next());
+		} else if (token == "binding") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for binding");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.binding = core::string::toInt(tok.next());
+		} else if (token == "xfb_buffer") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for xfb_buffer");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.transformFeedbackBuffer = core::string::toInt(tok.next());
+		} else if (token == "xfb_offset") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for xfb_offset");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.transformFeedbackOffset = core::string::toInt(tok.next());
+		} else if (token == "vertices") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for vertices");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.tesselationVertices = core::string::toInt(tok.next());
+		} else if (token == "max_vertices") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for max_vertices");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.maxGeometryVertices = core::string::toInt(tok.next());
+		} else if (token == "origin_upper_left") {
+			layout.originUpperLeft = true;
+		} else if (token == "pixel_center_integer") {
+			layout.pixelCenterInteger = true;
+		} else if (token == "early_fragment_tests") {
+			layout.earlyFragmentTests = true;
+		} else if (token == "primitive_type") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.primitiveType = layoutPrimitiveType(tok.next());
+		} else if (token == "local_size_x") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.localSize.x = core::string::toInt(tok.next());
+		} else if (token == "local_size_y") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.localSize.y = core::string::toInt(tok.next());
+		} else if (token == "local_size_z") {
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
+			if (!tok.hasNext()) {
+				return false;
+			}
+			layout.localSize.z = core::string::toInt(tok.next());
+		} else {
+			video::ImageFormat format = util::getImageFormat(token, tok.line());
+			if (format != video::ImageFormat::Max) {
+				layout.imageFormat = format;
+			} else {
+				video::Primitive primitiveType = layoutPrimitiveType(token);
+				if (primitiveType != video::Primitive::Max) {
+					layout.primitiveType = primitiveType;
+				} else {
+					Log::warn("Warning in %s:%i:%i. Unknown token given for layout: %s", tok.file(), tok.line(), tok.col(), token.c_str());
+				}
+			}
+		}
+	} while (token != ")");
+
 	return true;
 }
 
+static bool validatePreprocessorDirective(TokenIterator& rawtok) {
+	bool preprocessorError = false;
+
+	while (rawtok.hasNext()) {
+		core::String token = rawtok.next();
+		if (rawtok.op() != '#') {
+			continue;
+		}
+		if (!rawtok.hasNext()) {
+			Log::error("Error in %s:%i:%i. Found preprocessor directive, but no further token",
+					rawtok.file(), rawtok.line(), rawtok.col());
+			preprocessorError = true;
+		}
+		token = rawtok.next();
+		if (token == "ifdef" || token == "ifndef" || token == "define" || token == "if") {
+			if (!rawtok.hasNext()) {
+				Log::error("Error in %s:%i:%i. Found preprocessor directive, but no further token",
+						rawtok.file(), rawtok.line(), rawtok.col());
+				preprocessorError = true;
+			}
+			const core::String& preprocessor = rawtok.next();
+			if (core::string::contains(preprocessor.c_str(), "_")) {
+				Log::warn("Warning in %s:%i:%i. Found preprocessor token with _ - some drivers doesn't support this: %s",
+						rawtok.file(), rawtok.line(), rawtok.col(), preprocessor.c_str());
+				Log::warn("If this is a shader cvar define, just remove the _");
+			}
+		}
+	}
+	return !preprocessorError;
+}
+
 static bool parseArraySpecifier(TokenIterator& tok, int& arraySize) {
-	arraySize = 0;
-	
 	if (tok.peekNext() != "[") {
 		return false; // Not an array
 	}
@@ -215,6 +259,8 @@ static bool parseArraySpecifier(TokenIterator& tok, int& arraySize) {
 }
 
 static bool parseTypeQualifiers(TokenIterator& tok, core::String& type) {
+	// Skip type qualifiers that don't affect parsing
+	// https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
 	static const core::String qualifiers[] = {
 		"uniform", "highp", "mediump", "lowp", 
 		"precision", "flat", "noperspective", "smooth"
@@ -247,250 +293,213 @@ static bool parseTypeQualifiers(TokenIterator& tok, core::String& type) {
 	return true;
 }
 
-static bool validatePreprocessorDirective(TokenIterator& rawtok) {
-	bool preprocessorError = false;
-	
-	while (rawtok.hasNext()) {
-		const core::String token = rawtok.next();
-		if (rawtok.op() != '#') {
-			continue;
-		}
-		
-		if (!rawtok.hasNext()) {
-			Log::error("Error in %s:%i:%i. Incomplete preprocessor directive",
-				rawtok.file(), rawtok.line(), rawtok.col());
-			preprocessorError = true;
-			continue;
-		}
-		
-		const core::String directive = rawtok.next();
-		if (directive == "ifdef" || directive == "ifndef" || 
-			directive == "define" || directive == "if") {
-			
-			if (!rawtok.hasNext()) {
-				Log::error("Error in %s:%i:%i. Incomplete %s directive",
-					rawtok.file(), rawtok.line(), rawtok.col(), directive.c_str());
-				preprocessorError = true;
-				continue;
-			}
-			
-			const core::String& preprocessorToken = rawtok.next();
-			if (core::string::contains(preprocessorToken.c_str(), "_")) {
-				Log::warn("Warning in %s:%i:%i. Preprocessor token with underscore (may not be supported by all drivers): %s",
-					rawtok.file(), rawtok.line(), rawtok.col(), preprocessorToken.c_str());
-				Log::warn("If this is a shader cvar define, consider removing the underscore");
-			}
-		}
-	}
-	
-	return !preprocessorError;
-}
-
-bool parse(const core::String& filename, ShaderStruct& shaderStruct, 
-		   const core::String& shaderFile, const core::String& buffer, bool vertex) {
-	
+bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
 	shaderStruct.filename = shaderFile;
 	shaderStruct.name = shaderFile;
-	
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;
-	
-	simplecpp::TokenList rawtokens(buffer.c_str(), buffer.size(), 
-		files, filename.c_str(), &outputList);
-	
-	std::map<std::string, simplecpp::TokenList*> included = 
-		simplecpp::load(rawtokens, files, dui, &outputList);
-	
+	simplecpp::TokenList rawtokens(buffer.c_str(), buffer.size(), files, filename.c_str(), &outputList);
+	std::map<std::string, simplecpp::TokenList*> included = simplecpp::load(rawtokens, files, dui, &outputList);
+
 	simplecpp::TokenList output(files);
 	std::list<simplecpp::MacroUsage> macroUsage;
-	simplecpp::preprocess(output, rawtokens, files, included, 
-		dui, &outputList, &macroUsage);
-	
+	simplecpp::preprocess(output, rawtokens, files, included, dui, &outputList, &macroUsage);
+
 	TokenIterator rawtok;
 	rawtok.init(&rawtokens);
-	
+
 	if (!validatePreprocessorDirective(rawtok)) {
 		return false;
 	}
-	
-	TokenIterator tok;
-	tok.init(&output);
-	
-	Layout layout;
-	bool hasLayout = false;
-	
+
+	simplecpp::Location loc(files);
+
 	BufferBlock uniformBuffer;
 	bool uniformBufferActive = false;
-	
+
 	BufferBlock shaderStorageBuffer;
 	bool shaderStorageBufferActive = false;
 	bool shaderStorageBufferFound = false;
-	
+
+	TokenIterator tok;
+	tok.init(&output);
+
+	Layout layout;
+	bool hasLayout = false;
 	while (tok.hasNext()) {
 		const core::String token = tok.next();
-		Log::trace("main token: %s", token.c_str());
-		
-		core::List<Variable>* targetList = nullptr;
-		
-		
+		Log::trace("token: %s", token.c_str());
+		core::List<Variable>* v = nullptr;
 		if (token == "$in") {
-			targetList = vertex ? &shaderStruct.attributes : nullptr;
-			// TODO: Use for validation between vertex and fragment shaders
+			if (vertex) {
+				v = &shaderStruct.attributes;
+			} else {
+				// TODO: use this to validate that each $out of the vertex shader has a $in in the fragment shader
+				//v = &_shaderStruct.varyings;
+			}
 		} else if (token == "$out") {
-			targetList = vertex ? &shaderStruct.varyings : &shaderStruct.outs;
+			if (vertex) {
+				v = &shaderStruct.varyings;
+			} else {
+				v = &shaderStruct.outs;
+			}
 		} else if (token == "$constant") {
-			if (!parseConstant(tok, shaderStruct.constants)) {
+			if (!tok.hasNext()) {
 				return false;
 			}
-			continue;
+			const core::String varname = tok.next();
+			if (!tok.hasNext()) {
+				return false;
+			}
+			const core::String varvalue = tok.next();
+			auto it = shaderStruct.constants.find(varname);
+			if (it != shaderStruct.constants.end()) {
+				if (it->value != varvalue) {
+					Log::warn("Warning in %s:%i:%i. Could not register constant %s with value %s (duplicate has value %s)", tok.file(), tok.line(), tok.col(),
+							varname.c_str(), varvalue.c_str(), it->value.c_str());
+				}
+			} else {
+				shaderStruct.constants.put(varname, varvalue);
+			}
 		} else if (token == "layout") {
-			layout = Layout(); // Reset layout
+			// there can be multiple layouts per definition since GL 4.2 (or ARB_shading_language_420pack)
+			// that's why we only reset the layout after we finished parsing the variable and/or the
+			// uniform buffer. The last defined value for the mutually-exclusive qualifiers or for numeric
+			// qualifiers prevails.
+			layout = Layout();
 			hasLayout = true;
 			if (!parseLayout(tok, layout)) {
-				Log::warn("Warning in %s:%i:%i. Failed to parse layout", 
-					tok.file(), tok.line(), tok.col());
+				Log::warn("Warning in %s:%i:%i. Could not parse layout", tok.file(), tok.line(), tok.col());
 			}
-			continue;
 		} else if (token == "buffer") {
 			shaderStorageBufferFound = true;
-			continue;
 		} else if (token == "uniform") {
-			targetList = &shaderStruct.uniforms;
+			v = &shaderStruct.uniforms;
 		} else if (hasLayout && token == "in") {
 			shaderStruct.in.layout = layout;
-			hasLayout = false;
-			continue;
 		} else if (hasLayout && token == "out") {
 			shaderStruct.out.layout = layout;
-			hasLayout = false;
-			continue;
 		} else if (uniformBufferActive) {
 			if (token == "}") {
 				uniformBufferActive = false;
 				if (hasLayout) {
 					uniformBuffer.layout = layout;
-					hasLayout = false;
 				}
+				Log::trace("End of uniform block: %s", uniformBuffer.name.c_str());
 				shaderStruct.uniformBlocks.insert(uniformBuffer);
-				
 				if (tok.next() != ";") {
-					Log::error("Missing ; after uniform block: %s (%s:%i)", 
-						uniformBuffer.name.c_str(), tok.file(), tok.line());
+					Log::error("Missing ; in uniform block: %s (%s:%i)", uniformBuffer.name.c_str(), tok.file(), tok.line());
 					return false;
 				}
-				continue;
+			} else {
+				tok.prev();
 			}
-			tok.prev(); 
 		} else if (shaderStorageBufferActive) {
 			if (token == "}") {
 				shaderStorageBufferActive = false;
 				if (hasLayout) {
 					shaderStorageBuffer.layout = layout;
-					hasLayout = false;
 				}
-				
+				Log::trace("End of buffer block: %s", shaderStorageBuffer.name.c_str());
+
+				// Check if there's an instance name after the closing brace
 				if (tok.hasNext()) {
-					const core::String& nextToken = tok.next();
-					if (nextToken != ";") {
-						shaderStorageBuffer.name = shaderStorageBuffer.name + "_" + nextToken;
+					const core::String &instanceName = tok.next();
+					if (instanceName != ";") {
+						// Store instance name in the buffer block
+						shaderStorageBuffer.name = shaderStorageBuffer.name + "_" + instanceName;
+						Log::trace("Buffer block instance name: %s", instanceName.c_str());
 						if (!tok.hasNext() || tok.next() != ";") {
-							Log::error("Missing ; after buffer block instance: %s (%s:%i)", 
-								shaderStorageBuffer.name.c_str(), tok.file(), tok.line());
+							Log::error("Missing ; for storage buffer block instance: %s (%s:%i)", shaderStorageBuffer.name.c_str(), tok.file(), tok.line());
 							return false;
 						}
 					} else {
-						tok.prev(); 
+						tok.prev(); // Put ; back
 					}
 				}
-				
+
 				shaderStruct.bufferBlocks.insert(shaderStorageBuffer);
-				
 				if (tok.next() != ";") {
-					Log::error("Missing ; after buffer block: %s (%s:%i)", 
-						shaderStorageBuffer.name.c_str(), tok.file(), tok.line());
+					Log::error("Missing ; for storage buffer block: %s (%s:%i)", shaderStorageBuffer.name.c_str(), tok.file(), tok.line());
 					return false;
 				}
-				continue;
+			} else {
+				tok.prev();
 			}
-			tok.prev(); 
 		}
-		
-		if (!targetList && !uniformBufferActive && !shaderStorageBufferActive) {
+
+		if (v == nullptr && !uniformBufferActive && !shaderStorageBufferActive && !shaderStorageBufferFound) {
 			continue;
 		}
-		
+
 		if (!tok.hasNext()) {
-			Log::error("Error in %s:%i:%i. Expected type", 
-				tok.file(), tok.line(), tok.col());
+			Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get type", tok.file(), tok.line(), tok.col());
+			return false;
+		}
+		core::String type = tok.next();
+		Log::trace("token: %s", type.c_str());
+		if (!tok.hasNext()) {
+			Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get variable name for type %s", tok.file(), tok.line(), tok.col(), type.c_str());
 			return false;
 		}
 		
-		core::String type = tok.next();
 		if (!parseTypeQualifiers(tok, type)) {
 			return false;
 		}
 		
-		if (!tok.hasNext()) {
-			Log::error("Error in %s:%i:%i. Expected identifier for type %s", 
-				tok.file(), tok.line(), tok.col(), type.c_str());
-			return false;
-		}
-		
 		core::String name = tok.next();
-		
+		Log::trace("token: %s", name.c_str());
+		// uniform block or buffer block
 		if (name == "{") {
 			if (shaderStorageBufferFound) {
 				shaderStorageBuffer.name = type;
 				shaderStorageBuffer.members.clear();
+				Log::trace("Found uniform or buffer block: %s", type.c_str());
 				shaderStorageBufferActive = true;
 				shaderStorageBufferFound = false;
 			} else {
 				uniformBuffer.name = type;
 				uniformBuffer.members.clear();
+				Log::trace("Found uniform or buffer block: %s", type.c_str());
 				uniformBufferActive = true;
 			}
 			continue;
 		}
-		
 		const Variable::Type typeEnum = util::getType(type, tok.line());
 		int arraySize = 0;
-		
 		if (parseArraySpecifier(tok, arraySize)) {
 			if (tok.next() != ";") {
-				Log::error("Missing ; for array %s (%s:%i)", 
-					name.c_str(), tok.file(), tok.line());
+				Log::error("Missing ; for array %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 		} else {
 			if (tok.next() != ";") {
-				Log::error("Missing ; for variable %s (%s:%i)", 
-					name.c_str(), tok.file(), tok.line());
+				Log::error("Missing ; for variable %s (%s:%i)", name.c_str(), tok.file(), tok.line());
 				return false;
 			}
 		}
-		
+		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBufferActive) {
 			uniformBuffer.members.insert(Variable{typeEnum, name, arraySize});
 		} else if (shaderStorageBufferActive) {
 			shaderStorageBuffer.members.insert(Variable{typeEnum, name, arraySize});
-		} else if (targetList) {
-
-			bool duplicate = false;
-			for (const auto& var : *targetList) {
-				if (var.name == name) {
-					duplicate = true;
-					if (var.type != typeEnum) {
-						Log::error("Error in %s:%i:%i. Duplicate variable %s with different type", 
-							tok.file(), tok.line(), tok.col(), name.c_str());
+		} else {
+			bool found = false;
+			for (auto i = v->begin(); i != v->end(); ++i) {
+				if (i->value.name == name) {
+					found = true;
+					if (typeEnum != i->value.type) {
+						// TODO: check layout differences
+						Log::error("Error in %s:%i:%i. Found duplicate variable %s (%s versus %s)", tok.file(), tok.line(), tok.col(),
+							name.c_str(), util::resolveTypes(i->value.type).ctype, util::resolveTypes(typeEnum).ctype);
 						return false;
 					}
 					break;
 				}
 			}
-			
-			if (!duplicate) {
-				targetList->insert(Variable{typeEnum, name, arraySize});
+			if (!found) {
+				v->insert(Variable{typeEnum, name, arraySize});
 				if (hasLayout) {
 					shaderStruct.layouts.put(name, layout);
 					hasLayout = false;
@@ -498,48 +507,15 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct,
 			}
 		}
 	}
-	
-	// Validate parsing state
 	if (uniformBufferActive) {
-		Log::error("Parsing error - unterminated uniform block");
+		Log::error("Parsing error - still inside a uniform block");
 		return false;
 	}
-	
 	if (shaderStorageBufferActive) {
-		Log::error("Parsing error - unterminated buffer block");
+		Log::error("Parsing error - still inside a buffer block");
 		return false;
 	}
-	
 	return true;
 }
 
-// Helper function for parsing constants
-static bool parseConstant(TokenIterator& tok, core::Map<core::String, core::String>& constants) {
-	if (!tok.hasNext()) {
-		Log::error("Expected constant name");
-		return false;
-	}
-	
-	const core::String name = tok.next();
-	
-	if (!tok.hasNext()) {
-		Log::error("Expected constant value for %s", name.c_str());
-		return false;
-	}
-	
-	const core::String value = tok.next();
-	
-	auto it = constants.find(name);
-	if (it != constants.end()) {
-		if (it->value != value) {
-			Log::warn("Warning in %s:%i:%i. Constant %s redefined with different value (%s vs %s)", 
-				tok.file(), tok.line(), tok.col(), name.c_str(), it->value.c_str(), value.c_str());
-		}
-	} else {
-		constants.put(name, value);
-	}
-	
-	return true;
 }
-
-} // namespace shadertool
