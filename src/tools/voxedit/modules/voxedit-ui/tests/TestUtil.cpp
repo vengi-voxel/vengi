@@ -14,6 +14,20 @@
 
 namespace voxedit {
 
+bool newTemplateScene(ImGuiTestContext *ctx, const core::String &templateName) {
+	ImGuiWindow* window = ImGui::FindWindowByName("###app");
+	if (window == nullptr) {
+		ctx->LogError("Error: could not find ###app window");
+		IM_CHECK_SILENT_RETV(window != nullptr, false);
+	}
+	ctx->SetRef(window);
+	ctx->MenuClick("File/New");
+	ctx->Yield();
+	ctx->SetRef(POPUP_TITLE_NEW_SCENE);
+	ctx->ItemClick(templateName.c_str());
+	return true;
+}
+
 bool changeViewMode(ImGuiTestContext *ctx, ViewMode viewMode) {
 	ImGuiWindow* window = ImGui::FindWindowByName("###app");
 	if (window == nullptr) {

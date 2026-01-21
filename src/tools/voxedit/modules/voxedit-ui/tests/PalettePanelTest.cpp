@@ -34,11 +34,11 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
 		ctx->ItemClick("//$FOCUSED/Ok");
 		ctx->MenuClick("File/Export");
-		saveFile(ctx, "palette-lospec.png");
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		IM_CHECK_EQ(activePalette.colorCount(), 16);
 		IM_CHECK_EQ(activePalette.color(0), color::RGBA(0, 0, 0, 255));
 		IM_CHECK_EQ(activePalette.color(4), color::RGBA(255, 255, 255, 255));
+		saveFile(ctx, "palette-lospec.png");
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color")->TestFunc = [=](ImGuiTestContext *ctx) {
