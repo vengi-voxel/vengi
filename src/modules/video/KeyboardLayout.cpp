@@ -21,23 +21,23 @@ KeyboardLayout detectKeyboardLayout() {
 #endif
 
 	if (q == 'q' && w == 'w' && y == 'y') {
-		Log::error("Detected QWERTY keyboard layout");
+		Log::debug("Detected QWERTY keyboard layout");
 		return KeyboardLayout::QWERTY;
 	}
 	if (q == 'q' && w == 'w' && y == 'z') {
-		Log::error("Detected QWERTZ keyboard layout");
+		Log::debug("Detected QWERTZ keyboard layout");
 		return KeyboardLayout::QWERTZ;
 	}
 	if (q == 'a' && w == 'z' && y == 'y') {
-		Log::error("Detected AZERTY keyboard layout");
+		Log::debug("Detected AZERTY keyboard layout");
 		return KeyboardLayout::AZERTY;
 	}
 	if (q == 'q' && w == 'w' && y == 'j') {
-		Log::error("Detected COLEMAK keyboard layout");
+		Log::debug("Detected COLEMAK keyboard layout");
 		return KeyboardLayout::COLEMAK;
 	}
 	if (q == 'q' && w == ',' && y == 'f') {
-		Log::error("Detected DVORAK keyboard layout");
+		Log::debug("Detected DVORAK keyboard layout");
 		return KeyboardLayout::DVORAK;
 	}
 	return KeyboardLayout::Max;
