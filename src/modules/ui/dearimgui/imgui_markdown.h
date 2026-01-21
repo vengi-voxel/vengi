@@ -284,6 +284,7 @@ namespace ImGui
          UNORDERED_LIST,
          LINK,
          EMPHASIS,
+         CODE,
     };
 
     struct MarkdownFormatInfo
@@ -400,6 +401,7 @@ namespace ImGui
     struct Line {
         bool isHeading = false;
         bool isEmphasis = false;
+        bool isCode = false;
         bool isUnorderedListStart = false;
         bool isLeadingSpace = true;     // spaces at start of line
         int  leadSpaceCount = 0;
@@ -431,6 +433,15 @@ namespace ImGui
         TextBlock url;
         bool isImage = false;
         int num_brackets_open = 0;
+    };
+
+    struct Code {
+        enum State {
+            NONE,
+            LEFT,
+        };
+        State state = NONE;
+        TextBlock text;
     };
 
 	struct Emphasis {
@@ -496,6 +507,13 @@ namespace ImGui
 			const char* text = markdown_ + textStart;
 			textRegion_.RenderTextWrapped(text, text + textSize);
 		}
+        else if( line_.isCode )
+        {
+            formatInfo.type = MarkdownFormatType::CODE;
+            mdConfig_.formatCallback( formatInfo, true );
+            const char* text = markdown_ + textStart;
+            textRegion_.RenderTextWrapped( text, text + textSize );
+        }
         else                                // render a normal paragraph chunk
         {
             formatInfo.type = MarkdownFormatType::NORMAL_TEXT;
@@ -529,6 +547,7 @@ namespace ImGui
         Line        prevLine;
         Link        link;
         Emphasis    em;
+        Code        code;
         TextRegion  textRegion;
         int concurrentEmptyNewlines = 0;
         bool appliedExtraNewline = false;
@@ -620,6 +639,46 @@ namespace ImGui
                 if (!appliedExtraNewline && !prevLine.isHeading && concurrentEmptyNewlines >= 1) {
                     ImGui::NewLine();
                     appliedExtraNewline = true;
+                }
+            }
+
+            if( code.state == Code::NONE && c == '`' && !line.isHeading && link.state == Link::NO_LINK )
+            {
+                int lineEnd = i;
+                if( lineEnd > line.lineStart )
+                {
+                    line.lineEnd = lineEnd;
+                    RenderLine( markdown_, line, textRegion, mdConfig_ );
+                    ImGui::SameLine( 0.0f, 0.0f );
+                    line.isUnorderedListStart = false;
+                    line.leadSpaceCount = 0;
+                }
+                code.state = Code::LEFT;
+                code.text.start = i;
+                line.isCode = true;
+                line.lineStart = i + 1;
+                line.lastRenderPosition = i;
+                continue;
+            }
+            else if( code.state == Code::LEFT )
+            {
+                if( c == '`' )
+                {
+                    line.lineEnd = i;
+                    if( line.lineEnd > line.lineStart )
+                    {
+                        RenderLine( markdown_, line, textRegion, mdConfig_ );
+                        ImGui::SameLine( 0.0f, 0.0f );
+                    }
+                    code.state = Code::NONE;
+                    line.isCode = false;
+                    line.lineStart = i + 1;
+                    line.lastRenderPosition = i;
+                    continue;
+                }
+                if( c != '\n' )
+                {
+                    continue;
                 }
             }
 
@@ -841,6 +900,7 @@ namespace ImGui
                 prevLine = line;
 				line = Line();
                 em = Emphasis();
+                code = Code();
 
                 line.lineStart = i + 1;
                 line.lastRenderPosition = i;
@@ -1153,6 +1213,16 @@ namespace ImGui
             break;
         }
         case MarkdownFormatType::UNORDERED_LIST:
+            break;
+        case MarkdownFormatType::CODE:
+            if( start_ )
+            {
+                ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_TextDisabled ] );
+            }
+            else
+            {
+                ImGui::PopStyleColor();
+            }
             break;
         case MarkdownFormatType::LINK:
             if( start_ )
