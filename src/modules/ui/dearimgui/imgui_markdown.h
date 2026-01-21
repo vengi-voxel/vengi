@@ -285,6 +285,7 @@ namespace ImGui
          LINK,
          EMPHASIS,
          CODE,
+         TABLE,
     };
 
     struct MarkdownFormatInfo
@@ -358,6 +359,7 @@ namespace ImGui
     struct Line;
     inline void UnderLine( ImColor col_ );
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ );
+    inline void RenderTableRow( const char* markdown_, int lineStart_, int lineEnd_, int columnCount_, bool isHeader_, const MarkdownConfig& mdConfig_ );
 
     struct TextRegion
     {
@@ -404,6 +406,8 @@ namespace ImGui
         bool isCode = false;
         bool isUnorderedListStart = false;
         bool isLeadingSpace = true;     // spaces at start of line
+        bool isTableRow = false;
+        bool isTableSeparator = false;
         int  leadSpaceCount = 0;
         int  headingCount = 0;
         int  emphasisCount = 0;
@@ -456,12 +460,77 @@ namespace ImGui
         char sym;
 	};
 
+    struct Table {
+        enum State {
+            NONE,
+            HEADER,
+            SEPARATOR,
+            ROWS,
+        };
+        State state = NONE;
+        int columnCount = 0;
+        int rowStart = 0;
+        bool active = false;
+    };
+
     inline void UnderLine( ImColor col_ )
     {
         ImVec2 min = ImGui::GetItemRectMin();
         ImVec2 max = ImGui::GetItemRectMax();
         min.y = max.y;
         ImGui::GetWindowDrawList()->AddLine( min, max, col_, 1.0f );
+    }
+
+    inline void RenderTableRow( const char* markdown_, int lineStart_, int lineEnd_, int columnCount_, bool isHeader_, const MarkdownConfig& mdConfig_ )
+    {
+        // Parse cells separated by pipes
+        int cellStart = lineStart_;
+        int cellIndex = 0;
+
+        // Skip leading pipe
+        while( cellStart < lineEnd_ && markdown_[cellStart] == '|' )
+        {
+            cellStart++;
+        }
+
+        for( int i = cellStart; i <= lineEnd_ && cellIndex < columnCount_; ++i )
+        {
+            if( i == lineEnd_ || markdown_[i] == '|' )
+            {
+                // Found end of cell
+                int cellEnd = i;
+
+                // Trim leading/trailing spaces
+                while( cellStart < cellEnd && markdown_[cellStart] == ' ' )
+                {
+                    cellStart++;
+                }
+                while( cellEnd > cellStart && markdown_[cellEnd - 1] == ' ' )
+                {
+                    cellEnd--;
+                }
+
+                ImGui::TableNextColumn();
+
+                if( isHeader_ )
+                {
+                    MarkdownFormatInfo formatInfo;
+                    formatInfo.config = &mdConfig_;
+                    formatInfo.type = MarkdownFormatType::EMPHASIS;
+                    formatInfo.level = 2; // Bold for headers
+                    mdConfig_.formatCallback( formatInfo, true );
+                    ImGui::TextUnformatted( markdown_ + cellStart, markdown_ + cellEnd );
+                    mdConfig_.formatCallback( formatInfo, false );
+                }
+                else
+                {
+                    ImGui::TextUnformatted( markdown_ + cellStart, markdown_ + cellEnd );
+                }
+
+                cellStart = i + 1;
+                cellIndex++;
+            }
+        }
     }
 
     inline void RenderLine( const char* markdown_, Line& line_, TextRegion& textRegion_, const MarkdownConfig& mdConfig_ )
@@ -548,6 +617,7 @@ namespace ImGui
         Link        link;
         Emphasis    em;
         Code        code;
+        Table       table;
         TextRegion  textRegion;
         int concurrentEmptyNewlines = 0;
         bool appliedExtraNewline = false;
@@ -629,7 +699,64 @@ namespace ImGui
                             continue;
                         }
                     }
+                    else if( c == '|' )
+                    {
+                        // Detect table rows
+                        line.isTableRow = true;
+                        line.isLeadingSpace = false;
+
+                        // Count columns by counting pipes
+                        int pipeCount = 0;
+                        int j = i;
+                        bool isAllDashes = true;
+                        bool hasDash = false;
+
+                        while( j < (int)markdownLength_ && markdown_[j] != '\n' )
+                        {
+                            if( markdown_[j] == '|' )
+                            {
+                                pipeCount++;
+                            }
+                            else if( markdown_[j] == '-' )
+                            {
+                                hasDash = true;
+                            }
+                            else if( markdown_[j] != ' ' && markdown_[j] != ':' )
+                            {
+                                isAllDashes = false;
+                            }
+                            j++;
+                        }
+
+                        // Check if this is a separator row (all dashes and pipes)
+                        if( isAllDashes && hasDash && pipeCount >= 2 )
+                        {
+                            line.isTableSeparator = true;
+                            table.state = Table::SEPARATOR;
+                            table.columnCount = pipeCount - 1;
+                        }
+                        else if( pipeCount >= 2 )
+                        {
+                            if( table.state == Table::NONE )
+                            {
+                                table.state = Table::HEADER;
+                                table.columnCount = pipeCount - 1;
+                            }
+                            else if( table.state == Table::SEPARATOR )
+                            {
+                                table.state = Table::ROWS;
+                            }
+                        }
+                    }
                 }
+            }
+
+            // Check if we need to end an active table
+            if( !line.isLeadingSpace && table.active && !line.isTableRow )
+            {
+                // We're in a table but this line is not a table row - end the table
+                ImGui::EndTable();
+                table = Table();
             }
 
             if ( (mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_DiscardExtraNewLines) )
@@ -639,6 +766,16 @@ namespace ImGui
                 if (!appliedExtraNewline && !prevLine.isHeading && concurrentEmptyNewlines >= 1) {
                     ImGui::NewLine();
                     appliedExtraNewline = true;
+                }
+            }
+
+            // Skip inline parsing for table rows
+            if( line.isTableRow )
+            {
+                // Just continue to newline handling
+                if( c != '\n' )
+                {
+                    continue;
                 }
             }
 
@@ -891,8 +1028,38 @@ namespace ImGui
                 {
                     ImGui::Separator();
                 }
+                else if( line.isTableRow )
+                {
+                    // Handle table rendering
+                    if( table.state == Table::HEADER )
+                    {
+                        // Start new table
+                        if( ImGui::BeginTable( "##mdtable", table.columnCount, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg ) )
+                        {
+                            table.active = true;
+                            ImGui::TableNextRow( ImGuiTableRowFlags_Headers );
+                            RenderTableRow( markdown_, line.lineStart, line.lineEnd, table.columnCount, true, mdConfig_ );
+                        }
+                    }
+                    else if( line.isTableSeparator && table.active )
+                    {
+                        // Skip separator row, already handled by BeginTable with headers
+                    }
+                    else if( table.state == Table::ROWS && table.active )
+                    {
+                        // Render data row
+                        ImGui::TableNextRow();
+                        RenderTableRow( markdown_, line.lineStart, line.lineEnd, table.columnCount, false, mdConfig_ );
+                    }
+                }
                 else
                 {
+                    // End table if we were in one
+                    if( table.active )
+                    {
+                        ImGui::EndTable();
+                        table = Table();
+                    }
                     // render the line: multiline emphasis requires a complex implementation so not supporting
                     RenderLine( markdown_, line, textRegion, mdConfig_ );
                 }
@@ -922,6 +1089,13 @@ namespace ImGui
         }
         else
         {
+            // Close any open table
+            if( table.active )
+            {
+                ImGui::EndTable();
+                table = Table();
+            }
+
             // render any remaining text if last char wasn't 0
             if( markdownLength_ && line.lineStart < (int)markdownLength_ && markdown_[ line.lineStart ] != 0 )
             {
@@ -1243,6 +1417,9 @@ namespace ImGui
                     ImGui::UnderLine( ImGui::GetStyle().Colors[ ImGuiCol_Button ] );
                 }
             }
+            break;
+        case MarkdownFormatType::TABLE:
+            // Tables are handled inline during rendering
             break;
         }
     }
