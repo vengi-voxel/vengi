@@ -7,7 +7,6 @@
 #include "core/ArrayLength.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
-#include "Parser.h"
 #include "Util.h"
 
 namespace shadertool {
@@ -77,9 +76,9 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 				return false;
 			}
 			layout.offset = core::string::toInt(tok.next());
-		} else if (token == "compontents") {
+		} else if (token == "components") {
 			if (!tok.hasNext() || tok.next() != "=") {
-				Log::error("Expected = for compontents");
+				Log::error("Expected = for components");
 				return false;
 			}
 			if (!tok.hasNext()) {
