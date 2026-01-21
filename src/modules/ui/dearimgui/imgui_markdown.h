@@ -762,6 +762,7 @@ namespace ImGui
                         }
                         if( ImGui::IsItemHovered() )
                         {
+                            ImGui::SetMouseCursor( ImGuiMouseCursor_Hand );
                             if( ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback && useLinkCallback )
                             {
                                 mdConfig_.linkCallback( { markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true } );
@@ -964,6 +965,7 @@ namespace ImGui
 
         if(bHovered)
         {
+            ImGui::SetMouseCursor( ImGuiMouseCursor_Hand );
             if( ImGui::IsMouseReleased( 0 ) && mdConfig_.linkCallback )
             {
                 mdConfig_.linkCallback( { markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false } );
