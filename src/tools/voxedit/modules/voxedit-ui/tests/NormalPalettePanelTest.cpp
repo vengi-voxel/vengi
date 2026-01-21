@@ -23,6 +23,14 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(window != nullptr);
 		IM_CHECK(!window->Active);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Tiberian Sun");
+		ctx->MenuClick("File/Red Alert 2");
+		ctx->MenuClick("File/Slab6");
+	};
 }
 
 } // namespace voxedit
