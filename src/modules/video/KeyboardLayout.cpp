@@ -10,9 +10,15 @@
 namespace video {
 
 KeyboardLayout detectKeyboardLayout() {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
 	const SDL_Keycode q = SDL_GetKeyFromScancode(SDL_SCANCODE_Q, 0, true);
 	const SDL_Keycode w = SDL_GetKeyFromScancode(SDL_SCANCODE_W, 0, true);
 	const SDL_Keycode y = SDL_GetKeyFromScancode(SDL_SCANCODE_Y, 0, true);
+#else
+	const SDL_Keycode q = SDL_GetKeyFromScancode(SDL_SCANCODE_Q);
+	const SDL_Keycode w = SDL_GetKeyFromScancode(SDL_SCANCODE_W);
+	const SDL_Keycode y = SDL_GetKeyFromScancode(SDL_SCANCODE_Y);
+#endif
 
 	if (q == 'q' && w == 'w' && y == 'y') {
 		Log::error("Detected QWERTY keyboard layout");
