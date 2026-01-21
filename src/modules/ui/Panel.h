@@ -34,6 +34,7 @@ public:
 	void unregisterUITests(ImGuiTestEngine *);
 	const char *testCategory() const { return _title.c_str(); }
 
+	bool changeSlider(ImGuiTestContext *ctx, const char *path, bool left);
 	bool saveFile(ImGuiTestContext *ctx, const char *filename);
 	bool cancelSaveFile(ImGuiTestContext *ctx);
 	bool focusWindow(ImGuiTestContext *ctx, const char *title);

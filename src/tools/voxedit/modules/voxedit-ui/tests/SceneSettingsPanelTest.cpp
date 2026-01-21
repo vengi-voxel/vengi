@@ -17,10 +17,8 @@ void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->ComboClick("Shading Mode/Lit (No Shadows)");
 		ctx->ComboClick("Shading Mode/Shadows");
 
-		ctx->MouseMove("sunangle/Azimuth");
-		ctx->MouseDown();
-		ctx->MouseMove("sunangle/Azimuth", ImGuiTestOpFlags_MoveToEdgeL);
-		ctx->MouseUp();
+		changeSlider(ctx, "sunangle/Azimuth", true);
+		changeSlider(ctx, "sunangle/Azimuth", false);
 	};
 }
 
