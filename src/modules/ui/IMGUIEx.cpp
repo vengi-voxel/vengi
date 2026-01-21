@@ -10,12 +10,14 @@
 #include "Style.h"
 #include "app/App.h"
 #include "color/ColorUtil.h"
+#include "core/StringUtil.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "dearimgui/imgui_internal.h"
 #include "io/FormatDescription.h"
 #include "math/Axis.h"
 #include "video/FileDialogOptions.h"
+#include "video/TexturePool.h"
 #include "video/WindowedApp.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>

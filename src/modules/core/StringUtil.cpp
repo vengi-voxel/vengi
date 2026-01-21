@@ -1099,5 +1099,20 @@ core::String addFilenamePrefix(const core::String &filename, const core::String 
 	return core::string::path(path, prefix + file);
 }
 
+bool isUrl(const core::String &in) {
+	// check for alphanum followed by ://
+	if (in.size() < 5) {
+		return false;
+	}
+	size_t i = 0;
+	while (i < in.size() && core::string::isAlphaNum(in[i])) {
+		++i;
+	}
+	if (i + 3 >= in.size()) {
+		return false;
+	}
+	return in[i] == ':' && in[i + 1] == '/' && in[i + 2] == '/';
+}
+
 } // namespace string
 } // namespace core

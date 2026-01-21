@@ -76,6 +76,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders",
 								   urlIconWidth);
 					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", urlIconWidth);
+					ImGui::URLItem("imgui_markdown", "https://github.com/juliettef/imgui_markdown", urlIconWidth);
 					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", urlIconWidth);
 					ImGui::URLItem("implot", "https://github.com/epezent/implot", urlIconWidth);
 					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", urlIconWidth);

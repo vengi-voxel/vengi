@@ -336,5 +336,7 @@ bool parseReal(const char **token, float *out);
 void parseIVec3(const core::String &in, int32_t *out, const char* delimiters = " \t\r\n\f\v");
 void parseVec3(const core::String &in, float *out, const char* delimiters = " \t\r\n\f\v");
 
+bool isUrl(const core::String &in);
+
 }
 }

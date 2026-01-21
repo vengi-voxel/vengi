@@ -7,6 +7,7 @@
 #include "FileDialog.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/RingBuffer.h"
+#include "video/TexturePool.h"
 #include "video/WindowedApp.h"
 #include "IMGUIConsole.h"
 #include "Style.h"
