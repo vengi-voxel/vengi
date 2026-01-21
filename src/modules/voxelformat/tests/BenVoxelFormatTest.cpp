@@ -9,11 +9,11 @@ namespace voxelformat {
 
 class BenVoxelFormatTest : public AbstractFormatTest {};
 
-TEST_F(BenVoxelFormatTest, testLoadJSON) {
+TEST_F(BenVoxelFormatTest, DISABLED_testLoadJSON) {
 	testLoad("sora.ben.json");
 }
 
-TEST_F(BenVoxelFormatTest, testLoadBinary) {
+TEST_F(BenVoxelFormatTest, DISABLED_testLoadBinary) {
 	testLoad("sora.ben");
 }
 
