@@ -40,6 +40,21 @@ def update_git(name, repo_url, branch=None):
             clone_cmd += ["-b", branch]
         subprocess.run(clone_cmd, check=True)
     else:
+        # Check if there are uncommitted changes and handle them
+        try:
+            # Check for uncommitted changes
+            result = subprocess.run(["git", "-C", sync_dir, "diff-index", "--quiet", "HEAD"],
+                                  capture_output=True)
+            if result.returncode != 0:
+                print(f"Uncommitted changes detected in {sync_dir}, discarding them...")
+                # Discard all uncommitted changes (both staged and unstaged)
+                subprocess.run(["git", "-C", sync_dir, "reset", "--hard"], check=True)
+                subprocess.run(["git", "-C", sync_dir, "clean", "-fd"], check=True)
+        except subprocess.CalledProcessError:
+            # If we can't check status, try to reset anyway
+            subprocess.run(["git", "-C", sync_dir, "reset", "--hard"], check=False)
+            subprocess.run(["git", "-C", sync_dir, "clean", "-fd"], check=False)
+
         pull_cmd = ["git", "-C", sync_dir, "pull", "--rebase", "--allow-unrelated-histories"]
         subprocess.run(pull_cmd, check=True)
     return get_git_revision(sync_dir)
@@ -265,6 +280,15 @@ def update_dearimgui_testengine():
         ]
     )
 
+def update_imgui_markdown():
+    update_target(
+        "imgui_markdown",
+        "https://github.com/enkisoftware/imgui_markdown.git",
+        [
+            ("imgui_markdown.h", "src/modules/ui/dearimgui/imgui_markdown.h"),
+        ]
+    )
+
 def update_glm():
     update_target(
         "glm",
@@ -447,7 +471,8 @@ def main():
         update_ufbx,
         update_natsort,
         update_miniz,
-        update_opengametools
+        update_opengametools,
+        update_imgui_markdown
     ]
 
     # Filter updates based on the provided filter
