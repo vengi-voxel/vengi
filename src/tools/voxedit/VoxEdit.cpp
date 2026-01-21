@@ -414,7 +414,6 @@ app::AppState VoxEdit::onInit() {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 	video::enable(video::State::Blend);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
 	setRelativeMouseMode(false);
 

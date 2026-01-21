@@ -411,6 +411,8 @@ void startFrame(SDL_Window *window, RendererContext &context) {
 	rendererState().startFrame();
 
 	activateContext(window, context);
+
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 }
 
 } // namespace video

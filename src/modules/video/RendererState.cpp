@@ -13,7 +13,7 @@ void RendererState::startFrame() {
 	// superfluous state changes from a previous frame
 	for (int i = 0; i < core::enumVal(TextureUnit::Max); ++i) {
 		pendingTextureHandle[i] = textureHandle[i];
-		pendingTextureType[i] = TextureType::Max;
+		// pendingTextureType[i] = TextureType::Max;
 	}
 
 	pendingClearColor = clearColor;

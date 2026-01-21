@@ -29,6 +29,7 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 		return image::ImagePtr();
 	}
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
+	// TODO: RENDERER: use scoped state changes like video::ScopedBlendMode
 	video::clearColor(ctx.clearColor);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
