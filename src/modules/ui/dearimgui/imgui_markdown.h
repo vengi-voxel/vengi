@@ -611,7 +611,7 @@ namespace ImGui
             linkHoverStart = s_linkHoverStart;
         }
 
-        ImGuiStyle& style = ImGui::GetStyle();
+        // ImGuiStyle& style = ImGui::GetStyle();
         Line        line;
         Line        prevLine;
         Link        link;
