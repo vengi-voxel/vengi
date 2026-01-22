@@ -18,23 +18,21 @@ class MainWindow;
  * See the @c CMakeLists.txt file for voxedit to get a list of all included markdown files.
  */
 class HelpPanel : public ui::Panel {
-private:
-	using Super = ui::Panel;
-
-	MainWindow *_mainWindow = nullptr;
+public:
 	struct State {
 		core::String _basePath;
 		core::String _filename;
 	};
+
+private:
+	using Super = ui::Panel;
+
+	MainWindow *_mainWindow = nullptr;
 	core::DynamicArray<State> _history;
 	int _historyPosition = 0;
 	core::String _markdown;
 	core::String _pendingMarkdown;
 	bool _hasPendingUpdate = false;
-
-	const State &c() const {
-		return _history[_historyPosition];
-	}
 
 	void setMarkdownState(const State &state);
 	void loadCurrentState();
@@ -52,6 +50,10 @@ public:
 	void goForward();
 	bool canGoBack() const;
 	bool canGoForward() const;
+
+	const State &c() const {
+		return _history[_historyPosition];
+	}
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;

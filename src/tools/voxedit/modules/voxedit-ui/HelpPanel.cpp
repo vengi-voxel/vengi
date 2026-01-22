@@ -84,13 +84,15 @@ static void linkCallback(ImGui::MarkdownLinkCallbackData data) {
 
 static ImGui::MarkdownImageData imageCallback(ImGui::MarkdownLinkCallbackData data) {
 	HelpPanel *panel = (HelpPanel *)data.userData;
+	const HelpPanel::State &c = panel->c();
 	video::TexturePool *texturePool = panel->texturePool().get();
+	core::String imagePath(data.link, data.linkLength);
+	imagePath = core::string::path(c._basePath, imagePath);
 	if (texturePool == nullptr) {
 		ImGui::MarkdownImageData imageData;
 		imageData.isValid = false;
 		return imageData;
 	}
-	core::String imagePath(data.link, data.linkLength);
 	video::TexturePtr texture = texturePool->load(imagePath);
 	ImGui::MarkdownImageData imageData;
 	imageData.isValid = texture->isLoaded();

@@ -46,6 +46,7 @@ set(DOCS
 	LUAScript.md
 	Material.md
 	Palette.md
+	Translation.md
 	img/voxedit-animation.png
 	img/voxedit-asset.png
 	img/voxedit-brushes.png
