@@ -36,6 +36,11 @@ private:
 
 	void setMarkdownState(const State &state);
 	void loadCurrentState();
+	void navigation();
+	void goBack();
+	void goForward();
+	bool canGoBack() const;
+	bool canGoForward() const;
 
 public:
 	HelpPanel(MainWindow *mainWindow, ui::IMGUIApp *app) : Super(app, "help"), _mainWindow(mainWindow) {
@@ -46,10 +51,6 @@ public:
 	void setMarkdownFile(const core::String &file);
 	void setMarkdown(const core::String &markdown);
 	const video::TexturePoolPtr &texturePool() const;
-	void goBack();
-	void goForward();
-	bool canGoBack() const;
-	bool canGoForward() const;
 
 	const State &c() const {
 		return _history[_historyPosition];

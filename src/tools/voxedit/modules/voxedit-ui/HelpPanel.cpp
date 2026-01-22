@@ -135,6 +135,42 @@ bool HelpPanel::canGoForward() const {
 	return _historyPosition < (int)_history.size() - 1;
 }
 
+void HelpPanel::navigation() {
+	bool backDisabled = !canGoBack();
+	if (backDisabled) {
+		ImGui::BeginDisabled();
+	}
+	if (ImGui::IconButton(ICON_LC_ARROW_LEFT, _("Back"))) {
+		goBack();
+	}
+	if (backDisabled) {
+		ImGui::EndDisabled();
+	}
+
+	ImGui::SameLine();
+
+	bool forwardDisabled = !canGoForward();
+	if (forwardDisabled) {
+		ImGui::BeginDisabled();
+	}
+	if (ImGui::IconButton(ICON_LC_ARROW_RIGHT, _("Forward"))) {
+		goForward();
+	}
+	if (forwardDisabled) {
+		ImGui::EndDisabled();
+	}
+
+	if (!backDisabled || !forwardDisabled) {
+		ImGui::SameLine();
+
+		if (ImGui::IconButton(ICON_LC_HOUSE, _("Home"))) {
+			init();
+		}
+	}
+
+	ImGui::Separator();
+}
+
 void HelpPanel::update(const char *id) {
 	// Apply any pending markdown updates after previous ImGui::Markdown processing is complete - this is needed because
 	// the markdown link processing might change the content.
@@ -150,40 +186,7 @@ void HelpPanel::update(const char *id) {
 	core_trace_scoped(HelpPanel);
 	const core::String title = makeTitle(ICON_LC_LAMP, _("Help"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		// Navigation buttons
-		bool backDisabled = !canGoBack();
-		if (backDisabled) {
-			ImGui::BeginDisabled();
-		}
-		if (ImGui::IconButton(ICON_LC_ARROW_LEFT, _("Back"))) {
-			goBack();
-		}
-		if (backDisabled) {
-			ImGui::EndDisabled();
-		}
-
-		ImGui::SameLine();
-
-		bool forwardDisabled = !canGoForward();
-		if (forwardDisabled) {
-			ImGui::BeginDisabled();
-		}
-		if (ImGui::IconButton(ICON_LC_ARROW_RIGHT, _("Forward"))) {
-			goForward();
-		}
-		if (forwardDisabled) {
-			ImGui::EndDisabled();
-		}
-
-		if (!backDisabled || !forwardDisabled) {
-			ImGui::SameLine();
-
-			if (ImGui::IconButton(ICON_LC_HOUSE, _("Home"))) {
-				init();
-			}
-		}
-
-		ImGui::Separator();
+		navigation();
 		ImGui::Markdown(_markdown, linkCallback, imageCallback, this);
 	}
 	ImGui::End();
