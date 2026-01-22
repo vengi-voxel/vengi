@@ -64,6 +64,10 @@ protected:
 	 */
 	core::String _bindingsFilter;
 	/**
+	 * string to filter the cvars in the cvar dialog
+	 */
+	core::String _cvarFilter;
+	/**
 	 * Reset the custom keybindings and load the default keymap
 	 */
 	bool _resetKeybindings = false;

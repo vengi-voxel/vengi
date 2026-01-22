@@ -12,6 +12,7 @@
 #include "app/i18n/Language.h"
 #include "color/Quantize.h"
 #include "core/ConfigVar.h"
+#include "core/collection/DynamicArray.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
@@ -586,7 +587,7 @@ void IMGUIApp::renderCvarDialog() {
 		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
 										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize(0.0f, ImGui::Height(25.0f));
+		const ImVec2 outerSize(ImGui::Height(80.0f), ImGui::Height(25.0f));
 		if (ImGui::BeginTable("##cvars", 4, TableFlags, outerSize)) {
 			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
@@ -595,45 +596,72 @@ void IMGUIApp::renderCvarDialog() {
 			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 
-			// TODO: add filtering
-			// TODO: PERF: use ImGuiListClipper to store a list of core::Var* first and then render only the visible ones
-			core::Var::visit([](const core::VarPtr &var) {
-				ImGui::TableNextColumn();
-				ImGui::TextUnformatted(var->name().c_str());
-				ImGui::TableNextColumn();
-				const bool readOnly = var->getFlags() & core::CV_READONLY;
-				ImGui::BeginDisabled(readOnly);
-				const core::String type = "##" + var->name();
-				if (var->typeIsBool()) {
-					bool value = var->boolVal();
-					if (ImGui::Checkbox(type.c_str(), &value)) {
-						var->setVal(value);
-					}
-				} else {
-					int flags = 0;
-					const bool secret = var->getFlags() & core::CV_SECRET;
-					if (secret) {
-						flags |= ImGuiInputTextFlags_Password;
-					}
-					core::String value = var->strVal();
-					if (ImGui::InputText(type.c_str(), &value, flags)) {
-						var->setVal(value);
-					}
-				}
-				ImGui::EndDisabled();
-				ImGui::TableNextColumn();
-				if (!readOnly) {
-					ScopedID id(var->name());
-					if (ImGui::Button(_("Reset"))) {
-						var->reset();
-					}
-					ImGui::TooltipTextUnformatted(_("Reset to default value"));
-				}
-				ImGui::TableNextColumn();
-				ImGui::TextUnformatted(var->help() ? var->help() : "");
+			core::DynamicArray<core::Var*> vars;
+			vars.reserve(core::Var::size());
+			core::Var::visit([&](const core::VarPtr &var) {
+				vars.push_back(var.get());
 			});
+
+			// apply filtering
+			core::DynamicArray<core::Var*> filteredVars;
+			if (_cvarFilter.size() >= 2u) {
+				for (core::Var *var : vars) {
+					const bool matchName = core::string::icontains(var->name(), _cvarFilter);
+					const bool matchValue = core::string::icontains(var->strVal(), _cvarFilter);
+					const bool matchHelp = var->help() ? core::string::icontains(var->help(), _cvarFilter) : false;
+					if (matchName || matchValue || matchHelp) {
+						filteredVars.push_back(var);
+					}
+				}
+			} else {
+				filteredVars = vars;
+			}
+
+			// use clipper for efficient rendering of only visible items
+			ImGuiListClipper clipper;
+			clipper.Begin((int)filteredVars.size());
+			while (clipper.Step()) {
+				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+					core::Var *var = filteredVars[i];
+					ImGui::TableNextColumn();
+					ImGui::TextUnformatted(var->name().c_str());
+					ImGui::TableNextColumn();
+					const bool readOnly = var->getFlags() & core::CV_READONLY;
+					ImGui::BeginDisabled(readOnly);
+					const core::String type = "##" + var->name();
+					if (var->typeIsBool()) {
+						bool value = var->boolVal();
+						if (ImGui::Checkbox(type.c_str(), &value)) {
+							var->setVal(value);
+						}
+					} else {
+						int flags = 0;
+						const bool secret = var->getFlags() & core::CV_SECRET;
+						if (secret) {
+							flags |= ImGuiInputTextFlags_Password;
+						}
+						core::String value = var->strVal();
+						if (ImGui::InputText(type.c_str(), &value, flags)) {
+							var->setVal(value);
+						}
+					}
+					ImGui::EndDisabled();
+					ImGui::TableNextColumn();
+					if (!readOnly) {
+						ScopedID id(var->name());
+						if (ImGui::Button(_("Reset"))) {
+							var->reset();
+						}
+						ImGui::TooltipTextUnformatted(_("Reset to default value"));
+					}
+					ImGui::TableNextColumn();
+					ImGui::TextUnformatted(var->help() ? var->help() : "");
+				}
+			}
 			ImGui::EndTable();
 		}
+		ImGui::InputText(_("Filter"), &_cvarFilter);
+		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			_showCvarDialog = false;
 		}
