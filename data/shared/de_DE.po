@@ -1463,6 +1463,12 @@ msgstr "Minecraft"
 msgid "Ace Of Spades"
 msgstr "Ace Of Spades"
 
+msgid "Forward"
+msgstr ""
+
+msgid "Home"
+msgstr ""
+
 msgid "L-System"
 msgstr "L-System"
 

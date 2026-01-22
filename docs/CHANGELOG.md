@@ -19,6 +19,9 @@ General:
    - Fixed issues regarding `vxl`/`hva` animations (Command & Conquer)
    - Added pipe support to send commands from external tools (`app_pipe` needs to be set `true`)
    - Added new greedy texture mesher that uses a texture atlas to reduce vertex counts
+   - Added filtering to the cvars dialog
+   - Added keyboard layout detection
+   - Improved mime-type handling
 
 VoxConvert:
 
@@ -44,6 +47,8 @@ VoxEdit:
    - Removed tree panel
    - Fixed multi color selection in palette panel after sorting the colors
    - Added transform baking
+   - Added offline help markdown to a new panel
+   - Let the default normal palette also depend on the view mode (the game type that is selected)
 
 Thumbnailer:
 
