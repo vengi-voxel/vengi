@@ -84,6 +84,7 @@ nav:
       - thumbnailer/Usage.md
       - thumbnailer/Examples.md
   - Blog:
+      - blog/devlog_26_01.md
       - blog/devlog_25_12.md
       - blog/devlog_25_11.md
       - blog/devlog_25_10.md
