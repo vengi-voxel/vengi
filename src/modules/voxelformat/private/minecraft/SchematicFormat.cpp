@@ -9,13 +9,16 @@
 #include "app/Async.h"
 #include "color/Color.h"
 #include "core/Common.h"
+#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/Array.h"
 #include "core/concurrent/Atomic.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "io/MemoryReadStream.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
@@ -27,6 +30,7 @@
 #include "voxel/Voxel.h"
 
 #include <glm/common.hpp>
+#include <limits>
 
 namespace voxelformat {
 
@@ -61,6 +65,13 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 		return false;
 	}
 	palette.minecraft();
+
+	const core::String &extension = core::string::extractExtension(filename);
+	if (extension == "bp") {
+		// Axiom format is not a zip file, it has a custom binary format
+		return loadAxiomBinary(*stream, sceneGraph, palette);
+	}
+
 	io::ZipReadStream zipStream(*stream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
@@ -70,7 +81,6 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::
 		return false;
 	}
 
-	const core::String &extension = core::string::extractExtension(filename);
 	if (extension == "nbt") {
 		const int dataVersion = schematic.get("DataVersion").int32(-1);
 		if (loadNbt(schematic, sceneGraph, palette, dataVersion)) {
@@ -177,6 +187,192 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 	});
 
 	return success;
+}
+
+bool SchematicFormat::loadAxiomBinary(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+									   palette::Palette &palette) {
+	uint32_t magic;
+	if (stream.readUInt32(magic) != 0) {
+		Log::error("Failed to read Axiom magic number");
+		return false;
+	}
+	const uint32_t AXIOM_MAGIC = FourCC(0x0A, 0xE5, 0xBB, 0x36);
+	if (magic != AXIOM_MAGIC) {
+		Log::error("Invalid Axiom magic number: 0x%08X", magic);
+		return false;
+	}
+
+	// Read and skip header
+	uint32_t headerTagSize;
+	if (stream.readUInt32BE(headerTagSize) != 0) {
+		Log::error("Failed to read header tag size");
+		return false;
+	}
+	if (stream.skip(headerTagSize) < 0) {
+		Log::error("Failed to skip header");
+		return false;
+	}
+
+	// Read and skip thumbnail
+	// TODO: VOXELFORMAT: support this in loadScreenshot
+	uint32_t thumbnailLength;
+	if (stream.readUInt32BE(thumbnailLength) != 0) {
+		Log::error("Failed to read thumbnail length");
+		return false;
+	}
+	if (stream.skip(thumbnailLength) < 0) {
+		Log::error("Failed to skip thumbnail");
+		return false;
+	}
+
+	// Read block data (gzip compressed NBT)
+	uint32_t blockDataLength;
+	if (stream.readUInt32BE(blockDataLength) != 0) {
+		Log::error("Failed to read block data length");
+		return false;
+	}
+	core::Buffer<uint8_t> blockDataBuffer(blockDataLength);
+	const int bytesRead = stream.read(blockDataBuffer.data(), blockDataLength);
+	if (bytesRead != (int)blockDataLength) {
+		Log::error("Failed to read block data: expected %u bytes, got %d", blockDataLength, bytesRead);
+		return false;
+	}
+
+	// Decompress the block data
+	io::MemoryReadStream memStream(blockDataBuffer.data(), blockDataLength);
+	io::ZipReadStream zipStream(memStream);
+	priv::NamedBinaryTagContext ctx;
+	ctx.stream = &zipStream;
+	const priv::NamedBinaryTag &schematic = priv::NamedBinaryTag::parse(ctx);
+	if (!schematic.valid()) {
+		Log::error("Failed to parse Axiom block data NBT");
+		return false;
+	}
+
+	return loadAxiom(schematic, sceneGraph, palette);
+}
+
+bool SchematicFormat::loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+									palette::Palette &palette) {
+	const priv::NamedBinaryTag &blockRegionNbt = schematic.get("BlockRegion");
+	if (!blockRegionNbt.valid() || blockRegionNbt.type() != priv::TagType::LIST) {
+		Log::error("Could not find valid 'BlockRegion' list tag");
+		return false;
+	}
+
+	const priv::NBTList &blockRegions = *blockRegionNbt.list();
+	if (blockRegions.empty()) {
+		Log::error("No block regions found");
+		return false;
+	}
+
+	// Calculate bounds
+	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
+	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
+	for (const auto &regionTag : blockRegions) {
+		if (regionTag.type() != priv::TagType::COMPOUND) {
+			Log::error("Invalid region tag type");
+			return false;
+		}
+		const glm::ivec3 regionPos(regionTag.get("X").int32(0), regionTag.get("Y").int32(0), regionTag.get("Z").int32(0));
+		mins = glm::min(mins, regionPos);
+		maxs = glm::max(maxs, regionPos);
+	}
+	constexpr const int chunkSize = 16;
+
+	// Calculate size in blocks (each region is 16x16x16)
+	const glm::ivec3 regionSize = (maxs - mins + glm::ivec3(1)) * chunkSize;
+	const voxel::Region region({0, 0, 0}, regionSize - 1);
+	if (!region.isValid()) {
+		Log::error("Invalid region size: %i %i %i", regionSize.x, regionSize.y, regionSize.z);
+		return false;
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setPalette(palette);
+	node.setName("Axiom Schematic");
+	node.setVolume(new voxel::RawVolume(region), true);
+
+	voxel::RawVolume *volume = node.volume();
+	voxel::RawVolume::Sampler sampler(volume);
+
+	// Process each region
+	for (const auto &regionTag : blockRegions) {
+		const int regionX = regionTag.get("X").int32(0) - mins.x;
+		const int regionY = regionTag.get("Y").int32(0) - mins.y;
+		const int regionZ = regionTag.get("Z").int32(0) - mins.z;
+
+		// Get block states palette
+		const priv::NamedBinaryTag &blockStatesTag = regionTag.get("BlockStates");
+		if (!blockStatesTag.valid() || blockStatesTag.type() != priv::TagType::COMPOUND) {
+			Log::error("Could not find 'BlockStates' compound");
+			return false;
+		}
+
+		const priv::NamedBinaryTag &paletteTag = blockStatesTag.get("palette");
+		if (!paletteTag.valid() || paletteTag.type() != priv::TagType::LIST) {
+			Log::error("Could not find 'palette' list");
+			return false;
+		}
+
+		const priv::NBTList &paletteNbt = *paletteTag.list();
+		SchematicPalette mcpal;
+		mcpal.resize(paletteNbt.size());
+		int paletteSize = 0;
+		for (const auto &palNbt : paletteNbt) {
+			const priv::NamedBinaryTag &materialName = palNbt.get("Name");
+			if (!materialName.valid()) {
+				Log::warn("Missing Name in palette entry");
+				mcpal[paletteSize++] = 0;
+				continue;
+			}
+			mcpal[paletteSize++] = findPaletteIndex(materialName.string()->c_str(), 1);
+		}
+
+		// Get block data
+		const priv::NamedBinaryTag &dataTag = blockStatesTag.get("data");
+		if (!dataTag.valid() || dataTag.type() != priv::TagType::LONG_ARRAY) {
+			continue;
+		}
+		const core::Buffer<int64_t> *data = dataTag.longArray();
+		core::Array<uint32_t, chunkSize * chunkSize * chunkSize> blockStateData;
+		// Calculate bits per value
+		const int n = (int)paletteNbt.size();
+		int bitsPerValue = 4;
+		while ((1 << bitsPerValue) < n) {
+			++bitsPerValue;
+		}
+
+		int index = 0;
+		const uint64_t mask = (1ULL << bitsPerValue) - 1;
+		for (int64_t num : *data) {
+			for (int i = 0; i < (64 / bitsPerValue) && index < (int)blockStateData.size(); ++i) {
+				blockStateData[index++] = (uint32_t)(num & mask);
+				num >>= bitsPerValue;
+			}
+		}
+		int i = 0;
+		const int chunkPosX = regionX * chunkSize;
+		const int chunkPosY = regionY * chunkSize;
+		const int chunkPosZ = regionZ * chunkSize;
+		for (int z = 0; z < chunkSize; ++z) {
+			for (int y = 0; y < chunkSize; ++y) {
+				sampler.setPosition(chunkPosX, chunkPosY + y, chunkPosZ + z);
+				for (int x = 0; x < chunkSize; ++x) {
+					uint8_t colorIdx = mcpal[blockStateData[i++]];
+					sampler.setVoxel(voxel::createVoxel(node.palette(), colorIdx));
+					sampler.movePositiveX();
+				}
+			}
+		}
+	}
+
+	if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
+		Log::error("Failed to add node to the scenegraph");
+		return false;
+	}
+
+	return true;
 }
 
 bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,

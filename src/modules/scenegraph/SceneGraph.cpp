@@ -1161,6 +1161,8 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 
 void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &target, const SceneGraphNode &node, const palette::Palette &paletteConversion) const {
 	const voxel::RawVolume *v = resolveVolume(node);
+	core_assert(v != nullptr);
+	core_assert(v->region().isValid());
 	palette::PaletteLookup palLookup(paletteConversion);
 	const palette::Palette &nodePalette = node.palette();
 

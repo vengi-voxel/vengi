@@ -22,6 +22,7 @@ class NamedBinaryTag;
  * @note https://www.minecraft-schematics.com/
  * @note https://github.com/SpongePowered/Schematic-Specification/tree/master/versions
  * @note https://abfielder.com/
+ * @note Details about the bp format are from https://github.com/PiTheGuy/SchemConvert
  *
  * @ingroup Formats
  */
@@ -39,6 +40,9 @@ protected:
 								  scenegraph::SceneGraphNode &node, const SchematicPalette &mcpal);
 	bool loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 					   palette::Palette &palette);
+	bool loadAxiomBinary(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette);
+	bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+				  palette::Palette &palette);
 	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 					 palette::Palette &palette, int version);
 	bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
@@ -61,7 +65,7 @@ protected:
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"Minecraft schematic", "", {"schematic", "schem", "nbt", "litematic"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+			"Minecraft schematic", "", {"schematic", "schem", "nbt", "litematic" /*, "bp"*/}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

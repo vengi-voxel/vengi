@@ -25,6 +25,10 @@ TEST_F(SchematicFormatTest, testLoadStructory) {
 	testLoad("brick_chimney_1.nbt");
 }
 
+TEST_F(SchematicFormatTest, testLoadAxiom) {
+	testLoad("schematic.bp");
+}
+
 TEST_F(SchematicFormatTest, testSaveSmallVoxel) {
 	SchematicFormat f;
 	util::ScopedVarChange scoped(cfg::VoxformatMerge, "true");
