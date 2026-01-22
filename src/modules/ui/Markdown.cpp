@@ -63,7 +63,7 @@ void Markdown(const core::String &markdown, MarkdownLinkCallback *linkCallback, 
 	cfg.linkCallback = linkCallback;
 	cfg.userData = user;
 	cfg.tooltipCallback = nullptr;
-	cfg.formatFlags = ImGuiMarkdownFormatFlags_GithubStyle;
+	cfg.formatFlags = ImGuiMarkdownFormatFlags_GithubStyle | ImGuiMarkdownFormatFlags_IgnoreHtml;
 	cfg.imageCallback = imageCallback;
 	cfg.linkIcon = ICON_LC_LINK;
 	const float fontSize = (float)imguiApp()->fontSize();

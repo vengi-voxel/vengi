@@ -235,6 +235,7 @@ enum ImGuiMarkdownFormatFlags_
     ImGuiMarkdownFormatFlags_DiscardExtraNewLines        = 1 << 0,  // (Accurate parsing) Provided markdown will discard all redundant newlines
     ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading      = 1 << 1,  // (Accurate parsing) Provided markdown will not format a newline after the first line if it is a heading
     ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance     = 1 << 2,  // (Accurate parsing) Provided markdown will not advance to the next line after formatting a separator
+    ImGuiMarkdownFormatFlags_IgnoreHtml                  = 1 << 3,  // Ignore and skip HTML tags in the markdown
     ImGuiMarkdownFormatFlags_GithubStyle                 = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
     ImGuiMarkdownFormatFlags_CommonMarkAll               = ImGuiMarkdownFormatFlags_DiscardExtraNewLines | ImGuiMarkdownFormatFlags_NoNewLineBeforeHeading | ImGuiMarkdownFormatFlags_SeparatorDoesNotAdvance,
 };
@@ -627,6 +628,36 @@ namespace ImGui
         {
             c = markdown_[i];               // get the character at index
             if( c == 0 ) { break; }         // shouldn't happen but don't go beyond 0.
+
+            // Skip HTML tags if the flag is set
+            if( ( mdConfig_.formatFlags & ImGuiMarkdownFormatFlags_IgnoreHtml ) && c == '<' )
+            {
+                // Check if this looks like an HTML tag
+                int j = i + 1;
+
+                // Check for closing tag
+                if( j < (int)markdownLength_ && markdown_[j] == '/' )
+                {
+                    j++;
+                }
+
+                // Check for valid tag name (starts with letter)
+                if( j < (int)markdownLength_ && ( ( markdown_[j] >= 'a' && markdown_[j] <= 'z' ) || ( markdown_[j] >= 'A' && markdown_[j] <= 'Z' ) ) )
+                {
+                    // Find the closing >
+                    while( j < (int)markdownLength_ && markdown_[j] != '>' )
+                    {
+                        j++;
+                    }
+
+                    if( j < (int)markdownLength_ && markdown_[j] == '>' )
+                    {
+                        // Valid HTML tag found, skip it
+                        i = j;
+                        continue;
+                    }
+                }
+            }
 
             // If we're at the beginning of the line, count any spaces
             if( line.isLeadingSpace )
