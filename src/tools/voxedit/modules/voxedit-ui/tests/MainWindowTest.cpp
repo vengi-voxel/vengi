@@ -20,6 +20,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_brushPanel.registerUITests(engine, TITLE_BRUSHPANEL);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
 	_gameModePanel.registerUITests(engine, TITLE_GAMEMODE);
+	_helpPanel.registerUITests(engine, TITLE_HELP);
 	_lsystemPanel.registerUITests(engine, TITLE_LSYSTEMPANEL);
 	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
 	_menuBar.registerUITests(engine, "##MenuBar");

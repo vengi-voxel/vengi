@@ -185,9 +185,13 @@ void HelpPanel::update(const char *id) {
 	}
 	core_trace_scoped(HelpPanel);
 	const core::String title = makeTitle(ICON_LC_LAMP, _("Help"), id);
-	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	if (ImGui::Begin(title.c_str(), nullptr, windowFlags)) {
 		navigation();
-		ImGui::Markdown(_markdown, linkCallback, imageCallback, this);
+		if (ImGui::BeginChild("HelpContent", ImVec2(0.0f, 0.0f), false, ImGuiWindowFlags_HorizontalScrollbar)) {
+			ImGui::Markdown(_markdown, linkCallback, imageCallback, this);
+		}
+		ImGui::EndChild();
 	}
 	ImGui::End();
 }
