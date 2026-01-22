@@ -122,7 +122,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
 	  _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
 	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr),
-	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr) {
+	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr), _helpPanel(this, app) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));
 }
@@ -224,6 +224,7 @@ bool MainWindow::init() {
 	_gameModePanel.init();
 	_normalPalettePanel.init();
 	_brushPanel.init();
+	_helpPanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
@@ -380,6 +381,7 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_EDITOR, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_HELP, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, dockId);
 	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
 }
@@ -403,6 +405,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
+	_helpPanel.update(TITLE_HELP);
 	if (viewModeAnimations(_viewMode->intVal()) && isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}

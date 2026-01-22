@@ -16,6 +16,7 @@
 #include "voxedit-ui/BrushPanel.h"
 #include "voxedit-ui/CameraPanel.h"
 #include "voxedit-ui/GameModePanel.h"
+#include "voxedit-ui/HelpPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/MementoPanel.h"
 #include "voxedit-ui/MenuBar.h"
@@ -100,6 +101,7 @@ private:
 	CameraPanel _cameraPanel;
 	SceneDebugPanel _sceneDebugPanel;
 	SceneSettingsPanel _sceneSettingsPanel;
+	HelpPanel _helpPanel;
 
 	bool isSceneMode() const;
 
@@ -163,6 +165,8 @@ public:
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 
+	const video::TexturePoolPtr &texturePool() const;
+
 	void toggleScene();
 	void resetCamera();
 	/**
@@ -182,6 +186,10 @@ public:
 
 	bool saveScreenshot(const core::String &file, const core::String &viewportId = "");
 };
+
+inline const video::TexturePoolPtr &MainWindow::texturePool() const {
+	return _texturePool;
+}
 
 inline Viewport *MainWindow::activeViewport() const {
 	if (_lastHoveredViewport == nullptr) {
