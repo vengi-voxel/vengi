@@ -94,6 +94,11 @@ public:
 		setVal(_defaultValue);
 	}
 
+	static size_t size() {
+		ScopedLock scoped(_lock);
+		return _vars.size();
+	}
+
 	static bool boolValidator(const core::String& value) {
 		return value == "1" || value == "true" || value == "false" || value == "0";
 	}
