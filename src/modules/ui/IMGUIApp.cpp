@@ -595,6 +595,8 @@ void IMGUIApp::renderCvarDialog() {
 			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 
+			// TODO: add filtering
+			// TODO: PERF: use ImGuiListClipper to store a list of core::Var* first and then render only the visible ones
 			core::Var::visit([](const core::VarPtr &var) {
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(var->name().c_str());
