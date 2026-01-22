@@ -47,7 +47,7 @@ protected:
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"anivoxel", {"voxa"}, {"VOXA"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED /* | FORMAT_FLAG_SAVE */};
+			"anivoxel", "", {"voxa"}, {"VOXA"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED /* | FORMAT_FLAG_SAVE */};
 		return f;
 	}
 };

@@ -100,7 +100,7 @@ public:
 					bool withColor, bool withTexCoords) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Polygon File Format", {"ply"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Polygon File Format", "", {"ply"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

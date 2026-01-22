@@ -94,6 +94,7 @@ protected:
 	bool setRelativeMouseMode(bool mode);
 
 	void resetKeybindings();
+	void openKeybindings();
 
 public:
 	bool isRelativeMouseMode() const;

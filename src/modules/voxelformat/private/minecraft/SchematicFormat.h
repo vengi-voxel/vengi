@@ -61,7 +61,7 @@ protected:
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"Minecraft schematic", {"schematic", "schem", "nbt", "litematic"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+			"Minecraft schematic", "", {"schematic", "schem", "nbt", "litematic"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

@@ -24,7 +24,7 @@
 	 }
  public:
 	 static const io::FormatDescription &format() {
-		 static io::FormatDescription f{"Minecraft mcworld", {"mcworld"}, {}, 0u};
+		 static io::FormatDescription f{"Minecraft mcworld", "", {"mcworld"}, {}, 0u};
 		 return f;
 	 }
  };

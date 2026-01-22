@@ -5,7 +5,6 @@
 #include "VolumeSplitter.h"
 #include "app/Async.h"
 #include "core/Log.h"
-#include "core/collection/Array3DView.h"
 #include "voxel/Connectivity.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"

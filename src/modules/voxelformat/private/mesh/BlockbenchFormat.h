@@ -234,7 +234,7 @@ public:
 	using BBElementMap = core::Map<core::UUID, BBElement, 11, core::UUIDHash>;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
+		static io::FormatDescription f{"Blockbench", "", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 

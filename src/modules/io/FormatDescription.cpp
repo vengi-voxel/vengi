@@ -51,25 +51,25 @@ void printJson(const io::FormatDescription *desc, const core::StringMap<uint32_t
 }
 
 FormatDescription png() {
-	return {"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE};
+	return {"Portable Network Graphics", "image/png", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE};
 }
 
 const FormatDescription *images() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
 		png(),
-		{"JPEG", {"jpeg", "jpg"}, {}, FORMAT_FLAG_SAVE},
-		{"Targa image file", {"tga"}, {}, 0u},
-		{"DDS", {"dds"}, {}, 0u},
-		{"PKM", {"pkm"}, {}, 0u},
-		{"PVR", {"pvr"}, {}, 0u},
-		{"Bitmap", {"bmp"}, {}, 0u},
-		{"Photoshop", {"psd"}, {}, 0u},
-		{"Graphics Interchange Format", {"gif"}, {}, 0u},
-		{"Radiance rgbE", {"hdr"}, {}, 0u},
-		{"Softimage PIC", {"pic"}, {}, 0u},
-		{"Portable Anymap", {"pnm"}, {}, 0u},
-		{"", {}, {}, 0u}
+		{"JPEG", "image/jpeg", {"jpeg", "jpg"}, {}, FORMAT_FLAG_SAVE},
+		{"Targa image file", "image/tga", {"tga"}, {}, 0u},
+		{"DDS", "image/dds", {"dds"}, {}, 0u},
+		{"PKM", "image/grafx2", {"pkm"}, {}, 0u},
+		{"PVR", "image/pvrTexture", {"pvr"}, {}, 0u},
+		{"Bitmap", "image/bmp", {"bmp"}, {}, 0u},
+		{"Photoshop", "image/vnd.adobe.photoshop", {"psd"}, {}, 0u},
+		{"Graphics Interchange Format", "image/gif", {"gif"}, {}, 0u},
+		{"Radiance rgbE", "image/vnd.radiance", {"hdr"}, {}, 0u},
+		{"Softimage PIC", "image/softimage", {"pic"}, {}, 0u},
+		{"Portable Anymap", "image/x-portable-anymap", {"pnm"}, {}, 0u},
+		FormatDescription::END
 	};
 	// clang-format: on
 	return desc;
@@ -78,8 +78,8 @@ const FormatDescription *images() {
 const FormatDescription *fonts() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
-		{"TrueType Font", {"ttf"}, {}, 0u},
-		{"", {}, {}, 0u}
+		{"TrueType Font", "font/ttf", {"ttf"}, {}, 0u},
+		FormatDescription::END
 	};
 	// clang-format: on
 	return desc;
@@ -88,14 +88,30 @@ const FormatDescription *fonts() {
 const FormatDescription *lua() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
-		{"LUA script", {"lua"}, {}, 0u},
-		{"", {}, {}, 0u}
+		{"LUA script", "application/x-lua", {"lua"}, {}, 0u},
+		FormatDescription::END
 	};
 	// clang-format: on
 	return desc;
 }
 
 } // namespace format
+
+const FormatDescription FormatDescription::END = {"", "", {}, {}, 0u};
+
+core::String FormatDescription::mimeType() const {
+	if (!mimetype.empty()) {
+		return mimetype;
+	}
+	core::String lname = name.toLower();
+	core::string::replaceAllChars(lname, ' ', '-');
+	core::string::replaceAllChars(lname, ':', '-');
+	core::string::replaceAllChars(lname, '.', '-');
+	core::string::replaceAllChars(lname, '/', '-');
+	lname = core::string::eraseAllChars(lname, '(');
+	lname = core::string::eraseAllChars(lname, ')');
+	return core::String::format("application/x-%s", lname.c_str());
+}
 
 core::String FormatDescription::mainExtension(bool includeDot) const {
 	if (exts.empty()) {
@@ -215,7 +231,7 @@ void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<
 					}
 					flags |= tmpDesc.flags;
 				}
-				const io::FormatDescription val{lastName, exts, {}, flags};
+				const io::FormatDescription val{lastName, "", exts, {}, flags};
 				groups.push_back(val);
 			}
 			lastName = firstWord;
@@ -232,7 +248,7 @@ void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<
 			}
 			flags |= tmpDesc.flags;
 		}
-		const io::FormatDescription val{lastName, exts, {}, flags};
+		const io::FormatDescription val{lastName, "", exts, {}, flags};
 		groups.push_back(val);
 	}
 }

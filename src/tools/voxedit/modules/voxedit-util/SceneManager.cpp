@@ -318,10 +318,12 @@ void SceneManager::hollow() {
 void SceneManager::fillPlane(const image::ImagePtr &image) {
 	const int nodeId = activeNode();
 	if (nodeId == InvalidNodeId) {
+		Log::error("No active node for fill plane operation");
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
 	if (v == nullptr) {
+		Log::error("No volume for active node %i", nodeId);
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);

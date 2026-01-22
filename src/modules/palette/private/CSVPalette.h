@@ -20,7 +20,7 @@ public:
 	bool save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
 
 	static const io::FormatDescription &format() {
-		static const io::FormatDescription desc = {"CSV Palette", {"csv"}, {}, FORMAT_FLAG_SAVE};
+		static const io::FormatDescription desc = {"CSV Palette", "text/csv", {"csv"}, {}, FORMAT_FLAG_SAVE};
 		return desc;
 	}
 };

@@ -848,28 +848,6 @@ float lineWidth(float width) {
 		return rs.lineWidth;
 	}
 	video_trace_scoped(LineWidth);
-	if (rs.smoothedLineWidth.x < 0.0f) {
-#ifdef USE_OPENGLES
-		GLfloat buf[2];
-		core_assert(glGetFloatv != nullptr);
-		glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		rs.smoothedLineWidth.x = buf[0];
-		rs.smoothedLineWidth.y = buf[1];
-		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		rs.aliasedLineWidth.x = buf[0];
-		rs.aliasedLineWidth.y = buf[1];
-#else
-		GLdouble buf[2];
-		core_assert(glGetDoublev != nullptr);
-		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		rs.smoothedLineWidth.x = (float)buf[0];
-		rs.smoothedLineWidth.y = (float)buf[1];
-		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		rs.aliasedLineWidth.x = (float)buf[0];
-		rs.aliasedLineWidth.y = (float)buf[1];
-#endif
-		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
-	}
 	if (glm::abs(rs.pendingLineWidth - width) < glm::epsilon<float>()) {
 		return rs.pendingLineWidth;
 	}
@@ -1510,17 +1488,6 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
-}
-
-void deleteVertexArray(Id &id) {
-	if (id == InvalidId) {
-		return;
-	}
-	if (rendererState().vertexArrayHandle == id) {
-		bindVertexArray(InvalidId);
-	}
-	deleteVertexArrays(1, &id);
-	id = InvalidId;
 }
 
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
@@ -2625,11 +2592,6 @@ void activateContext(SDL_Window *window, RendererContext &context) {
 	SDL_GL_MakeCurrent(window, (SDL_GLContext)context);
 }
 
-void startFrame(SDL_Window *window, RendererContext &context) {
-	rendererState().drawCalls = 0;
-	activateContext(window, context);
-}
-
 void endFrame(SDL_Window *window) {
 	SDL_GL_SwapWindow(window);
 }
@@ -2726,6 +2688,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glState().glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glState().glVersion.minorVersion);
 	Log::debug("got gl context: %i.%i", glState().glVersion.majorVersion, glState().glVersion.minorVersion);
+	RendererState &rs = rendererState();
 
 	resize(windowWidth, windowHeight, scaleFactor);
 
@@ -2747,12 +2710,12 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		const core::String vendor(glvendor);
 		for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
 			const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
-			rendererState().vendor.set(i, match);
+			rs.vendor.set(i, match);
 		}
 	}
 
 	for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
-		if (rendererState().vendor[i]) {
+		if (rs.vendor[i]) {
 			Log::debug("Found vendor: %s", _priv::VendorStrings[i]);
 		} else {
 			Log::debug("Didn't find vendor: %s", _priv::VendorStrings[i]);
@@ -2808,9 +2771,30 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	// default state
 	// https://www.glprogramming.com/red/appendixb.html
-	rendererState().states.set(core::enumVal(video::State::DepthMask), true);
-	glGetFloatv(GL_POINT_SIZE, &rendererState().pointSize);
-
+	rs.states.set(core::enumVal(video::State::DepthMask), true);
+	glGetFloatv(GL_POINT_SIZE, &rs.pointSize);
+	if (rs.smoothedLineWidth.x < 0.0f) {
+#ifdef USE_OPENGLES
+		GLfloat buf[2];
+		core_assert(glGetFloatv != nullptr);
+		glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+		rs.smoothedLineWidth.x = buf[0];
+		rs.smoothedLineWidth.y = buf[1];
+		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
+		rs.aliasedLineWidth.x = buf[0];
+		rs.aliasedLineWidth.y = buf[1];
+#else
+		GLdouble buf[2];
+		core_assert(glGetDoublev != nullptr);
+		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+		rs.smoothedLineWidth.x = (float)buf[0];
+		rs.smoothedLineWidth.y = (float)buf[1];
+		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
+		rs.aliasedLineWidth.x = (float)buf[0];
+		rs.aliasedLineWidth.y = (float)buf[1];
+#endif
+		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
+	}
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}

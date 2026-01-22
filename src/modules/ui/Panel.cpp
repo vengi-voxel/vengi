@@ -48,6 +48,14 @@ void Panel::registerUITests(ImGuiTestEngine *, const char *) {
 	Log::warn("No tests registered for panel %s", _title.c_str());
 }
 
+bool Panel::changeSlider(ImGuiTestContext *ctx, const char *path, bool left) {
+	ctx->MouseMove(path);
+	ctx->MouseDown();
+	ctx->MouseMove(path, left ? ImGuiTestOpFlags_MoveToEdgeL : ImGuiTestOpFlags_MoveToEdgeR);
+	ctx->MouseUp();
+	return true;
+}
+
 bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	ImGuiContext& g = *ctx->UiContext;
 	IM_CHECK_RETV(focusWindow(ctx, "Save file"), false);

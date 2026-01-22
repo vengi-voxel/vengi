@@ -125,7 +125,7 @@ msgid ""
 "(1x256)"
 msgstr ""
 
-msgid "The normal palette to use for voxelization"
+msgid "The normal palette"
 msgstr ""
 
 msgid "Camera free look on toggle"
@@ -320,6 +320,9 @@ msgstr "Fehler beim Abrufen des Befehls für %s"
 msgid "Reset to default"
 msgstr "Auf Standard zurücksetzen"
 
+msgid "Edit bindings"
+msgstr "Tastenbelegungen bearbeiten"
+
 msgid "FPS"
 msgstr "FPS"
 
@@ -479,11 +482,11 @@ msgstr "Sie verwenden die neueste Version."
 msgid "Debug build with reduced performance"
 msgstr ""
 
+msgid "Website"
+msgstr ""
+
 msgid "Bug reports"
 msgstr "Fehlerberichte"
-
-msgid "Help"
-msgstr "Hilfe"
 
 msgid "Mastodon"
 msgstr "Mastodon"
@@ -1035,6 +1038,9 @@ msgstr "Benachrichtigungen"
 
 msgid "Show console"
 msgstr "Konsole anzeigen"
+
+msgid "Help"
+msgstr "Hilfe"
 
 msgid "Input"
 msgstr ""

@@ -16,6 +16,7 @@
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
+#include "video/KeyboardLayout.h"
 #include "video/WindowedApp.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/Viewport.h"
@@ -105,7 +106,7 @@ app::AppState VoxEdit::onConstruct() {
 			_paletteFormats.push_back(*desc);
 		}
 	}
-	_paletteFormats.push_back(io::FormatDescription{"", {}, {}, 0u});
+	_paletteFormats.push_back(io::FormatDescription::END);
 
 	_sceneMgr->construct();
 	_collectionMgr->construct();
@@ -300,10 +301,16 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
 
+	video::KeyboardLayout keyboardLayout = video::detectKeyboardLayout();
 	if (keymap != KeyBindings::Qubicle) {
 		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
-		_keybindingHandler.registerBinding("w",                      "+move_forward",              "editing");
-		_keybindingHandler.registerBinding("a",                      "+move_left",                 "editing");
+		if (keyboardLayout == video::KeyboardLayout::AZERTY) {
+			_keybindingHandler.registerBinding("z",                  "+move_forward",              "editing");
+			_keybindingHandler.registerBinding("q",                  "+move_left",                 "editing");
+		} else {
+			_keybindingHandler.registerBinding("w",                  "+move_forward",              "editing");
+			_keybindingHandler.registerBinding("a",                  "+move_left",                 "editing");
+		}
 		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
 		_keybindingHandler.registerBinding("d",                      "+move_right",                "editing");
 		_keybindingHandler.registerBinding("space",                  "+jump",                      "game");
@@ -407,7 +414,6 @@ app::AppState VoxEdit::onInit() {
 	video::enable(video::State::CullFace);
 	video::enable(video::State::DepthMask);
 	video::enable(video::State::Blend);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
 	setRelativeMouseMode(false);
 

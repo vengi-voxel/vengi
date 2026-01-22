@@ -9,9 +9,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "video/Camera.h"
-#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxelrender/SceneGraphRenderer.h"
 
 namespace voxedit {
 

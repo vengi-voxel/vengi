@@ -35,7 +35,7 @@ public:
 					   const LoadContext &ctx) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"aseprite", {"aseprite", "ase"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		static io::FormatDescription f{"aseprite", "image/aseprite", {"aseprite", "ase"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 		return f;
 	}
 };

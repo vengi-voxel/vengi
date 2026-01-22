@@ -51,7 +51,7 @@ public:
 					bool withColor, bool withTexCoords) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Standard Triangle Language", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Standard Triangle Language", "", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

@@ -374,6 +374,17 @@ void setUniformi(int location, int value) {
 	rendererState().pendingUniformi.put(location, value);
 }
 
+void deleteVertexArray(Id &id) {
+	if (id == InvalidId) {
+		return;
+	}
+	if (rendererState().vertexArrayHandle == id) {
+		bindVertexArray(InvalidId);
+	}
+	deleteVertexArrays(1, &id);
+	id = InvalidId;
+}
+
 Id currentFramebuffer() {
 	return rendererState().framebufferHandle;
 }
@@ -394,6 +405,14 @@ glm::ivec2 getWindowSize() {
 
 float getScaleFactor() {
 	return rendererState().scaleFactor;
+}
+
+void startFrame(SDL_Window *window, RendererContext &context) {
+	rendererState().startFrame();
+
+	activateContext(window, context);
+
+	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 }
 
 } // namespace video

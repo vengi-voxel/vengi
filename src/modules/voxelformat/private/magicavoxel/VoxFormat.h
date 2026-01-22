@@ -53,7 +53,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"MagicaVoxel", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+			"MagicaVoxel", "", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

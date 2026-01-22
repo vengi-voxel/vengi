@@ -33,6 +33,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Sandbox VoxEdit Block",
+									"",
 									{"vxb"},
 									{"VXB1"},
 									VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};

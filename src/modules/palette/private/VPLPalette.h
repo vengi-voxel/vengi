@@ -30,7 +30,7 @@ public:
 	uint8_t index(uint8_t section, uint8_t color) const;
 
 	static const io::FormatDescription &format() {
-		static const io::FormatDescription desc{"Tiberian Sun Palette", {"vpl"}, {}, 0u};
+		static const io::FormatDescription desc{"Tiberian Sun Palette", "", {"vpl"}, {}, 0u};
 		return desc;
 	}
 };

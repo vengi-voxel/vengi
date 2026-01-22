@@ -103,7 +103,7 @@ msgid ""
 "(1x256)"
 msgstr ""
 
-msgid "The normal palette to use for voxelization"
+msgid "The normal palette"
 msgstr ""
 
 msgid "Camera free look on toggle"
@@ -296,6 +296,9 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
+msgid "Edit bindings"
+msgstr ""
+
 msgid "FPS"
 msgstr ""
 
@@ -449,10 +452,10 @@ msgstr ""
 msgid "Debug build with reduced performance"
 msgstr ""
 
-msgid "Bug reports"
+msgid "Website"
 msgstr ""
 
-msgid "Help"
+msgid "Bug reports"
 msgstr ""
 
 msgid "Mastodon"
@@ -1002,6 +1005,9 @@ msgid "Notifications"
 msgstr ""
 
 msgid "Show console"
+msgstr ""
+
+msgid "Help"
 msgstr ""
 
 msgid "Input"

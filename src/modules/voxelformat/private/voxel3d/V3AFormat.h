@@ -29,7 +29,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Voxel3D", {"v3a", "v3b"}, {}, FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Voxel3D", "", {"v3a", "v3b"}, {}, FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

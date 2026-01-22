@@ -22,12 +22,12 @@ protected:
 
 public:
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Chronovox", {"csm"}, {".CSM"}, 0u};
+		static io::FormatDescription f{"Chronovox", "", {"csm"}, {".CSM"}, 0u};
 		return f;
 	}
 
 	static const io::FormatDescription &formatNVM() {
-		static io::FormatDescription f{"Nicks Voxel Model", {"nvm"}, {".NVM"}, 0u};
+		static io::FormatDescription f{"Nicks Voxel Model", "", {"nvm"}, {".NVM"}, 0u};
 		return f;
 	}
 };

@@ -8,6 +8,7 @@
 #include "ScopedID.h"
 #include "ScopedStyle.h"
 #include "Style.h"
+#include "app/App.h"
 #include "app/i18n/Language.h"
 #include "color/Quantize.h"
 #include "core/ConfigVar.h"
@@ -544,6 +545,10 @@ void IMGUIApp::renderBindingsDialog() {
 		}
 		ImGui::SameLine();
 		ImGui::InputText(_("Filter"), &_bindingsFilter);
+
+		if (ImGui::IconButton(ICON_LC_TEXT_SELECT, _("Edit bindings"))) {
+			openKeybindings();
+		}
 	}
 	ImGui::End();
 }

@@ -31,7 +31,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"StarMade Template", {"smtpl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+			"StarMade Template", "", {"smtpl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

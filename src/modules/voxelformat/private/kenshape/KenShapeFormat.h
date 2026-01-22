@@ -27,7 +27,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"KenShape", {"kenshape"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+			"KenShape", "", {"kenshape"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 		return f;
 	}
 };

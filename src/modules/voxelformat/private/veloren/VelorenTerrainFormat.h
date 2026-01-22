@@ -94,6 +94,7 @@ public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
 			"Veloren terrain",
+			"",
 			{"dat"},
 			{{'\x03', '\x00', '\x89', '\xa7'}, {'\x02', '\x00', '\x89', '\xa7'}, {'\x01', '\x00', '\x89', '\xa7'}},
 			VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};

@@ -43,7 +43,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"BinVox", {"binvox"}, {"#binvox"}, FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"BinVox", "", {"binvox"}, {"#binvox"}, FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

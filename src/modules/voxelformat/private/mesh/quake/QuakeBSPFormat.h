@@ -158,12 +158,12 @@ public:
 	}
 
 	static const io::FormatDescription &formatUFOAI() {
-		static io::FormatDescription f{"UFO:Alien Invasion", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
+		static io::FormatDescription f{"UFO:Alien Invasion", "", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 
 	static const io::FormatDescription &formatQuake1() {
-		static io::FormatDescription f{"Quake 1", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
+		static io::FormatDescription f{"Quake 1", "", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 };

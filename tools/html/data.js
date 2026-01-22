@@ -255,7 +255,7 @@ const jsonData = {
         "ase"
       ],
       "magics": [],
-      "mimetype": "application/x-aseprite",
+      "mimetype": "image/aseprite",
       "animation": false,
       "load": true,
       "save": false
@@ -562,7 +562,7 @@ const jsonData = {
           "value": "0x2320476F"
         }
       ],
-      "mimetype": "application/x-goxel-txt",
+      "mimetype": "text/plain",
       "animation": false,
       "load": true,
       "save": true
@@ -762,7 +762,7 @@ const jsonData = {
         "csv"
       ],
       "magics": [],
-      "mimetype": "application/x-sproxel-csv",
+      "mimetype": "text/csv",
       "animation": false,
       "load": true,
       "save": true
@@ -840,7 +840,7 @@ const jsonData = {
         "obj"
       ],
       "magics": [],
-      "mimetype": "application/x-wavefront-object",
+      "mimetype": "text/plain",
       "mesh": true,
       "animation": false,
       "load": true,
@@ -1000,7 +1000,7 @@ const jsonData = {
         "vxl"
       ],
       "magics": [],
-      "mimetype": "application/x-aceofspades-vxl",
+      "mimetype": "application/x-aceofspades",
       "animation": false,
       "load": true,
       "save": true
@@ -1016,7 +1016,7 @@ const jsonData = {
           "value": "0x51756269"
         }
       ],
-      "mimetype": "application/x-qubicle-exchange",
+      "mimetype": "text/plain",
       "animation": false,
       "load": true,
       "save": true
@@ -1122,7 +1122,7 @@ const jsonData = {
           "value": "0x89504E47"
         }
       ],
-      "mimetype": "application/x-portable-network-graphics",
+      "mimetype": "image/png",
       "animation": false,
       "load": true,
       "save": true

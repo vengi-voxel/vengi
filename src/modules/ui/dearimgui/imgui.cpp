@@ -16555,6 +16555,7 @@ static bool ImGui::GetWindowAlwaysWantOwnViewport(ImGuiWindow* window)
 
 
 // Heuristic, see #8948: depends on how backends handle OS-level parenting.
+// Due to how parent viewport stack is layed out, note that IsViewportAbove(a,b) isn't always the same as !IsViewportAbove(b,a).
 static bool IsViewportAbove(ImGuiViewportP* potential_above, ImGuiViewportP* potential_below)
 {
     // If ImGuiBackendFlags_HasParentViewport if set, ->ParentViewport chain should be accurate.
@@ -16576,37 +16577,37 @@ static bool IsViewportAbove(ImGuiViewportP* potential_above, ImGuiViewportP* pot
     return false;
 }
 
-static bool ImGui::UpdateTryMergeWindowIntoHostViewport(ImGuiWindow* window, ImGuiViewportP* viewport)
+static bool ImGui::UpdateTryMergeWindowIntoHostViewport(ImGuiWindow* window, ImGuiViewportP* viewport_dst)
 {
     ImGuiContext& g = *GImGui;
-    if (window->Viewport == viewport)
+    ImGuiViewportP* viewport_src = window->Viewport; // Current viewport
+    if (viewport_src == viewport_dst)
         return false;
-    if ((viewport->Flags & ImGuiViewportFlags_CanHostOtherWindows) == 0)
+    if ((viewport_dst->Flags & ImGuiViewportFlags_CanHostOtherWindows) == 0)
         return false;
-    if ((viewport->Flags & ImGuiViewportFlags_IsMinimized) != 0)
+    if ((viewport_dst->Flags & ImGuiViewportFlags_IsMinimized) != 0)
         return false;
-    if (!viewport->GetMainRect().Contains(window->Rect()))
+    if (!viewport_dst->GetMainRect().Contains(window->Rect()))
         return false;
     if (GetWindowAlwaysWantOwnViewport(window))
         return false;
 
-    for (ImGuiViewportP* viewport_2 : g.Viewports)
+    for (ImGuiViewportP* viewport_obstructing : g.Viewports)
     {
-        if (viewport_2 == viewport || viewport_2 == window->Viewport)
+        if (viewport_obstructing == viewport_src || viewport_obstructing == viewport_dst)
             continue;
-        if (viewport_2->GetMainRect().Overlaps(window->Rect()))
-            if (IsViewportAbove(viewport_2, viewport))
-                if (window->Viewport == NULL || !IsViewportAbove(viewport_2, window->Viewport))
-                    return false;
+        if (viewport_obstructing->GetMainRect().Overlaps(window->Rect()))
+            if (IsViewportAbove(viewport_obstructing, viewport_dst))
+                if (viewport_src == NULL || IsViewportAbove(viewport_src, viewport_obstructing))
+                    return false; // viewport_obstructing is between viewport_src and viewport_dst -> Cannot merge.
     }
 
     // Move to the existing viewport, Move child/hosted windows as well (FIXME-OPT: iterate child)
-    ImGuiViewportP* old_viewport = window->Viewport;
     if (window->ViewportOwned)
         for (int n = 0; n < g.Windows.Size; n++)
-            if (g.Windows[n]->Viewport == old_viewport)
-                SetWindowViewport(g.Windows[n], viewport);
-    SetWindowViewport(window, viewport);
+            if (g.Windows[n]->Viewport == viewport_src)
+                SetWindowViewport(g.Windows[n], viewport_dst);
+    SetWindowViewport(window, viewport_dst);
     if ((window->Flags & ImGuiWindowFlags_NoBringToFrontOnFocus) == 0)
         BringWindowToDisplayFront(window);
 
@@ -16989,6 +16990,10 @@ ImGuiViewportP* ImGui::AddUpdateViewport(ImGuiWindow* window, ImGuiID id, const 
         g.ViewportCreatedCount++;
         IMGUI_DEBUG_LOG_VIEWPORT("[viewport] Add Viewport %08X '%s'\n", id, window ? window->Name : "<NULL>");
 
+        // We assume the window becomes front-most (even when ImGuiViewportFlags_NoFocusOnAppearing is used).
+        // This is useful for our platform z-order heuristic when io.MouseHoveredViewport is not available.
+        viewport->LastFocusedStampCount = ++g.ViewportFocusedStampCount;
+
         // We normally setup for all viewports in NewFrame() but here need to handle the mid-frame creation of a new viewport.
         // We need to extend the fullscreen clip rect so the OverlayDrawList clip is correct for that the first frame
         g.DrawListSharedData.ClipRectFullscreen.x = ImMin(g.DrawListSharedData.ClipRectFullscreen.x, viewport->Pos.x);
@@ -17363,11 +17368,6 @@ void ImGui::UpdatePlatformWindows()
 
             // Show window
             g.PlatformIO.Platform_ShowWindow(viewport);
-
-            // Even without focus, we assume the window becomes front-most.
-            // This is useful for our platform z-order heuristic when io.MouseHoveredViewport is not available.
-            if (viewport->LastFocusedStampCount != g.ViewportFocusedStampCount)
-                viewport->LastFocusedStampCount = ++g.ViewportFocusedStampCount;
         }
 
         // Clear request flags

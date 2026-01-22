@@ -64,7 +64,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"Qubicle Binary Tree", {"qbt"}, {"QB 2"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+			"Qubicle Binary Tree", "", {"qbt"}, {"QB 2"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

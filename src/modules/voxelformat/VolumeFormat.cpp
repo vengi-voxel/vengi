@@ -142,7 +142,7 @@ const io::FormatDescription *voxelFormats() {
 												 VelorenTerrainFormat::format(),
 												 io::format::png(),
 												 SkinFormat::format(), // let this be after png
-												 {"", {}, {}, 0u}};
+												 io::FormatDescription::END};
 	return desc;
 }
 
@@ -157,7 +157,7 @@ const io::FormatDescription *voxelLoad() {
 			}
 			desc.push_back(*d);
 		}
-		desc.push_back({"", {}, {}, 0u});
+		desc.push_back(io::FormatDescription::END);
 	}
 	return desc.data();
 }
@@ -170,7 +170,7 @@ const io::FormatDescription *voxelSave() {
 				desc.push_back(*d);
 			}
 		}
-		desc.push_back({"", {}, {}, 0u});
+		desc.push_back(io::FormatDescription::END);
 	}
 	return desc.data();
 }

@@ -36,7 +36,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{
-			"AceOfSpades", {"vxl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
+			"AceOfSpades", "", {"vxl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
 		return f;
 	}
 };

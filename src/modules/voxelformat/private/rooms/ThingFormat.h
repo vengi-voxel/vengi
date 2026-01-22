@@ -48,7 +48,7 @@ public:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Rooms.xyz Thing", {"thing"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		static io::FormatDescription f{"Rooms.xyz Thing", "", {"thing"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 		return f;
 	}
 };

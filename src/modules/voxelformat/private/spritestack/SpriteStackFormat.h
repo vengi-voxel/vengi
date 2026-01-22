@@ -34,7 +34,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"SpriteStack", {"zip"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"SpriteStack", "", {"zip"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

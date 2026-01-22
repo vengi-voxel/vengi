@@ -20,7 +20,7 @@
 
 namespace util {
 
-static core::String filename(int version) {
+static inline core::String keybindingsFilename(int version) {
 	return core::String::format("keybindings-%i.cfg", version);
 }
 
@@ -194,7 +194,7 @@ void KeyBindingHandler::construct() {
 	}).setHelp(_("Unbind a key"));
 }
 
-void KeyBindingHandler::shutdown(int version) {
+void KeyBindingHandler::saveKeybindings(int version) {
 	core::String keybindings;
 	keybindings += R"(
 # modifier+key command context
@@ -241,12 +241,16 @@ void KeyBindingHandler::shutdown(int version) {
 	if (keybindings.empty()) {
 		removeApplicationKeyBindings(version);
 	} else {
-		io::filesystem()->homeWrite(filename(version), keybindings);
+		io::filesystem()->homeWrite(keybindingsFilename(version), keybindings);
 	}
 }
 
+void KeyBindingHandler::shutdown(int version) {
+	saveKeybindings(version);
+}
+
 void KeyBindingHandler::removeApplicationKeyBindings(int version) {
-	const core::String &f = filename(version);
+	const core::String &f = keybindingsFilename(version);
 	const core::String &path = io::filesystem()->homeWritePath(f);
 	io::Filesystem::sysRemoveFile(path);
 }
@@ -254,6 +258,17 @@ void KeyBindingHandler::removeApplicationKeyBindings(int version) {
 void KeyBindingHandler::reset(int version) {
 	removeApplicationKeyBindings(version);
 	clear();
+}
+
+void KeyBindingHandler::openKeybindings(int version) {
+	const core::String &abspath = io::filesystem()->homeWritePath(keybindingsFilename(version));
+	if (abspath.empty()) {
+		return;
+	}
+	saveKeybindings(version);
+	const core::String fileurl = "file://" + abspath;
+	Log::debug("Open keybindings file: %s", fileurl.c_str());
+	app::App::openURL(fileurl);
 }
 
 void KeyBindingHandler::clear() {
@@ -265,7 +280,7 @@ bool KeyBindingHandler::init() {
 }
 
 bool KeyBindingHandler::load(int version) {
-	io::FilePtr file = io::filesystem()->open(filename(version));
+	io::FilePtr file = io::filesystem()->open(keybindingsFilename(version));
 	core::String bindings = file->load();
 	if (bindings.empty()) {
 		file->close();

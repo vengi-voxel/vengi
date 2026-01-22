@@ -18,7 +18,8 @@ Build-Depends:
  libfreetype-dev,
  liblua5.4-dev,
  wayland-protocols,
- pkg-config
+ pkg-config,
+ zlib1g-dev
 Standards-Version: 4.1.4
 Homepage: https://github.com/vengi-voxel/vengi
 Vcs-Git: https://github.com/vengi-voxel/vengi

@@ -148,6 +148,7 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"GL Transmission Format",
+									   "", // model/gltf+json, model/gltf-binary
 									   {"gltf", "glb", "vrm"},
 									   {},
 									   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};

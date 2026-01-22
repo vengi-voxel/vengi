@@ -20,7 +20,7 @@ public:
 	bool save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
 
 	static const io::FormatDescription &format() {
-		static const io::FormatDescription desc = {"Qubicle Palette", {"qsm"}, {}, 0u};
+		static const io::FormatDescription desc = {"Qubicle Palette", "", {"qsm"}, {}, 0u};
 		return desc;
 	}
 };

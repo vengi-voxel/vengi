@@ -60,7 +60,7 @@ public:
 	}
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Build engine", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Build engine", "", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

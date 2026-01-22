@@ -42,7 +42,7 @@ public:
 					bool withColor, bool withTexCoords) override;
 
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Wavefront Object", {"obj"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Wavefront Object", "text/plain", {"obj"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };

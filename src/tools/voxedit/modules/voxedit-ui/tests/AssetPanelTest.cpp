@@ -7,6 +7,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "core/StringUtil.h"
 #include "TestUtil.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
@@ -18,6 +19,11 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->LogInfo("No images found in asset panel");
 			return;
 		}
+		IM_CHECK(_sceneMgr->newScene(true, "image drag and drop", voxel::Region(0, 31)));
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);
+		IM_CHECK(volume != nullptr);
+
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
 		const core::String viewPortId = core::String::format("//%s", Viewport::viewportId(viewportId).c_str());
@@ -29,6 +35,7 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			const core::String srcRef = core::String::format("##assetpaneltabs/Images/%i", (int)i);
 			ctx->ItemDragAndDrop(srcRef.c_str(), viewPortId.c_str());
 		}
+		IM_CHECK(voxelutil::countVoxels(*volume) > 0);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "load remote collection")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -36,6 +43,12 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("##assetpaneltabs/Models");
 		ctx->Yield();
 		ctx->ItemDoubleClick("**/Oasis");
+		ctx->ItemDoubleClick("**/Vengi voxelized");
+		// TODO: wait until it's loaded and import flighthelmet-scale-300.qb via context menu - add to scene
+		// const int modelSize = _sceneMgr->sceneGraph().size();
+		// assetpanel\/##voxelfiles_134E7031/0x134E7031 [override]/Vengi voxelized (3)##Vengi voxelized/2/flighthelmet-scale-300.qb
+		// const int modelSizeAfterImport = _sceneMgr->sceneGraph().size();
+		// IM_CHECK_EQ(modelSizeAfterImport, modelSize + 1);
 	};
 }
 
