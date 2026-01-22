@@ -4,7 +4,7 @@ A new year and quite a lot has happened already! The first few weeks of January 
 
 ## New Greedy Texture Mesher
 
-One of the biggest additions this month is the new greedy texture mesher [#709](https://github.com/vengi-voxel/vengi/issues/709) (find images linked in the ticket). This advanced mesher uses a texture atlas approach instead of vertex colors, which dramatically reduces vertex counts for scenes with flat surfaces containing different colors. Instead of needing many vertices per surface, you now only get four vertices and a corresponding section in the texture atlas.
+One of the biggest additions this month is the new greedy texture mesher [#709](https://github.com/vengi-voxel/vengi/issues/709) (find images linked in the ticket). This new mesher uses a texture atlas approach instead of vertex colors, which dramatically reduces vertex counts for scenes with flat surfaces containing different colors. Instead of needing many vertices per surface, you now only get four vertices and a corresponding section in the texture atlas.
 
 The new mesher is currently supported by OBJ and GLTF output formats, with more formats to follow.
 
@@ -12,7 +12,7 @@ The new mesher is currently supported by OBJ and GLTF output formats, with more 
 
 The editor now includes offline documentation [#713](https://github.com/vengi-voxel/vengi/issues/713)! A new help panel was added to [vengi-voxedit](../voxedit/Index.md) that renders markdown documentation directly in the application. This required integrating the `imgui_markdown` library and extending it with support for tables and code blocks - features that were contributed back to the upstream project (see below).
 
-The markdown rendering system includes proper link handling with hand cursor feedback, making the documentation experience smooth and intuitive even when working without an internet connection.
+The markdown rendering system includes proper link handling with hand cursor feedback, making the documentation experience smooth and intuitive even when working without an internet connection. This was requested in a recent [discussion](https://github.com/vengi-voxel/vengi/discussions/710).
 
 ## Keyboard Layout Detection
 
