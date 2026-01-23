@@ -28,7 +28,7 @@ msgstr ""
 "Protokollniveau, 5 sind nur schwerwiegende Fehler."
 
 msgid "Print the cvars in json format"
-msgstr ""
+msgstr "Die cvars im JSON-Format ausgeben"
 
 msgid "Print the version and quit"
 msgstr "Die Version anzeigen und beenden"
@@ -104,29 +104,37 @@ msgid "Show the list of known commands (wildcards supported)"
 msgstr "Die Liste der bekannten Befehle anzeigen (Platzhalter unterstützt)"
 
 msgid "Enable named pipe for input commands"
-msgstr ""
+msgstr "Benannte Pipe für Eingabebefehle aktivieren"
 
 msgid "Controls the algorithm that is used to perform the color reduction"
-msgstr ""
+msgstr "Steuert den Algorithmus, der zur Farbreduktion verwendet wird"
 
 msgid ""
 "Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
 msgstr ""
+"6-Bit-Farbwerte für die Palette verwenden (0–63) — z. B. in C&C pal-Dateien "
+"verwendet"
 
 msgid ""
 "The maximum size of an image in x and y direction to quantize to a palette"
 msgstr ""
+"Maximale Größe eines Bildes in X- und Y-Richtung zur Quantisierung auf eine "
+"Palette"
 
 msgid "Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"
 msgstr ""
+"RGBA-Format für GIMP-Paletten verwenden (statt RGB / Aseprite-Erweiterung)"
 
 msgid ""
 "This is the NAME part of palette-<NAME>.png or absolute png file to use "
 "(1x256)"
 msgstr ""
+"Dies ist der NAME-Teil von palette-<NAME>.png oder eine absolute PNG-Datei "
+"zur Verwendung (1x256)"
 
+msgctxt "A palette of normal vectors converted to RGBA values"
 msgid "The normal palette"
-msgstr ""
+msgstr "Die Normalen Palette"
 
 msgid "Camera free look on toggle"
 msgstr "Kamera-Freisicht umschalten"
@@ -189,7 +197,7 @@ msgid "Date"
 msgstr "Datum"
 
 msgid "link"
-msgstr ""
+msgstr "Link"
 
 msgid "directory"
 msgstr "Verzeichnis"
@@ -204,10 +212,10 @@ msgid "The last selected file type filter in the file dialog"
 msgstr "Der zuletzt ausgewählte Dateitypfilter im Dateidialog"
 
 msgid "Not writeable"
-msgstr ""
+msgstr "Nicht beschreibbar"
 
 msgid "The selected file or directory is not writeable"
-msgstr ""
+msgstr "Die ausgewählte Datei oder das Verzeichnis ist nicht beschreibbar"
 
 msgid "Create folder"
 msgstr "Ordner erstellen"
@@ -222,7 +230,7 @@ msgid "Folder name can't be empty"
 msgstr "Der Ordnername darf nicht leer sein"
 
 msgid "Folder creation failed"
-msgstr ""
+msgstr "Ordnererstellung fehlgeschlagen"
 
 msgid "Options"
 msgstr "Optionen"
@@ -459,7 +467,7 @@ msgstr ""
 "%s"
 
 msgid "Unknown"
-msgstr ""
+msgstr "Unbekannt"
 
 msgid "Enable sending anonymous metrics"
 msgstr "Senden anonymer Metriken aktivieren"
@@ -480,10 +488,10 @@ msgid "You are using the latest version."
 msgstr "Sie verwenden die neueste Version."
 
 msgid "Debug build with reduced performance"
-msgstr ""
+msgstr "Debug-Build mit verringerter Leistung"
 
 msgid "Website"
-msgstr ""
+msgstr "Website"
 
 msgid "Bug reports"
 msgstr "Fehlerberichte"
@@ -499,6 +507,9 @@ msgstr "Danksagungen"
 
 msgid "Paths"
 msgstr "Pfade"
+
+msgid "Close"
+msgstr "Schließen"
 
 msgid "Clear the text from the built-in console"
 msgstr "Den Text aus der integrierten Konsole löschen"
@@ -528,7 +539,7 @@ msgid "Activate culling for buffer parts"
 msgstr ""
 
 msgid "Activate culling for scene nodes"
-msgstr ""
+msgstr "Culling für Szenenknoten aktivieren"
 
 msgid "Activate bloom post processing"
 msgstr "Bloom-Nachbearbeitung aktivieren"
@@ -561,25 +572,28 @@ msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
 
 msgid "Merge similar quads to optimize the mesh"
-msgstr ""
+msgstr "Ähnliche Quads zusammenführen, um das Mesh zu optimieren"
 
 msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
-msgstr ""
+msgstr "0 = Würfel, 1 = Marching Cubes, 2 = binärer Mesher, 3 = Greedy-Textur"
 
 msgid "Reuse vertices or always create new ones"
-msgstr ""
+msgstr "Vertices wiederverwenden oder immer neue erstellen"
 
 msgid ""
 "If multiple triangles contribute to the same voxel the color values are "
 "averaged based on their area contribution - otherwise only the biggest "
 "triangle counts"
 msgstr ""
+"Wenn mehrere Dreiecke zum selben Voxel beitragen, werden die Farbwerte "
+"basierend auf ihrem Flächenanteil gemittelt — andernfalls zählt nur das "
+"größte Dreieck"
 
 msgid "Extra vertices for ambient occlusion"
-msgstr ""
+msgstr "Zusätzliche Vertices für Ambient Occlusion"
 
 msgid "The RGB color flatten factor for importing color and mesh formats"
-msgstr ""
+msgstr "RGB-Abflachfaktor beim Importieren von Farb- und Mesh-Formaten"
 
 msgid "Save only visible nodes"
 msgstr ""
@@ -744,29 +758,28 @@ msgid "Pop"
 msgstr "Herausnehmen"
 
 msgid "Movement speed in game mode"
-msgstr ""
+msgstr "Bewegungsgeschwindigkeit im Spielmodus"
 
 msgid "Jump velocity in game mode"
-msgstr ""
+msgstr "Sprunggeschwindigkeit im Spielmodus"
 
-#, fuzzy
 msgid "Height of the body in game mode"
-msgstr "Knochen im Szenenmodus anzeigen"
+msgstr ""
 
 msgid "Gravity in game mode"
-msgstr ""
+msgstr "Schwerkraft im Spielmodus"
 
 msgid "Friction in game mode"
-msgstr ""
+msgstr "Reibung im Spielmodus"
 
 msgid "Body size in game mode"
-msgstr ""
+msgstr "Körpergröße im Spielmodus"
 
 msgid "Enable camera clipping"
-msgstr ""
+msgstr "Kameraclipping aktivieren"
 
 msgid "Enable gravity"
-msgstr ""
+msgstr "Schwerkraft aktivieren"
 
 msgid "Bottom"
 msgstr "Unten"
@@ -1041,6 +1054,9 @@ msgstr "Konsole anzeigen"
 
 msgid "Help"
 msgstr "Hilfe"
+
+msgid "About"
+msgstr "Über"
 
 msgid "Input"
 msgstr ""

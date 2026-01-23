@@ -103,6 +103,7 @@ msgid ""
 "(1x256)"
 msgstr ""
 
+msgctxt "A palette of normal vectors converted to RGBA values"
 msgid "The normal palette"
 msgstr ""
 
@@ -468,6 +469,9 @@ msgid "Credits"
 msgstr ""
 
 msgid "Paths"
+msgstr ""
+
+msgid "Close"
 msgstr ""
 
 msgid "Clear the text from the built-in console"
@@ -1008,6 +1012,9 @@ msgid "Show console"
 msgstr ""
 
 msgid "Help"
+msgstr ""
+
+msgid "About"
 msgstr ""
 
 msgid "Input"
