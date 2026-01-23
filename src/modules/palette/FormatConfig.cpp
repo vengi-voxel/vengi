@@ -33,7 +33,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
 				   _("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"));
 	core::Var::get(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(),
-				   _("The normal palette"));
+				   C_("A palette of normal vectors converted to RGBA values", "The normal palette"));
 
 	return true;
 }
