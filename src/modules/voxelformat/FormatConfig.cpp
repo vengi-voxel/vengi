@@ -31,7 +31,8 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, _("Merge similar quads to optimize the mesh"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary),
-				   core::CV_SHADER, _("0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"),
+				   core::CV_SHADER,
+				   C_("Voxel mesh mode description", "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"),
 				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
 											  (int)voxel::SurfaceExtractionType::Max - 1>);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST,
@@ -95,7 +96,8 @@ bool FormatConfig::init() {
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBSaveLeftHanded, "true", core::CV_NOPERSIST,
 				   _("Toggle between left and right handed"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatQBSaveCompressed, "true", core::CV_NOPERSIST, _("Save RLE compressed"),
+	core::Var::get(cfg::VoxformatQBSaveCompressed, "true", core::CV_NOPERSIST,
+				   C_("Save qubicle voxel files with RLE compression enabled", "Save RLE compressed"),
 				   core::Var::boolValidator);
 	core::Var::get(
 		cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST,

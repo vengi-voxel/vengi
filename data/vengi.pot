@@ -471,9 +471,6 @@ msgstr ""
 msgid "Paths"
 msgstr ""
 
-msgid "Close"
-msgstr ""
-
 msgid "Clear the text from the built-in console"
 msgstr ""
 
@@ -537,6 +534,7 @@ msgstr ""
 msgid "Merge similar quads to optimize the mesh"
 msgstr ""
 
+msgctxt "Voxel mesh mode description"
 msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
 msgstr ""
 
@@ -616,6 +614,7 @@ msgstr ""
 msgid "Toggle between left and right handed"
 msgstr ""
 
+msgctxt "Save qubicle voxel files with RLE compression enabled"
 msgid "Save RLE compressed"
 msgstr ""
 
@@ -765,6 +764,9 @@ msgstr ""
 msgid "6 bit colors"
 msgstr ""
 
+msgctxt ""
+"Aseprite extended the gpl palette format for the graphic program Gimp by an "
+"alpha channel for the colors"
 msgid "Gimp Aseprite Alpha extension"
 msgstr ""
 
@@ -1012,9 +1014,6 @@ msgid "Show console"
 msgstr ""
 
 msgid "Help"
-msgstr ""
-
-msgid "About"
 msgstr ""
 
 msgid "Input"

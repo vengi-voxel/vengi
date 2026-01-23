@@ -102,7 +102,10 @@ bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc)
 		return true;
 	}
 	if (mode == video::OpenFileMode::Save && *desc == palette::GimpPalette::format()) {
-		ImGui::CheckboxVar(_("Gimp Aseprite Alpha extension"), cfg::PalformatGimpRGBA);
+		ImGui::CheckboxVar(C_("Aseprite extended the gpl palette format for the graphic program Gimp by an alpha "
+							  "channel for the colors",
+							  "Gimp Aseprite Alpha extension"),
+						   cfg::PalformatGimpRGBA);
 	}
 	imguiApp()->colorReductionOptions();
 	return false;

@@ -508,9 +508,6 @@ msgstr "Danksagungen"
 msgid "Paths"
 msgstr "Pfade"
 
-msgid "Close"
-msgstr "Schließen"
-
 msgid "Clear the text from the built-in console"
 msgstr "Den Text aus der integrierten Konsole löschen"
 
@@ -574,6 +571,7 @@ msgstr "Das Fenster minimieren"
 msgid "Merge similar quads to optimize the mesh"
 msgstr "Ähnliche Quads zusammenführen, um das Mesh zu optimieren"
 
+msgctxt "Voxel mesh mode description"
 msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
 msgstr "0 = Würfel, 1 = Marching Cubes, 2 = binärer Mesher, 3 = Greedy-Textur"
 
@@ -656,6 +654,7 @@ msgstr ""
 msgid "Toggle between left and right handed"
 msgstr ""
 
+msgctxt "Save qubicle voxel files with RLE compression enabled"
 msgid "Save RLE compressed"
 msgstr ""
 
@@ -805,6 +804,9 @@ msgstr "Rechts"
 msgid "6 bit colors"
 msgstr "6-Bit Farbwerte"
 
+msgctxt ""
+"Aseprite extended the gpl palette format for the graphic program Gimp by an "
+"alpha channel for the colors"
 msgid "Gimp Aseprite Alpha extension"
 msgstr ""
 
@@ -1054,9 +1056,6 @@ msgstr "Konsole anzeigen"
 
 msgid "Help"
 msgstr "Hilfe"
-
-msgid "About"
-msgstr "Über"
 
 msgid "Input"
 msgstr ""
