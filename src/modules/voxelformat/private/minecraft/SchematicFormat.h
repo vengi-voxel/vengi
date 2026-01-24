@@ -63,9 +63,16 @@ protected:
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 public:
+	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
+										const LoadContext &ctx) override;
+
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{
-			"Minecraft schematic", "", {"schematic", "schem", "nbt", "litematic" /*, "bp"*/}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		static io::FormatDescription f{"Minecraft schematic",
+									   "",
+									   {"schematic", "schem", "nbt", "litematic", "bp"},
+									   {},
+									   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE |
+										   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 		return f;
 	}
 };

@@ -16,6 +16,8 @@
 #include "core/Var.h"
 #include "core/collection/Array.h"
 #include "core/concurrent/Atomic.h"
+#include "image/Image.h"
+#include "image/ImageType.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "io/MemoryReadStream.h"
@@ -189,6 +191,54 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 	return success;
 }
 
+image::ImagePtr SchematicFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
+												const LoadContext &ctx) {
+	const core::String &extension = core::string::extractExtension(filename);
+	if (extension == "bp") {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
+			Log::error("Could not load file %s", filename.c_str());
+			return {};
+		}
+		palette::Palette palette;
+		palette.minecraft();
+		scenegraph::SceneGraph sceneGraph;
+
+		uint32_t magic;
+		if (stream->readUInt32(magic) != 0) {
+			Log::error("Failed to read Axiom magic number");
+			return {};
+		}
+		const uint32_t AXIOM_MAGIC = FourCC(0x0A, 0xE5, 0xBB, 0x36);
+		if (magic != AXIOM_MAGIC) {
+			Log::error("Invalid Axiom magic number: 0x%08X", magic);
+			return {};
+		}
+
+		// skip header
+		uint32_t headerTagSize;
+		if (stream->readUInt32BE(headerTagSize) != 0) {
+			Log::error("Failed to read header tag size");
+			return {};
+		}
+		if (stream->skip(headerTagSize) < 0) {
+			Log::error("Failed to skip header");
+			return {};
+		}
+
+		// Read thumbnail png
+		uint32_t thumbnailLength;
+		if (stream->readUInt32BE(thumbnailLength) != 0) {
+			Log::error("Failed to read thumbnail length");
+			return {};
+		}
+		image::ImagePtr thumbnail = image::createEmptyImage("thumbnail");
+		thumbnail->load(image::ImageType::PNG, *stream, thumbnailLength);
+		return thumbnail;
+	}
+	return {};
+}
+
 bool SchematicFormat::loadAxiomBinary(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 									   palette::Palette &palette) {
 	uint32_t magic;
@@ -202,7 +252,17 @@ bool SchematicFormat::loadAxiomBinary(io::SeekableReadStream &stream, scenegraph
 		return false;
 	}
 
-	// Read and skip header
+	// Read header
+	// the header is a compound nbt tag
+	// * ThumbnailYaw float
+	// * ThumbnailPitch float
+	// * ContainsAir byte
+	// * LockedThumbnail byte
+	// * Version long
+	// * Author string
+	// * Name string
+	// * Tags list
+	// * BlockCount int
 	uint32_t headerTagSize;
 	if (stream.readUInt32BE(headerTagSize) != 0) {
 		Log::error("Failed to read header tag size");
@@ -214,7 +274,6 @@ bool SchematicFormat::loadAxiomBinary(io::SeekableReadStream &stream, scenegraph
 	}
 
 	// Read and skip thumbnail
-	// TODO: VOXELFORMAT: support this in loadScreenshot
 	uint32_t thumbnailLength;
 	if (stream.readUInt32BE(thumbnailLength) != 0) {
 		Log::error("Failed to read thumbnail length");
