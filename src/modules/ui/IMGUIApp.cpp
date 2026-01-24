@@ -15,6 +15,7 @@
 #include "core/collection/DynamicArray.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
+#include "io/File.h"
 #ifdef IMGUI_ENABLE_FREETYPE
 #include "dearimgui/misc/freetype/imgui_freetype.h"
 #endif
@@ -285,6 +286,17 @@ void IMGUIApp::loadFonts() {
 	io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, 0.0f,
 											&fontIconCfg);
+
+	core::DynamicArray<io::FilesystemEntry> entities;
+	io::filesystem()->list("font", entities, "*.ttf");
+	Log::debug("Found %i additional font files", (int)entities.size());
+	for (const io::FilesystemEntry &entry : entities) {
+		const core::String &name = io::filesystem()->filePath(entry.fullPath);
+		Log::debug("Load additional font from %s", name.c_str());
+		if (io.Fonts->AddFontFromFileTTF(name.c_str()) == nullptr) {
+			Log::error("Failed to load font from %s", name.c_str());
+		}
+	}
 }
 
 static void *_imguiAlloc(size_t size, void *) {
