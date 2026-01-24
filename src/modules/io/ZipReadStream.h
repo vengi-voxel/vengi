@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Stream.h"
+#include "engine-config.h" // USE_ZLIB, USE_LIBDEFLATE
 
 namespace io {
 
@@ -22,7 +23,9 @@ class ZipReadStream : public io::ReadStream {
 private:
 	void *_stream;
 	io::ReadStream &_readStream;
+#ifndef USE_LIBDEFLATE
 	uint8_t _buf[256 * 1024] {};
+#endif
 	const int _size;
 	int _remaining;
 	int _uncompressedSize = -1;

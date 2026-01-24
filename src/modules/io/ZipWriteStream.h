@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Stream.h"
+#include "engine-config.h" // USE_ZLIB, USE_LIBDEFLATE
 
 namespace io {
 
@@ -17,7 +18,9 @@ class ZipWriteStream : public io::WriteStream {
 private:
 	void *_stream;
 	io::WriteStream &_outStream;
+#ifndef USE_LIBDEFLATE
 	uint8_t _out[256 * 1024] {};
+#endif
 	int64_t _pos = 0;
 
 public:

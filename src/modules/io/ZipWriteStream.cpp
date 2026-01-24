@@ -5,7 +5,6 @@
 #include "ZipWriteStream.h"
 #include "core/StandardLib.h"
 #include "core/collection/Buffer.h"
-#include "engine-config.h" // USE_ZLIB, USE_LIBDEFLATE
 #if USE_LIBDEFLATE
 #include <libdeflate.h>
 #elif USE_ZLIB
