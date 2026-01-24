@@ -254,22 +254,17 @@ bool SchematicFormat::loadAxiomBinary(io::SeekableReadStream &stream, scenegraph
 
 	// Read header
 	// the header is a compound nbt tag
-	// * ThumbnailYaw float
-	// * ThumbnailPitch float
-	// * ContainsAir byte
-	// * LockedThumbnail byte
-	// * Version long
-	// * Author string
-	// * Name string
-	// * Tags list
-	// * BlockCount int
 	uint32_t headerTagSize;
 	if (stream.readUInt32BE(headerTagSize) != 0) {
 		Log::error("Failed to read header tag size");
 		return false;
 	}
-	if (stream.skip(headerTagSize) < 0) {
-		Log::error("Failed to skip header");
+	priv::NamedBinaryTagContext headerCtx;
+	io::BufferedReadWriteStream headerStream(stream, headerTagSize);
+	headerCtx.stream = &headerStream;
+	const priv::NamedBinaryTag &header = priv::NamedBinaryTag::parse(headerCtx);
+	if (!header.valid()) {
+		Log::error("Failed to parse Axiom header compound NBT");
 		return false;
 	}
 
@@ -302,13 +297,37 @@ bool SchematicFormat::loadAxiomBinary(io::SeekableReadStream &stream, scenegraph
 	io::ZipReadStream zipStream(memStream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
-	const priv::NamedBinaryTag &schematic = priv::NamedBinaryTag::parse(ctx);
-	if (!schematic.valid()) {
+	const priv::NamedBinaryTag &blockData = priv::NamedBinaryTag::parse(ctx);
+	if (!blockData.valid()) {
 		Log::error("Failed to parse Axiom block data NBT");
 		return false;
 	}
 
-	return loadAxiom(schematic, sceneGraph, palette);
+	const int blockCount = header.get("BlockCount").int32(0);
+	const int8_t containsAir = header.get("ContainsAir").int8(0);
+	const int8_t lockedThumbnail = header.get("LockedThumbnail").int8(0);
+	const float thumbnailYaw = header.get("ThumbnailYaw").float32(0.0f);
+	const float thumbnailPitch = header.get("ThumbnailPitch").float32(0.0f);
+	// TODO: VOXELFORMAT: header.get("Tags").list()
+	Log::debug("Block count: %i", blockCount);
+	Log::debug("Contains air: %i", (int)containsAir);
+	Log::debug("Locked thumbnail: %i", (int)lockedThumbnail);
+	Log::debug("Thumbnail yaw: %.2f", thumbnailYaw);
+	Log::debug("Thumbnail pitch: %.2f", thumbnailPitch);
+
+	if (loadAxiom(blockData, sceneGraph, palette)) {
+		scenegraph::SceneGraphNode &rootNode = sceneGraph.node(0);
+		if (const core::String *author = header.get("Author").string()) {
+			rootNode.setProperty(scenegraph::PropAuthor, *author);
+		}
+		if (const core::String *name = header.get("Name").string()) {
+			rootNode.setProperty(scenegraph::PropTitle, *name);
+		}
+		const int64_t version = header.get("Version").int64(0);
+		rootNode.setProperty(scenegraph::PropVersion, core::string::toString(version));
+		return true;
+	}
+	return false;
 }
 
 bool SchematicFormat::loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
@@ -374,6 +393,7 @@ bool SchematicFormat::loadAxiom(const priv::NamedBinaryTag &schematic, scenegrap
 			return false;
 		}
 
+		// minecraft:structure_void is air in Axiom schematics
 		const priv::NBTList &paletteNbt = *paletteTag.list();
 		SchematicPalette mcpal;
 		mcpal.resize(paletteNbt.size());
