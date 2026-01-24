@@ -1513,7 +1513,7 @@ trace_state make_trace_state(
 
 // Forward declaration
 static trace_light& add_light(trace_lights& lights) {
-  return lights.lights.emplace_back();
+  return lights.lights.emplace_back(trace_light{});
 }
 
 // Init trace lights
@@ -1612,7 +1612,7 @@ void trace_samples(trace_state& state, const scene_data& scene,
 
 // Trace context
 trace_context make_trace_context(const trace_params& params) {
-  return {{}, false, false};
+  return trace_context{};
 }
 
 // Async start
