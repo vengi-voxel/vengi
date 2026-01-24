@@ -39,11 +39,12 @@ using MsgStrs = core::DynamicArray<core::String, 1>;
  * languages and .po files at once use the DictionaryManager.
  */
 class Dictionary : public core::NonCopyable {
-private:
+public:
 	typedef core::DynamicStringMap<MsgStrs> Entries;
+	typedef core::DynamicStringMap<Entries> CtxtEntries;
+private:
 	Entries _entries;
 
-	typedef core::DynamicStringMap<Entries> CtxtEntries;
 	CtxtEntries _ctxtEntries;
 
 	core::String _charset;
@@ -113,7 +114,15 @@ public:
 	 * void func(const core::String& msgid, const MsgStrs& msgstrs)
 	 */
 	template<class Func>
-	Func foreach (Func func) {
+	Func foreach (Func &&func) {
+		for (Entries::iterator i = _entries.begin(); i != _entries.end(); ++i) {
+			func(i->first, i->second);
+		}
+		return func;
+	}
+
+	template<class Func>
+	Func foreach (Func &&func) const {
 		for (Entries::iterator i = _entries.begin(); i != _entries.end(); ++i) {
 			func(i->first, i->second);
 		}

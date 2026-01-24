@@ -653,6 +653,14 @@ AppState App::onConstruct() {
 	core::Var::get(cfg::MetricFlavor, "");
 	Log::init();
 
+	command::Command::registerCommand("i18nlist", [&](const command::CmdArgs &args) {
+		_dict->foreach([](const core::String &key, const Dictionary::Entries::value_type &value) {
+			for (const core::String &v : value) {
+				Log::info("%s = %s", key.c_str(), v.c_str());
+			}
+		});
+	}).setHelp(_("List all available translated strings"));
+
 	command::Command::registerCommand("set", [](const command::CmdArgs &args) {
 		if (args.size() < 2) {
 			Log::info("usage: set <name> <value>");
