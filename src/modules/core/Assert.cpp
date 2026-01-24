@@ -28,7 +28,7 @@ const char *core_crashlog_path() {
 	return g_crashLogPath.c_str();
 }
 
-static_assert(sizeof(SDL_AssertData) == sizeof(AssertData));
+static_assert(sizeof(SDL_AssertData) == sizeof(AssertData), "Expected AssertData to match SDL_AssertData size");
 
 static SDL_assert_state coreAssertionHandler(const SDL_assert_data *data, void *userdata) {
 	if (data->trigger_count <= 1 && data->always_ignore == 0) {
