@@ -20,9 +20,11 @@ gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_deps(tests-${LIB} ${LIB} test-app)
 gtest_suite_end(tests-${LIB})
 
-set(BENCHMARK_SRCS
-	benchmarks/ColorUtilBenchmark.cpp
-	benchmarks/QuantizeBenchmark.cpp
-)
-engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
-engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
+if (USE_BENCHMARKS)
+	set(BENCHMARK_SRCS
+		benchmarks/ColorUtilBenchmark.cpp
+		benchmarks/QuantizeBenchmark.cpp
+	)
+	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
+endif()

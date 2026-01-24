@@ -379,10 +379,12 @@ set(BENCHMARK_FILES
 	voxedit/chr_knight.vengi
 )
 
-set(BENCHMARK_SRCS
-	benchmarks/MeshFormatBenchmark.cpp
-	benchmarks/MeshTriBenchmark.cpp
-	benchmarks/VolumeFormatBenchmark.cpp
-)
-engine_add_executable(TARGET benchmarks-${LIB} FILES ${BENCHMARK_FILES} SRCS ${BENCHMARK_SRCS} NOINSTALL)
-engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
+if (USE_BENCHMARKS)
+	set(BENCHMARK_SRCS
+		benchmarks/MeshFormatBenchmark.cpp
+		benchmarks/MeshTriBenchmark.cpp
+		benchmarks/VolumeFormatBenchmark.cpp
+	)
+	engine_add_executable(TARGET benchmarks-${LIB} FILES ${BENCHMARK_FILES} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
+endif()

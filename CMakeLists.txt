@@ -28,6 +28,7 @@ option(USE_SANITIZERS "Enable sanitizer" OFF)
 option(USE_GLSLANG_VALIDATOR "Enable the use of the standalone glslang validator" OFF)
 option(USE_LIBS_FORCE_LOCAL "Don't use systemwide installations" OFF)
 option(USE_LIBDEFLATE "Enable libdeflate support" ON)
+option(USE_BENCHMARKS "Build benchmarks" ON)
 
 set(ROOT_PROJECT_MAJOR_VERSION 0)
 set(ROOT_PROJECT_MINOR_VERSION 4)
