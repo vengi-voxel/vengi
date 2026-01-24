@@ -293,7 +293,9 @@ void IMGUIApp::loadFonts() {
 	for (const io::FilesystemEntry &entry : entities) {
 		const core::String &name = io::filesystem()->filePath(entry.fullPath);
 		Log::debug("Load additional font from %s", name.c_str());
-		if (io.Fonts->AddFontFromFileTTF(name.c_str()) == nullptr) {
+		ImFontConfig fontCfg;
+		fontCfg.MergeMode = true;
+		if (io.Fonts->AddFontFromFileTTF(name.c_str(), 0.0f, &fontCfg) == nullptr) {
 			Log::error("Failed to load font from %s", name.c_str());
 		}
 	}
