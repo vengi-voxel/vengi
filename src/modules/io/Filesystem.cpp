@@ -306,6 +306,14 @@ bool Filesystem::list(const core::String &directory, core::DynamicArray<Filesyst
 	return true;
 }
 
+core::String Filesystem::filePath(const core::String& filename) const {
+	const io::FilePtr &file = open(filename);
+	const core::String name = file->name();
+	file->close();
+	return name;
+}
+
+
 bool Filesystem::sysChdir(const core::String &directory) {
 	Log::debug("Change current working dir to %s", directory.c_str());
 	return fs_chdir(directory.c_str());

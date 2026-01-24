@@ -114,6 +114,8 @@ public:
 		return open(path.str(), mode);
 	}
 
+	core::String filePath(const core::String& filename) const;
+
 	core::String load(CORE_FORMAT_STRING const char *filename, ...) CORE_PRINTF_VARARG_FUNC(2);
 	core::String load(const core::String& filename) const;
 
