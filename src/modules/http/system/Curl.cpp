@@ -70,7 +70,9 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	curl_easy_setopt(curl, CURLOPT_URL, ctx._url.c_str());
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+#ifdef CURLOPT_DEFAULT_PROTOCOL
 	curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
+#endif
 	HeaderData headerdata = {outheaders, &stream};
 	curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteHeaderData);
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
