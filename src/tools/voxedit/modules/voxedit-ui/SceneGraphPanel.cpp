@@ -470,10 +470,10 @@ void SceneGraphPanel::registerPopups() {
 		}
 		if (canChangeParent) {
 			scenegraph::NodeMoveFlag flags = scenegraph::NodeMoveFlag::None;
-			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, _("Move below"))) {
+			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, C_("Scene graph panel node move", "Move below"))) {
 				flags = scenegraph::NodeMoveFlag::UpdateTransform;
 			}
-			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, _("Move below but keep position"))) {
+			if (ImGui::IconButton(ICON_LC_LIST_INDENT_INCREASE, C_("Scene graph panel node move", "Move below but keep position"))) {
 				flags = scenegraph::NodeMoveFlag::KeepWorldTransform;
 			}
 			if (flags != scenegraph::NodeMoveFlag::None) {

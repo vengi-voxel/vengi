@@ -79,7 +79,8 @@ bool FormatConfig::init() {
 				   _("0 = high quality, 1 = faster and less memory"), core::Var::minMaxValidator<0, 1>);
 	core::Var::get(cfg::VoxformatQBTPaletteMode, "true", core::CV_NOPERSIST,
 				   _("Use palette mode in qubicle qbt export"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatQBTMergeCompounds, "false", core::CV_NOPERSIST, _("Merge compounds on load"),
+	core::Var::get(cfg::VoxformatQBTMergeCompounds, "false", core::CV_NOPERSIST,
+				   C_("Merge compounds when loading Qubicle QBT files", "Merge compounds on load"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatMerge, "false", core::CV_NOPERSIST, _("Merge all objects into one"),
 				   core::Var::boolValidator);
@@ -90,9 +91,11 @@ bool FormatConfig::init() {
 				   });
 	core::Var::get(cfg::VoxformatVXLLoadHVA, "true", core::CV_NOPERSIST, _("Load the hva for animations"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatVOXCreateGroups, "true", core::CV_NOPERSIST, _("Merge compounds on load"),
+	core::Var::get(cfg::VoxformatVOXCreateGroups, "true", core::CV_NOPERSIST,
+				   C_("Create groups when saving MagicaVoxel vox files", "Create groups for vox file"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST, _("Merge compounds on load"),
+	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST,
+				   C_("Create layers when saving MagicaVoxel vox files", "Create layers for vox file"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBSaveLeftHanded, "true", core::CV_NOPERSIST,
 				   _("Toggle between left and right handed"), core::Var::boolValidator);
