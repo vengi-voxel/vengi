@@ -126,7 +126,7 @@ bool FormatConfig::init() {
 				   _("0 = plane, 1 = heightmap, 2 = volume"),
 				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
 	core::Var::get(cfg::VoxformatImageSaveType, PNGFormat::ImageType::Plane, core::CV_NOPERSIST,
-				   _("0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"),
+				   C_("Image save type", "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"),
 				   core::Var::minMaxValidator<PNGFormat::ImageType::Plane, PNGFormat::ImageType::Volume>);
 	core::Var::get(cfg::VoxformatImageSliceOffsetAxis, "y", core::CV_NOPERSIST,
 				   _("The axis to offset the slices when importing images as volumes or heightmaps"),
@@ -140,7 +140,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatSchematicType, "mcedit2", core::CV_NOPERSIST,
 				   _("The type of schematic format to use when saving schematics"), schematicTypeValidator);
 	core::Var::get(cfg::VoxformatBinvoxVersion, "2", core::CV_NOPERSIST,
-				   _("Save in version 1, 2 or the unofficial version 3"), [](const core::String &var) {
+				   C_("Binvox format version", "Save in version 1, 2 or the unofficial version 3"), [](const core::String &var) {
 					   const int type = var.toInt();
 					   return type >= 1 && type <= 3;
 				   });
