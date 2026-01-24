@@ -3,7 +3,7 @@ set(SRCS
 
 	Archive.cpp Archive.h
 	Base64.cpp Base64.h
-	Base64Stream.h
+	Base64Stream.cpp Base64Stream.h
 	Base64ReadStream.cpp Base64ReadStream.h
 	Base64WriteStream.cpp Base64WriteStream.h
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
