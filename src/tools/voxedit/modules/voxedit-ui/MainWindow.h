@@ -34,8 +34,9 @@
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
+#include "engine-config.h" // USE_YOCTO
 
-#define ENABLE_RENDER_PANEL 1
+#define ENABLE_RENDER_PANEL USE_YOCTO
 #if ENABLE_RENDER_PANEL
 #include "voxedit-ui/RenderPanel.h"
 #endif
