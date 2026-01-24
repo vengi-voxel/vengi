@@ -29,6 +29,7 @@
 
 #include <thread>
 #include <functional>
+#include "core/ResultType.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Queue.h"
 #include "core/concurrent/Atomic.h"
@@ -37,15 +38,6 @@
 #include "core/concurrent/ConditionVariable.h"
 #include "core/Trace.h"
 #include "core/SharedPtr.h"
-#include <type_traits>
-
-#if __cplusplus >= 201703L
-template<typename F>
-using invoke_result_t = typename std::invoke_result<F>::type;
-#else
-template<typename F>
-using invoke_result_t = typename std::result_of<F()>::type;
-#endif
 
 namespace core {
 
@@ -58,7 +50,7 @@ public:
 	 * Enqueue functors or lambdas into the thread pool
 	 */
 	template<class F>
-	auto enqueue(F&& f) -> core::Future<invoke_result_t<F>>;
+	auto enqueue(F&& f) -> core::Future<core::invoke_result_t<F>>;
 	void schedule(std::function<void()> &&f);
 
 	void dump() const;
@@ -97,8 +89,8 @@ inline void ThreadPool::reserve(size_t n) {
 // add new work item to the pool
 template<class F>
 auto ThreadPool::enqueue(F&& f)
--> core::Future<invoke_result_t<F>> {
-	using return_type = invoke_result_t<F>;
+-> core::Future<core::invoke_result_t<F>> {
+	using return_type = core::invoke_result_t<F>;
 	if (_stop) {
 		return core::Future<return_type>();
 	}
