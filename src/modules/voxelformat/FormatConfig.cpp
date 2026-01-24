@@ -109,10 +109,10 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatPointCloudSize, "1", core::CV_NOPERSIST,
 				   _("Specify the side length for the voxels when loading a point cloud"));
 	core::Var::get(cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness, "true", core::CV_NOPERSIST,
-				   _("Apply KHR_materials_pbrSpecularGlossiness when saving into the gltf format"),
+				   _("Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatGLTF_KHR_materials_specular, "false", core::CV_NOPERSIST,
-				   _("Apply KHR_materials_specular when saving into the gltf format"), core::Var::boolValidator);
+				   _("Apply KHR_materials_specular when saving into the glTF format"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatWithMaterials, "true", core::CV_NOPERSIST,
 				   _("Try to export material properties if the formats support it"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatImageVolumeMaxDepth, "1", core::CV_NOPERSIST,

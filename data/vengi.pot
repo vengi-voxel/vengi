@@ -599,6 +599,7 @@ msgstr ""
 msgid "Use palette mode in qubicle qbt export"
 msgstr ""
 
+msgctxt "Merge compounds when loading Qubicle QBT files"
 msgid "Merge compounds on load"
 msgstr ""
 
@@ -609,6 +610,14 @@ msgid "The index of the empty color in the palette"
 msgstr ""
 
 msgid "Load the hva for animations"
+msgstr ""
+
+msgctxt "Create groups when saving MagicaVoxel vox files"
+msgid "Create groups for vox file"
+msgstr ""
+
+msgctxt "Create layers when saving MagicaVoxel vox files"
+msgid "Create layers for vox file"
 msgstr ""
 
 msgid "Toggle between left and right handed"
@@ -627,10 +636,10 @@ msgid "Specify the side length for the voxels when loading a point cloud"
 msgstr ""
 
 msgid ""
-"Apply KHR_materials_pbrSpecularGlossiness when saving into the gltf format"
+"Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format"
 msgstr ""
 
-msgid "Apply KHR_materials_specular when saving into the gltf format"
+msgid "Apply KHR_materials_specular when saving into the glTF format"
 msgstr ""
 
 msgid "Try to export material properties if the formats support it"
@@ -2362,9 +2371,11 @@ msgstr ""
 msgid "Merge %s onto %s"
 msgstr ""
 
+msgctxt "Scene graph panel node move"
 msgid "Move below"
 msgstr ""
 
+msgctxt "Scene graph panel node move"
 msgid "Move below but keep position"
 msgstr ""
 
@@ -2520,8 +2531,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
-"<cmd:cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
+"cam_rotation>."
 msgstr ""
 
 msgid ""
@@ -2559,8 +2570,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
-"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."
