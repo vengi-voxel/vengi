@@ -62,6 +62,7 @@ set(SRCS
 	Path.cpp Path.h
 	PoolAllocator.h
 	Process.cpp Process.h
+	ResultType.h
 	SharedPtr.h
 	Singleton.h
 	StandardLib.h
