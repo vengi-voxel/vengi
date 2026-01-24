@@ -13,6 +13,10 @@ After you've created a new `po` file, copy them into any of the [search paths](C
 
 If you create a new translation it would be nice if you would contribute it to the project.
 
+## Missing glyphs
+
+If your translation uses unicode character which are not included in the default (Arimo) font, you can register additional fonts by putting them into a subdirectory called `font`. E.g. `NotoSansSC-Regular.ttf` for chinese glyphs. Put it into `voxedit/font/NotoSansSC-Regular.ttf` (if the directory doesn't exist, just create it in any of the [search paths][Configuration.md]).
+
 ## Developers
 
 > Translators don't have to do this
