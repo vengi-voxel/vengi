@@ -594,65 +594,65 @@ msgid "The RGB color flatten factor for importing color and mesh formats"
 msgstr "RGB-Abflachfaktor beim Importieren von Farb- und Mesh-Formaten"
 
 msgid "Save only visible nodes"
-msgstr ""
+msgstr "Nur sichtbare Knoten speichern"
 
 msgid "Scale the vertices for voxelization on all axis by the given factor"
-msgstr ""
+msgstr "Skaliere die Vertices zur Voxelisierung auf allen Achsen um den angegebenen Faktor"
 
 msgid "Scale the vertices for voxelization X axis by the given factor"
-msgstr ""
+msgstr "Skaliere die Vertices zur Voxelisierung auf der X-Achse um den angegebenen Faktor"
 
 msgid "Scale the vertices for voxelization Y axis by the given factor"
-msgstr ""
+msgstr "Skaliere die Vertices zur Voxelisierung auf der Y-Achse um den angegebenen Faktor"
 
 msgid "Scale the vertices for voxelization Z axis by the given factor"
-msgstr ""
+msgstr "Skaliere die Vertices zur Voxelisierung auf der Z-Achse um den angegebenen Faktor"
 
 msgid "Export as quads. If this false, triangles will be used."
-msgstr ""
+msgstr "Exportiere als Quads. Falls false, werden Dreiecke verwendet."
 
 msgid "Export with vertex colors"
-msgstr ""
+msgstr "Exportiere mit Vertexfarben"
 
 msgid "Export smoothed normals for cubic meshes"
-msgstr ""
+msgstr "Exportiere geglättete Normalen für kubische Meshes"
 
 msgid ""
 "Export with vertex colors as float values (if vertex colors are exported)"
-msgstr ""
+msgstr "Exportiere Vertexfarben als Float-Werte (falls Vertexfarben exportiert werden)"
 
 msgid "Export with uv coordinates of the palette image"
-msgstr ""
+msgstr "Exportiere mit UV-Koordinaten des Palettenbildes"
 
 msgid "Apply the scene graph transform to mesh exports"
-msgstr ""
+msgstr "Wende die Szenengraph-Transformation auf Mesh-Exporte an"
 
 msgid "Apply mesh optimization steps to meshes"
-msgstr ""
+msgstr "Wende Mesh-Optimierungsschritte auf Meshes an"
 
 msgid "Fill the hollows when voxelizing a mesh format"
-msgstr ""
+msgstr "Fülle die Hohlräume bei der Voxelisierung eines Mesh-Formats"
 
 msgid "0 = high quality, 1 = faster and less memory"
-msgstr ""
+msgstr "0 = hohe Qualität, 1 = schneller und weniger Speicher"
 
 msgid "Use palette mode in qubicle qbt export"
-msgstr ""
+msgstr "Verwende Palettenmodus beim Qubicle QBT-Export"
 
 msgid "Merge compounds on load"
-msgstr ""
+msgstr "Verbindungen beim Laden zusammenführen"
 
 msgid "Merge all objects into one"
-msgstr ""
+msgstr "Alle Objekte in eines zusammenführen"
 
 msgid "The index of the empty color in the palette"
-msgstr ""
+msgstr "Der Index der leeren Farbe in der Palette"
 
 msgid "Load the hva for animations"
-msgstr ""
+msgstr "HVA für Animationen laden"
 
 msgid "Toggle between left and right handed"
-msgstr ""
+msgstr "Zwischen Links- und Rechtshändig umschalten"
 
 msgctxt "Save qubicle voxel files with RLE compression enabled"
 msgid "Save RLE compressed"
