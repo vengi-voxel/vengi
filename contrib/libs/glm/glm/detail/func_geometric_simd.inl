@@ -1,4 +1,4 @@
-﻿/// @ref core
+/// @ref core
 /// @file glm/detail/func_geometric_simd.inl
 
 #include "../simd/geometric.h"
@@ -40,7 +40,9 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER static float call(vec<3, float, Q> const& a, vec<3, float, Q> const& b)
 		{
-			return _mm_cvtss_f32(glm_vec3_dot(a.data, b.data)); // aligned as vec4
+			vec<4, float, Q> aa = xyz0(a);
+			vec<4, float, Q> bb = xyz0(b);
+			return _mm_cvtss_f32(glm_vec1_dot(aa.data, bb.data));
 		}
 	};
 
@@ -66,28 +68,6 @@ namespace detail
 		}
 	};
 
-	template<>
-	struct compute_normalize<4, float, aligned_lowp, true>
-	{
-		GLM_FUNC_QUALIFIER static vec<4, float, aligned_lowp> call(vec<4, float, aligned_lowp> const& v)
-		{
-			vec<4, float, aligned_lowp> Result;
-			Result.data = glm_vec4_normalize(v.data);
-			return Result;
-		}
-	};
-
-	template<>
-	struct compute_normalize<3, float, aligned_lowp, true>
-	{
-		GLM_FUNC_QUALIFIER static vec<3, float, aligned_lowp> call(vec<3, float, aligned_lowp> const& v)
-		{
-			vec<3, float, aligned_lowp> Result;
-			Result.data = glm_vec3_normalize_lowp(v.data);
-			return Result;
-		}
-	};
-
 	template<qualifier Q>
 	struct compute_normalize<4, float, Q, true>
 	{
@@ -95,17 +75,6 @@ namespace detail
 		{
 			vec<4, float, Q> Result;
 			Result.data = glm_vec4_normalize(v.data);
-			return Result;
-		}
-	};
-
-	template<qualifier Q>
-	struct compute_normalize<3, float, Q, true>
-	{
-		GLM_FUNC_QUALIFIER static vec<3, float, Q> call(vec<3, float, Q> const& v)
-		{
-			vec<3, float, Q> Result;
-			Result.data = glm_vec3_normalize(v.data);
 			return Result;
 		}
 	};
