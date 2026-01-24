@@ -7,6 +7,7 @@
 #include "app/i18n/DictionaryManager.h"
 #include "app/Pipe.h"
 #include "core/Common.h"
+#include "core/ResultType.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -319,7 +320,7 @@ public:
 	io::FilesystemPtr filesystem() const;
 
 	template<class F>
-	auto enqueue(F&& f) -> core::Future<typename std::invoke_result<F>::type> {
+	auto enqueue(F&& f) -> core::Future<core::invoke_result_t<F>> {
 		return _threadPool->enqueue(core::forward<F>(f));
 	}
 	void schedule(std::function<void()> &&f);
