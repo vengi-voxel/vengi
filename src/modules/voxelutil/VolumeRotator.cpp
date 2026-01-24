@@ -20,7 +20,7 @@ namespace voxelutil {
 
 /**
  * @param[in] srcVolume The RawVolume to rotate
- * @param[in] angles The angles for the x, y and z axis given in degrees
+ * @param[in] mat The transformation matrix representing the rotation
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  *
