@@ -4,6 +4,7 @@
 
 #include "../modifier/SelectionManager.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ScopedPtr.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {
@@ -21,7 +22,12 @@ TEST_F(SelectionManagerTest, testSelectAndInvert) {
 	EXPECT_TRUE(mgr.select(volume, glm::ivec3(4), glm::ivec3(12)));
 	EXPECT_TRUE(mgr.hasSelection());
 	mgr.invert(volume);
-	EXPECT_EQ(6u, mgr.selections().size());
+	EXPECT_TRUE(mgr.isSelected(glm::ivec3(0)));
+	EXPECT_TRUE(mgr.isSelected(glm::ivec3(16)));
+	EXPECT_TRUE(mgr.isSelected(glm::ivec3(3)));
+	EXPECT_TRUE(mgr.isSelected(glm::ivec3(13)));
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(4)));
+	EXPECT_FALSE(mgr.isSelected(glm::ivec3(12)));
 }
 
 TEST_F(SelectionManagerTest, testUnselectHole) {
@@ -32,8 +38,8 @@ TEST_F(SelectionManagerTest, testUnselectHole) {
 	const glm::ivec3 mins(10, 10, 10);
 	const glm::ivec3 maxs(20, 20, 20);
 	EXPECT_TRUE(mgr.select(volume, mins, maxs));
-	EXPECT_EQ(1u, mgr.selections().size());
-	EXPECT_EQ(voxel::Region(mins, maxs), mgr.selections()[0]);
+	EXPECT_TRUE(mgr.isSelected(mins));
+	EXPECT_TRUE(mgr.isSelected(maxs));
 
 	const glm::ivec3 unselectMins(12, 12, 12);
 	const glm::ivec3 unselectMaxs(18, 18, 18);
@@ -105,6 +111,54 @@ TEST_F(SelectionManagerTest, testUnselectExtendsOutside) {
 
 	// Check that the unselected part is unselected
 	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 2, 5)));
+}
+
+TEST_F(SelectionManagerTest, testCopy) {
+	voxel::Region region(0, 32);
+	voxel::RawVolume volume(region);
+	// Fill volume
+	for (int x = 10; x <= 20; ++x) {
+		volume.setVoxel(x, 10, 10, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	}
+
+	SelectionManager mgr;
+	const glm::ivec3 mins(10, 10, 10);
+	const glm::ivec3 maxs(20, 10, 10);
+	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+
+	core::ScopedPtr<voxel::RawVolume> copy(mgr.copy(volume));
+	ASSERT_NE(nullptr, copy);
+	EXPECT_EQ(voxel::Region(mins, maxs), copy->region());
+	// verify content
+	for (int x = 10; x <= 20; ++x) {
+		EXPECT_EQ(voxel::VoxelType::Generic, copy->voxel(x, 10, 10).getMaterial());
+	}
+}
+
+TEST_F(SelectionManagerTest, testCut) {
+	voxel::Region region(0, 32);
+	voxel::RawVolume volume(region);
+	// Fill volume
+	for (int x = 10; x <= 20; ++x) {
+		volume.setVoxel(x, 10, 10, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	}
+
+	SelectionManager mgr;
+	const glm::ivec3 mins(10, 10, 10);
+	const glm::ivec3 maxs(20, 10, 10);
+	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+
+	core::ScopedPtr<voxel::RawVolume> cut(mgr.cut(volume));
+	ASSERT_NE(nullptr, cut);
+	EXPECT_EQ(voxel::Region(mins, maxs), cut->region());
+	// verify content in cut
+	for (int x = 10; x <= 20; ++x) {
+		EXPECT_EQ(voxel::VoxelType::Generic, cut->voxel(x, 10, 10).getMaterial());
+	}
+	// verify removed from volume
+	for (int x = 10; x <= 20; ++x) {
+		EXPECT_EQ(voxel::VoxelType::Air, volume.voxel(x, 10, 10).getMaterial());
+	}
 }
 
 } // namespace voxedit
