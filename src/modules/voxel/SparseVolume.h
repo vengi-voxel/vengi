@@ -18,8 +18,10 @@ namespace voxel {
  */
 class SparseVolume {
 private:
+	// TODO: MEMORY: add chunk support here to reduce the size of the coordinates from 32 to 8 bits (chunk coords + in-chunk coords)
 	core::DynamicMap<glm::ivec3, voxel::Voxel, 1031, glm::hash<glm::ivec3>> _map;
 	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0, 0, 0};
+	/** if this is a valid region, we limit the volume to this region */
 	const voxel::Region _region;
 	const bool _isRegionValid;
 	bool _storeEmptyVoxels = false;
