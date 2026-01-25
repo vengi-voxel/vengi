@@ -131,6 +131,9 @@ void logRegion(const char *ctx, const voxel::Region& region) {
 }
 
 int Region::voxels() const {
+	if (!isValid()) {
+		return 0;
+	}
 	return getWidthInVoxels() * getHeightInVoxels() * getDepthInVoxels();
 }
 
