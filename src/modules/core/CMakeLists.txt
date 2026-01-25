@@ -10,6 +10,7 @@ set(SRCS
 	collection/ConcurrentPriorityQueue.h
 	collection/ConcurrentSet.h
 	collection/DynamicArray.h
+	collection/DynamicBitSet.h collection/DynamicBitSet.cpp
 	collection/DynamicParallelMap.h
 	collection/DynamicList.h
 	collection/DynamicMap.h
@@ -127,6 +128,7 @@ set(TEST_SRCS
 	tests/ArrayTest.cpp
 	tests/BitsTest.cpp
 	tests/BitSetTest.cpp
+	tests/DynamicBitSetTest.cpp
 	tests/BufferTest.cpp
 	tests/ConcurrentDynamicArrayTest.cpp
 	tests/ConcurrentPriorityQueueTest.cpp

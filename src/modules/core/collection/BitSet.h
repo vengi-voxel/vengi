@@ -77,6 +77,13 @@ public:
 		}
 	}
 
+	void invert() {
+		const size_t elements = requiredElements(SIZE);
+		for (size_t i = 0; i < elements; ++i) {
+			_buffer[i] = ~_buffer[i];
+		}
+	}
+
 	bool operator==(const BitSet<SIZE> &other) const {
 		for (size_t i = 0; i < requiredElements(SIZE); ++i) {
 			if (_buffer[i] != other._buffer[i]) {
