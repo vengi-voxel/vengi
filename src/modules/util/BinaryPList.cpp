@@ -588,7 +588,7 @@ BinaryPList BinaryPList::readDict(io::SeekableReadStream &stream, BPListFormats 
 
 BinaryPList BinaryPList::readNull() {
 	Log::debug("BPLIST: Read null");
-	return BinaryPList{BPListFormats::Null};
+	return BinaryPList{BPListFormats::Null, (uint64_t)0};
 }
 
 BinaryPList BinaryPList::readBool(bool value) {
