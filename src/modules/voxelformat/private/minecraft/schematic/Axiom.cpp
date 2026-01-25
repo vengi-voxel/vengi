@@ -9,6 +9,7 @@
 #include "core/StringUtil.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
 
@@ -91,7 +92,13 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 				mcpal[paletteSize++] = 0;
 				continue;
 			}
-			mcpal[paletteSize++] = findPaletteIndex(materialName.string()->c_str(), 1);
+			const core::String *name = materialName.string();
+			mcpal[paletteSize] = findPaletteIndex(name->c_str(), 1);
+			Log::debug("Material name: %s, mapped to %i", name->c_str(), mcpal[paletteSize]);
+			if (*name == "minecraft:structure_void") {
+				mcpal[paletteSize] = palette::PaletteColorNotFound;
+			}
+			++paletteSize;
 		}
 
 		// Get block data
@@ -129,7 +136,10 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 						sampler.movePositiveX();
 						continue;
 					}
-					uint8_t colorIdx = mcpal[blockStateData[i]];
+					int colorIdx = mcpal[blockStateData[i]];
+					if (colorIdx == palette::PaletteColorNotFound) {
+						continue;
+					}
 					sampler.setVoxel(voxel::createVoxel(node.palette(), colorIdx));
 					sampler.movePositiveX();
 				}
