@@ -438,8 +438,8 @@ inline glm::u8vec3 SparseVolume::unpackLocal(uint32_t packedLocalPos) {
 }
 
 inline glm::ivec3 SparseVolume::worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos) {
-	const glm::ivec3 base = chunkBase(chunkPos);
-	const glm::u8vec3 local = unpackLocal(packedLocalPos);
+	const glm::ivec3 &base = chunkBase(chunkPos);
+	const glm::u8vec3 &local = unpackLocal(packedLocalPos);
 	return glm::ivec3(base.x + (int)local.x, base.y + (int)local.y, base.z + (int)local.z);
 }
 

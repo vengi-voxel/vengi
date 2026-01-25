@@ -54,8 +54,8 @@ bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 		return false;
 	}
 
-	const glm::ivec3 chunkPos = chunkPosition(pos);
-	const glm::u8vec3 localPos = localPosition(pos, chunkPos);
+	const glm::ivec3 &chunkPos = chunkPosition(pos);
+	const glm::u8vec3 &localPos = localPosition(pos, chunkPos);
 	const uint32_t packedLocalPos = packLocal(localPos);
 	const bool isEmptyVoxel = !_storeEmptyVoxels && isAir(voxel.getMaterial());
 
@@ -192,8 +192,8 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return _emptyVoxel;
 	}
-	const glm::ivec3 chunkPos = chunkPosition(pos);
-	const glm::u8vec3 localPos = localPosition(pos, chunkPos);
+	const glm::ivec3 &chunkPos = chunkPosition(pos);
+	const glm::u8vec3 &localPos = localPosition(pos, chunkPos);
 	const uint32_t packedLocalPos = packLocal(localPos);
 
 	core::ScopedLock mapLock(_chunkLock);
@@ -214,8 +214,8 @@ bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
-	const glm::ivec3 chunkPos = chunkPosition(pos);
-	const glm::u8vec3 localPos = localPosition(pos, chunkPos);
+	const glm::ivec3 &chunkPos = chunkPosition(pos);
+	const glm::u8vec3 &localPos = localPosition(pos, chunkPos);
 	const uint32_t packedLocalPos = packLocal(localPos);
 
 	core::ScopedLock mapLock(_chunkLock);
@@ -545,7 +545,7 @@ Region SparseVolume::calculateRegion() const {
 		}
 		core::ScopedLock chunkLock(chunk->lock);
 		for (auto voxelIter = chunk->voxels.begin(); voxelIter != chunk->voxels.end(); ++voxelIter) {
-			const glm::ivec3 pos = worldPosition(chunkPos, voxelIter->key);
+			const glm::ivec3 &pos = worldPosition(chunkPos, voxelIter->key);
 			const glm::aligned_ivec4 aligned(pos, 0);
 			if (!initialized) {
 				mins = aligned;
