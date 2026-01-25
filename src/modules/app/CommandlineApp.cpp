@@ -50,37 +50,4 @@ int CommandlineApp::terminalWidth() {
 	return -1; // fallback or error
 }
 
-
-AppState CommandlineApp::onConstruct() {
-	const app::AppState state = Super::onConstruct();
-
-	registerArg("--trace").setDescription("Change log level to trace");
-	registerArg("--debug").setDescription("Change log level to debug");
-	registerArg("--info").setDescription("Change log level to info");
-	registerArg("--warn").setDescription("Change log level to warn");
-	registerArg("--error").setDescription("Change log level to error");
-
-	bool changed = false;
-	if (hasArg("--trace")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Trace);
-		changed = true;
-	} else if (hasArg("--debug")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Debug);
-		changed = true;
-	} else if (hasArg("--info")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Info);
-		changed = true;
-	} else if (hasArg("--warn")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Warn);
-		changed = true;
-	} else if (hasArg("--error")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Error);
-		changed = true;
-	}
-	if (changed) {
-		Log::init();
-	}
-	return state;
-}
-
 }

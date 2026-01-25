@@ -499,6 +499,12 @@ bool App::setLanguage(const core::String &language) {
 }
 
 AppState App::onConstruct() {
+	registerArg("--trace").setDescription("Change log level to trace");
+	registerArg("--debug").setDescription("Change log level to debug");
+	registerArg("--info").setDescription("Change log level to info");
+	registerArg("--warn").setDescription("Change log level to warn");
+	registerArg("--error").setDescription("Change log level to error");
+
 	if (!_filesystem->init(_organisation, _appname)) {
 		Log::warn("Failed to initialize the filesystem");
 	}
@@ -561,6 +567,17 @@ AppState App::onConstruct() {
 			core::Var::get(var, value, core::CV_FROMCOMMANDLINE);
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
+	}
+	if (hasArg("--trace")) {
+		logVar->setVal((int)Log::Level::Trace);
+	} else if (hasArg("--debug")) {
+		logVar->setVal((int)Log::Level::Debug);
+	} else if (hasArg("--info")) {
+		logVar->setVal((int)Log::Level::Info);
+	} else if (hasArg("--warn")) {
+		logVar->setVal((int)Log::Level::Warn);
+	} else if (hasArg("--error")) {
+		logVar->setVal((int)Log::Level::Error);
 	}
 	Log::init();
 
