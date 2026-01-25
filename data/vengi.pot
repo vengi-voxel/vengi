@@ -21,6 +21,9 @@ msgstr ""
 msgid "Change log level from 1 (trace) to 6 (only critical)"
 msgstr ""
 
+msgid "List all available translated strings"
+msgstr ""
+
 msgid "Set a variable value"
 msgstr ""
 

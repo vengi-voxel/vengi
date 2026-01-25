@@ -42,6 +42,9 @@ msgstr "Vervollständigung für Bash und ZSH generieren"
 msgid "Change log level from 1 (trace) to 6 (only critical)"
 msgstr "Protokollniveau von 1 (Trace) auf 6 (nur kritisch) ändern"
 
+msgid "List all available translated strings"
+msgstr ""
+
 msgid "Set a variable value"
 msgstr "Einen Variablenwert setzen"
 
