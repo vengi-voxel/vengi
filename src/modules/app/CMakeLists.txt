@@ -34,11 +34,13 @@ if (USE_STACKTRACES)
 	target_compile_definitions(${LIB} PRIVATE HAVE_BACKWARD)
 endif()
 
-set(TEST_MODULE_SRCS
-	tests/AbstractTest.cpp
-	tests/AbstractTest.h
-)
-engine_add_module(TARGET test-${LIB} SRCS ${TEST_MODULE_SRCS} DEPENDENCIES gtest ${LIB})
+if (UNITTESTS)
+	set(TEST_MODULE_SRCS
+		tests/AbstractTest.cpp
+		tests/AbstractTest.h
+	)
+	engine_add_module(TARGET test-${LIB} SRCS ${TEST_MODULE_SRCS} DEPENDENCIES gtest ${LIB})
+endif()
 
 set(TEST_SRCS
 	tests/AppTest.cpp
