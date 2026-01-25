@@ -41,13 +41,18 @@ private:
 	const bool _isRegionValid;
 	bool _storeEmptyVoxels = false;
 
-	static glm::ivec3 chunkPosition(const glm::ivec3 &pos);
-	static glm::ivec3 chunkBase(const glm::ivec3 &chunkPos);
-	static glm::u8vec3 localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos);
-	static uint32_t packLocal(const glm::u8vec3 &localPos);
-	static glm::u8vec3 unpackLocal(uint32_t packedLocalPos);
-	static glm::ivec3 worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos);
+	// Last accessed chunk cache for performance
+	mutable ChunkPtr _cachedChunkPtr;
+	mutable glm::ivec3 _cachedChunkPosition{INT32_MAX, INT32_MAX, INT32_MAX};
 
+	static inline glm::ivec3 chunkPosition(const glm::ivec3 &pos);
+	static inline glm::ivec3 chunkBase(const glm::ivec3 &chunkPos);
+	static inline glm::u8vec3 localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos);
+	static inline uint32_t packLocal(const glm::u8vec3 &localPos);
+	static inline glm::u8vec3 unpackLocal(uint32_t packedLocalPos);
+	static inline glm::ivec3 worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos);
+
+	Chunk *findChunkUnsafe(const glm::ivec3 &chunkPos) const;
 	ChunkPtr findChunk(const glm::ivec3 &chunkPos) const;
 	ChunkPtr findOrCreateChunk(const glm::ivec3 &chunkPos);
 	void removeChunkIfEmpty(const glm::ivec3 &chunkPos, const ChunkPtr &chunk);
@@ -62,6 +67,7 @@ public:
 	public:
 		Sampler(const SparseVolume &volume);
 		Sampler(const SparseVolume *volume);
+		Sampler(const Sampler &other) = default;  // Explicitly allow default copy to preserve chunk cache
 		virtual ~Sampler();
 
 		const Voxel &voxel() const;
@@ -125,6 +131,14 @@ public:
 
 		/** Whether the current position is inside the volume */
 		uint8_t _currentPositionInvalid = 0u;
+
+		// Cached chunk for performance
+		mutable Chunk *_cachedChunk = nullptr;
+		mutable glm::ivec3 _cachedChunkPos{0, 0, 0};
+		mutable uint32_t _cachedPackedLocal = 0;
+
+		void updateChunkCache() const;
+		void invalidateChunkCache();
 	};
 
 	// invalid region means unlimited size
@@ -145,6 +159,9 @@ public:
 	}
 
 	bool setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel);
+
+	// Batch set voxels in a row (same Y, same Z, varying X)
+	void setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel);
 
 	void clear();
 
@@ -236,13 +253,14 @@ inline bool setVoxels<SparseVolume>(SparseVolume &volume, int x, int y, int z, i
 			nz -= zDiff;
 		}
 	}
-	for (int lz = 0; lz < nz; ++lz) {
-		for (int lx = 0; lx < nx; ++lx) {
+	// Use parallel processing for Z slices, with optimized row setting
+	app::for_parallel(0, nz, [nx, amount, &volume, &voxels, x, y, z](int start, int end) {
+		for (int lz = start; lz < end; ++lz) {
 			for (int ly = 0; ly < amount; ++ly) {
-				volume.setVoxel(x + lx, y + ly, z + lz, voxels[ly]);
+				volume.setVoxelsRow(x, y + ly, z + lz, nx, voxels[ly]);
 			}
 		}
-	}
+	});
 	return true;
 }
 
@@ -390,6 +408,39 @@ inline const Voxel &SparseVolume::Sampler::peekVoxel1px1py0pz() const {
 
 inline const Voxel &SparseVolume::Sampler::peekVoxel1px1py1pz() const {
 	return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
+}
+
+inline glm::ivec3 SparseVolume::chunkPosition(const glm::ivec3 &pos) {
+	auto chunkCoord = [](int value) -> int {
+		if (value >= 0) {
+			return value >> 8; // divide by 256
+		}
+		return -(((-value) + ChunkMask) >> 8);
+	};
+	return glm::ivec3(chunkCoord(pos.x), chunkCoord(pos.y), chunkCoord(pos.z));
+}
+
+inline glm::ivec3 SparseVolume::chunkBase(const glm::ivec3 &chunkPos) {
+	return glm::ivec3(chunkPos.x << 8, chunkPos.y << 8, chunkPos.z << 8);
+}
+
+inline glm::u8vec3 SparseVolume::localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos) {
+	const glm::ivec3 base = chunkBase(chunkPos);
+	return glm::u8vec3(pos.x - base.x, pos.y - base.y, pos.z - base.z);
+}
+
+inline uint32_t SparseVolume::packLocal(const glm::u8vec3 &localPos) {
+	return (uint32_t(localPos.x) << 16) | (uint32_t(localPos.y) << 8) | uint32_t(localPos.z);
+}
+
+inline glm::u8vec3 SparseVolume::unpackLocal(uint32_t packedLocalPos) {
+	return glm::u8vec3((packedLocalPos >> 16) & 0xFFu, (packedLocalPos >> 8) & 0xFFu, packedLocalPos & 0xFFu);
+}
+
+inline glm::ivec3 SparseVolume::worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos) {
+	const glm::ivec3 base = chunkBase(chunkPos);
+	const glm::u8vec3 local = unpackLocal(packedLocalPos);
+	return glm::ivec3(base.x + (int)local.x, base.y + (int)local.y, base.z + (int)local.z);
 }
 
 } // namespace voxel
