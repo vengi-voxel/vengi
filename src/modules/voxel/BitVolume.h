@@ -17,10 +17,21 @@ namespace voxel {
 class BitVolume {
 private:
 	core::DynamicBitSet _data;
-	const voxel::Region _region;
+	voxel::Region _region;
 
 public:
 	BitVolume(const voxel::Region &region) : _data(region.voxels()), _region(region) {
+	}
+
+	BitVolume& operator=(BitVolume&& other) noexcept {
+		if (this != &other) {
+			_data = core::move(other._data);
+			_region = other._region;
+		}
+		return *this;
+	}
+
+	BitVolume(BitVolume&& other) noexcept : _data(core::move(other._data)), _region(other._region) {
 	}
 
 	inline bool hasValue(int x, int y, int z) const {
