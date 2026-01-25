@@ -22,6 +22,7 @@ General:
    - Added filtering to the cvars dialog
    - Added keyboard layout detection
    - Improved mime-type handling
+   - Added support for Axiom Blueprints Minecraft Schematics (`bp`)
 
 VoxConvert:
 
