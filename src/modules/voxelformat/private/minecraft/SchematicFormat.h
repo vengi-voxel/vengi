@@ -5,7 +5,6 @@
 #pragma once
 
 #include "voxelformat/Format.h"
-#include "core/collection/Buffer.h"
 
 namespace io {
 class ZipReadStream;
@@ -28,43 +27,15 @@ class NamedBinaryTag;
  */
 class SchematicFormat : public PaletteFormat {
 protected:
-	using SchematicPalette = core::Buffer<int>;
-	bool loadSponge1And2(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-						 palette::Palette &palette);
-	bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-						palette::Palette &palette, const priv::NamedBinaryTag &blocks);
-
-	bool loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-				 int dataVersion);
-	bool readLitematicBlockStates(const glm::ivec3 &size, int bits, const priv::NamedBinaryTag &blockStates,
-								  scenegraph::SceneGraphNode &node, const SchematicPalette &mcpal);
-	bool loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-					   palette::Palette &palette);
-	bool loadAxiomBinary(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette);
-	bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-				  palette::Palette &palette);
-	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-					 palette::Palette &palette, int version);
-	bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-					 const priv::NamedBinaryTag &blocks, int version);
-
-	void addMetadata_r(const core::String &key, const priv::NamedBinaryTag &schematic,
-					   scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node);
-	void parseMetadata(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-					   scenegraph::SceneGraphNode &node);
-	int loadMCEdit2Palette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
-	int loadWorldEditPalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
-	int loadSchematicaPalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
-
-	int parsePalette(const priv::NamedBinaryTag &schematic, SchematicPalette &mcpal) const;
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
-										const LoadContext &ctx) override;
+								   const LoadContext &ctx) override;
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Minecraft schematic",

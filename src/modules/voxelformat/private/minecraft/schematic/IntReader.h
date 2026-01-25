@@ -7,14 +7,15 @@
 #include "core/collection/Buffer.h"
 
 namespace voxelformat {
+namespace schematic {
 
-class SchematicIntReader {
+class IntReader {
 private:
 	const core::Buffer<int8_t> *_blocks;
 	int _index = 0;
 
 public:
-	SchematicIntReader(const core::Buffer<int8_t> *blocks) : _blocks(blocks) {
+	IntReader(const core::Buffer<int8_t> *blocks) : _blocks(blocks) {
 	}
 
 	bool eos() const {
@@ -48,4 +49,5 @@ public:
 	}
 };
 
+} // namespace schematic
 } // namespace voxelformat

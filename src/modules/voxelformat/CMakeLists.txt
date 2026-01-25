@@ -90,7 +90,13 @@ set(SRCS
 	private/minecraft/MCWorldFormat.h        private/minecraft/MCWorldFormat.cpp
 	private/minecraft/MinecraftPaletteMap.h  private/minecraft/MinecraftPaletteMap.cpp
 	private/minecraft/NamedBinaryTag.h       private/minecraft/NamedBinaryTag.cpp
-	private/minecraft/SchematicIntReader.h   private/minecraft/SchematicIntWriter.h
+	private/minecraft/schematic/Axiom.cpp    private/minecraft/schematic/Axiom.h
+	private/minecraft/schematic/Litematic.cpp private/minecraft/schematic/Litematic.h
+	private/minecraft/schematic/Nbt.cpp      private/minecraft/schematic/Nbt.h
+	private/minecraft/schematic/Sponge.cpp   private/minecraft/schematic/Sponge.h
+	private/minecraft/schematic/Util.cpp     private/minecraft/schematic/Util.h
+	private/minecraft/schematic/IntReader.h
+	private/minecraft/schematic/IntWriter.h
 	private/qubicle/QBTFormat.h              private/qubicle/QBTFormat.cpp
 	private/qubicle/QBFormat.h               private/qubicle/QBFormat.cpp
 	private/qubicle/QBCLFormat.h             private/qubicle/QBCLFormat.cpp
