@@ -10,6 +10,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
+#include <thread>
+#include <vector>
 
 namespace voxel {
 
@@ -298,6 +300,55 @@ TEST_F(SparseVolumeTest, testFullSamplerLoop) {
 			}
 		}
 	}
+}
+
+TEST_F(SparseVolumeTest, testChunkBoundariesAndRegion) {
+	SparseVolume v;
+	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 2);
+	ASSERT_TRUE(v.setVoxel(255, 255, 255, voxel));
+	ASSERT_TRUE(v.setVoxel(256, 0, 0, voxel));
+	ASSERT_TRUE(v.setVoxel(-1, -1, -1, voxel));
+
+	EXPECT_EQ(3u, v.size());
+	EXPECT_TRUE(v.hasVoxel(255, 255, 255));
+	EXPECT_TRUE(v.hasVoxel(256, 0, 0));
+	EXPECT_TRUE(v.hasVoxel(-1, -1, -1));
+
+	const Region region = v.calculateRegion();
+	ASSERT_TRUE(region.isValid());
+	EXPECT_EQ(-1, region.getLowerX());
+	EXPECT_EQ(-1, region.getLowerY());
+	EXPECT_EQ(-1, region.getLowerZ());
+	EXPECT_EQ(256, region.getUpperX());
+	EXPECT_EQ(255, region.getUpperY());
+	EXPECT_EQ(255, region.getUpperZ());
+}
+
+TEST_F(SparseVolumeTest, testThreadSafeChunkedSetVoxel) {
+	SparseVolume v;
+	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 3);
+	const int threadCount = 4;
+	const int voxelsPerThread = 64;
+	std::vector<std::thread> threads;
+	threads.reserve(threadCount);
+
+	for (int t = 0; t < threadCount; ++t) {
+		threads.emplace_back([&, t]() {
+			for (int i = 0; i < voxelsPerThread; ++i) {
+				const int z = (t % 2 == 0) ? i : 256 + i;
+				v.setVoxel(i, t, z, voxel);
+			}
+		});
+	}
+
+	for (std::thread &thread : threads) {
+		thread.join();
+	}
+
+	EXPECT_EQ((size_t)(threadCount * voxelsPerThread), v.size());
+	EXPECT_TRUE(v.hasVoxel(0, 0, 0));
+	EXPECT_TRUE(v.hasVoxel(0, 1, 256));
+	EXPECT_TRUE(v.hasVoxel(voxelsPerThread - 1, 3, 256 + voxelsPerThread - 1));
 }
 
 } // namespace voxel

@@ -5,7 +5,11 @@
 #pragma once
 
 #include "core/GLM.h"
+#include "core/Trace.h"
+#include "core/SharedPtr.h"
 #include "core/collection/DynamicMap.h"
+#include "core/concurrent/Atomic.h"
+#include "core/concurrent/Lock.h"
 #include "math/Axis.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxel/VolumeSamplerUtil.h"
@@ -18,13 +22,35 @@ namespace voxel {
  */
 class SparseVolume {
 private:
-	// TODO: MEMORY: add chunk support here to reduce the size of the coordinates from 32 to 8 bits (chunk coords + in-chunk coords)
-	core::DynamicMap<glm::ivec3, voxel::Voxel, 1031, glm::hash<glm::ivec3>> _map;
+	struct Chunk {
+		core::DynamicMap<uint32_t, voxel::Voxel, 1031> voxels;
+		mutable core_trace_mutex(core::Lock, lock, "SparseVolumeChunk");
+	};
+
+	using ChunkPtr = core::SharedPtr<Chunk>;
+
+	static constexpr int ChunkSide = 256;
+	static constexpr int ChunkMask = ChunkSide - 1;
+
+	core::DynamicMap<glm::ivec3, ChunkPtr, 1031, glm::hash<glm::ivec3>> _chunks;
+	mutable core_trace_mutex(core::Lock, _chunkLock, "SparseVolumeChunks");
+	core::AtomicInt _size{0};
 	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0, 0, 0};
 	/** if this is a valid region, we limit the volume to this region */
 	const voxel::Region _region;
 	const bool _isRegionValid;
 	bool _storeEmptyVoxels = false;
+
+	static glm::ivec3 chunkPosition(const glm::ivec3 &pos);
+	static glm::ivec3 chunkBase(const glm::ivec3 &chunkPos);
+	static glm::u8vec3 localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos);
+	static uint32_t packLocal(const glm::u8vec3 &localPos);
+	static glm::u8vec3 unpackLocal(uint32_t packedLocalPos);
+	static glm::ivec3 worldPosition(const glm::ivec3 &chunkPos, uint32_t packedLocalPos);
+
+	ChunkPtr findChunk(const glm::ivec3 &chunkPos) const;
+	ChunkPtr findOrCreateChunk(const glm::ivec3 &chunkPos);
+	void removeChunkIfEmpty(const glm::ivec3 &chunkPos, const ChunkPtr &chunk);
 
 public:
 	class Sampler {
@@ -125,9 +151,7 @@ public:
 	/**
 	 * Gets a voxel at the position given by @c x,y,z coordinates
 	 */
-	[[nodiscard]] const Voxel &voxel(int32_t x, int32_t y, int32_t z) const {
-		return voxel({x, y, z});
-	}
+	[[nodiscard]] const Voxel &voxel(int32_t x, int32_t y, int32_t z) const;
 
 	/**
 	 * @param pos The 3D position of the voxel
@@ -135,9 +159,7 @@ public:
 	 */
 	[[nodiscard]] const Voxel &voxel(const glm::ivec3 &pos) const;
 
-	[[nodiscard]] bool hasVoxel(int x, int y, int z) const {
-		return hasVoxel({x, y, z});
-	}
+	[[nodiscard]] bool hasVoxel(int x, int y, int z) const;
 
 	[[nodiscard]] bool hasVoxel(const glm::ivec3 &pos) const;
 
@@ -146,7 +168,7 @@ public:
 	}
 
 	[[nodiscard]] inline size_t size() const {
-		return _map.size();
+		return (size_t)_size;
 	}
 
 	/**
@@ -172,10 +194,18 @@ public:
 
 	template<class Volume>
 	void copyTo(Volume &target) const {
-		for (auto iter = _map.begin(); iter != _map.end(); ++iter) {
-			const glm::ivec3 &pos = iter->first;
-			const voxel::Voxel &voxel = iter->second;
-			target.setVoxel(pos.x, pos.y, pos.z, voxel);
+		core::ScopedLock mapLock(_chunkLock);
+		for (auto iter = _chunks.begin(); iter != _chunks.end(); ++iter) {
+			const glm::ivec3 &chunkPos = iter->first;
+			const ChunkPtr &chunk = iter->second;
+			if (!chunk) {
+				continue;
+			}
+			core::ScopedLock chunkGuard(chunk->lock);
+			for (auto voxelIter = chunk->voxels.begin(); voxelIter != chunk->voxels.end(); ++voxelIter) {
+				const glm::ivec3 pos = worldPosition(chunkPos, voxelIter->key);
+				target.setVoxel(pos.x, pos.y, pos.z, voxelIter->value);
+			}
 		}
 	}
 
