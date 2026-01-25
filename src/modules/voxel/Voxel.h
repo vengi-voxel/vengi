@@ -140,7 +140,7 @@ public:
 		setFlags(2); // no shader flag for this
 	}
 
-	bool resetNormal() const {
+	constexpr bool resetNormal() const {
 		return (_flags & 2) != 0;
 	}
 
