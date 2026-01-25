@@ -43,13 +43,15 @@ public:
 	virtual void render(const video::Camera &camera, const glm::mat4 &cursor, const glm::mat4 &model) {
 	}
 	virtual void renderSelection(const video::Camera &camera, const glm::mat4 &model) {
+		// TODO: SELECTION: remove this and render the single voxels of the selection volume
+	}
+	virtual void updateSelectionBuffers(const Selections &selections) {
+		// TODO: SELECTION: remove this and render the single voxels of the selection volume
 	}
 
 	virtual void updateReferencePosition(const glm::ivec3 &pos) {
 	}
 	virtual void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &region) {
-	}
-	virtual void updateSelectionBuffers(const Selections &selections) {
 	}
 	virtual void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip) {
 	}
