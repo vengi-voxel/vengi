@@ -184,6 +184,7 @@
 		<glob pattern="*.schem"/>
 		<glob pattern="*.nbt"/>
 		<glob pattern="*.litematic"/>
+		<glob pattern="*.bp"/>
 	</mime-type>
 	<mime-type type="application/x-quake-map">
 		<comment>Quake Map</comment>

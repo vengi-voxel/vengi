@@ -383,7 +383,7 @@ Minecraft mcworld (*.mcworld)
 .TP
 Minecraft region (*.mca, *.mcr)
 .TP
-Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
+Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic, *.bp)
 .TP
 Minecraft skin (*.mcskin, *.png)
 .TP
@@ -483,7 +483,7 @@ MagicaVoxel (*.vox)
 .TP
 Magicavoxel XRAW (*.xraw)
 .TP
-Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
+Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic, *.bp)
 .TP
 Minecraft skin (*.mcskin, *.png)
 .TP

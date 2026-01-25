@@ -100,6 +100,9 @@
 		<RegistryKey Root="HKCR" Key=".litematic">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".bp">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".map">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -495,6 +498,15 @@
 		<RegistryValue Root="HKCR" Key=".litematic\OpenWithProgids" Name="vengi-voxedit.litematic" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.litematic" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="litematic" ContentType="application/x-minecraft-schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bp" Value="vengi-voxedit.bp" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bp" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".bp\OpenWithProgids" Name="vengi-voxedit.bp" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.bp" Description="Minecraft schematic" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bp" ContentType="application/x-minecraft-schematic">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
