@@ -1116,11 +1116,10 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 
-	const voxel::RawVolume *volume = _sceneGraph.resolveVolume(*node);
 	scenegraph::SceneGraph newSceneGraph;
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(*node, newNode, false);
-	voxel::RawVolume *v = _selectionManager->copy(*volume);
+	voxel::RawVolume *v = _selectionManager->copy(*node);
 	newNode.setVolume(v, true);
 	newSceneGraph.emplace(core::move(newNode));
 	if (!voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
@@ -1141,8 +1140,7 @@ bool SceneManager::copy() {
 	if (node == nullptr) {
 		return false;
 	}
-	voxel::ClipboardData voxelData(node->volume(), node->palette(), false);
-	_copy = voxedit::tool::copy(voxelData, _selectionManager);
+	_copy = voxedit::tool::copy(*node, _selectionManager);
 	return _copy;
 }
 
@@ -1196,8 +1194,7 @@ bool SceneManager::cut() {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	voxel::ClipboardData voxelData(node.volume(), node.palette(), false);
-	_copy = voxedit::tool::cut(voxelData, _selectionManager, modifiedRegion);
+	_copy = voxedit::tool::cut(node, _selectionManager, modifiedRegion);
 	if (!_copy) {
 		Log::debug("Failed to cut");
 		return false;
@@ -1945,11 +1942,11 @@ void SceneManager::construct() {
 		}
 		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
 			if (args[0] == "none") {
-				_selectionManager->unselect(*node->volume());
+				_selectionManager->unselect(*node);
 			} else if (args[0] == "all") {
-				_selectionManager->selectAll(*node->volume());
+				_selectionManager->selectAll(*node);
 			} else if (args[0] == "invert") {
-				_selectionManager->invert(*node->volume());
+				_selectionManager->invert(*node);
 			}
 		}
 	}).setHelp(_("Select all, nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));

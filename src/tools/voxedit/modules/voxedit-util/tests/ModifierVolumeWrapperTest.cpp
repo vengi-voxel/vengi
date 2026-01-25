@@ -32,7 +32,7 @@ TEST_F(ModifierVolumeWrapperTest, testPlaceSelection) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-	selectionMgr->select(volume, {1, 1, 1}, {1, 1, 1});
+	selectionMgr->select(node, {1, 1, 1}, {1, 1, 1});
 	ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
 	ASSERT_FALSE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));

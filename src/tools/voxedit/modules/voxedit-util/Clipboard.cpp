@@ -4,6 +4,7 @@
 
 #include "Clipboard.h"
 #include "core/Log.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/SelectionManager.h"
 #include "voxelutil/VolumeMerger.h"
 #include <glm/common.hpp>
@@ -11,26 +12,36 @@
 namespace voxedit {
 namespace tool {
 
-voxel::ClipboardData copy(const voxel::ClipboardData &voxelData, const SelectionManagerPtr &selectionMgr) {
-	if (!voxelData) {
+voxel::ClipboardData copy(const scenegraph::SceneGraphNode &node, const SelectionManagerPtr &selectionMgr) {
+	if (!node.isModelNode()) {
+		Log::debug("Copy failed: not a model node");
+		return {};
+	}
+	const voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
 	}
-	voxel::RawVolume *v = selectionMgr->copy(*voxelData.volume);
+	voxel::RawVolume *v = selectionMgr->copy(node);
 	if (v == nullptr) {
 		Log::debug("Copy failed: no selection active");
 		return {};
 	}
-	return voxel::ClipboardData(v, voxelData.palette, true);
+	return voxel::ClipboardData(v, node.palette(), true);
 }
 
-voxel::ClipboardData cut(voxel::ClipboardData &voxelData, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion) {
-	if (!voxelData) {
-		Log::debug("Copy failed: no voxel data");
+voxel::ClipboardData cut(scenegraph::SceneGraphNode &node, const SelectionManagerPtr &selectionMgr, voxel::Region &modifiedRegion) {
+	if (!node.isModelNode()) {
+		Log::debug("Cut failed: not a model node");
+		return {};
+	}
+	voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
+		Log::debug("Cut failed: no voxel data");
 		return {};
 	}
 
-	voxel::RawVolume *v = selectionMgr->cut(*voxelData.volume);
+	voxel::RawVolume *v = selectionMgr->cut(node);
 	if (!v) {
 		Log::debug("Cut failed: no selection active");
 		return {};
@@ -40,7 +51,7 @@ voxel::ClipboardData cut(voxel::ClipboardData &voxelData, const SelectionManager
 	} else {
 		modifiedRegion = v->region();
 	}
-	return {v, voxelData.palette, true};
+	return {v, node.palette(), true};
 }
 
 void paste(voxel::ClipboardData &out, const voxel::ClipboardData &in, const glm::ivec3 &referencePosition,

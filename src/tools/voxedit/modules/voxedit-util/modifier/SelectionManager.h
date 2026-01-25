@@ -8,6 +8,10 @@
 #include "core/DirtyState.h"
 #include "core/SharedPtr.h"
 
+namespace scenegraph {
+class SceneGraphNode;
+}
+
 namespace voxel {
 class RawVolume;
 }
@@ -30,25 +34,25 @@ public:
 	const voxel::Region& region();
 	bool hasSelection() const;
 
-	void invert(voxel::RawVolume &volume);
-	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
-	bool select(voxel::RawVolume &volume, const glm::ivec3 &pos);
-	void selectAll(voxel::RawVolume &volume);
+	void invert(scenegraph::SceneGraphNode &node);
+	bool select(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs);
+	bool select(scenegraph::SceneGraphNode &node, const glm::ivec3 &pos);
+	void selectAll(scenegraph::SceneGraphNode &node);
 	/**
-	 * @brief Unselect all selected voxels in the given volume
+	 * @brief Unselect all selected voxels in the given node
 	 */
-	void unselect(voxel::RawVolume &volume);
-	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &pos);
-	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
+	void unselect(scenegraph::SceneGraphNode &node);
+	bool unselect(scenegraph::SceneGraphNode &node, const glm::ivec3 &pos);
+	bool unselect(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs);
 	bool isSelected(const glm::ivec3 &pos) const;
 	/**
-	 * @brief Cut selected voxels from the given volume and return a new volume containing them
+	 * @brief Cut selected voxels from the given node and return a new volume containing them
 	 */
-	voxel::RawVolume *cut(voxel::RawVolume &volume);
+	voxel::RawVolume *cut(scenegraph::SceneGraphNode &node);
 	/**
-	 * @brief Copy selected voxels from the given volume and return a new volume containing them
+	 * @brief Copy selected voxels from the given node and return a new volume containing them
 	 */
-	voxel::RawVolume *copy(const voxel::RawVolume &volume);
+	voxel::RawVolume *copy(const scenegraph::SceneGraphNode &node);
 
 	/**
 	 * @brief Unselect everything

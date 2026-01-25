@@ -5,6 +5,7 @@
 #include "../modifier/SelectionManager.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {
@@ -17,11 +18,13 @@ private:
 TEST_F(SelectionManagerTest, testSelectAndInvert) {
 	voxel::Region region(0, 16);
 	voxel::RawVolume volume(region);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 	SelectionManager mgr;
 	EXPECT_FALSE(mgr.hasSelection());
-	EXPECT_TRUE(mgr.select(volume, glm::ivec3(4), glm::ivec3(12)));
+	EXPECT_TRUE(mgr.select(node, glm::ivec3(4), glm::ivec3(12)));
 	EXPECT_TRUE(mgr.hasSelection());
-	mgr.invert(volume);
+	mgr.invert(node);
 	EXPECT_TRUE(mgr.isSelected(glm::ivec3(0)));
 	EXPECT_TRUE(mgr.isSelected(glm::ivec3(16)));
 	EXPECT_TRUE(mgr.isSelected(glm::ivec3(3)));
@@ -33,17 +36,19 @@ TEST_F(SelectionManagerTest, testSelectAndInvert) {
 TEST_F(SelectionManagerTest, testUnselectHole) {
 	voxel::Region region(0, 32);
 	voxel::RawVolume volume(region);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 	SelectionManager mgr;
 
 	const glm::ivec3 mins(10, 10, 10);
 	const glm::ivec3 maxs(20, 20, 20);
-	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+	EXPECT_TRUE(mgr.select(node, mins, maxs));
 	EXPECT_TRUE(mgr.isSelected(mins));
 	EXPECT_TRUE(mgr.isSelected(maxs));
 
 	const glm::ivec3 unselectMins(12, 12, 12);
 	const glm::ivec3 unselectMaxs(18, 18, 18);
-	EXPECT_TRUE(mgr.unselect(volume, unselectMins, unselectMaxs));
+	EXPECT_TRUE(mgr.unselect(node, unselectMins, unselectMaxs));
 
 	// Check that the hole is indeed unselected
 	for (int x = unselectMins.x; x <= unselectMaxs.x; ++x) {
@@ -67,15 +72,17 @@ TEST_F(SelectionManagerTest, testUnselectHole) {
 TEST_F(SelectionManagerTest, testUnselectCorner) {
 	voxel::Region region(0, 32);
 	voxel::RawVolume volume(region);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 	SelectionManager mgr;
 
 	const glm::ivec3 mins(10, 10, 10);
 	const glm::ivec3 maxs(20, 20, 20);
-	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+	EXPECT_TRUE(mgr.select(node, mins, maxs));
 
 	const glm::ivec3 unselectMins(15, 15, 15);
 	const glm::ivec3 unselectMaxs(25, 25, 25); // Goes outside
-	EXPECT_TRUE(mgr.unselect(volume, unselectMins, unselectMaxs));
+	EXPECT_TRUE(mgr.unselect(node, unselectMins, unselectMaxs));
 
 	// Check unselected part inside original
 	EXPECT_FALSE(mgr.isSelected(glm::ivec3(16, 16, 16)));
@@ -90,16 +97,18 @@ TEST_F(SelectionManagerTest, testUnselectCorner) {
 TEST_F(SelectionManagerTest, testUnselectExtendsOutside) {
 	voxel::Region region(0, 32);
 	voxel::RawVolume volume(region);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 	SelectionManager mgr;
 
 	const glm::ivec3 mins(0, 0, 0);
 	const glm::ivec3 maxs(10, 10, 10);
-	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+	EXPECT_TRUE(mgr.select(node, mins, maxs));
 
 	// Unselect region that extends outside in Z
 	const glm::ivec3 unselectMins(0, 0, -5);
 	const glm::ivec3 unselectMaxs(10, 5, 15);
-	EXPECT_TRUE(mgr.unselect(volume, unselectMins, unselectMaxs));
+	EXPECT_TRUE(mgr.unselect(node, unselectMins, unselectMaxs));
 
 	// Check that we didn't select anything outside the original bounds
 	// The bug would cause (0, 6, -5) to be selected.
@@ -120,13 +129,15 @@ TEST_F(SelectionManagerTest, testCopy) {
 	for (int x = 10; x <= 20; ++x) {
 		volume.setVoxel(x, 10, 10, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 
 	SelectionManager mgr;
 	const glm::ivec3 mins(10, 10, 10);
 	const glm::ivec3 maxs(20, 10, 10);
-	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+	EXPECT_TRUE(mgr.select(node, mins, maxs));
 
-	core::ScopedPtr<voxel::RawVolume> copy(mgr.copy(volume));
+	core::ScopedPtr<voxel::RawVolume> copy(mgr.copy(node));
 	ASSERT_NE(nullptr, copy);
 	EXPECT_EQ(voxel::Region(mins, maxs), copy->region());
 	// verify content
@@ -142,13 +153,15 @@ TEST_F(SelectionManagerTest, testCut) {
 	for (int x = 10; x <= 20; ++x) {
 		volume.setVoxel(x, 10, 10, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 
 	SelectionManager mgr;
 	const glm::ivec3 mins(10, 10, 10);
 	const glm::ivec3 maxs(20, 10, 10);
-	EXPECT_TRUE(mgr.select(volume, mins, maxs));
+	EXPECT_TRUE(mgr.select(node, mins, maxs));
 
-	core::ScopedPtr<voxel::RawVolume> cut(mgr.cut(volume));
+	core::ScopedPtr<voxel::RawVolume> cut(mgr.cut(node));
 	ASSERT_NE(nullptr, cut);
 	EXPECT_EQ(voxel::Region(mins, maxs), cut->region());
 	// verify content in cut

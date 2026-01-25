@@ -161,7 +161,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale, model);
 
-	// TODO: SELECTION: remove me - let the SelectionManager render the SparseVolume
+	// TODO: SELECTION: remove me - let the SelectionManager render this
 	if (_brushType == BrushType::Select && brush->active()) {
 		if (brush->dirty()) {
 			const voxel::Region &region = brush->calcRegion(_brushContext);

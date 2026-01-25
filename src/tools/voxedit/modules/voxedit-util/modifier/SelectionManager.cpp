@@ -3,6 +3,7 @@
  */
 
 #include "SelectionManager.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {
@@ -15,19 +16,29 @@ void SelectionManager::setMaxRegionSize(const voxel::Region &maxRegion) {
 	_maxRegion = maxRegion;
 }
 
-void SelectionManager::invert(voxel::RawVolume &volume) {
+void SelectionManager::invert(scenegraph::SceneGraphNode &node) {
+	if (!node.isModelNode()) {
+		return;
+	}
+	voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
+		return;
+	}
 	if (!hasSelection()) {
-		select(volume, volume.region().getLowerCorner(), volume.region().getUpperCorner());
+		select(node, volume->region().getLowerCorner(), volume->region().getUpperCorner());
 	} else {
-		const Selections &remainingSelections = voxel::Region::subtract(volume.region(), _selections);
+		const Selections &remainingSelections = voxel::Region::subtract(volume->region(), _selections);
 		reset();
 		for (const Selection &selection : remainingSelections) {
-			select(volume, selection.getLowerCorner(), selection.getUpperCorner());
+			select(node, selection.getLowerCorner(), selection.getUpperCorner());
 		}
 	}
 }
 
-void SelectionManager::unselect(voxel::RawVolume &volume) {
+void SelectionManager::unselect(scenegraph::SceneGraphNode &node) {
+	if (!node.isModelNode()) {
+		return;
+	}
 	reset();
 }
 
@@ -52,7 +63,10 @@ const voxel::Region &SelectionManager::region() {
 	return _cachedRegion;
 }
 
-bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+bool SelectionManager::select(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	if (!node.isModelNode()) {
+		return false;
+	}
 	const Selection sel{mins, maxs};
 	if (!sel.isValid()) {
 		return false;
@@ -82,15 +96,28 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 	return true;
 }
 
-void SelectionManager::selectAll(voxel::RawVolume &volume) {
-	select(volume, volume.region().getLowerCorner(), volume.region().getUpperCorner());
+void SelectionManager::selectAll(scenegraph::SceneGraphNode &node) {
+	if (!node.isModelNode()) {
+		return;
+	}
+	voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
+		return;
+	}
+	select(node, volume->region().getLowerCorner(), volume->region().getUpperCorner());
 }
 
-bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &pos) {
-	return unselect(volume, pos, pos);
+bool SelectionManager::unselect(scenegraph::SceneGraphNode &node, const glm::ivec3 &pos) {
+	if (!node.isModelNode()) {
+		return false;
+	}
+	return unselect(node, pos, pos);
 }
 
-bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+bool SelectionManager::unselect(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	if (!node.isModelNode()) {
+		return false;
+	}
 	const Selection sel{mins, maxs};
 	if (!sel.isValid()) {
 		return false;
@@ -117,8 +144,11 @@ bool SelectionManager::unselect(voxel::RawVolume &volume, const glm::ivec3 &mins
 	return changed;
 }
 
-bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &pos) {
-	return select(volume, pos, pos);
+bool SelectionManager::select(scenegraph::SceneGraphNode &node, const glm::ivec3 &pos) {
+	if (!node.isModelNode()) {
+		return false;
+	}
+	return select(node, pos, pos);
 }
 
 bool SelectionManager::isSelected(const glm::ivec3 &pos) const {
@@ -136,16 +166,23 @@ bool SelectionManager::isSelected(const glm::ivec3 &pos) const {
 	return false;
 }
 
-voxel::RawVolume *SelectionManager::cut(voxel::RawVolume &volume) {
+voxel::RawVolume *SelectionManager::cut(scenegraph::SceneGraphNode &node) {
+	if (!node.isModelNode()) {
+		return nullptr;
+	}
+	voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
+		return nullptr;
+	}
 	if (!hasSelection()) {
 		return nullptr;
 	}
-	voxel::RawVolume *v = new voxel::RawVolume(volume, _selections);
+	voxel::RawVolume *v = new voxel::RawVolume(*volume, _selections);
 	for (const Selection &selection : _selections) {
 		const glm::ivec3 &mins = selection.getLowerCorner();
 		const glm::ivec3 &maxs = selection.getUpperCorner();
 		static constexpr voxel::Voxel AIR;
-		voxel::RawVolume::Sampler sampler(volume);
+		voxel::RawVolume::Sampler sampler(*volume);
 		sampler.setPosition(mins);
 		for (int32_t z = mins.z; z <= maxs.z; ++z) {
 			voxel::RawVolume::Sampler sampler2 = sampler;
@@ -163,11 +200,18 @@ voxel::RawVolume *SelectionManager::cut(voxel::RawVolume &volume) {
 	return v;
 }
 
-voxel::RawVolume *SelectionManager::copy(const voxel::RawVolume &volume) {
+voxel::RawVolume *SelectionManager::copy(const scenegraph::SceneGraphNode &node) {
+	if (!node.isModelNode()) {
+		return nullptr;
+	}
+	const voxel::RawVolume *volume = node.volume();
+	if (volume == nullptr) {
+		return nullptr;
+	}
 	if (!hasSelection()) {
 		return nullptr;
 	}
-	voxel::RawVolume *v = new voxel::RawVolume(volume, _selections);
+	voxel::RawVolume *v = new voxel::RawVolume(*volume, _selections);
 	return v;
 }
 

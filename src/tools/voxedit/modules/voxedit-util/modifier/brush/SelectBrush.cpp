@@ -16,9 +16,9 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		selectionRegion.cropTo(ctx.targetVolumeRegion);
 	}
 	if (_remove) {
-		_selectionManager->unselect(wrapper, selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
+		_selectionManager->unselect(wrapper.node(), selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
 	} else {
-		_selectionManager->select(wrapper, selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
+		_selectionManager->select(wrapper.node(), selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
 	}
 }
 
