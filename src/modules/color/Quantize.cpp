@@ -50,7 +50,9 @@ struct ColorBox {
 	}
 };
 
-static core::Pair<ColorBox, ColorBox> medianCutSplitBox(ColorBox &box) {
+using ColorBoxes = core::Pair<ColorBox, ColorBox>;
+
+static ColorBoxes medianCutSplitBox(ColorBox &box) {
 	int longestAxis = 0;
 	if ((box.max.g - box.min.g) > (box.max.r - box.min.r)) {
 		longestAxis = 1;
@@ -114,7 +116,7 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(ColorBox &box) {
 		box2.min.b = median;
 	}
 
-	return core::Pair{box1, box2};
+	return ColorBoxes{box1, box2};
 }
 
 static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
@@ -139,7 +141,7 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 		}
 
 		// Split the most populated box.
-		core::Pair<ColorBox, ColorBox> boxesPair = medianCutSplitBox(boxes[maxIndex]);
+		ColorBoxes boxesPair = medianCutSplitBox(boxes[maxIndex]);
 		boxes.erase(maxIndex);
 		boxes.push_back(boxesPair.first);
 		boxes.push_back(boxesPair.second);
