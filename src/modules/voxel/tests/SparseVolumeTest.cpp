@@ -349,6 +349,8 @@ TEST_F(SparseVolumeTest, testThreadSafeChunkedSetVoxel) {
 	EXPECT_TRUE(v.hasVoxel(0, 0, 0));
 	EXPECT_TRUE(v.hasVoxel(0, 1, 256));
 	EXPECT_TRUE(v.hasVoxel(voxelsPerThread - 1, 3, 256 + voxelsPerThread - 1));
+	v.clear();
+	EXPECT_EQ(0u, v.size());
 }
 
 } // namespace voxel
