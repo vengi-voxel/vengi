@@ -525,8 +525,11 @@ AppState App::onConstruct() {
 		int count = 0;
 		SDL_Locale **locales = SDL_GetPreferredLocales(&count);
 		for (int i = 0; i < count; ++i) {
-			Log::debug("Preferred locale: %s", locales[i]->language);
-			Language lang = Language::fromSpec(locales[i]->language, locales[i]->country);
+			const auto *locale = locales[i];
+			const core::String language = locale->language ? locale->language : "";
+			const core::String country = locale->country ? locale->country : "";
+			Log::debug("Preferred locale: %s (%s)", language.c_str(), country.c_str());
+			Language lang = Language::fromSpec(language, country);
 			if (lang) {
 				_systemLanguage = lang;
 				break;
