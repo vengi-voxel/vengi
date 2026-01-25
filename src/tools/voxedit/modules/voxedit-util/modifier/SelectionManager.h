@@ -38,13 +38,25 @@ public:
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &pos);
 	void selectAll(voxel::RawVolume &volume);
+	/**
+	 * @brief Unselect all selected voxels in the given volume
+	 */
 	void unselect(voxel::RawVolume &volume);
 	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &pos);
 	bool unselect(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
 	bool isSelected(const glm::ivec3 &pos) const;
+	/**
+	 * @brief Cut selected voxels from the given volume and return a new volume containing them
+	 */
 	voxel::RawVolume *cut(voxel::RawVolume &volume);
+	/**
+	 * @brief Copy selected voxels from the given volume and return a new volume containing them
+	 */
 	voxel::RawVolume *copy(const voxel::RawVolume &volume);
 
+	/**
+	 * @brief Unselect everything
+	 */
 	void reset();
 };
 
