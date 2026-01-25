@@ -11,10 +11,19 @@ namespace detail
 
 	// -- Implicit basic constructors --
 
-#	if GLM_CONFIG_CTOR_INIT == GLM_ENABLE
+#	if GLM_CONFIG_DEFAULTED_DEFAULT_CTOR == GLM_DISABLE
 		template<typename T, qualifier Q>
 		GLM_DEFAULTED_DEFAULT_CTOR_QUALIFIER GLM_CONSTEXPR vec<4, T, Q>::vec()
-			: x(0), y(0), z(0), w(0)
+#			if GLM_CONFIG_CTOR_INIT != GLM_CTOR_INIT_DISABLE
+				: x(0), y(0), z(0), w(0)
+#			endif
+		{}
+#	endif
+
+#	if GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_DISABLE
+		template<typename T, qualifier Q>
+		GLM_DEFAULTED_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, Q>::vec(vec<4, T, Q> const& v)
+			: x(v.x), y(v.y), z(v.z), w(v.w)
 		{}
 #	endif
 
@@ -386,6 +395,18 @@ namespace detail
 	}
 
 	// -- Unary arithmetic operators --
+
+#	if GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_DISABLE
+		template<typename T, qualifier Q>
+		GLM_DEFAULTED_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, T, Q>& vec<4, T, Q>::operator=(vec<4, T, Q> const& v)
+		{
+			this->x = v.x;
+			this->y = v.y;
+			this->z = v.z;
+			this->w = v.w;
+			return *this;
+		}
+#	endif
 
 	template<typename T, qualifier Q>
 	template<typename U>
@@ -1003,7 +1024,6 @@ namespace detail
 #	include "type_vec_simd.inl"
 
 namespace glm {
-/* build errors on Windows ARM Github C.I.
 #if GLM_ARCH & GLM_ARCH_NEON_BIT && !GLM_CONFIG_XYZW_ONLY
 	CTORSL(4, CTOR_FLOAT);
 	CTORSL(4, CTOR_INT);
@@ -1013,8 +1033,10 @@ namespace glm {
 	CTORSL(4, CTOR_VECF_VECF);
 	CTORSL(4, CTOR_VECF_VECI);
 	CTORSL(4, CTOR_VECF_VECU);
+
+
 #endif// GLM_ARCH & GLM_ARCH_NEON_BIT
-*/
+
 #if GLM_ARCH & GLM_ARCH_SSE2_BIT
 	CTORSL(4, CTOR_FLOAT);
 	CTORSL(4, CTOR_DOUBLE);
@@ -1037,7 +1059,7 @@ namespace glm {
 	{
 		data = _mm_loadu_ps(reinterpret_cast<const float*>(&v));
 	}
-
+		
 	template<>
 	template<>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<4, float, packed_highp>::vec(const vec<4, float, aligned_highp>& v)

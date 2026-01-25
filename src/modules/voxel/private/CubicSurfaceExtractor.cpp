@@ -278,7 +278,7 @@ static bool performQuadMerging(QuadList &quads, Mesh *meshCurrent) {
 			Quad& q2 = *innerIter;
 
 			bool result;
-			if constexpr (AmbientOcclusion) {
+			if (AmbientOcclusion) {
 				result = mergeQuadsAO(q1, q2, meshCurrent);
 			} else {
 				result = mergeQuads(q1, q2, meshCurrent);

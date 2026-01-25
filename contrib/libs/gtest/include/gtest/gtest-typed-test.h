@@ -45,18 +45,18 @@
 // First, define a fixture class template.  It should be parameterized
 // by a type.  Remember to derive it from testing::Test.
 template <typename T>
-class [[nodiscard]] FooTest : public testing::Test {
+class FooTest : public testing::Test {
  public:
   ...
-  using List = ::std::list<T>;
+  typedef std::list<T> List;
   static T shared_;
   T value_;
 };
 
 // Next, associate a list of types with the test suite, which will be
-// repeated for each type in the list.  The using-declaration is necessary for
+// repeated for each type in the list.  The typedef is necessary for
 // the macro to parse correctly.
-using MyTypes = ::testing::Types<char, int, unsigned int>;
+typedef testing::Types<char, int, unsigned int> MyTypes;
 TYPED_TEST_SUITE(FooTest, MyTypes);
 
 // If the type list contains only one type, you can write that type
@@ -123,7 +123,7 @@ TYPED_TEST(FooTest, HasPropertyA) { ... }
 // First, define a fixture class template.  It should be parameterized
 // by a type.  Remember to derive it from testing::Test.
 template <typename T>
-class [[nodiscard]] FooTest : public testing::Test {
+class FooTest : public testing::Test {
   ...
 };
 
@@ -157,7 +157,7 @@ REGISTER_TYPED_TEST_SUITE_P(FooTest,
 // argument to the INSTANTIATE_* macro is a prefix that will be added
 // to the actual test suite name.  Remember to pick unique prefixes for
 // different instances.
-using MyTypes = ::testing::Types<char, int, unsigned int>;
+typedef testing::Types<char, int, unsigned int> MyTypes;
 INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
 
 // If the type list contains only one type, you can write that type
@@ -205,8 +205,8 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
     typedef gtest_TypeParam_ TypeParam;                                       \
     void TestBody() override;                                                 \
   };                                                                          \
-  [[maybe_unused]] static bool gtest_##CaseName##_##TestName##_registered_ =  \
-      ::testing::internal::TypeParameterizedTest<                             \
+  static bool gtest_##CaseName##_##TestName##_registered_                     \
+      GTEST_ATTRIBUTE_UNUSED_ = ::testing::internal::TypeParameterizedTest<   \
           CaseName,                                                           \
           ::testing::internal::TemplateSel<GTEST_TEST_CLASS_NAME_(CaseName,   \
                                                                   TestName)>, \
@@ -267,31 +267,31 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
   TYPED_TEST_SUITE_P
 #endif  // GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
-#define TYPED_TEST_P(SuiteName, TestName)                     \
-  namespace GTEST_SUITE_NAMESPACE_(SuiteName) {               \
-  template <typename gtest_TypeParam_>                        \
-  class TestName : public SuiteName<gtest_TypeParam_> {       \
-   private:                                                   \
-    typedef SuiteName<gtest_TypeParam_> TestFixture;          \
-    typedef gtest_TypeParam_ TypeParam;                       \
-    void TestBody() override;                                 \
-  };                                                          \
-  [[maybe_unused]] static bool gtest_##TestName##_defined_ =  \
-      GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).AddTestName( \
-          __FILE__, __LINE__, GTEST_STRINGIFY_(SuiteName),    \
-          GTEST_STRINGIFY_(TestName));                        \
-  }                                                           \
-  template <typename gtest_TypeParam_>                        \
-  void GTEST_SUITE_NAMESPACE_(                                \
+#define TYPED_TEST_P(SuiteName, TestName)                             \
+  namespace GTEST_SUITE_NAMESPACE_(SuiteName) {                       \
+    template <typename gtest_TypeParam_>                              \
+    class TestName : public SuiteName<gtest_TypeParam_> {             \
+     private:                                                         \
+      typedef SuiteName<gtest_TypeParam_> TestFixture;                \
+      typedef gtest_TypeParam_ TypeParam;                             \
+      void TestBody() override;                                       \
+    };                                                                \
+    static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ = \
+        GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).AddTestName(       \
+            __FILE__, __LINE__, GTEST_STRINGIFY_(SuiteName),          \
+            GTEST_STRINGIFY_(TestName));                              \
+  }                                                                   \
+  template <typename gtest_TypeParam_>                                \
+  void GTEST_SUITE_NAMESPACE_(                                        \
       SuiteName)::TestName<gtest_TypeParam_>::TestBody()
 
 // Note: this won't work correctly if the trailing arguments are macros.
 #define REGISTER_TYPED_TEST_SUITE_P(SuiteName, ...)                         \
   namespace GTEST_SUITE_NAMESPACE_(SuiteName) {                             \
-  typedef ::testing::internal::Templates<__VA_ARGS__> gtest_AllTests_;      \
+    typedef ::testing::internal::Templates<__VA_ARGS__> gtest_AllTests_;    \
   }                                                                         \
-  [[maybe_unused]] static const char* const GTEST_REGISTERED_TEST_NAMES_(   \
-      SuiteName) =                                                          \
+  static const char* const GTEST_REGISTERED_TEST_NAMES_(                    \
+      SuiteName) GTEST_ATTRIBUTE_UNUSED_ =                                  \
       GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).VerifyRegisteredTestNames( \
           GTEST_STRINGIFY_(SuiteName), __FILE__, __LINE__, #__VA_ARGS__)
 
@@ -306,7 +306,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
 #define INSTANTIATE_TYPED_TEST_SUITE_P(Prefix, SuiteName, Types, ...)     \
   static_assert(sizeof(GTEST_STRINGIFY_(Prefix)) > 1,                     \
                 "test-suit-prefix must not be empty");                    \
-  [[maybe_unused]] static bool gtest_##Prefix##_##SuiteName =             \
+  static bool gtest_##Prefix##_##SuiteName GTEST_ATTRIBUTE_UNUSED_ =      \
       ::testing::internal::TypeParameterizedTestSuite<                    \
           SuiteName, GTEST_SUITE_NAMESPACE_(SuiteName)::gtest_AllTests_,  \
           ::testing::internal::GenerateTypeList<Types>::type>::           \
