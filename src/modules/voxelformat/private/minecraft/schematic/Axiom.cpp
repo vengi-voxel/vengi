@@ -95,7 +95,7 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 			const core::String *name = materialName.string();
 			mcpal[paletteSize] = findPaletteIndex(name->c_str(), 1);
 			Log::debug("Material name: %s, mapped to %i", name->c_str(), mcpal[paletteSize]);
-			if (*name == "minecraft:structure_void") {
+			if (*name == "minecraft:structure_void" || *name == "minecraft:air") {
 				mcpal[paletteSize] = palette::PaletteColorNotFound;
 			}
 			++paletteSize;
