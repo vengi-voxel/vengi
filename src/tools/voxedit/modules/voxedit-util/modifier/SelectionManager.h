@@ -31,6 +31,9 @@ public:
 
 	// TODO: SELECTION: the plan here is to move the selected voxels into the sparse volume to allow copy/cut/move operations
 	//                  see https://github.com/vengi-voxel/vengi/issues/580
+	//                  UPDATE: Turns out this isn't the best solution as it would require to also ray trace against a sparse
+	//                  volume in many places. Maybe it's better to use a BitVolume to only mark selected voxels. In that case
+	//                  we can make all volume parameters here const and only modify the selection state.
 	void invert(voxel::RawVolume &volume);
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &pos);

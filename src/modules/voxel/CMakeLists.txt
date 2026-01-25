@@ -8,6 +8,7 @@ set(SRCS
 
 	external/stb_rect_pack.h
 
+	BitVolume.h
 	Connectivity.h
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
@@ -38,6 +39,7 @@ engine_target_optimize(${LIB})
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/AmbientOcclusionTest.cpp
+	tests/BitVolumeTest.cpp
 	tests/CoordinateSystemVolumeTest.cpp
 	tests/FaceTest.cpp
 	tests/MeshTests.cpp
