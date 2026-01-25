@@ -107,7 +107,7 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 		while (nbtPaletteSize > (1 << bits)) {
 			++bits;
 		}
-		bits = core_max(bits, 2);
+		bits = core_max(bits, 4);
 
 		int index = 0;
 		const uint64_t mask = (1ULL << bits) - 1;
@@ -121,11 +121,15 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 		const int chunkPosX = regionX * chunkSize;
 		const int chunkPosY = regionY * chunkSize;
 		const int chunkPosZ = regionZ * chunkSize;
-		for (int z = 0; z < chunkSize; ++z) {
-			for (int y = 0; y < chunkSize; ++y) {
+		for (int y = 0; y < chunkSize; ++y) {
+			for (int z = 0; z < chunkSize; ++z) {
 				sampler.setPosition(chunkPosX, chunkPosY + y, chunkPosZ + z);
-				for (int x = 0; x < chunkSize; ++x) {
-					uint8_t colorIdx = mcpal[blockStateData[i++]];
+				for (int x = 0; x < chunkSize; ++x, ++i) {
+					if (blockStateData[i] == 0) {
+						sampler.movePositiveX();
+						continue;
+					}
+					uint8_t colorIdx = mcpal[blockStateData[i]];
 					sampler.setVoxel(voxel::createVoxel(node.palette(), colorIdx));
 					sampler.movePositiveX();
 				}
