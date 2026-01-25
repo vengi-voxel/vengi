@@ -129,10 +129,16 @@ public:
 						  _mins.z + (idx / (_stride)));
 	}
 
+	/**
+	 * @brief Calculates the linear index for the given coordinates within this region.
+	 */
 	inline int index(const glm::ivec3 &pos) const {
 		return index(pos.x, pos.y, pos.z);
 	}
 
+	/**
+	 * @brief Calculates the linear index for the given coordinates within this region.
+	 */
 	inline int index(int x, int y, int z) const {
 		return (x - _mins.x) + (y - _mins.y) * getWidthInVoxels() + (z - _mins.z) * _stride;
 	}
