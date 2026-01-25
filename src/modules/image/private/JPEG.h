@@ -65,7 +65,9 @@ bool load(io::SeekableReadStream &stream, int length, int &width, int &height, i
 
 	jpeg_create_decompress(&cinfo);
 
-	const uint8_t *buf = buffer.getBuffer();
+	// this weird cast is needed because libjpeg wants a non-const pointer in older versions
+	// and they all only have the LIB_JPEG_VERSION set to 80
+	uint8_t *buf = const_cast<uint8_t *>(buffer.getBuffer());
 	jpeg_mem_src(&cinfo, buf, length);
 	if (jpeg_read_header(&cinfo, TRUE) != JPEG_HEADER_OK) {
 		jpeg_destroy_decompress(&cinfo);
