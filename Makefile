@@ -208,24 +208,24 @@ endif
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 docs/Formats.md: formatprinter
-	$(Q)$(call EXEC_PATH,formatprinter) --markdown > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --markdown > $@
 
 contrib/installer/windows/wixpatch.xml: formatprinter
-	$(Q)$(call EXEC_PATH,formatprinter) --wix > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --wix > $@
 
 tools/html/data.js: formatprinter
 	$(Q)printf "const jsonData = " > $@
-	$(Q)$(call EXEC_PATH,formatprinter) --palette --image --voxel | jq >> $@
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --palette --image --voxel | jq >> $@
 
 contrib/installer/linux/x-voxel.xml: formatprinter
-	$(Q)$(call EXEC_PATH,formatprinter) --mimeinfo > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --mimeinfo > $@
 	$(Q)contrib/installer/linux/mimetypes.py
 
 contrib/installer/osx/%.plist.in: formatprinter
-	$(Q)$(call EXEC_PATH,formatprinter) --plist > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --plist > $@
 
 contrib/installer/linux/%.man.in: formatprinter
-	$(Q)$(call EXEC_PATH,formatprinter) --manpage $* > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --manpage $* > $@
 
 manpages: contrib/installer/linux/voxconvert.man.in contrib/installer/linux/palconvert.man.in contrib/installer/linux/thumbnailer.man.in contrib/installer/linux/application.man.in
 plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit.plist.in

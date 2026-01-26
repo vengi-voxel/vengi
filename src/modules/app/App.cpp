@@ -504,6 +504,7 @@ AppState App::onConstruct() {
 	registerArg("--info").setDescription("Change log level to info");
 	registerArg("--warn").setDescription("Change log level to warn");
 	registerArg("--error").setDescription("Change log level to error");
+	registerArg("--language").setDescription("Set the application language");
 
 	if (!_filesystem->init(_organisation, _appname)) {
 		Log::warn("Failed to initialize the filesystem");
@@ -516,6 +517,10 @@ AppState App::onConstruct() {
 	}
 
 	if (!_systemLanguage) {
+		if (hasArg("--language")) {
+			const core::String lang = getArgVal("--language");
+			SDL_SetHint(SDL_HINT_PREFERRED_LOCALES, lang.c_str());
+		}
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 		int count = 0;
 		SDL_Locale **locales = SDL_GetPreferredLocales(&count);

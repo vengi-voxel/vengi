@@ -102,9 +102,9 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_fillhollow\fP: Fill the hollows when voxelizing a mesh format
 .PP
-\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness when saving into the gltf format
+\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format
 .PP
-\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular when saving into the gltf format
+\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular when saving into the glTF format
 .PP
 \fBvoxformat_imageheightmapminheight\fP: The minimum height of the heightmap when importing an image as heightmap
 .PP
@@ -160,7 +160,7 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_skinaddgroups\fP: Add groups for body parts of Minecraft skins
 .PP
-\fBvoxformat_skinapplytransform\fP: Transformationen bei Minecraft Skins anwenden
+\fBvoxformat_skinapplytransform\fP: Apply transforms to Minecraft skins
 .PP
 \fBvoxformat_skinmergefaces\fP: Merge face parts into single volume for Minecraft skins
 .PP
@@ -168,9 +168,9 @@ Use a camera that is available in the scene. Not all formats are supporting this
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the scene graph transform to mesh exports
 .PP
-\fBvoxformat_voxcreategroups\fP: Merge compounds on load
+\fBvoxformat_voxcreategroups\fP: Create groups for vox file
 .PP
-\fBvoxformat_voxcreatelayers\fP: Merge compounds on load
+\fBvoxformat_voxcreatelayers\fP: Create layers for vox file
 .PP
 \fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 .PP
