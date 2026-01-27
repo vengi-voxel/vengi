@@ -104,9 +104,8 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, Br
 
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette,
 										command::CommandExecutionListener &listener) {
-	Modifier &modifier = _sceneMgr->modifier();
 	ui::ScopedStyle selectionStyle;
-	ImGui::BeginDisabled(!modifier.selectionMgr()->hasSelection());
+	ImGui::BeginDisabled(!node.hasSelection());
 	ImGui::CommandButton(_("Use selection"), "stampbrushuseselection", listener);
 	ImGui::EndDisabled();
 }

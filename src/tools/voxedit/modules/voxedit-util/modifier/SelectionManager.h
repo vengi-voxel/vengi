@@ -21,18 +21,13 @@ namespace voxedit {
 // TODO: SELECTION: see https://github.com/vengi-voxel/vengi/issues/580
 class SelectionManager : public core::DirtyState {
 private:
-	Selections _selections;
 	// when moving selected voxels, don't do it in a region larger than this
 	voxel::Region _maxRegion = voxel::Region::InvalidRegion;
-	voxel::Region _cachedRegion = voxel::Region::InvalidRegion;
 
 public:
-	// TODO: SELECTION: reduce access to this as much as possible
-	const Selections &selections() const;
-
+	void reset();
 	void setMaxRegionSize(const voxel::Region &maxRegion);
-	const voxel::Region& region();
-	bool hasSelection() const;
+	voxel::Region calculateRegion(const scenegraph::SceneGraphNode &node) const;
 
 	void invert(scenegraph::SceneGraphNode &node);
 	bool select(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs);
@@ -44,7 +39,7 @@ public:
 	void unselect(scenegraph::SceneGraphNode &node);
 	bool unselect(scenegraph::SceneGraphNode &node, const glm::ivec3 &pos);
 	bool unselect(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs);
-	bool isSelected(const glm::ivec3 &pos) const;
+	bool isSelected(const scenegraph::SceneGraphNode &node, const glm::ivec3 &pos) const;
 	/**
 	 * @brief Cut selected voxels from the given node and return a new volume containing them
 	 */
@@ -53,16 +48,7 @@ public:
 	 * @brief Copy selected voxels from the given node and return a new volume containing them
 	 */
 	voxel::RawVolume *copy(const scenegraph::SceneGraphNode &node);
-
-	/**
-	 * @brief Unselect everything
-	 */
-	void reset();
 };
-
-inline bool SelectionManager::hasSelection() const {
-	return !_selections.empty();
-}
 
 using SelectionManagerPtr = core::SharedPtr<SelectionManager>;
 

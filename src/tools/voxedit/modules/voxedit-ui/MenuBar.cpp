@@ -80,8 +80,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	if (ImGui::BeginMenuBar()) {
 		ImGui::Dummy({});
 
-		const Modifier &modifier = _sceneMgr->modifier();
-		const bool hasSelection = modifier.selectionMgr()->hasSelection();
+		const scenegraph::SceneGraphNode *activeModelNode = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+		const bool hasSelection = activeModelNode && activeModelNode->hasSelection();
 
 		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("New"), "new", true, &listener);

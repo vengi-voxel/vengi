@@ -84,8 +84,10 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ui::ScopedStyle style;
 		style.pushFontSize(imguiApp()->bigFontSize());
 		ui::Toolbar toolbar("toolbar", &listener);
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+		const bool hasSelection = node && node->hasSelection();
 		toolbar.button(ICON_LC_CROP, "crop");
-		toolbar.button(ICON_LC_SCALING, "resizetoselection", !_sceneMgr->modifier().selectionMgr()->hasSelection());
+		toolbar.button(ICON_LC_SCALING, "resizetoselection", !hasSelection);
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");
 		toolbar.button(ICON_LC_EXPAND, "modelsize");
 		toolbar.button(ICON_LC_UNGROUP, "colortomodel");

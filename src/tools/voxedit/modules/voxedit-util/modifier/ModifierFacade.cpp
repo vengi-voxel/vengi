@@ -162,16 +162,25 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	_modifierRenderer->render(camera, scale, model);
 
 	// TODO: SELECTION: remove me - let the SelectionManager render this
+	int activeNodeId = _sceneMgr->sceneGraph().activeNode();
+	const scenegraph::SceneGraphNode *activeModelNode = _sceneMgr->sceneGraphModelNode(activeNodeId);
 	if (_brushType == BrushType::Select && brush->active()) {
 		if (brush->dirty()) {
 			const voxel::Region &region = brush->calcRegion(_brushContext);
-			Selections selections = selectionMgr()->selections();
+			scenegraph::Selections selections;
+			if (activeModelNode) {
+				selections = activeModelNode->selections();
+			}
 			selections.push_back(region);
 			_modifierRenderer->updateSelectionBuffers(selections);
 			brush->markClean();
 		}
 	} else {
-		_modifierRenderer->updateSelectionBuffers(selectionMgr()->selections());
+		if (activeModelNode) {
+			_modifierRenderer->updateSelectionBuffers(activeModelNode->selections());
+		} else {
+			_modifierRenderer->updateSelectionBuffers({});
+		}
 	}
 	_modifierRenderer->renderSelection(camera, model);
 

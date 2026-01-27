@@ -42,6 +42,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_keyFramesMap = core::move(move._keyFramesMap);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
+	_selections = core::move(move._selections);
 	_type = move._type;
 	move._type = SceneGraphNodeType::Max;
 	_flags = move._flags;
@@ -74,6 +75,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_keyFramesMap = core::move(move._keyFramesMap);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
+	_selections = core::move(move._selections);
 	_type = move._type;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
@@ -458,6 +460,21 @@ const voxel::Region &SceneGraphNode::region() const {
 	return _volume->region();
 }
 
+const Selections &SceneGraphNode::selections() const {
+	return _selections;
+}
+
+Selections &SceneGraphNode::selections() {
+	return _selections;
+}
+
+bool SceneGraphNode::hasSelection() const {
+	return !_selections.empty();
+}
+
+void SceneGraphNode::clearSelections() {
+	_selections.clear();
+}
 bool SceneGraphNode::isLeaf() const {
 	return _children.empty();
 }

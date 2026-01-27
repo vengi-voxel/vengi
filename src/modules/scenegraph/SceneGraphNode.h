@@ -14,10 +14,10 @@
 #include "SceneGraphKeyFrame.h"
 #include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "voxel/Region.h"
 
 namespace voxel {
 class RawVolume;
-class Region;
 }
 namespace palette {
 class Palette;
@@ -28,6 +28,11 @@ namespace scenegraph {
 class SceneGraph;
 class SceneGraphNode;
 #define DEFAULT_ANIMATION "Default"
+
+/**
+ * @brief Selection regions for model nodes
+ */
+using Selections = core::Buffer<voxel::Region>;
 
 enum class SceneGraphNodeType : uint8_t {
 	Root,
@@ -101,6 +106,7 @@ protected:
 	SceneGraphNodeProperties _properties;
 	mutable core::Optional<palette::Palette> _palette;
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
+	Selections _selections;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -237,6 +243,12 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
+
+	// selections
+	const Selections &selections() const;
+	Selections &selections();
+	bool hasSelection() const;
+	void clearSelections();
 
 	const SceneGraphNodeChildren &children() const;
 	const SceneGraphNodeProperties &properties() const;

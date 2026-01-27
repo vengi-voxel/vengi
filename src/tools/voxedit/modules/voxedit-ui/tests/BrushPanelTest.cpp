@@ -4,10 +4,10 @@
 
 #include "../BrushPanel.h"
 #include "command/CommandHandler.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -99,14 +99,17 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "select")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
-		const voxedit::SelectionManagerPtr &selectionMgr = _sceneMgr->modifier().selectionMgr();
 
 		command::executeCommands("select none");
-		IM_CHECK(!selectionMgr->hasSelection());
+		const scenegraph::SceneGraphNode *nodeBeforeSelect = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+		IM_CHECK(nodeBeforeSelect != nullptr);
+		IM_CHECK(!nodeBeforeSelect->hasSelection());
 
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK(executeViewportClickArea(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
-		IM_CHECK(selectionMgr->hasSelection());
+		const scenegraph::SceneGraphNode *nodeAfterSelect = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+		IM_CHECK(nodeAfterSelect != nullptr);
+		IM_CHECK(nodeAfterSelect->hasSelection());
 
 		command::executeCommands("select none");
 	};

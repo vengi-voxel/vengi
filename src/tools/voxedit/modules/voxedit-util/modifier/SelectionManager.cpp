@@ -8,8 +8,8 @@
 
 namespace voxedit {
 
-const Selections &SelectionManager::selections() const {
-	return _selections;
+void SelectionManager::reset() {
+	markClean();
 }
 
 void SelectionManager::setMaxRegionSize(const voxel::Region &maxRegion) {
@@ -24,12 +24,13 @@ void SelectionManager::invert(scenegraph::SceneGraphNode &node) {
 	if (volume == nullptr) {
 		return;
 	}
-	if (!hasSelection()) {
+	scenegraph::Selections &selections = node.selections();
+	if (selections.empty()) {
 		select(node, volume->region().getLowerCorner(), volume->region().getUpperCorner());
 	} else {
-		const Selections &remainingSelections = voxel::Region::subtract(volume->region(), _selections);
-		reset();
-		for (const Selection &selection : remainingSelections) {
+		const scenegraph::Selections &remainingSelections = voxel::Region::subtract(volume->region(), selections);
+		node.clearSelections();
+		for (const voxel::Region &selection : remainingSelections) {
 			select(node, selection.getLowerCorner(), selection.getUpperCorner());
 		}
 	}
@@ -39,59 +40,51 @@ void SelectionManager::unselect(scenegraph::SceneGraphNode &node) {
 	if (!node.isModelNode()) {
 		return;
 	}
-	reset();
+	node.clearSelections();
 }
 
-void SelectionManager::reset() {
-	_selections.clear();
-	markDirty();
-}
-
-const voxel::Region &SelectionManager::region() {
-	if (!dirty()) {
-		return _cachedRegion;
-	}
-	if (_selections.empty()) {
+voxel::Region SelectionManager::calculateRegion(const scenegraph::SceneGraphNode &node) const {
+	const scenegraph::Selections &selections = node.selections();
+	if (selections.empty()) {
 		return voxel::Region::InvalidRegion;
 	}
-	voxel::Region r = _selections[0];
-	for (const Selection &selection : _selections) {
+	voxel::Region r = selections[0];
+	for (const voxel::Region &selection : selections) {
 		r.accumulate(selection);
 	}
-	_cachedRegion = r;
-	markClean();
-	return _cachedRegion;
+	return r;
 }
 
 bool SelectionManager::select(scenegraph::SceneGraphNode &node, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	if (!node.isModelNode()) {
 		return false;
 	}
-	const Selection sel{mins, maxs};
+	const voxel::Region sel{mins, maxs};
 	if (!sel.isValid()) {
 		return false;
 	}
-	for (size_t i = 0; i < _selections.size(); ++i) {
-		const Selection &s = _selections[i];
+	scenegraph::Selections &selections = node.selections();
+	for (size_t i = 0; i < selections.size(); ++i) {
+		const voxel::Region &s = selections[i];
 		if (s.containsRegion(sel)) {
 			return true;
 		}
 	}
 
-	for (size_t i = 0; i < _selections.size();) {
-		Selection &s = _selections[i];
+	for (size_t i = 0; i < selections.size();) {
+		voxel::Region &s = selections[i];
 		if (sel.containsRegion(s)) {
-			_selections.erase(i);
+			selections.erase(i);
 		} else if (voxel::intersects(sel, s)) {
-			const Selections newRegions = voxel::Region::subtract(s, sel);
-			_selections.erase(i);
-			_selections.insert(_selections.begin() + i, newRegions.begin(), newRegions.end());
+			const scenegraph::Selections newRegions = voxel::Region::subtract(s, sel);
+			selections.erase(i);
+			selections.insert(selections.begin() + i, newRegions.begin(), newRegions.end());
 			i += newRegions.size();
 		} else {
 			++i;
 		}
 	}
-	_selections.push_back(sel);
+	selections.push_back(sel);
 	markDirty();
 	return true;
 }
@@ -118,20 +111,21 @@ bool SelectionManager::unselect(scenegraph::SceneGraphNode &node, const glm::ive
 	if (!node.isModelNode()) {
 		return false;
 	}
-	const Selection sel{mins, maxs};
+	const voxel::Region sel{mins, maxs};
 	if (!sel.isValid()) {
 		return false;
 	}
+	scenegraph::Selections &selections = node.selections();
 	bool changed = false;
-	for (size_t i = 0; i < _selections.size();) {
-		Selection &s = _selections[i];
+	for (size_t i = 0; i < selections.size();) {
+		voxel::Region &s = selections[i];
 		if (sel.containsRegion(s)) {
-			_selections.erase(i);
+			selections.erase(i);
 			changed = true;
 		} else if (voxel::intersects(sel, s)) {
-			const Selections newRegions = voxel::Region::subtract(s, sel);
-			_selections.erase(i);
-			_selections.insert(_selections.begin() + i, newRegions.begin(), newRegions.end());
+			const scenegraph::Selections newRegions = voxel::Region::subtract(s, sel);
+			selections.erase(i);
+			selections.insert(selections.begin() + i, newRegions.begin(), newRegions.end());
 			i += newRegions.size();
 			changed = true;
 		} else {
@@ -151,14 +145,9 @@ bool SelectionManager::select(scenegraph::SceneGraphNode &node, const glm::ivec3
 	return select(node, pos, pos);
 }
 
-bool SelectionManager::isSelected(const glm::ivec3 &pos) const {
-	if (!dirty()) {
-		if (!_cachedRegion.containsPoint(pos)) {
-			return false;
-		}
-	}
-
-	for (const Selection &sel : _selections) {
+bool SelectionManager::isSelected(const scenegraph::SceneGraphNode &node, const glm::ivec3 &pos) const {
+	const scenegraph::Selections &selections = node.selections();
+	for (const voxel::Region &sel : selections) {
 		if (sel.containsPoint(pos)) {
 			return true;
 		}
@@ -174,11 +163,12 @@ voxel::RawVolume *SelectionManager::cut(scenegraph::SceneGraphNode &node) {
 	if (volume == nullptr) {
 		return nullptr;
 	}
-	if (!hasSelection()) {
+	const scenegraph::Selections &selections = node.selections();
+	if (selections.empty()) {
 		return nullptr;
 	}
-	voxel::RawVolume *v = new voxel::RawVolume(*volume, _selections);
-	for (const Selection &selection : _selections) {
+	voxel::RawVolume *v = new voxel::RawVolume(*volume, selections);
+	for (const voxel::Region &selection : selections) {
 		const glm::ivec3 &mins = selection.getLowerCorner();
 		const glm::ivec3 &maxs = selection.getUpperCorner();
 		static constexpr voxel::Voxel AIR;
@@ -208,10 +198,11 @@ voxel::RawVolume *SelectionManager::copy(const scenegraph::SceneGraphNode &node)
 	if (volume == nullptr) {
 		return nullptr;
 	}
-	if (!hasSelection()) {
+	const scenegraph::Selections &selections = node.selections();
+	if (selections.empty()) {
 		return nullptr;
 	}
-	voxel::RawVolume *v = new voxel::RawVolume(*volume, _selections);
+	voxel::RawVolume *v = new voxel::RawVolume(*volume, selections);
 	return v;
 }
 

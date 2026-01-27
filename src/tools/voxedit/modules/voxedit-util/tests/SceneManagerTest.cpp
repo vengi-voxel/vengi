@@ -89,11 +89,11 @@ protected:
 		EXPECT_TRUE(modifier.beginBrush());
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier.executeAdditionalAction();
-		scenegraph::SceneGraph sceneGraph;
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume({mins, maxs}), true);
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(sceneGraph.activeNode());
+		ASSERT_NE(nullptr, node);
 		EXPECT_TRUE(
-			modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, SceneModifiedFlags) {}));
+			modifier.execute(sceneGraph, *node, [&](const voxel::Region &, ModifierType, SceneModifiedFlags) {}));
 		modifier.setBrushType(BrushType::Shape);
 	}
 
@@ -289,10 +289,11 @@ TEST_F(SceneManagerTest, testRenameUndoRedo) {
 }
 
 TEST_F(SceneManagerTest, testCopyPaste) {
-	Modifier &modifier = _sceneMgr->modifier();
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
-	EXPECT_TRUE(modifier.selectionMgr()->hasSelection());
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	ASSERT_NE(nullptr, node);
+	EXPECT_TRUE(node->hasSelection());
 	EXPECT_TRUE(_sceneMgr->copy());
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));

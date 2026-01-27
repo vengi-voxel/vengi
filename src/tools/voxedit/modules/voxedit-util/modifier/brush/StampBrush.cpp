@@ -52,18 +52,18 @@ void StampBrush::construct() {
 	}).setHelp(_("Rotate stamp volume around the given axis by 90 degrees"));
 
 	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
-		Modifier &modifier = _sceneMgr->modifier();
-		if (!modifier.selectionMgr()->hasSelection()) {
-			Log::warn("There's no selection to use as stamp");
-			return;
-		}
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		if (!node) {
 			return;
 		}
+		if (!node->hasSelection()) {
+			Log::warn("There's no selection to use as stamp");
+			return;
+		}
+		Modifier &modifier = _sceneMgr->modifier();
 		const SelectionManagerPtr &selectionMgr = modifier.selectionMgr();
-		voxel::RawVolume stampVolume(node->volume(), selectionMgr->region());
+		voxel::RawVolume stampVolume(node->volume(), selectionMgr->calculateRegion(*node));
 		setVolume(stampVolume, node->palette());
 		// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
 		// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area

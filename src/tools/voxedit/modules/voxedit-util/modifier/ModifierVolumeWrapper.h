@@ -33,10 +33,10 @@ private:
 
 	// if we have a selection, we only handle voxels inside the selection
 	bool skip(const glm::aligned_ivec4 &pos) const {
-		if (!_selectionMgr->hasSelection()) {
+		if (!_node.hasSelection()) {
 			return false;
 		}
-		return !_selectionMgr->isSelected(pos);
+		return !_selectionMgr->isSelected(_node, pos);
 	}
 
 public:

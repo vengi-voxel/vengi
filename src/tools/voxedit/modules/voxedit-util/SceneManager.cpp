@@ -1097,9 +1097,6 @@ bool SceneManager::doRedo() {
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
-	if (!_selectionManager->hasSelection()) {
-		return false;
-	}
 	const int nodeId = activeNode();
 	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
@@ -1108,6 +1105,9 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 	}
 	if (node->type() != scenegraph::SceneGraphNodeType::Model) {
 		Log::warn("Given node is no model node");
+		return false;
+	}
+	if (!node->hasSelection()) {
 		return false;
 	}
 
@@ -1131,13 +1131,13 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 }
 
 bool SceneManager::copy() {
-	if (!_selectionManager->hasSelection()) {
-		Log::debug("Nothing selected yet - failed to copy");
-		return false;
-	}
 	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
+		return false;
+	}
+	if (!node->hasSelection()) {
+		Log::debug("Nothing selected yet - failed to copy");
 		return false;
 	}
 	_copy = voxedit::tool::copy(*node, _selectionManager);
@@ -1184,13 +1184,13 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 }
 
 bool SceneManager::cut() {
-	if (!_selectionManager->hasSelection()) {
-		Log::debug("Nothing selected - failed to cut");
-		return false;
-	}
 	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.volume() == nullptr) {
+		return false;
+	}
+	if (!node.hasSelection()) {
+		Log::debug("Nothing selected - failed to cut");
 		return false;
 	}
 	voxel::Region modifiedRegion;
@@ -1637,8 +1637,8 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	if (v == nullptr) {
 		return;
 	}
-
-	if (_selectionManager->hasSelection()) {
+	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node && node->hasSelection()) {
 		// TODO: SELECTION: only move the selected voxels
 		Log::warn("Moving only the selected voxels is not implemented yet");
 	} else {
@@ -1773,8 +1773,13 @@ void SceneManager::construct() {
 	_client.construct();
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
-		const voxel::Region &region = modifier().selectionMgr()->region();
-		nodeResize(sceneGraph().activeNode(), region);
+		const int activeNodeId = sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNodeId);
+		if (node == nullptr) {
+			return;
+		}
+		const voxel::Region &region = modifier().selectionMgr()->calculateRegion(*node);
+		nodeResize(activeNodeId, region);
 	}).setHelp(_("Resize the volume to the current selection"));
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
@@ -2225,8 +2230,9 @@ void SceneManager::construct() {
 	}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		if (_selectionManager->hasSelection()) {
-			paste(_selectionManager->region().getLowerCorner());
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode());
+		if (node && node->hasSelection()) {
+			paste(_selectionManager->calculateRegion(*node).getLowerCorner());
 		} else {
 			paste(referencePosition());
 		}

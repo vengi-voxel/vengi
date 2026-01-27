@@ -40,11 +40,9 @@ protected:
 		modifier.executeAdditionalAction();
 	}
 
-	void select(voxel::RawVolume &volume, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	void select(scenegraph::SceneGraphNode &node, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		prepare(modifier, mins, maxs, ModifierType::Select, BrushType::Select);
 		scenegraph::SceneGraph sceneGraph;
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(&volume, false);
 		modifier.execute(sceneGraph, node);
 		modifier.endBrush();
 	}
@@ -73,19 +71,19 @@ TEST_F(ModifierTest, testModifierAction) {
 
 TEST_F(ModifierTest, testModifierSelection) {
 	voxel::RawVolume volume({-10, 10});
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
 	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
 	Modifier modifier(&mgr, selectionManager);
 	ASSERT_TRUE(modifier.init());
-	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
+	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
 	// now modify voxels - but only on the current selection
 	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
 	int modifierExecuted = 0;
 	EXPECT_TRUE(
 		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
@@ -93,7 +91,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
 	EXPECT_EQ(1, modifierExecuted);
-	const voxel::Region &selectionRegion = modifier.selectionMgr()->region();
+	const voxel::Region &selectionRegion = modifier.selectionMgr()->calculateRegion(node);
 	EXPECT_EQ(glm::ivec3(-1), selectionRegion.getLowerCorner());
 	EXPECT_EQ(glm::ivec3(1), selectionRegion.getUpperCorner());
 	EXPECT_FALSE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));

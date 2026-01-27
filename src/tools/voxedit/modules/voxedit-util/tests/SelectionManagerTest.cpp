@@ -21,16 +21,16 @@ TEST_F(SelectionManagerTest, testSelectAndInvert) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManager mgr;
-	EXPECT_FALSE(mgr.hasSelection());
+	EXPECT_FALSE(node.hasSelection());
 	EXPECT_TRUE(mgr.select(node, glm::ivec3(4), glm::ivec3(12)));
-	EXPECT_TRUE(mgr.hasSelection());
+	EXPECT_TRUE(node.hasSelection());
 	mgr.invert(node);
-	EXPECT_TRUE(mgr.isSelected(glm::ivec3(0)));
-	EXPECT_TRUE(mgr.isSelected(glm::ivec3(16)));
-	EXPECT_TRUE(mgr.isSelected(glm::ivec3(3)));
-	EXPECT_TRUE(mgr.isSelected(glm::ivec3(13)));
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(4)));
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(12)));
+	EXPECT_TRUE(mgr.isSelected(node, glm::ivec3(0)));
+	EXPECT_TRUE(mgr.isSelected(node, glm::ivec3(16)));
+	EXPECT_TRUE(mgr.isSelected(node, glm::ivec3(3)));
+	EXPECT_TRUE(mgr.isSelected(node, glm::ivec3(13)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(4)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(12)));
 }
 
 TEST_F(SelectionManagerTest, testUnselectHole) {
@@ -43,8 +43,8 @@ TEST_F(SelectionManagerTest, testUnselectHole) {
 	const glm::ivec3 mins(10, 10, 10);
 	const glm::ivec3 maxs(20, 20, 20);
 	EXPECT_TRUE(mgr.select(node, mins, maxs));
-	EXPECT_TRUE(mgr.isSelected(mins));
-	EXPECT_TRUE(mgr.isSelected(maxs));
+	EXPECT_TRUE(mgr.isSelected(node, mins));
+	EXPECT_TRUE(mgr.isSelected(node, maxs));
 
 	const glm::ivec3 unselectMins(12, 12, 12);
 	const glm::ivec3 unselectMaxs(18, 18, 18);
@@ -54,19 +54,19 @@ TEST_F(SelectionManagerTest, testUnselectHole) {
 	for (int x = unselectMins.x; x <= unselectMaxs.x; ++x) {
 		for (int y = unselectMins.y; y <= unselectMaxs.y; ++y) {
 			for (int z = unselectMins.z; z <= unselectMaxs.z; ++z) {
-				EXPECT_FALSE(mgr.isSelected(glm::ivec3(x, y, z)))
+				EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(x, y, z)))
 					<< "Position at " << x << ", " << y << ", " << z << " should not be selected";
 			}
 		}
 	}
 
 	// Check that the border is still selected
-	EXPECT_TRUE(mgr.isSelected(mins));
-	EXPECT_TRUE(mgr.isSelected(maxs));
+	EXPECT_TRUE(mgr.isSelected(node, mins));
+	EXPECT_TRUE(mgr.isSelected(node, maxs));
 
 	// Check that we didn't select anything outside the original bounds
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(9, 10, 10)));
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(21, 20, 20)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(9, 10, 10)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(21, 20, 20)));
 }
 
 TEST_F(SelectionManagerTest, testUnselectCorner) {
@@ -85,13 +85,13 @@ TEST_F(SelectionManagerTest, testUnselectCorner) {
 	EXPECT_TRUE(mgr.unselect(node, unselectMins, unselectMaxs));
 
 	// Check unselected part inside original
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(16, 16, 16)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(16, 16, 16)));
 
 	// Check selected part
-	EXPECT_TRUE(mgr.isSelected(glm::ivec3(10, 10, 10)));
+	EXPECT_TRUE(mgr.isSelected(node, glm::ivec3(10, 10, 10)));
 
 	// Check outside original (should still be unselected)
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(22, 22, 22)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(22, 22, 22)));
 }
 
 TEST_F(SelectionManagerTest, testUnselectExtendsOutside) {
@@ -112,14 +112,14 @@ TEST_F(SelectionManagerTest, testUnselectExtendsOutside) {
 
 	// Check that we didn't select anything outside the original bounds
 	// The bug would cause (0, 6, -5) to be selected.
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 8, -1)));
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 8, 11)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(5, 8, -1)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(5, 8, 11)));
 
 	// Check that the remaining part is correct
-	EXPECT_TRUE(mgr.isSelected(glm::ivec3(5, 8, 5)));
+	EXPECT_TRUE(mgr.isSelected(node, glm::ivec3(5, 8, 5)));
 
 	// Check that the unselected part is unselected
-	EXPECT_FALSE(mgr.isSelected(glm::ivec3(5, 2, 5)));
+	EXPECT_FALSE(mgr.isSelected(node, glm::ivec3(5, 2, 5)));
 }
 
 TEST_F(SelectionManagerTest, testCopy) {
