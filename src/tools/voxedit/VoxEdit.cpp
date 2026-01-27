@@ -301,10 +301,9 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "!scene");
 
-	video::KeyboardLayout keyboardLayout = video::detectKeyboardLayout();
 	if (keymap != KeyBindings::Qubicle) {
 		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
-		if (keyboardLayout == video::KeyboardLayout::AZERTY) {
+		if (_keyboardLayout == video::KeyboardLayout::AZERTY) {
 			_keybindingHandler.registerBinding("z",                  "+move_forward",              "editing");
 			_keybindingHandler.registerBinding("q",                  "+move_left",                 "editing");
 		} else {

@@ -8,6 +8,7 @@
 #include "video/IEventObserver.h"
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
+#include "video/KeyboardLayout.h"
 #include "video/FileDialogOptions.h"
 #include <SDL_main.h>
 #include <glm/vec2.hpp>
@@ -52,6 +53,8 @@ protected:
 	bool _powerSaveMode = true;
 
 	bool _fullScreenApplication = true;
+	video::KeyboardLayout _keyboardLayout = video::KeyboardLayout::Max;
+
 	int _windowWidth = 1024;
 	int _windowHeight = 768;
 

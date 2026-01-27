@@ -37,7 +37,11 @@ set(SRCS
 	dearimgui/implot.cpp dearimgui/implot.h
 	dearimgui/implot_items.cpp dearimgui/implot_internal.h
 
+	dearimgui/imgui_markdown.h
+
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
+
+	dearimgui/imgui_keyboard.cpp dearimgui/imgui_keyboard.h
 )
 
 if (USE_SDL_VERSION EQUAL 2)

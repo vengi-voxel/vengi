@@ -15,6 +15,7 @@
 #include "core/collection/DynamicArray.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
+#include "dearimgui/imgui_keyboard.h"
 #include "io/File.h"
 #ifdef IMGUI_ENABLE_FREETYPE
 #include "dearimgui/misc/freetype/imgui_freetype.h"
@@ -564,6 +565,30 @@ void IMGUIApp::renderBindingsDialog() {
 		if (ImGui::IconButton(ICON_LC_TEXT_SELECT, _("Edit bindings"))) {
 			openKeybindings();
 		}
+
+		ImKeyboard::ImGuiKeyboardLayout layout = ImKeyboard::ImGuiKeyboardLayout_Qwerty;
+		switch (_keyboardLayout) {
+		case video::KeyboardLayout::QWERTY:
+			layout = ImKeyboard::ImGuiKeyboardLayout_Qwerty;
+			break;
+		case video::KeyboardLayout::AZERTY:
+			layout = ImKeyboard::ImGuiKeyboardLayout_Azerty;
+			break;
+		case video::KeyboardLayout::QWERTZ:
+			layout = ImKeyboard::ImGuiKeyboardLayout_Qwertz;
+			break;
+		case video::KeyboardLayout::COLEMAK:
+			layout = ImKeyboard::ImGuiKeyboardLayout_Colemak;
+			break;
+		case video::KeyboardLayout::DVORAK:
+			layout = ImKeyboard::ImGuiKeyboardLayout_Dvorak;
+			break;
+		default:
+			break; // keep default
+		}
+		ImKeyboard::Keyboard(layout, ImKeyboard::ImGuiKeyboardFlags_ShowPressed |
+										 ImKeyboard::ImGuiKeyboardFlags_ShowBothLabels |
+										 ImKeyboard::ImGuiKeyboardFlags_ShowIcons);
 	}
 	ImGui::End();
 }

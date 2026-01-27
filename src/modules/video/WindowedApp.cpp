@@ -532,6 +532,7 @@ app::AppState WindowedApp::onInit() {
 	const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
 	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+	_keyboardLayout = video::detectKeyboardLayout();
 
 	video_trace_init();
 
