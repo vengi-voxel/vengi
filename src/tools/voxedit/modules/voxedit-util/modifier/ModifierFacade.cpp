@@ -172,28 +172,25 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		ctx.activeRegion = node->region();
 	}
 
-	// Selection handling
-	// TODO: SELECTION: remove this special handling once selection is handled in node/SelectionManager
-	if (_brushType == BrushType::Select && brush && brush->active()) {
-		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
-			ctx.selections = node->selections();
-		}
-		const voxel::Region &region = brush->calcRegion(_brushContext);
-		ctx.selections.push_back(region);
-		if (brush->dirty()) {
-			brush->markClean();
-		}
-	} else {
-		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
-			ctx.selections = node->selections();
-		}
-	}
-
 	// Handle brush preview with deferred updates
 	if (isMode(ModifierType::ColorPicker)) {
 		ctx.brushActive = false;
 	} else {
 		ctx.brushActive = brush && brush->active();
+	}
+
+	// Selection handling
+	// TODO: SELECTION: remove this special handling once selection is handled in node/SelectionManager
+	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+		ctx.selections = node->selections();
+	}
+
+	if (_brushType == BrushType::Select && ctx.brushActive) {
+		const voxel::Region &region = brush->calcRegion(_brushContext);
+		ctx.selections.push_back(region);
+		if (brush->dirty()) {
+			brush->markClean();
+		}
 	}
 
 	if (ctx.brushActive) {
