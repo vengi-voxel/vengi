@@ -12,7 +12,6 @@
 #include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
 #include "video/Types.h"
-#include "voxedit-util/modifier/Selection.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -122,10 +121,10 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
-void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
+void ModifierRenderer::updateSelectionBuffers(const scenegraph::Selections& selections) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::Yellow());
-	for (const Selection &selection : selections) {
+	for (const auto &selection : selections) {
 		if (!selection.isValid()) {
 			continue;
 		}

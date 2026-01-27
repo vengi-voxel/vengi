@@ -8,9 +8,8 @@
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
 #include "math/Axis.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
-#include "voxedit-util/modifier/ModifierType.h"
-#include "voxedit-util/modifier/Selection.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -49,7 +48,7 @@ struct ModifierRendererContext {
 	voxel::Region activeRegion;
 
 	// Selections
-	Selections selections;
+	scenegraph::Selections selections;
 
 	// Brush preview
 	voxel::RawVolume *previewVolume = nullptr;

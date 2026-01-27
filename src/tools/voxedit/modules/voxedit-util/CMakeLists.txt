@@ -19,7 +19,6 @@ set(SRCS
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierType.h
 	modifier/ModifierVolumeWrapper.h
-	modifier/Selection.h
 	modifier/ShapeType.h
 	modifier/SelectionManager.h modifier/SelectionManager.cpp
 	modifier/SceneModifiedFlags.h

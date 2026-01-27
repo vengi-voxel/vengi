@@ -5,7 +5,6 @@
 #pragma once
 
 #include "ModifierType.h"
-#include "Selection.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolumeWrapper.h"

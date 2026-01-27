@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "Selection.h"
 #include "core/DirtyState.h"
 #include "core/SharedPtr.h"
+#include "voxel/Region.h"
 
 namespace scenegraph {
 class SceneGraphNode;
