@@ -64,7 +64,7 @@ bool ModifierFacade::previewNeedsExistingVolume() const {
 	return false;
 }
 
-bool ModifierFacade::generateSimplePreview(const Brush *brush, const voxel::Region &region) const {
+bool ModifierFacade::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
 	if (brush->type() != BrushType::Shape) {
 		return false;
 	}
@@ -114,7 +114,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		return;
 	}
 	const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
-	bool simplePreview = generateSimplePreview(brush, region);
+	bool simplePreview = isSimplePreview(brush, region);
 	if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
@@ -143,26 +143,25 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	}
 }
 
-void ModifierFacade::handleSelection(const video::Camera &camera, const glm::mat4 &model, Brush *brush) {
+void ModifierFacade::renderSelection(const video::Camera &camera, const glm::mat4 &model, Brush *brush) {
 	// TODO: SELECTION: remove me - let the SelectionManager render this or if the selection state in the node is a
 	//                  volume (BitVolume?) let the ModifierRenderer handle it and don't handle the selection brush in a
 	//                  special way here - also see The ModifierRenderer TODOs
-	int activeNodeId = _sceneMgr->sceneGraph().activeNode();
-	const scenegraph::SceneGraphNode *activeModelNode = _sceneMgr->sceneGraphModelNode(activeNodeId);
+	const int activeNodeId = _sceneMgr->sceneGraph().activeNode();
 	if (_brushType == BrushType::Select && brush->active()) {
 		if (brush->dirty()) {
 			const voxel::Region &region = brush->calcRegion(_brushContext);
 			scenegraph::Selections selections;
-			if (activeModelNode) {
-				selections = activeModelNode->selections();
+			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+				selections = node->selections();
 			}
 			selections.push_back(region);
 			_modifierRenderer->updateSelectionBuffers(selections);
 			brush->markClean();
 		}
 	} else {
-		if (activeModelNode) {
-			_modifierRenderer->updateSelectionBuffers(activeModelNode->selections());
+		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+			_modifierRenderer->updateSelectionBuffers(node->selections());
 		} else {
 			_modifierRenderer->updateSelectionBuffers({});
 		}
@@ -190,7 +189,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale, model);
 
-	handleSelection(camera, model, brush);
+	renderSelection(camera, model, brush);
 
 	if (isMode(ModifierType::ColorPicker)) {
 		return;
