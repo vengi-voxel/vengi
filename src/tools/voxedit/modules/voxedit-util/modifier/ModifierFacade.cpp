@@ -173,10 +173,9 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	if (_locked) {
 		return;
 	}
-	const glm::mat4 &translate = glm::translate(model, glm::vec3(_brushContext.cursorPosition));
-	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
 	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
 	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
+
 	Brush *brush = currentBrush();
 	if (brush) {
 		int activeNode = _sceneMgr->sceneGraph().activeNode();
@@ -186,8 +185,10 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 			}
 		}
 	}
-	_modifierRenderer->updateReferencePosition(referencePosition());
-	_modifierRenderer->render(camera, scale, model);
+
+	const glm::mat4 &translate = glm::translate(model, glm::vec3(_brushContext.cursorPosition));
+	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
+	_modifierRenderer->render(camera, scale, model, referencePosition());
 
 	renderSelection(camera, model, brush);
 

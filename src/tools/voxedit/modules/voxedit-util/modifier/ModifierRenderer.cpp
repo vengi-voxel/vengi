@@ -174,7 +174,9 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm:
 	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false, false);
 }
 
-void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &cursor, const glm::mat4& model) {
+void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &cursor, const glm::mat4& model, const glm::ivec3 &pos) {
+	const glm::vec3 posAligned((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f);
+	_referencePoint = posAligned;
 	const video::ScopedState depthTest(video::State::DepthTest, false);
 	const video::ScopedState cullFace(video::State::CullFace, false);
 	_shapeRenderer.render(_voxelCursorMesh, camera, cursor);
@@ -187,11 +189,6 @@ void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &curs
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
 		_shapeRenderer.render(_aabbMeshes[i], camera, model);
 	}
-}
-
-void ModifierRenderer::updateReferencePosition(const glm::ivec3 &pos) {
-	const glm::vec3 posAligned((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f);
-	_referencePoint = posAligned;
 }
 
 void ModifierRenderer::renderSelection(const video::Camera& camera, const glm::mat4 &model) {
