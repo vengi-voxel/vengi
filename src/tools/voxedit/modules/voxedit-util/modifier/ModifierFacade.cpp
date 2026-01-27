@@ -20,7 +20,8 @@
 
 namespace voxedit {
 
-ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer, const SelectionManagerPtr &selectionManager)
+ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer,
+							   const SelectionManagerPtr &selectionManager)
 	: Super(sceneMgr, selectionManager), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
 }
 
@@ -39,7 +40,8 @@ void ModifierFacade::shutdown() {
 	_modifierRenderer->shutdown();
 }
 
-static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume, voxel::Region region) {
+static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume,
+									   voxel::Region region) {
 	if (existingVolume == nullptr) {
 		if (volume == nullptr || volume->region() != region) {
 			volume = new voxel::RawVolume(region);
@@ -141,27 +143,10 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	}
 }
 
-void ModifierFacade::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
-	if (_locked) {
-		return;
-	}
-	const glm::mat4 &translate = glm::translate(model, glm::vec3(_brushContext.cursorPosition));
-	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
-	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
-	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
-	Brush *brush = currentBrush();
-	if (brush) {
-		int activeNode = _sceneMgr->sceneGraph().activeNode();
-		if (activeNode != InvalidNodeId) {
-			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
-				_modifierRenderer->updateMirrorPlane(brush->mirrorAxis(), brush->mirrorPos(), node->region());
-			}
-		}
-	}
-	_modifierRenderer->updateReferencePosition(referencePosition());
-	_modifierRenderer->render(camera, scale, model);
-
-	// TODO: SELECTION: remove me - let the SelectionManager render this
+void ModifierFacade::handleSelection(const video::Camera &camera, const glm::mat4 &model, Brush *brush) {
+	// TODO: SELECTION: remove me - let the SelectionManager render this or if the selection state in the node is a
+	//                  volume (BitVolume?) let the ModifierRenderer handle it and don't handle the selection brush in a
+	//                  special way here - also see The ModifierRenderer TODOs
 	int activeNodeId = _sceneMgr->sceneGraph().activeNode();
 	const scenegraph::SceneGraphNode *activeModelNode = _sceneMgr->sceneGraphModelNode(activeNodeId);
 	if (_brushType == BrushType::Select && brush->active()) {
@@ -183,6 +168,29 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		}
 	}
 	_modifierRenderer->renderSelection(camera, model);
+}
+
+void ModifierFacade::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
+	if (_locked) {
+		return;
+	}
+	const glm::mat4 &translate = glm::translate(model, glm::vec3(_brushContext.cursorPosition));
+	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
+	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
+	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
+	Brush *brush = currentBrush();
+	if (brush) {
+		int activeNode = _sceneMgr->sceneGraph().activeNode();
+		if (activeNode != InvalidNodeId) {
+			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
+				_modifierRenderer->updateMirrorPlane(brush->mirrorAxis(), brush->mirrorPos(), node->region());
+			}
+		}
+	}
+	_modifierRenderer->updateReferencePosition(referencePosition());
+	_modifierRenderer->render(camera, scale, model);
+
+	handleSelection(camera, model, brush);
 
 	if (isMode(ModifierType::ColorPicker)) {
 		return;

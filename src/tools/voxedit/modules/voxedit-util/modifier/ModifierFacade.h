@@ -31,6 +31,7 @@ private:
 	 * @return false if the complex preview voxel-based rendering should be used
 	 */
 	bool generateSimplePreview(const Brush *brush, const voxel::Region &region) const;
+	void handleSelection(const video::Camera &camera, const glm::mat4 &model, Brush *brush);
 
 public:
 	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer, const SelectionManagerPtr &selectionManager);
