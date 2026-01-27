@@ -276,8 +276,6 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
  * change the cursor position if the brush region is outside the volume
  * this allows us to keep all voxels inside the volume boundaries even on the
  * +x, +y and +z sides where the voxels are currently flowing out of the volume
- *
- * @todo: this should be a global brush option - also see https://github.com/vengi-voxel/vengi/issues/444
  */
 static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region &brushRegion,
 							   const glm::ivec3 &cursor) {
