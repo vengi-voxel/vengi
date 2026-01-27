@@ -9,7 +9,6 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxel/RawVolume.h"
@@ -35,8 +34,6 @@ bool ModifierFacade::init() {
 
 void ModifierFacade::shutdown() {
 	Super::shutdown();
-	// the volumes of the renderer are not deleted by this shutdown
-	// call, but with our scoped pointers
 	_modifierRenderer->shutdown();
 }
 
@@ -68,7 +65,7 @@ bool ModifierFacade::isSimplePreview(const Brush *brush, const voxel::Region &re
 	if (brush->type() != BrushType::Shape) {
 		return false;
 	}
-	const ShapeBrush *shapeBrush = static_cast<const ShapeBrush *>(brush);
+	const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
 	if (shapeBrush->shapeType() == ShapeType::AABB) {
 		// we can use a simple cube for the preview here
 		return true;
@@ -76,7 +73,7 @@ bool ModifierFacade::isSimplePreview(const Brush *brush, const voxel::Region &re
 	return false;
 }
 
-void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
+void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette, ModifierRendererContext &ctx) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _brushContext.modifierType;
 	if (modifierType == ModifierType::Erase) {
@@ -85,8 +82,14 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	voxel::Voxel voxel = _brushContext.cursorVoxel;
 	voxel.setOutline();
 
-	// this call is needed to prevent double frees
-	_modifierRenderer->clear();
+	// Reset preview state
+	_previewVolume = nullptr;
+	_previewMirrorVolume = nullptr;
+	ctx.previewVolume = nullptr;
+	ctx.previewMirrorVolume = nullptr;
+	ctx.simplePreviewRegion = voxel::Region::InvalidRegion;
+	ctx.simpleMirrorPreviewRegion = voxel::Region::InvalidRegion;
+	ctx.useSimplePreview = false;
 
 	Log::debug("regenerate preview volume");
 
@@ -102,8 +105,6 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		existingVolume = activeVolume;
 	}
 
-	// TODO: BRUSH: for erase we have to use the existing volume
-	// and hide the real volume to show the modification only.
 	const Brush *brush = currentBrush();
 	if (!brush) {
 		return;
@@ -123,100 +124,106 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setVolume(_previewMirrorVolume, false);
 			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
-			_modifierRenderer->updateBrushVolume(1, _previewMirrorVolume, &activePalette);
+			ctx.previewMirrorVolume = _previewMirrorVolume;
 		}
 		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setVolume(_previewVolume, false);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-		_modifierRenderer->updateBrushVolume(0, _previewVolume, &activePalette);
+		ctx.previewVolume = _previewVolume;
+		ctx.palette = &activePalette;
 	} else if (simplePreview) {
-		_modifierRenderer->updateBrushVolume(0, nullptr, nullptr);
-		_modifierRenderer->updateBrushVolume(1, nullptr, nullptr);
+		ctx.useSimplePreview = true;
+		ctx.simplePreviewRegion = region;
+		ctx.simplePreviewColor = activePalette.color(_brushContext.cursorVoxel.getColor());
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
-		color::RGBA color = activePalette.color(_brushContext.cursorVoxel.getColor());
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
-			_modifierRenderer->updateBrushVolume(1, {minsMirror, maxsMirror}, color);
-		}
-		_modifierRenderer->updateBrushVolume(0, region, color);
-	}
-}
-
-void ModifierFacade::renderSelection(const video::Camera &camera, const glm::mat4 &model, Brush *brush) {
-	// TODO: SELECTION: remove me - let the SelectionManager render this or if the selection state in the node is a
-	//                  volume (BitVolume?) let the ModifierRenderer handle it and don't handle the selection brush in a
-	//                  special way here - also see The ModifierRenderer TODOs
-	const int activeNodeId = _sceneMgr->sceneGraph().activeNode();
-	if (_brushType == BrushType::Select && brush->active()) {
-		if (brush->dirty()) {
-			const voxel::Region &region = brush->calcRegion(_brushContext);
-			scenegraph::Selections selections;
-			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
-				selections = node->selections();
-			}
-			selections.push_back(region);
-			_modifierRenderer->updateSelectionBuffers(selections);
-			brush->markClean();
-		}
-	} else {
-		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
-			_modifierRenderer->updateSelectionBuffers(node->selections());
-		} else {
-			_modifierRenderer->updateSelectionBuffers({});
+			ctx.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
 		}
 	}
-	_modifierRenderer->renderSelection(camera, model);
 }
 
 void ModifierFacade::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
 	if (_locked) {
 		return;
 	}
-	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
-	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
 
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	const int activeNodeId = sceneGraph.activeNode();
 	Brush *brush = currentBrush();
+
+	// Build the context for the renderer
+	ModifierRendererContext ctx;
+	ctx.cursorVoxel = _brushContext.cursorVoxel;
+	ctx.voxelAtCursor = _brushContext.voxelAtCursor;
+	ctx.cursorFace = _brushContext.cursorFace;
+	ctx.cursorPosition = _brushContext.cursorPosition;
+	ctx.gridResolution = _brushContext.gridResolution;
+	ctx.referencePosition = referencePosition();
+	ctx.palette = &activePalette;
+
+	// Mirror plane info
 	if (brush) {
-		int activeNode = _sceneMgr->sceneGraph().activeNode();
-		if (activeNode != InvalidNodeId) {
-			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
-				_modifierRenderer->updateMirrorPlane(brush->mirrorAxis(), brush->mirrorPos(), node->region());
-			}
+		ctx.mirrorAxis = brush->mirrorAxis();
+		ctx.mirrorPos = brush->mirrorPos();
+	}
+	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+		ctx.activeRegion = node->region();
+	}
+
+	// Selection handling
+	// TODO: SELECTION: remove this special handling once selection is handled in node/SelectionManager
+	if (_brushType == BrushType::Select && brush && brush->active()) {
+		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+			ctx.selections = node->selections();
+		}
+		const voxel::Region &region = brush->calcRegion(_brushContext);
+		ctx.selections.push_back(region);
+		if (brush->dirty()) {
+			brush->markClean();
+		}
+	} else {
+		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+			ctx.selections = node->selections();
 		}
 	}
 
-	const glm::mat4 &translate = glm::translate(model, glm::vec3(_brushContext.cursorPosition));
-	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
-	_modifierRenderer->render(camera, scale, model, referencePosition());
-
-	renderSelection(camera, model, brush);
-
+	// Handle brush preview with deferred updates
 	if (isMode(ModifierType::ColorPicker)) {
-		return;
+		ctx.brushActive = false;
+	} else {
+		ctx.brushActive = brush && brush->active();
 	}
 
-	if (brush && brush->active()) {
+	if (ctx.brushActive) {
 		if (brush->dirty()) {
 			if (_nextPreviewUpdateSeconds > 0.0) {
-				_nextPreviewUpdateSeconds -= 0.02f;
+				_nextPreviewUpdateSeconds -= 0.02;
 			} else {
-				_nextPreviewUpdateSeconds = _nowSeconds + 0.1f;
+				_nextPreviewUpdateSeconds = _nowSeconds + 0.1;
 			}
 			brush->markClean();
 		}
 		if (_nextPreviewUpdateSeconds > 0.0) {
 			if (_nextPreviewUpdateSeconds <= _nowSeconds) {
-				_nextPreviewUpdateSeconds = 0.0f;
-				updateBrushVolumePreview(activePalette);
+				_nextPreviewUpdateSeconds = 0.0;
+				updateBrushVolumePreview(activePalette, ctx);
 			}
 		}
-		video::polygonOffset(glm::vec3(-0.1f));
-		_modifierRenderer->renderBrushVolume(camera, model);
-		video::polygonOffset(glm::vec3(0.0f));
-	} else {
-		_modifierRenderer->clear();
+		// If we have preview data from previous update, pass it along
+		if (!ctx.previewVolume && !ctx.useSimplePreview) {
+			ctx.previewVolume = _previewVolume;
+			ctx.previewMirrorVolume = _previewMirrorVolume;
+			ctx.palette = &activePalette;
+		}
 	}
+
+	// Let the renderer handle buffer updates and rendering
+	_modifierRenderer->update(ctx);
+
+	// Render everything
+	_modifierRenderer->render(camera, model);
 }
 
 } // namespace voxedit

@@ -3,16 +3,16 @@
  */
 
 #include "ModifierRenderer.h"
+#include "../AxisUtil.h"
 #include "color/Color.h"
-#include "math/Axis.h"
 #include "core/Log.h"
+#include "math/Axis.h"
+#include "palette/Palette.h"
 #include "video/Camera.h"
 #include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
 #include "video/Types.h"
-#include "../AxisUtil.h"
 #include "voxedit-util/modifier/Selection.h"
-#include "palette/Palette.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -63,7 +63,6 @@ void ModifierRenderer::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_volumeRendererCtx.shutdown();
-	// this is automatically deleted in the ModifierFacade
 	_volumeRenderer.shutdown();
 	// the volumes in this state belong to the brush
 	(void)_meshState->shutdown();
@@ -174,28 +173,7 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera, const glm:
 	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false, false);
 }
 
-void ModifierRenderer::render(const video::Camera& camera, const glm::mat4 &cursor, const glm::mat4& model, const glm::ivec3 &pos) {
-	const glm::vec3 posAligned((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f);
-	_referencePoint = posAligned;
-	const video::ScopedState depthTest(video::State::DepthTest, false);
-	const video::ScopedState cullFace(video::State::CullFace, false);
-	_shapeRenderer.render(_voxelCursorMesh, camera, cursor);
-	_shapeRenderer.render(_mirrorMeshIndex, camera, model);
-	_shapeRenderer.render(_referencePointMesh, camera, glm::translate(model, _referencePoint));
-
-	video::ScopedState scopedDepth(video::State::DepthTest);
-	video::depthFunc(video::CompareFunc::LessEqual);
-
-	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
-		_shapeRenderer.render(_aabbMeshes[i], camera, model);
-	}
-}
-
-void ModifierRenderer::renderSelection(const video::Camera& camera, const glm::mat4 &model) {
-	_shapeRenderer.render(_selectionIndex, camera, model);
-}
-
-void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirrorPos, const voxel::Region &region) {
+void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &region) {
 	if (axis == math::Axis::None) {
 		if (_mirrorMeshIndex != -1) {
 			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
@@ -209,4 +187,69 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirr
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
+void ModifierRenderer::update(const ModifierRendererContext &ctx) {
+	const bool flip = voxel::isAir(ctx.voxelAtCursor.getMaterial());
+	updateCursor(ctx.cursorVoxel, ctx.cursorFace, flip);
+
+	_cursorPosition = ctx.cursorPosition;
+	_gridResolution = ctx.gridResolution;
+	_referencePoint = glm::vec3(ctx.referencePosition) + 0.5f;
+
+	if (ctx.mirrorAxis != _lastMirrorAxis || ctx.mirrorPos != _lastMirrorPos ||
+		ctx.activeRegion != _lastActiveRegion) {
+		updateMirrorPlane(ctx.mirrorAxis, ctx.mirrorPos, ctx.activeRegion);
+		_lastMirrorAxis = ctx.mirrorAxis;
+		_lastMirrorPos = ctx.mirrorPos;
+		_lastActiveRegion = ctx.activeRegion;
+	}
+
+	// Update selection buffers
+	updateSelectionBuffers(ctx.selections);
+
+	// Update brush preview volumes
+	if (ctx.brushActive) {
+		if (ctx.useSimplePreview) {
+			// Simple AABB preview using shape rendering
+			updateBrushVolume(0, nullptr, nullptr);
+			updateBrushVolume(1, nullptr, nullptr);
+			if (ctx.simplePreviewRegion.isValid()) {
+				updateBrushVolume(0, ctx.simplePreviewRegion, ctx.simplePreviewColor);
+			}
+			if (ctx.simpleMirrorPreviewRegion.isValid()) {
+				updateBrushVolume(1, ctx.simpleMirrorPreviewRegion, ctx.simplePreviewColor);
+			}
+		} else {
+			// Complex voxel-based preview
+			updateBrushVolume(0, ctx.previewVolume, ctx.palette);
+			updateBrushVolume(1, ctx.previewMirrorVolume, ctx.palette);
+		}
+	} else {
+		clear();
+	}
 }
+
+void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &modelMatrix) {
+	const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
+	const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
+
+	const video::ScopedState depthTest(video::State::DepthTest, false);
+	const video::ScopedState cullFace(video::State::CullFace, false);
+	_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
+	_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
+	_shapeRenderer.render(_referencePointMesh, camera, glm::translate(modelMatrix, _referencePoint));
+	video::ScopedState scopedDepth(video::State::DepthTest);
+	video::depthFunc(video::CompareFunc::LessEqual);
+
+	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
+		_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
+	}
+
+	_shapeRenderer.render(_selectionIndex, camera, modelMatrix);
+
+	// Render brush volume preview
+	video::polygonOffset(glm::vec3(-0.1f));
+	renderBrushVolume(camera, modelMatrix);
+	video::polygonOffset(glm::vec3(0.0f));
+}
+
+} // namespace voxedit
