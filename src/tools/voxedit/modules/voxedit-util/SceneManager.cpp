@@ -2232,7 +2232,8 @@ void SceneManager::construct() {
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode());
 		if (node && node->hasSelection()) {
-			paste(_selectionManager->calculateRegion(*node).getLowerCorner());
+			const voxel::Region &region = _selectionManager->calculateRegion(*node);
+			paste(region.getLowerCorner());
 		} else {
 			paste(referencePosition());
 		}

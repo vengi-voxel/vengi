@@ -91,9 +91,9 @@ TEST_F(ModifierTest, testModifierSelection) {
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
 	EXPECT_EQ(1, modifierExecuted);
-	const voxel::Region &selectionRegion = modifier.selectionMgr()->calculateRegion(node);
-	EXPECT_EQ(glm::ivec3(-1), selectionRegion.getLowerCorner());
-	EXPECT_EQ(glm::ivec3(1), selectionRegion.getUpperCorner());
+	EXPECT_TRUE(modifier.selectionMgr()->isSelected(node, glm::ivec3(-1)));
+	EXPECT_TRUE(modifier.selectionMgr()->isSelected(node, glm::ivec3(1)));
+	EXPECT_FALSE(modifier.selectionMgr()->isSelected(node, glm::ivec3(2)));
 	EXPECT_FALSE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume.voxel(-2, -2, -2).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));

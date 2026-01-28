@@ -63,6 +63,7 @@ void StampBrush::construct() {
 		}
 		Modifier &modifier = _sceneMgr->modifier();
 		const SelectionManagerPtr &selectionMgr = modifier.selectionMgr();
+		// TODO: SELECTION: this will also use non selected voxels as this is the bouding region of all selections
 		voxel::RawVolume stampVolume(node->volume(), selectionMgr->calculateRegion(*node));
 		setVolume(stampVolume, node->palette());
 		// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
