@@ -5,6 +5,7 @@
 #include "VoxelUtil.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/Set.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
@@ -15,6 +16,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <functional>
@@ -25,25 +27,65 @@ namespace voxelutil {
 
 voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &worldMat,
 										 const glm::vec3 &normalizedPivot) {
-	// TODO: scaling is not applied properly
 	const glm::vec3 translation(worldMat[3]);
-	glm::quat q = glm::quat_cast(worldMat);
+
+	// Extract scale from the matrix columns
+	const glm::vec3 scale(glm::length(glm::vec3(worldMat[0])), glm::length(glm::vec3(worldMat[1])),
+						  glm::length(glm::vec3(worldMat[2])));
+
+	// Create a normalized rotation matrix (remove scale)
+	glm::mat4 rotMat = worldMat;
+	rotMat[0] = glm::vec4(glm::vec3(worldMat[0]) / scale.x, 0.0f);
+	rotMat[1] = glm::vec4(glm::vec3(worldMat[1]) / scale.y, 0.0f);
+	rotMat[2] = glm::vec4(glm::vec3(worldMat[2]) / scale.z, 0.0f);
+	rotMat[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glm::quat q = glm::quat_cast(rotMat);
 	const glm::vec3 angles = glm::degrees(glm::eulerAngles(q));
-	Log::debug("Apply transforms: angles: %f %f %f, translation: %f %f %f", angles.x, angles.y, angles.z, translation.x,
-			   translation.y, translation.z);
+	Log::debug("Apply transforms: angles: %f %f %f, scale: %f %f %f, translation: %f %f %f", angles.x, angles.y,
+			   angles.z, scale.x, scale.y, scale.z, translation.x, translation.y, translation.z);
 
 	const glm::vec3 dim(volume.region().getDimensionsInVoxels());
 	const glm::vec3 pivot = normalizedPivot * dim;
 
-	if (glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f))) {
-		voxel::RawVolume *v = new voxel::RawVolume(volume);
-		v->translate(glm::ivec3(translation) - glm::ivec3(glm::round(pivot)));
-		return v;
+	const bool hasScale = !glm::all(glm::epsilonEqual(scale, glm::vec3(1.0f), 0.001f));
+	const bool hasRotation = !glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f));
+
+	const voxel::RawVolume *currentVolume = &volume;
+	core::ScopedPtr<voxel::RawVolume> scaledVolume;
+	core::ScopedPtr<voxel::RawVolume> rotatedVolume;
+
+	// Apply scale first if needed
+	if (hasScale) {
+		scaledVolume = voxelutil::scaleVolume(currentVolume, scale, normalizedPivot);
+		if (scaledVolume == nullptr) {
+			return nullptr;
+		}
+		currentVolume = scaledVolume;
 	}
-	glm::mat4 rotMat = glm::mat4_cast(q);
-	voxel::RawVolume *rotated = voxelutil::rotateVolume(&volume, rotMat, normalizedPivot);
-	rotated->translate(glm::ivec3(translation) - glm::ivec3(glm::round(pivot)));
-	return rotated;
+
+	// Apply rotation if needed
+	if (hasRotation) {
+		rotatedVolume = voxelutil::rotateVolume(currentVolume, rotMat, normalizedPivot);
+		if (rotatedVolume == nullptr) {
+			return nullptr;
+		}
+		currentVolume = rotatedVolume;
+	}
+
+	// Create final volume (copy if no transforms were applied, or take ownership of last transform)
+	voxel::RawVolume *result;
+	if (!hasScale && !hasRotation) {
+		result = new voxel::RawVolume(volume);
+	} else if (rotatedVolume) {
+		result = rotatedVolume.release();
+	} else {
+		result = scaledVolume.release();
+	}
+
+	// Apply translation
+	result->translate(glm::ivec3(translation) - glm::ivec3(glm::round(pivot)));
+	return result;
 }
 
 bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Connectivity connectivity) {

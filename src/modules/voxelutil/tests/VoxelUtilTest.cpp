@@ -272,4 +272,55 @@ TEST_F(VoxelUtilTest, applyTransformToVolume) {
 	EXPECT_EQ(voxelCount, 9) << "Expected 9 voxels after rotation" << *rotated << v;
 }
 
+TEST_F(VoxelUtilTest, applyTransformToVolumeWithScale) {
+	voxel::RawVolume v{voxel::Region{0, 3}};
+	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	v.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 3));
+
+	// Scale by 2x
+	const glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.0f)));
+	ASSERT_NE(scaled, nullptr);
+	const glm::ivec3 dims = scaled->region().getDimensionsInVoxels();
+	// 4x4x4 scaled by 2 should be 8x8x8
+	EXPECT_EQ(dims.x, 8);
+	EXPECT_EQ(dims.y, 8);
+	EXPECT_EQ(dims.z, 8);
+	// Should have voxels after scaling
+	const int voxelCount = voxelutil::countVoxels(*scaled);
+	EXPECT_GT(voxelCount, 0);
+}
+
+TEST_F(VoxelUtilTest, applyTransformToVolumeWithScaleAndRotation) {
+	voxel::RawVolume v{voxel::Region{0, 3}};
+	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+
+	// Scale by 2x and rotate 90 degrees around Z
+	glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
+	transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	core::ScopedPtr<voxel::RawVolume> result(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.5f)));
+	ASSERT_NE(result, nullptr);
+	// Should have voxels after scaling and rotation
+	const int voxelCount = voxelutil::countVoxels(*result);
+	EXPECT_GT(voxelCount, 0);
+}
+
+TEST_F(VoxelUtilTest, applyTransformToVolumeWithNonUniformScale) {
+	voxel::RawVolume v{voxel::Region{0, 3}};
+	v.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+
+	// Non-uniform scale: 2x in X, 1x in Y, 0.5x in Z
+	const glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.5f));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.0f)));
+	ASSERT_NE(scaled, nullptr);
+	const glm::ivec3 dims = scaled->region().getDimensionsInVoxels();
+	// 4x4x4 scaled by (2, 1, 0.5) should be approximately (8, 4, 2)
+	EXPECT_EQ(dims.x, 8);
+	EXPECT_EQ(dims.y, 4);
+	EXPECT_EQ(dims.z, 2);
+}
+
 } // namespace voxelutil
