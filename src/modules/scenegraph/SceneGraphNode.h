@@ -29,6 +29,7 @@ class SceneGraph;
 class SceneGraphNode;
 #define DEFAULT_ANIMATION "Default"
 
+// TODO: SELECTION: this should be voxel::BitVolume to select single voxels always in the same size as the RawVolume of a model node
 /**
  * @brief Selection regions for model nodes
  */

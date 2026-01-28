@@ -20,13 +20,8 @@ namespace voxedit {
 
 // TODO: SELECTION: see https://github.com/vengi-voxel/vengi/issues/580
 class SelectionManager : public core::DirtyState {
-private:
-	// when moving selected voxels, don't do it in a region larger than this
-	voxel::Region _maxRegion = voxel::Region::InvalidRegion;
-
 public:
 	void reset();
-	void setMaxRegionSize(const voxel::Region &maxRegion);
 	voxel::Region calculateRegion(const scenegraph::SceneGraphNode &node) const;
 
 	void invert(scenegraph::SceneGraphNode &node);
@@ -42,12 +37,14 @@ public:
 	bool isSelected(const scenegraph::SceneGraphNode &node, const glm::ivec3 &pos) const;
 	/**
 	 * @brief Cut selected voxels from the given node and return a new volume containing them
+	 * @note The caller has to take care about the memory of the returned volume
 	 */
-	voxel::RawVolume *cut(scenegraph::SceneGraphNode &node);
+	[[nodiscard]] voxel::RawVolume *cut(scenegraph::SceneGraphNode &node) const;
 	/**
 	 * @brief Copy selected voxels from the given node and return a new volume containing them
+	 * @note The caller has to take care about the memory of the returned volume
 	 */
-	voxel::RawVolume *copy(const scenegraph::SceneGraphNode &node);
+	[[nodiscard]] voxel::RawVolume *copy(const scenegraph::SceneGraphNode &node) const;
 };
 
 using SelectionManagerPtr = core::SharedPtr<SelectionManager>;

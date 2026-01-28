@@ -12,10 +12,6 @@ void SelectionManager::reset() {
 	markClean();
 }
 
-void SelectionManager::setMaxRegionSize(const voxel::Region &maxRegion) {
-	_maxRegion = maxRegion;
-}
-
 void SelectionManager::invert(scenegraph::SceneGraphNode &node) {
 	if (!node.isModelNode()) {
 		return;
@@ -155,7 +151,7 @@ bool SelectionManager::isSelected(const scenegraph::SceneGraphNode &node, const 
 	return false;
 }
 
-voxel::RawVolume *SelectionManager::cut(scenegraph::SceneGraphNode &node) {
+voxel::RawVolume *SelectionManager::cut(scenegraph::SceneGraphNode &node) const {
 	if (!node.isModelNode()) {
 		return nullptr;
 	}
@@ -190,7 +186,7 @@ voxel::RawVolume *SelectionManager::cut(scenegraph::SceneGraphNode &node) {
 	return v;
 }
 
-voxel::RawVolume *SelectionManager::copy(const scenegraph::SceneGraphNode &node) {
+voxel::RawVolume *SelectionManager::copy(const scenegraph::SceneGraphNode &node) const {
 	if (!node.isModelNode()) {
 		return nullptr;
 	}

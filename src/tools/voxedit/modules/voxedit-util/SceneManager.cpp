@@ -2700,10 +2700,6 @@ bool SceneManager::init() {
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();
-
-	voxel::Region maxRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
-	_selectionManager->setMaxRegionSize(maxRegion);
-
 	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;
 }
@@ -2819,12 +2815,6 @@ bool SceneManager::update(double nowSeconds) {
 			loadedNewScene = true;
 		}
 		_loadingFuture = {};
-	}
-
-	if (_maxSuggestedVolumeSize->isDirty()) {
-		voxel::Region maxRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
-		_selectionManager->setMaxRegionSize(maxRegion);
-		_maxSuggestedVolumeSize->markClean();
 	}
 
 	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);
