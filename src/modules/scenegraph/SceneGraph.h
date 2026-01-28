@@ -431,6 +431,21 @@ public:
 			}
 		}
 	}
+
+	template<class FUNC>
+	void visitChildren(int nodeId, bool recursive, FUNC&& f) const {
+		if (!hasNode(nodeId)) {
+			return;
+		}
+		const SceneGraphNode &own = node(nodeId);
+		for (int childNodeId : own.children()) {
+			const SceneGraphNode &n = node(childNodeId);
+			f(n);
+			if (recursive) {
+				visitChildren(childNodeId, recursive, f);
+			}
+		}
+	}
 };
 
 inline int SceneGraph::activeNode() const {

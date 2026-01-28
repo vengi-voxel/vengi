@@ -1198,17 +1198,15 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	const palette::NormalPalette &normalPalette = firstModelNode()->normalPalette();
 
 	voxel::SparseVolume merged;
-	// TODO: the order is wrong here - start from root and recursively apply child nodes
-	for (const auto &e : nodes()) {
-		const SceneGraphNode &node = e->second;
+	visitChildren(root().id(), true, [&](const SceneGraphNode &node) {
 		if (!node.isAnyModelNode()) {
-			continue;
+			return;
 		}
 		if (skipHidden && !node.visible()) {
-			continue;
+			return;
 		}
 		bakeIntoSparse(frameIdx, merged, node, mergedPalette);
-	}
+	});
 	voxel::RawVolume *mergedVolume = new voxel::RawVolume(merged.calculateRegion());
 	merged.copyTo(*mergedVolume);
 	return MergeResult{mergedVolume, mergedPalette, normalPalette};
