@@ -31,12 +31,17 @@
 namespace ImKeyboard {
 
 enum ImGuiKeyboardLayout_ {
-	ImGuiKeyboardLayout_Qwerty,
-	ImGuiKeyboardLayout_Qwertz,
-	ImGuiKeyboardLayout_Azerty,
-	ImGuiKeyboardLayout_Colemak,
-	ImGuiKeyboardLayout_Dvorak,
+	ImGuiKeyboardLayout_Qwerty,		 // ANSI
+	ImGuiKeyboardLayout_Qwertz,		 // ANSI
+	ImGuiKeyboardLayout_Azerty,		 // ANSI
+	ImGuiKeyboardLayout_Colemak,	 // ANSI
+	ImGuiKeyboardLayout_Dvorak,		 // ANSI
 	ImGuiKeyboardLayout_NumericPad,
+	ImGuiKeyboardLayout_QwertyISO,	 // ISO (UK/International)
+	ImGuiKeyboardLayout_QwertzISO,	 // ISO (German)
+	ImGuiKeyboardLayout_AzertyISO,	 // ISO (French)
+	ImGuiKeyboardLayout_AppleANSI,	 // Apple ANSI (US)
+	ImGuiKeyboardLayout_AppleISO,	 // Apple ISO (UK/International)
 
 	ImGuiKeyboardLayout_Count
 };
@@ -48,6 +53,8 @@ enum ImGuiKeyboardFlags_ {
 	ImGuiKeyboardFlags_NoShiftLabels = 1 << 1,	// Don't show shift labels when Shift is pressed
 	ImGuiKeyboardFlags_ShowBothLabels = 1 << 2, // Always show both normal and shift labels (shift label below)
 	ImGuiKeyboardFlags_ShowIcons = 1 << 3,		// Show icons instead of text (Windows logo, arrow triangles)
+	ImGuiKeyboardFlags_NoNumpad = 1 << 4,		// Skip rendering the numeric keypad
+	ImGuiKeyboardFlags_Recordable = 1 << 5,		// Enable key recording for keybinding selection (click or press keys)
 };
 typedef int ImGuiKeyboardFlags;
 
@@ -62,6 +69,7 @@ enum ImGuiKeyboardCol_ {
 	ImGuiKeyboardCol_KeyPressed,			// Overlay color when key is pressed
 	ImGuiKeyboardCol_KeyHighlighted,		// Overlay color when key is highlighted
 	ImGuiKeyboardCol_KeyPressedHighlighted, // Overlay color when key is both pressed and highlighted
+	ImGuiKeyboardCol_KeyRecorded,			// Overlay color when key is recorded (for keybinding selection)
 
 	ImGuiKeyboardCol_COUNT
 };
@@ -90,6 +98,8 @@ struct ImGuiKeyboardStyle {
 ImGuiKeyboardStyle &GetStyle();
 void Highlight(ImGuiKey key, bool highlight);
 void ClearHighlights();
+void ClearRecorded();
+const ImVector<ImGuiKey> &GetRecordedKeys();
 void Keyboard(ImGuiKeyboardLayout layout, ImGuiKeyboardFlags flags = 0);
 void KeyboardDemo();
 

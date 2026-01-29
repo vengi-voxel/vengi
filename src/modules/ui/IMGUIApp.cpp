@@ -531,7 +531,7 @@ void IMGUIApp::renderBindingsDialog() {
 					}
 				}
 				ImGui::TableNextColumn();
-				// TODO: change binding
+				// TODO: change binding and show current selected bindings in the keyboard layout by using the Highlight() function (and clearing previous highlights if the selected has changed)
 				const core::String &deleteButton = core::String::format(ICON_LC_TRASH "##del-key-%i", n++);
 				if (ImGui::Button(deleteButton.c_str())) {
 					command::executeCommands(core::String::format("unbind \"%s\"", keyBinding.c_str()),
