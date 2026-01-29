@@ -17,6 +17,35 @@
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 
+#if !SDL_VERSION_ATLEAST(3, 2, 0)
+#define SDLK_A SDLK_a
+#define SDLK_B SDLK_b
+#define SDLK_C SDLK_c
+#define SDLK_D SDLK_d
+#define SDLK_E SDLK_e
+#define SDLK_F SDLK_f
+#define SDLK_G SDLK_g
+#define SDLK_H SDLK_h
+#define SDLK_I SDLK_i
+#define SDLK_J SDLK_j
+#define SDLK_K SDLK_k
+#define SDLK_L SDLK_l
+#define SDLK_M SDLK_m
+#define SDLK_N SDLK_n
+#define SDLK_O SDLK_o
+#define SDLK_P SDLK_p
+#define SDLK_Q SDLK_q
+#define SDLK_R SDLK_r
+#define SDLK_S SDLK_s
+#define SDLK_T SDLK_t
+#define SDLK_U SDLK_u
+#define SDLK_V SDLK_v
+#define SDLK_W SDLK_w
+#define SDLK_X SDLK_x
+#define SDLK_Y SDLK_y
+#define SDLK_Z SDLK_z
+#endif
+
 namespace ui {
 
 // Helper to convert SDL keycode to ImGuiKey
