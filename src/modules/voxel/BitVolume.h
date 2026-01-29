@@ -20,7 +20,21 @@ private:
 	voxel::Region _region;
 
 public:
+	BitVolume() : _region(Region::InvalidRegion) {
+	}
+
 	BitVolume(const voxel::Region &region) : _data(region.voxels()), _region(region) {
+	}
+
+	BitVolume(const BitVolume &other) : _data(other._data), _region(other._region) {
+	}
+
+	BitVolume &operator=(const BitVolume &other) {
+		if (this != &other) {
+			_data = other._data;
+			_region = other._region;
+		}
+		return *this;
 	}
 
 	BitVolume& operator=(BitVolume&& other) noexcept {
@@ -32,6 +46,41 @@ public:
 	}
 
 	BitVolume(BitVolume&& other) noexcept : _data(core::move(other._data)), _region(other._region) {
+	}
+
+	inline bool isValid() const {
+		return _region.isValid();
+	}
+
+	/**
+	 * @brief Clear the bit volume (set all bits to false)
+	 */
+	inline void clear() {
+		_data.clear();
+	}
+
+	/**
+	 * @brief Fill the bit volume (set all bits to true)
+	 */
+	inline void fill() {
+		_data.fill();
+	}
+
+	/**
+	 * @brief Invert all bits in the volume
+	 */
+	inline void invert() {
+		_data.invert();
+	}
+
+	/**
+	 * @brief Resize the bit volume to match a new region
+	 * @note This will reset all bits to false
+	 */
+	inline void resize(const voxel::Region &region) {
+		_region = region;
+		_data.resize(region.voxels());
+		_data.clear();
 	}
 
 	inline bool hasValue(int x, int y, int z) const {
