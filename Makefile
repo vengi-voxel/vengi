@@ -84,6 +84,7 @@ analysebuild:
 
 thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
 
+.PHONY: $(BUILDDIR)/POTFILES
 $(BUILDDIR)/POTFILES:
 	$(Q)git grep -l -w "[NC]*_(" src/ > $@
 
