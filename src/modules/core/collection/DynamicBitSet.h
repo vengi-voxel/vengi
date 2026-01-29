@@ -16,7 +16,7 @@ namespace core {
  */
 class DynamicBitSet {
 public:
-	using Type = uint32_t;
+	using Type = uint64_t;
 
 private:
 	static constexpr size_t bitsPerValue = sizeof(Type) * CHAR_BIT;

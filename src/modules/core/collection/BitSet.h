@@ -18,7 +18,7 @@ template<size_t SIZE>
 class BitSet {
 private:
 	static_assert(SIZE > 0, "BitSet size must be greater than 0");
-	using Type = uint32_t;
+	using Type = uint64_t;
 	static constexpr size_t requiredElements(size_t bits) {
 		const int bitsPerType = sizeof(Type) * CHAR_BIT;
 		return bits % bitsPerType == 0 ? bits / bitsPerType : bits / bitsPerType + 1;
