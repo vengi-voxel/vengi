@@ -140,6 +140,161 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
+bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
+	if (!intersects(_region, region)) {
+		return false;
+	}
+
+	voxel::Region r = region;
+	if (!_region.containsRegion(r)) {
+		r.cropTo(_region);
+	}
+
+	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
+	// Create a 32-bit mask for one voxel with the flags bits set
+	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
+	// Create a 64-bit mask for two voxels at once
+	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+
+	const glm::ivec3 &mins = r.getLowerCorner();
+	const glm::ivec3 &maxs = r.getUpperCorner();
+	const int width = _region.getWidthInVoxels();
+	const int height = _region.getHeightInVoxels();
+	const int yStride = width;
+	const int zStride = width * height;
+
+	const int xStart = mins.x - _region.getLowerX();
+	const int lineLength = maxs.x - mins.x + 1;
+
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		const int zPos = z - _region.getLowerZ();
+		const int zBase = zPos * zStride + xStart;
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			const int yPos = y - _region.getLowerY();
+			const int baseIndex = zBase + (yPos * yStride);
+
+			// Process two voxels at a time using 64-bit operations
+			const uint64_t *data64 = (const uint64_t *)&_data[baseIndex];
+			int i = 0;
+			const int pairs = lineLength / 2;
+			for (; i < pairs; ++i) {
+				if (data64[i] & flagsMask64) {
+					return true;
+				}
+			}
+			// Handle remaining voxel if line length is odd
+			if (lineLength & 1) {
+				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + pairs * 2];
+				if (*data32 & flagsMask32) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+void RawVolume::removeFlags(const Region &region, uint8_t flags) {
+	if (!intersects(_region, region)) {
+		return;
+	}
+
+	voxel::Region r = region;
+	if (!_region.containsRegion(r)) {
+		r.cropTo(_region);
+	}
+
+	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
+	// Create a 32-bit mask for one voxel with the flags bits set
+	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
+	// Create a 64-bit mask for two voxels at once
+	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+	// Invert the mask for clearing flags
+	const uint64_t clearMask64 = ~flagsMask64;
+	const uint32_t clearMask32 = ~flagsMask32;
+
+	const glm::ivec3 &mins = r.getLowerCorner();
+	const glm::ivec3 &maxs = r.getUpperCorner();
+	const int width = _region.getWidthInVoxels();
+	const int height = _region.getHeightInVoxels();
+	const int yStride = width;
+	const int zStride = width * height;
+
+	const int xStart = mins.x - _region.getLowerX();
+	const int lineLength = maxs.x - mins.x + 1;
+
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		const int zPos = z - _region.getLowerZ();
+		const int zBase = zPos * zStride + xStart;
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			const int yPos = y - _region.getLowerY();
+			const int baseIndex = zBase + (yPos * yStride);
+
+			// Process two voxels at a time using 64-bit operations
+			uint64_t *data64 = (uint64_t *)&_data[baseIndex];
+			int i = 0;
+			const int pairs = lineLength / 2;
+			for (; i < pairs; ++i) {
+				data64[i] &= clearMask64;
+			}
+			// Handle remaining voxel if line length is odd
+			if (lineLength & 1) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex + pairs * 2];
+				*data32 &= clearMask32;
+			}
+		}
+	}
+}
+
+void RawVolume::setFlags(const Region &region, uint8_t flags) {
+	if (!intersects(_region, region)) {
+		return;
+	}
+
+	voxel::Region r = region;
+	if (!_region.containsRegion(r)) {
+		r.cropTo(_region);
+	}
+
+	// Flags are at bits 2-3 in the first byte of the 4-byte Voxel struct
+	// Create a 32-bit mask for one voxel with the flags bits set
+	const uint32_t flagsMask32 = (uint32_t)(flags & 0x3) << 2;
+	// Create a 64-bit mask for two voxels at once
+	const uint64_t flagsMask64 = ((uint64_t)flagsMask32 << 32) | flagsMask32;
+
+	const glm::ivec3 &mins = r.getLowerCorner();
+	const glm::ivec3 &maxs = r.getUpperCorner();
+	const int width = _region.getWidthInVoxels();
+	const int height = _region.getHeightInVoxels();
+	const int yStride = width;
+	const int zStride = width * height;
+
+	const int xStart = mins.x - _region.getLowerX();
+	const int lineLength = maxs.x - mins.x + 1;
+
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		const int zPos = z - _region.getLowerZ();
+		const int zBase = zPos * zStride + xStart;
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			const int yPos = y - _region.getLowerY();
+			const int baseIndex = zBase + (yPos * yStride);
+
+			// Process two voxels at a time using 64-bit operations
+			uint64_t *data64 = (uint64_t *)&_data[baseIndex];
+			int i = 0;
+			const int pairs = lineLength / 2;
+			for (; i < pairs; ++i) {
+				data64[i] |= flagsMask64;
+			}
+			// Handle remaining voxel if line length is odd
+			if (lineLength & 1) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex + pairs * 2];
+				*data32 |= flagsMask32;
+			}
+		}
+	}
+}
+
 bool RawVolume::isEmpty(const Region &region) const {
 	core_trace_scoped(RawVolumeIsEmpty);
 	if (!intersects(_region, region)) {

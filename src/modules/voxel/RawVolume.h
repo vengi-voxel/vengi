@@ -180,6 +180,10 @@ public:
 	 */
 	bool move(const glm::ivec3 &t);
 
+	void removeFlags(const Region &region, uint8_t flags);
+	void setFlags(const Region &region, uint8_t flags);
+	bool hasFlags(const Region &region, uint8_t flags) const;
+
 private:
 	void initialise(const Region &region);
 

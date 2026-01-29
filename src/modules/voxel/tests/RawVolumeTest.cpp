@@ -151,6 +151,107 @@ TEST_F(RawVolumeTest, testMove) {
 	EXPECT_EQ((int)v.voxel(1, 0, 0).getMaterial(), (int)VoxelType::Generic);
 }
 
+TEST_F(RawVolumeTest, testSetFlags) {
+	RawVolume v({glm::ivec3(0), glm::ivec3(3)});
+	// Set some voxels
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int x = 0; x <= 3; ++x) {
+				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	// Test setting flags on a subregion
+	v.setFlags(Region(1, 1, 1, 2, 2, 2), 1); // FlagOutline
+
+	// Verify flags are set in the region
+	EXPECT_EQ(1, (int)v.voxel(1, 1, 1).getFlags());
+	EXPECT_EQ(1, (int)v.voxel(2, 2, 2).getFlags());
+
+	// Verify flags are not set outside the region
+	EXPECT_EQ(0, (int)v.voxel(0, 0, 0).getFlags());
+	EXPECT_EQ(0, (int)v.voxel(3, 3, 3).getFlags());
+}
+
+TEST_F(RawVolumeTest, testRemoveFlags) {
+	RawVolume v({glm::ivec3(0), glm::ivec3(3)});
+	// Set all voxels with flag 1
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int x = 0; x <= 3; ++x) {
+				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Generic, 1, NO_NORMAL, 1));
+			}
+		}
+	}
+
+	// Verify flags are initially set
+	EXPECT_EQ(1, (int)v.voxel(0, 0, 0).getFlags());
+	EXPECT_EQ(1, (int)v.voxel(2, 2, 2).getFlags());
+
+	// Remove flags from a subregion
+	v.removeFlags(Region(1, 1, 1, 2, 2, 2), 1);
+
+	// Verify flags are removed in the region
+	EXPECT_EQ(0, (int)v.voxel(1, 1, 1).getFlags());
+	EXPECT_EQ(0, (int)v.voxel(2, 2, 2).getFlags());
+
+	// Verify flags are still set outside the region
+	EXPECT_EQ(1, (int)v.voxel(0, 0, 0).getFlags());
+	EXPECT_EQ(1, (int)v.voxel(3, 3, 3).getFlags());
+}
+
+TEST_F(RawVolumeTest, testSetFlagsOddWidth) {
+	// Test with odd line length to cover the remaining voxel handling
+	RawVolume v({glm::ivec3(0), glm::ivec3(4, 2, 2)});
+	for (int z = 0; z <= 2; ++z) {
+		for (int y = 0; y <= 2; ++y) {
+			for (int x = 0; x <= 4; ++x) {
+				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	// Set flags on a region with odd width (5 voxels wide)
+	v.setFlags(Region(0, 0, 0, 4, 2, 2), 1);
+
+	// Verify all voxels in the region have flags set
+	for (int z = 0; z <= 2; ++z) {
+		for (int y = 0; y <= 2; ++y) {
+			for (int x = 0; x <= 4; ++x) {
+				EXPECT_EQ(1, (int)v.voxel(x, y, z).getFlags()) << "Flag not set at " << x << "," << y << "," << z;
+			}
+		}
+	}
+}
+
+TEST_F(RawVolumeTest, testHasFlags) {
+	RawVolume v({glm::ivec3(0), glm::ivec3(3)});
+	// Set voxels without flags
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int x = 0; x <= 3; ++x) {
+				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	// No flags should be set initially
+	EXPECT_FALSE(v.hasFlags(v.region(), 1));
+
+	// Set a flag on one voxel
+	v.setVoxel(2, 2, 2, voxel::createVoxel(VoxelType::Generic, 1, NO_NORMAL, 1));
+
+	// Now hasFlags should return true for the full region
+	EXPECT_TRUE(v.hasFlags(v.region(), 1));
+
+	// hasFlags should return false for a region without the flagged voxel
+	EXPECT_FALSE(v.hasFlags(Region(0, 0, 0, 1, 1, 1), 1));
+
+	// hasFlags should return true for a region containing the flagged voxel
+	EXPECT_TRUE(v.hasFlags(Region(2, 2, 2, 3, 3, 3), 1));
+}
+
 TEST_F(RawVolumeTest, testFullSamplerLoop) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
