@@ -71,6 +71,14 @@ TEST_F(ModifierTest, testModifierAction) {
 
 TEST_F(ModifierTest, testModifierSelection) {
 	voxel::RawVolume volume({-10, 10});
+	// Fill volume with voxels in the selection area
+	for (int z = -1; z <= 1; ++z) {
+		for (int y = -1; y <= 1; ++y) {
+			for (int x = -1; x <= 1; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 
@@ -82,7 +90,8 @@ TEST_F(ModifierTest, testModifierSelection) {
 	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
 	// now modify voxels - but only on the current selection
-	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place, BrushType::Shape);
+	// Use Override mode since we already have voxels in the selection area
+	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Override, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	int modifierExecuted = 0;
 	EXPECT_TRUE(

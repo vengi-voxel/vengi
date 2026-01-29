@@ -18,6 +18,14 @@ private:
 TEST_F(SelectionManagerTest, testSelectAndInvert) {
 	voxel::Region region(0, 16);
 	voxel::RawVolume volume(region);
+	// Fill volume with voxels
+	for (int z = 0; z <= 16; ++z) {
+		for (int y = 0; y <= 16; ++y) {
+			for (int x = 0; x <= 16; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManager mgr;
@@ -36,6 +44,14 @@ TEST_F(SelectionManagerTest, testSelectAndInvert) {
 TEST_F(SelectionManagerTest, testUnselectHole) {
 	voxel::Region region(0, 32);
 	voxel::RawVolume volume(region);
+	// Fill volume with voxels in the selection area
+	for (int z = 10; z <= 20; ++z) {
+		for (int y = 10; y <= 20; ++y) {
+			for (int x = 10; x <= 20; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManager mgr;
@@ -72,6 +88,14 @@ TEST_F(SelectionManagerTest, testUnselectHole) {
 TEST_F(SelectionManagerTest, testUnselectCorner) {
 	voxel::Region region(0, 32);
 	voxel::RawVolume volume(region);
+	// Fill volume with voxels in the selection area
+	for (int z = 10; z <= 20; ++z) {
+		for (int y = 10; y <= 20; ++y) {
+			for (int x = 10; x <= 20; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManager mgr;
@@ -97,6 +121,14 @@ TEST_F(SelectionManagerTest, testUnselectCorner) {
 TEST_F(SelectionManagerTest, testUnselectExtendsOutside) {
 	voxel::Region region(0, 32);
 	voxel::RawVolume volume(region);
+	// Fill volume with voxels in the selection area
+	for (int z = 0; z <= 10; ++z) {
+		for (int y = 0; y <= 10; ++y) {
+			for (int x = 0; x <= 10; ++x) {
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+			}
+		}
+	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManager mgr;

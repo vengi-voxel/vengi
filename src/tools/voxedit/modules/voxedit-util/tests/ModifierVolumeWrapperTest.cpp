@@ -29,13 +29,17 @@ TEST_F(ModifierVolumeWrapperTest, testPlace) {
 
 TEST_F(ModifierVolumeWrapperTest, testPlaceSelection) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
+	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
 	selectionMgr->select(node, {1, 1, 1}, {1, 1, 1});
-	ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
+	// Use Override mode since there's already a voxel at (1,1,1)
+	ModifierVolumeWrapper wrapper(node, ModifierType::Override, selectionMgr);
 	ASSERT_FALSE(wrapper.dirtyRegion().isValid());
+	// Position (0,0,0) should fail because it's outside the selection
 	ASSERT_FALSE(wrapper.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	// Position (1,1,1) should succeed because it's in the selection
 	ASSERT_TRUE(wrapper.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	ASSERT_TRUE(wrapper.dirtyRegion().isValid());
 	ASSERT_EQ(wrapper.dirtyRegion(), voxel::Region(1, 1));
