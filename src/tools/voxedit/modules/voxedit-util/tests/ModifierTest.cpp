@@ -89,6 +89,11 @@ TEST_F(ModifierTest, testModifierSelection) {
 	ASSERT_TRUE(modifier.init());
 	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
+	// Verify selection was set correctly
+	EXPECT_TRUE(node.hasSelection()) << "Node should have selection after select()";
+	EXPECT_TRUE(selectionManager->isSelected(node, glm::ivec3(0, 0, 0))) << "Center voxel should be selected";
+	EXPECT_FALSE(selectionManager->isSelected(node, glm::ivec3(2, 2, 2))) << "Voxel outside selection should not be selected";
+
 	// now modify voxels - but only on the current selection
 	// Use Override mode since we already have voxels in the selection area
 	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Override, BrushType::Shape);
