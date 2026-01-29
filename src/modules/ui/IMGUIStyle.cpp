@@ -4,11 +4,27 @@
  */
 
 #include "IMGUIStyle.h"
+#include "app/I18N.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_neo_sequencer.h"
 #include "dearimgui/ImGuizmo.h"
 
 namespace ImGui {
+
+const char *GetStyleName(int style) {
+	switch (style) {
+	case StyleCorporateGrey:
+		return _("Corporate Grey");
+	case StyleDark:
+		return _("Dark");
+	case StyleLight:
+		return _("Light");
+	case StyleClassic:
+		return _("Classic");
+	default:
+		return _("Unknown");
+	}
+}
 
 // https://github.com/ocornut/imgui/issues/707
 void StyleColorsCorporateGrey() {

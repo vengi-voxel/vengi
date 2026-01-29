@@ -16,6 +16,13 @@ enum {
 	MaxStyles
 };
 
+/**
+ * @brief Get the name of a UI style
+ * @param style The style index (StyleCorporateGrey, StyleDark, StyleLight, StyleClassic)
+ * @return The name of the style
+ */
+const char *GetStyleName(int style);
+
 void StyleColorsCorporateGrey();
 void StyleColorsNeoSequencer();
 void StyleImGuizmo();

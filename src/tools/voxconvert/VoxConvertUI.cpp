@@ -100,9 +100,20 @@ void VoxConvertUI::onRenderUI() {
 					languageOption();
 					ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);
 					ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
-					const core::Array<core::String, ImGui::MaxStyles> uiStyles = {_("CorporateGrey"), _("Dark"),
-																				  _("Light"), _("Classic")};
-					ImGui::ComboVar(_("Color theme"), cfg::UIStyle, uiStyles);
+					const core::VarPtr &uiStyleVar = core::Var::getSafe(cfg::UIStyle);
+					int currentStyle = uiStyleVar->intVal();
+					if (ImGui::BeginCombo(_("Color theme"), ImGui::GetStyleName(currentStyle))) {
+						for (int i = 0; i < ImGui::MaxStyles; ++i) {
+							const bool isSelected = (currentStyle == i);
+							if (ImGui::Selectable(ImGui::GetStyleName(i), isSelected)) {
+								uiStyleVar->setVal(i);
+							}
+							if (isSelected) {
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+						ImGui::EndCombo();
+					}
 					ImGui::InputVarFloat(_("Notifications"), cfg::UINotifyDismissMillis);
 					ImGui::Checkbox(_("Show console"), &_showConsole);
 					ImGui::EndMenu();
