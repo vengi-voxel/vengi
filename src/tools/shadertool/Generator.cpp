@@ -145,6 +145,10 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	}
 	int n = 0;
 	for (const Variable& v : shaderStruct.uniforms) {
+		if (!v.isSampler() && !v.isImage()) {
+			Log::error("Uniform '%s' found in shader sources. You must use uniform blocks for everything except opaques (samplers, images).", v.name.c_str());
+			return false;
+		}
 		const bool isInteger = v.isSingleInteger();
 		const core::String& uniformName = util::convertName(v.name, true);
 		core::String mproto;
