@@ -45,6 +45,7 @@ set(SRCS
 	Trace.cpp Trace.h
 	Types.h
 	UniformBuffer.cpp UniformBuffer.h
+	ShaderStorageBuffer.cpp ShaderStorageBuffer.h
 	Version.h
 	WindowedApp.cpp WindowedApp.h
 

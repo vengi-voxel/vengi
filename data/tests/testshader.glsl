@@ -17,6 +17,20 @@ layout(std140) uniform u_materialblock {
 	vec2 foobar4;
 };
 
+// Shader Storage Buffer Object with std430 layout
+layout(std430, binding = 0) buffer ParticleBuffer {
+	vec4 positions[64];
+	vec4 velocities[64];
+	float masses[];
+};
+
+// Another SSBO with different types
+layout(std430, binding = 1) buffer TransformBuffer {
+	mat4 transforms[16];
+	int count;
+	uint flags;
+};
+
 uniform mat4 u_viewprojection;
 uniform mat4 u_model;
 

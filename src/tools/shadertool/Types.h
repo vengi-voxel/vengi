@@ -19,7 +19,8 @@ enum PassBy {
 
 enum class BlockLayout {
 	unknown,
-	std140
+	std140,
+	std430
 };
 
 struct Variable {

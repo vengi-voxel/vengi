@@ -606,15 +606,204 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		methods += "\n";
 	}
 
+	// Generate SSBO (Shader Storage Buffer Object) structs
 	for (auto & buf : shaderStruct.bufferBlocks) {
-		const core::String& bufName = util::convertName(buf.name, true);
+		const core::String& bufferStructName = util::convertName(buf.name, true);
+		const core::String& bufferName = util::convertName(buf.name, false);
+		const core::String bufferClassName = util::convertName(shaderStruct.name + "SSBO", true);
+
+		core::String ssbo;
+		core::String ssboShutdown;
+
+		ssbo += "\n\t/**\n\t * @brief Shader Storage Buffer for ";
+		ssbo += bufferStructName;
+		ssbo += "Data\n\t */\n";
+		ssbo += "\tvideo::ShaderStorageBuffer _";
+		ssbo += bufferName;
+		ssbo += ";\n";
+		ssboShutdown += "\t\t_";
+		ssboShutdown += bufferName;
+		ssboShutdown += ".shutdown();\n";
+
+		ssbo += "\t/**\n\t * @brief layout(";
+		switch (buf.layout.blockLayout) {
+		case BlockLayout::std430:
+			ssbo += "std430";
+			break;
+		case BlockLayout::std140:
+			ssbo += "std140";
+			break;
+		default:
+			ssbo += "unknown";
+			break;
+		}
+		ssbo += ") aligned shader storage buffer structure\n\t */\n";
+		ssbo += "\t#pragma pack(push, 1)\n\tstruct ";
+		ssbo += bufferStructName;
+		ssbo += "Data {\n";
+
+		size_t offset = 0u;
+		int paddingCnt = 0;
+		bool hasDynamicArray = false;
+		for (auto& v : buf.members) {
+			const int align = buf.layout.typeAlign(v);
+			int padding = 0;
+			if (align <= 0) {
+				Log::error("Failed to determine alignment of ssbo member %s", v.name.c_str());
+				return false;
+			}
+			while (offset % align != 0) {
+				++offset;
+				++padding;
+			}
+			if (padding) {
+				if (padding > 1) {
+					ssbo += core::String::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, padding);
+				} else {
+					ssbo += core::String::format("\t\tuint32_t _padding%i;\n", paddingCnt);
+				}
+				++paddingCnt;
+			}
+			const core::String& memberName = util::convertName(v.name, false);
+			const Types& cType = util::resolveTypes(v.type);
+			ssbo += "\t\t";
+			ssbo += cType.ctype;
+			ssbo += " ";
+			ssbo += memberName;
+			const size_t intSize = buf.layout.typeSize(v);
+			if (intSize == 0 && v.arraySize != -1) {
+				Log::error("Failed to determine size of ssbo member %s", v.name.c_str());
+				return false;
+			}
+			if (v.arraySize > 0) {
+				ssbo += "[";
+				ssbo += core::string::toString(v.arraySize);
+				ssbo += "]";
+			} else if (v.arraySize == -1) {
+				// Dynamic array - must be last member
+				hasDynamicArray = true;
+				ssbo += "[1]"; // Placeholder, actual size determined at runtime
+			}
+			ssbo += "; // ";
+			if (v.arraySize == -1) {
+				ssbo += "dynamic array";
+			} else {
+				ssbo += core::string::toString((uint32_t)(intSize * 4));
+				ssbo += " bytes - offset ";
+				ssbo += core::string::toString((uint32_t)(offset * 4));
+			}
+			ssbo += " - alignment ";
+			ssbo += core::string::toString(align);
+			ssbo += "\n";
+
+			if (v.arraySize != -1) {
+				offset += intSize;
+			}
+		}
+
+		ssbo += "\t};\n\t#pragma pack(pop)\n";
+
+		if (!hasDynamicArray) {
+			// Only add size assertion for fixed-size structs
+			const size_t fillBytes = (offset * 4) % 16;
+			if (fillBytes > 0) {
+				ssbo += core::String::format("\t// Note: struct size is %u bytes, may need padding to 16-byte boundary for some uses\n", (uint32_t)(offset * 4));
+			}
+			ssbo += "\tstatic_assert(sizeof(";
+			ssbo += bufferStructName;
+			ssbo += "Data) == ";
+			ssbo += core::string::toString((uint32_t)(offset * 4));
+			ssbo += ", \"Unexpected structure size for ";
+			ssbo += bufferStructName;
+			ssbo += "Data\");\n";
+		}
+
+		ssbo += "\n\t/**\n\t * @brief Binding index for the shader storage buffer\n\t */\n";
+		ssbo += "\tstatic constexpr int ";
+		ssbo += bufferName;
+		ssbo += "_binding = ";
+		ssbo += core::string::toString(buf.layout.binding);
+		ssbo += ";\n";
+
+		ssbo += "\n\t/**\n\t * @brief Create the shader storage buffer with the given data\n\t */\n";
+		ssbo += "\tinline bool create(const ";
+		ssbo += bufferStructName;
+		ssbo += "Data* data, size_t count = 1) {\n";
+		ssbo += "\t\treturn _";
+		ssbo += bufferName;
+		ssbo += ".create(data, sizeof(";
+		ssbo += bufferStructName;
+		ssbo += "Data) * count);\n";
+		ssbo += "\t}\n";
+
+		ssbo += "\n\t/**\n\t * @brief Update the shader storage buffer with the given data\n\t */\n";
+		ssbo += "\tinline bool update(const ";
+		ssbo += bufferStructName;
+		ssbo += "Data* data, size_t count = 1) {\n";
+		ssbo += "\t\treturn _";
+		ssbo += bufferName;
+		ssbo += ".update(data, sizeof(";
+		ssbo += bufferStructName;
+		ssbo += "Data) * count);\n";
+		ssbo += "\t}\n";
+
+		ssbo += "\n\t/**\n\t * @brief Bind the buffer to its binding point\n\t */\n";
+		ssbo += "\tinline bool bind() const {\n";
+		ssbo += "\t\treturn _";
+		ssbo += bufferName;
+		ssbo += ".bind(";
+		ssbo += bufferName;
+		ssbo += "_binding);\n";
+		ssbo += "\t}\n";
+
+		ssbo += "\n\t/**\n\t * @brief Get the underlying buffer\n\t */\n";
+		ssbo += "\tinline video::ShaderStorageBuffer& get";
+		ssbo += bufferStructName;
+		ssbo += "Buffer() {\n";
+		ssbo += "\t\treturn _";
+		ssbo += bufferName;
+		ssbo += ";\n";
+		ssbo += "\t}\n";
+
+		ssbo += "\n\t/**\n\t * @brief Get the underlying buffer (const)\n\t */\n";
+		ssbo += "\tinline const video::ShaderStorageBuffer& get";
+		ssbo += bufferStructName;
+		ssbo += "Buffer() const {\n";
+		ssbo += "\t\treturn _";
+		ssbo += bufferName;
+		ssbo += ";\n";
+		ssbo += "\t}\n";
+
+		// Generate a separate header file for the SSBO if template is available
+		core::String generatedSsbo = core::string::replaceAll(templateUniformBuffer, "$name$", bufferClassName);
+		generatedSsbo = core::string::replaceAll(generatedSsbo, "$namespace$", namespaceSrc);
+		generatedSsbo = core::string::replaceAll(generatedSsbo, "$uniformbuffers$", ssbo);
+		generatedSsbo = core::string::replaceAll(generatedSsbo, "$methods$", "");
+		generatedSsbo = core::string::replaceAll(generatedSsbo, "$shutdown$", ssboShutdown);
+
+		// Replace UniformBuffer include with ShaderStorageBuffer include for SSBOs
+		generatedSsbo = core::string::replaceAll(generatedSsbo, "#include \"video/UniformBuffer.h\"", "#include \"video/ShaderStorageBuffer.h\"");
+
+		const core::String targetFileSsbo = sourceDirectory + bufferClassName + ".h";
+
+		includes += "#include \"";
+		includes += bufferClassName;
+		includes += ".h\"\n";
+
+		Log::debug("Generate ssbo bindings for %s at %s", bufferStructName.c_str(), targetFileSsbo.c_str());
+		if (!io::Filesystem::sysWrite(targetFileSsbo, generatedSsbo)) {
+			Log::error("Failed to write %s", targetFileSsbo.c_str());
+			return false;
+		}
+
+		// Also add binding getter to the shader class
 		prototypes += "\n\t/**\n";
-		prototypes += "\t * @brief Get the binding index of the buffer object ";
+		prototypes += "\t * @brief Get the binding index of the shader storage buffer ";
 		prototypes += buf.name;
 		prototypes += "\n";
 		prototypes += "\t */\n";
 		prototypes += "\tinline int getBinding";
-		prototypes += bufName;
+		prototypes += bufferStructName;
 		prototypes += "() {\n";
 		prototypes += "\t\treturn ";
 		prototypes += core::string::toString(buf.layout.binding);

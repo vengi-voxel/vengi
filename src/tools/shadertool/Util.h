@@ -39,6 +39,9 @@ extern Variable::Type getType(const core::String& type, int line);
 extern size_t std140Size(const Variable& v);
 extern int std140Align(const Variable& v);
 
+extern size_t std430Size(const Variable& v);
+extern int std430Align(const Variable& v);
+
 extern const Types& resolveTypes(Variable::Type type);
 
 }

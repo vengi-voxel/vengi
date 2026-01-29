@@ -1746,6 +1746,9 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	core_assert_msg(type != BufferType::UniformBuffer || limiti(Limit::MaxUniformBufferSize) <= 0 ||
 						(int)size <= limiti(Limit::MaxUniformBufferSize),
 					"Given size %i exceeds the max allowed of %i", (int)size, limiti(Limit::MaxUniformBufferSize));
+	core_assert_msg(type != BufferType::ShaderStorageBuffer || limiti(Limit::MaxShaderStorageBufferSize) <= 0 ||
+						(int)size <= limiti(Limit::MaxShaderStorageBufferSize),
+					"Given size %i exceeds the max allowed of %i", (int)size, limiti(Limit::MaxShaderStorageBufferSize));
 	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[core::enumVal(mode)];
 	if (useFeature(Feature::DirectStateAccess)) {

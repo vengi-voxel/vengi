@@ -39,6 +39,87 @@ You can export constants from the GLSL shader code to the generated C++ code by 
 
 Use `$constant varname 42` to generate a method that returns 42 with a name `getVarname`
 
+## Uniform Buffer Objects (UBO)
+
+Uniform buffer objects allow you to share uniform data between multiple shaders efficiently. The shadertool generates C++ structs that match the GLSL memory layout.
+
+```glsl
+layout(std140) uniform MaterialBlock {
+    vec4 diffuseColor;
+    vec4 specularColor;
+    float shininess;
+};
+```
+
+This generates a `MaterialBlockData` struct with proper std140 alignment and padding. The generated code includes:
+- A struct with correct padding for the memory layout
+- Methods to create and update the uniform buffer
+- Static assertions to verify struct size at compile time
+
+## Shader Storage Buffer Objects (SSBO)
+
+SSBOs allow read/write access to buffer data in shaders. They are parsed using the `buffer` keyword and support the `std430` layout which has tighter packing rules than `std140`.
+
+```glsl
+layout(std430, binding = 0) buffer ParticleBuffer {
+    vec4 positions[64];
+    vec4 velocities[64];
+    float masses[];  // Dynamic array (must be last member)
+};
+```
+
+This generates:
+- A `ParticleBufferData` struct with std430 alignment
+- A separate header file `YourShaderSSBO.h` with the buffer wrapper class using `video::ShaderStorageBuffer`
+- Methods for creating, updating, and binding the buffer
+- The binding index as a static constexpr
+
+### Generated SSBO Class
+
+The generated SSBO wrapper class provides:
+
+```cpp
+// Create the buffer with initial data
+ssbo.create(&data, count);
+
+// Update the buffer
+ssbo.update(&data, count);
+
+// Bind to the shader binding point
+ssbo.bind();
+
+// Access the underlying video::ShaderStorageBuffer
+ssbo.getParticleBufferBuffer();
+```
+
+### std430 vs std140 Layout
+
+The key difference between std430 (SSBOs) and std140 (UBOs) is array padding:
+- **std140**: Arrays of scalars (float, int) are padded to vec4 boundaries (16 bytes)
+- **std430**: Arrays use natural alignment without vec4 padding
+
+```glsl
+// std430 example - tighter packing
+layout(std430, binding = 1) buffer DataBuffer {
+    mat4 transforms[16];
+    int count;
+    uint flags;
+};
+```
+
+### Dynamic Arrays
+
+SSBOs support unsized arrays as the last member:
+
+```glsl
+layout(std430, binding = 0) buffer DynamicBuffer {
+    int fixedData;
+    float dynamicArray[];  // Size determined at runtime
+};
+```
+
+The generated struct uses `[1]` as a placeholder, and you allocate the actual size when creating the buffer.
+
 ## Branching / Feature toggles
 
 Usually you don't have to use branching and uniforms for feature toggles. You can use cvars with the flag `CV_SHADER` set. If you are going to change one of these cvars, the shaders are recompiled with the value of the cvar given as preprocessor define.

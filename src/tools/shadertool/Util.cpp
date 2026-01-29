@@ -269,6 +269,31 @@ int std140Align(const Variable& v) {
 	return cType.align;
 }
 
+/**
+ * std430 layout rules (OpenGL 4.3+, Section 7.6.2.2):
+ * - Scalars: natural alignment (4 bytes for float/int/uint)
+ * - vec2: 2N alignment (8 bytes)
+ * - vec3, vec4: 4N alignment (16 bytes)
+ * - Arrays: element stride is the element size rounded to alignment (NOT always vec4 like std140)
+ * - Structs: alignment is the largest alignment of any member
+ *
+ * Key difference from std140: arrays of scalars/vec2 don't need vec4 padding between elements
+ */
+size_t std430Size(const Variable& v) {
+	const Types& cType = resolveTypes(v.type);
+	if (v.arraySize > 0) {
+		return (size_t)cType.size * v.arraySize;
+	}
+	return cType.size;
+}
+
+int std430Align(const Variable& v) {
+	const Types& cType = resolveTypes(v.type);
+	// std430 has the same alignment rules as std140 for individual types
+	// The difference is mainly in array stride calculation
+	return cType.align;
+}
+
 const Types& resolveTypes(Variable::Type type) {
 	int max = core::enumVal(Variable::MAX);
 	for (int i = 0; i < max; ++i) {
