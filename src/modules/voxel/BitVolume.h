@@ -48,6 +48,10 @@ public:
 	BitVolume(BitVolume&& other) noexcept : _data(core::move(other._data)), _region(other._region) {
 	}
 
+	inline bool empty() const {
+		return !isValid() || !_data.hasBitsSet();
+	}
+
 	inline bool isValid() const {
 		return _region.isValid();
 	}

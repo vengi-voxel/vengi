@@ -126,6 +126,18 @@ void DynamicBitSet::set(size_t idx, bool value) {
 	}
 }
 
+
+bool DynamicBitSet::hasBitsSet() const {
+	// TODO: PERF: use core::memchr_not
+	const size_t elements = requiredElements(_size);
+	for (size_t i = 0; i < elements; ++i) {
+		if (_buffer[i] != 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void DynamicBitSet::invert() {
 	const size_t elements = requiredElements(_size);
 	for (size_t i = 0; i < elements; ++i) {

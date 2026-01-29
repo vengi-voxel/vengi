@@ -46,6 +46,7 @@ public:
 
 	void fill();
 	void invert();
+	bool hasBitsSet() const;
 
 	void clear();
 
