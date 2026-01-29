@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "BindingsDialog.h"
 #include "FileDialog.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/RingBuffer.h"
@@ -60,9 +61,9 @@ protected:
 	 */
 	core::DynamicArray<core::String> _uiKeyMaps;
 	/**
-	 * string to filter the bindings in the binding dialog
+	 * The bindings dialog instance
 	 */
-	core::String _bindingsFilter;
+	BindingsDialog _bindingsDialog;
 	/**
 	 * string to filter the cvars in the cvar dialog
 	 */

@@ -15,7 +15,6 @@
 #include "core/collection/DynamicArray.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
-#include "dearimgui/imgui_keyboard.h"
 #include "io/File.h"
 #ifdef IMGUI_ENABLE_FREETYPE
 #include "dearimgui/misc/freetype/imgui_freetype.h"
@@ -54,6 +53,7 @@
 
 #include <glm/mat4x4.hpp>
 #include <SDL_events.h>
+#include <SDL_keyboard.h>
 #include <SDL_version.h>
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 #define SDL_MOUSEMOTION SDL_EVENT_MOUSE_MOTION
@@ -497,100 +497,8 @@ void IMGUIApp::beforeUI() {
 }
 
 void IMGUIApp::renderBindingsDialog() {
-	if (ImGui::Begin(_("Bindings"), &_showBindingsDialog, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_Modal)) {
-		const util::BindMap &bindings = _keybindingHandler.bindings();
-		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
-										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize(0.0f, ImGui::Height(25.0f));
-		if (ImGui::BeginTable("##bindingslist", 4, TableFlags, outerSize)) {
-			ImGui::TableSetupColumn(_("Keys"), ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(_("Command"), ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(_("Context"), ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableHeadersRow();
-
-			int n = 0;
-			for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-				const util::CommandModifierPair &pair = i->second;
-				const core::String &command = pair.command;
-				const core::String &keyBinding =
-					util::KeyBindingHandler::toString(i->first, i->second.modifier, pair.count);
-				const command::Command *cmd = nullptr;
-				if (command.contains(" ")) {
-					cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
-				} else {
-					cmd = command::Command::getCommand(command);
-				}
-				if (_bindingsFilter.size() >= 2u) {
-					const bool matchCmd = core::string::icontains(command, _bindingsFilter);
-					const bool matchKey = core::string::icontains(keyBinding, _bindingsFilter);
-					const bool matchHelp = cmd ? core::string::icontains(cmd->help(), _bindingsFilter) : true;
-					if (!matchCmd && !matchKey && !matchHelp) {
-						continue;
-					}
-				}
-				ImGui::TableNextColumn();
-				// TODO: change binding and show current selected bindings in the keyboard layout by using the Highlight() function (and clearing previous highlights if the selected has changed)
-				const core::String &deleteButton = core::String::format(ICON_LC_TRASH "##del-key-%i", n++);
-				if (ImGui::Button(deleteButton.c_str())) {
-					command::executeCommands(core::String::format("unbind \"%s\"", keyBinding.c_str()),
-											 &_lastExecutedCommand);
-				}
-				ImGui::SameLine();
-				ImGui::TextUnformatted(keyBinding.c_str());
-				ImGui::TableNextColumn();
-				ImGui::TextUnformatted(command.c_str());
-				ImGui::TableNextColumn();
-				ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
-				ImGui::TableNextColumn();
-				if (!cmd) {
-					ImGui::TextColored(color::Red(), _("Failed to get command for %s"), command.c_str());
-				} else {
-					ImGui::TextUnformatted(cmd->help().c_str());
-				}
-			}
-			ImGui::EndTable();
-		}
-		if (!_uiKeyMaps.empty()) {
-			keyMapOption();
-		} else {
-			if (ImGui::Button(_("Reset to default"))) {
-				_resetKeybindings = true;
-			}
-		}
-		ImGui::SameLine();
-		ImGui::InputText(_("Filter"), &_bindingsFilter);
-
-		if (ImGui::IconButton(ICON_LC_TEXT_SELECT, _("Edit bindings"))) {
-			openKeybindings();
-		}
-
-		ImKeyboard::ImGuiKeyboardLayout layout = ImKeyboard::ImGuiKeyboardLayout_Qwerty;
-		switch (_keyboardLayout) {
-		case video::KeyboardLayout::QWERTY:
-			layout = ImKeyboard::ImGuiKeyboardLayout_Qwerty;
-			break;
-		case video::KeyboardLayout::AZERTY:
-			layout = ImKeyboard::ImGuiKeyboardLayout_Azerty;
-			break;
-		case video::KeyboardLayout::QWERTZ:
-			layout = ImKeyboard::ImGuiKeyboardLayout_Qwertz;
-			break;
-		case video::KeyboardLayout::COLEMAK:
-			layout = ImKeyboard::ImGuiKeyboardLayout_Colemak;
-			break;
-		case video::KeyboardLayout::DVORAK:
-			layout = ImKeyboard::ImGuiKeyboardLayout_Dvorak;
-			break;
-		default:
-			break; // keep default
-		}
-		ImKeyboard::Keyboard(layout, ImKeyboard::ImGuiKeyboardFlags_ShowPressed |
-										 ImKeyboard::ImGuiKeyboardFlags_ShowBothLabels |
-										 ImKeyboard::ImGuiKeyboardFlags_ShowIcons);
-	}
-	ImGui::End();
+	_bindingsDialog.render(_showBindingsDialog, _keybindingHandler, _keyboardLayout,
+						   _uiKeyMaps, _uiKeyMap, _resetKeybindings, _lastExecutedCommand);
 }
 
 void IMGUIApp::renderFPSDialog() {

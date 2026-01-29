@@ -1,6 +1,7 @@
 set(LIB ui)
 
 set(SRCS
+	BindingsDialog.cpp BindingsDialog.h
 	FileDialog.cpp FileDialog.h
 	IconsLucide.h
 	IMGUIConsole.cpp IMGUIConsole.h
