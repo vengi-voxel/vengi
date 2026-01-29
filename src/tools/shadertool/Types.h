@@ -80,7 +80,8 @@ struct Variable {
 
 	inline bool isSampler() const {
 		return type == Variable::SAMPLER1D || type == Variable::SAMPLER2D || type == Variable::SAMPLER3D || type == Variable::SAMPLER2DMS
-		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP || type == Variable::USAMPLER3D;
+		 || type == Variable::SAMPLER2DSHADOW || type == Variable::SAMPLER1DSHADOW || type == Variable::SAMPLERCUBEMAP || type == Variable::USAMPLER3D
+		 || type == Variable::SAMPLER2DARRAY || type == Variable::SAMPLER2DARRAYSHADOW;
 	}
 
 	inline bool isImage() const {

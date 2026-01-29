@@ -158,49 +158,6 @@ const char* getPrimitiveTypeString(video::Primitive primitive) {
 
 core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	switch (type) {
-	case Variable::MAX:
-		return core::String::Empty;
-	case Variable::FLOAT:
-		if (amount > 1) {
-			return "1fv";
-		}
-		return "f";
-	case Variable::UNSIGNED_INT:
-		if (amount > 1) {
-			return "1uiv";
-		}
-		return "ui";
-	case Variable::INT:
-		if (amount > 1) {
-			return "1iv";
-		}
-		return "i";
-	case Variable::UVEC2:
-	case Variable::IVEC2:
-	case Variable::VEC2:
-		if (amount > 1) {
-			return "Vec2v";
-		}
-		return "Vec2";
-	case Variable::UVEC3:
-	case Variable::IVEC3:
-	case Variable::VEC3:
-		if (amount > 1) {
-			return "Vec3v";
-		}
-		return "Vec3";
-	case Variable::UVEC4:
-	case Variable::IVEC4:
-	case Variable::VEC4:
-		if (amount > 1) {
-			return "Vec4v";
-		}
-		return "Vec4";
-	case Variable::MAT4:
-		if (amount > 1) {
-			return "Matrixv";
-		}
-		return "Matrix";
 	case Variable::IMAGE2D:
 	case Variable::SAMPLER1D:
 	case Variable::SAMPLER2D:
@@ -211,6 +168,7 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	case Variable::SAMPLER2DARRAY:
 	case Variable::SAMPLER2DARRAYSHADOW:
 	case Variable::USAMPLER3D:
+	case Variable::SAMPLERCUBEMAP:
 		if (amount > 1) {
 			// https://www.opengl.org/wiki/Data_Type_%28GLSL%29#Opaque_arrays
 			if (video::Shader::glslVersion < video::GLSLVersion::V400) {
@@ -220,11 +178,8 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 			return "1iv";
 		}
 		return core::String::Empty;
-	case Variable::SAMPLERCUBEMAP:
-		if (amount > 1) {
-			return "1iv";
-		}
-		return core::String::Empty;
+	default:
+		break;
 	}
 	return core::String::Empty;
 }
