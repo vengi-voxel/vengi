@@ -421,7 +421,7 @@ inline glm::ivec3 SparseVolume::chunkPosition(const glm::ivec3 &pos) {
 }
 
 inline glm::ivec3 SparseVolume::chunkBase(const glm::ivec3 &chunkPos) {
-	return glm::ivec3(chunkPos.x << 8, chunkPos.y << 8, chunkPos.z << 8);
+	return chunkPos * ChunkSide;
 }
 
 inline glm::u8vec3 SparseVolume::localPosition(const glm::ivec3 &pos, const glm::ivec3 &chunkPos) {
