@@ -1522,6 +1522,10 @@ void deleteTextures(uint8_t amount, Id *ids) {
 				// the texture might still be bound...
 				rendererState().textureHandle[j] = InvalidId;
 			}
+			if (rendererState().pendingTextureHandle[j] == ids[i]) {
+				// the texture might still be pending to be bound...
+				rendererState().pendingTextureHandle[j] = InvalidId;
+			}
 		}
 		ids[i] = InvalidId;
 	}
