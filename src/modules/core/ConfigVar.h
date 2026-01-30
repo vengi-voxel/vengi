@@ -64,7 +64,8 @@ constexpr const char *CoreLanguage = "core_language";
 
 // The size of the mesh chunk
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
-constexpr const char *VoxelMeshMode = "voxel_meshmode";
+constexpr const char *VoxRenderMeshMode = "vox_meshmode";
+constexpr const char *VoxformatMeshMode = "voxformat_meshmode";
 
 constexpr const char *AppPipe = "app_pipe";
 constexpr const char *AppHomePath = "app_homepath";

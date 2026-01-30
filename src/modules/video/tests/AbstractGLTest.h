@@ -51,7 +51,7 @@ protected:
 		core::Var::get(cfg::ToneMapping, "0", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic), core::CV_SHADER);
+		core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic), core::CV_SHADER);
 		core::Singleton<ShaderManager>::getInstance().update();
 	}
 

@@ -90,7 +90,7 @@ void AbstractFormatTest::testSaveMesh(const core::String &inputFile, const core:
 
 	for (int i = 0; i < (int)voxel::SurfaceExtractionType::Max; ++i) {
 		SCOPED_TRACE(core::String::format("Mesh extraction type: %i", i));
-		util::ScopedVarChange scoped(cfg::VoxelMeshMode, core::string::toString(i));
+		util::ScopedVarChange scoped(cfg::VoxformatMeshMode, core::string::toString(i));
 		const core::String modeFilename = core::String::format("%i_%s", i, filename.c_str());
 		ASSERT_TRUE(format->save(sceneGraph, modeFilename, archive, testSaveCtx))
 			<< "Could not save " << modeFilename.c_str();

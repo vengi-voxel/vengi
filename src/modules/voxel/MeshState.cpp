@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "app/Async.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/concurrent/Concurrency.h"
 #include "palette/NormalPalette.h"
 #include "voxel/MaterialColor.h"
@@ -18,7 +19,7 @@ MeshState::MeshState() {
 }
 
 bool MeshState::init() {
-	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
+	_meshMode = core::Var::getSafe(cfg::VoxRenderMeshMode);
 	_meshMode->markClean();
 	return true;
 }
@@ -26,6 +27,12 @@ bool MeshState::init() {
 void MeshState::construct() {
 	// this must be 62 for the binary cubic mesher
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "62", core::CV_READONLY | core::CV_NOPERSIST);
+	// Editor/render mesh mode - excludes GreedyTexture as it's not supported by the renderer
+	core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary),
+				   core::CV_SHADER,
+				   "0 = cubes, 1 = marching cubes, 2 = binary mesher",
+				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
+											  (int)voxel::SurfaceExtractionType::Binary>);
 }
 
 glm::vec3 MeshState::VolumeData::centerPos(bool applyModel) const {

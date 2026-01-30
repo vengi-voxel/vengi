@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
+#include "core/collection/Array.h"
 #include "imgui.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
@@ -16,7 +17,6 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/SurfaceExtractor.h"
-#include "voxelui/FileDialogOptions.h"
 
 namespace voxedit {
 
@@ -29,7 +29,7 @@ void MenuBar::viewportOptions() {
 	ImGui::IconCheckboxVar(ICON_LC_FRAME, _("Plane"), cfg::VoxEditShowPlane);
 	ImGui::IconSliderVarInt(ICON_LC_GRIP, _("Plane size"), cfg::VoxEditPlaneSize, 0, 1000);
 
-	ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
+	ImGui::BeginDisabled(core::Var::get(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
 	if (viewModeNormalPalette(core::Var::getSafe(cfg::VoxEditViewMode)->intVal())) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
@@ -130,7 +130,12 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				viewModeOption();
 				_app->languageOption();
 
-				voxelui::meshModeOption();
+				// Editor mesh mode - excludes GreedyTexture as it's not supported by the renderer
+				{
+					static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Binary + 1> meshModes = {
+						_("Cubes"), _("Marching cubes"), _("Binary")};
+					ImGui::ComboVar(_("Mesh mode"), cfg::VoxRenderMeshMode, meshModes);
+				}
 				ImGui::InputVarInt(_("Model animation speed"), cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt(_("Autosave delay in seconds"), cfg::VoxEditAutoSaveSeconds);
 				ImGui::InputVarInt(_("Viewports"), cfg::VoxEditViewports, 1, 1);

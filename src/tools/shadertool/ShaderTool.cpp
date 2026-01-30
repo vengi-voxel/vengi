@@ -46,7 +46,7 @@ app::AppState ShaderTool::onConstruct() {
 	core::Var::get(cfg::ToneMapping, "1", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::MarchingCubes),
+	core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::MarchingCubes),
 				   core::CV_SHADER);
 	return Super::onConstruct();
 }

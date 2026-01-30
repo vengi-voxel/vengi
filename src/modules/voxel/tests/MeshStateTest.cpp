@@ -19,7 +19,7 @@ protected:
 	void SetUp() override {
 		Super::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
 	}
 };
 

@@ -28,7 +28,7 @@ protected:
 		core::Var::get(cfg::VoxEditGridsize, "1");
 		core::Var::get(cfg::VoxEditPlaneSize, "0");
 		core::Var::get(cfg::VoxEditShowPlane, "false");
-		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
 		core::Var::get(cfg::VoxEditShowaabb, "");
 		core::Var::get(cfg::VoxEditShowBones, "");
 		core::Var::get(cfg::VoxEditGrayInactive, "");

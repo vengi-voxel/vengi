@@ -417,8 +417,7 @@ void meshModeOption() {
 	static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
 		_("Cubes"), _("Marching cubes"), _("Binary"), _("Greedy texture")};
 	static_assert(4 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
-	// TODO: VOXELFORMAT: this shouldn't have an influence on the voxedit meshing
-	ImGui::ComboVar(_("Mesh mode"), cfg::VoxelMeshMode, meshModes);
+	ImGui::ComboVar(_("Mesh mode"), cfg::VoxformatMeshMode, meshModes);
 }
 
 } // namespace voxelui

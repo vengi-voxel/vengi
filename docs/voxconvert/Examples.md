@@ -102,7 +102,7 @@ If you want to export flat normals for your `gltf/glb` file, you can use disable
 
 By setting `voxformat_reusevertices` to `true` you get surface normals for your mesh.
 
-> **NOTE:** This only works for cubic voxels - if you use another meshing algorithm (see [voxel_meshmode](../Configuration.md) cvar), this setting most likely doesn't have the same effect.
+> **NOTE:** This only works for cubic voxels - if you use another meshing algorithm (see [voxformat_meshmode](../Configuration.md) cvar), this setting most likely doesn't have the same effect.
 
 ## Export all nodes as single files
 

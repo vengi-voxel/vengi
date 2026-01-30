@@ -25,10 +25,12 @@ General:
    - Added support for Axiom Blueprints Minecraft Schematics (`bp`)
    - Optimized volume cropping
    - Implement scaling of volumes by fractional values and handle it also in baking transform matrices
+   - Split `vox_meshmode` to `voxformat_meshmode`
 
 VoxConvert:
 
    - Renamed source and target to input and output in the ui to match the command line parameters
+   - Use `voxformat_meshmode` if you previously used `vox_meshmode`
 
 VoxEdit:
 

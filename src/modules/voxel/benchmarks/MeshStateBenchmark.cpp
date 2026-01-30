@@ -25,7 +25,7 @@ public:
 		if (!app::AbstractBenchmark::onInitApp()) {
 			return false;
 		}
-		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
 		meshState.construct();
 		if (!meshState.init()) {
 			Log::error("Failed to initialize mesh state");

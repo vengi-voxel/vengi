@@ -792,7 +792,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithColor)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const voxel::SurfaceExtractionType type =
-		(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+		(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxformatMeshMode)->intVal();
 
 	ChunkMeshes meshes;
 	meshes.resize(sceneGraph.nodes().size());

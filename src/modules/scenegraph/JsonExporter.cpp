@@ -207,7 +207,7 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 		const voxel::SurfaceExtractionType meshType =
-			(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+			(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxformatMeshMode)->intVal();
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx =
 			voxel::createContext(meshType, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0}, mergeQuads,
