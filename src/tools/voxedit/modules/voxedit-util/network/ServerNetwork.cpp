@@ -192,10 +192,18 @@ bool ServerNetwork::init() {
 }
 
 void ServerNetwork::disconnect(network::ClientId clientId) {
+	if (clientId >= _clients.size()) {
+		return;
+	}
 	RemoteClient &client = _clients[clientId];
+	if (client.socket == network::InvalidSocketId) {
+		return;
+	}
 	const network::SocketId clientSocket = client.socket;
-	FD_CLR(clientSocket, &_impl->readFDSet);
-	FD_CLR(clientSocket, &_impl->writeFDSet);
+	if (clientSocket < FD_SETSIZE) {
+		FD_CLR(clientSocket, &_impl->readFDSet);
+		FD_CLR(clientSocket, &_impl->writeFDSet);
+	}
 	closesocket(clientSocket);
 	client.socket = network::InvalidSocketId;
 	Log::debug("RemoteClient %d disconnected", clientId);
@@ -203,6 +211,10 @@ void ServerNetwork::disconnect(network::ClientId clientId) {
 		listener->onDisconnect(&client);
 	}
 	_clients.erase(clientId);
+}
+
+void ServerNetwork::markForDisconnect(network::ClientId clientId) {
+	_pendingDisconnects.push_back(clientId);
 }
 
 bool ServerNetwork::updateClient(RemoteClient &client) {
@@ -246,6 +258,13 @@ bool ServerNetwork::updateClient(RemoteClient &client) {
 
 void ServerNetwork::update(double nowSeconds) {
 	updateDelta(nowSeconds);
+
+	// Process pending disconnects from handlers
+	for (network::ClientId id : _pendingDisconnects) {
+		disconnect(id);
+	}
+	_pendingDisconnects.clear();
+
 	if (_impl->socketFD == network::InvalidSocketId) {
 		return;
 	}
@@ -281,9 +300,14 @@ void ServerNetwork::update(double nowSeconds) {
 		Log::warn("select() failed: %s", network::getNetworkErrorString());
 		return;
 	}
-	if (_impl->socketFD != network::InvalidSocketId && FD_ISSET(_impl->socketFD, &readFDsOut)) {
+	if (_impl->socketFD != network::InvalidSocketId && _impl->socketFD < FD_SETSIZE && FD_ISSET(_impl->socketFD, &readFDsOut)) {
 		const network::SocketId clientSocket = accept(_impl->socketFD, nullptr, nullptr);
 		if (clientSocket != network::InvalidSocketId) {
+			if (clientSocket >= FD_SETSIZE) {
+				Log::error("Client socket %d exceeds FD_SETSIZE - rejecting connection", (int)clientSocket);
+				closesocket(clientSocket);
+				return;
+			}
 			if (_clients.size() >= (size_t)_maxClients->intVal()) {
 				Log::info("Maximum number of clients reached - rejecting connection");
 				closesocket(clientSocket);
@@ -306,7 +330,7 @@ void ServerNetwork::update(double nowSeconds) {
 	for (auto i = _clients.begin(); i != _clients.end(); ++i, ++clientId) {
 		RemoteClient &client = *i;
 		const network::SocketId clientSocket = client.socket;
-		if (client.socket == network::InvalidSocketId) {
+		if (client.socket == network::InvalidSocketId || clientSocket >= FD_SETSIZE) {
 			remove[clientId] = true;
 			continue;
 		}

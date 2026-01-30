@@ -66,6 +66,7 @@ protected:
 	core::VarPtr _maxClients;
 
 	RemoteClients _clients;
+	core::DynamicArray<network::ClientId> _pendingDisconnects;
 
 	using Listeners = core::DynamicArray<NetworkListener *>;
 	Listeners _listeners;
@@ -85,6 +86,7 @@ public:
 	void shutdown() override;
 	void update(double nowSeconds);
 	void disconnect(network::ClientId clientId);
+	void markForDisconnect(network::ClientId clientId);
 
 	const RemoteClients &clients() const;
 

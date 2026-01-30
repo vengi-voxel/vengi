@@ -20,6 +20,11 @@ private:
 
 public:
 	SceneStateMessage(scenegraph::SceneGraph &sceneGraph) : ProtocolMessage(PROTO_SCENE_STATE) {
+		if (!sceneGraph.hasNode(0)) {
+			Log::warn("Cannot serialize scene state - no root node");
+			writeSize();
+			return;
+		}
 		// we don't want to modify the voxels
 		util::ScopedVarChange var1(cfg::VoxformatEmptyPaletteIndex, "-1");
 

@@ -33,7 +33,7 @@ bool Server::shouldSendClientState(bool localServer) const {
 	if (localServer) {
 		return false;
 	}
-	if (_sceneGraph == nullptr) {
+	if (_sceneGraph == nullptr || !_sceneGraph->hasNode(0)) {
 		return false;
 	}
 	return !_sceneGraph->empty();
@@ -85,6 +85,10 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 
 void Server::disconnect(const network::ClientId &clientId) {
 	_network.disconnect(clientId);
+}
+
+void Server::markForDisconnect(const network::ClientId &clientId) {
+	_network.markForDisconnect(clientId);
 }
 
 void Server::onConnect(RemoteClient *client) {
