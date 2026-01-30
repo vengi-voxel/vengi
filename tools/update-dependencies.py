@@ -435,6 +435,16 @@ def update_miniz():
         ]
     )
 
+def update_tinyxml2():
+    update_target(
+        "tinyxml2",
+        "https://github.com/leethomason/tinyxml2.git",
+        [
+            (f"tinyxml2.h", "contrib/libs/tinyxml2/tinyxml2.h"),
+            (f"tinyxml2.cpp", "contrib/libs/tinyxml2/tinyxml2.cpp")
+        ]
+    )
+
 # Main function to run all updates
 def main():
     parser = argparse.ArgumentParser(description="Update dependencies")
@@ -464,6 +474,7 @@ def main():
         update_tinyobjloader,
         update_simplecpp,
         update_simplexnoise,
+        update_tinyxml2,
         update_flextgl,
         update_libvxl,
         update_meshoptimizer,
