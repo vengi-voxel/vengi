@@ -555,13 +555,16 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 					/**
 					 * Check merge compatibility:
 					 * 1. Voxel types must match (same color/material)
-					 * 2. If AO is enabled, AO environments must match
+					 * 2. Flags must match (e.g., outline flag)
+					 * 3. If AO is enabled, AO environments must match
 					 *
 					 * If compatible, increment the forward merge counter.
 					 * Otherwise, remove from the merging set.
 					 */
-					if (voxels[get_axis_i(axis, right, forward, bit_pos)].isSame(
-							voxels[get_axis_i(axis, right, forward + 1, bit_pos)]) &&
+					const voxel::Voxel &voxelCurrent = voxels[get_axis_i(axis, right, forward, bit_pos)];
+					const voxel::Voxel &voxelForward = voxels[get_axis_i(axis, right, forward + 1, bit_pos)];
+					if (voxelCurrent.isSame(voxelForward) &&
+						voxelCurrent.getFlags() == voxelForward.getFlags() &&
 						(!ambientOcclusion ||
 						 compare_ao<MeshType>(voxels, axis, forward, right, bit_pos + air_dir, 1, 0))) {
 						merged_forward[(right * CS_P) + bit_pos]++;
@@ -600,11 +603,14 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 					 * 1. The right neighbor has a visible face at this position
 					 * 2. Forward merge counts match (same quad shape)
 					 * 3. Voxel types match
-					 * 4. AO environments match (if enabled)
+					 * 4. Flags must match (e.g., outline flag)
+					 * 5. AO environments match (if enabled)
 					 */
+					const voxel::Voxel &voxelRight = voxels[get_axis_i(axis, right + 1, forward, bit_pos)];
 					if ((bits_merging_right & (1ULL << bit_pos)) != 0 &&
 						(merged_forward[(right * CS_P) + bit_pos] == merged_forward[(right + 1) * CS_P + bit_pos]) &&
-						(type.isSame(voxels[get_axis_i(axis, right + 1, forward, bit_pos)])) &&
+						(type.isSame(voxelRight)) &&
+						(type.getFlags() == voxelRight.getFlags()) &&
 						(!ambientOcclusion ||
 						 compare_ao<MeshType>(voxels, axis, forward, right, bit_pos + air_dir, 0, 1))) {
 						bits_walking_right |= 1ULL << bit_pos;
