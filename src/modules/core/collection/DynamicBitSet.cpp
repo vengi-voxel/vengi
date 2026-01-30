@@ -72,6 +72,7 @@ void DynamicBitSet::resize(size_t newSize) {
 		for (size_t i = toCopy; i < newElements; ++i) {
 			newBuffer[i] = Type(0);
 		}
+		core_free(_buffer);
 		_buffer = newBuffer;
 		_size = newSize;
 		return;
