@@ -41,6 +41,8 @@ namespace voxelformat {
  * @li https://www.ogc.org/standards/citygml
  * @li https://www.ogc.org/standards/gml
  * @li https://www.citygmlwiki.org/index.php?title=KIT_Sample_files_Energy_ADE
+ * @li https://filipbiljecki.com/code/Random3Dcity
+ * @li https://github.com/tudelft3d/Random3Dcity
  *
  * @ingroup Formats
  */
