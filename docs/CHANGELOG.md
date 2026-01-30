@@ -23,6 +23,8 @@ General:
    - Added keyboard layout detection
    - Improved mime-type handling
    - Added support for Axiom Blueprints Minecraft Schematics (`bp`)
+   - Optimized volume cropping
+   - Implement scaling of volumes by fractional values and handle it also in baking transform matrices
 
 VoxConvert:
 
@@ -50,6 +52,8 @@ VoxEdit:
    - Added transform baking
    - Added offline help markdown to a new panel
    - Let the default normal palette also depend on the view mode (the game type that is selected)
+   - Refactored the selection handling
+   - Allow to re-configure key bindings in the options
 
 Thumbnailer:
 
