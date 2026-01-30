@@ -5,7 +5,6 @@
 #include "app/benchmark/AbstractBenchmark.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
@@ -36,8 +35,7 @@ BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Place)(benchmark::State &stat
 	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	voxedit::SelectionManagerPtr selectionMgr = core::make_shared<voxedit::SelectionManager>();
-	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Place, selectionMgr);
+	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Place);
 	for (auto _ : state) {
 		wrapper.fill(voxel::Voxel(voxel::VoxelType::Air, 0));
 		voxelgenerator::shape::createCubeNoCenter(wrapper, mins, dim, voxel);
@@ -49,8 +47,7 @@ BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Override)(benchmark::State &s
 	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	voxedit::SelectionManagerPtr selectionMgr = core::make_shared<voxedit::SelectionManager>();
-	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Override, selectionMgr);
+	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
 	for (auto _ : state) {
 		wrapper.fill(voxel::Voxel(voxel::VoxelType::Air, 0));
 		voxelgenerator::shape::createCubeNoCenter(wrapper, mins, dim, voxel);
@@ -62,8 +59,7 @@ BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Erase)(benchmark::State &stat
 	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel;
 
-	voxedit::SelectionManagerPtr selectionMgr = core::make_shared<voxedit::SelectionManager>();
-	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Erase, selectionMgr);
+	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Erase);
 	for (auto _ : state) {
 		wrapper.fill(voxel::Voxel(voxel::VoxelType::Generic, 1));
 		voxelgenerator::shape::createCubeNoCenter(wrapper, mins, dim, voxel);

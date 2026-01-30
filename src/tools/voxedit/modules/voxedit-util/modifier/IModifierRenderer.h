@@ -8,7 +8,6 @@
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
 #include "math/Axis.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
@@ -46,9 +45,6 @@ struct ModifierRendererContext {
 	math::Axis mirrorAxis = math::Axis::None;
 	glm::ivec3 mirrorPos{0};
 	voxel::Region activeRegion;
-
-	// Selections
-	scenegraph::Selections selections;
 
 	// Brush preview
 	voxel::RawVolume *previewVolume = nullptr;

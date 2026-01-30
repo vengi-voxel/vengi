@@ -35,9 +35,8 @@ public:
 		const auto timeProvider = core::make_shared<core::TimeProvider>();
 		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
 		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
-		const auto selectionManager = core::make_shared<SelectionManager>();
 		_sceneMgr = core::make_shared<SceneManager>(timeProvider, _testApp->filesystem(), sceneRenderer,
-													modifierRenderer, selectionManager);
+													modifierRenderer);
 
 		_client = core::make_shared<Client>(_sceneMgr.get());
 		EXPECT_TRUE(_client->init());

@@ -8,7 +8,6 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
@@ -50,9 +49,8 @@ protected:
 
 TEST_F(ModifierTest, testModifierAction) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
-	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
-	Modifier modifier(&mgr, selectionManager);
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	voxel::RawVolume volume({-10, 10});
@@ -83,16 +81,15 @@ TEST_F(ModifierTest, testModifierSelection) {
 	node.setVolume(&volume, false);
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
-	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
-	Modifier modifier(&mgr, selectionManager);
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
-	// Verify selection was set correctly
+	// Verify selection was set correctly using FlagOutline
 	EXPECT_TRUE(node.hasSelection()) << "Node should have selection after select()";
-	EXPECT_TRUE(selectionManager->isSelected(node, glm::ivec3(0, 0, 0))) << "Center voxel should be selected";
-	EXPECT_FALSE(selectionManager->isSelected(node, glm::ivec3(2, 2, 2))) << "Voxel outside selection should not be selected";
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Center voxel should be selected";
+	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0) << "Voxel outside selection should not be selected";
 
 	// now modify voxels - but only on the current selection
 	// Use Override mode since we already have voxels in the selection area
@@ -105,9 +102,9 @@ TEST_F(ModifierTest, testModifierSelection) {
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
 	EXPECT_EQ(1, modifierExecuted);
-	EXPECT_TRUE(modifier.selectionMgr()->isSelected(node, glm::ivec3(-1)));
-	EXPECT_TRUE(modifier.selectionMgr()->isSelected(node, glm::ivec3(1)));
-	EXPECT_FALSE(modifier.selectionMgr()->isSelected(node, glm::ivec3(2)));
+	EXPECT_TRUE((volume.voxel(-1, -1, -1).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((volume.voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0);
 	EXPECT_FALSE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume.voxel(-2, -2, -2).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));
@@ -117,9 +114,8 @@ TEST_F(ModifierTest, testModifierSelection) {
 TEST_F(ModifierTest, testClamp) {
 	scenegraph::SceneGraph sceneGraph;
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(), core::make_shared<SelectionManager>());
-	SelectionManagerPtr selectionManager = core::make_shared<SelectionManager>();
-	Modifier modifier(&mgr, selectionManager);
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 
 	voxel::RawVolume volume(voxel::Region(0, 0, 0, 10, 20, 4));

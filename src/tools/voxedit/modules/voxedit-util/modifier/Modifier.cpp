@@ -25,8 +25,8 @@
 
 namespace voxedit {
 
-Modifier::Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionManager)
-	: _selectionManager(selectionManager), _stampBrush(sceneMgr), _selectBrush(_selectionManager), _actionExecuteButton(sceneMgr),
+Modifier::Modifier(SceneManager *sceneMgr)
+	: _stampBrush(sceneMgr), _actionExecuteButton(sceneMgr),
 	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
@@ -163,7 +163,6 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 }
 
 void Modifier::reset() {
-	_selectionManager->reset();
 	_brushContext.gridResolution = 1;
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
@@ -185,7 +184,7 @@ bool Modifier::beginBrush() {
 }
 
 void Modifier::executeAdditionalAction() {
-	if (isMode(ModifierType::Select) || isMode(ModifierType::ColorPicker)) {
+	if (isMode(ModifierType::ColorPicker)) {
 		return;
 	}
 	if (AABBBrush *brush = currentAABBBrush()) {
@@ -198,9 +197,6 @@ void Modifier::setReferencePosition(const glm::ivec3 &pos) {
 }
 
 bool Modifier::needsAdditionalAction() {
-	if (isMode(ModifierType::Select)) {
-		return false;
-	}
 	if (const AABBBrush *brush = currentAABBBrush()) {
 		return brush->needsAdditionalAction(_brushContext);
 	}
@@ -331,7 +327,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	if (!brush) {
 		return false;
 	}
-	ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager);
+	ModifierVolumeWrapper wrapper(node, modifierType);
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 	if (brush->brushClamping()) {

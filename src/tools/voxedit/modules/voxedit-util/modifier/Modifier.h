@@ -7,7 +7,6 @@
 #include "ModifierButton.h"
 #include "ModifierType.h"
 #include "SceneModifiedFlags.h"
-#include "SelectionManager.h"
 #include "brush/Brush.h"
 #include "brush/BrushType.h"
 #include "brush/LineBrush.h"
@@ -50,8 +49,6 @@ public:
 		std::function<void(const voxel::Region &region, ModifierType type, SceneModifiedFlags flags)>;
 
 protected:
-	SelectionManagerPtr _selectionManager;
-
 	// lock the modifier to not perform any modification
 	// this can be useful when the user is interaction with the ui elements
 	// and we don't want to modify the volume
@@ -82,7 +79,7 @@ protected:
 	ModifierButton _deleteExecuteButton;
 
 public:
-	Modifier(SceneManager *sceneMgr, const SelectionManagerPtr &selectionManager);
+	Modifier(SceneManager *sceneMgr);
 
 	/**
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account
@@ -106,8 +103,6 @@ public:
 	void setLockedAxis(math::Axis axis, bool unlock);
 
 	void shutdown() override;
-
-	const SelectionManagerPtr &selectionMgr() const;
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
@@ -297,9 +292,6 @@ inline bool Modifier::isMode(ModifierType modifierType) const {
 }
 
 inline bool Modifier::aborted() const {
-	if (isMode(ModifierType::Select)) {
-		return false;
-	}
 	if (const AABBBrush *brush = currentAABBBrush()) {
 		return brush->aborted(_brushContext);
 	}
@@ -328,10 +320,6 @@ inline const voxel::Voxel &Modifier::cursorVoxel() const {
 
 inline const glm::ivec3 &Modifier::cursorPosition() const {
 	return _brushContext.cursorPosition;
-}
-
-inline const SelectionManagerPtr &Modifier::selectionMgr() const {
-	return _selectionManager;
 }
 
 } // namespace voxedit

@@ -41,8 +41,7 @@ protected:
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
-		SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-		ModifierVolumeWrapper wrapper(node, ModifierType::Place, selectionMgr);
+		ModifierVolumeWrapper wrapper(node, ModifierType::Place);
 		brush.preExecute(brushContext, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, brushContext);
 		const voxel::Region dirtyRegion = wrapper.dirtyRegion();

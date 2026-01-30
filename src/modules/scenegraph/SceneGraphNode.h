@@ -29,12 +29,6 @@ class SceneGraph;
 class SceneGraphNode;
 #define DEFAULT_ANIMATION "Default"
 
-// TODO: SELECTION: this should be removed and voxel::FlatOutline should be used on the RawVolume of the SceneGraphNode instead - Selection would be a normal brush action then
-/**
- * @brief Selection regions for model nodes
- */
-using Selections = core::Buffer<voxel::Region>;
-
 enum class SceneGraphNodeType : uint8_t {
 	Root,
 	Model,
@@ -107,7 +101,6 @@ protected:
 	SceneGraphNodeProperties _properties;
 	mutable core::Optional<palette::Palette> _palette;
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
-	Selections _selections;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -245,11 +238,10 @@ public:
 	bool locked() const;
 	void setLocked(bool locked);
 
-	// selections
-	const Selections &selections() const;
-	Selections &selections();
 	bool hasSelection() const;
-	void clearSelections();
+	void clearSelection();
+	void select(const voxel::Region &region);
+	void unselect(const voxel::Region &region);
 
 	const SceneGraphNodeChildren &children() const;
 	const SceneGraphNodeProperties &properties() const;

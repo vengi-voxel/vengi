@@ -22,8 +22,7 @@ TEST_F(LineBrushTest, testExecute) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
-	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-	ModifierVolumeWrapper wrapper(node, brush.modifierType(), selectionMgr);
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	BrushContext brushContext;
 	brushContext.referencePos = volume.region().getLowerCorner();
 	brushContext.cursorPosition = volume.region().getUpperCorner();

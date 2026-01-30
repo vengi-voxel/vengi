@@ -53,7 +53,6 @@ bool ModifierRenderer::init() {
 
 void ModifierRenderer::shutdown() {
 	_mirrorMeshIndex = -1;
-	_selectionIndex = -1;
 	_voxelCursorMesh = -1;
 	_referencePointMesh = -1;
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
@@ -121,18 +120,6 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
-void ModifierRenderer::updateSelectionBuffers(const scenegraph::Selections& selections) {
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(color::Yellow());
-	for (const auto &selection : selections) {
-		if (!selection.isValid()) {
-			continue;
-		}
-		_shapeBuilder.aabb(selection.getLowerCorner(), selection.getUpperCorner() + glm::one<glm::ivec3>());
-	}
-	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
-}
-
 void ModifierRenderer::clear() {
 	_volumeRenderer.clear(_meshState);
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
@@ -142,7 +129,9 @@ void ModifierRenderer::clear() {
 }
 
 void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
-	delete _volumeRenderer.setVolume(_meshState, idx, volume, palette, nullptr, true);
+	// Note: We don't delete the returned old volume because ownership stays with the caller (ModifierFacade)
+	// The caller manages the volume lifetime via ScopedPtr
+	(void)_volumeRenderer.setVolume(_meshState, idx, volume, palette, nullptr, true);
 	if (volume != nullptr) {
 		_volumeRenderer.scheduleRegionExtraction(_meshState, idx, volume->region());
 	}
@@ -202,9 +191,6 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 		_lastActiveRegion = ctx.activeRegion;
 	}
 
-	// Update selection buffers
-	updateSelectionBuffers(ctx.selections);
-
 	// Update brush preview volumes
 	if (ctx.brushActive) {
 		if (ctx.useSimplePreview) {
@@ -242,8 +228,6 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
 		_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
 	}
-
-	_shapeRenderer.render(_selectionIndex, camera, modelMatrix);
 
 	// Render brush volume preview
 	video::polygonOffset(glm::vec3(-0.1f));

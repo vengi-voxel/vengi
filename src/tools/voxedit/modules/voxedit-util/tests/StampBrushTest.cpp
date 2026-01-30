@@ -21,8 +21,7 @@ protected:
 
 TEST_F(StampBrushTest, testExecute) {
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>(),
-					 core::make_shared<SelectionManager>());
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	StampBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
@@ -30,8 +29,7 @@ TEST_F(StampBrushTest, testExecute) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
-	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-	ModifierVolumeWrapper wrapper(node, brush.modifierType(), selectionMgr);
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	palette::Palette palette;
 	palette.nippon();
 

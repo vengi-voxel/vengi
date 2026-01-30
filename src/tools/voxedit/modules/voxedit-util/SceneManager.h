@@ -20,7 +20,6 @@
 #include "modifier/IModifierRenderer.h"
 #include "modifier/ModifierFacade.h"
 #include "modifier/SceneModifiedFlags.h"
-#include "modifier/SelectionManager.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "voxedit-util/network/Client.h"
@@ -77,7 +76,6 @@ protected:
 	voxelgenerator::LUAApi _luaApi;
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
-	SelectionManagerPtr _selectionManager;
 	Server _server;
 	Client _client;
 
@@ -229,8 +227,7 @@ protected:
 
 public:
 	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
-				 const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
-				 const SelectionManagerPtr &selectionManager);
+				 const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
 	~SceneManager();
 
 	void construct() override;
@@ -343,6 +340,12 @@ public:
 	bool paste(const glm::ivec3 &pos);
 	bool pasteAsNewNode();
 	bool cut();
+
+	void selectionInvert(int nodeId);
+	void selectionUnselect(int nodeId);
+	void selectionSelectAll(int nodeId);
+	bool isSelected(int nodeId, const glm::ivec3 &pos) const;
+	voxel::Region selectionCalculateRegion(int nodeId) const;
 
 	void lsystem(const voxelgenerator::lsystem::LSystemConfig &conf);
 	void lsystemAbort();

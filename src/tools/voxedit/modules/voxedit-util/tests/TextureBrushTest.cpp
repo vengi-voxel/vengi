@@ -49,8 +49,7 @@ TEST_F(TextureBrushTest, testExecuteFilled) {
 	voxel::RawVolumeWrapper rvWrapper(&volume);
 	voxelutil::fill(rvWrapper, brushContext.cursorVoxel);
 	scenegraph::SceneGraph sceneGraph;
-	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-	ModifierVolumeWrapper wrapper(node, brush.modifierType(), selectionMgr);
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
 	EXPECT_EQ(wrapper.voxel({20, 10, 10}).getColor(), 1);
 

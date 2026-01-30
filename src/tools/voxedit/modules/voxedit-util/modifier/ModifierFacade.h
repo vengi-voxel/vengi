@@ -28,8 +28,7 @@ private:
 	bool isSimplePreview(const Brush *brush, const voxel::Region &region) const;
 
 public:
-	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer,
-				   const SelectionManagerPtr &selectionManager);
+	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
 	bool init() override;
 	void shutdown() override;
 	void render(const video::Camera &camera, palette::Palette &activePalette,

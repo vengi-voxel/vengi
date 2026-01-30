@@ -1,7 +1,6 @@
 #include "VoxEdit.h"
 #include "voxedit-util/SceneRenderer.h"
 #include "voxedit-util/modifier/ModifierRenderer.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 
 class VoxEditTest : public VoxEdit {
 private:
@@ -23,9 +22,8 @@ int main(int argc, char *argv[]) {
 	const voxedit::SceneRendererPtr &sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
 	const voxedit::ModifierRendererPtr &modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
 	const video::TexturePoolPtr &texturePool = core::make_shared<video::TexturePool>();
-	const voxedit::SelectionManagerPtr &selectionMgr = core::make_shared<voxedit::SelectionManager>();
 	const voxedit::SceneManagerPtr &sceneMgr = core::make_shared<voxedit::SceneManager>(
-		timeProvider, filesystem, sceneRenderer, modifierRenderer, selectionMgr);
+		timeProvider, filesystem, sceneRenderer, modifierRenderer);
 	const voxelcollection::CollectionManagerPtr &collectionMgr =
 		core::make_shared<voxelcollection::CollectionManager>(filesystem, texturePool);
 	VoxEditTest app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer);

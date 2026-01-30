@@ -6,8 +6,8 @@
 
 #include "ModifierType.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/Voxel.h"
 
 namespace voxedit {
 
@@ -15,13 +15,12 @@ namespace voxedit {
  * @brief A wrapper for a @c voxel::RawVolume that performs a sanity check for
  * the @c setVoxel() call and uses the @c ModifierType value to perform the
  * desired action for the @c setVoxel() call.
- * The sanity check also includes the @c Selections that are used to limit the
+ * The sanity check also includes the voxel's FlagOutline that is used to limit the
  * area of the @c voxel::RawVolume that is affected by the @c setVoxel() call.
  */
 class ModifierVolumeWrapper : public voxel::RawVolumeWrapper {
 private:
 	using Super = voxel::RawVolumeWrapper;
-	SelectionManagerPtr _selectionMgr;
 	const ModifierType _modifierType;
 	scenegraph::SceneGraphNode &_node;
 
@@ -29,13 +28,16 @@ private:
 	bool _override;
 	bool _paint;
 	bool _normalPaint;
+	bool _hasSelection;
 
 	// if we have a selection, we only handle voxels inside the selection
 	bool skip(const glm::aligned_ivec4 &pos) const {
-		if (!_node.hasSelection()) {
+		if (!_hasSelection) {
 			return false;
 		}
-		return !_selectionMgr->isSelected(_node, pos);
+		// Check if the voxel has the FlagOutline (selected) flag set
+		const voxel::Voxel &voxel = _volume->voxel(pos.x, pos.y, pos.z);
+		return (voxel.getFlags() & voxel::FlagOutline) == 0;
 	}
 
 public:
@@ -64,6 +66,8 @@ public:
 			if (_volume->skip(_posInVolume)) {
 				return false;
 			}
+			// Preserve the FlagOutline (selection) flag when modifying voxels
+			const uint8_t existingFlags = _currentVoxel->getFlags();
 			if (_volume->_erase) {
 				if (_volume->_normalPaint) {
 					_currentVoxel->setNormal(NO_NORMAL);
@@ -77,6 +81,10 @@ public:
 					*_currentVoxel = voxel;
 				}
 			}
+			// Restore the FlagOutline if it was set on the original voxel
+			if (existingFlags & voxel::FlagOutline) {
+				_currentVoxel->setFlags(existingFlags);
+			}
 			voxel::Region &dirtyRegion = _volume->_dirtyRegion;
 			if (dirtyRegion.isValid()) {
 				dirtyRegion.accumulate(_posInVolume);
@@ -87,12 +95,13 @@ public:
 		}
 	};
 
-	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType, const SelectionManagerPtr &selectionMgr)
-		: Super(node.volume()), _selectionMgr(selectionMgr), _modifierType(modifierType), _node(node) {
+	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType)
+		: Super(node.volume()), _modifierType(modifierType), _node(node) {
 		_erase = _modifierType == ModifierType::Erase;
 		_override = _modifierType == ModifierType::Override;
 		_paint = _modifierType == ModifierType::Paint;
 		_normalPaint = _modifierType == ModifierType::NormalPaint;
+		_hasSelection = _node.hasSelection();
 	}
 
 	inline scenegraph::SceneGraphNode &node() const {

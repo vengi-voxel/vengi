@@ -20,7 +20,6 @@ set(SRCS
 	modifier/ModifierType.h
 	modifier/ModifierVolumeWrapper.h
 	modifier/ShapeType.h
-	modifier/SelectionManager.h modifier/SelectionManager.cpp
 	modifier/SceneModifiedFlags.h
 
 	network/Client.h network/Client.cpp
@@ -94,7 +93,6 @@ set(TEST_SRCS
 	tests/ProtocolMessageFactoryTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
-	tests/SelectionManagerTest.cpp
 	tests/ShapeBrushTest.cpp
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp

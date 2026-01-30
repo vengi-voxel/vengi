@@ -23,8 +23,7 @@ TEST_F(TextBrushTest, testExecute) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
-	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-	ModifierVolumeWrapper wrapper(node, brush.modifierType(), selectionMgr);
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()));
 	brush.preExecute(brushContext, wrapper.volume());

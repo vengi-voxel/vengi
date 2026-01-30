@@ -16,7 +16,6 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
@@ -61,16 +60,13 @@ void StampBrush::construct() {
 			Log::warn("There's no selection to use as stamp");
 			return;
 		}
-		Modifier &modifier = _sceneMgr->modifier();
-		const SelectionManagerPtr &selectionMgr = modifier.selectionMgr();
-		// Copy only selected voxels to the stamp volume
-		voxel::RawVolume *stampVolume = selectionMgr->copy(*node);
-		if (stampVolume == nullptr) {
+		// Copy only selected voxels to the stamp volume using Clipboard::copy
+		voxel::ClipboardData clipboardData = voxedit::tool::copy(*node);
+		if (!clipboardData) {
 			Log::warn("Failed to copy selection to stamp");
 			return;
 		}
-		setVolume(*stampVolume, node->palette());
-		delete stampVolume;
+		setVolume(*clipboardData.volume, node->palette());
 		// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
 		// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
 		command::executeCommands("select none");

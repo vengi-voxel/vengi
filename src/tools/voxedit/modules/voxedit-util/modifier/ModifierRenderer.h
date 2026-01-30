@@ -5,7 +5,6 @@
 #pragma once
 
 #include "render/ShapeRenderer.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
@@ -19,7 +18,6 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	voxelrender::RawVolumeRenderer _volumeRenderer;
 	voxelrender::RenderContext _volumeRendererCtx;
-	int32_t _selectionIndex = -1;
 	int32_t _mirrorMeshIndex = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
@@ -36,7 +34,6 @@ private:
 	int _gridResolution = 1;
 
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
-	void updateSelectionBuffers(const scenegraph::Selections &selections);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion);
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette);
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);

@@ -155,9 +155,10 @@ void Viewport::dragAndDrop(float headerSize) {
 					modifier.beginBrush();
 					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type,
 												   SceneModifiedFlags flags) {
-						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-							_sceneMgr->modified(nodeId, region, flags);
+						if (type == ModifierType::ColorPicker) {
+							return;
 						}
+						_sceneMgr->modified(nodeId, region, flags);
 					};
 					modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
 					modifier.endBrush();

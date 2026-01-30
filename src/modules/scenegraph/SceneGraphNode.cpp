@@ -18,6 +18,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -42,7 +43,6 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_keyFramesMap = core::move(move._keyFramesMap);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
-	_selections = core::move(move._selections);
 	_type = move._type;
 	move._type = SceneGraphNodeType::Max;
 	_flags = move._flags;
@@ -75,7 +75,6 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_keyFramesMap = core::move(move._keyFramesMap);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
-	_selections = core::move(move._selections);
 	_type = move._type;
 	_flags = move._flags;
 	move._flags &= ~VolumeOwned;
@@ -460,21 +459,34 @@ const voxel::Region &SceneGraphNode::region() const {
 	return _volume->region();
 }
 
-const Selections &SceneGraphNode::selections() const {
-	return _selections;
-}
-
-Selections &SceneGraphNode::selections() {
-	return _selections;
-}
-
 bool SceneGraphNode::hasSelection() const {
-	return !_selections.empty();
+	if (_volume == nullptr) {
+		return false;
+	}
+	return _volume->hasFlags(_volume->region(), voxel::FlagOutline);
 }
 
-void SceneGraphNode::clearSelections() {
-	_selections.clear();
+void SceneGraphNode::clearSelection() {
+	if (_volume == nullptr) {
+		return;
+	}
+	_volume->removeFlags(_volume->region(), voxel::FlagOutline);
 }
+
+void SceneGraphNode::select(const voxel::Region &region) {
+	if (_volume == nullptr) {
+		return;
+	}
+	_volume->setFlags(region, voxel::FlagOutline);
+}
+
+void SceneGraphNode::unselect(const voxel::Region &region) {
+	if (_volume == nullptr) {
+		return;
+	}
+	_volume->removeFlags(region, voxel::FlagOutline);
+}
+
 bool SceneGraphNode::isLeaf() const {
 	return _children.empty();
 }

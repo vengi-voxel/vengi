@@ -19,9 +19,8 @@
 
 namespace voxedit {
 
-ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer,
-							   const SelectionManagerPtr &selectionManager)
-	: Super(sceneMgr, selectionManager), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
+ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer)
+	: Super(sceneMgr), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
 }
 
 bool ModifierFacade::init() {
@@ -55,6 +54,9 @@ bool ModifierFacade::previewNeedsExistingVolume() const {
 	if (isMode(ModifierType::Paint)) {
 		return true;
 	}
+	if (isMode(ModifierType::Select)) {
+		return true;
+	}
 	if (_brushType == BrushType::Plane) {
 		return isMode(ModifierType::Place);
 	}
@@ -62,6 +64,10 @@ bool ModifierFacade::previewNeedsExistingVolume() const {
 }
 
 bool ModifierFacade::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
+	if (brush->type() == BrushType::Select) {
+		// Selection brush just needs to show the region that will be selected
+		return true;
+	}
 	if (brush->type() != BrushType::Shape) {
 		return false;
 	}
@@ -162,6 +168,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	ctx.gridResolution = _brushContext.gridResolution;
 	ctx.referencePosition = referencePosition();
 	ctx.palette = &activePalette;
+	ctx.brushActive = false;
 
 	// Mirror plane info
 	if (brush) {
@@ -173,24 +180,8 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	}
 
 	// Handle brush preview with deferred updates
-	if (isMode(ModifierType::ColorPicker)) {
-		ctx.brushActive = false;
-	} else {
+	if (!isMode(ModifierType::ColorPicker)) {
 		ctx.brushActive = brush && brush->active();
-	}
-
-	// Selection handling
-	// TODO: SELECTION: remove this special handling once selection is handled via voxel::FlatOutline on the RawVolume of the SceneGraphNode
-	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
-		ctx.selections = node->selections();
-	}
-
-	if (_brushType == BrushType::Select && ctx.brushActive) {
-		const voxel::Region &region = brush->calcRegion(_brushContext);
-		ctx.selections.push_back(region);
-		if (brush->dirty()) {
-			brush->markClean();
-		}
 	}
 
 	if (ctx.brushActive) {

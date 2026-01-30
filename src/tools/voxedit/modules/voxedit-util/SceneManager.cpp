@@ -85,11 +85,10 @@
 namespace voxedit {
 
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
-						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
-						   const SelectionManagerPtr &selectionManager)
+						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
-	  _modifierFacade(this, modifierRenderer, selectionManager), _luaApi(filesystem),
-	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem), _selectionManager(selectionManager),
+	  _modifierFacade(this, modifierRenderer), _luaApi(filesystem),
+	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
 	  _client(this) {
 	server().setState(&_sceneGraph);
 }
@@ -1116,11 +1115,16 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 
+	voxel::ClipboardData clipboardData = voxedit::tool::copy(*node);
+	if (!clipboardData) {
+		Log::warn("Failed to copy selection for node %i", nodeId);
+		return false;
+	}
+
 	scenegraph::SceneGraph newSceneGraph;
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(*node, newNode, false);
-	voxel::RawVolume *v = _selectionManager->copy(*node);
-	newNode.setVolume(v, true);
+	newNode.setVolume(new voxel::RawVolume(*clipboardData.volume), true);
 	newSceneGraph.emplace(core::move(newNode));
 	if (!voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
 		Log::warn("Failed to save node %i to %s", nodeId, file.name.c_str());
@@ -1140,7 +1144,7 @@ bool SceneManager::copy() {
 		Log::debug("Nothing selected yet - failed to copy");
 		return false;
 	}
-	_copy = voxedit::tool::copy(*node, _selectionManager);
+	_copy = voxedit::tool::copy(*node);
 	return _copy;
 }
 
@@ -1194,7 +1198,7 @@ bool SceneManager::cut() {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	_copy = voxedit::tool::cut(node, _selectionManager, modifiedRegion);
+	_copy = voxedit::tool::cut(node, modifiedRegion);
 	if (!_copy) {
 		Log::debug("Failed to cut");
 		return false;
@@ -1207,6 +1211,93 @@ bool SceneManager::cut() {
 	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
 	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
 	return true;
+}
+
+void SceneManager::selectionInvert(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	voxel::RawVolume *volume = node->volume();
+	if (volume == nullptr) {
+		return;
+	}
+	volume->toggleFlags(volume->region(), voxel::FlagOutline);
+	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
+	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+}
+
+void SceneManager::selectionUnselect(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	node->clearSelection();
+	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
+	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+}
+
+void SceneManager::selectionSelectAll(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	voxel::RawVolume *volume = node->volume();
+	if (volume == nullptr) {
+		return;
+	}
+	node->select(volume->region());
+	// Mark mesh dirty to trigger re-extraction with updated FlagOutline
+	modified(nodeId, node->region(), SceneModifiedFlags::NoUndo);
+}
+
+bool SceneManager::isSelected(int nodeId, const glm::ivec3 &pos) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr || !node->isModelNode()) {
+		return false;
+	}
+	const voxel::RawVolume *volume = node->volume();
+	if (volume == nullptr) {
+		return false;
+	}
+	const voxel::Voxel &voxel = volume->voxel(pos);
+	return (voxel.getFlags() & voxel::FlagOutline) != 0;
+}
+
+voxel::Region SceneManager::selectionCalculateRegion(int nodeId) const {
+	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr || !node->isModelNode()) {
+		return voxel::Region::InvalidRegion;
+	}
+	const voxel::RawVolume *volume = node->volume();
+	if (volume == nullptr) {
+		return voxel::Region::InvalidRegion;
+	}
+	if (!node->hasSelection()) {
+		return voxel::Region::InvalidRegion;
+	}
+
+	// Calculate the bounding region of selected voxels
+	voxel::Region selectionRegion = voxel::Region::InvalidRegion;
+	const voxel::Region &region = volume->region();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+
+	for (int32_t z = mins.z; z <= maxs.z; ++z) {
+		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			for (int32_t x = mins.x; x <= maxs.x; ++x) {
+				const voxel::Voxel &voxel = volume->voxel(x, y, z);
+				if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
+					if (selectionRegion.isValid()) {
+						selectionRegion.accumulate(x, y, z);
+					} else {
+						selectionRegion = voxel::Region(x, y, z, x, y, z);
+					}
+				}
+			}
+		}
+	}
+	return selectionRegion;
 }
 
 void SceneManager::resetLastTrace() {
@@ -1639,8 +1730,34 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	}
 	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node && node->hasSelection()) {
-		// TODO: SELECTION: only move the selected voxels once voxel::FlagOutline can be used to identify them
-		Log::warn("Moving only the selected voxels is not implemented yet");
+		// Move only the selected voxels (those with FlagOutline set)
+		const voxel::Region &region = v->region();
+		const glm::ivec3 &mins = region.getLowerCorner();
+		const glm::ivec3 &maxs = region.getUpperCorner();
+
+		// First pass: collect selected voxels and clear them
+		core::DynamicArray<glm::ivec3> positions;
+		core::DynamicArray<voxel::Voxel> voxels;
+		for (int32_t z = mins.z; z <= maxs.z; ++z) {
+			for (int32_t y = mins.y; y <= maxs.y; ++y) {
+				for (int32_t x = mins.x; x <= maxs.x; ++x) {
+					const voxel::Voxel &voxel = v->voxel(x, y, z);
+					if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
+						positions.push_back(glm::ivec3(x, y, z));
+						voxels.push_back(voxel);
+						v->setVoxel(x, y, z, voxel::Voxel());
+					}
+				}
+			}
+		}
+
+		// Second pass: place voxels at new positions
+		for (size_t i = 0; i < positions.size(); ++i) {
+			const glm::ivec3 newPos = positions[i] + m;
+			if (region.containsPoint(newPos)) {
+				v->setVoxel(newPos, voxels[i]);
+			}
+		}
 	} else {
 		v->move(m);
 	}
@@ -1778,7 +1895,7 @@ void SceneManager::construct() {
 		if (node == nullptr) {
 			return;
 		}
-		const voxel::Region &region = modifier().selectionMgr()->calculateRegion(*node);
+		const voxel::Region &region = selectionCalculateRegion(activeNodeId);
 		nodeResize(activeNodeId, region);
 	}).setHelp(_("Resize the volume to the current selection"));
 
@@ -1945,14 +2062,13 @@ void SceneManager::construct() {
 			Log::info("Usage: select [all|none|invert]");
 			return;
 		}
-		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
-			if (args[0] == "none") {
-				_selectionManager->unselect(*node);
-			} else if (args[0] == "all") {
-				_selectionManager->selectAll(*node);
-			} else if (args[0] == "invert") {
-				_selectionManager->invert(*node);
-			}
+		const int nodeId = activeNode();
+		if (args[0] == "none") {
+			selectionUnselect(nodeId);
+		} else if (args[0] == "all") {
+			selectionSelectAll(nodeId);
+		} else if (args[0] == "invert") {
+			selectionInvert(nodeId);
 		}
 	}).setHelp(_("Select all, nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
@@ -2230,9 +2346,10 @@ void SceneManager::construct() {
 	}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode());
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 		if (node && node->hasSelection()) {
-			const voxel::Region &region = _selectionManager->calculateRegion(*node);
+			const voxel::Region &region = selectionCalculateRegion(nodeId);
 			paste(region.getLowerCorner());
 		} else {
 			paste(referencePosition());

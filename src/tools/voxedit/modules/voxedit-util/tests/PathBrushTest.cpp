@@ -31,8 +31,7 @@ TEST_F(PathBrushTest, testExecute) {
 		nodeId = sceneGraph.emplace(core::move(node));
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-	SelectionManagerPtr selectionMgr = core::make_shared<SelectionManager>();
-	ModifierVolumeWrapper wrapper(node, brush.modifierType(), selectionMgr);
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	BrushContext brushContext;
 	brushContext.referencePos = volume.region().getLowerCorner();
 	brushContext.referencePos.y++; // one above the ground

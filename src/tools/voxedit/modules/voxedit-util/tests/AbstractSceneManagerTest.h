@@ -15,9 +15,8 @@ namespace voxedit {
 class SceneManagerEx : public SceneManager {
 public:
 	SceneManagerEx(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
-				   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer,
-				   const SelectionManagerPtr &selectionManager)
-		: SceneManager(timeProvider, filesystem, sceneRenderer, modifierRenderer, selectionManager) {
+				   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
+		: SceneManager(timeProvider, filesystem, sceneRenderer, modifierRenderer) {
 	}
 	bool loadForTest(scenegraph::SceneGraph &&sceneGraph) {
 		return loadSceneGraph(core::move(sceneGraph));
@@ -65,9 +64,8 @@ protected:
 		const auto timeProvider = core::make_shared<core::TimeProvider>();
 		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
 		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
-		const auto selectionManager = core::make_shared<SelectionManager>();
 		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
-													  modifierRenderer, selectionManager);
+													  modifierRenderer);
 		core::Var::get(cfg::UILastDirectory, "", core::CV_NOPERSIST);
 		core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 		core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");

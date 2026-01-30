@@ -69,9 +69,7 @@ void ModifierButton::execute(bool single) {
 				return;
 			}
 			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-				if (isModifying(type)) {
-					_sceneMgr->modified(nodeId, region, flags);
-				}
+				_sceneMgr->modified(nodeId, region, flags);
 			};
 			modifier.execute(_sceneMgr->sceneGraph(), *node, modifierFunc);
 			++nodes;

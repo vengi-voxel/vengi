@@ -8,7 +8,6 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
-#include "voxedit-util/modifier/SelectionManager.h"
 
 VoxEditServer::VoxEditServer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 							 const voxedit::SceneManagerPtr &sceneMgr)
@@ -70,9 +69,8 @@ int main(int argc, char *argv[]) {
 	const core::SharedPtr<voxedit::ISceneRenderer> &sceneRenderer = core::make_shared<voxedit::ISceneRenderer>();
 	const core::SharedPtr<voxedit::IModifierRenderer> &modifierRenderer =
 		core::make_shared<voxedit::IModifierRenderer>();
-	const voxedit::SelectionManagerPtr &selectionManager = core::make_shared<voxedit::SelectionManager>();
 	const voxedit::SceneManagerPtr &sceneMgr = core::make_shared<voxedit::SceneManager>(
-		timeProvider, filesystem, sceneRenderer, modifierRenderer, selectionManager);
+		timeProvider, filesystem, sceneRenderer, modifierRenderer);
 	VoxEditServer app(filesystem, timeProvider, sceneMgr);
 	return app.startMainLoop(argc, argv);
 }

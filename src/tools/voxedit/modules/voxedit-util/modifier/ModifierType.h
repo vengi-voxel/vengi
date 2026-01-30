@@ -24,5 +24,5 @@ enum class ModifierType {
 CORE_ENUM_BIT_OPERATIONS(ModifierType)
 
 inline bool isModifying(ModifierType type) {
-	return type != ModifierType::None && type != ModifierType::Select && type != ModifierType::ColorPicker;
+	return type != ModifierType::None && type != ModifierType::ColorPicker;
 }
