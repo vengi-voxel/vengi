@@ -67,14 +67,25 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 
 	if (_movement.moving()) {
 		glm::vec3 direction(0);
-		if (_movement.forward()) {
-			direction += camForward;
+		// In orthographic mode, forward/backward should zoom instead of move
+		const bool orthographic = camera->mode() == video::CameraMode::Orthogonal;
+		if (orthographic && !clipping) {
+			if (_movement.forward()) {
+				camera->zoom(-speed * _deltaSeconds);
+			}
+			if (_movement.backward()) {
+				camera->zoom(speed * _deltaSeconds);
+			}
+		} else {
+			if (_movement.forward()) {
+				direction += camForward;
+			}
+			if (_movement.backward()) {
+				direction -= camForward;
+			}
 		}
 		if (_movement.left()) {
 			direction -= camRight;
-		}
-		if (_movement.backward()) {
-			direction -= camForward;
 		}
 		if (_movement.right()) {
 			direction += camRight;
