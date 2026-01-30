@@ -36,7 +36,7 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 
 	switch (_selectMode) {
 	case SelectMode::All: {
-		voxelutil::VisitVisible condition = voxelutil::VisitVisible();
+		voxelutil::VisitSolid condition;
 		voxelutil::visitVolumeParallel(wrapper, selectionRegion, func, condition);
 		break;
 	}
