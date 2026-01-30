@@ -183,6 +183,7 @@ public:
 	void removeFlags(const Region &region, uint8_t flags);
 	void setFlags(const Region &region, uint8_t flags);
 	bool hasFlags(const Region &region, uint8_t flags) const;
+	void toggleFlags(const Region &region, uint8_t flags);
 
 private:
 	void initialise(const Region &region);
