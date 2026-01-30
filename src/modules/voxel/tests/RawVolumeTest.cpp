@@ -252,6 +252,50 @@ TEST_F(RawVolumeTest, testHasFlags) {
 	EXPECT_TRUE(v.hasFlags(Region(2, 2, 2, 3, 3, 3), 1));
 }
 
+// Test alignment issues with odd starting coordinates
+TEST_F(RawVolumeTest, testFlagsAlignment) {
+	// Create a volume where odd x-coordinates will cause misaligned 64-bit accesses
+	RawVolume v({glm::ivec3(0), glm::ivec3(9, 3, 3)});
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int x = 0; x <= 9; ++x) {
+				v.setVoxel(x, y, z, voxel::createVoxel(VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	// Test setFlags with odd starting x-coordinate (causes misaligned access)
+	v.setFlags(Region(1, 0, 0, 8, 3, 3), 1);
+	for (int z = 0; z <= 3; ++z) {
+		for (int y = 0; y <= 3; ++y) {
+			EXPECT_EQ(0, (int)v.voxel(0, y, z).getFlags()) << "Flag incorrectly set at 0," << y << "," << z;
+			for (int x = 1; x <= 8; ++x) {
+				EXPECT_EQ(1, (int)v.voxel(x, y, z).getFlags()) << "Flag not set at " << x << "," << y << "," << z;
+			}
+			EXPECT_EQ(0, (int)v.voxel(9, y, z).getFlags()) << "Flag incorrectly set at 9," << y << "," << z;
+		}
+	}
+
+	// Test hasFlags with odd starting x-coordinate
+	EXPECT_TRUE(v.hasFlags(Region(1, 0, 0, 8, 3, 3), 1));
+	EXPECT_FALSE(v.hasFlags(Region(0, 0, 0, 0, 3, 3), 1));
+	EXPECT_FALSE(v.hasFlags(Region(9, 0, 0, 9, 3, 3), 1));
+
+	// Test removeFlags with odd starting x-coordinate
+	v.removeFlags(Region(3, 1, 1, 6, 2, 2), 1);
+	for (int z = 1; z <= 2; ++z) {
+		for (int y = 1; y <= 2; ++y) {
+			for (int x = 3; x <= 6; ++x) {
+				EXPECT_EQ(0, (int)v.voxel(x, y, z).getFlags()) << "Flag not removed at " << x << "," << y << "," << z;
+			}
+		}
+	}
+	// Flags should still be set at the edges
+	EXPECT_EQ(1, (int)v.voxel(1, 0, 0).getFlags());
+	EXPECT_EQ(1, (int)v.voxel(2, 1, 1).getFlags());
+	EXPECT_EQ(1, (int)v.voxel(7, 1, 1).getFlags());
+}
+
 TEST_F(RawVolumeTest, testFullSamplerLoop) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);

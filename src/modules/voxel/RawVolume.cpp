@@ -172,18 +172,31 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 			const int yPos = y - _region.getLowerY();
 			const int baseIndex = zBase + (yPos * yStride);
 
+			int offset = 0;
+			int remaining = lineLength;
+
+			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
+			if ((baseIndex & 1) && remaining > 0) {
+				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex];
+				if (*data32 & flagsMask32) {
+					return true;
+				}
+				offset = 1;
+				remaining--;
+			}
+
 			// Process two voxels at a time using 64-bit operations
-			const uint64_t *data64 = (const uint64_t *)&_data[baseIndex];
-			int i = 0;
-			const int pairs = lineLength / 2;
-			for (; i < pairs; ++i) {
+			const int pairs = remaining / 2;
+			const uint64_t *data64 = (const uint64_t *)&_data[baseIndex + offset];
+			for (int i = 0; i < pairs; ++i) {
 				if (data64[i] & flagsMask64) {
 					return true;
 				}
 			}
+
 			// Handle remaining voxel if line length is odd
-			if (lineLength & 1) {
-				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + pairs * 2];
+			if (remaining & 1) {
+				const uint32_t *data32 = (const uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				if (*data32 & flagsMask32) {
 					return true;
 				}
