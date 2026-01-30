@@ -1039,8 +1039,8 @@ int countVoxelsByColor(const Volume &volume, const voxel::Voxel &voxel) {
 
 typedef core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> VisitedSet;
 
-template<class Volume, class Visitor>
-static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &voxel, const glm::ivec3 &position, Visitor &visitor, VisitedSet &visited) {
+template<class Volume, class Visitor, class Condition>
+static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &voxel, const glm::ivec3 &position, Visitor &visitor, Condition &condition, VisitedSet &visited) {
 	typename Volume::Sampler sampler(volume);
 	if (!sampler.setPosition(position)) {
 		return 0;
@@ -1052,7 +1052,7 @@ static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &vox
 		if (!sampler.setPosition(volPos)) {
 			continue;
 		}
-		if (!sampler.voxel().isSame(voxel)) {
+		if (!condition(sampler)) {
 			continue;
 		}
 		if (!visited.insert(volPos)) {
@@ -1060,7 +1060,7 @@ static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &vox
 		}
 		visitor(volPos.x, volPos.y, volPos.z, voxel);
 		++n;
-		n += visitConnectedByVoxel_r(volume, voxel, volPos, visitor, visited);
+		n += visitConnectedByVoxel_r(volume, voxel, volPos, visitor, condition, visited);
 	}
 	return n;
 }
@@ -1069,7 +1069,15 @@ template<class Volume, class Visitor = EmptyVisitor>
 int visitConnectedByVoxel(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor = Visitor()) {
 	const voxel::Voxel voxel = volume.voxel(position);
 	VisitedSet visited;
-	return visitConnectedByVoxel_r(volume, voxel, position, visitor, visited);
+	VisitVoxelColor condition(voxel);
+	return visitConnectedByVoxel_r(volume, voxel, position, visitor, condition, visited);
+}
+
+template<class Volume, class Visitor = EmptyVisitor, class Condition = VisitSolid>
+int visitConnectedByCondition(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor = Visitor(), Condition &&condition = Condition()) {
+	const voxel::Voxel voxel = volume.voxel(position);
+	VisitedSet visited;
+	return visitConnectedByVoxel_r(volume, voxel, position, visitor, condition, visited);
 }
 
 } // namespace voxelutil
