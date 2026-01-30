@@ -103,6 +103,49 @@ public:
 		return _modifierType;
 	}
 
+	/**
+	 * @brief Set flags on voxels in the given region and mark it dirty
+	 */
+	void setFlags(const voxel::Region &region, uint8_t flags) {
+		_volume->setFlags(region, flags);
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(region);
+		} else {
+			_dirtyRegion = region;
+		}
+	}
+
+	/**
+	 * @brief Remove flags from voxels in the given region and mark it dirty
+	 */
+	void removeFlags(const voxel::Region &region, uint8_t flags) {
+		_volume->removeFlags(region, flags);
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(region);
+		} else {
+			_dirtyRegion = region;
+		}
+	}
+
+	/**
+	 * @brief Toggle flags on voxels in the given region and mark it dirty
+	 */
+	void toggleFlags(const voxel::Region &region, uint8_t flags) {
+		_volume->toggleFlags(region, flags);
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(region);
+		} else {
+			_dirtyRegion = region;
+		}
+	}
+
+	/**
+	 * @brief Check if any voxel in the given region has the specified flags
+	 */
+	bool hasFlags(const voxel::Region &region, uint8_t flags) const {
+		return _volume->hasFlags(region, flags);
+	}
+
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
 		Sampler sampler(*this);
 		if (!sampler.setPosition(x, y, z)) {
