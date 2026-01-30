@@ -779,6 +779,25 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Geography Markup Language</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-geography-markup-language</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>gml</string>
+          <string>xml</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Build engine</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

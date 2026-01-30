@@ -72,6 +72,7 @@ set(SRCS
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
 	private/mesh/TextureLookup.h             private/mesh/TextureLookup.cpp
+	private/mesh/gis/GMLFormat.h             private/mesh/gis/GMLFormat.cpp
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
 	private/mesh/quake/MapFormat.h           private/mesh/quake/MapFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
@@ -124,7 +125,7 @@ set(SRCS
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric ${LIB}-external)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric tinyxml2 ${LIB}-external)
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
@@ -144,6 +145,7 @@ set(TEST_SRCS
 	tests/CubzhB64FormatTest.cpp
 	tests/FBXFormatTest.cpp
 	tests/GLTFFormatTest.cpp
+	tests/GMLFormatTest.cpp
 	tests/GodotSceneFormatTest.cpp
 	tests/GoxFormatTest.cpp
 	tests/GoxTxtFormatTest.cpp
@@ -279,6 +281,12 @@ set(TEST_FILES
 	"tests/glTF/lantern/Lantern.gltf"
 	"tests/glTF/lantern/Lantern_normal.png"
 	"tests/glTF/lantern/Lantern_roughnessMetallic.png"
+	"tests/bridge-gml/Modellbahnbruecke-LoD3-V03.gml"
+	"tests/bridge-gml/textures/Bruecke-Beton.jpg"
+	"tests/bridge-gml/textures/Bruecke-Schotter.jpg"
+	"tests/bridge-gml/textures/Bruecken-Metall.jpg"
+	"tests/bridge-gml/textures/Metal_Rusted.jpg"
+	"tests/bridge-gml/textures/Metal_Steel_Textured.jpg"
 	"tests/gun.3ds"
 	"tests/hmec.hva"
 	"tests/hmec.vxl"

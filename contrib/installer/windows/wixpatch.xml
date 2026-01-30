@@ -166,6 +166,12 @@
 		<RegistryKey Root="HKCR" Key=".ply">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".gml">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".xml">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".kvx">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -696,6 +702,24 @@
 		<RegistryValue Root="HKCR" Key=".ply\OpenWithProgids" Name="vengi-voxedit.ply" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.ply" Description="Polygon File Format" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="ply" ContentType="application/x-polygon-file-format">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".gml" Value="vengi-voxedit.gml" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".gml" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".gml\OpenWithProgids" Name="vengi-voxedit.gml" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.gml" Description="Geography Markup Language" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="gml" ContentType="application/x-geography-markup-language">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".xml" Value="vengi-voxedit.xml" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".xml" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".xml\OpenWithProgids" Name="vengi-voxedit.xml" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.xml" Description="Geography Markup Language" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="xml" ContentType="application/x-geography-markup-language">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

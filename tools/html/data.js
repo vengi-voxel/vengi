@@ -886,6 +886,19 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Geography Markup Language",
+      "extensions": [
+        "gml",
+        "xml"
+      ],
+      "magics": [],
+      "mimetype": "application/x-geography-markup-language",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Build engine",
       "extensions": [
         "kvx"

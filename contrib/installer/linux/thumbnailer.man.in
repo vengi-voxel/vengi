@@ -216,6 +216,8 @@ Cubzh World (*.b64)
 .TP
 FBX (*.fbx)
 .TP
+Geography Markup Language (*.gml, *.xml)
+.TP
 GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
 Goxel (*.gox)

@@ -46,6 +46,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/mesh/quake/MD2Format.h"
 #include "voxelformat/private/mesh/quake/MDLFormat.h"
 #include "voxelformat/private/mesh/quake/MapFormat.h"
@@ -124,6 +125,7 @@ const io::FormatDescription *voxelFormats() {
 												 GLTFFormat::format(),
 												 STLFormat::format(),
 												 PLYFormat::format(),
+												 GMLFormat::format(),
 												 KVXFormat::format(),
 												 PCubesFormat::format(),
 												 CubzhFormat::format(),
@@ -295,6 +297,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<BenVoxelFormat>();
 		} else if (io::isA(AniVoxelFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AniVoxelFormat>();
+		} else if (io::isA(GMLFormat::format(), desc, ext, magic)) {
+			return core::make_shared<GMLFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
 		}

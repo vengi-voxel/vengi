@@ -283,6 +283,11 @@
 		<comment>Polygon File Format</comment>
 		<glob pattern="*.ply"/>
 	</mime-type>
+	<mime-type type="application/x-geography-markup-language">
+		<comment>Geography Markup Language</comment>
+		<glob pattern="*.gml"/>
+		<glob pattern="*.xml"/>
+	</mime-type>
 	<mime-type type="application/x-build-engine">
 		<comment>Build engine</comment>
 		<glob pattern="*.kvx"/>
