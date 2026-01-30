@@ -155,6 +155,54 @@ public:
 		return _volume->hasFlags(region, flags);
 	}
 
+	/**
+	 * @brief Set flags on a single voxel at the given position and mark it dirty
+	 * @note This directly modifies the volume, bypassing the Sampler validation
+	 * @return true if the voxel was modified (not air), false otherwise
+	 */
+	bool setFlagAt(int x, int y, int z, uint8_t flags) {
+		voxel::RawVolume::Sampler sampler(_volume);
+		if (!sampler.setPosition(x, y, z)) {
+			return false;
+		}
+		voxel::Voxel v = sampler.voxel();
+		if (voxel::isAir(v.getMaterial())) {
+			return false;
+		}
+		v.setFlags(v.getFlags() | flags);
+		sampler.setVoxel(v);
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(x, y, z);
+		} else {
+			_dirtyRegion = voxel::Region(x, y, z, x, y, z);
+		}
+		return true;
+	}
+
+	/**
+	 * @brief Remove flags from a single voxel at the given position and mark it dirty
+	 * @note This directly modifies the volume, bypassing the Sampler validation
+	 * @return true if the voxel was modified (not air), false otherwise
+	 */
+	bool removeFlagAt(int x, int y, int z, uint8_t flags) {
+		voxel::RawVolume::Sampler sampler(_volume);
+		if (!sampler.setPosition(x, y, z)) {
+			return false;
+		}
+		voxel::Voxel v = sampler.voxel();
+		if (voxel::isAir(v.getMaterial())) {
+			return false;
+		}
+		v.setFlags(v.getFlags() & ~flags);
+		sampler.setVoxel(v);
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(x, y, z);
+		} else {
+			_dirtyRegion = voxel::Region(x, y, z, x, y, z);
+		}
+		return true;
+	}
+
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
 		Sampler sampler(*this);
 		if (!sampler.setPosition(x, y, z)) {
