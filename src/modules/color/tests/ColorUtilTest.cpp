@@ -71,6 +71,25 @@ TEST_F(ColorUtilTest, testDistanceMax) {
 	EXPECT_FLOAT_EQ(584970.0f, color::getDistance(color1, color2, color::Distance::Approximation));
 }
 
+TEST_F(ColorUtilTest, testApproximationDistanceConstants) {
+	// Verify the constants match the actual computed values
+	const color::RGBA black(0, 0, 0, 255);
+	const color::RGBA white(255, 255, 255, 255);
+	const color::RGBA red(255, 0, 0, 255);
+
+	// Min distance (identical colors)
+	EXPECT_FLOAT_EQ(color::ApproximationDistanceMin, color::getDistance(red, red, color::Distance::Approximation));
+
+	// Max distance (black to white)
+	EXPECT_FLOAT_EQ(color::ApproximationDistanceMax, color::getDistance(black, white, color::Distance::Approximation));
+
+	// Verify threshold ordering
+	EXPECT_LT(color::ApproximationDistanceMin, color::ApproximationDistanceTight);
+	EXPECT_LT(color::ApproximationDistanceTight, color::ApproximationDistanceModerate);
+	EXPECT_LT(color::ApproximationDistanceModerate, color::ApproximationDistanceLoose);
+	EXPECT_LT(color::ApproximationDistanceLoose, color::ApproximationDistanceMax);
+}
+
 TEST_F(ColorUtilTest, testHSB) {
 	float h, s, b;
 	color::getHSB(color::RGBA(255, 0, 0), h, s, b);

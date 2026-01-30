@@ -243,12 +243,20 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 
 	int selectModeInt = (int)brush.selectMode();
 
-	const char *SelectModeStr[] = {C_("SelectMode", "All"),C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
-								   C_("SelectMode", "Connected")};
+	const char *SelectModeStr[] = {C_("SelectMode", "All"), C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
+								   C_("SelectMode", "Fuzzy Color"), C_("SelectMode", "Connected")};
 	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
 
 	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
 		brush.setSelectMode((SelectMode)selectModeInt);
+	}
+
+	if (brush.selectMode() == SelectMode::FuzzyColor) {
+		float threshold = brush.colorThreshold();
+		if (ImGui::SliderFloat(_("Threshold"), &threshold, color::ApproximationDistanceMin, color::ApproximationDistanceLoose, "%.0f")) {
+			brush.setColorThreshold(threshold);
+		}
+		ImGui::TooltipTextUnformatted(_("Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"));
 	}
 }
 

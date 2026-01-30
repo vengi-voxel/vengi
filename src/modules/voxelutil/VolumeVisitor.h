@@ -5,10 +5,12 @@
 #pragma once
 
 #include "app/Async.h"
+#include "color/ColorUtil.h"
 #include "core/GLM.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicSet.h"
 #include "core/concurrent/Atomic.h"
+#include "palette/Palette.h"
 #include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
@@ -173,6 +175,30 @@ struct VisitVoxelType {
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
 		return sampler.voxel().getMaterial() == _type;
+	}
+};
+
+struct VisitVoxelFuzzyColor {
+	const palette::Palette &_palette;
+	const uint8_t _colorIndex;
+	const float _threshold;
+
+	VisitVoxelFuzzyColor(const palette::Palette &palette, uint8_t colorIndex, float threshold)
+		: _palette(palette), _colorIndex(colorIndex), _threshold(threshold) {
+	}
+
+	template<class Sampler>
+	inline bool operator()(const Sampler &sampler) const {
+		if (sampler.voxel().getMaterial() == voxel::VoxelType::Air) {
+			return false;
+		}
+		const uint8_t voxelColorIndex = sampler.voxel().getColor();
+		if (voxelColorIndex == _colorIndex) {
+			return true;
+		}
+		const color::RGBA c1 = _palette.color(_colorIndex);
+		const color::RGBA c2 = _palette.color(voxelColorIndex);
+		return color::getDistance(c1, c2, color::Distance::Approximation) < _threshold;
 	}
 };
 

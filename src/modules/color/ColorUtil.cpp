@@ -120,7 +120,28 @@ core::String print(RGBA rgba, bool colorAsHex) {
 	return buf;
 }
 
-// https://www.compuphase.com/cmetric.htm
+/**
+ * @brief Low-cost color distance approximation
+ *
+ * Based on https://www.compuphase.com/cmetric.htm
+ *
+ * This formula weights the RGB components based on human color perception,
+ * using the mean red value to adjust the weights for red and blue channels.
+ * It produces perceptually better results than simple Euclidean RGB distance.
+ *
+ * @note Returns a squared distance (no sqrt), so values grow quadratically.
+ *
+ * Value ranges:
+ * - 0: Identical colors
+ * - ~5000: Very similar colors (tight threshold)
+ * - ~50000: Similar colors (moderate threshold)
+ * - ~150000: Broadly similar colors (loose threshold)
+ * - ~584970: Maximum distance (black to white)
+ *
+ * @param rgba First color
+ * @param rgba2 Second color
+ * @return Distance value (0 to ~584970)
+ */
 static float getDistanceApprox(RGBA rgba, RGBA rgba2) {
 	const int rmean = (rgba2.r + rgba.r) / 2;
 	const int r = rgba2.r - rgba.r;

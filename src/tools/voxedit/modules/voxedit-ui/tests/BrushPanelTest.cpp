@@ -30,10 +30,7 @@ static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id
 }
 
 static bool setModifierType(ImGuiTestContext *ctx, voxedit::ModifierFacade &modifier, ModifierType type) {
-	if (type == ModifierType::Select) {
-		IM_CHECK_RETV(modifier.brushType() == BrushType::Select, false);
-		ctx->ItemClick("modifiers/###button0");
-	} else if (type == ModifierType::ColorPicker) {
+	if (type == ModifierType::ColorPicker) {
 		IM_CHECK_RETV(modifier.brushType() == BrushType::None, false);
 		ctx->ItemClick("modifiers/###button1");
 	} else {

@@ -103,8 +103,7 @@ public:
 		_normalPaint = _modifierType == ModifierType::NormalPaint;
 		_hasSelection = _node.hasSelection();
 	}
-
-	inline scenegraph::SceneGraphNode &node() const {
+	scenegraph::SceneGraphNode &node() const {
 		return _node;
 	}
 

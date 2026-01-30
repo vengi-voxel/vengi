@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "color/ColorUtil.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
@@ -22,6 +23,8 @@ enum class SelectMode : uint8_t {
 	Surface,
 	/** Select only voxels with the same color as the clicked voxel */
 	SameColor,
+	/** Select only voxels with the similar color as the clicked voxel */
+	FuzzyColor,
 	/** Select voxels connected to the clicked voxel with the same color (flood fill) */
 	Connected,
 
@@ -35,6 +38,7 @@ class SelectBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 	SelectMode _selectMode = SelectMode::All;
+	float _colorThreshold = color::ApproximationDistanceModerate;
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
@@ -54,6 +58,14 @@ public:
 
 	SelectMode selectMode() const {
 		return _selectMode;
+	}
+
+	void setColorThreshold(float threshold) {
+		_colorThreshold = threshold;
+	}
+
+	float colorThreshold() const {
+		return _colorThreshold;
 	}
 };
 
