@@ -1639,7 +1639,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	}
 	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node && node->hasSelection()) {
-		// TODO: SELECTION: only move the selected voxels
+		// TODO: SELECTION: only move the selected voxels once voxel::FlagOutline can be used to identify them
 		Log::warn("Moving only the selected voxels is not implemented yet");
 	} else {
 		v->move(m);

@@ -180,7 +180,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	}
 
 	// Selection handling
-	// TODO: SELECTION: remove this special handling once selection is handled in node/SelectionManager
+	// TODO: SELECTION: remove this special handling once selection is handled via voxel::FlatOutline on the RawVolume of the SceneGraphNode
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
 		ctx.selections = node->selections();
 	}
