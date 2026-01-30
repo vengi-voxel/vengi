@@ -40,7 +40,7 @@ protected:
 	}
 
 	void select(scenegraph::SceneGraphNode &node, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
-		prepare(modifier, mins, maxs, ModifierType::Select, BrushType::Select);
+		prepare(modifier, mins, maxs, ModifierType::Paint, BrushType::Select);
 		scenegraph::SceneGraph sceneGraph;
 		modifier.execute(sceneGraph, node);
 		modifier.endBrush();
@@ -87,8 +87,12 @@ TEST_F(ModifierTest, testModifierSelection) {
 	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
 	// Verify selection was set correctly using FlagOutline
+	// Note: SelectMode::All uses VisitVisible, so only surface voxels get selected
 	EXPECT_TRUE(node.hasSelection()) << "Node should have selection after select()";
-	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Center voxel should be selected";
+	// Surface voxel at (1,0,0) should be selected
+	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Surface voxel at (1,0,0) should be selected";
+	// Interior voxel at (0,0,0) is not visible, so it should NOT be selected
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Interior voxel should not be selected";
 	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0) << "Voxel outside selection should not be selected";
 
 	// now modify voxels - but only on the current selection
@@ -102,6 +106,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
 	EXPECT_EQ(1, modifierExecuted);
+	// Surface voxels at corners should still have selection flag
 	EXPECT_TRUE((volume.voxel(-1, -1, -1).getFlags() & voxel::FlagOutline) != 0);
 	EXPECT_TRUE((volume.voxel(1, 1, 1).getFlags() & voxel::FlagOutline) != 0);
 	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0);

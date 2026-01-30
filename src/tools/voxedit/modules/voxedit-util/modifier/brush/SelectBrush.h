@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
 
@@ -13,29 +14,46 @@ namespace voxedit {
 class SceneManager;
 
 /**
+ * @brief Selection mode for the SelectBrush
+ */
+enum class SelectMode : uint8_t {
+	All,
+	/** Select only visible surface voxels in the AABB region */
+	Surface,
+	/** Select only voxels with the same color as the clicked voxel */
+	SameColor,
+	/** Select voxels connected to the clicked voxel with the same color (flood fill) */
+	Connected,
+
+	Max
+};
+
+/**
  * @ingroup Brushes
  */
 class SelectBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
-	bool _remove = false;
+	SelectMode _selectMode = SelectMode::All;
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
 	SelectBrush()
-		: Super(BrushType::Select, ModifierType::Select, ModifierType::Select) {
+		: Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase) {
 		setBrushClamping(true);
 	}
 	virtual ~SelectBrush() = default;
 
-	void setRemove(bool remove) {
-		_remove = remove;
+	voxel::Region calcRegion(const BrushContext &ctx) const override;
+
+	void setSelectMode(SelectMode mode) {
+		_selectMode = mode;
 	}
 
-	bool remove() const {
-		return _remove;
+	SelectMode selectMode() const {
+		return _selectMode;
 	}
 };
 

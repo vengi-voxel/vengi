@@ -240,11 +240,15 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	SelectBrush &brush = modifier.selectBrush();
-	aabbBrushOptions(listener, brush);
-	aabbBrushModeOptions(brush);
-	bool remove = brush.remove();
-	if (ImGui::Checkbox(_("Unselect"), &remove)) {
-		brush.setRemove(remove);
+
+	int selectModeInt = (int)brush.selectMode();
+
+	const char *SelectModeStr[] = {C_("SelectMode", "All"),C_("SelectMode", "Surface"), C_("SelectMode", "Same Color"),
+								   C_("SelectMode", "Connected")};
+	static_assert(lengthof(SelectModeStr) == (int)SelectMode::Max, "Array size mismatch");
+
+	if (ImGui::Combo(_("Select mode"), &selectModeInt, SelectModeStr, (int)SelectMode::Max)) {
+		brush.setSelectMode((SelectMode)selectModeInt);
 	}
 }
 
@@ -670,10 +674,6 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	const ModifierType supported = modifier.checkModifierType();
 	if (core::countSetBits(core::enumVal(supported)) > 1) {
 		ui::Toolbar toolbarModifiers("modifiers", &listener);
-		if ((supported & ModifierType::Select) != ModifierType::None) {
-			toolbarModifiers.button(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, "actionselect",
-									!modifier.isMode(ModifierType::Select));
-		}
 		if ((supported & ModifierType::ColorPicker) != ModifierType::None) {
 			toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
 		}

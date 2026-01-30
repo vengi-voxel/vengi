@@ -239,7 +239,7 @@ void Viewport::renderCursor() {
 	}
 
 	const ModifierFacade &modifier = _sceneMgr->modifier();
-	if (modifier.isMode(ModifierType::ColorPicker) || modifier.isMode(ModifierType::Select) ||
+	if (modifier.isMode(ModifierType::ColorPicker) || modifier.brushType() == BrushType::Select ||
 		modifier.brushType() == BrushType::Paint) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 	} else if (modifier.brushType() == BrushType::Plane) {

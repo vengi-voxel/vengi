@@ -54,7 +54,7 @@ bool ModifierFacade::previewNeedsExistingVolume() const {
 	if (isMode(ModifierType::Paint)) {
 		return true;
 	}
-	if (isMode(ModifierType::Select)) {
+	if (_brushType == BrushType::Select) {
 		return true;
 	}
 	if (_brushType == BrushType::Plane) {
@@ -64,10 +64,6 @@ bool ModifierFacade::previewNeedsExistingVolume() const {
 }
 
 bool ModifierFacade::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
-	if (brush->type() == BrushType::Select) {
-		// Selection brush just needs to show the region that will be selected
-		return true;
-	}
 	if (brush->type() != BrushType::Shape) {
 		return false;
 	}

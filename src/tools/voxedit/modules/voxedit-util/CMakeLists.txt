@@ -93,6 +93,7 @@ set(TEST_SRCS
 	tests/ProtocolMessageFactoryTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
+	tests/SelectBrushTest.cpp
 	tests/ShapeBrushTest.cpp
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp

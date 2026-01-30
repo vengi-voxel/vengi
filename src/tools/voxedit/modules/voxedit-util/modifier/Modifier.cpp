@@ -46,11 +46,6 @@ void Modifier::construct() {
 	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton,
 										   "Execute the modifier action in delete mode");
 
-	command::Command::registerCommand("actionselect", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Select);
-		setModifierType(ModifierType::Select);
-	}).setHelp(_("Change the modifier type to 'select'"));
-
 	command::Command::registerCommand("actioncolorpicker", [&](const command::CmdArgs &args) {
 		setBrushType(BrushType::None);
 		setModifierType(ModifierType::ColorPicker);

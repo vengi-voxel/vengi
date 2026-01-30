@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
+#include "imgui.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IMGUIStyle.h"
@@ -166,9 +167,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_SQUARE, _("Select"))) {
-			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("None"), "select none", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, _("Select"), "actionselect", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_PIPETTE, _("Color picker"), "actioncolorpicker", true, &listener);
+			ImGui::Separator();
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("None"), "select none", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, _("Select"), "brushselect", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Invert"), "select invert", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("All"), "select all", true, &listener);
 			ImGui::EndMenu();
