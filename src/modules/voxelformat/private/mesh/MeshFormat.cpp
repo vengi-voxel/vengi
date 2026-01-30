@@ -593,7 +593,7 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 
 	Log::debug("triangulate %i polygons", (int)polygons.size());
 
-	// this code was taken from tinyobjloader
+	// this code was taken from tinyobjloader - Newell's method for polygon normal
 	for (const voxel::IndexArray &p : polygons) {
 		const size_t nPolygons = p.size();
 		glm::vec3 norm(0.0f);
@@ -604,7 +604,9 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 			const glm::vec3 &point2 = vertices[i0_2].pos;
 			const glm::vec3 a(point1 - point2);
 			const glm::vec3 b(point1 + point2);
-			norm += glm::dot(a, b);
+			norm.x += a.y * b.z;
+			norm.y += a.z * b.x;
+			norm.z += a.x * b.y;
 		}
 		const float len = glm::length(norm);
 		if (len <= 0.0f) {
