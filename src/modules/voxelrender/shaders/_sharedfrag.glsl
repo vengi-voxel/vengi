@@ -57,18 +57,35 @@ vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 normal, in vec3 lightD
 	float cascadeNear = (cascade == 0) ? 0.0 : u_distances[cascade - 1];
 	float cascadeFar = u_distances[cascade];
 	float cascadeRange = max(cascadeFar - cascadeNear, 0.001);
+
 	vec3 normalizedLightDir = normalize(lightDir);
 	vec3 normalizedNormal = normalize(normal);
-	float alignment = max(dot(normalizedNormal, normalizedLightDir), 0.0);
-	float invAlignment = 1.0 - alignment;
-	float invAlignmentSq = invAlignment * invAlignment;
-	float distanceFactor = mix(1.0, min(1.0 + cascadeRange * 0.003, 1.5), invAlignmentSq);
-	float receiverScale = mix(0.01, 0.55, invAlignmentSq * invAlignment);
-	float receiverBias = bias * receiverScale * distanceFactor;
-	receiverBias = min(receiverBias, bias * 2.0);
-	vec3 offsetPos = lightspacepos.xyz - normalizedLightDir * receiverBias;
+	float NdotL = dot(normalizedNormal, normalizedLightDir);
+	float alignment = max(NdotL, 0.0);
+
+	// Calculate texel size for this cascade (approximate world space size)
+	// Higher cascades cover more area, so texels are larger in world space
+	float cascadeScale = 1.0 + float(cascade) * 0.5;
+	float texelSize = cascadeScale / u_depthsize.x;
+
+	// Normal offset bias: offset along surface normal to avoid shadow acne on slopes
+	// This is the primary technique to fix both shadow acne and peter panning
+	// The offset is proportional to the texel size and increases with surface slope
+	float normalOffsetScale = texelSize * 2.5;
+	float slopeScale = clamp(1.0 - NdotL, 0.0, 1.0);
+	vec3 normalOffset = normalizedNormal * normalOffsetScale * (1.0 + slopeScale * 3.0);
+
+	// Small constant depth bias to handle depth precision issues
+	// This should be minimal to avoid peter panning
+	float depthBias = bias * (0.5 + float(cascade) * 0.25);
+
+	// Apply normal offset to position before transforming to shadow space
+	vec3 offsetPos = lightspacepos.xyz + normalOffset;
 	vec3 uv = calculateShadowUVZ(vec4(offsetPos, 1.0), cascade);
-	float slopeBias = mix(bias * 0.02, bias * 0.85, invAlignmentSq);
+
+	// Additional slope-scaled depth bias for the comparison
+	// Use a smaller bias since we already applied normal offset
+	float slopeBias = depthBias * (0.1 + slopeScale * 0.4);
 	float shadow = sampleShadowPCF(slopeBias, cascade, uv.xy, uv.z);
 #if cl_debug_cascade
 	if (cascade == 0) {

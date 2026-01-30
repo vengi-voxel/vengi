@@ -155,9 +155,17 @@ bool Shadow::bind(video::TextureUnit unit) {
 void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	video_trace_scoped(ShadowRender);
 	const bool oldBlend = video::disable(video::State::Blend);
-	// put shadow acne into the dark
+	// Enable front face culling to reduce shadow acne (render back faces into shadow map)
 	video::enable(video::State::CullFace);
 	video::cullFace(video::Face::Front);
+
+	// Enable polygon offset to help with depth precision issues
+	// This provides a hardware-assisted constant and slope-scaled depth bias
+	video::enable(video::State::PolygonOffsetFill);
+	// factor: slope-scaled bias (helps with surfaces at angles)
+	// units: constant bias (helps with depth buffer precision)
+	video::polygonOffset(glm::vec2(1.1f, 4.0f));
+
 	video::colorMask(false, false, false, false);
 	_depthBuffer.bind(false);
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
@@ -168,6 +176,11 @@ void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	}
 	_depthBuffer.unbind();
 	video::colorMask(true, true, true, true);
+
+	// Restore polygon offset state
+	video::polygonOffset(glm::vec2(0.0f));
+	video::disable(video::State::PolygonOffsetFill);
+
 	video::cullFace(video::Face::Back);
 	if (oldBlend) {
 		video::enable(video::State::Blend);

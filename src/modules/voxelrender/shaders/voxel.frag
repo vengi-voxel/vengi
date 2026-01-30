@@ -25,7 +25,10 @@ vec4 calcColor(void) {
 	vec3 lightDir = usePrimaryLight ? u_lightdir : -u_lightdir;
 	float ndotl = max(ndotl1, ndotl2);
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
-	float bias = max(0.0015 * (1.0 - ndotl), 0.00035);
+	// Base bias for shadow mapping - kept small since normal offset is the primary technique
+	// The bias is increased slightly for surfaces facing away from the light
+	float slopeFactor = 1.0 - ndotl;
+	float bias = 0.0005 + 0.001 * slopeFactor;
 	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
 	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion));
 	return vec4(color, v_color.a);
