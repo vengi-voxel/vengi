@@ -9,7 +9,6 @@
 #include "core/StandardLib.h"
 #include "core/Trace.h"
 #include <glm/common.hpp>
-#include <limits>
 
 namespace voxel {
 
@@ -230,16 +229,27 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 			const int yPos = y - _region.getLowerY();
 			const int baseIndex = zBase + (yPos * yStride);
 
+			int offset = 0;
+			int remaining = lineLength;
+
+			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
+			if ((baseIndex & 1) && remaining > 0) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
+				*data32 &= clearMask32;
+				offset = 1;
+				remaining--;
+			}
+
 			// Process two voxels at a time using 64-bit operations
-			uint64_t *data64 = (uint64_t *)&_data[baseIndex];
-			int i = 0;
-			const int pairs = lineLength / 2;
-			for (; i < pairs; ++i) {
+			const int pairs = remaining / 2;
+			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
+			for (int i = 0; i < pairs; ++i) {
 				data64[i] &= clearMask64;
 			}
+
 			// Handle remaining voxel if line length is odd
-			if (lineLength & 1) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex + pairs * 2];
+			if (remaining & 1) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				*data32 &= clearMask32;
 			}
 		}
@@ -279,16 +289,27 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 			const int yPos = y - _region.getLowerY();
 			const int baseIndex = zBase + (yPos * yStride);
 
+			int offset = 0;
+			int remaining = lineLength;
+
+			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
+			if ((baseIndex & 1) && remaining > 0) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
+				*data32 ^= flagsMask32;
+				offset = 1;
+				remaining--;
+			}
+
 			// Process two voxels at a time using 64-bit operations
-			uint64_t *data64 = (uint64_t *)&_data[baseIndex];
-			int i = 0;
-			const int pairs = lineLength / 2;
-			for (; i < pairs; ++i) {
+			const int pairs = remaining / 2;
+			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
+			for (int i = 0; i < pairs; ++i) {
 				data64[i] ^= flagsMask64;
 			}
+
 			// Handle remaining voxel if line length is odd
-			if (lineLength & 1) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex + pairs * 2];
+			if (remaining & 1) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				*data32 ^= flagsMask32;
 			}
 		}
@@ -328,16 +349,27 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 			const int yPos = y - _region.getLowerY();
 			const int baseIndex = zBase + (yPos * yStride);
 
+			int offset = 0;
+			int remaining = lineLength;
+
+			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
+			if ((baseIndex & 1) && remaining > 0) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
+				*data32 |= flagsMask32;
+				offset = 1;
+				remaining--;
+			}
+
 			// Process two voxels at a time using 64-bit operations
-			uint64_t *data64 = (uint64_t *)&_data[baseIndex];
-			int i = 0;
-			const int pairs = lineLength / 2;
-			for (; i < pairs; ++i) {
+			const int pairs = remaining / 2;
+			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
+			for (int i = 0; i < pairs; ++i) {
 				data64[i] |= flagsMask64;
 			}
+
 			// Handle remaining voxel if line length is odd
-			if (lineLength & 1) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex + pairs * 2];
+			if (remaining & 1) {
+				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
 				*data32 |= flagsMask32;
 			}
 		}
