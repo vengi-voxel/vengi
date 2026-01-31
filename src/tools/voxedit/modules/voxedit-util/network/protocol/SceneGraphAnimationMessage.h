@@ -39,6 +39,25 @@ public:
 		writeSize();
 	}
 
+	/**
+	 * @brief Construct an animation message with direct parameters
+	 * @param animations The list of animation names
+	 */
+	SceneGraphAnimationMessage(const core::DynamicArray<core::String> &animations)
+		: ProtocolMessage(PROTO_SCENE_GRAPH_ANIMATION), _animations(animations) {
+		if (!writeUInt16((uint16_t)_animations.size())) {
+			Log::error("Failed to write animation count in SceneGraphAnimationMessage ctor");
+			return;
+		}
+		for (const core::String &anim : _animations) {
+			if (!writePascalStringUInt16LE(anim)) {
+				Log::error("Failed to write animation name in SceneGraphAnimationMessage ctor");
+				return;
+			}
+		}
+		writeSize();
+	}
+
 	SceneGraphAnimationMessage(network::MessageStream &in) {
 		_id = PROTO_SCENE_GRAPH_ANIMATION;
 		uint16_t count = 0;

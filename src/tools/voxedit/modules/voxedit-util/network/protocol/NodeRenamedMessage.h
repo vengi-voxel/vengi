@@ -30,6 +30,22 @@ public:
 		}
 		writeSize();
 	}
+	/**
+	 * @brief Construct a node renamed message with direct parameters
+	 * @param nodeUUID The UUID of the node to rename
+	 * @param name The new name for the node
+	 */
+	NodeRenamedMessage(const core::UUID &nodeUUID, const core::String &name) : ProtocolMessage(PROTO_NODE_RENAMED) {
+		if (!writeUUID(nodeUUID)) {
+			Log::error("Failed to write node UUID in NodeRenamedMessage ctor");
+			return;
+		}
+		if (!writePascalStringUInt16LE(name)) {
+			Log::error("Failed to write name in NodeRenamedMessage ctor");
+			return;
+		}
+		writeSize();
+	}
 	NodeRenamedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_RENAMED;
 		if (in.readUUID(_nodeUUID) == -1) {

@@ -30,6 +30,23 @@ public:
 		}
 		writeSize();
 	}
+	/**
+	 * @brief Construct a node properties message with direct parameters
+	 * @param nodeUUID The UUID of the node to update properties for
+	 * @param properties The new properties for the node
+	 */
+	NodePropertiesMessage(const core::UUID &nodeUUID, const scenegraph::SceneGraphNodeProperties &properties)
+		: ProtocolMessage(PROTO_NODE_PROPERTIES) {
+		if (!writeUUID(nodeUUID)) {
+			Log::error("Failed to write node UUID in NodePropertiesMessage ctor");
+			return;
+		}
+		if (!serializeProperties(properties)) {
+			Log::error("Failed to serialize properties in NodePropertiesMessage ctor");
+			return;
+		}
+		writeSize();
+	}
 	NodePropertiesMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_PROPERTIES;
 		if (in.readUUID(_nodeUUID) == -1) {

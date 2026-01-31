@@ -32,6 +32,23 @@ public:
 		}
 		writeSize();
 	}
+	/**
+	 * @brief Construct a node keyframes message with direct parameters
+	 * @param nodeUUID The UUID of the node to update keyframes for
+	 * @param keyFrames The keyframes map for the node
+	 */
+	NodeKeyFramesMessage(const core::UUID &nodeUUID, const scenegraph::SceneGraphKeyFramesMap &keyFrames)
+		: ProtocolMessage(PROTO_NODE_KEYFRAMES) {
+		if (!writeUUID(nodeUUID)) {
+			Log::error("Failed to write node UUID in NodeKeyFramesMessage ctor");
+			return;
+		}
+		if (!serializeKeyFrames(keyFrames)) {
+			Log::error("Failed to write animation count in NodeKeyFramesMessage ctor");
+			return;
+		}
+		writeSize();
+	}
 	NodeKeyFramesMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_KEYFRAMES;
 		if (in.readUUID(_nodeUUID) == -1) {

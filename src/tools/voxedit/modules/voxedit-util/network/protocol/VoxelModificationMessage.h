@@ -6,6 +6,7 @@
 
 #include "memento/MementoHandler.h"
 #include "voxedit-util/network/ProtocolIds.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
@@ -32,6 +33,36 @@ public:
 			return;
 		}
 		if (!serializeVolume(state.data.buffer(), state.data.size())) {
+			Log::error("Failed to serialize volume in VoxelModificationMessage ctor");
+			return;
+		}
+		writeSize();
+	}
+	/**
+	 * @brief Construct a voxel modification message with direct parameters
+	 * @param nodeUUID The UUID of the node to modify
+	 * @param volume The volume containing the voxel data to send
+	 * @param region The region within the volume to send (if invalid, the full volume region is used)
+	 *
+	 * @note The volume data will be compressed using MementoData::fromVolume
+	 */
+	VoxelModificationMessage(const core::UUID &nodeUUID, const voxel::RawVolume &volume,
+							 const voxel::Region &region = voxel::Region::InvalidRegion)
+		: ProtocolMessage(PROTO_VOXEL_MODIFICATION) {
+		if (!writeUUID(nodeUUID)) {
+			Log::error("Failed to write node UUID in VoxelModificationMessage ctor");
+			return;
+		}
+		memento::MementoData data = memento::MementoData::fromVolume(&volume, region);
+		if (!data.hasVolume()) {
+			Log::error("Failed to compress volume data in VoxelModificationMessage ctor");
+			return;
+		}
+		if (!serializeRegion(data.dataRegion())) {
+			Log::error("Failed to serialize region in VoxelModificationMessage ctor");
+			return;
+		}
+		if (!serializeVolume(data.buffer(), data.size())) {
 			Log::error("Failed to serialize volume in VoxelModificationMessage ctor");
 			return;
 		}

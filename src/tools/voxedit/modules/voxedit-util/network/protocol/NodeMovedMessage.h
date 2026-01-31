@@ -31,6 +31,26 @@ public:
 		}
 		writeSize();
 	}
+	/**
+	 * @brief Construct a node moved message with direct parameters
+	 * @param nodeUUID The UUID of the node being moved
+	 * @param parentUUID The UUID of the new parent node
+	 * @param referenceUUID The UUID of the reference node (sibling ordering)
+	 * @param keyFrames The updated keyframes for the node
+	 */
+	NodeMovedMessage(const core::UUID &nodeUUID, const core::UUID &parentUUID, const core::UUID &referenceUUID,
+					 const scenegraph::SceneGraphKeyFramesMap &keyFrames = scenegraph::SceneGraphKeyFramesMap())
+		: ProtocolMessage(PROTO_NODE_MOVED) {
+		if (!writeUUID(nodeUUID) || !writeUUID(parentUUID) || !writeUUID(referenceUUID)) {
+			Log::error("Failed to write UUIDs in NodeMovedMessage ctor");
+			return;
+		}
+		if (!serializeKeyFrames(keyFrames)) {
+			Log::error("Failed to write animation count in NodeMovedMessage ctor");
+			return;
+		}
+		writeSize();
+	}
 	NodeMovedMessage(network::MessageStream &in) {
 		_id = PROTO_NODE_MOVED;
 		if (in.readUUID(_nodeUUID) == -1) {
