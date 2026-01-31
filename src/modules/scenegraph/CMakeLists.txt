@@ -20,6 +20,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
 set(TEST_SRCS
 	tests/FrameTransformTest.cpp
+	tests/JsonExporterTest.cpp
 	tests/PhysicsTest.cpp
 	tests/SceneGraphTest.cpp
 	tests/SceneGraphTransformTest.cpp

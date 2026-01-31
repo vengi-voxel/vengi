@@ -3,8 +3,8 @@
  */
 
 #include "JsonExporter.h"
-#include "core/Log.h"
 #include "core/Var.h"
+#include "io/StdoutWriteStream.h"
 #include "palette/Material.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/ChunkMesh.h"
@@ -35,40 +35,40 @@ struct NodeStats {
 	}
 };
 
-static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, int nodeId, bool printMeshDetails) {
+static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, int nodeId, bool printMeshDetails, io::WriteStream &stream) {
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 
 	const scenegraph::SceneGraphNodeType type = node.type();
 
-	Log::printf("{");
-	Log::printf("\"id\": %i,", nodeId);
-	Log::printf("\"parent\": %i,", node.parent());
-	Log::printf("\"name\": \"%s\",", node.name().c_str());
-	Log::printf("\"type\": \"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
+	stream.writeStringFormat(false, "{");
+	stream.writeStringFormat(false, "\"id\": %i,", nodeId);
+	stream.writeStringFormat(false, "\"parent\": %i,", node.parent());
+	stream.writeStringFormat(false, "\"name\": \"%s\",", node.name().c_str());
+	stream.writeStringFormat(false, "\"type\": \"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	const glm::vec3 &pivot = node.pivot();
-	Log::printf("\"pivot\": \"%f:%f:%f\"", pivot.x, pivot.y, pivot.z);
+	stream.writeStringFormat(false, "\"pivot\": \"%f:%f:%f\"", pivot.x, pivot.y, pivot.z);
 	if (node.hasPalette()) {
-		Log::printf(",\"palette\": {\n");
+		stream.writeStringFormat(false, ",\"palette\": {\n");
 		const palette::Palette &palette = node.palette();
-		Log::printf("\"name\": \"%s\"", palette.name().c_str());
-		Log::printf(",\"color_count\": %i", palette.colorCount());
-		Log::printf(",\"colors\": [");
+		stream.writeStringFormat(false, "\"name\": \"%s\"", palette.name().c_str());
+		stream.writeStringFormat(false, ",\"color_count\": %i", palette.colorCount());
+		stream.writeStringFormat(false, ",\"colors\": [");
 		for (size_t i = 0; i < palette.size(); ++i) {
 			if (i > 0) {
-				Log::printf(",");
+				stream.writeStringFormat(false, ",");
 			}
 			const color::RGBA &color = palette.color(i);
-			Log::printf("{");
-			Log::printf("\"r\": %i", color.r);
-			Log::printf(",\"g\": %i", color.g);
-			Log::printf(",\"b\": %i", color.b);
-			Log::printf(",\"a\": %i", color.a);
+			stream.writeStringFormat(false, "{");
+			stream.writeStringFormat(false, "\"r\": %i", color.r);
+			stream.writeStringFormat(false, ",\"g\": %i", color.g);
+			stream.writeStringFormat(false, ",\"b\": %i", color.b);
+			stream.writeStringFormat(false, ",\"a\": %i", color.a);
 			if (!palette.colorName(i).empty()) {
-				Log::printf(",\"name\": \"%s\"", palette.colorName(i).c_str());
+				stream.writeStringFormat(false, ",\"name\": \"%s\"", palette.colorName(i).c_str());
 			}
 			const palette::Material &mat = palette.material(i);
-			Log::printf(",\"material\": {");
-			Log::printf("\"type\": \"%i\"", (int)mat.type);
+			stream.writeStringFormat(false, ",\"material\": {");
+			stream.writeStringFormat(false, "\"type\": \"%i\"", (int)mat.type);
 			for (int m = 0; m < (int)palette::MaterialProperty::MaterialMax; ++m) {
 				if (m == palette::MaterialProperty::MaterialNone) {
 					continue;
@@ -78,129 +78,129 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 					continue;
 				}
 				const float value = mat.value(prop);
-				Log::printf(",\"%s\": %f", palette::MaterialPropertyName(prop), value);
+				stream.writeStringFormat(false, ",\"%s\": %f", palette::MaterialPropertyName(prop), value);
 			}
-			Log::printf("}\n");
-			Log::printf("}");
+			stream.writeStringFormat(false, "}\n");
+			stream.writeStringFormat(false, "}");
 		}
-		Log::printf("]");
-		Log::printf("}");
+		stream.writeStringFormat(false, "]");
+		stream.writeStringFormat(false, "}");
 	}
 	NodeStats stats;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		const voxel::RawVolume *v = node.volume();
 		const voxel::Region &region = node.region();
-		Log::printf(",\"volume\": {");
-		Log::printf("\"region\": {");
-		Log::printf("\"mins\": \"%i:%i:%i\",", region.getLowerX(), region.getLowerY(), region.getLowerZ());
-		Log::printf("\"maxs\": \"%i:%i:%i\",", region.getUpperX(), region.getUpperY(), region.getUpperZ());
-		Log::printf("\"size\": \"%i:%i:%i\"", region.getWidthInVoxels(), region.getHeightInVoxels(),
+		stream.writeStringFormat(false, ",\"volume\": {");
+		stream.writeStringFormat(false, "\"region\": {");
+		stream.writeStringFormat(false, "\"mins\": \"%i:%i:%i\",", region.getLowerX(), region.getLowerY(), region.getLowerZ());
+		stream.writeStringFormat(false, "\"maxs\": \"%i:%i:%i\",", region.getUpperX(), region.getUpperY(), region.getUpperZ());
+		stream.writeStringFormat(false, "\"size\": \"%i:%i:%i\"", region.getWidthInVoxels(), region.getHeightInVoxels(),
 					region.getDepthInVoxels());
-		Log::printf("},");
+		stream.writeStringFormat(false, "},");
 		if (v) {
 			stats.voxels = voxelutil::countVoxels(*v);
 		}
-		Log::printf("\"voxels\": %i", stats.voxels);
-		Log::printf("}");
+		stream.writeStringFormat(false, "\"voxels\": %i", stats.voxels);
+		stream.writeStringFormat(false, "}");
 	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
 		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
-		Log::printf(",\"camera\": {");
-		Log::printf("\"field_of_view\": %i,", cameraNode.fieldOfView());
-		Log::printf("\"nearplane\": %f,", cameraNode.nearPlane());
-		Log::printf("\"farplane\": %f,", cameraNode.farPlane());
-		Log::printf("\"mode\": \"%s\"", cameraNode.isOrthographic() ? "ortho" : "perspective");
-		Log::printf("}");
+		stream.writeStringFormat(false, ",\"camera\": {");
+		stream.writeStringFormat(false, "\"field_of_view\": %i,", cameraNode.fieldOfView());
+		stream.writeStringFormat(false, "\"nearplane\": %f,", cameraNode.nearPlane());
+		stream.writeStringFormat(false, "\"farplane\": %f,", cameraNode.farPlane());
+		stream.writeStringFormat(false, "\"mode\": \"%s\"", cameraNode.isOrthographic() ? "ortho" : "perspective");
+		stream.writeStringFormat(false, "}");
 	}
 	if (!node.properties().empty()) {
-		Log::printf(",\"properties\": {");
+		stream.writeStringFormat(false, ",\"properties\": {");
 		auto piter = node.properties().begin();
 		for (size_t i = 0; i < node.properties().size(); ++i) {
 			const auto &entry = *piter;
-			Log::printf("\"%s\": \"%s\"", entry->key.c_str(), entry->value.c_str());
+			stream.writeStringFormat(false, "\"%s\": \"%s\"", entry->key.c_str(), entry->value.c_str());
 			if (i + 1 < node.properties().size()) {
-				Log::printf(",");
+				stream.writeStringFormat(false, ",");
 			}
 			++piter;
 		}
-		Log::printf("}");
+		stream.writeStringFormat(false, "}");
 	}
-	Log::printf(",\"animations\": [");
+	stream.writeStringFormat(false, ",\"animations\": [");
 	for (size_t a = 0; a < sceneGraph.animations().size(); ++a) {
-		Log::printf("{");
-		Log::printf("\"name\": \"%s\",", sceneGraph.animations()[a].c_str());
-		Log::printf("\"keyframes\": [");
+		stream.writeStringFormat(false, "{");
+		stream.writeStringFormat(false, "\"name\": \"%s\",", sceneGraph.animations()[a].c_str());
+		stream.writeStringFormat(false, "\"keyframes\": [");
 		for (size_t i = 0; i < node.keyFrames().size(); ++i) {
 			const scenegraph::SceneGraphKeyFrame &kf = node.keyFrames()[i];
-			Log::printf("{");
-			Log::printf("\"id\": %i,", kf.frameIdx);
-			Log::printf("\"long_rotation\": %s,", kf.longRotation ? "true" : "false");
-			Log::printf("\"interpolation\": \"%s\",",
+			stream.writeStringFormat(false, "{");
+			stream.writeStringFormat(false, "\"id\": %i,", kf.frameIdx);
+			stream.writeStringFormat(false, "\"long_rotation\": %s,", kf.longRotation ? "true" : "false");
+			stream.writeStringFormat(false, "\"interpolation\": \"%s\",",
 						scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
-			Log::printf("\"transform\": {");
+			stream.writeStringFormat(false, "\"transform\": {");
 			const scenegraph::SceneGraphTransform &transform = kf.transform();
 			const glm::vec3 &tr = transform.worldTranslation();
-			Log::printf("\"world_translation\": {");
-			Log::printf("\"x\": %f,", tr.x);
-			Log::printf("\"y\": %f,", tr.y);
-			Log::printf("\"z\": %f", tr.z);
-			Log::printf("},");
+			stream.writeStringFormat(false, "\"world_translation\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", tr.x);
+			stream.writeStringFormat(false, "\"y\": %f,", tr.y);
+			stream.writeStringFormat(false, "\"z\": %f", tr.z);
+			stream.writeStringFormat(false, "},");
 			const glm::vec3 &ltr = transform.localTranslation();
-			Log::printf("\"local_translation\": {");
-			Log::printf("\"x\": %f,", ltr.x);
-			Log::printf("\"y\": %f,", ltr.y);
-			Log::printf("\"z\": %f", ltr.z);
-			Log::printf("},");
+			stream.writeStringFormat(false, "\"local_translation\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", ltr.x);
+			stream.writeStringFormat(false, "\"y\": %f,", ltr.y);
+			stream.writeStringFormat(false, "\"z\": %f", ltr.z);
+			stream.writeStringFormat(false, "},");
 			const glm::quat &rt = transform.worldOrientation();
 			const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
-			Log::printf("\"world_orientation\": {");
-			Log::printf("\"x\": %f,", rt.x);
-			Log::printf("\"y\": %f,", rt.y);
-			Log::printf("\"z\": %f,", rt.z);
-			Log::printf("\"w\": %f", rt.w);
-			Log::printf("},");
-			Log::printf("\"world_euler\": {");
-			Log::printf("\"x\": %f,", rtEuler.x);
-			Log::printf("\"y\": %f,", rtEuler.y);
-			Log::printf("\"z\": %f", rtEuler.z);
-			Log::printf("},");
+			stream.writeStringFormat(false, "\"world_orientation\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", rt.x);
+			stream.writeStringFormat(false, "\"y\": %f,", rt.y);
+			stream.writeStringFormat(false, "\"z\": %f,", rt.z);
+			stream.writeStringFormat(false, "\"w\": %f", rt.w);
+			stream.writeStringFormat(false, "},");
+			stream.writeStringFormat(false, "\"world_euler\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", rtEuler.x);
+			stream.writeStringFormat(false, "\"y\": %f,", rtEuler.y);
+			stream.writeStringFormat(false, "\"z\": %f", rtEuler.z);
+			stream.writeStringFormat(false, "},");
 			const glm::quat &lrt = transform.localOrientation();
 			const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
-			Log::printf("\"local_orientation\": {");
-			Log::printf("\"x\": %f,", lrt.x);
-			Log::printf("\"y\": %f,", lrt.y);
-			Log::printf("\"z\": %f,", lrt.z);
-			Log::printf("\"w\": %f", lrt.w);
-			Log::printf("},");
-			Log::printf("\"local_euler\": {");
-			Log::printf("\"x\": %f,", lrtEuler.x);
-			Log::printf("\"y\": %f,", lrtEuler.y);
-			Log::printf("\"z\": %f", lrtEuler.z);
-			Log::printf("},");
+			stream.writeStringFormat(false, "\"local_orientation\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", lrt.x);
+			stream.writeStringFormat(false, "\"y\": %f,", lrt.y);
+			stream.writeStringFormat(false, "\"z\": %f,", lrt.z);
+			stream.writeStringFormat(false, "\"w\": %f", lrt.w);
+			stream.writeStringFormat(false, "},");
+			stream.writeStringFormat(false, "\"local_euler\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", lrtEuler.x);
+			stream.writeStringFormat(false, "\"y\": %f,", lrtEuler.y);
+			stream.writeStringFormat(false, "\"z\": %f", lrtEuler.z);
+			stream.writeStringFormat(false, "},");
 			const glm::vec3 &sc = transform.worldScale();
-			Log::printf("\"world_scale\": {");
-			Log::printf("\"x\": %f,", sc.x);
-			Log::printf("\"y\": %f,", sc.y);
-			Log::printf("\"z\": %f", sc.z);
-			Log::printf("},");
+			stream.writeStringFormat(false, "\"world_scale\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", sc.x);
+			stream.writeStringFormat(false, "\"y\": %f,", sc.y);
+			stream.writeStringFormat(false, "\"z\": %f", sc.z);
+			stream.writeStringFormat(false, "},");
 			const glm::vec3 &lsc = transform.localScale();
-			Log::printf("\"local_scale\": {");
-			Log::printf("\"x\": %f,", lsc.x);
-			Log::printf("\"y\": %f,", lsc.y);
-			Log::printf("\"z\": %f", lsc.z);
-			Log::printf("}");
-			Log::printf("}"); // transform
-			Log::printf("}"); // keyframe
+			stream.writeStringFormat(false, "\"local_scale\": {");
+			stream.writeStringFormat(false, "\"x\": %f,", lsc.x);
+			stream.writeStringFormat(false, "\"y\": %f,", lsc.y);
+			stream.writeStringFormat(false, "\"z\": %f", lsc.z);
+			stream.writeStringFormat(false, "}");
+			stream.writeStringFormat(false, "}"); // transform
+			stream.writeStringFormat(false, "}"); // keyframe
 			if (i + 1 < node.keyFrames().size()) {
-				Log::printf(",");
+				stream.writeStringFormat(false, ",");
 			}
 		}
-		Log::printf("]"); // keyframes
-		Log::printf("}"); // animation
+		stream.writeStringFormat(false, "]"); // keyframes
+		stream.writeStringFormat(false, "}"); // animation
 		if (a + 1 < sceneGraph.animations().size()) {
-			Log::printf(",");
+			stream.writeStringFormat(false, ",");
 		}
 	}
-	Log::printf("]"); // animations
+	stream.writeStringFormat(false, "]"); // animations
 
 	if (printMeshDetails && node.isModelNode()) {
 		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
@@ -216,41 +216,46 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 		voxel::extractSurface(ctx);
 		const size_t vertices = mesh.mesh[0].getNoOfVertices() + mesh.mesh[1].getNoOfVertices();
 		const size_t indices = mesh.mesh[0].getNoOfIndices() + mesh.mesh[1].getNoOfIndices();
-		Log::printf(",\"mesh\": {");
-		Log::printf("\"vertices\": %i,", (int)vertices);
-		Log::printf("\"indices\": %i", (int)indices);
-		Log::printf("}");
+		stream.writeStringFormat(false, ",\"mesh\": {");
+		stream.writeStringFormat(false, "\"vertices\": %i,", (int)vertices);
+		stream.writeStringFormat(false, "\"indices\": %i", (int)indices);
+		stream.writeStringFormat(false, "}");
 		stats.vertices += (int)vertices;
 		stats.indices += (int)indices;
 	}
 	if (!node.children().empty()) {
-		Log::printf(",\"children\": [");
+		stream.writeStringFormat(false, ",\"children\": [");
 		for (size_t i = 0; i < node.children().size(); ++i) {
 			const int children = node.children()[i];
-			stats += sceneGraphJsonNode_r(sceneGraph, children, printMeshDetails);
+			stats += sceneGraphJsonNode_r(sceneGraph, children, printMeshDetails, stream);
 			if (i + 1 < node.children().size()) {
-				Log::printf(",");
+				stream.writeStringFormat(false, ",");
 			}
 		}
-		Log::printf("]");
+		stream.writeStringFormat(false, "]");
 	}
-	Log::printf("}");
+	stream.writeStringFormat(false, "}");
 	return stats;
 }
 
-void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, bool printMeshDetails) {
-	Log::printf("{");
-	Log::printf("\"root\": ");
-	NodeStats stats = sceneGraphJsonNode_r(sceneGraph, sceneGraph.root().id(), printMeshDetails);
-	Log::printf(",");
-	Log::printf("\"stats\": {");
-	Log::printf("\"voxel_count\": %i", stats.voxels);
+void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, bool printMeshDetails, io::WriteStream &stream) {
+	stream.writeStringFormat(false, "{");
+	stream.writeStringFormat(false, "\"root\": ");
+	NodeStats stats = sceneGraphJsonNode_r(sceneGraph, sceneGraph.root().id(), printMeshDetails, stream);
+	stream.writeStringFormat(false, ",");
+	stream.writeStringFormat(false, "\"stats\": {");
+	stream.writeStringFormat(false, "\"voxel_count\": %i", stats.voxels);
 	if (printMeshDetails) {
-		Log::printf(",\"vertex_count\": %i,", stats.vertices);
-		Log::printf("\"index_count\": %i", stats.indices);
+		stream.writeStringFormat(false, ",\"vertex_count\": %i,", stats.vertices);
+		stream.writeStringFormat(false, "\"index_count\": %i", stats.indices);
 	}
-	Log::printf("}"); // stats
-	Log::printf("}");
+	stream.writeStringFormat(false, "}"); // stats
+	stream.writeStringFormat(false, "}");
+}
+
+void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, bool printMeshDetails) {
+	io::StdoutWriteStream stream;
+	sceneGraphJson(sceneGraph, printMeshDetails, stream);
 }
 
 } // namespace scenegraph
