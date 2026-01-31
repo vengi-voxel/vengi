@@ -26,6 +26,13 @@
 #include "voxedit-util/network/protocol/SceneStateMessage.h"
 #include "voxedit-util/network/protocol/SceneStateRequestMessage.h"
 #include "voxedit-util/network/protocol/VoxelModificationMessage.h"
+#include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
+#include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
+#include "voxedit-util/network/protocol/LuaScriptCreateMessage.h"
+#include "voxedit-util/network/protocol/CVarsRequestMessage.h"
+#include "voxedit-util/network/protocol/CVarsListMessage.h"
+#include "voxedit-util/network/protocol/CommandsRequestMessage.h"
+#include "voxedit-util/network/protocol/CommandsListMessage.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -393,4 +400,245 @@ TEST_F(ProtocolMessageFactoryTest, testSceneStateMessage) {
 	scenegraph::SceneGraph sceneGraph = createTestSceneGraph();
 	voxedit::SceneStateMessage originalMsg(sceneGraph);
 	testRoundTripSerialization(&originalMsg, "SceneStateMessage");
+}
+
+TEST_F(ProtocolMessageFactoryTest, testLuaScriptsRequestMessage) {
+	voxedit::LuaScriptsRequestMessage originalMsg;
+	testRoundTripSerialization(&originalMsg, "LuaScriptsRequestMessage");
+}
+
+TEST_F(ProtocolMessageFactoryTest, testLuaScriptsListMessage) {
+	core::DynamicArray<voxedit::LuaScriptInfo> scripts;
+
+	// Add script without parameters
+	voxedit::LuaScriptInfo script1;
+	script1.filename = "test_script1.lua";
+	script1.description = "A test script without parameters";
+	script1.valid = true;
+	scripts.push_back(script1);
+
+	// Add script with parameters
+	voxedit::LuaScriptInfo script2;
+	script2.filename = "test_script2.lua";
+	script2.description = "A test script with parameters";
+	script2.valid = true;
+
+	voxedit::LuaParameterInfo param1;
+	param1.name = "size";
+	param1.description = "Size of the shape";
+	param1.defaultValue = "10";
+	param1.enumValues = "";
+	param1.minValue = 1.0;
+	param1.maxValue = 100.0;
+	param1.type = voxedit::LuaParameterType::Integer;
+	script2.parameters.push_back(param1);
+
+	voxedit::LuaParameterInfo param2;
+	param2.name = "name";
+	param2.description = "Name for the object";
+	param2.defaultValue = "default";
+	param2.enumValues = "";
+	param2.minValue = 0.0;
+	param2.maxValue = 0.0;
+	param2.type = voxedit::LuaParameterType::String;
+	script2.parameters.push_back(param2);
+
+	voxedit::LuaParameterInfo param3;
+	param3.name = "shape";
+	param3.description = "Shape type";
+	param3.defaultValue = "cube";
+	param3.enumValues = "cube;sphere;cylinder";
+	param3.minValue = 0.0;
+	param3.maxValue = 0.0;
+	param3.type = voxedit::LuaParameterType::Enum;
+	script2.parameters.push_back(param3);
+
+	scripts.push_back(script2);
+
+	// Add invalid script
+	voxedit::LuaScriptInfo script3;
+	script3.filename = "invalid_script.lua";
+	script3.description = "";
+	script3.valid = false;
+	scripts.push_back(script3);
+
+	voxedit::LuaScriptsListMessage originalMsg(scripts);
+
+	network::MessageStream serializedStream;
+	serializedStream.write(originalMsg.getBuffer(), originalMsg.size());
+	for (int i = 0; i < 10; ++i) {
+		serializedStream.writeUInt8(0xFF);
+		serializedStream.writeUInt8(0xFE);
+	}
+
+	core::ScopedPtr<network::ProtocolMessage> deserializedMsg(
+		voxedit::ProtocolMessageFactory::create(serializedStream));
+	ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize LuaScriptsListMessage";
+	ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch";
+
+	voxedit::LuaScriptsListMessage *typedMsg = static_cast<voxedit::LuaScriptsListMessage *>((network::ProtocolMessage *)deserializedMsg);
+	const core::DynamicArray<voxedit::LuaScriptInfo> &deserializedScripts = typedMsg->scripts();
+
+	ASSERT_EQ(scripts.size(), deserializedScripts.size()) << "Script count mismatch";
+
+	for (size_t i = 0; i < scripts.size(); ++i) {
+		EXPECT_EQ(scripts[i].filename, deserializedScripts[i].filename) << "Filename mismatch at index " << i;
+		EXPECT_EQ(scripts[i].description, deserializedScripts[i].description) << "Description mismatch at index " << i;
+		EXPECT_EQ(scripts[i].valid, deserializedScripts[i].valid) << "Valid flag mismatch at index " << i;
+		ASSERT_EQ(scripts[i].parameters.size(), deserializedScripts[i].parameters.size())
+			<< "Parameter count mismatch at script index " << i;
+
+		for (size_t j = 0; j < scripts[i].parameters.size(); ++j) {
+			const voxedit::LuaParameterInfo &origParam = scripts[i].parameters[j];
+			const voxedit::LuaParameterInfo &deserParam = deserializedScripts[i].parameters[j];
+			EXPECT_EQ(origParam.name, deserParam.name) << "Parameter name mismatch";
+			EXPECT_EQ(origParam.description, deserParam.description) << "Parameter description mismatch";
+			EXPECT_EQ(origParam.defaultValue, deserParam.defaultValue) << "Parameter default value mismatch";
+			EXPECT_EQ(origParam.enumValues, deserParam.enumValues) << "Parameter enum values mismatch";
+			EXPECT_DOUBLE_EQ(origParam.minValue, deserParam.minValue) << "Parameter min value mismatch";
+			EXPECT_DOUBLE_EQ(origParam.maxValue, deserParam.maxValue) << "Parameter max value mismatch";
+			EXPECT_EQ(origParam.type, deserParam.type) << "Parameter type mismatch";
+		}
+	}
+
+	deserializedMsg->seek(0);
+	deserializedMsg->writeBack();
+	EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << "Size mismatch after writeBack";
+}
+
+TEST_F(ProtocolMessageFactoryTest, testLuaScriptCreateMessage) {
+	voxedit::LuaScriptCreateMessage originalMsg("test_script", "print('hello world')", "rcon_password123");
+
+	network::MessageStream serializedStream;
+	serializedStream.write(originalMsg.getBuffer(), originalMsg.size());
+	for (int i = 0; i < 10; ++i) {
+		serializedStream.writeUInt8(0xFF);
+		serializedStream.writeUInt8(0xFE);
+	}
+
+	core::ScopedPtr<network::ProtocolMessage> deserializedMsg(
+		voxedit::ProtocolMessageFactory::create(serializedStream));
+	ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize LuaScriptCreateMessage";
+	ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch";
+
+	voxedit::LuaScriptCreateMessage *typedMsg = static_cast<voxedit::LuaScriptCreateMessage *>((network::ProtocolMessage *)deserializedMsg);
+	EXPECT_EQ("test_script", typedMsg->name()) << "Name mismatch";
+	EXPECT_EQ("print('hello world')", typedMsg->content()) << "Content mismatch";
+	EXPECT_EQ("rcon_password123", typedMsg->rconPassword()) << "Rcon password mismatch";
+
+	deserializedMsg->seek(0);
+	deserializedMsg->writeBack();
+	EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << "Size mismatch after writeBack";
+}
+
+TEST_F(ProtocolMessageFactoryTest, testCVarsRequestMessage) {
+	voxedit::CVarsRequestMessage originalMsg;
+	testRoundTripSerialization(&originalMsg, "CVarsRequestMessage");
+}
+
+TEST_F(ProtocolMessageFactoryTest, testCVarsListMessage) {
+	core::DynamicArray<voxedit::CVarInfo> cvars;
+
+	voxedit::CVarInfo cvar1;
+	cvar1.name = "test_var1";
+	cvar1.value = "100";
+	cvar1.description = "A test variable";
+	cvar1.flags = 0;
+	cvars.push_back(cvar1);
+
+	voxedit::CVarInfo cvar2;
+	cvar2.name = "test_var2";
+	cvar2.value = "hello";
+	cvar2.description = "Another test variable";
+	cvar2.flags = core::CV_READONLY;
+	cvars.push_back(cvar2);
+
+	voxedit::CVarInfo cvar3;
+	cvar3.name = "secret_var";
+	cvar3.value = "***";
+	cvar3.description = "A secret variable";
+	cvar3.flags = core::CV_SECRET;
+	cvars.push_back(cvar3);
+
+	voxedit::CVarsListMessage originalMsg(cvars);
+
+	network::MessageStream serializedStream;
+	serializedStream.write(originalMsg.getBuffer(), originalMsg.size());
+	for (int i = 0; i < 10; ++i) {
+		serializedStream.writeUInt8(0xFF);
+		serializedStream.writeUInt8(0xFE);
+	}
+
+	core::ScopedPtr<network::ProtocolMessage> deserializedMsg(
+		voxedit::ProtocolMessageFactory::create(serializedStream));
+	ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize CVarsListMessage";
+	ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch";
+
+	voxedit::CVarsListMessage *typedMsg = static_cast<voxedit::CVarsListMessage *>((network::ProtocolMessage *)deserializedMsg);
+	const core::DynamicArray<voxedit::CVarInfo> &deserializedCvars = typedMsg->cvars();
+
+	ASSERT_EQ(cvars.size(), deserializedCvars.size()) << "CVar count mismatch";
+
+	for (size_t i = 0; i < cvars.size(); ++i) {
+		EXPECT_EQ(cvars[i].name, deserializedCvars[i].name) << "Name mismatch at index " << i;
+		EXPECT_EQ(cvars[i].value, deserializedCvars[i].value) << "Value mismatch at index " << i;
+		EXPECT_EQ(cvars[i].description, deserializedCvars[i].description) << "Description mismatch at index " << i;
+		EXPECT_EQ(cvars[i].flags, deserializedCvars[i].flags) << "Flags mismatch at index " << i;
+	}
+
+	deserializedMsg->seek(0);
+	deserializedMsg->writeBack();
+	EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << "Size mismatch after writeBack";
+}
+
+TEST_F(ProtocolMessageFactoryTest, testCommandsRequestMessage) {
+	voxedit::CommandsRequestMessage originalMsg;
+	testRoundTripSerialization(&originalMsg, "CommandsRequestMessage");
+}
+
+TEST_F(ProtocolMessageFactoryTest, testCommandsListMessage) {
+	core::DynamicArray<voxedit::CommandInfo> commands;
+
+	voxedit::CommandInfo cmd1;
+	cmd1.name = "test_command";
+	cmd1.description = "A test command that does something";
+	commands.push_back(cmd1);
+
+	voxedit::CommandInfo cmd2;
+	cmd2.name = "another_cmd";
+	cmd2.description = "";
+	commands.push_back(cmd2);
+
+	voxedit::CommandInfo cmd3;
+	cmd3.name = "quit";
+	cmd3.description = "Quit the application";
+	commands.push_back(cmd3);
+
+	voxedit::CommandsListMessage originalMsg(commands);
+
+	network::MessageStream serializedStream;
+	serializedStream.write(originalMsg.getBuffer(), originalMsg.size());
+	for (int i = 0; i < 10; ++i) {
+		serializedStream.writeUInt8(0xFF);
+		serializedStream.writeUInt8(0xFE);
+	}
+
+	core::ScopedPtr<network::ProtocolMessage> deserializedMsg(
+		voxedit::ProtocolMessageFactory::create(serializedStream));
+	ASSERT_NE(nullptr, deserializedMsg) << "Failed to deserialize CommandsListMessage";
+	ASSERT_EQ(originalMsg.getId(), deserializedMsg->getId()) << "Message ID mismatch";
+
+	voxedit::CommandsListMessage *typedMsg = static_cast<voxedit::CommandsListMessage *>((network::ProtocolMessage *)deserializedMsg);
+	const core::DynamicArray<voxedit::CommandInfo> &deserializedCommands = typedMsg->commands();
+
+	ASSERT_EQ(commands.size(), deserializedCommands.size()) << "Command count mismatch";
+
+	for (size_t i = 0; i < commands.size(); ++i) {
+		EXPECT_EQ(commands[i].name, deserializedCommands[i].name) << "Name mismatch at index " << i;
+		EXPECT_EQ(commands[i].description, deserializedCommands[i].description) << "Description mismatch at index " << i;
+	}
+
+	deserializedMsg->seek(0);
+	deserializedMsg->writeBack();
+	EXPECT_EQ(deserializedMsg->size(), originalMsg.size()) << "Size mismatch after writeBack";
 }

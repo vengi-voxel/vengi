@@ -21,7 +21,6 @@ public:
 		const core::VarPtr &password = core::Var::getSafe(cfg::VoxEditNetRconPassword);
 		if (password->strVal() != msg->rconPassword()) {
 			Log::warn("Received command message with invalid rcon password from client id %d", clientId);
-			Log::error("password: '%s', expected: '%s'", msg->rconPassword().c_str(), password->strVal().c_str());
 			return;
 		}
 		command::executeCommands(msg->command());

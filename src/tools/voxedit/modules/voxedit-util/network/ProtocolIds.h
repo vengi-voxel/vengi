@@ -37,5 +37,19 @@ const network::ProtocolId PROTO_COMMAND = 12;
 const network::ProtocolId PROTO_NODE_NORMAL_PALETTE_CHANGED = 13;
 // scene graph animation list changed
 const network::ProtocolId PROTO_SCENE_GRAPH_ANIMATION = 14;
+// request the list of available lua scripts
+const network::ProtocolId PROTO_LUA_SCRIPTS_REQUEST = 15;
+// response with the list of available lua scripts
+const network::ProtocolId PROTO_LUA_SCRIPTS_LIST = 16;
+// create/send a new lua script
+const network::ProtocolId PROTO_LUA_SCRIPT_CREATE = 17;
+// request the list of cvars
+const network::ProtocolId PROTO_CVARS_REQUEST = 18;
+// response with the list of cvars
+const network::ProtocolId PROTO_CVARS_LIST = 19;
+// request the list of commands
+const network::ProtocolId PROTO_COMMANDS_REQUEST = 20;
+// response with the list of commands
+const network::ProtocolId PROTO_COMMANDS_LIST = 21;
 
 } // namespace voxedit

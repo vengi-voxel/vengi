@@ -8,6 +8,7 @@
 #include "core/DeltaFrameSeconds.h"
 #include "core/collection/DynamicArray.h"
 #include "handler/server/InitSessionHandler.h"
+#include "handler/server/InfoRequestHandlers.h"
 #include "handler/server/SceneStateHandlerServer.h"
 #include "network/ProtocolHandlerRegistry.h"
 #include "voxedit-util/network/handler/server/BroadcastHandler.h"
@@ -15,6 +16,10 @@
 
 namespace network {
 struct NetworkImpl;
+}
+
+namespace voxelgenerator {
+class LUAApi;
 }
 
 namespace voxedit {
@@ -63,6 +68,10 @@ protected:
 	InitSessionHandler _initSessionHandler;
 	SceneStateHandlerServer _sceneStateHandler;
 	BroadcastHandler _broadcastHandler;
+	LuaScriptsRequestHandler _luaScriptsRequestHandler;
+	LuaScriptCreateHandler _luaScriptCreateHandler;
+	CVarsRequestHandler _cvarsRequestHandler;
+	CommandsRequestHandler _commandsRequestHandler;
 	core::VarPtr _maxClients;
 
 	RemoteClients _clients;
@@ -92,6 +101,8 @@ public:
 
 	void addListener(NetworkListener *listener);
 	void removeListener(NetworkListener *listener);
+
+	void setLuaApi(voxelgenerator::LUAApi *luaApi);
 
 	size_t clientCount() const;
 	RemoteClient *client(network::ClientId clientId);

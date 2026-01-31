@@ -2828,6 +2828,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the lua api");
 		return false;
 	}
+	_server.setLuaApi(&_luaApi);
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();

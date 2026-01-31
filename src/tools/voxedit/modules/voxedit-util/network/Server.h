@@ -44,6 +44,10 @@ public:
 		return _network;
 	}
 
+	void setLuaApi(voxelgenerator::LUAApi *luaApi) {
+		_network.setLuaApi(luaApi);
+	}
+
 	/**
 	 * @brief Start to listen on the specified port and interface
 	 */

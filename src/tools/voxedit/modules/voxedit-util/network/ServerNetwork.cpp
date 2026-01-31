@@ -50,7 +50,8 @@ RemoteClient &RemoteClient::operator=(RemoteClient &&other) noexcept {
 }
 
 ServerNetwork::ServerNetwork(Server *server)
-	: _impl(new network::NetworkImpl()), _initSessionHandler(server), _sceneStateHandler(server), _broadcastHandler(server) {
+	: _impl(new network::NetworkImpl()), _initSessionHandler(server), _sceneStateHandler(server), _broadcastHandler(server),
+	  _luaScriptsRequestHandler(this), _cvarsRequestHandler(this), _commandsRequestHandler(this) {
 }
 
 ServerNetwork::~ServerNetwork() {
@@ -188,6 +189,10 @@ bool ServerNetwork::init() {
 	r.registerHandler(PROTO_NODE_KEYFRAMES, &_broadcastHandler);
 	r.registerHandler(PROTO_NODE_NORMAL_PALETTE_CHANGED, &_broadcastHandler);
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_broadcastHandler);
+	r.registerHandler(PROTO_LUA_SCRIPTS_REQUEST, &_luaScriptsRequestHandler);
+	r.registerHandler(PROTO_LUA_SCRIPT_CREATE, &_luaScriptCreateHandler);
+	r.registerHandler(PROTO_CVARS_REQUEST, &_cvarsRequestHandler);
+	r.registerHandler(PROTO_COMMANDS_REQUEST, &_commandsRequestHandler);
 	return true;
 }
 
@@ -456,6 +461,10 @@ void ServerNetwork::removeListener(NetworkListener *listener) {
 	if (it != _listeners.end()) {
 		_listeners.erase(it);
 	}
+}
+
+void ServerNetwork::setLuaApi(voxelgenerator::LUAApi *luaApi) {
+	_luaScriptsRequestHandler.setLuaApi(luaApi);
 }
 
 
