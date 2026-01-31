@@ -44,6 +44,26 @@ set(DOCS
 	FAQ.md
 	Formats.md
 	LUAScript.md
+	lua/algorithm.md
+	lua/cmd.md
+	lua/http.md
+	lua/image.md
+	lua/import.md
+	lua/io.md
+	lua/keyframe.md
+	lua/log.md
+	lua/noise.md
+	lua/palette.md
+	lua/quat.md
+	lua/region.md
+	lua/scenegraph.md
+	lua/scenegraphnode.md
+	lua/shape.md
+	lua/stream.md
+	lua/sys.md
+	lua/var.md
+	lua/vector.md
+	lua/volume.md
 	Material.md
 	Palette.md
 	Translation.md

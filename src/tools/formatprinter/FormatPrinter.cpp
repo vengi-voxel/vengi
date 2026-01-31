@@ -8,12 +8,17 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStringMap.h"
 #include "core/collection/Set.h"
 #include "io/FormatDescription.h"
+#include "io/MemoryReadStream.h"
+#include "io/BufferedReadWriteStream.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteFormatDescription.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelgenerator/LUAApi.h"
+#include "json/JSON.h"
 #include "engine-config.h"
 #include <ctype.h>
 
@@ -33,6 +38,7 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--plist").setDescription("Generate the plist file for voxel formats");
 	registerArg("--wix").setDescription("Generate the wix file for msi installers");
 	registerArg("--magic").setDescription("Generate the magic file");
+	registerArg("--lua-api").setDescription("Generate the lua api markdown documentation files");
 	app::AppState state = Super::onConstruct();
 
 	core::Var::visit([this](const core::VarPtr &var) {
@@ -116,6 +122,8 @@ app::AppState FormatPrinter::onRunning() {
 		printApplicationPlist();
 	} else if (hasArg("--wix")) {
 		printInstallerWix();
+	} else if (hasArg("--lua-api")) {
+		printLuaApiMarkdown();
 	} else {
 		const bool palette = hasArg("--palette");
 		const bool image = hasArg("--image");
@@ -823,6 +831,310 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 		Log::printf("]");
 	}
 	Log::printf("}\n");
+}
+
+// Map from Lua global/meta names to documentation page names
+static core::String getDocPageName(const core::String &name) {
+	if (name == "g_scenegraph") {
+		return "scenegraph";
+	} else if (name == "g_region") {
+		return "region";
+	} else if (name == "g_palette") {
+		return "palette";
+	} else if (name == "g_noise") {
+		return "noise";
+	} else if (name == "g_shape") {
+		return "shape";
+	} else if (name == "g_import") {
+		return "import";
+	} else if (name == "g_algorithm") {
+		return "algorithm";
+	} else if (name == "g_http") {
+		return "http";
+	} else if (name == "g_io") {
+		return "io";
+	} else if (name == "g_cmd") {
+		return "cmd";
+	} else if (name == "g_var") {
+		return "var";
+	} else if (name == "g_log") {
+		return "log";
+	} else if (name == "g_sys") {
+		return "sys";
+	} else if (name == "g_vec2" || name == "g_vec3" || name == "g_vec4" ||
+			   name == "g_ivec2" || name == "g_ivec3" || name == "g_ivec4") {
+		return "vector";
+	} else if (name == "g_quat") {
+		return "quat";
+	} else if (name == "scenegraphnode") {
+		return "scenegraphnode";
+	} else if (name == "keyframe") {
+		return "keyframe";
+	} else if (name == "volume") {
+		return "volume";
+	} else if (name == "region" || name == "region_gc") {
+		return "region";
+	} else if (name == "palette" || name == "palette_gc") {
+		return "palette";
+	} else if (name == "stream") {
+		return "stream";
+	} else if (name == "image") {
+		return "image";
+	}
+	return name;
+}
+
+static core::String getDocTitle(const core::String &pageName) {
+	if (pageName == "scenegraph") {
+		return "SceneGraph";
+	} else if (pageName == "scenegraphnode") {
+		return "SceneGraphNode";
+	} else if (pageName == "region") {
+		return "Region";
+	} else if (pageName == "palette") {
+		return "Palette";
+	} else if (pageName == "noise") {
+		return "Noise";
+	} else if (pageName == "shape") {
+		return "Shape";
+	} else if (pageName == "import") {
+		return "Import";
+	} else if (pageName == "algorithm") {
+		return "Algorithm";
+	} else if (pageName == "http") {
+		return "HTTP";
+	} else if (pageName == "io") {
+		return "IO";
+	} else if (pageName == "cmd") {
+		return "Command";
+	} else if (pageName == "var") {
+		return "Cvar";
+	} else if (pageName == "log") {
+		return "Logging";
+	} else if (pageName == "sys") {
+		return "System";
+	} else if (pageName == "vector") {
+		return "Vectors";
+	} else if (pageName == "quat") {
+		return "Quaternion";
+	} else if (pageName == "volume") {
+		return "Volume";
+	} else if (pageName == "keyframe") {
+		return "Keyframe";
+	} else if (pageName == "stream") {
+		return "Stream";
+	} else if (pageName == "image") {
+		return "Image";
+	}
+	return pageName;
+}
+
+static core::String getGlobalName(const core::String &pageName) {
+	if (pageName == "scenegraph") {
+		return "g_scenegraph";
+	} else if (pageName == "region") {
+		return "g_region";
+	} else if (pageName == "palette") {
+		return "g_palette";
+	} else if (pageName == "noise") {
+		return "g_noise";
+	} else if (pageName == "shape") {
+		return "g_shape";
+	} else if (pageName == "import") {
+		return "g_import";
+	} else if (pageName == "algorithm") {
+		return "g_algorithm";
+	} else if (pageName == "http") {
+		return "g_http";
+	} else if (pageName == "io") {
+		return "g_io";
+	} else if (pageName == "cmd") {
+		return "g_cmd";
+	} else if (pageName == "var") {
+		return "g_var";
+	} else if (pageName == "log") {
+		return "g_log";
+	} else if (pageName == "sys") {
+		return "g_sys";
+	} else if (pageName == "vector") {
+		return "g_vec3, g_ivec3, ...";
+	} else if (pageName == "quat") {
+		return "g_quat";
+	}
+	return "";
+}
+
+void FormatPrinter::printLuaApiMarkdown() {
+	voxelgenerator::LUAApi scriptApi(_filesystem);
+	if (!scriptApi.init()) {
+		Log::error("Failed to initialize LUA API");
+		return;
+	}
+
+	// Get JSON from LUAApi
+	io::BufferedReadWriteStream stream;
+	if (!scriptApi.apiJsonToStream(stream)) {
+		Log::error("Failed to generate Lua API JSON");
+		scriptApi.shutdown();
+		return;
+	}
+	scriptApi.shutdown();
+
+	stream.seek(0);
+	core::String jsonStr;
+	stream.readString((int)stream.size(), jsonStr);
+
+	nlohmann::json apiJson = nlohmann::json::parse(jsonStr.c_str(), nullptr, false, true);
+	if (apiJson.is_discarded()) {
+		Log::error("Failed to parse Lua API JSON");
+		return;
+	}
+
+	// Group by documentation page
+	core::DynamicStringMap<nlohmann::json> pageContent;
+
+	for (auto it = apiJson.begin(); it != apiJson.end(); ++it) {
+		const core::String name = it.key().c_str();
+		const core::String pageName = getDocPageName(name);
+
+		auto found = pageContent.find(pageName);
+		if (found == pageContent.end()) {
+			pageContent.put(pageName, nlohmann::json::array());
+		}
+
+		nlohmann::json entry;
+		entry["name"] = name.c_str();
+		entry["type"] = it.value().value("type", "");
+		entry["methods"] = it.value().value("methods", nlohmann::json::array());
+		auto iter = pageContent.find(pageName);
+		if (iter != pageContent.end()) {
+			iter->value.push_back(entry);
+		}
+	}
+
+	// Generate markdown for each page
+	for (auto it = pageContent.begin(); it != pageContent.end(); ++it) {
+		const core::String &pageName = it->key;
+		const nlohmann::json &entries = it->value;
+
+		Log::printf("--- BEGIN FILE: lua/%s.md ---\n", pageName.c_str());
+		Log::printf("# %s\n\n", getDocTitle(pageName).c_str());
+
+		const core::String globalName = getGlobalName(pageName);
+		if (!globalName.empty()) {
+			Log::printf("Global: `%s`\n\n", globalName.c_str());
+		}
+
+		// Collect all methods across all entries (for vector types there are multiple globals)
+		core::DynamicStringMap<nlohmann::json> allMethods;
+		core::DynamicArray<core::String> sortedMethodNames;
+		bool isMetatable = false;
+
+		for (const auto &entry : entries) {
+			const std::string entryType = entry.value("type", "");
+			const auto &methods = entry.value("methods", nlohmann::json::array());
+
+			if (entryType == "metatable") {
+				isMetatable = true;
+			}
+
+			for (const auto &method : methods) {
+				const std::string methodName = method.value("name", "");
+				if (methodName.empty() || methodName[0] == '_') {
+					continue; // Skip metamethods
+				}
+
+				// Store for documentation (avoid duplicates for vector types)
+				if (allMethods.find(methodName.c_str()) == allMethods.end()) {
+					allMethods.put(methodName.c_str(), method);
+					sortedMethodNames.push_back(methodName.c_str());
+				}
+			}
+		}
+
+		// Sort method names alphabetically
+		sortedMethodNames.sort(core::Greater<core::String>());
+
+		// Print function/method table
+		if (isMetatable) {
+			Log::printf("## Methods\n\n");
+			Log::printf("| Method | Description |\n");
+			Log::printf("| ------ | ----------- |\n");
+		} else {
+			Log::printf("## Functions\n\n");
+			Log::printf("| Function | Description |\n");
+			Log::printf("| -------- | ----------- |\n");
+		}
+
+		for (const core::String &methodName : sortedMethodNames) {
+			auto mit = allMethods.find(methodName);
+			if (mit == allMethods.end()) {
+				continue;
+			}
+			const nlohmann::json &method = mit->value;
+			const std::string summary = method.value("summary", "");
+
+			// Build parameter signature
+			core::String params;
+			if (method.contains("parameters")) {
+				bool first = true;
+				for (const auto &param : method["parameters"]) {
+					if (!first) {
+						params += ", ";
+					}
+					params += param.value("name", "").c_str();
+					first = false;
+				}
+			}
+			Log::printf("| `%s(%s)` | %s |\n", methodName.c_str(), params.c_str(), summary.c_str());
+		}
+
+		Log::printf("\n## Detailed Documentation\n\n");
+
+		// Print detailed documentation for each method (sorted)
+		for (const core::String &methodName : sortedMethodNames) {
+			auto mit = allMethods.find(methodName);
+			if (mit == allMethods.end()) {
+				continue;
+			}
+			const nlohmann::json &method = mit->value;
+
+			const std::string summary = method.value("summary", "");
+
+			Log::printf("### %s\n\n", methodName.c_str());
+
+			if (!summary.empty()) {
+				Log::printf("%s\n\n", summary.c_str());
+			}
+
+			if (method.contains("parameters") && !method["parameters"].empty()) {
+				Log::printf("**Parameters:**\n\n");
+				Log::printf("| Name | Type | Description |\n");
+				Log::printf("| ---- | ---- | ----------- |\n");
+				for (const auto &param : method["parameters"]) {
+					const std::string pname = param.value("name", "");
+					const std::string ptype = param.value("type", "");
+					const std::string pdesc = param.value("description", "");
+					Log::printf("| `%s` | `%s` | %s |\n", pname.c_str(), ptype.c_str(), pdesc.c_str());
+				}
+				Log::printf("\n");
+			}
+
+			if (method.contains("returns") && !method["returns"].empty()) {
+				Log::printf("**Returns:**\n\n");
+				Log::printf("| Type | Description |\n");
+				Log::printf("| ---- | ----------- |\n");
+				for (const auto &ret : method["returns"]) {
+					const std::string rtype = ret.value("type", "");
+					const std::string rdesc = ret.value("description", "");
+					Log::printf("| `%s` | %s |\n", rtype.c_str(), rdesc.c_str());
+				}
+				Log::printf("\n");
+			}
+		}
+
+		Log::printf("--- END FILE ---\n\n");
+	}
 }
 
 int main(int argc, char *argv[]) {

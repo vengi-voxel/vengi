@@ -7,6 +7,10 @@
 #include "app/CommandlineApp.h"
 #include "core/collection/StringSet.h"
 
+namespace io {
+class WriteStream;
+}
+
 /**
  * @ingroup Tools
  */
@@ -23,6 +27,7 @@ private:
 	void printApplicationPlist();
 	void printInstallerWix();
 	void printMagic();
+	void printLuaApiMarkdown();
 
 	core::StringSet _varsAtStartup;
 	core::StringSet _uniqueMimetypes;

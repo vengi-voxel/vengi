@@ -211,6 +211,10 @@ endif
 docs/Formats.md: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --markdown > $@
 
+lua-api: formatprinter
+	$(Q)mkdir -p docs/lua
+	$(Q)$(call EXEC_PATH,formatprinter) --lua-api | awk '/^--- BEGIN FILE: / { gsub(/^--- BEGIN FILE: /, ""); gsub(/ ---$$/, ""); file="docs/" $$0; next } /^--- END FILE ---/ { close(file); file=""; next } file { print > file }'
+
 contrib/installer/windows/wixpatch.xml: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --wix > $@
 
@@ -233,7 +237,7 @@ plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit
 formats: manpages plists tools/html/data.js contrib/installer/linux/x-voxel.xml docs/Formats.md contrib/installer/windows/wixpatch.xml
 metainfo:
 	$(Q)contrib/installer/linux/metainfo.py contrib/installer/linux/io.github.vengi_voxel.vengi.voxedit.metainfo.xml docs/CHANGELOG.md
-prepare-release: formats metainfo find-undocumented-cvars po
+prepare-release: formats metainfo find-undocumented-cvars po lua-api
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)
