@@ -130,10 +130,11 @@ public:
 	const voxel::Region &dirtyRegion() const;
 
 	/**
-	 * @brief Generate a JSON representation of the Lua API
-	 * @return JSON string containing all registered globals and metatables with their methods
+	 * @brief Generate a JSON representation of the Lua API to a stream
+	 * @param stream The stream to write the JSON to
+	 * @return true if successful, false otherwise
 	 */
-	core::String apiJson() const;
+	bool apiJsonToStream(io::WriteStream &stream) const;
 };
 
 inline const core::String &LUAApi::error() const {

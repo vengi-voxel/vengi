@@ -23,6 +23,7 @@
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
+#include "io/StdoutWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "palette/Palette.h"
@@ -97,6 +98,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
 	registerArg("--print-scripts").setDescription("Print found lua scripts as json for easier parsing in other tools");
+	registerArg("--print-lua-api").setDescription("Print the lua api documentation as json for easier parsing in other tools");
 
 	voxelformat::FormatConfig::init();
 
@@ -218,6 +220,15 @@ app::AppState VoxConvert::onInit() {
 						(scripts[i].valid ? "true" : "false"));
 		}
 		Log::printf("]}\n");
+		return state;
+	}
+
+	if (hasArg("--print-lua-api")) {
+		voxelgenerator::LUAApi scriptApi(filesystem());
+		scriptApi.init();
+		io::StdoutWriteStream stream;
+		scriptApi.apiJsonToStream(stream);
+		scriptApi.shutdown();
 		return state;
 	}
 

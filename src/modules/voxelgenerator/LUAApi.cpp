@@ -13,6 +13,7 @@
 #include "io/FilesystemArchive.h"
 #include "io/Stream.h"
 #include "io/StreamArchive.h"
+#include "lauxlib.h"
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "noise/Simplex.h"
@@ -285,9 +286,39 @@ static int luaVoxel_volumewrapper_voxel(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_voxel_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "voxel",
+		"summary": "Get the voxel at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The color index of the voxel at the specified coordinates, or -1 if the voxel is air." }
+		]})";
+
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_region(lua_State* s) {
 	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	return luaVoxel_pushregion(s, volume->region());
+}
+
+static int luaVoxel_volumewrapper_region_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "region",
+		"summary": "Get the region of the volume.",
+		"parameters": [],
+		"returns": [
+			{"type": "region", "description": "The region of the volume."}
+		]})";
+
+	lua_pushstring(s, json);
+	return 1;
 }
 
 static int luaVoxel_volumewrapper_translate(lua_State* s) {
@@ -297,6 +328,21 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 	const int z = (int)luaL_optinteger(s, 4, 0);
 	volume->volume()->translate(glm::ivec3(x, y, z));
 	return 0;
+}
+
+static int luaVoxel_volumewrapper_translate_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "translate",
+		"summary": "Translate the region of the volume without moving the voxels.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x translation."},
+			{"name": "y", "type": "integer", "description": "The y translation (optional, default 0)."},
+			{"name": "z", "type": "integer", "description": "The z translation (optional, default 0)."}
+		],
+		"returns": []})";
+
+	lua_pushstring(s, json);
+	return 1;
 }
 
 static int luaVoxel_volumewrapper_move(lua_State* s) {
@@ -313,6 +359,21 @@ static int luaVoxel_volumewrapper_move(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_volumewrapper_move_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "move",
+		"summary": "Move the voxels within the volume by the specified offset.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x offset."},
+			{"name": "y", "type": "integer", "description": "The y offset (optional, default 0)."},
+			{"name": "z", "type": "integer", "description": "The z offset (optional, default 0)."}
+		],
+		"returns": []})";
+
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const int w = (int)luaL_checkinteger(s, 2);
@@ -326,6 +387,22 @@ static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	volume->setVolume(v);
 	volume->update();
 	return 0;
+}
+
+static int luaVoxel_volumewrapper_resize_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "resize",
+		"summary": "Resize the volume by the specified amounts.",
+		"parameters": [
+			{"name": "w", "type": "integer", "description": "Width change."},
+			{"name": "h", "type": "integer", "description": "Height change (optional, default 0)."},
+			{"name": "d", "type": "integer", "description": "Depth change (optional, default 0)."},
+			{"name": "extendMins", "type": "boolean", "description": "Extend the minimum corner (optional, default false)."}
+		],
+		"returns": []})";
+
+	lua_pushstring(s, json);
+	return 1;
 }
 
 static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index, int defaultColor = 1) {
@@ -1739,238 +1816,1931 @@ static int luaVoxel_scenegraphnode_gc(lua_State *s) {
 	return 0;
 }
 
+static int luaVoxel_volumewrapper_crop_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "crop",
+		"summary": "Crop the volume to remove empty space around the voxels.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_text_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "text",
+		"summary": "Render text into the volume using a TrueType font.",
+		"parameters": [
+			{"name": "font", "type": "string", "description": "Path to the TrueType font file."},
+			{"name": "text", "type": "string", "description": "The text to render."},
+			{"name": "x", "type": "integer", "description": "The x position (optional, default region lower x)."},
+			{"name": "y", "type": "integer", "description": "The y position (optional, default region lower y)."},
+			{"name": "z", "type": "integer", "description": "The z position (optional, default region lower z)."},
+			{"name": "size", "type": "integer", "description": "Font size (optional, default 16)."},
+			{"name": "thickness", "type": "integer", "description": "Voxel thickness (optional, default 1)."},
+			{"name": "spacing", "type": "integer", "description": "Character spacing (optional, default 0)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_fillhollow_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "fillHollow",
+		"summary": "Fill hollow areas in the volume with the specified voxel color.",
+		"parameters": [
+			{"name": "color", "type": "integer", "description": "The color index to fill with (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_hollow_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hollow",
+		"summary": "Make the volume hollow by removing interior voxels.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_importheightmap_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "importHeightmap",
+		"summary": "Import a heightmap image into the volume.",
+		"parameters": [
+			{"name": "image", "type": "string", "description": "Path to the heightmap image."},
+			{"name": "underground", "type": "integer", "description": "Color index for underground voxels (optional)."},
+			{"name": "surface", "type": "integer", "description": "Color index for surface voxels (optional)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_importcoloredheightmap_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "importColoredHeightmap",
+		"summary": "Import a colored heightmap image into the volume.",
+		"parameters": [
+			{"name": "image", "type": "string", "description": "Path to the colored heightmap image."},
+			{"name": "underground", "type": "integer", "description": "Color index for underground voxels (optional)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_importimageasvolume_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "importImageAsVolume",
+		"summary": "Import an image as a 3D volume using depth information.",
+		"parameters": [
+			{"name": "texture", "type": "string", "description": "Path to the texture image."},
+			{"name": "depthmap", "type": "string", "description": "Path to the depth map image (optional)."},
+			{"name": "palette", "type": "palette", "description": "Palette to use (optional)."},
+			{"name": "thickness", "type": "integer", "description": "Thickness of the volume (optional, default 8)."},
+			{"name": "bothSides", "type": "boolean", "description": "Create voxels on both sides (optional, default false)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_mirroraxis_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "mirrorAxis",
+		"summary": "Mirror the volume along the specified axis.",
+		"parameters": [
+			{"name": "axis", "type": "string", "description": "The axis to mirror along: 'x', 'y', or 'z' (default 'y')."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_rotateaxis_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "rotateAxis",
+		"summary": "Rotate the volume 90 degrees around the specified axis.",
+		"parameters": [
+			{"name": "axis", "type": "string", "description": "The axis to rotate around: 'x', 'y', or 'z' (default 'y')."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_setvoxel_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setVoxel",
+		"summary": "Set a voxel at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "color", "type": "integer", "description": "The color index to set, or -1 for air (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel was set within the region, false otherwise."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+// Region jsonhelp functions
+static int luaVoxel_region_width_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "width",
+		"summary": "Get the width of the region in voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The width of the region."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_height_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "height",
+		"summary": "Get the height of the region in voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The height of the region."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_depth_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "depth",
+		"summary": "Get the depth of the region in voxels.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The depth of the region."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_x_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "x",
+		"summary": "Get the lower x coordinate of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The lower x coordinate."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_y_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "y",
+		"summary": "Get the lower y coordinate of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The lower y coordinate."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_z_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "z",
+		"summary": "Get the lower z coordinate of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The lower z coordinate."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_center_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "center",
+		"summary": "Get the center point of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "vec3", "description": "The center point of the region."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_mins_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "mins",
+		"summary": "Get the lower corner of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "ivec3", "description": "The lower corner coordinates."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_maxs_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "maxs",
+		"summary": "Get the upper corner of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "ivec3", "description": "The upper corner coordinates."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_size_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "size",
+		"summary": "Get the dimensions of the region.",
+		"parameters": [],
+		"returns": [
+			{"type": "ivec3", "description": "The dimensions in voxels."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_isonborder_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isOnBorder",
+		"summary": "Check if a position is on the border of the region.",
+		"parameters": [
+			{"name": "pos", "type": "ivec3", "description": "The position to check."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if on border, false otherwise."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_intersects_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "intersects",
+		"summary": "Check if this region intersects with another region.",
+		"parameters": [
+			{"name": "other", "type": "region", "description": "The other region to check."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if regions intersect, false otherwise."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_contains_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "contains",
+		"summary": "Check if this region fully contains another region.",
+		"parameters": [
+			{"name": "other", "type": "region", "description": "The other region to check."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if this region contains the other, false otherwise."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_setmins_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setMins",
+		"summary": "Set the lower corner of the region.",
+		"parameters": [
+			{"name": "mins", "type": "ivec3", "description": "The new lower corner coordinates."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_setmaxs_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setMaxs",
+		"summary": "Set the upper corner of the region.",
+		"parameters": [
+			{"name": "maxs", "type": "ivec3", "description": "The new upper corner coordinates."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_region_new_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "new",
+		"summary": "Create a new region with the specified bounds.",
+		"parameters": [
+			{"name": "minX", "type": "integer", "description": "Minimum x coordinate."},
+			{"name": "minY", "type": "integer", "description": "Minimum y coordinate."},
+			{"name": "minZ", "type": "integer", "description": "Minimum z coordinate."},
+			{"name": "maxX", "type": "integer", "description": "Maximum x coordinate."},
+			{"name": "maxY", "type": "integer", "description": "Maximum y coordinate."},
+			{"name": "maxZ", "type": "integer", "description": "Maximum z coordinate."}
+		],
+		"returns": [
+			{"type": "region", "description": "The newly created region."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+// Shape jsonhelp functions
+static int luaVoxel_shape_cylinder_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "cylinder",
+		"summary": "Create a cylinder shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "centerBottom", "type": "vec3", "description": "The center bottom position."},
+			{"name": "axis", "type": "string", "description": "The axis: 'x', 'y', or 'z' (default 'y')."},
+			{"name": "radius", "type": "integer", "description": "The radius of the cylinder."},
+			{"name": "height", "type": "integer", "description": "The height of the cylinder."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_torus_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "torus",
+		"summary": "Create a torus shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "center", "type": "ivec3", "description": "The center position."},
+			{"name": "minorRadius", "type": "integer", "description": "The minor (tube) radius."},
+			{"name": "majorRadius", "type": "integer", "description": "The major (ring) radius."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_ellipse_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "ellipse",
+		"summary": "Create an ellipse (filled oval) shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "centerBottom", "type": "ivec3", "description": "The center bottom position."},
+			{"name": "axis", "type": "string", "description": "The axis: 'x', 'y', or 'z' (default 'y')."},
+			{"name": "width", "type": "integer", "description": "The width of the ellipse."},
+			{"name": "height", "type": "integer", "description": "The height of the ellipse."},
+			{"name": "depth", "type": "integer", "description": "The depth of the ellipse."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_dome_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "dome",
+		"summary": "Create a dome (half ellipsoid) shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "centerBottom", "type": "ivec3", "description": "The center bottom position."},
+			{"name": "axis", "type": "string", "description": "The axis: 'x', 'y', or 'z' (default 'y')."},
+			{"name": "negative", "type": "boolean", "description": "Flip the dome direction (optional, default false)."},
+			{"name": "width", "type": "integer", "description": "The width of the dome."},
+			{"name": "height", "type": "integer", "description": "The height of the dome."},
+			{"name": "depth", "type": "integer", "description": "The depth of the dome."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_cube_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "cube",
+		"summary": "Create a cube shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "position", "type": "ivec3", "description": "The corner position."},
+			{"name": "width", "type": "integer", "description": "The width of the cube."},
+			{"name": "height", "type": "integer", "description": "The height of the cube."},
+			{"name": "depth", "type": "integer", "description": "The depth of the cube."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_cone_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "cone",
+		"summary": "Create a cone shape in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "centerBottom", "type": "ivec3", "description": "The center bottom position."},
+			{"name": "axis", "type": "string", "description": "The axis: 'x', 'y', or 'z' (default 'y')."},
+			{"name": "negative", "type": "boolean", "description": "Flip the cone direction (optional, default false)."},
+			{"name": "width", "type": "integer", "description": "The width of the cone base."},
+			{"name": "height", "type": "integer", "description": "The height of the cone."},
+			{"name": "depth", "type": "integer", "description": "The depth of the cone base."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_line_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "line",
+		"summary": "Draw a line between two points in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "start", "type": "ivec3", "description": "The start position."},
+			{"name": "end", "type": "ivec3", "description": "The end position."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."},
+			{"name": "thickness", "type": "integer", "description": "The line thickness (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shape_bezier_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "bezier",
+		"summary": "Draw a quadratic bezier curve in the volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to draw in."},
+			{"name": "start", "type": "ivec3", "description": "The start position."},
+			{"name": "end", "type": "ivec3", "description": "The end position."},
+			{"name": "control", "type": "ivec3", "description": "The control point."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 1)."},
+			{"name": "thickness", "type": "integer", "description": "The line thickness (optional, default 1)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+// Noise jsonhelp functions
+static int luaVoxel_noise_simplex2_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "noise2",
+		"summary": "Generate 2D simplex noise.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "The x coordinate (or vec2)."},
+			{"name": "y", "type": "number", "description": "The y coordinate (optional if vec2 provided)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Noise value in range [-1, 1]."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_simplex3_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "noise3",
+		"summary": "Generate 3D simplex noise.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "The x coordinate (or vec3)."},
+			{"name": "y", "type": "number", "description": "The y coordinate (optional if vec3 provided)."},
+			{"name": "z", "type": "number", "description": "The z coordinate (optional if vec3 provided)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Noise value in range [-1, 1]."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_simplex4_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "noise4",
+		"summary": "Generate 4D simplex noise.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "The x coordinate (or vec4)."},
+			{"name": "y", "type": "number", "description": "The y coordinate (optional if vec4 provided)."},
+			{"name": "z", "type": "number", "description": "The z coordinate (optional if vec4 provided)."},
+			{"name": "w", "type": "number", "description": "The w coordinate (optional if vec4 provided)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Noise value in range [-1, 1]."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_fBm2_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "fBm2",
+		"summary": "Generate 2D fractal Brownian motion noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec2", "description": "The 2D position."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.5)."}
+		],
+		"returns": [
+			{"type": "number", "description": "fBm noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_fBm3_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "fBm3",
+		"summary": "Generate 3D fractal Brownian motion noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec3", "description": "The 3D position."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.5)."}
+		],
+		"returns": [
+			{"type": "number", "description": "fBm noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_fBm4_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "fBm4",
+		"summary": "Generate 4D fractal Brownian motion noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec4", "description": "The 4D position."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.5)."}
+		],
+		"returns": [
+			{"type": "number", "description": "fBm noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_voronoi_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "voronoi",
+		"summary": "Generate Voronoi noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec3", "description": "The 3D position."},
+			{"name": "frequency", "type": "number", "description": "Frequency (optional, default 1.0)."},
+			{"name": "seed", "type": "integer", "description": "Random seed (optional, default 0)."},
+			{"name": "enableDistance", "type": "boolean", "description": "Enable distance output (optional, default true)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Voronoi noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_swissturbulence_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "swissTurbulence",
+		"summary": "Generate Swiss turbulence noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec2", "description": "The 2D position."},
+			{"name": "offset", "type": "number", "description": "Offset (optional, default 1.0)."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.6)."},
+			{"name": "warp", "type": "number", "description": "Warp amount (optional, default 0.15)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Swiss turbulence noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_ridgedMF2_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "ridgedMF2",
+		"summary": "Generate 2D ridged multi-fractal noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec2", "description": "The 2D position."},
+			{"name": "ridgeOffset", "type": "number", "description": "Ridge offset (optional, default 1.0)."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.5)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Ridged multi-fractal noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_ridgedMF3_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "ridgedMF3",
+		"summary": "Generate 3D ridged multi-fractal noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec3", "description": "The 3D position."},
+			{"name": "ridgeOffset", "type": "number", "description": "Ridge offset (optional, default 1.0)."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.5)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Ridged multi-fractal noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_ridgedMF4_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "ridgedMF4",
+		"summary": "Generate 4D ridged multi-fractal noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec4", "description": "The 4D position."},
+			{"name": "ridgeOffset", "type": "number", "description": "Ridge offset (optional, default 1.0)."},
+			{"name": "octaves", "type": "integer", "description": "Number of octaves (optional, default 4)."},
+			{"name": "lacunarity", "type": "number", "description": "Lacunarity (optional, default 2.0)."},
+			{"name": "gain", "type": "number", "description": "Gain (optional, default 0.5)."}
+		],
+		"returns": [
+			{"type": "number", "description": "Ridged multi-fractal noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_worley2_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "worley2",
+		"summary": "Generate 2D Worley (cellular) noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec2", "description": "The 2D position."}
+		],
+		"returns": [
+			{"type": "number", "description": "Worley noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_noise_worley3_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "worley3",
+		"summary": "Generate 3D Worley (cellular) noise.",
+		"parameters": [
+			{"name": "pos", "type": "vec3", "description": "The 3D position."}
+		],
+		"returns": [
+			{"type": "number", "description": "Worley noise value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_colors_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "colors",
+		"summary": "Get all colors in the palette as a table of vec4.",
+		"parameters": [],
+		"returns": [
+			{"type": "table", "description": "Table of vec4 colors (RGBA, 0-1 range)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_color_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "color",
+		"summary": "Get a color from the palette as vec4.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "vec4", "description": "The color as RGBA vec4 (0-1 range)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_size_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "size",
+		"summary": "Get the number of colors in the palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The number of colors."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_rgba_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "rgba",
+		"summary": "Get a color from the palette as separate RGBA components.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "Red component (0-255)."},
+			{"type": "integer", "description": "Green component (0-255)."},
+			{"type": "integer", "description": "Blue component (0-255)."},
+			{"type": "integer", "description": "Alpha component (0-255)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_load_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "load",
+		"summary": "Load a palette from a file or built-in name.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "File path or built-in palette name (e.g., 'built-in:minecraft')."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_setcolor_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setColor",
+		"summary": "Set a color in the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."},
+			{"name": "r", "type": "integer", "description": "Red component (0-255)."},
+			{"name": "g", "type": "integer", "description": "Green component (0-255)."},
+			{"name": "b", "type": "integer", "description": "Blue component (0-255)."},
+			{"name": "a", "type": "integer", "description": "Alpha component (0-255, optional, default 255)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_closestmatch_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "match",
+		"summary": "Find the closest matching color in the palette.",
+		"parameters": [
+			{"name": "r", "type": "integer", "description": "Red component (0-255)."},
+			{"name": "g", "type": "integer", "description": "Green component (0-255)."},
+			{"name": "b", "type": "integer", "description": "Blue component (0-255)."},
+			{"name": "skipIndex", "type": "integer", "description": "Index to skip (optional, default -1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The index of the closest matching color."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_similar_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "similar",
+		"summary": "Find similar colors in the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The reference color index."},
+			{"name": "count", "type": "integer", "description": "Number of similar colors to find."}
+		],
+		"returns": [
+			{"type": "table", "description": "Table of similar color indices, or nil if none found."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_setmaterialproperty_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setMaterial",
+		"summary": "Set a material property for a palette color.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."},
+			{"name": "property", "type": "string", "description": "The property name."},
+			{"name": "value", "type": "number", "description": "The property value."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_materialproperty_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "material",
+		"summary": "Get a material property for a palette color.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."},
+			{"name": "property", "type": "string", "description": "The property name."}
+		],
+		"returns": [
+			{"type": "number", "description": "The property value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_delta_e_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "deltaE",
+		"summary": "Calculate the perceptual color difference (Delta E 76) between two palette colors.",
+		"parameters": [
+			{"name": "index1", "type": "integer", "description": "First color index."},
+			{"name": "index2", "type": "integer", "description": "Second color index."}
+		],
+		"returns": [
+			{"type": "number", "description": "The Delta E value (0 = identical colors)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_color_to_string_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "colorString",
+		"summary": "Get a string representation of a palette color.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "string", "description": "String representation of the color."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_new_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "new",
+		"summary": "Create a new empty palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "palette", "description": "The newly created palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_align_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "align",
+		"summary": "Align all nodes in the scene graph.",
+		"parameters": [
+			{"name": "padding", "type": "integer", "description": "Padding between nodes (optional, default 2)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_new_node_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "new",
+		"summary": "Create a new node in the scene graph.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The node name."},
+			{"name": "region", "type": "region", "description": "The region for model nodes (or boolean for visibility)."},
+			{"name": "visible", "type": "boolean", "description": "Whether the node is visible (optional, default true)."},
+			{"name": "type", "type": "string", "description": "Node type: 'Model', 'Group', 'Camera', 'Point' (optional, default 'Group')."}
+		],
+		"returns": [
+			{"type": "node", "description": "The newly created node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_get_node_by_id_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "get",
+		"summary": "Get a node by its ID.",
+		"parameters": [
+			{"name": "id", "type": "integer", "description": "The node ID (optional, defaults to active node)."}
+		],
+		"returns": [
+			{"type": "node", "description": "The node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_get_node_by_name_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "getByName",
+		"summary": "Get a node by its name.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The node name."}
+		],
+		"returns": [
+			{"type": "node", "description": "The node, or nil if not found."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_get_node_by_uuid_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "getByUUID",
+		"summary": "Get a node by its UUID.",
+		"parameters": [
+			{"name": "uuid", "type": "string", "description": "The node UUID."}
+		],
+		"returns": [
+			{"type": "node", "description": "The node, or nil if not found."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_get_all_node_ids_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "nodeIds",
+		"summary": "Get all node IDs in the scene graph.",
+		"parameters": [],
+		"returns": [
+			{"type": "table", "description": "Table of node IDs."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_updatetransforms_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "updateTransforms",
+		"summary": "Update all transforms in the scene graph.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_addanimation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "addAnimation",
+		"summary": "Add a new animation to the scene graph.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The animation name."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if animation was added successfully."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_setanimation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setAnimation",
+		"summary": "Set the active animation.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The animation name."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if animation was set successfully."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_duplicateanimation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "duplicateAnimation",
+		"summary": "Duplicate an existing animation.",
+		"parameters": [
+			{"name": "source", "type": "string", "description": "The source animation name."},
+			{"name": "target", "type": "string", "description": "The new animation name."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if animation was duplicated successfully."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_hasanimation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasAnimation",
+		"summary": "Check if an animation exists.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The animation name."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if animation exists."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_activeanimation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "activeAnimation",
+		"summary": "Get the name of the active animation.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The active animation name."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_name_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "name",
+		"summary": "Get the name of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The node name."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_id_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "id",
+		"summary": "Get the ID of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The node ID."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_uuid_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "uuid",
+		"summary": "Get the UUID of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The node UUID."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_clone_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "clone",
+		"summary": "Create a copy of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "node", "description": "The cloned node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_parent_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "parent",
+		"summary": "Get the parent node ID.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The parent node ID."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_volume_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "volume",
+		"summary": "Get the volume of a model node.",
+		"parameters": [],
+		"returns": [
+			{"type": "volume", "description": "The volume."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_model_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isModel",
+		"summary": "Check if the node is a model node.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if this is a model node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_modelref_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isReference",
+		"summary": "Check if the node is a model reference node.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if this is a reference node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_point_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isPoint",
+		"summary": "Check if the node is a point node.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if this is a point node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_camera_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isCamera",
+		"summary": "Check if the node is a camera node.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if this is a camera node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_group_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isGroup",
+		"summary": "Check if the node is a group node.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if this is a group node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_palette_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "palette",
+		"summary": "Get the palette of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "palette", "description": "The node's palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setname_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setName",
+		"summary": "Set the name of the node.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The new name."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setpalette_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setPalette",
+		"summary": "Set the palette of the node.",
+		"parameters": [
+			{"name": "palette", "type": "palette", "description": "The new palette."},
+			{"name": "remap", "type": "boolean", "description": "Remap existing colors (optional, default false)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setpivot_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setPivot",
+		"summary": "Set the pivot point of the node.",
+		"parameters": [
+			{"name": "pivot", "type": "vec3", "description": "The new pivot point."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_keyframe_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "keyFrame",
+		"summary": "Get a keyframe by index.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The keyframe index."}
+		],
+		"returns": [
+			{"type": "keyframe", "description": "The keyframe."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_keyframeforframe_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "keyFrameForFrame",
+		"summary": "Get the keyframe for a specific frame number.",
+		"parameters": [
+			{"name": "frame", "type": "integer", "description": "The frame number."}
+		],
+		"returns": [
+			{"type": "keyframe", "description": "The keyframe."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_addframe_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "addKeyFrame",
+		"summary": "Add a new keyframe at the specified frame.",
+		"parameters": [
+			{"name": "frame", "type": "integer", "description": "The frame number."},
+			{"name": "interpolation", "type": "integer", "description": "Interpolation type (optional, default Linear)."}
+		],
+		"returns": [
+			{"type": "keyframe", "description": "The newly created keyframe."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_hasframe_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasKeyFrameForFrame",
+		"summary": "Check if a keyframe exists at the specified frame.",
+		"parameters": [
+			{"name": "frame", "type": "integer", "description": "The frame number."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if keyframe exists."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_removekeyframeforframe_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "removeKeyFrameForFrame",
+		"summary": "Remove the keyframe at the specified frame.",
+		"parameters": [
+			{"name": "frame", "type": "integer", "description": "The frame number."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_removekeyframe_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "removeKeyFrame",
+		"summary": "Remove a keyframe by index.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The keyframe index."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_hide_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hide",
+		"summary": "Hide the node.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_show_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "show",
+		"summary": "Show the node.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_lock_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "lock",
+		"summary": "Lock the node.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_unlock_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "unlock",
+		"summary": "Unlock the node.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_isvisible_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isVisible",
+		"summary": "Check if the node is visible.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if node is visible."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_islocked_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isLocked",
+		"summary": "Check if the node is locked.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if node is locked."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setproperty_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setProperty",
+		"summary": "Set a custom property on the node.",
+		"parameters": [
+			{"name": "key", "type": "string", "description": "The property key."},
+			{"name": "value", "type": "string", "description": "The property value."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if property was set successfully."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_property_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "property",
+		"summary": "Get a custom property from the node.",
+		"parameters": [
+			{"name": "key", "type": "string", "description": "The property key."}
+		],
+		"returns": [
+			{"type": "string", "description": "The property value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_index_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "index",
+		"summary": "Get the keyframe index.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The keyframe index."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_frame_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "frame",
+		"summary": "Get the frame number of this keyframe.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The frame number."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_interpolation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "interpolation",
+		"summary": "Get the interpolation type.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The interpolation type name."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setinterpolation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setInterpolation",
+		"summary": "Set the interpolation type.",
+		"parameters": [
+			{"name": "type", "type": "string", "description": "The interpolation type: 'Instant', 'Linear', 'QuadEaseIn', etc."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_localscale_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "localScale",
+		"summary": "Get the local scale.",
+		"parameters": [],
+		"returns": [
+			{"type": "vec3", "description": "The local scale."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setlocalscale_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setLocalScale",
+		"summary": "Set the local scale.",
+		"parameters": [
+			{"name": "scale", "type": "vec3", "description": "The new local scale."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_localorientation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "localOrientation",
+		"summary": "Get the local orientation quaternion.",
+		"parameters": [],
+		"returns": [
+			{"type": "quat", "description": "The local orientation."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setlocalorientation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setLocalOrientation",
+		"summary": "Set the local orientation.",
+		"parameters": [
+			{"name": "orientation", "type": "quat", "description": "The new local orientation (quaternion or x,y,z,w components)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_localtranslation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "localTranslation",
+		"summary": "Get the local translation.",
+		"parameters": [],
+		"returns": [
+			{"type": "vec3", "description": "The local translation."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setlocaltranslation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setLocalTranslation",
+		"summary": "Set the local translation.",
+		"parameters": [
+			{"name": "translation", "type": "vec3", "description": "The new local translation."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_worldscale_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "worldScale",
+		"summary": "Get the world scale.",
+		"parameters": [],
+		"returns": [
+			{"type": "vec3", "description": "The world scale."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setworldscale_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setWorldScale",
+		"summary": "Set the world scale.",
+		"parameters": [
+			{"name": "scale", "type": "vec3", "description": "The new world scale."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_worldorientation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "worldOrientation",
+		"summary": "Get the world orientation quaternion.",
+		"parameters": [],
+		"returns": [
+			{"type": "quat", "description": "The world orientation."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setworldorientation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setWorldOrientation",
+		"summary": "Set the world orientation.",
+		"parameters": [
+			{"name": "orientation", "type": "quat", "description": "The new world orientation (quaternion or x,y,z,w components)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_worldtranslation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "worldTranslation",
+		"summary": "Get the world translation.",
+		"parameters": [],
+		"returns": [
+			{"type": "vec3", "description": "The world translation."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setworldtranslation_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setWorldTranslation",
+		"summary": "Set the world translation.",
+		"parameters": [
+			{"name": "translation", "type": "vec3", "description": "The new world translation."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_load_palette_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "palette",
+		"summary": "Load a palette from a stream.",
+		"parameters": [
+			{"name": "filename", "type": "string", "description": "The filename for format detection."},
+			{"name": "stream", "type": "stream", "description": "The stream to read from."}
+		],
+		"returns": [
+			{"type": "palette", "description": "The loaded palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_load_image_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "image",
+		"summary": "Load an image from a stream.",
+		"parameters": [
+			{"name": "filename", "type": "string", "description": "The filename for format detection."},
+			{"name": "stream", "type": "stream", "description": "The stream to read from."}
+		],
+		"returns": [
+			{"type": "image", "description": "The loaded image."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_import_scene_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "scene",
+		"summary": "Import a scene from a file or stream.",
+		"parameters": [
+			{"name": "filename", "type": "string", "description": "The filename to load."},
+			{"name": "stream", "type": "stream", "description": "Optional stream to read from."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_import_imageasplane_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "imageAsPlane",
+		"summary": "Import an image as a voxel plane.",
+		"parameters": [
+			{"name": "image", "type": "image", "description": "The image to convert."},
+			{"name": "palette", "type": "palette", "description": "The palette to use."},
+			{"name": "thickness", "type": "integer", "description": "The plane thickness (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "node", "description": "The created node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_genland_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "genland",
+		"summary": "Generate procedural terrain.",
+		"parameters": [
+			{"name": "seed", "type": "integer", "description": "Random seed (optional, default 0)."},
+			{"name": "size", "type": "integer", "description": "Terrain size (optional, default 256)."},
+			{"name": "height", "type": "integer", "description": "Max height (optional, default 64)."},
+			{"name": "octaves", "type": "integer", "description": "Noise octaves (optional, default 10)."},
+			{"name": "smoothing", "type": "number", "description": "Smoothing factor (optional, default 1)."},
+			{"name": "persistence", "type": "number", "description": "Noise persistence (optional, default 0.4)."},
+			{"name": "amplitude", "type": "number", "description": "Noise amplitude (optional, default 0.4)."},
+			{"name": "riverWidth", "type": "number", "description": "River width (optional, default 0.02)."},
+			{"name": "freqGround", "type": "number", "description": "Ground frequency (optional, default 9.5)."},
+			{"name": "freqRiver", "type": "number", "description": "River frequency (optional, default 13.2)."},
+			{"name": "offsetX", "type": "integer", "description": "X offset (optional, default 0)."},
+			{"name": "offsetZ", "type": "integer", "description": "Z offset (optional, default 0)."},
+			{"name": "shadow", "type": "boolean", "description": "Add shadows (optional, default true)."},
+			{"name": "river", "type": "boolean", "description": "Add rivers (optional, default true)."},
+			{"name": "ambience", "type": "boolean", "description": "Add ambient effects (optional, default true)."}
+		],
+		"returns": [
+			{"type": "node", "description": "The generated terrain node."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_shadow_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "shadow",
+		"summary": "Add shadow coloring to a volume.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to add shadows to."},
+			{"name": "lightStep", "type": "integer", "description": "Light step value (optional, default 8)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static void prepareState(lua_State* s) {
-	static const luaL_Reg volumeFuncs[] = {
-		{"voxel", luaVoxel_volumewrapper_voxel},
-		{"region", luaVoxel_volumewrapper_region},
-		{"translate", luaVoxel_volumewrapper_translate},
-		{"move", luaVoxel_volumewrapper_move},
-		{"resize", luaVoxel_volumewrapper_resize},
-		{"crop", luaVoxel_volumewrapper_crop},
-		{"text", luaVoxel_volumewrapper_text},
-		{"fillHollow", luaVoxel_volumewrapper_fillhollow},
-		{"hollow", luaVoxel_volumewrapper_hollow},
-		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
-		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap},
-		{"importImageAsVolume", luaVoxel_volumewrapper_importimageasvolume},
-		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},
-		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis},
-		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
-		{"__gc", luaVoxel_volumewrapper_gc},
-		{nullptr, nullptr}
+	static const clua_Reg volumeFuncs[] = {
+		{"voxel", luaVoxel_volumewrapper_voxel, luaVoxel_volumewrapper_voxel_jsonhelp},
+		{"region", luaVoxel_volumewrapper_region, luaVoxel_volumewrapper_region_jsonhelp},
+		{"translate", luaVoxel_volumewrapper_translate, luaVoxel_volumewrapper_translate_jsonhelp},
+		{"move", luaVoxel_volumewrapper_move, luaVoxel_volumewrapper_move_jsonhelp},
+		{"resize", luaVoxel_volumewrapper_resize, luaVoxel_volumewrapper_resize_jsonhelp},
+		{"crop", luaVoxel_volumewrapper_crop, luaVoxel_volumewrapper_crop_jsonhelp},
+		{"text", luaVoxel_volumewrapper_text, luaVoxel_volumewrapper_text_jsonhelp},
+		{"fillHollow", luaVoxel_volumewrapper_fillhollow, luaVoxel_volumewrapper_fillhollow_jsonhelp},
+		{"hollow", luaVoxel_volumewrapper_hollow, luaVoxel_volumewrapper_hollow_jsonhelp},
+		{"importHeightmap", luaVoxel_volumewrapper_importheightmap, luaVoxel_volumewrapper_importheightmap_jsonhelp},
+		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap, luaVoxel_volumewrapper_importcoloredheightmap_jsonhelp},
+		{"importImageAsVolume", luaVoxel_volumewrapper_importimageasvolume, luaVoxel_volumewrapper_importimageasvolume_jsonhelp},
+		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis, luaVoxel_volumewrapper_mirroraxis_jsonhelp},
+		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis, luaVoxel_volumewrapper_rotateaxis_jsonhelp},
+		{"setVoxel", luaVoxel_volumewrapper_setvoxel, luaVoxel_volumewrapper_setvoxel_jsonhelp},
+		{"__gc", luaVoxel_volumewrapper_gc, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolumewrapper());
 
-	static const luaL_Reg regionFuncs[] = {
-		{"width", luaVoxel_region_width},
-		{"height", luaVoxel_region_height},
-		{"depth", luaVoxel_region_depth},
-		{"x", luaVoxel_region_x},
-		{"y", luaVoxel_region_y},
-		{"z", luaVoxel_region_z},
-		{"center", luaVoxel_region_center},
-		{"mins", luaVoxel_region_mins},
-		{"maxs", luaVoxel_region_maxs},
-		{"size", luaVoxel_region_size},
-		{"__tostring", luaVoxel_region_tostring},
-		{nullptr, nullptr}
+	static const clua_Reg regionFuncs[] = {
+		{"width", luaVoxel_region_width, luaVoxel_region_width_jsonhelp},
+		{"height", luaVoxel_region_height, luaVoxel_region_height_jsonhelp},
+		{"depth", luaVoxel_region_depth, luaVoxel_region_depth_jsonhelp},
+		{"x", luaVoxel_region_x, luaVoxel_region_x_jsonhelp},
+		{"y", luaVoxel_region_y, luaVoxel_region_y_jsonhelp},
+		{"z", luaVoxel_region_z, luaVoxel_region_z_jsonhelp},
+		{"center", luaVoxel_region_center, luaVoxel_region_center_jsonhelp},
+		{"mins", luaVoxel_region_mins, luaVoxel_region_mins_jsonhelp},
+		{"maxs", luaVoxel_region_maxs, luaVoxel_region_maxs_jsonhelp},
+		{"size", luaVoxel_region_size, luaVoxel_region_size_jsonhelp},
+		{"__tostring", luaVoxel_region_tostring, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, regionFuncs, luaVoxel_metaregion());
 
-	static const luaL_Reg regionFuncs_gc[] = {
-		{"width", luaVoxel_region_width},
-		{"height", luaVoxel_region_height},
-		{"depth", luaVoxel_region_depth},
-		{"x", luaVoxel_region_x},
-		{"y", luaVoxel_region_y},
-		{"z", luaVoxel_region_z},
-		{"isOnBorder", luaVoxel_region_isonborder},
-		{"center", luaVoxel_region_center},
-		{"mins", luaVoxel_region_mins},
-		{"maxs", luaVoxel_region_maxs},
-		{"size", luaVoxel_region_size},
-		{"intersects", luaVoxel_region_intersects},
-		{"contains", luaVoxel_region_contains},
-		{"setMins", luaVoxel_region_setmins},
-		{"setMaxs", luaVoxel_region_setmaxs},
-		{"__tostring", luaVoxel_region_tostring},
-		{"__eq", luaVoxel_region_eq},
-		{"__gc", luaVoxel_region_gc},
-		{nullptr, nullptr}
+	static const clua_Reg regionFuncs_gc[] = {
+		{"width", luaVoxel_region_width, luaVoxel_region_width_jsonhelp},
+		{"height", luaVoxel_region_height, luaVoxel_region_height_jsonhelp},
+		{"depth", luaVoxel_region_depth, luaVoxel_region_depth_jsonhelp},
+		{"x", luaVoxel_region_x, luaVoxel_region_x_jsonhelp},
+		{"y", luaVoxel_region_y, luaVoxel_region_y_jsonhelp},
+		{"z", luaVoxel_region_z, luaVoxel_region_z_jsonhelp},
+		{"isOnBorder", luaVoxel_region_isonborder, luaVoxel_region_isonborder_jsonhelp},
+		{"center", luaVoxel_region_center, luaVoxel_region_center_jsonhelp},
+		{"mins", luaVoxel_region_mins, luaVoxel_region_mins_jsonhelp},
+		{"maxs", luaVoxel_region_maxs, luaVoxel_region_maxs_jsonhelp},
+		{"size", luaVoxel_region_size, luaVoxel_region_size_jsonhelp},
+		{"intersects", luaVoxel_region_intersects, luaVoxel_region_intersects_jsonhelp},
+		{"contains", luaVoxel_region_contains, luaVoxel_region_contains_jsonhelp},
+		{"setMins", luaVoxel_region_setmins, luaVoxel_region_setmins_jsonhelp},
+		{"setMaxs", luaVoxel_region_setmaxs, luaVoxel_region_setmaxs_jsonhelp},
+		{"__tostring", luaVoxel_region_tostring, nullptr},
+		{"__eq", luaVoxel_region_eq, nullptr},
+		{"__gc", luaVoxel_region_gc, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, regionFuncs_gc, luaVoxel_metaregion_gc());
 
-	static const luaL_Reg globalRegionFuncs[] = {
-		{"new", luaVoxel_region_new},
-		{nullptr, nullptr}
+	static const clua_Reg globalRegionFuncs[] = {
+		{"new", luaVoxel_region_new, luaVoxel_region_new_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, globalRegionFuncs, luaVoxel_metaregionglobal(), "g_region");
 
-	static const luaL_Reg sceneGraphFuncs[] = {
-		{"align", luaVoxel_scenegraph_align},
-		{"new", luaVoxel_scenegraph_new_node},
-		{"get", luaVoxel_scenegraph_get_node_by_id},
-		{"getByName", luaVoxel_scenegraph_get_node_by_name},
-		{"getByUUID", luaVoxel_scenegraph_get_node_by_uuid},
-		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids},
-		{"updateTransforms", luaVoxel_scenegraph_updatetransforms},
-		{"addAnimation", luaVoxel_scenegraph_addanimation},
-		{"setAnimation", luaVoxel_scenegraph_setanimation},
-		{"duplicateAnimation", luaVoxel_scenegraph_duplicateanimation},
-		{"hasAnimation", luaVoxel_scenegraph_hasanimation},
-		{"activeAnimation", luaVoxel_scenegraph_activeanimation},
-		{nullptr, nullptr}
+	static const clua_Reg sceneGraphFuncs[] = {
+		{"align", luaVoxel_scenegraph_align, luaVoxel_scenegraph_align_jsonhelp},
+		{"new", luaVoxel_scenegraph_new_node, luaVoxel_scenegraph_new_node_jsonhelp},
+		{"get", luaVoxel_scenegraph_get_node_by_id, luaVoxel_scenegraph_get_node_by_id_jsonhelp},
+		{"getByName", luaVoxel_scenegraph_get_node_by_name, luaVoxel_scenegraph_get_node_by_name_jsonhelp},
+		{"getByUUID", luaVoxel_scenegraph_get_node_by_uuid, luaVoxel_scenegraph_get_node_by_uuid_jsonhelp},
+		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids, luaVoxel_scenegraph_get_all_node_ids_jsonhelp},
+		{"updateTransforms", luaVoxel_scenegraph_updatetransforms, luaVoxel_scenegraph_updatetransforms_jsonhelp},
+		{"addAnimation", luaVoxel_scenegraph_addanimation, luaVoxel_scenegraph_addanimation_jsonhelp},
+		{"setAnimation", luaVoxel_scenegraph_setanimation, luaVoxel_scenegraph_setanimation_jsonhelp},
+		{"duplicateAnimation", luaVoxel_scenegraph_duplicateanimation, luaVoxel_scenegraph_duplicateanimation_jsonhelp},
+		{"hasAnimation", luaVoxel_scenegraph_hasanimation, luaVoxel_scenegraph_hasanimation_jsonhelp},
+		{"activeAnimation", luaVoxel_scenegraph_activeanimation, luaVoxel_scenegraph_activeanimation_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "g_scenegraph");
 
-	static const luaL_Reg sceneGraphNodeFuncs[] = {
-		{"name", luaVoxel_scenegraphnode_name},
-		{"id", luaVoxel_scenegraphnode_id},
-		{"uuid", luaVoxel_scenegraphnode_uuid},
-		{"clone", luaVoxel_scenegraphnode_clone},
-		{"parent", luaVoxel_scenegraphnode_parent},
-		{"volume", luaVoxel_scenegraphnode_volume},
-		{"isModel", luaVoxel_scenegraphnode_is_model},
-		{"isReference", luaVoxel_scenegraphnode_is_modelref},
-		{"isPoint", luaVoxel_scenegraphnode_is_point},
-		{"isCamera", luaVoxel_scenegraphnode_is_camera},
-		{"isGroup", luaVoxel_scenegraphnode_is_group},
-		{"palette", luaVoxel_scenegraphnode_palette},
-		{"setName", luaVoxel_scenegraphnode_setname},
-		{"setPalette", luaVoxel_scenegraphnode_setpalette},
-		{"setPivot", luaVoxel_scenegraphnode_setpivot},
-		{"hide", luaVoxel_scenegraphnode_hide},
-		{"show", luaVoxel_scenegraphnode_show},
-		{"lock", luaVoxel_scenegraphnode_lock},
-		{"unlock", luaVoxel_scenegraphnode_unlock},
-		{"isVisible", luaVoxel_scenegraphnode_isvisible},
-		{"isLocked", luaVoxel_scenegraphnode_islocked},
-		{"setProperty", luaVoxel_scenegraphnode_setproperty},
-		{"property", luaVoxel_scenegraphnode_property},
-		{"keyFrame", luaVoxel_scenegraphnode_keyframe},
-		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe},
-		{"addKeyFrame", luaVoxel_scenegraphnode_addframe},
-		{"hasKeyFrameForFrame", luaVoxel_scenegraphnode_hasframe},
-		{"removeKeyFrameForFrame", luaVoxel_scenegraphnode_removekeyframeforframe},
-		{"removeKeyFrame", luaVoxel_scenegraphnode_removekeyframe},
-		{"__tostring", luaVoxel_scenegraphnode_tostring},
-		{"__gc", luaVoxel_scenegraphnode_gc},
-		{nullptr, nullptr}
+	static const clua_Reg sceneGraphNodeFuncs[] = {
+		{"name", luaVoxel_scenegraphnode_name, luaVoxel_scenegraphnode_name_jsonhelp},
+		{"id", luaVoxel_scenegraphnode_id, luaVoxel_scenegraphnode_id_jsonhelp},
+		{"uuid", luaVoxel_scenegraphnode_uuid, luaVoxel_scenegraphnode_uuid_jsonhelp},
+		{"clone", luaVoxel_scenegraphnode_clone, luaVoxel_scenegraphnode_clone_jsonhelp},
+		{"parent", luaVoxel_scenegraphnode_parent, luaVoxel_scenegraphnode_parent_jsonhelp},
+		{"volume", luaVoxel_scenegraphnode_volume, luaVoxel_scenegraphnode_volume_jsonhelp},
+		{"isModel", luaVoxel_scenegraphnode_is_model, luaVoxel_scenegraphnode_is_model_jsonhelp},
+		{"isReference", luaVoxel_scenegraphnode_is_modelref, luaVoxel_scenegraphnode_is_modelref_jsonhelp},
+		{"isPoint", luaVoxel_scenegraphnode_is_point, luaVoxel_scenegraphnode_is_point_jsonhelp},
+		{"isCamera", luaVoxel_scenegraphnode_is_camera, luaVoxel_scenegraphnode_is_camera_jsonhelp},
+		{"isGroup", luaVoxel_scenegraphnode_is_group, luaVoxel_scenegraphnode_is_group_jsonhelp},
+		{"palette", luaVoxel_scenegraphnode_palette, luaVoxel_scenegraphnode_palette_jsonhelp},
+		{"setName", luaVoxel_scenegraphnode_setname, luaVoxel_scenegraphnode_setname_jsonhelp},
+		{"setPalette", luaVoxel_scenegraphnode_setpalette, luaVoxel_scenegraphnode_setpalette_jsonhelp},
+		{"setPivot", luaVoxel_scenegraphnode_setpivot, luaVoxel_scenegraphnode_setpivot_jsonhelp},
+		{"hide", luaVoxel_scenegraphnode_hide, luaVoxel_scenegraphnode_hide_jsonhelp},
+		{"show", luaVoxel_scenegraphnode_show, luaVoxel_scenegraphnode_show_jsonhelp},
+		{"lock", luaVoxel_scenegraphnode_lock, luaVoxel_scenegraphnode_lock_jsonhelp},
+		{"unlock", luaVoxel_scenegraphnode_unlock, luaVoxel_scenegraphnode_unlock_jsonhelp},
+		{"isVisible", luaVoxel_scenegraphnode_isvisible, luaVoxel_scenegraphnode_isvisible_jsonhelp},
+		{"isLocked", luaVoxel_scenegraphnode_islocked, luaVoxel_scenegraphnode_islocked_jsonhelp},
+		{"setProperty", luaVoxel_scenegraphnode_setproperty, luaVoxel_scenegraphnode_setproperty_jsonhelp},
+		{"property", luaVoxel_scenegraphnode_property, luaVoxel_scenegraphnode_property_jsonhelp},
+		{"keyFrame", luaVoxel_scenegraphnode_keyframe, luaVoxel_scenegraphnode_keyframe_jsonhelp},
+		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe, luaVoxel_scenegraphnode_keyframeforframe_jsonhelp},
+		{"addKeyFrame", luaVoxel_scenegraphnode_addframe, luaVoxel_scenegraphnode_addframe_jsonhelp},
+		{"hasKeyFrameForFrame", luaVoxel_scenegraphnode_hasframe, luaVoxel_scenegraphnode_hasframe_jsonhelp},
+		{"removeKeyFrameForFrame", luaVoxel_scenegraphnode_removekeyframeforframe, luaVoxel_scenegraphnode_removekeyframeforframe_jsonhelp},
+		{"removeKeyFrame", luaVoxel_scenegraphnode_removekeyframe, luaVoxel_scenegraphnode_removekeyframe_jsonhelp},
+		{"__tostring", luaVoxel_scenegraphnode_tostring, nullptr},
+		{"__gc", luaVoxel_scenegraphnode_gc, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, sceneGraphNodeFuncs, luaVoxel_metascenegraphnode());
 
-	static const luaL_Reg keyframeFuncs[] = {
-		{"index", luaVoxel_keyframe_index},
-		{"frame", luaVoxel_keyframe_frame},
-		{"interpolation", luaVoxel_keyframe_interpolation},
-		{"setInterpolation", luaVoxel_keyframe_setinterpolation},
-		{"localScale", luaVoxel_keyframe_localscale},
-		{"setLocalScale", luaVoxel_keyframe_setlocalscale},
-		{"localOrientation", luaVoxel_keyframe_localorientation},
-		{"setLocalOrientation", luaVoxel_keyframe_setlocalorientation},
-		{"localTranslation", luaVoxel_keyframe_localtranslation},
-		{"setLocalTranslation", luaVoxel_keyframe_setlocaltranslation},
-		{"worldScale", luaVoxel_keyframe_worldscale},
-		{"setWorldScale", luaVoxel_keyframe_setworldscale},
-		{"worldOrientation", luaVoxel_keyframe_worldorientation},
-		{"setWorldOrientation", luaVoxel_keyframe_setworldorientation},
-		{"worldTranslation", luaVoxel_keyframe_worldtranslation},
-		{"setWorldTranslation", luaVoxel_keyframe_setworldtranslation},
-		{"__tostring", luaVoxel_keyframe_tostring},
-		{"__gc", luaVoxel_keyframe_gc},
-		{nullptr, nullptr}
+	static const clua_Reg keyframeFuncs[] = {
+		{"index", luaVoxel_keyframe_index, luaVoxel_keyframe_index_jsonhelp},
+		{"frame", luaVoxel_keyframe_frame, luaVoxel_keyframe_frame_jsonhelp},
+		{"interpolation", luaVoxel_keyframe_interpolation, luaVoxel_keyframe_interpolation_jsonhelp},
+		{"setInterpolation", luaVoxel_keyframe_setinterpolation, luaVoxel_keyframe_setinterpolation_jsonhelp},
+		{"localScale", luaVoxel_keyframe_localscale, luaVoxel_keyframe_localscale_jsonhelp},
+		{"setLocalScale", luaVoxel_keyframe_setlocalscale, luaVoxel_keyframe_setlocalscale_jsonhelp},
+		{"localOrientation", luaVoxel_keyframe_localorientation, luaVoxel_keyframe_localorientation_jsonhelp},
+		{"setLocalOrientation", luaVoxel_keyframe_setlocalorientation, luaVoxel_keyframe_setlocalorientation_jsonhelp},
+		{"localTranslation", luaVoxel_keyframe_localtranslation, luaVoxel_keyframe_localtranslation_jsonhelp},
+		{"setLocalTranslation", luaVoxel_keyframe_setlocaltranslation, luaVoxel_keyframe_setlocaltranslation_jsonhelp},
+		{"worldScale", luaVoxel_keyframe_worldscale, luaVoxel_keyframe_worldscale_jsonhelp},
+		{"setWorldScale", luaVoxel_keyframe_setworldscale, luaVoxel_keyframe_setworldscale_jsonhelp},
+		{"worldOrientation", luaVoxel_keyframe_worldorientation, luaVoxel_keyframe_worldorientation_jsonhelp},
+		{"setWorldOrientation", luaVoxel_keyframe_setworldorientation, luaVoxel_keyframe_setworldorientation_jsonhelp},
+		{"worldTranslation", luaVoxel_keyframe_worldtranslation, luaVoxel_keyframe_worldtranslation_jsonhelp},
+		{"setWorldTranslation", luaVoxel_keyframe_setworldtranslation, luaVoxel_keyframe_setworldtranslation_jsonhelp},
+		{"__tostring", luaVoxel_keyframe_tostring, nullptr},
+		{"__gc", luaVoxel_keyframe_gc, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, keyframeFuncs, luaVoxel_metakeyframe());
 
-	static const luaL_Reg paletteFuncs[] = {
-		{"colors", luaVoxel_palette_colors},
-		{"color", luaVoxel_palette_color},
-		{"size", luaVoxel_palette_size},
-		{"rgba", luaVoxel_palette_rgba},
-		{"load", luaVoxel_palette_load},
-		{"setColor", luaVoxel_palette_setcolor},
-		{"match", luaVoxel_palette_closestmatch},
-		{"similar", luaVoxel_palette_similar},
-		{"setMaterial", luaVoxel_palette_setmaterialproperty},
-		{"material", luaVoxel_palette_materialproperty},
-		{"deltaE", luaVoxel_palette_delta_e},
-		{"colorString", luaVoxel_palette_color_to_string},
-		{"__tostring", luaVoxel_palette_tostring},
-		{"__eq", luaVoxel_palette_eq},
-		{nullptr, nullptr}
+	static const clua_Reg paletteFuncs[] = {
+		{"colors", luaVoxel_palette_colors, luaVoxel_palette_colors_jsonhelp},
+		{"color", luaVoxel_palette_color, luaVoxel_palette_color_jsonhelp},
+		{"size", luaVoxel_palette_size, luaVoxel_palette_size_jsonhelp},
+		{"rgba", luaVoxel_palette_rgba, luaVoxel_palette_rgba_jsonhelp},
+		{"load", luaVoxel_palette_load, luaVoxel_palette_load_jsonhelp},
+		{"setColor", luaVoxel_palette_setcolor, luaVoxel_palette_setcolor_jsonhelp},
+		{"match", luaVoxel_palette_closestmatch, luaVoxel_palette_closestmatch_jsonhelp},
+		{"similar", luaVoxel_palette_similar, luaVoxel_palette_similar_jsonhelp},
+		{"setMaterial", luaVoxel_palette_setmaterialproperty, luaVoxel_palette_setmaterialproperty_jsonhelp},
+		{"material", luaVoxel_palette_materialproperty, luaVoxel_palette_materialproperty_jsonhelp},
+		{"deltaE", luaVoxel_palette_delta_e, luaVoxel_palette_delta_e_jsonhelp},
+		{"colorString", luaVoxel_palette_color_to_string, luaVoxel_palette_color_to_string_jsonhelp},
+		{"__tostring", luaVoxel_palette_tostring, nullptr},
+		{"__eq", luaVoxel_palette_eq, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
 
-	static const luaL_Reg paletteFuncs_gc[] = {
-		{"colors", luaVoxel_palette_colors},
-		{"color", luaVoxel_palette_color},
-		{"size", luaVoxel_palette_size},
-		{"rgba", luaVoxel_palette_rgba},
-		{"load", luaVoxel_palette_load},
-		{"setColor", luaVoxel_palette_setcolor},
-		{"match", luaVoxel_palette_closestmatch},
-		{"similar", luaVoxel_palette_similar},
-		{"setMaterial", luaVoxel_palette_setmaterialproperty},
-		{"material", luaVoxel_palette_materialproperty},
-		{"deltaE", luaVoxel_palette_delta_e},
-		{"colorString", luaVoxel_palette_color_to_string},
-		{"__tostring", luaVoxel_palette_tostring},
-		{"__gc", luaVoxel_palette_gc},
-		{"__eq", luaVoxel_palette_eq},
-		{nullptr, nullptr}
+	static const clua_Reg paletteFuncs_gc[] = {
+		{"colors", luaVoxel_palette_colors, luaVoxel_palette_colors_jsonhelp},
+		{"color", luaVoxel_palette_color, luaVoxel_palette_color_jsonhelp},
+		{"size", luaVoxel_palette_size, luaVoxel_palette_size_jsonhelp},
+		{"rgba", luaVoxel_palette_rgba, luaVoxel_palette_rgba_jsonhelp},
+		{"load", luaVoxel_palette_load, luaVoxel_palette_load_jsonhelp},
+		{"setColor", luaVoxel_palette_setcolor, luaVoxel_palette_setcolor_jsonhelp},
+		{"match", luaVoxel_palette_closestmatch, luaVoxel_palette_closestmatch_jsonhelp},
+		{"similar", luaVoxel_palette_similar, luaVoxel_palette_similar_jsonhelp},
+		{"setMaterial", luaVoxel_palette_setmaterialproperty, luaVoxel_palette_setmaterialproperty_jsonhelp},
+		{"material", luaVoxel_palette_materialproperty, luaVoxel_palette_materialproperty_jsonhelp},
+		{"deltaE", luaVoxel_palette_delta_e, luaVoxel_palette_delta_e_jsonhelp},
+		{"colorString", luaVoxel_palette_color_to_string, luaVoxel_palette_color_to_string_jsonhelp},
+		{"__tostring", luaVoxel_palette_tostring, nullptr},
+		{"__gc", luaVoxel_palette_gc, nullptr},
+		{"__eq", luaVoxel_palette_eq, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs_gc, luaVoxel_metapalette_gc());
 
-	static const luaL_Reg paletteGlobalsFuncs[] = {
-		{"new", luaVoxel_palette_new},
-		{nullptr, nullptr}
+	static const clua_Reg paletteGlobalsFuncs[] = {
+		{"new", luaVoxel_palette_new, luaVoxel_palette_new_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, paletteGlobalsFuncs, luaVoxel_metapaletteglobal(), "g_palette");
 
-	static const luaL_Reg noiseFuncs[] = {
-		{"noise2", luaVoxel_noise_simplex2},
-		{"noise3", luaVoxel_noise_simplex3},
-		{"noise4", luaVoxel_noise_simplex4},
-		{"fBm2", luaVoxel_noise_fBm2},
-		{"fBm3", luaVoxel_noise_fBm3},
-		{"fBm4", luaVoxel_noise_fBm4},
-		{"swissTurbulence", luaVoxel_noise_swissturbulence},
-		{"voronoi", luaVoxel_noise_voronoi},
-		{"ridgedMF2", luaVoxel_noise_ridgedMF2},
-		{"ridgedMF3", luaVoxel_noise_ridgedMF3},
-		{"ridgedMF4", luaVoxel_noise_ridgedMF4},
-		{"worley2", luaVoxel_noise_worley2},
-		{"worley3", luaVoxel_noise_worley3},
-		{nullptr, nullptr}
+	static const clua_Reg noiseFuncs[] = {
+		{"noise2", luaVoxel_noise_simplex2, luaVoxel_noise_simplex2_jsonhelp},
+		{"noise3", luaVoxel_noise_simplex3, luaVoxel_noise_simplex3_jsonhelp},
+		{"noise4", luaVoxel_noise_simplex4, luaVoxel_noise_simplex4_jsonhelp},
+		{"fBm2", luaVoxel_noise_fBm2, luaVoxel_noise_fBm2_jsonhelp},
+		{"fBm3", luaVoxel_noise_fBm3, luaVoxel_noise_fBm3_jsonhelp},
+		{"fBm4", luaVoxel_noise_fBm4, luaVoxel_noise_fBm4_jsonhelp},
+		{"swissTurbulence", luaVoxel_noise_swissturbulence, luaVoxel_noise_swissturbulence_jsonhelp},
+		{"voronoi", luaVoxel_noise_voronoi, luaVoxel_noise_voronoi_jsonhelp},
+		{"ridgedMF2", luaVoxel_noise_ridgedMF2, luaVoxel_noise_ridgedMF2_jsonhelp},
+		{"ridgedMF3", luaVoxel_noise_ridgedMF3, luaVoxel_noise_ridgedMF3_jsonhelp},
+		{"ridgedMF4", luaVoxel_noise_ridgedMF4, luaVoxel_noise_ridgedMF4_jsonhelp},
+		{"worley2", luaVoxel_noise_worley2, luaVoxel_noise_worley2_jsonhelp},
+		{"worley3", luaVoxel_noise_worley3, luaVoxel_noise_worley3_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, noiseFuncs, luaVoxel_metanoise(), "g_noise");
 
-	static const luaL_Reg shapeFuncs[] = {
-		{"cylinder", luaVoxel_shape_cylinder},
-		{"torus", luaVoxel_shape_torus},
-		{"ellipse", luaVoxel_shape_ellipse},
-		{"dome", luaVoxel_shape_dome},
-		{"cube", luaVoxel_shape_cube},
-		{"cone", luaVoxel_shape_cone},
-		{"line", luaVoxel_shape_line},
-		{"bezier", luaVoxel_shape_bezier},
-		{nullptr, nullptr}
+	static const clua_Reg shapeFuncs[] = {
+		{"cylinder", luaVoxel_shape_cylinder, luaVoxel_shape_cylinder_jsonhelp},
+		{"torus", luaVoxel_shape_torus, luaVoxel_shape_torus_jsonhelp},
+		{"ellipse", luaVoxel_shape_ellipse, luaVoxel_shape_ellipse_jsonhelp},
+		{"dome", luaVoxel_shape_dome, luaVoxel_shape_dome_jsonhelp},
+		{"cube", luaVoxel_shape_cube, luaVoxel_shape_cube_jsonhelp},
+		{"cone", luaVoxel_shape_cone, luaVoxel_shape_cone_jsonhelp},
+		{"line", luaVoxel_shape_line, luaVoxel_shape_line_jsonhelp},
+		{"bezier", luaVoxel_shape_bezier, luaVoxel_shape_bezier_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, shapeFuncs, luaVoxel_metashape(), "g_shape");
 
-	static const luaL_Reg importerFuncs[] = {
-		{"palette", luaVoxel_load_palette},
-		{"image", luaVoxel_load_image},
-		{"scene", luaVoxel_import_scene},
-		{"imageAsPlane", luaVoxel_import_imageasplane},
-		{nullptr, nullptr}
+	static const clua_Reg importerFuncs[] = {
+		{"palette", luaVoxel_load_palette, luaVoxel_load_palette_jsonhelp},
+		{"image", luaVoxel_load_image, luaVoxel_load_image_jsonhelp},
+		{"scene", luaVoxel_import_scene, luaVoxel_import_scene_jsonhelp},
+		{"imageAsPlane", luaVoxel_import_imageasplane, luaVoxel_import_imageasplane_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, importerFuncs, luaVoxel_metaimporter(), "g_import");
 
-	static const luaL_Reg algorithmFuncs[] = {
-		{"genland", luaVoxel_genland},
-		{"shadow", luaVoxel_shadow},
-		{nullptr, nullptr}
+	static const clua_Reg algorithmFuncs[] = {
+		{"genland", luaVoxel_genland, luaVoxel_genland_jsonhelp},
+		{"shadow", luaVoxel_shadow, luaVoxel_shadow_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, algorithmFuncs, luaVoxel_metaalgorithm(), "g_algorithm");
 
@@ -2431,10 +4201,55 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	return true;
 }
 
-core::String LUAApi::apiJson() const {
+bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 	lua_State *s = _lua.state();
-	core::String json = "{";
 	bool firstGlobal = true;
+
+	if (!stream.writeString("{", false)) {
+		return false;
+	}
+
+	// Helper lambda to write method JSON including help data
+	auto writeMethodJson = [&](const char *methodName, const char *metaName, bool &firstMethod) -> bool {
+		if (methodName[0] == '_') {
+			return true; // Skip metamethods
+		}
+		if (!firstMethod) {
+			if (!stream.writeString(",", false)) {
+				return false;
+			}
+		}
+		firstMethod = false;
+
+		// Try to get the jsonhelp function for this method
+		lua_CFunction jsonHelpFunc = clua_getjsonhelp(s, metaName, methodName);
+		if (jsonHelpFunc) {
+			// Call the jsonhelp function to get the JSON string
+			lua_pushcfunction(s, jsonHelpFunc);
+			if (lua_pcall(s, 0, 1, 0) == LUA_OK && lua_isstring(s, -1)) {
+				const char *helpJson = lua_tostring(s, -1);
+				if (!stream.writeString(helpJson, false)) {
+					lua_pop(s, 1);
+					return false;
+				}
+			} else {
+				// Fallback to just the method name if jsonhelp call fails
+				core::String methodJson = core::String::format("{\"name\":\"%s\"}", methodName);
+				if (!stream.writeString(methodJson.c_str(), false)) {
+					lua_pop(s, 1);
+					return false;
+				}
+			}
+			lua_pop(s, 1); // pop result
+		} else {
+			// No jsonhelp available, just output name
+			core::String methodJson = core::String::format("{\"name\":\"%s\"}", methodName);
+			if (!stream.writeString(methodJson.c_str(), false)) {
+				return false;
+			}
+		}
+		return true;
+	};
 
 	// Iterate global table to find our registered globals (g_*)
 	lua_pushglobaltable(s);
@@ -2445,12 +4260,62 @@ core::String LUAApi::apiJson() const {
 			// Only include our g_* globals and skip internal Lua globals
 			if (name && name[0] == 'g' && name[1] == '_') {
 				if (!firstGlobal) {
-					json += ",";
+					if (!stream.writeString(",", false)) {
+						lua_pop(s, 2); // pop value and global table
+						return false;
+					}
 				}
 				firstGlobal = false;
-				json += core::String::format("\"%s\":{", name);
-				json += "\"type\":\"global\",";
-				json += "\"methods\":[";
+
+				core::String header = core::String::format("\"%s\":{\"type\":\"global\",\"methods\":[", name);
+				if (!stream.writeString(header.c_str(), false)) {
+					lua_pop(s, 2);
+					return false;
+				}
+
+				// Find the corresponding metatable name for this global
+				core::String metaName;
+				if (SDL_strcmp(name, "g_scenegraph") == 0) {
+					metaName = luaVoxel_metascenegraph();
+				} else if (SDL_strcmp(name, "g_region") == 0) {
+					metaName = luaVoxel_metaregionglobal();
+				} else if (SDL_strcmp(name, "g_palette") == 0) {
+					metaName = luaVoxel_metapaletteglobal();
+				} else if (SDL_strcmp(name, "g_noise") == 0) {
+					metaName = luaVoxel_metanoise();
+				} else if (SDL_strcmp(name, "g_shape") == 0) {
+					metaName = luaVoxel_metashape();
+				} else if (SDL_strcmp(name, "g_import") == 0) {
+					metaName = luaVoxel_metaimporter();
+				} else if (SDL_strcmp(name, "g_algorithm") == 0) {
+					metaName = luaVoxel_metaalgorithm();
+				} else if (SDL_strcmp(name, "g_http") == 0) {
+					metaName = clua_metahttp();
+				} else if (SDL_strcmp(name, "g_io") == 0) {
+					metaName = clua_metaio();
+				} else if (SDL_strcmp(name, "g_vec2") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::vec2>::name());
+				} else if (SDL_strcmp(name, "g_vec3") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::vec3>::name());
+				} else if (SDL_strcmp(name, "g_vec4") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::vec4>::name());
+				} else if (SDL_strcmp(name, "g_ivec2") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::ivec2>::name());
+				} else if (SDL_strcmp(name, "g_ivec3") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::ivec3>::name());
+				} else if (SDL_strcmp(name, "g_ivec4") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::ivec4>::name());
+				} else if (SDL_strcmp(name, "g_quat") == 0) {
+					metaName = core::String::format("%s_global", clua_meta<glm::quat>::name());
+				} else if (SDL_strcmp(name, "g_var") == 0) {
+					metaName = clua_metavar();
+				} else if (SDL_strcmp(name, "g_log") == 0) {
+					metaName = clua_metalog();
+				} else if (SDL_strcmp(name, "g_cmd") == 0) {
+					metaName = clua_metacmd();
+				} else if (SDL_strcmp(name, "g_sys") == 0) {
+					metaName = clua_metasys();
+				}
 
 				bool firstMethod = true;
 				// Iterate through the table's methods
@@ -2459,19 +4324,21 @@ core::String LUAApi::apiJson() const {
 					while (lua_next(s, -2) != 0) {
 						if (lua_type(s, -2) == LUA_TSTRING) {
 							const char *methodName = lua_tostring(s, -2);
-							// Skip metamethods and internal fields
-							if (methodName && methodName[0] != '_' && lua_isfunction(s, -1)) {
-								if (!firstMethod) {
-									json += ",";
+							if (methodName && lua_isfunction(s, -1)) {
+								if (!writeMethodJson(methodName, metaName.c_str(), firstMethod)) {
+									lua_pop(s, 4); // pop key, value, inner key, global table
+									return false;
 								}
-								firstMethod = false;
-								json += core::String::format("\"%s\"", methodName);
 							}
 						}
 						lua_pop(s, 1);
 					}
 				}
-				json += "]}";
+
+				if (!stream.writeString("]}", false)) {
+					lua_pop(s, 2);
+					return false;
+				}
 			}
 		}
 		lua_pop(s, 1);
@@ -2491,43 +4358,56 @@ core::String LUAApi::apiJson() const {
 		{luaVoxel_metakeyframe(), "keyframe"},
 		{luaVoxel_metapalette(), "palette"},
 		{luaVoxel_metapalette_gc(), "palette_gc"},
+		{clua_metastream(), "stream"},
+		{clua_meta<image::Image>::name(), "image"},
 	};
 
 	for (const auto &meta : metas) {
 		luaL_getmetatable(s, meta.name);
 		if (lua_istable(s, -1)) {
 			if (!firstGlobal) {
-				json += ",";
+				if (!stream.writeString(",", false)) {
+					lua_pop(s, 1);
+					return false;
+				}
 			}
 			firstGlobal = false;
-			json += core::String::format("\"%s\":{", meta.displayName);
-			json += "\"type\":\"metatable\",";
-			json += core::String::format("\"metaname\": \"%s\",", meta.name);
-			json += "\"methods\":[";
+
+			core::String header = core::String::format("\"%s\":{\"type\":\"metatable\",\"metaname\":\"%s\",\"methods\":[",
+				meta.displayName, meta.name);
+			if (!stream.writeString(header.c_str(), false)) {
+				lua_pop(s, 1);
+				return false;
+			}
 
 			bool firstMethod = true;
 			lua_pushnil(s);
 			while (lua_next(s, -2) != 0) {
 				if (lua_type(s, -2) == LUA_TSTRING) {
 					const char *methodName = lua_tostring(s, -2);
-					// Skip metamethods
-					if (methodName && methodName[0] != '_' && lua_isfunction(s, -1)) {
-						if (!firstMethod) {
-							json += ",";
+					if (methodName && lua_isfunction(s, -1)) {
+						if (!writeMethodJson(methodName, meta.name, firstMethod)) {
+							lua_pop(s, 3); // pop key, value, metatable
+							return false;
 						}
-						firstMethod = false;
-						json += core::String::format("\"%s\"", methodName);
 					}
 				}
 				lua_pop(s, 1);
 			}
-			json += "]}";
+
+			if (!stream.writeString("]}", false)) {
+				lua_pop(s, 1);
+				return false;
+			}
 		}
 		lua_pop(s, 1);
 	}
 
-	json += "}\n";
-	return json;
+	if (!stream.writeString("}\n", false)) {
+		return false;
+	}
+
+	return true;
 }
 
 }

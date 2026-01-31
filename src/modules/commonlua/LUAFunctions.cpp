@@ -100,6 +100,42 @@ bool clua_registerfuncs(lua_State *s, const luaL_Reg *funcs, const char *name) {
 	return true;
 }
 
+// Helper function to create the jsonhelp metatable name
+static core::String clua_jsonhelpname(const char *name) {
+	return core::String::format("%s_jsonhelp", name);
+}
+
+bool clua_registerfuncs(lua_State *s, const clua_Reg *funcs, const char *name) {
+	if (luaL_newmetatable(s, name) == 0) {
+		Log::warn("Metatable %s already exists", name);
+		return false;
+	}
+
+	// Register the functions
+	for (const clua_Reg *f = funcs; f->name != nullptr; ++f) {
+		lua_pushcfunction(s, f->func);
+		lua_setfield(s, -2, f->name);
+	}
+
+	// assign the metatable to __index
+	lua_pushvalue(s, -1);
+	lua_setfield(s, -2, "__index");
+	lua_pop(s, 1);
+
+	// Create a separate metatable to store jsonhelp functions
+	const core::String jsonHelpMetaName = clua_jsonhelpname(name);
+	luaL_newmetatable(s, jsonHelpMetaName.c_str());
+	for (const clua_Reg *f = funcs; f->name != nullptr; ++f) {
+		if (f->jsonHelp != nullptr) {
+			lua_pushcfunction(s, f->jsonHelp);
+			lua_setfield(s, -2, f->name);
+		}
+	}
+	lua_pop(s, 1);
+
+	return true;
+}
+
 bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name) {
 	if (luaL_newmetatable(s, meta) == 0) {
 		Log::warn("Metatable %s already exists", meta);
@@ -115,6 +151,51 @@ bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *m
 	lua_setfield(s, -1, "__index");
 	lua_setglobal(s, name);
 	return true;
+}
+
+bool clua_registerfuncsglobal(lua_State* s, const clua_Reg* funcs, const char *meta, const char *name) {
+	if (luaL_newmetatable(s, meta) == 0) {
+		Log::warn("Metatable %s already exists", meta);
+		return false;
+	}
+
+	// Register the functions
+	for (const clua_Reg *f = funcs; f->name != nullptr; ++f) {
+		lua_pushcfunction(s, f->func);
+		lua_setfield(s, -2, f->name);
+	}
+
+	lua_pushvalue(s, -1);
+	lua_setfield(s, -1, "__index");
+	lua_setglobal(s, name);
+
+	// Create a separate metatable to store jsonhelp functions
+	const core::String jsonHelpMetaName = clua_jsonhelpname(meta);
+	luaL_newmetatable(s, jsonHelpMetaName.c_str());
+	for (const clua_Reg *f = funcs; f->name != nullptr; ++f) {
+		if (f->jsonHelp != nullptr) {
+			lua_pushcfunction(s, f->jsonHelp);
+			lua_setfield(s, -2, f->name);
+		}
+	}
+	lua_pop(s, 1);
+
+	return true;
+}
+
+lua_CFunction clua_getjsonhelp(lua_State* s, const char *name, const char *method) {
+	const core::String jsonHelpMetaName = clua_jsonhelpname(name);
+	if (luaL_getmetatable(s, jsonHelpMetaName.c_str()) == 0) {
+		lua_pop(s, 1);
+		return nullptr;
+	}
+	lua_getfield(s, -1, method);
+	lua_CFunction func = nullptr;
+	if (lua_iscfunction(s, -1)) {
+		func = lua_tocfunction(s, -1);
+	}
+	lua_pop(s, 2);
+	return func;
 }
 
 static core::String clua_stackdump(lua_State *L) {
@@ -227,12 +308,23 @@ static int clua_cmdexecute(lua_State *s) {
 	return 0;
 }
 
+static int clua_cmd_execute_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "execute",
+		"summary": "Execute a command string.",
+		"parameters": [
+			{"name": "cmdline", "type": "string", "description": "The command line to execute."}
+		],
+		"returns": []})");
+	return 1;
+}
+
 void clua_cmdregister(lua_State* s) {
-	const luaL_Reg funcs[] = {
-		{"execute", clua_cmdexecute},
-		{nullptr, nullptr}
+	static const clua_Reg funcs[] = {
+		{"execute", clua_cmdexecute, clua_cmd_execute_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metacmd", "g_cmd");
+	clua_registerfuncsglobal(s, funcs, clua_metacmd(), "g_cmd");
 }
 
 static int clua_varcreate(lua_State *s) {
@@ -332,20 +424,135 @@ static int clua_varsetfloat(lua_State *s) {
 	return 0;
 }
 
+static int clua_var_create_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "create",
+		"summary": "Create a new cvar that is persisted by default.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."},
+			{"name": "value", "type": "string", "description": "The initial value."},
+			{"name": "help", "type": "string", "description": "Help text (optional)."},
+			{"name": "nopersist", "type": "boolean", "description": "If true, the cvar won't be persisted (optional)."},
+			{"name": "secret", "type": "boolean", "description": "If true, the cvar value is hidden (optional)."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_var_str_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "str",
+		"summary": "Get the string value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."}
+		],
+		"returns": [
+			{"type": "string", "description": "The cvar's string value."}
+		]})");
+	return 1;
+}
+
+static int clua_var_bool_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "bool",
+		"summary": "Get the boolean value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "The cvar's boolean value."}
+		]})");
+	return 1;
+}
+
+static int clua_var_int_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "int",
+		"summary": "Get the integer value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The cvar's integer value."}
+		]})");
+	return 1;
+}
+
+static int clua_var_float_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "float",
+		"summary": "Get the float value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."}
+		],
+		"returns": [
+			{"type": "number", "description": "The cvar's float value."}
+		]})");
+	return 1;
+}
+
+static int clua_var_setstr_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "setStr",
+		"summary": "Set the string value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."},
+			{"name": "value", "type": "string", "description": "The new string value."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_var_setbool_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "setBool",
+		"summary": "Set the boolean value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."},
+			{"name": "value", "type": "boolean", "description": "The new boolean value."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_var_setint_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "setInt",
+		"summary": "Set the integer value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."},
+			{"name": "value", "type": "integer", "description": "The new integer value."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_var_setfloat_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "setFloat",
+		"summary": "Set the float value of a cvar.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The cvar name."},
+			{"name": "value", "type": "number", "description": "The new float value."}
+		],
+		"returns": []})");
+	return 1;
+}
+
 void clua_varregister(lua_State* s) {
-	const luaL_Reg funcs[] = {
-		{"create", clua_varcreate},
-		{"str", clua_vargetstr},
-		{"bool", clua_vargetbool},
-		{"int", clua_vargetint},
-		{"float", clua_vargetfloat},
-		{"setStr", clua_varsetstr},
-		{"setBool", clua_varsetbool},
-		{"setInt", clua_varsetint},
-		{"setFloat", clua_varsetfloat},
-		{nullptr, nullptr}
+	static const clua_Reg funcs[] = {
+		{"create", clua_varcreate, clua_var_create_jsonhelp},
+		{"str", clua_vargetstr, clua_var_str_jsonhelp},
+		{"bool", clua_vargetbool, clua_var_bool_jsonhelp},
+		{"int", clua_vargetint, clua_var_int_jsonhelp},
+		{"float", clua_vargetfloat, clua_var_float_jsonhelp},
+		{"setStr", clua_varsetstr, clua_var_setstr_jsonhelp},
+		{"setBool", clua_varsetbool, clua_var_setbool_jsonhelp},
+		{"setInt", clua_varsetint, clua_var_setint_jsonhelp},
+		{"setFloat", clua_varsetfloat, clua_var_setfloat_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metavar", "g_var");
+	clua_registerfuncsglobal(s, funcs, clua_metavar(), "g_var");
 }
 
 static int clua_loginfo(lua_State *s) {
@@ -373,16 +580,71 @@ static int clua_logtrace(lua_State *s) {
 	return 0;
 }
 
+static int clua_log_info_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "info",
+		"summary": "Log an info message.",
+		"parameters": [
+			{"name": "message", "type": "string", "description": "The message to log."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_log_error_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "error",
+		"summary": "Log an error message.",
+		"parameters": [
+			{"name": "message", "type": "string", "description": "The message to log."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_log_warn_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "warn",
+		"summary": "Log a warning message.",
+		"parameters": [
+			{"name": "message", "type": "string", "description": "The message to log."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_log_debug_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "debug",
+		"summary": "Log a debug message.",
+		"parameters": [
+			{"name": "message", "type": "string", "description": "The message to log."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_log_trace_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "trace",
+		"summary": "Log a trace message.",
+		"parameters": [
+			{"name": "message", "type": "string", "description": "The message to log."}
+		],
+		"returns": []})");
+	return 1;
+}
+
 void clua_logregister(lua_State* s) {
-	const luaL_Reg funcs[] = {
-		{"info", clua_loginfo},
-		{"error", clua_logerror},
-		{"warn", clua_logwarn},
-		{"debug", clua_logdebug},
-		{"trace", clua_logtrace},
-		{nullptr, nullptr}
+	static const clua_Reg funcs[] = {
+		{"info", clua_loginfo, clua_log_info_jsonhelp},
+		{"error", clua_logerror, clua_log_error_jsonhelp},
+		{"warn", clua_logwarn, clua_log_warn_jsonhelp},
+		{"debug", clua_logdebug, clua_log_debug_jsonhelp},
+		{"trace", clua_logtrace, clua_log_trace_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metalog", "g_log");
+	clua_registerfuncsglobal(s, funcs, clua_metalog(), "g_log");
 }
 
 int clua_ioloader(lua_State *s) {
@@ -523,6 +785,112 @@ static int clua_quatindex(lua_State *s) {
 	return clua_error(s, "Invalid component %c", *i);
 }
 
+static int clua_quat_new_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "new",
+		"summary": "Create a new identity quaternion.",
+		"parameters": [],
+		"returns": [
+			{"type": "quat", "description": "A new identity quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotatexyz_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateXYZ",
+		"summary": "Create a quaternion rotation around X and Z axes.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
+			{"name": "z", "type": "number", "description": "Rotation angle around Z axis in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotatexy_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateXY",
+		"summary": "Create a quaternion rotation around X and Y axes.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
+			{"name": "y", "type": "number", "description": "Rotation angle around Y axis in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotateyz_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateYZ",
+		"summary": "Create a quaternion rotation around Y and Z axes.",
+		"parameters": [
+			{"name": "y", "type": "number", "description": "Rotation angle around Y axis in radians."},
+			{"name": "z", "type": "number", "description": "Rotation angle around Z axis in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotatexz_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateXZ",
+		"summary": "Create a quaternion rotation around X and Z axes.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
+			{"name": "z", "type": "number", "description": "Rotation angle around Z axis in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotatex_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateX",
+		"summary": "Create a quaternion rotation around the X axis.",
+		"parameters": [
+			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotatey_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateY",
+		"summary": "Create a quaternion rotation around the Y axis.",
+		"parameters": [
+			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_rotatez_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rotateZ",
+		"summary": "Create a quaternion rotation around the Z axis.",
+		"parameters": [
+			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
 void clua_quatregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
 		{"__mul", clua_quatmul},
@@ -531,16 +899,16 @@ void clua_quatregister(lua_State* s) {
 	};
 	Log::debug("Register %s lua functions", clua_meta<glm::quat>::name());
 	clua_registerfuncs(s, funcs, clua_meta<glm::quat>::name());
-	const luaL_Reg globalFuncs[] = {
-		{"new",          clua_quat_new},
-		{"rotateXYZ",    clua_quat_rotate_xyz},
-		{"rotateXY",     clua_quat_rotate_xy},
-		{"rotateYZ",     clua_quat_rotate_yz},
-		{"rotateXZ",     clua_quat_rotate_xz},
-		{"rotateX",      clua_quat_rotate_x},
-		{"rotateY",      clua_quat_rotate_y},
-		{"rotateZ",      clua_quat_rotate_z},
-		{nullptr, nullptr}
+	static const clua_Reg globalFuncs[] = {
+		{"new",          clua_quat_new, clua_quat_new_jsonhelp},
+		{"rotateXYZ",    clua_quat_rotate_xyz, clua_quat_rotatexyz_jsonhelp},
+		{"rotateXY",     clua_quat_rotate_xy, clua_quat_rotatexy_jsonhelp},
+		{"rotateYZ",     clua_quat_rotate_yz, clua_quat_rotateyz_jsonhelp},
+		{"rotateXZ",     clua_quat_rotate_xz, clua_quat_rotatexz_jsonhelp},
+		{"rotateX",      clua_quat_rotate_x, clua_quat_rotatex_jsonhelp},
+		{"rotateY",      clua_quat_rotate_y, clua_quat_rotatey_jsonhelp},
+		{"rotateZ",      clua_quat_rotate_z, clua_quat_rotatez_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	const core::String& globalMeta = core::String::format("%s_global", clua_meta<glm::quat>::name());
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
@@ -583,13 +951,35 @@ static int clua_sysshouldquit(lua_State *s) {
 	return 1;
 }
 
+static int clua_sys_sleep_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "sleep",
+		"summary": "Sleep for the specified number of milliseconds.",
+		"parameters": [
+			{"name": "ms", "type": "integer", "description": "The number of milliseconds to sleep."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_sys_shouldquit_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "shouldQuit",
+		"summary": "Check if the application should quit.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if the application should quit."}
+		]})");
+	return 1;
+}
+
 static void clua_sysregister(lua_State *s) {
-	const luaL_Reg funcs[] = {
-		{"sleep", clua_syssleep},
-		{"shouldQuit", clua_sysshouldquit},
-		{nullptr, nullptr}
+	static const clua_Reg funcs[] = {
+		{"sleep", clua_syssleep, clua_sys_sleep_jsonhelp},
+		{"shouldQuit", clua_sysshouldquit, clua_sys_shouldquit_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metasys", "g_sys");
+	clua_registerfuncsglobal(s, funcs, clua_metasys(), "g_sys");
 }
 
 static int clua_io_sysopen(lua_State *s) {
@@ -634,13 +1024,45 @@ static int clua_io_open(lua_State *s) {
 	return 1;
 }
 
+const char *clua_metaio() {
+	return "__global_io";
+}
+
+static int clua_io_sysopen_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "sysopen",
+		"summary": "Open a file from an absolute path or relative to the current working directory.",
+		"parameters": [
+			{"name": "path", "type": "string", "description": "The file path to open."},
+			{"name": "mode", "type": "string", "description": "The file mode ('r' for read, 'w' for write). Default is 'r'."}
+		],
+		"returns": [
+			{"type": "stream", "description": "A stream object for reading/writing."}
+		]})");
+	return 1;
+}
+
+static int clua_io_open_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "open",
+		"summary": "Open a file from the user's home path for reading or writing.",
+		"parameters": [
+			{"name": "path", "type": "string", "description": "The file path relative to the home path."},
+			{"name": "mode", "type": "string", "description": "The file mode ('r' for read, 'w' for write). Default is 'r'."}
+		],
+		"returns": [
+			{"type": "stream", "description": "A stream object for reading/writing."}
+		]})");
+	return 1;
+}
+
 void clua_ioregister(lua_State *s) {
-	static const luaL_Reg funcs[] = {
-		{"sysopen", clua_io_sysopen},
-		{"open", clua_io_open},
-		{nullptr, nullptr}
+	static const clua_Reg funcs[] = {
+		{"sysopen", clua_io_sysopen, clua_io_sysopen_jsonhelp},
+		{"open", clua_io_open, clua_io_open_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metaio", "g_io");
+	clua_registerfuncsglobal(s, funcs, clua_metaio(), "g_io");
 }
 
 void clua_register(lua_State *s) {
@@ -651,8 +1073,28 @@ void clua_register(lua_State *s) {
 	clua_ioregister(s);
 }
 
-static const char *clua_metastream() {
+const char *clua_metastream() {
 	return "__global_stream";
+}
+
+const char *clua_metahttp() {
+	return "__meta_http";
+}
+
+const char *clua_metacmd() {
+	return "__meta_cmd";
+}
+
+const char *clua_metavar() {
+	return "__meta_var";
+}
+
+const char *clua_metalog() {
+	return "__meta_log";
+}
+
+const char *clua_metasys() {
+	return "__meta_sys";
 }
 
 int clua_pushstream(lua_State* s, io::SeekableReadWriteStream *stream) {
@@ -757,6 +1199,21 @@ static int clua_http_get(lua_State *s) {
 	return ret;
 }
 
+static int clua_http_get_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "get",
+		"summary": "Perform an HTTP GET request.",
+		"parameters": [
+			{"name": "url", "type": "string", "description": "The URL to request."},
+			{"name": "headers", "type": "table", "description": "Optional headers table."}
+		],
+		"returns": [
+			{"type": "stream", "description": "Response body as stream."},
+			{"type": "table", "description": "Response headers."}
+		]})");
+	return 1;
+}
+
 static int clua_stream_gc(lua_State *s) {
 	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	delete stream;
@@ -796,13 +1253,29 @@ static int clua_http_post(lua_State *s) {
 	return ret;
 }
 
+static int clua_http_post_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "post",
+		"summary": "Perform an HTTP POST request.",
+		"parameters": [
+			{"name": "url", "type": "string", "description": "The URL to request."},
+			{"name": "body", "type": "string", "description": "The request body."},
+			{"name": "headers", "type": "table", "description": "Optional headers table."}
+		],
+		"returns": [
+			{"type": "stream", "description": "Response body as stream."},
+			{"type": "table", "description": "Response headers."}
+		]})");
+	return 1;
+}
+
 void clua_httpregister(lua_State *s) {
-	static const luaL_Reg shapeFuncs[] = {
-		{"get", clua_http_get},
-		{"post", clua_http_post},
-		{nullptr, nullptr}
+	static const clua_Reg httpFuncs[] = {
+		{"get", clua_http_get, clua_http_get_jsonhelp},
+		{"post", clua_http_post, clua_http_post_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, shapeFuncs, "__meta_http", "g_http");
+	clua_registerfuncsglobal(s, httpFuncs, clua_metahttp(), "g_http");
 }
 
 static int clua_stream_readuint8(lua_State *s) {
@@ -1225,65 +1698,584 @@ static int clua_image_save(lua_State *s) {
 	return 0;
 }
 
+static int clua_image_name_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "name",
+		"summary": "Get the name of the image.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The image name."}
+		]})");
+	return 1;
+}
+
+static int clua_image_save_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "save",
+		"summary": "Save the image to a file.",
+		"parameters": [
+			{"name": "filename", "type": "string", "description": "The filename to save to."}
+		],
+		"returns": []})");
+	return 1;
+}
+
 void clua_imageregister(lua_State *s) {
-	static const luaL_Reg imageFuncs[] = {
-		{"name", clua_image_name},
-		{"save", clua_image_save},
-		{"__gc", clua_image_gc},
-		{nullptr, nullptr}
+	static const clua_Reg imageFuncs[] = {
+		{"name", clua_image_name, clua_image_name_jsonhelp},
+		{"save", clua_image_save, clua_image_save_jsonhelp},
+		{"__gc", clua_image_gc, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, imageFuncs, clua_meta<image::Image>::name());
 }
 
+static int clua_stream_readstring_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readString",
+		"summary": "Read a string from the stream.",
+		"parameters": [
+			{"name": "terminate", "type": "boolean", "description": "Whether to stop at null terminator (optional)."}
+		],
+		"returns": [
+			{"type": "string", "description": "The string read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readuint8_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt8",
+		"summary": "Read an unsigned 8-bit integer from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint8_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt8",
+		"summary": "Read a signed 8-bit integer from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readuint16_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt16",
+		"summary": "Read an unsigned 16-bit integer (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint16_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt16",
+		"summary": "Read a signed 16-bit integer (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readuint32_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt32",
+		"summary": "Read an unsigned 32-bit integer (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint32_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt32",
+		"summary": "Read a signed 32-bit integer (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readuint64_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt64",
+		"summary": "Read an unsigned 64-bit integer (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint64_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt64",
+		"summary": "Read a signed 64-bit integer (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readfloat_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readFloat",
+		"summary": "Read a 32-bit float (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "number", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readdouble_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readDouble",
+		"summary": "Read a 64-bit double (little-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "number", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_writestring_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeString",
+		"summary": "Write a string to the stream.",
+		"parameters": [
+			{"name": "str", "type": "string", "description": "The string to write."},
+			{"name": "terminate", "type": "boolean", "description": "Whether to write null terminator (optional)."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeuint8_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt8",
+		"summary": "Write an unsigned 8-bit integer to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint8_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt8",
+		"summary": "Write a signed 8-bit integer to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeuint16_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt16",
+		"summary": "Write an unsigned 16-bit integer (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint16_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt16",
+		"summary": "Write a signed 16-bit integer (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeuint32_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt32",
+		"summary": "Write an unsigned 32-bit integer (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint32_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt32",
+		"summary": "Write a signed 32-bit integer (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeuint64_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt64",
+		"summary": "Write an unsigned 64-bit integer (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint64_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt64",
+		"summary": "Write a signed 64-bit integer (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writefloat_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeFloat",
+		"summary": "Write a 32-bit float (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "number", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writedouble_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeDouble",
+		"summary": "Write a 64-bit double (little-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "number", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_readuint16be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt16BE",
+		"summary": "Read an unsigned 16-bit integer (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint16be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt16BE",
+		"summary": "Read a signed 16-bit integer (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readuint32be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt32BE",
+		"summary": "Read an unsigned 32-bit integer (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint32be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt32BE",
+		"summary": "Read a signed 32-bit integer (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readuint64be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readUInt64BE",
+		"summary": "Read an unsigned 64-bit integer (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readint64be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readInt64BE",
+		"summary": "Read a signed 64-bit integer (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readfloatbe_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readFloatBE",
+		"summary": "Read a 32-bit float (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "number", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_readdoublebe_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "readDoubleBE",
+		"summary": "Read a 64-bit double (big-endian) from the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "number", "description": "The value read."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_writeuint16be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt16BE",
+		"summary": "Write an unsigned 16-bit integer (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint16be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt16BE",
+		"summary": "Write a signed 16-bit integer (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeuint32be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt32BE",
+		"summary": "Write an unsigned 32-bit integer (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint32be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt32BE",
+		"summary": "Write a signed 32-bit integer (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeuint64be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeUInt64BE",
+		"summary": "Write an unsigned 64-bit integer (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writeint64be_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeInt64BE",
+		"summary": "Write a signed 64-bit integer (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writefloatbe_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeFloatBE",
+		"summary": "Write a 32-bit float (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "number", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writedoublebe_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeDoubleBE",
+		"summary": "Write a 64-bit double (big-endian) to the stream.",
+		"parameters": [
+			{"name": "value", "type": "number", "description": "The value to write."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_writestream_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "writeStream",
+		"summary": "Write the contents of another stream to this stream.",
+		"parameters": [
+			{"name": "source", "type": "stream", "description": "The source stream to read from."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_eos_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "eos",
+		"summary": "Check if end of stream has been reached.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if at end of stream."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_seek_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "seek",
+		"summary": "Seek to a position in the stream.",
+		"parameters": [
+			{"name": "offset", "type": "integer", "description": "The offset to seek to."},
+			{"name": "mode", "type": "integer", "description": "Seek mode (0=SET, 1=CUR, 2=END)."}
+		],
+		"returns": []})");
+	return 1;
+}
+
+static int clua_stream_tell_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "tell",
+		"summary": "Get the current position in the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The current position."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_pos_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "pos",
+		"summary": "Get the current position in the stream (alias for tell).",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The current position."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_size_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "size",
+		"summary": "Get the total size of the stream.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The stream size in bytes."}
+		]})");
+	return 1;
+}
+
+static int clua_stream_close_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "close",
+		"summary": "Close the stream.",
+		"parameters": [],
+		"returns": []})");
+	return 1;
+}
+
 void clua_streamregister(lua_State *s) {
-	static const luaL_Reg streamFuncs[] = {
-		{"readString", clua_stream_readstring},
-		{"readUInt8", clua_stream_readuint8},
-		{"readInt8", clua_stream_readint8},
-		{"readUInt16", clua_stream_readuint16},
-		{"readInt16", clua_stream_readint16},
-		{"readUInt32", clua_stream_readuint32},
-		{"readInt32", clua_stream_readint32},
-		{"readUInt64", clua_stream_readuint64},
-		{"readInt64", clua_stream_readint64},
-		{"readFloat", clua_stream_readfloat},
-		{"readDouble", clua_stream_readdouble},
-		{"writeString", clua_stream_writestring},
-		{"writeUInt8", clua_stream_writeuint8},
-		{"writeInt8", clua_stream_writeint8},
-		{"writeUInt16", clua_stream_writeuint16},
-		{"writeInt16", clua_stream_writeint16},
-		{"writeUInt32", clua_stream_writeuint32},
-		{"writeInt32", clua_stream_writeint32},
-		{"writeUInt64", clua_stream_writeuint64},
-		{"writeInt64", clua_stream_writeint64},
-		{"writeFloat", clua_stream_writefloat},
-		{"writeDouble", clua_stream_writedouble},
-		{"readUInt16BE", clua_stream_readuint16be},
-		{"readInt16BE", clua_stream_readint16be},
-		{"readUInt32BE", clua_stream_readuint32be},
-		{"readInt32BE", clua_stream_readint32be},
-		{"readUInt64BE", clua_stream_readuint64be},
-		{"readInt64BE", clua_stream_readint64be},
-		{"readFloatBE", clua_stream_readfloatbe},
-		{"readDoubleBE", clua_stream_readdoublebe},
-		{"writeUInt16BE", clua_stream_writeuint16be},
-		{"writeInt16BE", clua_stream_writeint16be},
-		{"writeUInt32BE", clua_stream_writeuint32be},
-		{"writeInt32BE", clua_stream_writeint32be},
-		{"writeUInt64BE", clua_stream_writeuint64be},
-		{"writeInt64BE", clua_stream_writeint64be},
-		{"writeFloatBE", clua_stream_writefloatbe},
-		{"writeDoubleBE", clua_stream_writedoublebe},
-		{"writeStream", clua_stream_writestream},
-		{"eos", clua_stream_eos},
-		{"seek", clua_stream_seek},
-		{"tell", clua_stream_tell},
-		{"pos", clua_stream_tell},
-		{"size", clua_stream_size},
-		{"close", clua_stream_close},
-		{"__gc", clua_stream_gc},
-		{nullptr, nullptr}
+	static const clua_Reg streamFuncs[] = {
+		{"readString", clua_stream_readstring, clua_stream_readstring_jsonhelp},
+		{"readUInt8", clua_stream_readuint8, clua_stream_readuint8_jsonhelp},
+		{"readInt8", clua_stream_readint8, clua_stream_readint8_jsonhelp},
+		{"readUInt16", clua_stream_readuint16, clua_stream_readuint16_jsonhelp},
+		{"readInt16", clua_stream_readint16, clua_stream_readint16_jsonhelp},
+		{"readUInt32", clua_stream_readuint32, clua_stream_readuint32_jsonhelp},
+		{"readInt32", clua_stream_readint32, clua_stream_readint32_jsonhelp},
+		{"readUInt64", clua_stream_readuint64, clua_stream_readuint64_jsonhelp},
+		{"readInt64", clua_stream_readint64, clua_stream_readint64_jsonhelp},
+		{"readFloat", clua_stream_readfloat, clua_stream_readfloat_jsonhelp},
+		{"readDouble", clua_stream_readdouble, clua_stream_readdouble_jsonhelp},
+		{"writeString", clua_stream_writestring, clua_stream_writestring_jsonhelp},
+		{"writeUInt8", clua_stream_writeuint8, clua_stream_writeuint8_jsonhelp},
+		{"writeInt8", clua_stream_writeint8, clua_stream_writeint8_jsonhelp},
+		{"writeUInt16", clua_stream_writeuint16, clua_stream_writeuint16_jsonhelp},
+		{"writeInt16", clua_stream_writeint16, clua_stream_writeint16_jsonhelp},
+		{"writeUInt32", clua_stream_writeuint32, clua_stream_writeuint32_jsonhelp},
+		{"writeInt32", clua_stream_writeint32, clua_stream_writeint32_jsonhelp},
+		{"writeUInt64", clua_stream_writeuint64, clua_stream_writeuint64_jsonhelp},
+		{"writeInt64", clua_stream_writeint64, clua_stream_writeint64_jsonhelp},
+		{"writeFloat", clua_stream_writefloat, clua_stream_writefloat_jsonhelp},
+		{"writeDouble", clua_stream_writedouble, clua_stream_writedouble_jsonhelp},
+		{"readUInt16BE", clua_stream_readuint16be, clua_stream_readuint16be_jsonhelp},
+		{"readInt16BE", clua_stream_readint16be, clua_stream_readint16be_jsonhelp},
+		{"readUInt32BE", clua_stream_readuint32be, clua_stream_readuint32be_jsonhelp},
+		{"readInt32BE", clua_stream_readint32be, clua_stream_readint32be_jsonhelp},
+		{"readUInt64BE", clua_stream_readuint64be, clua_stream_readuint64be_jsonhelp},
+		{"readInt64BE", clua_stream_readint64be, clua_stream_readint64be_jsonhelp},
+		{"readFloatBE", clua_stream_readfloatbe, clua_stream_readfloatbe_jsonhelp},
+		{"readDoubleBE", clua_stream_readdoublebe, clua_stream_readdoublebe_jsonhelp},
+		{"writeUInt16BE", clua_stream_writeuint16be, clua_stream_writeuint16be_jsonhelp},
+		{"writeInt16BE", clua_stream_writeint16be, clua_stream_writeint16be_jsonhelp},
+		{"writeUInt32BE", clua_stream_writeuint32be, clua_stream_writeuint32be_jsonhelp},
+		{"writeInt32BE", clua_stream_writeint32be, clua_stream_writeint32be_jsonhelp},
+		{"writeUInt64BE", clua_stream_writeuint64be, clua_stream_writeuint64be_jsonhelp},
+		{"writeInt64BE", clua_stream_writeint64be, clua_stream_writeint64be_jsonhelp},
+		{"writeFloatBE", clua_stream_writefloatbe, clua_stream_writefloatbe_jsonhelp},
+		{"writeDoubleBE", clua_stream_writedoublebe, clua_stream_writedoublebe_jsonhelp},
+		{"writeStream", clua_stream_writestream, clua_stream_writestream_jsonhelp},
+		{"eos", clua_stream_eos, clua_stream_eos_jsonhelp},
+		{"seek", clua_stream_seek, clua_stream_seek_jsonhelp},
+		{"tell", clua_stream_tell, clua_stream_tell_jsonhelp},
+		{"pos", clua_stream_tell, clua_stream_pos_jsonhelp},
+		{"size", clua_stream_size, clua_stream_size_jsonhelp},
+		{"close", clua_stream_close, clua_stream_close_jsonhelp},
+		{"__gc", clua_stream_gc, nullptr},
+		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncs(s, streamFuncs, clua_metastream());
 }

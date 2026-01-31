@@ -129,6 +129,22 @@ bool clua_registernew(lua_State* s, const char *name, lua_CFunction func);
 bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
 bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
 
+struct clua_Reg {
+  const char *name;
+  lua_CFunction func;
+  lua_CFunction jsonHelp;
+};
+bool clua_registerfuncs(lua_State* s, const clua_Reg* funcs, const char *name);
+bool clua_registerfuncsglobal(lua_State* s, const clua_Reg* funcs, const char *meta, const char *name);
+
+/**
+ * @brief Get the jsonhelp function for a method in a metatable
+ * @param s The lua state
+ * @param name The metatable name
+ * @param method The method name
+ * @return The jsonhelp function or nullptr if not found
+ */
+lua_CFunction clua_getjsonhelp(lua_State* s, const char *name, const char *method);
 
 template<class T>
 struct LuaNumberFuncs {};
@@ -553,6 +569,77 @@ static int clua_vecnewindex(lua_State *s) {
 	return clua_error(s, "Invalid component %c", *i);
 }
 
+// Vector jsonhelp functions (generic for all vector types)
+inline int clua_vec_new_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "new",
+		"summary": "Create a new vector with the specified components.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "The X component."},
+			{"name": "y", "type": "number", "description": "The Y component (for vec2 and higher)."},
+			{"name": "z", "type": "number", "description": "The Z component (for vec3 and higher)."},
+			{"name": "w", "type": "number", "description": "The W component (for vec4 only)."}
+		],
+		"returns": [
+			{"type": "vec", "description": "A new vector with the specified components."}
+		]})");
+	return 1;
+}
+
+inline int clua_vec_distance_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "distance",
+		"summary": "Calculate the distance between two vectors.",
+		"parameters": [
+			{"name": "a", "type": "vec", "description": "The first vector."},
+			{"name": "b", "type": "vec", "description": "The second vector."}
+		],
+		"returns": [
+			{"type": "number", "description": "The Euclidean distance between the two vectors."}
+		]})");
+	return 1;
+}
+
+inline int clua_vec_dot_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "dot",
+		"summary": "Calculate the dot product of two vectors.",
+		"parameters": [
+			{"name": "a", "type": "vec", "description": "The first vector."},
+			{"name": "b", "type": "vec", "description": "The second vector."}
+		],
+		"returns": [
+			{"type": "number", "description": "The dot product of the two vectors."}
+		]})");
+	return 1;
+}
+
+inline int clua_vec_length_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "length",
+		"summary": "Calculate the length (magnitude) of a vector.",
+		"parameters": [
+			{"name": "v", "type": "vec", "description": "The vector."}
+		],
+		"returns": [
+			{"type": "number", "description": "The length of the vector."}
+		]})");
+	return 1;
+}
+
+inline int clua_vec_normalize_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "normalize",
+		"summary": "Normalize a vector to unit length.",
+		"parameters": [
+			{"name": "v", "type": "vec", "description": "The vector to normalize."}
+		],
+		"returns": [
+			{"type": "vec", "description": "The normalized vector with length 1."}
+		]})");
+	return 1;
+}
+
 template<class T>
 void clua_vecregister(lua_State* s) {
 	using RAWTYPE = typename core::remove_reference<typename core::remove_pointer<T>::type>::type;
@@ -576,13 +663,13 @@ void clua_vecregister(lua_State* s) {
 	};
 	Log::debug("Register %s lua functions", clua_meta<RAWTYPE>::name());
 	clua_registerfuncs(s, funcs, clua_meta<RAWTYPE>::name());
-	const luaL_Reg globalFuncs[] = {
-		{"new", clua_vecnew<RAWTYPE>::exec},
-		{"distance", clua_vecfunc<RAWTYPE>::distance},
-		{"dot", clua_vecfunc<RAWTYPE>::dot},
-		{"length", clua_vecfunc<RAWTYPE>::length},
-		{"normalize", clua_vecfunc<RAWTYPE>::normalize},
-		{nullptr, nullptr}
+	static const clua_Reg globalFuncs[] = {
+		{"new", clua_vecnew<RAWTYPE>::exec, clua_vec_new_jsonhelp},
+		{"distance", clua_vecfunc<RAWTYPE>::distance, clua_vec_distance_jsonhelp},
+		{"dot", clua_vecfunc<RAWTYPE>::dot, clua_vec_dot_jsonhelp},
+		{"length", clua_vecfunc<RAWTYPE>::length, clua_vec_length_jsonhelp},
+		{"normalize", clua_vecfunc<RAWTYPE>::normalize, clua_vec_normalize_jsonhelp},
+		{nullptr, nullptr, nullptr}
 	};
 	const core::String& globalMeta = core::String::format("%s_global", clua_meta<RAWTYPE>::name());
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<RAWTYPE>::name());
@@ -620,3 +707,11 @@ void clua_ioregister(lua_State *s);
 void clua_cmdregister(lua_State *s);
 void clua_varregister(lua_State *s);
 void clua_logregister(lua_State *s);
+
+const char *clua_metahttp();
+const char *clua_metaio();
+const char *clua_metastream();
+const char *clua_metacmd();
+const char *clua_metavar();
+const char *clua_metalog();
+const char *clua_metasys();
