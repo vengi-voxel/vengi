@@ -86,17 +86,13 @@ TEST_F(ModifierTest, testModifierSelection) {
 	ASSERT_TRUE(modifier.init());
 	select(node, modifier, glm::ivec3(-1), glm::ivec3(1));
 
-	// Verify selection was set correctly using FlagOutline
-	// Note: SelectMode::All uses VisitVisible, so only surface voxels get selected
 	EXPECT_TRUE(node.hasSelection()) << "Node should have selection after select()";
 	// Surface voxel at (1,0,0) should be selected
 	EXPECT_TRUE((volume.voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Surface voxel at (1,0,0) should be selected";
-	// Interior voxel at (0,0,0) is not visible, so it should NOT be selected
-	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Interior voxel should not be selected";
+	// Interior voxel at (0,0,0) should also be selected
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0) << "Interior voxel should be selected";
 	EXPECT_FALSE((volume.voxel(2, 2, 2).getFlags() & voxel::FlagOutline) != 0) << "Voxel outside selection should not be selected";
 
-	// now modify voxels - but only on the current selection
-	// Use Override mode since we already have voxels in the selection area
 	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Override, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	int modifierExecuted = 0;
