@@ -2431,6 +2431,105 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	return true;
 }
 
+core::String LUAApi::apiJson() const {
+	lua_State *s = _lua.state();
+	core::String json = "{";
+	bool firstGlobal = true;
+
+	// Iterate global table to find our registered globals (g_*)
+	lua_pushglobaltable(s);
+	lua_pushnil(s);
+	while (lua_next(s, -2) != 0) {
+		if (lua_type(s, -2) == LUA_TSTRING) {
+			const char *name = lua_tostring(s, -2);
+			// Only include our g_* globals and skip internal Lua globals
+			if (name && name[0] == 'g' && name[1] == '_') {
+				if (!firstGlobal) {
+					json += ",";
+				}
+				firstGlobal = false;
+				json += core::String::format("\"%s\":{", name);
+				json += "\"type\":\"global\",";
+				json += "\"methods\":[";
+
+				bool firstMethod = true;
+				// Iterate through the table's methods
+				if (lua_istable(s, -1)) {
+					lua_pushnil(s);
+					while (lua_next(s, -2) != 0) {
+						if (lua_type(s, -2) == LUA_TSTRING) {
+							const char *methodName = lua_tostring(s, -2);
+							// Skip metamethods and internal fields
+							if (methodName && methodName[0] != '_' && lua_isfunction(s, -1)) {
+								if (!firstMethod) {
+									json += ",";
+								}
+								firstMethod = false;
+								json += core::String::format("\"%s\"", methodName);
+							}
+						}
+						lua_pop(s, 1);
+					}
+				}
+				json += "]}";
+			}
+		}
+		lua_pop(s, 1);
+	}
+	lua_pop(s, 1); // pop global table
+
+	// Add metatables info for object types by checking the registry
+	struct MetaInfo {
+		const char *name;
+		const char *displayName;
+	};
+	const MetaInfo metas[] = {
+		{luaVoxel_metavolumewrapper(), "volume"},
+		{luaVoxel_metaregion(), "region"},
+		{luaVoxel_metaregion_gc(), "region_gc"},
+		{luaVoxel_metascenegraphnode(), "scenegraphnode"},
+		{luaVoxel_metakeyframe(), "keyframe"},
+		{luaVoxel_metapalette(), "palette"},
+		{luaVoxel_metapalette_gc(), "palette_gc"},
+	};
+
+	for (const auto &meta : metas) {
+		luaL_getmetatable(s, meta.name);
+		if (lua_istable(s, -1)) {
+			if (!firstGlobal) {
+				json += ",";
+			}
+			firstGlobal = false;
+			json += core::String::format("\"%s\":{", meta.displayName);
+			json += "\"type\":\"metatable\",";
+			json += core::String::format("\"metaname\": \"%s\",", meta.name);
+			json += "\"methods\":[";
+
+			bool firstMethod = true;
+			lua_pushnil(s);
+			while (lua_next(s, -2) != 0) {
+				if (lua_type(s, -2) == LUA_TSTRING) {
+					const char *methodName = lua_tostring(s, -2);
+					// Skip metamethods
+					if (methodName && methodName[0] != '_' && lua_isfunction(s, -1)) {
+						if (!firstMethod) {
+							json += ",";
+						}
+						firstMethod = false;
+						json += core::String::format("\"%s\"", methodName);
+					}
+				}
+				lua_pop(s, 1);
+			}
+			json += "]}";
+		}
+		lua_pop(s, 1);
+	}
+
+	json += "}\n";
+	return json;
+}
+
 }
 
 #undef GENERATOR_LUA_SANTITY

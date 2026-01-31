@@ -1923,6 +1923,20 @@ void SceneManager::construct() {
 	}).setHelp(_("Executes a lua script"))
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(_filesystem));
 
+	command::Command::registerCommand("luaapijson", [&] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Usage: luaapijson <file>");
+			return;
+		}
+		const core::String &filename = args[0];
+		const core::String &json = _luaApi.apiJson();
+		if (io::Filesystem::sysWrite(filename, json)) {
+			Log::info("Wrote lua api json to %s", filename.c_str());
+		} else {
+			Log::error("Failed to write lua api json to %s", filename.c_str());
+		}
+	}).setHelp(_("Print the lua scripting api as json to a file"));
+
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
 				core::String::format("movecursor%s", DIRECTIONS[i].postfix),

@@ -128,6 +128,12 @@ public:
 			  const core::DynamicArray<core::String> &args = {});
 
 	const voxel::Region &dirtyRegion() const;
+
+	/**
+	 * @brief Generate a JSON representation of the Lua API
+	 * @return JSON string containing all registered globals and metatables with their methods
+	 */
+	core::String apiJson() const;
 };
 
 inline const core::String &LUAApi::error() const {
