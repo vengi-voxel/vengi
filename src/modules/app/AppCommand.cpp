@@ -150,38 +150,6 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		Log::warn("%s", args[0].c_str());
 	}).setHelp(_("Log given message as warn"));
 
-	command::Command::registerCommand("cvarjson", [] (const command::CmdArgs& args) {
-		if (args.empty()) {
-			Log::info("Usage: cvarjson <file>");
-			return;
-		}
-		const core::String &filename = args[0];
-		core::String json = "{\n";
-		bool first = true;
-		util::visitVarSorted([&] (const core::VarPtr& var) {
-			if (!first) {
-				json += ",\n";
-			} else {
-				first = false;
-			}
-			const uint32_t flags = var->getFlags();
-			const char *value = (flags & core::CV_SECRET) ? "***secret***" : var->strVal().c_str();
-			json += core::String::format("\"%s\": {", var->name().c_str());
-			json += core::String::format("\"value\": \"%s\",", value);
-			json += core::String::format("\"flags\": %u", flags);
-			if (var->help()) {
-				json += core::String::format(",\"help\": \"%s\"", var->help());
-			}
-			json += "}";
-		}, 0u);
-		json += "}";
-		if (io::Filesystem::sysWrite(filename, json)) {
-			Log::info("Wrote cvar json to %s", filename.c_str());
-		} else {
-			Log::error("Failed to write cvar json to %s", filename.c_str());
-		}
-	}).setHelp(_("Print the list of all known variables as json to a file"));
-
 	command::Command::registerCommand("cvarlist", [] (const command::CmdArgs& args) {
 		util::visitVarSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(var->name(), args[0])) {
@@ -222,32 +190,6 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("* %s - %s", cmd.name().c_str(), cmd.help().c_str());
 		});
 	}).setHelp(_("Show the list of known commands (wildcards supported)"));
-
-	command::Command::registerCommand("cmdjson", [] (const command::CmdArgs& args) {
-		if (args.empty()) {
-			Log::info("Usage: cmdjson <file>");
-			return;
-		}
-		const core::String &filename = args[0];
-		core::String json = "{\n";
-		bool first = true;
-		command::Command::visitSorted([&] (const command::Command& cmd) {
-			if (!first) {
-				json += ",\n";
-			} else {
-				first = false;
-			}
-			json += core::String::format("\"%s\": {", cmd.name().c_str());
-			json += core::String::format("\"help\": \"%s\"", cmd.help().c_str());
-			json += "}";
-		});
-		json += "}";
-		if (io::Filesystem::sysWrite(filename, json)) {
-			Log::info("Wrote cmd json to %s", filename.c_str());
-		} else {
-			Log::error("Failed to write cmd json to %s", filename.c_str());
-		}
-	}).setHelp(_("Print the list of all known commands as json to a file"));
 }
 
 }
