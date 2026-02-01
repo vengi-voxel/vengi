@@ -36,7 +36,6 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/VoxelUtil.h"
-#include "voxelformat/external/earcut.hpp"
 #include <array>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
@@ -641,16 +640,17 @@ void MeshFormat::triangulatePolygons(const core::DynamicArray<voxel::IndexArray>
 
 		std::vector<voxel::IndexType> indicesEarCut = mapbox::earcut<voxel::IndexType>(polygon);
 		core_assert((int)indicesEarCut.size() % 3 == 0);
-		Log::debug("triangulated %i tris", (int)indices.size() / 3);
+		Log::debug("triangulated %i tris", (int)indicesEarCut.size() / 3);
 
 		for (size_t k = 0; k < indicesEarCut.size() / 3; k++) {
+			// earcut returns local indices (0 to nPolygons-1), map them back to global vertex indices
 			const int idx0 = indicesEarCut[3 * k + 0];
 			const int idx1 = indicesEarCut[3 * k + 1];
 			const int idx2 = indicesEarCut[3 * k + 2];
 
-			indices.push_back(idx0);
-			indices.push_back(idx1);
-			indices.push_back(idx2);
+			indices.push_back(p[idx0]);
+			indices.push_back(p[idx1]);
+			indices.push_back(p[idx2]);
 		}
 	}
 }
