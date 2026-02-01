@@ -484,7 +484,11 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["name"] = "voxedit_create_generator";
 		tool["description"] = "Create and run a custom Lua generator script.\n"
 							  "Script receives: node, region, color, [custom args]\n"
-							  "Get api details with voxedit_lua_api";
+							  "Get api details with voxedit_lua_api.\n"
+							  "Always add a description function to your script.\n"
+							  "function description() return 'My script description' end\n"
+							  "Custom args are given via function arguments() return { { name = 'padding', desc = 'padding between nodes', type = 'int', default = '2' } } end\n"
+							  "Try to use arguments to make your scripts re-usable.";
 
 		nlohmann::json nameProp;
 		nameProp["type"] = "string";
@@ -501,7 +505,7 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 
 		nlohmann::json argsProp;
 		argsProp["type"] = "string";
-		argsProp["description"] = "Script arguments";
+		argsProp["description"] = "Script arguments defined by function arguments() in the lua code [custom args]";
 
 		nlohmann::json inputSchema;
 		inputSchema["type"] = "object";
