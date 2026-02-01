@@ -107,6 +107,7 @@ app::AppState McpServer::onCleanup() {
 }
 
 bool McpServer::connectToVoxEdit() {
+	Log::debug("Connecting to VoxEdit server...");
 #ifdef WIN32
 	WSADATA wsaData;
 	const int wsaResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -142,6 +143,7 @@ bool McpServer::connectToVoxEdit() {
 		return false;
 	}
 
+	Log::debug("Connecting to %s:%i...", host.c_str(), port);
 	int connectResult = ::connect(_network->socketFD, res->ai_addr, res->ai_addrlen);
 	if (connectResult < 0) {
 		closesocket(_network->socketFD);
@@ -163,6 +165,7 @@ bool McpServer::connectToVoxEdit() {
 
 	core::Var::getSafe(cfg::AppUserName)->setVal("mcp-client");
 
+	Log::debug("Sending init session message to VoxEdit server...");
 	voxedit::InitSessionMessage initMsg(false);
 	return sendMessage(initMsg);
 }
@@ -293,6 +296,8 @@ app::AppState McpServer::onRunning() {
 		return app::AppState::Running;
 	}
 
+	Log::debug("Reading MCP request from stdin...");
+
 	char line[65536];
 	if (fgets(line, sizeof(line), stdin) == nullptr) {
 		Log::error("Failed to read from stdin");
@@ -300,6 +305,7 @@ app::AppState McpServer::onRunning() {
 	}
 
 	if (line[0] == '\n' || line[0] == '\0') {
+		Log::debug("Received empty MCP request");
 		return app::AppState::Running;
 	}
 
@@ -353,12 +359,24 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 
 void McpServer::handleInitialize(const nlohmann::json &request) {
 	Log::info("Received initialize request");
+	if (request.contains("params") && request["params"].contains("clientInfo")) {
+		const auto &clientInfo = request["params"]["clientInfo"];
+		core::String _clientName = "unknown";
+		core::String _clientVersion = "unknown";
+		if (clientInfo.contains("name") && clientInfo["name"].is_string()) {
+			_clientName = clientInfo["name"].get<std::string>().c_str();
+		}
+		if (clientInfo.contains("version") && clientInfo["version"].is_string()) {
+			_clientVersion = clientInfo["version"].get<std::string>().c_str();
+		}
+		Log::info("Client: %s (version %s)", _clientName.c_str(), _clientVersion.c_str());
+	}
 	_initialized = true;
 
 	nlohmann::json result;
 	result["protocolVersion"] = "2024-11-05";
 	result["capabilities"]["tools"]["listChanged"] = true;
-	result["serverInfo"]["name"] = appname();
+	result["serverInfo"]["name"] = appname().c_str();
 	result["serverInfo"]["version"] = PROJECT_VERSION;
 
 	nlohmann::json response;
@@ -378,8 +396,10 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["name"] = "voxedit_lua_api";
 		tool["description"] = "Get the Lua API documentation as JSON. This describes all available Lua functions and "
 							  "their parameters for writing generator scripts.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"] = nlohmann::json::object();
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["properties"] = nlohmann::json::object();
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -390,16 +410,31 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["description"] = "Create and run a custom Lua generator script.\n"
 							  "Script receives: node, region, color, [custom args]\n"
 							  "Get api details with voxedit_lua_api";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["required"] = nlohmann::json::array({"name", "code"});
-		tool["inputSchema"]["properties"]["name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["name"]["description"] = "Script name";
-		tool["inputSchema"]["properties"]["code"]["type"] = "string";
-		tool["inputSchema"]["properties"]["code"]["description"] = "Lua script code";
-		tool["inputSchema"]["properties"]["run"]["type"] = "boolean";
-		tool["inputSchema"]["properties"]["run"]["default"] = true;
-		tool["inputSchema"]["properties"]["args"]["type"] = "string";
-		tool["inputSchema"]["properties"]["args"]["description"] = "Script arguments";
+
+		nlohmann::json nameProp;
+		nameProp["type"] = "string";
+		nameProp["description"] = "Script name";
+
+		nlohmann::json codeProp;
+		codeProp["type"] = "string";
+		codeProp["description"] = "Lua script code";
+
+		nlohmann::json runProp;
+		runProp["type"] = "boolean";
+		runProp["default"] = true;
+
+		nlohmann::json argsProp;
+		argsProp["type"] = "string";
+		argsProp["description"] = "Script arguments";
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["required"] = nlohmann::json::array({"name", "code"});
+		inputSchema["properties"]["name"] = nameProp;
+		inputSchema["properties"]["code"] = codeProp;
+		inputSchema["properties"]["run"] = runProp;
+		inputSchema["properties"]["args"] = argsProp;
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -409,8 +444,10 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["name"] = "voxedit_get_scene_state";
 		tool["description"] = "Get the current scene graph structure as JSON. Each node includes its UUID, type, "
 							  "palette colors (with RGBA values and names), and volume information.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"] = nlohmann::json::object();
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["properties"] = nlohmann::json::object();
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -420,12 +457,30 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["name"] = "voxedit_place_voxels";
 		tool["description"] =
 			"Place voxels at specified positions in a node. Get node UUIDs from voxedit_get_scene_state.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
-		tool["inputSchema"]["properties"]["voxels"]["type"] = "array";
-		tool["inputSchema"]["properties"]["voxels"]["description"] = "Array of {x, y, z, colorIndex} objects";
-		tool["inputSchema"]["properties"]["nodeUUID"]["type"] = "string";
-		tool["inputSchema"]["properties"]["nodeUUID"]["description"] = "UUID of the node to modify";
+
+		nlohmann::json itemsSchema;
+		itemsSchema["type"] = "object";
+		itemsSchema["properties"]["x"]["type"] = "integer";
+		itemsSchema["properties"]["y"]["type"] = "integer";
+		itemsSchema["properties"]["z"]["type"] = "integer";
+		itemsSchema["properties"]["colorIndex"]["type"] = "integer";
+		itemsSchema["required"] = nlohmann::json::array({"x", "y", "z", "colorIndex"});
+
+		nlohmann::json voxelsProp;
+		voxelsProp["type"] = "array";
+		voxelsProp["description"] = "Array of {x, y, z, colorIndex} objects";
+		voxelsProp["items"] = itemsSchema;
+
+		nlohmann::json nodeUUIDProp;
+		nodeUUIDProp["type"] = "string";
+		nodeUUIDProp["description"] = "UUID of the node to modify";
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
+		inputSchema["properties"]["voxels"] = voxelsProp;
+		inputSchema["properties"]["nodeUUID"] = nodeUUIDProp;
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -435,10 +490,16 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["name"] = "voxedit_get_palette";
 		tool["description"] = "Get the color palette of a specific node. Returns all colors with their RGBA values, "
 							  "names, and material properties. Use this to find the right colorIndex for voxedit_place_voxels.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["required"] = nlohmann::json::array({"nodeUUID"});
-		tool["inputSchema"]["properties"]["nodeUUID"]["type"] = "string";
-		tool["inputSchema"]["properties"]["nodeUUID"]["description"] = "UUID of the node to get the palette from";
+
+		nlohmann::json nodeUUIDProp;
+		nodeUUIDProp["type"] = "string";
+		nodeUUIDProp["description"] = "UUID of the node to get the palette from";
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["required"] = nlohmann::json::array({"nodeUUID"});
+		inputSchema["properties"]["nodeUUID"] = nodeUUIDProp;
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -448,27 +509,45 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["name"] = "voxedit_find_color";
 		tool["description"] = "Find the closest matching color index in a node's palette for a given RGBA color. "
 							  "Returns the palette index to use with voxedit_place_voxels.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["required"] = nlohmann::json::array({"nodeUUID", "r", "g", "b"});
-		tool["inputSchema"]["properties"]["nodeUUID"]["type"] = "string";
-		tool["inputSchema"]["properties"]["nodeUUID"]["description"] = "UUID of the node whose palette to search";
-		tool["inputSchema"]["properties"]["r"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["r"]["description"] = "Red component (0-255)";
-		tool["inputSchema"]["properties"]["r"]["minimum"] = 0;
-		tool["inputSchema"]["properties"]["r"]["maximum"] = 255;
-		tool["inputSchema"]["properties"]["g"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["g"]["description"] = "Green component (0-255)";
-		tool["inputSchema"]["properties"]["g"]["minimum"] = 0;
-		tool["inputSchema"]["properties"]["g"]["maximum"] = 255;
-		tool["inputSchema"]["properties"]["b"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["b"]["description"] = "Blue component (0-255)";
-		tool["inputSchema"]["properties"]["b"]["minimum"] = 0;
-		tool["inputSchema"]["properties"]["b"]["maximum"] = 255;
-		tool["inputSchema"]["properties"]["a"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["a"]["description"] = "Alpha component (0-255), defaults to 255";
-		tool["inputSchema"]["properties"]["a"]["minimum"] = 0;
-		tool["inputSchema"]["properties"]["a"]["maximum"] = 255;
-		tool["inputSchema"]["properties"]["a"]["default"] = 255;
+
+		nlohmann::json nodeUUIDProp;
+		nodeUUIDProp["type"] = "string";
+		nodeUUIDProp["description"] = "UUID of the node whose palette to search";
+
+		nlohmann::json rProp;
+		rProp["type"] = "integer";
+		rProp["description"] = "Red component (0-255)";
+		rProp["minimum"] = 0;
+		rProp["maximum"] = 255;
+
+		nlohmann::json gProp;
+		gProp["type"] = "integer";
+		gProp["description"] = "Green component (0-255)";
+		gProp["minimum"] = 0;
+		gProp["maximum"] = 255;
+
+		nlohmann::json bProp;
+		bProp["type"] = "integer";
+		bProp["description"] = "Blue component (0-255)";
+		bProp["minimum"] = 0;
+		bProp["maximum"] = 255;
+
+		nlohmann::json aProp;
+		aProp["type"] = "integer";
+		aProp["description"] = "Alpha component (0-255), defaults to 255";
+		aProp["minimum"] = 0;
+		aProp["maximum"] = 255;
+		aProp["default"] = 255;
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["required"] = nlohmann::json::array({"nodeUUID", "r", "g", "b"});
+		inputSchema["properties"]["nodeUUID"] = nodeUUIDProp;
+		inputSchema["properties"]["r"] = rProp;
+		inputSchema["properties"]["g"] = gProp;
+		inputSchema["properties"]["b"] = bProp;
+		inputSchema["properties"]["a"] = aProp;
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -477,9 +556,15 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		nlohmann::json tool;
 		tool["name"] = core::String("voxedit_cmd_" + cmd.name).c_str();
 		tool["description"] = cmd.description.c_str();
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["args"]["type"] = "string";
-		tool["inputSchema"]["properties"]["args"]["description"] = "Command arguments";
+
+		nlohmann::json argsProp;
+		argsProp["type"] = "string";
+		argsProp["description"] = "Command arguments";
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["properties"]["args"] = argsProp;
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -498,8 +583,12 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		} else {
 			tool["description"] = script.description;
 		}
-		tool["inputSchema"]["type"] = "object";
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		nlohmann::json properties = nlohmann::json::object();
 		nlohmann::json required = nlohmann::json::array();
+
 		for (const voxedit::LuaParameterInfo &param : script.parameters) {
 			nlohmann::json propSchema;
 			switch (param.type) {
@@ -554,15 +643,18 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 					propSchema["default"] = param.defaultValue.c_str();
 				}
 			}
-			tool["inputSchema"]["properties"][param.name.c_str()] = propSchema;
+			properties[param.name.c_str()] = propSchema;
 			// All script parameters are required unless they have a default value
 			if (param.defaultValue.empty()) {
 				required.push_back(param.name.c_str());
 			}
 		}
+
+		inputSchema["properties"] = properties;
 		if (!required.empty()) {
-			tool["inputSchema"]["required"] = required;
+			inputSchema["required"] = required;
 		}
+		tool["inputSchema"] = inputSchema;
 		tools.push_back(tool);
 	}
 
@@ -586,8 +678,10 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 	const auto &args = request["params"].value("arguments", nlohmann::json::object());
 	const nlohmann::json &id = request["id"];
 
+	Log::info("Received tool call for %s", toolName.c_str());
+
 	// voxedit_cmd_* tools
-	if (toolName.rfind("voxedit_cmd_", 0) == 0) {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_cmd_")) {
 		const std::string &cmdName = toolName.substr(12);
 		const std::string &cmdArgs = args.value("args", "");
 		const core::String &cmd = cmdArgs.empty() ? core::String(cmdName.c_str())
@@ -601,7 +695,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 	}
 
 	// voxedit_script_* tools
-	if (toolName.rfind("voxedit_script_", 0) == 0) {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_script_")) {
 		const std::string &scriptName = toolName.substr(15);
 		const std::string &scriptArgs = args.value("args", "");
 		const core::String &cmd = core::String::format("xs %s %s", scriptName.c_str(), scriptArgs.c_str());
@@ -613,7 +707,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		return;
 	}
 
-	if (toolName == "voxedit_create_generator") {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_create_generator")) {
 		const std::string &name = args.value("name", "");
 		const std::string &code = args.value("code", "");
 		bool run = args.value("run", true);
@@ -635,7 +729,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		return;
 	}
 
-	if (toolName == "voxedit_lua_api") {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_lua_api")) {
 		io::BufferedReadWriteStream stream;
 		if (_luaApi.apiJsonToStream(stream)) {
 			core::String json((const char *)stream.getBuffer(), (size_t)stream.size());
@@ -646,7 +740,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		return;
 	}
 
-	if (toolName == "voxedit_get_scene_state") {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_get_scene_state")) {
 		if (!_sceneStateReceived) {
 			sendToolResult(id, "Timeout waiting for scene state", true);
 			return;
@@ -659,7 +753,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		return;
 	}
 
-	if (toolName == "voxedit_place_voxels") {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_place_voxels")) {
 		if (!args.contains("voxels")) {
 			sendToolResult(id, "Missing voxels argument", true);
 			return;
@@ -705,7 +799,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		return;
 	}
 
-	if (toolName == "voxedit_get_palette") {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_get_palette")) {
 		if (!args.contains("nodeUUID") || !args["nodeUUID"].is_string()) {
 			sendToolResult(id, "Missing nodeUUID argument", true);
 			return;
@@ -745,7 +839,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		return;
 	}
 
-	if (toolName == "voxedit_find_color") {
+	if (core::string::startsWith(toolName.c_str(), "voxedit_find_color")) {
 		if (!args.contains("nodeUUID") || !args["nodeUUID"].is_string()) {
 			sendToolResult(id, "Missing nodeUUID argument", true);
 			return;
@@ -817,7 +911,9 @@ void McpServer::sendToolResult(const nlohmann::json &id, const core::String &tex
 }
 
 void McpServer::sendResponse(const nlohmann::json &response) {
-	const core::String &out = response.dump().c_str();
+	const std::string out = response.dump();
+	Log::debug("Sending MCP response: %s", out.c_str());
+	core_assert(out.find('\n') == std::string::npos); // ensure single line output
 	fprintf(stdout, "%s\n", out.c_str());
 	fflush(stdout);
 }
