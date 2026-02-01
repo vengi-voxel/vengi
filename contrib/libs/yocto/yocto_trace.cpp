@@ -949,11 +949,11 @@ static trace_result trace_pathtest(const scene_data& scene,
   auto radiance      = vec3f{0, 0, 0};
   auto weight        = vec3f{1, 1, 1};
   auto ray           = ray_;
-  auto max_roughness = 0.0f;
+  // auto max_roughness = 0.0f;
   auto hit           = false;
   auto hit_albedo    = vec3f{0, 0, 0};
   auto hit_normal    = vec3f{0, 0, 0};
-  auto opbounce      = 0;
+  // auto opbounce      = 0;
 
   // trace  path
   for (auto bounce = 0; bounce < params.bounces; bounce++) {
