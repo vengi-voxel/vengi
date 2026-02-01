@@ -288,6 +288,21 @@ app::AppState McpServer::onRunning() {
 	// Process any pending messages from the VoxEdit server
 	processIncomingMessages();
 
+	// Use select to check if stdin has data available (non-blocking)
+	fd_set readfds;
+	FD_ZERO(&readfds);
+	FD_SET(STDIN_FILENO, &readfds);
+
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000; // 100ms timeout
+
+	const int stdinReady = select(STDIN_FILENO + 1, &readfds, nullptr, nullptr, &tv);
+	if (stdinReady <= 0 || !FD_ISSET(STDIN_FILENO, &readfds)) {
+		// No stdin data available, continue processing network messages
+		return app::AppState::Running;
+	}
+
 	char line[65536];
 	if (fgets(line, sizeof(line), stdin) == nullptr) {
 		Log::error("Failed to read from stdin");
