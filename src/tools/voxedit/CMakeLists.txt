@@ -116,3 +116,9 @@ set(SERVER_SRCS
 
 engine_add_executable(TARGET ${PROJECT_NAME}server SRCS ${SERVER_SRCS} DESCRIPTION "VoxEdit server")
 engine_target_link_libraries(TARGET ${PROJECT_NAME}server DEPENDENCIES app voxedit-util)
+
+set(MCP_SRCS
+	McpServer.h McpServer.cpp
+)
+engine_add_executable(TARGET ${PROJECT_NAME}mcp SRCS ${MCP_SRCS} DESCRIPTION "MCP server for VoxEdit")
+engine_target_link_libraries(TARGET ${PROJECT_NAME}mcp DEPENDENCIES app voxedit-util voxelgenerator-lua)
