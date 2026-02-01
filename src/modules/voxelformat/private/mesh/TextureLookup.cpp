@@ -7,6 +7,7 @@
 #include "core/Path.h"
 #include "core/String.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
 
@@ -61,20 +62,27 @@ static core::Path searchInPath(const core::Path &referencePath, const core::Path
 	return {};
 }
 
-core::Path lookupTexture(const core::Path &referenceFile, const core::Path &file, const io::ArchivePtr &archive) {
+core::Path lookupTexture(const core::Path &referenceFile, const core::Path &file, const io::ArchivePtr &archive, const core::DynamicArray<core::Path> &additionalSearchPaths) {
 	const core::Path referencePath(referenceFile.dirname());
 	core::Path foundFile = searchInPath(referencePath, file, archive);
-	if (!foundFile.valid()) {
-		const core::Path additionalSearchPath(core::Var::getSafe(cfg::VoxformatTexturePath)->strVal());
-		if (additionalSearchPath.valid()) {
-			foundFile = searchInPath(additionalSearchPath, file, archive);
+	if (foundFile.valid()) {
+		return foundFile;
+	}
+	for (const core::Path &searchPath : additionalSearchPaths) {
+		foundFile = searchInPath(referencePath, searchPath + file, archive);
+		if (foundFile.valid()) {
+			return foundFile;
 		}
 	}
-	if (!foundFile.valid()) {
-		Log::error("Could not find texture %s", file.c_str());
-		return file;
+	const core::Path additionalSearchPath(core::Var::getSafe(cfg::VoxformatTexturePath)->strVal());
+	if (additionalSearchPath.valid()) {
+		foundFile = searchInPath(additionalSearchPath, file, archive);
+		if (foundFile.valid()) {
+			return foundFile;
+		}
 	}
-	return foundFile;
+	Log::error("Could not find texture %s", file.c_str());
+	return file;
 }
 
 } // namespace voxelformat
