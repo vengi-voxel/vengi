@@ -407,7 +407,8 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 	{
 		nlohmann::json tool;
 		tool["name"] = "voxedit_get_scene_state";
-		tool["description"] = "Get the current scene graph structure as JSON";
+		tool["description"] = "Get the current scene graph structure as JSON. Each node includes its UUID, type, "
+							  "palette colors (with RGBA values and names), and volume information.";
 		tool["inputSchema"]["type"] = "object";
 		tool["inputSchema"]["properties"] = nlohmann::json::object();
 		tools.push_back(tool);
@@ -425,6 +426,49 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["inputSchema"]["properties"]["voxels"]["description"] = "Array of {x, y, z, colorIndex} objects";
 		tool["inputSchema"]["properties"]["nodeUUID"]["type"] = "string";
 		tool["inputSchema"]["properties"]["nodeUUID"]["description"] = "UUID of the node to modify";
+		tools.push_back(tool);
+	}
+
+	// voxedit_get_palette
+	{
+		nlohmann::json tool;
+		tool["name"] = "voxedit_get_palette";
+		tool["description"] = "Get the color palette of a specific node. Returns all colors with their RGBA values, "
+							  "names, and material properties. Use this to find the right colorIndex for voxedit_place_voxels.";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["required"] = nlohmann::json::array({"nodeUUID"});
+		tool["inputSchema"]["properties"]["nodeUUID"]["type"] = "string";
+		tool["inputSchema"]["properties"]["nodeUUID"]["description"] = "UUID of the node to get the palette from";
+		tools.push_back(tool);
+	}
+
+	// voxedit_find_color
+	{
+		nlohmann::json tool;
+		tool["name"] = "voxedit_find_color";
+		tool["description"] = "Find the closest matching color index in a node's palette for a given RGBA color. "
+							  "Returns the palette index to use with voxedit_place_voxels.";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["required"] = nlohmann::json::array({"nodeUUID", "r", "g", "b"});
+		tool["inputSchema"]["properties"]["nodeUUID"]["type"] = "string";
+		tool["inputSchema"]["properties"]["nodeUUID"]["description"] = "UUID of the node whose palette to search";
+		tool["inputSchema"]["properties"]["r"]["type"] = "integer";
+		tool["inputSchema"]["properties"]["r"]["description"] = "Red component (0-255)";
+		tool["inputSchema"]["properties"]["r"]["minimum"] = 0;
+		tool["inputSchema"]["properties"]["r"]["maximum"] = 255;
+		tool["inputSchema"]["properties"]["g"]["type"] = "integer";
+		tool["inputSchema"]["properties"]["g"]["description"] = "Green component (0-255)";
+		tool["inputSchema"]["properties"]["g"]["minimum"] = 0;
+		tool["inputSchema"]["properties"]["g"]["maximum"] = 255;
+		tool["inputSchema"]["properties"]["b"]["type"] = "integer";
+		tool["inputSchema"]["properties"]["b"]["description"] = "Blue component (0-255)";
+		tool["inputSchema"]["properties"]["b"]["minimum"] = 0;
+		tool["inputSchema"]["properties"]["b"]["maximum"] = 255;
+		tool["inputSchema"]["properties"]["a"]["type"] = "integer";
+		tool["inputSchema"]["properties"]["a"]["description"] = "Alpha component (0-255), defaults to 255";
+		tool["inputSchema"]["properties"]["a"]["minimum"] = 0;
+		tool["inputSchema"]["properties"]["a"]["maximum"] = 255;
+		tool["inputSchema"]["properties"]["a"]["default"] = 255;
 		tools.push_back(tool);
 	}
 
@@ -658,6 +702,93 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		} else {
 			sendToolResult(id, "Failed to send voxel modification", true);
 		}
+		return;
+	}
+
+	if (toolName == "voxedit_get_palette") {
+		if (!args.contains("nodeUUID") || !args["nodeUUID"].is_string()) {
+			sendToolResult(id, "Missing nodeUUID argument", true);
+			return;
+		}
+
+		const core::UUID nodeUUID(args["nodeUUID"].get<std::string>().c_str());
+		if (!nodeUUID.isValid()) {
+			sendToolResult(id, "Invalid node UUID", true);
+			return;
+		}
+
+		scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(nodeUUID);
+		if (node == nullptr) {
+			sendToolResult(id, "Node not found", true);
+			return;
+		}
+
+		const palette::Palette &palette = node->palette();
+		nlohmann::json paletteJson;
+		paletteJson["name"] = palette.name().c_str();
+		paletteJson["colorCount"] = palette.colorCount();
+		paletteJson["colors"] = nlohmann::json::array();
+		for (size_t i = 0; i < palette.size(); ++i) {
+			const color::RGBA &color = palette.color(i);
+			nlohmann::json colorJson;
+			colorJson["index"] = i;
+			colorJson["r"] = color.r;
+			colorJson["g"] = color.g;
+			colorJson["b"] = color.b;
+			colorJson["a"] = color.a;
+			if (!palette.colorName(i).empty()) {
+				colorJson["name"] = palette.colorName(i).c_str();
+			}
+			paletteJson["colors"].push_back(colorJson);
+		}
+		sendToolResult(id, paletteJson.dump().c_str());
+		return;
+	}
+
+	if (toolName == "voxedit_find_color") {
+		if (!args.contains("nodeUUID") || !args["nodeUUID"].is_string()) {
+			sendToolResult(id, "Missing nodeUUID argument", true);
+			return;
+		}
+		if (!args.contains("r") || !args.contains("g") || !args.contains("b")) {
+			sendToolResult(id, "Missing r, g, or b argument", true);
+			return;
+		}
+
+		const core::UUID nodeUUID(args["nodeUUID"].get<std::string>().c_str());
+		if (!nodeUUID.isValid()) {
+			sendToolResult(id, "Invalid node UUID", true);
+			return;
+		}
+
+		scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(nodeUUID);
+		if (node == nullptr) {
+			sendToolResult(id, "Node not found", true);
+			return;
+		}
+
+		const int r = args["r"].get<int>();
+		const int g = args["g"].get<int>();
+		const int b = args["b"].get<int>();
+		const int a = args.value("a", 255);
+		const color::RGBA rgba((uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a);
+
+		const palette::Palette &palette = node->palette();
+		const int matchIndex = palette.getClosestMatch(rgba);
+
+		nlohmann::json resultJson;
+		resultJson["colorIndex"] = matchIndex;
+		if (matchIndex >= 0 && matchIndex < (int)palette.size()) {
+			const color::RGBA &matchedColor = palette.color(matchIndex);
+			resultJson["matchedColor"]["r"] = matchedColor.r;
+			resultJson["matchedColor"]["g"] = matchedColor.g;
+			resultJson["matchedColor"]["b"] = matchedColor.b;
+			resultJson["matchedColor"]["a"] = matchedColor.a;
+			if (!palette.colorName(matchIndex).empty()) {
+				resultJson["matchedColor"]["name"] = palette.colorName(matchIndex).c_str();
+			}
+		}
+		sendToolResult(id, resultJson.dump().c_str());
 		return;
 	}
 
