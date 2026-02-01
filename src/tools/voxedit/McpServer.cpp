@@ -225,8 +225,18 @@ void McpServer::processIncomingMessages() {
 	tv.tv_usec = 0;
 #ifdef WIN32
 	const int ready = select(0, &readFDsOut, nullptr, nullptr, &tv);
+	if (ready == SOCKET_ERROR) {
+		Log::warn("select() failed on Windows: %s", network::getNetworkErrorString());
+		disconnectFromVoxEdit();
+		return;
+	}
 #else
 	const int ready = select(_network->socketFD + 1, &readFDsOut, nullptr, nullptr, &tv);
+	if (ready < 0) {
+		Log::warn("select() failed on Unix: %s", network::getNetworkErrorString());
+		disconnectFromVoxEdit();
+		return;
+	}
 #endif
 	if (ready <= 0) {
 		return;
@@ -237,16 +247,25 @@ void McpServer::processIncomingMessages() {
 	}
 
 	core::Array<uint8_t, 16384> buf;
-	const network_return len = recv(_network->socketFD, (char *)&buf[0], buf.size(), 0);
-	if (len == 0) {
-		// Connection closed by peer
-		Log::info("VoxEdit server closed the connection");
+	const network_return len = recv(_network->socketFD, (char *)buf.data(), buf.size(), 0);
+#ifdef WIN32
+	if (len == SOCKET_ERROR) {
+		// Socket error on Windows
+		Log::warn("Socket error while receiving from VoxEdit server: %s", network::getNetworkErrorString());
 		disconnectFromVoxEdit();
 		return;
 	}
+#else
 	if (len < 0) {
-		// Socket error
+		// Socket error on Unix
 		Log::warn("Socket error while receiving from VoxEdit server: %s", network::getNetworkErrorString());
+		disconnectFromVoxEdit();
+		return;
+	}
+#endif
+	if (len == 0) {
+		// Connection closed by peer
+		Log::info("VoxEdit server closed the connection");
 		disconnectFromVoxEdit();
 		return;
 	}
