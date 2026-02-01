@@ -12,8 +12,6 @@
 #include "core/collection/Array.h"
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/File.h"
-#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "network/NetworkError.h"
 #include "network/NetworkImpl.h"

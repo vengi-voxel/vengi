@@ -29,6 +29,24 @@ gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
 ```
 
+## UI tests
+
+The Dear ImGui Automation and Test Engine is also integrated into the code base. At the time of writing only [VoxEdit](voxedit/Index.md) has these type of tests. You can activate them via cmake option (`USE_IMGUITESTENGINE`).
+
+## Benchmarks
+
+Similar to the unittests, there are benchmarks integrated into the code base. They are (like the unittests) close to the code they are benchmarking.
+
+```cmake
+if (USE_BENCHMARKS)
+	set(BENCHMARK_SRCS
+		benchmarks/YourBenchmark.cpp
+	)
+	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
+	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})
+endif()
+```
+
 ## Coding style
 
 Rule of thumb - stick to the existing coding style - you can also use the `clang-format` settings to format your code. In general
