@@ -9,7 +9,6 @@
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "json/JSON.h"
-#include "io/BufferedReadWriteStream.h"
 #include "network/ProtocolHandler.h"
 #include "network/ProtocolHandlerRegistry.h"
 #include "network/ProtocolMessage.h"
