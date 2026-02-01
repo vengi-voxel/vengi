@@ -84,6 +84,7 @@ private:
 	bool _scriptsReceived = false;
 	bool _commandsReceived = false;
 	bool _sceneStateReceived = false;
+	uint64_t _lastConnectionAttemptMillis = 0;
 
 	bool connectToVoxEdit();
 	void disconnectFromVoxEdit();

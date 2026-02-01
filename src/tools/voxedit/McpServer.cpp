@@ -167,7 +167,14 @@ bool McpServer::connectToVoxEdit() {
 
 	Log::debug("Sending init session message to VoxEdit server...");
 	voxedit::InitSessionMessage initMsg(false);
-	return sendMessage(initMsg);
+	if (!sendMessage(initMsg)) {
+		disconnectFromVoxEdit();
+		Log::error("Failed to send init session message to VoxEdit server");
+		return false;
+	}
+	requestScripts();
+	requestCommands();
+	return true;
 }
 
 void McpServer::disconnectFromVoxEdit() {
@@ -193,6 +200,7 @@ bool McpServer::sendMessage(const network::ProtocolMessage &msg) {
 		const network_return sent = send(_network->socketFD, (const char *)msg.getBuffer() + sentTotal, toSend, 0);
 		if (sent < 0) {
 			Log::warn("Failed to send message: %s", network::getNetworkErrorString());
+			disconnectFromVoxEdit();
 			return false;
 		}
 		sentTotal += sent;
@@ -225,8 +233,16 @@ void McpServer::processIncomingMessages() {
 
 	core::Array<uint8_t, 16384> buf;
 	const network_return len = recv(_network->socketFD, (char *)&buf[0], buf.size(), 0);
-	if (len <= 0) {
-		Log::debug("No data received from VoxEdit server (len=%d)", (int)len);
+	if (len == 0) {
+		// Connection closed by peer
+		Log::info("VoxEdit server closed the connection");
+		disconnectFromVoxEdit();
+		return;
+	}
+	if (len < 0) {
+		// Socket error
+		Log::warn("Socket error while receiving from VoxEdit server: %s", network::getNetworkErrorString());
+		disconnectFromVoxEdit();
 		return;
 	}
 	Log::debug("Received %d bytes from VoxEdit server", (int)len);
@@ -278,6 +294,30 @@ bool McpServer::sendVoxelModification(const core::UUID &nodeUUID, const voxel::R
 }
 
 app::AppState McpServer::onRunning() {
+	// Check if disconnected and reconnect with 5-second delay between attempts
+	if (_initialized && _network->socketFD == network::InvalidSocketId) {
+		const uint64_t now = _timeProvider->tickNow();
+		if (now - _lastConnectionAttemptMillis >= 5000) {
+			Log::info("Connection lost, attempting to reconnect...");
+			_lastConnectionAttemptMillis = now;
+			// Reset state
+			_scriptsReceived = false;
+			_commandsReceived = false;
+			_sceneStateReceived = false;
+			_scripts.clear();
+			_commands.clear();
+			_sceneGraph.clear();
+
+			if (connectToVoxEdit()) {
+				Log::info("Reconnected to VoxEdit server");
+				requestScripts();
+				requestCommands();
+			} else {
+				Log::warn("Failed to reconnect to VoxEdit server");
+			}
+		}
+	}
+
 	// Process any pending messages from the VoxEdit server
 	processIncomingMessages();
 
@@ -343,9 +383,6 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 			sendError(request.value("id", nlohmann::json()), INIT_FAILED, "Failed to connect to VoxEdit server");
 			return;
 		}
-
-		requestScripts();
-		requestCommands();
 
 		Log::info("MCP client initialized");
 	} else if (method == "tools/list") {
