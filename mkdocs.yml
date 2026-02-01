@@ -75,6 +75,7 @@ nav:
       - voxedit/Configuration.md
       - voxedit/Animation.md
       - voxedit/Screenshots.md
+      - voxedit/MCP.md
   - PalConvert:
       - palconvert/Index.md
       - palconvert/Usage.md
