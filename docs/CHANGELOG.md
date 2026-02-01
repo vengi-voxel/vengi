@@ -56,6 +56,7 @@ VoxEdit:
    - Let the default normal palette also depend on the view mode (the game type that is selected)
    - Refactored the selection handling
    - Allow to re-configure key bindings in the options
+   - Added MCP server
 
 Thumbnailer:
 
