@@ -89,6 +89,15 @@ bool ClientNetwork::connect(const core::String &hostname, uint16_t port) {
 		return false;
 	}
 
+	// Set non-blocking mode on the connected socket
+#ifdef O_NONBLOCK
+	fcntl(_impl->socketFD, F_SETFL, O_NONBLOCK);
+#endif
+#ifdef WIN32
+	unsigned long mode = 1;
+	ioctlsocket(_impl->socketFD, FIONBIO, &mode);
+#endif
+
 	freeaddrinfo(res);
 	FD_SET(_impl->socketFD, &_impl->readFDSet);
 	return true;

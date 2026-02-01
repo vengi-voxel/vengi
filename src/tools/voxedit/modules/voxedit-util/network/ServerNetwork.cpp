@@ -318,6 +318,14 @@ void ServerNetwork::update(double nowSeconds) {
 				closesocket(clientSocket);
 				return;
 			}
+			// Set non-blocking mode on the accepted client socket
+#ifdef O_NONBLOCK
+			fcntl(clientSocket, F_SETFL, O_NONBLOCK);
+#endif
+#ifdef WIN32
+			unsigned long mode = 1;
+			ioctlsocket(clientSocket, FIONBIO, &mode);
+#endif
 			FD_SET(clientSocket, &_impl->readFDSet);
 			_clients.emplace_back(static_cast<uintptr_t>(clientSocket));
 			RemoteClient *client = &_clients.back();
@@ -335,7 +343,7 @@ void ServerNetwork::update(double nowSeconds) {
 	for (auto i = _clients.begin(); i != _clients.end(); ++i, ++clientId) {
 		RemoteClient &client = *i;
 		const network::SocketId clientSocket = client.socket;
-		if (client.socket == network::InvalidSocketId || clientSocket >= FD_SETSIZE) {
+		if (!network::isValidSocketId(clientSocket)) {
 			remove[clientId] = true;
 			continue;
 		}
