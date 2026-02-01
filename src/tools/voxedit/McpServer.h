@@ -76,10 +76,6 @@ private:
 	LuaScriptsListHandler _luaScriptsListHandler;
 	CommandsListHandler _commandsListHandler;
 	SceneStateHandler _sceneStateHandler;
-	core::String _host = "127.0.0.1";
-	uint16_t _port = 10001;
-	core::String _rconPassword = "changeme";
-	core::String _connPassword = "changeme";
 	voxelgenerator::LUAApi _luaApi;
 
 	core::DynamicArray<voxedit::LuaScriptInfo> _scripts;

@@ -18,6 +18,7 @@
 #include "network/NetworkError.h"
 #include "network/NetworkImpl.h"
 #include "palette/FormatConfig.h"
+#include "scenegraph/JsonExporter.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/ProtocolMessageFactory.h"
@@ -29,7 +30,6 @@
 #include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
 #include "voxedit-util/network/protocol/SceneStateRequestMessage.h"
 #include "voxedit-util/network/protocol/VoxelModificationMessage.h"
-#include "scenegraph/JsonExporter.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
@@ -42,6 +42,7 @@ static constexpr int PARSE_ERROR = -32700;
 static constexpr int INVALID_REQUEST = -32600;
 static constexpr int METHOD_NOT_FOUND = -32601;
 static constexpr int INVALID_PARAMS = -32602;
+static constexpr int INIT_FAILED = -32000;
 
 void LuaScriptsListHandler::execute(const network::ClientId &clientId, voxedit::LuaScriptsListMessage *message) {
 	_server->_scripts = message->scripts();
@@ -68,12 +69,15 @@ McpServer::McpServer(const io::FilesystemPtr &filesystem, const core::TimeProvid
 }
 
 app::AppState McpServer::onConstruct() {
-	registerArg("--host").setShort("-H").setDescription("VoxEdit server host").setDefaultValue("127.0.0.1");
-	registerArg("--port").setShort("-p").setDescription("VoxEdit server port").setDefaultValue("10001");
-	registerArg("--rcon").setDescription("RCON password").setDefaultValue("changeme");
-	registerArg("--password").setDescription("Connection password");
-	registerArg("--state-dir").setDescription("State directory for temp files").setDefaultValue("/tmp/vengi-mcp");
 	_luaApi.construct();
+
+	core::Var::get(cfg::VoxEditNetHostname, "127.0.0.1", "The hostname of the voxedit server");
+	core::Var::get(cfg::VoxEditNetPort, "10001", "The port to run the voxedit server on");
+	core::Var::get(cfg::VoxEditNetPassword, "", core::CV_SECRET,
+				   "The password required to connect to the voxedit server");
+	core::Var::get(cfg::VoxEditNetRconPassword, "changeme", core::CV_SECRET,
+				   "The rcon password required to send commands to the voxedit server");
+
 	return Super::onConstruct();
 }
 
@@ -90,19 +94,6 @@ app::AppState McpServer::onInit() {
 		Log::error("Failed to initialize the LUA API");
 		return app::AppState::InitFailure;
 	}
-
-	_host = getArgVal("--host", "127.0.0.1");
-	_port = getArgVal("--port", "10001").toInt();
-	_rconPassword = getArgVal("--rcon", "changeme");
-	_connPassword = getArgVal("--password", "changeme");
-
-	if (!connectToVoxEdit()) {
-		Log::error("Failed to connect to VoxEdit server at %s:%d", _host.c_str(), _port);
-		return app::AppState::InitFailure;
-	}
-
-	requestScripts();
-	requestCommands();
 
 	return app::AppState::Running;
 }
@@ -135,10 +126,12 @@ bool McpServer::connectToVoxEdit() {
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
-	core::String service = core::string::toString(_port);
-	int err = getaddrinfo(_host.c_str(), service.c_str(), &hints, &res);
+	const core::String host = core::Var::getSafe(cfg::VoxEditNetHostname)->strVal();
+	const int port = core::Var::getSafe(cfg::VoxEditNetPort)->intVal();
+	const core::String service = core::string::toString(port);
+	int err = getaddrinfo(host.c_str(), service.c_str(), &hints, &res);
 	if (err != 0 || res == nullptr) {
-		Log::error("Failed to resolve hostname %s: %s", _host.c_str(), network::getNetworkErrorString());
+		Log::error("Failed to resolve hostname %s: %s", host.c_str(), network::getNetworkErrorString());
 		return false;
 	}
 
@@ -154,7 +147,7 @@ bool McpServer::connectToVoxEdit() {
 		closesocket(_network->socketFD);
 		_network->socketFD = network::InvalidSocketId;
 		freeaddrinfo(res);
-		Log::error("Failed to connect to %s:%i: %s", _host.c_str(), _port, network::getNetworkErrorString());
+		Log::error("Failed to connect to %s:%i: %s", host.c_str(), port, network::getNetworkErrorString());
 		return false;
 	}
 
@@ -168,11 +161,7 @@ bool McpServer::connectToVoxEdit() {
 	r.registerHandler(voxedit::PROTO_COMMANDS_LIST, &_commandsListHandler);
 	r.registerHandler(voxedit::PROTO_SCENE_STATE, &_sceneStateHandler);
 
-	// Set the password and username vars BEFORE creating InitSessionMessage
-	// as the message reads from these vars
 	core::Var::getSafe(cfg::AppUserName)->setVal("mcp-client");
-	core::Var::getSafe(cfg::VoxEditNetPassword)->setVal(_connPassword);
-	core::Var::getSafe(cfg::VoxEditNetRconPassword)->setVal(_rconPassword);
 
 	voxedit::InitSessionMessage initMsg(false);
 	return sendMessage(initMsg);
@@ -258,12 +247,12 @@ void McpServer::processIncomingMessages() {
 }
 
 bool McpServer::sendCommand(const core::String &command) {
-	voxedit::CommandMessage msg(command, _rconPassword);
+	voxedit::CommandMessage msg(command, core::Var::getSafe(cfg::VoxEditNetRconPassword)->strVal());
 	return sendMessage(msg);
 }
 
 bool McpServer::createLuaScript(const core::String &name, const core::String &content) {
-	voxedit::LuaScriptCreateMessage msg(name, content, _rconPassword);
+	voxedit::LuaScriptCreateMessage msg(name, content, core::Var::getSafe(cfg::VoxEditNetRconPassword)->strVal());
 	return sendMessage(msg);
 }
 
@@ -279,7 +268,8 @@ bool McpServer::requestCommands() {
 	return sendMessage(requestMsg);
 }
 
-bool McpServer::sendVoxelModification(const core::UUID &nodeUUID, const voxel::RawVolume &volume, const voxel::Region &region) {
+bool McpServer::sendVoxelModification(const core::UUID &nodeUUID, const voxel::RawVolume &volume,
+									  const voxel::Region &region) {
 	voxedit::VoxelModificationMessage msg(nodeUUID, volume, region);
 	return sendMessage(msg);
 }
@@ -340,6 +330,17 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 	if (method == "initialize") {
 		handleInitialize(request);
 	} else if (method == "notifications/initialized") {
+		if (!connectToVoxEdit()) {
+			Log::error("Failed to connect to VoxEdit server at %s:%d",
+					   core::Var::getSafe(cfg::VoxEditNetHostname)->strVal().c_str(),
+					   core::Var::getSafe(cfg::VoxEditNetPort)->intVal());
+			sendError(request.value("id", nlohmann::json()), INIT_FAILED, "Failed to connect to VoxEdit server");
+			return;
+		}
+
+		requestScripts();
+		requestCommands();
+
 		Log::info("MCP client initialized");
 	} else if (method == "tools/list") {
 		handleToolsList(request);
@@ -416,7 +417,8 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 	{
 		nlohmann::json tool;
 		tool["name"] = "voxedit_place_voxels";
-		tool["description"] = "Place voxels at specified positions in a node. Get node UUIDs from voxedit_get_scene_state.";
+		tool["description"] =
+			"Place voxels at specified positions in a node. Get node UUIDs from voxedit_get_scene_state.";
 		tool["inputSchema"]["type"] = "object";
 		tool["inputSchema"]["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
 		tool["inputSchema"]["properties"]["voxels"]["type"] = "array";
@@ -497,7 +499,8 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 				propSchema["description"] = param.description.c_str();
 			}
 			if (!param.defaultValue.empty()) {
-				if (param.type == voxedit::LuaParameterType::Integer || param.type == voxedit::LuaParameterType::ColorIndex) {
+				if (param.type == voxedit::LuaParameterType::Integer ||
+					param.type == voxedit::LuaParameterType::ColorIndex) {
 					propSchema["default"] = core::string::toInt(param.defaultValue);
 				} else if (param.type == voxedit::LuaParameterType::Float) {
 					propSchema["default"] = core::string::toFloat(param.defaultValue);
@@ -543,7 +546,8 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 	if (toolName.rfind("voxedit_cmd_", 0) == 0) {
 		const std::string &cmdName = toolName.substr(12);
 		const std::string &cmdArgs = args.value("args", "");
-		const core::String &cmd = cmdArgs.empty() ? core::String(cmdName.c_str()) : core::String::format("%s %s", cmdName.c_str(), cmdArgs.c_str());
+		const core::String &cmd = cmdArgs.empty() ? core::String(cmdName.c_str())
+												  : core::String::format("%s %s", cmdName.c_str(), cmdArgs.c_str());
 		if (sendCommand(cmd)) {
 			sendToolResult(id, core::String::format("Executed: %s", cmd.c_str()));
 		} else {
@@ -649,7 +653,8 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 		voxel::RawVolume rawVolume(volume.calculateRegion());
 		volume.copyTo(rawVolume);
 		if (sendVoxelModification(nodeUUID, rawVolume, rawVolume.region())) {
-			sendToolResult(id, core::String::format("Placed %d voxels in node %s", placedCount, nodeUUID.str().c_str()));
+			sendToolResult(id,
+						   core::String::format("Placed %d voxels in node %s", placedCount, nodeUUID.str().c_str()));
 		} else {
 			sendToolResult(id, "Failed to send voxel modification", true);
 		}
