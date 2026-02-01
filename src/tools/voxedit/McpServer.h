@@ -83,7 +83,6 @@ private:
 	bool _scriptsReceived = false;
 	bool _commandsReceived = false;
 	bool _sceneStateReceived = false;
-	bool _everConnected = false; // tracks if we've ever had a successful connection
 	uint64_t _lastConnectionAttemptMillis = 0;
 
 	bool connectToVoxEdit();

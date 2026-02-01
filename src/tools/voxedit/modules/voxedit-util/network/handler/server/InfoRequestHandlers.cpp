@@ -24,6 +24,9 @@ void LuaScriptsRequestHandler::execute(const network::ClientId &clientId, LuaScr
 		}
 		scriptInfos.reserve(scripts.size());
 		for (const voxelgenerator::LUAScript &script : scripts) {
+			if (!script.valid) {
+				continue;
+			}
 			LuaScriptInfo info;
 			info.filename = script.filename;
 			info.description = script.desc;

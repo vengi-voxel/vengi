@@ -111,6 +111,9 @@ app::AppState McpServer::onCleanup() {
 }
 
 bool McpServer::connectToVoxEdit() {
+	if (_network->socketFD != network::InvalidSocketId) {
+		return true;
+	}
 	Log::debug("Connecting to VoxEdit server...");
 #ifdef WIN32
 	WSADATA wsaData;
@@ -318,8 +321,7 @@ bool McpServer::sendVoxelModification(const core::UUID &nodeUUID, const voxel::R
 
 app::AppState McpServer::onRunning() {
 	// Check if disconnected and reconnect with 5-second delay between attempts
-	// Only attempt reconnection if we've ever had a successful connection (to avoid race with notifications/initialized)
-	if (_initialized && _everConnected && _network->socketFD == network::InvalidSocketId) {
+	if (_initialized && _network->socketFD == network::InvalidSocketId) {
 		const uint64_t now = _timeProvider->tickNow();
 		if (now - _lastConnectionAttemptMillis >= 5000) {
 			Log::info("Connection lost, attempting to reconnect...");
@@ -420,8 +422,6 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 			sendError(request.value("id", nlohmann::json()), INIT_FAILED, "Failed to connect to VoxEdit server");
 			return;
 		}
-		_everConnected = true;
-
 		Log::info("MCP client initialized");
 	} else if (method == "tools/list") {
 		handleToolsList(request);
