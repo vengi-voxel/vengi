@@ -16,6 +16,12 @@ void LuaScriptsRequestHandler::execute(const network::ClientId &clientId, LuaScr
 	core::DynamicArray<LuaScriptInfo> scriptInfos;
 	if (_luaApi != nullptr) {
 		core::DynamicArray<voxelgenerator::LUAScript> scripts = _luaApi->listScripts();
+		for (voxelgenerator::LUAScript &script : scripts) {
+			if (script.cached) {
+				continue;
+			}
+			_luaApi->reloadScriptParameters(script);
+		}
 		scriptInfos.reserve(scripts.size());
 		for (const voxelgenerator::LUAScript &script : scripts) {
 			LuaScriptInfo info;
