@@ -42,6 +42,7 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 
 	stream.writeStringFormat(false, "{");
 	stream.writeStringFormat(false, "\"id\": %i,", nodeId);
+	stream.writeStringFormat(false, "\"uuid\": \"%s\",", node.uuid().str().c_str());
 	stream.writeStringFormat(false, "\"parent\": %i,", node.parent());
 	stream.writeStringFormat(false, "\"name\": \"%s\",", node.name().c_str());
 	stream.writeStringFormat(false, "\"type\": \"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
