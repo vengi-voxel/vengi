@@ -21,6 +21,11 @@
 
 namespace voxelformat {
 
+// Convert from Quake coordinates (X, Y, Z where Z is up) to Vengi coordinates (X, Y, Z where Y is up)
+static inline glm::vec3 quakeToVengi(const glm::vec3 &quakePos) {
+	return glm::vec3(quakePos.x, quakePos.z, -quakePos.y);
+}
+
 // clip plane
 struct QFace {
 	glm::vec3 planePoints[3];
@@ -43,8 +48,7 @@ struct QFace {
 		edge2 = planePoints[2] - planePoints[0];
 		normal = glm::normalize(glm::cross(edge1, edge2));
 		d = glm::dot(normal, planePoints[0]);
-		// flip the normal because we want the back side
-		plane = math::Plane(-normal, d);
+		plane = math::Plane(normal, d);
 	}
 };
 
@@ -78,6 +82,11 @@ static glm::vec3 parsePlane(core::Tokenizer &tok) {
 	}
 	Log::error("Invalid plane line - expected )");
 	return {};
+}
+
+static glm::vec3 parsePlaneWithConversion(core::Tokenizer &tok) {
+	const glm::vec3 quakePos = parsePlane(tok);
+	return quakeToVengi(quakePos);
 }
 
 static bool parseFloat(core::Tokenizer &tok, float &val) {
@@ -122,34 +131,140 @@ static bool skipFace(const core::String &texture) {
 	return false;
 }
 
-bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
-						   MeshMaterialMap &meshMaterials, Mesh &mesh) const {
-	QBrush qbrush;
-	while (tok.hasNext()) {
-		core::String t = tok.next();
-		if (t == "}") {
-			break;
+static void planeBasis(const glm::vec3 &n, glm::vec3 &u, glm::vec3 &v) {
+	if (glm::abs(n.z) > 0.9f) {
+		u = glm::normalize(glm::cross(n, glm::vec3(0, 1, 0)));
+	} else {
+		u = glm::normalize(glm::cross(n, glm::vec3(0, 0, 1)));
+	}
+	v = glm::normalize(glm::cross(u, n));
+}
+
+static core::DynamicArray<glm::vec3> createBasePolygon(const math::Plane &plane) {
+	glm::vec3 u, v;
+	planeBasis(plane.norm(), u, v);
+
+	const float EXTENT = 8192.0f; // larger than any map
+	const glm::vec3 origin = plane.norm() * -plane.dist();
+
+	core::DynamicArray<glm::vec3> poly;
+	poly.emplace_back(origin + u * EXTENT + v * EXTENT);
+	poly.emplace_back(origin - u * EXTENT + v * EXTENT);
+	poly.emplace_back(origin - u * EXTENT - v * EXTENT);
+	poly.emplace_back(origin + u * EXTENT - v * EXTENT);
+
+	return poly;
+}
+
+static core::DynamicArray<glm::vec3> clipPolygon(const core::DynamicArray<glm::vec3> &in, const math::Plane &plane) {
+	core::DynamicArray<glm::vec3> out;
+	if (in.empty()) {
+		return out;
+	}
+
+	glm::vec3 prev = in.back();
+	float prevDist = plane.distanceToPlane(prev);
+
+	for (const glm::vec3 &curr : in) {
+		float currDist = plane.distanceToPlane(curr);
+
+		const bool currIn = currDist >= 0.0f;
+		const bool prevIn = prevDist >= 0.0f;
+
+		if (currIn ^ prevIn) {
+			const float t = prevDist / (prevDist - currDist);
+			out.emplace_back(prev + t * (curr - prev));
 		}
-		if (t == "\n") {
+		if (currIn) {
+			out.emplace_back(curr);
+		}
+
+		prev = curr;
+		prevDist = currDist;
+	}
+
+	return out;
+}
+
+static core::DynamicArray<glm::vec3> buildFacePolygon(const QFace &face, const QBrush &brush) {
+	core::DynamicArray<glm::vec3> poly = createBasePolygon(face.plane);
+
+	for (const QFace &clip : brush.faces) {
+		if (&clip == &face) {
 			continue;
 		}
+		poly = clipPolygon(poly, clip.plane);
+		if (poly.size() < 3) {
+			poly.clear();
+			break;
+		}
+	}
+
+	return poly;
+}
+
+static glm::vec2 computeUV(const QFace &face, const glm::vec3 &worldPos) {
+	// 1 stable basis for the plane
+	glm::vec3 u, v;
+	planeBasis(face.normal, u, v);
+
+	// 2 Projection onto basis
+	float s = glm::dot(worldPos, u);
+	float t = glm::dot(worldPos, v);
+
+	// 3 rotation (Quake: degrees, CCW)
+	if (face.rotation != 0.0f) {
+		const float rad = glm::radians(face.rotation);
+		const float cs = glm::cos(rad);
+		const float sn = glm::sin(rad);
+
+		const float sRot = cs * s - sn * t;
+		const float tRot = sn * s + cs * t;
+
+		s = sRot;
+		t = tRot;
+	}
+
+	// 4 Scale
+	const float scaleX = face.texscale.x != 0.0f ? face.texscale.x : 1.0f;
+	const float scaleY = face.texscale.y != 0.0f ? face.texscale.y : 1.0f;
+
+	s /= scaleX;
+	t /= scaleY;
+
+	// 5 Offset
+	s += face.offset.x;
+	t += face.offset.y;
+
+	return glm::vec2(s, t);
+}
+
+bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
+						   MeshMaterialMap &meshMaterials, Mesh &mesh) const {
+	QBrush qbrush;
+	core::String line;
+	while (stream.readLine(line)) {
+		if (line.empty() || core::string::startsWith(line, "//")) {
+			continue;
+		}
+		if (line == "}") {
+			break;
+		}
+
+		core::Tokenizer tok(line, " ");
+		core::String t = tok.peekNext();
 		if (t == "patchDef2") {
 			Log::error("Quake3 is not yet supported");
 			return false;
 		}
-		if (t != "(") {
-			Log::error("Invalid brush line - expected ( - got %s", t.c_str());
-			return false;
-		}
-		tok.prev();
 
 		QFace qface;
-
-		qface.planePoints[0] = parsePlane(tok);
-		qface.planePoints[1] = parsePlane(tok);
-		qface.planePoints[2] = parsePlane(tok);
-		if (tok.hasNext()) {
-			qface.texture = tok.next();
+		qface.planePoints[0] = parsePlaneWithConversion(tok);
+		qface.planePoints[1] = parsePlaneWithConversion(tok);
+		qface.planePoints[2] = parsePlaneWithConversion(tok);
+		qface.texture = tok.next();
+		if (skipFace(qface.texture)) {
+			continue;
 		}
 
 		if (tok.peekNext() == "[") {
@@ -183,31 +298,26 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		}
 		Log::trace("texscale: %f:%f", qface.texscale.x, qface.texscale.y);
 
-		parseInt(tok, qface.contentFlags);
-		Log::trace("Contentflags: %i", qface.contentFlags);
-		parseInt(tok, qface.surfaceFlags);
-		Log::trace("SurfaceFlags: %i", qface.surfaceFlags);
-		parseInt(tok, qface.value);
-		Log::trace("Value: %i", qface.value);
-
-		if (!tok.hasNext()) {
-			Log::error("Invalid plane line end detected");
-			return false;
-		}
-
-		if (skipFace(qface.texture)) {
-			continue;
+		if (tok.hasNext()) {
+			parseInt(tok, qface.contentFlags);
+			Log::trace("Contentflags: %i", qface.contentFlags);
+			parseInt(tok, qface.surfaceFlags);
+			Log::trace("SurfaceFlags: %i", qface.surfaceFlags);
+			parseInt(tok, qface.value);
+			Log::trace("Value: %i", qface.value);
 		}
 
 		qface.finish();
 		qbrush.faces.emplace_back(core::move(qface));
 	}
 
+	core::DynamicArray<core::Path> additionPaths;
+	additionPaths.push_back(core::Path("../textures/"));
 	for (const QFace &qface : qbrush.faces) {
 		auto iter = meshMaterials.find(qface.texture);
 		MeshMaterialIndex materialIdx;
 		if (iter == meshMaterials.end()) {
-			const core::String &imageName = lookupTexture(filename, qface.texture, archive);
+			const core::String &imageName = lookupTexture(filename, qface.texture, archive, additionPaths);
 			const image::ImagePtr &image = image::loadImage(imageName);
 			mesh.materials.push_back(createMaterial(image));
 			materialIdx = mesh.materials.size() - 1;
@@ -219,26 +329,27 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		Polygon polygon;
 		polygon.setMaterialIndex(materialIdx);
 
-		// TODO: VOXELFORMAT: this is broken
-		// Generate a basis for the plane (u, v)
-		const glm::vec3 &u = glm::normalize(qface.edge1);
-		const glm::vec3 &v = glm::normalize(glm::cross(qface.normal, u));
-
 		// Create vertices with UV mapping
-		for (const glm::vec3 &point : qface.planePoints) {
-			const glm::vec3 localPos = point - qface.planePoints[0]; // Translate to local space
-			glm::vec2 uv;
-			uv.x = glm::dot(localPos, u) / qface.texscale.x + qface.offset.x;
-			uv.y = glm::dot(localPos, v) / qface.texscale.y + qface.offset.y;
+		const auto polyVerts = buildFacePolygon(qface, qbrush);
 
-			// Apply rotation to UV coordinates
-			const float cosTheta = glm::cos(glm::radians(qface.rotation));
-			const float sinTheta = glm::sin(glm::radians(qface.rotation));
-			const float uRotated = uv.x * cosTheta - uv.y * sinTheta;
-			const float vRotated = uv.x * sinTheta + uv.y * cosTheta;
+		if (polyVerts.empty()) {
+			continue;
+		}
 
-			// Store the vertex
-			polygon.addVertex(point, glm::vec2(uRotated, vRotated));
+		for (const glm::vec3 &p : polyVerts) {
+			glm::vec2 uv = computeUV(qface, p);
+			glm::vec3 snapped = p;
+			const float epsilon = 0.001f;
+			if (glm::abs(snapped.x - glm::round(snapped.x)) < epsilon) {
+				snapped.x = glm::round(snapped.x);
+			}
+			if (glm::abs(snapped.y - glm::round(snapped.y)) < epsilon) {
+				snapped.y = glm::round(snapped.y);
+			}
+			if (glm::abs(snapped.z - glm::round(snapped.z)) < epsilon) {
+				snapped.z = glm::round(snapped.z);
+			}
+			polygon.addVertex(snapped, uv);
 		}
 
 		polygon.toTris(mesh);
@@ -246,25 +357,31 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 	return true;
 }
 
-bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
+bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 							MeshMaterialMap &meshMaterials, Mesh &mesh,
 							scenegraph::SceneGraphNodeProperties &props) const {
-	while (tok.hasNext()) {
-		const core::String &t = tok.next();
-		if (t == "}") {
-			return true;
-		}
-		if (t == "\n") {
+	core::String line;
+	while (stream.readLine(line)) {
+		if (line.empty() || core::string::startsWith(line, "//")) {
 			continue;
 		}
-		if (t == "{") {
+		Log::debug("Token in entity: '%s'", line.c_str());
+		if (line == "}") {
+			return true;
+		}
+		if (line == "{") {
 			Log::debug("Found brush");
-			if (!parseBrush(filename, archive, tok, meshMaterials, mesh)) {
+			if (!parseBrush(filename, archive, stream, meshMaterials, mesh)) {
 				Log::error("Failed to parse brush");
 				return false;
 			}
 		} else {
-			const core::String key = t;
+			core::Tokenizer tok(line, " ");
+			if (tok.size() != 2) {
+				Log::error("Invalid entity key/value pair: %s", line.c_str());
+				return false;
+			}
+			const core::String key = tok.next();
 			if (!tok.hasNext()) {
 				Log::error("Missing value for key %s", key.c_str());
 				return false;
@@ -285,41 +402,65 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
-	core::String map;
-	if (!stream->readString(stream->size(), map, false)) {
-		Log::error("Failed to read file %s", filename.c_str());
-		return false;
-	}
-
-	core::TokenizerConfig cfg;
-	cfg.skipComments = true;
-	Log::debug("Tokenizing");
-	core::Tokenizer tok(cfg, map, " \t\r");
 	int entity = 0;
-	while (tok.hasNext()) {
-		const core::String &t = tok.next();
-		if (t == "{") {
+	core::String line;
+	while (stream->readLine(line)) {
+		if (line.empty() || core::string::startsWith(line, "//")) {
+			continue;
+		}
+		Log::debug("Token in map: %s", line.c_str());
+		if (line == "{") {
 			Mesh mesh;
 			MeshMaterialMap meshMaterials;
 			scenegraph::SceneGraphNodeProperties props;
-			if (!parseEntity(filename, archive, tok, meshMaterials, mesh, props)) {
+			if (!parseEntity(filename, archive, *stream, meshMaterials, mesh, props)) {
 				Log::error("Failed to parse entity");
 				return false;
 			}
 			if (mesh.vertices.empty()) {
-				continue;
-			}
-			core::String classname;
-			props.get("classname", classname);
-			const core::String name = core::String::format("%s brush %i", classname.c_str(), entity);
-			const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
-			if (nodeId == InvalidNodeId) {
-				Log::error("Voxelization failed");
-				return false;
-			}
-			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			for (const auto &entry : props) {
-				node.setProperty(entry->key, entry->value);
+				core::String classname;
+				if (props.get("classname", classname)) {
+					core::String originStr;
+					glm::vec3 origin(0.0f);
+					if (props.get("origin", originStr)) {
+						core::Tokenizer tok(originStr, " ");
+						float x = 0.0f;
+						float y = 0.0f;
+						float z = 0.0f;
+						if (tok.hasNext()) {
+							x = tok.next().toFloat();
+						}
+						if (tok.hasNext()) {
+							y = tok.next().toFloat();
+						}
+						if (tok.hasNext()) {
+							z = tok.next().toFloat();
+						}
+						origin = quakeToVengi(glm::vec3(x, y, z));
+					}
+					scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
+					node.setName(core::String::format("%s %i", classname.c_str(), entity));
+					for (const auto &entry : props) {
+						node.setProperty(entry->key, entry->value);
+					}
+					scenegraph::SceneGraphKeyFrame &frame = node.keyFrame(0);
+					scenegraph::SceneGraphTransform &transform = frame.transform();
+					transform.setWorldTranslation(origin);
+					sceneGraph.emplace(core::move(node));
+				}
+			} else {
+				core::String classname;
+				props.get("classname", classname);
+				const core::String name = core::String::format("%s brush %i", classname.c_str(), entity);
+				const int nodeId = voxelizeMesh(name, sceneGraph, core::move(mesh));
+				if (nodeId == InvalidNodeId) {
+					Log::error("Voxelization failed");
+					return false;
+				}
+				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+				for (const auto &entry : props) {
+					node.setProperty(entry->key, entry->value);
+				}
 			}
 			++entity;
 		}

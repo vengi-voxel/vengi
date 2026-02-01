@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Tokenizer.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 
@@ -20,9 +19,9 @@ class MapFormat : public MeshFormat {
 protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
-	bool parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
+	bool parseBrush(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 					MeshMaterialMap &materials, Mesh &mesh) const;
-	bool parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
+	bool parseEntity(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 					 MeshMaterialMap &materials, Mesh &mesh, scenegraph::SceneGraphNodeProperties &props) const;
 
 public:
