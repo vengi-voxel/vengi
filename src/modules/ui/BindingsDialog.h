@@ -10,7 +10,7 @@
 #include "video/KeyboardLayout.h"
 
 namespace command {
-class CommandExecutionListener;
+struct CommandExecutionListener;
 }
 
 namespace util {
