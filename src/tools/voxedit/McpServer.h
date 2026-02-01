@@ -80,7 +80,6 @@ private:
 	uint16_t _port = 10001;
 	core::String _rconPassword = "changeme";
 	core::String _connPassword = "changeme";
-	core::String _stateDir;
 	voxelgenerator::LUAApi _luaApi;
 
 	core::DynamicArray<voxedit::LuaScriptInfo> _scripts;
