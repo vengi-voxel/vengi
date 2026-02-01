@@ -40,11 +40,24 @@
 
 namespace network {
 
+static inline bool isValidSocketId(SocketId socket) {
+#ifdef WIN32
+	// on windows the SocketId can be any value except InvalidSocketId
+	return socket != InvalidSocketId;
+#else
+	return socket != InvalidSocketId && socket < FD_SETSIZE;
+#endif
+}
+
 // Platform-specific network implementation
 struct NetworkImpl {
 	SocketId socketFD = InvalidSocketId;
 	fd_set readFDSet;
 	fd_set writeFDSet;
+
+	bool isValid() const {
+		return isValidSocketId(socketFD);
+	}
 
 	NetworkImpl() {
 		FD_ZERO(&readFDSet);

@@ -205,7 +205,7 @@ void ServerNetwork::disconnect(network::ClientId clientId) {
 		return;
 	}
 	const network::SocketId clientSocket = client.socket;
-	if (clientSocket < FD_SETSIZE) {
+	if (network::isValidSocketId(clientSocket)) {
 		FD_CLR(clientSocket, &_impl->readFDSet);
 		FD_CLR(clientSocket, &_impl->writeFDSet);
 	}
@@ -305,11 +305,11 @@ void ServerNetwork::update(double nowSeconds) {
 		Log::warn("select() failed: %s", network::getNetworkErrorString());
 		return;
 	}
-	if (_impl->socketFD != network::InvalidSocketId && _impl->socketFD < FD_SETSIZE && FD_ISSET(_impl->socketFD, &readFDsOut)) {
+	if (_impl->isValid() && FD_ISSET(_impl->socketFD, &readFDsOut)) {
 		const network::SocketId clientSocket = accept(_impl->socketFD, nullptr, nullptr);
 		if (clientSocket != network::InvalidSocketId) {
-			if (clientSocket >= FD_SETSIZE) {
-				Log::error("Client socket %d exceeds FD_SETSIZE - rejecting connection", (int)clientSocket);
+			if (!network::isValidSocketId(clientSocket)) {
+				Log::error("Client socket %d invalid - rejecting connection", (int)clientSocket);
 				closesocket(clientSocket);
 				return;
 			}
