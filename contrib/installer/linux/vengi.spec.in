@@ -53,6 +53,7 @@ echo "Using source tree at %{_builddir}"
 cmake . -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON -DPKGDATABASEDIR:STRING=/usr/share/
 cmake --build . --target voxedit
 cmake --build . --target voxeditserver
+cmake --build . --target voxeditmcp
 cmake --build . --target voxconvert
 cmake --build . --target voxconvertui
 cmake --build . --target thumbnailer
@@ -61,6 +62,7 @@ cmake --build . --target thumbnailer
 rm -rf $RPM_BUILD_ROOT
 cmake --install . --component voxedit --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component voxeditserver --prefix $RPM_BUILD_ROOT%{prefix}
+cmake --install . --component voxeditmcp --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component voxconvert --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component voxconvertui --prefix $RPM_BUILD_ROOT%{prefix}
 cmake --install . --component thumbnailer --prefix $RPM_BUILD_ROOT%{prefix}
@@ -78,8 +80,10 @@ rm -rf $RPM_BUILD_ROOT
 %files voxedit
 /usr/bin/vengi-voxedit
 /usr/bin/vengi-voxeditserver
+/usr/bin/vengi-voxeditmcp
 /usr/share/man/man1/vengi-voxedit.*
 /usr/share/man/man1/vengi-voxeditserver.*
+/usr/share/man/man1/vengi-voxeditmcp.*
 /usr/share/applications/vengi-voxedit.desktop
 /usr/share/vengi-voxedit/*
 /usr/share/icons/hicolor/128x128/apps/voxedit-icon.png
