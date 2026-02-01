@@ -72,7 +72,7 @@ void MenuBar::viewModeOption() {
 	};
 	static_assert(7 == (size_t)ViewMode::Max, "Unexpected viewmode array size");
 	const core::VarPtr &viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
-	ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
+	ImGui::ComboVar(_("View mode"), viewMode, viewModes);
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {

@@ -1120,7 +1120,6 @@ bool MainWindow::saveScreenshot(const core::String &file, const core::String &vi
 }
 
 void MainWindow::resetCamera() {
-	voxelrender::CameraMovement &cameraMovement = _sceneMgr->cameraMovement();
 	if (Viewport *viewport = hoveredViewport()) {
 		viewport->resetCamera();
 	} else {
