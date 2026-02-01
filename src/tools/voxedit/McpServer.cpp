@@ -22,19 +22,24 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/ProtocolMessageFactory.h"
-#include "voxedit-util/network/ProtocolVersion.h"
 #include "voxedit-util/network/protocol/CommandMessage.h"
 #include "voxedit-util/network/protocol/CommandsRequestMessage.h"
 #include "voxedit-util/network/protocol/InitSessionMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptCreateMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
-#include "voxedit-util/network/protocol/SceneStateRequestMessage.h"
 #include "voxedit-util/network/protocol/VoxelModificationMessage.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/FormatConfig.h"
-
+#ifdef _WIN32
+#include <io.h>
+#include <windows.h>
+#define STDIN_FILENO 0
+#else
+#include <sys/select.h>
+#include <unistd.h>
+#endif
 #include <stdio.h>
 
 // JSON-RPC error codes
@@ -322,6 +327,13 @@ app::AppState McpServer::onRunning() {
 	processIncomingMessages();
 
 	// Use select to check if stdin has data available (non-blocking)
+#ifdef _WIN32
+	HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+	if (WaitForSingleObject(hStdin, 100) != WAIT_OBJECT_0) {
+		// No stdin data available, continue processing network messages
+		return app::AppState::Running;
+	}
+#else
 	fd_set readfds;
 	FD_ZERO(&readfds);
 	FD_SET(STDIN_FILENO, &readfds);
@@ -335,6 +347,7 @@ app::AppState McpServer::onRunning() {
 		// No stdin data available, continue processing network messages
 		return app::AppState::Running;
 	}
+#endif
 
 	Log::debug("Reading MCP request from stdin...");
 
