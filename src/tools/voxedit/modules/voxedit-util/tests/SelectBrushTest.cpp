@@ -54,16 +54,16 @@ TEST_F(SelectBrushTest, testSelectModeAll) {
 	ctx.targetVolumeRegion = volume.region();
 	ctx.referencePos = glm::ivec3(-2, -2, -2);
 
-	// Select the entire volume region which includes surface voxels
+	// Select the entire volume region which includes all solid voxels
 	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
-	// SelectMode::All uses VisitVisible, so only surface voxels should be selected
-	// Interior voxel should NOT be selected
-	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
-		<< "Interior voxel at (0,0,0) should not be selected";
+	// SelectMode::All uses VisitSolid, so ALL solid voxels should be selected (including interior)
+	// Interior voxel should be selected
+	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Interior voxel at (0,0,0) should be selected";
 
-	// Surface voxels at the actual boundary of the volume should be selected
+	// Surface voxels at the boundary of the volume should also be selected
 	EXPECT_TRUE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Surface voxel at (2,0,0) should be selected";
 	EXPECT_TRUE((volume.voxel(-2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
@@ -231,16 +231,16 @@ TEST_F(SelectBrushTest, testSelectRemove) {
 	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Erase);
 
-	// SelectMode::All uses VisitVisible, so only visible surface voxels should be deselected
-	// Surface voxels at the actual boundary should be deselected
+	// SelectMode::All uses VisitSolid, so ALL solid voxels should be deselected (including interior)
+	// Surface voxels at the boundary should be deselected
 	EXPECT_FALSE((volume.voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Surface voxel at (2,0,0) should be deselected";
 	EXPECT_FALSE((volume.voxel(-2, 0, 0).getFlags() & voxel::FlagOutline) != 0)
 		<< "Surface voxel at (-2,0,0) should be deselected";
 
-	// Interior voxel should still be selected (not visited by VisitVisible)
-	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
-		<< "Interior voxel at (0,0,0) should still be selected";
+	// Interior voxel should also be deselected (VisitSolid visits all solid voxels)
+	EXPECT_FALSE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
+		<< "Interior voxel at (0,0,0) should be deselected";
 
 	brush.shutdown();
 }
