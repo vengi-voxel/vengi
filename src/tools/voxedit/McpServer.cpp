@@ -491,6 +491,7 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		nlohmann::json runProp;
 		runProp["type"] = "boolean";
 		runProp["default"] = true;
+		runProp["description"] = "Run the script immediately";
 
 		nlohmann::json argsProp;
 		argsProp["type"] = "string";
@@ -530,9 +531,13 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		nlohmann::json itemsSchema;
 		itemsSchema["type"] = "object";
 		itemsSchema["properties"]["x"]["type"] = "integer";
+		itemsSchema["properties"]["x"]["description"] = "X coordinate";
 		itemsSchema["properties"]["y"]["type"] = "integer";
+		itemsSchema["properties"]["y"]["description"] = "Y coordinate";
 		itemsSchema["properties"]["z"]["type"] = "integer";
+		itemsSchema["properties"]["z"]["description"] = "Z coordinate";
 		itemsSchema["properties"]["colorIndex"]["type"] = "integer";
+		itemsSchema["properties"]["colorIndex"]["description"] = "Palette index of the color";
 		itemsSchema["required"] = nlohmann::json::array({"x", "y", "z", "colorIndex"});
 
 		nlohmann::json voxelsProp;
@@ -699,6 +704,8 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 			}
 			if (!param.description.empty()) {
 				propSchema["description"] = param.description.c_str();
+			} else {
+				propSchema["description"] = param.name.c_str();
 			}
 			if (!param.defaultValue.empty()) {
 				if (param.type == voxedit::LuaParameterType::Integer ||
