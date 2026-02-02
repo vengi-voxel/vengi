@@ -21,7 +21,7 @@ protected:
 	bool shouldRequestClientState(bool localServer) const;
 	bool shouldSendClientState(bool localServer) const;
 public:
-	Server();
+	Server(voxelgenerator::LUAApi *luaApi);
 	virtual ~Server();
 	void construct() override;
 	bool init() override;
@@ -42,10 +42,6 @@ public:
 
 	ServerNetwork &network() {
 		return _network;
-	}
-
-	void setLuaApi(voxelgenerator::LUAApi *luaApi) {
-		_network.setLuaApi(luaApi);
 	}
 
 	/**

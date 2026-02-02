@@ -89,7 +89,7 @@ SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifierFacade(this, modifierRenderer), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
-	  _client(this) {
+	  _server(&_luaApi), _client(this) {
 	server().setState(&_sceneGraph);
 }
 
@@ -2814,7 +2814,6 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the lua api");
 		return false;
 	}
-	_server.setLuaApi(&_luaApi);
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();

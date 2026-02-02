@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-Server::Server() : _network(this) {
+Server::Server(voxelgenerator::LUAApi *luaApi) : _network(this, luaApi) {
 	_network.addListener(this);
 }
 

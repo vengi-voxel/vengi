@@ -49,9 +49,9 @@ RemoteClient &RemoteClient::operator=(RemoteClient &&other) noexcept {
 	return *this;
 }
 
-ServerNetwork::ServerNetwork(Server *server)
+ServerNetwork::ServerNetwork(Server *server, voxelgenerator::LUAApi *luaApi)
 	: _impl(new network::NetworkImpl()), _initSessionHandler(server), _sceneStateHandler(server), _broadcastHandler(server),
-	  _luaScriptsRequestHandler(this), _cvarsRequestHandler(this), _commandsRequestHandler(this) {
+	  _luaScriptsRequestHandler(this, luaApi), _luaScriptCreateHandler(this, luaApi), _cvarsRequestHandler(this), _commandsRequestHandler(this) {
 }
 
 ServerNetwork::~ServerNetwork() {
@@ -470,10 +470,5 @@ void ServerNetwork::removeListener(NetworkListener *listener) {
 		_listeners.erase(it);
 	}
 }
-
-void ServerNetwork::setLuaApi(voxelgenerator::LUAApi *luaApi) {
-	_luaScriptsRequestHandler.setLuaApi(luaApi);
-}
-
 
 } // namespace voxedit

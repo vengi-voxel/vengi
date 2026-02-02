@@ -84,7 +84,7 @@ protected:
 	bool sendToClient(RemoteClient &client, network::ProtocolMessage &msg);
 
 public:
-	ServerNetwork(Server *server);
+	ServerNetwork(Server *server, voxelgenerator::LUAApi *luaApi);
 	virtual ~ServerNetwork();
 
 	bool start(uint16_t port = 10001u, const core::String &iface = "0.0.0.0");
@@ -101,8 +101,6 @@ public:
 
 	void addListener(NetworkListener *listener);
 	void removeListener(NetworkListener *listener);
-
-	void setLuaApi(voxelgenerator::LUAApi *luaApi);
 
 	size_t clientCount() const;
 	RemoteClient *client(network::ClientId clientId);

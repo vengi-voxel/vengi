@@ -4,17 +4,11 @@
 
 #pragma once
 
-#include "command/Command.h"
-#include "core/Var.h"
 #include "network/ProtocolHandler.h"
 #include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
-#include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptCreateMessage.h"
 #include "voxedit-util/network/protocol/CVarsRequestMessage.h"
-#include "voxedit-util/network/protocol/CVarsListMessage.h"
 #include "voxedit-util/network/protocol/CommandsRequestMessage.h"
-#include "voxedit-util/network/protocol/CommandsListMessage.h"
-#include "voxedit-util/Config.h"
 
 namespace voxelgenerator {
 class LUAApi;
@@ -34,10 +28,7 @@ private:
 	voxelgenerator::LUAApi *_luaApi = nullptr;
 
 public:
-	LuaScriptsRequestHandler(ServerNetwork *network) : _network(network) {
-	}
-	void setLuaApi(voxelgenerator::LUAApi *luaApi) {
-		_luaApi = luaApi;
+	LuaScriptsRequestHandler(ServerNetwork *network, voxelgenerator::LUAApi *luaApi) : _network(network), _luaApi(luaApi) {
 	}
 	void execute(const network::ClientId &clientId, LuaScriptsRequestMessage *msg) override;
 };
@@ -46,7 +37,13 @@ public:
  * @brief Handler for LuaScriptCreateMessage - creates a new lua script
  */
 class LuaScriptCreateHandler : public network::ProtocolTypeHandler<LuaScriptCreateMessage> {
+private:
+	ServerNetwork *_network;
+	voxelgenerator::LUAApi *_luaApi = nullptr;
+
 public:
+	LuaScriptCreateHandler(ServerNetwork *network, voxelgenerator::LUAApi *luaApi) : _network(network), _luaApi(luaApi) {
+	}
 	void execute(const network::ClientId &clientId, LuaScriptCreateMessage *msg) override;
 };
 
