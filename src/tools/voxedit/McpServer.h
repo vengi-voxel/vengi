@@ -10,18 +10,13 @@
 #include "core/collection/DynamicArray.h"
 #include "json/JSON.h"
 #include "network/ProtocolHandler.h"
-#include "network/ProtocolHandlerRegistry.h"
-#include "network/ProtocolMessage.h"
-#include "scenegraph/SceneGraph.h"
-#include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
+#include "voxedit-util/ISceneRenderer.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/IModifierRenderer.h"
+#include "voxedit-util/network/ClientNetwork.h"
 #include "voxedit-util/network/protocol/CommandsListMessage.h"
-#include "voxedit-util/network/protocol/SceneStateMessage.h"
+#include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
 #include "voxel/RawVolume.h"
-#include "voxelgenerator/LUAApi.h"
-
-namespace network {
-struct NetworkImpl;
-}
 
 class McpServer;
 
@@ -45,16 +40,6 @@ public:
 	void execute(const network::ClientId &clientId, voxedit::CommandsListMessage *message) override;
 };
 
-class SceneStateHandler : public network::ProtocolTypeHandler<voxedit::SceneStateMessage> {
-private:
-	McpServer *_server;
-
-public:
-	SceneStateHandler(McpServer *server) : _server(server) {
-	}
-	void execute(const network::ClientId &clientId, voxedit::SceneStateMessage *message) override;
-};
-
 /**
  * @brief MCP (Model Context Protocol) server for vengi
  * @ingroup Tools
@@ -65,35 +50,29 @@ private:
 
 	friend class LuaScriptsListHandler;
 	friend class CommandsListHandler;
-	friend class SceneStateHandler;
 
 	bool _initialized = false;
-	network::NetworkImpl *_network;
-	network::MessageStream _inStream;
-	network::ProtocolHandlerRegistry _protocolRegistry;
-	network::NopHandler _nopHandler;
+	voxedit::SceneRendererPtr _sceneRenderer;
+	voxedit::ModifierRendererPtr _modifierRenderer;
+	voxedit::SceneManagerPtr _sceneMgr;
+	voxedit::ClientNetwork _network;
 	LuaScriptsListHandler _luaScriptsListHandler;
 	CommandsListHandler _commandsListHandler;
-	SceneStateHandler _sceneStateHandler;
-	voxelgenerator::LUAApi _luaApi;
 
 	core::DynamicArray<voxedit::LuaScriptInfo> _scripts;
 	core::DynamicArray<voxedit::CommandInfo> _commands;
-	scenegraph::SceneGraph _sceneGraph;
 	bool _scriptsReceived = false;
 	bool _commandsReceived = false;
-	bool _sceneStateReceived = false;
 	uint64_t _lastConnectionAttemptMillis = 0;
 
 	bool connectToVoxEdit();
 	void disconnectFromVoxEdit();
-	bool sendMessage(const network::ProtocolMessage &msg);
 	bool sendCommand(const core::String &command);
 	bool createLuaScript(const core::String &name, const core::String &content);
-	bool sendVoxelModification(const core::UUID &nodeUUID, const voxel::RawVolume &volume, const voxel::Region &region = voxel::Region::InvalidRegion);
+	bool sendVoxelModification(const core::UUID &nodeUUID, const voxel::RawVolume &volume,
+							   const voxel::Region &region = voxel::Region::InvalidRegion);
 	bool requestScripts();
 	bool requestCommands();
-	void processIncomingMessages();
 
 	void handleRequest(const nlohmann::json &request);
 	void handleInitialize(const nlohmann::json &request);

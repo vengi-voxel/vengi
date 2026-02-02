@@ -6,21 +6,16 @@
 #include "command/Command.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
-#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
-#include "core/collection/Array.h"
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
-#include "network/NetworkError.h"
-#include "network/NetworkImpl.h"
 #include "palette/FormatConfig.h"
 #include "scenegraph/JsonExporter.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/ProtocolIds.h"
-#include "voxedit-util/network/ProtocolMessageFactory.h"
 #include "voxedit-util/network/protocol/CommandMessage.h"
 #include "voxedit-util/network/protocol/CommandsRequestMessage.h"
 #include "voxedit-util/network/protocol/InitSessionMessage.h"
@@ -60,121 +55,74 @@ void CommandsListHandler::execute(const network::ClientId &clientId, voxedit::Co
 	Log::debug("Received %d commands from server", (int)_server->_commands.size());
 }
 
-void SceneStateHandler::execute(const network::ClientId &clientId, voxedit::SceneStateMessage *message) {
-	_server->_sceneGraph = core::move(message->sceneGraph());
-	_server->_sceneStateReceived = true;
-	Log::debug("Received scene state with %d nodes", (int)_server->_sceneGraph.size());
-}
-
 McpServer::McpServer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
-	: Super(filesystem, timeProvider, 1), _network(new network::NetworkImpl()), _luaScriptsListHandler(this),
-	  _commandsListHandler(this), _sceneStateHandler(this), _luaApi(filesystem) {
+	: Super(filesystem, timeProvider, 1), _sceneRenderer(core::make_shared<voxedit::ISceneRenderer>()),
+	  _modifierRenderer(core::make_shared<voxedit::IModifierRenderer>()),
+	  _sceneMgr(core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, _sceneRenderer, _modifierRenderer)),
+	  _network(_sceneMgr.get()), _luaScriptsListHandler(this), _commandsListHandler(this) {
 	init(ORGANISATION, "vengimcp");
 }
 
 app::AppState McpServer::onConstruct() {
-	_luaApi.construct();
-
-	core::Var::get(cfg::VoxEditNetHostname, "127.0.0.1", "The hostname of the voxedit server");
-	core::Var::get(cfg::VoxEditNetPort, "10001", "The port to run the voxedit server on");
-	core::Var::get(cfg::VoxEditNetPassword, "", core::CV_SECRET,
-				   "The password required to connect to the voxedit server");
-	core::Var::get(cfg::VoxEditNetRconPassword, "changeme", core::CV_SECRET,
-				   "The rcon password required to send commands to the voxedit server");
-
-	return Super::onConstruct();
+	const app::AppState state = Super::onConstruct();
+	core::Var::get(cfg::UILastDirectory, filesystem()->homePath().c_str());
+	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
+	core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
+	_sceneMgr->construct();
+	_network.construct();
+	return state;
 }
 
 app::AppState McpServer::onInit() {
 	const app::AppState state = Super::onInit();
-	if (state != app::AppState::Running) {
-		return state;
-	}
 
 	voxelformat::FormatConfig::init();
 	palette::FormatConfig::init();
 
-	if (!_luaApi.init()) {
-		Log::error("Failed to initialize the LUA API");
+	if (!_sceneMgr->init()) {
+		Log::error("Failed to initialize scene manager");
 		return app::AppState::InitFailure;
 	}
 
-	return app::AppState::Running;
+	if (!_network.init()) {
+		Log::error("Failed to initialize client network");
+		return app::AppState::InitFailure;
+	}
+
+	// Register our custom handlers for lua scripts and commands list
+	network::ProtocolHandlerRegistry &r = _network.protocolRegistry();
+	r.registerHandler(voxedit::PROTO_LUA_SCRIPTS_LIST, &_luaScriptsListHandler);
+	r.registerHandler(voxedit::PROTO_COMMANDS_LIST, &_commandsListHandler);
+
+	return state;
 }
 
 app::AppState McpServer::onCleanup() {
 	disconnectFromVoxEdit();
-	_protocolRegistry.shutdown();
-	delete _network;
-	_luaApi.shutdown();
+	_network.shutdown();
+	_sceneMgr->shutdown();
 	return Super::onCleanup();
 }
 
 bool McpServer::connectToVoxEdit() {
-	if (_network->socketFD != network::InvalidSocketId) {
+	if (_network.isConnected()) {
 		return true;
 	}
 	Log::debug("Connecting to VoxEdit server...");
-#ifdef WIN32
-	WSADATA wsaData;
-	const int wsaResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (wsaResult != NO_ERROR) {
-		Log::error("WSAStartup failed with error: %d", wsaResult);
-		return false;
-	}
-#else
-	signal(SIGPIPE, SIG_IGN);
-#endif
-
-	FD_ZERO(&_network->readFDSet);
-	FD_ZERO(&_network->writeFDSet);
-
-	struct addrinfo hints, *res = nullptr;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
 
 	const core::String host = core::Var::getSafe(cfg::VoxEditNetHostname)->strVal();
 	const int port = core::Var::getSafe(cfg::VoxEditNetPort)->intVal();
-	const core::String service = core::string::toString(port);
-	int err = getaddrinfo(host.c_str(), service.c_str(), &hints, &res);
-	if (err != 0 || res == nullptr) {
-		Log::error("Failed to resolve hostname %s: %s", host.c_str(), network::getNetworkErrorString());
+
+	if (!_network.connect(host, port)) {
+		Log::error("Failed to connect to %s:%i", host.c_str(), port);
 		return false;
 	}
-
-	_network->socketFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if (_network->socketFD == network::InvalidSocketId) {
-		freeaddrinfo(res);
-		Log::error("Failed to create socket: %s", network::getNetworkErrorString());
-		return false;
-	}
-
-	Log::debug("Connecting to %s:%i...", host.c_str(), port);
-	int connectResult = ::connect(_network->socketFD, res->ai_addr, res->ai_addrlen);
-	if (connectResult < 0) {
-		closesocket(_network->socketFD);
-		_network->socketFD = network::InvalidSocketId;
-		freeaddrinfo(res);
-		Log::error("Failed to connect to %s:%i: %s", host.c_str(), port, network::getNetworkErrorString());
-		return false;
-	}
-
-	freeaddrinfo(res);
-	FD_SET(_network->socketFD, &_network->readFDSet);
-
-	// Register protocol handlers
-	network::ProtocolHandlerRegistry &r = _protocolRegistry;
-	r.registerHandler(voxedit::PROTO_PING, &_nopHandler);
-	r.registerHandler(voxedit::PROTO_LUA_SCRIPTS_LIST, &_luaScriptsListHandler);
-	r.registerHandler(voxedit::PROTO_COMMANDS_LIST, &_commandsListHandler);
-	r.registerHandler(voxedit::PROTO_SCENE_STATE, &_sceneStateHandler);
 
 	core::Var::getSafe(cfg::AppUserName)->setVal("mcp-client");
 
 	Log::debug("Sending init session message to VoxEdit server...");
 	voxedit::InitSessionMessage initMsg(false);
-	if (!sendMessage(initMsg)) {
+	if (!_network.sendMessage(initMsg)) {
 		disconnectFromVoxEdit();
 		Log::error("Failed to send init session message to VoxEdit server");
 		return false;
@@ -185,143 +133,42 @@ bool McpServer::connectToVoxEdit() {
 }
 
 void McpServer::disconnectFromVoxEdit() {
-	if (_network->socketFD != network::InvalidSocketId) {
-		closesocket(_network->socketFD);
-		_network->socketFD = network::InvalidSocketId;
-	}
-	FD_ZERO(&_network->readFDSet);
-	FD_ZERO(&_network->writeFDSet);
-	network_cleanup();
-}
-
-bool McpServer::sendMessage(const network::ProtocolMessage &msg) {
-	if (_network->socketFD == network::InvalidSocketId) {
-		return false;
-	}
-
-	const size_t total = msg.size();
-	Log::debug("Send message of type %d with size %u to server", msg.getId(), (uint32_t)total);
-	size_t sentTotal = 0;
-	while (sentTotal < total) {
-		const size_t toSend = total - sentTotal;
-		const network_return sent = send(_network->socketFD, (const char *)msg.getBuffer() + sentTotal, toSend, 0);
-		if (sent < 0) {
-			Log::warn("Failed to send message: %s", network::getNetworkErrorString());
-			disconnectFromVoxEdit();
-			return false;
-		}
-		sentTotal += sent;
-	}
-	return true;
-}
-
-void McpServer::processIncomingMessages() {
-	if (_network->socketFD == network::InvalidSocketId) {
-		return;
-	}
-
-	fd_set readFDsOut = _network->readFDSet;
-
-	struct timeval tv;
-	tv.tv_sec = 2;
-	tv.tv_usec = 0;
-#ifdef WIN32
-	const int ready = select(0, &readFDsOut, nullptr, nullptr, &tv);
-	if (ready == SOCKET_ERROR) {
-		Log::warn("select() failed on Windows: %s", network::getNetworkErrorString());
-		disconnectFromVoxEdit();
-		return;
-	}
-#else
-	const int ready = select(_network->socketFD + 1, &readFDsOut, nullptr, nullptr, &tv);
-	if (ready < 0) {
-		Log::warn("select() failed on Unix: %s", network::getNetworkErrorString());
-		disconnectFromVoxEdit();
-		return;
-	}
-#endif
-	if (ready <= 0) {
-		return;
-	}
-
-	if (!FD_ISSET(_network->socketFD, &readFDsOut)) {
-		return;
-	}
-
-	core::Array<uint8_t, 16384> buf;
-	const network_return len = recv(_network->socketFD, (char *)buf.data(), buf.size(), 0);
-#ifdef WIN32
-	if (len == SOCKET_ERROR) {
-		// Socket error on Windows
-		Log::warn("Socket error while receiving from VoxEdit server: %s", network::getNetworkErrorString());
-		disconnectFromVoxEdit();
-		return;
-	}
-#else
-	if (len < 0) {
-		// Socket error on Unix
-		Log::warn("Socket error while receiving from VoxEdit server: %s", network::getNetworkErrorString());
-		disconnectFromVoxEdit();
-		return;
-	}
-#endif
-	if (len == 0) {
-		// Connection closed by peer
-		Log::info("VoxEdit server closed the connection");
-		disconnectFromVoxEdit();
-		return;
-	}
-	Log::debug("Received %d bytes from VoxEdit server", (int)len);
-	_inStream.write(buf.data(), len);
-
-	// Process all available messages using registered handlers
-	while (voxedit::ProtocolMessageFactory::isNewMessageAvailable(_inStream)) {
-		Log::debug("Processing message from stream (stream size: %d)", (int)_inStream.size());
-		core::ScopedPtr<network::ProtocolMessage> msg(voxedit::ProtocolMessageFactory::create(_inStream));
-		if (!msg) {
-			Log::warn("Received invalid message");
-			break;
-		}
-		Log::debug("Received message type %d", (int)msg->getId());
-		if (network::ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
-			handler->execute(0, *msg);
-		} else {
-			Log::debug("No handler for message type %d", (int)msg->getId());
-		}
-	}
+	_network.disconnect();
 }
 
 bool McpServer::sendCommand(const core::String &command) {
 	voxedit::CommandMessage msg(command, core::Var::getSafe(cfg::VoxEditNetRconPassword)->strVal());
-	return sendMessage(msg);
+	return _network.sendMessage(msg);
 }
 
 bool McpServer::createLuaScript(const core::String &name, const core::String &content) {
 	voxedit::LuaScriptCreateMessage msg(name, content, core::Var::getSafe(cfg::VoxEditNetRconPassword)->strVal());
-	return sendMessage(msg);
+	return _network.sendMessage(msg);
 }
 
 bool McpServer::requestScripts() {
 	_scriptsReceived = false;
 	voxedit::LuaScriptsRequestMessage requestMsg;
-	return sendMessage(requestMsg);
+	return _network.sendMessage(requestMsg);
 }
 
 bool McpServer::requestCommands() {
 	_commandsReceived = false;
 	voxedit::CommandsRequestMessage requestMsg;
-	return sendMessage(requestMsg);
+	return _network.sendMessage(requestMsg);
 }
 
 bool McpServer::sendVoxelModification(const core::UUID &nodeUUID, const voxel::RawVolume &volume,
 									  const voxel::Region &region) {
 	voxedit::VoxelModificationMessage msg(nodeUUID, volume, region);
-	return sendMessage(msg);
+	return _network.sendMessage(msg);
 }
 
 app::AppState McpServer::onRunning() {
+	const double nowSeconds = _timeProvider->tickSeconds();
+
 	// Check if disconnected and reconnect with 5-second delay between attempts
-	if (_initialized && _network->socketFD == network::InvalidSocketId) {
+	if (_initialized && !_network.isConnected()) {
 		const uint64_t now = _timeProvider->tickNow();
 		if (now - _lastConnectionAttemptMillis >= 5000) {
 			Log::info("Connection lost, attempting to reconnect...");
@@ -329,10 +176,8 @@ app::AppState McpServer::onRunning() {
 			// Reset state
 			_scriptsReceived = false;
 			_commandsReceived = false;
-			_sceneStateReceived = false;
 			_scripts.clear();
 			_commands.clear();
-			_sceneGraph.clear();
 
 			if (connectToVoxEdit()) {
 				Log::info("Reconnected to VoxEdit server");
@@ -344,8 +189,8 @@ app::AppState McpServer::onRunning() {
 		}
 	}
 
-	// Process any pending messages from the VoxEdit server
-	processIncomingMessages();
+	// Process any pending messages from the VoxEdit server via ClientNetwork
+	_network.update(nowSeconds);
 
 	// Use select to check if stdin has data available (non-blocking)
 #ifdef _WIN32
@@ -843,7 +688,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 
 	if (core::string::startsWith(toolName.c_str(), "voxedit_lua_api")) {
 		io::BufferedReadWriteStream stream;
-		if (_luaApi.apiJsonToStream(stream)) {
+		if (_sceneMgr->luaApi().apiJsonToStream(stream)) {
 			core::String json((const char *)stream.getBuffer(), (size_t)stream.size());
 			sendToolResult(id, json);
 		} else {
@@ -853,13 +698,12 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 	}
 
 	if (core::string::startsWith(toolName.c_str(), "voxedit_get_scene_state")) {
-		if (!_sceneStateReceived) {
-			sendToolResult(id, "Timeout waiting for scene state", true);
+		if (_sceneMgr->sceneGraph().empty()) {
+			sendToolResult(id, "Scene graph is empty - not connected or no scene loaded", true);
 			return;
 		}
-		// Generate JSON from the cached scene graph
 		io::BufferedReadWriteStream stream;
-		scenegraph::sceneGraphJson(_sceneGraph, false, stream);
+		scenegraph::sceneGraphJson(_sceneMgr->sceneGraph(), false, stream);
 		const core::String json((const char *)stream.getBuffer(), (size_t)stream.size());
 		sendToolResult(id, json);
 		return;
@@ -923,7 +767,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 			return;
 		}
 
-		scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(nodeUUID);
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 		if (node == nullptr) {
 			sendToolResult(id, "Node not found", true);
 			return;
@@ -967,7 +811,7 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 			return;
 		}
 
-		const scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(nodeUUID);
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 		if (node == nullptr) {
 			sendToolResult(id, "Node not found", true);
 			return;
