@@ -13,7 +13,6 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
-#include "voxedit-util/network/ClientNetwork.h"
 #include "voxedit-util/network/protocol/CommandsListMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
 #include "voxel/RawVolume.h"
@@ -55,7 +54,6 @@ private:
 	voxedit::SceneRendererPtr _sceneRenderer;
 	voxedit::ModifierRendererPtr _modifierRenderer;
 	voxedit::SceneManagerPtr _sceneMgr;
-	voxedit::ClientNetwork _network;
 	LuaScriptsListHandler _luaScriptsListHandler;
 	CommandsListHandler _commandsListHandler;
 
