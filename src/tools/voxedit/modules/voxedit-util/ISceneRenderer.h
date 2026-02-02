@@ -7,9 +7,10 @@
 #include "core/IComponent.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "video/Camera.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/RenderContext.h"
 
 namespace scenegraph {
 class SceneGraph;
