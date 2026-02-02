@@ -26,6 +26,7 @@
 #include "core/sdl/SDLSystem.h"
 #include <SDL_messagebox.h>
 #include <SDL_cpuinfo.h>
+#include <stdio.h>
 #include <signal.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -34,7 +35,9 @@
 #include <signal.h>
 #ifdef _WIN32
 #include "system/Windows.h"
+#include <io.h>
 #else
+#include <sys/select.h>
 #include <unistd.h>
 #endif
 #ifdef HAVE_BACKWARD
@@ -204,6 +207,43 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 App::~App() {
 	Log::shutdown();
 	_threadPool = core::ThreadPoolPtr();
+}
+
+bool App::readInputLine(io::WriteStream &stream) const {
+#ifdef _WIN32
+	HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+	if (WaitForSingleObject(hStdin, 100) != WAIT_OBJECT_0) {
+		return true;
+	}
+#else
+	fd_set readfds;
+	FD_ZERO(&readfds);
+	FD_SET(STDIN_FILENO, &readfds);
+
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 100000; // 100ms timeout
+
+	const int stdinReady = select(STDIN_FILENO + 1, &readfds, nullptr, nullptr, &tv);
+	if (stdinReady <= 0 || !FD_ISSET(STDIN_FILENO, &readfds)) {
+		return true;
+	}
+#endif
+
+	char line[65536];
+	if (fgets(line, sizeof(line), stdin) == nullptr) {
+		if (ferror(stdin)) {
+			Log::error("Error reading from stdin");
+			return false;
+		}
+		if (feof(stdin)) {
+			Log::info("EOF reached on stdin");
+			return false;
+		}
+		return true;
+	}
+	stream.writeString(line, false);
+	return true;
 }
 
 void App::threadsDump() const {

@@ -155,6 +155,13 @@ public:
 	App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~App();
 
+	/**
+	 * @brief Read from stdin into the given stream
+	 * @param stream The stream to write the stdin input to
+	 * @return @c false in case of an error
+	 */
+	bool readInputLine(io::WriteStream &stream) const;
+
 	void init(const core::String& organisation, const core::String& appname);
 	int startMainLoop(int argc, char *argv[]);
 	void setArgs(int argc, char *argv[]);

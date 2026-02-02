@@ -29,15 +29,6 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelgenerator/LUAApi.h"
-#ifdef _WIN32
-#include <io.h>
-#include <windows.h>
-#define STDIN_FILENO 0
-#else
-#include <sys/select.h>
-#include <unistd.h>
-#endif
-#include <stdio.h>
 
 // JSON-RPC error codes
 static constexpr int PARSE_ERROR = -32700;
@@ -157,7 +148,6 @@ bool McpServer::sendVoxelModification(const core::UUID &nodeUUID, const voxel::R
 
 app::AppState McpServer::onRunning() {
 	const double nowSeconds = _timeProvider->tickSeconds();
-
 	voxedit::Client &client = _sceneMgr->client();
 
 	// Check if disconnected and reconnect with 5-second delay between attempts
@@ -183,56 +173,49 @@ app::AppState McpServer::onRunning() {
 	}
 
 	client.update(nowSeconds);
-
-	// Use select to check if stdin has data available (non-blocking)
-#ifdef _WIN32
-	HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-	if (WaitForSingleObject(hStdin, 100) != WAIT_OBJECT_0) {
-		// No stdin data available, continue processing network messages
-		return app::AppState::Running;
-	}
-#else
-	fd_set readfds;
-	FD_ZERO(&readfds);
-	FD_SET(STDIN_FILENO, &readfds);
-
-	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 100000; // 100ms timeout
-
-	const int stdinReady = select(STDIN_FILENO + 1, &readfds, nullptr, nullptr, &tv);
-	if (stdinReady <= 0 || !FD_ISSET(STDIN_FILENO, &readfds)) {
-		// No stdin data available, continue processing network messages
-		return app::AppState::Running;
-	}
-#endif
-
-	Log::debug("Reading MCP request from stdin...");
-
-	char line[65536];
-	if (fgets(line, sizeof(line), stdin) == nullptr) {
-		Log::error("Failed to read from stdin");
+	if (!handleStdin()) {
+		Log::info("Standard input closed, shutting down MCP server");
 		return app::AppState::Cleanup;
 	}
+	return app::AppState::Running;
+}
 
-	if (line[0] == '\n' || line[0] == '\0') {
-		Log::debug("Received empty MCP request");
-		return app::AppState::Running;
+bool McpServer::handleStdin() {
+	io::BufferedReadWriteStream stream;
+	if (!readInputLine(stream)) {
+		return false;
+	}
+	if (stream.empty()) {
+		return true;
+	}
+	Log::debug("Reading MCP request from stdin...");
+
+	stream.seek(0);
+	core::String lineStr;
+	if (!stream.readString((int)stream.size(), lineStr)) {
+		Log::error("Failed to read MCP request from stream");
+		return true;
 	}
 
+	if (lineStr[0] == '\n' || lineStr[0] == '\0') {
+		Log::debug("Received empty MCP request");
+		return true;
+	}
+
+	const char *line = lineStr.c_str();
 	if (!nlohmann::json::accept(line)) {
 		sendError(nullptr, PARSE_ERROR, "Parse error");
-		return app::AppState::Running;
+		return true;
 	}
 
-	nlohmann::json request = nlohmann::json::parse(line);
+	const nlohmann::json &request = nlohmann::json::parse(line);
 	if (request.is_discarded()) {
 		sendError(nullptr, PARSE_ERROR, "Parse error");
-		return app::AppState::Running;
+		return true;
 	}
 
 	handleRequest(request);
-	return app::AppState::Running;
+	return true;
 }
 
 void McpServer::handleRequest(const nlohmann::json &request) {

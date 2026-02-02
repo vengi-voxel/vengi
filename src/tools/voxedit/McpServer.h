@@ -72,6 +72,8 @@ private:
 	bool requestScripts();
 	bool requestCommands();
 
+	/** @brief Read JSON-RPC from stdin - only line at a time */
+	bool handleStdin();
 	void handleRequest(const nlohmann::json &request);
 	void handleInitialize(const nlohmann::json &request);
 	/** Dynamic script tools */
