@@ -66,10 +66,13 @@ set(SRCS
 	network/handler/client/SceneGraphAnimationHandler.h network/handler/client/SceneGraphAnimationHandler.cpp
 
 	network/handler/server/CommandHandlerServer.h
+	network/handler/server/CommandsRequestHandler.h network/handler/server/CommandsRequestHandler.cpp
+	network/handler/server/CVarsRequestHandler.h network/handler/server/CVarsRequestHandler.cpp
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp
+	network/handler/server/LuaScriptCreateHandler.h network/handler/server/LuaScriptCreateHandler.cpp
+	network/handler/server/LuaScriptsRequestHandler.h network/handler/server/LuaScriptsRequestHandler.cpp
 	network/handler/server/SceneStateHandlerServer.h network/handler/server/SceneStateHandlerServer.cpp
 	network/handler/server/BroadcastHandler.h network/handler/server/BroadcastHandler.cpp
-	network/handler/server/InfoRequestHandlers.h network/handler/server/InfoRequestHandlers.cpp
 
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
