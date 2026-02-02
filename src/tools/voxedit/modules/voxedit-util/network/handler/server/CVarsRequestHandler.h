@@ -11,6 +11,10 @@ namespace voxedit {
 
 class ServerNetwork;
 
+/**
+ * @see @c CommandsRequestHandler
+ * @see @c LuaScriptsRequestHandler
+ */
 class CVarsRequestHandler : public network::ProtocolTypeHandler<CVarsRequestMessage> {
 private:
 	ServerNetwork *_network;

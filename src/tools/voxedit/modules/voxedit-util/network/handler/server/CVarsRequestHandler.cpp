@@ -26,7 +26,7 @@ void CVarsRequestHandler::execute(const network::ClientId &clientId, CVarsReques
 		const char *help = var->help();
 		info.description = help != nullptr ? help : "";
 		info.flags = var->getFlags();
-		cvarInfos.push_back(info);
+		cvarInfos.emplace_back(core::move(info));
 	});
 
 	CVarsListMessage response(cvarInfos);

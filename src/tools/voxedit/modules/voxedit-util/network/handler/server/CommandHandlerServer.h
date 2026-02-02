@@ -14,6 +14,10 @@ namespace voxedit {
 
 class Server;
 
+/**
+ * @brief A client can issue the @c CommandMessage to execute commands on the server side. This is checking the rcon password.
+ * @see CommandsRequestHandler
+ */
 class CommandHandlerServer : public network::ProtocolTypeHandler<CommandMessage> {
 public:
 	void execute(const network::ClientId &clientId, CommandMessage *msg) override {
