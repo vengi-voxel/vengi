@@ -6,15 +6,14 @@
 
 #include "app/CommandlineApp.h"
 #include "core/String.h"
-#include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "network/ProtocolHandler.h"
+#include "voxedit-mcp/ToolRegistry.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxedit-util/network/protocol/CommandsListMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
-#include "voxel/RawVolume.h"
 #include "json/JSON.h"
 
 class McpServer;
@@ -40,8 +39,12 @@ public:
 };
 
 /**
- * @brief MCP (Model Context Protocol) server for vengi
+ * @brief MCP (Model Context Protocol) server for vengi voxedit
  * @ingroup Tools
+ *
+ * @li https://modelcontextprotocol.io/docs/tools/inspector
+ *
+ * @code npx @modelcontextprotocol/inspector path/to/vengi-voxeditmcp @endcode
  */
 class McpServer : public app::CommandlineApp {
 private:
@@ -50,55 +53,39 @@ private:
 	friend class LuaScriptsListHandler;
 	friend class CommandsListHandler;
 
-	bool _initialized = false;
 	voxedit::SceneRendererPtr _sceneRenderer;
 	voxedit::ModifierRendererPtr _modifierRenderer;
 	voxedit::SceneManagerPtr _sceneMgr;
 	LuaScriptsListHandler _luaScriptsListHandler;
 	CommandsListHandler _commandsListHandler;
+	voxedit::ToolRegistry _toolRegistry;
 
-	core::DynamicArray<voxedit::LuaScriptInfo> _scripts;
-	core::DynamicArray<voxedit::CommandInfo> _commands;
-	bool _scriptsReceived = false;
-	bool _commandsReceived = false;
+	bool _initialized = false;
+
 	uint64_t _lastConnectionAttemptMillis = 0;
+
+	void printUsageHeader() const override;
+	void usage() const override;
+
+	bool requestCommands();
+	void updateCommandTools(const core::DynamicArray<voxedit::CommandInfo> &commands);
+
+	bool requestScripts();
+	void updateScriptTools(const core::DynamicArray<voxedit::LuaScriptInfo> &scripts);
 
 	bool connectToVoxEdit();
 	void disconnectFromVoxEdit();
-	bool sendCommand(const core::String &command);
-	bool createLuaScript(const core::String &name, const core::String &content);
-	bool sendVoxelModification(const core::UUID &nodeUUID, const voxel::RawVolume &volume,
-							   const voxel::Region &region = voxel::Region::InvalidRegion);
-	bool requestScripts();
-	bool requestCommands();
 
 	/** @brief Read JSON-RPC from stdin - only line at a time */
 	bool handleStdin();
 	void handleRequest(const nlohmann::json &request);
 	void handleInitialize(const nlohmann::json &request);
-	/** Dynamic script tools */
-	void scriptTools(nlohmann::json &tools);
-	/** Dynamic command tools */
-	void commandTools(nlohmann::json &tools);
-	/** voxedit_find_color */
-	void findColorTool(nlohmann::json &tools);
-	/** voxedit_get_palette */
-	void getPaletteTool(nlohmann::json &tools);
-	/** voxedit_place_voxels */
-	void placeVoxelTool(nlohmann::json &tools);
-	/** voxedit_get_scene_state */
-	void getSceneStateTool(nlohmann::json &tools);
-	/** voxedit_create_generator */
-	void createGeneratorTool(nlohmann::json &tools);
-	/** voxedit_lua_api - expose the Lua API documentation */
-	void luaApiDocTool(nlohmann::json &tools);
-
 	void handleToolsList(const nlohmann::json &request);
 	void handleToolsCall(const nlohmann::json &request);
 
-	void sendResponse(const nlohmann::json &response);
-	void sendError(const nlohmann::json &id, int code, const core::String &message);
-	void sendToolResult(const nlohmann::json &id, const core::String &text, bool isError = false);
+	static void sendResponse(const nlohmann::json &response);
+	static void sendError(const nlohmann::json &id, int code, const core::String &message);
+	static bool sendToolResult(const nlohmann::json &id, const core::String &text, bool isError = false);
 
 public:
 	McpServer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);
