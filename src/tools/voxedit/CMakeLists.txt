@@ -121,7 +121,7 @@ set(MCP_SRCS
 	McpServer.h McpServer.cpp
 )
 engine_add_executable(TARGET ${PROJECT_NAME}mcp SRCS ${MCP_SRCS} DESCRIPTION "MCP server for VoxEdit")
-engine_target_link_libraries(TARGET ${PROJECT_NAME}mcp DEPENDENCIES app voxedit-util voxelgenerator-lua)
+engine_target_link_libraries(TARGET ${PROJECT_NAME}mcp DEPENDENCIES app voxedit-util)
 
 if (UNIX)
 	enable_testing()
