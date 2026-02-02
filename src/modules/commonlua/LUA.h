@@ -38,7 +38,6 @@ private:
 	void openState();
 	void closeState();
 	core::String string(const core::String& expr, const core::String& defaultValue = "");
-	void setError(const core::String& error);
 
 public:
 	explicit LUA(lua_State *state);
@@ -58,8 +57,7 @@ public:
 
 	void pop(int amount = 1);
 
-	void reg(const core::String& prefix, const luaL_Reg* funcs);
-
+	void setError(const core::String& error);
 	const core::String& error() const;
 	/**
 	 * @brief Loads a lua script into the lua state.

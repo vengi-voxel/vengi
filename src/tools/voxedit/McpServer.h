@@ -8,7 +8,6 @@
 #include "core/String.h"
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
-#include "json/JSON.h"
 #include "network/ProtocolHandler.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
@@ -16,6 +15,7 @@
 #include "voxedit-util/network/protocol/CommandsListMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
 #include "voxel/RawVolume.h"
+#include "json/JSON.h"
 
 class McpServer;
 
@@ -74,6 +74,23 @@ private:
 
 	void handleRequest(const nlohmann::json &request);
 	void handleInitialize(const nlohmann::json &request);
+	/** Dynamic script tools */
+	void scriptTools(nlohmann::json &tools);
+	/** Dynamic command tools */
+	void commandTools(nlohmann::json &tools);
+	/** voxedit_find_color */
+	void findColorTool(nlohmann::json &tools);
+	/** voxedit_get_palette */
+	void getPaletteTool(nlohmann::json &tools);
+	/** voxedit_place_voxels */
+	void placeVoxelTool(nlohmann::json &tools);
+	/** voxedit_get_scene_state */
+	void getSceneStateTool(nlohmann::json &tools);
+	/** voxedit_create_generator */
+	void createGeneratorTool(nlohmann::json &tools);
+	/** voxedit_lua_api - expose the Lua API documentation */
+	void luaApiDocTool(nlohmann::json &tools);
+
 	void handleToolsList(const nlohmann::json &request);
 	void handleToolsCall(const nlohmann::json &request);
 

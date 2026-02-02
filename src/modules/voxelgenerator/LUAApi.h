@@ -96,8 +96,8 @@ public:
 	ScriptState update(double nowSeconds);
 	void shutdown() override;
 
-	void reloadScriptParameters(voxelgenerator::LUAScript &s);
-	void reloadScriptParameters(voxelgenerator::LUAScript &s, const core::String &luaScript);
+	bool reloadScriptParameters(voxelgenerator::LUAScript &s);
+	bool reloadScriptParameters(voxelgenerator::LUAScript &s, const core::String &luaScript);
 
 	bool scriptStillRunning() const {
 		return _scriptStillRunning;

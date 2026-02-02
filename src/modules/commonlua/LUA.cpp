@@ -118,15 +118,6 @@ bool LUA::resetState() {
 	return true;
 }
 
-void LUA::reg(const core::String& prefix, const luaL_Reg* funcs) {
-	const core::String metaTableName = META_PREFIX + prefix;
-	luaL_newmetatable(_state, metaTableName.c_str());
-	luaL_setfuncs(_state, funcs, 0);
-	lua_pushvalue(_state, -1);
-	lua_setfield(_state, -1, "__index");
-	lua_setglobal(_state, prefix.c_str());
-}
-
 bool LUA::load(const core::String& luaString, int returnValues) {
 	if (luaL_loadbufferx(_state, luaString.c_str(), luaString.size(), "", nullptr) || lua_pcall(_state, 0, returnValues, 0)) {
 		setError(lua_tostring(_state, -1));

@@ -3865,7 +3865,9 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 	// Call arguments() -> should push return values on stack
 	const int error = lua_pcall(lua, 0, LUA_MULTRET, 0);
 	if (error != LUA_OK) {
-		Log::error("LUA generate arguments script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
+		const core::String &errorMsg = lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error";
+		lua.setError(errorMsg);
+		Log::error("LUA arguments() error: %s", errorMsg.c_str());
 		lua_pop(lua, 1); // pop error message
 		return false;
 	}
@@ -3882,7 +3884,9 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 	}
 
 	if (!lua_istable(lua, -1)) {
-		Log::error("Expected to get a table return value");
+		const core::String &errorMsg = "Expected to get a table return value";
+		Log::error("%s", errorMsg.c_str());
+		lua.setError(errorMsg);
 		lua_pop(lua, 1);
 		return false;
 	}
@@ -3893,7 +3897,9 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		lua_pushinteger(lua, i + 1); // lua starts at 1
 		lua_gettable(lua, -2);
 		if (!lua_istable(lua, -1)) {
-			Log::error("Expected to return tables of { name = 'name', desc = 'description', type = 'int' } at %i", i);
+			const core::String &errorMsg = core::String::format("Expected to return tables of { name = 'name', desc = 'description', type = 'int' } at %i", i);
+			Log::error("%s", errorMsg.c_str());
+			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
 			return false;
 		}
@@ -3975,7 +3981,9 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 				} else if (core::string::startsWith(value, "bool")) {
 					type = LUAParameterType::Boolean;
 				} else {
-					Log::error("Invalid type found: %s", value.c_str());
+					const core::String &errorMsg = core::String::format("Invalid type found: %s", value.c_str());
+					Log::error("%s", errorMsg.c_str());
+					lua.setError(errorMsg);
 					lua_settop(lua, preTop);
 					return false;
 				}
@@ -3986,19 +3994,25 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		}
 
 		if (name.empty()) {
-			Log::error("No name = 'myname' key given");
+			const core::String &errorMsg = "No name = 'myname' key given";
+			Log::error("%s", errorMsg.c_str());
+			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
 			return false;
 		}
 
 		if (type == LUAParameterType::Max) {
-			Log::error("No type = 'int', 'float', 'str', 'bool', 'enum' or 'colorindex' key given for '%s'", name.c_str());
+			const core::String &errorMsg = core::String::format("No type = 'int', 'float', 'str', 'bool', 'enum' or 'colorindex' key given for '%s'", name.c_str());
+			Log::error("%s", errorMsg.c_str());
+			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
 			return false;
 		}
 
 		if (type == LUAParameterType::Enum && enumValues.empty()) {
-			Log::error("No enum property given for argument '%s', but type is 'enum'", name.c_str());
+			const core::String &errorMsg = core::String::format("No enum property given for argument '%s', but type is 'enum'", name.c_str());
+			Log::error("%s", errorMsg.c_str());
+			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
 			return false;
 		}
@@ -4071,11 +4085,11 @@ core::DynamicArray<LUAScript> LUAApi::listScripts() const {
 	return scripts;
 }
 
-void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s) {
-	reloadScriptParameters(s, load(s.filename));
+bool LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s) {
+	return reloadScriptParameters(s, load(s.filename));
 }
 
-void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::String &luaScript) {
+bool LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::String &luaScript) {
 	lua::StackChecker stackCheck(_lua);
 	s.valid = false;
 	s.parameterDescription.clear();
@@ -4083,9 +4097,11 @@ void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::St
 	s.enumValues.clear();
 
 	if (luaScript.empty() || !prepare(_lua, luaScript)) {
-		return;
+		return false;
 	}
-	argumentInfo(_lua, s.parameterDescription);
+	if (!argumentInfo(_lua, s.parameterDescription)) {
+		return false;
+	}
 	const int parameterCount = (int)s.parameterDescription.size();
 	s.parameters.resize(parameterCount);
 	s.enumValues.resize(parameterCount);
@@ -4097,6 +4113,7 @@ void LUAApi::reloadScriptParameters(voxelgenerator::LUAScript &s, const core::St
 	s.desc = description(_lua);
 	s.cached = true;
 	s.valid = true;
+	return true;
 }
 
 bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,

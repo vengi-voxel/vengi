@@ -4,6 +4,7 @@
 
 #include "McpServer.h"
 #include "command/Command.h"
+#include "commonlua/LUA.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -27,6 +28,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/FormatConfig.h"
+#include "voxelgenerator/LUAApi.h"
 #ifdef _WIN32
 #include <io.h>
 #include <windows.h>
@@ -234,13 +236,14 @@ app::AppState McpServer::onRunning() {
 }
 
 void McpServer::handleRequest(const nlohmann::json &request) {
+	auto id = request.value("id", nlohmann::json());
 	if (!request.contains("jsonrpc") || request["jsonrpc"] != "2.0") {
-		sendError(request.value("id", nlohmann::json()), INVALID_REQUEST, "Invalid JSON-RPC version");
+		sendError(id, INVALID_REQUEST, "Invalid JSON-RPC version");
 		return;
 	}
 
 	if (!request.contains("method") || !request["method"].is_string()) {
-		sendError(request.value("id", nlohmann::json()), INVALID_REQUEST, "Missing method");
+		sendError(id, INVALID_REQUEST, "Missing method");
 		return;
 	}
 
@@ -254,7 +257,7 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 			Log::error("Failed to connect to VoxEdit server at %s:%d",
 					   core::Var::getSafe(cfg::VoxEditNetHostname)->strVal().c_str(),
 					   core::Var::getSafe(cfg::VoxEditNetPort)->intVal());
-			sendError(request.value("id", nlohmann::json()), INIT_FAILED, "Failed to connect to VoxEdit server");
+			sendError(id, INIT_FAILED, "Failed to connect to VoxEdit server");
 			return;
 		}
 		Log::info("MCP client initialized");
@@ -263,7 +266,7 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 	} else if (method == "tools/call") {
 		handleToolsCall(request);
 	} else {
-		sendError(request.value("id", nlohmann::json()), METHOD_NOT_FOUND, "Method not found");
+		sendError(id, METHOD_NOT_FOUND, "Method not found");
 	}
 }
 
@@ -296,217 +299,7 @@ void McpServer::handleInitialize(const nlohmann::json &request) {
 	sendResponse(response);
 }
 
-void McpServer::handleToolsList(const nlohmann::json &request) {
-	Log::info("Received tools list request");
-	nlohmann::json tools = nlohmann::json::array();
-
-	// voxedit_lua_api - expose the Lua API documentation
-	{
-		nlohmann::json tool;
-		tool["name"] = "voxedit_lua_api";
-		tool["description"] = "Get the Lua API documentation as JSON. This describes all available Lua functions and "
-							  "their parameters for writing generator scripts.";
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["properties"] = nlohmann::json::object();
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// voxedit_create_generator
-	{
-		nlohmann::json tool;
-		tool["name"] = "voxedit_create_generator";
-		tool["description"] = "Create and run a custom Lua generator script.\n"
-							  "Script receives: node, region, color, [custom args]\n"
-							  "Get api details with voxedit_lua_api.\n"
-							  "Always add a description function to your script.\n"
-							  "function description() return 'My script description' end\n"
-							  "Custom args are given via function arguments() return { { name = 'padding', desc = 'padding between nodes', type = 'int', default = '2' } } end\n"
-							  "Try to use arguments to make your scripts re-usable.";
-
-		nlohmann::json nameProp;
-		nameProp["type"] = "string";
-		nameProp["description"] = "Script name";
-
-		nlohmann::json codeProp;
-		codeProp["type"] = "string";
-		codeProp["description"] = "Lua script code";
-
-		nlohmann::json runProp;
-		runProp["type"] = "boolean";
-		runProp["default"] = true;
-		runProp["description"] = "Run the script immediately";
-
-		nlohmann::json argsProp;
-		argsProp["type"] = "string";
-		argsProp["description"] = "Script arguments defined by function arguments() in the lua code [custom args]";
-
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["required"] = nlohmann::json::array({"name", "code"});
-		inputSchema["properties"]["name"] = core::move(nameProp);
-		inputSchema["properties"]["code"] = core::move(codeProp);
-		inputSchema["properties"]["run"] = core::move(runProp);
-		inputSchema["properties"]["args"] = core::move(argsProp);
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// voxedit_get_scene_state
-	{
-		nlohmann::json tool;
-		tool["name"] = "voxedit_get_scene_state";
-		tool["description"] = "Get the current scene graph structure as JSON. Each node includes its UUID, type, "
-							  "palette colors (with RGBA values and names), and volume information.";
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["properties"] = nlohmann::json::object();
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// voxedit_place_voxels
-	{
-		nlohmann::json tool;
-		tool["name"] = "voxedit_place_voxels";
-		tool["description"] =
-			"Place voxels at specified positions in a node. Get node UUIDs from voxedit_get_scene_state.";
-
-		nlohmann::json itemsSchema;
-		itemsSchema["type"] = "object";
-		itemsSchema["properties"]["x"]["type"] = "integer";
-		itemsSchema["properties"]["x"]["description"] = "X coordinate";
-		itemsSchema["properties"]["y"]["type"] = "integer";
-		itemsSchema["properties"]["y"]["description"] = "Y coordinate";
-		itemsSchema["properties"]["z"]["type"] = "integer";
-		itemsSchema["properties"]["z"]["description"] = "Z coordinate";
-		itemsSchema["properties"]["colorIndex"]["type"] = "integer";
-		itemsSchema["properties"]["colorIndex"]["description"] = "Palette index of the color";
-		itemsSchema["required"] = nlohmann::json::array({"x", "y", "z", "colorIndex"});
-
-		nlohmann::json voxelsProp;
-		voxelsProp["type"] = "array";
-		voxelsProp["description"] = "Array of {x, y, z, colorIndex} objects";
-		voxelsProp["items"] = core::move(itemsSchema);
-
-		nlohmann::json nodeUUIDProp;
-		nodeUUIDProp["type"] = "string";
-		nodeUUIDProp["description"] = "UUID of the node to modify";
-
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
-		inputSchema["properties"]["voxels"] = core::move(voxelsProp);
-		inputSchema["properties"]["nodeUUID"] = core::move(nodeUUIDProp);
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// voxedit_get_palette
-	{
-		nlohmann::json tool;
-		tool["name"] = "voxedit_get_palette";
-		tool["description"] = "Get the color palette of a specific node. Returns all colors with their RGBA values, "
-							  "names, and material properties. Use this to find the right colorIndex for voxedit_place_voxels.";
-
-		nlohmann::json nodeUUIDProp;
-		nodeUUIDProp["type"] = "string";
-		nodeUUIDProp["description"] = "UUID of the node to get the palette from";
-
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["required"] = nlohmann::json::array({"nodeUUID"});
-		inputSchema["properties"]["nodeUUID"] = core::move(nodeUUIDProp);
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// voxedit_find_color
-	{
-		nlohmann::json tool;
-		tool["name"] = "voxedit_find_color";
-		tool["description"] = "Find the closest matching color index in a node's palette for a given RGBA color. "
-							  "Returns the palette index to use with voxedit_place_voxels.";
-
-		nlohmann::json nodeUUIDProp;
-		nodeUUIDProp["type"] = "string";
-		nodeUUIDProp["description"] = "UUID of the node whose palette to search";
-
-		nlohmann::json rProp;
-		rProp["type"] = "integer";
-		rProp["description"] = "Red component (0-255)";
-		rProp["minimum"] = 0;
-		rProp["maximum"] = 255;
-
-		nlohmann::json gProp;
-		gProp["type"] = "integer";
-		gProp["description"] = "Green component (0-255)";
-		gProp["minimum"] = 0;
-		gProp["maximum"] = 255;
-
-		nlohmann::json bProp;
-		bProp["type"] = "integer";
-		bProp["description"] = "Blue component (0-255)";
-		bProp["minimum"] = 0;
-		bProp["maximum"] = 255;
-
-		nlohmann::json aProp;
-		aProp["type"] = "integer";
-		aProp["description"] = "Alpha component (0-255), defaults to 255";
-		aProp["minimum"] = 0;
-		aProp["maximum"] = 255;
-		aProp["default"] = 255;
-
-		nlohmann::json properties = nlohmann::json::object();
-		properties["nodeUUID"] = core::move(nodeUUIDProp);
-		properties["r"] = core::move(rProp);
-		properties["g"] = core::move(gProp);
-		properties["b"] = core::move(bProp);
-		properties["a"] = core::move(aProp);
-
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["required"] = nlohmann::json::array({"nodeUUID", "r", "g", "b"});
-		inputSchema["properties"] = core::move(properties);
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// Dynamic command tools
-	for (const voxedit::CommandInfo &cmd : _commands) {
-		nlohmann::json tool;
-		core::String toolName;
-		if (cmd.name[0] == COMMAND_PRESSED[0]) {
-			toolName = core::String::format("voxedit_cmd_pressed_%s", cmd.name.c_str() + 1);
-			const core::String desc =
-				core::String::format("Execute input command '%s' (pressed - make sure to call the release version afterwards)", cmd.name.c_str() + 1);
-			tool["description"] = desc.c_str();
-		} else if (cmd.name[0] == COMMAND_RELEASED[0]) {
-			toolName = core::String::format("voxedit_cmd_released_%s", cmd.name.c_str() + 1);
-			const core::String desc =
-				core::String::format("Execute input command '%s' (released - make sure to call the pressed version beforehand)", cmd.name.c_str() + 1);
-			tool["description"] = desc.c_str();
-		} else {
-			toolName = core::String("voxedit_cmd_" + cmd.name);
-			tool["description"] = cmd.description.c_str();
-		}
-		tool["name"] = toolName.c_str();
-
-		nlohmann::json argsProp;
-		argsProp["type"] = "string";
-		argsProp["description"] = "Command arguments";
-
-		nlohmann::json inputSchema;
-		inputSchema["type"] = "object";
-		inputSchema["properties"]["args"] = core::move(argsProp);
-		tool["inputSchema"] = core::move(inputSchema);
-		tools.emplace_back(core::move(tool));
-	}
-
-	// TODO: add a tool to change the scene graph transforms and animate a scene
-
-	// Dynamic script tools
+void McpServer::scriptTools(nlohmann::json &tools) {
 	for (const voxedit::LuaScriptInfo &script : _scripts) {
 		core::String name = script.filename;
 		if (name.size() > 4 && name.substr(name.size() - 4) == ".lua") {
@@ -595,14 +388,231 @@ void McpServer::handleToolsList(const nlohmann::json &request) {
 		tool["inputSchema"] = core::move(inputSchema);
 		tools.emplace_back(core::move(tool));
 	}
+}
+
+void McpServer::commandTools(nlohmann::json &tools) {
+	for (const voxedit::CommandInfo &cmd : _commands) {
+		nlohmann::json tool;
+		core::String toolName;
+		if (cmd.name[0] == COMMAND_PRESSED[0]) {
+			toolName = core::String::format("voxedit_cmd_pressed_%s", cmd.name.c_str() + 1);
+			const core::String desc = core::String::format(
+				"Execute input command '%s' (pressed - make sure to call the release version afterwards)",
+				cmd.name.c_str() + 1);
+			tool["description"] = desc.c_str();
+		} else if (cmd.name[0] == COMMAND_RELEASED[0]) {
+			toolName = core::String::format("voxedit_cmd_released_%s", cmd.name.c_str() + 1);
+			const core::String desc = core::String::format(
+				"Execute input command '%s' (released - make sure to call the pressed version beforehand)",
+				cmd.name.c_str() + 1);
+			tool["description"] = desc.c_str();
+		} else {
+			toolName = core::String("voxedit_cmd_" + cmd.name);
+			tool["description"] = cmd.description.c_str();
+		}
+		tool["name"] = toolName.c_str();
+
+		nlohmann::json argsProp;
+		argsProp["type"] = "string";
+		argsProp["description"] = "Command arguments";
+
+		nlohmann::json inputSchema;
+		inputSchema["type"] = "object";
+		inputSchema["properties"]["args"] = core::move(argsProp);
+		tool["inputSchema"] = core::move(inputSchema);
+		tools.emplace_back(core::move(tool));
+	}
+}
+
+void McpServer::findColorTool(nlohmann::json &tools) {
+	nlohmann::json tool;
+	tool["name"] = "voxedit_find_color";
+	tool["description"] = "Find the closest matching color index in a node's palette for a given RGBA color. "
+						  "Returns the palette index to use with voxedit_place_voxels.";
+
+	nlohmann::json nodeUUIDProp;
+	nodeUUIDProp["type"] = "string";
+	nodeUUIDProp["description"] = "UUID of the node whose palette to search";
+
+	nlohmann::json rProp;
+	rProp["type"] = "integer";
+	rProp["description"] = "Red component (0-255)";
+	rProp["minimum"] = 0;
+	rProp["maximum"] = 255;
+
+	nlohmann::json gProp;
+	gProp["type"] = "integer";
+	gProp["description"] = "Green component (0-255)";
+	gProp["minimum"] = 0;
+	gProp["maximum"] = 255;
+
+	nlohmann::json bProp;
+	bProp["type"] = "integer";
+	bProp["description"] = "Blue component (0-255)";
+	bProp["minimum"] = 0;
+	bProp["maximum"] = 255;
+
+	nlohmann::json aProp;
+	aProp["type"] = "integer";
+	aProp["description"] = "Alpha component (0-255), defaults to 255";
+	aProp["minimum"] = 0;
+	aProp["maximum"] = 255;
+	aProp["default"] = 255;
+
+	nlohmann::json properties = nlohmann::json::object();
+	properties["nodeUUID"] = core::move(nodeUUIDProp);
+	properties["r"] = core::move(rProp);
+	properties["g"] = core::move(gProp);
+	properties["b"] = core::move(bProp);
+	properties["a"] = core::move(aProp);
+
+	nlohmann::json inputSchema;
+	inputSchema["type"] = "object";
+	inputSchema["required"] = nlohmann::json::array({"nodeUUID", "r", "g", "b"});
+	inputSchema["properties"] = core::move(properties);
+	tool["inputSchema"] = core::move(inputSchema);
+	tools.emplace_back(core::move(tool));
+}
+
+void McpServer::getPaletteTool(nlohmann::json &tools) {
+	nlohmann::json tool;
+	tool["name"] = "voxedit_get_palette";
+	tool["description"] =
+		"Get the color palette of a specific node. Returns all colors with their RGBA values, "
+		"names, and material properties. Use this to find the right colorIndex for voxedit_place_voxels.";
+
+	nlohmann::json nodeUUIDProp;
+	nodeUUIDProp["type"] = "string";
+	nodeUUIDProp["description"] = "UUID of the node to get the palette from";
+
+	nlohmann::json inputSchema;
+	inputSchema["type"] = "object";
+	inputSchema["required"] = nlohmann::json::array({"nodeUUID"});
+	inputSchema["properties"]["nodeUUID"] = core::move(nodeUUIDProp);
+	tool["inputSchema"] = core::move(inputSchema);
+	tools.emplace_back(core::move(tool));
+}
+
+void McpServer::placeVoxelTool(nlohmann::json &tools) {
+	nlohmann::json tool;
+	tool["name"] = "voxedit_place_voxels";
+	tool["description"] = "Place voxels at specified positions in a node. Get node UUIDs from voxedit_get_scene_state.";
+
+	nlohmann::json itemsSchema;
+	itemsSchema["type"] = "object";
+	itemsSchema["properties"]["x"]["type"] = "integer";
+	itemsSchema["properties"]["x"]["description"] = "X coordinate";
+	itemsSchema["properties"]["y"]["type"] = "integer";
+	itemsSchema["properties"]["y"]["description"] = "Y coordinate";
+	itemsSchema["properties"]["z"]["type"] = "integer";
+	itemsSchema["properties"]["z"]["description"] = "Z coordinate";
+	itemsSchema["properties"]["colorIndex"]["type"] = "integer";
+	itemsSchema["properties"]["colorIndex"]["description"] = "Palette index of the color";
+	itemsSchema["required"] = nlohmann::json::array({"x", "y", "z", "colorIndex"});
+
+	nlohmann::json voxelsProp;
+	voxelsProp["type"] = "array";
+	voxelsProp["description"] = "Array of {x, y, z, colorIndex} objects";
+	voxelsProp["items"] = core::move(itemsSchema);
+
+	nlohmann::json nodeUUIDProp;
+	nodeUUIDProp["type"] = "string";
+	nodeUUIDProp["description"] = "UUID of the node to modify";
+
+	nlohmann::json inputSchema;
+	inputSchema["type"] = "object";
+	inputSchema["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
+	inputSchema["properties"]["voxels"] = core::move(voxelsProp);
+	inputSchema["properties"]["nodeUUID"] = core::move(nodeUUIDProp);
+	tool["inputSchema"] = core::move(inputSchema);
+	tools.emplace_back(core::move(tool));
+}
+
+void McpServer::getSceneStateTool(nlohmann::json &tools) {
+	nlohmann::json tool;
+	tool["name"] = "voxedit_get_scene_state";
+	tool["description"] = "Get the current scene graph structure as JSON. Each node includes its UUID, type, "
+						  "palette colors (with RGBA values and names), and volume information.";
+	nlohmann::json inputSchema;
+	inputSchema["type"] = "object";
+	inputSchema["properties"] = nlohmann::json::object();
+	tool["inputSchema"] = core::move(inputSchema);
+	tools.emplace_back(core::move(tool));
+}
+
+void McpServer::createGeneratorTool(nlohmann::json &tools) {
+	nlohmann::json tool;
+	tool["name"] = "voxedit_create_generator";
+	tool["description"] = "Create and run a custom Lua generator script.\n"
+						  "Script receives: node, region, color, [custom args]\n"
+						  "Get api details with voxedit_lua_api.\n"
+						  "Always add a description function to your script.\n"
+						  "function description() return 'My script description' end\n"
+						  "Custom args are given via function arguments() return { { name = 'padding', desc = "
+						  "'padding between nodes', type = 'int', default = '2' } } end\n"
+						  "Try to use arguments to make your scripts re-usable.";
+
+	nlohmann::json nameProp;
+	nameProp["type"] = "string";
+	nameProp["description"] = "Script name";
+
+	nlohmann::json codeProp;
+	codeProp["type"] = "string";
+	codeProp["description"] = "Lua script code";
+
+	nlohmann::json runProp;
+	runProp["type"] = "boolean";
+	runProp["default"] = true;
+	runProp["description"] = "Run the script immediately";
+
+	nlohmann::json argsProp;
+	argsProp["type"] = "string";
+	argsProp["description"] = "Script arguments defined by function arguments() in the lua code [custom args]";
+
+	nlohmann::json inputSchema;
+	inputSchema["type"] = "object";
+	inputSchema["required"] = nlohmann::json::array({"name", "code"});
+	inputSchema["properties"]["name"] = core::move(nameProp);
+	inputSchema["properties"]["code"] = core::move(codeProp);
+	inputSchema["properties"]["run"] = core::move(runProp);
+	inputSchema["properties"]["args"] = core::move(argsProp);
+	tool["inputSchema"] = core::move(inputSchema);
+	tools.emplace_back(core::move(tool));
+}
+
+void McpServer::luaApiDocTool(nlohmann::json &tools) {
+	nlohmann::json tool;
+	tool["name"] = "voxedit_lua_api";
+	tool["description"] = "Get the Lua API documentation as JSON. This describes all available Lua functions and "
+						  "their parameters for writing generator scripts.";
+	nlohmann::json inputSchema;
+	inputSchema["type"] = "object";
+	inputSchema["properties"] = nlohmann::json::object();
+	tool["inputSchema"] = core::move(inputSchema);
+	tools.emplace_back(core::move(tool));
+}
+
+void McpServer::handleToolsList(const nlohmann::json &request) {
+	Log::info("Received tools list request");
+	nlohmann::json tools = nlohmann::json::array();
+
+	luaApiDocTool(tools);
+	createGeneratorTool(tools);
+	getSceneStateTool(tools);
+	placeVoxelTool(tools);
+	getPaletteTool(tools);
+	findColorTool(tools);
+	commandTools(tools);
+	scriptTools(tools);
+	// TODO: add a tool to change the scene graph transforms and animate a scene
 
 	nlohmann::json result;
-	result["tools"] = tools;
+	result["tools"] = core::move(tools);
 
 	nlohmann::json response;
 	response["jsonrpc"] = "2.0";
 	response["id"] = request.value("id", nlohmann::json());
-	response["result"] = result;
+	response["result"] = core::move(result);
 	sendResponse(response);
 }
 
@@ -655,10 +665,25 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 	}
 
 	if (core::string::startsWith(toolName.c_str(), "voxedit_create_generator")) {
-		const std::string &name = args.value("name", "");
-		const std::string &code = args.value("code", "");
-		bool run = args.value("run", true);
-		const std::string &scriptArgs = args.value("args", "");
+		const core::String name = args.value("name", "").c_str();
+		const core::String code = args.value("code", "").c_str();
+		const bool run = args.value("run", true);
+		const core::String scriptArgs = args.value("args", "").c_str();
+
+		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
+		voxelgenerator::LUAScript script;
+		if (!luaApi.reloadScriptParameters(script, code)) {
+			sendToolResult(id, "Failed to create script: " + luaApi.error(), true);
+			return;
+		}
+		if (!script.valid) {
+			sendToolResult(id, "Failed to create script: detected as invalid", true);
+			return;
+		}
+		if (script.desc.empty()) {
+			sendToolResult(id, "Failed to create script: missing description function", true);
+			return;
+		}
 
 		if (!createLuaScript(name.c_str(), code.c_str())) {
 			sendToolResult(id, "Failed to create script", true);
@@ -678,7 +703,8 @@ void McpServer::handleToolsCall(const nlohmann::json &request) {
 
 	if (core::string::startsWith(toolName.c_str(), "voxedit_lua_api")) {
 		io::BufferedReadWriteStream stream;
-		if (_sceneMgr->luaApi().apiJsonToStream(stream)) {
+		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
+		if (luaApi.apiJsonToStream(stream)) {
 			core::String json((const char *)stream.getBuffer(), (size_t)stream.size());
 			sendToolResult(id, json);
 		} else {
