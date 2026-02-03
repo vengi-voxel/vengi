@@ -25,12 +25,57 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 	return *this;
 }
 
-Command& Command::registerCommand(const core::String &name, FunctionType&& func) {
-	const Command c(name, std::forward<FunctionType>(func));
+Command& Command::registerCommand(const core::String &name) {
+	const Command c(name);
 	core::ScopedLock lock(_lock);
 	core_assert(_cmds.size() < MAX_COMMANDS);
 	_cmds.put(name, c);
 	return (Command&)_cmds.find(name)->value;
+}
+
+Command& Command::addArg(const CommandArg &arg) {
+	_args.push_back(arg);
+	return *this;
+}
+
+core::String Command::usage() const {
+	core::String msg = "Usage: ";
+	msg.append(_name);
+	for (const CommandArg &arg : _args) {
+		msg.append(" ");
+		if (arg.optional) {
+			msg.append("[");
+		} else {
+			msg.append("<");
+		}
+		msg.append(arg.name);
+		if (!arg.defaultVal.empty()) {
+			msg.append(":");
+			msg.append(arg.defaultVal);
+		}
+		if (arg.optional) {
+			msg.append("]");
+		} else {
+			msg.append(">");
+		}
+	}
+	return msg;
+}
+
+bool Command::parseArgs(const core::DynamicArray<core::String>& rawArgs, CommandArgs& out) const {
+	size_t argIdx = 0;
+	for (const CommandArg &argDef : _args) {
+		if (argIdx < rawArgs.size()) {
+			out.set(argDef.name, rawArgs[argIdx]);
+		} else if (!argDef.optional) {
+			// Required argument missing
+			return false;
+		} else if (!argDef.defaultVal.empty()) {
+			out.set(argDef.name, argDef.defaultVal);
+		}
+		++argIdx;
+	}
+	return true;
 }
 
 bool Command::unregisterCommand(const core::String &name) {
@@ -40,17 +85,23 @@ bool Command::unregisterCommand(const core::String &name) {
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button, const core::String &help) {
 	core::ScopedLock lock(_lock);
-	Command cPressed(COMMAND_PRESSED + name, [&] (const command::CmdArgs& args) {
-		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
-		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
+	Command cPressed(COMMAND_PRESSED + name);
+	cPressed.addArg({"key", ArgType::Int, true, "0"});
+	cPressed.addArg({"seconds", ArgType::Float, true, "0.0"});
+	cPressed.setHandler([&] (const CommandArgs& args) {
+		const int32_t key = args.intVal("key", 0);
+		const double seconds = (double)args.floatVal("seconds", 0.0f);
 		button.handleDown(key, seconds);
 	});
 	cPressed.setHelp(help);
 	core_assert(_cmds.size() < MAX_COMMANDS - 1);
 	_cmds.put(cPressed.name(), cPressed);
-	Command cReleased(COMMAND_RELEASED + name, [&] (const command::CmdArgs& args) {
-		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
-		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
+	Command cReleased(COMMAND_RELEASED + name);
+	cReleased.addArg({"key", ArgType::Int, true, "0"});
+	cReleased.addArg({"seconds", ArgType::Float, true, "0.0"});
+	cReleased.setHandler([&] (const CommandArgs& args) {
+		const int32_t key = args.intVal("key", 0);
+		const double seconds = (double)args.floatVal("seconds", 0.0f);
 		button.handleUp(key, seconds);
 	});
 	cReleased.setHelp(help);
@@ -72,6 +123,21 @@ int Command::complete(const core::String& str, core::DynamicArray<core::String>&
 		return 0;
 	}
 	return _completer(str, matches);
+}
+
+int Command::completeArg(int argIndex, const core::String& str, core::DynamicArray<core::String>& matches) const {
+	if (argIndex < 0 || argIndex >= (int)_args.size()) {
+		return 0;
+	}
+	const CommandArg &arg = _args[argIndex];
+	if (arg.completer) {
+		return arg.completer(str, matches);
+	}
+	// Fall back to the command-level completer for the first argument
+	if (argIndex == 0 && _completer) {
+		return _completer(str, matches);
+	}
+	return 0;
 }
 
 int Command::update(double deltaFrameSeconds) {
@@ -162,16 +228,16 @@ int Command::execute(const core::String& command) {
 	return executed;
 }
 
-bool Command::execute(const core::String& command, const CmdArgs& args) {
+bool Command::execute(const core::String& command, const core::DynamicArray<core::String>& rawArgs) {
 	if (command == "wait") {
-		if (args.size() == 1) {
-			_delaySeconds += core_max(1, args[0].toInt());
+		if (rawArgs.size() == 1) {
+			_delaySeconds += core_max(1, rawArgs[0].toInt());
 		} else {
 			_delaySeconds += 1.0;
 		}
 		return true;
 	}
-	if ((command[0] == COMMAND_PRESSED[0] || command[0] == COMMAND_RELEASED[0]) && args.empty()) {
+	if ((command[0] == COMMAND_PRESSED[0] || command[0] == COMMAND_RELEASED[0]) && rawArgs.empty()) {
 		Log::warn("Skip execution of %s - no arguments provided", command.c_str());
 		return false;
 	}
@@ -185,7 +251,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 		}
 		if (_delaySeconds > 0.0) {
 			core::String fullCmd = command;
-			for (const core::String& arg : args) {
+			for (const core::String& arg : rawArgs) {
 				fullCmd.append(" ");
 				fullCmd.append(arg);
 			}
@@ -195,8 +261,18 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 		}
 		cmd = i->second;
 	}
-	Log::trace("execute %s with %i arguments", command.c_str(), (int)args.size());
-	cmd._func(args);
+	Log::trace("execute %s with %i arguments", command.c_str(), (int)rawArgs.size());
+
+	// Parse arguments according to command's argument definitions
+	CommandArgs parsedArgs;
+	if (!cmd.parseArgs(rawArgs, parsedArgs)) {
+		Log::info("%s", cmd.usage().c_str());
+		return false;
+	}
+
+	if (cmd._func) {
+		cmd._func(parsedArgs);
+	}
 	return true;
 }
 

@@ -579,9 +579,10 @@ app::AppState WindowedApp::onConstruct() {
 		return fv > 0.0001f && fv < 1000.0f;
 	});
 
-	command::Command::registerCommand("minimize", [&] (const command::CmdArgs& args) {
-		minimize();
-	}).setHelp(_("Minimize the window"));
+	command::Command::registerCommand("minimize")
+		.setHandler([&] (const command::CommandArgs& args) {
+			minimize();
+		}).setHelp(_("Minimize the window"));
 
 	video::construct();
 

@@ -46,64 +46,70 @@ void Modifier::construct() {
 	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton,
 										   "Execute the modifier action in delete mode");
 
-	command::Command::registerCommand("actioncolorpicker", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::None);
-		setModifierType(ModifierType::ColorPicker);
-	}).setHelp(_("Change the modifier type to 'color picker'"));
+	command::Command::registerCommand("actioncolorpicker")
+		.setHandler([&](const command::CommandArgs &args) {
+			setBrushType(BrushType::None);
+			setModifierType(ModifierType::ColorPicker);
+		}).setHelp(_("Change the modifier type to 'color picker'"));
 
-	command::Command::registerCommand("actionerase", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Erase);
-	}).setHelp(_("Change the modifier type to 'erase'"));
+	command::Command::registerCommand("actionerase")
+		.setHandler([&](const command::CommandArgs &args) {
+			setModifierType(ModifierType::Erase);
+		}).setHelp(_("Change the modifier type to 'erase'"));
 
-	command::Command::registerCommand("actionplace", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Place);
-	}).setHelp(_("Change the modifier type to 'place'"));
+	command::Command::registerCommand("actionplace")
+		.setHandler([&](const command::CommandArgs &args) {
+			setModifierType(ModifierType::Place);
+		}).setHelp(_("Change the modifier type to 'place'"));
 
-	command::Command::registerCommand("actionoverride", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Override);
-	}).setHelp(_("Change the modifier type to 'override'"));
+	command::Command::registerCommand("actionoverride")
+		.setHandler([&](const command::CommandArgs &args) {
+			setModifierType(ModifierType::Override);
+		}).setHelp(_("Change the modifier type to 'override'"));
 
 	for (const Brush *b : _brushes) {
 		const BrushType type = b->type();
 		const core::String hlp = core::String::format(_("Change the brush type to '%s'"), b->name().c_str());
-		command::Command::registerCommand("brush" + b->name().toLower(), [&, type](const command::CmdArgs &args) {
-			setBrushType(type);
-		}).setHelp(hlp);
+		command::Command::registerCommand("brush" + b->name().toLower())
+			.setHandler([&, type](const command::CommandArgs &args) {
+				setBrushType(type);
+			}).setHelp(hlp);
 	}
-	command::Command::registerCommand("brushnone", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::None);
-	}).setHelp(_("Change the brush type to 'none'"));
+	command::Command::registerCommand("brushnone")
+		.setHandler([&](const command::CommandArgs &args) {
+			setBrushType(BrushType::None);
+		}).setHelp(_("Change the brush type to 'none'"));
 
-	command::Command::registerCommand("lock",
-									  [&](const command::CmdArgs &args) {
-										  if (args.size() != 1) {
-											  Log::info("Usage: lock <x|y|z>");
-											  return;
-										  }
-										  const math::Axis axis = math::toAxis(args[0]);
-										  const bool unlock = (_brushContext.lockedAxis & axis) == axis;
-										  setLockedAxis(axis, unlock);
-									  })
+	command::Command::registerCommand("lock")
+		.addArg({"axis", command::ArgType::String, false, "", "Axis to lock: x|y|z"})
+		.setHandler([&](const command::CommandArgs &args) {
+			const math::Axis axis = math::toAxis(args.str("axis"));
+			const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+			setLockedAxis(axis, unlock);
+		})
 		.setHelp(_("Toggle locked mode for the given axis at the current cursor position"))
 		.setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
-	command::Command::registerCommand("lockx", [&](const command::CmdArgs &args) {
-		const math::Axis axis = math::Axis::X;
-		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp(_("Toggle locked mode for the x axis at the current cursor position"));
+	command::Command::registerCommand("lockx")
+		.setHandler([&](const command::CommandArgs &args) {
+			const math::Axis axis = math::Axis::X;
+			const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+			setLockedAxis(axis, unlock);
+		}).setHelp(_("Toggle locked mode for the x axis at the current cursor position"));
 
-	command::Command::registerCommand("locky", [&](const command::CmdArgs &args) {
-		const math::Axis axis = math::Axis::Y;
-		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp(_("Toggle locked mode for the y axis at the current cursor position"));
+	command::Command::registerCommand("locky")
+		.setHandler([&](const command::CommandArgs &args) {
+			const math::Axis axis = math::Axis::Y;
+			const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+			setLockedAxis(axis, unlock);
+		}).setHelp(_("Toggle locked mode for the y axis at the current cursor position"));
 
-	command::Command::registerCommand("lockz", [&](const command::CmdArgs &args) {
-		const math::Axis axis = math::Axis::Z;
-		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp(_("Toggle locked mode for the z axis at the current cursor position"));
+	command::Command::registerCommand("lockz")
+		.setHandler([&](const command::CommandArgs &args) {
+			const math::Axis axis = math::Axis::Z;
+			const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+			setLockedAxis(axis, unlock);
+		}).setHelp(_("Toggle locked mode for the z axis at the current cursor position"));
 
 	for (Brush *b : _brushes) {
 		b->construct();

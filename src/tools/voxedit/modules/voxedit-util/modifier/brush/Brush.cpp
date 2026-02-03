@@ -120,21 +120,25 @@ void Brush::construct() {
 	// mirroraxispaintbrush, setpaintbrushcenter, setpaintbrushsingle, setpaintbrushaabb
 
 	const core::String &cmdName = name().toLower() + "brush";
-	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::X, _referencePosition);
-	}).setHelp(_("Mirror along the x axis at the reference position"));
+	command::Command::registerCommand("mirroraxis" + cmdName + "x")
+		.setHandler([&](const command::CommandArgs &args) {
+			toggleMirrorAxis(math::Axis::X, _referencePosition);
+		}).setHelp(_("Mirror along the x axis at the reference position"));
 
-	command::Command::registerCommand("mirroraxis" + cmdName + "y", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::Y, _referencePosition);
-	}).setHelp(_("Mirror along the y axis at the reference position"));
+	command::Command::registerCommand("mirroraxis" + cmdName + "y")
+		.setHandler([&](const command::CommandArgs &args) {
+			toggleMirrorAxis(math::Axis::Y, _referencePosition);
+		}).setHelp(_("Mirror along the y axis at the reference position"));
 
-	command::Command::registerCommand("mirroraxis" + cmdName + "z", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::Z, _referencePosition);
-	}).setHelp(_("Mirror along the z axis at the reference position"));
+	command::Command::registerCommand("mirroraxis" + cmdName + "z")
+		.setHandler([&](const command::CommandArgs &args) {
+			toggleMirrorAxis(math::Axis::Z, _referencePosition);
+		}).setHelp(_("Mirror along the z axis at the reference position"));
 
-	command::Command::registerCommand("mirroraxis" + cmdName + "none", [&](const command::CmdArgs &args) {
-		setMirrorAxis(math::Axis::None, _referencePosition);
-	}).setHelp(_("Disable mirror axis"));
+	command::Command::registerCommand("mirroraxis" + cmdName + "none")
+		.setHandler([&](const command::CommandArgs &args) {
+			setMirrorAxis(math::Axis::None, _referencePosition);
+		}).setHelp(_("Disable mirror axis"));
 }
 
 bool Brush::init() {

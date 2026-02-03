@@ -15,14 +15,12 @@ namespace voxedit {
 
 void TextBrush::construct() {
 	Super::construct();
-	command::Command::registerCommand("textbrushaxis", [this](const command::CmdArgs &args) {
-		if (args.size() < 1) {
-			Log::info("Usage: textbrushaxis <x|y|z>");
-			return;
-		}
-		_axis = math::toAxis(args[0]);
-		markDirty();
-	}).setHelp(_("Change the text brush axis"));
+	command::Command::registerCommand("textbrushaxis")
+		.addArg({"axis", command::ArgType::String, false, "", "Text brush axis: x|y|z"})
+		.setHandler([this](const command::CommandArgs &args) {
+			_axis = math::toAxis(args.str("axis"));
+			markDirty();
+		}).setHelp(_("Change the text brush axis"));
 }
 
 voxel::Region TextBrush::calcRegion(const BrushContext &ctx) const {

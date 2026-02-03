@@ -126,72 +126,77 @@ bool KeyBindingHandler::executeCommands(int32_t key, int16_t modifier, double no
 }
 
 void KeyBindingHandler::construct() {
-	command::Command::registerCommand("bindlist", [this] (const command::CmdArgs& args) {
-		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
-			const CommandModifierPair& pair = i->second;
-			const core::String& command = pair.command;
-			const core::String& keyBinding = toString(i->first, i->second.modifier, pair.count);
-			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
-		}
-	}).setHelp(_("Show all known key bindings"));
+	command::Command::registerCommand("bindlist")
+		.setHandler([this] (const command::CommandArgs& args) {
+			for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
+				const CommandModifierPair& pair = i->second;
+				const core::String& command = pair.command;
+				const core::String& keyBinding = toString(i->first, i->second.modifier, pair.count);
+				Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
+			}
+		}).setHelp(_("Show all known key bindings"));
 
-	command::Command::registerCommand("bind", [this] (const command::CmdArgs& args) {
-		if (args.size() != 3) {
-			Log::error("Expected parameters: key+modifier command context - got %i parameters", (int)args.size());
-			return;
-		}
+	command::Command::registerCommand("bind")
+		.addArg({"key", command::ArgType::String, false, "", "Key+modifier combination"})
+		.addArg({"command", command::ArgType::String, false, "", "Command to execute"})
+		.addArg({"context", command::ArgType::String, false, "", "Context for the binding"})
+		.setHandler([this] (const command::CommandArgs& args) {
+			const core::String &key = args.str("key");
+			const core::String &command = args.str("command");
+			const core::String &context = args.str("context");
 
-		KeybindingParser p(args[0], args[1], args[2]);
-		const BindMap& bindings = p.getBindings();
-		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-			const uint32_t key = i->first;
-			const CommandModifierPair& pair = i->second;
-			auto range = _bindings.equal_range(key);
-			bool found = false;
-			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second.modifier == pair.modifier) {
-					it->second.command = pair.command;
-					found = true;
-					Log::info("Updated binding for key %s", args[0].c_str());
-					break;
+			KeybindingParser p(key, command, context);
+			const BindMap& bindings = p.getBindings();
+			for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+				const uint32_t keyCode = i->first;
+				const CommandModifierPair& pair = i->second;
+				auto range = _bindings.equal_range(keyCode);
+				bool found = false;
+				for (auto it = range.first; it != range.second; ++it) {
+					if (it->second.modifier == pair.modifier) {
+						it->second.command = pair.command;
+						found = true;
+						Log::info("Updated binding for key %s", key.c_str());
+						break;
+					}
+				}
+				if (!found) {
+					_bindings.insert(std::make_pair(keyCode, pair));
+					Log::info("Added binding for key %s", key.c_str());
 				}
 			}
-			if (!found) {
-				_bindings.insert(std::make_pair(key, pair));
-				Log::info("Added binding for key %s", args[0].c_str());
+		}).setHelp(_("Bind a command to a key"));
+
+	command::Command::registerCommand("unbind")
+		.addArg({"key", command::ArgType::String, false, "", "Key+modifier combination"})
+		.addArg({"context", command::ArgType::String, false, "", "Context for the binding"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &key = args.str("key");
+			const core::String &context = args.str("context");
+
+			KeybindingParser p(key, "unbind", context);
+			const BindMap &bindings = p.getBindings();
+			if (bindings.empty()) {
+				Log::info("Failed to delete binding for key '%s' in context '%s'", key.c_str(), context.c_str());
 			}
-		}
-	}).setHelp(_("Bind a command to a key"));
-
-	command::Command::registerCommand("unbind", [this](const command::CmdArgs &args) {
-		if (args.size() != 2) {
-			Log::error("Expected parameters: key+modifier context - got %i parameters", (int)args.size());
-			return;
-		}
-
-		KeybindingParser p(args[0], "unbind", args[1]);
-		const BindMap &bindings = p.getBindings();
-		if (bindings.empty()) {
-			Log::info("Failed to delete binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
-		}
-		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-			const uint32_t key = i->first;
-			const CommandModifierPair &pair = i->second;
-			auto range = _bindings.equal_range(key);
-			bool found = false;
-			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second.modifier == pair.modifier && (it->second.context & pair.context) != 0u) {
-					_bindings.erase(it);
-					found = true;
-					Log::info("Removed binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
-					break;
+			for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+				const uint32_t keyCode = i->first;
+				const CommandModifierPair &pair = i->second;
+				auto range = _bindings.equal_range(keyCode);
+				bool found = false;
+				for (auto it = range.first; it != range.second; ++it) {
+					if (it->second.modifier == pair.modifier && (it->second.context & pair.context) != 0u) {
+						_bindings.erase(it);
+						found = true;
+						Log::info("Removed binding for key '%s' in context '%s'", key.c_str(), context.c_str());
+						break;
+					}
+				}
+				if (!found) {
+					Log::info("Failed to delete binding for key '%s' in context '%s'", key.c_str(), context.c_str());
 				}
 			}
-			if (!found) {
-				Log::info("Failed to delete binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
-			}
-		}
-	}).setHelp(_("Unbind a key"));
+		}).setHelp(_("Unbind a key"));
 }
 
 void KeyBindingHandler::saveKeybindings(int version) {

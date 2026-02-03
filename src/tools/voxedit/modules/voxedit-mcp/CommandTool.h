@@ -8,6 +8,7 @@ namespace voxedit {
 class CommandTool : public Tool {
 private:
 	core::String _cmdName;
+	voxedit::CommandInfo _info;
 
 public:
 	static core::String toolName(const voxedit::CommandInfo &info);

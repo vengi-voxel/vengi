@@ -18,9 +18,10 @@ void ShapeBrush::construct() {
 	for (int type = ShapeType::Min; type < ShapeType::Max; ++type) {
 		const core::String &typeStr = core::String::lower(ShapeTypeStr[type]);
 		const core::String &cmd = "shape" + typeStr;
-		command::Command::registerCommand(cmd.c_str(), [&, type](const command::CmdArgs &args) {
-			setShapeType((ShapeType)type);
-		}).setHelp(_("Change the modifier shape type"));
+		command::Command::registerCommand(cmd.c_str())
+			.setHandler([&, type](const command::CommandArgs &args) {
+				setShapeType((ShapeType)type);
+			}).setHelp(_("Change the modifier shape type"));
 	}
 }
 

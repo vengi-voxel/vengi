@@ -31,63 +31,66 @@ namespace voxedit {
 
 void StampBrush::construct() {
 	Super::construct();
-	command::Command::registerCommand("togglestampbrushcenter", [this](const command::CmdArgs &args) {
-		_center ^= true;
-	}).setHelp(_("Toggle center at cursor"));
+	command::Command::registerCommand("togglestampbrushcenter")
+		.setHandler([this](const command::CommandArgs &args) {
+			_center ^= true;
+		}).setHelp(_("Toggle center at cursor"));
 
-	command::Command::registerCommand("togglestampbrushcontinuous", [this](const command::CmdArgs &args) {
-		_continuous ^= true;
-	}).setHelp(_("Toggle continuously placing the stamp voxels"));
+	command::Command::registerCommand("togglestampbrushcontinuous")
+		.setHandler([this](const command::CommandArgs &args) {
+			_continuous ^= true;
+		}).setHelp(_("Toggle continuously placing the stamp voxels"));
 
-	command::Command::registerCommand("stampbrushrotate", [this](const command::CmdArgs &args) {
-		if (args.size() < 1) {
-			Log::info("Usage: stampbrushrotate <x|y|z>");
-			return;
-		}
-		const math::Axis axis = math::toAxis(args[0]);
-		_volume = voxelutil::rotateAxis(_volume, axis);
-		_volume->translate(-_volume->region().getLowerCorner());
-		markDirty();
-	}).setHelp(_("Rotate stamp volume around the given axis by 90 degrees"));
+	command::Command::registerCommand("stampbrushrotate")
+		.addArg({"axis", command::ArgType::String, false, "", "Axis to rotate: x|y|z"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const math::Axis axis = math::toAxis(args.str("axis"));
+			_volume = voxelutil::rotateAxis(_volume, axis);
+			_volume->translate(-_volume->region().getLowerCorner());
+			markDirty();
+		}).setHelp(_("Rotate stamp volume around the given axis by 90 degrees"));
 
-	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
-		const int nodeId = _sceneMgr->sceneGraph().activeNode();
-		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
-		if (!node) {
-			return;
-		}
-		if (!node->hasSelection()) {
-			Log::warn("There's no selection to use as stamp");
-			return;
-		}
-		// Copy only selected voxels to the stamp volume using Clipboard::copy
-		voxel::ClipboardData clipboardData = voxedit::tool::copy(*node);
-		if (!clipboardData) {
-			Log::warn("Failed to copy selection to stamp");
-			return;
-		}
-		setVolume(*clipboardData.volume, node->palette());
-		// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
-		// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
-		command::executeCommands("select none");
-	}).setHelp(_("Use the current selection as new stamp"));
+	command::Command::registerCommand("stampbrushuseselection")
+		.setHandler([this](const command::CommandArgs &) {
+			const int nodeId = _sceneMgr->sceneGraph().activeNode();
+			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
+			if (!node) {
+				return;
+			}
+			if (!node->hasSelection()) {
+				Log::warn("There's no selection to use as stamp");
+				return;
+			}
+			// Copy only selected voxels to the stamp volume using Clipboard::copy
+			voxel::ClipboardData clipboardData = voxedit::tool::copy(*node);
+			if (!clipboardData) {
+				Log::warn("Failed to copy selection to stamp");
+				return;
+			}
+			setVolume(*clipboardData.volume, node->palette());
+			// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
+			// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
+			command::executeCommands("select none");
+		}).setHelp(_("Use the current selection as new stamp"));
 
-	command::Command::registerCommand("stampbrushusenode", [this](const command::CmdArgs &) {
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
-		if (node == nullptr) {
-			Log::warn("No active model node to use as stamp");
-			return;
-		}
-		setVolume(*node->volume(), node->palette());
-	}).setHelp(_("Use the current selected node volume as new stamp"));
+	command::Command::registerCommand("stampbrushusenode")
+		.setHandler([this](const command::CommandArgs &) {
+			const int activeNode = _sceneMgr->sceneGraph().activeNode();
+			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+			if (node == nullptr) {
+				Log::warn("No active model node to use as stamp");
+				return;
+			}
+			setVolume(*node->volume(), node->palette());
+		}).setHelp(_("Use the current selected node volume as new stamp"));
 
-	command::Command::registerCommand("stampbrushpaste", [this](const command::CmdArgs &) {
-		const voxel::ClipboardData &clipBoard = _sceneMgr->clipboardData();
-		if (clipBoard) {
-			setVolume(*clipBoard.volume, *clipBoard.palette);
-		}
-	}).setHelp(_("Paste the current clipboard content as stamp"));
+	command::Command::registerCommand("stampbrushpaste")
+		.setHandler([this](const command::CommandArgs &) {
+			const voxel::ClipboardData &clipBoard = _sceneMgr->clipboardData();
+			if (clipBoard) {
+				setVolume(*clipBoard.volume, *clipBoard.palette);
+			}
+		}).setHelp(_("Paste the current clipboard content as stamp"));
 
 	_maxVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSizePreview);
 }

@@ -248,9 +248,10 @@ app::AppState IMGUIApp::onConstruct() {
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 	_lastOpenedFile = core::Var::get(cfg::UIFileDialogLastFile, "");
 
-	command::Command::registerCommand("ui_showtextures",
-									  [&](const command::CmdArgs &args) { _showTexturesDialog = true; });
-	command::Command::registerCommand("ui_close", [&](const command::CmdArgs &args) { _closeModalPopup = true; });
+	command::Command::registerCommand("ui_showtextures")
+		.setHandler([&](const command::CommandArgs &args) { _showTexturesDialog = true; });
+	command::Command::registerCommand("ui_close")
+		.setHandler([&](const command::CommandArgs &args) { _closeModalPopup = true; });
 
 	return state;
 }

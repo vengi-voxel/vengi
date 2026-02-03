@@ -14,9 +14,10 @@ namespace voxedit {
 void LineBrush::construct() {
 	Super::construct();
 	const core::String &cmdName = name().toLower() + "brush";
-	command::Command::registerCommand("toggle" + cmdName + "continuous", [&](const command::CmdArgs &args) {
-		setContinuous(!continuous());
-	}).setHelp(_("Change the modifier shape type"));
+	command::Command::registerCommand("toggle" + cmdName + "continuous")
+		.setHandler([&](const command::CommandArgs &args) {
+			setContinuous(!continuous());
+		}).setHelp(_("Change the modifier shape type"));
 }
 
 void LineBrush::reset() {

@@ -112,117 +112,143 @@ app::AppState VoxEdit::onConstruct() {
 	_collectionMgr->construct();
 	_texturePool->construct();
 
-	command::Command::registerCommand("screenshot", [this](const command::CmdArgs &args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		core::String viewportId = args.empty() ? "" : args[0];
-		if (args.size() <= 1) {
-			const core::String filename = _sceneMgr->getSuggestedFilename(io::format::png().mainExtension(false));
-			saveDialog([this, viewportId] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(file, viewportId); }, voxelui::FileDialogOptions::build(_paletteCache, false), io::format::images(), filename);
-			return;
-		}
-		_mainWindow->saveScreenshot(args[1], viewportId);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current viewport as screenshot"));
-
-	command::Command::registerCommand("togglescene", [this](const command::CmdArgs &args) {
-		toggleScene();
-	}).setHelp(_("Toggle scene mode on/off"));
-
-	command::Command::registerCommand("save", [this](const command::CmdArgs &args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		if (args.empty()) {
-			const core::String filename = _sceneMgr->getSuggestedFilename();
-			if (filename.empty()) {
-				saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelSave(), "scene.vengi");
-			} else {
-				_mainWindow->save(filename, nullptr);
-			}
-			return;
-		}
-		_mainWindow->save(args[0], nullptr);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
-
-	command::Command::registerCommand("saveas", [this](const command::CmdArgs &args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		const core::String &filename = _sceneMgr->getSuggestedFilename();
-		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelSave(), filename);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
-
-	command::Command::registerCommand("exportselection", [&] (const command::CmdArgs& args) {
-		static auto func = [this] (const core::String &file, const io::FormatDescription *desc) {
-			io::FileDescription fd;
-			fd.set(file, desc);
-			_sceneMgr->saveSelection(fd);
-		};
-		saveDialog(func, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelSave());
-	}).setHelp(_("Save the selection from the current active model node"));
-
-	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->load(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelLoad());
-			return;
-		}
-		_mainWindow->load(args[0], nullptr);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Load a scene from the given volume file"));
-
-	command::Command::registerCommand("import", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			openDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->import(file); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelLoad());
-			return;
-		}
-		_sceneMgr->import(args[0]);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Add a volume to the existing scene from the given file"));
-
-	command::Command::registerCommand("importdirectory", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			directoryDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importDirectory(file); }, voxelui::FileDialogOptions::build(_paletteCache, false));
-			return;
-		}
-		const io::FormatDescription* format = nullptr;
-		if (args.size() == 2) {
-			for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-				if (desc->matchesExtension(args[1])) {
-					format = desc;
-					break;
-				}
-			}
-			if (format == nullptr) {
-				Log::error("Could not find a supported format for %s", args[1].c_str());
+	command::Command::registerCommand("screenshot")
+		.addArg({"viewport", command::ArgType::String, true, "", "Viewport ID"})
+		.addArg({"file", command::ArgType::String, true, "", "Output file path"})
+		.setHandler([this](const command::CommandArgs &args) {
+			if (_mainWindow == nullptr) {
 				return;
 			}
-		}
-		_sceneMgr->importDirectory(args[0], format);
-	}).setHelp(_("Import all files from a given directory")).setArgumentCompleter(command::dirCompleter(_filesystem, _lastDirectory));
+			const core::String &viewportId = args.str("viewport");
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				const core::String filename = _sceneMgr->getSuggestedFilename(io::format::png().mainExtension(false));
+				saveDialog([this, viewportId] (const core::String &f, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(f, viewportId); }, voxelui::FileDialogOptions::build(_paletteCache, false), io::format::images(), filename);
+				return;
+			}
+			_mainWindow->saveScreenshot(file, viewportId);
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current viewport as screenshot"));
 
-	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { importPalette(file); }, voxelui::FileDialogOptions::build(_paletteCache, true), &_paletteFormats[0]);
-			return;
-		}
-		importPalette(args[0]);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
+	command::Command::registerCommand("togglescene")
+		.setHandler([this](const command::CommandArgs &args) {
+			toggleScene();
+		}).setHelp(_("Toggle scene mode on/off"));
 
-	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {
-		if (_mainWindow == nullptr) {
-			return false;
-		}
-		return _mainWindow->createNew(false);
-	}).setHelp(_("Create a new scene with ui interaction"));
+	command::Command::registerCommand("save")
+		.addArg({"file", command::ArgType::String, true, "", "Output file path"})
+		.setHandler([this](const command::CommandArgs &args) {
+			if (_mainWindow == nullptr) {
+				return;
+			}
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				const core::String filename = _sceneMgr->getSuggestedFilename();
+				if (filename.empty()) {
+					saveDialog([this] (const core::String &f, const io::FormatDescription *desc) {_mainWindow->save(f, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelSave(), "scene.vengi");
+				} else {
+					_mainWindow->save(filename, nullptr);
+				}
+				return;
+			}
+			_mainWindow->save(file, nullptr);
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
 
-	command::Command::registerCommand("resetcamera", [this] (const command::CmdArgs& args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		_mainWindow->resetCamera();
-	}).setHelp(_("Reset cameras in viewports"));
+	command::Command::registerCommand("saveas")
+		.setHandler([this](const command::CommandArgs &args) {
+			if (_mainWindow == nullptr) {
+				return;
+			}
+			const core::String &filename = _sceneMgr->getSuggestedFilename();
+			saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelSave(), filename);
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
+
+	command::Command::registerCommand("exportselection")
+		.setHandler([&] (const command::CommandArgs& args) {
+			static auto func = [this] (const core::String &file, const io::FormatDescription *desc) {
+				io::FileDescription fd;
+				fd.set(file, desc);
+				_sceneMgr->saveSelection(fd);
+			};
+			saveDialog(func, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelSave());
+		}).setHelp(_("Save the selection from the current active model node"));
+
+	command::Command::registerCommand("load")
+		.addArg({"file", command::ArgType::String, true, "", "File to load"})
+		.setHandler([this](const command::CommandArgs &args) {
+			if (_mainWindow == nullptr) {
+				return;
+			}
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				openDialog([this] (const core::String &f, const io::FormatDescription *desc) {_mainWindow->load(f, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelLoad());
+				return;
+			}
+			_mainWindow->load(file, nullptr);
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Load a scene from the given volume file"));
+
+	command::Command::registerCommand("import")
+		.addArg({"file", command::ArgType::String, true, "", "File to import"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				openDialog([this](const core::String &f, const io::FormatDescription *desc) { _sceneMgr->import(f); }, voxelui::FileDialogOptions::build(_paletteCache, false), voxelformat::voxelLoad());
+				return;
+			}
+			_sceneMgr->import(file);
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Add a volume to the existing scene from the given file"));
+
+	command::Command::registerCommand("importdirectory")
+		.addArg({"directory", command::ArgType::String, true, "", "Directory to import from"})
+		.addArg({"extension", command::ArgType::String, true, "", "File extension filter"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &directory = args.str("directory");
+			const core::String &extension = args.str("extension");
+			if (directory.empty()) {
+				directoryDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importDirectory(file); }, voxelui::FileDialogOptions::build(_paletteCache, false));
+				return;
+			}
+			const io::FormatDescription* format = nullptr;
+			if (!extension.empty()) {
+				for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+					if (desc->matchesExtension(extension)) {
+						format = desc;
+						break;
+					}
+				}
+				if (format == nullptr) {
+					Log::error("Could not find a supported format for %s", extension.c_str());
+					return;
+				}
+			}
+			_sceneMgr->importDirectory(directory, format);
+		}).setHelp(_("Import all files from a given directory")).setArgumentCompleter(command::dirCompleter(_filesystem, _lastDirectory));
+
+	command::Command::registerCommand("importpalette")
+		.addArg({"file", command::ArgType::String, true, "", "Palette file to import"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				openDialog([this] (const core::String &f, const io::FormatDescription *desc) { importPalette(f); }, voxelui::FileDialogOptions::build(_paletteCache, true), &_paletteFormats[0]);
+				return;
+			}
+			importPalette(file);
+		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
+
+	command::Command::registerCommand("new")
+		.setHandler([this] (const command::CommandArgs& args) {
+			if (_mainWindow == nullptr) {
+				return;
+			}
+			_mainWindow->createNew(false);
+		}).setHelp(_("Create a new scene with ui interaction"));
+
+	command::Command::registerCommand("resetcamera")
+		.setHandler([this] (const command::CommandArgs& args) {
+			if (_mainWindow == nullptr) {
+				return;
+			}
+			_mainWindow->resetCamera();
+		}).setHelp(_("Reset cameras in viewports"));
 
 	return state;
 }

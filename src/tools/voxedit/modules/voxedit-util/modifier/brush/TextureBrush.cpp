@@ -78,18 +78,21 @@ bool TextureBrush::projectOntoSurface() const {
 void TextureBrush::construct() {
 	Super::construct();
 
-	command::Command::registerCommand("texturebrushmirroru", [&](const command::CmdArgs &args) {
-		core::exchange(_uv0.x, _uv1.x);
-	}).setHelp(_("Mirror the uv coordinates along the u axis"));
+	command::Command::registerCommand("texturebrushmirroru")
+		.setHandler([&](const command::CommandArgs &args) {
+			core::exchange(_uv0.x, _uv1.x);
+		}).setHelp(_("Mirror the uv coordinates along the u axis"));
 
-	command::Command::registerCommand("texturebrushmirrorv", [&](const command::CmdArgs &args) {
-		core::exchange(_uv0.y, _uv1.y);
-	}).setHelp(_("Mirror the uv coordinates along the v axis"));
+	command::Command::registerCommand("texturebrushmirrorv")
+		.setHandler([&](const command::CommandArgs &args) {
+			core::exchange(_uv0.y, _uv1.y);
+		}).setHelp(_("Mirror the uv coordinates along the v axis"));
 
-	command::Command::registerCommand("texturebrushresetuv", [&](const command::CmdArgs &args) {
-		_uv0 = glm::vec2(0.0f);
-		_uv1 = glm::vec2(1.0f);
-	}).setHelp(_("Reset the uv coordinates"));
+	command::Command::registerCommand("texturebrushresetuv")
+		.setHandler([&](const command::CommandArgs &args) {
+			_uv0 = glm::vec2(0.0f);
+			_uv1 = glm::vec2(1.0f);
+		}).setHelp(_("Reset the uv coordinates"));
 }
 
 void TextureBrush::shutdown() {

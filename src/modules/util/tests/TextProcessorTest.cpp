@@ -12,9 +12,9 @@ class TextProcessorTest : public app::AbstractTest {
 public:
 	virtual void SetUp() override {
 		core::Var::get("testReplaceCvar", "value");
-		command::Command::registerCommand("testReplaceCmd", [](const core::DynamicArray<core::String> &) {
-			return true;
-		}).setHelp("help for cmd");
+		command::Command::registerCommand("testReplaceCmd")
+			.setHandler([](const command::CommandArgs &) {
+			}).setHelp("help for cmd");
 	}
 
 	virtual void TearDown() override {

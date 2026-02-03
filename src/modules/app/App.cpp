@@ -718,38 +718,41 @@ AppState App::onConstruct() {
 	core::Var::get(cfg::MetricFlavor, "");
 	Log::init();
 
-	command::Command::registerCommand("i18nlist", [&](const command::CmdArgs &args) {
-		_dict->foreach([](const core::String &key, const Dictionary::Entries::value_type &value) {
-			for (const core::String &v : value) {
-				Log::info("%s = %s", key.c_str(), v.c_str());
-			}
-		});
-	}).setHelp(_("List all available translated strings"));
+	command::Command::registerCommand("i18nlist")
+		.setHandler([&](const command::CommandArgs &args) {
+			_dict->foreach([](const core::String &key, const Dictionary::Entries::value_type &value) {
+				for (const core::String &v : value) {
+					Log::info("%s = %s", key.c_str(), v.c_str());
+				}
+			});
+		}).setHelp(_("List all available translated strings"));
 
-	command::Command::registerCommand("set", [](const command::CmdArgs &args) {
-		if (args.size() < 2) {
-			Log::info("usage: set <name> <value>");
-			return;
-		}
-		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
-	}).setHelp(_("Set a variable value"));
+	command::Command::registerCommand("set")
+		.addArg({"name", command::ArgType::String, false, "", "Variable name"})
+		.addArg({"value", command::ArgType::String, false, "", "Variable value"})
+		.setHandler([](const command::CommandArgs &args) {
+			const core::String &name = args.str("name");
+			const core::String &value = args.str("value");
+			core::Var::get(name, "")->setVal(value);
+		}).setHelp(_("Set a variable value"));
 
-	command::Command::registerCommand("clear", [](const command::CmdArgs &args) {
-		if (args.size() < 1) {
-			Log::info("usage: reset <name>");
-			return;
-		}
-		core::Var::get(args[0], "")->setVal("");
-	}).setHelp(_("Clear the variable value"));
+	command::Command::registerCommand("clear")
+		.addArg({"name", command::ArgType::String, false, "", "Variable name"})
+		.setHandler([](const command::CommandArgs &args) {
+			const core::String &name = args.str("name");
+			core::Var::get(name, "")->setVal("");
+		}).setHelp(_("Clear the variable value"));
 
-	command::Command::registerCommand("quit", [&](const command::CmdArgs &args) {
-		requestQuit();
-	}).setHelp(_("Quit the application"));
+	command::Command::registerCommand("quit")
+		.setHandler([&](const command::CommandArgs &args) {
+			requestQuit();
+		}).setHelp(_("Quit the application"));
 
 #ifdef DEBUG
-	command::Command::registerCommand("assert", [&](const command::CmdArgs &args) {
-		core_assert_msg(false, "assert triggered");
-	}).setHelp(_("Trigger an assert"));
+	command::Command::registerCommand("assert")
+		.setHandler([&](const command::CommandArgs &args) {
+			core_assert_msg(false, "assert triggered");
+		}).setHelp(_("Trigger an assert"));
 #endif
 
 	AppCommand::init(_timeProvider);

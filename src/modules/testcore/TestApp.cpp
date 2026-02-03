@@ -40,19 +40,23 @@ app::AppState TestApp::onConstruct() {
 
 	_movement.construct();
 
-	command::Command::registerCommand("+cam_freelook", [this] (const command::CmdArgs& args) {
-		Log::info("target lock: %s", args[0].c_str());
-		if (args[0] == "true") {
-			camera().setRotationType(video::CameraRotationType::Target);
-			camera().setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
-			return;
-		}
-		camera().setRotationType(video::CameraRotationType::Eye);
-	}).setHelp(_("Camera free look on toggle"));
+	command::Command::registerCommand("+cam_freelook")
+		.addArg({"enabled", command::ArgType::String, true, "true", "Enable or disable target lock"})
+		.setHandler([this] (const command::CommandArgs& args) {
+			const core::String &enabled = args.str("enabled", "true");
+			Log::info("target lock: %s", enabled.c_str());
+			if (enabled == "true") {
+				camera().setRotationType(video::CameraRotationType::Target);
+				camera().setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
+				return;
+			}
+			camera().setRotationType(video::CameraRotationType::Eye);
+		}).setHelp(_("Camera free look on toggle"));
 
-	command::Command::registerCommand("togglerelativemouse", [&] (const command::CmdArgs& args) {
-		_cameraMotion ^= true;
-	}).setHelp(_("Toggle relative mouse rotation mode"));
+	command::Command::registerCommand("togglerelativemouse")
+		.setHandler([&] (const command::CommandArgs& args) {
+			_cameraMotion ^= true;
+		}).setHelp(_("Toggle relative mouse rotation mode"));
 
 	return state;
 }

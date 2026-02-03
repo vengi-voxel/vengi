@@ -21,21 +21,25 @@ void AABBBrush::construct() {
 	Super::construct();
 	// TODO: BRUSH: some aabb brushes don't support center or single mode (e.g. the plane brush)
 	const core::String &cmdName = name().toLower() + "brush";
-	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
-		setCenterMode();
-	}).setHelp(_("Set center plane building"));
+	command::Command::registerCommand("set" + cmdName + "center")
+		.setHandler([this](const command::CommandArgs &args) {
+			setCenterMode();
+		}).setHelp(_("Set center plane building"));
 
-	command::Command::registerCommand("set" + cmdName + "aabb", [this](const command::CmdArgs &args) {
-		setAABBMode();
-	}).setHelp(_("Set default aabb voxel building mode"));
+	command::Command::registerCommand("set" + cmdName + "aabb")
+		.setHandler([this](const command::CommandArgs &args) {
+			setAABBMode();
+		}).setHelp(_("Set default aabb voxel building mode"));
 
-	command::Command::registerCommand("set" + cmdName + "single", [this](const command::CmdArgs &args) {
-		setSingleMode();
-	}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button"));
+	command::Command::registerCommand("set" + cmdName + "single")
+		.setHandler([this](const command::CommandArgs &args) {
+			setSingleMode();
+		}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button"));
 
-	command::Command::registerCommand("set" + cmdName + "singlemove", [this](const command::CmdArgs &args) {
-		setSingleModeMove();
-	}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button - but don't overwrite the last voxel"));
+	command::Command::registerCommand("set" + cmdName + "singlemove")
+		.setHandler([this](const command::CommandArgs &args) {
+			setSingleModeMove();
+		}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button - but don't overwrite the last voxel"));
 }
 
 void AABBBrush::reset() {

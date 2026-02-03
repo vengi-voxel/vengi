@@ -27,11 +27,14 @@ TEST_F(CommandHandlerTest, testExecuteCommandline) {
 
 TEST_F(CommandHandlerTest, testExecuteCommandsQuoteWhitespace) {
 	core::String parameter;
-	command::Command::registerCommand("testquitewhitespace", [&](const command::CmdArgs &args) {
-		if (args.size() == 1) {
-			parameter = args[0];
-		}
-	});
+	command::Command::registerCommand("testquitewhitespace")
+		.addArg({"param", ArgType::String, true, ""})
+		.setHandler([&](const CommandArgs &args) {
+			const core::String &param = args.str("param");
+			if (!param.empty()) {
+				parameter = param;
+			}
+		});
 
 	EXPECT_EQ(-1, command::executeCommands("testquitewhitespace \"foobar barfoo\";nocommand"));
 	EXPECT_STREQ("foobar barfoo", parameter.c_str());

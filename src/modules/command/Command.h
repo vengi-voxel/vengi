@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Common.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/DynamicArray.h"
@@ -14,9 +15,112 @@
 
 namespace command {
 
-typedef core::DynamicArray<core::String> CmdArgs;
 #define COMMAND_PRESSED "+"
 #define COMMAND_RELEASED "-"
+
+/**
+ * @brief Argument types for command parameters
+ */
+enum class ArgType : uint8_t {
+	String,
+	Int,
+	Float,
+	Bool
+};
+
+class Command;
+
+/**
+ * @brief Completion function type for individual arguments
+ */
+typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
+
+/**
+ * @brief Definition of a single command argument
+ */
+struct CommandArg {
+	core::String name;
+	core::String description;
+	core::String defaultVal;
+	ArgType type = ArgType::String;
+	bool optional = false;
+	ArgCompleterFunc completer;
+
+	CommandArg() = default;
+	CommandArg(const core::String &n, ArgType t = ArgType::String, bool opt = false,
+			   const core::String &def = "", const core::String &desc = "")
+		: name(n), description(desc), defaultVal(def), type(t), optional(opt) {
+	}
+};
+
+/**
+ * @brief Parsed command arguments with named access
+ */
+class CommandArgs {
+private:
+	core::StringMap<core::String> _values;
+
+public:
+	CommandArgs() = default;
+
+	void set(const core::String &name, const core::String &value) {
+		_values.put(name, value);
+	}
+
+	bool has(const core::String &name) const {
+		return _values.find(name) != _values.end();
+	}
+
+	const core::String &str(const core::String &name) const {
+		static const core::String empty;
+		auto iter = _values.find(name);
+		if (iter == _values.end()) {
+			return empty;
+		}
+		return iter->value;
+	}
+
+	core::String str(const core::String &name, const core::String &defaultVal) const {
+		auto iter = _values.find(name);
+		if (iter == _values.end()) {
+			return defaultVal;
+		}
+		return iter->value;
+	}
+
+	int intVal(const core::String &name, int defaultVal = 0) const {
+		auto iter = _values.find(name);
+		if (iter == _values.end()) {
+			return defaultVal;
+		}
+		return iter->value.toInt();
+	}
+
+	float floatVal(const core::String &name, float defaultVal = 0.0f) const {
+		auto iter = _values.find(name);
+		if (iter == _values.end()) {
+			return defaultVal;
+		}
+		return core::string::toFloat(iter->value);
+	}
+
+	bool boolVal(const core::String &name, bool defaultVal = false) const {
+		auto iter = _values.find(name);
+		if (iter == _values.end()) {
+			return defaultVal;
+		}
+		const core::String &val = iter->value;
+		return val == "true" || val == "1" || val == "yes" || val == "on";
+	}
+
+	size_t size() const {
+		return _values.size();
+	}
+
+	bool empty() const {
+		return _values.empty();
+	}
+};
 
 struct ActionButtonCommands {
 	const core::String first;
@@ -38,7 +142,7 @@ struct ActionButtonCommands {
 class Command {
 private:
 	typedef core::StringMap<Command> CommandMap;
-	typedef std::function<void(const CmdArgs&)> FunctionType;
+	typedef std::function<void(const CommandArgs&)> FunctionType;
 
 	static CommandMap _cmds core_thread_guarded_by(_lock);
 	static core::Lock _lock;
@@ -51,6 +155,7 @@ private:
 	core::String _name;
 	core::String _help;
 	FunctionType _func;
+	core::DynamicArray<CommandArg> _args;
 	typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
@@ -58,18 +163,48 @@ private:
 		_func() {
 	}
 
-	Command(const core::String& name, FunctionType&& func) :
-		_name(name), _func(core::move(func)) {
+	Command(const core::String& name) :
+		_name(name), _func() {
 	}
 
 	static void updateSortedList();
 
+	/**
+	 * @brief Generate usage message based on argument definitions
+	 */
+	core::String usage() const;
+
+	/**
+	 * @brief Parse raw arguments into CommandArgs based on definitions
+	 * @return true if parsing succeeded (all required args present), false otherwise
+	 */
+	bool parseArgs(const core::DynamicArray<core::String>& rawArgs, CommandArgs& out) const;
+
 public:
-	static Command& registerCommand(const core::String &name, std::function<void(void)>& func) {
-		return registerCommand(name, FunctionType([&] (const CmdArgs&) {func();}));
-	}
-	static Command& registerCommand(const core::String &name, FunctionType&& func);
+	/**
+	 * @brief Register a new command with the given name
+	 * @return Reference to the command for chaining
+	 */
+	static Command& registerCommand(const core::String &name);
 	static bool unregisterCommand(const core::String &name);
+
+	/**
+	 * @brief Add an argument definition to this command
+	 * @param arg The argument definition
+	 * @return Reference to this command for chaining
+	 */
+	Command& addArg(const CommandArg &arg);
+
+	/**
+	 * @brief Set the handler function for this command
+	 * @param func The function to execute when the command is invoked
+	 * @return Reference to this command for chaining
+	 */
+	template<class Functor>
+	Command& setHandler(Functor&& func) {
+		_func = std::forward<Functor>(func);
+		return *this;
+	}
 
 	/**
 	 * @brief Registers two commands prefixed with @c + and @c - (for pressed and released)
@@ -94,7 +229,7 @@ public:
 
 	static int execute(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 
-	static bool execute(const core::String& command, const CmdArgs& args);
+	static bool execute(const core::String& command, const core::DynamicArray<core::String>& rawArgs);
 
 	static Command* getCommand(const core::String& name) {
 		core::ScopedLock lock(_lock);
@@ -125,6 +260,15 @@ public:
 	int complete(const core::String& str, core::DynamicArray<core::String>& matches) const;
 
 	/**
+	 * @brief Complete specific argument by index
+	 * @param argIndex The index of the argument to complete (0-based)
+	 * @param str The current input string for the argument
+	 * @param matches Output array for completion matches
+	 * @return Number of matches found
+	 */
+	int completeArg(int argIndex, const core::String& str, core::DynamicArray<core::String>& matches) const;
+
+	/**
 	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, core::DynamicArray<core::String>& matches @endcode
 	 */
 	template<class Functor>
@@ -136,6 +280,7 @@ public:
 	Command& setBoolCompleter();
 
 	const core::String &name() const;
+	const core::DynamicArray<CommandArg> &args() const;
 
 	Command& setHelp(const core::String &help);
 	const core::String &help() const;
@@ -153,6 +298,10 @@ inline const core::String &Command::name() const {
 
 inline const core::String &Command::help() const {
 	return _help;
+}
+
+inline const core::DynamicArray<CommandArg> &Command::args() const {
+	return _args;
 }
 
 inline core::String help(const core::String &cmd) {

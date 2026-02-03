@@ -19,6 +19,16 @@ void CommandsRequestHandler::execute(const network::ClientId &clientId, Commands
 		CommandInfo info;
 		info.name = cmd.name();
 		info.description = cmd.help();
+		// Copy argument definitions
+		for (const command::CommandArg &arg : cmd.args()) {
+			CommandArgInfo argInfo;
+			argInfo.name = arg.name;
+			argInfo.description = arg.description;
+			argInfo.defaultVal = arg.defaultVal;
+			argInfo.type = (CommandArgType)arg.type;
+			argInfo.optional = arg.optional;
+			info.args.push_back(argInfo);
+		}
 		commandInfos.push_back(info);
 	});
 

@@ -602,16 +602,39 @@ TEST_F(ProtocolMessageFactoryTest, testCommandsListMessage) {
 	voxedit::CommandInfo cmd1;
 	cmd1.name = "test_command";
 	cmd1.description = "A test command that does something";
+	// Add some arguments
+	voxedit::CommandArgInfo arg1;
+	arg1.name = "filename";
+	arg1.description = "The file to load";
+	arg1.type = voxedit::CommandArgType::String;
+	arg1.optional = false;
+	cmd1.args.push_back(arg1);
+	voxedit::CommandArgInfo arg2;
+	arg2.name = "count";
+	arg2.description = "Number of iterations";
+	arg2.type = voxedit::CommandArgType::Int;
+	arg2.optional = true;
+	arg2.defaultVal = "10";
+	cmd1.args.push_back(arg2);
 	commands.push_back(cmd1);
 
 	voxedit::CommandInfo cmd2;
 	cmd2.name = "another_cmd";
 	cmd2.description = "";
+	// No arguments for this command
 	commands.push_back(cmd2);
 
 	voxedit::CommandInfo cmd3;
 	cmd3.name = "quit";
 	cmd3.description = "Quit the application";
+	// Add a boolean argument
+	voxedit::CommandArgInfo arg3;
+	arg3.name = "force";
+	arg3.description = "Force quit without saving";
+	arg3.type = voxedit::CommandArgType::Bool;
+	arg3.optional = true;
+	arg3.defaultVal = "false";
+	cmd3.args.push_back(arg3);
 	commands.push_back(cmd3);
 
 	voxedit::CommandsListMessage originalMsg(commands);
@@ -636,6 +659,14 @@ TEST_F(ProtocolMessageFactoryTest, testCommandsListMessage) {
 	for (size_t i = 0; i < commands.size(); ++i) {
 		EXPECT_EQ(commands[i].name, deserializedCommands[i].name) << "Name mismatch at index " << i;
 		EXPECT_EQ(commands[i].description, deserializedCommands[i].description) << "Description mismatch at index " << i;
+		ASSERT_EQ(commands[i].args.size(), deserializedCommands[i].args.size()) << "Args count mismatch at index " << i;
+		for (size_t j = 0; j < commands[i].args.size(); ++j) {
+			EXPECT_EQ(commands[i].args[j].name, deserializedCommands[i].args[j].name) << "Arg name mismatch at cmd " << i << " arg " << j;
+			EXPECT_EQ(commands[i].args[j].description, deserializedCommands[i].args[j].description) << "Arg description mismatch at cmd " << i << " arg " << j;
+			EXPECT_EQ(commands[i].args[j].defaultVal, deserializedCommands[i].args[j].defaultVal) << "Arg defaultVal mismatch at cmd " << i << " arg " << j;
+			EXPECT_EQ(commands[i].args[j].type, deserializedCommands[i].args[j].type) << "Arg type mismatch at cmd " << i << " arg " << j;
+			EXPECT_EQ(commands[i].args[j].optional, deserializedCommands[i].args[j].optional) << "Arg optional mismatch at cmd " << i << " arg " << j;
+		}
 	}
 
 	deserializedMsg->seek(0);

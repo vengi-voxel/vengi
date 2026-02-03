@@ -476,7 +476,8 @@ void MementoHandler::print() const {
 }
 
 void MementoHandler::construct() {
-	command::Command::registerCommand("ve_mementoinfo", [&](const command::CmdArgs &args) { print(); });
+	command::Command::registerCommand("ve_mementoinfo")
+		.setHandler([&](const command::CommandArgs &args) { print(); });
 }
 
 void MementoHandler::clearStates() {

@@ -74,8 +74,12 @@ void Console::registerOutputCallbacks() {
 }
 
 void Console::construct() {
-	command::Command::registerCommand("con_clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp(_("Clear the text from the built-in console"));
-	command::Command::registerCommand("con_history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp(_("Print the command history"));
+	command::Command::registerCommand("con_clear")
+		.setHandler([&] (const command::CommandArgs& args) { clear(); })
+		.setHelp(_("Clear the text from the built-in console"));
+	command::Command::registerCommand("con_history")
+		.setHandler([&] (const command::CommandArgs& args) { printHistory(); })
+		.setHelp(_("Print the command history"));
 }
 
 bool Console::init() {

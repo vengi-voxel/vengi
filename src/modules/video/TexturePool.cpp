@@ -81,12 +81,13 @@ image::ImagePtr TexturePool::loadImage(const core::String &name) {
 }
 
 void TexturePool::construct() {
-	command::Command::registerCommand("texturepoollist", [this](const command::CmdArgs &args) {
-		Log::info("TexturePool");
-		for (const auto &e : _cache) {
-			Log::info("- %s\n", e->first.c_str());
-		}
-	}).setHelp(_("Show all images in the texture pool"));
+	command::Command::registerCommand("texturepoollist")
+		.setHandler([this](const command::CommandArgs &args) {
+			Log::info("TexturePool");
+			for (const auto &e : _cache) {
+				Log::info("- %s\n", e->first.c_str());
+			}
+		}).setHelp(_("Show all images in the texture pool"));
 }
 
 bool TexturePool::init() {

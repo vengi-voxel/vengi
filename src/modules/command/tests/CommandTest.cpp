@@ -19,8 +19,9 @@ TEST_F(CommandTest, testExecuteUnknown) {
 }
 
 TEST_F(CommandTest, testExecuteAfterUnregister) {
-	Command::registerCommand("test", [&] (const command::CmdArgs&) {
-	});
+	Command::registerCommand("test")
+		.setHandler([&] (const CommandArgs&) {
+		});
 	EXPECT_EQ(1, Command::execute("test"));
 	EXPECT_TRUE(Command::unregisterCommand("test")) << "Failed to unregister the 'test' command";
 	EXPECT_EQ(0, Command::execute("test"));
@@ -28,24 +29,29 @@ TEST_F(CommandTest, testExecuteAfterUnregister) {
 
 TEST_F(CommandTest, testExecuteRegistered) {
 	int reallyExecuted = 0;
-	Command::registerCommand("test", [&] (const command::CmdArgs&) {
-		++reallyExecuted;
-	});
+	Command::registerCommand("test")
+		.setHandler([&] (const CommandArgs&) {
+			++reallyExecuted;
+		});
 	EXPECT_EQ(1, Command::execute("test"));
 	EXPECT_EQ(1, reallyExecuted);
 }
 
 TEST_F(CommandTest, textExecuteParameter) {
 	core::String parameter = "command not executed at all";
-	Command::registerCommand("test", [&] (const command::CmdArgs&) {
-	});
-	Command::registerCommand("testparameter", [&] (const command::CmdArgs& args) {
-		if (args.empty()) {
-			parameter = "empty";
-		} else {
-			parameter = args[0];
-		}
-	});
+	Command::registerCommand("test")
+		.setHandler([&] (const CommandArgs&) {
+		});
+	Command::registerCommand("testparameter")
+		.addArg({"param", ArgType::String, true, ""})
+		.setHandler([&] (const CommandArgs& args) {
+			const core::String &param = args.str("param");
+			if (param.empty()) {
+				parameter = "empty";
+			} else {
+				parameter = param;
+			}
+		});
 	EXPECT_EQ(1, Command::execute("testparameter 42"));
 	EXPECT_EQ("42", parameter);
 	parameter = "command not executed at all";
@@ -56,16 +62,20 @@ TEST_F(CommandTest, textExecuteParameter) {
 TEST_F(CommandTest, textExecuteSemicolonAsParameter) {
 	core::String parameter = "command not executed at all";
 	int testExecuted = 0;
-	Command::registerCommand("test", [&] (const command::CmdArgs&) {
-		++testExecuted;
-	});
-	Command::registerCommand("testsemicolon", [&] (const command::CmdArgs& args) {
-		if (args.empty()) {
-			parameter = "empty";
-		} else {
-			parameter = args[0];
-		}
-	});
+	Command::registerCommand("test")
+		.setHandler([&] (const CommandArgs&) {
+			++testExecuted;
+		});
+	Command::registerCommand("testsemicolon")
+		.addArg({"param", ArgType::String, true, ""})
+		.setHandler([&] (const CommandArgs& args) {
+			const core::String &param = args.str("param");
+			if (param.empty()) {
+				parameter = "empty";
+			} else {
+				parameter = param;
+			}
+		});
 	EXPECT_EQ(1, Command::execute(";;;;testsemicolon \";\";;;;"));
 	EXPECT_EQ(";", parameter);
 	EXPECT_EQ(3, Command::execute("test;;;;testsemicolon \";\";;;;test"));

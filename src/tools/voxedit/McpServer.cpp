@@ -85,13 +85,13 @@ app::AppState McpServer::onConstruct() {
 	core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
 	_sceneMgr->construct();
 
-	command::Command::registerCommand("toollist", [this](const command::CmdArgs &args) {
-		for (const auto &toolPair : _toolRegistry.tools()) {
-			const voxedit::Tool *tool = toolPair->second;
-			Log::info(" - %s: %s", tool->name().c_str(), tool->inputSchema()["description"].get<std::string>().c_str());
-		}
-		return 0;
-	});
+	command::Command::registerCommand("toollist")
+		.setHandler([this](const command::CommandArgs &args) {
+			for (const auto &toolPair : _toolRegistry.tools()) {
+				const voxedit::Tool *tool = toolPair->second;
+				Log::info(" - %s: %s", tool->name().c_str(), tool->inputSchema()["description"].get<std::string>().c_str());
+			}
+		});
 
 	// script and command tool are registered later
 	_toolRegistry.registerTool(new voxedit::FindColorTool());

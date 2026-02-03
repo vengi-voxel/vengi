@@ -70,17 +70,17 @@ protected:
 		reset();
 		core::setBindingContext(core::BindingContext::Context1);
 		command::Command::shutdown();
-		command::Command::registerCommand("+bar", [] (const command::CmdArgs& args) {});
-		command::Command::registerCommand("-bar", [] (const command::CmdArgs& args) {});
-		command::Command::registerCommand("+foo", [this] (const command::CmdArgs& args) {this->_foo = true;});
-		command::Command::registerCommand("-foo", [this] (const command::CmdArgs& args) {this->_foo = false;});
-		command::Command::registerCommand("+xyz", [this] (const command::CmdArgs& args) {this->_xyz = true;});
-		command::Command::registerCommand("-xyz", [this] (const command::CmdArgs& args) {this->_xyz = false;});
-		command::Command::registerCommand("somecommand", [this] (const command::CmdArgs& args) {this->_somecommand = true;});
-		command::Command::registerCommand("altmodcommand", [this] (const command::CmdArgs& args) {this->_altmodcommand = true;});
-		command::Command::registerCommand("allmodscommand", [this] (const command::CmdArgs& args) {this->_allmodscommand = true;});
-		command::Command::registerCommand("ctrlshiftmodcommand", [this] (const command::CmdArgs& args) {this->_ctrlshiftmodcommand = true;});
-		command::Command::registerCommand("doubleleftclick", [this] (const command::CmdArgs& args) {this->_doubleLeftClick = true;});
+		command::Command::registerCommand("+bar").setHandler([] (const command::CommandArgs& args) {});
+		command::Command::registerCommand("-bar").setHandler([] (const command::CommandArgs& args) {});
+		command::Command::registerCommand("+foo").setHandler([this] (const command::CommandArgs& args) {this->_foo = true;});
+		command::Command::registerCommand("-foo").setHandler([this] (const command::CommandArgs& args) {this->_foo = false;});
+		command::Command::registerCommand("+xyz").setHandler([this] (const command::CommandArgs& args) {this->_xyz = true;});
+		command::Command::registerCommand("-xyz").setHandler([this] (const command::CommandArgs& args) {this->_xyz = false;});
+		command::Command::registerCommand("somecommand").setHandler([this] (const command::CommandArgs& args) {this->_somecommand = true;});
+		command::Command::registerCommand("altmodcommand").setHandler([this] (const command::CommandArgs& args) {this->_altmodcommand = true;});
+		command::Command::registerCommand("allmodscommand").setHandler([this] (const command::CommandArgs& args) {this->_allmodscommand = true;});
+		command::Command::registerCommand("ctrlshiftmodcommand").setHandler([this] (const command::CommandArgs& args) {this->_ctrlshiftmodcommand = true;});
+		command::Command::registerCommand("doubleleftclick").setHandler([this] (const command::CommandArgs& args) {this->_doubleLeftClick = true;});
 		return true;
 	}
 
