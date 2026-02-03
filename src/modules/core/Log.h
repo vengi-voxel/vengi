@@ -25,6 +25,7 @@ public:
 	// the only version that doesn't add a newline
 	static void printf(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 	static void setLevel(Level level);
+	static void setConsoleColors(bool enabled);
 };
 
 extern "C" void c_logtrace(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);

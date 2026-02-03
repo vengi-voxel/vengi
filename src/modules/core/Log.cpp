@@ -34,6 +34,7 @@ static Log::Level _logLevel = Log::Level::Info;
 
 static SDL_LogOutputFunction _logCallback = nullptr;
 static void *_logCallbackUserData = nullptr;
+static bool _logConsoleColors = true;
 
 static void logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	if (_logCallback == nullptr) {
@@ -47,15 +48,15 @@ static void logOutputFunction(void *userdata, int category, SDL_LogPriority prio
 	#define ANSI_COLOR_YELLOW "\033[33m"
 	#define ANSI_COLOR_BLUE "\033[34m"
 	#define ANSI_COLOR_CYAN "\033[36m"
-	if (priority == SDL_LOG_PRIORITY_VERBOSE) {
+	if (_logConsoleColors && priority == SDL_LOG_PRIORITY_VERBOSE) {
 		core::String::formatBuf(buf, sizeof(buf), ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET, message);
-	} else if (priority == SDL_LOG_PRIORITY_DEBUG) {
+	} else if (_logConsoleColors && priority == SDL_LOG_PRIORITY_DEBUG) {
 		core::String::formatBuf(buf, sizeof(buf), ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET, message);
-	} else if (priority == SDL_LOG_PRIORITY_INFO) {
+	} else if (_logConsoleColors && priority == SDL_LOG_PRIORITY_INFO) {
 		core::String::formatBuf(buf, sizeof(buf), ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, message);
-	} else if (priority == SDL_LOG_PRIORITY_WARN) {
+	} else if (_logConsoleColors && priority == SDL_LOG_PRIORITY_WARN) {
 		core::String::formatBuf(buf, sizeof(buf), ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET, message);
-	} else if (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL) {
+	} else if (_logConsoleColors && (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL)) {
 		core::String::formatBuf(buf, sizeof(buf), ANSI_COLOR_RED "%s" ANSI_COLOR_RESET, message);
 	} else {
 		core::String::formatBuf(buf, sizeof(buf),  "%s", message);
@@ -63,15 +64,15 @@ static void logOutputFunction(void *userdata, int category, SDL_LogPriority prio
 	_logCallback(_logCallbackUserData, category, priority, buf);
 #elif defined(_WIN32)
 	int color = -1;
-	if (priority == SDL_LOG_PRIORITY_VERBOSE) {
+	if (_logConsoleColors && priority == SDL_LOG_PRIORITY_VERBOSE) {
 		color = FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY;
-	} else if (priority == SDL_LOG_PRIORITY_DEBUG) {
+	} else if (_logConsoleColors && priority == SDL_LOG_PRIORITY_DEBUG) {
 		color = FOREGROUND_BLUE;
-	} else if (priority == SDL_LOG_PRIORITY_INFO) {
+	} else if (_logConsoleColors && priority == SDL_LOG_PRIORITY_INFO) {
 		color = FOREGROUND_GREEN;
-	} else if (priority == SDL_LOG_PRIORITY_WARN) {
+	} else if (_logConsoleColors && priority == SDL_LOG_PRIORITY_WARN) {
 		color = FOREGROUND_GREEN | FOREGROUND_RED;
-	} else if (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL) {
+	} else if (_logConsoleColors && (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL)) {
 		color = FOREGROUND_RED;
 	}
 
@@ -138,6 +139,10 @@ const char* Log::toLogLevel(Log::Level level) {
 		return "error";
 	}
 	return "none";
+}
+
+void Log::setConsoleColors(bool enabled) {
+	priv::_logConsoleColors = enabled;
 }
 
 void Log::setLevel(Level level) {

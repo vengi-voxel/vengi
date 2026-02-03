@@ -57,6 +57,7 @@ McpServer::McpServer(const io::FilesystemPtr &filesystem, const core::TimeProvid
 	  _modifierRenderer(core::make_shared<voxedit::IModifierRenderer>()),
 	  _sceneMgr(core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, _sceneRenderer, _modifierRenderer)),
 	  _luaScriptsListHandler(this), _commandsListHandler(this) {
+	Log::setConsoleColors(false);
 	init(ORGANISATION, "vengimcp");
 }
 
