@@ -161,10 +161,17 @@ void Console::autoComplete() {
 	if (parameter && !strings.empty()) {
 		const command::Command* cmd = command::Command::getCommand(strings.front());
 		if (cmd != nullptr) {
-			if (strings.back() == strings.front()) {
-				cmd->complete("", matches);
-			} else {
-				cmd->complete(strings.back(), matches);
+			// Calculate the argument index (0-based, excluding the command name)
+			int argIndex = (int)strings.size() - 2; // -1 for command name, -1 for 0-based index
+			if (_commandLine.last() == ' ') {
+				argIndex++; // We're starting a new argument
+			}
+			const core::String& currentArg = (_commandLine.last() == ' ' || strings.size() <= 1) ? "" : strings.back();
+			// Try argument-specific completion first
+			int found = cmd->completeArg(argIndex, currentArg, matches);
+			// Fall back to legacy command-level completer if no matches
+			if (found == 0) {
+				cmd->complete(currentArg, matches);
 			}
 		}
 	} else {

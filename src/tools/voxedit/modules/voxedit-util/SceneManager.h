@@ -180,8 +180,8 @@ protected:
 
 	int colorToNewNode(int nodeId, const voxel::Voxel voxelColor);
 	int colorToNewNode(const voxel::Voxel voxelColor);
-	void crop();
-	void splitObjects();
+	void crop(int nodeId);
+	void splitObjects(int nodeId);
 	void scaleDown(int nodeId);
 	void scaleUp(int nodeId);
 	void resizeAll(const glm::ivec3 &size);
@@ -336,10 +336,10 @@ public:
 	 */
 	bool splitVolumes();
 
-	bool copy();
+	bool copy(int nodeId);
 	bool paste(const glm::ivec3 &pos);
-	bool pasteAsNewNode();
-	bool cut();
+	bool pasteAsNewNode(int nodeId);
+	bool cut(int nodeId);
 
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);

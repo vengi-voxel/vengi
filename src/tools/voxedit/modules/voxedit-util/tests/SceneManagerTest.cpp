@@ -294,7 +294,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
 	ASSERT_NE(nullptr, node);
 	EXPECT_TRUE(node->hasSelection());
-	EXPECT_TRUE(_sceneMgr->copy());
+	EXPECT_TRUE(_sceneMgr->copy(node->id()));
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));
 	EXPECT_TRUE(_sceneMgr->paste(testMins()));
