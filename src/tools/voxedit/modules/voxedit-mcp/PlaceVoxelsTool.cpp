@@ -47,6 +47,7 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 		return ctx.result(id, "voxels must be a non-empty array", true);
 	}
 
+	// TODO: MCP: use the sceneMgr here to keep the state of the scenegraph in sync and don't operate directly with the protocol messages
 	voxel::SparseVolume volume;
 	int placedCount = 0;
 	for (const auto &voxelData : voxelsArray) {

@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-// TODO: not only model nodes, but all other node types, too
+// TODO: MCP: not only model nodes, but all other node types, too
 NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
 	_tool["description"] = "Create a new model node. Provide optional parent UUID, name and size";
 
