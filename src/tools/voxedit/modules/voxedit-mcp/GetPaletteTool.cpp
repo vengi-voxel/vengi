@@ -43,6 +43,7 @@ bool GetPaletteTool::execute(const nlohmann::json &id, const nlohmann::json &arg
 		if (!palette.colorName(i).empty()) {
 			colorJson["name"] = palette.colorName(i).c_str();
 		}
+		// TODO: MCP: add material
 		paletteJson["colors"].emplace_back(core::move(colorJson));
 	}
 	return ctx.result(id, paletteJson.dump().c_str(), false);

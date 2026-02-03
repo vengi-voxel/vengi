@@ -10,24 +10,16 @@ namespace voxedit {
 FindColorTool::FindColorTool() : Tool("voxedit_find_color") {
 	_tool["description"] = "Find the closest matching color index in a node's palette for a given RGBA color.";
 
-	nlohmann::json rProp;
-	rProp["type"] = "integer";
-	rProp["description"] = "Red component (0-255)";
+	nlohmann::json rProp = propTypeDescription("integer", "Red component (0-255)");
 	rProp["minimum"] = 0;
 	rProp["maximum"] = 255;
-	nlohmann::json gProp;
-	gProp["type"] = "integer";
-	gProp["description"] = "Green component (0-255)";
+	nlohmann::json gProp = propTypeDescription("integer", "Green component (0-255)");
 	gProp["minimum"] = 0;
 	gProp["maximum"] = 255;
-	nlohmann::json bProp;
-	bProp["type"] = "integer";
-	bProp["description"] = "Blue component (0-255)";
+	nlohmann::json bProp = propTypeDescription("integer", "Blue component (0-255)");
 	bProp["minimum"] = 0;
 	bProp["maximum"] = 255;
-	nlohmann::json aProp;
-	aProp["type"] = "integer";
-	aProp["description"] = "Alpha component (0-255), defaults to 255";
+	nlohmann::json aProp = propTypeDescription("integer", "Alpha component (0-255), defaults to 255");
 	aProp["minimum"] = 0;
 	aProp["maximum"] = 255;
 	aProp["default"] = 255;
@@ -81,6 +73,7 @@ bool FindColorTool::execute(const nlohmann::json &id, const nlohmann::json &args
 		if (!palette.colorName(matchIndex).empty()) {
 			resultJson["matchedColor"]["name"] = palette.colorName(matchIndex).c_str();
 		}
+		// TODO: MCP: add material
 	}
 	return ctx.result(id, resultJson.dump().c_str(), false);
 }

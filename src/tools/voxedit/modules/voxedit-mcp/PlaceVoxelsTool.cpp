@@ -20,9 +20,7 @@ PlaceVoxelsTool::PlaceVoxelsTool() : Tool("voxedit_place_voxels") {
 	itemsSchema["properties"]["colorIndex"]["type"] = "integer";
 	itemsSchema["required"] = nlohmann::json::array({"x", "y", "z", "colorIndex"});
 
-	nlohmann::json voxelsProp;
-	voxelsProp["type"] = "array";
-	voxelsProp["description"] = "Array of {x, y, z, colorIndex} objects";
+	nlohmann::json voxelsProp = propTypeDescription("array", "Array of {x, y, z, colorIndex} objects");
 	voxelsProp["items"] = core::move(itemsSchema);
 
 	nlohmann::json inputSchema;

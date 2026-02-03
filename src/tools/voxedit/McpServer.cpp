@@ -304,15 +304,9 @@ void McpServer::handleInitialize(const nlohmann::json &request) {
 	Log::info("Received initialize request");
 	if (request.contains("params") && request["params"].contains("clientInfo")) {
 		const auto &clientInfo = request["params"]["clientInfo"];
-		core::String _clientName = "unknown";
-		core::String _clientVersion = "unknown";
-		if (clientInfo.contains("name") && clientInfo["name"].is_string()) {
-			_clientName = clientInfo["name"].get<std::string>().c_str();
-		}
-		if (clientInfo.contains("version") && clientInfo["version"].is_string()) {
-			_clientVersion = clientInfo["version"].get<std::string>().c_str();
-		}
-		Log::info("Client: %s (version %s)", _clientName.c_str(), _clientVersion.c_str());
+		const core::String &clientName = clientInfo.value("name", "unknown").c_str();
+		const core::String &clientVersion = clientInfo.value("version", "unknown").c_str();
+		Log::info("Client: %s (version %s)", clientName.c_str(), clientVersion.c_str());
 	}
 	_initialized = true;
 

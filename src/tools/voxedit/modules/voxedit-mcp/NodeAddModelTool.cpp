@@ -18,21 +18,21 @@ NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
 	inputSchema["type"] = "object";
 	inputSchema["properties"]["parentUUID"] = propParentUUID();
 	inputSchema["properties"]["name"] = propTypeDescription("string", "Name of the new node");
-	inputSchema["properties"]["width"] = propTypeDescription("integer", "Width");
-	inputSchema["properties"]["width"]["default"] = 16;
-	inputSchema["properties"]["height"] = propTypeDescription("integer", "Height");
-	inputSchema["properties"]["height"]["default"] = 16;
-	inputSchema["properties"]["depth"] = propTypeDescription("integer", "Depth");
-	inputSchema["properties"]["depth"]["default"] = 16;
+	inputSchema["properties"]["width"] = propTypeDescription("integer", "Width of the model node volume region");
+	inputSchema["properties"]["width"]["default"] = 32;
+	inputSchema["properties"]["height"] = propTypeDescription("integer", "Height of the model node volume region");
+	inputSchema["properties"]["height"]["default"] = 32;
+	inputSchema["properties"]["depth"] = propTypeDescription("integer", "Depth of the model node volume region");
+	inputSchema["properties"]["depth"]["default"] = 32;
 	_tool["inputSchema"] = core::move(inputSchema);
 }
 
 bool NodeAddModelTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
 	const core::UUID parentUUID = argsParentUUID(args);
 	const core::String name = args.value("name", "newnode").c_str();
-	const int w = args.value("width", 16);
-	const int h = args.value("height", 16);
-	const int d = args.value("depth", 16);
+	const int w = args.value("width", 32);
+	const int h = args.value("height", 32);
+	const int d = args.value("depth", 32);
 	if (w <= 0 || h <= 0 || d <= 0) {
 		return ctx.result(id, "Invalid dimensions", true);
 	}

@@ -27,11 +27,11 @@ bool NodeMoveTool::execute(const nlohmann::json &id, const nlohmann::json &args,
 	if (!parentUUID.isValid()) {
 		return ctx.result(id, "Invalid parent UUID", true);
 	}
-	const auto *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
+	const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return ctx.result(id, "Node not found in scene graph", true);
 	}
-	const auto *parentNode = ctx.sceneMgr->sceneGraphNodeByUUID(parentUUID);
+	const scenegraph::SceneGraphNode *parentNode = ctx.sceneMgr->sceneGraphNodeByUUID(parentUUID);
 	if (parentNode == nullptr) {
 		return ctx.result(id, "Parent node not found in scene graph", true);
 	}

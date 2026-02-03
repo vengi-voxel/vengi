@@ -10,10 +10,8 @@ namespace voxedit {
 MementoUndoTool::MementoUndoTool() : Tool("voxedit_memento_undo") {
 	_tool["description"] = "Undo the last action (optional n argument)";
 
-	nlohmann::json nprop;
-	nprop["type"] = "integer";
+	nlohmann::json nprop = propTypeDescription("integer", "Number of undo steps");
 	nprop["default"] = 1;
-	nprop["description"] = "Number of undo steps";
 
 	nlohmann::json in;
 	in["type"] = "object";
