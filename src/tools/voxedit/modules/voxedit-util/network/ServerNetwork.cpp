@@ -51,7 +51,7 @@ RemoteClient &RemoteClient::operator=(RemoteClient &&other) noexcept {
 
 ServerNetwork::ServerNetwork(Server *server, voxelgenerator::LUAApi *luaApi)
 	: _impl(new network::NetworkImpl()), _initSessionHandler(server), _sceneStateHandler(server), _broadcastHandler(server),
-	  _luaScriptsRequestHandler(this, luaApi), _luaScriptCreateHandler(this, luaApi), _cvarsRequestHandler(this), _commandsRequestHandler(this) {
+	  _luaScriptsRequestHandler(this, luaApi), _luaScriptCreateHandler(this, luaApi) {
 }
 
 ServerNetwork::~ServerNetwork() {
@@ -191,8 +191,6 @@ bool ServerNetwork::init() {
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_broadcastHandler);
 	r.registerHandler(PROTO_LUA_SCRIPTS_REQUEST, &_luaScriptsRequestHandler);
 	r.registerHandler(PROTO_LUA_SCRIPT_CREATE, &_luaScriptCreateHandler);
-	r.registerHandler(PROTO_CVARS_REQUEST, &_cvarsRequestHandler);
-	r.registerHandler(PROTO_COMMANDS_REQUEST, &_commandsRequestHandler);
 	return true;
 }
 

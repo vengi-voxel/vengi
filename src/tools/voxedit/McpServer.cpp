@@ -34,7 +34,6 @@
 #include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/ClientNetwork.h"
 #include "voxedit-util/network/ProtocolIds.h"
-#include "voxedit-util/network/protocol/CommandsRequestMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptsRequestMessage.h"
 
 // JSON-RPC error codes
@@ -48,15 +47,11 @@ void LuaScriptsListHandler::execute(const network::ClientId &clientId, voxedit::
 	_server->updateScriptTools(message->scripts());
 }
 
-void CommandsListHandler::execute(const network::ClientId &clientId, voxedit::CommandsListMessage *message) {
-	_server->updateCommandTools(message->commands());
-}
-
 McpServer::McpServer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider, 1), _sceneRenderer(core::make_shared<voxedit::ISceneRenderer>()),
 	  _modifierRenderer(core::make_shared<voxedit::IModifierRenderer>()),
 	  _sceneMgr(core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, _sceneRenderer, _modifierRenderer)),
-	  _luaScriptsListHandler(this), _commandsListHandler(this) {
+	  _luaScriptsListHandler(this) {
 	Log::setConsoleColors(false);
 	init(ORGANISATION, "vengimcp");
 }
@@ -93,7 +88,7 @@ app::AppState McpServer::onConstruct() {
 			}
 		});
 
-	// script and command tool are registered later
+	// script tool is registered later
 	_toolRegistry.registerTool(new voxedit::FindColorTool());
 	_toolRegistry.registerTool(new voxedit::GetPaletteTool());
 	_toolRegistry.registerTool(new voxedit::GetSceneStateTool());
@@ -109,7 +104,9 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::PlaceVoxelsTool());
 	_toolRegistry.registerTool(new voxedit::ScriptApiTool());
 	_toolRegistry.registerTool(new voxedit::ScriptCreateTool());
-
+	command::Command::visitSorted([&](const command::Command &c) {
+		_toolRegistry.registerTool(new voxedit::CommandTool(c));
+	});
 	return state;
 }
 
@@ -118,14 +115,6 @@ void McpServer::updateScriptTools(const core::DynamicArray<voxedit::LuaScriptInf
 	for (const voxedit::LuaScriptInfo &script : scripts) {
 		_toolRegistry.unregisterTool(voxedit::ScriptTool::toolName(script));
 		_toolRegistry.registerTool(new voxedit::ScriptTool(script));
-	}
-}
-
-void McpServer::updateCommandTools(const core::DynamicArray<voxedit::CommandInfo> &commands) {
-	Log::debug("Received %d commands from server", (int)commands.size());
-	for (const voxedit::CommandInfo &cmd : commands) {
-		_toolRegistry.unregisterTool(voxedit::CommandTool::toolName(cmd));
-		_toolRegistry.registerTool(new voxedit::CommandTool(cmd));
 	}
 }
 
@@ -144,7 +133,6 @@ app::AppState McpServer::onInit() {
 	voxedit::ClientNetwork &network = _sceneMgr->client().network();
 	network::ProtocolHandlerRegistry &r = network.protocolRegistry();
 	r.registerHandler(voxedit::PROTO_LUA_SCRIPTS_LIST, &_luaScriptsListHandler);
-	r.registerHandler(voxedit::PROTO_COMMANDS_LIST, &_commandsListHandler);
 
 	return state;
 }
@@ -174,7 +162,6 @@ bool McpServer::connectToVoxEdit() {
 	}
 
 	requestScripts();
-	requestCommands();
 	return true;
 }
 
@@ -184,11 +171,6 @@ void McpServer::disconnectFromVoxEdit() {
 
 bool McpServer::requestScripts() {
 	voxedit::LuaScriptsRequestMessage requestMsg;
-	return _sceneMgr->client().network().sendMessage(requestMsg);
-}
-
-bool McpServer::requestCommands() {
-	voxedit::CommandsRequestMessage requestMsg;
 	return _sceneMgr->client().network().sendMessage(requestMsg);
 }
 
@@ -206,7 +188,6 @@ app::AppState McpServer::onRunning() {
 			if (connectToVoxEdit()) {
 				Log::info("Reconnected to VoxEdit server");
 				requestScripts();
-				requestCommands();
 			} else {
 				Log::warn("Failed to reconnect to VoxEdit server");
 			}

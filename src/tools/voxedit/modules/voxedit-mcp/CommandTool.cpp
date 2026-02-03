@@ -8,8 +8,8 @@
 
 namespace voxedit {
 
-core::String CommandTool::toolName(const voxedit::CommandInfo &info) {
-	const core::String &cmd = info.name;
+core::String CommandTool::toolName(const command::Command &info) {
+	const core::String &cmd = info.name();
 	if (cmd[0] == COMMAND_PRESSED[0]) {
 		return core::String::format("voxedit_cmd_pressed_%s", cmd.c_str() + 1);
 	} else if (cmd[0] == COMMAND_RELEASED[0]) {
@@ -18,28 +18,29 @@ core::String CommandTool::toolName(const voxedit::CommandInfo &info) {
 	return core::String("voxedit_cmd_" + cmd);
 }
 
-CommandTool::CommandTool(const voxedit::CommandInfo &info) : Tool(toolName(info)), _info(info) {
-	_cmdName = info.name;
-	_tool["description"] = info.description.c_str();
+CommandTool::CommandTool(const command::Command &info) : Tool(toolName(info)) {
+	_cmdName = info.name();
+	_args = info.args();
+	_tool["description"] = info.help().c_str();
 
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";
 	nlohmann::json properties = nlohmann::json::object();
 	nlohmann::json required = nlohmann::json::array();
 
-	for (const voxedit::CommandArgInfo &arg : info.args) {
+	for (const command::CommandArg &arg : info.args()) {
 		nlohmann::json propSchema;
 		switch (arg.type) {
-		case voxedit::CommandArgType::Int:
+		case command::ArgType::Int:
 			propSchema["type"] = "integer";
 			break;
-		case voxedit::CommandArgType::Float:
+		case command::ArgType::Float:
 			propSchema["type"] = "number";
 			break;
-		case voxedit::CommandArgType::Bool:
+		case command::ArgType::Bool:
 			propSchema["type"] = "boolean";
 			break;
-		case voxedit::CommandArgType::String:
+		case command::ArgType::String:
 		default:
 			propSchema["type"] = "string";
 			break;
@@ -50,11 +51,11 @@ CommandTool::CommandTool(const voxedit::CommandInfo &info) : Tool(toolName(info)
 			propSchema["description"] = arg.name.c_str();
 		}
 		if (!arg.defaultVal.empty()) {
-			if (arg.type == voxedit::CommandArgType::Int) {
+			if (arg.type == command::ArgType::Int) {
 				propSchema["default"] = core::string::toInt(arg.defaultVal);
-			} else if (arg.type == voxedit::CommandArgType::Float) {
+			} else if (arg.type == command::ArgType::Float) {
 				propSchema["default"] = core::string::toFloat(arg.defaultVal);
-			} else if (arg.type == voxedit::CommandArgType::Bool) {
+			} else if (arg.type == command::ArgType::Bool) {
 				propSchema["default"] = core::string::toBool(arg.defaultVal);
 			} else {
 				propSchema["default"] = arg.defaultVal.c_str();
@@ -79,8 +80,7 @@ CommandTool::CommandTool(const voxedit::CommandInfo &info) : Tool(toolName(info)
 bool CommandTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
 	core::String cmd = _cmdName;
 
-	// Build command string from typed arguments
-	for (const voxedit::CommandArgInfo &p : _info.args) {
+	for (const command::CommandArg &p : _args) {
 		if (args.contains(p.name.c_str())) {
 			const auto &argVal = args[p.name.c_str()];
 			if (argVal.is_string()) {
@@ -103,8 +103,11 @@ bool CommandTool::execute(const nlohmann::json &id, const nlohmann::json &args, 
 			return ctx.result(id, core::String::format("Missing required parameter '%s'", p.name.c_str()), true);
 		}
 	}
-
-	return sendCommand(ctx, cmd, id);
+	if (command::Command::execute(cmd) > 1) {
+		return ctx.result(id, core::String::format("Executed command '%s'", cmd.c_str()), false);
+	} else {
+		return ctx.result(id, core::String::format("Failed to execute command '%s'", cmd.c_str()), true);
+	}
 }
 
 } // namespace voxedit

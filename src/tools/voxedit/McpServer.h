@@ -12,7 +12,6 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
-#include "voxedit-util/network/protocol/CommandsListMessage.h"
 #include "voxedit-util/network/protocol/LuaScriptsListMessage.h"
 #include "json/JSON.h"
 
@@ -28,16 +27,6 @@ public:
 	void execute(const network::ClientId &clientId, voxedit::LuaScriptsListMessage *message) override;
 };
 
-class CommandsListHandler : public network::ProtocolTypeHandler<voxedit::CommandsListMessage> {
-private:
-	McpServer *_server;
-
-public:
-	CommandsListHandler(McpServer *server) : _server(server) {
-	}
-	void execute(const network::ClientId &clientId, voxedit::CommandsListMessage *message) override;
-};
-
 /**
  * @brief MCP (Model Context Protocol) server for vengi voxedit
  * @ingroup Tools
@@ -51,13 +40,11 @@ private:
 	using Super = app::CommandlineApp;
 
 	friend class LuaScriptsListHandler;
-	friend class CommandsListHandler;
 
 	voxedit::SceneRendererPtr _sceneRenderer;
 	voxedit::ModifierRendererPtr _modifierRenderer;
 	voxedit::SceneManagerPtr _sceneMgr;
 	LuaScriptsListHandler _luaScriptsListHandler;
-	CommandsListHandler _commandsListHandler;
 	voxedit::ToolRegistry _toolRegistry;
 
 	bool _initialized = false;
@@ -66,9 +53,6 @@ private:
 
 	void printUsageHeader() const override;
 	void usage() const override;
-
-	bool requestCommands();
-	void updateCommandTools(const core::DynamicArray<voxedit::CommandInfo> &commands);
 
 	bool requestScripts();
 	void updateScriptTools(const core::DynamicArray<voxedit::LuaScriptInfo> &scripts);

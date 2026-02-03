@@ -1,19 +1,22 @@
 #pragma once
 
 #include "Tool.h"
-#include "voxedit-util/network/protocol/CommandsListMessage.h"
+#include "command/Command.h"
 
 namespace voxedit {
 
+/**
+ * @brief Run local commands to modify the scene graph - any change is sent to the server via network
+ */
 class CommandTool : public Tool {
 private:
 	core::String _cmdName;
-	voxedit::CommandInfo _info;
+	core::DynamicArray<command::CommandArg> _args;
+
+	static core::String toolName(const command::Command &cmd);
 
 public:
-	static core::String toolName(const voxedit::CommandInfo &info);
-
-	CommandTool(const voxedit::CommandInfo &info);
+	CommandTool(const command::Command &cmd);
 	~CommandTool() override = default;
 
 	bool execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) override;

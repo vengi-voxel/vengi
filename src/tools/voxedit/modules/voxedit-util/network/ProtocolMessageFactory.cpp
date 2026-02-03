@@ -3,10 +3,6 @@
  */
 
 #include "ProtocolMessageFactory.h"
-#include "protocol/CommandsListMessage.h"
-#include "protocol/CommandsRequestMessage.h"
-#include "protocol/CVarsListMessage.h"
-#include "protocol/CVarsRequestMessage.h"
 #include "protocol/InitSessionMessage.h"
 #include "protocol/LuaScriptCreateMessage.h"
 #include "protocol/LuaScriptsListMessage.h"
@@ -117,18 +113,6 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 		break;
 	case PROTO_LUA_SCRIPT_CREATE:
 		msg = new LuaScriptCreateMessage(in);
-		break;
-	case PROTO_CVARS_REQUEST:
-		msg = new CVarsRequestMessage();
-		break;
-	case PROTO_CVARS_LIST:
-		msg = new CVarsListMessage(in);
-		break;
-	case PROTO_COMMANDS_REQUEST:
-		msg = new CommandsRequestMessage();
-		break;
-	case PROTO_COMMANDS_LIST:
-		msg = new CommandsListMessage(in);
 		break;
 	default:
 		Log::error("Unknown protocol message type: %u with size %u", type, size);

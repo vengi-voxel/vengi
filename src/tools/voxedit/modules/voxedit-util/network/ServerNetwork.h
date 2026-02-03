@@ -11,9 +11,7 @@
 #include "network/ProtocolHandlerRegistry.h"
 #include "network/SocketId.h"
 #include "voxedit-util/network/handler/server/BroadcastHandler.h"
-#include "voxedit-util/network/handler/server/CVarsRequestHandler.h"
 #include "voxedit-util/network/handler/server/CommandHandlerServer.h"
-#include "voxedit-util/network/handler/server/CommandsRequestHandler.h"
 #include "voxedit-util/network/handler/server/LuaScriptCreateHandler.h"
 #include "voxedit-util/network/handler/server/LuaScriptsRequestHandler.h"
 
@@ -73,8 +71,6 @@ protected:
 	BroadcastHandler _broadcastHandler;
 	LuaScriptsRequestHandler _luaScriptsRequestHandler;
 	LuaScriptCreateHandler _luaScriptCreateHandler;
-	CVarsRequestHandler _cvarsRequestHandler;
-	CommandsRequestHandler _commandsRequestHandler;
 	core::VarPtr _maxClients;
 
 	RemoteClients _clients;
