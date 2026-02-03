@@ -197,6 +197,7 @@ public:
 
 	SceneGraphNode* findNodeByName(const core::String& name);
 	SceneGraphNode* findNodeByUUID(const core::UUID& uuid);
+	const SceneGraphNode* findNodeByUUID(const core::UUID& uuid) const;
 	const SceneGraphNode* findNodeByName(const core::String& name) const;
 	SceneGraphNode* findNodeByPropertyValue(const core::String &key, const core::String &value) const;
 	SceneGraphNode* first();

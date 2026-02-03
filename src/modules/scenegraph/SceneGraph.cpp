@@ -737,6 +737,17 @@ SceneGraphNode *SceneGraph::findNodeByUUID(const core::UUID &uuid) {
 	return nullptr;
 }
 
+const SceneGraphNode *SceneGraph::findNodeByUUID(const core::UUID &uuid) const {
+	for (const auto &entry : _nodes) {
+		const core::String &uuidStr = entry->value.uuid().str();
+		Log::trace("node uuid: %s", uuidStr.c_str());
+		if (entry->value.uuid() == uuid) {
+			return &entry->value;
+		}
+	}
+	return nullptr;
+}
+
 const SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) const {
 	for (const auto &entry : _nodes) {
 		Log::trace("node name: %s", entry->value.name().c_str());

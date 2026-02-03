@@ -8,6 +8,7 @@
 #include "ISceneRenderer.h"
 #include "LUAApiListener.h"
 #include "command/ActionButton.h"
+#include "command/Command.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
 #include "core/TimeProvider.h"
@@ -163,6 +164,7 @@ protected:
 	void updateCursor();
 	int traceScene();
 	void stepLSystem();
+	int toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name = "nodeid") const;
 
 protected:
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);

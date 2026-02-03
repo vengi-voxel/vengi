@@ -15,6 +15,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/File.h"
@@ -1828,6 +1829,21 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	renderContext.frameBuffer.unbind();
 }
 
+int SceneManager::toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name) const {
+	if (!args.has(name)) {
+		return defaultVal;
+	}
+	const core::String &nodeId = args.str(name);
+	core::UUID uuid(nodeId);
+	if (uuid.isValid()) {
+		const scenegraph::SceneGraphNode* node = _sceneGraph.findNodeByUUID(uuid);
+		if (node != nullptr) {
+			return node->id();
+		}
+	}
+	return args.intVal(name, defaultVal);
+}
+
 void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditColorWheel, "false", _("Use the color wheel in the palette color editing"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowColorPicker, "false", _("Always show the color picker below the palette"), core::Var::boolValidator);
@@ -1887,7 +1903,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("resizetoselection")
 		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to resize"})
 		.setHandler([&](const command::CommandArgs &args) {
-			const int activeNodeId = args.intVal("nodeid", activeNode());
+			const int activeNodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNodeId);
 			if (node == nullptr) {
 				return;
@@ -1928,10 +1944,10 @@ void SceneManager::construct() {
 	}
 	command::Command::registerCommand("palette_changeintensity")
 		.addArg({"value", command::ArgType::Float, false, "", "Intensity scale value"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the intensity change to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the intensity change to"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const float scale = args.floatVal("value");
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette &pal = node.palette();
 			pal.changeIntensity(scale);
@@ -1940,9 +1956,9 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_warmer")
 		.addArg({"value", command::ArgType::Int, true, "10", "Warmth adjustment value"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the warmth to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the warmth to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette &pal = node.palette();
 			const uint8_t val = (uint8_t)args.intVal("value", 10);
@@ -1952,9 +1968,9 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_colder")
 		.addArg({"value", command::ArgType::Int, true, "10", "Coldness adjustment value"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the coldness to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the coldness to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette &pal = node.palette();
 			const uint8_t val = (uint8_t)args.intVal("value", 10);
@@ -1964,9 +1980,9 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_brighter")
 		.addArg({"value", command::ArgType::Float, true, "0.2", "Brightness adjustment value"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the brightness to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the brightness to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette &pal = node.palette();
 			const float val = args.floatVal("value", 0.2f);
@@ -1976,9 +1992,9 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_darker")
 		.addArg({"value", command::ArgType::Float, true, "0.2", "Darkness adjustment value"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the darkness to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the darkness to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette &pal = node.palette();
 			const float val = args.floatVal("value", 0.2f);
@@ -1988,17 +2004,17 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_removeunused")
 		.addArg({"updatevoxels", command::ArgType::Bool, true, "false", "Update voxel colors"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to remove unused colors from"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to remove unused colors from"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const bool updateVoxels = args.boolVal("updatevoxels", false);
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			nodeRemoveUnusedColors(nodeId, updateVoxels);
 		}).setHelp(_("Remove unused colors from palette"));
 
 	command::Command::registerCommand("palette_whitebalancing")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the white balance to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the white balance to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette currentPal = node.palette();
 			currentPal.whiteBalance();
@@ -2007,9 +2023,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Apply white balance to the current palette"));
 
 	command::Command::registerCommand("palette_contraststretching")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the contrast stretching to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the contrast stretching to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette currentPal = node.palette();
 			currentPal.constrastStretching();
@@ -2018,9 +2034,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Apply color stretching to the current palette"));
 
 	command::Command::registerCommand("palette_applyall")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the palette from"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the palette from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			const scenegraph::SceneGraphNode &currentNode = _sceneGraph.node(nodeId);
 			const palette::Palette &currentPal = currentNode.palette();
 			memento::ScopedMementoGroup mementoGroup(_mementoHandler, "palette_applyall");
@@ -2036,10 +2052,10 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_sort")
 		.addArg({"type", command::ArgType::String, false, "", "Sort type: hue|saturation|brightness|cielab|original"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to apply the sort to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the sort to"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const core::String &type = args.str("type");
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			palette::Palette &pal = node.palette();
 			palette::PaletteView &palView = pal.view();
@@ -2059,9 +2075,9 @@ void SceneManager::construct() {
 			setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab", "original"}));
 
 	command::Command::registerCommand("normpalette_removenormals")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to remove the normals from"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to remove the normals from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeRemoveNormals(args.intVal("nodeid", InvalidNodeId));
+			nodeRemoveNormals(toNodeId(args, InvalidNodeId));
 		}).setHelp(_("Remove normal information from the palette"));
 
 	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
@@ -2079,9 +2095,9 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("select")
 		.addArg({"type", command::ArgType::String, false, "", "Selection type: all|none|invert"})
-		.addArg({"nodeid", command::ArgType::Int, false, "", "Node ID to apply the selection to"})
+		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID to apply the selection to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			const core::String &type = args.str("type");
 			if (type == "none") {
 				selectionUnselect(nodeId);
@@ -2126,7 +2142,7 @@ void SceneManager::construct() {
 		}).setHelp(_("Save all model nodes into filenames represented by their node names")).setArgumentCompleter(command::dirCompleter(_filesystem, _lastDirectory));
 
 	command::Command::registerCommand("modelsave")
-		.addArg({"nodeid", command::ArgType::Int, false, "", "Node ID to save"})
+		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID to save"})
 		.addArg({"file", command::ArgType::String, true, "", "File path to save to"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = args.intVal("nodeid");
@@ -2160,38 +2176,38 @@ void SceneManager::construct() {
 		}).setHelp(_("Create a new scene (with a given name and width, height, depth)"));
 
 	command::Command::registerCommand("crop")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to crop"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to crop"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			crop(nodeId);
 		}).setHelp(_("Crop the current active node to the voxel boundaries"));
 
 	command::Command::registerCommand("splitobjects")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to split"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to split"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			splitObjects(nodeId);
 		}).setHelp(_("Split the current active node into multiple nodes"));
 
 	command::Command::registerCommand("scaledown")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to scale"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scaleDown(nodeId);
 		}).setHelp(_("Scale the current active node or the given node down")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("scaleup")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to scale"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scaleUp(nodeId);
 		}).setHelp(_("Scale the current active node or the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortomodel")
 		.addArg({"index", command::ArgType::Int, true, "", "Palette color index"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to create"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to create"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (args.has("index")) {
 				const uint8_t index = (uint8_t)args.intVal("index");
 				const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
@@ -2251,9 +2267,9 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("loadnormalpalette")
 		.addArg({"name", command::ArgType::String, false, "", "Normal palette name"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to change"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to change"})
 		.setHandler([this] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 			if (node == nullptr) {
 				return;
@@ -2306,12 +2322,12 @@ void SceneManager::construct() {
 		.addArg({"x", command::ArgType::Int, true, "1", "X size"})
 		.addArg({"y", command::ArgType::Int, true, "1", "Y size"})
 		.addArg({"z", command::ArgType::Int, true, "1", "Z size"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to resize"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to resize"})
 		.setHandler([this] (const command::CommandArgs& args) {
 			const int x = args.intVal("x", 1);
 			const int y = args.intVal("y", x);
 			const int z = args.intVal("z", y);
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			nodeResize(nodeId, glm::ivec3(x, y, z));
 		}).setHelp(_("Resize your current model node about given x, y and z size"));
 
@@ -2367,9 +2383,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Move the voxels inside the volume by the given values without changing the volume bounds"));
 
 	command::Command::registerCommand("copy")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to copy from"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to copy from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			copy(args.intVal("nodeid", activeNode()));
+			copy(toNodeId(args, activeNode()));
 		}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste")
@@ -2390,15 +2406,15 @@ void SceneManager::construct() {
 		}).setHelp(_("Paste clipboard to current cursor position"));
 
 	command::Command::registerCommand("pastenewnode")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Parent node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Parent node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			pasteAsNewNode(args.intVal("nodeid", activeNode()));
+			pasteAsNewNode(toNodeId(args, activeNode()));
 		}).setHelp(_("Paste clipboard as a new node"));
 
 	command::Command::registerCommand("cut")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to cut from"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to cut from"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			cut(args.intVal("nodeid", activeNode()));
+			cut(toNodeId(args, activeNode()));
 		}).setHelp(_("Cut selection"));
 
 	command::Command::registerCommand("undo")
@@ -2424,17 +2440,17 @@ void SceneManager::construct() {
 		}).setHelp(_("Rotate active nodes around the given axis"));
 
 	command::Command::registerCommand("modelmerge")
-		.addArg({"nodeid1", command::ArgType::Int, true, "", "First node ID"})
-		.addArg({"nodeid2", command::ArgType::Int, true, "", "Second node ID"})
+		.addArg({"nodeid1", command::ArgType::String, true, "", "First node ID"})
+		.addArg({"nodeid2", command::ArgType::String, true, "", "Second node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			int nodeId1;
 			int nodeId2;
 			if (args.has("nodeid1") && !args.has("nodeid2")) {
-				nodeId2 = args.intVal("nodeid1");
+				nodeId2 = toNodeId(args, InvalidNodeId, "nodeid2");
 				nodeId1 = _sceneGraph.prevModelNode(nodeId2);
 			} else if (args.has("nodeid1") && args.has("nodeid2")) {
-				nodeId1 = args.intVal("nodeid1");
-				nodeId2 = args.intVal("nodeid2");
+				nodeId1 = toNodeId(args, InvalidNodeId, "nodeid1");
+				nodeId2 = toNodeId(args, InvalidNodeId, "nodeid2");
 			} else {
 				nodeId2 = activeNode();
 				nodeId1 = _sceneGraph.prevModelNode(nodeId2);
@@ -2519,18 +2535,18 @@ void SceneManager::construct() {
 		}).setHelp(_("Flip the selected nodes around the given axis x, y or z")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("transformreset")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			nodeResetTransform(nodeId, InvalidKeyFrame);
 		}).setHelp(_("Reset the transform of the current node and keyframe to the default transform"));
 
 	command::Command::registerCommand("transformmirror")
 		.addArg({"axis", command::ArgType::String, false, "", "Axis to mirror: x|y|z"})
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const math::Axis axis = math::toAxis(args.str("axis"));
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			nodeTransformMirror(nodeId, InvalidKeyFrame, axis);
 		}).setHelp(_("Mirrors the transform at the given axes x, y or z for the given node"));
 
@@ -2555,43 +2571,43 @@ void SceneManager::construct() {
 		}).setHelp(_("Bake the current transform into the voxel data for a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodedelete")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to delete"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to delete"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 				nodeRemove(*node, false);
 			}
 		}).setHelp(_("Delete a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodelock")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to lock"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to lock"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 				node->setLocked(true);
 			}
 		}).setHelp(_("Lock a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodetogglelock")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 				node->setLocked(!node->locked());
 			}
 		}).setHelp(_("Toggle the lock state of a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeunlock")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to unlock"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to unlock"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 				node->setLocked(false);
 			}
 		}).setHelp(_("Unlock a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeactivate")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to activate"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to activate"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			if (!args.has("nodeid")) {
 				Log::info("Active node: %i", activeNode());
@@ -2602,9 +2618,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Set or print the current active node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodetogglevisible")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
 		.setHandler([&](const command::CommandArgs &args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeSetVisible(nodeId, !node->visible());
 			}
@@ -2627,9 +2643,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Hide all nodes"));
 
 	command::Command::registerCommand("nodeshowallchildren")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
 				node.setVisible(true);
 			});
@@ -2639,9 +2655,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Show all children nodes"));
 
 	command::Command::registerCommand("nodehideallchildren")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
 		.setHandler([&](const command::CommandArgs &args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
 				node.setVisible(false);
 			});
@@ -2651,9 +2667,9 @@ void SceneManager::construct() {
 		}).setHelp(_("Hide all children nodes"));
 
 	command::Command::registerCommand("nodehideothers")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to keep visible"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to keep visible"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
 				if (node.id() == nodeId) {
@@ -2685,7 +2701,7 @@ void SceneManager::construct() {
 		.addArg({"newname", command::ArgType::String, true, "", "New name"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			// Two args: first is node ID, second is name
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			const core::String &newName = args.str("newname");
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeRename(*node, newName);
@@ -2693,34 +2709,34 @@ void SceneManager::construct() {
 		}).setHelp(_("Change the name of a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeduplicate")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to duplicate"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to duplicate"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeDuplicate(*node);
 			}
 		}).setHelp(_("Duplicates the current node or the given node id")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modelref")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to reference"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to reference"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeReference(*node);
 			}
 		}).setHelp(_("Create a node reference for the given node id")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modelunref")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Node ID to unreference"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to unreference"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid", activeNode());
+			const int nodeId = toNodeId(args, activeNode());
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeUnreference(*node);
 			}
 		}).setHelp(_("Unreference from model and allow to edit the voxels for this node"));
 
 	command::Command::registerCommand("cam_activate")
-		.addArg({"nodeid", command::ArgType::Int, true, "", "Camera node ID"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Camera node ID"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			video::Camera *camera = activeCamera();
 			if (camera == nullptr) {

@@ -104,9 +104,13 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::PlaceVoxelsTool());
 	_toolRegistry.registerTool(new voxedit::ScriptApiTool());
 	_toolRegistry.registerTool(new voxedit::ScriptCreateTool());
-	command::Command::visitSorted([&](const command::Command &c) {
-		_toolRegistry.registerTool(new voxedit::CommandTool(c));
-	});
+	command::Command::visitSorted(
+		[&](const command::Command &c) {
+			if (c.isInput()) {
+				return;
+			}
+			_toolRegistry.registerTool(new voxedit::CommandTool(c));
+		});
 	return state;
 }
 
@@ -155,6 +159,7 @@ bool McpServer::connectToVoxEdit() {
 	const int port = core::Var::getSafe(cfg::VoxEditNetPort)->intVal();
 
 	core::Var::getSafe(cfg::AppUserName)->setVal("mcp-client");
+	core::Var::getSafe(cfg::AppVersion)->setVal(PROJECT_VERSION);
 
 	if (!client.connect(host, port, false)) {
 		Log::error("Failed to connect to %s:%i", host.c_str(), port);

@@ -8,19 +8,7 @@
 
 namespace voxedit {
 
-core::String CommandTool::toolName(const command::Command &info) {
-	const core::String &cmd = info.name();
-	if (cmd[0] == COMMAND_PRESSED[0]) {
-		return core::String::format("voxedit_cmd_pressed_%s", cmd.c_str() + 1);
-	} else if (cmd[0] == COMMAND_RELEASED[0]) {
-		return core::String::format("voxedit_cmd_released_%s", cmd.c_str() + 1);
-	}
-	return core::String("voxedit_cmd_" + cmd);
-}
-
-CommandTool::CommandTool(const command::Command &info) : Tool(toolName(info)) {
-	_cmdName = info.name();
-	_args = info.args();
+CommandTool::CommandTool(const command::Command &info) : Tool(info.name()), _cmdName(info.name()), _args(info.args()) {
 	_tool["description"] = info.help().c_str();
 
 	nlohmann::json inputSchema;
@@ -105,9 +93,8 @@ bool CommandTool::execute(const nlohmann::json &id, const nlohmann::json &args, 
 	}
 	if (command::Command::execute(cmd) > 1) {
 		return ctx.result(id, core::String::format("Executed command '%s'", cmd.c_str()), false);
-	} else {
-		return ctx.result(id, core::String::format("Failed to execute command '%s'", cmd.c_str()), true);
 	}
+	return ctx.result(id, core::String::format("Failed to execute command '%s'", cmd.c_str()), true);
 }
 
 } // namespace voxedit
