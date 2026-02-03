@@ -277,6 +277,8 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 	if (method == "initialize") {
 		handleInitialize(request);
 	} else if (method == "notifications/initialized") {
+		Log::info("MCP client initialized");
+	} else if (method == "tools/list") {
 		if (!connectToVoxEdit()) {
 			Log::error("Failed to connect to VoxEdit server at %s:%d",
 					   core::Var::getSafe(cfg::VoxEditNetHostname)->strVal().c_str(),
@@ -284,8 +286,6 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 			sendError(id, INIT_FAILED, "Failed to connect to VoxEdit server");
 			return;
 		}
-		Log::info("MCP client initialized");
-	} else if (method == "tools/list") {
 		handleToolsList(request);
 	} else if (method == "tools/call") {
 		handleToolsCall(request);
