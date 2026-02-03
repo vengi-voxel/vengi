@@ -2485,7 +2485,7 @@ void SceneManager::construct() {
 		}
 		const math::Axis axis = math::toAxis(args[0]);
 		flip(axis);
-	}).setHelp(_("Flip the selected nodes around the given axis")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
+	}).setHelp(_("Flip the selected nodes around the given axis x, y or z")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("transformreset", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -2508,7 +2508,7 @@ void SceneManager::construct() {
 			nodeId = core::string::toInt(args[1]);
 		}
 		nodeTransformMirror(nodeId, InvalidKeyFrame, axis);
-	}).setHelp(_("Mirrors the transform at the given axes for the given node"));
+	}).setHelp(_("Mirrors the transform at the given axes x, y or z for the given node"));
 
 	command::Command::registerCommand("modeladd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";

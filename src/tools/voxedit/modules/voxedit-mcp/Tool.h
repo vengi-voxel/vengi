@@ -39,9 +39,7 @@ public:
 	/**
 	 * @brief Implementations of this class have to create their input schema in the ctor and store it in @c _tool
 	 */
-	Tool(const core::String &name) : _name(name) {
-		_tool["name"] = _name.c_str();
-	}
+	Tool(const core::String &name);
 
 	virtual ~Tool() = default;
 

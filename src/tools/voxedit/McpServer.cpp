@@ -289,6 +289,12 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 		handleToolsList(request);
 	} else if (method == "tools/call") {
 		handleToolsCall(request);
+	} else if (method == "ping") {
+		nlohmann::json response;
+		response["jsonrpc"] = "2.0";
+		response["id"] = id;
+		response["result"] = {};
+		sendResponse(response);
 	} else {
 		sendError(id, METHOD_NOT_FOUND, "Method not found");
 	}

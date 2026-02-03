@@ -8,6 +8,14 @@
 
 namespace voxedit {
 
+Tool::Tool(const core::String &name) : _name(name) {
+	// TODO: sanitize name
+	// letters (A-Z, a-z), digits (0-9), underscore (_), hyphen (-), and dot (.)
+	// may NOT contain spaces, commas, or other special characters.
+	_tool["name"] = _name.c_str();
+	// TODO: _tool["title"]
+}
+
 bool Tool::sendMessage(ToolContext &ctx, const network::ProtocolMessage &msg) {
 	Client &client = ctx.sceneMgr->client();
 	ClientNetwork &network = client.network();
