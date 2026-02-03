@@ -279,6 +279,8 @@ public:
 
 	Command& setBoolCompleter();
 
+	bool isInput() const;
+
 	const core::String &name() const;
 	const core::DynamicArray<CommandArg> &args() const;
 

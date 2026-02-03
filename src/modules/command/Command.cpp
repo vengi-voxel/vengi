@@ -25,6 +25,10 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 	return *this;
 }
 
+bool Command::isInput() const {
+	return _name[0] == COMMAND_PRESSED[0] || _name[0] == COMMAND_RELEASED[0];
+}
+
 Command& Command::registerCommand(const core::String &name) {
 	const Command c(name);
 	core::ScopedLock lock(_lock);
