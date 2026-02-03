@@ -23,24 +23,15 @@ bool Tool::sendMessage(ToolContext &ctx, const network::ProtocolMessage &msg) {
 }
 
 nlohmann::json Tool::propUUID() {
-	nlohmann::json nodeUUIDProp;
-	nodeUUIDProp["type"] = "string";
-	nodeUUIDProp["description"] = "UUID of the scene graph node";
-	return nodeUUIDProp;
+	return propTypeDescription("string", "UUID of the scene graph node");
 }
 
 nlohmann::json Tool::propParentUUID() {
-	nlohmann::json parentUUIDProp;
-	parentUUIDProp["type"] = "string";
-	parentUUIDProp["description"] = "UUID of the new parent node";
-	return parentUUIDProp;
+	return propTypeDescription("string", "UUID of the new parent node");
 }
 
 nlohmann::json Tool::propReferenceUUID() {
-	nlohmann::json referenceUUIDProp;
-	referenceUUIDProp["type"] = "string";
-	referenceUUIDProp["description"] = "UUID of the reference sibling (optional)";
-	return referenceUUIDProp;
+	return propTypeDescription("string", "UUID of the referenced node if the node type is a ModelReference");
 }
 
 nlohmann::json Tool::propTypeDescription(const core::String &type, const core::String &description) {
