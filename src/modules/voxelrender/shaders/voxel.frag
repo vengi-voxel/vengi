@@ -31,14 +31,15 @@ vec4 calcColor(void) {
 	float bias = 0.0005 + 0.001 * slopeFactor;
 	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
 	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion));
-	return vec4(color, v_color.a);
+	vec4 ocolor = vec4(color, v_color.a);
+	if ((v_flags & FLAGOUTLINE) != 0u) {
+		return outline(v_pos, ocolor, normal);
+	}
+	return ocolor;
 }
 
 void main(void) {
 	o_color = calcColor();
-	if ((v_flags & FLAGOUTLINE) != 0u) {
-		o_color = outline(v_pos, o_color);
-	}
 	o_color.rgb = pow(o_color.rgb, vec3(1.0 / cl_gamma));
 	o_glow = v_glow;
 }

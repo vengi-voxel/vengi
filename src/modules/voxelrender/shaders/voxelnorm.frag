@@ -18,14 +18,15 @@ vec4 calcColor(void) {
 	vec3 diffuse = u_diffuse_color * max(0.0, ndotl);
 	float bias = max(0.0015 * (1.0 - ndotl), 0.00035);
 	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
-	return vec4(shadowColor, v_color.a);
+	vec4 ocolor = vec4(shadowColor, v_color.a);
+	if ((v_flags & FLAGOUTLINE) != 0u) {
+		return outline(v_pos, ocolor, normal);
+	}
+	return ocolor;
 }
 
 void main(void) {
 	o_color = calcColor();
-	if ((v_flags & FLAGOUTLINE) != 0u) {
-		o_color = outline(v_pos, o_color);
-	}
 	o_color.rgb = pow(o_color.rgb, vec3(1.0 / cl_gamma));
 	o_glow = v_glow;
 }

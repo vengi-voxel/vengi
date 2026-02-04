@@ -172,7 +172,23 @@ vec4 brighten(vec4 color) {
 }
 
 // pos is in object space
-vec4 outline(vec3 pos, vec4 color) {
+vec4 outline(vec3 pos, vec4 color, vec3 normal) {
+#if 0
+	vec3 f = fract(pos);
+	float edge;
+	if (abs(normal.y) > 0.5) {
+		// top or bottom face XZ plane
+		edge = min(min(f.x, 1.0 - f.x), min(f.z, 1.0 - f.z));
+	} else if (abs(normal.x) > 0.5) {
+		// left / right face YZ plane
+		edge = min(min(f.y, 1.0 - f.y), min(f.z, 1.0 - f.z));
+	} else {
+		// front / back face XY plane
+		edge = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
+	}
+	float seam = smoothstep(0.02, 0.05, edge);
+	return color * seam;
+#else
 	const float epsilona = 0.025;
 	const float epsilonb = 0.0001;
 	vec3 frac = abs(fract(pos));
@@ -190,4 +206,5 @@ vec4 outline(vec3 pos, vec4 color) {
 		}
 	}
 	return color;
+#endif
 }
