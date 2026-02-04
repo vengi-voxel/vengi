@@ -52,7 +52,7 @@ bool NodeAddModelTool::execute(const nlohmann::json &id, const nlohmann::json &a
 
 	int nodeId = ctx.sceneMgr->moveNodeToSceneGraph(node, parentId);
 	if (nodeId == InvalidNodeId) {
-		return ctx.result(id, "Failed to add node to scene graph", true);
+		return ctx.result(id, "Failed to add node to scene graph - fetch the scene state first", true);
 	}
 	return ctx.result(id, core::String::format("Added model node %s with id %i", node.uuid().str().c_str(), nodeId),
 					  false);

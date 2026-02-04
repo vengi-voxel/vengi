@@ -24,7 +24,7 @@ PlaceVoxelsTool::PlaceVoxelsTool() : Tool("voxedit_place_voxels") {
 bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
-		return ctx.result(id, "Invalid node UUID", true);
+		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
 
 	if (!args.contains("voxels")) {
@@ -37,12 +37,12 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
-		return ctx.result(id, "Node not found", true);
+		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 	const int nodeId = node->id();
 	voxel::RawVolume *v = ctx.sceneMgr->volume(nodeId);
 	if (v == nullptr) {
-		return ctx.result(id, "Volume not found", true);
+		return ctx.result(id, "Volume not found - fetch the scene state first, this is no model node", true);
 	}
 
 	ModifierVolumeWrapper wrapper(*node, ModifierType::Place);

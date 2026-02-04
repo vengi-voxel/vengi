@@ -45,12 +45,12 @@ bool FindColorTool::execute(const nlohmann::json &id, const nlohmann::json &args
 
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
-		return ctx.result(id, "Invalid node UUID", true);
+		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
 
 	const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 	if (node == nullptr) {
-		return ctx.result(id, "Node not found", true);
+		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
 	const int r = args["r"].get<int>();
@@ -73,7 +73,14 @@ bool FindColorTool::execute(const nlohmann::json &id, const nlohmann::json &args
 		if (!palette.colorName(matchIndex).empty()) {
 			resultJson["matchedColor"]["name"] = palette.colorName(matchIndex).c_str();
 		}
-		// TODO: MCP: add material
+		const palette::Material &mat = palette.material(matchIndex);
+		resultJson["matchedColor"]["material"] = nlohmann::json::array();
+		for (int j = 0; j < (int)palette::MaterialProperty::MaterialMax; ++j) {
+			const palette::MaterialProperty prop = (palette::MaterialProperty)j;
+			if (mat.has(prop)) {
+				resultJson["matchedColor"]["material"][palette::MaterialPropertyName(prop)] = mat.value(prop);
+			}
+		}
 	}
 	return ctx.result(id, resultJson.dump().c_str(), false);
 }

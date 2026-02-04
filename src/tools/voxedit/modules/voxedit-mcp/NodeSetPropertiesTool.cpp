@@ -25,11 +25,11 @@ bool NodeSetPropertiesTool::execute(const nlohmann::json &id, const nlohmann::js
 	}
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
-		return ctx.result(id, "Invalid node UUID", true);
+		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
-		return ctx.result(id, "Node not found in scene graph", true);
+		return ctx.result(id, "Node not found in scene graph - fetch the scene state first", true);
 	}
 	for (auto it = args["properties"].begin(); it != args["properties"].end(); ++it) {
 		node->setProperty(it.key().c_str(), it.value().get<std::string>().c_str());

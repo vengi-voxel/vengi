@@ -20,12 +20,12 @@ GetPaletteTool::GetPaletteTool() : Tool("voxedit_get_palette") {
 bool GetPaletteTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
-		return ctx.result(id, "Invalid node UUID", true);
+		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
 
 	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 	if (node == nullptr) {
-		return ctx.result(id, "Node not found", true);
+		return ctx.result(id, "Node not found - fetch the scene state first", true);
 	}
 
 	const palette::Palette &palette = node->palette();

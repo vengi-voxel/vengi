@@ -21,22 +21,22 @@ NodeMoveTool::NodeMoveTool() : Tool("voxedit_node_move") {
 bool NodeMoveTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
 	const core::UUID nodeUUID = argsUUID(args);
 	if (!nodeUUID.isValid()) {
-		return ctx.result(id, "Invalid node UUID", true);
+		return ctx.result(id, "Invalid node UUID - fetch the scene state first", true);
 	}
 	const core::UUID parentUUID = argsParentUUID(args);
 	if (!parentUUID.isValid()) {
-		return ctx.result(id, "Invalid parent UUID", true);
+		return ctx.result(id, "Invalid parent UUID - fetch the scene state first", true);
 	}
 	const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
 	if (node == nullptr) {
-		return ctx.result(id, "Node not found in scene graph", true);
+		return ctx.result(id, "Node not found in scene graph - fetch the scene state first", true);
 	}
 	const scenegraph::SceneGraphNode *parentNode = ctx.sceneMgr->sceneGraphNodeByUUID(parentUUID);
 	if (parentNode == nullptr) {
-		return ctx.result(id, "Parent node not found in scene graph", true);
+		return ctx.result(id, "Parent node not found in scene graph - fetch the scene state first", true);
 	}
 	if (!ctx.sceneMgr->nodeMove(node->id(), parentNode->id(), scenegraph::NodeMoveFlag::UpdateTransform)) {
-		return ctx.result(id, "Failed to move node in scene graph", true);
+		return ctx.result(id, "Failed to move node in scene graph - fetch the scene state first", true);
 	}
 	return ctx.result(id, "Node moved successfully", false);
 }
