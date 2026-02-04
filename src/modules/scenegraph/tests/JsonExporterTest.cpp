@@ -22,7 +22,8 @@ TEST_F(JsonExporterTest, testExportToBufferedStream) {
 	sceneGraph.emplace(core::move(node), 0);
 
 	io::BufferedReadWriteStream stream;
-	sceneGraphJson(sceneGraph, false, stream);
+	const uint32_t flags = JSONEXPORTER_PALETTE | JSONEXPORTER_NODEDETAILS | JSONEXPORTER_CHILDREN;
+	sceneGraphJson(sceneGraph, stream, flags);
 	stream.seek(0);
 	std::string json((const char *)stream.getBuffer(), (size_t)stream.size());
 	EXPECT_FALSE(json.empty());

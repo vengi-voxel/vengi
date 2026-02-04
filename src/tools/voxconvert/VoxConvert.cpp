@@ -455,7 +455,9 @@ app::AppState VoxConvert::onInit() {
 	applyFilters(sceneGraph, infiles, outfiles);
 
 	if (_outputJson) {
-		scenegraph::sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
+		const uint32_t jsonFlags = getArgVal("--json", "") == "full" ? scenegraph::JSONEXPORTER_ALL : (scenegraph::JSONEXPORTER_ALL & ~scenegraph::JSONEXPORTER_MESHDETAILS);
+		io::StdoutWriteStream stream;
+		scenegraph::sceneGraphJson(sceneGraph, stream, jsonFlags);
 	}
 
 	if (_exportModels) {

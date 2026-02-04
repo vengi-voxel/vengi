@@ -4,7 +4,6 @@
 
 #include "JsonExporter.h"
 #include "core/Var.h"
-#include "io/StdoutWriteStream.h"
 #include "palette/Material.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/ChunkMesh.h"
@@ -14,29 +13,23 @@
 
 namespace scenegraph {
 
-struct NodeStats {
-	int voxels = 0;
-	int vertices = 0;
-	int indices = 0;
+NodeStats NodeStats::operator+(const NodeStats &other) const {
+	NodeStats result;
+	result.voxels = voxels + other.voxels;
+	result.vertices = vertices + other.vertices;
+	result.indices = indices + other.indices;
+	return result;
+}
 
-	NodeStats operator+(const NodeStats &other) const {
-		NodeStats result;
-		result.voxels = voxels + other.voxels;
-		result.vertices = vertices + other.vertices;
-		result.indices = indices + other.indices;
-		return result;
-	}
+NodeStats &NodeStats::operator+=(const NodeStats &other) {
+	voxels += other.voxels;
+	vertices += other.vertices;
+	indices += other.indices;
+	return *this;
+}
 
-	NodeStats &operator+=(const NodeStats &other) {
-		voxels += other.voxels;
-		vertices += other.vertices;
-		indices += other.indices;
-		return *this;
-	}
-};
-
-static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, int nodeId, io::WriteStream &stream,
-									  uint32_t flags) {
+NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeId, io::WriteStream &stream,
+							 uint32_t flags) {
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 
 	const scenegraph::SceneGraphNodeType type = node.type();
@@ -228,11 +221,11 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 			stats.vertices += (int)vertices;
 			stats.indices += (int)indices;
 		}
-		if (!node.children().empty()) {
+		if ((flags & JSONEXPORTER_CHILDREN) && !node.children().empty()) {
 			stream.writeStringFormat(false, ",\"children\": [");
 			for (size_t i = 0; i < node.children().size(); ++i) {
-				const int children = node.children()[i];
-				stats += sceneGraphJsonNode_r(sceneGraph, children, stream, flags);
+				const int childId = node.children()[i];
+				stats += sceneGraphNodeJson(sceneGraph, childId, stream, flags);
 				if (i + 1 < node.children().size()) {
 					stream.writeStringFormat(false, ",");
 				}
@@ -244,24 +237,22 @@ static NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, 
 	return stats;
 }
 
-void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream, uint32_t flags) {
-	stream.writeStringFormat(false, "{");
-	stream.writeStringFormat(false, "\"root\": ");
-	NodeStats stats = sceneGraphJsonNode_r(sceneGraph, sceneGraph.root().id(), stream, flags);
-	stream.writeStringFormat(false, ",");
-	stream.writeStringFormat(false, "\"stats\": {");
-	stream.writeStringFormat(false, "\"voxel_count\": %i", stats.voxels);
+void sceneGraphNodeStatsJson(const NodeStats &stats, io::WriteStream &stream, uint32_t flags) {
+	stream.writeStringFormat(false, "{\"voxel_count\": %i", stats.voxels);
 	if (flags & JSONEXPORTER_MESHDETAILS) {
-		stream.writeStringFormat(false, ",\"vertex_count\": %i,", stats.vertices);
-		stream.writeStringFormat(false, "\"index_count\": %i", stats.indices);
+		stream.writeStringFormat(false, ",\"vertex_count\": %i", stats.vertices);
+		stream.writeStringFormat(false, ",\"index_count\": %i", stats.indices);
 	}
-	stream.writeStringFormat(false, "}"); // stats
 	stream.writeStringFormat(false, "}");
 }
 
-void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, bool printMeshDetails, uint32_t flags) {
-	io::StdoutWriteStream stream;
-	sceneGraphJson(sceneGraph, printMeshDetails, stream, flags);
+void sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream, uint32_t flags) {
+	stream.writeStringFormat(false, "{");
+	stream.writeStringFormat(false, "\"root\": ");
+	NodeStats stats = sceneGraphNodeJson(sceneGraph, sceneGraph.root().id(), stream, flags);
+	stream.writeStringFormat(false, ",\"stats\": ");
+	sceneGraphNodeStatsJson(stats, stream, flags);
+	stream.writeStringFormat(false, "}");
 }
 
 } // namespace scenegraph

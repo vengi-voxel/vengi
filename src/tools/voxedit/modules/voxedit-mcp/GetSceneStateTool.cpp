@@ -21,7 +21,7 @@ bool GetSceneStateTool::execute(const nlohmann::json &id, const nlohmann::json &
 		return ctx.result(id, "Scene graph is empty - not connected or no scene loaded", true);
 	}
 	io::BufferedReadWriteStream stream;
-	scenegraph::sceneGraphJson(ctx.sceneMgr->sceneGraph(), false, stream);
+	scenegraph::sceneGraphJson(ctx.sceneMgr->sceneGraph(), stream);
 	core::String json((const char *)stream.getBuffer(), (size_t)stream.size());
 	return ctx.result(id, json, false);
 }
