@@ -122,6 +122,55 @@ msgstr ""
 msgid "Show all cvars"
 msgstr ""
 
+msgid "Bindings"
+msgstr ""
+
+#, c-format
+msgid "Recording new binding for: %s"
+msgstr ""
+
+msgid ""
+"Press keys to set new binding, then click 'Apply' or press Escape to cancel"
+msgstr ""
+
+#, c-format
+msgid "New binding: %s"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Keys"
+msgstr ""
+
+msgid "Command"
+msgstr ""
+
+msgid "Context"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+#, c-format
+msgid "Failed to get command for %s"
+msgstr ""
+
+msgid "Delete binding"
+msgstr ""
+
+msgid "Keymap"
+msgstr ""
+
+msgid "Reset to default"
+msgstr ""
+
+msgid "Filter"
+msgstr ""
+
 msgid "Cloud"
 msgstr ""
 
@@ -218,9 +267,6 @@ msgid ""
 "Do you want to overwrite the file?"
 msgstr ""
 
-msgid "Filter"
-msgstr ""
-
 msgid "Save file"
 msgstr ""
 
@@ -276,31 +322,6 @@ msgid "Allow to change the ui font size"
 msgstr ""
 
 msgid "Which keybinding to use"
-msgstr ""
-
-msgid "Bindings"
-msgstr ""
-
-msgid "Keys"
-msgstr ""
-
-msgid "Command"
-msgstr ""
-
-msgid "Context"
-msgstr ""
-
-msgid "Description"
-msgstr ""
-
-#, c-format
-msgid "Failed to get command for %s"
-msgstr ""
-
-msgid "Reset to default"
-msgstr ""
-
-msgid "Edit bindings"
 msgstr ""
 
 msgid "FPS"
@@ -379,9 +400,6 @@ msgstr ""
 msgid "To change the language everywhere restart the application"
 msgstr ""
 
-msgid "Keymap"
-msgstr ""
-
 msgid "Color reduction"
 msgstr ""
 
@@ -414,9 +432,6 @@ msgstr ""
 msgid "Z"
 msgstr ""
 
-msgid "Cancel"
-msgstr ""
-
 msgid "Ok"
 msgstr ""
 
@@ -433,6 +448,18 @@ msgid ""
 msgstr ""
 
 msgid "Unknown"
+msgstr ""
+
+msgid "Corporate Grey"
+msgstr ""
+
+msgid "Dark"
+msgstr ""
+
+msgid "Light"
+msgstr ""
+
+msgid "Classic"
 msgstr ""
 
 msgid "Enable sending anonymous metrics"
@@ -1006,18 +1033,6 @@ msgstr ""
 msgid "Font size"
 msgstr ""
 
-msgid "CorporateGrey"
-msgstr ""
-
-msgid "Dark"
-msgstr ""
-
-msgid "Classic"
-msgstr ""
-
-msgid "Light"
-msgstr ""
-
 msgid "Color theme"
 msgstr ""
 
@@ -1214,7 +1229,35 @@ msgstr ""
 msgid "Length of the stipple pattern <= 1 to disable"
 msgstr ""
 
-msgid "Unselect"
+msgctxt "SelectMode"
+msgid "All"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Same Color"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Surface"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Connected"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Fuzzy Color"
+msgstr ""
+
+msgid "Select mode"
+msgstr ""
+
+msgid "Threshold"
+msgstr ""
+
+msgid ""
+"Color distance threshold for fuzzy matching (0 = exact, higher = more "
+"similar colors)"
 msgstr ""
 
 msgid "Enable normal rendering to see your changes"
@@ -1626,9 +1669,6 @@ msgid "Rename node"
 msgstr ""
 
 msgid "Node names should be unique"
-msgstr ""
-
-msgid "Apply"
 msgstr ""
 
 msgid "Formats"
@@ -2534,8 +2574,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
-"cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:cam_rotation>."
 msgstr ""
 
 msgid ""
@@ -2573,8 +2613,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr ""
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
 msgid "Use ctrl+tab to switch between the panels of the application."
@@ -2922,21 +2962,19 @@ msgstr ""
 msgid "Save a single node to the given path with their node names"
 msgstr ""
 
-msgid ""
-"Create a new scene (with a given name and width, height, depth - all "
-"optional)"
+msgid "Create a new scene (with a given name and width, height, depth)"
 msgstr ""
 
-msgid "Crop the current active node to the voxel boundaries"
+msgid "Crop the given node to the voxel boundaries"
 msgstr ""
 
-msgid "Split the current active node into multiple nodes"
+msgid "Split the given node into multiple nodes"
 msgstr ""
 
-msgid "Scale the current active node or the given node down"
+msgid "Scale the given node down"
 msgstr ""
 
-msgid "Scale the current active node or the given node up"
+msgid "Scale the given node up"
 msgstr ""
 
 msgid ""
@@ -2977,10 +3015,7 @@ msgstr ""
 msgid "Set the reference position to the current cursor position"
 msgstr ""
 
-msgid "Resize your volume about given x, y and z size"
-msgstr ""
-
-msgid "Resize your current model node about given x, y and z size"
+msgid "Resize your current model node by the specified size"
 msgstr ""
 
 msgid "Shift the volume by the given values"
@@ -3058,8 +3093,8 @@ msgid "Mirrors the transform at the given axes for the given node"
 msgstr ""
 
 msgid ""
-"Add a new model node (with a given name and width, height, depth - all "
-"optional)"
+"Add a new model node to the current active node (with a given name and "
+"width, height, depth)"
 msgstr ""
 
 msgid ""
@@ -3107,7 +3142,7 @@ msgstr ""
 msgid "Unlock all nodes"
 msgstr ""
 
-msgid "Rename the current node or the given node id"
+msgid "Change the name of a node"
 msgstr ""
 
 msgid "Duplicates the current node or the given node id"
@@ -3129,9 +3164,6 @@ msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
 msgstr ""
 
 msgid "pitch, yaw and ignored roll in degrees"
-msgstr ""
-
-msgid "Change the modifier type to 'select'"
 msgstr ""
 
 msgid "Change the modifier type to 'color picker'"

@@ -151,6 +151,55 @@ msgstr "Alle Befehle anzeigen"
 msgid "Show all cvars"
 msgstr "Alle cvars anzeigen"
 
+msgid "Bindings"
+msgstr "Tastenbelegungen"
+
+#, c-format
+msgid "Recording new binding for: %s"
+msgstr ""
+
+msgid ""
+"Press keys to set new binding, then click 'Apply' or press Escape to cancel"
+msgstr ""
+
+#, c-format
+msgid "New binding: %s"
+msgstr "Neue Tastenbelegungen: %s"
+
+msgid "Apply"
+msgstr "Anwenden"
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Keys"
+msgstr "Tasten"
+
+msgid "Command"
+msgstr "Befehl"
+
+msgid "Context"
+msgstr "Kontext"
+
+msgid "Description"
+msgstr "Beschreibung"
+
+#, c-format
+msgid "Failed to get command for %s"
+msgstr "Fehler beim Abrufen des Befehls für %s"
+
+msgid "Delete binding"
+msgstr "Tastenbelegungen entfernen"
+
+msgid "Keymap"
+msgstr "Tastaturbelegung"
+
+msgid "Reset to default"
+msgstr "Auf Standard zurücksetzen"
+
+msgid "Filter"
+msgstr "Filter"
+
 msgid "Cloud"
 msgstr "Cloud"
 
@@ -249,9 +298,6 @@ msgstr ""
 "%s existiert bereits.\n"
 "Möchten Sie die Datei überschreiben?"
 
-msgid "Filter"
-msgstr "Filter"
-
 msgid "Save file"
 msgstr "Datei speichern"
 
@@ -308,31 +354,6 @@ msgstr "Ändern der UI-Schriftgröße zulassen"
 
 msgid "Which keybinding to use"
 msgstr "Welche Tastaturbelegung verwenden"
-
-msgid "Bindings"
-msgstr "Tastenbelegungen"
-
-msgid "Keys"
-msgstr "Tasten"
-
-msgid "Command"
-msgstr "Befehl"
-
-msgid "Context"
-msgstr "Beschreibung"
-
-msgid "Description"
-msgstr "Beschreibung"
-
-#, c-format
-msgid "Failed to get command for %s"
-msgstr "Fehler beim Abrufen des Befehls für %s"
-
-msgid "Reset to default"
-msgstr "Auf Standard zurücksetzen"
-
-msgid "Edit bindings"
-msgstr "Tastenbelegungen bearbeiten"
 
 msgid "FPS"
 msgstr "FPS"
@@ -412,9 +433,6 @@ msgid "To change the language everywhere restart the application"
 msgstr ""
 "Um die Sprache überall zu ändern, muss die Applikation neu gestartet werden"
 
-msgid "Keymap"
-msgstr "Tastaturbelegung"
-
 msgid "Color reduction"
 msgstr "Farbreduktion"
 
@@ -449,9 +467,6 @@ msgstr "Y"
 msgid "Z"
 msgstr "Z"
 
-msgid "Cancel"
-msgstr "Abbrechen"
-
 msgid "Ok"
 msgstr "Ok"
 
@@ -471,6 +486,18 @@ msgstr ""
 
 msgid "Unknown"
 msgstr "Unbekannt"
+
+msgid "Corporate Grey"
+msgstr "Corporate Grey"
+
+msgid "Dark"
+msgstr "Dunkel"
+
+msgid "Light"
+msgstr "Hell"
+
+msgid "Classic"
+msgstr "Klassisch"
 
 msgid "Enable sending anonymous metrics"
 msgstr "Senden anonymer Metriken aktivieren"
@@ -1073,18 +1100,6 @@ msgstr "Mehrere Monitore zulassen"
 msgid "Font size"
 msgstr "Schriftgröße"
 
-msgid "CorporateGrey"
-msgstr "Corporate Grey"
-
-msgid "Dark"
-msgstr "Dunkel"
-
-msgid "Classic"
-msgstr "Klassisch"
-
-msgid "Light"
-msgstr "Hell"
-
 msgid "Color theme"
 msgstr "Farbthema"
 
@@ -1282,8 +1297,36 @@ msgstr "Strichelmuster:"
 msgid "Length of the stipple pattern <= 1 to disable"
 msgstr "Länge des Strichelmusters <= 1 zum Deaktivieren"
 
-msgid "Unselect"
-msgstr "Auswahl entfernen"
+msgctxt "SelectMode"
+msgid "All"
+msgstr "Alles"
+
+msgctxt "SelectMode"
+msgid "Same Color"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Surface"
+msgstr ""
+
+msgctxt "SelectMode"
+msgid "Connected"
+msgstr "Zusammenhängend"
+
+msgctxt "SelectMode"
+msgid "Fuzzy Color"
+msgstr ""
+
+msgid "Select mode"
+msgstr "Auswahlmodus"
+
+msgid "Threshold"
+msgstr ""
+
+msgid ""
+"Color distance threshold for fuzzy matching (0 = exact, higher = more "
+"similar colors)"
+msgstr ""
 
 msgid "Enable normal rendering to see your changes"
 msgstr ""
@@ -1720,9 +1763,6 @@ msgstr "Knoten Umbenennen"
 
 msgid "Node names should be unique"
 msgstr "Knotennamen sollten eindeutig sein"
-
-msgid "Apply"
-msgstr "Anwenden"
 
 msgid "Formats"
 msgstr "Formate"
@@ -3118,24 +3158,22 @@ msgstr ""
 "Einen einzelnen Knoten mit ihren Knotennamen in den angegebenen Pfad "
 "speichern"
 
-msgid ""
-"Create a new scene (with a given name and width, height, depth - all "
-"optional)"
+msgid "Create a new scene (with a given name and width, height, depth)"
 msgstr ""
 "Eine neue Szene erstellen (mit einem angegebenen Namen und Breite, Höhe, "
-"Tiefe - alle optional)"
+"Tiefe"
 
-msgid "Crop the current active node to the voxel boundaries"
-msgstr "Den aktuellen aktiven Knoten auf die Voxelgrenzen zuschneiden"
+msgid "Crop the given node to the voxel boundaries"
+msgstr "Den gegebenen aktiven Knoten auf die Voxelgrenzen zuschneiden"
 
-msgid "Split the current active node into multiple nodes"
-msgstr "Den aktuellen aktiven Knoten in mehrere Knoten aufteilen"
+msgid "Split the given node into multiple nodes"
+msgstr "Den gegebenen Knoten in mehrere Knoten aufteilen"
 
-msgid "Scale the current active node or the given node down"
-msgstr "Den aktuellen aktiven Knoten oder den angegebenen Knoten verkleinern"
+msgid "Scale the given node down"
+msgstr "Den gegebenen Knoten oder den angegebenen Knoten verkleinern"
 
-msgid "Scale the current active node or the given node up"
-msgstr "Den aktuellen aktiven Knoten oder den angegebenen Knoten vergrößern"
+msgid "Scale the given node up"
+msgstr "Den gegebenen Knoten oder den angegebenen Knoten vergrößern"
 
 msgid ""
 "Move the voxels of the current selected palette index or the given index "
@@ -3177,14 +3215,10 @@ msgstr "Setzt den Cursor auf die angegebene Position"
 msgid "Set the reference position to the current cursor position"
 msgstr "Setzt die Referenzposition auf die aktuelle Cursorposition"
 
-msgid "Resize your volume about given x, y and z size"
-msgstr ""
-"Ändert die Größe des Volumens entsprechend der angegebenen x-, y- und z-Größe"
-
-msgid "Resize your current model node about given x, y and z size"
+msgid "Resize your current model node by the specified size"
 msgstr ""
 "Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen "
-"x-, y- und z-Größe"
+"Größe"
 
 msgid "Shift the volume by the given values"
 msgstr "Verschiebt das Volumen um die angegebenen Werte"
@@ -3276,11 +3310,11 @@ msgstr ""
 "Knoten"
 
 msgid ""
-"Add a new model node (with a given name and width, height, depth - all "
-"optional)"
+"Add a new model node to the current active node (with a given name and "
+"width, height, depth)"
 msgstr ""
 "Fügt einen neuen Modellknoten hinzu (mit einem angegebenen Namen und Breite, "
-"Höhe, Tiefe - alle optional)"
+"Höhe, Tiefe)"
 
 msgid ""
 "Bake the current transform into the voxel data for a particular node by id - "
@@ -3337,8 +3371,8 @@ msgstr "Alle Knoten sperren"
 msgid "Unlock all nodes"
 msgstr "Alle Knoten entsperren"
 
-msgid "Rename the current node or the given node id"
-msgstr "Bennene den aktuellen Knoten oder die angegebene Knoten-ID um"
+msgid "Change the name of a node"
+msgstr "Ändert den Namen eines Knotens"
 
 msgid "Duplicates the current node or the given node id"
 msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
@@ -3362,9 +3396,6 @@ msgstr "Schattierungsmodus: 0=Unlit, 1=Lit, 2=Schatten"
 
 msgid "pitch, yaw and ignored roll in degrees"
 msgstr "Pitch, Yaw und ignoriertes Roll in Grad"
-
-msgid "Change the modifier type to 'select'"
-msgstr "Ändert den Modifier-Typ auf 'Auswählen'"
 
 msgid "Change the modifier type to 'color picker'"
 msgstr "Ändert den Modifier-Typ auf 'Farbauswahl'"

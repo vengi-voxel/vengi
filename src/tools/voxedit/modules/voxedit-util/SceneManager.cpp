@@ -2180,28 +2180,28 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			crop(nodeId);
-		}).setHelp(_("Crop the current active node to the voxel boundaries"));
+		}).setHelp(_("Crop the given node to the voxel boundaries"));
 
 	command::Command::registerCommand("splitobjects")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to split"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			splitObjects(nodeId);
-		}).setHelp(_("Split the current active node into multiple nodes"));
+		}).setHelp(_("Split the given node into multiple nodes"));
 
 	command::Command::registerCommand("scaledown")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			scaleDown(nodeId);
-		}).setHelp(_("Scale the current active node or the given node down")).setArgumentCompleter(nodeCompleter(_sceneGraph));
+		}).setHelp(_("Scale the given node down")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("scaleup")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to scale"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			scaleUp(nodeId);
-		}).setHelp(_("Scale the current active node or the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
+		}).setHelp(_("Scale the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortomodel")
 		.addArg({"index", command::ArgType::Int, true, "", "Palette color index"})
@@ -2307,17 +2307,6 @@ void SceneManager::construct() {
 			setReferencePosition(cursorPosition());
 		}).setHelp(_("Set the reference position to the current cursor position"));
 
-	command::Command::registerCommand("resize")
-		.addArg({"x", command::ArgType::Int, true, "1", "X size"})
-		.addArg({"y", command::ArgType::Int, true, "1", "Y size"})
-		.addArg({"z", command::ArgType::Int, true, "1", "Z size"})
-		.setHandler([this] (const command::CommandArgs& args) {
-			const int x = args.intVal("x", 1);
-			const int y = args.intVal("y", x);
-			const int z = args.intVal("z", y);
-			resizeAll(glm::ivec3(x, y, z));
-		}).setHelp(_("Resize your volume about given x, y and z size"));
-
 	command::Command::registerCommand("modelsize")
 		.addArg({"x", command::ArgType::Int, true, "1", "X size"})
 		.addArg({"y", command::ArgType::Int, true, "1", "Y size"})
@@ -2329,7 +2318,7 @@ void SceneManager::construct() {
 			const int z = args.intVal("z", y);
 			const int nodeId = toNodeId(args, activeNode());
 			nodeResize(nodeId, glm::ivec3(x, y, z));
-		}).setHelp(_("Resize your current model node about given x, y and z size"));
+		}).setHelp(_("Resize your current model node by the specified size"));
 
 	command::Command::registerCommand("shift")
 		.addArg({"x", command::ArgType::Int, false, "", "X shift value"})
@@ -2532,7 +2521,7 @@ void SceneManager::construct() {
 		.setHandler([&] (const command::CommandArgs& args) {
 			const math::Axis axis = math::toAxis(args.str("axis"));
 			flip(axis);
-		}).setHelp(_("Flip the selected nodes around the given axis x, y or z")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
+		}).setHelp(_("Flip the selected nodes around the given axis")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("transformreset")
 		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID"})
@@ -2548,7 +2537,7 @@ void SceneManager::construct() {
 			const math::Axis axis = math::toAxis(args.str("axis"));
 			const int nodeId = toNodeId(args, activeNode());
 			nodeTransformMirror(nodeId, InvalidKeyFrame, axis);
-		}).setHelp(_("Mirrors the transform at the given axes x, y or z for the given node"));
+		}).setHelp(_("Mirrors the transform at the given axes for the given node"));
 
 	command::Command::registerCommand("modeladd")
 		.addArg({"name", command::ArgType::String, true, "", "Model name"})
