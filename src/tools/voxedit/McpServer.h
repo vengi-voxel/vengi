@@ -28,7 +28,8 @@ public:
 };
 
 /**
- * @brief MCP (Model Context Protocol) server for vengi voxedit
+ * @brief MCP (Model Context Protocol) server for vengi voxedit. It connects to a VoxEdit instance as normal client and
+ * knows the whole scene state,
  * @ingroup Tools
  *
  * @li https://modelcontextprotocol.io/docs/tools/inspector

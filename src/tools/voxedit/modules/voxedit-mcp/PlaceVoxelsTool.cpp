@@ -12,21 +12,10 @@ namespace voxedit {
 PlaceVoxelsTool::PlaceVoxelsTool() : Tool("voxedit_place_voxels") {
 	_tool["description"] = "Place voxels at specified positions in a node.";
 
-	nlohmann::json itemsSchema;
-	itemsSchema["type"] = "object";
-	itemsSchema["properties"]["x"]["type"] = "integer";
-	itemsSchema["properties"]["y"]["type"] = "integer";
-	itemsSchema["properties"]["z"]["type"] = "integer";
-	itemsSchema["properties"]["colorIndex"]["type"] = "integer";
-	itemsSchema["required"] = nlohmann::json::array({"x", "y", "z", "colorIndex"});
-
-	nlohmann::json voxelsProp = propTypeDescription("array", "Array of {x, y, z, colorIndex} objects");
-	voxelsProp["items"] = core::move(itemsSchema);
-
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";
 	inputSchema["required"] = nlohmann::json::array({"voxels", "nodeUUID"});
-	inputSchema["properties"]["voxels"] = core::move(voxelsProp);
+	inputSchema["properties"]["voxels"] = propVoxels();
 	inputSchema["properties"]["nodeUUID"] = propUUID();
 	_tool["inputSchema"] = core::move(inputSchema);
 }
@@ -52,7 +41,7 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 		const int x = voxelData["x"].get<int>();
 		const int y = voxelData["y"].get<int>();
 		const int z = voxelData["z"].get<int>();
-		const int colorIndex = voxelData.value("colorIndex", 1);
+		const int colorIndex = voxelData.value("idx", 1);
 		if (colorIndex > 0 && colorIndex < 256) {
 			volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex));
 			++placedCount;

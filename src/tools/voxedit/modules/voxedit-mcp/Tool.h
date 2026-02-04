@@ -30,6 +30,7 @@ protected:
 	core::UUID argsParentUUID(const nlohmann::json &args) const;
 	core::UUID argsReferenceUUID(const nlohmann::json &args) const;
 
+	static nlohmann::json propVoxels();
 	static nlohmann::json propUUID();
 	static nlohmann::json propParentUUID();
 	static nlohmann::json propReferenceUUID();

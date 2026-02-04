@@ -22,6 +22,19 @@ bool Tool::sendMessage(ToolContext &ctx, const network::ProtocolMessage &msg) {
 	return network.sendMessage(msg);
 }
 
+nlohmann::json Tool::propVoxels() {
+	nlohmann::json itemsSchema;
+	itemsSchema["type"] = "object";
+	itemsSchema["properties"]["x"] = propTypeDescription("integer", "X coordinate of the voxel");
+	itemsSchema["properties"]["y"] = propTypeDescription("integer", "Y coordinate of the voxel");
+	itemsSchema["properties"]["z"] = propTypeDescription("integer", "Z coordinate of the voxel");
+	itemsSchema["properties"]["idx"] = propTypeDescription("integer", "Node palette color index of the voxel");
+
+	nlohmann::json voxelsProp = propTypeDescription("array", "Array of {x, y, z, colorIndex} objects there y is pointing upwards.");
+	voxelsProp["items"] = core::move(itemsSchema);
+	return voxelsProp;
+}
+
 nlohmann::json Tool::propUUID() {
 	return propTypeDescription("string", "UUID of the scene graph node");
 }
