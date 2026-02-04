@@ -5,6 +5,7 @@
 #include "PlaceVoxelsTool.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {
@@ -44,30 +45,21 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 		return ctx.result(id, "Volume not found", true);
 	}
 
-	int placedCount = 0;
-	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
+	ModifierVolumeWrapper wrapper(*node, ModifierType::Place);
 	for (const auto &voxelData : voxelsArray) {
 		const int x = voxelData["x"].get<int>();
 		const int y = voxelData["y"].get<int>();
 		const int z = voxelData["z"].get<int>();
 		const int colorIndex = voxelData.value("idx", 1);
-		if (colorIndex > 0 && colorIndex < 256) {
-			if (v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex))) {
-				if (modifiedRegion.isValid()) {
-					modifiedRegion.accumulate(x, y, z);
-				} else {
-					modifiedRegion = voxel::Region(x, y, z, x, y, z);
-				}
-				++placedCount;
-			}
-		}
+		v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex));
 	}
 
-	if (placedCount > 0) {
-		ctx.sceneMgr->modified(nodeId, modifiedRegion);
+	const voxel::Region &region = wrapper.dirtyRegion();
+	if (region.isValid()) {
+		ctx.sceneMgr->modified(nodeId, region);
+		return ctx.result(id, "Voxels placed successfully", false);
 	}
-	return ctx.result(id, core::String::format("Placed %d voxels in node %s", placedCount, nodeUUID.str().c_str()),
-					  false);
+	return ctx.result(id, "No voxels were placed", true);
 }
 
 } // namespace voxedit
