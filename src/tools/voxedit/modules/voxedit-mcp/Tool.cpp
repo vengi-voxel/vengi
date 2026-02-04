@@ -59,13 +59,17 @@ const core::String &Tool::rconPassword() const {
 }
 
 core::UUID Tool::argsUUID(const nlohmann::json &args) const {
-	const core::UUID nodeUUID(args["nodeUUID"].get<std::string>().c_str());
-	return nodeUUID;
+	if (!args.contains("nodeUUID") || !args["nodeUUID"].is_string()) {
+		return core::UUID(args["nodeUUID"].get<std::string>().c_str());
+	}
+	return {};
 }
 
 core::UUID Tool::argsParentUUID(const nlohmann::json &args) const {
-	const core::UUID nodeUUID(args["parentUUID"].get<std::string>().c_str());
-	return nodeUUID;
+	if (args.contains("parentUUID") && args["parentUUID"].is_string()) {
+		return core::UUID(args["parentUUID"].get<std::string>().c_str());
+	}
+	return {};
 }
 
 core::UUID Tool::argsReferenceUUID(const nlohmann::json &args) const {

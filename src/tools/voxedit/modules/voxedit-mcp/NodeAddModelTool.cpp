@@ -30,6 +30,9 @@ NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
 
 bool NodeAddModelTool::execute(const nlohmann::json &id, const nlohmann::json &args, ToolContext &ctx) {
 	const core::UUID parentUUID = argsParentUUID(args);
+	if (!parentUUID.isValid()) {
+		return ctx.result(id, "Invalid parent UUID - fetch the scene state first", true);
+	}
 	const core::String name = args.value("name", "newnode").c_str();
 	const int w = args.value("width", 32);
 	const int h = args.value("height", 32);
