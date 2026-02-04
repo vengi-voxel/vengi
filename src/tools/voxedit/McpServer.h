@@ -29,7 +29,9 @@ public:
 
 /**
  * @brief MCP (Model Context Protocol) server for vengi voxedit. It connects to a VoxEdit instance as normal client and
- * knows the whole scene state,
+ * knows the whole scene state. It should not directly send network messages to modify the scene, but use @c SceneManager
+ * to keep the state in sync.
+ *
  * @ingroup Tools
  *
  * @li https://modelcontextprotocol.io/docs/tools/inspector

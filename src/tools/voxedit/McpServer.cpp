@@ -104,6 +104,7 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::PlaceVoxelsTool());
 	_toolRegistry.registerTool(new voxedit::ScriptApiTool());
 	_toolRegistry.registerTool(new voxedit::ScriptCreateTool());
+	// TODO: MCP: create brush tools for direct voxel manipulations, selection, etc
 	command::Command::visitSorted(
 		[&](const command::Command &c) {
 			if (c.isInput()) {

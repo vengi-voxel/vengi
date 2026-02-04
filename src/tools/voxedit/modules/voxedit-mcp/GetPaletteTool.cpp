@@ -3,6 +3,7 @@
  */
 
 #include "GetPaletteTool.h"
+#include "palette/Material.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -43,7 +44,14 @@ bool GetPaletteTool::execute(const nlohmann::json &id, const nlohmann::json &arg
 		if (!palette.colorName(i).empty()) {
 			colorJson["name"] = palette.colorName(i).c_str();
 		}
-		// TODO: MCP: add material
+		const palette::Material &mat = palette.material(i);
+		colorJson["material"] = nlohmann::json::array();
+		for (int j = 0; j < (int)palette::MaterialProperty::MaterialMax; ++j) {
+			const palette::MaterialProperty prop = (palette::MaterialProperty)j;
+			if (mat.has(prop)) {
+				colorJson["material"][palette::MaterialPropertyName(prop)] = mat.value(prop);
+			}
+		}
 		paletteJson["colors"].emplace_back(core::move(colorJson));
 	}
 	return ctx.result(id, paletteJson.dump().c_str(), false);
