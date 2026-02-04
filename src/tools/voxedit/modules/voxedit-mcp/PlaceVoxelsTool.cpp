@@ -45,13 +45,15 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 		return ctx.result(id, "Volume not found - fetch the scene state first, this is no model node", true);
 	}
 
-	ModifierVolumeWrapper wrapper(*node, ModifierType::Place);
+	ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
 	for (const auto &voxelData : voxelsArray) {
 		const int x = voxelData["x"].get<int>();
 		const int y = voxelData["y"].get<int>();
 		const int z = voxelData["z"].get<int>();
 		const int colorIndex = voxelData.value("idx", 1);
-		v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex));
+		if (!wrapper.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex))) {
+			return ctx.result(id, core::String::format("Failed to set voxel with colorIndex %i at %i,%i,%i", colorIndex, x, y, z), true);
+		}
 	}
 
 	const voxel::Region &region = wrapper.dirtyRegion();
