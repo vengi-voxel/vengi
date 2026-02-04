@@ -36,15 +36,15 @@ nlohmann::json Tool::propVoxels() {
 }
 
 nlohmann::json Tool::propUUID() {
-	return propTypeDescription("string", "UUID of the scene graph node");
+	return propTypeDescription("string", "UUID of the scene graph node - fetch the scene state to get the UUIDs of existing nodes");
 }
 
 nlohmann::json Tool::propParentUUID() {
-	return propTypeDescription("string", "UUID of the new parent node");
+	return propTypeDescription("string", "UUID of the new parent node - fetch the scene state to get the UUIDs of existing nodes");
 }
 
 nlohmann::json Tool::propReferenceUUID() {
-	return propTypeDescription("string", "UUID of the referenced node if the node type is a ModelReference");
+	return propTypeDescription("string", "UUID of the referenced node if the node type is a ModelReference - fetch the scene state to get the UUIDs of existing nodes");
 }
 
 nlohmann::json Tool::propTypeDescription(const core::String &type, const core::String &description) {

@@ -12,7 +12,7 @@ namespace voxedit {
 
 // TODO: MCP: not only model nodes, but all other node types, too
 NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
-	_tool["description"] = "Create a new model node. Provide optional parent UUID, name and size";
+	_tool["description"] = "Create a new model node. Provide parent UUID from the scene graph state, name and optinally the size";
 
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";

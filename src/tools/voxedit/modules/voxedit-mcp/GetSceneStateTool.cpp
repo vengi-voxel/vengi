@@ -10,7 +10,9 @@
 namespace voxedit {
 
 GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
-	_tool["description"] = "Get the current scene graph as JSON";
+	_tool["description"] =
+		"Get the current scene graph state. This should be your first action after connecting to the MCP server to get "
+		"the UUIDs of the existing nodes and their structure. Do this call from time to time to get an updated state.";
 	_tool["inputSchema"]["type"] = "object";
 }
 
