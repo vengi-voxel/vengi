@@ -59,7 +59,7 @@ const core::String &Tool::rconPassword() const {
 }
 
 core::UUID Tool::argsUUID(const nlohmann::json &args) const {
-	if (!args.contains("nodeUUID") || !args["nodeUUID"].is_string()) {
+	if (args.contains("nodeUUID") && args["nodeUUID"].is_string()) {
 		return core::UUID(args["nodeUUID"].get<std::string>().c_str());
 	}
 	return {};
