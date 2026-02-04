@@ -2145,7 +2145,7 @@ void SceneManager::construct() {
 		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID to save"})
 		.addArg({"file", command::ArgType::String, true, "", "File path to save to"})
 		.setHandler([&] (const command::CommandArgs& args) {
-			const int nodeId = args.intVal("nodeid");
+			const int nodeId = toNodeId(args, activeNode());
 			core::String file = args.str("file");
 			if (file.empty()) {
 				file = core::String::format("node%i.vengi", nodeId);
@@ -2602,7 +2602,7 @@ void SceneManager::construct() {
 				Log::info("Active node: %i", activeNode());
 				return;
 			}
-			const int nodeId = args.intVal("nodeid");
+			const int nodeId = toNodeId(args, activeNode());
 			nodeActivate(nodeId);
 		}).setHelp(_("Set or print the current active node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
@@ -2736,7 +2736,7 @@ void SceneManager::construct() {
 			if (!args.has("nodeid")) {
 				cameraNode = _sceneGraph.activeCameraNode();
 			} else {
-				const int nodeId = args.intVal("nodeid");
+				const int nodeId = toNodeId(args, InvalidNodeId);
 				const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 				if (!node.isCameraNode()) {
 					Log::error("The node %i (%s) is not a camera node", nodeId, node.name().c_str());
