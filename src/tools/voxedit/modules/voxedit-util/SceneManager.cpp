@@ -2964,11 +2964,11 @@ void SceneManager::startLocalServer(int port, const core::String &iface) {
 	client().connect("localhost", port, true);
 }
 
-void SceneManager::connectToServer(const core::String &host, int port) {
+bool SceneManager::connectToServer(const core::String &host, int port) {
 	_mementoHandler.registerListener(&_client);
 	server().stop();
 	client().disconnect();
-	client().connect(host, port, false);
+	return client().connect(host, port, false);
 }
 
 void SceneManager::disconnectFromServer() {

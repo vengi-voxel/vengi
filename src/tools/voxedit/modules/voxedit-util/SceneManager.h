@@ -442,7 +442,7 @@ public:
 	void startLocalServer(int port, const core::String &iface);
 	void stopLocalServer();
 
-	void connectToServer(const core::String &hostname, int port);
+	bool connectToServer(const core::String &hostname, int port);
 	void disconnectFromServer();
 
 	bool setGridResolution(int resolution);

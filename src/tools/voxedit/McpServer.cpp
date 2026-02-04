@@ -162,7 +162,7 @@ bool McpServer::connectToVoxEdit() {
 	core::Var::getSafe(cfg::AppUserName)->setVal("mcp-client");
 	core::Var::getSafe(cfg::AppVersion)->setVal(PROJECT_VERSION);
 
-	if (!client.connect(host, port, false)) {
+	if (!_sceneMgr->connectToServer(host, port)) {
 		Log::error("Failed to connect to %s:%i", host.c_str(), port);
 		return false;
 	}

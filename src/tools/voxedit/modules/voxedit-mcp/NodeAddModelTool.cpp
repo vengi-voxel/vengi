@@ -16,8 +16,8 @@ NodeAddModelTool::NodeAddModelTool() : Tool("voxedit_node_add_model") {
 
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";
-	inputSchema["properties"]["parentUUID"] = propParentUUID();
 	inputSchema["required"] = nlohmann::json::array({"parentUUID", "name"});
+	inputSchema["properties"]["parentUUID"] = propParentUUID();
 	inputSchema["properties"]["name"] = propTypeDescription("string", "Name of the new node");
 	inputSchema["properties"]["width"] = propTypeDescription("integer", "Width of the model node volume region");
 	inputSchema["properties"]["width"]["default"] = 32;
