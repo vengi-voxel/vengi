@@ -3,6 +3,7 @@
  */
 
 #include "GetSceneStateTool.h"
+#include "core/StringUtil.h"
 #include "core/UUID.h"
 #include "io/BufferedReadWriteStream.h"
 #include "scenegraph/JsonExporter.h"
@@ -11,6 +12,9 @@
 
 namespace voxedit {
 
+// map to JsonExporterFlags
+#define VALID_SKIPINFO_VALUES "palette, meshdetails, nodedetails, children, palettematerials"
+
 GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
 	_tool["description"] =
 		"Get the current scene graph state. This should be your first action after connecting to the MCP server to get "
@@ -18,8 +22,12 @@ GetSceneStateTool::GetSceneStateTool() : Tool("voxedit_get_scene_state") {
 		"If a node uuid is specified, only a single node is returned.";
 	nlohmann::json inputSchema;
 	inputSchema["type"] = "object";
+	inputSchema["required"] = nlohmann::json::array({"flags"});
 	inputSchema["properties"]["nodeUUID"] = propUUID();
-	// TODO: MCP: allow to specify flags to include/exclude palette, meshes, etc. (JsonExporterFlags)
+	inputSchema["properties"]["skipinfo"] =
+		propTypeDescription("string", "Comma separated list things to omit from the json output: " VALID_SKIPINFO_VALUES
+									  ". Useful to reduce the output size if you only need a "
+									  "subset of the information. By default, all details are included.");
 	_tool["inputSchema"] = core::move(inputSchema);
 }
 
@@ -31,6 +39,27 @@ bool GetSceneStateTool::execute(const nlohmann::json &id, const nlohmann::json &
 
 	io::BufferedReadWriteStream stream;
 	uint32_t flags = scenegraph::JSONEXPORTER_ALL;
+	if (args.contains("skipinfo")) {
+		const core::String &skipInfoStr = args.value("skipinfo", "").c_str();
+		core::DynamicArray<core::String> skipInfo;
+		core::string::splitString(skipInfoStr, skipInfo, ",");
+		for (const core::String &skip : skipInfo) {
+			if (skip == "palette") {
+				flags &= ~scenegraph::JSONEXPORTER_PALETTE;
+			} else if (skip == "meshdetails") {
+				flags &= ~scenegraph::JSONEXPORTER_MESHDETAILS;
+			} else if (skip == "nodedetails") {
+				flags &= ~scenegraph::JSONEXPORTER_NODEDETAILS;
+			} else if (skip == "children") {
+				flags &= ~scenegraph::JSONEXPORTER_CHILDREN;
+			} else if (skip == "palettematerials") {
+				flags &= ~scenegraph::JSONEXPORTER_PALETTEMATERIALS;
+			} else {
+				return ctx.result(id, "Invalid skipinfo valid are: " VALID_SKIPINFO_VALUES, true);
+			}
+		}
+	}
+
 	core::UUID nodeUUID = argsUUID(args);
 	if (nodeUUID.isValid()) {
 		if (const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(nodeUUID)) {
