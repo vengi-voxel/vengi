@@ -3,9 +3,9 @@
  */
 
 #include "PlaceVoxelsTool.h"
-#include "voxedit-util/network/protocol/VoxelModificationMessage.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
-#include "voxel/SparseVolume.h"
 
 namespace voxedit {
 
@@ -34,28 +34,40 @@ bool PlaceVoxelsTool::execute(const nlohmann::json &id, const nlohmann::json &ar
 		return ctx.result(id, "voxels must be a non-empty array", true);
 	}
 
-	// TODO: MCP: use the sceneMgr here to keep the state of the scenegraph in sync and don't operate directly with the protocol messages
-	voxel::SparseVolume volume;
+	scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraphNodeByUUID(nodeUUID);
+	if (node == nullptr) {
+		return ctx.result(id, "Node not found", true);
+	}
+	const int nodeId = node->id();
+	voxel::RawVolume *v = ctx.sceneMgr->volume(nodeId);
+	if (v == nullptr) {
+		return ctx.result(id, "Volume not found", true);
+	}
+
 	int placedCount = 0;
+	voxel::Region modifiedRegion = voxel::Region::InvalidRegion;
 	for (const auto &voxelData : voxelsArray) {
 		const int x = voxelData["x"].get<int>();
 		const int y = voxelData["y"].get<int>();
 		const int z = voxelData["z"].get<int>();
 		const int colorIndex = voxelData.value("idx", 1);
 		if (colorIndex > 0 && colorIndex < 256) {
-			volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex));
-			++placedCount;
+			if (v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIndex))) {
+				if (modifiedRegion.isValid()) {
+					modifiedRegion.accumulate(x, y, z);
+				} else {
+					modifiedRegion = voxel::Region(x, y, z, x, y, z);
+				}
+				++placedCount;
+			}
 		}
 	}
 
-	voxel::RawVolume rawVolume(volume.calculateRegion());
-	volume.copyTo(rawVolume);
-	voxedit::VoxelModificationMessage msg(nodeUUID, rawVolume, rawVolume.region());
-	if (sendMessage(ctx, msg)) {
-		return ctx.result(id, core::String::format("Placed %d voxels in node %s", placedCount, nodeUUID.str().c_str()),
-						  false);
+	if (placedCount > 0) {
+		ctx.sceneMgr->modified(nodeId, modifiedRegion);
 	}
-	return ctx.result(id, "Failed to send voxel modification", true);
+	return ctx.result(id, core::String::format("Placed %d voxels in node %s", placedCount, nodeUUID.str().c_str()),
+					  false);
 }
 
 } // namespace voxedit
