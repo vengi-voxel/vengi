@@ -12,6 +12,7 @@
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "io/Filesystem.h"
+#include "io/system/System.h"
 #include <dirent.h>
 #include <errno.h>
 #include <pwd.h>
@@ -220,7 +221,14 @@ bool initState(io::FilesystemState &state) {
 	state._thisPc.push_back({"Home", envHome});
 
 #if defined __APPLE__
-	// TODO: add mounted volumes - https://github.com/vengi-voxel/vengi/issues/701
+	core::DynamicArray<io::FilesystemEntry> volumeEntries = fs_scandir("/Volumes");
+	for (const io::FilesystemEntry& entry : volumeEntries) {
+		if (entry.type == io::FilesystemEntry::Type::dir){
+			core::String fullPath = core::string::path("/Volumes", entry.name);
+			state._thisPc.push_back({entry.name, fullPath});
+		}
+	}
+
 #elif defined(__linux__)
 	if (FILE *fp = setmntent("/proc/self/mounts", "r")) {
 		struct mntent *ent;
