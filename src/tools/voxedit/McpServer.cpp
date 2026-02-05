@@ -17,6 +17,7 @@
 #include "voxedit-mcp/GetPaletteTool.h"
 #include "voxedit-mcp/GetSceneStateTool.h"
 #include "voxedit-mcp/GetVoxelsTool.h"
+#include "voxedit-mcp/LineBrushTool.h"
 #include "voxedit-mcp/MementoCanRedoTool.h"
 #include "voxedit-mcp/MementoCanUndoTool.h"
 #include "voxedit-mcp/MementoRedoTool.h"
@@ -26,10 +27,14 @@
 #include "voxedit-mcp/NodeRemoveTool.h"
 #include "voxedit-mcp/NodeRenameTool.h"
 #include "voxedit-mcp/NodeSetPropertiesTool.h"
+#include "voxedit-mcp/PaintBrushTool.h"
 #include "voxedit-mcp/PlaceVoxelsTool.h"
+#include "voxedit-mcp/PlaneBrushTool.h"
 #include "voxedit-mcp/ScriptApiTool.h"
 #include "voxedit-mcp/ScriptCreateTool.h"
 #include "voxedit-mcp/ScriptTool.h"
+#include "voxedit-mcp/SelectBrushTool.h"
+#include "voxedit-mcp/ShapeBrushTool.h"
 #include "voxedit-mcp/Tool.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/Client.h"
@@ -106,7 +111,12 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::PlaceVoxelsTool());
 	_toolRegistry.registerTool(new voxedit::ScriptApiTool());
 	_toolRegistry.registerTool(new voxedit::ScriptCreateTool());
-	// TODO: MCP: create brush tools for direct voxel manipulations, selection, etc
+	_toolRegistry.registerTool(new voxedit::ShapeBrushTool());
+	_toolRegistry.registerTool(new voxedit::PaintBrushTool());
+	_toolRegistry.registerTool(new voxedit::LineBrushTool());
+	_toolRegistry.registerTool(new voxedit::SelectBrushTool());
+	_toolRegistry.registerTool(new voxedit::PlaneBrushTool());
+
 	command::Command::visitSorted(
 		[&](const command::Command &c) {
 			if (c.isInput()) {

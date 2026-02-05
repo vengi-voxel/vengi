@@ -1,5 +1,11 @@
 set(SRCS
 	Tool.h Tool.cpp
+	BrushTool.h BrushTool.cpp
+	ShapeBrushTool.h ShapeBrushTool.cpp
+	PaintBrushTool.h PaintBrushTool.cpp
+	LineBrushTool.h LineBrushTool.cpp
+	SelectBrushTool.h SelectBrushTool.cpp
+	PlaneBrushTool.h PlaneBrushTool.cpp
 	NodeRenameTool.h NodeRenameTool.cpp
 	NodeMoveTool.h NodeMoveTool.cpp
 	NodeRemoveTool.h NodeRemoveTool.cpp
