@@ -223,17 +223,17 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 			stats.vertices += (int)vertices;
 			stats.indices += (int)indices;
 		}
-		if ((flags & JSONEXPORTER_CHILDREN) && !node.children().empty()) {
-			stream.writeStringFormat(false, ",\"children\":[");
-			for (size_t i = 0; i < node.children().size(); ++i) {
-				const int childId = node.children()[i];
-				stats += sceneGraphNodeJson(sceneGraph, childId, stream, flags);
-				if (i + 1 < node.children().size()) {
-					stream.writeStringFormat(false, ",");
-				}
+	}
+	if ((flags & JSONEXPORTER_CHILDREN) && !node.children().empty()) {
+		stream.writeStringFormat(false, ",\"children\":[");
+		for (size_t i = 0; i < node.children().size(); ++i) {
+			const int childId = node.children()[i];
+			stats += sceneGraphNodeJson(sceneGraph, childId, stream, flags);
+			if (i + 1 < node.children().size()) {
+				stream.writeStringFormat(false, ",");
 			}
-			stream.writeStringFormat(false, "]");
 		}
+		stream.writeStringFormat(false, "]");
 	}
 	stream.writeStringFormat(false, "}");
 	return stats;
