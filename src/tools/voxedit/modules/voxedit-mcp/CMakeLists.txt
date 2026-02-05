@@ -10,6 +10,7 @@ set(SRCS
 	MementoUndoTool.h MementoUndoTool.cpp
 	MementoRedoTool.h MementoRedoTool.cpp
 	GetSceneStateTool.h GetSceneStateTool.cpp
+	GetVoxelsTool.h GetVoxelsTool.cpp
 	PlaceVoxelsTool.h PlaceVoxelsTool.cpp
 	GetPaletteTool.h GetPaletteTool.cpp
 	FindColorTool.h FindColorTool.cpp
