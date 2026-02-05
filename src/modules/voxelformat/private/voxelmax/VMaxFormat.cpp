@@ -5,6 +5,7 @@
 #include "VMaxFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -21,8 +22,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include <glm/common.hpp>
 #include "json/JSON.h"
+#include <glm/common.hpp>
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -186,6 +187,25 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
+	const core::String &ext = core::string::extractExtension(filename);
+	const bool onlyOneObject = ext == "vmaxb";
+	if (onlyOneObject) {
+		palette::Palette vmaxPalette;
+		const core::String &baseDir = core::string::extractDir(filename);
+		int palIdx = 1;
+		SDL_sscanf(filename.c_str(), "%*[^0-9]%i", &palIdx);
+		Log::error("Palette index: %i", palIdx);
+		const core::String &palName = core::string::path(baseDir, core::String::format("palette%i.png", palIdx));
+		if (!loadPaletteFromArchive(archive, palName, vmaxPalette, ctx)) {
+			return false;
+		}
+		VMaxObject obj;
+		if (!loadObject(filename, stream, sceneGraph, ctx, obj, vmaxPalette)) {
+			Log::error("Failed to load object %s", obj.n.c_str());
+			return false;
+		}
+		return true;
+	}
 	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 	VMaxScene scene;
 	if (!loadSceneJson(zipArchive, scene)) {
@@ -194,9 +214,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
 	Log::debug("Load %i scene groups", (int)scene.groups.size());
-	const core::String &ext = core::string::extractExtension(filename);
 	const core::String &objName = core::string::extractFilenameWithExtension(filename);
-	const bool onlyOneObject = ext == "vmaxb";
 	for (size_t i = 0; i < scene.groups.size(); ++i) {
 		if (stopExecution()) {
 			return false;
@@ -309,7 +327,11 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		Log::error("Failed to seek to the beginning of the sub stream");
 		return false;
 	}
+	return loadObject(filename, data, sceneGraph, ctx, obj, palette);
+}
 
+bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream* data, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
+							const VMaxObject &obj, const palette::Palette &palette) const {
 	io::LZFSEReadStream stream(*data);
 
 	// io::filesystem()->write(filename + ".plist", stream);
@@ -586,17 +608,16 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 	io::ArchivePtr zipArchive = io::openZipArchive(archiveStream);
-	io::ArchivePtr readArchive = zipArchive ? zipArchive : archive;
 	const core::String &paletteName = "palette.png";
 	if (zipArchive) {
 		Log::debug("Found zip archive %s", filename.c_str());
-		if (!loadPaletteFromArchive(readArchive, paletteName, palette, ctx)) {
+		if (!loadPaletteFromArchive(zipArchive, paletteName, palette, ctx)) {
 			Log::error("Failed to load palette from %s", paletteName.c_str());
 			return 0u;
 		}
 	} else {
 		const core::String fullPath = core::string::path(core::string::extractDir(filename), paletteName);
-		if (!loadPaletteFromArchive(readArchive, fullPath, palette, ctx)) {
+		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx)) {
 			Log::error("Failed to load palette from %s", fullPath.c_str());
 			return 0u;
 		}

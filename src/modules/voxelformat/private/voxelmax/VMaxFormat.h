@@ -263,8 +263,10 @@ private:
 	bool loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
 							   const palette::Palette &palette) const;
-	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName, palette::Palette &palette,
-								const LoadContext &ctx) const;
+	bool loadObject(const core::String &filename, io::SeekableReadStream *data, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx, const VMaxObject &obj, const palette::Palette &palette) const;
+	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
+								palette::Palette &palette, const LoadContext &ctx) const;
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
