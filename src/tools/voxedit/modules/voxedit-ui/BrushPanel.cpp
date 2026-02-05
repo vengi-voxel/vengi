@@ -153,7 +153,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	addBrushClampingOption(brush);
 
 	if (_stampPaletteIndex >= 0 && _stampPaletteIndex < palette.colorCount()) {
-		const float size = 20;
+		const float size = ImGui::Height(1);
 		const ImVec2 v1 = ImGui::GetCursorScreenPos();
 		const ImVec2 v2(v1.x + size, v1.y + size);
 		ImDrawList *drawList = ImGui::GetWindowDrawList();

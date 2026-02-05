@@ -236,7 +236,7 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 
 			if (usableColor) {
 				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-					const float size = 20;
+					const float size = ImGui::Height(1);
 					const ImVec2 rectMins = ImGui::GetCursorScreenPos();
 					const ImVec2 rectMaxs(rectMins.x + size, rectMins.y + size);
 					ImGui::GetWindowDrawList()->AddRectFilled(rectMins, rectMaxs, ImGui::GetColorU32(color));
