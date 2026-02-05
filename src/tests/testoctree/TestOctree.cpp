@@ -130,15 +130,15 @@ void TestOctree::handleDirtyState() {
 void TestOctree::onRenderUI() {
 	handleDirtyState();
 	ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(400, 120), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(ImGui::Size(40), ImGui::Height(10)), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Keys and information");
 	ImGui::BulletText("+/INSERT: Insert new element");
 	ImGui::BulletText("DELETE: Remove all elements");
 	Super::onRenderUI();
 	ImGui::End();
 
-	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(500, 260), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(ImGui::Size(41), ImGui::Height(2)), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(ImGui::Size(50), ImGui::Height(26)), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Actions");
 	if (ImGui::Button("Clear")) {
 		clear();
