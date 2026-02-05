@@ -423,7 +423,7 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 		brush.markDirty();
 	}
 
-	ImGui::SetNextItemWidth(100.0f);
+	ImGui::SetNextItemWidth(ImGui::Size(10.0f));
 	int size = brush.size();
 	if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL, &size)) {
 		brush.setSize(size);
@@ -431,7 +431,7 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	ImGui::TooltipTextUnformatted(_("Font size"));
 	ImGui::SameLine();
 
-	ImGui::SetNextItemWidth(100.0f);
+	ImGui::SetNextItemWidth(ImGui::Size(10.0f));
 	int spacing = brush.spacing();
 	if (ImGui::InputInt(ICON_LC_MOVE_HORIZONTAL "##textinput", &spacing)) {
 		brush.setSpacing(spacing);
