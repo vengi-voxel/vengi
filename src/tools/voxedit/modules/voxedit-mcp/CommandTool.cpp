@@ -8,7 +8,7 @@
 
 namespace voxedit {
 
-CommandTool::CommandTool(const command::Command &info) : Tool(info.name()), _cmdName(info.name()), _args(info.args()) {
+CommandTool::CommandTool(const command::Command &info) : Tool("voxedit_cmd_" + info.name()), _cmdName(info.name()), _args(info.args()) {
 	_tool["description"] = info.help().c_str();
 
 	nlohmann::json inputSchema;
