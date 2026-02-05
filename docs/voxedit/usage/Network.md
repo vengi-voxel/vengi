@@ -4,4 +4,4 @@ You can start a server to allow others to work on the same scene with you. Head 
 
 ## Remote console access
 
-In order to prevent running [commands](../../Configuration.md) on the server, you should make sure to a remote console password. The client can now use the input field in the network panel to run commands on the server side.
+In order to prevent running [commands](../../Configuration.md) on the server, you should make sure to set a remote console password. The client can now use the input field in the network panel to run commands on the server side.
