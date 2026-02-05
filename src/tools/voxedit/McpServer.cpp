@@ -12,6 +12,8 @@
 #include "engine-git.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
+#include "voxedit-mcp/AnimationAddTool.h"
+#include "voxedit-mcp/AnimationSetTool.h"
 #include "voxedit-mcp/CommandTool.h"
 #include "voxedit-mcp/FindColorTool.h"
 #include "voxedit-mcp/GetPaletteTool.h"
@@ -22,6 +24,7 @@
 #include "voxedit-mcp/MementoCanUndoTool.h"
 #include "voxedit-mcp/MementoRedoTool.h"
 #include "voxedit-mcp/MementoUndoTool.h"
+#include "voxedit-mcp/NodeAddKeyframeTool.h"
 #include "voxedit-mcp/NodeAddModelTool.h"
 #include "voxedit-mcp/NodeMoveTool.h"
 #include "voxedit-mcp/NodeRemoveTool.h"
@@ -95,6 +98,8 @@ app::AppState McpServer::onConstruct() {
 		});
 
 	// script tool is registered later
+	_toolRegistry.registerTool(new voxedit::AnimationAddTool());
+	_toolRegistry.registerTool(new voxedit::AnimationSetTool());
 	_toolRegistry.registerTool(new voxedit::FindColorTool());
 	_toolRegistry.registerTool(new voxedit::GetPaletteTool());
 	_toolRegistry.registerTool(new voxedit::GetSceneStateTool());
@@ -103,6 +108,7 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::MementoCanUndoTool());
 	_toolRegistry.registerTool(new voxedit::MementoRedoTool());
 	_toolRegistry.registerTool(new voxedit::MementoUndoTool());
+	_toolRegistry.registerTool(new voxedit::NodeAddKeyframeTool());
 	_toolRegistry.registerTool(new voxedit::NodeAddModelTool());
 	_toolRegistry.registerTool(new voxedit::NodeMoveTool());
 	_toolRegistry.registerTool(new voxedit::NodeRemoveTool());
