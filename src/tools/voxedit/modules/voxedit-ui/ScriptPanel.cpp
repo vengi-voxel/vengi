@@ -66,6 +66,7 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_LIGHTBULB, _("Help"))) {
+				// TODO: open the embedded manual
 				ImGui::URLIconButton(ICON_LC_BOOK, _("Scripting manual"), "https://vengi-voxel.github.io/vengi/LUAScript/");
 				ImGui::EndMenu();
 			}
