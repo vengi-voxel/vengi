@@ -149,6 +149,11 @@ protected:
 	virtual bool loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;
 
+	/**
+	 * @brief Check if the given region is valid for processing
+	 */
+	bool checkValidRegion(const voxel::Region &region) const;
+
 public:
 	Format();
 	virtual ~Format() = default;

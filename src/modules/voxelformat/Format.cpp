@@ -28,6 +28,22 @@
 
 namespace voxelformat {
 
+bool Format::checkValidRegion(const voxel::Region &region) const {
+	const size_t bytes = voxel::RawVolume::size(region);
+	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
+		const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+		const core::String &neededMem = core::string::humanSize(bytes);
+		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", vdim.x, vdim.y, vdim.z, neededMem.c_str());
+		return InvalidNodeId;
+	}
+	if (bytes == 0u || bytes > std::numeric_limits<int>::max()) {
+		const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+		Log::error("Invalid volume size %i:%i:%i", vdim.x, vdim.y, vdim.z);
+		return InvalidNodeId;
+	}
+	return true;
+}
+
 core::String Format::stringProperty(const scenegraph::SceneGraphNode *node, const core::String &name,
 									const core::String &defaultVal) {
 	if (node == nullptr) {

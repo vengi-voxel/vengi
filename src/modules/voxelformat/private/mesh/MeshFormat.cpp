@@ -308,10 +308,8 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		}
 	}
 
-	const size_t bytes = voxel::RawVolume::size(region);
-	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
-		const core::String &neededMem = core::string::humanSize(bytes);
-		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", vdim.x, vdim.y, vdim.z, neededMem.c_str());
+	if (!checkValidRegion(region)) {
+		Log::error("Invalid region: %s", region.toString().c_str());
 		return InvalidNodeId;
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
@@ -697,15 +695,10 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 	}
 	const int pointSize = core_max(1, core::Var::getSafe(cfg::VoxformatPointCloudSize)->intVal());
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
-
-	const size_t bytes = voxel::RawVolume::size(region);
-	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
-		const core::String &neededMem = core::string::humanSize(bytes);
-		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", region.getDimensionsInVoxels().x,
-				  region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z, neededMem.c_str());
+	if (!checkValidRegion(region)) {
+		Log::error("Invalid region: %s", region.toString().c_str());
 		return InvalidNodeId;
 	}
-
 	simplifyPointCloud(vertices);
 
 	voxel::RawVolume *v = new voxel::RawVolume(region);
