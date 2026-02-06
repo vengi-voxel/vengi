@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "core/Var.h"
 #include "io/Archive.h"
 #include "io/ZipArchive.h"
@@ -263,6 +264,7 @@ bool GMLFormat::parseLinearRing(const tinyxml2::XMLElement *linearRing, GMLPolyg
 
 bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::DynamicArray<GMLPolygon> &polygons,
 							 const glm::dvec3 &offset, SurfaceType surfaceType) const {
+	core_trace_scoped(ParsePolygon);
 	if (polygonElement == nullptr) {
 		return false;
 	}
@@ -329,6 +331,7 @@ bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::D
 
 bool GMLFormat::parseMultiSurface(const tinyxml2::XMLElement *multiSurface, core::DynamicArray<GMLPolygon> &polygons,
 								  const glm::dvec3 &offset, SurfaceType surfaceType) const {
+	core_trace_scoped(ParseMultiSurface);
 	if (multiSurface == nullptr) {
 		return false;
 	}
@@ -452,6 +455,7 @@ bool GMLFormat::parseBuilding(const tinyxml2::XMLElement *building, core::Dynami
 // Parse a gml:MultiGeometry element (per XSD: MultiGeometryType has geometryMember/geometryMembers)
 bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, core::DynamicArray<GMLPolygon> &polygons,
 								   const glm::dvec3 &offset, SurfaceType surfaceType) const {
+	core_trace_scoped(ParseMultiGeometry);
 	if (multiGeometry == nullptr) {
 		return false;
 	}
@@ -513,6 +517,7 @@ bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, co
 // Helper to find and parse any geometry element (MultiSurface, MultiGeometry, CompositeSurface, Solid, etc.)
 bool GMLFormat::parseAnyGeometry(const tinyxml2::XMLElement *parent, core::DynamicArray<GMLPolygon> &polygons,
 								 const glm::dvec3 &offset, SurfaceType surfaceType) const {
+	core_trace_scoped(ParseAnyGeometry);
 	if (parent == nullptr) {
 		return false;
 	}
@@ -895,6 +900,7 @@ core::String GMLFormat::getObjectName(const tinyxml2::XMLElement *element, const
 }
 
 bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, Mesh &mesh) const {
+	core_trace_scoped(PolygonsToMesh);
 	for (const GMLPolygon &polygon : polygons) {
 		if (polygon.vertices.size() < 3) {
 			continue;
@@ -930,6 +936,7 @@ bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, M
 }
 
 bool GMLFormat::computeObjectAABB(const CityObject &obj, glm::vec3 &mins, glm::vec3 &maxs) {
+	core_trace_scoped(ComputeObjectAABB);
 	bool first = true;
 	for (const GMLPolygon &polygon : obj.polygons) {
 		for (const glm::vec3 &vertex : polygon.vertices) {
@@ -1102,6 +1109,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 
 bool GMLFormat::parseXMLFile(io::SeekableReadStream &stream, core::DynamicArray<CityObject> &objects,
 							 GMLMetadata &metadata) const {
+	core_trace_scoped(ParseXMLFile);
 	const int64_t size = stream.size();
 	if (size <= 0) {
 		Log::error("Empty GML XML file");
@@ -1236,14 +1244,16 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 								  estimatedVoxelSize.z > MaxThresholdZ;
 
 	if (exceedsThreshold) {
-		Log::warn("GML dataset estimated voxel size %dx%dx%d exceeds the threshold of %dx%dx%d. "
-				  "Consider setting '%s' to a world coordinate region (format: 'minX minY minZ maxX maxY maxZ') "
-				  "to limit the import area.",
-				  estimatedVoxelSize.x, estimatedVoxelSize.y, estimatedVoxelSize.z, MaxThresholdX, MaxThresholdY,
-				  MaxThresholdZ, cfg::VoxformatGMLRegion);
+		const core::String &regionStr = core::Var::getSafe(cfg::VoxformatGMLRegion)->strVal();
+		if (regionStr.empty()) {
+			Log::warn("GML dataset estimated voxel size %dx%dx%d exceeds the threshold of %dx%dx%d. "
+					"Consider setting '%s' to a world coordinate region (format: 'minX minY minZ maxX maxY maxZ') "
+					"to limit the import area.",
+					estimatedVoxelSize.x, estimatedVoxelSize.y, estimatedVoxelSize.z, MaxThresholdX, MaxThresholdY,
+					MaxThresholdZ, cfg::VoxformatGMLRegion);
+		}
 
 		// Check if the user specified a region filter
-		const core::String &regionStr = core::Var::getSafe(cfg::VoxformatGMLRegion)->strVal();
 		glm::dvec3 gmlFilterMins, gmlFilterMaxs;
 		if (parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs)) {
 			// Convert GML world coordinates to internal coordinates using each object's offset
