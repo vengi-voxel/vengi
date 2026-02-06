@@ -43,6 +43,7 @@ namespace voxelformat {
  * @li https://www.citygmlwiki.org/index.php?title=KIT_Sample_files_Energy_ADE
  * @li https://filipbiljecki.com/code/Random3Dcity
  * @li https://github.com/tudelft3d/Random3Dcity
+ * @li https://suche.transparenz.hamburg.de/dataset/3d-stadtmodell-lod2-de-hamburg2
  *
  * @ingroup Formats
  */
