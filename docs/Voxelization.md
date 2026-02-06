@@ -51,6 +51,7 @@ Additional settings that affect high quality voxelization:
 | `voxformat_rgbweightedaverage` | Average colors based on triangle area contribution | `true` |
 | `voxformat_rgbflattenfactor` | Flatten RGB colors when importing (0-255) | `1` |
 | `voxformat_createpalette` | Generate palette from mesh colors vs. use existing | `true` |
+| `voxformat_gmlregion` | World coordinate region filter for GML/CityGML import (`minX minY minZ maxX maxY maxZ`) | `""` |
 
 ## Fast Mode
 
@@ -189,5 +190,17 @@ Check texture paths and ensure `voxformat_createpalette` is enabled. See [FAQ](F
 - Use Fast mode instead of High Quality
 - Scale the mesh down using `voxformat_scale`
 - Simplify the mesh before voxelization
+
+### Large GML/CityGML datasets
+
+GML and CityGML files often contain large geographic datasets (entire city districts) that would result in enormous voxel regions. If the estimated voxel region after scaling exceeds 1024x256x1024 voxels, a warning is shown.
+
+To limit the import to a specific area, use the `voxformat_gmlregion` cvar to specify a bounding region in GML world coordinates (the same coordinate system used in the source file):
+
+```sh
+voxconvert -set voxformat_gmlregion "548000 5930000 0 548500 5930500 100" --input input.gml --output output.vengi
+```
+
+Only objects whose geometry is **fully contained** within the specified region are imported. Objects that are partially or fully outside the region are skipped. The region filter is only applied when the estimated voxel size exceeds the threshold — for smaller datasets, all objects are imported regardless of the cvar value.
 
 For more details on configuration, see [Configuration.md](Configuration.md).

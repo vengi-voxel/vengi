@@ -3,6 +3,8 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/ConfigVar.h"
+#include "core/Var.h"
 #include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
@@ -714,6 +716,169 @@ TEST_F(GMLFormatTest, testLoadMultipleObjectsAsNodes) {
 		}
 	}
 	EXPECT_TRUE(foundGroup);
+}
+
+// Helper: two buildings spread far apart for region filter tests
+// Building A at GML world coords (0,0,0)-(5,0,5), Building B at (500,0,0)-(505,0,5)
+// With envelope lower corner at (0,0,0)
+static const char *twoSpreadBuildingsGML = R"(<?xml version="1.0" encoding="UTF-8"?>
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"
+  xmlns:bldg="http://www.opengis.net/citygml/building/2.0"
+  xmlns:gml="http://www.opengis.net/gml">
+  <gml:boundedBy>
+    <gml:Envelope srsName="EPSG:25832" srsDimension="3">
+      <gml:lowerCorner>0 0 0</gml:lowerCorner>
+      <gml:upperCorner>505 5 5</gml:upperCorner>
+    </gml:Envelope>
+  </gml:boundedBy>
+  <core:cityObjectMember>
+    <bldg:Building gml:id="buildingA">
+      <gml:name>House A</gml:name>
+      <bldg:boundedBy>
+        <bldg:WallSurface gml:id="wallA">
+          <bldg:lod2MultiSurface>
+            <gml:MultiSurface>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">0 0 0 5 0 0 5 5 0 0 5 0 0 0 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">0 0 0 5 0 0 5 0 5 0 0 5 0 0 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+            </gml:MultiSurface>
+          </bldg:lod2MultiSurface>
+        </bldg:WallSurface>
+      </bldg:boundedBy>
+    </bldg:Building>
+  </core:cityObjectMember>
+  <core:cityObjectMember>
+    <bldg:Building gml:id="buildingB">
+      <gml:name>House B</gml:name>
+      <bldg:boundedBy>
+        <bldg:WallSurface gml:id="wallB">
+          <bldg:lod2MultiSurface>
+            <gml:MultiSurface>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">500 0 0 505 0 0 505 5 0 500 5 0 500 0 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">500 0 0 505 0 0 505 0 5 500 0 5 500 0 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+            </gml:MultiSurface>
+          </bldg:lod2MultiSurface>
+        </bldg:WallSurface>
+      </bldg:boundedBy>
+    </bldg:Building>
+  </core:cityObjectMember>
+</core:CityModel>)";
+
+// Test: region filter applied when voxel size exceeds threshold
+TEST_F(GMLFormatTest, testRegionFilterApplied) {
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
+
+	// Set scale high enough to exceed 1024 threshold (505 * 3 = 1515 > 1024)
+	core::Var::getSafe(cfg::VoxformatScale)->setVal("3.0");
+	// Region filter that includes only Building A (GML world coords 0,0,0 to 10,10,10)
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
+
+	GMLFormat f;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
+
+	// Only House A should be imported
+	int modelCount = 0;
+	bool foundHouseA = false;
+	bool foundHouseB = false;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &n = *iter;
+		++modelCount;
+		if (n.name() == "House A") {
+			foundHouseA = true;
+		} else if (n.name() == "House B") {
+			foundHouseB = true;
+		}
+	}
+	EXPECT_EQ(1, modelCount);
+	EXPECT_TRUE(foundHouseA);
+	EXPECT_FALSE(foundHouseB);
+
+	// Reset cvars
+	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+}
+
+// Test: region filter NOT applied when below threshold
+TEST_F(GMLFormatTest, testRegionFilterNotAppliedBelowThreshold) {
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
+
+	// With scale=1.0, the extent is 505x5x5 which doesn't exceed 1024x256x1024
+	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
+	// Set a region filter that would exclude Building B - but it should NOT be applied
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
+
+	GMLFormat f;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
+
+	// Both houses should be imported since threshold is not exceeded
+	int modelCount = 0;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		++modelCount;
+	}
+	EXPECT_EQ(2, modelCount);
+
+	// Reset cvars
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+}
+
+// Test: warning without filter - all objects still imported
+TEST_F(GMLFormatTest, testLargeDatasetNoFilterImportsAll) {
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
+
+	// Set scale high enough to exceed threshold
+	core::Var::getSafe(cfg::VoxformatScale)->setVal("3.0");
+	// No region filter set (empty string = default)
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+
+	GMLFormat f;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
+
+	// Both houses should still be imported (warning shown but no filtering)
+	int modelCount = 0;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		++modelCount;
+	}
+	EXPECT_EQ(2, modelCount);
+
+	// Reset cvars
+	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
 }
 
 } // namespace voxelformat

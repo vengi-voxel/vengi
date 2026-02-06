@@ -26,6 +26,7 @@
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
@@ -308,7 +309,7 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 	}
 }
 
-static void loadOptionsMesh() {
+static void loadOptionsMesh(const io::FormatDescription *desc) {
 	ImGui::InputVarString(_("Texture search path"), cfg::VoxformatTexturePath);
 	ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
 	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
@@ -323,6 +324,12 @@ static void loadOptionsMesh() {
 		}
 		ImGui::EndCombo();
 		// TODO: allow other normal palettes to be loaded
+	}
+
+
+	if (*desc == voxelformat::GMLFormat::format()) {
+		const core::VarPtr &regionVar = core::Var::getSafe(cfg::VoxformatGMLRegion);
+		ImGui::InputVarString(_("Region filter (minX minY minZ maxX maxY maxZ)"), regionVar);
 	}
 
 	const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};
@@ -390,7 +397,7 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (meshFormat) {
-		loadOptionsMesh();
+		loadOptionsMesh(desc);
 	}
 
 	if (*desc == io::format::png()) {

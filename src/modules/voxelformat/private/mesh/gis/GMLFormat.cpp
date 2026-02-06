@@ -3,9 +3,11 @@
  */
 
 #include "GMLFormat.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "io/Archive.h"
 #include "io/ZipArchive.h"
 #include "scenegraph/SceneGraph.h"
@@ -105,8 +107,8 @@ int GMLFormat::getSrsDimension(const tinyxml2::XMLElement *element) {
 	return 3; // default to 3D
 }
 
-bool GMLFormat::parsePosList(const char *posData, core::DynamicArray<glm::vec3> &vertices,
-							 const glm::dvec3 &offset, int srsDimension) const {
+bool GMLFormat::parsePosList(const char *posData, core::DynamicArray<glm::vec3> &vertices, const glm::dvec3 &offset,
+							 int srsDimension) const {
 	if (posData == nullptr) {
 		return false;
 	}
@@ -297,8 +299,8 @@ bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::D
 	polygons.push_back(core::move(polygon));
 
 	// Parse interior rings (holes) - each becomes a separate polygon for triangulation
-	for (const tinyxml2::XMLElement *interior = findChildElement(polygonElement, "interior");
-		 interior != nullptr; interior = findNextSiblingElement(interior, "interior")) {
+	for (const tinyxml2::XMLElement *interior = findChildElement(polygonElement, "interior"); interior != nullptr;
+		 interior = findNextSiblingElement(interior, "interior")) {
 		const tinyxml2::XMLElement *innerRing = findChildElement(interior, "LinearRing");
 		if (innerRing != nullptr) {
 			GMLPolygon holePolygon;
@@ -449,7 +451,7 @@ bool GMLFormat::parseBuilding(const tinyxml2::XMLElement *building, core::Dynami
 
 // Parse a gml:MultiGeometry element (per XSD: MultiGeometryType has geometryMember/geometryMembers)
 bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, core::DynamicArray<GMLPolygon> &polygons,
-								  const glm::dvec3 &offset, SurfaceType surfaceType) const {
+								   const glm::dvec3 &offset, SurfaceType surfaceType) const {
 	if (multiGeometry == nullptr) {
 		return false;
 	}
@@ -457,8 +459,8 @@ bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, co
 	const size_t initialCount = polygons.size();
 
 	// Per XSD: geometryMember elements (GeometryPropertyType)
-	for (const tinyxml2::XMLElement *member = findChildElement(multiGeometry, "geometryMember");
-		 member != nullptr; member = findNextSiblingElement(member, "geometryMember")) {
+	for (const tinyxml2::XMLElement *member = findChildElement(multiGeometry, "geometryMember"); member != nullptr;
+		 member = findNextSiblingElement(member, "geometryMember")) {
 
 		const tinyxml2::XMLElement *polygon = findChildElement(member, "Polygon");
 		if (polygon != nullptr) {
@@ -475,8 +477,7 @@ bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, co
 		const tinyxml2::XMLElement *compSurface = findChildElement(member, "CompositeSurface");
 		if (compSurface != nullptr) {
 			for (const tinyxml2::XMLElement *surfaceMember = findChildElement(compSurface, "surfaceMember");
-				 surfaceMember != nullptr;
-				 surfaceMember = findNextSiblingElement(surfaceMember, "surfaceMember")) {
+				 surfaceMember != nullptr; surfaceMember = findNextSiblingElement(surfaceMember, "surfaceMember")) {
 				const tinyxml2::XMLElement *poly = findChildElement(surfaceMember, "Polygon");
 				if (poly != nullptr) {
 					parsePolygon(poly, polygons, offset, surfaceType);
@@ -511,7 +512,7 @@ bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, co
 
 // Helper to find and parse any geometry element (MultiSurface, MultiGeometry, CompositeSurface, Solid, etc.)
 bool GMLFormat::parseAnyGeometry(const tinyxml2::XMLElement *parent, core::DynamicArray<GMLPolygon> &polygons,
-								const glm::dvec3 &offset, SurfaceType surfaceType) const {
+								 const glm::dvec3 &offset, SurfaceType surfaceType) const {
 	if (parent == nullptr) {
 		return false;
 	}
@@ -570,8 +571,7 @@ bool GMLFormat::parseAnyGeometry(const tinyxml2::XMLElement *parent, core::Dynam
 			const tinyxml2::XMLElement *compSurface = findChildElement(lodElement, "CompositeSurface");
 			if (compSurface != nullptr) {
 				for (const tinyxml2::XMLElement *surfaceMember = findChildElement(compSurface, "surfaceMember");
-					 surfaceMember != nullptr;
-					 surfaceMember = findNextSiblingElement(surfaceMember, "surfaceMember")) {
+					 surfaceMember != nullptr; surfaceMember = findNextSiblingElement(surfaceMember, "surfaceMember")) {
 					const tinyxml2::XMLElement *polygonEl = findChildElement(surfaceMember, "Polygon");
 					if (polygonEl != nullptr) {
 						parsePolygon(polygonEl, polygons, offset, surfaceType);
@@ -766,8 +766,7 @@ bool GMLFormat::parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArr
 
 	// Parse outerBridgeConstruction elements (CityGML bridge module)
 	for (const tinyxml2::XMLElement *construction = findChildElement(bridge, "outerBridgeConstruction");
-		 construction != nullptr;
-		 construction = findNextSiblingElement(construction, "outerBridgeConstruction")) {
+		 construction != nullptr; construction = findNextSiblingElement(construction, "outerBridgeConstruction")) {
 		const tinyxml2::XMLElement *element = findChildElement(construction, "BridgeConstructionElement");
 		if (element != nullptr) {
 			parseAnyGeometry(element, polygons, offset, SurfaceType::Bridge);
@@ -776,8 +775,7 @@ bool GMLFormat::parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArr
 
 	// Parse outerBridgeInstallation elements
 	for (const tinyxml2::XMLElement *installation = findChildElement(bridge, "outerBridgeInstallation");
-		 installation != nullptr;
-		 installation = findNextSiblingElement(installation, "outerBridgeInstallation")) {
+		 installation != nullptr; installation = findNextSiblingElement(installation, "outerBridgeInstallation")) {
 		const tinyxml2::XMLElement *element = findChildElement(installation, "BridgeInstallation");
 		if (element != nullptr) {
 			parseAnyGeometry(element, polygons, offset, SurfaceType::Bridge);
@@ -787,8 +785,8 @@ bool GMLFormat::parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArr
 	// Bridges have CityGML boundedBy with surface types
 	for (const tinyxml2::XMLElement *boundedBy = findChildElement(bridge, "boundedBy"); boundedBy != nullptr;
 		 boundedBy = findNextSiblingElement(boundedBy, "boundedBy")) {
-		const char *surfaceTypes[] = {"WallSurface", "RoofSurface", "GroundSurface", "OuterFloorSurface",
-									 "OuterCeilingSurface", "ClosureSurface"};
+		const char *surfaceTypes[] = {"WallSurface",	   "RoofSurface",		  "GroundSurface",
+									  "OuterFloorSurface", "OuterCeilingSurface", "ClosureSurface"};
 		for (const char *surfaceTypeName : surfaceTypes) {
 			const tinyxml2::XMLElement *surface = findChildElement(boundedBy, surfaceTypeName);
 			if (surface != nullptr) {
@@ -799,8 +797,7 @@ bool GMLFormat::parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArr
 
 	// BridgePart handling (similar to BuildingPart)
 	for (const tinyxml2::XMLElement *bridgePart = findChildElement(bridge, "consistsOfBridgePart");
-		 bridgePart != nullptr;
-		 bridgePart = findNextSiblingElement(bridgePart, "consistsOfBridgePart")) {
+		 bridgePart != nullptr; bridgePart = findNextSiblingElement(bridgePart, "consistsOfBridgePart")) {
 		const tinyxml2::XMLElement *innerPart = findChildElement(bridgePart, "BridgePart");
 		if (innerPart != nullptr) {
 			parseBridge(innerPart, polygons, offset);
@@ -932,6 +929,73 @@ bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, M
 	return !mesh.vertices.empty();
 }
 
+bool GMLFormat::computeObjectAABB(const CityObject &obj, glm::vec3 &mins, glm::vec3 &maxs) {
+	bool first = true;
+	for (const GMLPolygon &polygon : obj.polygons) {
+		for (const glm::vec3 &vertex : polygon.vertices) {
+			if (first) {
+				mins = vertex;
+				maxs = vertex;
+				first = false;
+			} else {
+				mins = glm::min(mins, vertex);
+				maxs = glm::max(maxs, vertex);
+			}
+		}
+	}
+	return !first;
+}
+
+bool GMLFormat::parseRegionFilter(const core::String &regionStr, glm::dvec3 &mins, glm::dvec3 &maxs) {
+	if (regionStr.empty()) {
+		return false;
+	}
+
+	const char *ptr = regionStr.c_str();
+	char *endPtr = nullptr;
+	double values[6];
+
+	for (int i = 0; i < 6; ++i) {
+		while (*ptr == ' ' || *ptr == '\t') {
+			++ptr;
+		}
+		if (*ptr == '\0') {
+			Log::error("GML region filter requires 6 values (minX minY minZ maxX maxY maxZ), got %d", i);
+			return false;
+		}
+		values[i] = SDL_strtod(ptr, &endPtr);
+		if (endPtr == ptr) {
+			Log::error("Failed to parse GML region filter value at position %d", i);
+			return false;
+		}
+		ptr = endPtr;
+	}
+
+	mins = glm::dvec3(values[0], values[1], values[2]);
+	maxs = glm::dvec3(values[3], values[4], values[5]);
+
+	// Ensure min <= max
+	for (int i = 0; i < 3; ++i) {
+		if (mins[i] > maxs[i]) {
+			const double tmp = mins[i];
+			mins[i] = maxs[i];
+			maxs[i] = tmp;
+		}
+	}
+
+	Log::debug("GML region filter: (%f %f %f) to (%f %f %f)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+	return true;
+}
+
+bool GMLFormat::isObjectInsideRegion(const CityObject &obj, const glm::vec3 &filterMins, const glm::vec3 &filterMaxs) {
+	glm::vec3 objMins, objMaxs;
+	if (!computeObjectAABB(obj, objMins, objMaxs)) {
+		return false;
+	}
+	// Check if the object's AABB is fully contained within the filter region
+	return glm::all(glm::greaterThanEqual(objMins, filterMins)) && glm::all(glm::lessThanEqual(objMaxs, filterMaxs));
+}
+
 bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::DynamicArray<CityObject> &objects,
 							   GMLMetadata &metadata) const {
 	if (cityModel == nullptr) {
@@ -958,12 +1022,14 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 			parseEnvelope(envelope, offset);
 		}
 	}
+	metadata.offset = offset;
 
 	// Dispatch table: element name -> parser function + type label
 	struct CityObjectDispatch {
 		const char *elementName;
 		const char *typeName;
-		bool (GMLFormat::*parser)(const tinyxml2::XMLElement *, core::DynamicArray<GMLPolygon> &, const glm::dvec3 &) const;
+		bool (GMLFormat::*parser)(const tinyxml2::XMLElement *, core::DynamicArray<GMLPolygon> &,
+								  const glm::dvec3 &) const;
 	};
 
 	const CityObjectDispatch dispatchers[] = {
@@ -998,6 +1064,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 				CityObject obj;
 				obj.type = dispatch.typeName;
 				obj.name = getObjectName(element, dispatch.typeName);
+				obj.offset = offset;
 				(this->*dispatch.parser)(element, obj.polygons, offset);
 				if (!obj.polygons.empty()) {
 					objects.push_back(core::move(obj));
@@ -1015,6 +1082,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 				CityObject obj;
 				obj.type = "Unknown";
 				obj.name = getObjectName(unknownChild, "Unknown");
+				obj.offset = offset;
 				parseGenericCityObject(unknownChild, obj.polygons, offset);
 				if (!obj.polygons.empty()) {
 					objects.push_back(core::move(obj));
@@ -1135,6 +1203,85 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	if (allObjects.empty()) {
 		Log::error("No objects found in GML data");
 		return false;
+	}
+
+	// Compute the overall AABB of all objects (in internal coordinates)
+	glm::vec3 overallMins(0.0f);
+	glm::vec3 overallMaxs(0.0f);
+	bool firstAABB = true;
+	for (const CityObject &obj : allObjects) {
+		glm::vec3 objMins, objMaxs;
+		if (computeObjectAABB(obj, objMins, objMaxs)) {
+			if (firstAABB) {
+				overallMins = objMins;
+				overallMaxs = objMaxs;
+				firstAABB = false;
+			} else {
+				overallMins = glm::min(overallMins, objMins);
+				overallMaxs = glm::max(overallMaxs, objMaxs);
+			}
+		}
+	}
+
+	// Apply scale factor to estimate the voxel region dimensions
+	const glm::vec3 &scale = getInputScale();
+	const glm::vec3 extent = (overallMaxs - overallMins) * scale;
+	const glm::ivec3 estimatedVoxelSize((int)glm::ceil(extent.x), (int)glm::ceil(extent.y), (int)glm::ceil(extent.z));
+
+	// Threshold for warning and region filtering
+	static constexpr int MaxThresholdX = 1024;
+	static constexpr int MaxThresholdY = 256;
+	static constexpr int MaxThresholdZ = 1024;
+	const bool exceedsThreshold = estimatedVoxelSize.x > MaxThresholdX || estimatedVoxelSize.y > MaxThresholdY ||
+								  estimatedVoxelSize.z > MaxThresholdZ;
+
+	if (exceedsThreshold) {
+		Log::warn("GML dataset estimated voxel size %dx%dx%d exceeds the threshold of %dx%dx%d. "
+				  "Consider setting '%s' to a world coordinate region (format: 'minX minY minZ maxX maxY maxZ') "
+				  "to limit the import area.",
+				  estimatedVoxelSize.x, estimatedVoxelSize.y, estimatedVoxelSize.z, MaxThresholdX, MaxThresholdY,
+				  MaxThresholdZ, cfg::VoxformatGMLRegion);
+
+		// Check if the user specified a region filter
+		const core::String &regionStr = core::Var::getSafe(cfg::VoxformatGMLRegion)->strVal();
+		glm::dvec3 gmlFilterMins, gmlFilterMaxs;
+		if (parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs)) {
+			// Convert GML world coordinates to internal coordinates using each object's offset
+			// GML: (x, y, z) -> Internal: (x - offset.x, z - offset.z, y - offset.y)
+			int originalCount = (int)allObjects.size();
+			int removedCount = 0;
+
+			for (size_t i = 0; i < allObjects.size();) {
+				const CityObject &obj = allObjects[i];
+				const glm::dvec3 &off = obj.offset;
+
+				// Convert GML world filter region to internal coordinates for this object's offset
+				const glm::vec3 filterMinsInternal((float)(gmlFilterMins.x - off.x), (float)(gmlFilterMins.z - off.z),
+												   (float)(gmlFilterMins.y - off.y));
+				const glm::vec3 filterMaxsInternal((float)(gmlFilterMaxs.x - off.x), (float)(gmlFilterMaxs.z - off.z),
+												   (float)(gmlFilterMaxs.y - off.y));
+
+				// Ensure min <= max after transformation
+				const glm::vec3 actualFilterMins = glm::min(filterMinsInternal, filterMaxsInternal);
+				const glm::vec3 actualFilterMaxs = glm::max(filterMinsInternal, filterMaxsInternal);
+
+				if (!isObjectInsideRegion(obj, actualFilterMins, actualFilterMaxs)) {
+					Log::debug("Filtering out object '%s' - outside region filter", obj.name.c_str());
+					allObjects.erase(i);
+					++removedCount;
+				} else {
+					++i;
+				}
+			}
+
+			Log::info("GML region filter: kept %d of %d objects (%d removed)", originalCount - removedCount,
+					  originalCount, removedCount);
+
+			if (allObjects.empty()) {
+				Log::error("No objects remaining after applying GML region filter");
+				return false;
+			}
+		}
 	}
 
 	// Create a group node as root for all city objects

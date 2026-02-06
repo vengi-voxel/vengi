@@ -62,6 +62,7 @@ private:
 	struct GMLMetadata {
 		core::String name;
 		core::String description;
+		glm::dvec3 offset{0.0};
 	};
 
 	// Represents a single city object (building, bridge, etc.) with its own polygons
@@ -69,6 +70,7 @@ private:
 		core::String name;
 		core::String type;
 		core::DynamicArray<GMLPolygon> polygons;
+		glm::dvec3 offset{0.0}; // envelope offset used during parsing
 	};
 
 	static color::RGBA surfaceTypeColor(SurfaceType type);
@@ -78,8 +80,8 @@ private:
 	bool parsePosList(const char *posData, core::DynamicArray<glm::vec3> &vertices, const glm::dvec3 &offset,
 					  int srsDimension = 3) const;
 	// Parse the deprecated gml:coordinates element (cs/ts/decimal separators)
-	bool parseCoordinatesElement(const tinyxml2::XMLElement *coordsElement,
-								core::DynamicArray<glm::vec3> &vertices, const glm::dvec3 &offset) const;
+	bool parseCoordinatesElement(const tinyxml2::XMLElement *coordsElement, core::DynamicArray<glm::vec3> &vertices,
+								 const glm::dvec3 &offset) const;
 	bool parseLinearRing(const tinyxml2::XMLElement *linearRing, GMLPolygon &polygon, const glm::dvec3 &offset) const;
 	// Parse a gml:Polygon (exterior + optional interior rings)
 	bool parsePolygon(const tinyxml2::XMLElement *polygonElement, core::DynamicArray<GMLPolygon> &polygons,
@@ -87,11 +89,11 @@ private:
 	bool parseMultiSurface(const tinyxml2::XMLElement *multiSurface, core::DynamicArray<GMLPolygon> &polygons,
 						   const glm::dvec3 &offset, SurfaceType surfaceType) const;
 	bool parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, core::DynamicArray<GMLPolygon> &polygons,
-						   const glm::dvec3 &offset, SurfaceType surfaceType) const;
+							const glm::dvec3 &offset, SurfaceType surfaceType) const;
 	bool parseAnyGeometry(const tinyxml2::XMLElement *parent, core::DynamicArray<GMLPolygon> &polygons,
 						  const glm::dvec3 &offset, SurfaceType surfaceType) const;
 	bool parseCityGMLBoundedBy(const tinyxml2::XMLElement *boundedBy, core::DynamicArray<GMLPolygon> &polygons,
-							  const glm::dvec3 &offset) const;
+							   const glm::dvec3 &offset) const;
 	bool parseBuilding(const tinyxml2::XMLElement *building, core::DynamicArray<GMLPolygon> &polygons,
 					   const glm::dvec3 &offset) const;
 	bool parseLandUse(const tinyxml2::XMLElement *landUse, core::DynamicArray<GMLPolygon> &polygons,
@@ -111,10 +113,15 @@ private:
 	bool parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner) const;
 	static core::String getObjectName(const tinyxml2::XMLElement *element, const char *typeName);
 	bool polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, Mesh &mesh) const;
+
+	// Region filtering helpers
+	static bool computeObjectAABB(const CityObject &obj, glm::vec3 &mins, glm::vec3 &maxs);
+	static bool isObjectInsideRegion(const CityObject &obj, const glm::vec3 &filterMins, const glm::vec3 &filterMaxs);
+
 	bool parseCityModel(const tinyxml2::XMLElement *cityModel, core::DynamicArray<CityObject> &objects,
 						GMLMetadata &metadata) const;
 	bool parseXMLFile(io::SeekableReadStream &stream, core::DynamicArray<CityObject> &objects,
-					 GMLMetadata &metadata) const;
+					  GMLMetadata &metadata) const;
 
 	static int getSrsDimension(const tinyxml2::XMLElement *element);
 
@@ -134,6 +141,8 @@ protected:
 	}
 
 public:
+	static bool parseRegionFilter(const core::String &regionStr, glm::dvec3 &mins, glm::dvec3 &maxs);
+
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Geography Markup Language", "", {"gml", "xml"}, {}, VOX_FORMAT_FLAG_MESH};
 		return f;

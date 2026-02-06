@@ -155,6 +155,10 @@ bool FormatConfig::init() {
 				   _("Merge face parts into single volume for Minecraft skins"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatMeshSimplify, "false", core::CV_NOPERSIST,
 				   _("Simplify the mesh when voxelizing a mesh format"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatGMLRegion, "", core::CV_NOPERSIST,
+				   _("World coordinate region filter for GML/CityGML import. Format: 'minX minY minZ maxX maxY maxZ' "
+					 "in GML world coordinates. Only applied when the estimated voxel region exceeds the size threshold. "
+					 "Objects fully inside this region are imported, others are skipped."));
 	return true;
 }
 
