@@ -50,26 +50,22 @@
 #define GOOGLETEST_INCLUDE_GTEST_GTEST_H_
 
 #include <cstddef>
-#include <cstdint>
 #include <limits>
 #include <memory>
 #include <ostream>
-#include <set>
-#include <sstream>
-#include <string>
 #include <type_traits>
 #include <vector>
 
-#include "gtest/gtest-assertion-result.h"  // IWYU pragma: export
-#include "gtest/gtest-death-test.h"  // IWYU pragma: export
-#include "gtest/gtest-matchers.h"  // IWYU pragma: export
-#include "gtest/gtest-message.h"  // IWYU pragma: export
-#include "gtest/gtest-param-test.h"  // IWYU pragma: export
-#include "gtest/gtest-printers.h"  // IWYU pragma: export
-#include "gtest/gtest-test-part.h"  // IWYU pragma: export
-#include "gtest/gtest-typed-test.h"  // IWYU pragma: export
-#include "gtest/gtest_pred_impl.h"  // IWYU pragma: export
-#include "gtest/gtest_prod.h"  // IWYU pragma: export
+#include "gtest/gtest-assertion-result.h"
+#include "gtest/gtest-death-test.h"
+#include "gtest/gtest-matchers.h"
+#include "gtest/gtest-message.h"
+#include "gtest/gtest-param-test.h"
+#include "gtest/gtest-printers.h"
+#include "gtest/gtest-test-part.h"
+#include "gtest/gtest-typed-test.h"
+#include "gtest/gtest_pred_impl.h"
+#include "gtest/gtest_prod.h"
 #include "gtest/internal/gtest-internal.h"
 #include "gtest/internal/gtest-string.h"
 
@@ -165,7 +161,11 @@ namespace testing {
 
 // Silence C4100 (unreferenced formal parameter) and 4805
 // unsafe mix of type 'const int' and type 'const bool'
-GTEST_DISABLE_MSC_WARNINGS_PUSH_(4805 4100)
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4805)
+#pragma warning(disable : 4100)
+#endif
 
 // The upper limit for valid stack trace depths.
 const int kMaxStackTraceDepth = 100;
@@ -190,31 +190,20 @@ void ReportFailureInUnknownLocation(TestPartResult::Type result_type,
                                     const std::string& message);
 std::set<std::string>* GetIgnoredParameterizedTestSuites();
 
-// A base class that prevents subclasses from being copyable.
-// We do this instead of using '= delete' so as to avoid triggering warnings
-// inside user code regarding any of our declarations.
-class [[nodiscard]] GTestNonCopyable {
- public:
-  GTestNonCopyable() = default;
-  GTestNonCopyable(const GTestNonCopyable&) = delete;
-  GTestNonCopyable& operator=(const GTestNonCopyable&) = delete;
-  ~GTestNonCopyable() = default;
-};
-
 }  // namespace internal
 
 // The friend relationship of some of these classes is cyclic.
 // If we don't forward declare them the compiler might confuse the classes
 // in friendship clauses with same named classes on the scope.
-class [[nodiscard]] Test;
-class [[nodiscard]] TestSuite;
+class Test;
+class TestSuite;
 
 // Old API is still available but deprecated
 #ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 using TestCase = TestSuite;
 #endif
-class [[nodiscard]] TestInfo;
-class [[nodiscard]] UnitTest;
+class TestInfo;
+class UnitTest;
 
 // The abstract class that all tests inherit from.
 //
@@ -239,7 +228,7 @@ class [[nodiscard]] UnitTest;
 //   TEST_F(FooTest, Baz) { ... }
 //
 // Test is not copyable.
-class GTEST_API_ [[nodiscard]] Test {
+class GTEST_API_ Test {
  public:
   friend class TestInfo;
 
@@ -296,13 +285,7 @@ class GTEST_API_ [[nodiscard]] Test {
   // SetUp/TearDown method of Environment objects registered with Google
   // Test) will be output as attributes of the <testsuites> element.
   static void RecordProperty(const std::string& key, const std::string& value);
-  // We do not define a custom serialization except for values that can be
-  // converted to int64_t, but other values could be logged in this way.
-  template <typename T, std::enable_if_t<std::is_convertible<T, int64_t>::value,
-                                         bool> = true>
-  static void RecordProperty(const std::string& key, const T& value) {
-    RecordProperty(key, (Message() << value).GetString());
-  }
+  static void RecordProperty(const std::string& key, int value);
 
  protected:
   // Creates a Test object.
@@ -366,7 +349,7 @@ typedef internal::TimeInMillis TimeInMillis;
 // output as a key/value string pair.
 //
 // Don't inherit from TestProperty as its destructor is not virtual.
-class [[nodiscard]] TestProperty {
+class TestProperty {
  public:
   // C'tor.  TestProperty does NOT have a default constructor.
   // Always use this constructor (with parameters) to create a
@@ -396,7 +379,7 @@ class [[nodiscard]] TestProperty {
 // the Test.
 //
 // TestResult is not copyable.
-class GTEST_API_ [[nodiscard]] TestResult {
+class GTEST_API_ TestResult {
  public:
   // Creates an empty TestResult.
   TestResult();
@@ -530,7 +513,7 @@ class GTEST_API_ [[nodiscard]] TestResult {
 // The constructor of TestInfo registers itself with the UnitTest
 // singleton such that the RUN_ALL_TESTS() macro knows which tests to
 // run.
-class GTEST_API_ [[nodiscard]] TestInfo {
+class GTEST_API_ TestInfo {
  public:
   // Destructs a TestInfo object.  This function is not virtual, so
   // don't inherit from TestInfo.
@@ -550,14 +533,14 @@ class GTEST_API_ [[nodiscard]] TestInfo {
   // Returns the name of the parameter type, or NULL if this is not a typed
   // or a type-parameterized test.
   const char* type_param() const {
-    if (type_param_ != nullptr) return type_param_->c_str();
+    if (type_param_.get() != nullptr) return type_param_->c_str();
     return nullptr;
   }
 
   // Returns the text representation of the value parameter, or NULL if this
   // is not a value-parameterized test.
   const char* value_param() const {
-    if (value_param_ != nullptr) return value_param_->c_str();
+    if (value_param_.get() != nullptr) return value_param_->c_str();
     return nullptr;
   }
 
@@ -599,7 +582,7 @@ class GTEST_API_ [[nodiscard]] TestInfo {
   const TestResult* result() const { return &result_; }
 
  private:
-#ifdef GTEST_HAS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
   friend class internal::DefaultDeathTestFactory;
 #endif  // GTEST_HAS_DEATH_TEST
   friend class Test;
@@ -607,7 +590,7 @@ class GTEST_API_ [[nodiscard]] TestInfo {
   friend class internal::UnitTestImpl;
   friend class internal::StreamingListenerTest;
   friend TestInfo* internal::MakeAndRegisterTestInfo(
-      std::string test_suite_name, const char* name, const char* type_param,
+      const char* test_suite_name, const char* name, const char* type_param,
       const char* value_param, internal::CodeLocation code_location,
       internal::TypeId fixture_class_id, internal::SetUpTestSuiteFunc set_up_tc,
       internal::TearDownTestSuiteFunc tear_down_tc,
@@ -615,7 +598,7 @@ class GTEST_API_ [[nodiscard]] TestInfo {
 
   // Constructs a TestInfo object. The newly constructed instance assumes
   // ownership of the factory object.
-  TestInfo(std::string test_suite_name, std::string name,
+  TestInfo(const std::string& test_suite_name, const std::string& name,
            const char* a_type_param,   // NULL if not a type-parameterized test
            const char* a_value_param,  // NULL if not a value-parameterized test
            internal::CodeLocation a_code_location,
@@ -669,7 +652,7 @@ class GTEST_API_ [[nodiscard]] TestInfo {
 // A test suite, which consists of a vector of TestInfos.
 //
 // TestSuite is not copyable.
-class GTEST_API_ [[nodiscard]] TestSuite {
+class GTEST_API_ TestSuite {
  public:
   // Creates a TestSuite with the given name.
   //
@@ -683,7 +666,7 @@ class GTEST_API_ [[nodiscard]] TestSuite {
   //                 this is not a type-parameterized test.
   //   set_up_tc:    pointer to the function that sets up the test suite
   //   tear_down_tc: pointer to the function that tears down the test suite
-  TestSuite(const std::string& name, const char* a_type_param,
+  TestSuite(const char* name, const char* a_type_param,
             internal::SetUpTestSuiteFunc set_up_tc,
             internal::TearDownTestSuiteFunc tear_down_tc);
 
@@ -696,7 +679,7 @@ class GTEST_API_ [[nodiscard]] TestSuite {
   // Returns the name of the parameter type, or NULL if this is not a
   // type-parameterized test suite.
   const char* type_param() const {
-    if (type_param_ != nullptr) return type_param_->c_str();
+    if (type_param_.get() != nullptr) return type_param_->c_str();
     return nullptr;
   }
 
@@ -890,10 +873,10 @@ class GTEST_API_ [[nodiscard]] TestSuite {
 //      available.
 //   2. You cannot use ASSERT_* directly in a constructor or
 //      destructor.
-class [[nodiscard]] Environment {
+class Environment {
  public:
   // The d'tor is virtual as we need to subclass Environment.
-  virtual ~Environment() = default;
+  virtual ~Environment() {}
 
   // Override this to define how to set up the environment.
   virtual void SetUp() {}
@@ -911,7 +894,7 @@ class [[nodiscard]] Environment {
 #if GTEST_HAS_EXCEPTIONS
 
 // Exception which can be thrown from TestEventListener::OnTestPartResult.
-class GTEST_API_ [[nodiscard]] AssertionException
+class GTEST_API_ AssertionException
     : public internal::GoogleTestFailureException {
  public:
   explicit AssertionException(const TestPartResult& result)
@@ -922,9 +905,9 @@ class GTEST_API_ [[nodiscard]] AssertionException
 
 // The interface for tracing execution of tests. The methods are organized in
 // the order the corresponding events are fired.
-class [[nodiscard]] TestEventListener {
+class TestEventListener {
  public:
-  virtual ~TestEventListener() = default;
+  virtual ~TestEventListener() {}
 
   // Fired before any test activity starts.
   virtual void OnTestProgramStart(const UnitTest& unit_test) = 0;
@@ -989,7 +972,7 @@ class [[nodiscard]] TestEventListener {
 // the methods they override will not be caught during the build.  For
 // comments about each method please see the definition of TestEventListener
 // above.
-class [[nodiscard]] EmptyTestEventListener : public TestEventListener {
+class EmptyTestEventListener : public TestEventListener {
  public:
   void OnTestProgramStart(const UnitTest& /*unit_test*/) override {}
   void OnTestIterationStart(const UnitTest& /*unit_test*/,
@@ -1019,7 +1002,7 @@ class [[nodiscard]] EmptyTestEventListener : public TestEventListener {
 };
 
 // TestEventListeners lets users add listeners to track events in Google Test.
-class GTEST_API_ [[nodiscard]] TestEventListeners {
+class GTEST_API_ TestEventListeners {
  public:
   TestEventListeners();
   ~TestEventListeners();
@@ -1054,10 +1037,6 @@ class GTEST_API_ [[nodiscard]] TestEventListeners {
     return default_xml_generator_;
   }
 
-  // Controls whether events will be forwarded by the repeater to the
-  // listeners in the list.
-  void SuppressEventForwarding(bool);
-
  private:
   friend class TestSuite;
   friend class TestInfo;
@@ -1087,6 +1066,7 @@ class GTEST_API_ [[nodiscard]] TestEventListeners {
   // Controls whether events will be forwarded by the repeater to the
   // listeners in the list.
   bool EventForwardingEnabled() const;
+  void SuppressEventForwarding();
 
   // The actual list of listeners.
   internal::TestEventRepeater* repeater_;
@@ -1110,7 +1090,7 @@ class GTEST_API_ [[nodiscard]] TestEventListeners {
 //
 // This class is thread-safe as long as the methods are called
 // according to their specification.
-class GTEST_API_ [[nodiscard]] UnitTest {
+class GTEST_API_ UnitTest {
  public:
   // Gets the singleton UnitTest object.  The first time this method
   // is called, a UnitTest object is constructed and returned.
@@ -1123,7 +1103,7 @@ class GTEST_API_ [[nodiscard]] UnitTest {
   // This method can only be called from the main thread.
   //
   // INTERNAL IMPLEMENTATION - DO NOT USE IN A USER PROGRAM.
-  [[nodiscard]] int Run();
+  int Run() GTEST_MUST_USE_RESULT_;
 
   // Returns the working directory when the first TEST() or TEST_F()
   // was executed.  The UnitTest object owns the string.
@@ -1262,20 +1242,6 @@ class GTEST_API_ [[nodiscard]] UnitTest {
   // total_test_suite_count() - 1. If i is not in that range, returns NULL.
   TestSuite* GetMutableTestSuite(int i);
 
-  // Invokes OsStackTrackGetterInterface::UponLeavingGTest. UponLeavingGTest()
-  // should be called immediately before Google Test calls user code. It saves
-  // some information about the current stack that CurrentStackTrace() will use
-  // to find and hide Google Test stack frames.
-  void UponLeavingGTest();
-
-  // Sets the TestSuite object for the test that's currently running.
-  void set_current_test_suite(TestSuite* a_current_test_suite)
-      GTEST_LOCK_EXCLUDED_(mutex_);
-
-  // Sets the TestInfo object for the test that's currently running.
-  void set_current_test_info(TestInfo* a_current_test_info)
-      GTEST_LOCK_EXCLUDED_(mutex_);
-
   // Accessors for the implementation object.
   internal::UnitTestImpl* impl() { return impl_; }
   const internal::UnitTestImpl* impl() const { return impl_; }
@@ -1284,8 +1250,6 @@ class GTEST_API_ [[nodiscard]] UnitTest {
   // members of UnitTest.
   friend class ScopedTrace;
   friend class Test;
-  friend class TestInfo;
-  friend class TestSuite;
   friend class internal::AssertHelper;
   friend class internal::StreamingListenerTest;
   friend class internal::UnitTestRecordPropertyTestHelper;
@@ -1398,7 +1362,7 @@ AssertionResult CmpHelperEQ(const char* lhs_expression,
   return CmpHelperEQFailure(lhs_expression, rhs_expression, lhs, rhs);
 }
 
-class [[nodiscard]] EqHelper {
+class EqHelper {
  public:
   // This templatized version is for the general case.
   template <
@@ -1589,12 +1553,12 @@ AssertionResult CmpHelperFloatingPointEQ(const char* lhs_expression,
   }
 
   ::std::stringstream lhs_ss;
-  lhs_ss.precision(std::numeric_limits<RawType>::digits10 + 2);
-  lhs_ss << lhs_value;
+  lhs_ss << std::setprecision(std::numeric_limits<RawType>::digits10 + 2)
+         << lhs_value;
 
   ::std::stringstream rhs_ss;
-  rhs_ss.precision(std::numeric_limits<RawType>::digits10 + 2);
-  rhs_ss << rhs_value;
+  rhs_ss << std::setprecision(std::numeric_limits<RawType>::digits10 + 2)
+         << rhs_value;
 
   return EqFailure(lhs_expression, rhs_expression,
                    StringStreamToString(&lhs_ss), StringStreamToString(&rhs_ss),
@@ -1610,11 +1574,9 @@ GTEST_API_ AssertionResult DoubleNearPredFormat(const char* expr1,
                                                 double val1, double val2,
                                                 double abs_error);
 
-using GoogleTest_NotSupported_OnFunctionReturningNonVoid = void;
-
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 // A class that enables one to stream messages to assertion macros
-class GTEST_API_ [[nodiscard]] AssertHelper {
+class GTEST_API_ AssertHelper {
  public:
   // Constructor.
   AssertHelper(TestPartResult::Type type, const char* file, int line,
@@ -1623,8 +1585,7 @@ class GTEST_API_ [[nodiscard]] AssertHelper {
 
   // Message assignment is a semantic trick to enable assertion
   // streaming; see the GTEST_MESSAGE_ macro below.
-  GoogleTest_NotSupported_OnFunctionReturningNonVoid operator=(
-      const Message& message) const;
+  void operator=(const Message& message) const;
 
  private:
   // We put our data in a struct so that the size of the AssertHelper class can
@@ -1664,7 +1625,7 @@ class GTEST_API_ [[nodiscard]] AssertHelper {
 // the GetParam() method.
 //
 // Use it with one of the parameter generator defining functions, like Range(),
-// Values(), ValuesIn(), Bool(), Combine(), and ConvertGenerator<T>().
+// Values(), ValuesIn(), Bool(), and Combine().
 //
 // class FooTest : public ::testing::TestWithParam<int> {
 //  protected:
@@ -1689,14 +1650,14 @@ class GTEST_API_ [[nodiscard]] AssertHelper {
 // INSTANTIATE_TEST_SUITE_P(OneToTenRange, FooTest, ::testing::Range(1, 10));
 
 template <typename T>
-class [[nodiscard]] WithParamInterface {
+class WithParamInterface {
  public:
   typedef T ParamType;
-  virtual ~WithParamInterface() = default;
+  virtual ~WithParamInterface() {}
 
   // The current parameter value. Is also available in the test fixture's
   // constructor.
-  [[nodiscard]] static const ParamType& GetParam() {
+  static const ParamType& GetParam() {
     GTEST_CHECK_(parameter_ != nullptr)
         << "GetParam() can only be called inside a value-parameterized test "
         << "-- did you intend to write TEST_P instead of TEST_F?";
@@ -1723,8 +1684,7 @@ const T* WithParamInterface<T>::parameter_ = nullptr;
 // WithParamInterface, and can just inherit from ::testing::TestWithParam.
 
 template <typename T>
-class [[nodiscard]] TestWithParam : public Test,
-                                    public WithParamInterface<T> {};
+class TestWithParam : public Test, public WithParamInterface<T> {};
 
 // Macros for indicating success/failure in test code.
 
@@ -1763,15 +1723,14 @@ class [[nodiscard]] TestWithParam : public Test,
 #define GTEST_FAIL() GTEST_FATAL_FAILURE_("Failed")
 
 // Like GTEST_FAIL(), but at the given source file location.
-#define GTEST_FAIL_AT(file, line)                \
-  return GTEST_MESSAGE_AT_(file, line, "Failed", \
-                           ::testing::TestPartResult::kFatalFailure)
+#define GTEST_FAIL_AT(file, line)         \
+  GTEST_MESSAGE_AT_(file, line, "Failed", \
+                    ::testing::TestPartResult::kFatalFailure)
 
 // Define this macro to 1 to omit the definition of FAIL(), which is a
 // generic name and clashes with some other libraries.
-#if !(defined(GTEST_DONT_DEFINE_FAIL) && GTEST_DONT_DEFINE_FAIL)
+#if !GTEST_DONT_DEFINE_FAIL
 #define FAIL() GTEST_FAIL()
-#define FAIL_AT(file, line) GTEST_FAIL_AT(file, line)
 #endif
 
 // Generates a success with a generic message.
@@ -1779,7 +1738,7 @@ class [[nodiscard]] TestWithParam : public Test,
 
 // Define this macro to 1 to omit the definition of SUCCEED(), which
 // is a generic name and clashes with some other libraries.
-#if !(defined(GTEST_DONT_DEFINE_SUCCEED) && GTEST_DONT_DEFINE_SUCCEED)
+#if !GTEST_DONT_DEFINE_SUCCEED
 #define SUCCEED() GTEST_SUCCEED()
 #endif
 
@@ -1823,19 +1782,19 @@ class [[nodiscard]] TestWithParam : public Test,
 // Define these macros to 1 to omit the definition of the corresponding
 // EXPECT or ASSERT, which clashes with some users' own code.
 
-#if !(defined(GTEST_DONT_DEFINE_EXPECT_TRUE) && GTEST_DONT_DEFINE_EXPECT_TRUE)
+#if !GTEST_DONT_DEFINE_EXPECT_TRUE
 #define EXPECT_TRUE(condition) GTEST_EXPECT_TRUE(condition)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_EXPECT_FALSE) && GTEST_DONT_DEFINE_EXPECT_FALSE)
+#if !GTEST_DONT_DEFINE_EXPECT_FALSE
 #define EXPECT_FALSE(condition) GTEST_EXPECT_FALSE(condition)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_TRUE) && GTEST_DONT_DEFINE_ASSERT_TRUE)
+#if !GTEST_DONT_DEFINE_ASSERT_TRUE
 #define ASSERT_TRUE(condition) GTEST_ASSERT_TRUE(condition)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_FALSE) && GTEST_DONT_DEFINE_ASSERT_FALSE)
+#if !GTEST_DONT_DEFINE_ASSERT_FALSE
 #define ASSERT_FALSE(condition) GTEST_ASSERT_FALSE(condition)
 #endif
 
@@ -1914,27 +1873,27 @@ class [[nodiscard]] TestWithParam : public Test,
 // Define macro GTEST_DONT_DEFINE_ASSERT_XY to 1 to omit the definition of
 // ASSERT_XY(), which clashes with some users' own code.
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_EQ) && GTEST_DONT_DEFINE_ASSERT_EQ)
+#if !GTEST_DONT_DEFINE_ASSERT_EQ
 #define ASSERT_EQ(val1, val2) GTEST_ASSERT_EQ(val1, val2)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_NE) && GTEST_DONT_DEFINE_ASSERT_NE)
+#if !GTEST_DONT_DEFINE_ASSERT_NE
 #define ASSERT_NE(val1, val2) GTEST_ASSERT_NE(val1, val2)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_LE) && GTEST_DONT_DEFINE_ASSERT_LE)
+#if !GTEST_DONT_DEFINE_ASSERT_LE
 #define ASSERT_LE(val1, val2) GTEST_ASSERT_LE(val1, val2)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_LT) && GTEST_DONT_DEFINE_ASSERT_LT)
+#if !GTEST_DONT_DEFINE_ASSERT_LT
 #define ASSERT_LT(val1, val2) GTEST_ASSERT_LT(val1, val2)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_GE) && GTEST_DONT_DEFINE_ASSERT_GE)
+#if !GTEST_DONT_DEFINE_ASSERT_GE
 #define ASSERT_GE(val1, val2) GTEST_ASSERT_GE(val1, val2)
 #endif
 
-#if !(defined(GTEST_DONT_DEFINE_ASSERT_GT) && GTEST_DONT_DEFINE_ASSERT_GT)
+#if !GTEST_DONT_DEFINE_ASSERT_GT
 #define ASSERT_GT(val1, val2) GTEST_ASSERT_GT(val1, val2)
 #endif
 
@@ -2022,7 +1981,7 @@ GTEST_API_ AssertionResult FloatLE(const char* expr1, const char* expr2,
 GTEST_API_ AssertionResult DoubleLE(const char* expr1, const char* expr2,
                                     double val1, double val2);
 
-#ifdef GTEST_OS_WINDOWS
+#if GTEST_OS_WINDOWS
 
 // Macros that test for HRESULT failure and success, these are only useful
 // on Windows, and rely on Windows SDK macros and APIs to compile.
@@ -2072,7 +2031,7 @@ GTEST_API_ AssertionResult DoubleLE(const char* expr1, const char* expr2,
 // Example:
 //   testing::ScopedTrace trace("file.cc", 123, "message");
 //
-class GTEST_API_ [[nodiscard]] ScopedTrace {
+class GTEST_API_ ScopedTrace {
  public:
   // The c'tor pushes the given source file location and message onto
   // a trace stack maintained by Google Test.
@@ -2104,7 +2063,9 @@ class GTEST_API_ [[nodiscard]] ScopedTrace {
 
   ScopedTrace(const ScopedTrace&) = delete;
   ScopedTrace& operator=(const ScopedTrace&) = delete;
-};
+} GTEST_ATTRIBUTE_UNUSED_;  // A ScopedTrace object does its job in its
+                            // c'tor and d'tor.  Therefore it doesn't
+                            // need to be used otherwise.
 
 // Causes a trace (including the source file path, the current line
 // number, and the given message) to be included in every test failure
@@ -2121,8 +2082,8 @@ class GTEST_API_ [[nodiscard]] ScopedTrace {
 // Assuming that each thread maintains its own stack of traces.
 // Therefore, a SCOPED_TRACE() would (correctly) only affect the
 // assertions in its own thread.
-#define SCOPED_TRACE(message)                                               \
-  const ::testing::ScopedTrace GTEST_CONCAT_TOKEN_(gtest_trace_, __LINE__)( \
+#define SCOPED_TRACE(message)                                         \
+  ::testing::ScopedTrace GTEST_CONCAT_TOKEN_(gtest_trace_, __LINE__)( \
       __FILE__, __LINE__, (message))
 
 // Compile-time assertion for type equality.
@@ -2192,7 +2153,7 @@ constexpr bool StaticAssertTypeEq() noexcept {
 
 // Define this macro to 1 to omit the definition of TEST(), which
 // is a generic name and clashes with some other libraries.
-#if !(defined(GTEST_DONT_DEFINE_TEST) && GTEST_DONT_DEFINE_TEST)
+#if !GTEST_DONT_DEFINE_TEST
 #define TEST(test_suite_name, test_name) GTEST_TEST(test_suite_name, test_name)
 #endif
 
@@ -2224,22 +2185,17 @@ constexpr bool StaticAssertTypeEq() noexcept {
 #define GTEST_TEST_F(test_fixture, test_name)        \
   GTEST_TEST_(test_fixture, test_name, test_fixture, \
               ::testing::internal::GetTypeId<test_fixture>())
-#if !(defined(GTEST_DONT_DEFINE_TEST_F) && GTEST_DONT_DEFINE_TEST_F)
+#if !GTEST_DONT_DEFINE_TEST_F
 #define TEST_F(test_fixture, test_name) GTEST_TEST_F(test_fixture, test_name)
 #endif
 
-// Returns a path to a temporary directory, which should be writable. It is
-// implementation-dependent whether or not the path is terminated by the
-// directory-separator character.
+// Returns a path to temporary directory.
+// Tries to determine an appropriate directory for the platform.
 GTEST_API_ std::string TempDir();
 
-// Returns a path to a directory that contains ancillary data files that might
-// be used by tests. It is implementation dependent whether or not the path is
-// terminated by the directory-separator character. The directory and the files
-// in it should be considered read-only.
-GTEST_API_ std::string SrcDir();
-
-GTEST_DISABLE_MSC_WARNINGS_POP_()  // 4805 4100
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 // Dynamically registers a test with the framework.
 //
@@ -2328,12 +2284,11 @@ TestInfo* RegisterTest(const char* test_suite_name, const char* test_name,
 // tests are successful, or 1 otherwise.
 //
 // RUN_ALL_TESTS() should be invoked after the command line has been
-// parsed by InitGoogleTest(). RUN_ALL_TESTS will tear down and delete any
-// installed environments and should only be called once per binary.
+// parsed by InitGoogleTest().
 //
 // This function was formerly a macro; thus, it is in the global
 // namespace and has an all-caps name.
-[[nodiscard]] int RUN_ALL_TESTS();
+int RUN_ALL_TESTS() GTEST_MUST_USE_RESULT_;
 
 inline int RUN_ALL_TESTS() { return ::testing::UnitTest::GetInstance()->Run(); }
 

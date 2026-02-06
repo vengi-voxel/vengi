@@ -12,6 +12,7 @@
 #include "io/Stream.h"
 
 #ifdef USE_LIBPNG
+#define PNG_SKIP_SETJMP_CHECK // libpng 1.2.50
 #include <png.h>
 #endif
 

@@ -6,10 +6,19 @@ namespace glm
 {
 	// -- Implicit basic constructors --
 
-#	if GLM_CONFIG_CTOR_INIT == GLM_ENABLE
+#	if GLM_CONFIG_DEFAULTED_DEFAULT_CTOR == GLM_DISABLE
 		template<typename T, qualifier Q>
 		GLM_DEFAULTED_DEFAULT_CTOR_QUALIFIER GLM_CONSTEXPR vec<1, T, Q>::vec()
-			: x(0)
+#			if GLM_CONFIG_CTOR_INIT != GLM_CTOR_INIT_DISABLE
+				: x(0)
+#			endif
+		{}
+#	endif
+
+#	if GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_DISABLE
+		template<typename T, qualifier Q>
+		GLM_DEFAULTED_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q>::vec(vec<1, T, Q> const& v)
+			: x(v.x)
 		{}
 #	endif
 
@@ -67,6 +76,15 @@ namespace glm
 	}
 
 	// -- Unary arithmetic operators --
+
+#	if GLM_CONFIG_DEFAULTED_FUNCTIONS == GLM_DISABLE
+		template<typename T, qualifier Q>
+		GLM_DEFAULTED_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> & vec<1, T, Q>::operator=(vec<1, T, Q> const& v)
+		{
+			this->x = v.x;
+			return *this;
+		}
+#	endif
 
 	template<typename T, qualifier Q>
 	template<typename U>

@@ -499,7 +499,7 @@ namespace glm
 		Result[3][2] = - static_cast<T>(2) * zNear;
 		return Result;
 	}
-
+	
 	template<typename T>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> infinitePerspectiveRH_ZO(T fovy, T aspect, T zNear)
 	{
