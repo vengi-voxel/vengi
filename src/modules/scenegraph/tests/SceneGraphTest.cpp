@@ -539,9 +539,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(12, 12, 12).getMaterial()));
 }
 
-// TODO: SCENEGRAPH: implement rotation here
-//       https://github.com/vengi-voxel/vengi/issues/433
-TEST_F(SceneGraphTest, DISABLED_testMergeWithTranslationPivotAndRotation) {
+TEST_F(SceneGraphTest, testMergeWithTranslationPivotAndRotation) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
@@ -572,12 +570,13 @@ TEST_F(SceneGraphTest, DISABLED_testMergeWithTranslationPivotAndRotation) {
 		node.setPivot(glm::vec3(0.0f));
 		sceneGraph.emplace(core::move(node));
 	}
+	sceneGraph.updateTransforms();
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(27, v->region().getWidthInVoxels());
+	EXPECT_EQ(25, v->region().getWidthInVoxels());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-10, -10, -10).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel(12, 12, 12).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(13, 12, 9).getMaterial()));
 }
 
 TEST_F(SceneGraphTest, testKeyframes) {
