@@ -93,6 +93,30 @@ const tinyxml2::XMLElement *GMLFormat::findNextSiblingElement(const tinyxml2::XM
 	return nullptr;
 }
 
+static int parseDoubles(const char *text, double *values, int count) {
+	if (text == nullptr) {
+		return 0;
+	}
+	const char *ptr = text;
+	int parsed = 0;
+	for (int i = 0; i < count; ++i) {
+		while (*ptr == ' ' || *ptr == '\t' || *ptr == '\n' || *ptr == '\r') {
+			++ptr;
+		}
+		if (*ptr == '\0') {
+			break;
+		}
+		char *endPtr = nullptr;
+		values[i] = SDL_strtod(ptr, &endPtr);
+		if (endPtr == ptr) {
+			break;
+		}
+		ptr = endPtr;
+		++parsed;
+	}
+	return parsed;
+}
+
 int GMLFormat::getSrsDimension(const tinyxml2::XMLElement *element) {
 	if (element == nullptr) {
 		return 3;
@@ -853,7 +877,7 @@ bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &
 	if (text == nullptr) {
 		return false;
 	}
-	SDL_sscanf(text, "%lf %lf %lf", &lowerCorner.x, &lowerCorner.y, &lowerCorner.z);
+	parseDoubles(text, &lowerCorner.x, 3);
 
 	const tinyxml2::XMLElement *upper = findChildElement(envelope, "upperCorner");
 	if (upper == nullptr) {
@@ -867,7 +891,7 @@ bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &
 	if (text == nullptr) {
 		return false;
 	}
-	SDL_sscanf(text, "%lf %lf %lf", &upperCorner.x, &upperCorner.y, &upperCorner.z);
+	parseDoubles(text, &upperCorner.x, 3);
 
 	Log::debug("GML envelope lower corner: %f %f %f", lowerCorner.x, lowerCorner.y, lowerCorner.z);
 	Log::debug("GML envelope upper corner: %f %f %f", upperCorner.x, upperCorner.y, upperCorner.z);
@@ -949,7 +973,14 @@ bool GMLFormat::parseRegionFilter(const core::String &regionStr, glm::dvec3 &min
 	}
 
 	const char *ptr = regionStr.c_str();
-	SDL_sscanf(ptr, "%lf %lf %lf %lf %lf %lf", &mins.x, &mins.y, &mins.z, &maxs.x, &maxs.y, &maxs.z);
+	double values[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	parseDoubles(ptr, values, 6);
+	mins.x = values[0];
+	mins.y = values[1];
+	mins.z = values[2];
+	maxs.x = values[3];
+	maxs.y = values[4];
+	maxs.z = values[5];
 
 	// Ensure min <= max
 	for (int i = 0; i < 3; ++i) {
