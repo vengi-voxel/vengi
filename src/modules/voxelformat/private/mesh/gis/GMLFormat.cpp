@@ -298,7 +298,7 @@ bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::D
 	if (!parseLinearRing(linearRing, polygon, offset)) {
 		return false;
 	}
-	polygons.push_back(core::move(polygon));
+	polygons.emplace_back(core::move(polygon));
 
 	// Parse interior rings (holes) - each becomes a separate polygon for triangulation
 	for (const tinyxml2::XMLElement *interior = findChildElement(polygonElement, "interior"); interior != nullptr;
@@ -308,7 +308,7 @@ bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::D
 			GMLPolygon holePolygon;
 			holePolygon.surfaceType = surfaceType;
 			if (parseLinearRing(innerRing, holePolygon, offset)) {
-				polygons.push_back(core::move(holePolygon));
+				polygons.emplace_back(core::move(holePolygon));
 			}
 		}
 	}
@@ -321,7 +321,7 @@ bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::D
 			GMLPolygon holePolygon;
 			holePolygon.surfaceType = surfaceType;
 			if (parseLinearRing(innerRing, holePolygon, offset)) {
-				polygons.push_back(core::move(holePolygon));
+				polygons.emplace_back(core::move(holePolygon));
 			}
 		}
 	}
@@ -654,7 +654,7 @@ bool GMLFormat::parseReliefFeature(const tinyxml2::XMLElement *relief, core::Dyn
 							if (exterior != nullptr) {
 								const tinyxml2::XMLElement *ring = findChildElement(exterior, "LinearRing");
 								if (ring != nullptr && parseLinearRing(ring, polygon, offset)) {
-									polygons.push_back(core::move(polygon));
+									polygons.emplace_back(core::move(polygon));
 								}
 							}
 						}
@@ -929,7 +929,7 @@ bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, M
 			polyIndices.push_back((voxel::IndexType)mesh.vertices.size());
 			mesh.vertices.push_back(vert);
 		}
-		mesh.polygons.push_back(polyIndices);
+		mesh.polygons.emplace_back(core::move(polyIndices));
 	}
 
 	return !mesh.vertices.empty();
@@ -1074,7 +1074,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 				obj.offset = offset;
 				(this->*dispatch.parser)(element, obj.polygons, offset);
 				if (!obj.polygons.empty()) {
-					objects.push_back(core::move(obj));
+					objects.emplace_back(core::move(obj));
 				}
 				found = true;
 				break;
@@ -1092,7 +1092,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 				obj.offset = offset;
 				parseGenericCityObject(unknownChild, obj.polygons, offset);
 				if (!obj.polygons.empty()) {
-					objects.push_back(core::move(obj));
+					objects.emplace_back(core::move(obj));
 				}
 			}
 		}
