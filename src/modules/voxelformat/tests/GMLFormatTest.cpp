@@ -2,12 +2,12 @@
  * @file
  */
 
+#include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxelformat/private/mesh/gis/GMLFormat.h"
 
 namespace voxelformat {
 
@@ -629,95 +629,6 @@ TEST_F(GMLFormatTest, testLoadBuildingPart) {
 	ASSERT_NE(nullptr, node);
 }
 
-// Test: multiple objects get separate scene graph nodes under a group
-TEST_F(GMLFormatTest, testLoadMultipleObjectsAsNodes) {
-	const char *gmlData = R"(<?xml version="1.0" encoding="UTF-8"?>
-<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"
-  xmlns:bldg="http://www.opengis.net/citygml/building/2.0"
-  xmlns:gml="http://www.opengis.net/gml">
-  <gml:name>MyCity</gml:name>
-  <core:cityObjectMember>
-    <bldg:Building gml:id="buildingA">
-      <gml:name>House A</gml:name>
-      <bldg:boundedBy>
-        <bldg:WallSurface>
-          <bldg:lod2MultiSurface>
-            <gml:MultiSurface>
-              <gml:surfaceMember>
-                <gml:Polygon>
-                  <gml:exterior>
-                    <gml:LinearRing>
-                      <gml:posList srsDimension="3">0 0 0 5 0 0 5 0 5 0 0 5 0 0 0</gml:posList>
-                    </gml:LinearRing>
-                  </gml:exterior>
-                </gml:Polygon>
-              </gml:surfaceMember>
-            </gml:MultiSurface>
-          </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
-      </bldg:boundedBy>
-    </bldg:Building>
-  </core:cityObjectMember>
-  <core:cityObjectMember>
-    <bldg:Building gml:id="buildingB">
-      <gml:name>House B</gml:name>
-      <bldg:boundedBy>
-        <bldg:WallSurface>
-          <bldg:lod2MultiSurface>
-            <gml:MultiSurface>
-              <gml:surfaceMember>
-                <gml:Polygon>
-                  <gml:exterior>
-                    <gml:LinearRing>
-                      <gml:posList srsDimension="3">10 0 0 15 0 0 15 0 5 10 0 5 10 0 0</gml:posList>
-                    </gml:LinearRing>
-                  </gml:exterior>
-                </gml:Polygon>
-              </gml:surfaceMember>
-            </gml:MultiSurface>
-          </bldg:lod2MultiSurface>
-        </bldg:WallSurface>
-      </bldg:boundedBy>
-    </bldg:Building>
-  </core:cityObjectMember>
-</core:CityModel>)";
-
-	io::MemoryArchivePtr archive = io::openMemoryArchive();
-	archive->add("test.gml", (const uint8_t *)gmlData, SDL_strlen(gmlData));
-
-	GMLFormat f;
-	scenegraph::SceneGraph sceneGraph;
-	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
-
-	// Should have a group node named "MyCity" with 2 model children
-	int modelCount = 0;
-	bool foundHouseA = false;
-	bool foundHouseB = false;
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &n = *iter;
-		++modelCount;
-		if (n.name() == "House A") {
-			foundHouseA = true;
-		} else if (n.name() == "House B") {
-			foundHouseB = true;
-		}
-	}
-	EXPECT_EQ(2, modelCount);
-	EXPECT_TRUE(foundHouseA);
-	EXPECT_TRUE(foundHouseB);
-
-	// Check the group node exists
-	bool foundGroup = false;
-	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Group); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &n = *iter;
-		if (n.name() == "MyCity") {
-			foundGroup = true;
-			break;
-		}
-	}
-	EXPECT_TRUE(foundGroup);
-}
-
 // Helper: two buildings spread far apart for region filter tests
 // Building A at GML world coords (0,0,0)-(5,0,5), Building B at (500,0,0)-(505,0,5)
 // With envelope lower corner at (0,0,0)
@@ -831,26 +742,25 @@ TEST_F(GMLFormatTest, testRegionFilterApplied) {
 	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
 }
 
-// Test: region filter NOT applied when below threshold
-TEST_F(GMLFormatTest, testRegionFilterNotAppliedBelowThreshold) {
+// Test: region filter is always applied when set
+TEST_F(GMLFormatTest, testRegionFilterAlwaysApplied) {
 	io::MemoryArchivePtr archive = io::openMemoryArchive();
 	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
 
-	// With scale=1.0, the extent is 505x5x5 which doesn't exceed 1024x256x1024
 	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
-	// Set a region filter that would exclude Building B - but it should NOT be applied
+	// Region filter that includes only Building A (GML world coords 0,0,0 to 10,10,10)
 	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
 
 	GMLFormat f;
 	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
 
-	// Both houses should be imported since threshold is not exceeded
+	// Only House A should be imported - region filter is always applied when set
 	int modelCount = 0;
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		++modelCount;
 	}
-	EXPECT_EQ(2, modelCount);
+	EXPECT_EQ(1, modelCount);
 
 	// Reset cvars
 	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
@@ -879,6 +789,227 @@ TEST_F(GMLFormatTest, testLargeDatasetNoFilterImportsAll) {
 
 	// Reset cvars
 	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
+}
+
+// Test: region filter works correctly with non-zero envelope offset (real-world coordinates)
+TEST_F(GMLFormatTest, testRegionFilterWithOffset) {
+	// Two buildings with a non-zero envelope offset (simulating real UTM coordinates)
+	// Building A at GML world (1000, 2000, 0)-(1005, 2005, 5)
+	// Building B at GML world (1500, 2000, 0)-(1505, 2005, 5)
+	// Envelope lower corner at (1000, 2000, 0)
+	const char *gmlData = R"(<?xml version="1.0" encoding="UTF-8"?>
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"
+  xmlns:bldg="http://www.opengis.net/citygml/building/2.0"
+  xmlns:gml="http://www.opengis.net/gml">
+  <gml:boundedBy>
+    <gml:Envelope srsName="EPSG:25832" srsDimension="3">
+      <gml:lowerCorner>1000 2000 0</gml:lowerCorner>
+      <gml:upperCorner>1505 2005 5</gml:upperCorner>
+    </gml:Envelope>
+  </gml:boundedBy>
+  <core:cityObjectMember>
+    <bldg:Building gml:id="buildingA">
+      <gml:name>House A</gml:name>
+      <bldg:boundedBy>
+        <bldg:WallSurface>
+          <bldg:lod2MultiSurface>
+            <gml:MultiSurface>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">1000 2000 0 1005 2000 0 1005 2005 0 1000 2005 0 1000 2000 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">1000 2000 0 1005 2000 0 1005 2000 5 1000 2000 5 1000 2000 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+            </gml:MultiSurface>
+          </bldg:lod2MultiSurface>
+        </bldg:WallSurface>
+      </bldg:boundedBy>
+    </bldg:Building>
+  </core:cityObjectMember>
+  <core:cityObjectMember>
+    <bldg:Building gml:id="buildingB">
+      <gml:name>House B</gml:name>
+      <bldg:boundedBy>
+        <bldg:WallSurface>
+          <bldg:lod2MultiSurface>
+            <gml:MultiSurface>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">1500 2000 0 1505 2000 0 1505 2005 0 1500 2005 0 1500 2000 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">1500 2000 0 1505 2000 0 1505 2000 5 1500 2000 5 1500 2000 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+            </gml:MultiSurface>
+          </bldg:lod2MultiSurface>
+        </bldg:WallSurface>
+      </bldg:boundedBy>
+    </bldg:Building>
+  </core:cityObjectMember>
+</core:CityModel>)";
+
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	archive->add("test.gml", (const uint8_t *)gmlData, SDL_strlen(gmlData));
+
+	// Region filter in GML world coordinates that includes only Building A
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("999 1999 -1 1010 2010 10");
+
+	GMLFormat f;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
+
+	int modelCount = 0;
+	bool foundHouseA = false;
+	bool foundHouseB = false;
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &n = *iter;
+		++modelCount;
+		if (n.name() == "House A") {
+			foundHouseA = true;
+		} else if (n.name() == "House B") {
+			foundHouseB = true;
+		}
+	}
+	EXPECT_EQ(1, modelCount);
+	EXPECT_TRUE(foundHouseA);
+	EXPECT_FALSE(foundHouseB);
+
+	// Reset cvars
+	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+}
+
+// Test: multi-file with different offsets produces objects that don't all overlap
+// This tests the global offset adjustment in voxelizeGroups by loading two buildings
+// at different world positions and verifying their voxel nodes are not at the same position.
+TEST_F(GMLFormatTest, testMultiFileOffsetAdjustment) {
+	// Two buildings in the same file with a non-zero envelope offset
+	// Building 1 at GML world (105-110, 205-210, 0-5)
+	// Building 2 at GML world (205-210, 305-310, 0-5)
+	// These are far apart in world space, so they should NOT overlap in the scene.
+	const char *gmlData = R"(<?xml version="1.0" encoding="UTF-8"?>
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"
+  xmlns:bldg="http://www.opengis.net/citygml/building/2.0"
+  xmlns:gml="http://www.opengis.net/gml">
+  <gml:boundedBy>
+    <gml:Envelope srsName="EPSG:25832" srsDimension="3">
+      <gml:lowerCorner>100 200 0</gml:lowerCorner>
+      <gml:upperCorner>210 310 5</gml:upperCorner>
+    </gml:Envelope>
+  </gml:boundedBy>
+  <core:cityObjectMember>
+    <bldg:Building gml:id="building1">
+      <gml:name>Building Near</gml:name>
+      <bldg:boundedBy>
+        <bldg:WallSurface>
+          <bldg:lod2MultiSurface>
+            <gml:MultiSurface>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">105 205 0 110 205 0 110 210 0 105 210 0 105 205 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">105 205 0 110 205 0 110 205 5 105 205 5 105 205 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+            </gml:MultiSurface>
+          </bldg:lod2MultiSurface>
+        </bldg:WallSurface>
+      </bldg:boundedBy>
+    </bldg:Building>
+  </core:cityObjectMember>
+  <core:cityObjectMember>
+    <bldg:Building gml:id="building2">
+      <gml:name>Building Far</gml:name>
+      <bldg:boundedBy>
+        <bldg:WallSurface>
+          <bldg:lod2MultiSurface>
+            <gml:MultiSurface>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">205 305 0 210 305 0 210 310 0 205 310 0 205 305 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+              <gml:surfaceMember>
+                <gml:Polygon>
+                  <gml:exterior>
+                    <gml:LinearRing>
+                      <gml:posList srsDimension="3">205 305 0 210 305 0 210 305 5 205 305 5 205 305 0</gml:posList>
+                    </gml:LinearRing>
+                  </gml:exterior>
+                </gml:Polygon>
+              </gml:surfaceMember>
+            </gml:MultiSurface>
+          </bldg:lod2MultiSurface>
+        </bldg:WallSurface>
+      </bldg:boundedBy>
+    </bldg:Building>
+  </core:cityObjectMember>
+</core:CityModel>)";
+
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	archive->add("test.gml", (const uint8_t *)gmlData, SDL_strlen(gmlData));
+
+	GMLFormat f;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(f.load("test.gml", archive, sceneGraph, testLoadCtx));
+
+	// Both buildings should be imported
+	int modelCount = 0;
+	glm::vec3 pos1(0.0f), pos2(0.0f);
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &n = *iter;
+		const scenegraph::SceneGraphTransform &transform = n.transform(0);
+		if (n.name() == "Building Near") {
+			pos1 = transform.localTranslation();
+		} else if (n.name() == "Building Far") {
+			pos2 = transform.localTranslation();
+		}
+		++modelCount;
+	}
+	EXPECT_EQ(2, modelCount);
+
+	// The two buildings should be at different positions (not overlapping)
+	// Building Near is at GML (105,205) and Building Far is at GML (205,305)
+	// They should be separated by roughly 100 units on each axis
+	const float distance = glm::length(pos2 - pos1);
+	EXPECT_GT(distance, 50.0f) << "Buildings should not overlap - they are at different world positions";
 }
 
 } // namespace voxelformat

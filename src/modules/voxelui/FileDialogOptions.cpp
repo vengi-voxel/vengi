@@ -330,6 +330,11 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 	if (*desc == voxelformat::GMLFormat::format()) {
 		const core::VarPtr &regionVar = core::Var::getSafe(cfg::VoxformatGMLRegion);
 		ImGui::InputVarString(_("Region filter (minX minY minZ maxX maxY maxZ)"), regionVar);
+		ImGui::TooltipTextUnformatted(
+			_("Only load objects that intersect with the given region. The coordinates are in the order of minX minY "
+			  "minZ maxX maxY maxZ. They are in world coordinates of the given GML file, so you might need to check "
+			  "the envelope of the file first to determine the correct region."));
+		ImGui::InputVarString(_("Filename filter (wildcard)"), core::Var::getSafe(cfg::VoxformatGMLFilenameFilter));
 	}
 
 	const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};

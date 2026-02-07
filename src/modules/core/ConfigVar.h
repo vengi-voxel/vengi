@@ -132,6 +132,7 @@ constexpr const char *VoxformatSkinApplyTransform = "voxformat_skinapplytransfor
 constexpr const char *VoxformatSkinAddGroups = "voxformat_skinaddgroups";
 constexpr const char *VoxformatSkinMergeFaces = "voxformat_skinmergefaces";
 constexpr const char *VoxformatGMLRegion = "voxformat_gmlregion";
+constexpr const char *VoxformatGMLFilenameFilter = "voxformat_gmlfilenamefilter";
 
 constexpr const char *GameModeClipping = "g_clipping";
 constexpr const char *GameModeApplyGravity = "g_applygravity";

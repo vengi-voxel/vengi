@@ -159,6 +159,9 @@ bool FormatConfig::init() {
 				   _("World coordinate region filter for GML/CityGML import. Format: 'minX minY minZ maxX maxY maxZ' "
 					 "in GML world coordinates. Only applied when the estimated voxel region exceeds the size threshold. "
 					 "Objects fully inside this region are imported, others are skipped."));
+	core::Var::get(cfg::VoxformatGMLFilenameFilter, "", core::CV_NOPERSIST,
+				   _("Filename filter for GML/CityGML import. Only import files that contain this string in their "
+					 "filename. Wildcards are supported."));
 	return true;
 }
 

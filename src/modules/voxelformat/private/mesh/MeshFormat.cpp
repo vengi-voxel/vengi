@@ -520,7 +520,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			colorIndex = palLookup.findClosestIndex(rgba);
 		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette, colorIndex, posSampling.getNormal());
-		core_assert_always(volume->setVoxel(idx, voxel));
+		core_assert_msg_always(volume->setVoxel(idx, voxel), "Failed to set voxel at index %i (%s)", idx, volume->region().toString().c_str());
 	};
 	posMap.for_parallel(fn);
 	if (palette.colorCount() == 1) {

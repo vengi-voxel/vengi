@@ -110,18 +110,12 @@ private:
 					 const glm::dvec3 &offset) const;
 	bool parseGenericCityObject(const tinyxml2::XMLElement *obj, core::DynamicArray<GMLPolygon> &polygons,
 								const glm::dvec3 &offset) const;
-	bool parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner) const;
+	bool parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner, glm::dvec3 &upperCorner) const;
 	static core::String getObjectName(const tinyxml2::XMLElement *element, const char *typeName);
 	bool polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, Mesh &mesh) const;
 
-	// Region filtering helpers
-	static bool computeObjectAABB(const CityObject &obj, glm::vec3 &mins, glm::vec3 &maxs);
-	static bool isObjectInsideRegion(const CityObject &obj, const glm::vec3 &filterMins, const glm::vec3 &filterMaxs);
-
-	bool parseCityModel(const tinyxml2::XMLElement *cityModel, core::DynamicArray<CityObject> &objects,
-						GMLMetadata &metadata) const;
-	bool parseXMLFile(io::SeekableReadStream &stream, core::DynamicArray<CityObject> &objects,
-					  GMLMetadata &metadata) const;
+	bool parseCityModel(const tinyxml2::XMLElement *cityModel, core::DynamicArray<CityObject> &objects) const;
+	bool parseXMLFile(const core::String &content, core::DynamicArray<CityObject> &objects) const;
 
 	static int getSrsDimension(const tinyxml2::XMLElement *element);
 

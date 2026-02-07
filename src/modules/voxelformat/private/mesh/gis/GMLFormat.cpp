@@ -3,18 +3,21 @@
  */
 
 #include "GMLFormat.h"
+#include "app/Async.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/ZipArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "tinyxml2.h"
+#include <SDL_stdinc.h>
 
 namespace voxelformat {
 
@@ -831,7 +834,7 @@ bool GMLFormat::parseGenericCityObject(const tinyxml2::XMLElement *obj, core::Dy
 	return !polygons.empty();
 }
 
-bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner) const {
+bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner, glm::dvec3 &upperCorner) const {
 	if (envelope == nullptr) {
 		return false;
 	}
@@ -840,39 +843,32 @@ bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &
 	if (lower == nullptr) {
 		return false;
 	}
-
+	if (lower->IntAttribute("srcDimension", 3) != 3) {
+		Log::error("Unsupported srcDimension on lowerCorner, expected 3");
+		return false;
+	}
 	const char *text = lower->GetText();
 	if (text == nullptr) {
 		return false;
 	}
+	SDL_sscanf(text, "%lf %lf %lf", &lowerCorner.x, &lowerCorner.y, &lowerCorner.z);
 
-	const char *ptr = text;
-	char *endPtr = nullptr;
-
-	lowerCorner.x = SDL_strtod(ptr, &endPtr);
-	if (endPtr == ptr) {
+	const tinyxml2::XMLElement *upper = findChildElement(envelope, "upperCorner");
+	if (upper == nullptr) {
 		return false;
 	}
-	ptr = endPtr;
-
-	while (*ptr == ' ' || *ptr == '\t') {
-		++ptr;
-	}
-	lowerCorner.y = SDL_strtod(ptr, &endPtr);
-	if (endPtr == ptr) {
+	if (upper->IntAttribute("srcDimension", 3) != 3) {
+		Log::error("Unsupported srcDimension on upperCorner, expected 3");
 		return false;
 	}
-	ptr = endPtr;
-
-	while (*ptr == ' ' || *ptr == '\t') {
-		++ptr;
-	}
-	lowerCorner.z = SDL_strtod(ptr, &endPtr);
-	if (endPtr == ptr) {
+	text = upper->GetText();
+	if (text == nullptr) {
 		return false;
 	}
+	SDL_sscanf(text, "%lf %lf %lf", &upperCorner.x, &upperCorner.y, &upperCorner.z);
 
 	Log::debug("GML envelope lower corner: %f %f %f", lowerCorner.x, lowerCorner.y, lowerCorner.z);
+	Log::debug("GML envelope upper corner: %f %f %f", upperCorner.x, upperCorner.y, upperCorner.z);
 	return true;
 }
 
@@ -901,6 +897,16 @@ core::String GMLFormat::getObjectName(const tinyxml2::XMLElement *element, const
 
 bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, Mesh &mesh) const {
 	core_trace_scoped(PolygonsToMesh);
+	int vertices = 0;
+	for (const GMLPolygon &polygon : polygons) {
+		if (polygon.vertices.size() < 3) {
+			continue;
+		}
+		vertices += polygon.vertices.size();
+	}
+	mesh.polygons.reserve(polygons.size());
+	mesh.vertices.reserve(vertices);
+
 	for (const GMLPolygon &polygon : polygons) {
 		if (polygon.vertices.size() < 3) {
 			continue;
@@ -935,51 +941,13 @@ bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, M
 	return !mesh.vertices.empty();
 }
 
-bool GMLFormat::computeObjectAABB(const CityObject &obj, glm::vec3 &mins, glm::vec3 &maxs) {
-	core_trace_scoped(ComputeObjectAABB);
-	bool first = true;
-	for (const GMLPolygon &polygon : obj.polygons) {
-		for (const glm::vec3 &vertex : polygon.vertices) {
-			if (first) {
-				mins = vertex;
-				maxs = vertex;
-				first = false;
-			} else {
-				mins = glm::min(mins, vertex);
-				maxs = glm::max(maxs, vertex);
-			}
-		}
-	}
-	return !first;
-}
-
 bool GMLFormat::parseRegionFilter(const core::String &regionStr, glm::dvec3 &mins, glm::dvec3 &maxs) {
 	if (regionStr.empty()) {
 		return false;
 	}
 
 	const char *ptr = regionStr.c_str();
-	char *endPtr = nullptr;
-	double values[6];
-
-	for (int i = 0; i < 6; ++i) {
-		while (*ptr == ' ' || *ptr == '\t') {
-			++ptr;
-		}
-		if (*ptr == '\0') {
-			Log::error("GML region filter requires 6 values (minX minY minZ maxX maxY maxZ), got %d", i);
-			return false;
-		}
-		values[i] = SDL_strtod(ptr, &endPtr);
-		if (endPtr == ptr) {
-			Log::error("Failed to parse GML region filter value at position %d", i);
-			return false;
-		}
-		ptr = endPtr;
-	}
-
-	mins = glm::dvec3(values[0], values[1], values[2]);
-	maxs = glm::dvec3(values[3], values[4], values[5]);
+	SDL_sscanf(ptr, "%lf %lf %lf %lf %lf %lf", &mins.x, &mins.z, &mins.y, &maxs.x, &maxs.z, &maxs.y);
 
 	// Ensure min <= max
 	for (int i = 0; i < 3; ++i) {
@@ -994,42 +962,34 @@ bool GMLFormat::parseRegionFilter(const core::String &regionStr, glm::dvec3 &min
 	return true;
 }
 
-bool GMLFormat::isObjectInsideRegion(const CityObject &obj, const glm::vec3 &filterMins, const glm::vec3 &filterMaxs) {
-	glm::vec3 objMins, objMaxs;
-	if (!computeObjectAABB(obj, objMins, objMaxs)) {
-		return false;
-	}
-	// Check if the object's AABB is fully contained within the filter region
-	return glm::all(glm::greaterThanEqual(objMins, filterMins)) && glm::all(glm::lessThanEqual(objMaxs, filterMaxs));
-}
-
-bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::DynamicArray<CityObject> &objects,
-							   GMLMetadata &metadata) const {
+bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::DynamicArray<CityObject> &objects) const {
 	if (cityModel == nullptr) {
 		return false;
 	}
 
-	// Extract metadata
-	const tinyxml2::XMLElement *descriptionElement = findChildElement(cityModel, "description");
-	if (descriptionElement != nullptr && descriptionElement->GetText() != nullptr) {
-		metadata.description = descriptionElement->GetText();
-	}
-
-	const tinyxml2::XMLElement *nameElement = findChildElement(cityModel, "name");
-	if (nameElement != nullptr && nameElement->GetText() != nullptr) {
-		metadata.name = nameElement->GetText();
-	}
-
 	// First, find the envelope to get the offset for coordinate normalization
-	glm::dvec3 offset(0.0);
+	glm::dvec3 offsetMins(0.0);
 	const tinyxml2::XMLElement *boundedBy = findChildElement(cityModel, "boundedBy");
 	if (boundedBy != nullptr) {
 		const tinyxml2::XMLElement *envelope = findChildElement(boundedBy, "Envelope");
-		if (envelope != nullptr) {
-			parseEnvelope(envelope, offset);
+		glm::dvec3 offsetMaxs(0.0);
+		if (parseEnvelope(envelope, offsetMins, offsetMaxs)) {
+			const core::String &regionStr = core::Var::getSafe(cfg::VoxformatGMLRegion)->strVal();
+			glm::dvec3 gmlFilterMins(0.0);
+			glm::dvec3 gmlFilterMaxs(0.0);
+			if (parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs)) {
+				if (offsetMaxs.x < gmlFilterMins.x || offsetMins.x > gmlFilterMaxs.x ||
+					offsetMaxs.y < gmlFilterMins.y || offsetMins.y > gmlFilterMaxs.y ||
+					offsetMaxs.z < gmlFilterMins.z || offsetMins.z > gmlFilterMaxs.z) {
+					Log::debug("CityModel envelope [%i %i %i %i %i %i] does not intersect filter region, skipping [%i %i %i %i %i %i]",
+							  (int)offsetMins.x, (int)offsetMins.y, (int)offsetMins.z, (int)offsetMaxs.x, (int)offsetMaxs.y,
+							  (int)offsetMaxs.z, (int)gmlFilterMins.x, (int)gmlFilterMins.y, (int)gmlFilterMins.z,
+							  (int)gmlFilterMaxs.x, (int)gmlFilterMaxs.y, (int)gmlFilterMaxs.z);
+					return false;
+				}
+			}
 		}
 	}
-	metadata.offset = offset;
 
 	// Dispatch table: element name -> parser function + type label
 	struct CityObjectDispatch {
@@ -1071,8 +1031,8 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 				CityObject obj;
 				obj.type = dispatch.typeName;
 				obj.name = getObjectName(element, dispatch.typeName);
-				obj.offset = offset;
-				(this->*dispatch.parser)(element, obj.polygons, offset);
+				obj.offset = offsetMins;
+				(this->*dispatch.parser)(element, obj.polygons, offsetMins);
 				if (!obj.polygons.empty()) {
 					objects.emplace_back(core::move(obj));
 				}
@@ -1089,8 +1049,8 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 				CityObject obj;
 				obj.type = "Unknown";
 				obj.name = getObjectName(unknownChild, "Unknown");
-				obj.offset = offset;
-				parseGenericCityObject(unknownChild, obj.polygons, offset);
+				obj.offset = offsetMins;
+				parseGenericCityObject(unknownChild, obj.polygons, offsetMins);
 				if (!obj.polygons.empty()) {
 					objects.emplace_back(core::move(obj));
 				}
@@ -1098,27 +1058,12 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 		}
 	}
 
-	if (objects.empty()) {
-		Log::warn("No objects found in GML file");
-		return false;
-	}
-
 	Log::debug("Total objects parsed: %d", (int)objects.size());
 	return true;
 }
 
-bool GMLFormat::parseXMLFile(io::SeekableReadStream &stream, core::DynamicArray<CityObject> &objects,
-							 GMLMetadata &metadata) const {
+bool GMLFormat::parseXMLFile(const core::String &content, core::DynamicArray<CityObject> &objects) const {
 	core_trace_scoped(ParseXMLFile);
-	const int64_t size = stream.size();
-	if (size <= 0) {
-		Log::error("Empty GML XML file");
-		return false;
-	}
-
-	core::String content;
-	content.reserve((size_t)size);
-	stream.readString((int)size, content, false);
 
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLError error = doc.Parse(content.c_str(), content.size());
@@ -1140,7 +1085,7 @@ bool GMLFormat::parseXMLFile(io::SeekableReadStream &stream, core::DynamicArray<
 		return false;
 	}
 
-	return parseCityModel(root, objects, metadata);
+	return parseCityModel(root, objects);
 }
 
 bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
@@ -1152,7 +1097,6 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	core::DynamicArray<CityObject> allObjects;
-	GMLMetadata combinedMetadata;
 
 	// Check if this is a zip archive (GML files are often distributed as zip)
 	if (io::ZipArchive::validStream(*stream)) {
@@ -1174,27 +1118,57 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			return false;
 		}
 
-		int filesProcessed = 0;
+		Log::info("Found %d XML/GML files in archive", (int)xmlFiles.size());
+		core::AtomicInt filesProcessed = 0;
+		core::DynamicArray<core::String> xmlData;
+		const core::String &gmlFilenameFilter = core::Var::getSafe(cfg::VoxformatGMLFilenameFilter)->strVal();
 		for (const io::FilesystemEntry &entry : xmlFiles) {
 			Log::debug("Processing XML file: %s", entry.fullPath.c_str());
+			if (!gmlFilenameFilter.empty() && !core::string::matches(entry.name, gmlFilenameFilter, true)) {
+				Log::info("Skipping file %s due to filename filter", entry.fullPath.c_str());
+				continue;
+			}
 			core::ScopedPtr<io::SeekableReadStream> xmlStream(zipArchive->readStream(entry.fullPath));
 			if (!xmlStream) {
 				Log::warn("Could not read XML file %s", entry.fullPath.c_str());
 				continue;
 			}
-
-			GMLMetadata fileMetadata;
-			if (parseXMLFile(*xmlStream, allObjects, fileMetadata)) {
-				++filesProcessed;
-				if (combinedMetadata.name.empty() && !fileMetadata.name.empty()) {
-					combinedMetadata = fileMetadata;
-				}
+			const int64_t size = xmlStream->size();
+			core::String content;
+			if (!xmlStream->readString((int)size, content, false)) {
+				Log::warn("Failed to read XML file %s", entry.fullPath.c_str());
+				continue;
 			}
-
+			if (content.empty()) {
+				Log::warn("Empty XML file %s", entry.fullPath.c_str());
+				continue;
+			}
+			xmlData.emplace_back(core::move(content));
+			Log::debug("Queued XML file %s for parsing", entry.fullPath.c_str());
 			if (stopExecution()) {
 				break;
 			}
 		}
+
+		core_trace_mutex(core::Lock, mutex, "ParseXML");
+		app::for_parallel(0, (int)xmlData.size(), [&](int start, int end) {
+			core::DynamicArray<CityObject> fileObjects;
+			for (int i = start; i < end; ++i) {
+				if (stopExecution()) {
+					break;
+				}
+				parseXMLFile(xmlData[i], fileObjects);
+				++filesProcessed;
+
+				ctx.progress("parse xml files", (int)filesProcessed, (int)xmlFiles.size());
+			}
+
+			// TODO: PERF: collecting them in an array of size xmlData.size() and move them later by only allocating
+			// once is more efficient than locking for each file and allocating and moving the objects one by one each
+			// time
+			core::ScopedLock lock(mutex);
+			allObjects.append(core::move(fileObjects));
+		});
 
 		if (filesProcessed == 0) {
 			Log::error("No valid GML data found in any XML file");
@@ -1202,121 +1176,25 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		}
 	} else {
 		// Single XML file
+		core::String content;
+		if (!stream->readString((int)stream->size(), content, false)) {
+			Log::error("Failed to read GML XML file");
+			return false;
+		}
+		if (content.empty()) {
+			Log::error("Empty GML XML file");
+			return false;
+		}
 		Log::debug("GML file is a single XML file");
-		if (!parseXMLFile(*stream, allObjects, combinedMetadata)) {
+		if (!parseXMLFile(content, allObjects)) {
 			return false;
 		}
 	}
 
-	if (allObjects.empty()) {
-		Log::error("No objects found in GML data");
-		return false;
-	}
-
-	// Compute the overall AABB of all objects (in internal coordinates)
-	glm::vec3 overallMins(0.0f);
-	glm::vec3 overallMaxs(0.0f);
-	bool firstAABB = true;
-	for (const CityObject &obj : allObjects) {
-		glm::vec3 objMins, objMaxs;
-		if (computeObjectAABB(obj, objMins, objMaxs)) {
-			if (firstAABB) {
-				overallMins = objMins;
-				overallMaxs = objMaxs;
-				firstAABB = false;
-			} else {
-				overallMins = glm::min(overallMins, objMins);
-				overallMaxs = glm::max(overallMaxs, objMaxs);
-			}
-		}
-	}
-
-	// Apply scale factor to estimate the voxel region dimensions
-	const glm::vec3 &scale = getInputScale();
-	const glm::vec3 extent = (overallMaxs - overallMins) * scale;
-	const glm::ivec3 estimatedVoxelSize((int)glm::ceil(extent.x), (int)glm::ceil(extent.y), (int)glm::ceil(extent.z));
-
-	// Threshold for warning and region filtering
-	static constexpr int MaxThresholdX = 1024;
-	static constexpr int MaxThresholdY = 256;
-	static constexpr int MaxThresholdZ = 1024;
-	const bool exceedsThreshold = estimatedVoxelSize.x > MaxThresholdX || estimatedVoxelSize.y > MaxThresholdY ||
-								  estimatedVoxelSize.z > MaxThresholdZ;
-
-	if (exceedsThreshold) {
-		const core::String &regionStr = core::Var::getSafe(cfg::VoxformatGMLRegion)->strVal();
-		if (regionStr.empty()) {
-			Log::warn("GML dataset estimated voxel size %dx%dx%d exceeds the threshold of %dx%dx%d. "
-					"Consider setting '%s' to a world coordinate region (format: 'minX minY minZ maxX maxY maxZ') "
-					"to limit the import area.",
-					estimatedVoxelSize.x, estimatedVoxelSize.y, estimatedVoxelSize.z, MaxThresholdX, MaxThresholdY,
-					MaxThresholdZ, cfg::VoxformatGMLRegion);
-		}
-
-		// Check if the user specified a region filter
-		glm::dvec3 gmlFilterMins, gmlFilterMaxs;
-		if (parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs)) {
-			// Convert GML world coordinates to internal coordinates using each object's offset
-			// GML: (x, y, z) -> Internal: (x - offset.x, z - offset.z, y - offset.y)
-			int originalCount = (int)allObjects.size();
-			int removedCount = 0;
-
-			for (size_t i = 0; i < allObjects.size();) {
-				const CityObject &obj = allObjects[i];
-				const glm::dvec3 &off = obj.offset;
-
-				// Convert GML world filter region to internal coordinates for this object's offset
-				const glm::vec3 filterMinsInternal((float)(gmlFilterMins.x - off.x), (float)(gmlFilterMins.z - off.z),
-												   (float)(gmlFilterMins.y - off.y));
-				const glm::vec3 filterMaxsInternal((float)(gmlFilterMaxs.x - off.x), (float)(gmlFilterMaxs.z - off.z),
-												   (float)(gmlFilterMaxs.y - off.y));
-
-				// Ensure min <= max after transformation
-				const glm::vec3 actualFilterMins = glm::min(filterMinsInternal, filterMaxsInternal);
-				const glm::vec3 actualFilterMaxs = glm::max(filterMinsInternal, filterMaxsInternal);
-
-				if (!isObjectInsideRegion(obj, actualFilterMins, actualFilterMaxs)) {
-					Log::debug("Filtering out object '%s' - outside region filter", obj.name.c_str());
-					allObjects.erase(i);
-					++removedCount;
-				} else {
-					++i;
-				}
-			}
-
-			Log::info("GML region filter: kept %d of %d objects (%d removed)", originalCount - removedCount,
-					  originalCount, removedCount);
-
-			if (allObjects.empty()) {
-				Log::error("No objects remaining after applying GML region filter");
-				return false;
-			}
-		}
-	}
-
-	// Create a group node as root for all city objects
-	const core::String groupName =
-		combinedMetadata.name.empty() ? core::string::extractFilename(filename) : combinedMetadata.name;
-
-	int parentNode = sceneGraph.root().id();
-	if (allObjects.size() > 1) {
-		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
-		groupNode.setName(groupName);
-		if (!combinedMetadata.description.empty()) {
-			groupNode.setProperty(scenegraph::PropDescription, combinedMetadata.description);
-		}
-		if (!combinedMetadata.name.empty()) {
-			groupNode.setProperty(scenegraph::PropTitle, combinedMetadata.name);
-		}
-		parentNode = sceneGraph.emplace(core::move(groupNode), parentNode);
-		if (parentNode == InvalidNodeId) {
-			Log::error("Failed to create group node for CityModel");
-			return false;
-		}
-	}
+	Log::info("Found total of %d objects in GML data", (int)allObjects.size());
 
 	int nodesCreated = 0;
-	for (CityObject &obj : allObjects) {
+	for (const CityObject &obj : allObjects) {
 		Mesh mesh;
 		if (!polygonsToMesh(obj.polygons, mesh)) {
 			Log::warn("Object '%s' produced no valid mesh", obj.name.c_str());
@@ -1326,7 +1204,7 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::debug("Voxelizing object '%s' (%s): %d vertices, %d polygons", obj.name.c_str(), obj.type.c_str(),
 				   (int)mesh.vertices.size(), (int)mesh.polygons.size());
 
-		const int nodeId = voxelizeMesh(obj.name, sceneGraph, core::move(mesh), parentNode);
+		const int nodeId = voxelizeMesh(obj.name, sceneGraph, core::move(mesh));
 		if (nodeId != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			node.setProperty("type", obj.type);
