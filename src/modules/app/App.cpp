@@ -939,6 +939,7 @@ void App::zshCompletion() const {
 		}
 	}
 	command::Command::visitSorted([=](const command::Command &c) {
+		// TODO: add the arguments of the command to the completion
 		Log::printf("\t\t'-%s[\"%s\"]'\n", c.name().c_str(), c.help().c_str());
 	});
 
@@ -984,6 +985,7 @@ void App::bashCompletion() const {
 		if (!firstArg) {
 			Log::printf(" ");
 		}
+		// TODO: add the arguments of the command to the completion
 		Log::printf("-%s", c.name().c_str());
 		firstArg = false;
 	});
