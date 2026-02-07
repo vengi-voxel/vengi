@@ -32,7 +32,11 @@ Because CityGML datasets can be enormous it's important to say that a lot of twe
 vengi-voxconvert -set voxformat_gmlfilenamefilter "LoD2_558*" --input ~/Downloads/lod2-de_hh_2016-11-22_21283_snap_1.GML --output hamburg2.vengi
 ```
 
-This alone is creating a scenegraph with 13264 nodes. If any of the minecrafters is reading this, I would be interested whether it works to import these scenes into minecraft.
+This alone is creating a scenegraph with 13264 nodes. I suppose these datasets will serve well as a base for further profiling in the scene graph handling...
+
+If any of the minecrafters are reading this, I would be interested whether it works to import these scenes into minecraft.
+
+![hamburg free gis data](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-gis_2026-02-07.png#gallery)
 
 ## VMax format fixes
 
