@@ -92,18 +92,37 @@ bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode *node, io::S
 	wrapBool(stream.writeBool(boolProperty(node, "preview mirror x axis", false)))
 	wrapBool(stream.writeBool(boolProperty(node, "preview mirror y axis", false)))
 	wrapBool(stream.writeBool(boolProperty(node, "preview mirror z axis", false)))
-	wrapBool(stream.writeBool(boolProperty(node, "ikAnchor", false)))
-	wrapBool(stream.writeString(stringProperty(node, "ikEffectorId"), true))
-	wrapBool(stream.writeBool(boolProperty(node, "ikConstraintsVisible", true)))
-	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMin", 0.0f)))
-	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMax", glm::two_pi<float>())))
-	int ikConstraintAmount = 0;
-	wrapBool(stream.writeUInt32(ikConstraintAmount)) // (max 10)
-	// we don't support this - but leave this disabled for loop as it is for reference reasons
-	for (int i = 0; i < ikConstraintAmount; ++i) {
-		wrapBool(stream.writeFloat(0.0f)) // ikConstraintX
-		wrapBool(stream.writeFloat(0.0f)) // ikConstraintZ
-		wrapBool(stream.writeFloat(0.0f)) // ikConstraintRadius
+	if (node != nullptr) {
+		if (const scenegraph::IKConstraint *ikConstraint = node->ikConstraint()) {
+			wrapBool(stream.writeBool(ikConstraint->anchor))
+			// resolve the effector node name for serialization
+			const core::String effectorName = stringProperty(node, "ikEffectorId");
+			wrapBool(stream.writeString(effectorName, true))
+			wrapBool(stream.writeBool(ikConstraint->visible))
+			wrapBool(stream.writeFloat(ikConstraint->rollMin))
+			wrapBool(stream.writeFloat(ikConstraint->rollMax))
+			const int ikConstraintAmount = (int)ikConstraint->swingLimits.size();
+			wrapBool(stream.writeUInt32(ikConstraintAmount))
+			for (int i = 0; i < ikConstraintAmount; ++i) {
+				wrapBool(stream.writeFloat(ikConstraint->swingLimits[i].center.x))
+				wrapBool(stream.writeFloat(ikConstraint->swingLimits[i].center.y))
+				wrapBool(stream.writeFloat(ikConstraint->swingLimits[i].radius))
+			}
+		} else {
+			wrapBool(stream.writeBool(false))
+			wrapBool(stream.writeString("", true))
+			wrapBool(stream.writeBool(true))
+			wrapBool(stream.writeFloat(0.0f))
+			wrapBool(stream.writeFloat(glm::two_pi<float>()))
+			wrapBool(stream.writeUInt32(0))
+		}
+	} else {
+		wrapBool(stream.writeBool(false))
+		wrapBool(stream.writeString("", true))
+		wrapBool(stream.writeBool(true))
+		wrapBool(stream.writeFloat(0.0f))
+		wrapBool(stream.writeFloat(glm::two_pi<float>()))
+		wrapBool(stream.writeUInt32(0))
 	}
 	return true;
 }
@@ -326,39 +345,43 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 		node.setProperty("preview mirror x axis", stream.readBool());
 		node.setProperty("preview mirror y axis", stream.readBool());
 		node.setProperty("preview mirror z axis", stream.readBool());
-		node.setProperty("ikAnchor", stream.readBool());
+		scenegraph::IKConstraint ikConstraint;
+		ikConstraint.anchor = stream.readBool();
 		if (version >= 9) {
 			char effectorId[1024];
 			wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
 			node.setProperty("ikEffectorId", effectorId);
-			node.setProperty("ikConstraintsVisible", stream.readBool());
-			float rollmin;
-			wrap(stream.readFloat(rollmin))
-			node.setProperty("ikRollMin", core::String::format("%f", rollmin));
-			float rollmax;
-			wrap(stream.readFloat(rollmax))
-			node.setProperty("ikRollMax", core::String::format("%f", rollmax));
+			// the effector node might not exist yet - we resolve after the full scene graph is loaded
+			scenegraph::SceneGraphNode *effectorNode = sceneGraph.findNodeByName(effectorId);
+			ikConstraint.effectorNodeId = effectorNode != nullptr ? effectorNode->id() : InvalidNodeId;
+			ikConstraint.visible = stream.readBool();
+			wrap(stream.readFloat(ikConstraint.rollMin))
+			wrap(stream.readFloat(ikConstraint.rollMax))
 			int32_t inverseKinematicsConstraints;
 			wrap(stream.readInt32(inverseKinematicsConstraints))
+			ikConstraint.swingLimits.resize(inverseKinematicsConstraints);
 			for (int32_t i = 0; i < inverseKinematicsConstraints; ++i) {
-				float inverseKinematicsX, inverseKinematicsY, inverseKinematicsRadius;
-				wrap(stream.readFloat(inverseKinematicsX))
-				wrap(stream.readFloat(inverseKinematicsY))
-				wrap(stream.readFloat(inverseKinematicsRadius))
+				scenegraph::IKConstraint::RadiusConstraint &constraint = ikConstraint.swingLimits[i];
+				wrap(stream.readFloat(constraint.center.x))
+				wrap(stream.readFloat(constraint.center.y))
+				wrap(stream.readFloat(constraint.radius))
 			}
 		} else {
-			node.setProperty("pitch constraint", stream.readBool());
+			const bool pitchConstraintEnabled = stream.readBool();
 			float pitchConstraintMin;
 			wrap(stream.readFloat(pitchConstraintMin))
-			node.setProperty("pitch constraint min", core::String::format("%f", pitchConstraintMin));
 			float pitchConstraintMax;
 			wrap(stream.readFloat(pitchConstraintMax))
-			node.setProperty("pitch constraint max", core::String::format("%f", pitchConstraintMax));
 			stream.readBool(); /* y counter clock wise allowed */
 			stream.readBool(); /* y clock wise allowed */
 			stream.readBool(); /* z counter clock wise allowed */
 			stream.readBool(); /* z clock wise allowed */
+			if (pitchConstraintEnabled) {
+				ikConstraint.rollMin = pitchConstraintMin;
+				ikConstraint.rollMax = pitchConstraintMax;
+			}
 		}
+		node.setIkConstraint(ikConstraint);
 	}
 	Log::debug("Add node %s with parent %i", id, parent);
 	const int nodeId = sceneGraph.emplace(core::move(node), parent);

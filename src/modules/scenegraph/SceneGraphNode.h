@@ -10,6 +10,7 @@
 #include "core/UUID.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
 #include "SceneGraphKeyFrame.h"
 #include "palette/NormalPalette.h"
@@ -63,6 +64,20 @@ using SceneGraphNodeProperties = core::DynamicStringMap<core::String>;
 
 #define InvalidNodeId (-1)
 
+struct IKConstraint {
+	int effectorNodeId = InvalidNodeId;
+	float rollMin = -glm::pi<float>();
+	float rollMax = glm::pi<float>();
+	bool visible = true;
+	bool anchor = false;
+
+	struct RadiusConstraint {
+		glm::vec2 center;
+		float radius;
+	};
+	core::DynamicArray<RadiusConstraint> swingLimits;
+};
+
 /**
  * @brief Struct that holds the metadata and the volume
  * @sa SceneGraph
@@ -101,6 +116,7 @@ protected:
 	SceneGraphNodeProperties _properties;
 	mutable core::Optional<palette::Palette> _palette;
 	mutable core::Optional<palette::NormalPalette> _normalPalette;
+	core::Optional<IKConstraint> _ikConstraint;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -261,6 +277,9 @@ public:
 	bool setProperty(const core::String& key, color::RGBA value);
 	bool setProperty(const core::String& key, const core::String& value);
 
+	IKConstraint* ikConstraint();
+	const IKConstraint* ikConstraint() const;
+	void setIkConstraint(const IKConstraint &constraint);
 	FrameIndex maxFrame() const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
 	bool hasKeyFrame(FrameIndex frameIdx) const;
@@ -306,6 +325,18 @@ public:
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrame *keyFrame(KeyFrameIndex keyFrameIdx) const;
 };
+
+inline IKConstraint *SceneGraphNode::ikConstraint() {
+	return _ikConstraint.hasValue() ? _ikConstraint.value() : nullptr;
+}
+
+inline const IKConstraint *SceneGraphNode::ikConstraint() const {
+	return _ikConstraint.hasValue() ? _ikConstraint.value() : nullptr;
+}
+
+inline void SceneGraphNode::setIkConstraint(const IKConstraint &constraint) {
+	_ikConstraint.setValue(constraint);
+}
 
 inline bool SceneGraphNode::owns() const {
 	return _volume;
