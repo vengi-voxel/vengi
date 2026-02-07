@@ -4,6 +4,7 @@
 
 #include "GMLFormat.h"
 #include "app/Async.h"
+#include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -18,6 +19,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "tinyxml2.h"
 #include <SDL_stdinc.h>
+#include <float.h>
 
 namespace voxelformat {
 
@@ -947,7 +949,7 @@ bool GMLFormat::parseRegionFilter(const core::String &regionStr, glm::dvec3 &min
 	}
 
 	const char *ptr = regionStr.c_str();
-	SDL_sscanf(ptr, "%lf %lf %lf %lf %lf %lf", &mins.x, &mins.z, &mins.y, &maxs.x, &maxs.z, &maxs.y);
+	SDL_sscanf(ptr, "%lf %lf %lf %lf %lf %lf", &mins.x, &mins.y, &mins.z, &maxs.x, &maxs.y, &maxs.z);
 
 	// Ensure min <= max
 	for (int i = 0; i < 3; ++i) {
@@ -1193,8 +1195,42 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	Log::info("Found total of %d objects in GML data", (int)allObjects.size());
 
+	// Parse the region filter (in GML world coordinates) for per-object filtering
+	glm::dvec3 gmlFilterMins(0.0);
+	glm::dvec3 gmlFilterMaxs(0.0);
+	const core::String &regionStr = core::Var::getSafe(cfg::VoxformatGMLRegion)->strVal();
+	const bool hasRegionFilter = parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs);
+
 	int nodesCreated = 0;
 	for (const CityObject &obj : allObjects) {
+		// Apply per-object region filter: compute the object's bounding box in GML world
+		// coordinates and check if it intersects the filter region
+		if (hasRegionFilter) {
+			glm::dvec3 objGmlMins(DBL_MAX);
+			glm::dvec3 objGmlMaxs(-DBL_MAX);
+			for (const GMLPolygon &poly : obj.polygons) {
+				for (const glm::vec3 &v : poly.vertices) {
+					// Convert from internal coords back to GML world coords
+					// Internal: (gml_x - offset.x, gml_z - offset.z, gml_y - offset.y)
+					const double gmlX = (double)v.x + obj.offset.x;
+					const double gmlY = (double)v.z + obj.offset.y;
+					const double gmlZ = (double)v.y + obj.offset.z;
+					objGmlMins.x = core_min(objGmlMins.x, gmlX);
+					objGmlMins.y = core_min(objGmlMins.y, gmlY);
+					objGmlMins.z = core_min(objGmlMins.z, gmlZ);
+					objGmlMaxs.x = core_max(objGmlMaxs.x, gmlX);
+					objGmlMaxs.y = core_max(objGmlMaxs.y, gmlY);
+					objGmlMaxs.z = core_max(objGmlMaxs.z, gmlZ);
+				}
+			}
+			// Check AABB intersection in GML world coordinates
+			if (objGmlMaxs.x < gmlFilterMins.x || objGmlMins.x > gmlFilterMaxs.x ||
+				objGmlMaxs.y < gmlFilterMins.y || objGmlMins.y > gmlFilterMaxs.y ||
+				objGmlMaxs.z < gmlFilterMins.z || objGmlMins.z > gmlFilterMaxs.z) {
+				Log::debug("Object '%s' filtered out by region filter", obj.name.c_str());
+				continue;
+			}
+		}
 		Mesh mesh;
 		if (!polygonsToMesh(obj.polygons, mesh)) {
 			Log::warn("Object '%s' produced no valid mesh", obj.name.c_str());
