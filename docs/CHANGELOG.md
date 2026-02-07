@@ -26,6 +26,12 @@ General:
    - Optimized volume cropping
    - Implement scaling of volumes by fractional values and handle it also in baking transform matrices
    - Split `vox_meshmode` to `voxformat_meshmode`
+   - Improved argument handling for console commands
+   - Added CityGML support (`gml`)
+   - VoxelMax (`vmaxb`) loading support fixed
+   - Improved the quake `map` format support (still wip though)
+   - Fixed network issues on Windows
+   - Improved auto generated lua docs
 
 VoxConvert:
 
@@ -57,6 +63,7 @@ VoxEdit:
    - Refactored the selection handling
    - Allow to re-configure key bindings in the options
    - Added MCP server
+   - Fixed a few high dpi issues
 
 Thumbnailer:
 
