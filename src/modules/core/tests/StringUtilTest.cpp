@@ -293,6 +293,18 @@ TEST_F(StringUtilTest, testMatches) {
 	EXPECT_TRUE(core::string::matches("file.ext", "*.ext"));
 	EXPECT_TRUE(core::string::matches("foobar", "fo?bar"));
 	EXPECT_FALSE(core::string::matches("foo", "foo?"));
+	EXPECT_TRUE(core::string::matches("foobar1", "foobar[123]*"));
+	EXPECT_TRUE(core::string::matches("foobar14", "foobar[123]*"));
+	EXPECT_TRUE(core::string::matches("foobar12", "foobar[123]*"));
+	EXPECT_TRUE(core::string::matches("foobar2", "foobar[123]*"));
+	EXPECT_TRUE(core::string::matches("foobar3", "foobar[123]*"));
+	EXPECT_FALSE(core::string::matches("foobar4", "foobar[123]*"));
+	EXPECT_FALSE(core::string::matches("foobar14", "foobar[123]"));
+	EXPECT_FALSE(core::string::matches("foobar12", "foobar[123]"));
+	EXPECT_TRUE(core::string::matches("foobar1", "foobar[123]"));
+	EXPECT_TRUE(core::string::matches("foobar2", "foobar[123]"));
+	EXPECT_TRUE(core::string::matches("foobar3", "foobar[123]"));
+	EXPECT_FALSE(core::string::matches("foobar4", "foobar[123]"));
 }
 
 TEST_F(StringUtilTest, testFileMatchesMultiple) {

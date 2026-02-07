@@ -523,6 +523,31 @@ static double cosineSimilarity(const core::String &s1, const core::String &s2) {
 #endif
 
 static bool patternMatch(const char *text, const char *pattern, bool ignoreCase);
+
+// Match a single character against a '[...]' group pattern.
+// 'p' should point to the first character after '['.
+// Returns true if 'c' matches one of the characters in the group.
+// On success or failure, 'p' is advanced past the closing ']'.
+static bool matchGroup(char c, const char *&p, bool ignoreCase) {
+	bool matched = false;
+	if (ignoreCase) {
+		c = toLower(c);
+	}
+	for (; *p != '\0' && *p != ']'; ++p) {
+		char gc = *p;
+		if (ignoreCase) {
+			gc = toLower(gc);
+		}
+		if (gc == c) {
+			matched = true;
+		}
+	}
+	if (*p == ']') {
+		++p; // skip closing bracket
+	}
+	return matched;
+}
+
 static bool patternMatchMulti(const char *text, const char *pattern, bool ignoreCase) {
 	const char *p = pattern;
 	const char *t = text;
@@ -543,12 +568,24 @@ static bool patternMatchMulti(const char *text, const char *pattern, bool ignore
 	}
 
 	const size_t l = SDL_strlen(t);
-	for (size_t i = 0; i < l; ++i) {
-		if (*t == c && patternMatch(p - 1, t, ignoreCase)) {
-			return true;
+	if (c == '[') {
+		for (size_t i = 0; i < l; ++i) {
+			const char *gp = p;
+			if (matchGroup(*t, gp, ignoreCase) && patternMatch(gp, t + 1, ignoreCase)) {
+				return true;
+			}
+			if (*t++ == '\0') {
+				return false;
+			}
 		}
-		if (*t++ == '\0') {
-			return false;
+	} else {
+		for (size_t i = 0; i < l; ++i) {
+			if (*t == c && patternMatch(p - 1, t, ignoreCase)) {
+				return true;
+			}
+			if (*t++ == '\0') {
+				return false;
+			}
 		}
 	}
 	return false;
@@ -565,6 +602,15 @@ static bool patternMatch(const char *text, const char *pattern, bool ignoreCase)
 			return patternMatchMulti(t, p, ignoreCase);
 		case '?':
 			if (*t == '\0') {
+				return false;
+			}
+			++t;
+			break;
+		case '[':
+			if (*t == '\0') {
+				return false;
+			}
+			if (!matchGroup(*t, p, ignoreCase)) {
 				return false;
 			}
 			++t;
