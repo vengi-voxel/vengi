@@ -33,6 +33,7 @@ private:
 								   io::WriteStream &stream);
 	bool saveNodePaletteNormals(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 								io::WriteStream &stream);
+	bool saveIKConstraint(const scenegraph::SceneGraphNode &node, io::WriteStream &stream);
 	bool saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream,
 				  const scenegraph::SceneGraphNode &node);
 
@@ -50,6 +51,8 @@ private:
 								   uint32_t version, io::ReadStream &stream);
 	bool loadNodePaletteNormals(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 								io::ReadStream &stream);
+	bool loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
+						  io::ReadStream &stream);
 	bool loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
 				  NodeMapping &nodeMapping);
 

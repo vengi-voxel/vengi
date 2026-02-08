@@ -12,7 +12,7 @@ A VENGI file consists of the following main sections:
 
 1. **Magic Number**: A 4-byte identifier `VENG`.
 2. **Zip data**: zlib header (0x78, 0xDA)
-    * **Version**: A 4-byte version number. The current supported version is `6`.
+    * **Version**: A 4-byte version number. The current supported version is `7`.
     * **Scene Graph Data**: Contains information about the scene graph nodes.
 
 ## Node Structure
@@ -28,6 +28,7 @@ Nodes are composed of data chunks that each start with a FourCC code.
     * `ANIM`: Contains animation data for a node.
         * `KEYF[]`: Contains keyframe data for an animation.
         * `ENDA`: Marks the end of an animation chunk.
+    * `IKCO`: Contains inverse kinematics constraint data for a node (since version 7).
     * `NODE[]`: child nodes (only present if there are child nodes)
     * `ENDN`: Marks the end of a node chunk.
 
@@ -162,3 +163,21 @@ Animations are stored in the `ANIM` chunk:
     * **Local Matrix**: Sixteen 4-byte floats (4x4 matrix in column-major order)
 
 The end of the animation chunk is marked by the `ENDA` FourCC.
+
+#### IK Constraints
+
+Inverse kinematics constraints are stored in the `IKCO` chunk (since version 7):
+
+> Note: This chunk is only present if the node has an IK constraint.
+
+* **FourCC**: `IKCO`
+* **Effector Node ID**: 4-byte signed integer (node id of the IK end-effector target, `-1` if none)
+* **Roll Min**: 4-byte float (minimum roll angle in radians)
+* **Roll Max**: 4-byte float (maximum roll angle in radians)
+* **Visible**: 1-byte boolean
+* **Anchor**: 1-byte boolean
+* **Swing Limit Count**: 4-byte unsigned integer
+* **Swing Limits**: For each swing limit:
+    * **Center X**: 4-byte float
+    * **Center Y**: 4-byte float
+    * **Radius**: 4-byte float

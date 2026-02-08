@@ -133,6 +133,47 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	return true;
 }
 
+bool VENGIFormat::saveIKConstraint(const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+	if (!node.hasIKConstraint()) {
+		return true;
+	}
+	const scenegraph::IKConstraint *ik = node.ikConstraint();
+	wrapBool(stream.writeUInt32(FourCC('I', 'K', 'C', 'O')))
+	wrapBool(stream.writeInt32(ik->effectorNodeId))
+	wrapBool(stream.writeFloat(ik->rollMin))
+	wrapBool(stream.writeFloat(ik->rollMax))
+	wrapBool(stream.writeBool(ik->visible))
+	wrapBool(stream.writeBool(ik->anchor))
+	wrapBool(stream.writeUInt32((uint32_t)ik->swingLimits.size()))
+	for (const auto &swing : ik->swingLimits) {
+		wrapBool(stream.writeFloat(swing.center.x))
+		wrapBool(stream.writeFloat(swing.center.y))
+		wrapBool(stream.writeFloat(swing.radius))
+	}
+	return true;
+}
+
+bool VENGIFormat::loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+								   uint32_t version, io::ReadStream &stream) {
+	scenegraph::IKConstraint ik;
+	wrap(stream.readInt32(ik.effectorNodeId))
+	wrap(stream.readFloat(ik.rollMin))
+	wrap(stream.readFloat(ik.rollMax))
+	ik.visible = stream.readBool();
+	ik.anchor = stream.readBool();
+	uint32_t swingCount;
+	wrap(stream.readUInt32(swingCount))
+	ik.swingLimits.resize(swingCount);
+	for (uint32_t i = 0; i < swingCount; ++i) {
+		wrap(stream.readFloat(ik.swingLimits[i].center.x))
+		wrap(stream.readFloat(ik.swingLimits[i].center.y))
+		wrap(stream.readFloat(ik.swingLimits[i].radius))
+	}
+	node.setIkConstraint(ik);
+	Log::debug("Loaded IK constraint with %u swing limits", swingCount);
+	return true;
+}
+
 bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyframe, io::WriteStream &stream) {
 	wrapBool(stream.writeUInt32(FourCC('K', 'E', 'Y', 'F')))
 	wrapBool(stream.writeUInt32(keyframe.frameIdx))
@@ -225,6 +266,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	}
 	wrapBool(saveNodePaletteNormals(sceneGraph, node, stream))
 	wrapBool(saveNodeData(sceneGraph, node, stream))
+	wrapBool(saveIKConstraint(node, stream))
 	for (const core::String &animation : sceneGraph.animations()) {
 		wrapBool(saveAnimation(node, animation, stream))
 	}
@@ -498,7 +540,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
 		}
 		nodeId = sceneGraph.emplace(core::move(node), parent);
-		if (nodeId == -1) {
+		if (nodeId == InvalidNodeId) {
 			Log::error("Failed to add new node");
 			return false;
 		}
@@ -556,6 +598,10 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 			if (!loadAnimation(sceneGraph, node, version, stream)) {
 				return false;
 			}
+		} else if (chunkMagic == FourCC('I', 'K', 'C', 'O')) {
+			if (!loadIKConstraint(sceneGraph, node, version, stream)) {
+				return false;
+			}
 		} else if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
 			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping)) {
 				return false;
@@ -579,7 +625,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(*stream, stream->size());
-	wrapBool(zipStream.writeUInt32(6))
+	wrapBool(zipStream.writeUInt32(7))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -602,7 +648,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ZipReadStream zipStream(*stream, stream->size());
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 6) {
+	if (version > 7) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}
@@ -623,6 +669,24 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 			}
 			Log::debug("Update node reference for node %i to: %i", node.id(), nodeId);
 			node.setReference(nodeId);
+		}
+		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::All); iter != sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
+			if (!node.hasIKConstraint()) {
+				continue;
+			}
+			scenegraph::IKConstraint *ik = node.ikConstraint();
+			if (ik->effectorNodeId == InvalidNodeId) {
+				continue;
+			}
+			int nodeId;
+			if (!nodeMapping.get(ik->effectorNodeId, nodeId)) {
+				Log::warn("Failed to perform node id mapping for IK effector node %i", ik->effectorNodeId);
+				ik->effectorNodeId = InvalidNodeId;
+			} else {
+				Log::debug("Update IK effector node for node %i to: %i", node.id(), nodeId);
+				ik->effectorNodeId = nodeId;
+			}
 		}
 		sceneGraph.updateTransforms();
 		return true;
