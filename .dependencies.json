@@ -8,7 +8,7 @@
     "implot": "81b8b1951392767cf458508385fa025fd087a252",
     "backward-cpp": "0bfd0a07a61551413ccd2ab9a9099af3bad40681",
     "im-neo-sequencer": "3b7930d4894408f655eefceb9f76e2ca15f1db24",
-    "imgui": "5b5d5b049d0c533b13d8fa5cef5d7b75edbcea46",
+    "imgui": "913a3c60561bb07e8fd410ec7d4a8f6f485defd6",
     "glm": "e7970a8b26732f1b0df9690f7180546f8c30e48e",
     "sdl2": "01dff47fd792fd504c208ccb820c745e1a49d3cc",
     "tinygltf": "81bd50c1062fdb956e878efa2a9234b2b9ec91ec",
@@ -22,7 +22,7 @@
     "ufbx": "6ecd6177af59c82ec363356ac36c3a4245b85321",
     "natsort": "cdd8df9602e727482ae5e051cff74b7ec7ffa07a",
     "miniz": "c883286f1a6443720e7705450f59e579a4bbb8e2",
-    "imgui_test_engine": "3fff43588c40ad225bcfff0219c62dae13ca9c47",
+    "imgui_test_engine": "d0b1b44c774ba050e1d2cb720c5880db58311738",
     "opengametools": "0dce3f2277a32b9f646367139506b00da6f080d7",
     "tinyxml2": "3324d04d58de9d5db09327db6442f075e519f11b",
     "imgui_markdown": "1fd8cc7877fca92fce9b37ec9b494e3b6084ffb4"

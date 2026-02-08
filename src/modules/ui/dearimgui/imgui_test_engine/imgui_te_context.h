@@ -336,7 +336,7 @@ struct IMGUI_API ImGuiTestContext
 
     // Miscellaneous helpers
     ImVec2      GetPosOnVoid(ImGuiViewport* viewport);                              // Find a point that has no windows // FIXME: This needs error return and flag to enable/disable forcefully finding void.
-    ImVec2      GetWindowTitlebarPoint(ImGuiTestRef window_ref);                    // Return a clickable point on window title-bar (window tab for docked windows).
+    ImVec2      GetWindowTitlebarPoint(ImGuiTestRef window_ref);                    // Return a clickable point on window title-bar (window tab for docked windows) that will e.g. move this single window.
     ImVec2      GetMainMonitorWorkPos();                                            // Work pos and size of main viewport when viewports are disabled, or work pos and size of monitor containing main viewport when viewports are enabled.
     ImVec2      GetMainMonitorWorkSize();
 
@@ -509,6 +509,7 @@ struct IMGUI_API ImGuiTestContext
     bool        WindowIsUndockedOrStandalone(ImGuiWindow* window);
     bool        DockIdIsUndockedOrStandalone(ImGuiID dock_id);
     void        DockNodeHideTabBar(ImGuiDockNode* node, bool hidden);
+    //ImVec2    GetDockNodeTitlebarPos(ImGuiDockNode* node);
 #endif
 
     // Performances Measurement (use along with Dear ImGui Perf Tool)
@@ -555,7 +556,7 @@ struct IMGUI_API ImGuiTestContext
 // Helpers used by IM_CHECK_OP() macros.
 // ImGuiTestEngine_GetTempStringBuilder() returns a shared instance of ImGuiTextBuffer to recycle memory allocations
 template<typename T> void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, T v) { buf->append("???"); IM_UNUSED(v); } // FIXME-TESTS: Could improve with some template magic
-template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, const char* v) { buf->appendf("\"%s\"", v); }
+template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, const char* v) { if (v) buf->appendf("\"%s\"", v); else buf->append("nullptr"); }
 template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, bool v)        { buf->append(v ? "true" : "false"); }
 template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, ImS8 v)        { buf->appendf("%d", v); }
 template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, ImU8 v)        { buf->appendf("%u", v); }
@@ -655,6 +656,7 @@ template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, Im
 // Floating point compares using an epsilon
 #define IM_CHECK_FLOAT_EQ(_LHS, _RHS)               IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, ==, ((__lhs-__rhs) <= FLT_EPSILON && (__lhs-__rhs) >= -FLT_EPSILON), true) // Float Equal (w/ epsilon)
 #define IM_CHECK_FLOAT_NE(_LHS, _RHS)               IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, !=, ((__lhs-__rhs) >  FLT_EPSILON || (__lhs-__rhs) <  -FLT_EPSILON), true) // Float Not Equal (w/ epsilon)
+#define IM_CHECK_FLOAT_NEAR_EQ(_LHS, _RHS, _EPS)    IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, ==, ((__lhs-__rhs) <= _EPS        && (__lhs-__rhs) >= -_EPS),        true) // Float Equal (w/ custom epsilon)
 #define IM_CHECK_DOUBLE_EQ(_LHS, _RHS)              IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, ==, ((__lhs-__rhs) <= DBL_EPSILON && (__lhs-__rhs) >= -DBL_EPSILON), true) // Double Equal (w/ epsilon)
 #define IM_CHECK_DOUBLE_NE(_LHS, _RHS)              IM_CHECK_FLOAT_OP_CUSTOM(_LHS, _RHS, !=, ((__lhs-__rhs) >  DBL_EPSILON || (__lhs-__rhs) <  -DBL_EPSILON), true) // Double Not Equal (w/ epsilon)
 

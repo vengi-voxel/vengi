@@ -38,6 +38,16 @@ Index of this file:
 #include "imgui_te_utils.h"         // ImPathFindFilename, ImPathFindExtension, ImPathFixSeparatorsForCurrentOS, ImFileCreateDirectoryChain, ImOsOpenInShell
 #include "thirdparty/Str/Str.h"
 
+// Warnings
+#if defined(__clang__)
+#if __has_warning("-Wunknown-warning-option")
+#pragma clang diagnostic ignored "-Wunknown-warning-option"         // warning: unknown warning group 'xxx'                      // not all warnings are known by all Clang versions and they tend to be rename-happy.. so ignoring warnings triggers new warnings on some configuration. Great!
+#endif
+#pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wsign-conversion"                  // warning: conversion to 'xxxx' from 'xxxx' may change the sign of the result
+#endif
+
 //-----------------------------------------------------------------------------
 // [SECTION] Link stb_image_write.h
 //-----------------------------------------------------------------------------
@@ -389,7 +399,7 @@ ImGuiCaptureStatus ImGuiCaptureContext::CaptureUpdate(ImGuiCaptureArgs* args)
     }
     else
     {
-        IM_ASSERT(args == _CaptureArgs); // Capture args can not change mid-capture.
+        IM_ASSERT(!_CaptureArgs || args == _CaptureArgs); // Capture may be cancelled, but args can not otherwise change mid-capture.
     }
 
     //-----------------------------------------------------------------

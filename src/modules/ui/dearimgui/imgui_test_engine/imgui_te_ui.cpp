@@ -120,6 +120,8 @@ static float GetDpiScale()
 {
 #ifdef IMGUI_HAS_VIEWPORT
     return ImGui::GetWindowViewport()->DpiScale;
+#elif IMGUI_VERSION_NUM >= 19197
+    return ImGui::GetStyle()._MainScale;
 #else
     return 1.0f;
 #endif
@@ -196,6 +198,24 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
             ImGui::PopID();
         }
     }
+
+    // Helper
+    if (test->Output.Status == ImGuiTestStatus_Error)
+    {
+        if (ImGui::TextLink("How to investigate a failing test?"))
+            ImGui::OpenPopup("Help");
+        if (ImGui::BeginPopup("Help"))
+        {
+            ImGui::BulletText("%s", "Click '[X] KeepGui' (io.ConfigKeepGuiFunc)    to view and interact with failing state.");
+            ImGui::BulletText("%s", "Click '[X] Break'   (io.ConfigBreakOnError)   to break in debugger.");
+            ImGui::BulletText("%s", "Click '[X] Capture' (io.ConfigCaptureOnError) to capture image of failing state to disk.");
+            ImGui::BulletText("%s", "Right-click in Log to open file.");
+            ImGui::BulletText("%s", "Hover hex identifiers in Log to locate them on screen.");
+            ImGui::BulletText("%s", "Call IM_SUSPEND_TESTFUNC() from TestFunc to view and interact with state at any given point.");
+            ImGui::EndPopup();
+        }
+    }
+
     ImGui::PopStyleVar();
 }
 
@@ -301,7 +321,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter,
             ImGuiTest* test = e->TestsAll[n];
             if (!ShowTestGroupFilterTest(e, group, filter->c_str(), test))
                 continue;
-            ImGuiTestEngine_QueueTest(e, test, ImGuiTestRunFlags_None);
+            ImGuiTestEngine_QueueTest(e, test, ImGuiTestRunFlags_RunFromGui);
         }
     }
     ImGui::SameLine();
@@ -777,20 +797,38 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
         ImGui::EndMenuBar();
     }
 
-    ImGui::SetNextItemWidth(90 * dpi_scale);
-    if (ImGui::BeginCombo("##RunSpeed", ImGuiTestEngine_GetRunSpeedName(engine->IO.ConfigRunSpeed), ImGuiComboFlags_None))
+    // Run Speed
     {
-        for (ImGuiTestRunSpeed level = (ImGuiTestRunSpeed)0; level < ImGuiTestRunSpeed_COUNT; level = (ImGuiTestRunSpeed)(level + 1))
-            if (ImGui::Selectable(ImGuiTestEngine_GetRunSpeedName(level), engine->IO.ConfigRunSpeed == level))
-                engine->IO.ConfigRunSpeed = level;
-        ImGui::EndCombo();
+        ImGui::SetNextItemWidth(90 * dpi_scale);
+        if (ImGui::BeginCombo("##RunSpeed", ImGuiTestEngine_GetRunSpeedName(engine->IO.ConfigRunSpeed), ImGuiComboFlags_None))
+        {
+            for (ImGuiTestRunSpeed level = (ImGuiTestRunSpeed)0; level < ImGuiTestRunSpeed_COUNT; level = (ImGuiTestRunSpeed)(level + 1))
+                if (ImGui::Selectable(ImGuiTestEngine_GetRunSpeedName(level), engine->IO.ConfigRunSpeed == level))
+                    engine->IO.ConfigRunSpeed = level;
+            ImGui::EndCombo();
+        }
+        ImGui::SetItemTooltip(
+            "Running speed\n"
+            "- Fast: Run tests as fast as possible (no delay/vsync, teleport mouse, etc.).\n"
+            "- Normal: Run tests at human watchable speed (for debugging).\n"
+            "- Cinematic: Run tests with pauses between actions (for e.g. tutorials)."
+        );
     }
-    ImGui::SetItemTooltip(
-        "Running speed\n"
-        "- Fast: Run tests as fast as possible (no delay/vsync, teleport mouse, etc.).\n"
-        "- Normal: Run tests at human watchable speed (for debugging).\n"
-        "- Cinematic: Run tests with pauses between actions (for e.g. tutorials)."
-    );
+    ImGui::SameLine();
+
+    // Verbose Level
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImGui::SetNextItemWidth(ImGui::CalcTextSize(ImGuiTestEngine_GetVerboseLevelName(ImGuiTestVerboseLevel_Warning)).x + style.FramePadding.x * 4.0f + ImGui::GetFontSize());
+        if (ImGui::BeginCombo("##Verbose", ImGuiTestEngine_GetVerboseLevelName(engine->IO.ConfigVerboseLevel), ImGuiComboFlags_None))
+        {
+            for (ImGuiTestVerboseLevel level = (ImGuiTestVerboseLevel)0; level < ImGuiTestVerboseLevel_COUNT; level = (ImGuiTestVerboseLevel)(level + 1))
+                if (ImGui::Selectable(ImGuiTestEngine_GetVerboseLevelName(level), engine->IO.ConfigVerboseLevel == level))
+                    engine->IO.ConfigVerboseLevel = engine->IO.ConfigVerboseLevelOnError = level;
+            ImGui::EndCombo();
+        }
+        ImGui::SetItemTooltip("Verbose level.");
+    }
     ImGui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
@@ -799,7 +837,7 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
     ImGui::Checkbox("Stop", &engine->IO.ConfigStopOnError);
     ImGui::SetItemTooltip("When hitting an error:\n- Stop running other tests.");
     ImGui::SameLine();
-    ImGui::Checkbox("DbgBrk", &engine->IO.ConfigBreakOnError);
+    ImGui::Checkbox("Break", &engine->IO.ConfigBreakOnError);
     ImGui::SetItemTooltip("When hitting an error:\n- Break in debugger.");
     ImGui::SameLine();
     ImGui::Checkbox("Capture", &engine->IO.ConfigCaptureOnError);
@@ -808,27 +846,13 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
 
-    ImGui::Checkbox("KeepGUI", &engine->IO.ConfigKeepGuiFunc);
+    ImGui::Checkbox("KeepGui", &engine->IO.ConfigKeepGuiFunc);
     ImGui::SetItemTooltip("After running single test or hitting an error:\n- Keep GUI function visible and interactive.\n- Hold ESC to abort a running GUI function.");
     ImGui::SameLine();
     bool keep_focus = !engine->IO.ConfigRestoreFocusAfterTests;
     if (ImGui::Checkbox("KeepFocus", &keep_focus))
         engine->IO.ConfigRestoreFocusAfterTests = !keep_focus;
     ImGui::SetItemTooltip("After running tests:\n- Keep GUI current focus, instead of restoring focus to this window.");
-
-    ImGui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-    ImGui::SameLine();
-
-    ImGui::SetNextItemWidth(70 * dpi_scale);
-    if (ImGui::BeginCombo("##Verbose", ImGuiTestEngine_GetVerboseLevelName(engine->IO.ConfigVerboseLevel), ImGuiComboFlags_None))
-    {
-        for (ImGuiTestVerboseLevel level = (ImGuiTestVerboseLevel)0; level < ImGuiTestVerboseLevel_COUNT; level = (ImGuiTestVerboseLevel)(level + 1))
-            if (ImGui::Selectable(ImGuiTestEngine_GetVerboseLevelName(level), engine->IO.ConfigVerboseLevel == level))
-                engine->IO.ConfigVerboseLevel = engine->IO.ConfigVerboseLevelOnError = level;
-        ImGui::EndCombo();
-    }
-    ImGui::SetItemTooltip("Verbose level.");
 
     //ImGui::PopStyleVar();
     ImGui::Separator();

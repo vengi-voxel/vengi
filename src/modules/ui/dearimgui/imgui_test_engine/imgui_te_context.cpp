@@ -19,6 +19,16 @@
 #include "imgui_te_utils.h"
 #include "thirdparty/Str/Str.h"
 
+// Warnings
+#if defined(__clang__)
+#if __has_warning("-Wunknown-warning-option")
+#pragma clang diagnostic ignored "-Wunknown-warning-option"         // warning: unknown warning group 'xxx'                      // not all warnings are known by all Clang versions and they tend to be rename-happy.. so ignoring warnings triggers new warnings on some configuration. Great!
+#endif
+#pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wsign-conversion"                  // warning: conversion to 'xxxx' from 'xxxx' may change the sign of the result
+#endif
+
 //-------------------------------------------------------------------------
 // [SECTION] ImGuiTestRefDesc
 //-------------------------------------------------------------------------
@@ -505,6 +515,7 @@ void ImGuiTestContext::SetRef(ImGuiWindow* window)
 
     // We grab the ID directly and avoid ImHashDecoratedPath so "/" in window names are not ignored.
     size_t len = strlen(window->Name);
+    IM_UNUSED(len); // Only used when IM_ASSERT enabled
     IM_ASSERT(len < IM_COUNTOF(RefStr) - 1);
     strcpy(RefStr, window->Name);
     RefID = RefWindowID = window->ID;
@@ -527,6 +538,7 @@ void ImGuiTestContext::SetRef(ImGuiTestRef ref)
     if (ref.Path)
     {
         size_t len = strlen(ref.Path);
+        IM_UNUSED(len); // Only used when IM_ASSERT enabled
         IM_ASSERT(len < IM_COUNTOF(RefStr) - 1);
 
         strcpy(RefStr, ref.Path);
@@ -986,6 +998,7 @@ ImGuiTestItemInfo ImGuiTestContext::ItemInfo(ImGuiTestRef ref, ImGuiTestOpFlags 
         return ItemInfoNull();
 
     const ImGuiTestOpFlags SUPPORTED_FLAGS = ImGuiTestOpFlags_NoError;
+    IM_UNUSED(SUPPORTED_FLAGS); // Only used when IM_ASSERT enabled
     IM_ASSERT((flags & ~SUPPORTED_FLAGS) == 0);
 
     ImGuiID full_id = 0;
@@ -1476,6 +1489,17 @@ void    ImGuiTestContext::ScrollToPosY(ImGuiTestRef window_ref, float pos_y)
     ScrollToPos(window_ref, pos_y, ImGuiAxis_Y);
 }
 
+#if IMGUI_VERSION_NUM < 19226
+namespace ImGui
+{
+    ImGuiTabBar* TabBarFindByID(ImGuiID id)
+    {
+        ImGuiContext& g = *GImGui;
+        return g.TabBars.GetByKey(id);
+    }
+}
+#endif
+
 // Supported values for ImGuiTestOpFlags:
 // - ImGuiTestOpFlags_NoFocusWindow
 void    ImGuiTestContext::ScrollToItem(ImGuiTestRef ref, ImGuiAxis axis, ImGuiTestOpFlags flags)
@@ -1497,15 +1521,28 @@ void    ImGuiTestContext::ScrollToItem(ImGuiTestRef ref, ImGuiAxis axis, ImGuiTe
 
     // TabBar are a special case because they have no scrollbar and rely on ScrollButton "<" and ">"
     // FIXME-TESTS: Consider moving to its own function.
-    ImGuiContext& g = *UiContext;
     if (axis == ImGuiAxis_X)
-        if (ImGuiTabBar* tab_bar = g.TabBars.GetByKey(item.ParentID))
-            if (tab_bar->Flags & ImGuiTabBarFlags_FittingPolicyScroll)
+    {
+        ImGuiTabBar* tab_bar = ImGui::TabBarFindByID(item.ParentID);
+#ifdef IMGUI_HAS_DOCK
+        if (tab_bar == NULL)
+            if (ImGuiDockNode* node = ImGui::DockContextFindNodeByID(UiContext, item.ParentID))
+                if (node->TabBar != NULL)
+                    tab_bar = node->TabBar;
+#endif
+        if (tab_bar)
+            if (tab_bar->Flags & (ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_FittingPolicyMixed))
             {
                 ScrollToTabItem(tab_bar, item.ID);
                 return;
             }
+    }
 
+    // Unsupported beyond tab bars
+    if (item.NavLayer == ImGuiNavLayer_Menu)
+        return;
+
+    // FIXME: Consider storing current ClipRect
     ImGuiWindow* window = item.Window;
     float item_curr = ImFloor(item.RectFull.GetCenter()[axis]);
     float item_target = ImFloor(window->InnerClipRect.GetCenter()[axis]);
@@ -1540,30 +1577,52 @@ void    ImGuiTestContext::ScrollToTabItem(ImGuiTabBar* tab_bar, ImGuiID tab_id)
     if (target_tab_item == nullptr)
         return;
 
-    int selected_tab_index = tab_bar->Tabs.index_from_ptr(selected_tab_item);
-    int target_tab_index = tab_bar->Tabs.index_from_ptr(target_tab_item);
+    const int selected_tab_index = tab_bar->Tabs.index_from_ptr(selected_tab_item);
+    const int target_tab_index = tab_bar->Tabs.index_from_ptr(target_tab_item);
+    if (selected_tab_index == target_tab_index)
+        return;
 
     ImGuiTestRef backup_ref = GetRef();
     SetRef(tab_bar->ID);
 
-    if (selected_tab_index > target_tab_index)
+#if IMGUI_VERSION_NUM >= 19259
+    ImGuiID active_id = ImGui::GetActiveID();
+    if (active_id != 0 || ImGui::IsDragDropActive() || selected_tab_index == target_tab_index)
     {
-        MouseMove("##<");
-        for (int i = 0; i < selected_tab_index - target_tab_index; ++i)
-            MouseClick(0);
+        // Cannot click: will use mouse wheeling
+        // FIXME-TESTS: Taking a shortcut now instead of doing a mouse wheel.
+        //MouseMoveToPos(tab_bar->BarRect.GetCenter());
+        //MouseWheelX(delta?);
+        tab_bar->NextScrollToTabId = tab_id;
     }
     else
+#endif
     {
-        MouseMove("##>");
-        for (int i = 0; i < target_tab_index - selected_tab_index; ++i)
-            MouseClick(0);
+        if (selected_tab_index > target_tab_index)
+        {
+            MouseMove("##<");
+            for (int i = 0; i < selected_tab_index - target_tab_index; ++i)
+                MouseClick(0);
+        }
+        else
+        {
+            MouseMove("##>");
+            for (int i = 0; i < target_tab_index - selected_tab_index; ++i)
+                MouseClick(0);
+        }
     }
 
     // Skip the scroll animation
+    Yield();
     if (EngineIO->ConfigRunSpeed == ImGuiTestRunSpeed_Fast)
     {
         tab_bar->ScrollingAnim = tab_bar->ScrollingTarget;
         Yield();
+    }
+    else
+    {
+        while (tab_bar->ScrollingAnim != tab_bar->ScrollingTarget)
+            Yield();
     }
 
     SetRef(backup_ref);
@@ -1732,20 +1791,24 @@ static void FocusOrMakeClickableAtPos(ImGuiTestContext* ctx, ImGuiWindow* window
 {
     IM_ASSERT(window != nullptr);
 
-    // Avoid unnecessary focus
-    // While this is generally desirable and much more consistent with user behavior,
-    // it make test-engine behavior a little less deterministic.
-    // incorrectly written tests could possibly succeed or fail based on position of other windows.
-    bool is_covered = ctx->FindHoveredWindowAtPos(pos) != window;
-#if IMGUI_VERSION_NUM >= 18944
-    bool is_inhibited = ImGui::IsWindowContentHoverable(window) == false;
-#else
-    bool is_inhibited = false;
-#endif
-    // FIXME-TESTS-NOT_SAME_AS_END_USER: This has too many side effect, could we do without?
-    // - e.g. This can close a modal.
-    if (is_covered || is_inhibited)
+    for (int attempts = 0; attempts < 2; attempts++)
     {
+        // Avoid unnecessary focus
+        // While this is generally desirable and much more consistent with user behavior,
+        // it make test-engine behavior a little less deterministic.
+        // incorrectly written tests could possibly succeed or fail based on position of other windows.
+        bool is_covered = ctx->FindHoveredWindowAtPos(pos) != window;
+#if IMGUI_VERSION_NUM >= 18944
+        bool is_inhibited = ImGui::IsWindowContentHoverable(window) == false;
+#else
+        bool is_inhibited = false;
+#endif
+        if (!is_covered && !is_inhibited)
+            return;
+
+        // FIXME-TESTS-NOT_SAME_AS_END_USER: This has too many side effect, could we do without?
+        // - e.g. This can close a modal.
+
         // Testing ImGuiWindowFlags_NoBringToFrontOnFocus is similar to what FocusWindow() does
         ImGuiWindow* focus_front_window = window ? window->RootWindow : nullptr;
 #ifdef IMGUI_HAS_DOCK
@@ -1753,14 +1816,19 @@ static void FocusOrMakeClickableAtPos(ImGuiTestContext* ctx, ImGuiWindow* window
 #else
         ImGuiWindow* display_front_window = window ? window->RootWindow : nullptr;
 #endif
-        if ((window->Flags | focus_front_window->Flags | display_front_window->Flags) & ImGuiWindowFlags_NoBringToFrontOnFocus)
+        const bool can_bring_to_front = ((window->Flags | focus_front_window->Flags | display_front_window->Flags) & ImGuiWindowFlags_NoBringToFrontOnFocus) == 0;
+
+        // Initially I expected to aim to make the most common path move other windows and WindowBringToFront() the exceptional path.
+        // However from a user's perspective, if a window can be moved to front it is usually more natural to do this.
+        if (attempts == 0)
         {
-            // FIXME-TESTS: Aim to make it the common/default path, and WindowBringToFront() the exceptional path!
-            ctx->_MakeAimingSpaceOverPos(window->Viewport, window, pos);
-        }
-        else
-        {
+            if (!can_bring_to_front)
+                continue;
             ctx->WindowBringToFront(window->ID);
+        }
+        else if (attempts == 1)
+        {
+            ctx->_MakeAimingSpaceOverPos(window->Viewport, window, pos);
         }
     }
 }
@@ -1826,27 +1894,24 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
             }
         }
 
-        ImRect window_r = window->InnerClipRect;
-        window_r.Expand(ImVec2(-hover_padding.x, -hover_padding.y));
+        //ImRect window_r = window->InnerClipRect;
+        //window_r.Expand(ImVec2(-hover_padding.x, -hover_padding.y));
 
-        ImRect item_r_clipped;
-        item_r_clipped.Min.x = ImClamp(item.RectFull.Min.x, window_r.Min.x, window_r.Max.x);
-        item_r_clipped.Min.y = ImClamp(item.RectFull.Min.y, window_r.Min.y, window_r.Max.y);
-        item_r_clipped.Max.x = ImClamp(item.RectFull.Max.x, window_r.Min.x, window_r.Max.x);
-        item_r_clipped.Max.y = ImClamp(item.RectFull.Max.y, window_r.Min.y, window_r.Max.y);
+        ImRect item_r_clipped = item.RectClipped;
+        //item_r_clipped.Min.x = ImClamp(item.RectFull.Min.x, window_r.Min.x, window_r.Max.x);
+        //item_r_clipped.Min.y = ImClamp(item.RectFull.Min.y, window_r.Min.y, window_r.Max.y);
+        //item_r_clipped.Max.x = ImClamp(item.RectFull.Max.x, window_r.Min.x, window_r.Max.x);
+        //item_r_clipped.Max.y = ImClamp(item.RectFull.Max.y, window_r.Min.y, window_r.Max.y);
 
         // In theory all we need is one visible point, but it is generally nicer if we scroll toward visibility.
         // Bias toward reducing amount of horizontal scroll.
         float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
         float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
 
-        if (item.NavLayer == ImGuiNavLayer_Main)
-        {
-            if (visibility_ratio_x < 0.70f)
-                ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
-            if (visibility_ratio_y < 0.90f)
-                ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
-        }
+        if (visibility_ratio_x < 0.70f)
+            ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
+        if (visibility_ratio_y < 0.90f)
+            ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
         // FIXME: Scroll parent window
     }
 
@@ -2026,6 +2091,9 @@ bool    ImGuiTestContext::WindowTeleportToMakePosVisible(ImGuiTestRef ref, ImVec
     // itself. As a side effect this also adds support for child windows.
     window = window->RootWindowDockTree;
 #endif
+
+    if (window->Flags & ImGuiWindowFlags_NoMove)
+        return false;
 
     ImRect visible_r;
     visible_r.Min = GetMainMonitorWorkPos();
@@ -2444,7 +2512,7 @@ ImVec2   ImGuiTestContext::GetPosOnVoid(ImGuiViewport* viewport)
 
 ImVec2  ImGuiTestContext::GetWindowTitlebarPoint(ImGuiTestRef window_ref)
 {
-    // FIXME-TESTS: Need to find a -visible- click point. drag_pos may end up being outside of main viewport.
+    // FIXME-TESTS: Need to find a -visible- click point. 'pos' may end up being outside of main viewport.
     if (IsError())
         return ImVec2();
 
@@ -2455,7 +2523,7 @@ ImVec2  ImGuiTestContext::GetWindowTitlebarPoint(ImGuiTestRef window_ref)
         return ImVec2();
     }
 
-    ImVec2 drag_pos;
+    ImVec2 pos;
     for (int n = 0; n < 2; n++)
     {
 #ifdef IMGUI_HAS_DOCK
@@ -2464,7 +2532,7 @@ ImVec2  ImGuiTestContext::GetWindowTitlebarPoint(ImGuiTestRef window_ref)
             ImGuiTabBar* tab_bar = window->DockNode->TabBar;
             ImGuiTabItem* tab = ImGui::TabBarFindTabByID(tab_bar, window->TabId);
             IM_ASSERT(tab != nullptr);
-            drag_pos = tab_bar->BarRect.Min + ImVec2(tab->Offset + tab->Width * 0.5f, tab_bar->BarRect.GetHeight() * 0.5f);
+            pos = tab_bar->BarRect.Min + ImVec2(tab->Offset + tab->Width * 0.5f, tab_bar->BarRect.GetHeight() * 0.5f);
         }
         else
 #endif
@@ -2474,14 +2542,14 @@ ImVec2  ImGuiTestContext::GetWindowTitlebarPoint(ImGuiTestRef window_ref)
 #else
             const float h = window->TitleBarHeight();
 #endif
-            drag_pos = ImFloor(window->Pos + ImVec2(window->Size.x, h) * 0.5f);
+            pos = ImFloor(window->Pos + ImVec2(window->Size.x, h) * 0.5f);
         }
 
         // If we didn't have to teleport it means we can reach the position already
-        if (!WindowTeleportToMakePosVisible(window->ID, drag_pos))
+        if (!WindowTeleportToMakePosVisible(window->ID, pos))
             break;
     }
-    return drag_pos;
+    return pos;
 }
 
 // Click position which should have no windows.
@@ -3166,6 +3234,7 @@ bool    ImGuiTestContext::ItemReadAsScalar(ImGuiTestRef ref, ImGuiDataType data_
 
     const ImGuiDataTypeInfo* data_type_info = ImGui::DataTypeGetInfo(data_type);
     const ImGuiTestOpFlags SUPPORTED_FLAGS = ImGuiTestOpFlags_NoError;
+    IM_UNUSED(SUPPORTED_FLAGS); // Only used when IM_ASSERT enabled
     IM_ASSERT((flags & ~SUPPORTED_FLAGS) == 0);
 
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
@@ -3931,8 +4000,12 @@ void    ImGuiTestContext::WindowBringToFront(ImGuiTestRef ref, ImGuiTestOpFlags 
     }
     else if (window->RootWindow != g.Windows.back()->RootWindow)
     {
+        ImGuiWindow* blocking_modal = ImGui::FindBlockingModal(window);
         LogDebug("BringWindowToDisplayFront('%s') (window.back=%s)", window->Name, g.Windows.back()->Name);
-        ImGui::BringWindowToDisplayFront(window); // FIXME-TESTS-NOT_SAME_AS_END_USER: This is not an actually possible action for end-user.
+        if (blocking_modal == NULL)
+            ImGui::BringWindowToDisplayFront(window); // FIXME-TESTS-NOT_SAME_AS_END_USER: This is not an actually possible action for end-user.
+        else
+            ImGui::BringWindowToDisplayBehind(window, blocking_modal);
         Yield(2);
     }
 
@@ -3962,6 +4035,8 @@ void    ImGuiTestContext::WindowMove(ImGuiTestRef ref, ImVec2 input_pos, ImVec2 
 
     if ((flags & ImGuiTestOpFlags_NoFocusWindow) == 0)
         WindowFocus(window->ID);
+    else
+        WindowBringToFront(window->ID, ImGuiTestOpFlags_NoFocusWindow);
     WindowCollapse(window->ID, false);
 
     MouseSetViewport(window);
@@ -4023,20 +4098,30 @@ void    ImGuiTestContext::WindowResize(ImGuiTestRef ref, ImVec2 size)
         id = border_x2;
     else
         id = resize_br;
-    MouseMove(id, ImGuiTestOpFlags_IsSecondAttempt);
 
     if (size.x <= 0.0f || size.y <= 0.0f)
     {
         IM_ASSERT(size.x <= 0.0f && size.y <= 0.0f);
+        MouseMove(id, ImGuiTestOpFlags_IsSecondAttempt);
         MouseDoubleClick(0);
         Yield();
     }
     else
     {
+        if (id == resize_br)
+        {
+            MouseMove(id, ImGuiTestOpFlags_IsSecondAttempt);
+        }
+        else
+        {
+            // Resize grip easily covers borders
+            MouseMove(id, ImGuiTestOpFlags_IsSecondAttempt | ImGuiTestOpFlags_NoCheckHoveredId);
+            IM_CHECK(UiContext->HoveredId == id || UiContext->HoveredId == resize_br); // Either is fine
+        }
         MouseDown(0);
         ImVec2 delta = size - window->Size;
         MouseMoveToPos(Inputs->MousePosValue + delta);
-        Yield(); // At this point we don't guarantee the final size!
+        Yield(); // At this point we don't guarantee the final size! Constraint may apply.
         MouseUp();
     }
     MouseSetViewport(window); // Update in case window has changed viewport

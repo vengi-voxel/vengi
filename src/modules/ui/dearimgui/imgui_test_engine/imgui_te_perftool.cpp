@@ -51,6 +51,17 @@ Index of this file:
 #include "imgui_te_internal.h"  // ImGuiTestEngine_GetPerfTool()
 #include "imgui_capture_tool.h"
 
+// Warnings
+#if defined(__clang__)
+#if __has_warning("-Wunknown-warning-option")
+#pragma clang diagnostic ignored "-Wunknown-warning-option"         // warning: unknown warning group 'xxx'                      // not all warnings are known by all Clang versions and they tend to be rename-happy.. so ignoring warnings triggers new warnings on some configuration. Great!
+#endif
+#pragma clang diagnostic ignored "-Wsign-conversion"                // warning: implicit conversion changes signedness
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wsign-conversion"                  // warning: conversion to 'xxxx' from 'xxxx' may change the sign of the result
+#pragma GCC diagnostic ignored "-Wunused-result"                    // warning: ignoring return value of 'xxxx' declared with attribute 'warn_unused_result'
+#endif
+
 //-------------------------------------------------------------------------
 // [SECTION] ImGuiPerflogEntry
 //-------------------------------------------------------------------------
