@@ -27,13 +27,16 @@ static int ConsoleInputTextCallback(ImGuiInputTextCallbackData *data) {
 	} else if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory) {
 		if (data->EventKey == ImGuiKey_UpArrow) {
 			console->cursorUp();
-			data->DeleteChars(0, data->BufTextLen);
-			data->InsertChars(0, console->commandLine().c_str());
 		} else if (data->EventKey == ImGuiKey_DownArrow) {
 			console->cursorDown();
-			data->DeleteChars(0, data->BufTextLen);
-			data->InsertChars(0, console->commandLine().c_str());
 		}
+		// take a copy - cursorUp/cursorDown modify _commandLine which may
+		// free the buffer that data->Buf still points to. DeleteChars and
+		// InsertChars will trigger the resize callback that keeps data->Buf
+		// and _commandLine in sync.
+		const core::String commandLine = console->commandLine();
+		data->DeleteChars(0, data->BufTextLen);
+		data->InsertChars(0, commandLine.c_str());
 	}
 	return 0;
 }
