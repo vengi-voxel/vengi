@@ -266,6 +266,8 @@ public:
 
 	IKConstraint* ikConstraint();
 	const IKConstraint* ikConstraint() const;
+	bool hasIKConstraint() const;
+	bool isIKAnchor() const;
 	void setIkConstraint(const IKConstraint &constraint);
 	FrameIndex maxFrame() const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
@@ -314,11 +316,19 @@ public:
 };
 
 inline IKConstraint *SceneGraphNode::ikConstraint() {
-	return _ikConstraint.hasValue() ? _ikConstraint.value() : nullptr;
+	return hasIKConstraint() ? _ikConstraint.value() : nullptr;
 }
 
 inline const IKConstraint *SceneGraphNode::ikConstraint() const {
-	return _ikConstraint.hasValue() ? _ikConstraint.value() : nullptr;
+	return hasIKConstraint() ? _ikConstraint.value() : nullptr;
+}
+
+inline bool SceneGraphNode::hasIKConstraint() const {
+	return _ikConstraint.hasValue();
+}
+
+inline bool SceneGraphNode::isIKAnchor() const {
+	return hasIKConstraint() && _ikConstraint->anchor;
 }
 
 inline void SceneGraphNode::setIkConstraint(const IKConstraint &constraint) {

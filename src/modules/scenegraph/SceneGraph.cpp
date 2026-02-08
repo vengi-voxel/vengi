@@ -920,6 +920,16 @@ bool SceneGraph::isReferenced(int nodeId) const {
 	return false;
 }
 
+bool SceneGraph::isEffector(int nodeId) const {
+	for (const auto &entry : _nodes) {
+		const SceneGraphNode &n = entry->second;
+		if (n.hasIKConstraint() && n.ikConstraint()->effectorNodeId == nodeId) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
@@ -935,6 +945,17 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	if (isReferenced(nodeId)) {
 		Log::error("Could not remove node %i - it is still referenced by other nodes", nodeId);
 		return false;
+	}
+	for (const auto &entry : _nodes) {
+		SceneGraphNode &n = entry->value;
+		if (!n.hasIKConstraint()) {
+			continue;
+		}
+
+		IKConstraint *ikConstraint = n.ikConstraint();
+		if (ikConstraint->effectorNodeId == nodeId) {
+			ikConstraint->effectorNodeId = InvalidNodeId;
+		}
 	}
 	bool state = true;
 	const int parent = iter->value.parent();

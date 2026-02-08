@@ -221,6 +221,7 @@ public:
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
 	bool isReferenced(int nodeId) const;
+	bool isEffector(int nodeId) const;
 	bool removeNode(int nodeId, bool recursive);
 	bool changeParent(int nodeId, int newParentId, NodeMoveFlag flag = NodeMoveFlag::UpdateTransform);
 	bool nodeHasChildren(const SceneGraphNode &node, int childId) const;
