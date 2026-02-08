@@ -31,7 +31,7 @@ struct IKConstraint {
 	float rollMax;
 	/** @brief Whether this IK constraint is visible in the editor */
 	bool visible;
-	/** @brief Whether this node acts as an anchor (fixed point) in the IK chain */
+	/** @brief Whether this node acts as an anchor (fixed point) in the IK chain - usually the leg and arm nodes are no anchor nodes */
 	bool anchor;
 
 	/**

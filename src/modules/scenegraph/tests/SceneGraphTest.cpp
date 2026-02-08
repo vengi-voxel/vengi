@@ -9,17 +9,17 @@
 #include "core/ScopedPtr.h"
 #include "core/tests/TestColorHelper.h"
 #include "math/OBB.h"
+#include "math/tests/TestMathHelper.h"
 #include "palette/FormatConfig.h"
 #include "palette/Palette.h"
+#include "palette/tests/TestHelper.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/tests/TestHelper.h"
-#include "palette/tests/TestHelper.h"
-#include "math/tests/TestMathHelper.h"
-#include "voxel/tests/VoxelPrinter.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxel/tests/VoxelPrinter.h"
 #include <glm/gtc/quaternion.hpp>
 
 namespace scenegraph {
@@ -102,7 +102,8 @@ TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 	for (int i = 0; i < pal.colorCount(); ++i) {
 		const color::RGBA c1 = palette.color(i);
 		const color::RGBA c2 = pal.color(i);
-		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::print(c1, true) << " != " << color::print(c2, true);
+		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::print(c1, true)
+						  << " != " << color::print(c2, true);
 	}
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
@@ -163,7 +164,8 @@ TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 	for (int i = 0; i < pal.colorCount(); ++i) {
 		const color::RGBA c1 = palette.color(i);
 		const color::RGBA c2 = pal.color(i);
-		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::print(c1, true) << " != " << color::print(c2, true);
+		ASSERT_EQ(c1, c2) << "Color at index " << i << " differs: " << color::print(c1, true)
+						  << " != " << color::print(c2, true);
 	}
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
@@ -481,7 +483,8 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 	SceneGraph::MergeResult merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(23, v->region().getWidthInVoxels()) << "the region of both nodes combined and cropped (sparse volume) should be 23 voxels wide";
+	EXPECT_EQ(23, v->region().getWidthInVoxels())
+		<< "the region of both nodes combined and cropped (sparse volume) should be 23 voxels wide";
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-9, -9, -9).getMaterial()));
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(12, 12, 12).getMaterial()));
 }
@@ -726,8 +729,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 		glm::quat orientation;
 		glm::vec3 translation;
 		transform.decompose(scale, orientation, translation);
-		EXPECT_FLOAT_EQ(translation.x, 100.0f)
-			<< "The child node should also get the world translation of the parent";
+		EXPECT_FLOAT_EQ(translation.x, 100.0f) << "The child node should also get the world translation of the parent";
 		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(90.0f));
 	}
 	{
@@ -737,8 +739,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 		glm::quat orientation;
 		glm::vec3 translation;
 		transform.decompose(scale, orientation, translation);
-		EXPECT_FLOAT_EQ(translation.x, 50.0f)
-			<< "The child node should also get the world translation of the parent";
+		EXPECT_FLOAT_EQ(translation.x, 50.0f) << "The child node should also get the world translation of the parent";
 		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(45.0f));
 	}
 }
@@ -947,29 +948,28 @@ TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
 
 	// Initial transform
 	SceneGraphTransform parentTransform;
-	parentTransform.setTransforms(
-		glm::vec3(10.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f),
-		glm::vec3(10.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f)
-	);
+	parentTransform.setTransforms(glm::vec3(10.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f),
+								  glm::vec3(1.0f), glm::vec3(10.0f, 0.0f, 0.0f),
+								  glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
 	sceneGraph.node(parentId).setTransform(0, parentTransform);
 	sceneGraph.invalidateFrameTransformCache(parentId);
 
 	// Query child transform to populate cache
-	const FrameTransform& childTransform1 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
+	const FrameTransform &childTransform1 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
 	EXPECT_EQ(glm::vec3(10.0f, 0.0f, 0.0f), childTransform1.worldTranslation());
 
 	// Change parent transform
 	SceneGraphTransform newParentTransform;
-	newParentTransform.setTransforms(
-		glm::vec3(20.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f),
-		glm::vec3(20.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f)
-	);
+	newParentTransform.setTransforms(glm::vec3(20.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f),
+									 glm::vec3(1.0f), glm::vec3(20.0f, 0.0f, 0.0f),
+									 glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
 	sceneGraph.node(parentId).setTransform(0, newParentTransform);
 	sceneGraph.invalidateFrameTransformCache(parentId);
 
 	// Query child transform again - should be updated
-	const FrameTransform& childTransform2 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
-	EXPECT_EQ(glm::vec3(20.0f, 0.0f, 0.0f), childTransform2.worldTranslation()) << "Child transform should be updated after parent transform change";
+	const FrameTransform &childTransform2 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
+	EXPECT_EQ(glm::vec3(20.0f, 0.0f, 0.0f), childTransform2.worldTranslation())
+		<< "Child transform should be updated after parent transform change";
 }
 
-}
+} // namespace scenegraph

@@ -4,6 +4,7 @@ set(SRCS
 	FrameTransform.h FrameTransform.cpp
 	FrameTransformCache.h FrameTransformCache.cpp
 	IKConstraint.h IKConstraint.cpp
+	IKSolver.h IKSolver.cpp
 	JsonExporter.h JsonExporter.cpp
 	Physics.h Physics.cpp
 	SceneGraph.h SceneGraph.cpp
@@ -21,6 +22,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
 set(TEST_SRCS
 	tests/FrameTransformTest.cpp
+	tests/IKSolverTest.cpp
 	tests/JsonExporterTest.cpp
 	tests/PhysicsTest.cpp
 	tests/SceneGraphTest.cpp

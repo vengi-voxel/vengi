@@ -67,6 +67,7 @@ protected:
 	mutable FrameTransformCache _frameTransformCache;
 
 	bool updateTransforms_r(SceneGraphNode &node);
+	bool solveIK();
 	voxel::Region calcRegion() const;
 
 public:

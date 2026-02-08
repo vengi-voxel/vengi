@@ -20,6 +20,7 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/IKSolver.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -809,7 +810,22 @@ void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph,
 		}
 	}
 	const glm::mat4 &worldParentMatrix = parentWorldMatrix(sceneGraph, node, keyFrameIdx);
-	const glm::mat4 &newLocalMatrix = glm::inverse(worldParentMatrix) * worldMatrix;
+	glm::mat4 newLocalMatrix = glm::inverse(worldParentMatrix) * worldMatrix;
+
+	// Apply IK constraint clamping if the node has an IK constraint
+	const scenegraph::IKConstraint *constraint = node.ikConstraint();
+	if (constraint != nullptr) {
+		glm::vec3 scale;
+		glm::vec3 translation;
+		glm::quat orientation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(newLocalMatrix, scale, orientation, translation, skew, perspective);
+
+		orientation = scenegraph::IKSolver::clampOrientation(orientation, *constraint);
+		newLocalMatrix = glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale);
+	}
+
 	_sceneMgr->nodeUpdateTransform(node.id(), newLocalMatrix, keyFrameIdx, true);
 }
 
