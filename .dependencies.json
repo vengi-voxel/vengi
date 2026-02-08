@@ -24,5 +24,6 @@
     "miniz": "c883286f1a6443720e7705450f59e579a4bbb8e2",
     "imgui_test_engine": "3fff43588c40ad225bcfff0219c62dae13ca9c47",
     "opengametools": "0dce3f2277a32b9f646367139506b00da6f080d7",
-    "tinyxml2": "3324d04d58de9d5db09327db6442f075e519f11b"
+    "tinyxml2": "3324d04d58de9d5db09327db6442f075e519f11b",
+    "imgui_markdown": "1fd8cc7877fca92fce9b37ec9b494e3b6084ffb4"
 }
