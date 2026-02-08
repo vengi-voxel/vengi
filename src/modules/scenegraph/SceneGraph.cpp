@@ -16,6 +16,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/FrameTransform.h"
+#include "scenegraph/IKSolver.h"
 #include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -518,8 +519,6 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 		}
 	}
 	core_trace_scoped(NoneCachePath);
-	// TODO: SCENEGRAPH: ik solver https://github.com/vengi-voxel/vengi/issues/182
-	// and https://github.com/vengi-voxel/vengi/issues/265
 	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
 	// https://github.com/vengi-voxel/vengi/issues/420
 	FrameTransform parentTransform;
@@ -585,6 +584,31 @@ bool SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 	return changed;
 }
 
+bool SceneGraph::solveIK() {
+	bool changed = false;
+	for (const auto &entry : _nodes) {
+		const int nodeId = entry->second.id();
+		if (!entry->second.hasIKConstraint()) {
+			continue;
+		}
+		const IKConstraint *constraint = entry->second.ikConstraint();
+		if (constraint->effectorNodeId == InvalidNodeId) {
+			continue;
+		}
+		SceneGraphNode &n = node(nodeId);
+		const SceneGraphKeyFrames *kfs = n.keyFrames();
+		if (kfs == nullptr) {
+			continue;
+		}
+		for (const SceneGraphKeyFrame &kf : *kfs) {
+			if (IKSolver::solve(*this, n, kf.frameIdx)) {
+				changed = true;
+			}
+		}
+	}
+	return changed;
+}
+
 void SceneGraph::updateTransforms() {
 	core_trace_scoped(UpdateTransforms);
 	const core::String animId = _activeAnimation;
@@ -594,6 +618,8 @@ void SceneGraph::updateTransforms() {
 		clearCache |= updateTransforms_r(node(0));
 	}
 	core_assert_always(setAnimation(animId));
+	// Run the IK solver after all transforms are updated
+	clearCache |= solveIK();
 	if (clearCache) {
 		core::ScopedLock scoped(_mutex);
 		_frameTransformCache.clear();
