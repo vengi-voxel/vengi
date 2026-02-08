@@ -8,7 +8,6 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "imgui.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
