@@ -10,6 +10,10 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.5.0 (2026-XX-XX)
 
+General:
+
+   - Increased `vengi` binary file version
+
 VoxEdit:
 
    - Added IKConstraint editing
