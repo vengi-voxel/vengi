@@ -159,6 +159,10 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular when saving into the glTF format
 .PP
+\fBvoxformat_gmlfilenamefilter\fP: Filename filter for GML/CityGML import. Only import files that contain this string in their filename. Wildcards are supported.
+.PP
+\fBvoxformat_gmlregion\fP: World coordinate region filter for GML/CityGML import. Format: 'minX minY minZ maxX maxY maxZ' in GML world coordinates. Only applied when the estimated voxel region exceeds the size threshold. Objects fully inside this region are imported, others are skipped.
+.PP
 \fBvoxformat_imageheightmapminheight\fP: The minimum height of the heightmap when importing an image as heightmap
 .PP
 \fBvoxformat_imageimporttype\fP: 0 = plane, 1 = heightmap, 2 = volume

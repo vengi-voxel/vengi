@@ -721,6 +721,18 @@ msgstr ""
 msgid "Simplify the mesh when voxelizing a mesh format"
 msgstr ""
 
+msgid ""
+"World coordinate region filter for GML/CityGML import. Format: 'minX minY "
+"minZ maxX maxY maxZ' in GML world coordinates. Only applied when the "
+"estimated voxel region exceeds the size threshold. Objects fully inside this "
+"region are imported, others are skipped."
+msgstr ""
+
+msgid ""
+"Filename filter for GML/CityGML import. Only import files that contain this "
+"string in their filename. Wildcards are supported."
+msgstr ""
+
 msgid "Draw line forwards"
 msgstr ""
 
@@ -959,6 +971,19 @@ msgid "Simplify"
 msgstr ""
 
 msgid "Normal palette"
+msgstr ""
+
+msgid "Region filter (minX minY minZ maxX maxY maxZ)"
+msgstr ""
+
+msgid ""
+"Only load objects that intersect with the given region. The coordinates are "
+"in the order of minX minY minZ maxX maxY maxZ. They are in world coordinates "
+"of the given GML file, so you might need to check the envelope of the file "
+"first to determine the correct region."
+msgstr ""
+
+msgid "Filename filter (wildcard)"
 msgstr ""
 
 msgid "faster and less memory"
