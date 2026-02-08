@@ -21,6 +21,7 @@
 #include "modifier/IModifierRenderer.h"
 #include "modifier/ModifierFacade.h"
 #include "modifier/SceneModifiedFlags.h"
+#include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "voxedit-util/network/Client.h"
@@ -215,6 +216,7 @@ protected:
 	bool mementoRename(const memento::MementoState &s);
 	bool mementoKeyFrames(const memento::MementoState &s);
 	bool mementoProperties(const memento::MementoState &s);
+	bool mementoIKConstraint(const memento::MementoState &s);
 	bool mementoPaletteChange(const memento::MementoState &s);
 	bool mementoNormalPaletteChange(const memento::MementoState &s);
 	bool mementoModification(const memento::MementoState &s);
@@ -540,6 +542,8 @@ public:
 	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
 	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
 	bool nodeRemoveProperty(int nodeId, const core::String &key);
+	bool nodeSetIKConstraint(int nodeId, const scenegraph::IKConstraint &constraint);
+	bool nodeRemoveIKConstraint(int nodeId);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
 	bool nodeSetVisible(int nodeId, bool visible);

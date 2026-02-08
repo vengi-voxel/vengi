@@ -12,6 +12,7 @@
 #include "protocol/NodePropertiesMessage.h"
 #include "protocol/NodeRemovedMessage.h"
 #include "protocol/NodeRenamedMessage.h"
+#include "protocol/NodeIKConstraintMessage.h"
 #include "protocol/SceneStateMessage.h"
 #include "protocol/VoxelModificationMessage.h"
 #include "voxedit-util/SceneManager.h"
@@ -111,6 +112,11 @@ void Client::onMementoStateAdded(const memento::MementoState &state) {
 	case memento::MementoType::SceneNodeProperties: {
 		NodePropertiesMessage msg(state);
 		_network.sendMessage(msg);
+		break;
+	}
+	case memento::MementoType::SceneNodeIKConstraint: {
+		NodeIKConstraintMessage ikMsg(state);
+		_network.sendMessage(ikMsg);
 		break;
 	}
 	case memento::MementoType::SceneNodeNormalPaletteChanged: {

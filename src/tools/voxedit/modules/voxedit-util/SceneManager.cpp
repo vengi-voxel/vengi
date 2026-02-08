@@ -835,6 +835,20 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 	return false;
 }
 
+bool SceneManager::mementoIKConstraint(const memento::MementoState& s) {
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::debug("Memento: IK constraint of node %s (%s)", uuidStr.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
+		if (s.ikConstraint.hasValue()) {
+			node->setIkConstraint(*s.ikConstraint.value());
+		} else {
+			node->removeIkConstraint();
+		}
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::mementoAnimations(const memento::MementoState &s) {
 	Log::debug("Memento: animations for scene");
 	core_assert(s.stringList.hasValue());
@@ -954,6 +968,9 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 	}
 	if (s.type == memento::MementoType::SceneNodeProperties) {
 		return mementoProperties(s);
+	}
+	if (s.type == memento::MementoType::SceneNodeIKConstraint) {
+		return mementoIKConstraint(s);
 	}
 	if (s.type == memento::MementoType::SceneGraphAnimation) {
 		return mementoAnimations(s);
@@ -3773,6 +3790,29 @@ bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
 			_mementoHandler.markNodePropertyChange(_sceneGraph, *node);
 			return true;
 		}
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetIKConstraint(int nodeId, const scenegraph::IKConstraint &constraint) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		node->setIkConstraint(constraint);
+		_mementoHandler.markIKConstraintChange(_sceneGraph, *node);
+		markDirty();
+		return true;
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveIKConstraint(int nodeId) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		if (!node->hasIKConstraint()) {
+			return false;
+		}
+		node->removeIkConstraint();
+		_mementoHandler.markIKConstraintChange(_sceneGraph, *node);
+		markDirty();
+		return true;
 	}
 	return false;
 }

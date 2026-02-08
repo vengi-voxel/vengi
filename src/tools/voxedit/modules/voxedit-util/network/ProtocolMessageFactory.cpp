@@ -12,6 +12,7 @@
 #include "protocol/NodeMovedMessage.h"
 #include "protocol/NodePaletteChangedMessage.h"
 #include "protocol/NodePropertiesMessage.h"
+#include "protocol/NodeIKConstraintMessage.h"
 #include "protocol/NodeRemovedMessage.h"
 #include "protocol/NodeRenamedMessage.h"
 #include "protocol/NodeNormalPaletteChangedMessage.h"
@@ -95,6 +96,9 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 		break;
 	case PROTO_NODE_PROPERTIES:
 		msg = new NodePropertiesMessage(in);
+		break;
+	case PROTO_NODE_IK_CONSTRAINT:
+		msg = new NodeIKConstraintMessage(in);
 		break;
 	case PROTO_NODE_KEYFRAMES:
 		msg = new NodeKeyFramesMessage(in);

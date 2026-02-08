@@ -12,6 +12,7 @@
 #include "core/concurrent/Lock.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
+#include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
@@ -102,6 +103,14 @@ enum class MementoType {
 	 * and other metadata associated with the node.
 	 */
 	SceneNodeProperties,
+
+	/**
+	 * @brief IK constraint changes for a scene graph node
+	 *
+	 * Records changes to inverse kinematics constraints associated with a node,
+	 * such as effector node, roll limits, visibility, anchor, and swing limits.
+	 */
+	SceneNodeIKConstraint,
 
 	/**
 	 * @brief Scene graph animation changes
@@ -339,6 +348,7 @@ struct MementoState {
 	 * The Optional wrapper indicates this field is not always populated.
 	 */
 	core::Optional<core::DynamicArray<core::String>> stringList;
+	core::Optional<scenegraph::IKConstraint> ikConstraint;
 
 	MementoState();
 	MementoState(const MementoState &other);
@@ -453,6 +463,7 @@ private:
 	void undoPaletteChange(MementoState &s);
 	void undoNormalPaletteChange(MementoState &s);
 	void undoNodeProperties(MementoState &s);
+	void undoIKConstraint(MementoState &s);
 	void undoKeyFrames(MementoState &s);
 	void undoAnimations(MementoState &s);
 	void undoModification(MementoState &s);
@@ -518,6 +529,7 @@ public:
 	bool removeLast();
 
 	bool markNodePropertyChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markIKConstraintChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markKeyFramesChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markNodeRemove(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markNodeAdded(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);

@@ -37,6 +37,7 @@ set(SRCS
 	network/protocol/NodePaletteChangedMessage.h
 	network/protocol/NodeNormalPaletteChangedMessage.h
 	network/protocol/NodePropertiesMessage.h
+	network/protocol/NodeIKConstraintMessage.h
 	network/protocol/NodeRemovedMessage.h
 	network/protocol/NodeRenamedMessage.h
 	network/protocol/PingMessage.h
@@ -55,6 +56,7 @@ set(SRCS
 	network/handler/client/NodePaletteChangedHandler.h network/handler/client/NodePaletteChangedHandler.cpp
 	network/handler/client/NodeNormalPaletteChangedHandler.h network/handler/client/NodeNormalPaletteChangedHandler.cpp
 	network/handler/client/NodePropertiesHandler.h network/handler/client/NodePropertiesHandler.cpp
+	network/handler/client/NodeIKConstraintHandler.h network/handler/client/NodeIKConstraintHandler.cpp
 	network/handler/client/NodeRemovedHandler.h network/handler/client/NodeRemovedHandler.cpp
 	network/handler/client/NodeRenamedHandler.h network/handler/client/NodeRenamedHandler.cpp
 	network/handler/client/SceneStateRequestHandler.h network/handler/client/SceneStateRequestHandler.cpp

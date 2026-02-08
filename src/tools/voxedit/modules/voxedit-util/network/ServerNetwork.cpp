@@ -186,6 +186,7 @@ bool ServerNetwork::init() {
 	r.registerHandler(PROTO_NODE_RENAMED, &_broadcastHandler);
 	r.registerHandler(PROTO_NODE_PALETTE_CHANGED, &_broadcastHandler);
 	r.registerHandler(PROTO_NODE_PROPERTIES, &_broadcastHandler);
+	r.registerHandler(PROTO_NODE_IK_CONSTRAINT, &_broadcastHandler);
 	r.registerHandler(PROTO_NODE_KEYFRAMES, &_broadcastHandler);
 	r.registerHandler(PROTO_NODE_NORMAL_PALETTE_CHANGED, &_broadcastHandler);
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_broadcastHandler);

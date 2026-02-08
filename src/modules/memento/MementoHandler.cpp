@@ -35,14 +35,14 @@ MementoState::MementoState(const MementoState &other)
 	: type(other.type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
 	  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
 	  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette),
-	  normalPalette(other.normalPalette), stringList(other.stringList) {
+	  normalPalette(other.normalPalette), stringList(other.stringList), ikConstraint(other.ikConstraint) {
 }
 
 MementoState::MementoState(MementoType _type, const MementoState &other)
 	: type(_type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
 	  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
 	  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette),
-	  normalPalette(other.normalPalette), stringList(other.stringList) {
+	  normalPalette(other.normalPalette), stringList(other.stringList), ikConstraint(other.ikConstraint) {
 }
 
 MementoState::MementoState(MementoState &&other) noexcept {
@@ -59,6 +59,7 @@ MementoState::MementoState(MementoState &&other) noexcept {
 	palette = core::move(other.palette);
 	normalPalette = core::move(other.normalPalette);
 	stringList = core::move(other.stringList);
+	ikConstraint = core::move(other.ikConstraint);
 }
 
 MementoState &MementoState::operator=(MementoState &&other) noexcept {
@@ -78,6 +79,7 @@ MementoState &MementoState::operator=(MementoState &&other) noexcept {
 	palette = core::move(other.palette);
 	normalPalette = core::move(other.normalPalette);
 	stringList = core::move(other.stringList);
+	ikConstraint = core::move(other.ikConstraint);
 	return *this;
 }
 
@@ -98,6 +100,7 @@ MementoState &MementoState::operator=(const MementoState &other) {
 	palette = other.palette;
 	normalPalette = other.normalPalette;
 	stringList = other.stringList;
+	ikConstraint = other.ikConstraint;
 	return *this;
 }
 
@@ -410,6 +413,7 @@ const char *MementoHandler::typeToString(MementoType type) {
 							"SceneNodeNormalPaletteChanged",
 							"SceneNodeKeyFrames",
 							"SceneNodeProperties",
+							"SceneNodeIKConstraint",
 							"SceneGraphAnimation"};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 	return states[(int)type];
@@ -556,6 +560,20 @@ void MementoHandler::undoNodeProperties(MementoState &s) {
 	Log::warn("No previous node properties found for node %s", uuidStr.c_str());
 }
 
+void MementoHandler::undoIKConstraint(MementoState &s) {
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.nodeUUID == s.nodeUUID) {
+				s.ikConstraint = prevS.ikConstraint;
+				return;
+			}
+		}
+	}
+	const core::String &uuidStr = s.nodeUUID.str();
+	Log::warn("No previous IK constraint found for node %s", uuidStr.c_str());
+}
+
 void MementoHandler::undoKeyFrames(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
@@ -631,6 +649,8 @@ MementoStateGroup MementoHandler::undo() {
 			undoNormalPaletteChange(s);
 		} else if (s.type == MementoType::SceneNodeProperties) {
 			undoNodeProperties(s);
+		} else if (s.type == MementoType::SceneNodeIKConstraint) {
+			undoIKConstraint(s);
 		} else if (s.type == MementoType::SceneNodeKeyFrames) {
 			undoKeyFrames(s);
 		} else if (s.type == MementoType::SceneGraphAnimation) {
@@ -667,6 +687,15 @@ bool MementoHandler::markNodePropertyChange(const scenegraph::SceneGraph &sceneG
 	voxel::RawVolume *volume = nullptr;
 	Log::debug("New node property memento state for node %i with name %s", nodeId, name.c_str());
 	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeProperties, voxel::Region::InvalidRegion);
+}
+
+bool MementoHandler::markIKConstraintChange(const scenegraph::SceneGraph &sceneGraph,
+											const scenegraph::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	const core::String &name = node.name();
+	voxel::RawVolume *volume = nullptr;
+	Log::debug("New IK constraint memento state for node %i with name %s", nodeId, name.c_str());
+	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeIKConstraint, voxel::Region::InvalidRegion);
 }
 
 bool MementoHandler::markKeyFramesChange(const scenegraph::SceneGraph &sceneGraph,
@@ -810,8 +839,15 @@ bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const sc
 							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion) {
 	const core::UUID &parentId = sceneGraph.uuid(node.parent());
 	const core::UUID &referenceId = sceneGraph.uuid(node.reference());
-	return markUndo(parentId, node.uuid(), referenceId, node.name(), node.type(), volume, type, modifiedRegion,
-					node.pivot(), node.allKeyFrames(), node.palette(), node.normalPalette(), node.properties());
+	Log::debug("New memento state for node %s with name '%s'", node.uuid().str().c_str(), node.name().c_str());
+	voxel::logRegion("MarkUndo", modifiedRegion);
+	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
+	MementoState state(type, data, parentId, node.uuid(), referenceId, node.name(), node.type(), node.pivot(),
+					   node.allKeyFrames(), node.palette(), node.normalPalette(), node.properties());
+	if (node.hasIKConstraint()) {
+		state.ikConstraint.setValue(*node.ikConstraint());
+	}
+	return addState(core::move(state));
 }
 
 bool MementoHandler::markUndo(const core::UUID &parentId, const core::UUID &nodeId, const core::UUID &referenceId,

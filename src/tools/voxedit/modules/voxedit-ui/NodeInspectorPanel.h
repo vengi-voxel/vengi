@@ -28,6 +28,7 @@ private:
 	core::VarPtr _localSpace;
 	core::VarPtr _regionSizes;
 	core::VarPtr _gridSize;
+	core::VarPtr _viewMode;
 	core::Buffer<glm::ivec3> _validRegionSizes;
 	glm::ivec3 _newRegionSize{32, 32, 32};
 	SceneManagerPtr _sceneMgr;
@@ -41,6 +42,7 @@ private:
 	void modelView(command::CommandExecutionListener &listener);
 	void modelViewMenuBar(scenegraph::SceneGraphNode &node);
 	void keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
+	void ikConstraintSettings(scenegraph::SceneGraphNode &node);
 	void sceneView(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node);
 	void sceneViewMenuBar(scenegraph::SceneGraphNode &node);
 	void detailView(scenegraph::SceneGraphNode &node);

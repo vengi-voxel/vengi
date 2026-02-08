@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "math/tests/TestMathHelper.h"
+#include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -677,6 +678,41 @@ TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
 	EXPECT_FALSE(_mementoHandler.canUndo());
 	MementoState stateRedo = firstState(_mementoHandler.redo());
 	EXPECT_EQ(stateRedo.name, "Name after");
+}
+
+TEST_F(MementoHandlerTest, testSceneNodeIKConstraint) {
+	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
+	EXPECT_FALSE(node->hasIKConstraint());
+
+	// Set IK constraint on the node
+	scenegraph::IKConstraint ik;
+	ik.effectorNodeId = 42;
+	ik.rollMin = -1.0f;
+	ik.rollMax = 1.0f;
+	ik.visible = false;
+	ik.anchor = true;
+	node->setIkConstraint(ik);
+	_mementoHandler.markIKConstraintChange(_sceneGraph, *node);
+
+	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
+	EXPECT_TRUE(_mementoHandler.canUndo());
+
+	// Undo should restore to no IK constraint
+	MementoState stateUndo = firstState(_mementoHandler.undo());
+	EXPECT_EQ(MementoType::SceneNodeIKConstraint, stateUndo.type);
+	EXPECT_FALSE(stateUndo.ikConstraint.hasValue());
+
+	// Redo should restore the IK constraint
+	MementoState stateRedo = firstState(_mementoHandler.redo());
+	EXPECT_EQ(MementoType::SceneNodeIKConstraint, stateRedo.type);
+	ASSERT_TRUE(stateRedo.ikConstraint.hasValue());
+	EXPECT_EQ(42, stateRedo.ikConstraint.value()->effectorNodeId);
+	EXPECT_FLOAT_EQ(-1.0f, stateRedo.ikConstraint.value()->rollMin);
+	EXPECT_FLOAT_EQ(1.0f, stateRedo.ikConstraint.value()->rollMax);
+	EXPECT_FALSE(stateRedo.ikConstraint.value()->visible);
+	EXPECT_TRUE(stateRedo.ikConstraint.value()->anchor);
 }
 
 TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {

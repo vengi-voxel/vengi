@@ -4,4 +4,4 @@
 
 #pragma once
 
-#define PROTOCOL_VERSION 3
+#define PROTOCOL_VERSION 4

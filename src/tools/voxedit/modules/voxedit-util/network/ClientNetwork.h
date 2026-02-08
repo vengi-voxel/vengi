@@ -8,6 +8,7 @@
 #include "network/ProtocolHandlerRegistry.h"
 #include "network/ProtocolMessage.h"
 #include "voxedit-util/network/handler/client/NodeAddedHandler.h"
+#include "voxedit-util/network/handler/client/NodeIKConstraintHandler.h"
 #include "voxedit-util/network/handler/client/NodeKeyFramesHandler.h"
 #include "voxedit-util/network/handler/client/NodeMovedHandler.h"
 #include "voxedit-util/network/handler/client/NodePaletteChangedHandler.h"
@@ -39,6 +40,7 @@ protected:
 	NodePaletteChangedHandler _nodePaletteChangedHandle;
 	NodeNormalPaletteChangedHandler _nodeNormalPaletteChangedHandle;
 	NodePropertiesHandler _nodePropertiesHandler;
+	NodeIKConstraintHandler _nodeIKConstraintHandler;
 	NodeRemovedHandler _nodeRemovedHandler;
 	NodeRenamedHandler _nodeRenamedHandler;
 	SceneStateRequestHandler _sceneStateRequestHandler;

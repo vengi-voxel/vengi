@@ -269,6 +269,7 @@ public:
 	bool hasIKConstraint() const;
 	bool isIKAnchor() const;
 	void setIkConstraint(const IKConstraint &constraint);
+	void removeIkConstraint();
 	FrameIndex maxFrame() const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
 	bool hasKeyFrame(FrameIndex frameIdx) const;
@@ -333,6 +334,10 @@ inline bool SceneGraphNode::isIKAnchor() const {
 
 inline void SceneGraphNode::setIkConstraint(const IKConstraint &constraint) {
 	_ikConstraint.setValue(constraint);
+}
+
+inline void SceneGraphNode::removeIkConstraint() {
+	_ikConstraint = core::Optional<IKConstraint>();
 }
 
 inline bool SceneGraphNode::owns() const {

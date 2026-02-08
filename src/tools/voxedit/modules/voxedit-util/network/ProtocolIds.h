@@ -43,5 +43,7 @@ const network::ProtocolId PROTO_LUA_SCRIPTS_REQUEST = 15;
 const network::ProtocolId PROTO_LUA_SCRIPTS_LIST = 16;
 // create/send a new lua script
 const network::ProtocolId PROTO_LUA_SCRIPT_CREATE = 17;
+// node IK constraint was changed
+const network::ProtocolId PROTO_NODE_IK_CONSTRAINT = 18;
 
 } // namespace voxedit

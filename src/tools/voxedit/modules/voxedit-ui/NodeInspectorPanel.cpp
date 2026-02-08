@@ -3,10 +3,12 @@
  */
 
 #include "NodeInspectorPanel.h"
+#include "ViewMode.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "imgui.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
@@ -21,6 +23,7 @@
 #include "voxedit-util/SceneManager.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/ext/scalar_constants.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -32,6 +35,7 @@ bool NodeInspectorPanel::init() {
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
+	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
 	return true;
 }
 
@@ -365,6 +369,10 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 
 	keyFrameInterpolationSettings(node, keyFrameIdx);
 
+	if (viewModeAnimations(_viewMode->intVal())) {
+		ikConstraintSettings(node);
+	}
+
 	if (change) {
 		const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
 		// check if a new keyframe should get generated automatically
@@ -385,6 +393,157 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 	} else if (changeMultiple) {
 		_sceneMgr->nodeUpdateTransformGroup(matrixRotation, matrixScale, matrixTranslation, frameIdx,
 											_localSpace->boolVal());
+	}
+}
+
+void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) {
+	if (!ImGui::IconCollapsingHeader(ICON_LC_BONE, _("IK Constraints"))) {
+		return;
+	}
+
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	const bool hasConstraint = node.hasIKConstraint();
+	scenegraph::IKConstraint constraint;
+	if (hasConstraint) {
+		constraint = *node.ikConstraint();
+	}
+
+	bool changed = false;
+
+	// Enable/disable IK constraint
+	bool enabled = hasConstraint;
+	if (ImGui::Checkbox(_("Enable IK"), &enabled)) {
+		if (enabled && !hasConstraint) {
+			_sceneMgr->nodeSetIKConstraint(node.id(), constraint);
+		} else if (!enabled && hasConstraint) {
+			_sceneMgr->nodeRemoveIKConstraint(node.id());
+		}
+		return;
+	}
+
+	if (!enabled) {
+		return;
+	}
+
+	// Anchor toggle
+	if (ImGui::Checkbox(_("Anchor"), &constraint.anchor)) {
+		changed = true;
+	}
+	ImGui::TooltipTextUnformatted(_("Mark this node as a fixed point in the IK chain"));
+
+	// Visibility toggle
+	if (ImGui::Checkbox(_("Visible"), &constraint.visible)) {
+		changed = true;
+	}
+
+	// Effector node selection
+	const char *effectorName = _("None");
+	if (constraint.effectorNodeId != InvalidNodeId && sceneGraph.hasNode(constraint.effectorNodeId)) {
+		effectorName = sceneGraph.node(constraint.effectorNodeId).name().c_str();
+	}
+	if (ImGui::BeginCombo(_("Effector"), effectorName)) {
+		// Option to clear the effector
+		if (ImGui::Selectable(_("None"), constraint.effectorNodeId == InvalidNodeId)) {
+			constraint.effectorNodeId = InvalidNodeId;
+			changed = true;
+		}
+		// List all nodes that could be effectors
+		for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+			const scenegraph::SceneGraphNode &candidate = *iter;
+			if (candidate.id() == node.id()) {
+				continue;
+			}
+			const bool isSelected = (constraint.effectorNodeId == candidate.id());
+			if (ImGui::Selectable(candidate.name().c_str(), isSelected)) {
+				constraint.effectorNodeId = candidate.id();
+				changed = true;
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::TooltipTextUnformatted(_("The target node the IK chain tries to reach"));
+
+	// Roll limits
+	float rollMinDeg = glm::degrees(constraint.rollMin);
+	float rollMaxDeg = glm::degrees(constraint.rollMax);
+	if (ImGui::DragFloat(_("Roll min"), &rollMinDeg, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
+		constraint.rollMin = glm::radians(rollMinDeg);
+		changed = true;
+	}
+	if (ImGui::DragFloat(_("Roll max"), &rollMaxDeg, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
+		constraint.rollMax = glm::radians(rollMaxDeg);
+		changed = true;
+	}
+
+	// Swing limits
+	if (ImGui::IconCollapsingHeader(ICON_LC_CIRCLE, _("Swing Limits"))) {
+		int removeIdx = -1;
+		static const uint32_t swingTableFlags =
+			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
+		if (constraint.swingLimits.size() > 0 && ImGui::BeginTable("##swinglimits", 4, swingTableFlags)) {
+			const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
+									  ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
+			ImGui::TableSetupColumn(_("Yaw"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(_("Pitch"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(_("Radius"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##delete", colFlags);
+			ImGui::TableHeadersRow();
+
+			for (size_t i = 0; i < constraint.swingLimits.size(); ++i) {
+				ImGui::PushID((int)i);
+				auto &limit = constraint.swingLimits[i];
+				ImGui::TableNextRow();
+
+				ImGui::TableNextColumn();
+				float yaw = glm::degrees(limit.center.x);
+				ImGui::SetNextItemWidth(-FLT_MIN);
+				if (ImGui::DragFloat("##yaw", &yaw, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
+					limit.center.x = glm::radians(yaw);
+					changed = true;
+				}
+
+				ImGui::TableNextColumn();
+				float pitch = glm::degrees(limit.center.y);
+				ImGui::SetNextItemWidth(-FLT_MIN);
+				if (ImGui::DragFloat("##pitch", &pitch, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
+					limit.center.y = glm::radians(pitch);
+					changed = true;
+				}
+
+				ImGui::TableNextColumn();
+				float radiusDeg = glm::degrees(limit.radius);
+				ImGui::SetNextItemWidth(-FLT_MIN);
+				if (ImGui::DragFloat("##radius", &radiusDeg, 1.0f, 0.0f, 180.0f, "%.1f deg")) {
+					limit.radius = glm::radians(radiusDeg);
+					changed = true;
+				}
+
+				ImGui::TableNextColumn();
+				if (ImGui::Button(ICON_LC_TRASH)) {
+					removeIdx = (int)i;
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+		if (removeIdx >= 0) {
+			constraint.swingLimits.erase(removeIdx);
+			changed = true;
+		}
+		if (ImGui::IconButton(ICON_LC_PLUS, _("Add swing limit"))) {
+			scenegraph::IKConstraint::RadiusConstraint rc;
+			rc.center = glm::vec2(0.0f);
+			rc.radius = glm::half_pi<float>();
+			constraint.swingLimits.push_back(rc);
+			changed = true;
+		}
+	}
+
+	if (changed) {
+		_sceneMgr->nodeSetIKConstraint(node.id(), constraint);
 	}
 }
 

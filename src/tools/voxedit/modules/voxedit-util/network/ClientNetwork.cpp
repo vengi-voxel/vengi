@@ -19,9 +19,9 @@ namespace voxedit {
 ClientNetwork::ClientNetwork(SceneManager *sceneMgr)
 	: _impl(new network::NetworkImpl()), _voxelModificationHandler(sceneMgr), _nodeAddedHandler(sceneMgr),
 	  _nodeKeyFramesHandle(sceneMgr), _nodeMovedHandler(sceneMgr), _nodePaletteChangedHandle(sceneMgr),
-	  _nodeNormalPaletteChangedHandle(sceneMgr), _nodePropertiesHandler(sceneMgr), _nodeRemovedHandler(sceneMgr),
-	  _nodeRenamedHandler(sceneMgr), _sceneStateRequestHandler(sceneMgr), _sceneStateHandler(sceneMgr),
-	  _sceneGraphAnimationHandler(sceneMgr) {
+	  _nodeNormalPaletteChangedHandle(sceneMgr), _nodePropertiesHandler(sceneMgr), _nodeIKConstraintHandler(sceneMgr),
+	  _nodeRemovedHandler(sceneMgr), _nodeRenamedHandler(sceneMgr), _sceneStateRequestHandler(sceneMgr),
+	  _sceneStateHandler(sceneMgr), _sceneGraphAnimationHandler(sceneMgr) {
 }
 
 ClientNetwork::~ClientNetwork() {
@@ -128,6 +128,7 @@ bool ClientNetwork::init() {
 	r.registerHandler(PROTO_NODE_PALETTE_CHANGED, &_nodePaletteChangedHandle);
 	r.registerHandler(PROTO_NODE_NORMAL_PALETTE_CHANGED, &_nodeNormalPaletteChangedHandle);
 	r.registerHandler(PROTO_NODE_PROPERTIES, &_nodePropertiesHandler);
+	r.registerHandler(PROTO_NODE_IK_CONSTRAINT, &_nodeIKConstraintHandler);
 	r.registerHandler(PROTO_NODE_KEYFRAMES, &_nodeKeyFramesHandle);
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_sceneGraphAnimationHandler);
 

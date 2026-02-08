@@ -39,7 +39,7 @@ struct IKConstraint {
 	 */
 	struct RadiusConstraint {
 		/** @brief Center of the swing limit circle (polar coordinates on the cone) */
-		glm::vec2 center;
+		glm::vec2 center; // yaw, pitch
 		/** @brief Radius of the allowed swing region */
 		float radius;
 	};
