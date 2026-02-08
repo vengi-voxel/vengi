@@ -350,13 +350,15 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 		if (version >= 9) {
 			char effectorId[1024];
 			wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
-			node.setProperty("ikEffectorId", effectorId);
-			// TODO: VOXELFORMAT: the effector node might not exist yet - we resolve after the full scene graph is loaded
-			scenegraph::SceneGraphNode *effectorNode = sceneGraph.findNodeByName(effectorId);
-			if (effectorNode != nullptr) {
-				ikConstraint.effectorNodeId = effectorNode->id();
-			} else {
-				Log::warn("Could not find effector node with name '%s' for node '%s'", effectorId, id);
+			if (effectorId[0] != '\0') {
+				node.setProperty("ikEffectorId", effectorId);
+				// TODO: VOXELFORMAT: the effector node might not exist yet - we resolve after the full scene graph is loaded
+				scenegraph::SceneGraphNode *effectorNode = sceneGraph.findNodeByName(effectorId);
+				if (effectorNode != nullptr) {
+					ikConstraint.effectorNodeId = effectorNode->id();
+				} else {
+					Log::warn("Could not find effector node with name '%s' for node '%s'", effectorId, id);
+				}
 			}
 			ikConstraint.visible = stream.readBool();
 			wrap(stream.readFloat(ikConstraint.rollMin))

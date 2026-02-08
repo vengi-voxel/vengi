@@ -22,8 +22,7 @@ struct IKConstraint {
 	IKConstraint();
 	/**
 	 * @brief The node id of the IK end-effector target. This is the node the IK chain tries
-	 * to reach and can be any node in the scene graph
-	 * @note Resolved by name during scene loading (see @c ikEffectorId property)
+	 * to reach and can be any node in the scene graph or InvalidNodeId if no effector is assigned.
 	 */
 	int effectorNodeId;
 	/** @brief Minimum roll angle in radians */
