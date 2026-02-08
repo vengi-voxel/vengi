@@ -7025,7 +7025,10 @@ static stbir__info * stbir__alloc_internal_mem_and_build_samplers( stbir__sample
   void * alloced = 0;
   size_t alloced_total = 0;
   int vertical_first;
-  size_t decode_buffer_size, ring_buffer_length_bytes, ring_buffer_size, vertical_buffer_size;
+  size_t decode_buffer_size, ring_buffer_length_bytes, vertical_buffer_size;
+#ifndef STBIR__SEPARATE_ALLOCATIONS
+  size_t ring_buffer_size;
+#endif
   int alloc_ring_buffer_num_entries;
 
   int alpha_weighting_type = 0; // 0=none, 1=simple, 2=fancy
@@ -7095,7 +7098,9 @@ static stbir__info * stbir__alloc_internal_mem_and_build_samplers( stbir__sample
   if ( ( !vertical->is_gather ) && ( alloc_ring_buffer_num_entries > conservative_split_output_size ) )
     alloc_ring_buffer_num_entries = conservative_split_output_size;
 
+#ifndef STBIR__SEPARATE_ALLOCATIONS
   ring_buffer_size = (size_t)alloc_ring_buffer_num_entries * (size_t)ring_buffer_length_bytes;
+#endif
 
   // The vertical buffer is used differently, depending on whether we are scattering
   //   the vertical scanlines, or gathering them.
