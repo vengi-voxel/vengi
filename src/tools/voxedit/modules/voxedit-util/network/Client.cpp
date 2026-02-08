@@ -115,7 +115,7 @@ void Client::onMementoStateAdded(const memento::MementoState &state) {
 		break;
 	}
 	case memento::MementoType::SceneNodeIKConstraint: {
-		NodeIKConstraintMessage ikMsg(state);
+		NodeIKConstraintMessage ikMsg(state, _sceneMgr->sceneGraph());
 		_network.sendMessage(ikMsg);
 		break;
 	}

@@ -8,6 +8,7 @@
 #include "core/Optional.h"
 #include "memento/MementoHandler.h"
 #include "scenegraph/IKConstraint.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxedit-util/network/ProtocolIds.h"
 
 namespace voxedit {
@@ -19,8 +20,10 @@ class NodeIKConstraintMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	core::Optional<scenegraph::IKConstraint> _ikConstraint;
+	core::UUID _effectorUUID;
 
-	bool serializeIKConstraint(const core::Optional<scenegraph::IKConstraint> &ikConstraint) {
+	bool serializeIKConstraint(const core::Optional<scenegraph::IKConstraint> &ikConstraint,
+							   const core::UUID &effectorUUID) {
 		if (!ikConstraint.hasValue()) {
 			if (!writeBool(false)) {
 				Log::error("Failed to write IK constraint presence flag");
@@ -33,8 +36,8 @@ private:
 			return false;
 		}
 		const scenegraph::IKConstraint *ik = ikConstraint.value();
-		if (!writeInt32(ik->effectorNodeId)) {
-			Log::error("Failed to write effector node id");
+		if (!writeUUID(effectorUUID)) {
+			Log::error("Failed to write effector node UUID");
 			return false;
 		}
 		if (!writeFloat(ik->rollMin)) {
@@ -67,16 +70,19 @@ private:
 	}
 
 	static bool deserializeIKConstraint(network::MessageStream &in,
-										core::Optional<scenegraph::IKConstraint> &ikConstraint) {
+										core::Optional<scenegraph::IKConstraint> &ikConstraint,
+										core::UUID &effectorUUID) {
 		bool hasConstraint = in.readBool();
 		if (!hasConstraint) {
 			return true;
 		}
 		scenegraph::IKConstraint ik;
-		if (in.readInt32(ik.effectorNodeId) == -1) {
-			Log::error("Failed to read effector node id");
+		if (in.readUUID(effectorUUID) == -1) {
+			Log::error("Failed to read effector node UUID");
 			return false;
 		}
+		// effectorNodeId will be resolved by the handler using the UUID
+		ik.effectorNodeId = InvalidNodeId;
 		if (in.readFloat(ik.rollMin) == -1) {
 			Log::error("Failed to read roll min");
 			return false;
@@ -106,25 +112,20 @@ private:
 	}
 
 public:
-	NodeIKConstraintMessage(const memento::MementoState &state) : ProtocolMessage(PROTO_NODE_IK_CONSTRAINT) {
+	NodeIKConstraintMessage(const memento::MementoState &state, const scenegraph::SceneGraph &sceneGraph)
+		: ProtocolMessage(PROTO_NODE_IK_CONSTRAINT) {
 		if (!writeUUID(state.nodeUUID)) {
 			Log::error("Failed to write node UUID in NodeIKConstraintMessage ctor");
 			return;
 		}
-		if (!serializeIKConstraint(state.ikConstraint)) {
-			Log::error("Failed to serialize IK constraint in NodeIKConstraintMessage ctor");
-			return;
+		core::UUID effectorUUID;
+		if (state.ikConstraint.hasValue()) {
+			const int effectorId = state.ikConstraint.value()->effectorNodeId;
+			if (effectorId != InvalidNodeId && sceneGraph.hasNode(effectorId)) {
+				effectorUUID = sceneGraph.node(effectorId).uuid();
+			}
 		}
-		writeSize();
-	}
-
-	NodeIKConstraintMessage(const core::UUID &nodeUUID, const core::Optional<scenegraph::IKConstraint> &ikConstraint)
-		: ProtocolMessage(PROTO_NODE_IK_CONSTRAINT) {
-		if (!writeUUID(nodeUUID)) {
-			Log::error("Failed to write node UUID in NodeIKConstraintMessage ctor");
-			return;
-		}
-		if (!serializeIKConstraint(ikConstraint)) {
+		if (!serializeIKConstraint(state.ikConstraint, effectorUUID)) {
 			Log::error("Failed to serialize IK constraint in NodeIKConstraintMessage ctor");
 			return;
 		}
@@ -137,7 +138,7 @@ public:
 			Log::error("Failed to read node UUID for node IK constraint");
 			return;
 		}
-		if (!deserializeIKConstraint(in, _ikConstraint)) {
+		if (!deserializeIKConstraint(in, _ikConstraint, _effectorUUID)) {
 			Log::error("Failed to deserialize IK constraint for node %s", _nodeUUID.str().c_str());
 			return;
 		}
@@ -152,7 +153,7 @@ public:
 			Log::error("Failed to write node UUID in NodeIKConstraintMessage::writeBack");
 			return;
 		}
-		if (!serializeIKConstraint(_ikConstraint)) {
+		if (!serializeIKConstraint(_ikConstraint, _effectorUUID)) {
 			Log::error("Failed to serialize IK constraint in NodeIKConstraintMessage::writeBack");
 			return;
 		}
@@ -161,6 +162,10 @@ public:
 
 	const core::UUID &nodeUUID() const {
 		return _nodeUUID;
+	}
+
+	const core::UUID &effectorUUID() const {
+		return _effectorUUID;
 	}
 
 	const core::Optional<scenegraph::IKConstraint> &ikConstraint() const {

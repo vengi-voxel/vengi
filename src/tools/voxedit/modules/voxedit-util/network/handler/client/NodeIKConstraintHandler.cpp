@@ -21,7 +21,21 @@ void NodeIKConstraintHandler::execute(const network::ClientId &, NodeIKConstrain
 	}
 	const core::Optional<scenegraph::IKConstraint> &ikConstraint = message->ikConstraint();
 	if (ikConstraint.hasValue()) {
-		node->setIkConstraint(*ikConstraint.value());
+		scenegraph::IKConstraint ik = *ikConstraint.value();
+		// Resolve the effector UUID back to a local node ID
+		const core::UUID &effectorUUID = message->effectorUUID();
+		if (effectorUUID.isValid()) {
+			const scenegraph::SceneGraphNode *effectorNode = _sceneMgr->sceneGraph().findNodeByUUID(effectorUUID);
+			if (effectorNode != nullptr) {
+				ik.effectorNodeId = effectorNode->id();
+			} else {
+				Log::warn("Effector node UUID %s not found", effectorUUID.str().c_str());
+				ik.effectorNodeId = InvalidNodeId;
+			}
+		} else {
+			ik.effectorNodeId = InvalidNodeId;
+		}
+		node->setIkConstraint(ik);
 	} else {
 		node->removeIkConstraint();
 	}
