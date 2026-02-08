@@ -86,9 +86,11 @@ protected:
 	static constexpr uint8_t Visible = 1 << 1;
 	static constexpr uint8_t Locked = 1 << 2;
 
+	// local or internal ids - if you need to identify a node e.g. across the network, or in the memento state, use the uuid instead
 	int _id = InvalidNodeId;
 	int _parent = 0;
 	int _referenceId = InvalidNodeId;
+
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
 	color::RGBA _color;
