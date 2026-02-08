@@ -1307,7 +1307,7 @@ void Demo_SubplotsSizing() {
                 if (rows*cols > 1) {
                     ImPlot::SetNextLineStyle(SampleColormap((float)i/(float)(rows*cols-1),ImPlotColormap_Jet));
                 }
-                char label[16];
+                char label[17];
                 snprintf(label, sizeof(label), "data%d", id++);
                 ImPlot::PlotLineG(label,SinewaveGetter,&fi,1000);
                 ImPlot::EndPlot();
@@ -1423,7 +1423,7 @@ void Demo_LegendOptions() {
         ImPlot::PlotLineG("Item 003", MyImPlot::SawWave,  &data5, 1000);         // combined with previous "Item C"
 
         for (int i = 0; i < num_dummy_items; ++i) {
-            char label[16];
+            char label[17];
             snprintf(label, sizeof(label), "Item %03d", i+4);
             ImPlot::PlotDummy(label);
         }
