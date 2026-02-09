@@ -73,6 +73,8 @@ set(SRCS
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
 	private/mesh/TextureLookup.h             private/mesh/TextureLookup.cpp
 	private/mesh/gis/GMLFormat.h             private/mesh/gis/GMLFormat.cpp
+	private/mesh/gis/OSMFormat.h             private/mesh/gis/OSMFormat.cpp
+	private/mesh/gis/OSMDataLoader.h         private/mesh/gis/OSMDataLoader.cpp
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
 	private/mesh/quake/MapFormat.h           private/mesh/quake/MapFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
@@ -125,7 +127,7 @@ set(SRCS
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric tinyxml2 ${LIB}-external)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph metric tinyxml2 json ${LIB}-external)
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp

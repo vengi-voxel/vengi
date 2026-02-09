@@ -41,6 +41,7 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/FormatThumbnail.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/mesh/gis/OSMDataLoader.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelutil/Hollow.h"
 #include "voxelutil/ImageUtils.h"
@@ -99,6 +100,14 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
 	registerArg("--print-scripts").setDescription("Print found lua scripts as json for easier parsing in other tools");
 	registerArg("--print-lua-api").setDescription("Print the lua api documentation as json for easier parsing in other tools");
+	registerArg("--osm-lat").setDescription("Latitude for OSM data download (decimal degrees). Requires --osm-lon");
+	registerArg("--osm-lon").setDescription("Longitude for OSM data download (decimal degrees). Requires --osm-lat");
+	registerArg("--osm-radius").setDefaultValue("0.5").setDescription("Radius in km for OSM data download (default: 0.5km)");
+	registerArg("--osm-buildings").setDefaultValue("true").setDescription("Include buildings in OSM download");
+	registerArg("--osm-roads").setDefaultValue("true").setDescription("Include roads in OSM download");
+	registerArg("--osm-natural").setDefaultValue("true").setDescription("Include natural features in OSM download");
+	registerArg("--osm-water").setDefaultValue("true").setDescription("Include water features in OSM download");
+	registerArg("--osm-landuse").setDefaultValue("true").setDescription("Include land use features in OSM download");
 
 	voxelformat::FormatConfig::init();
 
@@ -233,6 +242,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	const bool hasScript = hasArg("--script");
+	const bool hasOsmInput = hasArg("--osm-lat") && hasArg("--osm-lon");
 
 	core::String infilesstr;
 	core::DynamicArray<core::String> infiles;
@@ -254,7 +264,7 @@ app::AppState VoxConvert::onInit() {
 			}
 			infilesstr += val;
 		}
-	} else if (!hasScript) {
+	} else if (!hasScript && !hasOsmInput) {
 		Log::error("No input file was specified");
 		return app::AppState::InitFailure;
 	}
@@ -374,6 +384,28 @@ app::AppState VoxConvert::onInit() {
 	}
 	const io::ArchivePtr &fsArchive = io::openFilesystemArchive(filesystem());
 	scenegraph::SceneGraph sceneGraph;
+
+	if (hasOsmInput) {
+		voxelformat::OSMDataLoader::Options osmOptions;
+		osmOptions.lat = core::string::toDouble(getArgVal("--osm-lat"));
+		osmOptions.lon = core::string::toDouble(getArgVal("--osm-lon"));
+		osmOptions.radiusKm = core::string::toDouble(getArgVal("--osm-radius", "0.5"));
+		osmOptions.includeBuildings = getArgVal("--osm-buildings", "true") == "true";
+		osmOptions.includeRoads = getArgVal("--osm-roads", "true") == "true";
+		osmOptions.includeNatural = getArgVal("--osm-natural", "true") == "true";
+		osmOptions.includeWater = getArgVal("--osm-water", "true") == "true";
+		osmOptions.includeLanduse = getArgVal("--osm-landuse", "true") == "true";
+
+		core::String cacheFilename;
+		const core::String downloadedJson = voxelformat::OSMDataLoader::download(fsArchive, osmOptions, &cacheFilename);
+		if (downloadedJson.empty()) {
+			Log::error("Failed to download OSM data");
+			return app::AppState::InitFailure;
+		}
+
+		infiles.push_back(cacheFilename);
+	}
+
 	for (const core::String &infile : infiles) {
 		if (shouldQuit()) {
 			break;
