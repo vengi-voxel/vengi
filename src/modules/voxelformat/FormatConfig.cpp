@@ -165,6 +165,11 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatGMLFilenameFilter, "", core::CV_NOPERSIST,
 				   _("Filename filter for GML/CityGML import. Only import files that contain this string in their "
 					 "filename. Wildcards are supported."));
+	core::Var::get(cfg::VoxformatOSMURL, "https://overpass-api.de/api/interpreter", core::CV_NOPERSIST,
+				   _("The URL of the Overpass API endpoint"));
+	core::Var::get(cfg::VoxformatOSMMetersPerVoxel, "1.0", core::CV_NOPERSIST,
+				   _("The number of real-world meters each voxel represents in OSM imports"));
+
 	return true;
 }
 

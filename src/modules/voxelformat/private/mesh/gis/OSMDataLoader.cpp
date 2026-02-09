@@ -32,9 +32,10 @@ core::String OSMDataLoader::buildOverpassQuery(const Options &options) {
 		query += core::String::format("  way[\"highway\"](%f,%f,%f,%f);\n", south, west, north, east);
 	}
 	if (options.includeNatural) {
-		query += core::String::format("  way[\"natural\"](%f,%f,%f,%f);\n"
+		query += core::String::format("  node[\"natural\"=\"tree\"](%f,%f,%f,%f);\n"
+									  "  way[\"natural\"](%f,%f,%f,%f);\n"
 									  "  relation[\"natural\"](%f,%f,%f,%f);\n",
-									  south, west, north, east, south, west, north, east);
+									  south, west, north, east, south, west, north, east, south, west, north, east);
 	}
 	if (options.includeWater) {
 		query += core::String::format("  way[\"water\"](%f,%f,%f,%f);\n"
@@ -77,7 +78,7 @@ core::String OSMDataLoader::download(const io::ArchivePtr &archive, const Option
 		*cacheFilePath = cacheFilename;
 	}
 
-	const core::VarPtr &urlVar = core::Var::get(cfg::VoxformatOSMURL, "https://overpass-api.de/api/interpreter");
+	const core::VarPtr &urlVar = core::Var::getSafe(cfg::VoxformatOSMURL);
 	const core::String &url = urlVar->strVal();
 
 	const core::String &postBody = core::String::format("data=%s", query.c_str());
