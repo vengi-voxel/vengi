@@ -13,10 +13,11 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Increased `vengi` binary file version
+   - Added openstreetmap `osm.json` format support
 
 VoxEdit:
 
-   - Added IKConstraint editing
+   - Added IKConstraint editing and inverse kinematic solver
 
 ## 0.4.0 (2026-02-08)
 
