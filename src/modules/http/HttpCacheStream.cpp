@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "http/Http.h"
+#include "http/Request.h"
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
@@ -14,6 +15,15 @@
 namespace http {
 
 HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
+	initGet(archive, file, url);
+}
+
+HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+								 const core::String &postBody, const core::String &contentType) {
+	initPost(archive, file, url, postBody, contentType);
+}
+
+void HttpCacheStream::initGet(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
 	if (core::string::startsWith(url, "file://")) {
 		_readStream = archive->readStream(url.substr(7));
 		return;
@@ -64,6 +74,61 @@ core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::
 	core::String str;
 	stream.readString((int)stream.size(), str);
 	return str;
+}
+
+core::String HttpCacheStream::stringPost(const io::ArchivePtr &archive, const core::String &file,
+										 const core::String &url, const core::String &postBody,
+										 const core::String &contentType) {
+	HttpCacheStream stream(archive, file, url, postBody, contentType);
+	if (!stream.valid()) {
+		return core::String::Empty;
+	}
+	core::String str;
+	stream.readString((int)stream.size(), str);
+	return str;
+}
+
+void HttpCacheStream::initPost(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+							   const core::String &postBody, const core::String &contentType) {
+	if (archive->exists(file)) {
+		Log::debug("Use cached file at %s for POST %s", file.c_str(), url.c_str());
+		_readStream = archive->readStream(file);
+		core_assert(_readStream != nullptr);
+		return;
+	}
+	Log::debug("try to POST to %s (cache: %s)", url.c_str(), file.c_str());
+	io::BufferedReadWriteStream bufStream(1024 * 1024);
+
+	http::Request request(url, http::RequestType::POST);
+	request.setBody(postBody);
+	request.addHeader("Content-Type", contentType);
+	request.setTimeoutSecond(180);
+	request.setConnectTimeoutSecond(30);
+
+	int statusCode = 0;
+	if (request.execute(bufStream, &statusCode)) {
+		if (http::isValidStatusCode(statusCode)) {
+			write(archive, file, bufStream);
+		} else if (statusCode == 429) {
+			Log::warn("Too many requests, retrying in 5 seconds... POST %s (%s)", url.c_str(), file.c_str());
+			app::App::getInstance()->wait(5000);
+			bufStream.seek(0);
+			http::Request retryRequest(url, http::RequestType::POST);
+			retryRequest.setBody(postBody);
+			retryRequest.addHeader("Content-Type", contentType);
+			retryRequest.setTimeoutSecond(180);
+			retryRequest.setConnectTimeoutSecond(30);
+			if (retryRequest.execute(bufStream, &statusCode)) {
+				if (http::isValidStatusCode(statusCode)) {
+					write(archive, file, bufStream);
+				}
+			}
+		} else {
+			Log::warn("Failed to POST %s (%s) - HTTP %d", url.c_str(), file.c_str(), statusCode);
+		}
+	} else {
+		Log::warn("Failed to POST %s (%s)", url.c_str(), file.c_str());
+	}
 }
 
 void HttpCacheStream::close() {
