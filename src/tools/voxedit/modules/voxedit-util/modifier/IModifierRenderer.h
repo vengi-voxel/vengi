@@ -80,6 +80,15 @@ public:
 	}
 
 	/**
+	 * @brief Wait for any pending mesh extractions to complete.
+	 *
+	 * This must be called before freeing preview volumes to avoid race conditions
+	 * where extraction threads are still reading from a volume that gets freed.
+	 */
+	virtual void waitForPendingExtractions() {
+	}
+
+	/**
 	 * @brief Render all modifier visuals.
 	 *
 	 * @param camera The camera for rendering.

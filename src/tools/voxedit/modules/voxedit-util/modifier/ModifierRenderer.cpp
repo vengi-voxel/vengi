@@ -235,4 +235,8 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 	video::polygonOffset(glm::vec3(0.0f));
 }
 
+void ModifierRenderer::waitForPendingExtractions() {
+	_meshState->extractAllPending();
+}
+
 } // namespace voxedit

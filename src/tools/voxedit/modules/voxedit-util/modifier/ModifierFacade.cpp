@@ -84,6 +84,11 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette, M
 	voxel::Voxel voxel = _brushContext.cursorVoxel;
 	voxel.setOutline();
 
+	// Wait for any pending mesh extractions to complete before freeing the old preview volumes.
+	// This prevents race conditions where extraction threads might still be reading from
+	// a volume that we're about to free.
+	_modifierRenderer->waitForPendingExtractions();
+
 	// Reset preview state
 	_previewVolume = nullptr;
 	_previewMirrorVolume = nullptr;
