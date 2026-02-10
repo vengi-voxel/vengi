@@ -64,6 +64,7 @@
 | Geography Markup Language  | gml       | X       |           |            |
 | GL Transmission Format     | gltf      | X       | X         | X          |
 | Godot Scene                | escn      |         | X         |            |
+| OpenStreetMap JSON         | osm.json  | X       |           |            |
 | Polygon File Format        | ply       | X       | X         |            |
 | Quake 1                    | bsp       | X       |           |            |
 | Quake 1 Model              | mdl       | X       |           |            |

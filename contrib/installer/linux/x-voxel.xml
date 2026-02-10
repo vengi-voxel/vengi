@@ -288,6 +288,10 @@
 		<glob pattern="*.gml"/>
 		<glob pattern="*.xml"/>
 	</mime-type>
+	<mime-type type="application/x-openstreetmap-json">
+		<comment>OpenStreetMap JSON</comment>
+		<glob pattern="*.osm.json"/>
+	</mime-type>
 	<mime-type type="application/x-build-engine">
 		<comment>Build engine</comment>
 		<glob pattern="*.kvx"/>

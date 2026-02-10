@@ -51,7 +51,6 @@ Additional settings that affect high quality voxelization:
 | `voxformat_rgbweightedaverage` | Average colors based on triangle area contribution | `true` |
 | `voxformat_rgbflattenfactor` | Flatten RGB colors when importing (0-255) | `1` |
 | `voxformat_createpalette` | Generate palette from mesh colors vs. use existing | `true` |
-| `voxformat_gmlregion` | World coordinate region filter for GML/CityGML import (`minX minY minZ maxX maxY maxZ`) | `""` |
 
 ## Fast Mode
 

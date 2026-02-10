@@ -899,6 +899,18 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "OpenStreetMap JSON",
+      "extensions": [
+        "osm.json"
+      ],
+      "magics": [],
+      "mimetype": "application/x-openstreetmap-json",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Build engine",
       "extensions": [
         "kvx"

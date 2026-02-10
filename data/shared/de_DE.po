@@ -2060,6 +2060,45 @@ msgstr "Skalierung"
 msgid "Pivot"
 msgstr "Pivot"
 
+msgid "IK Constraints"
+msgstr ""
+
+msgid "Enable IK"
+msgstr ""
+
+msgid "Anchor"
+msgstr ""
+
+msgid "Mark this node as a fixed point in the IK chain"
+msgstr ""
+
+msgid "Visible"
+msgstr "Sichtbar"
+
+msgid "Effector"
+msgstr ""
+
+msgid "The target node the IK chain tries to reach"
+msgstr ""
+
+msgid "Roll min"
+msgstr ""
+
+msgid "Roll max"
+msgstr ""
+
+msgid "Swing Limits"
+msgstr ""
+
+msgid "Yaw"
+msgstr ""
+
+msgid "Pitch"
+msgstr ""
+
+msgid "Add swing limit"
+msgstr ""
+
 #, c-format
 msgid "UUID: %s"
 msgstr "UUID: %s"

@@ -32,6 +32,7 @@ namespace voxelformat {
  * the data bounding box. The scale is configurable (default 1 meter per voxel).
  *
  * @sa GMLFormat for CityGML/GML support
+ * @li https://wiki.openstreetmap.org/wiki/JSON
  * @li https://wiki.openstreetmap.org/wiki/Overpass_API
  * @li https://overpass-api.de/
  *

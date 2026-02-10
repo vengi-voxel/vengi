@@ -395,6 +395,8 @@ Minecraft skin (*.mcskin, *.png)
 .TP
 Nicks Voxel Model (*.nvm)
 .TP
+OpenStreetMap JSON (*.osm.json)
+.TP
 Particubes (*.pcubes, *.particubes)
 .TP
 Polygon File Format (*.ply)
