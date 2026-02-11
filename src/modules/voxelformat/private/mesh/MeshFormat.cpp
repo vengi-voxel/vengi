@@ -240,14 +240,14 @@ template<class FUNC>
 static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshTri &meshTri, FUNC &&func) {
 	const glm::vec3 voxelHalf(0.5f);
 	const glm::vec3 shiftedTrisMins = trisMins + voxelHalf;
+	const glm::ivec3 itrisMins(trisMins);
 	const glm::vec3 &v0 = meshTri.vertex0();
 	const glm::vec3 &v1 = meshTri.vertex1();
 	const glm::vec3 &v2 = meshTri.vertex2();
 	const glm::vec3 mins = meshTri.mins();
 	const glm::vec3 maxs = meshTri.maxs();
 	const glm::ivec3 imins(glm::floor(mins - shiftedTrisMins));
-	const glm::ivec3 size(glm::round(maxs - mins));
-	const glm::ivec3 imaxs = 2 + imins + size;
+	const glm::ivec3 imaxs(glm::ivec3(glm::ceil(maxs - shiftedTrisMins)) + 1);
 
 	glm::vec3 center{};
 	for (int x = imins.x; x < imaxs.x; x++) {
@@ -259,9 +259,12 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 				if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
 					glm::vec2 uv;
 					if (!meshTri.calcUVs(center, uv)) {
-						continue;
+						// The voxel center is outside the triangle but the triangle still
+						// intersects this voxel. Use the triangle center UV as a fallback
+						// to avoid dropping valid voxels.
+						uv = meshTri.centerUV();
 					}
-					func(meshTri, uv, shiftedTrisMins.x + x, shiftedTrisMins.y + y, shiftedTrisMins.z + z);
+					func(meshTri, uv, itrisMins.x + x, itrisMins.y + y, itrisMins.z + z);
 				}
 			}
 		}
