@@ -432,6 +432,15 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 
 			ImGuiListClipper clipper;
 			clipper.Begin((int)_displayNodes.size());
+			if (_scrollToActiveNode) {
+				const int activeNodeId = sceneGraph.activeNode();
+				for (int i = 0; i < (int)_displayNodes.size(); i++) {
+					if (_displayNodes[i].nodeId == activeNodeId) {
+						clipper.IncludeItemByIndex(i);
+						break;
+					}
+				}
+			}
 			while (clipper.Step()) {
 				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
 					const DisplayNode &displayNode = _displayNodes[i];
