@@ -1,4 +1,4 @@
-﻿/// @ref simd
+/// @ref simd
 /// @file glm/simd/geometric.h
 
 #pragma once
@@ -26,7 +26,7 @@ GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_distance(glm_vec4 p0, glm_vec4 p1)
 
 GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_dot(glm_vec4 v1, glm_vec4 v2)
 {
-#	if GLM_ARCH & GLM_ARCH_SSE41_BIT
+#	if GLM_ARCH & GLM_ARCH_AVX_BIT
 		return _mm_dp_ps(v1, v2, 0xff);
 #	elif GLM_ARCH & GLM_ARCH_SSE3_BIT
 		glm_vec4 const mul0 = _mm_mul_ps(v1, v2);
@@ -43,33 +43,9 @@ GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_dot(glm_vec4 v1, glm_vec4 v2)
 #	endif
 }
 
-GLM_FUNC_QUALIFIER glm_vec4 glm_vec3_dot(glm_vec4 v1, glm_vec4 v2)
-{
-#	if GLM_ARCH & GLM_ARCH_SSE41_BIT
-		return _mm_dp_ps(v1, v2, 0x77);
-#	elif GLM_ARCH & GLM_ARCH_SSE3_BIT
-		glm_vec4 const constant0 = _mm_castsi128_ps(_mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0));
-		glm_vec4 const mul0 = _mm_mul_ps(v1, v2);
-		glm_vec4 const and0 = _mm_and_ps(mul0, constant0);
-		glm_vec4 const hadd0 = _mm_hadd_ps(and0, and0);
-		glm_vec4 const hadd1 = _mm_hadd_ps(hadd0, hadd0);
-		return hadd1;
-#	else
-		glm_vec4 const constant0 = _mm_castsi128_ps(_mm_setr_epi32(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0));
-		glm_vec4 const mul0 = _mm_mul_ps(v1, v2);
-		glm_vec4 const and0 = _mm_and_ps(mul0, constant0);
-		glm_vec4 const swp0 = _mm_shuffle_ps(and0, and0, _MM_SHUFFLE(2, 3, 0, 1));
-		glm_vec4 const add0 = _mm_add_ps(and0, swp0);
-		glm_vec4 const swp1 = _mm_shuffle_ps(add0, add0, _MM_SHUFFLE(0, 1, 2, 3));
-		glm_vec4 const add1 = _mm_add_ps(add0, swp1);
-		return add1;
-#	endif
-
-}
-
 GLM_FUNC_QUALIFIER glm_vec4 glm_vec1_dot(glm_vec4 v1, glm_vec4 v2)
 {
-#	if GLM_ARCH & GLM_ARCH_SSE41_BIT
+#	if GLM_ARCH & GLM_ARCH_AVX_BIT
 		return _mm_dp_ps(v1, v2, 0xff);
 #	elif GLM_ARCH & GLM_ARCH_SSE3_BIT
 		glm_vec4 const mul0 = _mm_mul_ps(v1, v2);
@@ -98,54 +74,13 @@ GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_cross(glm_vec4 v1, glm_vec4 v2)
 	return sub0;
 }
 
-GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_normalize_lowp(glm_vec4 v)
-{
-	glm_vec4 const dot0 = glm_vec4_dot(v, v);
-	glm_vec4 const isr0 = _mm_rsqrt_ps(dot0);
-	glm_vec4 const mul0 = _mm_mul_ps(v, isr0);
-	return mul0;
-}
-
-GLM_FUNC_QUALIFIER glm_vec4 glm_vec3_normalize_lowp(glm_vec4 v)
-{
-	glm_vec4 const dot0 = glm_vec3_dot(v, v);
-	glm_vec4 const isr0 = _mm_rsqrt_ps(dot0);
-	glm_vec4 const mul0 = _mm_mul_ps(v, isr0);
-	return mul0;
-}
-
 GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_normalize(glm_vec4 v)
 {
 	glm_vec4 const dot0 = glm_vec4_dot(v, v);
 	glm_vec4 const isr0 = _mm_rsqrt_ps(dot0);
-
-	// One iteration of Newton-Raphson method to improve precision
-	glm_vec4 const mul0 = glm_vec4_mul(dot0, isr0);
-	glm_vec4 const fma0 = glm_vec4_fma(mul0, isr0, _mm_set1_ps(-3.0f));
-	glm_vec4 const mul1 = glm_vec4_mul(isr0, _mm_set1_ps(-0.5f));
-
-	glm_vec4 const mul2 = glm_vec4_mul(mul1, v);
-	glm_vec4 const mul3 = glm_vec4_mul(mul2, fma0);
-
-	return mul3;
+	glm_vec4 const mul0 = _mm_mul_ps(v, isr0);
+	return mul0;
 }
-
-GLM_FUNC_QUALIFIER glm_vec4 glm_vec3_normalize(glm_vec4 v)
-{
-	glm_vec4 const dot0 = glm_vec3_dot(v, v);
-	glm_vec4 const isr0 = _mm_rsqrt_ps(dot0);
-
-	// One iteration of Newton-Raphson method to improve precision
-	glm_vec4 const mul0 = glm_vec4_mul(dot0, isr0);
-	glm_vec4 const fma0 = glm_vec4_fma(mul0, isr0, _mm_set1_ps(-3.0f));
-	glm_vec4 const mul1 = glm_vec4_mul(isr0, _mm_set1_ps(-0.5f));
-
-	glm_vec4 const mul2 = glm_vec4_mul(mul1, v);
-	glm_vec4 const mul3 = glm_vec4_mul(mul2, fma0);
-
-	return mul3;
-}
-
 
 GLM_FUNC_QUALIFIER glm_vec4 glm_vec4_faceforward(glm_vec4 N, glm_vec4 I, glm_vec4 Nref)
 {

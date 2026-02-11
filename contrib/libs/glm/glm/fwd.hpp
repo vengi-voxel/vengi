@@ -4,6 +4,7 @@
 
 namespace glm
 {
+#if GLM_HAS_EXTENDED_INTEGER_TYPE
 	typedef std::int8_t				int8;
 	typedef std::int16_t			int16;
 	typedef std::int32_t			int32;
@@ -13,6 +14,17 @@ namespace glm
 	typedef std::uint16_t			uint16;
 	typedef std::uint32_t			uint32;
 	typedef std::uint64_t			uint64;
+#else
+	typedef signed char				int8;
+	typedef signed short			int16;
+	typedef signed int				int32;
+	typedef detail::int64			int64;
+
+	typedef unsigned char			uint8;
+	typedef unsigned short			uint16;
+	typedef unsigned int			uint32;
+	typedef detail::uint64			uint64;
+#endif
 
 	// Scalar int
 
@@ -666,7 +678,7 @@ namespace glm
 	typedef mat<4, 2, f32, lowp>		lowp_f32mat4x2;
 	typedef mat<4, 3, f32, lowp>		lowp_f32mat4x3;
 	typedef mat<4, 4, f32, lowp>		lowp_f32mat4x4;
-
+	
 	typedef mat<2, 2, f32, mediump>		mediump_f32mat2x2;
 	typedef mat<2, 3, f32, mediump>		mediump_f32mat2x3;
 	typedef mat<2, 4, f32, mediump>		mediump_f32mat2x4;
