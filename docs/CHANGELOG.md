@@ -14,6 +14,7 @@ General:
 
    - Increased `vengi` binary file version
    - Added openstreetmap `osm.json` format support
+   - Allow to specify the target colors in a palette for voxelization and other RGB based formats (`voxformat_targetcolors`)
 
 VoxEdit:
 

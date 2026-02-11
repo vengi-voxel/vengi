@@ -361,6 +361,7 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 	}
 
 	ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
+	ImGui::InputVarInt(_("Target colors (0=no limit)"), cfg::VoxformatTargetColors);
 }
 
 static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,

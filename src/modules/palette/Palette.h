@@ -186,7 +186,7 @@ public:
 	bool tryAdd(color::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true,
 				int skipPaletteColorIdx = -1);
 	bool hasColor(color::RGBA rgba);
-	void quantize(const color::RGBA *inputColors, const size_t inputColorCount);
+	void quantize(const color::RGBA *inputColors, const size_t inputColorCount, int targetColors = 0);
 	void constrastStretching();
 	void whiteBalance();
 

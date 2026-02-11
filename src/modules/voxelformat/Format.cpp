@@ -359,12 +359,17 @@ color::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const
 
 int Format::createPalette(const palette::RGBABuffer &colors, palette::Palette &palette) const {
 	const size_t colorCount = (int)colors.size();
+	const int targetColors = core::Var::getSafe(cfg::VoxformatTargetColors)->intVal();
 	core::Buffer<color::RGBA> colorBuffer;
 	colorBuffer.reserve(colorCount);
 	for (const auto &e : colors) {
 		colorBuffer.push_back(e->first);
 	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	if (targetColors > 0) {
+		palette.quantize(colorBuffer.data(), colorBuffer.size(), targetColors);
+	} else {
+		palette.quantize(colorBuffer.data(), colorBuffer.size());
+	}
 	return palette.colorCount();
 }
 
@@ -375,6 +380,17 @@ int Format::createPalette(const palette::RGBAMaterialMap &colors, palette::Palet
 		return 0;
 	}
 	const size_t colorCount = (int)colors.size();
+	const int targetColors = core::Var::getSafe(cfg::VoxformatTargetColors)->intVal();
+	if (targetColors > 0) {
+		Log::debug("Quantizing to %i target colors", targetColors);
+		core::Buffer<color::RGBA> colorBuffer;
+		colorBuffer.reserve(colorCount);
+		for (const auto &e : colors) {
+			colorBuffer.push_back(e->first);
+		}
+		palette.quantize(colorBuffer.data(), colorBuffer.size(), targetColors);
+		return palette.colorCount();
+	}
 	if (colorCount < (size_t)palette::PaletteMaxColors) {
 		int n = 0;
 		for (const auto &e : colors) {

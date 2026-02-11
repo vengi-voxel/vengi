@@ -5,12 +5,21 @@
 #include "palette/ColorPalette.h"
 #include "app/tests/AbstractTest.h"
 #include "image/Image.h"
+#include "palette/FormatConfig.h"
 #include "palette/Palette.h"
 #include "palette/private/PaletteFormat.h"
 
 namespace palette {
 
-class ColorPaletteTest : public app::AbstractTest {};
+class ColorPaletteTest : public app::AbstractTest {
+protected:
+	bool onInitApp() override {
+		if (!app::AbstractTest::onInitApp()) {
+			return false;
+		}
+		return FormatConfig::init();
+	}
+};
 
 TEST_F(ColorPaletteTest, testSave) {
 	palette::Palette pal;
@@ -117,6 +126,37 @@ TEST_F(ColorPaletteTest, testPrint) {
 	palette.add(color::RGBA(255, 0, 0, 255));
 	core::String str = ColorPalette::print(palette);
 	EXPECT_FALSE(str.empty());
+}
+
+TEST_F(ColorPaletteTest, testQuantizeTargetColors) {
+	palette::Palette pal;
+	const color::RGBA colors[] = {
+		color::RGBA(255, 0, 0, 255),
+		color::RGBA(0, 255, 0, 255),
+		color::RGBA(0, 0, 255, 255),
+		color::RGBA(255, 255, 0, 255),
+		color::RGBA(0, 255, 255, 255),
+		color::RGBA(255, 0, 255, 255),
+		color::RGBA(128, 128, 128, 255),
+		color::RGBA(255, 128, 0, 255),
+		color::RGBA(0, 128, 255, 255),
+		color::RGBA(128, 0, 255, 255)
+	};
+	pal.quantize(colors, lengthof(colors), 5);
+	EXPECT_EQ(5, pal.colorCount());
+}
+
+TEST_F(ColorPaletteTest, testQuantizeTargetColorsZeroMeansNoLimit) {
+	palette::Palette pal;
+	const color::RGBA colors[] = {
+		color::RGBA(255, 0, 0, 255),
+		color::RGBA(0, 255, 0, 255),
+		color::RGBA(0, 0, 255, 255),
+		color::RGBA(255, 255, 0, 255),
+		color::RGBA(0, 255, 255, 255)
+	};
+	pal.quantize(colors, lengthof(colors), 0);
+	EXPECT_EQ(5, pal.colorCount());
 }
 
 } // namespace palette

@@ -144,6 +144,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_skinaddgroups`     | Add groups for body parts of Minecraft skins                                             | true/false   |
 | `voxformat_skinapplytransform`| Apply transforms to Minecraft skins                                                      | true/false   |
 | `voxformat_skinmergefaces`    | Merge faces of Minecraft skins into a single volume                                      | true/false   |
+| `voxformat_targetcolors`      | Target number of colors after voxelization (0 = no limit)                                | 0            |
 | `voxformat_texturepath`       | Additional search path for textures when importing mesh formats                          |              |
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 | true/false   |
 | `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   | true/false   |

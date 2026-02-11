@@ -149,11 +149,12 @@ void Palette::reduce(uint8_t targetColors) {
 	markDirty();
 }
 
-void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCount) {
+void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCount, int targetColors) {
 	Log::debug("quantize %i colors", (int)inputColorCount);
 	color::ColorReductionType reductionType =
 		color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
-	_colorCount = color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
+	const size_t maxColors = targetColors > 0 ? (size_t)targetColors : lengthof(_colors);
+	_colorCount = color::quantize(_colors, maxColors, inputColors, inputColorCount, reductionType);
 	markDirty();
 }
 

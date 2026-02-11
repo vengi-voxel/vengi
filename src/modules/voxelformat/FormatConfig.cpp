@@ -48,6 +48,9 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type >= 0 && type <= 255;
 				   });
+	core::Var::get(cfg::VoxformatTargetColors, "0", core::CV_NOPERSIST,
+				   _("Target number of colors after voxelization (0 = no limit, otherwise quantize to this amount)"),
+				   core::Var::minMaxValidator<0, 256>);
 	core::Var::get(cfg::VoxformatSaveVisibleOnly, "false", core::CV_NOPERSIST, _("Save only visible nodes"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST,
