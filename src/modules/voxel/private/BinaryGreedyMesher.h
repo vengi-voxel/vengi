@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
 #include <glm/fwd.hpp>
+#include "core/collection/DynamicArray.h"
 
 namespace voxel {
 
@@ -29,7 +29,8 @@ struct ChunkMesh;
  * already be structured this way so that you can feed the data straight into this
  * algorithm.
  *
- * Input data is ordered in YXZ and is 64^3 which results in a 62^3 mesh.
+ * Input data is in the RawVolume's native XYZ order (X innermost) and
+ * the chunk is 64^3 which results in a 62^3 mesh.
  * The 2-voxel reduction accounts for the 1-voxel border padding on each side.
  *
  * @section extract_output Output
@@ -49,7 +50,6 @@ struct ChunkMesh;
  * @note The chunk size is limited to 62 voxels because we use 64-bit masks with
  *       1-voxel border padding on each side (62 + 2 = 64 bits).
  *
- * @see prepareChunk() for data preparation details
  * @see extractBinaryGreedyMeshType() for the core meshing algorithm
  */
 void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,

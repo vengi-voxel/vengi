@@ -16,6 +16,7 @@ General:
    - Added openstreetmap `osm.json` format support
    - Allow to specify the target colors in a palette for voxelization and other RGB based formats (`voxformat_targetcolors`)
    - Fixed `voxformat_voxelizemode` `1` missing voxels
+   - Speed up the binary mesher usage
 
 VoxEdit:
 

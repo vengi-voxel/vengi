@@ -38,7 +38,6 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
-#include "app/Async.h"
 #include "core/Trace.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
@@ -87,27 +86,24 @@ static constexpr int CS_P3 = CS_P * CS_P * CS_P;
  * by rotating coordinates based on the current face direction, the same
  * merging code can be used for all 6 face directions.
  *
- * The memory layout uses ZXY ordering (Z in the innermost loop) because
- * Z is the primary axis for 64-bit column operations. Each 64-bit integer
- * represents occupancy along the Z axis.
- *
  * @param axis Which axis is being processed (0=X faces, 1=Y faces, 2=Z faces)
  * @param a First coordinate ("right" direction in face plane)
  * @param b Second coordinate ("forward" direction in face plane)
  * @param c Third coordinate (depth perpendicular to face)
  * @return Linear index into the voxel array using ZXY ordering
  *
- * @note The different formulas for each axis rotate the coordinate system:
- * - Axis 0 (X faces): index = b + a*CS_P + c*CS_P2  (YZX rotation)
- * - Axis 1 (Y faces): index = a + c*CS_P + b*CS_P2  (XZY rotation)
- * - Axis 2 (Z faces): index = c + b*CS_P + a*CS_P2  (ZXY - native order)
+ * @note The different formulas for each axis rotate the coordinate system
+ * so that the result always maps to XYZ order (X innermost):
+ * - Axis 0 (X faces): a=right=X, b=forward=Z, c=bit_pos=Y → X + Y*CS_P + Z*CS_P2
+ * - Axis 1 (Y faces): a=right=Z, b=forward=Y, c=bit_pos=X → X + Y*CS_P + Z*CS_P2
+ * - Axis 2 (Z faces): a=right=Y, b=forward=X, c=bit_pos=Z → X + Y*CS_P + Z*CS_P2
  */
 CORE_FORCE_INLINE int get_axis_i(const int axis, const int a, const int b, const int c) {
 	if (axis == 0)
-		return b + (a * CS_P) + (c * CS_P2);
-	else if (axis == 1)
 		return a + (c * CS_P) + (b * CS_P2);
-	return c + (b * CS_P) + (a * CS_P2);
+	else if (axis == 1)
+		return c + (b * CS_P) + (a * CS_P2);
+	return b + (a * CS_P) + (c * CS_P2);
 }
 
 /**
@@ -188,7 +184,7 @@ CORE_FORCE_INLINE int vertexAO(uint8_t side1, uint8_t side2, uint8_t corner) {
 	return (side1 && side2) ? 0 : (3 - (side1 + side2 + corner));
 }
 
-using BinaryMesherInput = core::DynamicArray<Voxel>;
+using VoxelData = const Voxel *;
 
 /**
  * @brief Checks if ambient occlusion values match between two positions
@@ -208,7 +204,7 @@ using BinaryMesherInput = core::DynamicArray<Voxel>;
  * @return true if AO values match and quads can be merged
  */
 template<int MeshType>
-CORE_FORCE_INLINE bool compare_ao(const BinaryMesherInput &voxels, int axis, int forward, int right, int c,
+CORE_FORCE_INLINE bool compare_ao(VoxelData voxels, int axis, int forward, int right, int c,
 								  int forward_offset, int right_offset) {
 	for (const auto &ao_dir : ao_dirs) {
 		if (solid_check<MeshType>(voxels[get_axis_i(axis, right + ao_dir[0], forward + ao_dir[1], c)]) !=
@@ -315,54 +311,7 @@ static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
 
 /** @} */
 
-/**
- * @brief Prepares chunk data by copying and reordering voxels
- *
- * This function extracts a chunk from the volume and reorganizes it into
- * a format optimized for binary meshing. The voxels are reordered from
- * the volume's native XYZ layout to ZXY layout (Z innermost).
- *
- * @section prepare_why Why ZXY Order?
- *
- * The binary greedy meshing algorithm uses 64-bit integers to represent
- * columns of voxels. Each bit in a uint64_t represents one voxel along an axis.
- * By storing Z in the innermost loop, we can:
- *
- * 1. Build Z-axis columns by setting bits: `column |= 1ULL << z`
- * 2. Perform face culling on 64 Z-voxels simultaneously
- * 3. Access voxels in cache-friendly order during column building
- *
- * @param map The source voxel volume (XYZ order)
- * @param voxels Output buffer for reordered voxel data (ZXY order)
- * @param chunkPos Position of the chunk in world space (includes padding offset)
- */
-// TODO: PERF: the binary mesher would be way faster if we would not convert this from xyz to zxy order
-void prepareChunk(const voxel::RawVolume &map, BinaryMesherInput &voxels, const glm::ivec3 &chunkPos) {
-	core_trace_scoped(PrepareChunks);
-	voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
-	voxel::RawVolume copy(copyRegion);
-	copy.copyInto(map, copyRegion);
-	const voxel::Voxel *data = copy.voxels();
-	voxels.resize(CS_P3);
 
-	// Parallel reorder operation for better cache performance
-	auto func = [&voxels, &data](int start, int end) {
-		for (int y = start; y < end; y++) {
-			const uint32_t yoffset = y * CS_P2;
-			const uint32_t vyoffset = y * CS_P;
-			for (uint32_t x = 0; x < CS_P; x++) {
-				const uint32_t xyoffset = (x * CS_P) + yoffset;
-				const uint32_t vxyoffset = x + vyoffset;
-				for (uint32_t z = 0; z < CS_P; z++) {
-					const int index = z + xyoffset;
-					const int vindex = vxyoffset + z * (CS_P2);
-					voxels[index] = data[vindex];
-				}
-			}
-		}
-	};
-	app::for_parallel(0, CS_P, func);
-}
 
 /**
  * @brief Extracts mesh geometry using binary greedy meshing algorithm
@@ -388,11 +337,11 @@ void prepareChunk(const voxel::RawVolume &map, BinaryMesherInput &voxels, const 
  * @tparam MeshType 0 for opaque geometry, 1 for transparent geometry
  * @param translate World space offset for vertex positions
  * @param ambientOcclusion Whether to calculate ambient occlusion
- * @param voxels Prepared voxel data buffer
+ * @param voxels Raw voxel data pointer in XYZ order (X innermost)
  * @param mesh Output mesh to populate with geometry
  */
 template<int MeshType>
-void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion, const BinaryMesherInput &voxels,
+void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion, VoxelData voxels,
 								 Mesh &mesh) {
 	core_trace_scoped(ExtractBinaryGreedyMeshType);
 
@@ -413,59 +362,58 @@ void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclus
 	alignas(16) core::Array<uint64_t, CS_P2 * 6> col_face_masks({});
 
 	/**
-	 * a_axis_cols: Temporary accumulator for column masks along the first axis.
-	 * As we iterate through voxels, we build up 64-bit columns incrementally.
-	 * This allows us to perform face culling on complete columns.
+	 * z_axis_cols: Accumulator for Z-axis column masks.
+	 * Indexed by [x + y*CS_P], each 64-bit entry has bits representing Z positions.
+	 * Built incrementally across Z iterations (outermost loop).
 	 */
-	alignas(16) core::Array<uint64_t, CS_P2> a_axis_cols({});
+	alignas(16) core::Array<uint64_t, CS_P2> z_axis_cols({});
 
 	// === PHASE 1: Build binary columns and cull faces ===
-	// This phase iterates through all voxels once, building 64-bit occupancy
-	// columns and simultaneously performing face culling via bitwise operations.
+	// Iterates through voxels in XYZ order (X innermost, matching RawVolume's
+	// native memory layout) to build 64-bit occupancy columns and cull faces.
 
-	auto p = voxels.begin();
-	for (int a = 0; a < CS_P; a++) {
-		// Temporary storage for columns along second axis
-		alignas(16) core::Array<uint64_t, CS_P> b_axis_cols({});
+	auto p = voxels;
+	for (int z = 0; z < CS_P; z++) {
+		// Temporary storage for Y-axis columns, indexed by [x], bits = Y positions
+		alignas(16) core::Array<uint64_t, CS_P> y_axis_cols({});
 
-		for (int b = 0; b < CS_P; ++b) {
-			uint64_t cb = 0; // Column bits for third axis
+		for (int y = 0; y < CS_P; ++y) {
+			uint64_t xb = 0; // X column bits
 
-			// Build column by checking each voxel and setting corresponding bit
-			for (int c = 0; c < CS_P; ++c) {
+			// Build X column by checking each voxel and setting corresponding bit
+			for (int x = 0; x < CS_P; ++x) {
 				if (solid_check<MeshType>(*p)) {
-					a_axis_cols[b + (c * CS_P)] |= 1ULL << a;
-					b_axis_cols[c] |= 1ULL << b;
-					cb |= 1ULL << c;
+					z_axis_cols[x + (y * CS_P)] |= 1ULL << z;
+					y_axis_cols[x] |= 1ULL << y;
+					xb |= 1ULL << x;
 				}
 				++p;
 			}
 
-			// Cull faces in the third (c) axis direction
-			// Face is visible where solid voxel transitions to air
-			// Negative direction: shift right and compare
-			col_face_masks[a + (b * CS_P) + (4 * CS_P2)] = cb & ~((cb >> 1) | CULL_MASK);
-			// Positive direction: shift left and compare
-			col_face_masks[a + (b * CS_P) + (5 * CS_P2)] = cb & ~((cb << 1) | 1ULL);
+			// Cull faces along X axis (faces 2, 3)
+			// Face mask 2D index: forward*CS_P + right = Y*CS_P + Z
+			col_face_masks[z + (y * CS_P) + (2 * CS_P2)] = xb & ~((xb >> 1) | CULL_MASK);
+			col_face_masks[z + (y * CS_P) + (3 * CS_P2)] = xb & ~((xb << 1) | 1ULL);
 		}
 
-		// Cull faces in the second (b) axis direction
-		const int faceIndex = (a * CS_P) + (2 * CS_P2);
-		for (int b = 1; b < CS_P - 1; ++b) {
-			const uint64_t &col = b_axis_cols[b];
-			col_face_masks[faceIndex + b] = col & ~((col >> 1) | CULL_MASK);
-			col_face_masks[faceIndex + b + CS_P2] = col & ~((col << 1) | 1ULL);
+		// Cull faces along Y axis (faces 0, 1)
+		// Face mask 2D index: forward*CS_P + right = Z*CS_P + X
+		const int faceIndex = (z * CS_P);
+		for (int x = 1; x < CS_P - 1; ++x) {
+			const uint64_t &col = y_axis_cols[x];
+			col_face_masks[faceIndex + x] = col & ~((col >> 1) | CULL_MASK);
+			col_face_masks[faceIndex + x + CS_P2] = col & ~((col << 1) | 1ULL);
 		}
 	}
 
-	// Cull faces in the first (a) axis direction
-	for (int a = 1; a < CS_P - 1; a++) {
-		const int faceIndex = a * CS_P;
-		for (int b = 1; b < CS_P - 1; ++b) {
-			const uint64_t &col = a_axis_cols[faceIndex + b];
-
-			col_face_masks[faceIndex + b] = col & ~((col >> 1) | CULL_MASK);
-			col_face_masks[faceIndex + b + CS_P2] = col & ~((col << 1) | 1ULL);
+	// Cull faces along Z axis (faces 4, 5)
+	// Face mask 2D index: forward*CS_P + right = X*CS_P + Y
+	for (int y = 1; y < CS_P - 1; y++) {
+		const int yOffset = y * CS_P;
+		for (int x = 1; x < CS_P - 1; ++x) {
+			const uint64_t &col = z_axis_cols[x + yOffset];
+			col_face_masks[(x * CS_P) + y + (4 * CS_P2)] = col & ~((col >> 1) | CULL_MASK);
+			col_face_masks[(x * CS_P) + y + (5 * CS_P2)] = col & ~((col << 1) | 1ULL);
 		}
 	}
 
@@ -785,7 +733,7 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	result->setOffset(offset);
 
 	/**
-	 * Prepare voxel data with 1-voxel border padding for neighbor access.
+	 * Create a padded copy for border handling.
 	 *
 	 * The padding is required for:
 	 * 1. Face visibility testing at chunk boundaries
@@ -794,9 +742,11 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const Region &regi
 	 * The chunkPos is offset by -1 to include the border padding from
 	 * neighboring chunks in the negative direction.
 	 */
-	BinaryMesherInput voxels;
 	const glm::ivec3 chunkPos = offset - 1;
-	prepareChunk(*volData, voxels, chunkPos);
+	const voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
+	voxel::RawVolume copy(copyRegion);
+	copy.copyInto(*volData, copyRegion);
+	VoxelData voxels = copy.voxels();
 
 	// Extract opaque geometry (MeshType = 0)
 	extractBinaryGreedyMeshType<0>(translate, ambientOcclusion, voxels, result->mesh[0]);

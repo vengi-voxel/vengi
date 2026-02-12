@@ -12,7 +12,6 @@
 #include "voxel/Voxel.h"
 
 namespace voxel {
-void prepareChunk(const RawVolume &map, core::DynamicArray<Voxel> &voxels, const glm::ivec3 &chunkPos);
 
 class SurfaceExtractorTest : public app::AbstractTest {
 protected:
@@ -165,20 +164,6 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionIssue445) {
 		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(8, (int)mesh.mesh[0].getNoOfVertices());
-}
-
-TEST_F(SurfaceExtractorTest, testBinaryPrepareChunk) {
-	glm::ivec3 mins(-10, -10, -10);
-	glm::ivec3 maxs(10, -10, 10);
-	voxel::Region region(mins, maxs);
-	voxel::RawVolume v(region);
-	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 1);
-	v.setVoxel(region.getCenter(), voxel);
-	core::DynamicArray<voxel::Voxel> voxels;
-	glm::ivec3 chunkPos = v.region().getCenter();
-	voxel::prepareChunk(v, voxels, chunkPos);
-	ASSERT_TRUE(voxels[0].isSameType(voxel));
-	ASSERT_TRUE(voxels[1].isSameType(voxel::Voxel()));
 }
 
 TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
