@@ -187,6 +187,10 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_optimize\fP: Apply mesh optimization steps to meshes
 .PP
+\fBvoxformat_osmmeterspervoxel\fP: The number of real-world meters each voxel represents in OSM imports
+.PP
+\fBvoxformat_osmurl\fP: The URL of the Overpass API endpoint
+.PP
 \fBvoxformat_pointcloudsize\fP: Specify the side length for the voxels when loading a point cloud
 .PP
 \fBvoxformat_qbsavecompressed\fP: Save RLE compressed
@@ -222,6 +226,8 @@ Allow to specify input file filter if --input is a directory.
 \fBvoxformat_skinapplytransform\fP: Apply transforms to Minecraft skins
 .PP
 \fBvoxformat_skinmergefaces\fP: Merge face parts into single volume for Minecraft skins
+.PP
+\fBvoxformat_targetcolors\fP: Target number of colors after voxelization (0 = no limit, otherwise quantize to this amount)
 .PP
 \fBvoxformat_texturepath\fP: Register an additional search path for texture lookups
 .PP

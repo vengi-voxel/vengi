@@ -623,6 +623,11 @@ msgstr "Zusätzliche Vertices für Ambient Occlusion"
 msgid "The RGB color flatten factor for importing color and mesh formats"
 msgstr "RGB-Abflachfaktor beim Importieren von Farb- und Mesh-Formaten"
 
+msgid ""
+"Target number of colors after voxelization (0 = no limit, otherwise quantize "
+"to this amount)"
+msgstr ""
+
 msgid "Save only visible nodes"
 msgstr "Nur sichtbare Knoten speichern"
 
@@ -793,6 +798,12 @@ msgstr ""
 msgid ""
 "Filename filter for GML/CityGML import. Only import files that contain this "
 "string in their filename. Wildcards are supported."
+msgstr ""
+
+msgid "The URL of the Overpass API endpoint"
+msgstr ""
+
+msgid "The number of real-world meters each voxel represents in OSM imports"
 msgstr ""
 
 msgid "Draw line forwards"
@@ -1066,6 +1077,9 @@ msgstr "RGB gewichteter Durchschnitt"
 
 msgid "RGB flatten factor"
 msgstr "RGB-Abflachfaktor"
+
+msgid "Target colors (0=no limit)"
+msgstr ""
 
 msgid "Create palette"
 msgstr "Palette erstellen"
@@ -2773,8 +2787,8 @@ msgstr ""
 
 msgid ""
 "You can switch the camera scene movement by switching the 'Camera movement' "
-"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:"
-"cam_rotation>."
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:cam_rotation>."
 msgstr ""
 "Sie können die Kamerabewegung im Szenenmodus durch Wechsel von "
 "'Kamerabewegung' zu 'Auge' oder 'Ziel' im 'Ansicht'-Menü des "
@@ -2827,8 +2841,8 @@ msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
 
 msgid ""
-"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
-"mirroraxisshapebrushz> to mirror the current selection."
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."

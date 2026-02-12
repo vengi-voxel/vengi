@@ -583,6 +583,11 @@ msgstr ""
 msgid "The RGB color flatten factor for importing color and mesh formats"
 msgstr ""
 
+msgid ""
+"Target number of colors after voxelization (0 = no limit, otherwise quantize "
+"to this amount)"
+msgstr ""
+
 msgid "Save only visible nodes"
 msgstr ""
 
@@ -731,6 +736,12 @@ msgstr ""
 msgid ""
 "Filename filter for GML/CityGML import. Only import files that contain this "
 "string in their filename. Wildcards are supported."
+msgstr ""
+
+msgid "The URL of the Overpass API endpoint"
+msgstr ""
+
+msgid "The number of real-world meters each voxel represents in OSM imports"
 msgstr ""
 
 msgid "Draw line forwards"
@@ -999,6 +1010,9 @@ msgid "RGB weighted average"
 msgstr ""
 
 msgid "RGB flatten factor"
+msgstr ""
+
+msgid "Target colors (0=no limit)"
 msgstr ""
 
 msgid "Create palette"
