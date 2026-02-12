@@ -4,6 +4,7 @@
 
 #include "voxedit-util/SceneManager.h"
 #include "AbstractSceneManagerTest.h"
+#include "image/Image.h"
 #include "io/FilesystemArchive.h"
 #include "math/tests/TestMathHelper.h"
 #include "palette/Palette.h"
@@ -842,7 +843,8 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	// Test force parameter by calling twice with same mouse position
 	sm->setMousePos(300, 300);
 	EXPECT_TRUE(sm->testMouseRayTrace(false, invModel));
-	EXPECT_FALSE(sm->testMouseRayTrace(false, invModel)) << "Without force, should not re-execute if mouse hasn't moved";
+	EXPECT_FALSE(sm->testMouseRayTrace(false, invModel))
+		<< "Without force, should not re-execute if mouse hasn't moved";
 	EXPECT_TRUE(sm->testMouseRayTrace(true, invModel)) << "Force should always re-execute";
 
 	// Test different mouse positions
@@ -928,6 +930,217 @@ TEST_F(SceneManagerTest, testNodeTransformMirror) {
 
 	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
 	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(10.0f, 20.0f, -30.0f), 0.001f);
+}
+
+TEST_F(SceneManagerTest, testLoadPalette) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const palette::Palette &paletteBefore = _sceneMgr->sceneGraph().node(nodeId).palette();
+	const int colorCountBefore = (int)paletteBefore.size();
+	EXPECT_GT(colorCountBefore, 0);
+	EXPECT_TRUE(_sceneMgr->loadPalette("built-in:nippon", false, false));
+	const palette::Palette &paletteAfter = _sceneMgr->sceneGraph().node(nodeId).palette();
+	EXPECT_GT((int)paletteAfter.size(), 0);
+}
+
+TEST_F(SceneManagerTest, testImportPalette) {
+	EXPECT_TRUE(_sceneMgr->importPalette("rgb_small.vox", true, false));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const palette::Palette &palette = _sceneMgr->sceneGraph().node(nodeId).palette();
+	EXPECT_GT((int)palette.size(), 0);
+}
+
+TEST_F(SceneManagerTest, testCalculateNormals) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "normals_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(glm::ivec3(2, 2, 2), 1));
+	ASSERT_TRUE(testSetVoxel(glm::ivec3(3, 2, 2), 1));
+	ASSERT_TRUE(testSetVoxel(glm::ivec3(2, 3, 2), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	// check that no normal is set yet
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			for (int z = 0; z <= 5; ++z) {
+				EXPECT_EQ(v->voxel(x, y, z).getNormal(), NO_NORMAL)
+					<< "Expected no normal for voxel at (" << x << ", " << y << ", " << z << ")";
+			}
+		}
+	}
+	EXPECT_TRUE(_sceneMgr->calculateNormals(nodeId, voxel::SixConnected));
+	// check that normals are set for the voxels we placed
+	EXPECT_NE(v->voxel(glm::ivec3(2, 2, 2)).getNormal(), NO_NORMAL);
+	EXPECT_NE(v->voxel(glm::ivec3(3, 2, 2)).getNormal(), NO_NORMAL);
+	EXPECT_NE(v->voxel(glm::ivec3(2, 3, 2)).getNormal(), NO_NORMAL);
+}
+
+TEST_F(SceneManagerTest, testSaveNode) {
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const core::String file = "test-savenode.vengi";
+	EXPECT_TRUE(sceneMgr()->testSaveNode(nodeId, file));
+}
+
+TEST_F(SceneManagerTest, testFillHollow) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "fillhollow_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+
+	// create a hollow cube shell
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			for (int z = 0; z <= 5; ++z) {
+				if (x == 0 || x == 5 || y == 0 || y == 5 || z == 0 || z == 5) {
+					v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+				}
+			}
+		}
+	}
+
+	const int voxelsBefore = voxelutil::countVoxels(*v);
+	sceneMgr()->testFillHollow();
+	const int voxelsAfter = voxelutil::countVoxels(*v);
+	EXPECT_GT(voxelsAfter, voxelsBefore) << "fillHollow should have filled the interior";
+}
+
+TEST_F(SceneManagerTest, testFill) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "fill_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	EXPECT_EQ(0, voxelutil::countVoxels(*v));
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	modifier.setModifierType(ModifierType::Override);
+	sceneMgr()->testFill();
+	const int voxelsAfter = voxelutil::countVoxels(*v);
+	const int expectedVoxels = region.getWidthInVoxels() * region.getHeightInVoxels() * region.getDepthInVoxels();
+	EXPECT_EQ(expectedVoxels, voxelsAfter);
+}
+
+TEST_F(SceneManagerTest, testClear) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	EXPECT_GT(voxelutil::countVoxels(*v), 0);
+
+	sceneMgr()->testClear();
+	EXPECT_EQ(0, voxelutil::countVoxels(*v));
+}
+
+TEST_F(SceneManagerTest, testHollow) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "hollow_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// fill the entire volume with voxels (solid cube)
+	for (int x = 0; x <= 5; ++x) {
+		for (int y = 0; y <= 5; ++y) {
+			for (int z = 0; z <= 5; ++z) {
+				v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	const int voxelsBefore = voxelutil::countVoxels(*v);
+	sceneMgr()->testHollow();
+	const int voxelsAfter = voxelutil::countVoxels(*v);
+	EXPECT_LT(voxelsAfter, voxelsBefore) << "hollow should have removed interior voxels";
+}
+
+TEST_F(SceneManagerTest, testFillPlane) {
+	const voxel::Region region{0, 5};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "fillplane_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// place a seed voxel that fillPlane will start from
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	EXPECT_EQ(1, voxelutil::countVoxels(*v));
+
+	// create a small image for the fill plane operation
+	image::ImagePtr img = image::createEmptyImage("fillplane");
+	const uint8_t rgba[] = {255, 0, 0, 255};
+	ASSERT_TRUE(img->loadRGBA(rgba, 1, 1));
+
+	// set cursor position and face for the fill plane operation
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::PositiveY);
+	_sceneMgr->fillPlane(img);
+}
+
+TEST_F(SceneManagerTest, testNodeUpdateVoxelType) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	const voxel::Voxel &before = v->voxel(testMins());
+	EXPECT_EQ(voxel::VoxelType::Generic, before.getMaterial());
+
+	_sceneMgr->nodeUpdateVoxelType(nodeId, 1, voxel::VoxelType::Transparent);
+	const voxel::Voxel &after = v->voxel(testMins());
+	EXPECT_EQ(voxel::VoxelType::Transparent, after.getMaterial());
+}
+
+TEST_F(SceneManagerTest, testSaveModels) {
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelChild("second node", 1, 1, 1));
+	EXPECT_TRUE(sceneMgr()->testSaveModels("."));
+}
+
+TEST_F(SceneManagerTest, testImport) {
+	const size_t nodesBefore = _sceneMgr->sceneGraph().size();
+	EXPECT_TRUE(_sceneMgr->import("rgb_small.vox"));
+	const size_t nodesAfter = _sceneMgr->sceneGraph().size();
+	EXPECT_GT(nodesAfter, nodesBefore) << "Import should have added at least one model node";
+}
+
+TEST_F(SceneManagerTest, testSplitNodes) {
+	const voxel::Region region{0, 9};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "split_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// place two disconnected voxel groups
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v->setVoxel(9, 9, 9, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	const size_t nodesBefore = _sceneMgr->sceneGraph().size();
+	sceneMgr()->testSplitObjects(nodeId);
+	const size_t nodesAfter = _sceneMgr->sceneGraph().size();
+	EXPECT_GT(nodesAfter, nodesBefore) << "Split should have created additional nodes";
+}
+
+TEST_F(SceneManagerTest, testFlip) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "flip_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// place a voxel at one corner with a specific color
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	EXPECT_FALSE(voxel::isAir(v->voxel(0, 0, 0).getMaterial()));
+
+	sceneMgr()->testFlip(math::Axis::X);
+
+	// after flip on X axis, get the new volume (flip replaces the volume)
+	v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	const int voxelCount = voxelutil::countVoxels(*v);
+	EXPECT_EQ(1, voxelCount) << "Flip should preserve the voxel count";
 }
 
 } // namespace voxedit

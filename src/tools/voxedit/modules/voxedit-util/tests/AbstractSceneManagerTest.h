@@ -41,6 +41,38 @@ public:
 	bool testMouseRayTrace(bool force, const glm::mat4 &invModel) {
 		return mouseRayTrace(force, invModel);
 	}
+
+	void testFillHollow() {
+		fillHollow();
+	}
+
+	void testHollow() {
+		hollow();
+	}
+
+	void testFill() {
+		fill();
+	}
+
+	void testClear() {
+		clear();
+	}
+
+	void testFlip(math::Axis axis) {
+		flip(axis);
+	}
+
+	bool testSaveNode(int nodeId, const core::String &file) {
+		return saveNode(nodeId, file);
+	}
+
+	bool testSaveModels(const core::String &dir) {
+		return saveModels(dir);
+	}
+
+	void testSplitObjects(int nodeId) {
+		splitObjects(nodeId);
+	}
 };
 
 class AbstractSceneManagerTest : public app::AbstractTest {
