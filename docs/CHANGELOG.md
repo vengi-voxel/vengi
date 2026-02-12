@@ -15,10 +15,12 @@ General:
    - Increased `vengi` binary file version
    - Added openstreetmap `osm.json` format support
    - Allow to specify the target colors in a palette for voxelization and other RGB based formats (`voxformat_targetcolors`)
+   - Fixed `voxformat_voxelizemode` `1` missing voxels
 
 VoxEdit:
 
    - Added IKConstraint editing and inverse kinematic solver
+   - Fixed scroll to active node in scene graph panel
 
 ## 0.4.0 (2026-02-08)
 
