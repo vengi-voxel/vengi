@@ -44,10 +44,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST,
 				   _("Extra vertices for ambient occlusion"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatRGBFlattenFactor, "0", core::CV_NOPERSIST,
-				   _("The RGB color flatten factor for importing color and mesh formats"), [](const core::String &var) {
-					   const int type = var.toInt();
-					   return type >= 0 && type <= 255;
-				   });
+				   _("The RGB color flatten factor for importing color and mesh formats"), core::Var::minMaxValidator<0, 255>);
 	core::Var::get(cfg::VoxformatTargetColors, "0", core::CV_NOPERSIST,
 				   _("Target number of colors after voxelization (0 = no limit, otherwise quantize to this amount)"),
 				   core::Var::minMaxValidator<0, 256>);

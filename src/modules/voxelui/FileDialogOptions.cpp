@@ -361,7 +361,6 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 	}
 
 	ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
-	ImGui::InputVarInt(_("Target colors (0=no limit)"), cfg::VoxformatTargetColors);
 }
 
 static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
@@ -369,6 +368,7 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 	if (voxelformat::isRGBFormat(*desc) || voxelformat::isMeshFormat(*desc)) {
 		imguiApp()->colorReductionOptions();
 		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
+		ImGui::InputVarInt(_("Target colors (0=no limit)"), cfg::VoxformatTargetColors);
 	}
 	const core::VarPtr &createPalette = core::Var::getSafe(cfg::VoxelCreatePalette);
 	ImGui::CheckboxVar(_("Create palette"), createPalette);
