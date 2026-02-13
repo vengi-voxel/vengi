@@ -114,7 +114,7 @@ void AbstractFormatTest::testTransform(scenegraph::SceneGraph &sceneGraph, const
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
 		<< "Failed to load " << filename.c_str();
-	EXPECT_EQ(20u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
+	EXPECT_EQ(20u, sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels)) << "Unexpected scene graph size for " << filename.c_str();
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
 	EXPECT_EQ("original", node->name());

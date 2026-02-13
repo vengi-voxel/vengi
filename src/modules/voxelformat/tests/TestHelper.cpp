@@ -425,8 +425,8 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		return;
 	}
 	ASSERT_EQ(graph1.size(scenegraph::SceneGraphNodeType::AllModels), graph2.size(scenegraph::SceneGraphNodeType::AllModels));
-	auto iter1 = graph1.beginModel();
-	auto iter2 = graph2.beginModel();
+	auto iter1 = graph1.beginAllModels();
+	auto iter2 = graph2.beginAllModels();
 	for (; iter1 != graph1.end() && iter2 != graph2.end(); ++iter1, ++iter2) {
 		const scenegraph::SceneGraphNode &node1 = *iter1;
 		const scenegraph::SceneGraphNode &node2 = *iter2;
@@ -440,7 +440,12 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 			voxel::orderPaletteComparator(node1.palette(), node2.palette(), maxDelta);
 		}
 		// it's intended that includingRegion is false here!
-		volumeComparator(*node1.volume(), node1.palette(), *node2.volume(), node2.palette(), flags, maxDelta);
+		// Use resolveVolume to handle ModelReference nodes that don't have their own volume
+		const voxel::RawVolume *v1 = graph1.resolveVolume(node1);
+		const voxel::RawVolume *v2 = graph2.resolveVolume(node2);
+		ASSERT_NE(nullptr, v1) << "Failed to resolve volume for node " << node1.name();
+		ASSERT_NE(nullptr, v2) << "Failed to resolve volume for node " << node2.name();
+		volumeComparator(*v1, node1.palette(), *v2, node2.palette(), flags, maxDelta);
 		if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
 			EXPECT_VEC_NEAR(node1.pivot(), node2.pivot(), 0.0001f) << "Pivot failed";
 		}

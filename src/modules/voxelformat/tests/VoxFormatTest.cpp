@@ -174,7 +174,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	io::ArchivePtr archive = helper_archive();
 	ASSERT_TRUE(f.save(sceneGraphsave, name, archive, testSaveCtx));
 	f.load(name, archive, sceneGraph, testLoadCtx);
-	EXPECT_EQ(3, (int)sceneGraph.size());
+	EXPECT_EQ(3, (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels));
 }
 
 TEST_F(VoxFormatTest, testSave) {
