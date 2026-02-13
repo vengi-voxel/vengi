@@ -12,6 +12,7 @@
 # General
 
 - when touching code, ensure that a test is written for it - if not, write one to test the change - and execute that test
+- all vengi tools understand the `--help` parameter to print the usage for command line parameters
 
 # Logging
 
@@ -24,3 +25,7 @@
 # LUA Scripts
 
 - more details on the lua scripts and the api can be found here: `docs/LUAScript.md` - if you are extending or modifying the api, make sure to also keep the documentation in sync.
+
+# Scenegraph
+
+- to get scenegraph details you can use `vengi-voxconvert --json --input thefile.ext`
