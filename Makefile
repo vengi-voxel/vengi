@@ -301,3 +301,17 @@ find-undocumented-cvars:
 		grep -q $$i docs/Configuration.md; \
 		if [ $$? -ne 0 ]; then echo $$i; fi; \
 	done
+
+.PHONY: coverage
+coverage:
+	$(Q)$(MAKE) CMAKE_OPTIONS="-DUSE_COVERAGE=1" BUILDDIR=coverage
+	$(Q)cd coverage && ctest -V -C $(BUILDTYPE) || true
+	$(Q)lcov --capture --directory coverage --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)lcov --remove coverage/coverage.info '/usr/*' --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)lcov --remove coverage/coverage.info '*/contrib/libs/*' --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)lcov --remove coverage/coverage.info '*/external/*' --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)lcov --remove coverage/coverage.info '*/generated/*' --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)lcov --remove coverage/coverage.info '*/third_party/*' --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)lcov --remove coverage/coverage.info '*/tests/*' --output-file coverage/coverage.info --ignore-errors inconsistent,unused
+	$(Q)genhtml coverage/coverage.info --output-directory coverage/out
+	$(Q)xdg-open coverage/out/index.html
