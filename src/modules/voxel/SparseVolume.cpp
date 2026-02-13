@@ -91,19 +91,21 @@ bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 
 	// Set voxel path - use cached chunk if available
 	ChunkPtr chunkPtr;
-	if (_cachedChunkPosition == chunkPos && _cachedChunkPtr) {
-		chunkPtr = _cachedChunkPtr;
-	} else {
+	{
 		core::ScopedLock mapLock(_chunkLock);
-		const auto iter = _chunks.find(chunkPos);
-		if (iter != _chunks.end()) {
-			chunkPtr = iter->value;
+		if (_cachedChunkPosition == chunkPos && _cachedChunkPtr) {
+			chunkPtr = _cachedChunkPtr;
 		} else {
-			chunkPtr = core::make_shared<Chunk>();
-			_chunks.put(chunkPos, chunkPtr);
+			const auto iter = _chunks.find(chunkPos);
+			if (iter != _chunks.end()) {
+				chunkPtr = iter->value;
+			} else {
+				chunkPtr = core::make_shared<Chunk>();
+				_chunks.put(chunkPos, chunkPtr);
+			}
+			_cachedChunkPtr = chunkPtr;
+			_cachedChunkPosition = chunkPos;
 		}
-		_cachedChunkPtr = chunkPtr;
-		_cachedChunkPosition = chunkPos;
 	}
 	Chunk *chunk = chunkPtr.get();
 
@@ -145,19 +147,21 @@ void SparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &vox
 
 		// Get or create chunk
 		ChunkPtr chunkPtr;
-		if (_cachedChunkPosition == chunkPos && _cachedChunkPtr) {
-			chunkPtr = _cachedChunkPtr;
-		} else {
+		{
 			core::ScopedLock mapLock(_chunkLock);
-			const auto iter = _chunks.find(chunkPos);
-			if (iter != _chunks.end()) {
-				chunkPtr = iter->value;
+			if (_cachedChunkPosition == chunkPos && _cachedChunkPtr) {
+				chunkPtr = _cachedChunkPtr;
 			} else {
-				chunkPtr = core::make_shared<Chunk>();
-				_chunks.put(chunkPos, chunkPtr);
+				const auto iter = _chunks.find(chunkPos);
+				if (iter != _chunks.end()) {
+					chunkPtr = iter->value;
+				} else {
+					chunkPtr = core::make_shared<Chunk>();
+					_chunks.put(chunkPos, chunkPtr);
+				}
+				_cachedChunkPtr = chunkPtr;
+				_cachedChunkPosition = chunkPos;
 			}
-			_cachedChunkPtr = chunkPtr;
-			_cachedChunkPosition = chunkPos;
 		}
 
 		Chunk *chunk = chunkPtr.get();
