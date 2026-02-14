@@ -421,7 +421,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 		node.setPalette(pal);
 		modelNodeId = sceneGraphsave.emplace(core::move(node));
 	}
-	if (!format->singleVolume()) {
+	if (format->supportsReferences()) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::ModelReference);
 		node.setReference(modelNodeId);
 		node.setPalette(pal);

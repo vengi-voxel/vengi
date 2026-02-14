@@ -227,6 +227,48 @@ core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, i
 	return nodesAdded;
 }
 
+static int copySceneGraphNodeResolveRef_r(SceneGraph &target, const SceneGraph &source,
+										  const SceneGraphNode &sourceNode, int parent) {
+	SceneGraphNodeType type = sourceNode.type();
+	if (type == SceneGraphNodeType::ModelReference) {
+		type = SceneGraphNodeType::Model;
+	}
+	SceneGraphNode newNode(type);
+	copy(sourceNode, newNode);
+	if (type == SceneGraphNodeType::Model) {
+		const voxel::RawVolume *vol = source.resolveVolume(sourceNode);
+		if (vol) {
+			newNode.setVolume(new voxel::RawVolume(*vol), true);
+		}
+	}
+	const int newNodeId = addToGraph(target, core::move(newNode), parent);
+	if (newNodeId == InvalidNodeId) {
+		Log::error("Failed to add node to the scene graph");
+		return InvalidNodeId;
+	}
+
+	for (int sourceNodeIdx : sourceNode.children()) {
+		core_assert(source.hasNode(sourceNodeIdx));
+		const SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
+		copySceneGraphNodeResolveRef_r(target, source, sourceChildNode, newNodeId);
+	}
+
+	return newNodeId;
+}
+
+void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &source, int parent) {
+	const SceneGraphNode &sourceRoot = source.root();
+
+	for (const core::String &animation : source.animations()) {
+		target.addAnimation(animation);
+	}
+
+	target.node(parent).addProperties(sourceRoot.properties());
+	for (int sourceNodeId : sourceRoot.children()) {
+		copySceneGraphNodeResolveRef_r(target, source, source.node(sourceNodeId), parent);
+	}
+}
+
 static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeId, int destParentId,
 						   core::DynamicMap<int, core::Buffer<int>> &splitMap,
 						   bool crop, bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {

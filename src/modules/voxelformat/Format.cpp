@@ -160,6 +160,10 @@ bool Format::singleVolume() const {
 	return core::Var::getSafe(cfg::VoxformatMerge)->boolVal();
 }
 
+bool Format::supportsReferences() const {
+	return false;
+}
+
 bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
 				  const SaveContext &ctx) {
 	bool needsSplit = false;
@@ -219,6 +223,14 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		}
 		return saveGroups(newSceneGraph, filename, archive, ctx);
 	}
+
+	if (!supportsReferences() && sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference) > 0) {
+		Log::debug("Resolve model references before saving as the target format doesn't support them");
+		scenegraph::SceneGraph resolvedSceneGraph;
+		scenegraph::copySceneGraphResolveReferences(resolvedSceneGraph, sceneGraph);
+		return saveGroups(resolvedSceneGraph, filename, archive, ctx);
+	}
+
 	return saveGroups(sceneGraph, filename, archive, ctx);
 }
 

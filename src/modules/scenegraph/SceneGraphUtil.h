@@ -27,6 +27,14 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent, const
 core::Buffer<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
 
 /**
+ * @brief Copy the scene graph but resolve model references into actual model nodes
+ *
+ * Model reference nodes are converted to model nodes with a copy of the referenced volume.
+ * This is useful for saving to formats that don't support model references.
+ */
+void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &source, int parent = 0);
+
+/**
  * @param[in] parent The parent node id - if @c -1 it will use the node parent id
  */
 int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent = -1);

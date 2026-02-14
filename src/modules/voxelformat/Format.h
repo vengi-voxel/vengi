@@ -168,6 +168,16 @@ public:
 	virtual bool singleVolume() const;
 
 	/**
+	 * @brief Whether the format supports saving and restoring model references with their transforms.
+	 *
+	 * If this returns @c false and the scene graph contains model references, the @c save() method will resolve
+	 * the references into actual model nodes before calling @c saveGroups().
+	 *
+	 * Formats that natively handle references (e.g., VENGI) should override this to return @c true.
+	 */
+	virtual bool supportsReferences() const;
+
+	/**
 	 * Some formats have embedded screenshots of the model. This method doesn't load anything else than that image.
 	 * @note Not supported by many formats.
 	 * @todo don't use a stream, but an archive for formats that are split over several files

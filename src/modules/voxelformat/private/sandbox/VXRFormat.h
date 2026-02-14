@@ -53,6 +53,9 @@ private:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
 public:
+	bool supportsReferences() const override {
+		return true;
+	}
 	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
 
