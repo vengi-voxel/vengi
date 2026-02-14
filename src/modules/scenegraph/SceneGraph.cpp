@@ -133,6 +133,9 @@ bool SceneGraph::setAnimation(const core::String &animation) {
 	}
 	invalidateFrameTransformCache(InvalidNodeId);
 	markMaxFramesDirty();
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onAnimationChanged(animation);
+	}
 	return true;
 }
 

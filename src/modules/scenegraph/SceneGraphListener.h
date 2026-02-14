@@ -20,6 +20,8 @@ public:
 	}
 	virtual void onAnimationRemoved(const core::String &name) {
 	}
+	virtual void onAnimationChanged(const core::String &name) {
+	}
 	virtual void onNodeChangedParent(int nodeId) {
 	}
 	virtual void onNodesAligned() {
