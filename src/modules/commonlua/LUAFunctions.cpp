@@ -20,6 +20,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/ext/quaternion_trigonometric.hpp>
+#include <glm/ext/quaternion_common.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/geometric.hpp>
 
 int clua_errorhandler(lua_State* s) {
 	Log::error("Lua error handler invoked");
@@ -699,36 +702,29 @@ static glm::quat rotateY(float angle) {
 	return glm::angleAxis(angle, glm::up());
 }
 
-static constexpr glm::quat rotateXZ(float angleX, float angleZ) {
-	return glm::quat(glm::vec3(angleX, 0.0f, angleZ));
-}
-
-static constexpr glm::quat rotateXY(float angleX, float angleY) {
-	return glm::quat(glm::vec3(angleX, angleY, 0.0f));
-}
-
 static int clua_quat_rotate_xyz(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
-	const float z = lua_tonumber(s, 2);
-	return clua_push(s, rotateXZ(x, z));
+	const float y = lua_tonumber(s, 2);
+	const float z = lua_tonumber(s, 3);
+	return clua_push(s, glm::quat(glm::vec3(x, y, z)));
 }
 
 static int clua_quat_rotate_xy(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float y = lua_tonumber(s, 2);
-	return clua_push(s, rotateXY(x, y));
+	return clua_push(s, glm::quat(glm::vec3(x, y, 0.0f)));
 }
 
 static int clua_quat_rotate_yz(lua_State* s) {
 	const float y = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
-	return clua_push(s, rotateXY(y, z));
+	return clua_push(s, glm::quat(glm::vec3(0.0f, y, z)));
 }
 
 static int clua_quat_rotate_xz(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
-	return clua_push(s, rotateXY(x, z));
+	return clua_push(s, glm::quat(glm::vec3(x, 0.0f, z)));
 }
 
 static int clua_quat_rotate_x(lua_State* s) {
@@ -756,6 +752,24 @@ static int clua_quatmul(lua_State* s) {
 	const glm::quat& b = clua_toquat(s, 2);
 	const glm::quat& c = a * b;
 	return clua_push(s, c);
+}
+
+static int clua_quat_slerp(lua_State* s) {
+	const glm::quat& a = clua_toquat(s, 1);
+	const glm::quat& b = clua_toquat(s, 2);
+	const float t = lua_tonumber(s, 3);
+	return clua_push(s, glm::slerp(a, b, t));
+}
+
+static int clua_quat_conjugate(lua_State* s) {
+	const glm::quat& q = clua_toquat(s, 1);
+	return clua_push(s, glm::conjugate(q));
+}
+
+static int clua_quat_fromaxisangle(lua_State* s) {
+	const glm::vec3 axis = clua_tovec<glm::vec3>(s, 1);
+	const float angle = lua_tonumber(s, 2);
+	return clua_push(s, glm::angleAxis(angle, glm::normalize(axis)));
 }
 
 static int clua_quatindex(lua_State *s) {
@@ -799,9 +813,10 @@ static int clua_quat_new_jsonhelp(lua_State *s) {
 static int clua_quat_rotatexyz_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateXYZ",
-		"summary": "Create a quaternion rotation around X and Z axes.",
+		"summary": "Create a quaternion rotation around X, Y, and Z axes.",
 		"parameters": [
 			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
+			{"name": "y", "type": "number", "description": "Rotation angle around Y axis in radians."},
 			{"name": "z", "type": "number", "description": "Rotation angle around Z axis in radians."}
 		],
 		"returns": [
@@ -891,6 +906,48 @@ static int clua_quat_rotatez_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+static int clua_quat_slerp_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "slerp",
+		"summary": "Spherical linear interpolation between two quaternions.",
+		"parameters": [
+			{"name": "a", "type": "quat", "description": "The start quaternion."},
+			{"name": "b", "type": "quat", "description": "The end quaternion."},
+			{"name": "t", "type": "number", "description": "Interpolation factor (0.0 to 1.0)."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The interpolated quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_conjugate_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "conjugate",
+		"summary": "Get the conjugate (inverse rotation) of a quaternion.",
+		"parameters": [
+			{"name": "q", "type": "quat", "description": "The quaternion."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The conjugated quaternion."}
+		]})");
+	return 1;
+}
+
+static int clua_quat_fromaxisangle_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "fromAxisAngle",
+		"summary": "Create a quaternion from an axis and an angle.",
+		"parameters": [
+			{"name": "axis", "type": "vec3", "description": "The rotation axis (will be normalized)."},
+			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
+		],
+		"returns": [
+			{"type": "quat", "description": "The rotation quaternion."}
+		]})");
+	return 1;
+}
+
 void clua_quatregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
 		{"__mul", clua_quatmul},
@@ -908,6 +965,9 @@ void clua_quatregister(lua_State* s) {
 		{"rotateX",      clua_quat_rotate_x, clua_quat_rotatex_jsonhelp},
 		{"rotateY",      clua_quat_rotate_y, clua_quat_rotatey_jsonhelp},
 		{"rotateZ",      clua_quat_rotate_z, clua_quat_rotatez_jsonhelp},
+		{"slerp",        clua_quat_slerp, clua_quat_slerp_jsonhelp},
+		{"conjugate",    clua_quat_conjugate, clua_quat_conjugate_jsonhelp},
+		{"fromAxisAngle", clua_quat_fromaxisangle, clua_quat_fromaxisangle_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	const core::String& globalMeta = core::String::format("%s_global", clua_meta<glm::quat>::name());
