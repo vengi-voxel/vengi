@@ -1529,7 +1529,7 @@ static int luaVoxel_scenegraphnode_removekeyframeforframe(lua_State* s) {
 static int luaVoxel_scenegraphnode_removekeyframe(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	scenegraph::KeyFrameIndex keyFrameIdx = (scenegraph::KeyFrameIndex)luaL_checkinteger(s, 2);
-	if (!node->node->removeKeyFrame(keyFrameIdx)) {
+	if (!node->node->removeKeyFrameByIndex(keyFrameIdx)) {
 		return clua_error(s, "Failed to remove keyframe %d", keyFrameIdx);
 	}
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
