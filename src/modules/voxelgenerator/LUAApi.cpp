@@ -1377,6 +1377,17 @@ static int luaVoxel_scenegraph_activeanimation(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraph_animations(lua_State* s) {
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
+	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph->animations();
+	lua_newtable(s);
+	for (size_t i = 0; i < animations.size(); ++i) {
+		lua_pushstring(s, animations[i].c_str());
+		lua_rawseti(s, -2, (int)i + 1);
+	}
+	return 1;
+}
+
 static int luaVoxel_scenegraph_duplicateanimation(lua_State* s) {
 	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	const char *animation = luaL_checkstring(s, 1);
@@ -1740,6 +1751,42 @@ static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
 	node->node->setPivot(val);
 	return 0;
+}
+
+static int luaVoxel_scenegraphnode_pivot(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	return clua_push(s, node->node->pivot());
+}
+
+static int luaVoxel_scenegraphnode_numkeyframes(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const scenegraph::SceneGraphKeyFrames *keyFrames = node->node->keyFrames();
+	if (keyFrames == nullptr) {
+		lua_pushinteger(s, 0);
+	} else {
+		lua_pushinteger(s, (int)keyFrames->size());
+	}
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_children(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const auto &children = node->node->children();
+	lua_newtable(s);
+	for (size_t i = 0; i < children.size(); ++i) {
+		lua_pushinteger(s, children[i]);
+		lua_rawseti(s, -2, (int)i + 1);
+	}
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_region(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	if (!node->node->isAnyModelNode()) {
+		return clua_error(s, "Node is not a model node");
+	}
+	const voxel::Region &region = node->node->region();
+	return luaVoxel_pushregion(s, region);
 }
 
 static int luaVoxel_scenegraphnode_hide(lua_State* s) {
@@ -2862,6 +2909,18 @@ static int luaVoxel_scenegraph_activeanimation_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraph_animations_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "animations",
+		"summary": "Get all animation names.",
+		"parameters": [],
+		"returns": [
+			{"type": "table", "description": "A table of animation names."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_name_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "name",
@@ -3039,6 +3098,54 @@ static int luaVoxel_scenegraphnode_setpivot_jsonhelp(lua_State* s) {
 			{"name": "pivot", "type": "vec3", "description": "The new pivot point."}
 		],
 		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_pivot_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "pivot",
+		"summary": "Get the normalized pivot point of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "vec3", "description": "The pivot point (normalized 0-1 range)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_numkeyframes_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "numKeyFrames",
+		"summary": "Get the number of keyframes for the current animation.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The number of keyframes."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_children_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "children",
+		"summary": "Get the child node IDs.",
+		"parameters": [],
+		"returns": [
+			{"type": "table", "description": "A table of child node IDs."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_region_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "region",
+		"summary": "Get the region of the model node.",
+		"parameters": [],
+		"returns": [
+			{"type": "region", "description": "The node's region."}
+		]})";
 	lua_pushstring(s, json);
 	return 1;
 }
@@ -3589,6 +3696,7 @@ static void prepareState(lua_State* s) {
 		{"duplicateAnimation", luaVoxel_scenegraph_duplicateanimation, luaVoxel_scenegraph_duplicateanimation_jsonhelp},
 		{"hasAnimation", luaVoxel_scenegraph_hasanimation, luaVoxel_scenegraph_hasanimation_jsonhelp},
 		{"activeAnimation", luaVoxel_scenegraph_activeanimation, luaVoxel_scenegraph_activeanimation_jsonhelp},
+		{"animations", luaVoxel_scenegraph_animations, luaVoxel_scenegraph_animations_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "g_scenegraph");
@@ -3609,6 +3717,10 @@ static void prepareState(lua_State* s) {
 		{"setName", luaVoxel_scenegraphnode_setname, luaVoxel_scenegraphnode_setname_jsonhelp},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette, luaVoxel_scenegraphnode_setpalette_jsonhelp},
 		{"setPivot", luaVoxel_scenegraphnode_setpivot, luaVoxel_scenegraphnode_setpivot_jsonhelp},
+		{"pivot", luaVoxel_scenegraphnode_pivot, luaVoxel_scenegraphnode_pivot_jsonhelp},
+		{"numKeyFrames", luaVoxel_scenegraphnode_numkeyframes, luaVoxel_scenegraphnode_numkeyframes_jsonhelp},
+		{"children", luaVoxel_scenegraphnode_children, luaVoxel_scenegraphnode_children_jsonhelp},
+		{"region", luaVoxel_scenegraphnode_region, luaVoxel_scenegraphnode_region_jsonhelp},
 		{"hide", luaVoxel_scenegraphnode_hide, luaVoxel_scenegraphnode_hide_jsonhelp},
 		{"show", luaVoxel_scenegraphnode_show, luaVoxel_scenegraphnode_show_jsonhelp},
 		{"lock", luaVoxel_scenegraphnode_lock, luaVoxel_scenegraphnode_lock_jsonhelp},
