@@ -230,6 +230,118 @@ TEST_F(LUAApiTest, testKeyFrames) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testNodePivot) {
+	const core::String script = R"(
+		function main(node, region, color)
+			node:setPivot(0.5, 0.5, 0.5)
+			local p = node:pivot()
+			if math.abs(p.x - 0.5) > 0.001 then error('pivot x') end
+			if math.abs(p.y - 0.5) > 0.001 then error('pivot y') end
+			if math.abs(p.z - 0.5) > 0.001 then error('pivot z') end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testNodeNumKeyFrames) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local n = node:numKeyFrames()
+			if n ~= 1 then error('expected 1 keyframe, got ' .. n) end
+			node:addKeyFrame(10)
+			n = node:numKeyFrames()
+			if n ~= 2 then error('expected 2 keyframes, got ' .. n) end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testNodeChildren) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local children = node:children()
+			-- belt node has head as child (see test setup)
+			if #children ~= 1 then error('expected 1 child, got ' .. #children) end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testNodeRegion) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local r = node:region()
+			if r:width() ~= 8 then error('expected width 8, got ' .. r:width()) end
+			if r:height() ~= 8 then error('expected height 8, got ' .. r:height()) end
+			if r:depth() ~= 8 then error('expected depth 8, got ' .. r:depth()) end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testSceneGraphAnimations) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local anims = g_scenegraph.animations()
+			if #anims < 1 then error('expected at least 1 animation') end
+			g_scenegraph.addAnimation("extra")
+			anims = g_scenegraph.animations()
+			local found = false
+			for _, name in ipairs(anims) do
+				if name == "extra" then found = true end
+			end
+			if not found then error('animation extra not found') end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testQuatSlerp) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local a = g_quat.new()
+			local b = g_quat.rotateX(1.0)
+			local mid = g_quat.slerp(a, b, 0.5)
+			if mid.w == nil then error('slerp failed') end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testQuatConjugate) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local q = g_quat.rotateY(1.0)
+			local c = g_quat.conjugate(q)
+			-- conjugate negates xyz, keeps w
+			if math.abs(c.w - q.w) > 0.001 then error('conjugate w differs') end
+			if math.abs(c.y + q.y) > 0.001 then error('conjugate y not negated') end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testQuatFromAxisAngle) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local axis = g_ivec3.new(0, 1, 0)
+			local q = g_quat.fromAxisAngle(axis, math.pi / 2.0)
+			if q.w == nil then error('fromAxisAngle failed') end
+			-- 90 degree rotation around Y: w should be ~0.707
+			if math.abs(q.w - 0.707) > 0.01 then error('unexpected w: ' .. q.w) end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testSceneGraphNewNode) {
 	const core::String script = R"(
 		function main(node, region, color)
