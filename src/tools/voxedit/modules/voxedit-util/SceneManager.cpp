@@ -3410,7 +3410,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 
 bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
 	nodeSetPivot(node, pivot);
-	_sceneGraph.updateTransforms();
+	_sceneGraph.updateTransforms(_transformUpdateChildren->boolVal());
 	markDirty();
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	return true;

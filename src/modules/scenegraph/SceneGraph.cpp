@@ -574,15 +574,15 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 	return transform;
 }
 
-bool SceneGraph::updateTransforms_r(SceneGraphNode &n) {
+bool SceneGraph::updateTransforms_r(SceneGraphNode &n, bool updateChildren) {
 	bool changed = false;
 	for (SceneGraphKeyFrame &keyframe : *n.keyFrames()) {
-		if (keyframe.transform().update(*this, n, keyframe.frameIdx, true)) {
+		if (keyframe.transform().update(*this, n, keyframe.frameIdx, updateChildren)) {
 			changed = true;
 		}
 	}
 	for (int childrenId : n.children()) {
-		changed |= updateTransforms_r(node(childrenId));
+		changed |= updateTransforms_r(node(childrenId), updateChildren);
 	}
 	return changed;
 }
@@ -612,12 +612,16 @@ bool SceneGraph::solveIK() {
 }
 
 void SceneGraph::updateTransforms() {
+	updateTransforms(true);
+}
+
+void SceneGraph::updateTransforms(bool updateChildren) {
 	core_trace_scoped(UpdateTransforms);
 	const core::String animId = _activeAnimation;
 	bool clearCache = false;
 	for (const core::String &animation : animations()) {
 		core_assert_always(setAnimation(animation));
-		clearCache |= updateTransforms_r(node(0));
+		clearCache |= updateTransforms_r(node(0), updateChildren);
 	}
 	core_assert_always(setAnimation(animId));
 	// Run the IK solver after all transforms are updated

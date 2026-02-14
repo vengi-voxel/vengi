@@ -66,7 +66,7 @@ protected:
 	mutable core_trace_mutex(core::Lock, _mutex, "FrameTransformCache");
 	mutable FrameTransformCache _frameTransformCache;
 
-	bool updateTransforms_r(SceneGraphNode &node);
+	bool updateTransforms_r(SceneGraphNode &node, bool updateChildren = true);
 	bool solveIK();
 	voxel::Region calcRegion() const;
 
@@ -183,6 +183,11 @@ public:
 	const core::String &activeAnimation() const;
 
 	void updateTransforms();
+	/**
+	 * @param updateChildren If @c false, children preserve their world position when a
+	 * parent transform changes - their local transform is adjusted instead.
+	 */
+	void updateTransforms(bool updateChildren);
 	void markMaxFramesDirty();
 
 	/**

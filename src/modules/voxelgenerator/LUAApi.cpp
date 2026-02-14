@@ -1749,7 +1749,12 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
-	node->node->setPivot(val);
+	const glm::vec3 oldPivot = node->node->pivot();
+	if (node->node->setPivot(val)) {
+		const glm::vec3 deltaPivot = val - oldPivot;
+		const glm::vec3 size = node->node->region().getDimensionsInVoxels();
+		node->node->localTranslate(deltaPivot * size);
+	}
 	return 0;
 }
 
