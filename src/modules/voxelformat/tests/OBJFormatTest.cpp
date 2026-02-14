@@ -21,12 +21,14 @@ TEST_F(OBJFormatTest, testVoxelize) {
 
 TEST_F(OBJFormatTest, testSaveChrKnight) {
 	OBJFormat format;
-	testSaveMesh("chr_knight.qbcl", "chr_knight.obj", &format);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::IgnoreHollow;
+	testSaveMesh("chr_knight.qbcl", "chr_knight.obj", &format, flags);
 }
 
 TEST_F(OBJFormatTest, testSaveCC) {
 	OBJFormat format;
-	testSaveMesh("cc.vxl", "cc.obj", &format);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::IgnoreHollow;
+	testSaveMesh("cc.vxl", "cc.obj", &format, flags);
 }
 
 // https://github.com/vengi-voxel/vengi/issues/393

@@ -80,7 +80,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filena
 }
 
 void AbstractFormatTest::testSaveMesh(const core::String &inputFile, const core::String &filename, Format *format,
-											   voxel::ValidateFlags flags) {
+												   voxel::ValidateFlags flags, float maxDelta) {
 	io::FileDescription fileDesc;
 	fileDesc.set(inputFile);
 	const io::ArchivePtr &archive = helper_filesystemarchive();
@@ -98,7 +98,7 @@ void AbstractFormatTest::testSaveMesh(const core::String &inputFile, const core:
 		scenegraph::SceneGraph sceneGraphLoad;
 		ASSERT_TRUE(format->load(modeFilename, archive, sceneGraphLoad, testLoadCtx))
 			<< "Could not load " << modeFilename.c_str();
-		// TODO: VOXELFORMAT: enable this: voxel::sceneGraphComparator(sceneGraph, sceneGraphLoad, flags, 0.001f);
+		voxel::sceneGraphComparator(sceneGraph, sceneGraphLoad, flags, maxDelta);
 	}
 }
 
