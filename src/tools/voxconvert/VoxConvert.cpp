@@ -64,8 +64,10 @@ VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProv
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
-	registerArg("--json").setDescription(
-		"Print the scene graph of the input file. Give full as argument to also get mesh details");
+	registerArg("--json")
+		.setDescription("Print the scene graph of the input file as json. Comma separated values to control the detail "
+						"level: default, all, palette, meshdetails, nodedetails, children, palettematerials")
+		.setDefaultValue("default");
 	registerArg("--image").setDescription("Print the scene graph of the input file as image to the console");
 	registerArg("--isometric").setDescription("Create an isometric thumbnail of the input file when --image is used");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
@@ -487,7 +489,34 @@ app::AppState VoxConvert::onInit() {
 	applyFilters(sceneGraph, infiles, outfiles);
 
 	if (_outputJson) {
-		const uint32_t jsonFlags = getArgVal("--json", "") == "full" ? scenegraph::JSONEXPORTER_ALL : (scenegraph::JSONEXPORTER_ALL & ~scenegraph::JSONEXPORTER_MESHDETAILS);
+		core::String jsonFlagsVal = getArgVal("--json", "default");
+		uint32_t jsonFlags = 0;
+		while (!jsonFlagsVal.empty()) {
+			size_t pos = jsonFlagsVal.find_first_of(',');
+			if (pos == core::String::npos) {
+				pos = jsonFlagsVal.size();
+			}
+			const core::String &flag = jsonFlagsVal.substr(0, pos);
+			if (flag == "default") {
+				jsonFlags |= scenegraph::JSONEXPORTER_ALL & ~scenegraph::JSONEXPORTER_MESHDETAILS;
+			} else if (flag == "all") {
+				jsonFlags |= scenegraph::JSONEXPORTER_ALL;
+			} else if (flag == "palette") {
+				jsonFlags |= scenegraph::JSONEXPORTER_PALETTE;
+			} else if (flag == "meshdetails") {
+				jsonFlags |= scenegraph::JSONEXPORTER_MESHDETAILS;
+			} else if (flag == "nodedetails") {
+				jsonFlags |= scenegraph::JSONEXPORTER_NODEDETAILS;
+			} else if (flag == "children") {
+				jsonFlags |= scenegraph::JSONEXPORTER_CHILDREN;
+			} else if (flag == "palettematerials") {
+				jsonFlags |= scenegraph::JSONEXPORTER_PALETTEMATERIALS;
+			} else {
+				Log::warn("Unknown json flag '%s' (use default, all, palette, meshdetails, nodedetails, children, palettematerials)", flag.c_str());
+			}
+			jsonFlagsVal = jsonFlagsVal.substr(pos + 1);
+		}
+
 		io::StdoutWriteStream stream;
 		scenegraph::sceneGraphJson(sceneGraph, stream, jsonFlags);
 	}
