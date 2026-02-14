@@ -813,7 +813,7 @@ static int clua_quat_new_jsonhelp(lua_State *s) {
 static int clua_quat_rotatexyz_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateXYZ",
-		"summary": "Create a quaternion rotation around X, Y, and Z axes.",
+		"summary": "Create a quaternion rotation around X, Y, and Z axes (pitch, yaw, roll).",
 		"parameters": [
 			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
 			{"name": "y", "type": "number", "description": "Rotation angle around Y axis in radians."},
@@ -828,7 +828,7 @@ static int clua_quat_rotatexyz_jsonhelp(lua_State *s) {
 static int clua_quat_rotatexy_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateXY",
-		"summary": "Create a quaternion rotation around X and Y axes.",
+		"summary": "Create a quaternion rotation around X and Y axes (pitch and yaw).",
 		"parameters": [
 			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
 			{"name": "y", "type": "number", "description": "Rotation angle around Y axis in radians."}
@@ -842,7 +842,7 @@ static int clua_quat_rotatexy_jsonhelp(lua_State *s) {
 static int clua_quat_rotateyz_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateYZ",
-		"summary": "Create a quaternion rotation around Y and Z axes.",
+		"summary": "Create a quaternion rotation around Y and Z axes (yaw and roll).",
 		"parameters": [
 			{"name": "y", "type": "number", "description": "Rotation angle around Y axis in radians."},
 			{"name": "z", "type": "number", "description": "Rotation angle around Z axis in radians."}
@@ -856,7 +856,7 @@ static int clua_quat_rotateyz_jsonhelp(lua_State *s) {
 static int clua_quat_rotatexz_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateXZ",
-		"summary": "Create a quaternion rotation around X and Z axes.",
+		"summary": "Create a quaternion rotation around X and Z axes (roll and pitch).",
 		"parameters": [
 			{"name": "x", "type": "number", "description": "Rotation angle around X axis in radians."},
 			{"name": "z", "type": "number", "description": "Rotation angle around Z axis in radians."}
@@ -870,7 +870,7 @@ static int clua_quat_rotatexz_jsonhelp(lua_State *s) {
 static int clua_quat_rotatex_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateX",
-		"summary": "Create a quaternion rotation around the X axis.",
+		"summary": "Create a quaternion rotation around the X axis (pitch - nod forward/backward).",
 		"parameters": [
 			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
 		],
@@ -883,7 +883,7 @@ static int clua_quat_rotatex_jsonhelp(lua_State *s) {
 static int clua_quat_rotatey_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateY",
-		"summary": "Create a quaternion rotation around the Y axis.",
+		"summary": "Create a quaternion rotation around the Y axis (yaw - turn left/right).",
 		"parameters": [
 			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
 		],
@@ -896,7 +896,7 @@ static int clua_quat_rotatey_jsonhelp(lua_State *s) {
 static int clua_quat_rotatez_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "rotateZ",
-		"summary": "Create a quaternion rotation around the Z axis.",
+		"summary": "Create a quaternion rotation around the Z axis (roll - tilt head left/right).",
 		"parameters": [
 			{"name": "angle", "type": "number", "description": "Rotation angle in radians."}
 		],
