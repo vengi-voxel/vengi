@@ -244,6 +244,32 @@ TEST_F(LUAApiTest, testNodePivot) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testNodeSetPivotCompensation) {
+	const core::String script = R"(
+		function main(node, region, color)
+			-- initial pivot is (0,0,0), local translation is (0,0,0)
+			local kf = node:keyFrameForFrame(0)
+			local t0 = kf:localTranslation()
+			if math.abs(t0.x) > 0.001 or math.abs(t0.y) > 0.001 or math.abs(t0.z) > 0.001 then
+				error('initial translation should be 0,0,0')
+			end
+
+			-- set pivot to center: (0.5, 0.5, 0.5)
+			-- region is 8x8x8 so delta * size = (0.5*8, 0.5*8, 0.5*8) = (4, 4, 4)
+			node:setPivot(0.5, 0.5, 0.5)
+
+			-- translation should be compensated by (4, 4, 4)
+			local kf2 = node:keyFrameForFrame(0)
+			local t1 = kf2:localTranslation()
+			if math.abs(t1.x - 4.0) > 0.001 then error('compensated x: ' .. t1.x) end
+			if math.abs(t1.y - 4.0) > 0.001 then error('compensated y: ' .. t1.y) end
+			if math.abs(t1.z - 4.0) > 0.001 then error('compensated z: ' .. t1.z) end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testNodeNumKeyFrames) {
 	const core::String script = R"(
 		function main(node, region, color)
