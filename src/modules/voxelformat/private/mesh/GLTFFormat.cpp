@@ -416,18 +416,23 @@ uint32_t GLTFFormat::writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::Seeka
 	const voxel::NormalArray &normals = mesh->getNormalVector();
 	const voxel::IndexArray &indices = mesh->getIndexVector();
 
-	for (int i = 0; i < ni; i++) {
-		if (vertices[indices[i]].colorIndex != idx) {
+	for (int i = 0; i < ni; i += 3) {
+		// include the whole triangle if any vertex matches the color index
+		if (vertices[indices[i]].colorIndex != idx && vertices[indices[i + 1]].colorIndex != idx &&
+			vertices[indices[i + 2]].colorIndex != idx) {
 			continue;
 		}
-		if (bounds.maxIndex < indices[i]) {
-			bounds.maxIndex = indices[i];
+		for (int j = 0; j < 3; ++j) {
+			const uint32_t index = indices[i + j];
+			if (bounds.maxIndex < index) {
+				bounds.maxIndex = index;
+			}
+			if (index < bounds.minIndex) {
+				bounds.minIndex = index;
+			}
+			os.writeUInt32(index);
+			++bounds.ni;
 		}
-		if (indices[i] < bounds.minIndex) {
-			bounds.minIndex = indices[i];
-		}
-		os.writeUInt32(indices[i]);
-		++bounds.ni;
 	}
 	static_assert(sizeof(voxel::IndexType) == 4, "if not 4 bytes - we might need padding here");
 	const uint32_t indexOffset = (uint32_t)os.size();
@@ -2037,6 +2042,10 @@ int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &s
 			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
 				const size_t indicedEnd = vertices.size();
 				indices.reserve(vertices.size());
+				if (vertices.size() % 3 != 0) {
+					Log::warn("Unexpected amount of vertices %i for triangle mode", (int)vertices.size());
+					return InvalidNodeId;
+				}
 				for (size_t i = 0; i < indicedEnd; ++i) {
 					indices.push_back((uint32_t)i);
 				}
@@ -2088,7 +2097,7 @@ int GLTFFormat::loadMesh(const core::String &filename, scenegraph::SceneGraph &s
 				gltfNode.mesh);
 
 		if (indices.size() % 3 != 0) {
-			Log::error("Unexpected amount of indices %i", (int)indices.size());
+			Log::error("Unexpected amount of indices %i in primitive mode %i", (int)indices.size(), primitive.mode);
 			return InvalidNodeId;
 		}
 
