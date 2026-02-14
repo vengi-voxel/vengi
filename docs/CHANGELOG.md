@@ -17,11 +17,21 @@ General:
    - Allow to specify the target colors in a palette for voxelization and other RGB based formats (`voxformat_targetcolors`)
    - Fixed `voxformat_voxelizemode` `1` missing voxels
    - Speed up the binary mesher usage
+   - Fixed invalid triangle handling in some `gltf` files
+   - Fixed quaternion lua binding issues
+   - Improved pivot rounding errors when merging nodes
+   - Extended `animate.lua` to work with more different character scenes
 
 VoxEdit:
 
    - Added IKConstraint editing and inverse kinematic solver
    - Fixed scroll to active node in scene graph panel
+   - Auto enable a newly created animation
+   - Fixed pivot change not taking local child transform into acount
+
+VoxConvert:
+
+   - Extend `--json` options
 
 ## 0.4.0 (2026-02-08)
 
