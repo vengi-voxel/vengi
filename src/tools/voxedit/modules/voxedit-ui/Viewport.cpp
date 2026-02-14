@@ -87,7 +87,9 @@ bool Viewport::init() {
 	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
 	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
 	_clipping = core::Var::getSafe(cfg::GameModeClipping);
-	if (!_renderContext.init(video::getWindowSize())) {
+	// Use the actual framebuffer pixel dimensions (not logical window size) to ensure
+	// crisp rendering on HiDPI displays
+	if (!_renderContext.init(_app->frameBufferDimension())) {
 		return false;
 	}
 
@@ -109,17 +111,26 @@ void Viewport::delayResize(const glm::ivec2 &frameBufferSize) {
 	resizeCamera(frameBufferSize);
 }
 
-void Viewport::resizeCamera(const glm::ivec2 &frameBufferSize) {
+glm::vec2 Viewport::dpiScale() const {
 	const glm::vec2 &windowSize = _app->windowDimension();
 	const glm::vec2 &windowFrameBufferSize = _app->frameBufferDimension();
-	const glm::vec2 scale = windowFrameBufferSize / windowSize;
-	const glm::ivec2 cameraSize((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y);
+	return windowFrameBufferSize / windowSize;
+}
+
+void Viewport::resizeCamera(const glm::ivec2 &contentSize) {
+	const glm::vec2 scale = dpiScale();
+	const glm::ivec2 cameraSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
 	_camera.setSize(cameraSize);
 }
 
-void Viewport::resize(const glm::ivec2 &frameBufferSize) {
-	resizeCamera(frameBufferSize);
-	_renderContext.resize(frameBufferSize);
+void Viewport::resize(const glm::ivec2 &contentSize) {
+	resizeCamera(contentSize);
+	// Apply DPI scaling so that the framebuffer matches the actual pixel resolution.
+	// Without this, HiDPI displays create a framebuffer at logical (window) coordinates
+	// that is smaller than what the camera expects, causing a pixelated/blurry viewport.
+	const glm::vec2 scale = dpiScale();
+	const glm::ivec2 pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
+	_renderContext.resize(pixelSize);
 }
 
 bool Viewport::isFixedCamera() const {
@@ -573,19 +584,22 @@ void Viewport::resetCamera() {
 	_sceneMgr->cameraMovement().body().velocity = glm::vec3(0.0f);
 }
 
-bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
-	if (frameBufferSize.x <= 0 || frameBufferSize.y <= 0) {
+bool Viewport::setupFrameBuffer(const glm::ivec2 &contentSize) {
+	if (contentSize.x <= 0 || contentSize.y <= 0) {
 		return false;
 	}
-	if (_renderContext.frameBuffer.dimension() == frameBufferSize) {
+	// Compare against the DPI-scaled pixel size (the framebuffer is now stored at pixel resolution)
+	const glm::vec2 scale = dpiScale();
+	const glm::ivec2 pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
+	if (_renderContext.frameBuffer.dimension() == pixelSize) {
 		return true;
 	}
 	if (_resizeRequestSeconds > 0.0 && _resizeRequestSeconds < _nowSeconds) {
-		resize(frameBufferSize);
+		resize(contentSize);
 		_resizeRequestSeconds = 0.0;
 		return true;
 	}
-	delayResize(frameBufferSize);
+	delayResize(contentSize);
 	return true;
 }
 

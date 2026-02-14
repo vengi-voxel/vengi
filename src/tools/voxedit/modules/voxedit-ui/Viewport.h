@@ -153,9 +153,10 @@ private:
 	void menuBarRenderModeToggle();
 	void menuBarMementoOptions(command::CommandExecutionListener *listener);
 	void renderMenuBar(command::CommandExecutionListener *listener);
-	void resize(const glm::ivec2 &frameBufferSize);
-	void resizeCamera(const glm::ivec2 &frameBufferSize);
-	void delayResize(const glm::ivec2 &frameBufferSize);
+	void resize(const glm::ivec2 &contentSize);
+	void resizeCamera(const glm::ivec2 &contentSize);
+	void delayResize(const glm::ivec2 &contentSize);
+	glm::vec2 dpiScale() const;
 	image::ImagePtr renderToImage(const char *imageName);
 	void setRenderMode(voxelrender::RenderMode renderMode);
 
