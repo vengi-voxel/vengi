@@ -431,6 +431,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 		node.setTransform(keyFrameIdx, transform);
 		ASSERT_NE(InvalidNodeId, sceneGraphsave.emplace(core::move(node)));
 	}
+	sceneGraphsave.updateTransforms();
 	io::ArchivePtr archive = helper_archive();
 	ASSERT_TRUE(format->save(sceneGraphsave, filename, archive, testSaveCtx));
 
