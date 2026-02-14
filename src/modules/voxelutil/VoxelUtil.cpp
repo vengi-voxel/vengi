@@ -84,7 +84,7 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 	}
 
 	// Apply translation
-	result->translate(glm::ivec3(translation) - glm::ivec3(glm::round(pivot)));
+	result->translate(glm::ivec3(glm::round(glm::vec3(translation) - pivot)));
 	return result;
 }
 

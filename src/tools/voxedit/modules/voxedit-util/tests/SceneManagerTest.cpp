@@ -448,7 +448,7 @@ TEST_F(SceneManagerTest, testChrKnightMerge) {
 		ASSERT_NE(nullptr, node);
 		const voxel::RawVolume *v = _sceneMgr->volume(node->id());
 		ASSERT_NE(nullptr, v);
-		EXPECT_EQ(2561, voxelutil::countVoxels(*v));
+		EXPECT_EQ(2612, voxelutil::countVoxels(*v));
 	}
 }
 
@@ -520,8 +520,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	ASSERT_NE(nullptr, mergedHeadVolume);
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
 
-	// this z is 14 - not 13 because there is a fractional translation on the cover node
-	glm::ivec3 expectedDimensions(9, 14, 14);
+	glm::ivec3 expectedDimensions(9, 14, 13);
 
 	EXPECT_EQ(expectedDimensions, mergedRegion.getDimensionsInVoxels())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
