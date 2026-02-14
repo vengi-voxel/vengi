@@ -59,20 +59,25 @@ void AnimationPanel::popupCreateAnimation() {
 		ImGui::BeginDisabled(animAlreadyExists);
 		bool close = false;
 		if (ImGui::OkButton() || renamed) {
+			core::String newAnimName = _newAnimation;
+			bool success = false;
 			if (_copyExistingAnimation) {
-				if (!_sceneMgr->duplicateAnimation(_selectedAnimation, _newAnimation)) {
-					Log::error("Failed to duplicate animation %s (%s)", _selectedAnimation.c_str(), _newAnimation.c_str());
+				if (!_sceneMgr->duplicateAnimation(_selectedAnimation, newAnimName)) {
+					Log::error("Failed to duplicate animation %s (%s)", _selectedAnimation.c_str(), newAnimName.c_str());
 				} else {
-					_newAnimation = "";
+					success = true;
 				}
 			} else {
-				if (!_sceneMgr->addAnimation(_newAnimation)) {
-					Log::error("Failed to add animation %s", _newAnimation.c_str());
+				if (!_sceneMgr->addAnimation(newAnimName)) {
+					Log::error("Failed to add animation %s", newAnimName.c_str());
 				} else {
-					_newAnimation = "";
+					success = true;
 				}
 			}
-			_animationTimeline->resetFrames();
+			if (success) {
+				_newAnimation = "";
+				_sceneMgr->setAnimation(newAnimName);
+			}
 			close = true;
 		}
 		ImGui::EndDisabled();
