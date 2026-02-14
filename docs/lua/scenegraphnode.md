@@ -5,6 +5,7 @@
 | Method | Description |
 | ------ | ----------- |
 | `addKeyFrame(frame, interpolation)` | Add a new keyframe at the specified frame. |
+| `children()` | Get the child node IDs. |
 | `clone()` | Create a copy of the node. |
 | `hasKeyFrameForFrame(frame)` | Check if a keyframe exists at the specified frame. |
 | `hide()` | Hide the node. |
@@ -20,9 +21,12 @@
 | `keyFrameForFrame(frame)` | Get the keyframe for a specific frame number. |
 | `lock()` | Lock the node. |
 | `name()` | Get the name of the node. |
+| `numKeyFrames()` | Get the number of keyframes for the current animation. |
 | `palette()` | Get the palette of the node. |
 | `parent()` | Get the parent node ID. |
+| `pivot()` | Get the normalized pivot point of the node. |
 | `property(key)` | Get a custom property from the node. |
+| `region()` | Get the region of the model node. |
 | `removeKeyFrame(index)` | Remove a keyframe by index. |
 | `removeKeyFrameForFrame(frame)` | Remove the keyframe at the specified frame. |
 | `setName(name)` | Set the name of the node. |
@@ -52,6 +56,16 @@ Add a new keyframe at the specified frame.
 | Type | Description |
 | ---- | ----------- |
 | `keyframe` | The newly created keyframe. |
+
+### children
+
+Get the child node IDs.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `table` | A table of child node IDs. |
 
 ### clone
 
@@ -209,6 +223,16 @@ Get the name of the node.
 | ---- | ----------- |
 | `string` | The node name. |
 
+### numKeyFrames
+
+Get the number of keyframes for the current animation.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of keyframes. |
+
 ### palette
 
 Get the palette of the node.
@@ -229,6 +253,16 @@ Get the parent node ID.
 | ---- | ----------- |
 | `integer` | The parent node ID. |
 
+### pivot
+
+Get the normalized pivot point of the node.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `vec3` | The pivot point (normalized 0-1 range). |
+
 ### property
 
 Get a custom property from the node.
@@ -244,6 +278,16 @@ Get a custom property from the node.
 | Type | Description |
 | ---- | ----------- |
 | `string` | The property value. |
+
+### region
+
+Get the region of the model node.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `region` | The node's region. |
 
 ### removeKeyFrame
 

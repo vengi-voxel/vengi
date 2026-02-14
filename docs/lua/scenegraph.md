@@ -9,6 +9,7 @@ Global: `g_scenegraph`
 | `activeAnimation()` | Get the name of the active animation. |
 | `addAnimation(name)` | Add a new animation to the scene graph. |
 | `align(padding)` | Align all nodes in the scene graph. |
+| `animations()` | Get all animation names. |
 | `duplicateAnimation(source, target)` | Duplicate an existing animation. |
 | `get(id)` | Get a node by its ID. |
 | `getByName(name)` | Get a node by its name. |
@@ -56,6 +57,16 @@ Align all nodes in the scene graph.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `padding` | `integer` | Padding between nodes (optional, default 2). |
+
+### animations
+
+Get all animation names.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `table` | A table of animation names. |
 
 ### duplicateAnimation
 
