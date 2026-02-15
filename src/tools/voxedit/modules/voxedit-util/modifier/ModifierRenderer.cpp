@@ -217,11 +217,16 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 	const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
 	const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
 
-	const video::ScopedState depthTest(video::State::DepthTest, false);
-	const video::ScopedState cullFace(video::State::CullFace, false);
-	_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
-	_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
-	_shapeRenderer.render(_referencePointMesh, camera, glm::translate(modelMatrix, _referencePoint));
+	{
+		const video::ScopedState depthTest(video::State::DepthTest, false);
+		const video::ScopedState cullFace(video::State::CullFace, false);
+		_shapeRenderer.render(_referencePointMesh, camera, glm::translate(modelMatrix, _referencePoint));
+		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
+	}
+	{
+		const video::ScopedState blend(video::State::Blend, true);
+		_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
+	}
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 
