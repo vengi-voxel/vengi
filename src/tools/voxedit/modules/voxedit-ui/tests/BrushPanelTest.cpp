@@ -85,12 +85,17 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 
 		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+		int buttonIdx = 0;
 		for (int i = 0; i < (int)BrushType::Max; ++i) {
-			const core::String btnid = core::String::format("brushes/###button%d", i);
+			if (i == (int)BrushType::Normal) {
+				continue;
+			}
+			const core::String btnid = core::String::format("brushes/###button%d", buttonIdx);
 			ctx->ItemClick(btnid.c_str());
 			ctx->Yield();
 			const BrushType brushType = modifier.brushType();
 			IM_CHECK_EQ((int)brushType, i);
+			++buttonIdx;
 		}
 	};
 
