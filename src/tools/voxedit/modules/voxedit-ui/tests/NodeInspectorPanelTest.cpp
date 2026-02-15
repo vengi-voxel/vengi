@@ -49,6 +49,10 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK_EQ(2, region.getDimensionsInVoxels().y);
 		IM_CHECK_EQ(2, region.getDimensionsInVoxels().z);
 	};
+
+	// TODO: ikConstraints test
+
+	// TODO: menubar->Options->XXX and validate the results (e.g. check if a new keyframe was created after changing values)
 }
 
 } // namespace voxedit

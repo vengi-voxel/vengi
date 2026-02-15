@@ -19,6 +19,13 @@ void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const size_t afterCamera = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Camera);
 		IM_CHECK_EQ(beforeCamera + 1, afterCamera);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "reset camera")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "cameraresettest", voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("toolbar/###button0");
+		ctx->Yield();
+	};
 }
 
 } // namespace voxedit

@@ -127,6 +127,14 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(activePalette.view().uiIndex(1), index0);
 		ctx->MenuClick("Sort/Original");
 	};
+
+	// TODO: multi select with shift+click
+
+	// TODO: set color name
+
+	// TODO: material editing (Context menu of a color after it is hovered)
+
+	// TODO: test the features in the menubar Tools->XXX (with result validation)
 }
 
 } // namespace voxedit

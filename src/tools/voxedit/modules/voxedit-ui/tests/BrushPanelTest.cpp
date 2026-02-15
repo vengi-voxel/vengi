@@ -148,6 +148,11 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// TODO: load or create a volume first, paint needs existing volumes
 		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Paint));
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "normal brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		// TODO: load or create a volume first, normal needs existing volumes
+		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Normal));
+	};
 #endif
 
 	// TODO: copy and paste

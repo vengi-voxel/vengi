@@ -31,6 +31,17 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->MenuClick("File/Red Alert 2");
 		ctx->MenuClick("File/Slab6");
 	};
+
+	// TODO: auto normals and remove all normals afterwards
+	// - load a model
+	// - changeViewMode to redalert2
+	// - call normpalette_removenormals
+	// - call File->Auto normals->XXX actions with the different options
+	// - call File->Remove all normals afterwards
+
+	// TODO: File->Export normal palette to image and check the output
+
+	// TODO: change longitude and latitude or modify the current normal index
 }
 
 } // namespace voxedit
