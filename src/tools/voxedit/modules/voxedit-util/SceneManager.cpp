@@ -1542,6 +1542,9 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 
 	_sceneGraph = core::move(sceneGraph);
 	_sceneRenderer->clear();
+	// stop any running animation
+	core::Var::getSafe(cfg::VoxEditAnimationPlaying)->setVal(false);
+	command::executeCommands("animate 0");
 
 	const size_t nodesAdded = _sceneGraph.size();
 	if (nodesAdded == 0) {
