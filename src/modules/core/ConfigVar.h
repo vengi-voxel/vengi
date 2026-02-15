@@ -30,6 +30,7 @@ constexpr const char *UIFileDialogLastFiles = "ui_filedialoglastfiles";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 constexpr const char *UIMultiMonitor = "ui_multimonitor";
 constexpr const char *UIBookmarks = "ui_bookmarks";
+constexpr const char *UITestFilter = "ui_testfilter";
 
 constexpr const char *AssetPanelLocalDirectory = "ui_assetlocaldirectory";
 

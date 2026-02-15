@@ -32,7 +32,12 @@ public:
 	IMGUIApp *app() { return _app; }
 	virtual void registerUITests(ImGuiTestEngine *, const char *);
 	void unregisterUITests(ImGuiTestEngine *);
-	const char *testCategory() const { return _title.c_str(); }
+	const char *testCategory() const {
+		if (_title.contains("###")) {
+			return _title.c_str() + _title.find("###") + 3;
+		}
+		return _title.c_str();
+	}
 
 	bool changeSlider(ImGuiTestContext *ctx, const char *path, bool left);
 	bool saveFile(ImGuiTestContext *ctx, const char *filename);

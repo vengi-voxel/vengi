@@ -56,6 +56,9 @@ void VoxEdit::printUsageHeader() const {
 }
 
 app::AppState VoxEdit::onCleanup() {
+	// shut down the thread pool first to ensure no background tasks reference
+	// objects that are about to be destroyed (e.g. AssetPanel::_images)
+	_threadPool->shutdown();
 	_sceneMgr->shutdown();
 	if (_mainWindow) {
 		_mainWindow->shutdown();

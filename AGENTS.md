@@ -2,6 +2,7 @@
 
 - compile: `make`
 - run particular tests: `GTEST_FILTER=SomeTest.* make tests-yourmodulename-run`
+- run ui based tests like this: `UI_TESTFILTER=XXX make tests-voxedit-run`. To get a list of the available tests, run this before: `build/voxedit/vengi-tests-voxedit --imgui_list_tests`. To run all tests, just omit the `UI_TESTFILTER` env var.
 - run all tests: `make tests`
 - check the documentation under `docs` if your change would also require the documentation to be updated (or extended)
 

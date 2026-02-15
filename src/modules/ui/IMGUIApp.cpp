@@ -232,6 +232,13 @@ app::AppState IMGUIApp::onConstruct() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
+	core::Var::get(cfg::UITestFilter, "", core::CV_NOPERSIST,
+				   _("Only run tests that match the given filter (e.g. \"Brush\" to only run brush related tests)"));
+
+	if (!_showWindow) {
+		registerArg("--imgui_test_filter").setDescription("Only run tests that match the given filter (e.g. \"Brush\" to only run brush related tests)");
+		registerArg("--imgui_list_tests").setDescription("List all available tests and exit");
+	}
 #else
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
@@ -331,6 +338,25 @@ app::AppState IMGUIApp::onInit() {
 	_imguiTestEngine = ImGuiTestEngine_CreateContext();
 	ImGuiTestEngineIO& test_io = ImGuiTestEngine_GetIO(_imguiTestEngine);
 	test_io.ConfigLogToTTY = _showWindow ? false : true;
+	test_io.ConfigLogToFunc = [](ImGuiTestEngine* engine, ImGuiTestContext* test_ctx, ImGuiTestVerboseLevel level, const char* message, void* user_data) {
+		switch (level) {
+		case ImGuiTestVerboseLevel_Debug:
+			Log::debug("%s", message);
+			break;
+		case ImGuiTestVerboseLevel_Info:
+			Log::info("%s", message);
+			break;
+		case ImGuiTestVerboseLevel_Warning:
+			Log::warn("%s", message);
+			break;
+		case ImGuiTestVerboseLevel_Error:
+			Log::error("%s", message);
+			break;
+		default:
+			Log::info("%s", message);
+			break;
+		}
+	};
 	test_io.ConfigVerboseLevel = ImGuiTestVerboseLevel_Info;
 	test_io.ConfigVerboseLevelOnError = ImGuiTestVerboseLevel_Debug;
 #endif
@@ -891,7 +917,21 @@ app::AppState IMGUIApp::onRunning() {
 			_startedFromCommandlineFrameDelay--;
 		}
 		if (_startedFromCommandlineFrameDelay == 0) {
-			ImGuiTestEngine_QueueTests(_imguiTestEngine, ImGuiTestGroup_Tests, "tests", ImGuiTestRunFlags_RunFromCommandLine);
+			if (hasArg("--imgui_list_tests")) {
+				ImVector<ImGuiTest*> testList;
+				ImGuiTestEngine_GetTestList(_imguiTestEngine, &testList);
+				for (int i = 0; i < testList.size(); i++) {
+					ImGuiTest* test = testList[i];
+					Log::info("Test: %s/%s", test->Category, test->Name);
+				}
+				requestQuit();
+				return app::AppState::Running;
+			}
+			core::String filter = core::Var::getSafe(cfg::UITestFilter)->strVal();
+			if (filter.empty()) {
+				filter = getArgVal("--imgui_test_filter");
+			}
+			ImGuiTestEngine_QueueTests(_imguiTestEngine, ImGuiTestGroup_Tests, filter.c_str(), ImGuiTestRunFlags_RunFromCommandLine);
 			_startedFromCommandlineFrameDelay--;
 		}
 
