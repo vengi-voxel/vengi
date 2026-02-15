@@ -176,6 +176,7 @@ public:
 	void addPanel(Panel *panel);
 	void removePanel(Panel *panel);
 	Panel* getPanel(const core::String &title);
+	Panel* findPanel(const core::String &title);
 
 	void showBindingsDialog();
 	void showTexturesDialog();

@@ -1071,17 +1071,24 @@ void IMGUIApp::removePanel(Panel *panel) {
 	}
 }
 
-Panel* IMGUIApp::getPanel(const core::String &title) {
+Panel* IMGUIApp::findPanel(const core::String &title) {
 	for (Panel *panel : _panels) {
 		if (panel->_title == title) {
 			return panel;
 		}
 	}
-	Log::error("Panel '%s' not found - available are:", title.c_str());
-	for (Panel *panel : _panels) {
-		Log::error("- %s", panel->_title.c_str());
-	}
 	return nullptr;
+}
+
+Panel* IMGUIApp::getPanel(const core::String &title) {
+	Panel *panel = findPanel(title);
+	if (panel == nullptr) {
+		Log::error("Panel '%s' not found - available are:", title.c_str());
+		for (Panel *p : _panels) {
+			Log::error("- %s", p->_title.c_str());
+		}
+	}
+	return panel;
 }
 
 } // namespace ui

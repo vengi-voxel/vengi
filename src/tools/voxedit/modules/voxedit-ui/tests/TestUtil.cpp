@@ -88,7 +88,7 @@ int viewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 	int viewportId = -1;
 	for (int i = 0; i < 8; ++i) {
 		const core::String &viewportTitle = Viewport::viewportId(i, true);
-		Viewport *viewport = (Viewport *)app->getPanel(viewportTitle);
+		Viewport *viewport = (Viewport *)app->findPanel(viewportTitle);
 		if (viewport == nullptr) {
 			break;
 		}
@@ -98,11 +98,14 @@ int viewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 		}
 	}
 	// not found, this means that the scene mode checkbox is set...
-	// so let's uncheck it to make this a viewport in edit mode
+	// so let's toggle it to make this a viewport in edit mode
 	if (viewportId == -1) {
 		viewportId = 0;
-		const core::String viewportRef = Viewport::viewportId(viewportId) + "/##MenuBar/Scene Mode";
-		ctx->ItemClick(viewportRef.c_str());
+		const core::String &viewportTitle = Viewport::viewportId(viewportId, true);
+		Viewport *viewport = (Viewport *)app->findPanel(viewportTitle);
+		if (viewport != nullptr) {
+			viewport->toggleScene();
+		}
 	}
 	return viewportId;
 }
@@ -111,7 +114,7 @@ int viewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 	int viewportId = -1;
 	for (int i = 0; i < 8; ++i) {
 		const core::String &viewportTitle = Viewport::viewportId(i, true);
-		Viewport *viewport = (Viewport *)app->getPanel(viewportTitle);
+		Viewport *viewport = (Viewport *)app->findPanel(viewportTitle);
 		if (viewport == nullptr) {
 			break;
 		}
@@ -121,11 +124,14 @@ int viewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 		}
 	}
 	// not found, this means that the scene mode checkbox is not set...
-	// so let's check it to make this a viewport in scene mode
+	// so let's toggle it to make this a viewport in scene mode
 	if (viewportId == -1) {
 		viewportId = 0;
-		const core::String viewportRef = Viewport::viewportId(viewportId) + "/##MenuBar/Scene Mode";
-		ctx->ItemClick(viewportRef.c_str());
+		const core::String &viewportTitle = Viewport::viewportId(viewportId, true);
+		Viewport *viewport = (Viewport *)app->findPanel(viewportTitle);
+		if (viewport != nullptr) {
+			viewport->toggleScene();
+		}
 	}
 	return viewportId;
 }

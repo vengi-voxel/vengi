@@ -15,7 +15,7 @@ void AnimationTimeline::registerUITests(ImGuiTestEngine *engine, const char *id)
 		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
 		IM_CHECK(node != nullptr);
 
-		activateViewportSceneMode(ctx, _app);
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		const ImGuiID wrapperId = ctx->WindowInfo("##sequencer_child_wrapper").ID;
 		ctx->SetRef(wrapperId);
