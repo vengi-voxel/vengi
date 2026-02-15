@@ -232,11 +232,19 @@ app::AppState IMGUIApp::onConstruct() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
-	core::Var::get(cfg::UITestFilter, "", core::CV_NOPERSIST,
-				   _("Only run tests that match the given filter (e.g. \"Brush\" to only run brush related tests)"));
+
+	core::Var::get(cfg::UITestFilter, "tests", core::CV_NOPERSIST, _("Only run tests that match the given filter"));
 
 	if (!_showWindow) {
-		registerArg("--imgui_test_filter").setDescription("Only run tests that match the given filter (e.g. \"Brush\" to only run brush related tests)");
+		registerArg("--imgui_test_filter")
+			.setDescription(
+				"Only run tests that match the given filter (e.g. \"tests,-scroll,-^nav_\" : all tests (but no "
+				"perfs) that do not contain \"scroll\" in their name and does not start with \"nav_\"). Special "
+				"keywords: \"all\" (all tests, no matter what group they are in), \"tests\" (tests in "
+				"ImGuiTestGroup_Tests group), \"perfs\" (tests in ImGuiTestGroup_Perfs group). Available modifiers: "
+				"'-' prefix excludes tests matched by the term, '^' prefix anchors term matching to the start of the "
+				"string, '$' suffix anchors term matching to the end of the string. This is no full regex engine, only "
+				"supports the behavior of these modifiers.");
 		registerArg("--imgui_list_tests").setDescription("List all available tests and exit");
 	}
 #else
@@ -926,14 +934,14 @@ app::AppState IMGUIApp::onRunning() {
 				ImGuiTestEngine_GetTestList(_imguiTestEngine, &testList);
 				for (int i = 0; i < testList.size(); i++) {
 					ImGuiTest* test = testList[i];
-					Log::info("Test: %s/%s", test->Category, test->Name);
+					Log::info("- category: %s, name: %s", test->Category, test->Name);
 				}
 				requestQuit();
 				return app::AppState::Running;
 			}
-			core::String filter = core::Var::getSafe(cfg::UITestFilter)->strVal();
+			core::String filter = getArgVal("--imgui_test_filter");
 			if (filter.empty()) {
-				filter = getArgVal("--imgui_test_filter");
+				filter = core::Var::getSafe(cfg::UITestFilter)->strVal();
 			}
 			ImGuiTestEngine_QueueTests(_imguiTestEngine, ImGuiTestGroup_Tests, filter.c_str(), ImGuiTestRunFlags_RunFromCommandLine);
 			_startedFromCommandlineFrameDelay--;
@@ -952,7 +960,9 @@ app::AppState IMGUIApp::onRunning() {
 				if (successCnt != testedCnt) {
 					_exitCode = 1;
 				}
+				Log::info("Test results: %i tested, %i success", summary.CountTested, summary.CountSuccess);
 				requestQuit();
+				--_startedFromCommandlineFrameDelay;
 			}
 		}
 	}
