@@ -31,6 +31,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	// TODO: viewport menubar tests
+	// TODO: enable different rendering modes like bloom, bones, aabb, mirror axis, etc.
 
 #if 0
 	IM_REGISTER_TEST(engine, testCategory(), "select node")->TestFunc = [=](ImGuiTestContext *ctx) {
