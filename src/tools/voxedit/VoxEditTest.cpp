@@ -14,6 +14,10 @@ public:
 		_showWindow = false;
 		_wantCrashLogs = false;
 	}
+
+	bool allowedToQuit() override {
+		return true;
+	}
 };
 
 int main(int argc, char *argv[]) {
