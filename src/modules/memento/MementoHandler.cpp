@@ -210,6 +210,7 @@ MementoData &MementoData::operator=(const MementoData &o) noexcept {
 		}
 		_dataRegion = o._dataRegion;
 		_volumeRegion = o._volumeRegion;
+		_modifiedRegion = o._modifiedRegion;
 	}
 	return *this;
 }
@@ -255,7 +256,7 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	if (volume == nullptr) {
 		return false;
 	}
-	if (!mementoData.dataRegion().containsRegion(region)) {
+	if (!voxel::intersects(mementoData.dataRegion(), region)) {
 		return false;
 	}
 
@@ -264,7 +265,13 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	if (!v) {
 		return false;
 	}
-	if (!volume->copyInto(*v, region)) {
+	// Crop the region to the data region to handle partial overlaps.
+	// This is important for mirror operations where the modified region spans
+	// both sides of the mirror plane but previous states may only cover a
+	// partial region.
+	voxel::Region copyRegion = region;
+	copyRegion.cropTo(mementoData.dataRegion());
+	if (!volume->copyInto(*v, copyRegion)) {
 		Log::error("Failed to copy memento volume region into target volume");
 	}
 	return true;

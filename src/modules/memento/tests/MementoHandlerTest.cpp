@@ -1119,4 +1119,122 @@ TEST_F(MementoHandlerTest, testCanUndoRedoWhileInGroup) {
 	EXPECT_TRUE(_mementoHandler.canUndo());
 }
 
+// Test that undoing a mirror operation (which creates a combined dirty region spanning two
+// disjoint areas) correctly preserves voxels between the mirrored edit regions.
+// This is a regression test for https://github.com/vengi-voxel/vengi/issues/732
+TEST_F(MementoHandlerTest, testMirrorUndoPreservesIntermediateVoxels) {
+	// Create a 16-wide volume with some existing voxels in the middle (x=6..9)
+	const voxel::Region volumeRegion(0, 0, 0, 15, 3, 3);
+	core::SharedPtr<voxel::RawVolume> initialVolume = core::make_shared<voxel::RawVolume>(volumeRegion);
+	// Place voxels in the middle of the volume that should NOT be affected by mirror undo
+	for (int x = 6; x <= 9; ++x) {
+		initialVolume->setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42));
+	}
+
+	// State 0: Initial state with existing voxels
+	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Initial", scenegraph::SceneGraphNodeType::Model,
+							 initialVolume.get(), MementoType::Modification);
+
+	// Simulate a mirror brush operation: place voxels at x=1..2 and mirrored at x=13..14
+	// The dirty region in ModifierVolumeWrapper would span x=1..14 (bounding box of both sides)
+	core::SharedPtr<voxel::RawVolume> afterMirror = core::make_shared<voxel::RawVolume>(initialVolume.get());
+	afterMirror->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	afterMirror->setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	afterMirror->setVoxel(13, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	afterMirror->setVoxel(14, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+
+	// The combined dirty region spans x=1..14 (as the mirror wrapper accumulates both regions)
+	const voxel::Region combinedMirrorRegion(1, 0, 0, 14, 0, 0);
+	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Mirror edit", scenegraph::SceneGraphNodeType::Model,
+							 afterMirror.get(), MementoType::Modification, combinedMirrorRegion);
+
+	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
+	EXPECT_EQ(1, (int)_mementoHandler.statePosition());
+
+	// Undo the mirror edit
+	const MementoState &undoState = firstState(_mementoHandler.undo());
+	ASSERT_TRUE(undoState.hasVolumeData());
+
+	// Restore the volume to verify undo correctness
+	voxel::RawVolume restored(volumeRegion);
+	// First fill with initial data
+	restored.copyInto(*initialVolume.get());
+	// Then apply the undo state
+	_mementoHandler.extractVolumeRegion(&restored, undoState);
+
+	// The existing voxels at x=6..9 should still be present (NOT air!)
+	for (int x = 6; x <= 9; ++x) {
+		const voxel::Voxel v = restored.voxel(x, 0, 0);
+		EXPECT_EQ(voxel::VoxelType::Generic, v.getMaterial())
+			<< "Voxel at x=" << x << " should be preserved after mirror undo, but was reset to air";
+		EXPECT_EQ(42, v.getColor())
+			<< "Voxel at x=" << x << " should have color 42 after mirror undo";
+	}
+
+	// The mirror voxels at x=1,2,13,14 should be gone (back to air)
+	for (int x : {1, 2, 13, 14}) {
+		const voxel::Voxel v = restored.voxel(x, 0, 0);
+		EXPECT_TRUE(voxel::isAir(v.getMaterial()))
+			<< "Voxel at x=" << x << " should be air after mirror undo";
+	}
+}
+
+// Test that undo works correctly when a partial edit region is followed by a mirror
+// operation that creates a larger combined region overlapping the partial region
+TEST_F(MementoHandlerTest, testMirrorUndoWithPriorPartialEdit) {
+	const voxel::Region volumeRegion(0, 0, 0, 15, 3, 3);
+	core::SharedPtr<voxel::RawVolume> initialVolume = core::make_shared<voxel::RawVolume>(volumeRegion);
+
+	// State 0: Initial state (empty volume)
+	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Initial", scenegraph::SceneGraphNodeType::Model,
+							 initialVolume.get(), MementoType::Modification);
+
+	// State 1: Place voxels at x=6..8 (partial edit, only touches a small region)
+	core::SharedPtr<voxel::RawVolume> afterEdit1 = core::make_shared<voxel::RawVolume>(initialVolume.get());
+	for (int x = 6; x <= 8; ++x) {
+		afterEdit1->setVoxel(x, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 20));
+	}
+	const voxel::Region edit1Region(6, 0, 0, 8, 0, 0);
+	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Edit 1", scenegraph::SceneGraphNodeType::Model,
+							 afterEdit1.get(), MementoType::Modification, edit1Region);
+
+	// State 2: Mirror edit at x=1..2 and x=13..14 (combined region x=1..14 overlaps edit1)
+	core::SharedPtr<voxel::RawVolume> afterMirror = core::make_shared<voxel::RawVolume>(afterEdit1.get());
+	afterMirror->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	afterMirror->setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	afterMirror->setVoxel(13, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	afterMirror->setVoxel(14, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 10));
+	const voxel::Region combinedMirrorRegion(1, 0, 0, 14, 0, 0);
+	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Mirror edit", scenegraph::SceneGraphNodeType::Model,
+							 afterMirror.get(), MementoType::Modification, combinedMirrorRegion);
+
+	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
+	EXPECT_EQ(2, (int)_mementoHandler.statePosition());
+
+	// Undo the mirror edit - should restore state 1 (voxels at x=6..8 present, mirror voxels gone)
+	const MementoState &undoState = firstState(_mementoHandler.undo());
+	ASSERT_TRUE(undoState.hasVolumeData());
+
+	// Apply undo to a volume that starts in the afterMirror state
+	voxel::RawVolume restored(volumeRegion);
+	restored.copyInto(*afterMirror.get());
+	_mementoHandler.extractVolumeRegion(&restored, undoState);
+
+	// The voxels from edit 1 at x=6..8 should still be present
+	for (int x = 6; x <= 8; ++x) {
+		const voxel::Voxel v = restored.voxel(x, 0, 0);
+		EXPECT_EQ(voxel::VoxelType::Generic, v.getMaterial())
+			<< "Voxel at x=" << x << " from edit 1 should be preserved after mirror undo";
+		EXPECT_EQ(20, v.getColor())
+			<< "Voxel at x=" << x << " should have color 20 (from edit 1) after mirror undo";
+	}
+
+	// The mirror voxels should be gone
+	for (int x : {1, 2, 13, 14}) {
+		const voxel::Voxel v = restored.voxel(x, 0, 0);
+		EXPECT_TRUE(voxel::isAir(v.getMaterial()))
+			<< "Mirror voxel at x=" << x << " should be air after undo";
+	}
+}
+
 } // namespace memento
