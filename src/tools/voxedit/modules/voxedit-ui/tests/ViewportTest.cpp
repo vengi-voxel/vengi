@@ -217,22 +217,28 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		ctx->Yield();
 
 		const core::String vid = Viewport::viewportId(_id);
-		const core::String viewportRef = vid + "/##MenuBar/Scene Mode";
+		ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+		IM_CHECK(window != nullptr);
 
 		// ensure we start in edit mode
+		ctx->WindowFocus(window->ID);
+		ctx->Yield();
+		ctx->ItemClick(window->ID);
+		ctx->Yield();
+		ctx->SetRef(window);
 		if (isSceneMode()) {
-			ctx->ItemClick(viewportRef.c_str());
+			ctx->ItemClick("##MenuBar/Scene Mode");
 			ctx->Yield(3);
 		}
 		IM_CHECK(!isSceneMode());
 
 		// switch to scene mode
-		ctx->ItemClick(viewportRef.c_str());
+		ctx->ItemClick("##MenuBar/Scene Mode");
 		ctx->Yield(3);
 		IM_CHECK(isSceneMode());
 
 		// switch back to edit mode
-		ctx->ItemClick(viewportRef.c_str());
+		ctx->ItemClick("##MenuBar/Scene Mode");
 		ctx->Yield(3);
 		IM_CHECK(!isSceneMode());
 	};
