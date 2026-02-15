@@ -100,7 +100,12 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
+
+		// fill a flat layer of voxels so the camera ray will reliably hit something
+		command::executeCommands("fill");
+		ctx->Yield(3);
 
 		command::executeCommands("select none");
 		const scenegraph::SceneGraphNode *nodeBeforeSelect = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
@@ -109,6 +114,9 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK(executeViewportClickArea(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
+		// The AABB brush requires a second action to complete the 3D selection when the
+		// drag only spans 2 dimensions (needsAdditionalAction returns true)
+		executeViewportClick();
 		const scenegraph::SceneGraphNode *nodeAfterSelect = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
 		IM_CHECK(nodeAfterSelect != nullptr);
 		IM_CHECK(nodeAfterSelect->hasSelection());
