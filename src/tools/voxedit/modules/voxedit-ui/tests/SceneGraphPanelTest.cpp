@@ -90,7 +90,69 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(after == before + 1);
 	};
 
-	// TODO: test for details view with adding and removing properties
+	IM_REGISTER_TEST(engine, testCategory(), "context menu hide show")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphhideshowtest", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// duplicate node to have multiple nodes
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+
+		// hide others
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Hide others");
+		ctx->Yield();
+
+		// show all
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Show all");
+		ctx->Yield();
+
+		// hide all
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Hide all");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "context menu lock unlock")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphlockunlocktest", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// lock all
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Lock all");
+		ctx->Yield();
+
+		// unlock all
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Unlock all");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "context menu center origin")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphcenterorigintest", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// center origin
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Center origin");
+		ctx->Yield();
+
+		// center reference
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Center reference");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "toolbar show hide all")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphtoolbartest", voxel::Region(0, 31)));
+
+		// click show all and hide all toolbar buttons
+		ctx->ItemClick("toolbar/###button4"); // show all
+		ctx->Yield();
+		ctx->ItemClick("toolbar/###button5"); // hide all
+		ctx->Yield();
+	};
 }
 
 } // namespace voxedit

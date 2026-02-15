@@ -6,9 +6,12 @@
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "TestUtil.h"
 
@@ -243,13 +246,35 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(!isSceneMode());
 	};
 
-#if 0
-	IM_REGISTER_TEST(engine, testCategory(), "select node")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "scene mode with nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "scenenodetest", voxel::Region(0, 31)));
+		ctx->Yield();
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		const int firstNode = sceneGraph.activeNode();
+
+		// add a second model node
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+		newNode.setName("second node");
+		newNode.setVolume(new voxel::RawVolume(voxel::Region(0, 31)), true);
+		const int secondNode = _sceneMgr->moveNodeToSceneGraph(newNode, sceneGraph.root().id());
+		IM_CHECK(secondNode != InvalidNodeId);
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+
+		// switch to scene mode
 		const int viewportId = viewportSceneMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-		// TODO: a scene mode test to create another node and select a node
+		ctx->Yield();
+
+		// activate each node
+		_sceneMgr->nodeActivate(firstNode);
+		ctx->Yield();
+		IM_CHECK_EQ(sceneGraph.activeNode(), firstNode);
+
+		_sceneMgr->nodeActivate(secondNode);
+		ctx->Yield();
+		IM_CHECK_EQ(sceneGraph.activeNode(), secondNode);
 	};
-#endif
 }
 
 } // namespace voxedit

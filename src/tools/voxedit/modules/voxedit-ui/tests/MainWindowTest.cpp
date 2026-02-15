@@ -109,7 +109,24 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("###Close");
 	};
 
-	// TODO: POPUP_TITLE_SCENE_SETTINGS
+	IM_REGISTER_TEST(engine, testCategory(), "edit options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Edit/Options");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "select menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, "selectmenutest", voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Select/None");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Select/All");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("Select/Invert");
+		ctx->Yield();
+	};
 
 	// TODO: file dialog load and save
 }
