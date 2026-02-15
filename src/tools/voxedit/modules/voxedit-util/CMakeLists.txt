@@ -95,6 +95,7 @@ set(TEST_SRCS
 	tests/LineBrushTest.cpp
 	tests/ModifierTest.cpp
 	tests/ModifierVolumeWrapperTest.cpp
+	tests/NormalBrushTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp
 	tests/PlaneBrushTest.cpp

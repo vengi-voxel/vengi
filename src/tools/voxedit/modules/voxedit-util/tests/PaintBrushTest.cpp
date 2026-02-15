@@ -17,6 +17,7 @@ class PaintBrushTest : public app::AbstractTest {
 protected:
 	const uint8_t paintColorIndex = 1;
 	const uint8_t existingVoxelColorIndex = 0;
+	const uint8_t existingNormalIndex = 5;
 
 	// create a volume that has voxels on the ground that we can paint
 	int prepareSceneGraph(scenegraph::SceneGraph &sceneGraph) {
@@ -25,7 +26,7 @@ protected:
 		for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 			for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 				volume->setVoxel(x, region.getLowerY(), z,
-								 voxel::Voxel(voxel::VoxelType::Generic, existingVoxelColorIndex));
+								 voxel::Voxel(voxel::VoxelType::Generic, existingVoxelColorIndex, existingNormalIndex));
 			}
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -57,12 +58,15 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 
 	const voxel::Voxel voxel = wrapper.voxel(brushContext.cursorPosition);
 	EXPECT_EQ((int)voxel.getColor(), (int)paintColorIndex) << "Voxel color was not changed by the paint brush";
+	EXPECT_EQ((int)voxel.getNormal(), (int)existingNormalIndex) << "Voxel normal was changed by the paint brush";
 	const voxel::Voxel voxel1 =
 		wrapper.voxel(brushContext.cursorPosition.x + 1, brushContext.cursorPosition.y, brushContext.cursorPosition.z);
 	EXPECT_EQ((int)voxel1.getColor(), (int)existingVoxelColorIndex) << "Voxel color was changed by the paint brush";
+	EXPECT_EQ((int)voxel1.getNormal(), (int)existingNormalIndex) << "Voxel normal was changed by the paint brush";
 	const voxel::Voxel voxel2 = wrapper.voxel(brushContext.cursorPosition.x + 1, brushContext.cursorPosition.y,
 											  brushContext.cursorPosition.z + 1);
 	EXPECT_EQ((int)voxel2.getColor(), (int)existingVoxelColorIndex) << "Voxel color was changed by the paint brush";
+	EXPECT_EQ((int)voxel2.getNormal(), (int)existingNormalIndex) << "Voxel normal was changed by the paint brush";
 
 	brush.shutdown();
 }
