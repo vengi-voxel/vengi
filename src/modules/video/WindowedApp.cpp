@@ -80,6 +80,7 @@ WindowedApp::~WindowedApp() {
 void WindowedApp::onAfterRunning() {
 	core_trace_scoped(WindowedAppAfterRunning);
 	video::endFrame(_window);
+	video_trace_frame_end();
 
 	const double frameStartSeconds = _timeProvider->tickSeconds();
 	const double frameCurrentSeconds = _timeProvider->nowSeconds();
@@ -202,8 +203,6 @@ app::AppState WindowedApp::onRunning() {
 	core_trace_scoped(WindowedAppStartFrame);
 	video::startFrame(_window, _rendererContext);
 	core::Singleton<ShaderManager>::getInstance().update();
-
-	video_trace_frame_end();
 
 	return app::AppState::Running;
 }
