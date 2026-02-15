@@ -214,21 +214,21 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 }
 
 void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &modelMatrix) {
-	const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
-	const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
-
+	video::ScopedState scopedDepth(video::State::DepthTest);
+	video::depthFunc(video::CompareFunc::LessEqual);
 	{
 		const video::ScopedState depthTest(video::State::DepthTest, false);
 		const video::ScopedState cullFace(video::State::CullFace, false);
 		_shapeRenderer.render(_referencePointMesh, camera, glm::translate(modelMatrix, _referencePoint));
+
+		const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
+		const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
 		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
 	}
 	{
 		const video::ScopedState blend(video::State::Blend, true);
 		_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
 	}
-	video::ScopedState scopedDepth(video::State::DepthTest);
-	video::depthFunc(video::CompareFunc::LessEqual);
 
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
 		_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
