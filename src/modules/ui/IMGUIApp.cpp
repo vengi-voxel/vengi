@@ -337,23 +337,27 @@ app::AppState IMGUIApp::onInit() {
 	// Initialize Test Engine
 	_imguiTestEngine = ImGuiTestEngine_CreateContext();
 	ImGuiTestEngineIO& test_io = ImGuiTestEngine_GetIO(_imguiTestEngine);
-	test_io.ConfigLogToTTY = _showWindow ? false : true;
+	test_io.ConfigLogToTTY = false;
 	test_io.ConfigLogToFunc = [](ImGuiTestEngine* engine, ImGuiTestContext* test_ctx, ImGuiTestVerboseLevel level, const char* message, void* user_data) {
+		core::String msg = message;
+		if (msg.last() == '\n') {
+			msg.pop();
+		}
 		switch (level) {
 		case ImGuiTestVerboseLevel_Debug:
-			Log::debug("%s", message);
+			Log::debug("%s", msg.c_str());
 			break;
 		case ImGuiTestVerboseLevel_Info:
-			Log::info("%s", message);
+			Log::info("%s", msg.c_str());
 			break;
 		case ImGuiTestVerboseLevel_Warning:
-			Log::warn("%s", message);
+			Log::warn("%s", msg.c_str());
 			break;
 		case ImGuiTestVerboseLevel_Error:
-			Log::error("%s", message);
+			Log::error("%s", msg.c_str());
 			break;
 		default:
-			Log::info("%s", message);
+			Log::info("%s", msg.c_str());
 			break;
 		}
 	};
