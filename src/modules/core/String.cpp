@@ -542,6 +542,14 @@ core::String String::format(const char *msg, ...) {
 	return core::String::Empty;
 }
 
+bool String::pop() {
+	if (empty()) {
+		return false;
+	}
+	_data._str[--_data._size] = '\0';
+	return true;
+}
+
 char String::last() const {
 	if (empty()) {
 		return '\0';

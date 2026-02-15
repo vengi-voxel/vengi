@@ -97,6 +97,7 @@ public:
 	const char& operator[](size_t idx) const;
 	char& operator[](size_t idx);
 
+	bool pop();
 	char last() const;
 	char first() const;
 
