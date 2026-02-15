@@ -2115,7 +2115,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("select")
 		.addArg({"type", command::ArgType::String, false, "", "Selection type: all|none|invert"})
-		.addArg({"nodeid", command::ArgType::String, false, "", "Node ID to apply the selection to"})
+		.addArg({"nodeid", command::ArgType::String, true, "", "Node ID to apply the selection to"})
 		.setHandler([&] (const command::CommandArgs& args) {
 			const int nodeId = toNodeId(args, activeNode());
 			const core::String &type = args.str("type");
