@@ -374,8 +374,8 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 	-- 0.7 - 1.0: landing (absorb impact)
 
 	if part == "torso" or part == "cover" then
-		local crouch = 0
-		local leanFwd = 0
+		local crouch
+		local leanFwd
 		if t < 0.2 then
 			crouch = -smoothstep(0, 0.2, t) * 0.5
 			leanFwd = smoothstep(0, 0.2, t) * 0.2
@@ -402,7 +402,7 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 		composeOrientation(kf, g_quat.rotateX(counterLean))
 
 	elseif part == "right_upper_leg" or part == "right_foot" then
-		local bend = 0
+		local bend
 		if t < 0.2 then
 			bend = smoothstep(0, 0.2, t) * 0.6
 		elseif t < 0.4 then
@@ -416,7 +416,7 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 		composeOrientation(kf, g_quat.rotateX(bend))
 
 	elseif part == "left_upper_leg" or part == "left_foot" then
-		local bend = 0
+		local bend
 		if t < 0.2 then
 			bend = smoothstep(0, 0.2, t) * 0.6
 		elseif t < 0.4 then
@@ -430,7 +430,7 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 		composeOrientation(kf, g_quat.rotateX(bend))
 
 	elseif part == "right_lower_leg" or part == "right_knee" or part == "right_toe" then
-		local bend = 0
+		local bend
 		if t < 0.2 then
 			bend = smoothstep(0, 0.2, t) * 0.4
 		elseif t < 0.4 then
@@ -444,7 +444,7 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 		composeOrientation(kf, g_quat.rotateX(bend))
 
 	elseif part == "left_lower_leg" or part == "left_knee" or part == "left_toe" then
-		local bend = 0
+		local bend
 		if t < 0.2 then
 			bend = smoothstep(0, 0.2, t) * 0.4
 		elseif t < 0.4 then
@@ -458,7 +458,7 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 		composeOrientation(kf, g_quat.rotateX(bend))
 
 	elseif part == "right_shoulder" or part == "right_arm" or part == "right_hand" then
-		local raise = 0
+		local raise
 		if t < 0.2 then
 			raise = smoothstep(0, 0.2, t) * 0.3
 		elseif t < 0.4 then
@@ -471,7 +471,7 @@ local function jumpAnimation(node, kf, part, keyframe, context)
 		composeOrientation(kf, g_quat.rotateX(raise))
 
 	elseif part == "left_shoulder" or part == "left_arm" or part == "left_hand" then
-		local raise = 0
+		local raise
 		if t < 0.2 then
 			raise = smoothstep(0, 0.2, t) * 0.3
 		elseif t < 0.4 then
