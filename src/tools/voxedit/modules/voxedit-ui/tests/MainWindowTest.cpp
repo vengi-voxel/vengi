@@ -6,6 +6,7 @@
 #include "../Viewport.h"
 #include "../WindowTitles.h"
 #include "TestUtil.h"
+#include "core/StringUtil.h"
 #include "ui/PopupAbout.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
@@ -128,7 +129,43 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 	};
 
-	// TODO: file dialog load and save
+	IM_REGISTER_TEST(engine, testCategory(), "file save")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Save");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, "mainwindow-test-save.vengi"));
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "file load dialog")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Load");
+		ctx->Yield();
+		// the load dialog opens the "Select a file" popup
+		IM_CHECK(focusWindow(ctx, "Select a file"));
+		ctx->ItemClick("###Cancel");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "file save as")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Save as");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, "uitest.vengi"));
+		const core::String suggestedFilename = _sceneMgr->getSuggestedFilename();
+		IM_CHECK(core::string::endsWith(suggestedFilename, "uitest.vengi"));
+		// load the saved file and verify the name is still correct
+		IM_CHECK(_sceneMgr->newScene(true, "empty", new voxel::RawVolume({0, 1})));
+		io::FileDescription fd;
+		fd.set(suggestedFilename);
+		IM_CHECK(_sceneMgr->load(fd));
+		for (int i = 0; i < 20 && _sceneMgr->isLoading(); ++i) {
+			ctx->Yield();
+		}
+		IM_CHECK(!_sceneMgr->isLoading());
+		IM_CHECK_STR_EQ(_sceneMgr->getSuggestedFilename().c_str(), suggestedFilename.c_str());
+	};
 }
 
 } // namespace voxedit

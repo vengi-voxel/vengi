@@ -65,10 +65,20 @@ bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	IM_CHECK_RETV(currentPopupSize > 0, false);
 	ctx->ItemClick("Save");
 	ctx->Yield();
-	if (g.OpenPopupStack.Size == currentPopupSize) {
-		IM_CHECK_RETV(g.OpenPopupStack[g.OpenPopupStack.Size - 1].PopupId == ctx->GetID(FILE_ALREADY_EXISTS_POPUP), false);
+
+	// Handle overwrite popup if the file already exists
+	ImGuiWindow* overwriteWindow = ImGui::FindWindowByName(FILE_ALREADY_EXISTS_POPUP);
+	if (overwriteWindow != nullptr && overwriteWindow->Active) {
 		IM_CHECK_RETV(focusWindow(ctx, FILE_ALREADY_EXISTS_POPUP), false);
 		ctx->ItemClick("###Yes");
+		ctx->Yield();
+	}
+
+	// Handle format options popup if it appeared
+	ImGuiWindow* optionsWindow = ImGui::FindWindowByName(OPTIONS_POPUP);
+	if (optionsWindow != nullptr && optionsWindow->Active) {
+		IM_CHECK_RETV(focusWindow(ctx, OPTIONS_POPUP), false);
+		ctx->ItemClick("###Ok");
 		ctx->Yield();
 	}
 

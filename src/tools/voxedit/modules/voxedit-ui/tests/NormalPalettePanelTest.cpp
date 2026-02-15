@@ -5,6 +5,7 @@
 #include "../NormalPalettePanel.h"
 #include "../ViewMode.h"
 #include "TestUtil.h"
+#include "command/CommandHandler.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -32,16 +33,46 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->MenuClick("File/Slab6");
 	};
 
-	// TODO: auto normals and remove all normals afterwards
-	// - load a model
-	// - changeViewMode to redalert2
-	// - call normpalette_removenormals
-	// - call File->Auto normals->XXX actions with the different options
-	// - call File->Remove all normals afterwards
+	// auto normals and remove all normals afterwards
+	IM_REGISTER_TEST(engine, testCategory(), "auto normals")->TestFunc = [=](ImGuiTestContext *ctx) {
+		// load a template model so there are voxels to calculate normals for
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(newTemplateScene(ctx, "##templates/##River"));
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
 
-	// TODO: File->Export normal palette to image and check the output
+		// remove all normals first
+		ctx->MenuClick("File/Remove all normals");
+		ctx->Yield();
 
-	// TODO: change longitude and latitude or modify the current normal index
+		// calculate normals with default (Flat) mode
+		ctx->MenuClick("File/Auto normals");
+		ctx->Yield();
+		ctx->ItemClick("//$FOCUSED/Calculate normals");
+		ctx->Yield();
+	};
+
+	// export normal palette
+	IM_REGISTER_TEST(engine, testCategory(), "export normal palette")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Export");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, "normalpalette-export.png"));
+	};
+
+	// change longitude and latitude
+	IM_REGISTER_TEST(engine, testCategory(), "longitude latitude")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
+		IM_CHECK(focusWindow(ctx, id));
+
+		changeSlider(ctx, "Longitude", true);
+		changeSlider(ctx, "Longitude", false);
+
+		changeSlider(ctx, "Latitude", true);
+		changeSlider(ctx, "Latitude", false);
+	};
 }
 
 } // namespace voxedit

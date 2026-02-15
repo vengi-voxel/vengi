@@ -128,13 +128,93 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->MenuClick("Sort/Original");
 	};
 
-	// TODO: multi select with shift+click
+	// multi select with shift+click
+	IM_REGISTER_TEST(engine, testCategory(), "multi select shift click")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->Yield();
 
-	// TODO: set color name
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
 
-	// TODO: material editing (Context menu of a color after it is hovered)
+		// click first cell
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(0);
+		ctx->Yield();
 
-	// TODO: test the features in the menubar Tools->XXX (with result validation)
+		// shift+click third cell to select range [0..2]
+		const ImVec2 pos2 = paletteCellCenter(window, 2);
+		ctx->KeyDown(ImGuiMod_Shift);
+		ctx->MouseMoveToPos(pos2);
+		ctx->MouseClick(0);
+		ctx->KeyUp(ImGuiMod_Shift);
+		ctx->Yield();
+	};
+
+	// set color name via context menu
+	IM_REGISTER_TEST(engine, testCategory(), "set color name")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+		ctx->Yield();
+
+		ImGuiWindow *window = ImGui::FindWindowByName(id);
+		IM_CHECK(window != nullptr);
+
+		// right-click first cell to open context menu
+		const ImVec2 pos0 = paletteCellCenter(window, 0);
+		ctx->MouseMoveToPos(pos0);
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->Yield();
+
+		// type a color name into the Name input field
+		ctx->ItemInputValue("//$FOCUSED/Name", "TestColor");
+		ctx->Yield();
+
+		// close the context menu
+		ctx->KeyPress(ImGuiKey_Escape);
+	};
+
+	// test palette tools menu features
+	IM_REGISTER_TEST(engine, testCategory(), "tools menu")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+
+		// sort options
+		ctx->MenuClick("Sort/Hue");
+		ctx->Yield();
+		ctx->MenuClick("Sort/Saturation");
+		ctx->Yield();
+		ctx->MenuClick("Sort/Brightness");
+		ctx->Yield();
+		ctx->MenuClick("Sort/CIELab");
+		ctx->Yield();
+		ctx->MenuClick("Sort/Original");
+		ctx->Yield();
+
+		// tools menu
+		ctx->MenuClick("Tools/Remove unused color");
+		ctx->Yield();
+		ctx->MenuClick("Tools/Contrast stretching");
+		ctx->Yield();
+		ctx->MenuClick("Tools/White balancing");
+		ctx->Yield();
+	};
+
+	// test palette modify sub-menu
+	IM_REGISTER_TEST(engine, testCategory(), "tools modify")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
+
+		ctx->MenuClick("Tools/Modify/Warmer");
+		ctx->Yield();
+		ctx->MenuClick("Tools/Modify/Colder");
+		ctx->Yield();
+		ctx->MenuClick("Tools/Modify/Brighter");
+		ctx->Yield();
+		ctx->MenuClick("Tools/Modify/Darker");
+		ctx->Yield();
+	};
 }
 
 } // namespace voxedit

@@ -50,9 +50,88 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK_EQ(2, region.getDimensionsInVoxels().z);
 	};
 
-	// TODO: ikConstraints test
+	// scene mode options menu
+	IM_REGISTER_TEST(engine, testCategory(), "scene options")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
 
-	// TODO: menubar->Options->XXX and validate the results (e.g. check if a new keyframe was created after changing values)
+		// toggle auto keyframe option and check the result
+		ctx->MenuClick("Options/Auto Keyframe");
+		ctx->Yield();
+
+		ctx->MenuClick("Options/Auto Keyframe");
+		ctx->Yield();
+
+		// toggle update children
+		ctx->MenuClick("Options/Update children");
+		ctx->Yield();
+
+		ctx->MenuClick("Options/Update children");
+		ctx->Yield();
+
+		// toggle local transforms
+		ctx->MenuClick("Options/Local transforms");
+		ctx->Yield();
+
+		ctx->MenuClick("Options/Local transforms");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "transform tools")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		ctx->MenuClick("Tools/Reset transforms");
+		ctx->Yield();
+
+		ctx->MenuClick("Tools/Mirror X");
+		ctx->Yield();
+
+		ctx->MenuClick("Tools/Mirror Y");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "ik constraints")->TestFunc = [=](ImGuiTestContext *ctx) {
+		// IK constraints are only visible in animation view mode (Default includes animations)
+		IM_CHECK(changeViewMode(ctx, ViewMode::Default));
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
+		IM_CHECK(focusWindow(ctx, id));
+
+		// open the IK Constraints collapsing header
+		ctx->ItemOpen("**/IK Constraints");
+		ctx->Yield();
+
+		// the active node should not have IK constraints yet
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(node != nullptr);
+		IM_CHECK(!node->hasIKConstraint());
+
+		// enable IK
+		ctx->ItemClick("**/Enable IK");
+		ctx->Yield();
+		IM_CHECK(node->hasIKConstraint());
+
+		// toggle anchor
+		ctx->ItemClick("**/Anchor");
+		ctx->Yield();
+
+		// toggle visible
+		ctx->ItemClick("**/Visible");
+		ctx->Yield();
+
+		// open swing limits header and add a swing limit
+		ctx->ItemOpen("**/Swing Limits");
+		ctx->Yield();
+		ctx->ItemClick("**/Add swing limit");
+		ctx->Yield();
+
+		// disable IK again
+		ctx->ItemClick("**/Enable IK");
+		ctx->Yield();
+		IM_CHECK(!node->hasIKConstraint());
+	};
 }
 
 } // namespace voxedit

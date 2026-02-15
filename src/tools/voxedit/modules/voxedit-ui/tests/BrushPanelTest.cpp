@@ -132,30 +132,42 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Plane));
 	};
 
-#if 0
-	// https://github.com/vengi-voxel/vengi/issues/457
-	IM_REGISTER_TEST(engine, testCategory(), "line brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		// TODO: not all created volumes are overridden and removed on click... check why
-		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Line));
-	};
-
-	IM_REGISTER_TEST(engine, testCategory(), "path brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		// TODO: load or create a volume first, path needs existing volumes
-		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Path));
-	};
-
 	IM_REGISTER_TEST(engine, testCategory(), "paint brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		// TODO: load or create a volume first, paint needs existing volumes
-		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Paint));
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		// fill to create existing voxels that paint brush can operate on
+		command::executeCommands("fill");
+		ctx->Yield(3);
+		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Paint));
+		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "normal brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		// TODO: load or create a volume first, normal needs existing volumes
-		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Normal));
+	IM_REGISTER_TEST(engine, testCategory(), "stamp brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Stamp));
+		// use selection as stamp source
+		command::executeCommands("fill");
+		ctx->Yield(3);
+		command::executeCommands("select all");
+		ctx->Yield(3);
+		command::executeCommands("stampbrushuseselection");
+		ctx->Yield(3);
 	};
-#endif
 
-	// TODO: copy and paste
+	IM_REGISTER_TEST(engine, testCategory(), "copy and paste")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		// fill and select to have something to copy
+		command::executeCommands("fill");
+		ctx->Yield(3);
+		command::executeCommands("select all");
+		ctx->Yield(3);
+		command::executeCommands("copy");
+		ctx->Yield(3);
+		command::executeCommands("paste");
+		ctx->Yield(3);
+	};
 }
 
 } // namespace voxedit

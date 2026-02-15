@@ -3,6 +3,7 @@
  */
 
 #include "../SceneGraphPanel.h"
+#include "command/CommandHandler.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
@@ -57,8 +58,73 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Merge all");
 		const int afterMerge = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(afterMerge == 1);
+	};
 
-		// TODO: all other actions, too
+	IM_REGISTER_TEST(engine, testCategory(), "context menu bake and stamp")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphbakestamp", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// bake transform
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Bake transform");
+		ctx->Yield();
+
+		// use as stamp
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Use as stamp");
+		ctx->Yield();
+
+		// save the model node (modelsave saves directly to a file, no dialog)
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Save");
+		ctx->Yield();
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "context menu add nodes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphaddnodes", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// add new group via context menu
+		const int groupsBefore = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Add new group");
+		ctx->Yield();
+		const int groupsAfter = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
+		IM_CHECK_EQ(groupsAfter, groupsBefore + 1);
+
+		// add new camera via context menu
+		const int camerasBefore = sceneGraph.size(scenegraph::SceneGraphNodeType::Camera);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Add new camera");
+		ctx->Yield();
+		const int camerasAfter = sceneGraph.size(scenegraph::SceneGraphNodeType::Camera);
+		IM_CHECK_EQ(camerasAfter, camerasBefore + 1);
+
+		// add new point via context menu
+		const int pointsBefore = sceneGraph.size(scenegraph::SceneGraphNodeType::Point);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Add new point");
+		ctx->Yield();
+		const int pointsAfter = sceneGraph.size(scenegraph::SceneGraphNodeType::Point);
+		IM_CHECK_EQ(pointsAfter, pointsBefore + 1);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "context menu merge visible locked")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, id));
+		IM_CHECK(_sceneMgr->newScene(true, "scenegraphmerge", voxel::Region(0, 31)));
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// fill voxels so merging produces a valid region
+		command::executeCommands("fill");
+		ctx->Yield(3);
+
+		// duplicate node to have multiple nodes
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+
+		// merge visible
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Merge visible");
+		ctx->Yield();
+		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 1);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
