@@ -10,6 +10,7 @@ namespace voxedit {
 
 void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "shading")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
 		IM_CHECK(newTemplateScene(ctx, "##templates/##River"));
 		IM_CHECK(focusWindow(ctx, id));
 
