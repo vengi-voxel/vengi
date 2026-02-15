@@ -1078,6 +1078,10 @@ static void syncState() {
 	}
 }
 
+void syncPendingState() {
+	syncState();
+}
+
 static GLbitfield getBitField(ClearFlag flag) {
 	GLbitfield glValue = 0;
 	if ((flag & ClearFlag::Color) == ClearFlag::Color) {

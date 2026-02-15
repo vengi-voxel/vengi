@@ -556,6 +556,16 @@ int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String
 void flush();
 
 /**
+ * @brief Flush all pending renderer state changes to the backend.
+ *
+ * Applies any pending state (blend, depth, scissor, textures, etc.) to the
+ * backend immediately, without requiring a draw call. This is used at frame
+ * boundaries to ensure state changes queued by Scoped* destructors after the
+ * last draw call are actually applied to the hardware.
+ */
+void syncPendingState();
+
+/**
  * @brief Block until all previously submitted rendering commands have finished.
  *
  * This is a heavy synchronization point and should be used sparingly.

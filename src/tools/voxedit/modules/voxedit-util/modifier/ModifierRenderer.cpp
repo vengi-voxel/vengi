@@ -225,10 +225,6 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 		const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3((float)_gridResolution));
 		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
 	}
-	{
-		const video::ScopedState blend(video::State::Blend, true);
-		_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
-	}
 
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
 		_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
@@ -238,6 +234,9 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 	video::polygonOffset(glm::vec3(-0.1f));
 	renderBrushVolume(camera, modelMatrix);
 	video::polygonOffset(glm::vec3(0.0f));
+
+	const video::ScopedState blend(video::State::Blend, true);
+	_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
 }
 
 void ModifierRenderer::waitForPendingExtractions() {

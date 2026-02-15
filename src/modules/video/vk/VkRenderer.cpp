@@ -187,6 +187,9 @@ void activateContext(SDL_Window *window, RendererContext &context) {
 void startFrame(SDL_Window *window, RendererContext &context) {
 }
 
+void syncPendingState() {
+}
+
 void endFrame(SDL_Window *window) {
 }
 

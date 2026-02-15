@@ -413,6 +413,7 @@ void startFrame(SDL_Window *window, RendererContext &context) {
 	activateContext(window, context);
 
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
+	video::syncPendingState();
 }
 
 } // namespace video
