@@ -42,6 +42,21 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("##assetpaneltabs/Models");
 		ctx->Yield();
+
+		// wait for the remote collection to load (async network fetch)
+		bool found = false;
+		for (int i = 0; i < 300; ++i) {
+			ctx->Yield();
+			if (!_collectionMgr->voxelFilesMap().empty()) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			ctx->LogWarning("Remote collection not available - skipping test");
+			return;
+		}
+
 		ctx->ItemDoubleClick("**/Oasis");
 		ctx->ItemDoubleClick("**/Vengi voxelized");
 		// TODO: wait until it's loaded and import flighthelmet-scale-300.qb via context menu - add to scene
