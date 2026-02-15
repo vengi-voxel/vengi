@@ -369,6 +369,7 @@ app::AppState IMGUIApp::onInit() {
 			break;
 		}
 	};
+	test_io.ConfigLogToFuncUserData = this;
 	test_io.ConfigVerboseLevel = ImGuiTestVerboseLevel_Info;
 	test_io.ConfigVerboseLevelOnError = ImGuiTestVerboseLevel_Debug;
 #endif
