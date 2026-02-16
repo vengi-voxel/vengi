@@ -45,6 +45,7 @@ private:
 	core::VarPtr _planeSize;
 	core::VarPtr _showPlane;
 	math::Axis _lockedAxis = math::Axis::None;
+	glm::ivec3 _cursorPosition{0};
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
 	int32_t _highlightMeshIndex = -1;
