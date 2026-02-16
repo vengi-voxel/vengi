@@ -3371,8 +3371,9 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 			return false;
 		}
 		if (sampler.currentPositionValid()) {
-			// while having an axis locked, we should end the trace if we cross the plane
-			// but allow the ray to continue traveling along the plane for side face selection
+			// while having an axis locked, we should end the trace if the ray leaves the
+			// locked plane - but allow the ray to arrive at and travel along the plane so
+			// that side faces of voxels on the plane can be selected
 			if (lockedAxis != math::Axis::None && _result.validPreviousPosition) {
 				const glm::ivec3& cursorPos = cursorPosition();
 				bool currOnPlane = false;
@@ -3389,14 +3390,18 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 					currOnPlane |= sampler.position()[2] == cursorPos[2];
 					prevOnPlane |= _result.previousPosition[2] == cursorPos[2];
 				}
-				if (prevOnPlane != currOnPlane) {
-					// ray is crossing the locked plane boundary - stop the trace
-					if (currOnPlane) {
-						// arriving at the plane - use the current position
-						_result.previousPosition = sampler.position();
+				if (prevOnPlane && !currOnPlane) {
+					// ray is leaving the locked plane - stop the trace and use the
+					// last on-plane position that is already in _result.previousPosition.
+					// use the locked axis to determine the face - the ray approaches the
+					// plane from one side, so the face is the plane surface facing the ray
+					if ((lockedAxis & math::Axis::X) != math::Axis::None) {
+						_result.hitFace = ray.direction.x > 0.0f ? voxel::FaceNames::NegativeX : voxel::FaceNames::PositiveX;
+					} else if ((lockedAxis & math::Axis::Y) != math::Axis::None) {
+						_result.hitFace = ray.direction.y > 0.0f ? voxel::FaceNames::NegativeY : voxel::FaceNames::PositiveY;
+					} else if ((lockedAxis & math::Axis::Z) != math::Axis::None) {
+						_result.hitFace = ray.direction.z > 0.0f ? voxel::FaceNames::NegativeZ : voxel::FaceNames::PositiveZ;
 					}
-					// leaving the plane - keep _result.previousPosition (already on the plane)
-					_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.previousPosition, 0.0f, 1.0f).face;
 					return false;
 				}
 			}
@@ -3412,7 +3417,18 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	});
 
 	if (_result.firstInvalidPosition) {
-		_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f).face;
+		if (lockedAxis != math::Axis::None && !_result.didHit) {
+			// ray exited the volume while on the locked plane without hitting a solid voxel
+			if ((lockedAxis & math::Axis::X) != math::Axis::None) {
+				_result.hitFace = ray.direction.x > 0.0f ? voxel::FaceNames::NegativeX : voxel::FaceNames::PositiveX;
+			} else if ((lockedAxis & math::Axis::Y) != math::Axis::None) {
+				_result.hitFace = ray.direction.y > 0.0f ? voxel::FaceNames::NegativeY : voxel::FaceNames::PositiveY;
+			} else if ((lockedAxis & math::Axis::Z) != math::Axis::None) {
+				_result.hitFace = ray.direction.z > 0.0f ? voxel::FaceNames::NegativeZ : voxel::FaceNames::PositiveZ;
+			}
+		} else {
+			_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f).face;
+		}
 		Log::debug("Raycast face hit: %i", (int)_result.hitFace);
 	}
 

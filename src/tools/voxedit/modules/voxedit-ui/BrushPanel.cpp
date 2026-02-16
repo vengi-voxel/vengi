@@ -391,7 +391,7 @@ void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, A
 
 // doing this after aabbBrushOptions() allows us to extend the radio buttons
 void BrushPanel::aabbBrushModeOptions(AABBBrush &brush) {
-	if (brush.singleMode()) {
+	if (brush.anySingleMode()) {
 		int radius = brush.radius();
 		if (ImGui::InputInt(_("Radius"), &radius)) {
 			brush.setRadius(radius);
