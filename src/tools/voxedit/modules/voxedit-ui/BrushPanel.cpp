@@ -296,6 +296,13 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 			},
 			{}, io::format::images());
 	}
+	ImGui::SameLine();
+	{
+		ui::ScopedStyle style;
+		style.pushFontSize(imguiApp()->bigFontSize());
+		ui::Toolbar toolbar("texturebrushtoolbar", &listener);
+		toolbar.button(ICON_LC_SCAN, "texturebrushfromface");
+	}
 
 	bool projectOntoSurface = brush.projectOntoSurface();
 	if (ImGui::Checkbox(_("Project onto surface"), &projectOntoSurface)) {

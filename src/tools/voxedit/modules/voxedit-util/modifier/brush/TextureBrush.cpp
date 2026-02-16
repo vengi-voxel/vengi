@@ -6,11 +6,36 @@
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "image/Image.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/ImportFace.h"
 
 namespace voxedit {
+
+bool TextureBrush::createImageFromFace(const voxel::RawVolume *volume, const palette::Palette &palette,
+									   const voxel::Region &region, voxel::FaceNames face) {
+	if (volume == nullptr) {
+		Log::error("No volume given for createImageFromFace");
+		return false;
+	}
+	if (face == voxel::FaceNames::Max) {
+		Log::error("No valid face given for createImageFromFace");
+		return false;
+	}
+	const image::ImagePtr &image = voxelutil::renderFaceToImage(volume, palette, region, face);
+	if (!image || !image->isLoaded()) {
+		Log::error("Failed to create image from face");
+		return false;
+	}
+	setImage(image);
+	_uv0 = glm::vec2(0.0f);
+	_uv1 = glm::vec2(1.0f);
+	Log::info("Created texture from face with dimensions %ix%i", image->width(), image->height());
+	return true;
+}
 
 bool TextureBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						   const BrushContext &ctx) {
@@ -93,6 +118,25 @@ void TextureBrush::construct() {
 			_uv0 = glm::vec2(0.0f);
 			_uv1 = glm::vec2(1.0f);
 		}).setHelp(_("Reset the uv coordinates"));
+
+	command::Command::registerCommand("texturebrushfromface")
+		.setHandler([this](const command::CommandArgs &args) {
+			const int activeNode = _sceneMgr->sceneGraph().activeNode();
+			const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+			if (node == nullptr) {
+				Log::warn("No active model node available");
+				return;
+			}
+			const voxel::FaceNames face = _sceneMgr->modifier().brushContext().cursorFace;
+			if (face == voxel::FaceNames::Max) {
+				Log::warn("No valid face selected for texture capture");
+				return;
+			}
+			const voxel::RawVolume *volume = node->volume();
+			const palette::Palette &palette = node->palette();
+			const voxel::Region &region = volume->region();
+			createImageFromFace(volume, palette, region, face);
+		}).setHelp(_("Create a texture from the active model's face colors"));
 }
 
 void TextureBrush::shutdown() {
@@ -100,6 +144,7 @@ void TextureBrush::shutdown() {
 	command::Command::unregisterCommand("texturebrushmirroru");
 	command::Command::unregisterCommand("texturebrushmirrorv");
 	command::Command::unregisterCommand("texturebrushresetuv");
+	command::Command::unregisterCommand("texturebrushfromface");
 }
 
 } // namespace voxedit

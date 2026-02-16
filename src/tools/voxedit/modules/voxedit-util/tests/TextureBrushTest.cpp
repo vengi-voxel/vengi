@@ -32,7 +32,7 @@ protected:
 };
 
 TEST_F(TextureBrushTest, testExecuteFilled) {
-	TextureBrush brush;
+	TextureBrush brush(nullptr);
 	BrushContext brushContext;
 	const glm::ivec3 mins(0, 0, 0);
 	const glm::ivec3 maxs(20, 20, 20);
