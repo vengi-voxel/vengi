@@ -720,6 +720,7 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	const glm::ivec3 oldMaxs = oldRegion.getUpperCorner();
 	const glm::ivec3 mins = region.getLowerCorner();
 	const glm::ivec3 maxs = region.getUpperCorner();
+	// TODO: MEMENTO: this doesn't work properly when undoing and redoing the change
 	if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
 		// we don't have to re-extract a mesh if only new empty voxels were added.
 		modified(nodeId, voxel::Region::InvalidRegion);
