@@ -180,25 +180,83 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
-		// sort options
+		// load builtin:nippon palette
+		ctx->MenuClick("File/Switch");
+		ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
+		ctx->ItemClick("##type");
+		ctx->ItemClick("//$FOCUSED/built-in:nippon");
+		ctx->ItemClick("###Ok");
+		ctx->SetRef(id);
+
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+
+		// sort options - sorting only reorders PaletteView indices, not actual colors
 		ctx->MenuClick("Sort/Hue");
 		ctx->Yield();
+		// after hue sort the ui ordering should differ from identity
+		bool hueSortChanged = false;
+		for (int i = 0; i < activePalette.colorCount(); ++i) {
+			if (activePalette.view().uiIndex((uint8_t)i) != (uint8_t)i) {
+				hueSortChanged = true;
+				break;
+			}
+		}
+		IM_CHECK(hueSortChanged);
+
 		ctx->MenuClick("Sort/Saturation");
 		ctx->Yield();
 		ctx->MenuClick("Sort/Brightness");
 		ctx->Yield();
 		ctx->MenuClick("Sort/CIELab");
 		ctx->Yield();
+
+		// sort back to original and verify identity ordering
 		ctx->MenuClick("Sort/Original");
 		ctx->Yield();
+		for (int i = 0; i < activePalette.colorCount(); ++i) {
+			IM_CHECK_EQ(activePalette.view().uiIndex((uint8_t)i), (uint8_t)i);
+		}
+
+		// snapshot colors before tools
+		palette::Palette beforeRemove;
+		beforeRemove.load(palette::Palette::builtIn[0]);
 
 		// tools menu
 		ctx->MenuClick("Tools/Remove unused color");
 		ctx->Yield();
+		// color count should be <= the original count after removing unused
+		IM_CHECK_LE(activePalette.colorCount(), beforeRemove.colorCount());
+
+		// reload palette before contrast stretching
+		ctx->MenuClick("File/Switch");
+		ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
+		ctx->ItemClick("##type");
+		ctx->ItemClick("//$FOCUSED/built-in:nippon");
+		ctx->ItemClick("###Ok");
+		ctx->SetRef(id);
+
 		ctx->MenuClick("Tools/Contrast stretching");
 		ctx->Yield();
+		// verify colors match the expected contrast-stretched palette
+		palette::Palette expectedContrast;
+		expectedContrast.load(palette::Palette::builtIn[0]);
+		expectedContrast.constrastStretching();
+		IM_CHECK_EQ(activePalette.color(0), expectedContrast.color(0));
+
+		// reload palette before white balancing
+		ctx->MenuClick("File/Switch");
+		ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
+		ctx->ItemClick("##type");
+		ctx->ItemClick("//$FOCUSED/built-in:nippon");
+		ctx->ItemClick("###Ok");
+		ctx->SetRef(id);
+
 		ctx->MenuClick("Tools/White balancing");
 		ctx->Yield();
+		palette::Palette expectedWb;
+		expectedWb.load(palette::Palette::builtIn[0]);
+		expectedWb.whiteBalance();
+		IM_CHECK_EQ(activePalette.color(0), expectedWb.color(0));
 	};
 
 	// test palette modify sub-menu
@@ -206,14 +264,52 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->SetRef(id);
 
+		// load builtin:nippon palette
+		ctx->MenuClick("File/Switch");
+		ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
+		ctx->ItemClick("##type");
+		ctx->ItemClick("//$FOCUSED/built-in:nippon");
+		ctx->ItemClick("###Ok");
+		ctx->SetRef(id);
+
+		const palette::Palette &activePalette = _sceneMgr->activePalette();
+
+		// warmer: r increases, b decreases
+		palette::Palette expectedWarmer;
+		expectedWarmer.load(palette::Palette::builtIn[0]);
+		expectedWarmer.changeWarmer();
 		ctx->MenuClick("Tools/Modify/Warmer");
 		ctx->Yield();
+		IM_CHECK_EQ(activePalette.color(0), expectedWarmer.color(0));
+		IM_CHECK_EQ(activePalette.colorCount(), expectedWarmer.colorCount());
+
+		// colder: r decreases, b increases (applied on top of warmer)
+		expectedWarmer.changeColder();
 		ctx->MenuClick("Tools/Modify/Colder");
 		ctx->Yield();
+		IM_CHECK_EQ(activePalette.color(0), expectedWarmer.color(0));
+
+		// reload palette for brighter/darker tests
+		ctx->MenuClick("File/Switch");
+		ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
+		ctx->ItemClick("##type");
+		ctx->ItemClick("//$FOCUSED/built-in:nippon");
+		ctx->ItemClick("###Ok");
+		ctx->SetRef(id);
+
+		// brighter
+		palette::Palette expectedBrighter;
+		expectedBrighter.load(palette::Palette::builtIn[0]);
+		expectedBrighter.changeBrighter();
 		ctx->MenuClick("Tools/Modify/Brighter");
 		ctx->Yield();
+		IM_CHECK_EQ(activePalette.color(0), expectedBrighter.color(0));
+
+		// darker (applied on top of brighter)
+		expectedBrighter.changeDarker();
 		ctx->MenuClick("Tools/Modify/Darker");
 		ctx->Yield();
+		IM_CHECK_EQ(activePalette.color(0), expectedBrighter.color(0));
 	};
 }
 
