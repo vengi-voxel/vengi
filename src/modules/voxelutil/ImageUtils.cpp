@@ -418,6 +418,58 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 	return image;
 }
 
+image::ImagePtr renderFaceToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
+								  const voxel::Region &region, voxel::FaceNames face) {
+	if (face == voxel::FaceNames::Max) {
+		Log::error("Invalid face for renderFaceToImage");
+		return image::ImagePtr();
+	}
+
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	int width = 1;
+	int height = 1;
+	if (voxel::isY(face)) {
+		width = dim.x;
+		height = dim.z;
+	} else if (voxel::isX(face)) {
+		width = dim.z;
+		height = dim.y;
+	} else if (voxel::isZ(face)) {
+		width = dim.x;
+		height = dim.y;
+	}
+
+	image::ImagePtr image = core::make_shared<image::Image>("renderFaceToImage");
+	image->resize(width, height);
+	for (int x = 0; x < width; ++x) {
+		for (int y = 0; y < height; ++y) {
+			image->setColor(color::RGBA(0, 0, 0, 0), x, y);
+		}
+	}
+
+	const glm::ivec3 &mins = region.getLowerCorner();
+	voxelutil::visitFace(*volume, region, face, [face, &palette, &image, &mins, height](int x, int y, int z, const voxel::Voxel &voxel) {
+		const color::RGBA rgba = palette.color(voxel.getColor());
+		int px = 0;
+		int py = 0;
+		if (voxel::isY(face)) {
+			px = x - mins.x;
+			py = height - 1 - (z - mins.z);
+		} else if (voxel::isX(face)) {
+			px = z - mins.z;
+			py = height - 1 - (y - mins.y);
+		} else if (voxel::isZ(face)) {
+			px = x - mins.x;
+			py = height - 1 - (y - mins.y);
+		}
+		image->setColor(rgba, px, py);
+	}, true);
+
+	image->markLoaded();
+	Log::debug("Created face texture image with dimensions %ix%i", width, height);
+	return image;
+}
+
 image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
 							  voxel::FaceNames frontFace, color::RGBA background, int imgW, int imgH, bool upScale,
 							  float depthFactor) {

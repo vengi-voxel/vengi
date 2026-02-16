@@ -48,6 +48,18 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
 											bool upScale = true, float depthFactor = 0.0f);
 
 /**
+ * @brief Render a face of a volume within a specific region into an image
+ * @note This is useful for capturing the surface colors from a selected face area
+ * @param[in] volume The volume to render from
+ * @param[in] palette The palette to use for color lookups
+ * @param[in] region The region to render from
+ * @param[in] face The face to render
+ * @return An image with the face's surface colors, or an empty image on failure
+ */
+[[nodiscard]] image::ImagePtr renderFaceToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
+												const voxel::Region &region, voxel::FaceNames face);
+
+/**
  * @brief Creates an isometric render image for voxel::RawVolume
  * @sa voxel::RawVolume
  */
