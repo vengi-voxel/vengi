@@ -9,6 +9,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
@@ -152,21 +153,74 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield(3);
 		command::executeCommands("select all");
 		ctx->Yield(3);
+		// TODO: do this via UI interaction
 		command::executeCommands("stampbrushuseselection");
 		ctx->Yield(3);
+
+		// create a new empty model node to stamp into
+		const int newNodeId = _sceneMgr->addModelChild("stamp target", 32, 32, 32);
+		IM_CHECK(newNodeId != InvalidNodeId);
+		ctx->Yield(3);
+
+		// verify the new node is empty
+		scenegraph::SceneGraphNode *newModel = _sceneMgr->sceneGraphModelNode(newNodeId);
+		IM_CHECK(newModel != nullptr);
+		IM_CHECK(voxelutil::countVoxels(*newModel->volume()) == 0);
+
+		// center on viewport and place the stamp
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
+
+		// validate that voxels were placed by the stamp
+		IM_CHECK(voxelutil::countVoxels(*newModel->volume()) > 0);
 	};
 
-	IM_REGISTER_TEST(engine, testCategory(), "copy and paste")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
-		// fill and select to have something to copy
+	IM_REGISTER_TEST(engine, testCategory(), "normal brush")->TestFunc = [=](ImGuiTestContext *ctx) {
+		// switch to "All" view mode so the Normal brush button is visible
+		IM_CHECK(changeViewMode(ctx, ViewMode::All));
+		ctx->Yield(3);
+
+		// activeBrush creates a new scene internally, so fill afterwards
+		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Normal));
+
+		// fill to create existing voxels that normal brush can operate on
 		command::executeCommands("fill");
 		ctx->Yield(3);
-		command::executeCommands("select all");
-		ctx->Yield(3);
-		command::executeCommands("copy");
-		ctx->Yield(3);
-		command::executeCommands("paste");
-		ctx->Yield(3);
+
+		// verify all voxels have NO_NORMAL after filling
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(node != nullptr);
+		bool allNoNormal = true;
+		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
+			if (v.getNormal() != NO_NORMAL) {
+				allNoNormal = false;
+			}
+		});
+		IM_CHECK(allNoNormal);
+
+		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+
+		// set a specific normal index on the modifier (the value the normal brush will paint)
+		const uint8_t expectedNormal = 7;
+		modifier.setNormalColorIndex(expectedNormal);
+
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
+		executeViewportClick();
+
+		// find any voxel that had its normal changed to the expected value
+		node = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(node != nullptr);
+		bool foundPaintedNormal = false;
+		voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &v) {
+			if (v.getNormal() == expectedNormal) {
+				foundPaintedNormal = true;
+			}
+		});
+		IM_CHECK(foundPaintedNormal);
+
+		// reset view mode back to default
+		IM_CHECK(changeViewMode(ctx, ViewMode::Default));
 	};
 }
 
