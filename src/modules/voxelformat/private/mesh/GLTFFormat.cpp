@@ -1971,10 +1971,10 @@ bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const ti
 			} else if (gltfAnimChannel.target_path == "rotation") {
 				core_assert(gltfTransformAccessor->type == TINYGLTF_TYPE_VEC4);
 				float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f;
-				stream.readFloat(w);
 				stream.readFloat(x);
 				stream.readFloat(y);
 				stream.readFloat(z);
+				stream.readFloat(w);
 				glm::quat orientation = glm::quat::wxyz(w, x, y, z);
 				transform.setLocalOrientation(orientation);
 			} else if (gltfAnimChannel.target_path == "scale") {
