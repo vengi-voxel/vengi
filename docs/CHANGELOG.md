@@ -21,6 +21,7 @@ General:
    - Fixed quaternion lua binding issues
    - Improved pivot rounding errors when merging nodes
    - Extended `animate.lua` to work with more different character scenes
+   - Fixed rotation import for `gltf` files
 
 VoxEdit:
 
