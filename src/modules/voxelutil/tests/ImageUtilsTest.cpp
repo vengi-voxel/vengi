@@ -289,4 +289,43 @@ TEST_F(ImageUtilsTest, testApplyTextureToFace) {
 	EXPECT_EQ(1870, voxelutil::countVoxels(volume));
 }
 
+TEST_F(ImageUtilsTest, testRenderFaceToImage) {
+	palette::Palette palette;
+	palette.nippon();
+	const voxel::Region region(0, 0, 0, 3, 3, 3);
+	voxel::RawVolume volume(region);
+
+	// fill the volume with voxels of different colors
+	for (int x = 0; x <= 3; ++x) {
+		for (int y = 0; y <= 3; ++y) {
+			for (int z = 0; z <= 3; ++z) {
+				const uint8_t colorIdx = (uint8_t)((x + y * 4 + z * 16) % 255 + 1);
+				volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, colorIdx));
+			}
+		}
+	}
+
+	const image::ImagePtr &img = renderFaceToImage(&volume, palette, region, voxel::FaceNames::Front);
+	ASSERT_TRUE(img && img->isLoaded());
+	// Front face (PositiveZ): image dimensions should be x × y = 4 × 4
+	EXPECT_EQ(4, img->width());
+	EXPECT_EQ(4, img->height());
+
+	// verify that the image contains non-transparent pixels
+	bool hasNonTransparent = false;
+	for (int x = 0; x < img->width(); ++x) {
+		for (int y = 0; y < img->height(); ++y) {
+			const color::RGBA c = img->colorAt(x, y);
+			if (c.a > 0) {
+				hasNonTransparent = true;
+				break;
+			}
+		}
+		if (hasNonTransparent) {
+			break;
+		}
+	}
+	EXPECT_TRUE(hasNonTransparent);
+}
+
 } // namespace voxelutil
