@@ -929,7 +929,7 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	core_assert(s.nodeType != scenegraph::SceneGraphNodeType::Max);
 	scenegraph::SceneGraphNode newNode(s.nodeType, s.nodeUUID);
 	if (newNode.isModelNode()) {
-		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
+		newNode.setVolume(new voxel::RawVolume(s.volumeRegion()), true);
 		if (s.hasVolumeData()) {
 			memento::MementoData::toVolume(newNode.volume(), s.data, s.data.dataRegion());
 		}
