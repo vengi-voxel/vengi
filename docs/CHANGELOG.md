@@ -28,7 +28,7 @@ VoxEdit:
    - Fixed scroll to active node in scene graph panel
    - Auto enable a newly created animation
    - Fixed pivot change not taking local child transform into acount
-   - Improved lock axis handling
+   - Improved locked axis handling
    - Fixed locked plane position change
    - Fixed mirror plane rendering
    - Improved ui integration tests
