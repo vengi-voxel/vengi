@@ -849,12 +849,12 @@ bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const sc
 	Log::debug("New memento state for node %s with name '%s'", node.uuid().str().c_str(), node.name().c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
-	MementoState state(type, data, parentId, node.uuid(), referenceId, node.name(), node.type(), node.pivot(),
-					   node.allKeyFrames(), node.palette(), node.normalPalette(), node.properties());
+	core::ScopedPtr<MementoState> state(new MementoState(type, data, parentId, node.uuid(), referenceId, node.name(), node.type(), node.pivot(),
+					   node.allKeyFrames(), node.palette(), node.normalPalette(), node.properties()));
 	if (node.hasIKConstraint()) {
-		state.ikConstraint.setValue(*node.ikConstraint());
+		state->ikConstraint.setValue(*node.ikConstraint());
 	}
-	return addState(core::move(state));
+	return addState(core::move(*state));
 }
 
 bool MementoHandler::markUndo(const core::UUID &parentId, const core::UUID &nodeId, const core::UUID &referenceId,
