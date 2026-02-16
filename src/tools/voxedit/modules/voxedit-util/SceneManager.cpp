@@ -3371,23 +3371,33 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 			return false;
 		}
 		if (sampler.currentPositionValid()) {
-			// while having an axis locked, we should end the trace if we hit the plane
-			if (lockedAxis != math::Axis::None) {
+			// while having an axis locked, we should end the trace if we cross the plane
+			// but allow the ray to continue traveling along the plane for side face selection
+			if (lockedAxis != math::Axis::None && _result.validPreviousPosition) {
 				const glm::ivec3& cursorPos = cursorPosition();
+				bool currOnPlane = false;
+				bool prevOnPlane = false;
 				if ((lockedAxis & math::Axis::X) != math::Axis::None) {
-					if (sampler.position()[0] == cursorPos[0]) {
-						return false;
-					}
+					currOnPlane |= sampler.position()[0] == cursorPos[0];
+					prevOnPlane |= _result.previousPosition[0] == cursorPos[0];
 				}
 				if ((lockedAxis & math::Axis::Y) != math::Axis::None) {
-					if (sampler.position()[1] == cursorPos[1]) {
-						return false;
-					}
+					currOnPlane |= sampler.position()[1] == cursorPos[1];
+					prevOnPlane |= _result.previousPosition[1] == cursorPos[1];
 				}
 				if ((lockedAxis & math::Axis::Z) != math::Axis::None) {
-					if (sampler.position()[2] == cursorPos[2]) {
-						return false;
+					currOnPlane |= sampler.position()[2] == cursorPos[2];
+					prevOnPlane |= _result.previousPosition[2] == cursorPos[2];
+				}
+				if (prevOnPlane != currOnPlane) {
+					// ray is crossing the locked plane boundary - stop the trace
+					if (currOnPlane) {
+						// arriving at the plane - use the current position
+						_result.previousPosition = sampler.position();
 					}
+					// leaving the plane - keep _result.previousPosition (already on the plane)
+					_result.hitFace = voxelutil::raycastFaceDetection(ray.origin, ray.direction, _result.previousPosition, 0.0f, 1.0f).face;
+					return false;
 				}
 			}
 
