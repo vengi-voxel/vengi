@@ -59,10 +59,13 @@ bool Panel::changeSlider(ImGuiTestContext *ctx, const char *path, bool left) {
 bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	ImGuiContext& g = *ctx->UiContext;
 	IM_CHECK_RETV(focusWindow(ctx, "Save file"), false);
-	ctx->ItemInputValue("Filename", filename);
-	ctx->Yield();
 	const int currentPopupSize = g.OpenPopupStack.Size;
 	IM_CHECK_RETV(currentPopupSize > 0, false);
+	// Use ItemInput + KeyCharsReplace instead of ItemInputValue to avoid
+	// pressing Enter, which would auto-close the dialog before clicking Save.
+	ctx->ItemInput("Filename");
+	ctx->KeyCharsReplace(filename);
+	ctx->Yield();
 	ctx->ItemClick("Save");
 	ctx->Yield();
 

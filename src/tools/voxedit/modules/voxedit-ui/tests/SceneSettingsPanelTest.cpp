@@ -52,15 +52,20 @@ void SceneSettingsPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		// enable shadows mode for sun presets to work
 		ctx->ComboClick("Shading Mode/Shadows");
 		ctx->Yield();
+		IM_CHECK_EQ(_shadingMode->intVal(), (int)ShadingMode::Shadows);
+		IM_CHECK_EQ(_rendershadow->boolVal(), true);
 
 		ctx->ItemClick("sunangle/Preset: Noon");
 		ctx->Yield();
+		IM_CHECK_STR_EQ(_sunAngle->strVal().c_str(), "60.00 135.00 0.00");
 
 		ctx->ItemClick("sunangle/Preset: Evening");
 		ctx->Yield();
+		IM_CHECK_STR_EQ(_sunAngle->strVal().c_str(), "15.00 225.00 0.00");
 
 		ctx->ItemClick("sunangle/Preset: Morning");
 		ctx->Yield();
+		IM_CHECK_STR_EQ(_sunAngle->strVal().c_str(), "15.00 45.00 0.00");
 	};
 }
 

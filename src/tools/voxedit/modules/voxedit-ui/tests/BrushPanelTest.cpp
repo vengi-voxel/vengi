@@ -153,8 +153,8 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield(3);
 		command::executeCommands("select all");
 		ctx->Yield(3);
-		// TODO: do this via UI interaction
-		command::executeCommands("stampbrushuseselection");
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->ItemClick("Use selection");
 		ctx->Yield(3);
 
 		// create a new empty model node to stamp into

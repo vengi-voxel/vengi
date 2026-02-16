@@ -46,14 +46,13 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->Yield();
 
 		// calculate normals with default (Flat) mode
-		ctx->MenuClick("File/Auto normals");
-		ctx->Yield();
-		ctx->ItemClick("//$FOCUSED/Calculate normals");
+		ctx->MenuClick("File/Auto normals/Calculate normals");
 		ctx->Yield();
 	};
 
 	// export normal palette
 	IM_REGISTER_TEST(engine, testCategory(), "export normal palette")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
 		IM_CHECK(changeViewMode(ctx, ViewMode::RedAlert2));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Export");

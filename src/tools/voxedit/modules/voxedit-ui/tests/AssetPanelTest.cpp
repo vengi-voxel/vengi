@@ -59,11 +59,25 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		ctx->ItemDoubleClick("**/Oasis");
 		ctx->ItemDoubleClick("**/Vengi voxelized");
-		// TODO: wait until it's loaded and import flighthelmet-scale-300.qb via context menu - add to scene
-		// const int modelSize = _sceneMgr->sceneGraph().size();
-		// assetpanel\/##voxelfiles_134E7031/0x134E7031 [override]/Vengi voxelized (3)##Vengi voxelized/2/flighthelmet-scale-300.qb
-		// const int modelSizeAfterImport = _sceneMgr->sceneGraph().size();
-		// IM_CHECK_EQ(modelSizeAfterImport, modelSize + 1);
+		ctx->Yield(10);
+
+		const int modelSize = (int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
+
+		// right-click the file and import via context menu
+		ctx->MouseMove("**/flighthelmet-scale-300.qb");
+		ctx->MouseClick(ImGuiMouseButton_Right);
+		ctx->MenuClick("//$FOCUSED/Add to scene");
+
+		// wait for the async import to complete
+		bool imported = false;
+		for (int i = 0; i < 600; ++i) {
+			ctx->Yield();
+			if ((int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model) > modelSize) {
+				imported = true;
+				break;
+			}
+		}
+		IM_CHECK(imported);
 	};
 }
 

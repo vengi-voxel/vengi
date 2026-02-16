@@ -162,21 +162,28 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
+		const int firstNodeId = sceneGraph.activeNode();
+
 		// duplicate node to have multiple nodes
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Duplicate");
 		IM_CHECK_EQ(sceneGraph.size(scenegraph::SceneGraphNodeType::Model), 2);
+		const int secondNodeId = sceneGraph.activeNode();
 
 		// hide others
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Hide others");
 		ctx->Yield();
+		IM_CHECK(sceneGraph.node(secondNodeId).visible());
+		IM_CHECK(!sceneGraph.node(firstNodeId).visible());
 
-		// show all
+		// show all (shows the node itself and its children)
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Show all");
 		ctx->Yield();
+		IM_CHECK(sceneGraph.node(secondNodeId).visible());
 
-		// hide all
+		// hide all (hides the node itself and its children)
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Hide all");
 		ctx->Yield();
+		IM_CHECK(!sceneGraph.node(secondNodeId).visible());
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu lock unlock")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -188,10 +195,12 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// lock all
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Lock all");
 		ctx->Yield();
+		IM_CHECK(sceneGraph.node(sceneGraph.activeNode()).locked());
 
 		// unlock all
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Unlock all");
 		ctx->Yield();
+		IM_CHECK(!sceneGraph.node(sceneGraph.activeNode()).locked());
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "context menu center origin")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -203,21 +212,41 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// center origin
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Center origin");
 		ctx->Yield();
+		{
+			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode());
+			IM_CHECK(v != nullptr);
+			const glm::ivec3 center = v->region().getCenter();
+			IM_CHECK_EQ(center.x, 0);
+			IM_CHECK_EQ(center.y, 0);
+			IM_CHECK_EQ(center.z, 0);
+		}
 
 		// center reference
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Center reference");
 		ctx->Yield();
+		{
+			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode());
+			IM_CHECK(v != nullptr);
+			const glm::ivec3 center = v->region().getCenter();
+			IM_CHECK_EQ(center.x, 0);
+			IM_CHECK_EQ(center.y, 0);
+			IM_CHECK_EQ(center.z, 0);
+		}
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "toolbar show hide all")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		IM_CHECK(_sceneMgr->newScene(true, "scenegraphtoolbartest", voxel::Region(0, 31)));
 
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
 		// click show all and hide all toolbar buttons
 		ctx->ItemClick("toolbar/###button4"); // show all
 		ctx->Yield();
+		IM_CHECK(sceneGraph.node(sceneGraph.activeNode()).visible());
 		ctx->ItemClick("toolbar/###button5"); // hide all
 		ctx->Yield();
+		IM_CHECK(!sceneGraph.node(sceneGraph.activeNode()).visible());
 	};
 }
 
