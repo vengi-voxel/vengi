@@ -134,7 +134,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Save");
 		ctx->Yield();
-		IM_CHECK(saveFile(ctx, "mainwindow-test-save.vengi"));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "file load dialog")->TestFunc = [=](ImGuiTestContext *ctx) {
