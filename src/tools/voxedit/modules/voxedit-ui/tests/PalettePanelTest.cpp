@@ -22,6 +22,9 @@ static ImVec2 paletteCellCenter(ImGuiWindow *window, int palettePanelIdx) {
 	const float startY = window->ContentRegionRect.Min.y;
 	const float availWidth = window->ContentRegionRect.Max.x - startX;
 	const int cols = (int)(availWidth / frameHeight);
+	if (cols <= 0) {
+		return ImVec2(startX + frameHeight * 0.5f, startY + palettePanelIdx * frameHeight + frameHeight * 0.5f);
+	}
 	const int col = palettePanelIdx % cols;
 	const int row = palettePanelIdx / cols;
 	return ImVec2(startX + col * frameHeight + frameHeight * 0.5f,
