@@ -884,13 +884,6 @@ bool MementoHandler::addState(MementoState &&state) {
 		}
 		return false;
 	}
-	if (!_groups.empty()) {
-		// if we mark something as new memento state, we can throw away
-		// every other state that follows the new one (everything after
-		// the current state position)
-		const size_t n = _groups.size() - (_groupStatePosition + 1);
-		_groups.erase_back(n);
-	}
 	core::ScopedLock lock(_mutex);
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
