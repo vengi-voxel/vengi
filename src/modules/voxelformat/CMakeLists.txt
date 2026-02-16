@@ -224,6 +224,8 @@ set(TEST_FILES
 	"tests/chr_knight.gox"
 	"tests/chr_knight.qb"
 	"tests/chr_knight.qbcl"
+	"tests/chr_oldman.vengi"
+	"tests/chr_oldman.gltf"
 	"tests/chronovox-studio.csm"
 	"tests/crabby.qbcl"
 	"tests/crabby.vox"
