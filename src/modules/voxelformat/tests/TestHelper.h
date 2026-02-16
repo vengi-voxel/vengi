@@ -61,6 +61,7 @@ enum class ValidateFlags {
 
 	Transform = Animations | Scale | Pivot | Translation,
 	All = Palette | Color | Transform | SceneGraphModels,										   // no region here
+	Mesh = Color | Animations | Scale | Pivot | Translation | SceneGraphModels | IgnoreHollow,
 	AllPaletteMinMatchingColors = PaletteMinMatchingColors | Color | Transform | SceneGraphModels, // no region here
 	AllPaletteColorOrderDiffers = PaletteColorOrderDiffers | Color | Transform | SceneGraphModels, // no region here
 	AllPaletteColorsScaled = PaletteColorsScaled | Color | Transform | SceneGraphModels,		   // no region here

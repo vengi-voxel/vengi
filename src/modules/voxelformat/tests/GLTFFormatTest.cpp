@@ -23,13 +23,13 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 
 TEST_F(GLTFFormatTest, testSaveChrKnight) {
 	GLTFFormat format;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::IgnoreHollow;
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Translation);
 	testSaveMesh("chr_knight.qbcl", "chr_knight.gltf", &format, flags);
 }
 
 TEST_F(GLTFFormatTest, testSaveCC) {
 	GLTFFormat format;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::IgnoreHollow;
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Transform);
 	testSaveMesh("cc.vxl", "cc.gltf", &format, flags);
 }
 
