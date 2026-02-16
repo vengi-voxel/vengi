@@ -1237,4 +1237,41 @@ TEST_F(MementoHandlerTest, testMirrorUndoWithPriorPartialEdit) {
 	}
 }
 
+// Test that undoing 3 of 5 states and adding a new one correctly truncates redo history
+TEST_F(MementoHandlerTest, testCutStatesAfterUndo) {
+	// Add 5 states
+	for (int i = 0; i < 5; ++i) {
+		auto v = create(1);
+		_mementoHandler.markUndo(0, 0, InvalidNodeId, core::String::format("State %i", i),
+								 scenegraph::SceneGraphNodeType::Model, v.get(), MementoType::Modification);
+	}
+	EXPECT_EQ(5, (int)_mementoHandler.stateSize());
+	EXPECT_EQ(4, _mementoHandler.statePosition());
+
+	// Undo 3 times
+	_mementoHandler.undo();
+	_mementoHandler.undo();
+	_mementoHandler.undo();
+	EXPECT_EQ(1, _mementoHandler.statePosition());
+
+	// Add 1 new state - this should truncate the 3 redo states
+	auto v = create(2);
+	_mementoHandler.markUndo(0, 0, InvalidNodeId, "New State", scenegraph::SceneGraphNodeType::Model, v.get(),
+							 MementoType::Modification);
+	EXPECT_EQ(3, (int)_mementoHandler.stateSize()) << "Should have initial + 1 non-undone + new state";
+	EXPECT_EQ(2, _mementoHandler.statePosition());
+	EXPECT_FALSE(_mementoHandler.canRedo()) << "All redo states should have been removed";
+	EXPECT_TRUE(_mementoHandler.canUndo());
+}
+
+// Test that beginGroup/endGroup both called while locked results in no change
+TEST_F(MementoHandlerTest, testBeginEndGroupBothLocked) {
+	const int sizeBefore = (int)_mementoHandler.stateSize();
+	_mementoHandler.lock();
+	_mementoHandler.beginGroup("locked group");
+	_mementoHandler.endGroup();
+	_mementoHandler.unlock();
+	EXPECT_EQ(sizeBefore, (int)_mementoHandler.stateSize()) << "No state should be added when locked";
+}
+
 } // namespace memento
