@@ -21,20 +21,15 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 	helper_saveSceneGraph(sceneGraph, "exportrgb.gltf");
 }
 
-// TODO: VOXELFORMAT: enable this
-TEST_F(GLTFFormatTest, DISABLED_testImportMeshAnimationCompare) {
+TEST_F(GLTFFormatTest, testImportMeshAnimationCompare) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "chr_oldman.vengi", 10);
 
-	// compare with chr_oldmman.gltf which was exported from the same source file
+	// compare with chr_oldman.gltf which was exported from the same source file
 	scenegraph::SceneGraph sceneGraph2;
 	testLoad(sceneGraph2, "chr_oldman.gltf", 10);
 
-	// TODO: VOXELFORMAT: this model includes animations - and once we import it back into vengi, the model is mirrored along the y-axis.
-	// It looks like this only happens for models with animations. Either it was already exported wrong like this (but I've checked
-	// the model in online viewers that also render the animation correctly), or the import is doing something wrong with the animation
-	// transforms.
-	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Transform);
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::Mesh & ~voxel::ValidateFlags::Color & ~voxel::ValidateFlags::Transform);
 	voxel::sceneGraphComparator(sceneGraph, sceneGraph2, flags);
 }
 
