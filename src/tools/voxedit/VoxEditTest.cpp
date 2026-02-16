@@ -13,6 +13,7 @@ public:
 		: VoxEdit(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool, sceneRenderer) {
 		_showWindow = false;
 		_wantCrashLogs = false;
+		_persistUISettings = false;
 	}
 
 	bool allowedToQuit() override {
