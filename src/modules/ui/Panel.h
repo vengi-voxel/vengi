@@ -43,6 +43,10 @@ public:
 	bool saveFile(ImGuiTestContext *ctx, const char *filename);
 	bool cancelSaveFile(ImGuiTestContext *ctx);
 	bool focusWindow(ImGuiTestContext *ctx, const char *title);
+	/**
+	 * @brief Check if a popup window with the given name/id is currently active
+	 */
+	static bool isPopupOpen(const char *name);
 #endif
 
 	/**

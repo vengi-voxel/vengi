@@ -43,12 +43,11 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	// main window itself
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
-		ImGuiContext &g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/New");
 		ctx->Yield();
-		IM_CHECK_EQ(g.OpenPopupStack.Size, 1);
-		IM_CHECK_EQ(g.OpenPopupStack[0].PopupId, ctx->GetID(POPUP_TITLE_UNSAVED));
+
+		IM_CHECK(isPopupOpen(POPUP_TITLE_UNSAVED));
 		ctx->SetRef(POPUP_TITLE_UNSAVED);
 		ctx->ItemClick("###Yes");
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);

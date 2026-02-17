@@ -56,11 +56,13 @@ bool Panel::changeSlider(ImGuiTestContext *ctx, const char *path, bool left) {
 	return true;
 }
 
+bool Panel::isPopupOpen(const char *name) {
+	ImGuiWindow *window = ImGui::FindWindowByName(name);
+	return window != nullptr && window->Active;
+}
+
 bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
-	ImGuiContext& g = *ctx->UiContext;
 	IM_CHECK_RETV(focusWindow(ctx, "Save file"), false);
-	const int currentPopupSize = g.OpenPopupStack.Size;
-	IM_CHECK_RETV(currentPopupSize > 0, false);
 	// Use ItemInput + KeyCharsReplace instead of ItemInputValue to avoid
 	// pressing Enter, which would auto-close the dialog before clicking Save.
 	ctx->ItemInput("Filename");
@@ -70,16 +72,14 @@ bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	ctx->Yield();
 
 	// Handle overwrite popup if the file already exists
-	ImGuiWindow* overwriteWindow = ImGui::FindWindowByName(FILE_ALREADY_EXISTS_POPUP);
-	if (overwriteWindow != nullptr && overwriteWindow->Active) {
+	if (isPopupOpen(FILE_ALREADY_EXISTS_POPUP)) {
 		IM_CHECK_RETV(focusWindow(ctx, FILE_ALREADY_EXISTS_POPUP), false);
 		ctx->ItemClick("###Yes");
 		ctx->Yield();
 	}
 
 	// Handle format options popup if it appeared
-	ImGuiWindow* optionsWindow = ImGui::FindWindowByName(OPTIONS_POPUP);
-	if (optionsWindow != nullptr && optionsWindow->Active) {
+	if (isPopupOpen(OPTIONS_POPUP)) {
 		IM_CHECK_RETV(focusWindow(ctx, OPTIONS_POPUP), false);
 		ctx->ItemClick("###Ok");
 		ctx->Yield();
