@@ -127,6 +127,8 @@ bool RawVolumeRenderer::init(bool normals) {
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
 	_cullBuffers = core::Var::getSafe(cfg::RenderCullBuffers);
 	_cullNodes = core::Var::getSafe(cfg::RenderCullNodes);
+	_outlineColor = core::Var::get(cfg::RenderOutlineColor, "-1.0 -1.0 -1.0", "Outline color for all voxels (use -1 for auto darken/brighten)");
+	_selectedOutlineColor = core::Var::get(cfg::RenderSelectedOutlineColor, "1.0 0.6 0.0", "Outline color for selected voxels");
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
@@ -851,6 +853,15 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 	}
 	_voxelShaderFragData.lightdir = _shadow.sunDirection();
+
+	glm::vec3 outlineColor;
+	_outlineColor->vec3Val(&outlineColor[0]);
+	_voxelShaderFragData.outlinecolor = glm::vec4(outlineColor, 1.0f);
+
+	glm::vec3 selectedOutlineColor;
+	_selectedOutlineColor->vec3Val(&selectedOutlineColor[0]);
+	_voxelShaderFragData.selectedoutlinecolor = glm::vec4(selectedOutlineColor, 1.0f);
+
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();

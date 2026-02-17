@@ -67,6 +67,8 @@ protected:
 	core::VarPtr _bloom;
 	core::VarPtr _cullBuffers;
 	core::VarPtr _cullNodes;
+	core::VarPtr _outlineColor;
+	core::VarPtr _selectedOutlineColor;
 
 	void updatePalette(const voxel::MeshStatePtr &meshState, int idx);
 	enum UpdateBufferFlags : uint8_t {

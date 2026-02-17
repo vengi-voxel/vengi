@@ -35,6 +35,7 @@ VoxEdit:
    - Improved ui integration tests
    - Fixed a stack overflow on mac
    - Fixed invalid memento state handling with undoing mirrored actions
+   - Selection outline now has a different color
 
 VoxConvert:
 

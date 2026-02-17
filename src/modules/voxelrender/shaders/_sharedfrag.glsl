@@ -6,6 +6,8 @@ layout(std140) uniform u_frag {
 	vec2 u_depthsize;
 	vec4 u_distances;
 	mat4 u_cascades[4];
+	vec4 u_outlinecolor;
+	vec4 u_selectedoutlinecolor;
 };
 
 layout(location = 0) $out vec4 o_color;
@@ -172,39 +174,32 @@ vec4 brighten(vec4 color) {
 }
 
 // pos is in object space
-vec4 outline(vec3 pos, vec4 color, vec3 normal) {
-#if 0
-	vec3 f = fract(pos);
-	float edge;
-	if (abs(normal.y) > 0.5) {
-		// top or bottom face XZ plane
-		edge = min(min(f.x, 1.0 - f.x), min(f.z, 1.0 - f.z));
-	} else if (abs(normal.x) > 0.5) {
-		// left / right face YZ plane
-		edge = min(min(f.y, 1.0 - f.y), min(f.z, 1.0 - f.z));
-	} else {
-		// front / back face XY plane
-		edge = min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y));
-	}
-	float seam = smoothstep(0.02, 0.05, edge);
-	return color * seam;
-#else
-	const float epsilona = 0.025;
+// outlineColor: vec4(-1) means auto darken/brighten, otherwise use the given color's rgb
+// thickness: controls the edge detection threshold
+vec4 outline(vec3 pos, vec4 color, vec3 normal, vec4 outlineColor, float thickness) {
 	const float epsilonb = 0.0001;
 	vec3 frac = abs(fract(pos));
-	bool nearX = (frac.x <= epsilona || 1.0 - frac.x <= epsilona);
-	bool nearY = (frac.y <= epsilona || 1.0 - frac.y <= epsilona);
-	bool nearZ = (frac.z <= epsilona || 1.0 - frac.z <= epsilona);
+	bool nearX = (frac.x <= thickness || 1.0 - frac.x <= thickness);
+	bool nearY = (frac.y <= thickness || 1.0 - frac.y <= thickness);
+	bool nearZ = (frac.z <= thickness || 1.0 - frac.z <= thickness);
 	bool overX = (frac.x <= epsilonb || 1.0 - frac.x <= epsilonb);
 	bool overY = (frac.y <= epsilonb || 1.0 - frac.y <= epsilonb);
 	bool overZ = (frac.z <= epsilonb || 1.0 - frac.z <= epsilonb);
 	if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
-		if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) {
-			color = brighten(color);
+		if (outlineColor.r < 0.0) {
+			// auto mode: darken or brighten based on voxel color
+			if (color.r < 0.1 && color.g < 0.1 && color.b < 0.1) {
+				color = brighten(color);
+			} else {
+				color = darken(color);
+			}
 		} else {
-			color = darken(color);
+			color = vec4(outlineColor.rgb, color.a);
 		}
 	}
 	return color;
-#endif
+}
+
+vec4 outline(vec3 pos, vec4 color, vec3 normal) {
+	return outline(pos, color, normal, vec4(-1.0), 0.025);
 }

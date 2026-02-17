@@ -32,8 +32,11 @@ vec4 calcColor(void) {
 	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
 	vec3 color = checkerBoardColor(normal, v_pos, tonemapping(shadowColor * v_ambientocclusion));
 	vec4 ocolor = vec4(color, v_color.a);
+	if ((v_flags & FLAGSELECTEDOUTLINE) != 0u) {
+		return outline(v_pos, ocolor, normal, u_selectedoutlinecolor, 0.06);
+	}
 	if ((v_flags & FLAGOUTLINE) != 0u) {
-		return outline(v_pos, ocolor, normal);
+		return outline(v_pos, ocolor, normal, u_outlinecolor, 0.025);
 	}
 	return ocolor;
 }
