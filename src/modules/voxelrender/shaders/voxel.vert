@@ -24,13 +24,10 @@ void main(void) {
 	v_normal = normal.xyz;
 	v_flags = 0u;
 
-	if ((a_flags & FLAGOUTLINE) != 0u) {
-		v_flags |= FLAGSELECTEDOUTLINE;
-		v_flags |= FLAGOUTLINE;
-	}
-#if r_renderoutline != 0
-	v_flags |= FLAGOUTLINE;
+#if r_renderoutline == 0
+	if ((a_flags & FLAGOUTLINE) != 0u)
 #endif
+		v_flags |= FLAGOUTLINE;
 
 	if (normalIndex > 0) { // NO_NORMAL
 		v_flags |= FLAGHASNORMALPALETTECOLOR;

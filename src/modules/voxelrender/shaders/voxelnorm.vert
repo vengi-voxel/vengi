@@ -19,14 +19,10 @@ void main(void) {
 	vec4 materialColor = u_materialcolor[materialColorIndex];
 	vec4 glowColor = u_glowcolor[materialColorIndex];
 	v_flags = 0u;
-
-	if ((a_flags & FLAGOUTLINE) != 0u) {
-		v_flags |= FLAGSELECTEDOUTLINE;
-		v_flags |= FLAGOUTLINE;
-	}
-#if r_renderoutline != 0
-	v_flags |= FLAGOUTLINE;
+#if r_renderoutline == 0
+	if ((a_flags & FLAGOUTLINE) != 0u)
 #endif
+		v_flags |= FLAGOUTLINE;
 
 	if (u_gray != 0) {
 		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;

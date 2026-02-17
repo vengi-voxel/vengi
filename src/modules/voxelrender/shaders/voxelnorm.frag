@@ -19,11 +19,8 @@ vec4 calcColor(void) {
 	float bias = max(0.0015 * (1.0 - ndotl), 0.00035);
 	vec3 shadowColor = shadow(bias, normal, lightDir, v_color.rgb, diffuse, u_ambient_color);
 	vec4 ocolor = vec4(shadowColor, v_color.a);
-	if ((v_flags & FLAGSELECTEDOUTLINE) != 0u) {
-		return outline(v_pos, ocolor, normal, u_selectedoutlinecolor, 0.06);
-	}
 	if ((v_flags & FLAGOUTLINE) != 0u) {
-		return outline(v_pos, ocolor, normal, u_outlinecolor, 0.025);
+		return outline(v_pos, ocolor, normal);
 	}
 	return ocolor;
 }
