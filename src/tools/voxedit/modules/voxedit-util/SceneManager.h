@@ -26,6 +26,8 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "voxedit-util/network/Client.h"
 #include "voxedit-util/network/Server.h"
+#include "voxedit-util/network/SessionRecorder.h"
+#include "voxedit-util/network/SessionPlayer.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -80,6 +82,8 @@ protected:
 	io::FilesystemPtr _filesystem;
 	Server _server;
 	Client _client;
+	SessionRecorder _recorder;
+	SessionPlayer _player;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -409,6 +413,7 @@ public:
 	 */
 	bool dirty() const;
 	void markDirty();
+	void clearDirty();
 
 	/**
 	 * @return @c true if the scene is completely empty
@@ -446,6 +451,21 @@ public:
 
 	bool connectToServer(const core::String &hostname, int port);
 	void disconnectFromServer();
+
+	bool startRecording(const core::String &filename);
+	void stopRecording();
+	bool isRecording() const;
+
+	bool startPlayback(const core::String &filename);
+	void stopPlayback();
+	bool isPlaying() const;
+	bool isPlaybackPaused() const;
+	void setPlaybackPaused(bool paused);
+	float playbackSpeed() const;
+	void setPlaybackSpeed(float speed);
+
+	SessionRecorder &recorder();
+	SessionPlayer &player();
 
 	bool setGridResolution(int resolution);
 
@@ -626,6 +646,14 @@ inline Client &SceneManager::client() {
 	return _client;
 }
 
+inline SessionRecorder &SceneManager::recorder() {
+	return _recorder;
+}
+
+inline SessionPlayer &SceneManager::player() {
+	return _player;
+}
+
 inline const voxel::ClipboardData &SceneManager::clipboardData() const {
 	return _copy;
 }
@@ -652,6 +680,10 @@ inline memento::MementoHandler &SceneManager::mementoHandler() {
 
 inline bool SceneManager::dirty() const {
 	return _dirty;
+}
+
+inline void SceneManager::clearDirty() {
+	_dirty = false;
 }
 
 inline int SceneManager::size() const {

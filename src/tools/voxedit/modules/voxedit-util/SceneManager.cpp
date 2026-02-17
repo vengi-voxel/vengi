@@ -90,7 +90,7 @@ SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer),
 	  _modifierFacade(this, modifierRenderer), _luaApi(filesystem),
 	  _luaApiListener(this, _mementoHandler, _sceneGraph), _filesystem(filesystem),
-	  _server(&_luaApi), _client(this) {
+	  _server(&_luaApi), _client(this), _recorder(this), _player(this) {
 	server().setState(&_sceneGraph);
 }
 
@@ -2997,6 +2997,54 @@ void SceneManager::disconnectFromServer() {
 	client().disconnect();
 }
 
+bool SceneManager::startRecording(const core::String &filename) {
+	stopPlayback();
+	_mementoHandler.registerListener(&_recorder);
+	if (!_recorder.startRecording(filename)) {
+		_mementoHandler.unregisterListener(&_recorder);
+		return false;
+	}
+	return true;
+}
+
+void SceneManager::stopRecording() {
+	_mementoHandler.unregisterListener(&_recorder);
+	_recorder.stopRecording();
+}
+
+bool SceneManager::isRecording() const {
+	return _recorder.isRecording();
+}
+
+bool SceneManager::startPlayback(const core::String &filename) {
+	stopRecording();
+	return _player.startPlayback(filename);
+}
+
+void SceneManager::stopPlayback() {
+	_player.stopPlayback();
+}
+
+bool SceneManager::isPlaying() const {
+	return _player.isPlaying();
+}
+
+bool SceneManager::isPlaybackPaused() const {
+	return _player.isPaused();
+}
+
+void SceneManager::setPlaybackPaused(bool paused) {
+	_player.setPaused(paused);
+}
+
+float SceneManager::playbackSpeed() const {
+	return _player.speed();
+}
+
+void SceneManager::setPlaybackSpeed(float speed) {
+	_player.setSpeed(speed);
+}
+
 bool SceneManager::update(double nowSeconds) {
 	core_trace_scoped(SceneManagerUpdate);
 	if (_lsystemRunning) {
@@ -3005,6 +3053,7 @@ bool SceneManager::update(double nowSeconds) {
 	updateDelta(nowSeconds);
 	_server.update(nowSeconds);
 	_client.update(nowSeconds);
+	_player.update(deltaSeconds());
 	bool loadedNewScene = false;
 	if (_loadingFuture.ready()) {
 		if (loadSceneGraph(core::move(_loadingFuture.get()))) {
@@ -3102,7 +3151,10 @@ void SceneManager::shutdown() {
 	_camMovement.shutdown();
 	_modifierFacade.shutdown();
 	_mementoHandler.unregisterListener(&_client);
+	_mementoHandler.unregisterListener(&_recorder);
 	_mementoHandler.shutdown();
+	_recorder.stopRecording();
+	_player.stopPlayback();
 	_server.shutdown();
 	_client.shutdown();
 

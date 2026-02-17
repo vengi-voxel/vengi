@@ -28,6 +28,8 @@ set(SRCS
 	network/ServerNetwork.h network/ServerNetwork.cpp
 	network/ProtocolIds.h
 	network/ProtocolMessageFactory.h network/ProtocolMessageFactory.cpp
+	network/SessionRecorder.h network/SessionRecorder.cpp
+	network/SessionPlayer.h network/SessionPlayer.cpp
 
 	network/protocol/NodeAddedMessage.h
 	network/protocol/CommandMessage.h
@@ -108,6 +110,7 @@ set(TEST_SRCS
 	tests/TextBrushTest.cpp
 	tests/TextureBrushTest.cpp
 	tests/ClientTest.cpp
+	tests/SessionRecorderTest.cpp
 )
 set(TEST_FILES
 	shared/font.ttf

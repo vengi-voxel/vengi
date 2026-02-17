@@ -98,6 +98,33 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add directory to scene"), "importdirectory", true,
 									   &listener);
 			ImGui::Separator();
+			if (ImGui::BeginIconMenu(ICON_LC_CIRCLE, _("Record"))) {
+				const bool isRecording = _sceneMgr->isRecording();
+				const bool isPlaying = _sceneMgr->isPlaying();
+				if (!isRecording) {
+					ImGui::CommandIconMenuItem(ICON_LC_CIRCLE, _("Start recording"), "record_start", !isPlaying, &listener);
+				} else {
+					ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("Stop recording"), "record_stop", true, &listener);
+				}
+				ImGui::Separator();
+				if (!isPlaying) {
+					ImGui::CommandIconMenuItem(ICON_LC_PLAY, _("Playback"), "record_playback", !isRecording, &listener);
+				} else {
+					ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("Stop playback"), "record_playback_stop", true, &listener);
+					const bool isPaused = _sceneMgr->isPlaybackPaused();
+					if (isPaused) {
+						ImGui::CommandIconMenuItem(ICON_LC_PLAY, _("Resume"), "record_playback_resume", true, &listener);
+					} else {
+						ImGui::CommandIconMenuItem(ICON_LC_PAUSE, _("Pause"), "record_playback_pause", true, &listener);
+					}
+					float speed = _sceneMgr->playbackSpeed();
+					if (ImGui::SliderFloat(_("Speed (s)"), &speed, 0.0f, 2.0f, "%.1f s")) {
+						_sceneMgr->setPlaybackSpeed(speed);
+					}
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, _("Quit"))) {
 				app->requestQuit();
 			}

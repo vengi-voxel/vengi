@@ -56,6 +56,10 @@ public:
 		return _protocolRegistry;
 	}
 
+	network::ProtocolHandler *protocolHandler(const network::ProtocolMessage &msg) {
+		return _protocolRegistry.getHandler(msg);
+	}
+
 	bool isConnected() const;
 	bool connect(const core::String &hostname, uint16_t port = 10001);
 	void disconnect();

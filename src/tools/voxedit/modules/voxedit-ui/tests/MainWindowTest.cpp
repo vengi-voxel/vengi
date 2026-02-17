@@ -110,6 +110,42 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("###Close");
 	};
 
+	IM_REGISTER_TEST(engine, testCategory(), "record start")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Record/Start recording");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, "recording.vrec"));
+		IM_CHECK(_sceneMgr->isRecording());
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(model != nullptr);
+		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		const core::String recordingFile = _sceneMgr->recorder().filename();
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Record/Stop recording");
+		ctx->Yield();
+		IM_CHECK(!_sceneMgr->isRecording());
+
+		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));
+		IM_CHECK(focusWindow(ctx, id));
+
+		// playback the recorded file
+		IM_CHECK(_sceneMgr->startPlayback(recordingFile));
+		IM_CHECK(_sceneMgr->isPlaying());
+		// process frames until playback finishes or we've waited long enough
+		for (int i = 0; i < 60 && _sceneMgr->isPlaying(); ++i) {
+			ctx->Yield();
+		}
+		IM_CHECK(!_sceneMgr->isPlaying());
+		const int activeNode2 = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *model2 = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(model2 != nullptr);
+		IM_CHECK(model2->volume()->voxel(glm::ivec3(1, 1, 1)).getColor() == 1);
+		IM_CHECK(model2->volume()->voxel(glm::ivec3(2, 2, 2)).getColor() == 2);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "edit options")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("Edit/Options");

@@ -237,6 +237,54 @@ app::AppState VoxEdit::onConstruct() {
 			importPalette(file);
 		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
 
+	static const io::FormatDescription vrecFormat = {"VoxEdit Recording", "", {"vrec"}, {}};
+
+	command::Command::registerCommand("record_start")
+		.addArg({"file", command::ArgType::String, true, "", "Recording output file"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				saveDialog([this](const core::String &f, const io::FormatDescription *desc) {
+					_sceneMgr->startRecording(f);
+				}, {}, &vrecFormat, "session.vrec");
+				return;
+			}
+			_sceneMgr->startRecording(file);
+		}).setHelp(_("Start recording the editing session"));
+
+	command::Command::registerCommand("record_stop")
+		.setHandler([this](const command::CommandArgs &args) {
+			_sceneMgr->stopRecording();
+		}).setHelp(_("Stop recording the editing session"));
+
+	command::Command::registerCommand("record_playback")
+		.addArg({"file", command::ArgType::String, true, "", "Recording file to play back"})
+		.setHandler([this](const command::CommandArgs &args) {
+			const core::String &file = args.str("file");
+			if (file.empty()) {
+				openDialog([this](const core::String &f, const io::FormatDescription *desc) {
+					_sceneMgr->startPlayback(f);
+				}, {}, &vrecFormat);
+				return;
+			}
+			_sceneMgr->startPlayback(file);
+		}).setHelp(_("Play back a recorded editing session"));
+
+	command::Command::registerCommand("record_playback_stop")
+		.setHandler([this](const command::CommandArgs &args) {
+			_sceneMgr->stopPlayback();
+		}).setHelp(_("Stop playback of a recorded editing session"));
+
+	command::Command::registerCommand("record_playback_pause")
+		.setHandler([this](const command::CommandArgs &args) {
+			_sceneMgr->setPlaybackPaused(true);
+		}).setHelp(_("Pause playback of a recorded editing session"));
+
+	command::Command::registerCommand("record_playback_resume")
+		.setHandler([this](const command::CommandArgs &args) {
+			_sceneMgr->setPlaybackPaused(false);
+		}).setHelp(_("Resume playback of a recorded editing session"));
+
 	command::Command::registerCommand("new")
 		.setHandler([this] (const command::CommandArgs& args) {
 			if (_mainWindow == nullptr) {
