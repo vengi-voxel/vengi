@@ -462,7 +462,30 @@ bool Filesystem::exists(const core::String& filename) const {
 	if (sysIsReadableDir(filename)) {
 		return true;
 	}
-	return open(filename)->exists();
+	for (const core::String &p : _paths) {
+		core::String fullpath = core::string::path(p, filename);
+		if (fs_exists(fullpath.c_str())) {
+			return true;
+		}
+		if (sysIsRelativePath(p)) {
+			for (const core::String &s : _paths) {
+				if (core::string::isSamePath(s, p)) {
+					continue;
+				}
+				core::String fullrelpath = core::string::path(s, p, filename);
+				if (fs_exists(fullrelpath.c_str())) {
+					return true;
+				}
+			}
+		}
+	}
+	if (fs_exists(filename.c_str())) {
+		return true;
+	}
+	if (!sysIsRelativePath(filename)) {
+		return false;
+	}
+	return fs_exists(core::string::path(_basePath, filename).c_str());
 }
 
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {

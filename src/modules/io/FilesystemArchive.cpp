@@ -37,14 +37,14 @@ bool FilesystemArchive::exists(const core::String &path) const {
 	if (_sysmode) {
 		return _filesytem->sysExists(path);
 	}
-	return _filesytem->open(path, FileMode::Read)->exists();
+	return _filesytem->exists(path);
 }
 
 bool FilesystemArchive::exists(const core::Path &path) const {
 	if (_sysmode) {
 		return _filesytem->sysExists(path.toNativePath());
 	}
-	return _filesytem->open(path, FileMode::Read)->exists();
+	return _filesytem->exists(path.toString());
 }
 
 void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
