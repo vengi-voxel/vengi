@@ -202,4 +202,48 @@ TEST_F(SessionRecorderTest, testPlaybackPausesOnDirtyScene) {
 	_sceneMgr->stopPlayback();
 }
 
+TEST_F(SessionRecorderTest, testRecordingDuringNetworkMode) {
+	const core::String filename = _testApp->filesystem()->homeWritePath("test_network_rec.vrec");
+
+	// Register the client as a listener (simulating network mode)
+	// The client won't actually send because it's not connected, but the
+	// listener registration must not interfere with recording
+	_sceneMgr->mementoHandler().registerListener(&_sceneMgr->client());
+
+	// Start recording while client listener is also registered
+	EXPECT_TRUE(_sceneMgr->startRecording(filename));
+	EXPECT_TRUE(_sceneMgr->isRecording());
+
+	// Perform a voxel modification
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	modifier.setBrushType(BrushType::Shape);
+	modifier.shapeBrush().setSingleMode();
+	modifier.setModifierType(ModifierType::Place);
+	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
+	ASSERT_TRUE(modifier.beginBrush());
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	scenegraph::SceneGraph tmpSceneGraph;
+	scenegraph::SceneGraphNode tmpNode(scenegraph::SceneGraphNodeType::Model);
+	tmpNode.setVolume(v, false);
+	auto callback = [&](const voxel::Region &region, ModifierType, SceneModifiedFlags) {
+		_sceneMgr->modified(nodeId, region);
+	};
+	ASSERT_TRUE(modifier.execute(tmpSceneGraph, tmpNode, callback));
+
+	// Stop recording - both listeners should still be fine
+	_sceneMgr->stopRecording();
+	EXPECT_FALSE(_sceneMgr->isRecording());
+
+	// Unregister client listener
+	_sceneMgr->mementoHandler().unregisterListener(&_sceneMgr->client());
+
+	// Verify the recorded file is valid by playing it back
+	EXPECT_TRUE(_sceneMgr->startPlayback(filename));
+	EXPECT_TRUE(_sceneMgr->isPlaying());
+	_sceneMgr->stopPlayback();
+}
+
 } // namespace voxedit
