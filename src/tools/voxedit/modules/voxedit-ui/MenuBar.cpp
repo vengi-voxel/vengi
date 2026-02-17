@@ -117,10 +117,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 					} else {
 						ImGui::CommandIconMenuItem(ICON_LC_PAUSE, _("Pause"), "record_playback_pause", true, &listener);
 					}
-					float speed = _sceneMgr->playbackSpeed();
-					if (ImGui::SliderFloat(_("Speed (s)"), &speed, 0.0f, 2.0f, "%.1f s")) {
-						_sceneMgr->setPlaybackSpeed(speed);
-					}
+				}
+				float speed = _sceneMgr->playbackSpeed();
+				if (ImGui::SliderFloat(_("Speed (s)"), &speed, 0.0f, 2.0f, "%.1f s")) {
+					_sceneMgr->setPlaybackSpeed(speed);
 				}
 				ImGui::EndMenu();
 			}
