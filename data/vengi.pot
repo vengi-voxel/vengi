@@ -318,6 +318,9 @@ msgstr ""
 msgid "Show metric and debug window"
 msgstr ""
 
+msgid "Only run tests that match the given filter"
+msgstr ""
+
 msgid "Allow to change the ui font size"
 msgstr ""
 
@@ -802,6 +805,12 @@ msgid "Enable camera clipping"
 msgstr ""
 
 msgid "Enable gravity"
+msgstr ""
+
+msgid "Outline color for all voxels (use -1 for auto darken/brighten)"
+msgstr ""
+
+msgid "Outline color for selected voxels"
 msgstr ""
 
 msgid "Bottom"
@@ -3363,6 +3372,9 @@ msgid "Mirror the uv coordinates along the v axis"
 msgstr ""
 
 msgid "Reset the uv coordinates"
+msgstr ""
+
+msgid "Create a texture from the active model's face colors"
 msgstr ""
 
 msgid "The voxedit server hostname to connect to"

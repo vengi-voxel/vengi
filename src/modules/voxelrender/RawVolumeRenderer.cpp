@@ -7,6 +7,7 @@
 #include "VoxelShaderConstants.h"
 #include "app/App.h"
 #include "app/Async.h"
+#include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "color/Color.h"
 #include "core/ConfigVar.h"
@@ -127,8 +128,8 @@ bool RawVolumeRenderer::init(bool normals) {
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
 	_cullBuffers = core::Var::getSafe(cfg::RenderCullBuffers);
 	_cullNodes = core::Var::getSafe(cfg::RenderCullNodes);
-	_outlineColor = core::Var::get(cfg::RenderOutlineColor, "-1.0 -1.0 -1.0", "Outline color for all voxels (use -1 for auto darken/brighten)");
-	_selectedOutlineColor = core::Var::get(cfg::RenderSelectedOutlineColor, "1.0 0.6 0.0", "Outline color for selected voxels");
+	_outlineColor = core::Var::get(cfg::RenderOutlineColor, "-1.0 -1.0 -1.0", _("Outline color for all voxels (use -1 for auto darken/brighten)"));
+	_selectedOutlineColor = core::Var::get(cfg::RenderSelectedOutlineColor, "1.0 0.6 0.0", _("Outline color for selected voxels"));
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
