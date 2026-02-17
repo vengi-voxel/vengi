@@ -18,6 +18,7 @@ class VoxelModificationMessage : public network::ProtocolMessage {
 private:
 	core::UUID _nodeUUID;
 	voxel::Region _region;
+	voxel::Region _volumeRegion;
 	uint32_t _compressedSize = 0;
 	uint8_t *_compressedData = nullptr;
 
@@ -29,7 +30,11 @@ public:
 		}
 		core_assert_always(state.dataRegion().isValid());
 		if (!serializeRegion(state.dataRegion())) {
-			Log::error("Failed to serialize region in VoxelModificationMessage ctor");
+			Log::error("Failed to serialize data region in VoxelModificationMessage ctor");
+			return;
+		}
+		if (!serializeRegion(state.volumeRegion())) {
+			Log::error("Failed to serialize volume region in VoxelModificationMessage ctor");
 			return;
 		}
 		if (!serializeVolume(state.data.buffer(), state.data.size())) {
@@ -59,7 +64,11 @@ public:
 			return;
 		}
 		if (!serializeRegion(data.dataRegion())) {
-			Log::error("Failed to serialize region in VoxelModificationMessage ctor");
+			Log::error("Failed to serialize data region in VoxelModificationMessage ctor");
+			return;
+		}
+		if (!serializeRegion(volume.region())) {
+			Log::error("Failed to serialize volume region in VoxelModificationMessage ctor");
 			return;
 		}
 		if (!serializeVolume(data.buffer(), data.size())) {
@@ -75,7 +84,11 @@ public:
 			return;
 		}
 		if (!deserializeRegion(in, _region)) {
-			Log::error("Failed to deserialize region for voxel modification");
+			Log::error("Failed to deserialize data region for voxel modification");
+			return;
+		}
+		if (!deserializeRegion(in, _volumeRegion)) {
+			Log::error("Failed to deserialize volume region for voxel modification");
 			return;
 		}
 		if (!deserializeVolume(in, _compressedSize, _compressedData)) {
@@ -93,7 +106,11 @@ public:
 			return;
 		}
 		if (!serializeRegion(_region)) {
-			Log::error("Failed to serialize region in VoxelModificationMessage::writeBack");
+			Log::error("Failed to serialize data region in VoxelModificationMessage::writeBack");
+			return;
+		}
+		if (!serializeRegion(_volumeRegion)) {
+			Log::error("Failed to serialize volume region in VoxelModificationMessage::writeBack");
 			return;
 		}
 		if (!serializeVolume(_compressedData, _compressedSize)) {
@@ -109,6 +126,9 @@ public:
 
 	const voxel::Region &region() const {
 		return _region;
+	}
+	const voxel::Region &volumeRegion() const {
+		return _volumeRegion;
 	}
 	const core::UUID &nodeUUID() const {
 		return _nodeUUID;

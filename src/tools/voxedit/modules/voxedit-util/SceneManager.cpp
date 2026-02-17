@@ -549,7 +549,8 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, Sce
 		const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		_mementoHandler.markModification(_sceneGraph, node, modifiedRegion);
 	}
-	if (modifiedRegion.isValid()) {
+	const bool updateRegion = (flags & SceneModifiedFlags::UpdateRendererRegion) == SceneModifiedFlags::UpdateRendererRegion;
+	if (updateRegion && modifiedRegion.isValid()) {
 		Log::debug("Modify region for nodeid %i", nodeId);
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
@@ -716,20 +717,22 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 		delete newVolume;
 		return;
 	}
+	// Use the enclosing region of old and new to ensure the memento captures all changes
+	// and the undo/redo can properly restore the volume in both directions
+	const voxel::Region modifiedRegion(
+		glm::min(oldRegion.getLowerCorner(), region.getLowerCorner()),
+		glm::max(oldRegion.getUpperCorner(), region.getUpperCorner())
+	);
 	const glm::ivec3 oldMins = oldRegion.getLowerCorner();
 	const glm::ivec3 oldMaxs = oldRegion.getUpperCorner();
 	const glm::ivec3 mins = region.getLowerCorner();
 	const glm::ivec3 maxs = region.getUpperCorner();
-	// TODO: MEMENTO: this doesn't work properly when undoing and redoing the change
 	if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
-		// we don't have to re-extract a mesh if only new empty voxels were added.
-		modified(nodeId, voxel::Region::InvalidRegion);
+		// No re-extraction needed if only new empty voxels were added, but still
+		// record the memento state with a valid region for undo/redo and network
+		modified(nodeId, modifiedRegion, SceneModifiedFlags::NoRegionUpdate);
 	} else {
-		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "resize");
-		const core::Buffer<voxel::Region> &regions = voxel::Region::subtract(oldRegion, region);
-		for (const voxel::Region &r : regions) {
-			modified(nodeId, r);
-		}
+		modified(nodeId, modifiedRegion);
 	}
 
 	if (activeNode() == nodeId) {

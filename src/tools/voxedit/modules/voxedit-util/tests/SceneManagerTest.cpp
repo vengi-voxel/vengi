@@ -1142,4 +1142,99 @@ TEST_F(SceneManagerTest, testFlip) {
 	EXPECT_EQ(1, voxelCount) << "Flip should preserve the voxel count";
 }
 
+TEST_F(SceneManagerTest, testNodeResizeEnlargeUndoRedo) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "resize_enlarge_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// Place a voxel to have something to verify after undo/redo
+	v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	_sceneMgr->modified(nodeId, v->region());
+
+	const voxel::Region oldRegion = v->region();
+	EXPECT_EQ(oldRegion, (voxel::Region{0, 3}));
+
+	// Enlarge the volume
+	const voxel::Region newRegion{0, 7};
+	_sceneMgr->nodeResize(nodeId, newRegion);
+
+	v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(v->region(), newRegion) << "Volume should be resized to new region";
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial())) << "Original voxel should be preserved";
+
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+
+	for (int i = 0; i < 3; ++i) {
+		// Undo the resize
+		ASSERT_TRUE(mementoHandler.canUndo());
+		EXPECT_TRUE(_sceneMgr->undo());
+		v = _sceneMgr->volume(nodeId);
+		ASSERT_NE(nullptr, v);
+		EXPECT_EQ(v->region(), oldRegion) << "Undo should restore original region (cycle " << i << ")";
+		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
+			<< "Original voxel should exist after undo (cycle " << i << ")";
+
+		// Redo the resize
+		ASSERT_TRUE(mementoHandler.canRedo());
+		EXPECT_TRUE(_sceneMgr->redo());
+		v = _sceneMgr->volume(nodeId);
+		ASSERT_NE(nullptr, v);
+		EXPECT_EQ(v->region(), newRegion) << "Redo should restore enlarged region (cycle " << i << ")";
+		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
+			<< "Original voxel should exist after redo (cycle " << i << ")";
+	}
+}
+
+TEST_F(SceneManagerTest, testNodeResizeShrinkUndoRedo) {
+	const voxel::Region region{0, 7};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "resize_shrink_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+
+	// Place voxels: one inside the new region, one outside
+	v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	_sceneMgr->modified(nodeId, v->region());
+
+	const voxel::Region oldRegion = v->region();
+	EXPECT_EQ(oldRegion, (voxel::Region{0, 7}));
+
+	// Shrink the volume - the voxel at (5,5,5) should be lost
+	const voxel::Region newRegion{0, 3};
+	_sceneMgr->nodeResize(nodeId, newRegion);
+
+	v = _sceneMgr->volume(nodeId);
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(v->region(), newRegion) << "Volume should be resized to new region";
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial())) << "Inner voxel should be preserved after shrink";
+
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+
+	for (int i = 0; i < 3; ++i) {
+		// Undo the shrink - should restore both voxels
+		ASSERT_TRUE(mementoHandler.canUndo());
+		EXPECT_TRUE(_sceneMgr->undo());
+		v = _sceneMgr->volume(nodeId);
+		ASSERT_NE(nullptr, v);
+		EXPECT_EQ(v->region(), oldRegion) << "Undo should restore original region (cycle " << i << ")";
+		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
+			<< "Inner voxel should exist after undo (cycle " << i << ")";
+		EXPECT_TRUE(voxel::isBlocked(v->voxel(5, 5, 5).getMaterial()))
+			<< "Outer voxel should be restored after undo (cycle " << i << ")";
+
+		// Redo the shrink
+		ASSERT_TRUE(mementoHandler.canRedo());
+		EXPECT_TRUE(_sceneMgr->redo());
+		v = _sceneMgr->volume(nodeId);
+		ASSERT_NE(nullptr, v);
+		EXPECT_EQ(v->region(), newRegion) << "Redo should restore shrunk region (cycle " << i << ")";
+		EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()))
+			<< "Inner voxel should exist after redo (cycle " << i << ")";
+	}
+}
+
 } // namespace voxedit

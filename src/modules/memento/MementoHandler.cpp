@@ -234,7 +234,15 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		stream.flush();
 		const size_t size = (size_t)outStream.size();
 		const voxel::Region actualRegion = v.region();
-		return {outStream.release(), size, actualRegion, volume->region()};
+		MementoData data(outStream.release(), size, actualRegion, volume->region());
+		// If the actual region was cropped from the requested region, store
+		// the originally requested region as modified region. This is needed
+		// for resize operations where the volume region changed and the undo
+		// must restore data across the full extent of the change.
+		if (actualRegion != region) {
+			data._modifiedRegion = region;
+		}
+		return data;
 	}
 	const int allVoxels = volume->region().voxels();
 	io::BufferedReadWriteStream outStream((int64_t)allVoxels * sizeof(voxel::Voxel));
@@ -507,7 +515,13 @@ void MementoHandler::undoModification(MementoState &s) {
 			}
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 				core_assert(prevS.hasVolumeData() || prevS.referenceUUID.isValid());
-				const voxel::Region modifiedRegion = s.data.dataRegion();
+				// Prefer the explicitly stored modified region (set during resize
+				// operations where the volume region changed). Fall back to the
+				// data region which covers the compressed volume data.
+				voxel::Region modifiedRegion = s.data.modifiedRegion();
+				if (!modifiedRegion.isValid()) {
+					modifiedRegion = s.data.dataRegion();
+				}
 				s.data = prevS.data;
 				s.data.setModifiedRegion(modifiedRegion);
 				// undo for un-reference node - so we have to make it a reference node again
