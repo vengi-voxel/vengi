@@ -834,6 +834,7 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		node->properties().clear();
 		node->addProperties(s.properties);
+		_mementoHandler.markNodePropertyChange(_sceneGraph, *node);
 		return true;
 	}
 	return false;
@@ -848,6 +849,7 @@ bool SceneManager::mementoIKConstraint(const memento::MementoState& s) {
 		} else {
 			node->removeIkConstraint();
 		}
+		_mementoHandler.markIKConstraintChange(_sceneGraph, *node);
 		return true;
 	}
 	return false;
@@ -860,7 +862,11 @@ bool SceneManager::mementoAnimations(const memento::MementoState &s) {
 	if (animations == nullptr) {
 		return false;
 	}
-	return _sceneGraph.setAnimations(*animations);
+	if (!_sceneGraph.setAnimations(*animations)) {
+		return false;
+	}
+	_mementoHandler.markAnimationAdded(_sceneGraph, "");
+	return true;
 }
 
 bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
@@ -870,6 +876,7 @@ bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 		_sceneGraph.setAllKeyFramesForNode(*node, s.keyFrames);
 		node->setPivot(s.pivot);
 		_sceneGraph.updateTransforms();
+		_mementoHandler.markKeyFramesChange(_sceneGraph, *node);
 		return true;
 	}
 	return false;
@@ -880,6 +887,7 @@ bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
 	Log::debug("Memento: palette change of node %s to %s", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode* node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		node->setPalette(s.palette);
+		_mementoHandler.markPaletteChange(_sceneGraph, *node);
 		return true;
 	}
 	return false;
@@ -890,6 +898,7 @@ bool SceneManager::mementoNormalPaletteChange(const memento::MementoState &s) {
 	Log::debug("Memento: normal palette change of node %s to %s", uuidStr.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode* node = sceneGraphNodeByUUID(s.nodeUUID)) {
 		node->setNormalPalette(s.normalPalette);
+		_mementoHandler.markNormalPaletteChange(_sceneGraph, *node);
 		return true;
 	}
 	return false;
@@ -922,7 +931,7 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 		}
 		node->setName(s.name);
 		node->setPalette(s.palette);
-		modified(node->id(), s.data.modifiedRegion(), SceneModifiedFlags::NoUndo);
+		modified(node->id(), s.data.modifiedRegion());
 		return true;
 	}
 	Log::warn("Failed to handle memento state - node id %s not found (%s)", uuidStr.c_str(), s.name.c_str());
