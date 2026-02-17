@@ -287,8 +287,9 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 		}
 		ImGui::EndDragDropTarget();
 	}
+	const bool itemClicked = ImGui::IsItemClicked();
 	ImGui::SameLine();
-	if (ImGui::Button(ICON_LC_FILE)) {
+	if (ImGui::Button(ICON_LC_FILE_INPUT) || itemClicked) {
 		_app->openDialog(
 			[&](const core::String &filename, const io::FormatDescription *desc) {
 				const image::ImagePtr &image = _texturePool->loadImage(filename);
@@ -296,13 +297,12 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 			},
 			{}, io::format::images());
 	}
-	ImGui::SameLine();
-	{
-		ui::ScopedStyle style;
-		style.pushFontSize(imguiApp()->bigFontSize());
-		ui::Toolbar toolbar("texturebrushtoolbar", &listener);
-		toolbar.button(ICON_LC_SCAN, "texturebrushfromface");
-	}
+
+	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode());
+	const bool hasSelection = node && node->hasSelection();
+	ImGui::BeginDisabled(!node->hasSelection());
+	ImGui::CommandIconButton(ICON_LC_SCAN, _("Use selection"), "texturebrushfromface", listener);
+	ImGui::EndDisabled();
 
 	bool projectOntoSurface = brush.projectOntoSurface();
 	if (ImGui::Checkbox(_("Project onto surface"), &projectOntoSurface)) {
