@@ -5,10 +5,8 @@
 #include "TeardownFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "glm/fwd.hpp"
 #include "io/StreamUtil.h"
 #include "io/ZipReadStream.h"
-#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -40,20 +38,12 @@ static bool readTransform(io::ReadStream &s, glm::vec3 &pos, glm::quat &rot) {
 	return true;
 }
 
-// TODO: unsure and untested
 static void setTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &pos, const glm::quat &quat) {
-	// Teardown/MagicaVoxel uses Z-up coordinate system, vengi uses Y-up
-	// We need to convert: Teardown (X right, Z up, Y forward) -> vengi (X right, Y up, Z back)
-	// This means: swap Y and Z, and negate the new Z (was Y)
-	glm::vec3 vengiPos(pos.x, pos.z, -pos.y);
-
-	// For quaternion rotation: convert from Z-up to Y-up
-	// Rotate the quaternion to match the coordinate system change
-	glm::quat vengiQuat(quat.w, quat.x, quat.z, -quat.y);
-
+	// Teardown uses Y-up coordinate system (gravity = (0, -10, 0)), same as vengi.
+	// No coordinate system conversion is needed.
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalOrientation(vengiQuat);
-	transform.setLocalTranslation(vengiPos);
+	transform.setLocalOrientation(quat);
+	transform.setLocalTranslation(pos);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 }
@@ -81,16 +71,23 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 	Log::debug("Description: '%s'", desc.c_str());
 	Log::debug("Handle: %u", handle);
 	Log::debug("Parent: %i", parent);
+	// Reset nodeId for this entity - prevents leaking from previous sibling entities
+	nodeId = InvalidNodeId;
+
 	switch (entityType) {
 	case EntityType::Body:
-		wrapBool(readBody(s))
+		wrapBool(readBody(sceneGraph, s, parent, nodeId))
+		if (nodeId != InvalidNodeId) {
+			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+			node.setProperty(scenegraph::PropDescription, desc);
+			node.properties() = core::move(properties);
+		}
 		break;
 	case EntityType::Shape: {
-		int oldNodeId = nodeId;
 		wrapBool(readShape(header, sceneGraph, s, parent, nodeId))
-		if (oldNodeId != nodeId) {
+		if (nodeId != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			sceneGraph.node(nodeId).setProperty(scenegraph::PropDescription, desc);
+			node.setProperty(scenegraph::PropDescription, desc);
 			node.properties() = core::move(properties);
 		}
 		break;
@@ -99,11 +96,10 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 		wrapBool(readLight(s))
 		break;
 	case EntityType::Location: {
-		int oldNodeId = nodeId;
 		wrapBool(readLocation(sceneGraph, s, parent, nodeId))
-		if (oldNodeId != nodeId) {
+		if (nodeId != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-			sceneGraph.node(nodeId).setProperty(scenegraph::PropDescription, desc);
+			node.setProperty(scenegraph::PropDescription, desc);
 			node.properties() = core::move(properties);
 		}
 		break;
@@ -142,7 +138,8 @@ bool TeardownFormat::readEntity(const Header &header, scenegraph::SceneGraph &sc
 	// Otherwise fall back to the incoming parent id so children are attached to the correct node.
 	int parentId = (nodeId != InvalidNodeId) ? nodeId : parent;
 	for (uint32_t c = 0; c < children; ++c) {
-		if (!readEntity(header, sceneGraph, s, parentId, nodeId)) {
+		int childNodeId = InvalidNodeId;
+		if (!readEntity(header, sceneGraph, s, parentId, childNodeId)) {
 			Log::error("Failed to read children %u/%u", c, children);
 			return false;
 		}
@@ -189,6 +186,10 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 
 	uint32_t aaa1;
 	wrap(s.readUInt32(aaa1))
+	if (aaa1 != 0xAAA1) {
+		Log::error("Invalid aaa1 sentinel: 0x%X (expected 0xAAA1)", aaa1);
+		return false;
+	}
 	uint32_t enabledMods;
 	wrap(s.readUInt32(enabledMods))
 	for (uint32_t i = 0; i < enabledMods; ++i) {
@@ -562,8 +563,6 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		}
 	}
 
-	// TODO: VOXELFORMAT: parsing fails after this point - need to investigate
-#if 0
 	uint32_t projectileCount;
 	wrap(s.readUInt32(projectileCount))
 	Log::debug("Projectile count: %u", projectileCount);
@@ -596,14 +595,13 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		wrapBool(s.readString(TDStringLength, folder, true))
 		/* bool doOverride = */ s.readBool();
 	}
-#endif
 
 	sceneGraph.updateTransforms();
 
 	return true;
 }
 
-bool TeardownFormat::readBody(io::ReadStream &s) {
+bool TeardownFormat::readBody(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
 	glm::vec3 pos;
@@ -624,6 +622,12 @@ bool TeardownFormat::readBody(io::ReadStream &s) {
 	wrap(s.readFloat(restitution))
 	uint8_t restitutionMode;
 	wrap(s.readUInt8(restitutionMode))
+
+	// Create a Group node for the body to maintain proper scene hierarchy
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+	setTransform(node, pos, rot);
+	node.setName("Body");
+	nodeId = sceneGraph.emplace(core::move(node), parent);
 	return true;
 }
 
@@ -634,10 +638,11 @@ bool TeardownFormat::readVoxels(const Header &header, scenegraph::SceneGraphNode
 	wrap(s.readUInt32(sz))
 	const uint64_t voxelCnt = (uint64_t)sx * (uint64_t)sy * (uint64_t)sz;
 	if (voxelCnt > 0) {
-		// Teardown (Z-up): X, Y, Z -> Vengi (Y-up): X, Z, -Y (swap Y and Z, negate new Z)
-		voxel::Region region(0, 0, 0, sx - 1, sz - 1, sy - 1);
+		// Voxels are stored in their natural XYZ order from the file.
+		// The shape transform already maps from local voxel space to Y-up world space.
+		voxel::Region region(0, 0, 0, sx - 1, sy - 1, sz - 1);
 		if (!region.isValid()) {
-			Log::error("The region is invalid: %i:%i:%i", sx - 1, sz - 1, sy - 1);
+			Log::error("The region is invalid: %i:%i:%i", sx - 1, sy - 1, sz - 1);
 			return false;
 		}
 		voxel::RawVolume *v = new voxel::RawVolume(region);
@@ -655,17 +660,15 @@ bool TeardownFormat::readVoxels(const Header &header, scenegraph::SceneGraphNode
 			// Decode run-length encoded voxels
 			const uint32_t runLength = (uint32_t)rl + 1; // run length is stored as n-1
 			for (uint32_t r = 0; r < runLength && voxelIndex < voxelCnt; ++r) {
-				// Convert linear index to 3D coordinates (Teardown XYZ order where Z is up)
+				// Convert linear index to 3D coordinates
+				// data[x + sizex * (y + sizey * z)]
 				const uint32_t x = voxelIndex % sx;
 				const uint32_t y = (voxelIndex / sx) % sy;
 				const uint32_t z = voxelIndex / (sx * sy);
 
-				// Create voxel with palette index
 				if (idx > 0) { // 0 is empty/air
 					const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, idx);
-					// Map Teardown coordinates (X, Y, Z) to Vengi coordinates (X, Z, -Y)
-					// Teardown: Z-up, Y-forward -> Vengi: Y-up, Z-back
-					v->setVoxel((int)x, (int)z, (int)(sy - 1 - y), voxel);
+					v->setVoxel((int)x, (int)y, (int)z, voxel);
 				}
 				++voxelIndex;
 			}

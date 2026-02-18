@@ -57,7 +57,7 @@ protected:
 	bool readEntity(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
 					int &nodeId);
 
-	bool readBody(io::ReadStream &s);
+	bool readBody(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId);
 	bool readShape(const Header &header, scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent,
 				   int &nodeId);
 	bool readLight(io::ReadStream &s);
