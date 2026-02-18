@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "glm/geometric.hpp"
 #include "image/Image.h"
 #include "voxel/Connectivity.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -37,8 +37,12 @@ bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
 /**
  * @brief Fill the plane at the position with the pixels of the image if the underlying voxel is of the given type
  */
-int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
+int fillPlane(voxel::RawVolumeWrapper &in, const image::Image *image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face);
+inline int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
+					 const glm::ivec3 &position, voxel::FaceNames face) {
+	return fillPlane(in, image.get(), searchedVoxel, position, face);
+}
 
 /**
  * @brief Extrudes a plane in a voxel volume.
@@ -130,6 +134,6 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
 [[nodiscard]] voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
 
 [[nodiscard]] voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &worldMat,
-														 const glm::vec3 &normalizedPivot);
+													   const glm::vec3 &normalizedPivot);
 
 } // namespace voxelutil

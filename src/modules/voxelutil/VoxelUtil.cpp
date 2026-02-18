@@ -414,7 +414,7 @@ int extrudePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::
 	return voxelutil::walkPlane(volume, pos, face, -1, check, exec, thickness);
 }
 
-int fillPlane(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
+int fillPlane(voxel::RawVolumeWrapper &volume, const image::Image *image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face) {
 	palette::Palette pal;
 	pal.nippon();

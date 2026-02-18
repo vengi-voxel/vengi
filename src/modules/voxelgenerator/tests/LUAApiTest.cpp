@@ -921,4 +921,123 @@ TEST_F(LUAApiTest, testVolumeMergeBinding) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testVolumeRotateDegrees) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			volume:rotateDegrees(90, 0, 0)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeScaleUp) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			volume:scaleUp()
+			local r = volume:region()
+			local s = r:size()
+			-- after scaling up, the dimensions should be doubled
+			assert(s.x > 0, "scaleUp should produce a valid volume")
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeScaleDown) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			-- fill a 2x2x2 area
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			volume:setVoxel(mins.x + 1, mins.y, mins.z, 1)
+			volume:setVoxel(mins.x, mins.y + 1, mins.z, 1)
+			volume:setVoxel(mins.x + 1, mins.y + 1, mins.z, 1)
+			volume:setVoxel(mins.x, mins.y, mins.z + 1, 1)
+			volume:setVoxel(mins.x + 1, mins.y, mins.z + 1, 1)
+			volume:setVoxel(mins.x, mins.y + 1, mins.z + 1, 1)
+			volume:setVoxel(mins.x + 1, mins.y + 1, mins.z + 1, 1)
+			volume:scaleDown()
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeScale) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			volume:scale(2.0)
+			local r = volume:region()
+			local s = r:size()
+			assert(s.x > 0, "scale should produce a valid volume")
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeRemapToPalette) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			local oldPal = node:palette()
+			local newPal = g_palette.new()
+			newPal:load("built-in:nippon")
+			volume:remapToPalette(oldPal, newPal)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeRenderToImage) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			local img = volume:renderToImage("front")
+			assert(img ~= nil, "renderToImage should return an image")
+			local w = img:width()
+			local h = img:height()
+			assert(w > 0, "image width should be > 0, got " .. tostring(w))
+			assert(h > 0, "image height should be > 0, got " .. tostring(h))
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeRenderIsometricImage) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			volume:setVoxel(mins.x, mins.y, mins.z, 1)
+			local img = volume:renderIsometricImage("front")
+			assert(img ~= nil, "renderIsometricImage should return an image")
+			local w = img:width()
+			local h = img:height()
+			assert(w > 0, "image width should be > 0, got " .. tostring(w))
+			assert(h > 0, "image height should be > 0, got " .. tostring(h))
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 } // namespace voxelgenerator

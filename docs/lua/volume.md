@@ -10,6 +10,7 @@
 | `extrudePlane(x, y, z, face, groundColor, newColor, thickness)` | Extrude a plane of connected voxels from a position. |
 | `fill(color, overwrite)` | Fill the entire volume with the specified color index. |
 | `fillHollow(color)` | Fill hollow areas in the volume with the specified voxel color. |
+| `fillPlane(image, searchVoxelColor, x, y, z, face)` | Fill a plane at the given position using colors from an image. |
 | `hollow()` | Make the volume hollow by removing interior voxels. |
 | `importColoredHeightmap(image, underground)` | Import a colored heightmap image into the volume. |
 | `importHeightmap(image, underground, surface)` | Import a heightmap image into the volume. |
@@ -23,8 +24,15 @@
 | `overridePlane(x, y, z, face, color, thickness)` | Override existing voxels on a plane with a new color. |
 | `paintPlane(x, y, z, face, searchColor, replaceColor)` | Paint connected voxels on a plane with a new color. |
 | `region()` | Get the region of the volume. |
+| `remapToPalette(oldPalette, newPalette, skipColorIndex)` | Remap all voxel colors from an old palette to a new palette. |
+| `renderIsometricImage(face)` | Render an isometric view of the volume to an image. |
+| `renderToImage(face)` | Render the volume to a 2D image from the given face direction. |
 | `resize(w, h, d, extendMins)` | Resize the volume by the specified amounts. |
 | `rotateAxis(axis)` | Rotate the volume 90 degrees around the specified axis. |
+| `rotateDegrees(angleX, angleY, angleZ, pivotX, pivotY, pivotZ)` | Rotate the volume by the given angles in degrees. |
+| `scale(scaleX, scaleY, scaleZ, pivotX, pivotY, pivotZ)` | Scale the volume by the given scale factors. |
+| `scaleDown()` | Scale the volume down by a factor of 2, averaging the colors. |
+| `scaleUp()` | Scale the volume up by a factor of 2. |
 | `setNormal(x, y, z, normal)` | Set the normal index on an existing voxel at the specified coordinates. |
 | `setVoxel(x, y, z, color, normal)` | Set a voxel at the specified coordinates. |
 | `text(font, text, x, y, z, size, thickness, spacing)` | Render text into the volume using a TrueType font. |
@@ -104,6 +112,27 @@ Fill hollow areas in the volume with the specified voxel color.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `color` | `integer` | The color index to fill with (optional, default 1). |
+
+### fillPlane
+
+Fill a plane at the given position using colors from an image.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `image` | `image` | The image to use for filling colors. |
+| `searchVoxelColor` | `integer` | The color index of the voxel to search for. |
+| `x` | `integer` | The x coordinate to start at. |
+| `y` | `integer` | The y coordinate to start at. |
+| `z` | `integer` | The z coordinate to start at. |
+| `face` | `string` | The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of voxels filled. |
 
 ### hollow
 
@@ -294,6 +323,50 @@ Get the region of the volume.
 | ---- | ----------- |
 | `region` | The region of the volume. |
 
+### remapToPalette
+
+Remap all voxel colors from an old palette to a new palette.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `oldPalette` | `palette` | The old palette used by the current voxels. |
+| `newPalette` | `palette` | The new palette to remap the colors to. |
+| `skipColorIndex` | `integer` | An optional color index to skip during remapping (default: -1). |
+
+### renderIsometricImage
+
+Render an isometric view of the volume to an image.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `face` | `string` | The front face for the isometric view, e.g. 'front', 'back', 'left', 'right', 'up', 'down'. Optional, default: 'front'. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `image` | The rendered isometric image. |
+
+### renderToImage
+
+Render the volume to a 2D image from the given face direction.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `face` | `string` | The face to render from, e.g. 'front', 'back', 'left', 'right', 'up', 'down'. Optional, default: 'front'. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `image` | The rendered image. |
+
 ### resize
 
 Resize the volume by the specified amounts.
@@ -316,6 +389,44 @@ Rotate the volume 90 degrees around the specified axis.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `axis` | `string` | The axis to rotate around: 'x', 'y', or 'z' (default 'y'). |
+
+### rotateDegrees
+
+Rotate the volume by the given angles in degrees.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `angleX` | `integer` | The rotation angle around the x axis in degrees (must be a multiple of 90). |
+| `angleY` | `integer` | The rotation angle around the y axis in degrees (must be a multiple of 90). (optional, default: 0) |
+| `angleZ` | `integer` | The rotation angle around the z axis in degrees (must be a multiple of 90). (optional, default: 0) |
+| `pivotX` | `number` | The normalized x pivot point (optional, default: 0.5). |
+| `pivotY` | `number` | The normalized y pivot point (optional, default: 0.5). |
+| `pivotZ` | `number` | The normalized z pivot point (optional, default: 0.5). |
+
+### scale
+
+Scale the volume by the given scale factors.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `scaleX` | `number` | The scale factor for the x axis. |
+| `scaleY` | `number` | The scale factor for the y axis (optional, defaults to scaleX). |
+| `scaleZ` | `number` | The scale factor for the z axis (optional, defaults to scaleX). |
+| `pivotX` | `number` | The normalized x pivot point (optional, default: 0). |
+| `pivotY` | `number` | The normalized y pivot point (optional, default: 0). |
+| `pivotZ` | `number` | The normalized z pivot point (optional, default: 0). |
+
+### scaleDown
+
+Scale the volume down by a factor of 2, averaging the colors.
+
+### scaleUp
+
+Scale the volume up by a factor of 2.
 
 ### setNormal
 

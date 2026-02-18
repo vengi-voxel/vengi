@@ -46,8 +46,10 @@
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
+#include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VoxelUtil.h"
 
 #define GENERATOR_LUA_SANTITY 1
@@ -746,6 +748,123 @@ static int luaVoxel_volumewrapper_merge(lua_State *s) {
 	const int count = voxelutil::mergeVolumes(dest, source, dest->region(), source->region());
 	lua_pushinteger(s, count);
 	return 1;
+}
+
+static int luaVoxel_volumewrapper_rotateVolumeDegrees(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int angx = (int)luaL_checkinteger(s, 2);
+	const int angy = (int)luaL_optinteger(s, 3, 0);
+	const int angz = (int)luaL_optinteger(s, 4, 0);
+	const float px = (float)luaL_optnumber(s, 5, 0.5);
+	const float py = (float)luaL_optnumber(s, 6, 0.5);
+	const float pz = (float)luaL_optnumber(s, 7, 0.5);
+	voxel::RawVolume *v = voxelutil::rotateVolumeDegrees(volume->volume(), glm::ivec3(angx, angy, angz), glm::vec3(px, py, pz));
+	if (v == nullptr) {
+		return clua_error(s, "Failed to rotate volume");
+	}
+	volume->setVolume(v);
+	volume->update();
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_scaleUp(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxel::RawVolume *v = voxelutil::scaleUp(*volume->volume());
+	if (v == nullptr) {
+		return clua_error(s, "Failed to scale up volume");
+	}
+	volume->setVolume(v);
+	volume->update();
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_scaleDown(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::Region &srcRegion = volume->region();
+	const glm::ivec3 &srcDims = srcRegion.getDimensionsInVoxels();
+	const glm::ivec3 destDims = srcDims / 2;
+	if (destDims.x <= 0 || destDims.y <= 0 || destDims.z <= 0) {
+		return clua_error(s, "Volume too small to scale down");
+	}
+	const voxel::Region destRegion(glm::ivec3(0), destDims - 1);
+	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
+	voxelutil::scaleDown(*volume->volume(), volume->node()->palette(), srcRegion, *destVolume, destRegion);
+	volume->setVolume(destVolume);
+	volume->update();
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_scaleVolume(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const float sx = (float)luaL_checknumber(s, 2);
+	const float sy = (float)luaL_optnumber(s, 3, sx);
+	const float sz = (float)luaL_optnumber(s, 4, sx);
+	const float px = (float)luaL_optnumber(s, 5, 0.0);
+	const float py = (float)luaL_optnumber(s, 6, 0.0);
+	const float pz = (float)luaL_optnumber(s, 7, 0.0);
+	voxel::RawVolume *v = voxelutil::scaleVolume(volume->volume(), glm::vec3(sx, sy, sz), glm::vec3(px, py, pz));
+	if (v == nullptr) {
+		return clua_error(s, "Failed to scale volume");
+	}
+	volume->setVolume(v);
+	volume->update();
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_remapToPalette(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const palette::Palette *oldPalette = luaVoxel_toPalette(s, 2);
+	const palette::Palette *newPalette = luaVoxel_toPalette(s, 3);
+	const int skipColorIndex = (int)luaL_optinteger(s, 4, -1);
+	voxelutil::remapToPalette(volume->volume(), *oldPalette, *newPalette, skipColorIndex);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_fillPlane(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const image::Image *image = clua_toimage(s, 2);
+	const voxel::Voxel searchedVoxel = luaVoxel_getVoxel(s, 3);
+	const int x = (int)luaL_checkinteger(s, 4);
+	const int y = (int)luaL_checkinteger(s, 5);
+	const int z = (int)luaL_checkinteger(s, 6);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 7);
+	const int count = voxelutil::fillPlane(*volume, image, searchedVoxel, glm::ivec3(x, y, z), face);
+	lua_pushinteger(s, count);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_renderToImage(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const char *faceStr = luaL_optstring(s, 2, "front");
+	voxel::FaceNames face = voxel::toFaceNames(faceStr);
+	if (face == voxel::FaceNames::Max) {
+		face = voxel::FaceNames::Front;
+	}
+	image::ImagePtr img = voxelutil::renderToImage(volume->volume(), volume->node()->palette(), face);
+	if (!img || !img->isLoaded()) {
+		return clua_error(s, "Failed to render volume to image");
+	}
+	// Create a new Image owned by Lua (allocated with new, freed by Lua GC via delete)
+	image::Image *luaImage = new image::Image(img->name());
+	luaImage->loadRGBA(img->data(), img->width(), img->height());
+	return clua_pushimage(s, luaImage);
+}
+
+static int luaVoxel_volumewrapper_renderIsometricImage(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const char *faceStr = luaL_optstring(s, 2, "front");
+	voxel::FaceNames face = voxel::toFaceNames(faceStr);
+	if (face == voxel::FaceNames::Max) {
+		face = voxel::FaceNames::Front;
+	}
+	image::ImagePtr img = voxelutil::renderIsometricImage(volume->volume(), volume->node()->palette(), face);
+	if (!img || !img->isLoaded()) {
+		return clua_error(s, "Failed to render isometric image");
+	}
+	// Create a new Image owned by Lua (allocated with new, freed by Lua GC via delete)
+	image::Image *luaImage = new image::Image(img->name());
+	luaImage->loadRGBA(img->data(), img->width(), img->height());
+	return clua_pushimage(s, luaImage);
 }
 
 static int luaVoxel_volumewrapper_gc(lua_State *s) {
@@ -2749,6 +2868,116 @@ static int luaVoxel_volumewrapper_merge_jsonhelp(lua_State* s) {
 		"returns": [
 			{"type": "integer", "description": "The number of voxels merged."}
 		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_rotateVolumeDegrees_jsonhelp(lua_State* s) {
+	const char *json = R"json({
+		"name": "rotateDegrees",
+		"summary": "Rotate the volume by the given angles in degrees.",
+		"parameters": [
+			{"name": "angleX", "type": "integer", "description": "The rotation angle around the x axis in degrees (must be a multiple of 90)."},
+			{"name": "angleY", "type": "integer", "description": "The rotation angle around the y axis in degrees (must be a multiple of 90). (optional, default: 0)", "optional": true},
+			{"name": "angleZ", "type": "integer", "description": "The rotation angle around the z axis in degrees (must be a multiple of 90). (optional, default: 0)", "optional": true},
+			{"name": "pivotX", "type": "number", "description": "The normalized x pivot point (optional, default: 0.5).", "optional": true},
+			{"name": "pivotY", "type": "number", "description": "The normalized y pivot point (optional, default: 0.5).", "optional": true},
+			{"name": "pivotZ", "type": "number", "description": "The normalized z pivot point (optional, default: 0.5).", "optional": true}
+		]})json";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_scaleUp_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "scaleUp",
+		"summary": "Scale the volume up by a factor of 2."
+	})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_scaleDown_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "scaleDown",
+		"summary": "Scale the volume down by a factor of 2, averaging the colors."
+	})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_scaleVolume_jsonhelp(lua_State* s) {
+	const char *json = R"json({
+		"name": "scale",
+		"summary": "Scale the volume by the given scale factors.",
+		"parameters": [
+			{"name": "scaleX", "type": "number", "description": "The scale factor for the x axis."},
+			{"name": "scaleY", "type": "number", "description": "The scale factor for the y axis (optional, defaults to scaleX).", "optional": true},
+			{"name": "scaleZ", "type": "number", "description": "The scale factor for the z axis (optional, defaults to scaleX).", "optional": true},
+			{"name": "pivotX", "type": "number", "description": "The normalized x pivot point (optional, default: 0).", "optional": true},
+			{"name": "pivotY", "type": "number", "description": "The normalized y pivot point (optional, default: 0).", "optional": true},
+			{"name": "pivotZ", "type": "number", "description": "The normalized z pivot point (optional, default: 0).", "optional": true}
+		]})json";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_remapToPalette_jsonhelp(lua_State* s) {
+	const char *json = R"json({
+		"name": "remapToPalette",
+		"summary": "Remap all voxel colors from an old palette to a new palette.",
+		"parameters": [
+			{"name": "oldPalette", "type": "palette", "description": "The old palette used by the current voxels."},
+			{"name": "newPalette", "type": "palette", "description": "The new palette to remap the colors to."},
+			{"name": "skipColorIndex", "type": "integer", "description": "An optional color index to skip during remapping (default: -1).", "optional": true}
+		]})json";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_fillPlane_jsonhelp(lua_State* s) {
+	const char *json = R"json({
+		"name": "fillPlane",
+		"summary": "Fill a plane at the given position using colors from an image.",
+		"parameters": [
+			{"name": "image", "type": "image", "description": "The image to use for filling colors."},
+			{"name": "searchVoxelColor", "type": "integer", "description": "The color index of the voxel to search for."},
+			{"name": "x", "type": "integer", "description": "The x coordinate to start at."},
+			{"name": "y", "type": "integer", "description": "The y coordinate to start at."},
+			{"name": "z", "type": "integer", "description": "The z coordinate to start at."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels filled."}
+		]})json";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_renderToImage_jsonhelp(lua_State* s) {
+	const char *json = R"json({
+		"name": "renderToImage",
+		"summary": "Render the volume to a 2D image from the given face direction.",
+		"parameters": [
+			{"name": "face", "type": "string", "description": "The face to render from, e.g. 'front', 'back', 'left', 'right', 'up', 'down'. Optional, default: 'front'.", "optional": true}
+		],
+		"returns": [
+			{"type": "image", "description": "The rendered image."}
+		]})json";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_renderIsometricImage_jsonhelp(lua_State* s) {
+	const char *json = R"json({
+		"name": "renderIsometricImage",
+		"summary": "Render an isometric view of the volume to an image.",
+		"parameters": [
+			{"name": "face", "type": "string", "description": "The front face for the isometric view, e.g. 'front', 'back', 'left', 'right', 'up', 'down'. Optional, default: 'front'.", "optional": true}
+		],
+		"returns": [
+			{"type": "image", "description": "The rendered isometric image."}
+		]})json";
 	lua_pushstring(s, json);
 	return 1;
 }
@@ -4953,6 +5182,14 @@ static void prepareState(lua_State* s) {
 		{"overridePlane", luaVoxel_volumewrapper_overridePlane, luaVoxel_volumewrapper_overridePlane_jsonhelp},
 		{"paintPlane", luaVoxel_volumewrapper_paintPlane, luaVoxel_volumewrapper_paintPlane_jsonhelp},
 		{"merge", luaVoxel_volumewrapper_merge, luaVoxel_volumewrapper_merge_jsonhelp},
+		{"rotateDegrees", luaVoxel_volumewrapper_rotateVolumeDegrees, luaVoxel_volumewrapper_rotateVolumeDegrees_jsonhelp},
+		{"scaleUp", luaVoxel_volumewrapper_scaleUp, luaVoxel_volumewrapper_scaleUp_jsonhelp},
+		{"scaleDown", luaVoxel_volumewrapper_scaleDown, luaVoxel_volumewrapper_scaleDown_jsonhelp},
+		{"scale", luaVoxel_volumewrapper_scaleVolume, luaVoxel_volumewrapper_scaleVolume_jsonhelp},
+		{"remapToPalette", luaVoxel_volumewrapper_remapToPalette, luaVoxel_volumewrapper_remapToPalette_jsonhelp},
+		{"fillPlane", luaVoxel_volumewrapper_fillPlane, luaVoxel_volumewrapper_fillPlane_jsonhelp},
+		{"renderToImage", luaVoxel_volumewrapper_renderToImage, luaVoxel_volumewrapper_renderToImage_jsonhelp},
+		{"renderIsometricImage", luaVoxel_volumewrapper_renderIsometricImage, luaVoxel_volumewrapper_renderIsometricImage_jsonhelp},
 		{"__gc", luaVoxel_volumewrapper_gc, nullptr},
 		{nullptr, nullptr, nullptr}
 	};
