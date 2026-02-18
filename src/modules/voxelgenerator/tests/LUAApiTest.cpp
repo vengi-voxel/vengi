@@ -715,4 +715,210 @@ TEST_F(LUAApiTest, testTreePine) {
 	runFile(sceneGraph, "tree_pine.lua", {"10", "2", "10", "10", "10", "2", "1", "2", "2", "1", "2"});
 }
 
+TEST_F(LUAApiTest, testPaletteExtendedBindings) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local pal = node:palette()
+			local name = pal:name()
+			local hash = pal:hash()
+			local size = pal:size()
+			assert(size > 0, "palette size should be > 0")
+
+			-- test hasColor, tryAdd, colorName, setColorName
+			pal:setColor(0, 255, 0, 0, 255)
+			local hasRed = pal:hasColor(255, 0, 0)
+			assert(hasRed, "palette should have red")
+
+			pal:setColorName(0, "MyRed")
+			local cname = pal:colorName(0)
+			assert(cname == "MyRed", "color name should be MyRed")
+
+			-- test palette name
+			pal:setName("TestPalette")
+			assert(pal:name() == "TestPalette", "palette name should be TestPalette")
+
+			-- test hasAlpha, hasEmit, hasMaterials
+			local alpha = pal:hasAlpha(0)
+			local emit = pal:hasEmit(0)
+			local mats = pal:hasMaterials()
+			local freeSlot = pal:hasFreeSlot()
+
+			-- test exchange and copy
+			pal:setColor(1, 0, 255, 0, 255)
+			pal:exchange(0, 1)
+			local r, g, b, a = pal:rgba(0)
+			assert(r == 0 and g == 255 and b == 0, "exchange should swap colors")
+			pal:copy(0, 2)
+
+			-- test brighter/darker/warmer/colder
+			pal:brighter(0.1)
+			pal:darker(0.1)
+			pal:warmer(5)
+			pal:colder(5)
+			pal:changeIntensity(1.0)
+
+			-- test contrastStretching and whiteBalance
+			pal:contrastStretching()
+			pal:whiteBalance()
+
+			-- test setSize and fill
+			pal:setSize(10)
+			assert(pal:size() == 10, "size should be 10")
+			pal:fill()
+
+			-- test new palette
+			local newpal = g_palette.new()
+			newpal:setSize(4)
+			newpal:setColor(0, 255, 0, 0, 255)
+			newpal:setColor(1, 0, 255, 0, 255)
+			newpal:setColor(2, 0, 0, 255, 255)
+			newpal:setColor(3, 128, 128, 128, 255)
+			local added, idx = newpal:tryAdd(64, 64, 64)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testNormalPaletteBindings) {
+	const core::String script = R"(
+		function main(node, region, color)
+			-- test creation
+			local npal = g_normalpalette.new()
+			npal:load("built-in:tiberiansun")
+			assert(npal:size() > 0, "size should be > 0")
+
+			-- test name
+			npal:setName("TestNormals")
+			assert(npal:name() == "TestNormals", "name should be TestNormals")
+
+			-- test hash
+			local hash = npal:hash()
+
+			-- test set/get normal
+			npal:setNormal(0, 0.0, 1.0, 0.0)
+			local n = npal:normal(0)
+			-- check that it's roughly (0, 1, 0)
+			assert(n.y > 0.9, "normal y should be close to 1.0")
+
+			-- test closest match
+			local idx = npal:match(0.0, 1.0, 0.0)
+
+			-- test tostring
+			local str = tostring(npal)
+
+			-- test node normal palette
+			node:setNormalPalette(npal)
+			assert(node:hasNormalPalette(), "node should have normal palette")
+			local npal2 = node:normalPalette()
+			assert(npal2:size() > 0, "node normal palette size should be > 0")
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeWrapperNormals) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			local x = mins.x
+			local y = mins.y
+			local z = mins.z
+
+			-- setVoxel with normal parameter
+			volume:setVoxel(x, y, z, 1, 5)
+			local c = volume:voxel(x, y, z)
+			assert(c == 1, "color should be 1, got " .. tostring(c))
+			local n = volume:normal(x, y, z)
+			assert(n == 5, "normal should be 5, got " .. tostring(n))
+
+			-- setNormal on existing voxel
+			volume:setNormal(x, y, z, 10)
+			n = volume:normal(x, y, z)
+			assert(n == 10, "normal should be 10 after setNormal, got " .. tostring(n))
+
+			-- setNormal on air voxel should return false
+			local airx = x + 100
+			local result = volume:setNormal(airx, y, z, 1)
+			assert(not result, "setNormal on air should return false")
+
+			-- normal of air voxel should be 0 (NO_NORMAL)
+			n = volume:normal(airx, y, z)
+			assert(n == 0, "normal of air should be 0, got " .. tostring(n))
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVoxelUtilBindings) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			local maxs = region:maxs()
+			local x = mins.x
+			local y = mins.y
+			local z = mins.z
+
+			-- test fill
+			volume:fill(5)
+			local c = volume:voxel(x, y, z)
+			assert(c == 5, "fill color should be 5, got " .. tostring(c))
+
+			-- test isEmpty after fill
+			assert(not volume:isEmpty(), "volume should not be empty after fill")
+
+			-- test clear
+			volume:clear()
+			c = volume:voxel(x, y, z)
+			assert(c == -1, "voxel should be air (-1) after clear, got " .. tostring(c))
+
+			-- test isEmpty after clear
+			assert(volume:isEmpty(), "volume should be empty after clear")
+
+			-- test isTouching
+			volume:setVoxel(x, y, z, 1)
+			local touching = volume:isTouching(x + 1, y, z)
+			assert(touching, "position adjacent to voxel should be touching")
+
+			-- test fill with overwrite=false
+			volume:fill(10, false)
+			c = volume:voxel(x, y, z)
+			assert(c == 1, "fill with overwrite=false should not overwrite existing voxel, got " .. tostring(c))
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, testVolumeMergeBinding) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local volume = node:volume()
+			local mins = region:mins()
+			local x = mins.x
+			local y = mins.y
+			local z = mins.z
+
+			-- set a voxel in the source
+			volume:setVoxel(x, y, z, 3)
+
+			-- create a second node and merge into it
+			local newNode = g_scenegraph.new("merge_target", region)
+			local newVolume = newNode:volume()
+
+			-- merge source into dest
+			local count = newVolume:merge(volume)
+			assert(count > 0, "merge should have copied at least 1 voxel, got " .. tostring(count))
+			local c = newVolume:voxel(x, y, z)
+			assert(c == 3, "merged voxel color should be 3, got " .. tostring(c))
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 } // namespace voxelgenerator

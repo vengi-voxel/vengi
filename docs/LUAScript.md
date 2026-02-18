@@ -131,33 +131,35 @@ The detailed documentation for each API is auto-generated and can be found in th
 
 | Global | Description |
 | ------ | ----------- |
-| [g_scenegraph](lua/scenegraph.md) | Access to scene graph for creating and managing nodes |
-| [g_region](lua/region.md) | Create and work with regions |
-| [g_palette](lua/palette.md) | Create and manipulate palettes |
-| [g_noise](lua/noise.md) | Noise generation functions |
-| [g_shape](lua/shape.md) | Shape generation functions |
 | [g_algorithm](lua/algorithm.md) | General purpose algorithms |
-| [g_import](lua/import.md) | Import images, palettes, and scenes |
-| [g_http](lua/http.md) | HTTP request functions |
-| [g_io](lua/io.md) | File I/O operations |
-| [g_var](lua/var.md) | Console variable access |
 | [g_cmd](lua/cmd.md) | Command execution |
+| [g_font](lua/font.md) | Voxel font binding |
+| [g_http](lua/http.md) | HTTP request functions |
+| [g_import](lua/import.md) | Import images, palettes, and scenes |
+| [g_io](lua/io.md) | File I/O operations |
 | [g_log](lua/log.md) | Logging functions |
-| [g_sys](lua/sys.md) | System utilities |
-| [g_vec2, g_vec3, g_vec4, g_ivec2, g_ivec3, g_ivec4](lua/vector.md) | Vector creation |
+| [g_noise](lua/noise.md) | Noise generation functions |
+| [g_normalpalette](lua/normalpalette.md) | Create and manipulate palettes |
+| [g_palette](lua/palette.md) | Create and manipulate palettes |
 | [g_quat](lua/quat.md) | Quaternion creation |
+| [g_region](lua/region.md) | Create and work with regions |
+| [g_scenegraph](lua/scenegraph.md) | Access to scene graph for creating and managing nodes |
+| [g_shape](lua/shape.md) | Shape generation functions |
+| [g_sys](lua/sys.md) | System utilities |
+| [g_var](lua/var.md) | Console variable access |
+| [g_vec2, g_vec3, g_vec4, g_ivec2, g_ivec3, g_ivec4](lua/vector.md) | Vector creation |
 
 ### Types
 
 | Type | Description |
 | ---- | ----------- |
-| [SceneGraphNode](lua/scenegraphnode.md) | A node in the scene graph (model, group, camera, etc.) |
 | [Keyframe](lua/keyframe.md) | Animation keyframe data |
-| [Volume](lua/volume.md) | Voxel volume data |
-| [Region](lua/region.md) | Bounding region for volumes |
-| [Palette](lua/palette.md) | Color palette |
-| [Stream](lua/stream.md) | Data stream for reading/writing |
 | [Image](lua/image.md) | Image data |
+| [Palette](lua/palette.md) | Color palette |
+| [Region](lua/region.md) | Bounding region for volumes |
+| [SceneGraphNode](lua/scenegraphnode.md) | A node in the scene graph (model, group, camera, etc.) |
+| [Stream](lua/stream.md) | Data stream for reading/writing |
+| [Volume](lua/volume.md) | Voxel volume data |
 
 ### Quick Access Examples
 

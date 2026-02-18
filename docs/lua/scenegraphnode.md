@@ -8,6 +8,7 @@
 | `children()` | Get the child node IDs. |
 | `clone()` | Create a copy of the node. |
 | `hasKeyFrameForFrame(frame)` | Check if a keyframe exists at the specified frame. |
+| `hasNormalPalette()` | Check if the node has a normal palette. |
 | `hide()` | Hide the node. |
 | `id()` | Get the ID of the node. |
 | `isCamera()` | Check if the node is a camera node. |
@@ -21,6 +22,7 @@
 | `keyFrameForFrame(frame)` | Get the keyframe for a specific frame number. |
 | `lock()` | Lock the node. |
 | `name()` | Get the name of the node. |
+| `normalPalette()` | Get the normal palette of the node. |
 | `numKeyFrames()` | Get the number of keyframes for the current animation. |
 | `palette()` | Get the palette of the node. |
 | `parent()` | Get the parent node ID. |
@@ -30,6 +32,7 @@
 | `removeKeyFrame(index)` | Remove a keyframe by index. |
 | `removeKeyFrameForFrame(frame)` | Remove the keyframe at the specified frame. |
 | `setName(name)` | Set the name of the node. |
+| `setNormalPalette(normalpalette)` | Set the normal palette of the node. |
 | `setPalette(palette, remap)` | Set the palette of the node. |
 | `setPivot(pivot)` | Set the pivot point of the node. |
 | `setProperty(key, value)` | Set a custom property on the node. |
@@ -92,6 +95,16 @@ Check if a keyframe exists at the specified frame.
 | Type | Description |
 | ---- | ----------- |
 | `boolean` | True if keyframe exists. |
+
+### hasNormalPalette
+
+Check if the node has a normal palette.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the node has a normal palette. |
 
 ### hide
 
@@ -223,6 +236,16 @@ Get the name of the node.
 | ---- | ----------- |
 | `string` | The node name. |
 
+### normalPalette
+
+Get the normal palette of the node.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `normalpalette` | The node's normal palette. |
+
 ### numKeyFrames
 
 Get the number of keyframes for the current animation.
@@ -318,6 +341,16 @@ Set the name of the node.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `name` | `string` | The new name. |
+
+### setNormalPalette
+
+Set the normal palette of the node.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `normalpalette` | `normalpalette` | The new normal palette. |
 
 ### setPalette
 

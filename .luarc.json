@@ -15,6 +15,7 @@
 			"g_log",
 			"g_import",
 			"g_noise",
+			"g_normalpalette",
 			"g_palette",
 			"g_region",
 			"g_scenegraph",
@@ -35,6 +36,7 @@
 			"g_quat",
 			"g_sys",
 			"g_io",
+			"g_font",
 			"g_algorithm",
 			"tracy"
 		]

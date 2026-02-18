@@ -837,16 +837,20 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 static core::String getDocPageName(const core::String &name) {
 	if (name == "g_scenegraph") {
 		return "scenegraph";
-	} else if (name == "g_region") {
+	} else if (name == "g_region" || name == "region" || name == "region_gc") {
 		return "region";
-	} else if (name == "g_palette") {
+	} else if (name == "g_palette" || name == "palette" || name == "palette_gc") {
 		return "palette";
+	} else if (name == "g_normalpalette" || name == "normalpalette" || name == "normalpalette_gc") {
+		return "normalpalette";
 	} else if (name == "g_noise") {
 		return "noise";
 	} else if (name == "g_shape") {
 		return "shape";
 	} else if (name == "g_import") {
 		return "import";
+	} else if (name == "g_font") {
+		return "font";
 	} else if (name == "g_algorithm") {
 		return "algorithm";
 	} else if (name == "g_http") {
@@ -872,10 +876,6 @@ static core::String getDocPageName(const core::String &name) {
 		return "keyframe";
 	} else if (name == "volume") {
 		return "volume";
-	} else if (name == "region" || name == "region_gc") {
-		return "region";
-	} else if (name == "palette" || name == "palette_gc") {
-		return "palette";
 	} else if (name == "stream") {
 		return "stream";
 	} else if (name == "image") {
@@ -893,8 +893,12 @@ static core::String getDocTitle(const core::String &pageName) {
 		return "Region";
 	} else if (pageName == "palette") {
 		return "Palette";
+	} else if (pageName == "normalpalette") {
+		return "NormalPalette";
 	} else if (pageName == "noise") {
 		return "Noise";
+	} else if (pageName == "font") {
+		return "Font";
 	} else if (pageName == "shape") {
 		return "Shape";
 	} else if (pageName == "import") {
@@ -936,10 +940,14 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_region";
 	} else if (pageName == "palette") {
 		return "g_palette";
+	} else if (pageName == "normalpalette") {
+		return "g_normalpalette";
 	} else if (pageName == "noise") {
 		return "g_noise";
 	} else if (pageName == "shape") {
 		return "g_shape";
+	} else if (pageName == "font") {
+		return "g_font";
 	} else if (pageName == "import") {
 		return "g_import";
 	} else if (pageName == "algorithm") {

@@ -4,27 +4,96 @@
 
 | Method | Description |
 | ------ | ----------- |
+| `clear()` | Clear all voxels in the volume (set to air). |
 | `crop()` | Crop the volume to remove empty space around the voxels. |
+| `erasePlane(x, y, z, face, groundColor, thickness)` | Erase connected voxels on a plane starting from a position. |
+| `extrudePlane(x, y, z, face, groundColor, newColor, thickness)` | Extrude a plane of connected voxels from a position. |
+| `fill(color, overwrite)` | Fill the entire volume with the specified color index. |
 | `fillHollow(color)` | Fill hollow areas in the volume with the specified voxel color. |
 | `hollow()` | Make the volume hollow by removing interior voxels. |
 | `importColoredHeightmap(image, underground)` | Import a colored heightmap image into the volume. |
 | `importHeightmap(image, underground, surface)` | Import a heightmap image into the volume. |
 | `importImageAsVolume(texture, depthmap, palette, thickness, bothSides)` | Import an image as a 3D volume using depth information. |
+| `isEmpty(minsx, minsy, minsz, maxsx, maxsy, maxsz)` | Check if a region is empty (contains only air). |
+| `isTouching(x, y, z, connectivity)` | Check if a position is touching (adjacent to) a solid voxel. |
+| `merge(source)` | Merge another volume into this one. |
 | `mirrorAxis(axis)` | Mirror the volume along the specified axis. |
 | `move(x, y, z)` | Move the voxels within the volume by the specified offset. |
+| `normal(x, y, z)` | Get the normal palette index of the voxel at the specified coordinates. |
+| `overridePlane(x, y, z, face, color, thickness)` | Override existing voxels on a plane with a new color. |
+| `paintPlane(x, y, z, face, searchColor, replaceColor)` | Paint connected voxels on a plane with a new color. |
 | `region()` | Get the region of the volume. |
 | `resize(w, h, d, extendMins)` | Resize the volume by the specified amounts. |
 | `rotateAxis(axis)` | Rotate the volume 90 degrees around the specified axis. |
-| `setVoxel(x, y, z, color)` | Set a voxel at the specified coordinates. |
+| `setNormal(x, y, z, normal)` | Set the normal index on an existing voxel at the specified coordinates. |
+| `setVoxel(x, y, z, color, normal)` | Set a voxel at the specified coordinates. |
 | `text(font, text, x, y, z, size, thickness, spacing)` | Render text into the volume using a TrueType font. |
 | `translate(x, y, z)` | Translate the region of the volume without moving the voxels. |
 | `voxel(x, y, z)` | Get the voxel at the specified coordinates. |
 
 ## Detailed Documentation
 
+### clear
+
+Clear all voxels in the volume (set to air).
+
 ### crop
 
 Crop the volume to remove empty space around the voxels.
+
+### erasePlane
+
+Erase connected voxels on a plane starting from a position.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `face` | `string` | The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.). |
+| `groundColor` | `integer` | The color index of the voxels to erase. |
+| `thickness` | `integer` | The thickness of the erase (optional, default 1). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of voxels erased. |
+
+### extrudePlane
+
+Extrude a plane of connected voxels from a position.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `face` | `string` | The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.). |
+| `groundColor` | `integer` | The color index of the ground voxels to extrude. |
+| `newColor` | `integer` | The color index for the new extruded voxels. |
+| `thickness` | `integer` | The extrusion thickness (optional, default 1). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of voxels extruded. |
+
+### fill
+
+Fill the entire volume with the specified color index.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `color` | `integer` | The color index to fill with. |
+| `overwrite` | `boolean` | If true, overwrite existing voxels. If false, only fill air voxels (optional, default true). |
 
 ### fillHollow
 
@@ -77,6 +146,62 @@ Import an image as a 3D volume using depth information.
 | `thickness` | `integer` | Thickness of the volume (optional, default 8). |
 | `bothSides` | `boolean` | Create voxels on both sides (optional, default false). |
 
+### isEmpty
+
+Check if a region is empty (contains only air).
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `minsx` | `integer` | Minimum x coordinate (optional, defaults to volume region). |
+| `minsy` | `integer` | Minimum y coordinate (optional). |
+| `minsz` | `integer` | Minimum z coordinate (optional). |
+| `maxsx` | `integer` | Maximum x coordinate (optional). |
+| `maxsy` | `integer` | Maximum y coordinate (optional). |
+| `maxsz` | `integer` | Maximum z coordinate (optional). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the region is empty. |
+
+### isTouching
+
+Check if a position is touching (adjacent to) a solid voxel.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `connectivity` | `string` | Connectivity type: '6' (faces), '18' (faces+edges), '26' (faces+edges+corners) (optional, default '6'). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the position is adjacent to a solid voxel. |
+
+### merge
+
+Merge another volume into this one.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `source` | `volume` | The source volume to merge from. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of voxels merged. |
+
 ### mirrorAxis
 
 Mirror the volume along the specified axis.
@@ -98,6 +223,66 @@ Move the voxels within the volume by the specified offset.
 | `x` | `integer` | The x offset. |
 | `y` | `integer` | The y offset (optional, default 0). |
 | `z` | `integer` | The z offset (optional, default 0). |
+
+### normal
+
+Get the normal palette index of the voxel at the specified coordinates.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The normal palette index of the voxel (0 means no normal). |
+
+### overridePlane
+
+Override existing voxels on a plane with a new color.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `face` | `string` | The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.). |
+| `color` | `integer` | The replacement color index. |
+| `thickness` | `integer` | The override thickness (optional, default 1). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of voxels overridden. |
+
+### paintPlane
+
+Paint connected voxels on a plane with a new color.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `face` | `string` | The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.). |
+| `searchColor` | `integer` | The color index to search for. |
+| `replaceColor` | `integer` | The color index to replace with. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `integer` | The number of voxels painted. |
 
 ### region
 
@@ -132,6 +317,25 @@ Rotate the volume 90 degrees around the specified axis.
 | ---- | ---- | ----------- |
 | `axis` | `string` | The axis to rotate around: 'x', 'y', or 'z' (default 'y'). |
 
+### setNormal
+
+Set the normal index on an existing voxel at the specified coordinates.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `x` | `integer` | The x coordinate. |
+| `y` | `integer` | The y coordinate. |
+| `z` | `integer` | The z coordinate. |
+| `normal` | `integer` | The normal palette index. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if the voxel was updated, false if the voxel is air or outside the region. |
+
 ### setVoxel
 
 Set a voxel at the specified coordinates.
@@ -144,6 +348,7 @@ Set a voxel at the specified coordinates.
 | `y` | `integer` | The y coordinate. |
 | `z` | `integer` | The z coordinate. |
 | `color` | `integer` | The color index to set, or -1 for air (optional, default 1). |
+| `normal` | `integer` | The normal palette index (optional, default NO_NORMAL). |
 
 **Returns:**
 

@@ -17,6 +17,7 @@
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "noise/Simplex.h"
+#include "palette/NormalPalette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -41,7 +42,9 @@
 #include "voxelutil/Hollow.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/Shadow.h"
+#include "voxel/Face.h"
 #include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
@@ -147,6 +150,18 @@ static const char *luaVoxel_metapalette_gc() {
 	return "__meta_palette_gc";
 }
 
+static const char *luaVoxel_metanormalpaletteglobal() {
+	return "__meta_normalpalette_global";
+}
+
+static const char *luaVoxel_metanormalpalette() {
+	return "__meta_normalpalette";
+}
+
+static const char *luaVoxel_metanormalpalette_gc() {
+	return "__meta_normalpalette_gc";
+}
+
 static const char *luaVoxel_metanoise() {
 	return "__meta_noise";
 }
@@ -161,6 +176,14 @@ static const char *luaVoxel_metaimporter() {
 
 static const char *luaVoxel_metaalgorithm() {
 	return "__meta_algorithm";
+}
+
+static const char *luaVoxel_metavoxelfontglobal() {
+	return "__meta_voxelfont_global";
+}
+
+static const char *luaVoxel_metavoxelfont() {
+	return "__meta_voxelfont";
 }
 
 static inline const char *luaVoxel_metaregion() {
@@ -249,6 +272,41 @@ static int luaVoxel_pushpalette(lua_State* s, palette::Palette* palette) {
 		return clua_error(s, "No palette given - can't push");
 	}
 	return clua_pushudata(s, palette, luaVoxel_metapalette_gc());
+}
+
+static palette::NormalPalette* luaVoxel_toNormalPalette(lua_State* s, int n) {
+	palette::NormalPalette** pal = (palette::NormalPalette**)luaL_testudata(s, n, luaVoxel_metanormalpalette_gc());
+	if (pal != nullptr) {
+		return *pal;
+	}
+	return *(palette::NormalPalette**)clua_getudata<palette::NormalPalette*>(s, n, luaVoxel_metanormalpalette());
+}
+
+static int luaVoxel_pushnormalpalette(lua_State* s, palette::NormalPalette& palette) {
+	return clua_pushudata(s, &palette, luaVoxel_metanormalpalette());
+}
+
+static int luaVoxel_pushnormalpalette(lua_State* s, palette::NormalPalette* palette) {
+	if (palette == nullptr) {
+		return clua_error(s, "No normal palette given - can't push");
+	}
+	return clua_pushudata(s, palette, luaVoxel_metanormalpalette_gc());
+}
+
+static voxelfont::VoxelFont* luaVoxel_toVoxelFont(lua_State* s, int n) {
+	return *(voxelfont::VoxelFont**)clua_getudata<voxelfont::VoxelFont*>(s, n, luaVoxel_metavoxelfont());
+}
+
+static int luaVoxel_pushvoxelfont(lua_State* s, voxelfont::VoxelFont* font) {
+	if (font == nullptr) {
+		return clua_error(s, "No font given - can't push");
+	}
+	return clua_pushudata(s, font, luaVoxel_metavoxelfont());
+}
+
+static voxel::FaceNames luaVoxel_getFace(lua_State *s, int index) {
+	const char* face = luaL_checkstring(s, index);
+	return voxel::toFaceNames(face);
 }
 
 static int luaVoxel_pushkeyframe(lua_State* s, scenegraph::SceneGraphNode& node, scenegraph::KeyFrameIndex keyFrameIdx) {
@@ -541,9 +599,152 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_checkinteger(s, 3);
 	const int z = (int)luaL_checkinteger(s, 4);
-	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
+	const int color = (int)luaL_optinteger(s, 5, 1);
+	const int normalIdx = (int)luaL_optinteger(s, 6, NO_NORMAL);
+	voxel::Voxel voxel;
+	if (color == -1) {
+		voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
+	} else {
+		voxel = voxel::createVoxel(voxel::VoxelType::Generic, color, normalIdx);
+	}
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_setnormal(lua_State* s) {
+	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const int normalIdx = (int)luaL_checkinteger(s, 5);
+	voxel::Voxel voxel = volume->voxel(x, y, z);
+	if (voxel::isAir(voxel.getMaterial())) {
+		lua_pushboolean(s, 0);
+		return 1;
+	}
+	voxel.setNormal(normalIdx);
+	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
+	lua_pushboolean(s, insideRegion ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_normal(lua_State* s) {
+	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::Voxel& voxel = volume->voxel(x, y, z);
+	lua_pushinteger(s, voxel.getNormal());
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_fill(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
+	const bool overwrite = clua_optboolean(s, 3, true);
+	voxelutil::fill(*volume, voxel, overwrite);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_clear(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxelutil::clear(*volume);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_isempty(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxel::Region region;
+	if (lua_gettop(s) >= 7) {
+		const int minsx = (int)luaL_checkinteger(s, 2);
+		const int minsy = (int)luaL_checkinteger(s, 3);
+		const int minsz = (int)luaL_checkinteger(s, 4);
+		const int maxsx = (int)luaL_checkinteger(s, 5);
+		const int maxsy = (int)luaL_checkinteger(s, 6);
+		const int maxsz = (int)luaL_checkinteger(s, 7);
+		region = voxel::Region(minsx, minsy, minsz, maxsx, maxsy, maxsz);
+	} else {
+		region = volume->region();
+	}
+	lua_pushboolean(s, voxelutil::isEmpty(*volume->volume(), region) ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_istouching(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const char *connectivityStr = luaL_optstring(s, 5, "6");
+	voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
+	if (SDL_strcmp(connectivityStr, "18") == 0) {
+		connectivity = voxel::Connectivity::EighteenConnected;
+	} else if (SDL_strcmp(connectivityStr, "26") == 0) {
+		connectivity = voxel::Connectivity::TwentySixConnected;
+	}
+	lua_pushboolean(s, voxelutil::isTouching(*volume->volume(), glm::ivec3(x, y, z), connectivity) ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_erasePlane(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
+	const voxel::Voxel groundVoxel = luaVoxel_getVoxel(s, 6);
+	const int thickness = (int)luaL_optinteger(s, 7, 1);
+	const int count = voxelutil::erasePlane(*volume, glm::ivec3(x, y, z), face, groundVoxel, thickness);
+	lua_pushinteger(s, count);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_extrudePlane(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
+	const voxel::Voxel groundVoxel = luaVoxel_getVoxel(s, 6);
+	const voxel::Voxel newPlaneVoxel = luaVoxel_getVoxel(s, 7);
+	const int thickness = (int)luaL_optinteger(s, 8, 1);
+	const int count = voxelutil::extrudePlane(*volume, glm::ivec3(x, y, z), face, groundVoxel, newPlaneVoxel, thickness);
+	lua_pushinteger(s, count);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_overridePlane(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
+	const voxel::Voxel replaceVoxel = luaVoxel_getVoxel(s, 6);
+	const int thickness = (int)luaL_optinteger(s, 7, 1);
+	const int count = voxelutil::overridePlane(*volume, glm::ivec3(x, y, z), face, replaceVoxel, thickness);
+	lua_pushinteger(s, count);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_paintPlane(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	const int z = (int)luaL_checkinteger(s, 4);
+	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
+	const voxel::Voxel searchVoxel = luaVoxel_getVoxel(s, 6);
+	const voxel::Voxel replaceVoxel = luaVoxel_getVoxel(s, 7);
+	const int count = voxelutil::paintPlane(*volume, glm::ivec3(x, y, z), face, searchVoxel, replaceVoxel);
+	lua_pushinteger(s, count);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_merge(lua_State *s) {
+	LuaRawVolumeWrapper *dest = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *source = luaVoxel_tovolumewrapper(s, 2);
+	const int count = voxelutil::mergeVolumes(dest, source, dest->region(), source->region());
+	lua_pushinteger(s, count);
 	return 1;
 }
 
@@ -916,6 +1117,293 @@ static int luaVoxel_palette_similar(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_palette_hascolor(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t r = luaL_checkinteger(s, 2);
+	const uint8_t g = luaL_checkinteger(s, 3);
+	const uint8_t b = luaL_checkinteger(s, 4);
+	lua_pushboolean(s, palette->hasColor(color::RGBA(r, g, b, 255)));
+	return 1;
+}
+
+static int luaVoxel_palette_tryadd(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t r = luaL_checkinteger(s, 2);
+	const uint8_t g = luaL_checkinteger(s, 3);
+	const uint8_t b = luaL_checkinteger(s, 4);
+	const uint8_t a = luaL_optinteger(s, 5, 255);
+	const bool skipSimilar = clua_optboolean(s, 6, true);
+	uint8_t index = 0;
+	const bool added = palette->tryAdd(color::RGBA(r, g, b, a), skipSimilar, &index);
+	lua_pushboolean(s, added);
+	lua_pushinteger(s, index);
+	return 2;
+}
+
+static int luaVoxel_palette_removecolor(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	lua_pushboolean(s, palette->removeColor(idx));
+	return 1;
+}
+
+static int luaVoxel_palette_duplicatecolor(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	lua_pushinteger(s, palette->duplicateColor(idx));
+	return 1;
+}
+
+static int luaVoxel_palette_hasfreeslot(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	lua_pushboolean(s, palette->hasFreeSlot());
+	return 1;
+}
+
+static int luaVoxel_palette_hasalpha(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	lua_pushboolean(s, palette->hasAlpha(idx));
+	return 1;
+}
+
+static int luaVoxel_palette_hasemit(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	lua_pushboolean(s, palette->hasEmit(idx));
+	return 1;
+}
+
+static int luaVoxel_palette_hasmaterials(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	lua_pushboolean(s, palette->hasMaterials());
+	return 1;
+}
+
+static int luaVoxel_palette_changeintensity(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const float scale = (float)luaL_checknumber(s, 2);
+	palette->changeIntensity(scale);
+	return 0;
+}
+
+static int luaVoxel_palette_changebrighter(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const float factor = (float)luaL_optnumber(s, 2, 0.2f);
+	palette->changeBrighter(factor);
+	return 0;
+}
+
+static int luaVoxel_palette_changedarker(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const float factor = (float)luaL_optnumber(s, 2, 0.2f);
+	palette->changeDarker(factor);
+	return 0;
+}
+
+static int luaVoxel_palette_changewarmer(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t value = luaL_optinteger(s, 2, 10);
+	palette->changeWarmer(value);
+	return 0;
+}
+
+static int luaVoxel_palette_changecolder(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t value = luaL_optinteger(s, 2, 10);
+	palette->changeColder(value);
+	return 0;
+}
+
+static int luaVoxel_palette_reduce(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t targetColors = luaL_checkinteger(s, 2);
+	palette->reduce(targetColors);
+	return 0;
+}
+
+static int luaVoxel_palette_colorname(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	const core::String &name = palette->colorName(idx);
+	lua_pushstring(s, name.c_str());
+	return 1;
+}
+
+static int luaVoxel_palette_setcolorname(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	const char *name = luaL_checkstring(s, 3);
+	palette->setColorName(idx, name);
+	return 0;
+}
+
+static int luaVoxel_palette_name(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	lua_pushstring(s, palette->name().c_str());
+	return 1;
+}
+
+static int luaVoxel_palette_setname(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const char *name = luaL_checkstring(s, 2);
+	palette->setName(name);
+	return 0;
+}
+
+static int luaVoxel_palette_fill(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	palette->fill();
+	return 0;
+}
+
+static int luaVoxel_palette_setsize(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const int cnt = (int)luaL_checkinteger(s, 2);
+	palette->setSize(cnt);
+	return 0;
+}
+
+static int luaVoxel_palette_save(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const char *name = luaL_optstring(s, 2, nullptr);
+	lua_pushboolean(s, palette->save(name));
+	return 1;
+}
+
+static int luaVoxel_palette_exchange(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx1 = luaL_checkinteger(s, 2);
+	const uint8_t idx2 = luaL_checkinteger(s, 3);
+	palette->exchange(idx1, idx2);
+	return 0;
+}
+
+static int luaVoxel_palette_copy(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t from = luaL_checkinteger(s, 2);
+	const uint8_t to = luaL_checkinteger(s, 3);
+	palette->copy(from, to);
+	return 0;
+}
+
+static int luaVoxel_palette_hash(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	lua_pushinteger(s, (lua_Integer)palette->hash());
+	return 1;
+}
+
+static int luaVoxel_palette_contraststretching(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	palette->constrastStretching();
+	return 0;
+}
+
+static int luaVoxel_palette_whitebalance(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	palette->whiteBalance();
+	return 0;
+}
+
+// Normal palette functions
+
+static int luaVoxel_normalpalette_eq(lua_State* s) {
+	const palette::NormalPalette *pal1 = luaVoxel_toNormalPalette(s, 1);
+	const palette::NormalPalette *pal2 = luaVoxel_toNormalPalette(s, 2);
+	lua_pushboolean(s, pal1->hash() == pal2->hash());
+	return 1;
+}
+
+static int luaVoxel_normalpalette_gc(lua_State *s) {
+	palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	delete pal;
+	return 0;
+}
+
+static int luaVoxel_normalpalette_size(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	lua_pushinteger(s, (int)pal->size());
+	return 1;
+}
+
+static int luaVoxel_normalpalette_normal(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	const glm::vec3 n = pal->normal3f(idx);
+	return clua_push(s, n);
+}
+
+static int luaVoxel_normalpalette_setnormal(lua_State* s) {
+	palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	const glm::vec3 &n = luaVoxel_getvec<3, float>(s, 3);
+	pal->setNormal(idx, n);
+	return 0;
+}
+
+static int luaVoxel_normalpalette_closestmatch(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	const glm::vec3 &n = luaVoxel_getvec<3, float>(s, 2);
+	const int match = pal->getClosestMatch(n);
+	if (match == palette::PaletteNormalNotFound) {
+		return clua_error(s, "No matching normal found");
+	}
+	lua_pushinteger(s, match);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_load(lua_State* s) {
+	palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	const char *name = luaL_checkstring(s, 2);
+	if (!pal->load(name)) {
+		core::String builtInPalettes;
+		for (int i = 0; i < lengthof(palette::NormalPalette::builtIn); ++i) {
+			if (!builtInPalettes.empty()) {
+				builtInPalettes.append(", ");
+			}
+			builtInPalettes.append(palette::NormalPalette::builtIn[i]);
+		}
+		return clua_error(s, "Could not load normal palette %s, built-in palettes are: %s", name, builtInPalettes.c_str());
+	}
+	return 0;
+}
+
+static int luaVoxel_normalpalette_save(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	const char *name = luaL_optstring(s, 2, nullptr);
+	lua_pushboolean(s, pal->save(name));
+	return 1;
+}
+
+static int luaVoxel_normalpalette_name(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	lua_pushstring(s, pal->name().c_str());
+	return 1;
+}
+
+static int luaVoxel_normalpalette_setname(lua_State* s) {
+	palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	const char *name = luaL_checkstring(s, 2);
+	pal->setName(name);
+	return 0;
+}
+
+static int luaVoxel_normalpalette_hash(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	lua_pushinteger(s, (lua_Integer)pal->hash());
+	return 1;
+}
+
+static int luaVoxel_normalpalette_new(lua_State* s) {
+	return luaVoxel_pushnormalpalette(s, new palette::NormalPalette());
+}
+
+static int luaVoxel_normalpalette_tostring(lua_State* s) {
+	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
+	lua_pushfstring(s, "normalpalette: %s [size: %d]", pal->name().c_str(), (int)pal->size());
+	return 1;
+}
+
 static int luaVoxel_region_width(lua_State* s) {
 	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getWidthInVoxels());
@@ -1206,6 +1694,63 @@ static int luaVoxel_shadow(lua_State *s) {
 	const int lightStep = (int)luaL_optinteger(s, 2, 8);
 	voxelutil::shadow(*volume, volume->node()->palette(), lightStep);
 	return 0;
+}
+
+// VoxelFont bindings
+
+static int luaVoxel_voxelfont_new(lua_State *s) {
+	const char *fontPath = luaL_checkstring(s, 1);
+	voxelfont::VoxelFont *font = new voxelfont::VoxelFont();
+	if (!font->init(fontPath)) {
+		delete font;
+		return clua_error(s, "Could not initialize font %s", fontPath);
+	}
+	return luaVoxel_pushvoxelfont(s, font);
+}
+
+static int luaVoxel_voxelfont_gc(lua_State *s) {
+	voxelfont::VoxelFont *font = luaVoxel_toVoxelFont(s, 1);
+	font->shutdown();
+	delete font;
+	return 0;
+}
+
+static int luaVoxel_voxelfont_tostring(lua_State *s) {
+	lua_pushfstring(s, "voxelfont");
+	return 1;
+}
+
+static int luaVoxel_voxelfont_dimensions(lua_State *s) {
+	voxelfont::VoxelFont *font = luaVoxel_toVoxelFont(s, 1);
+	const char *text = luaL_checkstring(s, 2);
+	const uint8_t size = (uint8_t)luaL_optinteger(s, 3, 16);
+	int w = 0, h = 0;
+	font->dimensions(text, size, w, h);
+	lua_pushinteger(s, w);
+	lua_pushinteger(s, h);
+	return 2;
+}
+
+static int luaVoxel_voxelfont_render(lua_State *s) {
+	voxelfont::VoxelFont *font = luaVoxel_toVoxelFont(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 2);
+	const char *text = luaL_checkstring(s, 3);
+	const int x = (int)luaL_checkinteger(s, 4);
+	const int y = (int)luaL_checkinteger(s, 5);
+	const int z = (int)luaL_checkinteger(s, 6);
+	const int size = (int)luaL_optinteger(s, 7, 16);
+	const int thickness = (int)luaL_optinteger(s, 8, 1);
+	const int color = (int)luaL_optinteger(s, 9, 0);
+	const int spacing = (int)luaL_optinteger(s, 10, 0);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	glm::ivec3 pos(x, y, z);
+	const char **str = &text;
+	for (int c = core::unicode::next(str); c != -1; c = core::unicode::next(str)) {
+		pos.x += font->renderCharacter(c, size, thickness, pos, *volume, voxel);
+		pos.x += spacing;
+	}
+	lua_pushinteger(s, pos.x - x);
+	return 1;
 }
 
 static int luaVoxel_region_new(lua_State* s) {
@@ -1746,6 +2291,25 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraphnode_normalpalette(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	palette::NormalPalette &pal = node->node->normalPalette();
+	return luaVoxel_pushnormalpalette(s, pal);
+}
+
+static int luaVoxel_scenegraphnode_setnormalpalette(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 2);
+	node->node->setNormalPalette(*pal);
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_hasnormalpalette(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->hasNormalPalette());
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
@@ -1994,7 +2558,8 @@ static int luaVoxel_volumewrapper_setvoxel_jsonhelp(lua_State* s) {
 			{"name": "x", "type": "integer", "description": "The x coordinate."},
 			{"name": "y", "type": "integer", "description": "The y coordinate."},
 			{"name": "z", "type": "integer", "description": "The z coordinate."},
-			{"name": "color", "type": "integer", "description": "The color index to set, or -1 for air (optional, default 1)."}
+			{"name": "color", "type": "integer", "description": "The color index to set, or -1 for air (optional, default 1)."},
+			{"name": "normal", "type": "integer", "description": "The normal palette index (optional, default NO_NORMAL)."}
 		],
 		"returns": [
 			{"type": "boolean", "description": "True if the voxel was set within the region, false otherwise."}
@@ -2003,7 +2568,245 @@ static int luaVoxel_volumewrapper_setvoxel_jsonhelp(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_volumewrapper_setnormal_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setNormal",
+		"summary": "Set the normal index on an existing voxel at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "normal", "type": "integer", "description": "The normal palette index."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the voxel was updated, false if the voxel is air or outside the region."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_normal_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "normal",
+		"summary": "Get the normal palette index of the voxel at the specified coordinates.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The normal palette index of the voxel (0 means no normal)."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 // Region jsonhelp functions
+
+static int luaVoxel_volumewrapper_fill_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "fill",
+		"summary": "Fill the entire volume with the specified color index.",
+		"parameters": [
+			{"name": "color", "type": "integer", "description": "The color index to fill with."},
+			{"name": "overwrite", "type": "boolean", "description": "If true, overwrite existing voxels. If false, only fill air voxels (optional, default true)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_clear_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "clear",
+		"summary": "Clear all voxels in the volume (set to air).",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_isempty_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isEmpty",
+		"summary": "Check if a region is empty (contains only air).",
+		"parameters": [
+			{"name": "minsx", "type": "integer", "description": "Minimum x coordinate (optional, defaults to volume region)."},
+			{"name": "minsy", "type": "integer", "description": "Minimum y coordinate (optional)."},
+			{"name": "minsz", "type": "integer", "description": "Minimum z coordinate (optional)."},
+			{"name": "maxsx", "type": "integer", "description": "Maximum x coordinate (optional)."},
+			{"name": "maxsy", "type": "integer", "description": "Maximum y coordinate (optional)."},
+			{"name": "maxsz", "type": "integer", "description": "Maximum z coordinate (optional)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the region is empty."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_istouching_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "isTouching",
+		"summary": "Check if a position is touching (adjacent to) a solid voxel.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "connectivity", "type": "string", "description": "Connectivity type: '6' (faces), '18' (faces+edges), '26' (faces+edges+corners) (optional, default '6')."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the position is adjacent to a solid voxel."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_erasePlane_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "erasePlane",
+		"summary": "Erase connected voxels on a plane starting from a position.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.)."},
+			{"name": "groundColor", "type": "integer", "description": "The color index of the voxels to erase."},
+			{"name": "thickness", "type": "integer", "description": "The thickness of the erase (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels erased."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_extrudePlane_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "extrudePlane",
+		"summary": "Extrude a plane of connected voxels from a position.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.)."},
+			{"name": "groundColor", "type": "integer", "description": "The color index of the ground voxels to extrude."},
+			{"name": "newColor", "type": "integer", "description": "The color index for the new extruded voxels."},
+			{"name": "thickness", "type": "integer", "description": "The extrusion thickness (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels extruded."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_overridePlane_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "overridePlane",
+		"summary": "Override existing voxels on a plane with a new color.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.)."},
+			{"name": "color", "type": "integer", "description": "The replacement color index."},
+			{"name": "thickness", "type": "integer", "description": "The override thickness (optional, default 1)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels overridden."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_paintPlane_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "paintPlane",
+		"summary": "Paint connected voxels on a plane with a new color.",
+		"parameters": [
+			{"name": "x", "type": "integer", "description": "The x coordinate."},
+			{"name": "y", "type": "integer", "description": "The y coordinate."},
+			{"name": "z", "type": "integer", "description": "The z coordinate."},
+			{"name": "face", "type": "string", "description": "The face direction (e.g. 'positiveX', 'negativeY', 'up', 'down', etc.)."},
+			{"name": "searchColor", "type": "integer", "description": "The color index to search for."},
+			{"name": "replaceColor", "type": "integer", "description": "The color index to replace with."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels painted."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_volumewrapper_merge_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "merge",
+		"summary": "Merge another volume into this one.",
+		"parameters": [
+			{"name": "source", "type": "volume", "description": "The source volume to merge from."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The number of voxels merged."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+// VoxelFont jsonhelp functions
+
+static int luaVoxel_voxelfont_new_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "new",
+		"summary": "Create a new VoxelFont from a TrueType font file.",
+		"parameters": [
+			{"name": "font", "type": "string", "description": "The path to the TrueType font file."}
+		],
+		"returns": [
+			{"type": "font", "description": "The created VoxelFont object."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_voxelfont_dimensions_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "dimensions",
+		"summary": "Get the width and height of the rendered text in voxels.",
+		"parameters": [
+			{"name": "text", "type": "string", "description": "The text to measure."},
+			{"name": "size", "type": "integer", "description": "The font size in pixels (optional, default 16)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The width in voxels."},
+			{"type": "integer", "description": "The height in voxels."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_voxelfont_render_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "render",
+		"summary": "Render text into a volume at the specified position.",
+		"parameters": [
+			{"name": "volume", "type": "volume", "description": "The volume to render into."},
+			{"name": "text", "type": "string", "description": "The text to render."},
+			{"name": "x", "type": "integer", "description": "The x start position."},
+			{"name": "y", "type": "integer", "description": "The y start position."},
+			{"name": "z", "type": "integer", "description": "The z start position."},
+			{"name": "size", "type": "integer", "description": "The font size in pixels (optional, default 16)."},
+			{"name": "thickness", "type": "integer", "description": "The thickness in voxels (optional, default 1)."},
+			{"name": "color", "type": "integer", "description": "The color index (optional, default 0)."},
+			{"name": "spacing", "type": "integer", "description": "Extra spacing between characters (optional, default 0)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The total advance width in voxels."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
 static int luaVoxel_region_width_jsonhelp(lua_State* s) {
 	const char *json = R"({
 		"name": "width",
@@ -2747,6 +3550,507 @@ static int luaVoxel_palette_new_jsonhelp(lua_State* s) {
 		"parameters": [],
 		"returns": [
 			{"type": "palette", "description": "The newly created palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_hascolor_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasColor",
+		"summary": "Check if a color exists in the palette.",
+		"parameters": [
+			{"name": "r", "type": "integer", "description": "Red component (0-255)."},
+			{"name": "g", "type": "integer", "description": "Green component (0-255)."},
+			{"name": "b", "type": "integer", "description": "Blue component (0-255)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the color exists in the palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_tryadd_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "tryAdd",
+		"summary": "Try to add a color to the palette.",
+		"parameters": [
+			{"name": "r", "type": "integer", "description": "Red component (0-255)."},
+			{"name": "g", "type": "integer", "description": "Green component (0-255)."},
+			{"name": "b", "type": "integer", "description": "Blue component (0-255)."},
+			{"name": "a", "type": "integer", "description": "Alpha component (0-255, optional, default 255)."},
+			{"name": "skipSimilar", "type": "boolean", "description": "Skip similar colors (optional, default true)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the color was added."},
+			{"type": "integer", "description": "The index of the added or matching color."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_removecolor_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "removeColor",
+		"summary": "Remove a color from the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index to remove (0-255)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the color was removed."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_duplicatecolor_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "duplicateColor",
+		"summary": "Duplicate a color to a new slot in the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index to duplicate (0-255)."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The index of the new color slot or -1 if not possible."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_hasfreeslot_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasFreeSlot",
+		"summary": "Check if the palette has a free slot for a new color.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if there is a free slot."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_hasalpha_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasAlpha",
+		"summary": "Check if a palette color has alpha transparency.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the color has alpha."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_hasemit_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasEmit",
+		"summary": "Check if a palette color is emissive.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the color is emissive."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_hasmaterials_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasMaterials",
+		"summary": "Check if the palette has any materials set.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if any materials are set."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_changeintensity_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "changeIntensity",
+		"summary": "Change the color intensity of the palette.",
+		"parameters": [
+			{"name": "scale", "type": "number", "description": "Intensity scale factor."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_changebrighter_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "brighter",
+		"summary": "Make the palette colors brighter.",
+		"parameters": [
+			{"name": "factor", "type": "number", "description": "Brightness factor (optional, default 0.2)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_changedarker_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "darker",
+		"summary": "Make the palette colors darker.",
+		"parameters": [
+			{"name": "factor", "type": "number", "description": "Darkness factor (optional, default 0.2)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_changewarmer_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "warmer",
+		"summary": "Make the palette colors warmer.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "Warmth value (optional, default 10)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_changecolder_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "colder",
+		"summary": "Make the palette colors colder.",
+		"parameters": [
+			{"name": "value", "type": "integer", "description": "Cold value (optional, default 10)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_reduce_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "reduce",
+		"summary": "Reduce the palette to a target number of colors.",
+		"parameters": [
+			{"name": "targetColors", "type": "integer", "description": "Target number of colors."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_colorname_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "colorName",
+		"summary": "Get the name of a color in the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."}
+		],
+		"returns": [
+			{"type": "string", "description": "The name of the color."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_setcolorname_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setColorName",
+		"summary": "Set the name of a color in the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The color index (0-255)."},
+			{"name": "name", "type": "string", "description": "The name to set."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_name_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "name",
+		"summary": "Get the name of the palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The palette name."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_setname_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setName",
+		"summary": "Set the name of the palette.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The new name."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_fill_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "fill",
+		"summary": "Fill the remaining palette slots with black.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_setsize_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setSize",
+		"summary": "Set the number of colors in the palette.",
+		"parameters": [
+			{"name": "count", "type": "integer", "description": "The new color count."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_save_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "save",
+		"summary": "Save the palette to a file.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "File path to save to (optional)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the save was successful."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_exchange_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "exchange",
+		"summary": "Exchange (swap) two colors in the palette.",
+		"parameters": [
+			{"name": "index1", "type": "integer", "description": "First color index (0-255)."},
+			{"name": "index2", "type": "integer", "description": "Second color index (0-255)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_copy_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "copy",
+		"summary": "Copy a color from one slot to another.",
+		"parameters": [
+			{"name": "from", "type": "integer", "description": "Source color index (0-255)."},
+			{"name": "to", "type": "integer", "description": "Destination color index (0-255)."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_hash_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hash",
+		"summary": "Get the hash of the palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The palette hash value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_contraststretching_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "contrastStretching",
+		"summary": "Apply contrast stretching to the palette.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_palette_whitebalance_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "whiteBalance",
+		"summary": "Apply white balance correction to the palette.",
+		"parameters": [],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+// Normal palette jsonhelp functions
+
+static int luaVoxel_normalpalette_size_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "size",
+		"summary": "Get the number of normals in the normal palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The number of normals."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_normal_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "normal",
+		"summary": "Get a normal from the palette as vec3.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The normal index."}
+		],
+		"returns": [
+			{"type": "vec3", "description": "The normal direction vector."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_setnormal_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setNormal",
+		"summary": "Set a normal in the palette.",
+		"parameters": [
+			{"name": "index", "type": "integer", "description": "The normal index."},
+			{"name": "x", "type": "number", "description": "X component of the normal."},
+			{"name": "y", "type": "number", "description": "Y component of the normal."},
+			{"name": "z", "type": "number", "description": "Z component of the normal."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_closestmatch_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "match",
+		"summary": "Find the closest matching normal in the palette.",
+		"parameters": [
+			{"name": "x", "type": "number", "description": "X component of the normal."},
+			{"name": "y", "type": "number", "description": "Y component of the normal."},
+			{"name": "z", "type": "number", "description": "Z component of the normal."}
+		],
+		"returns": [
+			{"type": "integer", "description": "The index of the closest matching normal."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_load_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "load",
+		"summary": "Load a normal palette from a file or built-in name.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "File path or built-in name (e.g., 'built-in:tiberiansun')."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_save_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "save",
+		"summary": "Save the normal palette to a file.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "File path to save to (optional)."}
+		],
+		"returns": [
+			{"type": "boolean", "description": "True if the save was successful."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_name_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "name",
+		"summary": "Get the name of the normal palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "string", "description": "The normal palette name."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_setname_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setName",
+		"summary": "Set the name of the normal palette.",
+		"parameters": [
+			{"name": "name", "type": "string", "description": "The new name."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_hash_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hash",
+		"summary": "Get the hash of the normal palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "integer", "description": "The normal palette hash value."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_normalpalette_new_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "new",
+		"summary": "Create a new empty normal palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "normalpalette", "description": "The newly created normal palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_normalpalette_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "normalPalette",
+		"summary": "Get the normal palette of the node.",
+		"parameters": [],
+		"returns": [
+			{"type": "normalpalette", "description": "The node's normal palette."}
+		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setnormalpalette_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "setNormalPalette",
+		"summary": "Set the normal palette of the node.",
+		"parameters": [
+			{"name": "normalpalette", "type": "normalpalette", "description": "The new normal palette."}
+		],
+		"returns": []})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_hasnormalpalette_jsonhelp(lua_State* s) {
+	const char *json = R"({
+		"name": "hasNormalPalette",
+		"summary": "Check if the node has a normal palette.",
+		"parameters": [],
+		"returns": [
+			{"type": "boolean", "description": "True if the node has a normal palette."}
 		]})";
 	lua_pushstring(s, json);
 	return 1;
@@ -3638,6 +4942,17 @@ static void prepareState(lua_State* s) {
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis, luaVoxel_volumewrapper_mirroraxis_jsonhelp},
 		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis, luaVoxel_volumewrapper_rotateaxis_jsonhelp},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel, luaVoxel_volumewrapper_setvoxel_jsonhelp},
+		{"setNormal", luaVoxel_volumewrapper_setnormal, luaVoxel_volumewrapper_setnormal_jsonhelp},
+		{"normal", luaVoxel_volumewrapper_normal, luaVoxel_volumewrapper_normal_jsonhelp},
+		{"fill", luaVoxel_volumewrapper_fill, luaVoxel_volumewrapper_fill_jsonhelp},
+		{"clear", luaVoxel_volumewrapper_clear, luaVoxel_volumewrapper_clear_jsonhelp},
+		{"isEmpty", luaVoxel_volumewrapper_isempty, luaVoxel_volumewrapper_isempty_jsonhelp},
+		{"isTouching", luaVoxel_volumewrapper_istouching, luaVoxel_volumewrapper_istouching_jsonhelp},
+		{"erasePlane", luaVoxel_volumewrapper_erasePlane, luaVoxel_volumewrapper_erasePlane_jsonhelp},
+		{"extrudePlane", luaVoxel_volumewrapper_extrudePlane, luaVoxel_volumewrapper_extrudePlane_jsonhelp},
+		{"overridePlane", luaVoxel_volumewrapper_overridePlane, luaVoxel_volumewrapper_overridePlane_jsonhelp},
+		{"paintPlane", luaVoxel_volumewrapper_paintPlane, luaVoxel_volumewrapper_paintPlane_jsonhelp},
+		{"merge", luaVoxel_volumewrapper_merge, luaVoxel_volumewrapper_merge_jsonhelp},
 		{"__gc", luaVoxel_volumewrapper_gc, nullptr},
 		{nullptr, nullptr, nullptr}
 	};
@@ -3719,6 +5034,9 @@ static void prepareState(lua_State* s) {
 		{"isCamera", luaVoxel_scenegraphnode_is_camera, luaVoxel_scenegraphnode_is_camera_jsonhelp},
 		{"isGroup", luaVoxel_scenegraphnode_is_group, luaVoxel_scenegraphnode_is_group_jsonhelp},
 		{"palette", luaVoxel_scenegraphnode_palette, luaVoxel_scenegraphnode_palette_jsonhelp},
+		{"normalPalette", luaVoxel_scenegraphnode_normalpalette, luaVoxel_scenegraphnode_normalpalette_jsonhelp},
+		{"setNormalPalette", luaVoxel_scenegraphnode_setnormalpalette, luaVoxel_scenegraphnode_setnormalpalette_jsonhelp},
+		{"hasNormalPalette", luaVoxel_scenegraphnode_hasnormalpalette, luaVoxel_scenegraphnode_hasnormalpalette_jsonhelp},
 		{"setName", luaVoxel_scenegraphnode_setname, luaVoxel_scenegraphnode_setname_jsonhelp},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette, luaVoxel_scenegraphnode_setpalette_jsonhelp},
 		{"setPivot", luaVoxel_scenegraphnode_setpivot, luaVoxel_scenegraphnode_setpivot_jsonhelp},
@@ -3775,13 +5093,39 @@ static void prepareState(lua_State* s) {
 		{"size", luaVoxel_palette_size, luaVoxel_palette_size_jsonhelp},
 		{"rgba", luaVoxel_palette_rgba, luaVoxel_palette_rgba_jsonhelp},
 		{"load", luaVoxel_palette_load, luaVoxel_palette_load_jsonhelp},
+		{"save", luaVoxel_palette_save, luaVoxel_palette_save_jsonhelp},
 		{"setColor", luaVoxel_palette_setcolor, luaVoxel_palette_setcolor_jsonhelp},
+		{"hasColor", luaVoxel_palette_hascolor, luaVoxel_palette_hascolor_jsonhelp},
+		{"tryAdd", luaVoxel_palette_tryadd, luaVoxel_palette_tryadd_jsonhelp},
+		{"removeColor", luaVoxel_palette_removecolor, luaVoxel_palette_removecolor_jsonhelp},
+		{"duplicateColor", luaVoxel_palette_duplicatecolor, luaVoxel_palette_duplicatecolor_jsonhelp},
 		{"match", luaVoxel_palette_closestmatch, luaVoxel_palette_closestmatch_jsonhelp},
 		{"similar", luaVoxel_palette_similar, luaVoxel_palette_similar_jsonhelp},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty, luaVoxel_palette_setmaterialproperty_jsonhelp},
 		{"material", luaVoxel_palette_materialproperty, luaVoxel_palette_materialproperty_jsonhelp},
 		{"deltaE", luaVoxel_palette_delta_e, luaVoxel_palette_delta_e_jsonhelp},
 		{"colorString", luaVoxel_palette_color_to_string, luaVoxel_palette_color_to_string_jsonhelp},
+		{"colorName", luaVoxel_palette_colorname, luaVoxel_palette_colorname_jsonhelp},
+		{"setColorName", luaVoxel_palette_setcolorname, luaVoxel_palette_setcolorname_jsonhelp},
+		{"name", luaVoxel_palette_name, luaVoxel_palette_name_jsonhelp},
+		{"setName", luaVoxel_palette_setname, luaVoxel_palette_setname_jsonhelp},
+		{"hash", luaVoxel_palette_hash, luaVoxel_palette_hash_jsonhelp},
+		{"hasFreeSlot", luaVoxel_palette_hasfreeslot, luaVoxel_palette_hasfreeslot_jsonhelp},
+		{"hasAlpha", luaVoxel_palette_hasalpha, luaVoxel_palette_hasalpha_jsonhelp},
+		{"hasEmit", luaVoxel_palette_hasemit, luaVoxel_palette_hasemit_jsonhelp},
+		{"hasMaterials", luaVoxel_palette_hasmaterials, luaVoxel_palette_hasmaterials_jsonhelp},
+		{"changeIntensity", luaVoxel_palette_changeintensity, luaVoxel_palette_changeintensity_jsonhelp},
+		{"brighter", luaVoxel_palette_changebrighter, luaVoxel_palette_changebrighter_jsonhelp},
+		{"darker", luaVoxel_palette_changedarker, luaVoxel_palette_changedarker_jsonhelp},
+		{"warmer", luaVoxel_palette_changewarmer, luaVoxel_palette_changewarmer_jsonhelp},
+		{"colder", luaVoxel_palette_changecolder, luaVoxel_palette_changecolder_jsonhelp},
+		{"reduce", luaVoxel_palette_reduce, luaVoxel_palette_reduce_jsonhelp},
+		{"fill", luaVoxel_palette_fill, luaVoxel_palette_fill_jsonhelp},
+		{"setSize", luaVoxel_palette_setsize, luaVoxel_palette_setsize_jsonhelp},
+		{"exchange", luaVoxel_palette_exchange, luaVoxel_palette_exchange_jsonhelp},
+		{"copy", luaVoxel_palette_copy, luaVoxel_palette_copy_jsonhelp},
+		{"contrastStretching", luaVoxel_palette_contraststretching, luaVoxel_palette_contraststretching_jsonhelp},
+		{"whiteBalance", luaVoxel_palette_whitebalance, luaVoxel_palette_whitebalance_jsonhelp},
 		{"__tostring", luaVoxel_palette_tostring, nullptr},
 		{"__eq", luaVoxel_palette_eq, nullptr},
 		{nullptr, nullptr, nullptr}
@@ -3794,13 +5138,39 @@ static void prepareState(lua_State* s) {
 		{"size", luaVoxel_palette_size, luaVoxel_palette_size_jsonhelp},
 		{"rgba", luaVoxel_palette_rgba, luaVoxel_palette_rgba_jsonhelp},
 		{"load", luaVoxel_palette_load, luaVoxel_palette_load_jsonhelp},
+		{"save", luaVoxel_palette_save, luaVoxel_palette_save_jsonhelp},
 		{"setColor", luaVoxel_palette_setcolor, luaVoxel_palette_setcolor_jsonhelp},
+		{"hasColor", luaVoxel_palette_hascolor, luaVoxel_palette_hascolor_jsonhelp},
+		{"tryAdd", luaVoxel_palette_tryadd, luaVoxel_palette_tryadd_jsonhelp},
+		{"removeColor", luaVoxel_palette_removecolor, luaVoxel_palette_removecolor_jsonhelp},
+		{"duplicateColor", luaVoxel_palette_duplicatecolor, luaVoxel_palette_duplicatecolor_jsonhelp},
 		{"match", luaVoxel_palette_closestmatch, luaVoxel_palette_closestmatch_jsonhelp},
 		{"similar", luaVoxel_palette_similar, luaVoxel_palette_similar_jsonhelp},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty, luaVoxel_palette_setmaterialproperty_jsonhelp},
 		{"material", luaVoxel_palette_materialproperty, luaVoxel_palette_materialproperty_jsonhelp},
 		{"deltaE", luaVoxel_palette_delta_e, luaVoxel_palette_delta_e_jsonhelp},
 		{"colorString", luaVoxel_palette_color_to_string, luaVoxel_palette_color_to_string_jsonhelp},
+		{"colorName", luaVoxel_palette_colorname, luaVoxel_palette_colorname_jsonhelp},
+		{"setColorName", luaVoxel_palette_setcolorname, luaVoxel_palette_setcolorname_jsonhelp},
+		{"name", luaVoxel_palette_name, luaVoxel_palette_name_jsonhelp},
+		{"setName", luaVoxel_palette_setname, luaVoxel_palette_setname_jsonhelp},
+		{"hash", luaVoxel_palette_hash, luaVoxel_palette_hash_jsonhelp},
+		{"hasFreeSlot", luaVoxel_palette_hasfreeslot, luaVoxel_palette_hasfreeslot_jsonhelp},
+		{"hasAlpha", luaVoxel_palette_hasalpha, luaVoxel_palette_hasalpha_jsonhelp},
+		{"hasEmit", luaVoxel_palette_hasemit, luaVoxel_palette_hasemit_jsonhelp},
+		{"hasMaterials", luaVoxel_palette_hasmaterials, luaVoxel_palette_hasmaterials_jsonhelp},
+		{"changeIntensity", luaVoxel_palette_changeintensity, luaVoxel_palette_changeintensity_jsonhelp},
+		{"brighter", luaVoxel_palette_changebrighter, luaVoxel_palette_changebrighter_jsonhelp},
+		{"darker", luaVoxel_palette_changedarker, luaVoxel_palette_changedarker_jsonhelp},
+		{"warmer", luaVoxel_palette_changewarmer, luaVoxel_palette_changewarmer_jsonhelp},
+		{"colder", luaVoxel_palette_changecolder, luaVoxel_palette_changecolder_jsonhelp},
+		{"reduce", luaVoxel_palette_reduce, luaVoxel_palette_reduce_jsonhelp},
+		{"fill", luaVoxel_palette_fill, luaVoxel_palette_fill_jsonhelp},
+		{"setSize", luaVoxel_palette_setsize, luaVoxel_palette_setsize_jsonhelp},
+		{"exchange", luaVoxel_palette_exchange, luaVoxel_palette_exchange_jsonhelp},
+		{"copy", luaVoxel_palette_copy, luaVoxel_palette_copy_jsonhelp},
+		{"contrastStretching", luaVoxel_palette_contraststretching, luaVoxel_palette_contraststretching_jsonhelp},
+		{"whiteBalance", luaVoxel_palette_whitebalance, luaVoxel_palette_whitebalance_jsonhelp},
 		{"__tostring", luaVoxel_palette_tostring, nullptr},
 		{"__gc", luaVoxel_palette_gc, nullptr},
 		{"__eq", luaVoxel_palette_eq, nullptr},
@@ -3813,6 +5183,60 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, paletteGlobalsFuncs, luaVoxel_metapaletteglobal(), "g_palette");
+
+	static const clua_Reg normalPaletteFuncs[] = {
+		{"size", luaVoxel_normalpalette_size, luaVoxel_normalpalette_size_jsonhelp},
+		{"normal", luaVoxel_normalpalette_normal, luaVoxel_normalpalette_normal_jsonhelp},
+		{"setNormal", luaVoxel_normalpalette_setnormal, luaVoxel_normalpalette_setnormal_jsonhelp},
+		{"match", luaVoxel_normalpalette_closestmatch, luaVoxel_normalpalette_closestmatch_jsonhelp},
+		{"load", luaVoxel_normalpalette_load, luaVoxel_normalpalette_load_jsonhelp},
+		{"save", luaVoxel_normalpalette_save, luaVoxel_normalpalette_save_jsonhelp},
+		{"name", luaVoxel_normalpalette_name, luaVoxel_normalpalette_name_jsonhelp},
+		{"setName", luaVoxel_normalpalette_setname, luaVoxel_normalpalette_setname_jsonhelp},
+		{"hash", luaVoxel_normalpalette_hash, luaVoxel_normalpalette_hash_jsonhelp},
+		{"__tostring", luaVoxel_normalpalette_tostring, nullptr},
+		{"__eq", luaVoxel_normalpalette_eq, nullptr},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncs(s, normalPaletteFuncs, luaVoxel_metanormalpalette());
+
+	static const clua_Reg normalPaletteFuncs_gc[] = {
+		{"size", luaVoxel_normalpalette_size, luaVoxel_normalpalette_size_jsonhelp},
+		{"normal", luaVoxel_normalpalette_normal, luaVoxel_normalpalette_normal_jsonhelp},
+		{"setNormal", luaVoxel_normalpalette_setnormal, luaVoxel_normalpalette_setnormal_jsonhelp},
+		{"match", luaVoxel_normalpalette_closestmatch, luaVoxel_normalpalette_closestmatch_jsonhelp},
+		{"load", luaVoxel_normalpalette_load, luaVoxel_normalpalette_load_jsonhelp},
+		{"save", luaVoxel_normalpalette_save, luaVoxel_normalpalette_save_jsonhelp},
+		{"name", luaVoxel_normalpalette_name, luaVoxel_normalpalette_name_jsonhelp},
+		{"setName", luaVoxel_normalpalette_setname, luaVoxel_normalpalette_setname_jsonhelp},
+		{"hash", luaVoxel_normalpalette_hash, luaVoxel_normalpalette_hash_jsonhelp},
+		{"__tostring", luaVoxel_normalpalette_tostring, nullptr},
+		{"__gc", luaVoxel_normalpalette_gc, nullptr},
+		{"__eq", luaVoxel_normalpalette_eq, nullptr},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncs(s, normalPaletteFuncs_gc, luaVoxel_metanormalpalette_gc());
+
+	static const clua_Reg normalPaletteGlobalsFuncs[] = {
+		{"new", luaVoxel_normalpalette_new, luaVoxel_normalpalette_new_jsonhelp},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, normalPaletteGlobalsFuncs, luaVoxel_metanormalpaletteglobal(), "g_normalpalette");
+
+	static const clua_Reg fontFuncs[] = {
+		{"dimensions", luaVoxel_voxelfont_dimensions, luaVoxel_voxelfont_dimensions_jsonhelp},
+		{"render", luaVoxel_voxelfont_render, luaVoxel_voxelfont_render_jsonhelp},
+		{"__tostring", luaVoxel_voxelfont_tostring, nullptr},
+		{"__gc", luaVoxel_voxelfont_gc, nullptr},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncs(s, fontFuncs, luaVoxel_metavoxelfont());
+
+	static const clua_Reg fontGlobalsFuncs[] = {
+		{"new", luaVoxel_voxelfont_new, luaVoxel_voxelfont_new_jsonhelp},
+		{nullptr, nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, fontGlobalsFuncs, luaVoxel_metavoxelfontglobal(), "g_font");
 
 	static const clua_Reg noiseFuncs[] = {
 		{"noise2", luaVoxel_noise_simplex2, luaVoxel_noise_simplex2_jsonhelp},
@@ -4415,6 +5839,8 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 					metaName = luaVoxel_metaregionglobal();
 				} else if (SDL_strcmp(name, "g_palette") == 0) {
 					metaName = luaVoxel_metapaletteglobal();
+				} else if (SDL_strcmp(name, "g_normalpalette") == 0) {
+					metaName = luaVoxel_metanormalpaletteglobal();
 				} else if (SDL_strcmp(name, "g_noise") == 0) {
 					metaName = luaVoxel_metanoise();
 				} else if (SDL_strcmp(name, "g_shape") == 0) {
@@ -4423,6 +5849,8 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 					metaName = luaVoxel_metaimporter();
 				} else if (SDL_strcmp(name, "g_algorithm") == 0) {
 					metaName = luaVoxel_metaalgorithm();
+				} else if (SDL_strcmp(name, "g_font") == 0) {
+					metaName = luaVoxel_metavoxelfontglobal();
 				} else if (SDL_strcmp(name, "g_http") == 0) {
 					metaName = clua_metahttp();
 				} else if (SDL_strcmp(name, "g_io") == 0) {
@@ -4492,6 +5920,9 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 		{luaVoxel_metakeyframe(), "keyframe"},
 		{luaVoxel_metapalette(), "palette"},
 		{luaVoxel_metapalette_gc(), "palette_gc"},
+		{luaVoxel_metanormalpalette(), "normalpalette"},
+		{luaVoxel_metanormalpalette_gc(), "normalpalette_gc"},
+		{luaVoxel_metavoxelfont(), "font"},
 		{clua_metastream(), "stream"},
 		{clua_meta<image::Image>::name(), "image"},
 	};
