@@ -67,8 +67,8 @@ def main(argsstring, options, profile):
 
         # The <comment> field is ignored
 
-        # The <extensions> and <commands> contents are merged
-        for i in ['extensions', 'commands']:
+        # The <types>, <extensions> and <commands> contents are merged
+        for i in ['types', 'extensions', 'commands']:
             extension_point = root.findall('./{}'.format(i))[0];
             for member in extra.iter(i):
                 extension_point.extend(member)

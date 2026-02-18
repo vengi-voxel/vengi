@@ -4,11 +4,6 @@ import os.path
 import re
 import sys
 
-# In order to have dicts iterable in insertion order in Python < 3.6
-# (https://stackoverflow.com/a/39537308)
-if not sys.version_info >= (3, 6, 0):
-    from collections import OrderedDict
-
 from glob     import glob
 
 import xml.etree.ElementTree as etree
@@ -99,12 +94,12 @@ class Version():
 
 
 def parse_profile(filename):
-    comment_pattern = re.compile('\s*#.*$|\s+$')
-    version_pattern = re.compile('\s*version\s+(\d)\.(\d)(\.(\d+))?\s*(core|compatibility|es|vulkan|)\s*$')
-    extraspec_pattern = re.compile('\s*extraspec\s+([^\s]+)\s*$')
-    extension_pattern = re.compile('\s*extension\s+(\w+)\s+(required|optional)\s*$')
-    functions_pattern = re.compile('\s*(begin|end) functions\s+(blacklist)?$')
-    function_pattern = re.compile('\s*[A-Z][A-Za-z0-9]+$')
+    comment_pattern = re.compile(r'\s*#.*$|\s+$')
+    version_pattern = re.compile(r'\s*version\s+(\d)\.(\d)(\.(\d+))?\s*(core|compatibility|es|vulkan|)\s*$')
+    extraspec_pattern = re.compile(r'\s*extraspec\s+([^\s]+)\s*$')
+    extension_pattern = re.compile(r'\s*extension\s+(\w+)\s+(required|optional)\s*$')
+    functions_pattern = re.compile(r'\s*(begin|end) functions\s+(blacklist)?$')
+    function_pattern = re.compile(r'\s*[A-Z][A-Za-z0-9]+$')
 
     version = None
     extraspec = []
@@ -265,7 +260,7 @@ def xml_parse_type_name_pair(node):
     if ptype == None: ptype = node.find('type')
     return (name, type, ptype.text.strip() if ptype != None else None)
 
-def extract_enums(feature, enum_extensions, *, extension_number=None, enum_extends_blacklist=set()):
+def extract_enums(root, feature, enum_extensions, *, extension_number=None, enum_extends_blacklist=set()):
     subsetEnums = []
 
     for enum in feature.findall('enum'):
@@ -286,7 +281,15 @@ def extract_enums(feature, enum_extensions, *, extension_number=None, enum_exten
 
             # Bit position
             elif 'bitpos' in enum.attrib:
-                value = '1 << {}'.format(enum.attrib['bitpos'])
+                # Certain Vulkan enums are 64-bit, those then need proper
+                # 64-bit literals
+                enumdef = root.find("./enums[@name='{}']".format(extends))
+                if enumdef.attrib.get('bitwidth') == '64':
+                    suffix = 'ull'
+                else:
+                    suffix = ''
+
+                value = '1{} << {}'.format(suffix, enum.attrib['bitpos'])
 
             # Alias
             elif 'alias' in enum.attrib:
@@ -331,19 +334,16 @@ def extract_names(feature, selector):
     return [element.attrib['name'] for element in feature.findall('./%s[@name]' % selector)]
 
 def parse_int_version(version_str):
-    version_pattern = re.compile('(\d)\.(\d)')
+    version_pattern = re.compile(r'(\d)\.(\d)')
     match = version_pattern.match(version_str)
     return int(match.group(1)) * 10 + int(match.group(2))
 
 def parse_xml_enums(root, api):
-    # In order to have dicts iterable in insertion order in Python < 3.6
-    # (https://stackoverflow.com/a/39537308)
-    if sys.version_info >= (3, 6, 0):
-        enums = {}
-    else:
-        enums = OrderedDict()
+    enums = {}
 
     for enum in root.findall("./enums/enum"):
+        # Doesn't seem to be used in Vulkan, so no need to handle cases like
+        # `api="vulkan,vulkansc,vulkanbase"` here.
         if ('api' in enum.attrib and enum.attrib['api'] != api): continue
         name  = enum.attrib['name']
         # GL type attribute is a literal suffix (which we need), while Vulkan
@@ -351,6 +351,9 @@ def parse_xml_enums(root, api):
         # need.
         if 'type' in enum.attrib and api != 'vulkan':
             value = "%s%s" % (enum.attrib['value'], enum.attrib['type'])
+        # Note that this case doesn't need special handling for Vulkan 64-bit
+        # enums, as the values parsed here are never used. The other cases
+        # with << have appropriate handling.
         elif 'bitpos' in enum.attrib:
             value = "1 << {}".format(enum.attrib['bitpos'])
         # GL defines both value and alias, prefer values because the original
@@ -368,9 +371,22 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
     types = []
 
     for type in root.findall("./types/type"):
-        if ('api' in type.attrib and type.attrib['api'] != api): continue
+        # While GL has just `api="gl"` for example, Vulkam now has
+        # `api="vulkan,vulkansc,vulkanbase"` etc., so we can't just match the
+        # whole atttribute value via an XQuery expression above and have to
+        # check if it's in the list instead
+        if 'api' in type.attrib and api not in type.attrib['api'].split(','):
+            continue
 
-        name = type.attrib['name'] if 'name'in type.attrib else type.find('./name').text
+        # Function pointers in Vulkan are special, inheriting the madness from
+        # C and then some. Ugh. Used to be written in a way where it's enough
+        # to just concatenate all text (like with GL), but as of 1.4.339 they
+        # contain <proto> and such that has to be explicitly dived into.
+        # Specialized parsing further below.
+        if 'category' in type.attrib and type.attrib['category'] == 'funcpointer' and type.find('./proto') is not None:
+            name = type.find('./proto/name').text
+        else:
+            name = type.attrib['name'] if 'name'in type.attrib else type.find('./name').text
 
         # Type dependencies
         dependencies = set()
@@ -410,12 +426,25 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
             enumdef = root.find("./enums[@name='{}']".format(name))
             # ISO C++ forbids empty unnamed enums, so add the full thing only
             # if it's nonempty or if there are extensions to it
-            if enumdef or name in enum_extensions:
+            # ElementTree deprecated the __bool__ conversion of Element, so I
+            # now have to check that `enums` actually has any children.
+            # Checking against None is not enough as it could be present but be
+            # empty, checking just len() isn't enough as it could be None. I
+            # actually don't understand HOW is the non-deprecated way ANY
+            # better.
+            if enumdef is not None and len(enumdef) or name in enum_extensions:
                 written_enum_values = set()
+
+                # Certain Vulkan enums are 64-bit, those need proper 64-bit
+                # literals
+                if enumdef.attrib.get('bitwidth') == '64':
+                    suffix = 'ull'
+                else:
+                    suffix = ''
 
                 for enum in enumdef.findall('enum'):
                     if 'bitpos' in enum.attrib:
-                        values += ['    {} = 1 << {}'.format(enum.attrib['name'], enum.attrib['bitpos'])]
+                        values += ['    {} = 1{} << {}'.format(enum.attrib['name'], suffix, enum.attrib['bitpos'])]
                     elif 'alias' in enum.attrib:
                         values += ['    {} = {}'.format(enum.attrib['name'], enum.attrib['alias'])]
                     else:
@@ -449,10 +478,12 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
                         # written yet, it's a problem. There's such a case with
                         # VK_EXT_filter_cubic enums depending on
                         # VK_IMG_filter_cubic and the dependency is not
-                        # specified since 1.2.148 anymore. For a lack of better
-                        # short-term solution, we just hardcode the two. See
-                        # test_generate.VkEnumAliasWithoutDependency for a test
-                        # case.
+                        # specified since 1.2.148 anymore. Furthermore, with
+                        # 1.3.221 the dependency was swapped around, so now
+                        # both the IMG and EXT values need to be listed. For a
+                        # lack of better short-term solution, we just hardcode
+                        # the two. See test_generate.VkEnumAliasWithoutDependency
+                        # for a test case.
                         else:
                             # TODO: fix properly by having a central place for
                             #   enum values instead of parsing 'bitpos' a
@@ -460,7 +491,9 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
                             if not value in written_enum_values:
                                 IMG_filter_cubic_values = {
                                     'VK_FILTER_CUBIC_IMG': '1000015000',
-                                    'VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG': '1 << 13'
+                                    'VK_FILTER_CUBIC_EXT': '1000015000',
+                                    'VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG': '1 << 13',
+                                    'VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT': '1 << 13'
                                 }
 
                                 assert value in IMG_filter_cubic_values, "Alias target for %s not found: %s" % (extension, value)
@@ -486,6 +519,31 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
             else:
                 definition = '\ntypedef int {};'.format(name)
 
+        # Function pointer definition in Vulkan as of 1.4.339, inheriting all
+        # the madness from C and then some. Only if the definition contains
+        # <proto> inside, otherwise it's the old way and xml_extract_all_text()
+        # below is enough.
+        elif 'category' in type.attrib and type.attrib['category'] == 'funcpointer' and type.find('./proto') is not None:
+            return_type = type.find('./proto/type');
+
+            definition = '\ntypedef {}{} (VKAPI_PTR *{})({});'.format(
+                return_type.text, # Return value
+                # Optionally a pointer after (and a lot of spaces), because
+                # everyone still pretends those things aren't part of the type
+                return_type.tail,
+                name,
+                # All arguments. Trying to match the original pre-1.4.339
+                # formatting to catch accidents.
+                ','.join(['\n    ' + ''.join(p.itertext()) for p in type.findall('./param')])
+            )
+
+        # Bitmask types that have the actual enum type in `bitvalues` rather
+        # than `requires`, which was handled above, add the type to
+        # dependencies.
+        elif 'category' in type.attrib and type.attrib['category'] == 'bitmask' and 'bitvalues' in type.attrib:
+            definition = xml_extract_all_text(type, {})
+            dependencies.add(type.attrib['bitvalues'])
+
         # Classic type definition
         else:
             definition = xml_extract_all_text(type, {'apientry' : 'APIENTRY'})
@@ -498,8 +556,14 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
         # parsing is broken. OTOH, there can be proxy types such as
         # <type requires="X11/Xlib.h" name="Display"/> that don't define
         # anything.
-        assert not type or definition.strip()
+        # ElementTree deprecated the __bool__ conversion of Element, so I now
+        # have to check that `type` actually has any children. Checking
+        # against None is not enough as it could be present but be empty.
+        assert not len(type) or definition.strip()
 
+        # TODO is the Type api field actually used for anything in Vulkan? If
+        #  so, may need to handle cases like `api="vulkan,vulkansc,vulkanbase"`
+        #  here similarly to elsewhere.
         types.append(Type(type.attrib['api'] if 'api' in type.attrib else None, name, definition, type.attrib.get('category') == 'bitmask', dependencies, enum_dependencies, type.attrib['structextends'].split(',') if 'structextends' in type.attrib else [], alias))
 
     # Go through type list and keep only unique names. Because the
@@ -586,16 +650,25 @@ def parse_xml_features(root, version):
     promoted_enum_extensions = {}
     subsets = []
 
-    for feature in root.findall("./feature[@api='%s'][@name][@number]" % version.api):
+    feature_set = set()
+    for feature in root.findall("./feature[@api][@name][@number]"):
+        # While GL has just `api="gl"` for example, Vulkam now has
+        # `api="vulkan,vulkansc,vulkanbase"` etc., so we can't just match the
+        # whole atttribute value via an XQuery expression above and have to
+        # check if it's in the list instead
+        if version.api not in feature.attrib['api'].split(','):
+            continue
+
         # Some Vulkan extension enums get promoted to core in later versions
         # and we can't ignore them because the extension enums would then alias
         # to nonexistent values
         if (parse_int_version(feature.attrib['number'])>version.int_value()):
             for actionSet in list(feature):
-                _, promoted_enum_extensions = extract_enums(actionSet, promoted_enum_extensions)
+                _, promoted_enum_extensions = extract_enums(root, actionSet, promoted_enum_extensions)
             continue
 
         featureName = feature.attrib['name']
+        feature_set.add(featureName)
 
         typeList    = []
         enumList    = []
@@ -609,7 +682,7 @@ def parse_xml_features(root, version):
                 typeList.extend(extract_names(actionSet, './type'))
                 commandList.extend(extract_names(actionSet, './command'))
 
-                enums_to_add, enum_extensions = extract_enums(actionSet, enum_extensions)
+                enums_to_add, enum_extensions = extract_enums(root, actionSet, enum_extensions)
                 enumList += enums_to_add
 
             if actionSet.tag == 'remove':
@@ -620,9 +693,9 @@ def parse_xml_features(root, version):
 
         subsets.append(APISubset(featureName[3:], typeList, enumList, commandList))
 
-    return subsets, enum_extensions, promoted_enum_extensions
+    return subsets, enum_extensions, promoted_enum_extensions, feature_set
 
-def parse_xml_extensions(root, extensions, enum_extensions, version):
+def parse_xml_extensions(root, extensions, enum_extensions, feature_set, version):
     subsets = []
 
     # Extensions might have dependencies, resolve them to avoid dangling
@@ -637,12 +710,27 @@ def parse_xml_extensions(root, extensions, enum_extensions, version):
             print('%s is not an extension' % name)
             return []
         required = []
-        # Extensions can require other extensions
+        # Extensions can require other extensions. Used to be a `requires`
+        # attribute...
         if 'requires' in extension.attrib:
             for i in extension.attrib['requires'].split(','):
                 required += resolve_extension_dependencies(i[len(version.prefix):])
+        # As of 1.3.241 it's named `depends` instead, with a complex syntax on
+        # its own. It's in a form of "(ext+(ext,ext)+version),version", where
+        # a `,` means OR and `+` means AND. In the ideal case the dependency
+        # would be just the version we already depend on, however at this point
+        # there's no such thing as a minimal version, so instead we do the next
+        # best thing, which is extracting all extensions from here and marking
+        # them as dependencies.
+        if 'depends' in extension.attrib:
+            for i in re.split(r'[\(\)+,]+', extension.attrib['depends']):
+                # Assuming all versions are something like
+                # VK_COMPUTE_VERSION_X_Y and no extensions contain an uppercase
+                # VERSION string.
+                if '_VERSION_' not in i:
+                    required += resolve_extension_dependencies(i[len(version.prefix):])
         # ... and have interactions with other extensions. If that's the case,
-        # add the interacted-with extension isn't already in the set, add it
+        # and the interacted-with extension isn't already in the set, add it
         # (and all its dependencies) there so it's early enough
         for interaction in extension.findall('require[@extension]'):
             interaction_suffix = interaction.attrib['extension'][len(version.prefix):]
@@ -666,14 +754,15 @@ def parse_xml_extensions(root, extensions, enum_extensions, version):
         subsetEnums = []
         subsetCommands = []
 
-        # At least in Vulkan 1.1.124, VK_KHR_sampler_ycbcr_conversion (which is
-        # promoted to 1.1) lists an extension to VkDebugReportObjectTypeEXT
+        # In Vulkan 1.1.124 to 1.3.204, VK_KHR_sampler_ycbcr_conversion (which
+        # is promoted to 1.1) lists an extension to VkDebugReportObjectTypeEXT
         # in a general <require> and then again (properly) in
         # <require extension="VK_EXT_debug_report">. If VK_EXT_debug_report is
         # not requested, that causes an assert. To circumvent that, add all
         # type extensions which aren't requested to a blacklist to ignore
         # later. See test_generate.VkDuplicateExtensionInteraction for a test
         # case.
+        # TODO: doesn't seem to be in 1.4.343 anymore, remove eventually
         enum_extends_blacklist = set()
         for require in extension.findall('./require[@extension]'):
             # The extended extension is requested, no blaclisting
@@ -685,12 +774,19 @@ def parse_xml_extensions(root, extensions, enum_extensions, version):
             # Given set of names is restricted to some API or profile subset
             # (e.g. KHR_debug has different set of names for 'gl' and 'gles2')
             if 'api' in require.attrib:
+                # Doesn't seem to be used in Vulkan, so no need to handle cases
+                # like `api="vulkan,vulkansc,vulkanbase"` here.
                 if require.attrib['api'] != version.api: continue
                 if 'profile' in require.attrib and require.attrib['profile'] != version.profile: continue
 
             # Vulkan extensions can have interactions with other extensions.
-            # Add those only if the other extensions is present as well.
+            # Used to be a `requires` attribute, as of 1.3.241 it's named
+            # `depends` instead and can include also things like VK_VERSION_1_1
+            # and such. Add those only if the other extension / feature is
+            # present as well.
             if 'extension' in require.attrib and require.attrib['extension'] not in extension_set:
+                continue
+            if 'depends' in require.attrib and require.attrib['depends'] not in extension_set|feature_set:
                 continue
 
             subsetTypes += extract_names(require, 'type')
@@ -698,7 +794,7 @@ def parse_xml_extensions(root, extensions, enum_extensions, version):
 
             # The 'number' attribute is available only in vk.xml, extract_enums()
             # asserts that it's available if needed
-            enums_to_add, enum_extensions = extract_enums(require, enum_extensions, extension_number=extension.attrib.get('number'), enum_extends_blacklist=enum_extends_blacklist)
+            enums_to_add, enum_extensions = extract_enums(root, require, enum_extensions, extension_number=extension.attrib.get('number'), enum_extends_blacklist=enum_extends_blacklist)
             subsetEnums += enums_to_add
 
         subsets.append(APISubset(name, subsetTypes, subsetEnums, subsetCommands))
@@ -745,18 +841,26 @@ def generate_enums(subsets, requiredEnums, enums, version):
     # Vulkan enum values can alias each other, ensure that the alias source is
     # pulled in as well. Assume there's no recursive dependency.
     for subset in subsets:
-        for enumName, _ in subset.enums:
+        for enumName, enumValue in subset.enums:
+            # If the enum itself is among parsed enums, add it as required
             if enumName in enums and enums[enumName] in enums:
                 requiredEnums.add(enums[enumName])
                 assert enums[enums[enumName]] not in enums
+            # Otherwise, if the enum value (i.e., an alias) is among parsed
+            # enums, add that. This is the case with e.g. VK_LUID_SIZE_EXT,
+            # which used to be present in the `<enums name="API Constants"`
+            # section already, but now it isn't and there's just VK_LUID_SIZE,
+            # and then an alias from VK_LUID_SIZE_EXT defined by an extension.
+            elif enumValue in enums:
+                requiredEnums.add(enumValue)
+                assert enums[enumValue] not in enums
 
     enumsDecl = ''
 
     # Vulkan API constants that are required by type definitions but not part
     # of any subset. Iterating over the enums dict instead of iterating over
     # the requiredEnums set in order to retain the XML order and have
-    # deterministic output. In Python 3.6+ dict preserves insertion order for
-    # iterations, in older versions we use collections.OrderedDict.
+    # deterministic output.
     for name, definition in enums.items():
         if name in requiredEnums:
             if enumsDecl: enumsDecl += '\n'
@@ -803,8 +907,6 @@ def resolve_type_dependencies(subsets, requiredTypes, types):
 
     types_from_subsets = set()
     for subset in subsets:
-        if subset.name == 'VK_KHR_copy_commands2':
-            print(subset.types)
         types_from_subsets |= set(subset.types)
 
 
@@ -848,8 +950,8 @@ def resolve_type_dependencies(subsets, requiredTypes, types):
     return requiredTypes, requiredEnums
 
 def parse_xml(root, version, extensions, funcslist, funcsblacklist):
-    subsets, enum_extensions, promoted_enum_extensions = parse_xml_features(root, version)
-    subset_extensions, extension_enum_extensions = parse_xml_extensions(root, extensions, enum_extensions, version)
+    subsets, enum_extensions, promoted_enum_extensions, feature_sets = parse_xml_features(root, version)
+    subset_extensions, extension_enum_extensions = parse_xml_extensions(root, extensions, enum_extensions, feature_sets, version)
     subsets += subset_extensions
     enum_extensions.update(extension_enum_extensions)
 
@@ -912,7 +1014,7 @@ def generate_source(argsstring, options, version, enums, functions_by_category, 
 
         allFiles += 1
 
-        with open(outfile, 'w') as out:
+        with open(outfile, 'w', encoding='utf-8') as out:
             out.write(template.render(template_namespace))
             print("Successfully generated %s" % outfile)
             generatedFiles += 1;
