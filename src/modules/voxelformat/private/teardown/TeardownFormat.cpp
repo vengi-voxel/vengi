@@ -463,7 +463,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 			wrap(s.readUInt8(mattype))
 			glm::vec4 rgba;
 			wrapBool(io::readVec4(s, rgba))
-			palette.setColor(j, core::Color::getRGBA(rgba));
+			palette.setColor(j, color::getRGBA(rgba));
 			float reflectivity;
 			wrap(s.readFloat(reflectivity))
 			float shinyness;
@@ -514,23 +514,23 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		}
 		/*bool hasTransparent =*/s.readBool();
 #if 1
-		s.skip(256 * 3 * sizeof(core::RGBA));
+		s.skip(256 * 3 * sizeof(color::RGBA));
 #else
-		core::RGBA blackTint[256];
+		color::RGBA blackTint[256];
 		for (int k = 0; k < 256; ++k) {
 			if (!io::readColor(s, blackTint[k])) {
 				Log::error("Could not read black tint for palette %u index %u", i, k);
 				return false;
 			}
 		}
-		core::RGBA yellowTint[256];
+		color::RGBA yellowTint[256];
 		for (int k = 0; k < 256; ++k) {
 			if (!io::readColor(s, yellowTint[k])) {
 				Log::error("Could not read yellow tint for palette %u index %u", i, k);
 				return false;
 			}
 		}
-		core::RGBA rgbaTint[256];
+		color::RGBA rgbaTint[256];
 		for (int k = 0; k < 256; ++k) {
 			if (!io::readColor(s, rgbaTint[k])) {
 				Log::error("Could not read RGBA tint for palette %u index %u", i, k);

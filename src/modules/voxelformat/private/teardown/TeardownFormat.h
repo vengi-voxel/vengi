@@ -78,7 +78,7 @@ protected:
 
 public:
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"Teardown bin", {"bin"}, {}, 0u};
+		static io::FormatDescription f{"Teardown bin", "", {"bin"}, {}, 0u};
 		return f;
 	}
 };
