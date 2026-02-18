@@ -780,6 +780,8 @@ bool TeardownFormat::readLight(io::ReadStream &s) {
 	wrap(s.readFloat(soundVol))
 	float glare;
 	wrap(s.readFloat(glare))
+	core::String breakSound;
+	wrapBool(s.readString(TDStringLength, breakSound, true))
 	return true;
 }
 
