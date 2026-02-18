@@ -211,6 +211,38 @@ TEST_F(LUAApiTest, testImageAsPlane) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testImagePixelAccess) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local stream = g_io.sysopen("test-heightmap.png")
+			local image = g_import.image("test-heightmap.png", stream)
+			local w = image:width()
+			local h = image:height()
+			if w <= 0 then
+				error('Expected width > 0, got ' .. w)
+			end
+			if h <= 0 then
+				error('Expected height > 0, got ' .. h)
+			end
+			local r, g, b, a = image:rgba(0, 0)
+			if r < 0 or r > 255 then
+				error('Invalid red value: ' .. r)
+			end
+			if g < 0 or g > 255 then
+				error('Invalid green value: ' .. g)
+			end
+			if b < 0 or b > 255 then
+				error('Invalid blue value: ' .. b)
+			end
+			if a < 0 or a > 255 then
+				error('Invalid alpha value: ' .. a)
+			end
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testKeyFrames) {
 	const core::String script = R"(
 		function main(node, region, color)

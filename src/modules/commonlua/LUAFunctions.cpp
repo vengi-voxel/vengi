@@ -1758,6 +1758,33 @@ static int clua_image_save(lua_State *s) {
 	return 0;
 }
 
+static int clua_image_width(lua_State *s) {
+	image::Image *image = clua_toimage(s, 1);
+	lua_pushinteger(s, image->width());
+	return 1;
+}
+
+static int clua_image_height(lua_State *s) {
+	image::Image *image = clua_toimage(s, 1);
+	lua_pushinteger(s, image->height());
+	return 1;
+}
+
+static int clua_image_rgba(lua_State *s) {
+	image::Image *image = clua_toimage(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_checkinteger(s, 3);
+	if (x < 0 || x >= image->width() || y < 0 || y >= image->height()) {
+		return clua_error(s, "Coordinates out of bounds: %d, %d (image: %dx%d)", x, y, image->width(), image->height());
+	}
+	const color::RGBA color = image->colorAt(x, y);
+	lua_pushinteger(s, color.r);
+	lua_pushinteger(s, color.g);
+	lua_pushinteger(s, color.b);
+	lua_pushinteger(s, color.a);
+	return 4;
+}
+
 static int clua_image_name_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "name",
@@ -1780,10 +1807,52 @@ static int clua_image_save_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+static int clua_image_width_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "width",
+		"summary": "Get the width of the image in pixels.",
+		"parameters": [],
+		"returns": [
+			{"type": "int", "description": "The image width."}
+		]})");
+	return 1;
+}
+
+static int clua_image_height_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "height",
+		"summary": "Get the height of the image in pixels.",
+		"parameters": [],
+		"returns": [
+			{"type": "int", "description": "The image height."}
+		]})");
+	return 1;
+}
+
+static int clua_image_rgba_jsonhelp(lua_State *s) {
+	lua_pushstring(s, R"({
+		"name": "rgba",
+		"summary": "Get the RGBA color values at the given pixel coordinates.",
+		"parameters": [
+			{"name": "x", "type": "int", "description": "The x coordinate (0-based)."},
+			{"name": "y", "type": "int", "description": "The y coordinate (0-based)."}
+		],
+		"returns": [
+			{"type": "int", "description": "Red value (0-255)."},
+			{"type": "int", "description": "Green value (0-255)."},
+			{"type": "int", "description": "Blue value (0-255)."},
+			{"type": "int", "description": "Alpha value (0-255)."}
+		]})");
+	return 1;
+}
+
 void clua_imageregister(lua_State *s) {
 	static const clua_Reg imageFuncs[] = {
 		{"name", clua_image_name, clua_image_name_jsonhelp},
 		{"save", clua_image_save, clua_image_save_jsonhelp},
+		{"width", clua_image_width, clua_image_width_jsonhelp},
+		{"height", clua_image_height, clua_image_height_jsonhelp},
+		{"rgba", clua_image_rgba, clua_image_rgba_jsonhelp},
 		{"__gc", clua_image_gc, nullptr},
 		{nullptr, nullptr, nullptr}
 	};
