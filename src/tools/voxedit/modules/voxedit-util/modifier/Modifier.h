@@ -111,6 +111,15 @@ protected:
 	bool previewNeedsExistingVolume() const;
 	bool isSimplePreview(const Brush *brush, const voxel::Region &region) const;
 
+	/**
+	 * @brief Generate or update the brush preview volumes
+	 * @param activePalette The active palette for color lookups
+	 * @param activeVolume The active volume (may be nullptr)
+	 * @param sceneGraph The scene graph for brush execution
+	 */
+	void updateBrushVolumePreview(palette::Palette &activePalette, voxel::RawVolume *activeVolume,
+								  scenegraph::SceneGraph &sceneGraph);
+
 public:
 	Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
 
@@ -136,15 +145,6 @@ public:
 	void setLockedAxis(math::Axis axis, bool unlock);
 
 	void shutdown() override;
-
-	/**
-	 * @brief Generate or update the brush preview volumes
-	 * @param activePalette The active palette for color lookups
-	 * @param activeVolume The active volume (may be nullptr)
-	 * @param sceneGraph The scene graph for brush execution
-	 */
-	void updateBrushVolumePreview(palette::Palette &activePalette, voxel::RawVolume *activeVolume,
-								  scenegraph::SceneGraph &sceneGraph);
 
 	/**
 	 * @brief Reset all preview state and free preview volumes
