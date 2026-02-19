@@ -8,8 +8,8 @@
 
 namespace voxedit {
 
-LuaScriptCreateHandler::LuaScriptCreateHandler(ServerNetwork *network, voxelgenerator::LUAApi *luaApi)
-	: _network(network), _luaApi(luaApi) {
+LuaScriptCreateHandler::LuaScriptCreateHandler(voxelgenerator::LUAApi *luaApi)
+	: _luaApi(luaApi) {
 }
 
 void LuaScriptCreateHandler::execute(const network::ClientId &clientId, LuaScriptCreateMessage *msg) {
