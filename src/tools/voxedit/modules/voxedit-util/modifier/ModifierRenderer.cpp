@@ -226,14 +226,20 @@ void ModifierRenderer::render(const video::Camera &camera, const glm::mat4 &mode
 		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
 	}
 
+	// Apply a small world-space depth bias toward the camera to avoid z-fighting
+	// between the brush preview and the scene volume that share the same voxel
+	// positions. Polygon offset is unreliable for axis-aligned faces viewed
+	// head-on (slope factor becomes 0). A world-space translation along the
+	// negative camera forward direction (i.e. toward the camera) guarantees
+	// consistent depth separation regardless of view angle.
+	const glm::mat4 biasedModelMatrix =
+		glm::translate(glm::mat4(1.0f), -camera.forward() * 0.01f) * modelMatrix;
+
 	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
-		_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
+		_shapeRenderer.render(_aabbMeshes[i], camera, biasedModelMatrix);
 	}
 
-	// Render brush volume preview
-	video::polygonOffset(glm::vec3(-0.1f));
-	renderBrushVolume(camera, modelMatrix);
-	video::polygonOffset(glm::vec3(0.0f));
+	renderBrushVolume(camera, biasedModelMatrix);
 
 	const video::ScopedState blend(video::State::Blend, true);
 	_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);
