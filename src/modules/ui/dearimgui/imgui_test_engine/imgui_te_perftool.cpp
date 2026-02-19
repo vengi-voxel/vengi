@@ -1390,10 +1390,14 @@ void ImGuiPerfTool::_ShowEntriesPlot()
             const int now_visible_builds = temp_set.GetInt(label_id);
             temp_set.SetInt(label_id, now_visible_builds + 1);
             double y_pos = (double)entry.LabelIndex + GetLabelVerticalOffset(occupy_h, max_visible_builds, now_visible_builds);
-            ImPlotSpec barSpec;
-            barSpec.FillColor = ImPlot::GetColormapColor(_DisplayType == ImGuiPerfToolDisplayType_PerBranchColors ? batch.BranchIndex : batch_index);
-            barSpec.Flags = ImPlotBarsFlags_Horizontal;
-            ImPlot::PlotBars<double>(display_label.c_str(), &entry.DtDeltaMs, &y_pos, 1, occupy_h / (double)max_visible_builds, barSpec);
+#if IMPLOT_VERSION_NUM >= 1800
+            ImPlotSpec plot_spec;
+            plot_spec.Flags = ImPlotBarsFlags_Horizontal;
+            ImPlot::PlotBars<double>(display_label.c_str(), &entry.DtDeltaMs, &y_pos, 1, occupy_h / (double)max_visible_builds, plot_spec);
+#else
+            ImPlot::SetNextFillStyle(ImPlot::GetColormapColor(_DisplayType == ImGuiPerfToolDisplayType_PerBranchColors ? batch.BranchIndex : batch_index));
+            ImPlot::PlotBars<double>(display_label.c_str(), &entry.DtDeltaMs, &y_pos, 1, occupy_h / (double)max_visible_builds, ImPlotBarsFlags_Horizontal);
+#endif
         }
         legend_hovered |= ImPlot::IsLegendEntryHovered(display_label.c_str());
 
