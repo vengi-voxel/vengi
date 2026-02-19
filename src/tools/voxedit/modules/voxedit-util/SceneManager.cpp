@@ -1908,7 +1908,6 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", _("The amount of viewports (not in simple ui mode)"), core::Var::minMaxValidator<2, cfg::MaxViewports>);
 	core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128", _("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"), core::Var::minMaxValidator<32, voxedit::MaxVolumeSize>);
-	core::Var::get(cfg::VoxEditMaxSuggestedVolumeSizePreview, "32", _("The maximum size of the preview volume"), core::Var::minMaxValidator<16, voxedit::MaxVolumeSize>);
 	core::Var::get(cfg::VoxEditViewMode, "default", _("Configure the editor view mode"));
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);

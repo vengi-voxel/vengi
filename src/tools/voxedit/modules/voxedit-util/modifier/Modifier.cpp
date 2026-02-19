@@ -8,9 +8,13 @@
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
 #include "math/Axis.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
+#include "voxedit-util/Config.h"
+#include "voxedit-util/ModelNodeSettings.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
@@ -25,9 +29,9 @@
 
 namespace voxedit {
 
-Modifier::Modifier(SceneManager *sceneMgr)
+Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer)
 	: _stampBrush(sceneMgr), _textureBrush(sceneMgr), _actionExecuteButton(sceneMgr),
-	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
+	  _deleteExecuteButton(sceneMgr, ModifierType::Erase), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
 	_brushes.push_back(&_stampBrush);
@@ -111,6 +115,8 @@ void Modifier::construct() {
 			setLockedAxis(axis, unlock);
 		}).setHelp(_("Toggle locked mode for the z axis at the current cursor position"));
 
+	_maxSuggestedVolumeSizePreview = core::Var::get(cfg::VoxEditMaxSuggestedVolumeSizePreview, "32", _("The maximum size of the preview volume"), core::Var::minMaxValidator<16, voxedit::MaxVolumeSize>);
+
 	for (Brush *b : _brushes) {
 		b->construct();
 	}
@@ -130,14 +136,20 @@ bool Modifier::init() {
 			Log::error("Failed to initialize the %s brush", b->name().c_str());
 		}
 	}
+	if (!_modifierRenderer->init()) {
+		Log::error("Failed to initialize modifier renderer");
+		return false;
+	}
 	return true;
 }
 
 void Modifier::shutdown() {
+	resetPreview();
 	reset();
 	for (Brush *b : _brushes) {
 		b->shutdown();
 	}
+	_modifierRenderer->shutdown();
 }
 
 void Modifier::update(double nowSeconds, const video::Camera *camera) {
@@ -456,6 +468,191 @@ ModifierType Modifier::checkModifierType() {
 		return ModifierType::ColorPicker;
 	}
 	return currentBrush()->modifierType(ModifierType::Mask);
+}
+
+static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume,
+									   voxel::Region region) {
+	if (existingVolume == nullptr) {
+		if (volume == nullptr || volume->region() != region) {
+			volume = new voxel::RawVolume(region);
+			return;
+		}
+		volume->clear();
+	} else {
+		region.grow(1);
+		volume = new voxel::RawVolume(*existingVolume, region);
+	}
+}
+
+bool Modifier::previewNeedsExistingVolume() const {
+	if (isMode(ModifierType::Paint)) {
+		return true;
+	}
+	if (_brushType == BrushType::Select) {
+		return true;
+	}
+	if (_brushType == BrushType::Plane) {
+		return isMode(ModifierType::Place);
+	}
+	return false;
+}
+
+bool Modifier::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
+	if (brush->type() != BrushType::Shape) {
+		return false;
+	}
+	const ShapeBrush *shapeBrush = (const ShapeBrush *)brush;
+	if (shapeBrush->shapeType() == ShapeType::AABB) {
+		// we can use a simple cube for the preview here
+		return true;
+	}
+	return false;
+}
+
+void Modifier::resetPreview() {
+	_previewVolume = nullptr;
+	_previewMirrorVolume = nullptr;
+	_brushPreview = BrushPreview();
+}
+
+void Modifier::updateBrushVolumePreview(palette::Palette &activePalette, voxel::RawVolume *activeVolume,
+										scenegraph::SceneGraph &sceneGraph) {
+	// even in erase mode we want the preview to create the models, not wipe them
+	ModifierType modifierType = _brushContext.modifierType;
+	if (modifierType == ModifierType::Erase) {
+		modifierType = ModifierType::Place;
+	}
+	voxel::Voxel voxel = _brushContext.cursorVoxel;
+	voxel.setOutline();
+
+	// Allow subclasses to wait for pending operations before freeing old preview volumes
+	_modifierRenderer->waitForPendingExtractions();
+
+	// Reset preview state
+	resetPreview();
+
+	Log::debug("regenerate preview volume");
+
+	if (activeVolume == nullptr) {
+		return;
+	}
+
+	// operate on existing voxels
+	voxel::RawVolume *existingVolume = nullptr;
+	if (previewNeedsExistingVolume()) {
+		existingVolume = activeVolume;
+	}
+
+	const Brush *brush = currentBrush();
+	if (!brush) {
+		return;
+	}
+	preExecuteBrush(activeVolume);
+	const voxel::Region &region = brush->calcRegion(_brushContext);
+	if (!region.isValid()) {
+		return;
+	}
+	const voxel::Region maxPreviewRegion(0, _maxSuggestedVolumeSizePreview->intVal() - 1);
+	bool simplePreview = isSimplePreview(brush, region);
+	if (!simplePreview && region.voxels() < maxPreviewRegion.voxels()) {
+		glm::ivec3 minsMirror = region.getLowerCorner();
+		glm::ivec3 maxsMirror = region.getUpperCorner();
+		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+			createOrClearPreviewVolume(existingVolume, _previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
+			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
+			mirrorDummyNode.setVolume(_previewMirrorVolume, false);
+			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
+		}
+		createOrClearPreviewVolume(existingVolume, _previewVolume, region);
+		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+		dummyNode.setVolume(_previewVolume, false);
+		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+	} else if (simplePreview) {
+		_brushPreview.useSimplePreview = true;
+		_brushPreview.simplePreviewRegion = region;
+		_brushPreview.simplePreviewColor = activePalette.color(_brushContext.cursorVoxel.getColor());
+		glm::ivec3 minsMirror = region.getLowerCorner();
+		glm::ivec3 maxsMirror = region.getUpperCorner();
+		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+			_brushPreview.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
+		}
+	}
+}
+
+void Modifier::render(const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
+	if (_locked) {
+		return;
+	}
+
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	const int activeNodeId = sceneGraph.activeNode();
+	Brush *brush = currentBrush();
+
+	// Build the context for the renderer
+	ModifierRendererContext ctx;
+	ctx.cursorVoxel = _brushContext.cursorVoxel;
+	ctx.voxelAtCursor = _brushContext.voxelAtCursor;
+	ctx.cursorFace = _brushContext.cursorFace;
+	ctx.cursorPosition = _brushContext.cursorPosition;
+	ctx.gridResolution = _brushContext.gridResolution;
+	ctx.referencePosition = referencePosition();
+	ctx.palette = &activePalette;
+	ctx.brushActive = false;
+
+	// Mirror plane info
+	if (brush) {
+		ctx.mirrorAxis = brush->mirrorAxis();
+		ctx.mirrorPos = brush->mirrorPos();
+	}
+	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNodeId)) {
+		ctx.activeRegion = node->region();
+	}
+
+	// Handle brush preview with deferred updates
+	if (!isMode(ModifierType::ColorPicker)) {
+		ctx.brushActive = brush && brush->active();
+	}
+
+	if (ctx.brushActive) {
+		if (brush->dirty()) {
+			if (_nextPreviewUpdateSeconds > 0.0) {
+				_nextPreviewUpdateSeconds -= 0.02;
+			} else {
+				_nextPreviewUpdateSeconds = _nowSeconds + 0.1;
+			}
+			brush->markClean();
+		}
+		if (_nextPreviewUpdateSeconds > 0.0) {
+			if (_nextPreviewUpdateSeconds <= _nowSeconds) {
+				_nextPreviewUpdateSeconds = 0.0;
+				voxel::RawVolume *activeVolume = _sceneMgr->volume(activeNodeId);
+				updateBrushVolumePreview(activePalette, activeVolume, sceneGraph);
+			}
+		}
+		// Copy cached preview state to renderer context
+		ctx.previewVolume = previewVolume();
+		ctx.previewMirrorVolume = previewMirrorVolume();
+		const BrushPreview &preview = brushPreview();
+		if (preview.useSimplePreview) {
+			ctx.useSimplePreview = true;
+			ctx.simplePreviewRegion = preview.simplePreviewRegion;
+			ctx.simpleMirrorPreviewRegion = preview.simpleMirrorPreviewRegion;
+			ctx.simplePreviewColor = preview.simplePreviewColor;
+		}
+		if (ctx.previewVolume || ctx.useSimplePreview) {
+			ctx.palette = &activePalette;
+		}
+	} else {
+		// Clear cached preview state when the brush is not active to prevent stale
+		// previews from reappearing as ghosts when the brush becomes active again
+		resetPreview();
+	}
+
+	// Let the renderer handle buffer updates and rendering
+	_modifierRenderer->update(ctx);
+
+	// Render everything
+	_modifierRenderer->render(camera, model);
 }
 
 } // namespace voxedit

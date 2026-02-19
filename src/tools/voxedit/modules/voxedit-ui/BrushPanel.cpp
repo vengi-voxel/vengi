@@ -660,7 +660,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::ScopedStyle style;
 	style.pushFontSize(imguiApp()->bigFontSize());
 
-	voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+	voxedit::Modifier &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
 	const bool normalPaletteMode = viewModeNormalPalette(_viewMode->intVal());
 

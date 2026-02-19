@@ -15,7 +15,6 @@ set(SRCS
 	modifier/IModifierRenderer.h
 	modifier/Modifier.h modifier/Modifier.cpp
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
-	modifier/ModifierFacade.h modifier/ModifierFacade.cpp
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierType.h
 	modifier/ModifierVolumeWrapper.h

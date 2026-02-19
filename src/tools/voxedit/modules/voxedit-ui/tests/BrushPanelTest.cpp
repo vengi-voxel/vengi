@@ -30,7 +30,7 @@ static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id
 	return true;
 }
 
-static bool setModifierType(ImGuiTestContext *ctx, voxedit::ModifierFacade &modifier, ModifierType type) {
+static bool setModifierType(ImGuiTestContext *ctx, voxedit::Modifier &modifier, ModifierType type) {
 	if (type == ModifierType::ColorPicker) {
 		IM_CHECK_RETV(modifier.brushType() == BrushType::None, false);
 		ctx->ItemClick("modifiers/###button1");
@@ -56,7 +56,7 @@ static bool setModifierType(ImGuiTestContext *ctx, voxedit::ModifierFacade &modi
 
 static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
 	IM_CHECK_RETV(activeBrush(panel, ctx, id, sceneMgr, type), false);
-	voxedit::ModifierFacade &modifier = sceneMgr->modifier();
+	voxedit::Modifier &modifier = sceneMgr->modifier();
 
 	setModifierType(ctx, modifier, ModifierType::Place);
 	IM_CHECK_RETV(centerOnViewport(ctx, sceneMgr, viewportEditMode(ctx, panel->app()), ImVec2(0, -50)), false);
@@ -85,7 +85,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// now we can focus the brush panel
 		IM_CHECK(focusWindow(ctx, id));
 
-		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		int buttonIdx = 0;
 		for (int i = 0; i < (int)BrushType::Max; ++i) {
 			if (i == (int)BrushType::Normal) {
@@ -139,7 +139,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		command::executeCommands("fill");
 		ctx->Yield(3);
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Paint));
-		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _sceneMgr->modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportEditMode(ctx, _app), ImVec2(0, -50)));
 		executeViewportClick();
@@ -199,7 +199,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		});
 		IM_CHECK(allNoNormal);
 
-		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+		voxedit::Modifier &modifier = _sceneMgr->modifier();
 
 		// set a specific normal index on the modifier (the value the normal brush will paint)
 		const uint8_t expectedNormal = 7;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "IModifierRenderer.h"
 #include "ModifierButton.h"
 #include "ModifierType.h"
 #include "SceneModifiedFlags.h"
@@ -18,7 +19,10 @@
 #include "brush/StampBrush.h"
 #include "brush/TextBrush.h"
 #include "brush/TextureBrush.h"
+#include "color/RGBA.h"
 #include "core/IComponent.h"
+#include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -28,6 +32,10 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 
+namespace palette {
+class Palette;
+}
+
 namespace video {
 class Camera;
 }
@@ -35,6 +43,19 @@ class Camera;
 namespace voxedit {
 
 class SceneManager;
+
+/**
+ * @brief Stores the result of brush preview generation
+ *
+ * This contains the computed preview state that can be used by renderers
+ * or tests to verify preview behavior without requiring a renderer.
+ */
+struct BrushPreview {
+	voxel::Region simplePreviewRegion = voxel::Region::InvalidRegion;
+	voxel::Region simpleMirrorPreviewRegion = voxel::Region::InvalidRegion;
+	color::RGBA simplePreviewColor{0};
+	bool useSimplePreview = false;
+};
 
 /**
  * @brief This class is responsible for manipulating the volume with the configured @c Brush and for
@@ -78,8 +99,20 @@ protected:
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
+	ModifierRendererPtr _modifierRenderer;
+	SceneManager *_sceneMgr;
+	double _nextPreviewUpdateSeconds = 0;
+
+	core::ScopedPtr<voxel::RawVolume> _previewVolume;
+	core::ScopedPtr<voxel::RawVolume> _previewMirrorVolume;
+	core::VarPtr _maxSuggestedVolumeSizePreview;
+	BrushPreview _brushPreview;
+
+	bool previewNeedsExistingVolume() const;
+	bool isSimplePreview(const Brush *brush, const voxel::Region &region) const;
+
 public:
-	Modifier(SceneManager *sceneMgr);
+	Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
 
 	/**
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account
@@ -103,6 +136,27 @@ public:
 	void setLockedAxis(math::Axis axis, bool unlock);
 
 	void shutdown() override;
+
+	/**
+	 * @brief Generate or update the brush preview volumes
+	 * @param activePalette The active palette for color lookups
+	 * @param activeVolume The active volume (may be nullptr)
+	 * @param sceneGraph The scene graph for brush execution
+	 */
+	void updateBrushVolumePreview(palette::Palette &activePalette, voxel::RawVolume *activeVolume,
+								  scenegraph::SceneGraph &sceneGraph);
+
+	/**
+	 * @brief Reset all preview state and free preview volumes
+	 */
+	void resetPreview();
+
+	const BrushPreview &brushPreview() const;
+	voxel::RawVolume *previewVolume() const;
+	voxel::RawVolume *previewMirrorVolume() const;
+
+	void render(const video::Camera &camera, palette::Palette &activePalette,
+				const glm::mat4 &model = glm::mat4(1.0f));
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
@@ -320,6 +374,18 @@ inline const voxel::Voxel &Modifier::cursorVoxel() const {
 
 inline const glm::ivec3 &Modifier::cursorPosition() const {
 	return _brushContext.cursorPosition;
+}
+
+inline const BrushPreview &Modifier::brushPreview() const {
+	return _brushPreview;
+}
+
+inline voxel::RawVolume *Modifier::previewVolume() const {
+	return _previewVolume;
+}
+
+inline voxel::RawVolume *Modifier::previewMirrorVolume() const {
+	return _previewMirrorVolume;
 }
 
 } // namespace voxedit

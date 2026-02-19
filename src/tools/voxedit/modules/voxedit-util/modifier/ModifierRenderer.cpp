@@ -129,7 +129,7 @@ void ModifierRenderer::clear() {
 }
 
 void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
-	// Note: We don't delete the returned old volume because ownership stays with the caller (ModifierFacade)
+	// Note: We don't delete the returned old volume because ownership stays with the caller (Modifier)
 	// The caller manages the volume lifetime via ScopedPtr
 	(void)_volumeRenderer.setVolume(_meshState, idx, volume, palette, nullptr, true);
 	if (volume != nullptr) {

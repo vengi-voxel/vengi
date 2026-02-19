@@ -19,7 +19,7 @@
 #include "io/FormatDescription.h"
 #include "memento/MementoHandler.h"
 #include "modifier/IModifierRenderer.h"
-#include "modifier/ModifierFacade.h"
+#include "modifier/Modifier.h"
 #include "modifier/SceneModifiedFlags.h"
 #include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
@@ -76,7 +76,7 @@ protected:
 	core::Future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
-	ModifierFacade _modifierFacade;
+	Modifier _modifierFacade;
 	voxelgenerator::LUAApi _luaApi;
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
@@ -477,8 +477,8 @@ public:
 	const voxel::ClipboardData &clipboardData() const;
 
 	// component access
-	const ModifierFacade &modifier() const;
-	ModifierFacade &modifier();
+	const Modifier &modifier() const;
+	Modifier &modifier();
 	const memento::MementoHandler &mementoHandler() const;
 	memento::MementoHandler &mementoHandler();
 	const scenegraph::SceneGraph &sceneGraph() const;
@@ -702,11 +702,11 @@ inline const glm::ivec3 &SceneManager::referencePosition() const {
 	return _modifierFacade.referencePosition();
 }
 
-inline const ModifierFacade &SceneManager::modifier() const {
+inline const Modifier &SceneManager::modifier() const {
 	return _modifierFacade;
 }
 
-inline ModifierFacade &SceneManager::modifier() {
+inline Modifier &SceneManager::modifier() {
 	return _modifierFacade;
 }
 

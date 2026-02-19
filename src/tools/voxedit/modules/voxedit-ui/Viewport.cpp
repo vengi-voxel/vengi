@@ -162,7 +162,7 @@ void Viewport::dragAndDrop(float headerSize) {
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 				if (node->visible() && node->isModelNode()) {
 					updateViewportInput(headerSize);
-					ModifierFacade &modifier = _sceneMgr->modifier();
+					Modifier &modifier = _sceneMgr->modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
 					modifier.beginBrush();
 					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type,
@@ -206,7 +206,7 @@ void Viewport::renderCursorDetails() const {
 	if (_viewportUIElementHovered) {
 		return;
 	}
-	const ModifierFacade &modifier = _sceneMgr->modifier();
+	const Modifier &modifier = _sceneMgr->modifier();
 	const int cursorDetailsLevel = _cursorDetails->intVal();
 	if (cursorDetailsLevel == 0) {
 		return;
@@ -250,7 +250,7 @@ void Viewport::renderCursor() {
 		return;
 	}
 
-	const ModifierFacade &modifier = _sceneMgr->modifier();
+	const Modifier &modifier = _sceneMgr->modifier();
 	if (modifier.isMode(ModifierType::ColorPicker) || modifier.brushType() == BrushType::Select ||
 		modifier.brushType() == BrushType::Paint) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
