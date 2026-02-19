@@ -210,8 +210,11 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 			ImPlot::SetupAxisLimits(ImAxis_X1, 0.0f, 1.0f, ImGuiCond_Once);
 			ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0f, 1.0f, ImGuiCond_Once);
 			const char *lineTitle = scenegraph::InterpolationTypeStr[currentInterpolation];
-			const ImPlotLineFlags lineFlag = ImPlotLineFlags_None;
-			ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, data.size(), lineFlag, 0, sizeof(glm::dvec2));
+			ImPlotSpec spec;
+			spec.Flags = ImPlotLineFlags_None;
+			spec.Offset = 0;
+			spec.Stride = sizeof(glm::dvec2);
+			ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, (int)data.size(), spec);
 			ImPlot::EndPlot();
 		}
 	}
