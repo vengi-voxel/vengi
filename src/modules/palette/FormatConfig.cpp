@@ -18,21 +18,21 @@ static bool colorReductionValidator(const core::String &value) {
 }
 
 bool FormatConfig::init() {
-	core::Var::get(cfg::CoreColorReduction,
+	core::Var::registerVar(cfg::CoreColorReduction,
 				   color::toColorReductionTypeString(color::ColorReductionType::MedianCut),
 				   _("Controls the algorithm that is used to perform the color reduction"), colorReductionValidator);
 
-	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,
+	core::Var::registerVar(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,
 				   _("Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::PalformatMaxSize, "512", core::CV_NOPERSIST,
+	core::Var::registerVar(cfg::PalformatMaxSize, "512", core::CV_NOPERSIST,
 				   _("The maximum size of an image in x and y direction to quantize to a palette"));
-	core::Var::get(cfg::PalformatGimpRGBA, "false", core::CV_NOPERSIST,
+	core::Var::registerVar(cfg::PalformatGimpRGBA, "false", core::CV_NOPERSIST,
 				   _("Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"));
 
-	core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
+	core::Var::registerVar(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
 				   _("This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"));
-	core::Var::get(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(),
+	core::Var::registerVar(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(),
 				   C_("A palette of normal vectors converted to RGBA values", "The normal palette"));
 
 	return true;

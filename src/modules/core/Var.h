@@ -44,10 +44,11 @@ struct VarDef {
 		   const char *defHelp = nullptr, ValidatorFunc defValidatorFunc = nullptr)
 		: name(defName), value(defValue), flags(defFlags), help(defHelp), validatorFunc(defValidatorFunc) {
 	}
-	core::String name;
-	core::String value;
+	core::String name; // The name that this var is registered under (must be unique)
+	core::String value; /** The initial value of the var. If this is @c nullptr a new cvar
+	 * is not created by this call. */
 	core::String defaultValue;
-	int32_t flags = -1;
+	int32_t flags = -1; // A bitmask of var flags - e.g. @c CV_READONLY
 	const char *help = nullptr;
 	ValidatorFunc validatorFunc = nullptr;
 };
@@ -99,6 +100,11 @@ protected:
 	static bool _ivec3ListValidator(const core::String& value, int nmin, int nmax);
 	static bool _minMaxValidator(const core::String& value, int nmin, int nmax);
 
+	/**
+	 * @brief Creates a new or gets an already existing var
+	 */
+	static VarPtr createVar(const VarDef &def);
+
 	// invisible - use the static get method
 	Var(const core::String& name, const core::String& value, const core::String &defaultValue, uint32_t flags, const char *help, ValidatorFunc validatorFunc);
 public:
@@ -133,32 +139,28 @@ public:
 		return _minMaxValidator(value, NMIN, NMAX);
 	}
 
-	/**
-	 * @brief Creates a new or gets an already existing var
-	 *
-	 * @param[in] name The name that this var is registered under (must be unique)
-	 * @param[in] value The initial value of the var. If this is @c nullptr a new cvar
-	 * is not created by this call.
-	 * @param[in] flags A bitmask of var flags - e.g. @c CV_READONLY
-	 *
-	 * @note This is using a read/write lock to allow access from different threads.
-	 */
-	// TODO: make this private - if value is nullptr or not given, then findVar could be used.
-	static VarPtr get(const core::String& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
 	static VarPtr findVar(const core::String& name);
 
 	static inline VarPtr registerVar(const VarDef &def) {
-		return get(def.name, def.value, def.flags, def.help, def.validatorFunc);
+		return createVar(def);
 	}
 
-	// TODO: deprecated - use registerVar
-	static inline VarPtr get(const core::String& name, const char* value, const char *help, ValidatorFunc validatorFunc = nullptr) {
-		return get(name, value, -1, help, validatorFunc);
+	// TODO: deprecated - use registerVar with VarDef
+	static inline VarPtr registerVar(const core::String& name, const char* value, const char *help, ValidatorFunc validatorFunc = nullptr) {
+		VarDef def(name, value, -1, help, validatorFunc);
+		return createVar(def);
 	}
 
-	// TODO: deprecated - use registerVar
-	static inline VarPtr get(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr) {
-		return get(name, value.c_str(), flags, help, validatorFunc);
+	// TODO: deprecated - use registerVar with VarDef
+	static VarPtr registerVar(const core::String& name, int value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = {}) {
+		VarDef def(name, core::String::format("%i", value), flags, help, validatorFunc);
+		return createVar(def);
+	}
+
+	// TODO: deprecated - use registerVar with VarDef
+	static inline VarPtr registerVar(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr) {
+		VarDef def(name, value, flags, help, validatorFunc);
+		return createVar(def);
 	}
 
 	/**
@@ -183,8 +185,6 @@ public:
 	 * @return @c false if var with given name wasn't found, otherwise the bool value of the var
 	 */
 	static bool boolean(const core::String& name);
-
-	static VarPtr get(const core::String& name, int value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = {});
 
 	static void shutdown();
 

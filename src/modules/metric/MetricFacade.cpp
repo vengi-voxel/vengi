@@ -35,12 +35,12 @@ bool MetricState::init(const core::String &appname) {
 	}
 
 	if (flavor->strVal() == "json") {
-		const core::String &url = core::Var::get(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric")->strVal();
+		const core::String &url = core::Var::registerVar(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric")->strVal();
 		const core::String userAgent = appname + "/" PROJECT_VERSION;
 		_sender = core::make_shared<metric::HTTPMetricSender>(url, userAgent);
 	} else {
-		const core::String &host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
-		const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
+		const core::String &host = core::Var::registerVar(cfg::MetricHost, "127.0.0.1")->strVal();
+		const int port = core::Var::registerVar(cfg::MetricPort, "8125")->intVal();
 		_sender = core::make_shared<metric::UDPMetricSender>(host, port);
 	}
 	if (!_sender->init()) {

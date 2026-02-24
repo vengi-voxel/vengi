@@ -38,32 +38,32 @@ protected:
 	RendererContext _ctx = nullptr;
 
 	void setShaderVars(const ShaderVarState& val) {
-		core::Var::get(cfg::RenderCheckerBoard, "false", core::CV_SHADER);
-		core::Var::get(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
-		core::Var::get(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
-		core::Var::get(cfg::ClientShadowMapSize, "128", core::CV_SHADER);
-		core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER);
-		core::Var::get(cfg::ClientBloom, "false");
-		core::Var::get(cfg::RenderCullBuffers, "false");
-		core::Var::get(cfg::RenderCullNodes, "true");
-		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
-		core::Var::get(cfg::RenderNormals, "false", core::CV_SHADER);
-		core::Var::get(cfg::ToneMapping, "0", core::CV_SHADER);
-		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
-		core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-		core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic), core::CV_SHADER);
+		core::Var::registerVar(cfg::RenderCheckerBoard, "false", core::CV_SHADER);
+		core::Var::registerVar(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
+		core::Var::registerVar(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
+		core::Var::registerVar(cfg::ClientShadowMapSize, "128", core::CV_SHADER);
+		core::Var::registerVar(cfg::ClientGamma, "1.0", core::CV_SHADER);
+		core::Var::registerVar(cfg::ClientBloom, "false");
+		core::Var::registerVar(cfg::RenderCullBuffers, "false");
+		core::Var::registerVar(cfg::RenderCullNodes, "true");
+		core::Var::registerVar(cfg::RenderOutline, "false", core::CV_SHADER);
+		core::Var::registerVar(cfg::RenderNormals, "false", core::CV_SHADER);
+		core::Var::registerVar(cfg::ToneMapping, "0", core::CV_SHADER);
+		core::Var::registerVar(cfg::ClientDebugShadow, "false", core::CV_SHADER);
+		core::Var::registerVar(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
+		core::Var::registerVar(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic), core::CV_SHADER);
 		core::Singleton<ShaderManager>::getInstance().update();
 	}
 
 public:
 	void SetUp() override {
 		// 4.3 is the minimum version where compute shaders are supported
-		core::Var::get(cfg::ClientOpenGLVersion, "4.3", core::CV_READONLY);
-		core::Var::get(cfg::ClientMultiSampleBuffers, "0");
-		core::Var::get(cfg::ClientMultiSampleSamples, "0");
-		core::Var::get(cfg::ClientVSync, "false");
-		core::Var::get(cfg::MaxAnisotropy, "1.0");
-		core::Var::get(cfg::ClientDebugSeverity, "3");
+		core::Var::registerVar(cfg::ClientOpenGLVersion, "4.3", core::CV_READONLY);
+		core::Var::registerVar(cfg::ClientMultiSampleBuffers, "0");
+		core::Var::registerVar(cfg::ClientMultiSampleSamples, "0");
+		core::Var::registerVar(cfg::ClientVSync, "false");
+		core::Var::registerVar(cfg::MaxAnisotropy, "1.0");
+		core::Var::registerVar(cfg::ClientDebugSeverity, "3");
 		app::AbstractTest::SetUp();
 #if defined(_WIN32) || defined(__CYGWIN__)
 		GTEST_SKIP() << "Skipping because there are problems in the pipeline when running this headless";

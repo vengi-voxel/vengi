@@ -343,13 +343,14 @@ static int clua_varcreate(lua_State *s) {
 	if (secret) {
 		flags |= core::CV_SECRET;
 	}
-	core::Var::get(var, val, flags, help);
+	core::VarDef varDef(var, val, flags, help);
+	core::Var::registerVar(varDef);
 	return 0;
 }
 
 static int clua_vargetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -359,7 +360,7 @@ static int clua_vargetstr(lua_State *s) {
 
 static int clua_vargetint(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -369,7 +370,7 @@ static int clua_vargetint(lua_State *s) {
 
 static int clua_vargetbool(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -379,7 +380,7 @@ static int clua_vargetbool(lua_State *s) {
 
 static int clua_vargetfloat(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -389,7 +390,7 @@ static int clua_vargetfloat(lua_State *s) {
 
 static int clua_varsetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -399,7 +400,7 @@ static int clua_varsetstr(lua_State *s) {
 
 static int clua_varsetbool(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -409,7 +410,7 @@ static int clua_varsetbool(lua_State *s) {
 
 static int clua_varsetint(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}
@@ -419,7 +420,7 @@ static int clua_varsetint(lua_State *s) {
 
 static int clua_varsetfloat(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
-	const core::VarPtr& v = core::Var::get(var, nullptr);
+	const core::VarPtr& v = core::findVar(var);
 	if (!v) {
 		return clua_error(s, "Invalid variable %s", var);
 	}

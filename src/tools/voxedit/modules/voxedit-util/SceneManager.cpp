@@ -1526,7 +1526,7 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 		disconnectFromServer();
 	}
 
-	bool createDiff = core::Var::get("ve_diff", "false")->boolVal();
+	bool createDiff = core::Var::registerVar("ve_diff", "false")->boolVal();
 	if (createDiff) {
 		for (const auto &entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
@@ -1878,48 +1878,48 @@ int SceneManager::toNodeId(const command::CommandArgs& args, int defaultVal, con
 }
 
 void SceneManager::construct() {
-	core::Var::get(cfg::VoxEditColorWheel, "false", _("Use the color wheel in the palette color editing"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowColorPicker, "false", _("Always show the color picker below the palette"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
-	core::Var::get(cfg::VoxEditRegionSizes, "", _("Show fixed region sizes in the volume inspector"), core::Var::ivec3ListValidator<1, 256>);
-	core::Var::get(cfg::VoxEditLocalSpace, "true", _("Use local space for transforms"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowgrid, "true", _("Show the grid"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowlockedaxis, "true", _("Show the currently locked axis"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowaabb, "true", _("Show the axis aligned bounding box"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowBones, "false", _("Show the bones in scene mode"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditRendershadow, "false", _("Render with shadows - make sure to set the scene lighting up properly"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShadingMode, "1", _("Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"), core::Var::minMaxValidator<0, 2>);
-	core::Var::get(cfg::VoxEditAnimationSpeed, "100", _("Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene"));
-	core::Var::get(cfg::VoxEditAutoNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
-	core::Var::get(cfg::VoxEditGridsize, "1", _("The size of the voxel grid"), core::Var::minMaxValidator<1, 64>);
-	core::Var::get(cfg::VoxEditPlaneSize, "100", _("The size of the plane"), core::Var::minMaxValidator<1, 1000>);
-	core::Var::get(cfg::VoxEditShowPlane, "true", _("Show the plane"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGrayInactive, "false", _("Render the inactive nodes in gray scale mode"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditHideInactive, "false", _("Hide the inactive nodes"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditViewdistance, "5000", _("Far plane for the camera"));
-	core::Var::get(cfg::VoxEditShowaxis, "true", _("Show the axis"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditCursorDetails, "1", _("Print cursor details in edit mode - measure distance to reference position in mode 3"), core::Var::minMaxValidator<0, 3>);
-	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", _("Automatically create keyframes when changing transforms"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGizmoOperations, "3", _("Bitmask of gizmo operations in scene mode"));
-	core::Var::get(cfg::VoxEditGizmoPivot, "false", core::CV_NOPERSIST, _("Activate the pivot mode for the gizmo in scene mode"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGizmoAllowAxisFlip, "true", _("Flip axis or stay along the positive world/local axis"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGizmoSnap, "true", _("Use the grid size for snap"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditModelGizmo, "false", _("Show the gizmo to also translate the region"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
-	core::Var::get(cfg::VoxEditViewports, "2", _("The amount of viewports (not in simple ui mode)"), core::Var::minMaxValidator<2, cfg::MaxViewports>);
-	core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128", _("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"), core::Var::minMaxValidator<32, voxedit::MaxVolumeSize>);
-	core::Var::get(cfg::VoxEditViewMode, "default", _("Configure the editor view mode"));
-	core::Var::get(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupWelcome, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupMinecraftMapping, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupAbout, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupRenameNode, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupCreateAnimation, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditColorWheel, "false", _("Use the color wheel in the palette color editing"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditShowColorPicker, "false", _("Always show the color picker below the palette"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
+	core::Var::registerVar(cfg::VoxEditRegionSizes, "", _("Show fixed region sizes in the volume inspector"), core::Var::ivec3ListValidator<1, 256>);
+	core::Var::registerVar(cfg::VoxEditLocalSpace, "true", _("Use local space for transforms"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditShowgrid, "true", _("Show the grid"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditShowlockedaxis, "true", _("Show the currently locked axis"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditShowaabb, "true", _("Show the axis aligned bounding box"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditShowBones, "false", _("Show the bones in scene mode"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditRendershadow, "false", _("Render with shadows - make sure to set the scene lighting up properly"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditShadingMode, "1", _("Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"), core::Var::minMaxValidator<0, 2>);
+	core::Var::registerVar(cfg::VoxEditAnimationSpeed, "100", _("Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene"));
+	core::Var::registerVar(cfg::VoxEditAutoNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
+	core::Var::registerVar(cfg::VoxEditGridsize, "1", _("The size of the voxel grid"), core::Var::minMaxValidator<1, 64>);
+	core::Var::registerVar(cfg::VoxEditPlaneSize, "100", _("The size of the plane"), core::Var::minMaxValidator<1, 1000>);
+	core::Var::registerVar(cfg::VoxEditShowPlane, "true", _("Show the plane"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditGrayInactive, "false", _("Render the inactive nodes in gray scale mode"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditHideInactive, "false", _("Hide the inactive nodes"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditViewdistance, "5000", _("Far plane for the camera"));
+	core::Var::registerVar(cfg::VoxEditShowaxis, "true", _("Show the axis"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditCursorDetails, "1", _("Print cursor details in edit mode - measure distance to reference position in mode 3"), core::Var::minMaxValidator<0, 3>);
+	core::Var::registerVar(cfg::VoxEditAutoKeyFrame, "true", _("Automatically create keyframes when changing transforms"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditGizmoOperations, "3", _("Bitmask of gizmo operations in scene mode"));
+	core::Var::registerVar(cfg::VoxEditGizmoPivot, "false", core::CV_NOPERSIST, _("Activate the pivot mode for the gizmo in scene mode"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditGizmoAllowAxisFlip, "true", _("Flip axis or stay along the positive world/local axis"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditGizmoSnap, "true", _("Use the grid size for snap"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditModelGizmo, "false", _("Show the gizmo to also translate the region"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
+	core::Var::registerVar(cfg::VoxEditViewports, "2", _("The amount of viewports (not in simple ui mode)"), core::Var::minMaxValidator<2, cfg::MaxViewports>);
+	core::Var::registerVar(cfg::VoxEditMaxSuggestedVolumeSize, "128", _("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"), core::Var::minMaxValidator<32, voxedit::MaxVolumeSize>);
+	core::Var::registerVar(cfg::VoxEditViewMode, "default", _("Configure the editor view mode"));
+	core::Var::registerVar(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditPopupTipOfTheDay, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditPopupWelcome, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditPopupMinecraftMapping, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditPopupAbout, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditPopupRenameNode, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditPopupCreateAnimation, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
 
-	core::Var::get(cfg::VoxEditAnimationPlaying, "false", core::CV_NOPERSIST, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
-	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
-	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::VoxEditAnimationPlaying, "false", core::CV_NOPERSIST, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
+	_autoSaveSecondsDelay = core::Var::registerVar(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
+	_transformUpdateChildren = core::Var::registerVar(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
 	_maxSuggestedVolumeSize = core::getVar(cfg::VoxEditMaxSuggestedVolumeSize);
 	_lastDirectory = core::getVar(cfg::UILastDirectory);
 

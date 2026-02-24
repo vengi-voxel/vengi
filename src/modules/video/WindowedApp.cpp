@@ -541,40 +541,40 @@ app::AppState WindowedApp::onInit() {
 
 app::AppState WindowedApp::onConstruct() {
 	app::AppState state = Super::onConstruct();
-	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
-	core::Var::get(cfg::ClientMultiSampleSamples, "0");
-	core::Var::get(cfg::ClientWindowHighDPI, "true", core::CV_READONLY);
-	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, _("Activate shadow map"), core::Var::boolValidator);
-	core::Var::get(cfg::RenderCheckerBoard, "false", core::CV_SHADER, _("Activate checkerboard rendering"), core::Var::boolValidator);
-	core::Var::get(cfg::RenderCullBuffers, "false", _("Activate culling for buffer parts"), core::Var::boolValidator);
-	core::Var::get(cfg::RenderCullNodes, "true", _("Activate culling for scene nodes"), core::Var::boolValidator);
-	core::Var::get(cfg::ClientBloom, "true", _("Activate bloom post processing"), core::Var::boolValidator);
-	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER, _("Activate shadow debug rendering"), core::Var::boolValidator);
-	core::Var::get(cfg::ClientShadowMapSize, "4096");
-	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER, _("Activate cascade shadow map debug rendering"), core::Var::boolValidator);
-	core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER, _("Gamma correction"));
-	core::Var::get(cfg::ClientWindowDisplay, 0);
-	core::Var::get(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
-	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, _("Render voxel outline"), core::Var::boolValidator);
-	core::Var::get(cfg::RenderNormals, "false", core::CV_SHADER, _("Render voxel normals"), core::Var::boolValidator);
-	core::Var::get(cfg::ToneMapping, "0", core::CV_SHADER, _("Activate tone mapping"), core::Var::minMaxValidator<0, 3>);
-	core::Var::get(cfg::ClientVSync, "true", _("Limit the framerate to the monitor refresh rate"), core::Var::boolValidator);
-	core::Var::get(cfg::ClientDebugSeverity, "0", 0u, _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));
-	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-	core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
+	core::Var::registerVar(cfg::ClientMultiSampleBuffers, "0");
+	core::Var::registerVar(cfg::ClientMultiSampleSamples, "0");
+	core::Var::registerVar(cfg::ClientWindowHighDPI, "true", core::CV_READONLY);
+	core::Var::registerVar(cfg::ClientShadowMap, "true", core::CV_SHADER, _("Activate shadow map"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::RenderCheckerBoard, "false", core::CV_SHADER, _("Activate checkerboard rendering"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::RenderCullBuffers, "false", -1, _("Activate culling for buffer parts"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::RenderCullNodes, "true", -1, _("Activate culling for scene nodes"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::ClientBloom, "true", -1, _("Activate bloom post processing"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::ClientDebugShadow, "false", core::CV_SHADER, _("Activate shadow debug rendering"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::ClientShadowMapSize, "4096");
+	core::Var::registerVar(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER, _("Activate cascade shadow map debug rendering"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::ClientGamma, "1.0", core::CV_SHADER, _("Gamma correction"));
+	core::Var::registerVar(cfg::ClientWindowDisplay, 0);
+	core::Var::registerVar(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
+	core::Var::registerVar(cfg::RenderOutline, "false", core::CV_SHADER, _("Render voxel outline"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::RenderNormals, "false", core::CV_SHADER, _("Render voxel normals"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::ToneMapping, "0", core::CV_SHADER, _("Activate tone mapping"), core::Var::minMaxValidator<0, 3>);
+	core::Var::registerVar(cfg::ClientVSync, "true", -1, _("Limit the framerate to the monitor refresh rate"), core::Var::boolValidator);
+	core::Var::registerVar(cfg::ClientDebugSeverity, "0", 0u, _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));
+	core::Var::registerVar(cfg::ClientMouseRotationSpeed, "0.01");
+	core::Var::registerVar(cfg::ClientCameraZoomSpeed, "0.1");
 
 	// Default anisotropy used for framebuffer-created textures. -1 means use device max.
-	core::Var::get(cfg::MaxAnisotropy, "-1", 0u, "", [](const core::String &val) {
+	core::Var::registerVar(cfg::MaxAnisotropy, "-1", 0u, "", [](const core::String &val) {
 		const float fv = core::string::toFloat(val);
 		// allow -1 (use device max) or any value >= 0
 		return fv == -1.0f || fv >= 0.0f;
 	});
 
-	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0", 0u, "", [](const core::String &val) {
+	core::Var::registerVar(cfg::ClientCameraMaxZoom, "1000.0", 0u, "", [](const core::String &val) {
 		const float fv = core::string::toFloat(val);
 		return fv > 1.0f && fv <= 1000.0f;
 	});
-	core::Var::get(cfg::ClientCameraMinZoom, "0.001", 0u, "", [](const core::String &val) {
+	core::Var::registerVar(cfg::ClientCameraMinZoom, "0.001", 0u, "", [](const core::String &val) {
 		const float fv = core::string::toFloat(val);
 		return fv > 0.0001f && fv < 1000.0f;
 	});

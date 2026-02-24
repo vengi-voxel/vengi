@@ -596,7 +596,7 @@ AppState App::onConstruct() {
 		_systemLanguage = Language::fromSpec("en", "GB");
 	}
 
-	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, (int)_initialLogLevel);
+	core::VarPtr logVar = core::Var::registerVar(cfg::CoreLogLevel, (int)_initialLogLevel);
 
 	Log::debug("Initialize the cvars");
 	for (int i = 0; i < _argc; ++i) {
@@ -612,7 +612,7 @@ AppState App::onConstruct() {
 			core::String var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
-			core::Var::get(var, value, core::CV_FROMCOMMANDLINE);
+			core::Var::registerVar(var, value, core::CV_FROMCOMMANDLINE);
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
 	}
@@ -660,7 +660,7 @@ AppState App::onConstruct() {
 				Log::debug("secret flag for %s", name.c_str());
 			}
 		}
-		const core::VarPtr &old = core::Var::get(name);
+		const core::VarPtr &old = core::findVar(name);
 		int32_t flagsMask;
 		if (old) {
 			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags());
@@ -670,20 +670,20 @@ AppState App::onConstruct() {
 
 		flagsMask &= ~(core::CV_FROMCOMMANDLINE | core::CV_FROMENV);
 
-		core::Var::get(name, value.c_str(), flagsMask);
+		core::Var::registerVar(name, value, flagsMask);
 	}
 	Log::init();
 
-	core::VarPtr langVar = core::Var::get(cfg::CoreLanguage, _systemLanguage.str().c_str());
+	core::VarPtr langVar = core::Var::registerVar(cfg::CoreLanguage, _systemLanguage.str());
 	setLanguage(langVar->strVal());
 
 	langVar->setHelp(_("The language to use - empty means system default"));
 	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
-	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
+	_framesPerSecondsCap = core::Var::registerVar(cfg::CoreMaxFPS, "1000.0");
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
-	core::Var::get(cfg::AppVersion, "");
+	core::Var::registerVar(cfg::AppVersion, "");
 	// username for network sessions
 	core::String defaultUsername = "Unknown";
 	_pipe.construct();
@@ -704,7 +704,7 @@ AppState App::onConstruct() {
 		defaultUsername = username;
 	}
 
-	core::Var::get(cfg::AppUserName, defaultUsername.c_str());
+	core::Var::registerVar(cfg::AppUserName, defaultUsername);
 
 	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
 	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
@@ -715,7 +715,7 @@ AppState App::onConstruct() {
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
-	core::Var::get(cfg::MetricFlavor, "");
+	core::Var::registerVar(cfg::MetricFlavor, "");
 	Log::init();
 
 	command::Command::registerCommand("i18nlist")
@@ -733,14 +733,24 @@ AppState App::onConstruct() {
 		.setHandler([](const command::CommandArgs &args) {
 			const core::String &name = args.str("name");
 			const core::String &value = args.str("value");
-			core::Var::get(name, "")->setVal(value);
+			core::VarPtr var = core::findVar(name);
+			if (!var) {
+				Log::error("Variable %s doesn't exist", name.c_str());
+				return;
+			}
+			var->setVal(value);
 		}).setHelp(_("Set a variable value"));
 
 	command::Command::registerCommand("clear")
 		.addArg({"name", command::ArgType::String, false, "", "Variable name"})
 		.setHandler([](const command::CommandArgs &args) {
 			const core::String &name = args.str("name");
-			core::Var::get(name, "")->setVal("");
+			core::VarPtr var = core::findVar(name);
+			if (!var) {
+				Log::error("Variable %s doesn't exist", name.c_str());
+				return;
+			}
+			var->setVal("");
 		}).setHelp(_("Clear the variable value"));
 
 	command::Command::registerCommand("quit")
@@ -1089,7 +1099,7 @@ void App::usageFooter() const {
 }
 
 void App::usage() const {
-	const core::VarPtr &logLevel = core::Var::get(cfg::CoreLogLevel, "");
+	const core::VarPtr &logLevel = core::Var::registerVar(cfg::CoreLogLevel, "");
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
 

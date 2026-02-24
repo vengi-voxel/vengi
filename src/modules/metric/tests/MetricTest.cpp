@@ -32,7 +32,7 @@ protected:
 	void SetUp() override {
 		sender = core::make_shared<BufferSender>();
 		ASSERT_TRUE(sender->init());
-		core::Var::get(cfg::MetricUUID, "fake");
+		core::Var::registerVar(cfg::MetricUUID, "fake");
 	}
 
 	void TearDown() override {
@@ -65,15 +65,15 @@ protected:
 
 	inline void setFlavor(Flavor flavor) const {
 		if (flavor == Flavor::Telegraf) {
-			core::Var::get("metric_flavor", "")->setVal("telegraf");
+			core::Var::registerVar("metric_flavor", "")->setVal("telegraf");
 		} else if (flavor == Flavor::Etsy) {
-			core::Var::get("metric_flavor", "")->setVal("etsy");
+			core::Var::registerVar("metric_flavor", "")->setVal("etsy");
 		} else if (flavor == Flavor::Datadog) {
-			core::Var::get("metric_flavor", "")->setVal("datadog");
+			core::Var::registerVar("metric_flavor", "")->setVal("datadog");
 		} else if (flavor == Flavor::Influx) {
-			core::Var::get("metric_flavor", "")->setVal("influx");
+			core::Var::registerVar("metric_flavor", "")->setVal("influx");
 		} else if (flavor == Flavor::JSON) {
-			core::Var::get("metric_flavor", "")->setVal("json");
+			core::Var::registerVar("metric_flavor", "")->setVal("json");
 		}
 	}
 };

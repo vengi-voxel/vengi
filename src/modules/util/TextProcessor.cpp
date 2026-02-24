@@ -19,7 +19,7 @@ bool replacePlaceholders(const KeyBindingHandler &handler, const core::String &s
 				const intptr_t len = l - c;
 				const core::String name(c, len);
 				core_assert((int)len == (int)name.size());
-				const core::VarPtr &var = core::Var::get(name);
+				const core::VarPtr &var = core::getVar(name);
 				i += 6 + len;
 				const core::String &value = var->strVal();
 				const size_t remaining = bufSize - idx;

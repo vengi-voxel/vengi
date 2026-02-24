@@ -84,9 +84,9 @@ void McpServer::usage() const {
 
 app::AppState McpServer::onConstruct() {
 	const app::AppState state = Super::onConstruct();
-	core::Var::get(cfg::UILastDirectory, filesystem()->homePath().c_str());
-	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-	core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
+	core::Var::registerVar(cfg::UILastDirectory, filesystem()->homePath().c_str());
+	core::Var::registerVar(cfg::ClientMouseRotationSpeed, "0.01");
+	core::Var::registerVar(cfg::ClientCameraZoomSpeed, "0.1");
 	_sceneMgr->construct();
 
 	command::Command::registerCommand("toollist")

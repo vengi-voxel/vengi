@@ -16,7 +16,7 @@ void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			const char *label;
 		} checkboxes[]{{cfg::VoxEditGrayInactive, "Grayscale"}, {cfg::VoxEditHideInactive, "Only active"}};
 		for (int i = 0; i < lengthof(checkboxes); ++i) {
-			core::VarPtr var = core::Var::get(checkboxes[i].cvarName);
+			core::VarPtr var = core::Var::registerVar(checkboxes[i].cvarName);
 			const bool before = var->boolVal();
 			ctx->ItemClick(checkboxes[i].label);
 			IM_CHECK(before != var->boolVal());

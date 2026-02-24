@@ -37,7 +37,7 @@ Pipe::~Pipe() {
 }
 
 void Pipe::construct() {
-	_corePipe = core::Var::get(cfg::AppPipe, "false", _("Enable named pipe for input commands"));
+	_corePipe = core::Var::registerVar(cfg::AppPipe, "false", _("Enable named pipe for input commands"));
 }
 
 bool Pipe::init() {

@@ -11,7 +11,7 @@
 class TextProcessorTest : public app::AbstractTest {
 public:
 	virtual void SetUp() override {
-		core::Var::get("testReplaceCvar", "value");
+		core::Var::registerVar("testReplaceCvar", "value");
 		command::Command::registerCommand("testReplaceCmd")
 			.setHandler([](const command::CommandArgs &) {
 			}).setHelp("help for cmd");

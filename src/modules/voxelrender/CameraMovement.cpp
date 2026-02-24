@@ -11,15 +11,15 @@
 namespace voxelrender {
 
 void CameraMovement::construct() {
-	_movementSpeed = core::Var::get(cfg::GameModeMovementSpeed, "60.0", _("Movement speed in game mode"));
-	_jumpVelocity = core::Var::get(cfg::GameModeJumpVelocity, "7.0", _("Jump velocity in game mode"));
-	_bodyHeight = core::Var::get(cfg::GameModeBodyHeight, "2.0", _("Height of the body in game mode"));
-	_gravity = core::Var::get(cfg::GameModeGravity, "9.81", _("Gravity in game mode"));
-	_friction = core::Var::get(cfg::GameModeFriction, "0.01", _("Friction in game mode"));
-	_bodySize = core::Var::get(cfg::GameModeBodySize, "0.2", _("Body size in game mode"));
-	_clipping = core::Var::get(cfg::GameModeClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
+	_movementSpeed = core::Var::registerVar(cfg::GameModeMovementSpeed, "60.0", _("Movement speed in game mode"));
+	_jumpVelocity = core::Var::registerVar(cfg::GameModeJumpVelocity, "7.0", _("Jump velocity in game mode"));
+	_bodyHeight = core::Var::registerVar(cfg::GameModeBodyHeight, "2.0", _("Height of the body in game mode"));
+	_gravity = core::Var::registerVar(cfg::GameModeGravity, "9.81", _("Gravity in game mode"));
+	_friction = core::Var::registerVar(cfg::GameModeFriction, "0.01", _("Friction in game mode"));
+	_bodySize = core::Var::registerVar(cfg::GameModeBodySize, "0.2", _("Body size in game mode"));
+	_clipping = core::Var::registerVar(cfg::GameModeClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
 							   core::Var::boolValidator);
-	_applyGravity = core::Var::get(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
+	_applyGravity = core::Var::registerVar(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
 								   core::Var::boolValidator);
 	_rotationSpeed = core::getVar(cfg::ClientMouseRotationSpeed);
 	_zoomSpeed = core::getVar(cfg::ClientCameraZoomSpeed);

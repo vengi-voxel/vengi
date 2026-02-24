@@ -19,12 +19,6 @@ Var::VarMap Var::_vars;
 uint8_t Var::_visitFlags = 0u;
 core_trace_mutex_static(Lock, Var, _lock);
 
-VarPtr Var::get(const core::String &name, int value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
-	char buf[64];
-	core::String::formatBuf(buf, sizeof(buf), "%i", value);
-	return get(name, buf, flags, help, validatorFunc);
-}
-
 void Var::shutdown() {
 	ScopedLock lock(_lock);
 	_vars.clear();
@@ -129,30 +123,30 @@ VarPtr Var::findVar(const core::String& name) {
 	return i->second;
 }
 
-VarPtr Var::get(const core::String &name, const char *value, int32_t flags, const char *help,
-				ValidatorFunc validatorFunc) {
-	core_assert(!name.empty());
+VarPtr Var::createVar(const VarDef &def) {
+	core_assert(!def.name.empty());
 	VarMap::iterator i;
-	const char *defaultValue = value;
+	const char *defaultValue = def.value.c_str();
 	bool missing;
 	{
 		ScopedLock lock(_lock);
-		i = _vars.find(name);
+		i = _vars.find(def.name);
 		missing = i == _vars.end();
 	}
 
-	uint32_t flagsMask = flags < 0 ? 0u : static_cast<uint32_t>(flags);
+	const char *value = def.value.c_str();
+	uint32_t flagsMask = def.flags < 0 ? 0u : static_cast<uint32_t>(def.flags);
 	if (missing) {
 		// environment variables have higher priority than config file values - but command line
 		// arguments have the highest priority
 		if ((flagsMask & CV_FROMCOMMANDLINE) == 0) {
-			const char *envValue = SDL_getenv(name.c_str());
+			const char *envValue = SDL_getenv(def.name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const core::String &upper = name.toUpper();
+				const core::String &upper = def.name.toUpper();
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
-				if (!validatorFunc || validatorFunc(envValue)) {
+				if (!def.validatorFunc || def.validatorFunc(envValue)) {
 					value = envValue;
 				}
 				flagsMask |= CV_FROMENV;
@@ -164,24 +158,24 @@ VarPtr Var::get(const core::String &name, const char *value, int32_t flags, cons
 			return VarPtr();
 		}
 
-		const VarPtr &p = core::make_shared<Var>(name, value, defaultValue == nullptr ? "" : defaultValue, flagsMask,
-												 help, validatorFunc);
+		const VarPtr &p = core::make_shared<Var>(def.name, value, defaultValue == nullptr ? "" : defaultValue, flagsMask,
+												 def.help, def.validatorFunc);
 		ScopedLock lock(_lock);
-		_vars.put(name, p);
+		_vars.put(def.name, p);
 		return p;
 	}
 	const VarPtr &v = i->second;
-	if (flags >= 0) {
+	if (def.flags >= 0) {
 		if ((flagsMask & CV_FROMFILE) == CV_FROMFILE && (v->_flags & (CV_FROMCOMMANDLINE | CV_FROMENV)) == 0u) {
-			Log::debug("Look for env var to resolve value of %s", name.c_str());
+			Log::debug("Look for env var to resolve value of %s", def.name.c_str());
 			// environment variables have higher priority than config file values
-			const char *envValue = SDL_getenv(name.c_str());
+			const char *envValue = SDL_getenv(def.name.c_str());
 			if (envValue == nullptr || envValue[0] == '\0') {
-				const core::String &upper = name.toUpper();
+				const core::String &upper = def.name.toUpper();
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
-				if (!validatorFunc || validatorFunc(envValue)) {
+				if (!def.validatorFunc || def.validatorFunc(envValue)) {
 					value = envValue;
 				}
 			}
@@ -203,11 +197,11 @@ VarPtr Var::get(const core::String &name, const char *value, int32_t flags, cons
 		const uint32_t preserve = v->_flags & CV_PRESERVE;
 		v->_flags = flagsMask | preserve;
 	}
-	if (validatorFunc != nullptr) {
-		v->_validator = validatorFunc;
+	if (def.validatorFunc != nullptr) {
+		v->_validator = def.validatorFunc;
 	}
 	if (!v->_help) {
-		v->_help = help;
+		v->_help = def.help;
 	}
 	return v;
 }

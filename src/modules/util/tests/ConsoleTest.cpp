@@ -30,7 +30,7 @@ TEST_F(ConsoleTest, testAutoCompleteCvar) {
 	const core::String cvar1 = "abcdef_console";
 	const core::String cvar2 = "test";
 	const core::String cvarComplete = cvar1 + cvar2;
-	core::Var::get(cvarComplete, "1");
+	core::Var::registerVar(cvarComplete, "1");
 	TestConsole c(cvar1);
 	SDL_LogSetOutputFunction(nullptr, nullptr);
 	ASSERT_EQ(cvar1, c.commandLine());

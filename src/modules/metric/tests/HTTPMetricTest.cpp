@@ -23,7 +23,7 @@ TEST_F(HTTPMetricTest, DISABLED_testHTTPMetricSender) {
 		GTEST_SKIP() << "No http support available";
 	}
 	util::ScopedVarChange change(cfg::MetricFlavor, "json");
-	const core::String &url = core::Var::get(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric")->strVal();
+	const core::String &url = core::Var::registerVar(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric")->strVal();
 	core::SharedPtr<metric::HTTPMetricSender> sender = core::make_shared<metric::HTTPMetricSender>(url, "test/1.0.0");
 	metric::Metric metric;
 

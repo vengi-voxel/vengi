@@ -32,8 +32,8 @@ protected:
 
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-		core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
+		core::Var::registerVar(cfg::ClientMouseRotationSpeed, "0.01");
+		core::Var::registerVar(cfg::ClientCameraZoomSpeed, "0.1");
 	}
 
 	bool isInsideSolid(const glm::vec3 &worldPos, const voxel::RawVolume *volume) const {

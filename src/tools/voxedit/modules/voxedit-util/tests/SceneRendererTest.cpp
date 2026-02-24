@@ -22,17 +22,17 @@ protected:
 		}
 		video::ShaderVarState state;
 		setShaderVars(state);
-		core::Var::get(cfg::VoxEditShowgrid, "true");
-		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
-		core::Var::get(cfg::VoxEditRendershadow, "true");
-		core::Var::get(cfg::VoxEditGridsize, "1");
-		core::Var::get(cfg::VoxEditPlaneSize, "0");
-		core::Var::get(cfg::VoxEditShowPlane, "false");
-		core::Var::get(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
-		core::Var::get(cfg::VoxEditShowaabb, "");
-		core::Var::get(cfg::VoxEditShowBones, "");
-		core::Var::get(cfg::VoxEditGrayInactive, "");
-		core::Var::get(cfg::VoxEditHideInactive, "");
+		core::Var::registerVar(cfg::VoxEditShowgrid, "true");
+		core::Var::registerVar(cfg::VoxEditShowlockedaxis, "true");
+		core::Var::registerVar(cfg::VoxEditRendershadow, "true");
+		core::Var::registerVar(cfg::VoxEditGridsize, "1");
+		core::Var::registerVar(cfg::VoxEditPlaneSize, "0");
+		core::Var::registerVar(cfg::VoxEditShowPlane, "false");
+		core::Var::registerVar(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		core::Var::registerVar(cfg::VoxEditShowaabb, "");
+		core::Var::registerVar(cfg::VoxEditShowBones, "");
+		core::Var::registerVar(cfg::VoxEditGrayInactive, "");
+		core::Var::registerVar(cfg::VoxEditHideInactive, "");
 		_sceneRenderer.construct();
 		ASSERT_TRUE(_sceneRenderer.init());
 	};

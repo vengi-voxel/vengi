@@ -221,19 +221,19 @@ app::AppState IMGUIApp::onConstruct() {
 		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
 	}
 	_uistyle =
-		core::Var::get(cfg::UIStyle, uiStyleDefaultValue.c_str(), _("Change the ui colors - [0-3]"), [](const core::String &val) {
+		core::Var::registerVar(cfg::UIStyle, uiStyleDefaultValue.c_str(), _("Change the ui colors - [0-3]"), [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
 			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx < ImGui::MaxStyles;
 		});
-	core::Var::get(cfg::UINotifyDismissMillis, "3000", _("Timeout for notifications in millis"));
-	core::Var::get(cfg::UIMultiMonitor, "true", _("Allow multi monitor setups - requires a restart"),
+	core::Var::registerVar(cfg::UINotifyDismissMillis, "3000", _("Timeout for notifications in millis"));
+	core::Var::registerVar(cfg::UIMultiMonitor, "true", _("Allow multi monitor setups - requires a restart"),
 				   core::Var::boolValidator);
-	_renderUI = core::Var::get(cfg::ClientRenderUI, "true", _("Render the ui"), core::Var::boolValidator);
+	_renderUI = core::Var::registerVar(cfg::ClientRenderUI, "true", _("Render the ui"), core::Var::boolValidator);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, _("Show metric and debug window"),
+	_showMetrics = core::Var::registerVar(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
 
-	core::Var::get(cfg::UITestFilter, "tests", core::CV_NOPERSIST, _("Only run tests that match the given filter"));
+	core::Var::registerVar(cfg::UITestFilter, "tests", core::CV_NOPERSIST, _("Only run tests that match the given filter"));
 
 	if (!_showWindow) {
 		registerArg("--imgui_test_filter")
@@ -248,20 +248,20 @@ app::AppState IMGUIApp::onConstruct() {
 		registerArg("--imgui_list_tests").setDescription("List all available tests and exit");
 	}
 #else
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, _("Show metric and debug window"),
+	_showMetrics = core::Var::registerVar(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
 #endif
 	_uiFontSize =
-		core::Var::get(cfg::UIFontSize, "14", -1, _("Allow to change the ui font size"), [](const core::String &val) {
+		core::Var::registerVar(cfg::UIFontSize, "14", -1, _("Allow to change the ui font size"), [](const core::String &val) {
 			const float size = core::string::toFloat(val);
 			return size >= 8.0f;
 		});
 
-	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", _("Which keybinding to use"));
+	_uiKeyMap = core::Var::registerVar(cfg::UIKeyMap, "0", _("Which keybinding to use"));
 	core_assert(!_uiKeyMap->isDirty());
-	_lastOpenedFiles = core::Var::get(cfg::UIFileDialogLastFiles, "");
+	_lastOpenedFiles = core::Var::registerVar(cfg::UIFileDialogLastFiles, "");
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
-	_lastOpenedFile = core::Var::get(cfg::UIFileDialogLastFile, "");
+	_lastOpenedFile = core::Var::registerVar(cfg::UIFileDialogLastFile, "");
 
 	command::Command::registerCommand("ui_showtextures")
 		.setHandler([&](const command::CommandArgs &args) { _showTexturesDialog = true; });
