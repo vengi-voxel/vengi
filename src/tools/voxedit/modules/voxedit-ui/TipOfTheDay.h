@@ -20,7 +20,7 @@ static const char *tips[]{
 	N_("Switch between different color themes in the options menu."),
 	N_("Please activate anonymous usage metrics in the options or the about dialog."),
 	N_("You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."),
-	N_("You can save your viewport as AVI video or as screenshot."),
+	N_("You can save your viewport as video or as screenshot."),
 	N_("Press <cmd:pickcolor> to pick a color from the scene."),
 	N_("Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."),
 	N_("Use ctrl+tab to switch between the panels of the application."),

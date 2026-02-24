@@ -99,14 +99,11 @@ bool paletteOptions(video::OpenFileMode mode, const io::FormatDescription *desc)
 	ImGui::Separator();
 
 	if (*desc == palette::RGBPalette::format()) {
-		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
+		ImGui::CheckboxVar(cfg::PalformatRGB6Bit);
 		return true;
 	}
 	if (mode == video::OpenFileMode::Save && *desc == palette::GimpPalette::format()) {
-		ImGui::CheckboxVar(C_("Aseprite extended the gpl palette format for the graphic program Gimp by an alpha "
-							  "channel for the colors",
-							  "Gimp Aseprite Alpha extension"),
-						   cfg::PalformatGimpRGBA);
+		ImGui::CheckboxVar(cfg::PalformatGimpRGBA);
 	}
 	imguiApp()->colorReductionOptions();
 	return false;
@@ -121,10 +118,10 @@ bool genericOptions(const io::FormatDescription *desc) {
 
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (meshFormat) {
-		ImGui::InputVarFloat(_("Uniform scale"), cfg::VoxformatScale);
-		ImGui::InputVarFloat(_("X axis scale"), cfg::VoxformatScaleX);
-		ImGui::InputVarFloat(_("Y axis scale"), cfg::VoxformatScaleY);
-		ImGui::InputVarFloat(_("Z axis scale"), cfg::VoxformatScaleZ);
+		ImGui::InputVarFloat(cfg::VoxformatScale);
+		ImGui::InputVarFloat(cfg::VoxformatScaleX);
+		ImGui::InputVarFloat(cfg::VoxformatScaleY);
+		ImGui::InputVarFloat(cfg::VoxformatScaleZ);
 		return true;
 	}
 	return false;
@@ -175,24 +172,23 @@ static void saveOptionsPng(const io::FilesystemEntry &entry) {
 }
 
 static void saveOptionsMesh(const io::FormatDescription *desc) {
-	ImGui::CheckboxVar(_("Merge quads"), cfg::VoxformatMergequads);
-	ImGui::CheckboxVar(_("Reuse vertices"), cfg::VoxformatReusevertices);
-	ImGui::CheckboxVar(_("Ambient occlusion"), cfg::VoxformatAmbientocclusion);
-	ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatTransform);
-	ImGui::CheckboxVar(_("Apply optimizations"), cfg::VoxformatOptimize);
-	ImGui::CheckboxVar(_("Exports quads"), cfg::VoxformatQuads);
-	ImGui::CheckboxVar(_("Vertex colors"), cfg::VoxformatWithColor);
-	ImGui::CheckboxVar(_("Normals"), cfg::VoxformatWithNormals);
+	ImGui::CheckboxVar(cfg::VoxformatMergequads);
+	ImGui::CheckboxVar(cfg::VoxformatReusevertices);
+	ImGui::CheckboxVar(cfg::VoxformatAmbientocclusion);
+	ImGui::CheckboxVar(cfg::VoxformatTransform);
+	ImGui::CheckboxVar(cfg::VoxformatOptimize);
+	ImGui::CheckboxVar(cfg::VoxformatQuads);
+	ImGui::CheckboxVar(cfg::VoxformatWithColor);
+	ImGui::CheckboxVar(cfg::VoxformatWithNormals);
 	ImGui::BeginDisabled(!core::getVar(cfg::VoxformatWithColor)->boolVal());
-	ImGui::CheckboxVar(_("Vertex colors as float"), cfg::VoxformatColorAsFloat);
+	ImGui::CheckboxVar(cfg::VoxformatColorAsFloat);
 	ImGui::EndDisabled();
-	ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
+	ImGui::CheckboxVar(cfg::VoxformatWithtexcoords);
 	if (*desc == voxelformat::GLTFFormat::format()) {
-		ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness",
-						   cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness);
-		ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxformatGLTF_KHR_materials_specular);
+		ImGui::CheckboxVar(						   cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness);
+		ImGui::CheckboxVar(cfg::VoxformatGLTF_KHR_materials_specular);
 	}
-	ImGui::CheckboxVar(_("Export materials"), cfg::VoxformatWithMaterials);
+	ImGui::CheckboxVar(cfg::VoxformatWithMaterials);
 
 	voxelui::meshModeOption();
 }
@@ -241,22 +237,22 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 		}
 	}
 
-	ImGui::CheckboxVar(_("Single object"), cfg::VoxformatMerge);
-	ImGui::CheckboxVar(_("Save visible only"), cfg::VoxformatSaveVisibleOnly);
+	ImGui::CheckboxVar(cfg::VoxformatMerge);
+	ImGui::CheckboxVar(cfg::VoxformatSaveVisibleOnly);
 
 	if (*desc == voxelformat::QBTFormat::format()) {
-		ImGui::CheckboxVar(_("Palette mode"), cfg::VoxformatQBTPaletteMode);
-		ImGui::CheckboxVar(_("Merge compounds"), cfg::VoxformatQBTMergeCompounds);
+		ImGui::CheckboxVar(cfg::VoxformatQBTPaletteMode);
+		ImGui::CheckboxVar(cfg::VoxformatQBTMergeCompounds);
 	}
 
 	if (*desc == voxelformat::VoxFormat::format()) {
-		ImGui::CheckboxVar(_("Create groups"), cfg::VoxformatVOXCreateGroups);
-		ImGui::CheckboxVar(_("Create layers"), cfg::VoxformatVOXCreateLayers);
+		ImGui::CheckboxVar(cfg::VoxformatVOXCreateGroups);
+		ImGui::CheckboxVar(cfg::VoxformatVOXCreateLayers);
 	}
 
 	if (*desc == voxelformat::QBFormat::format()) {
-		ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
-		ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
+		ImGui::CheckboxVar(cfg::VoxformatQBSaveLeftHanded);
+		ImGui::CheckboxVar(cfg::VoxformatQBSaveCompressed);
 	}
 
 	if (*desc == io::format::png()) {
@@ -264,14 +260,14 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	if (*desc == voxelformat::VENGIFormat::format()) {
-		ImGui::InputVarInt(_("Empty palette index"), cfg::VoxformatEmptyPaletteIndex);
+		ImGui::InputVarInt(cfg::VoxformatEmptyPaletteIndex);
 	}
 
 	return true;
 }
 
 static void loadOptionsAseprite(const io::FilesystemEntry &entry) {
-	ImGui::InputVarInt(_("Slice offset"), cfg::VoxformatImageSliceOffset);
+	ImGui::InputVarInt(cfg::VoxformatImageSliceOffset);
 	const core::VarPtr &sliceOffsetAxis = core::getVar(cfg::VoxformatImageSliceOffsetAxis);
 	if (ImGui::BeginCombo(_("Slice offset axis"), sliceOffsetAxis->strVal().c_str())) {
 		const math::Axis array  [] {
@@ -292,8 +288,8 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 	const int currentImageType = genericPngOptions(true, imageTypeVar);
 
 	if (currentImageType == voxelformat::PNGFormat::ImageType::Volume) {
-		ImGui::InputVarInt(_("Max depth"), cfg::VoxformatImageVolumeMaxDepth);
-		ImGui::CheckboxVar(_("Both sides"), cfg::VoxformatImageVolumeBothSides);
+		ImGui::InputVarInt(cfg::VoxformatImageVolumeMaxDepth);
+		ImGui::CheckboxVar(cfg::VoxformatImageVolumeBothSides);
 		if (!entry.fullPath.empty()) {
 			const core::String depthMapName = voxelutil::getDefaultDepthMapFile(entry.fullPath);
 			if (io::filesystem()->exists(depthMapName)) {
@@ -305,15 +301,15 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 			}
 		}
 	} else if (currentImageType == voxelformat::PNGFormat::ImageType::Volume) {
-		ImGui::InputVarInt(_("Min height"), cfg::VoxformatImageHeightmapMinHeight);
+		ImGui::InputVarInt(cfg::VoxformatImageHeightmapMinHeight);
 	}
 }
 
 static void loadOptionsMesh(const io::FormatDescription *desc) {
-	ImGui::InputVarString(_("Texture search path"), cfg::VoxformatTexturePath);
-	ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
-	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
-	ImGui::CheckboxVar(_("Simplify"), cfg::VoxformatMeshSimplify);
+	ImGui::InputVarString(cfg::VoxformatTexturePath);
+	ImGui::CheckboxVar(cfg::VoxformatFillHollow);
+	ImGui::InputVarInt(cfg::VoxformatPointCloudSize);
+	ImGui::CheckboxVar(cfg::VoxformatMeshSimplify);
 
 	const core::VarPtr &normalPaletteVar = core::getVar(cfg::NormalPalette);
 	if (ImGui::BeginCombo(_("Normal palette"), normalPaletteVar->strVal().c_str(), 0)) {
@@ -329,12 +325,12 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 
 	if (*desc == voxelformat::GMLFormat::format()) {
 		const core::VarPtr &regionVar = core::getVar(cfg::VoxformatGMLRegion);
-		ImGui::InputVarString(_("Region filter (minX minY minZ maxX maxY maxZ)"), regionVar);
+		ImGui::InputVarString(regionVar);
 		ImGui::TooltipTextUnformatted(
 			_("Only load objects that intersect with the given region. The coordinates are in the order of minX minY "
 			  "minZ maxX maxY maxZ. They are in world coordinates of the given GML file, so you might need to check "
 			  "the envelope of the file first to determine the correct region."));
-		ImGui::InputVarString(_("Filename filter (wildcard)"), core::getVar(cfg::VoxformatGMLFilenameFilter));
+		ImGui::InputVarString(core::getVar(cfg::VoxformatGMLFilenameFilter));
 	}
 
 	const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};
@@ -360,18 +356,18 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 		ImGui::EndCombo();
 	}
 
-	ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
+	ImGui::CheckboxVar(cfg::VoxformatRGBWeightedAverage);
 }
 
 static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
 							   const palette::PaletteCache &paletteCache) {
 	if (voxelformat::isRGBFormat(*desc) || voxelformat::isMeshFormat(*desc)) {
 		imguiApp()->colorReductionOptions();
-		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
-		ImGui::InputVarInt(_("Target colors (0=no limit)"), cfg::VoxformatTargetColors);
+		ImGui::InputVarInt(cfg::VoxformatRGBFlattenFactor);
+		ImGui::InputVarInt(cfg::VoxformatTargetColors);
 	}
 	const core::VarPtr &createPalette = core::getVar(cfg::VoxelCreatePalette);
-	ImGui::CheckboxVar(_("Create palette"), createPalette);
+	ImGui::CheckboxVar(createPalette);
 	if (!createPalette->boolVal()) {
 		core::VarPtr paletteVar = core::getVar(cfg::VoxelPalette);
 		if (ImGui::BeginCombo(_("Map colors to palette"), paletteVar->strVal().c_str(), 0)) {
@@ -384,15 +380,15 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 		}
 	}
 	if (*desc == palette::RGBPalette::format()) {
-		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
-		ImGui::InputVarInt(_("Max image size"), cfg::PalformatMaxSize);
+		ImGui::CheckboxVar(cfg::PalformatRGB6Bit);
+		ImGui::InputVarInt(cfg::PalformatMaxSize);
 	}
 }
 
 static void loadOptionsMinecraftSkin(const io::FilesystemEntry &entry) {
-	ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatSkinApplyTransform);
-	ImGui::CheckboxVar(_("Add groups"), cfg::VoxformatSkinAddGroups);
-	ImGui::CheckboxVar(_("Merge faces"), cfg::VoxformatSkinMergeFaces);
+	ImGui::CheckboxVar(cfg::VoxformatSkinApplyTransform);
+	ImGui::CheckboxVar(cfg::VoxformatSkinAddGroups);
+	ImGui::CheckboxVar(cfg::VoxformatSkinMergeFaces);
 }
 
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
@@ -419,7 +415,7 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	if (*desc == voxelformat::VXLFormat::format()) {
-		ImGui::CheckboxVar(_("Load HVA"), cfg::VoxformatVXLLoadHVA);
+		ImGui::CheckboxVar(cfg::VoxformatVXLLoadHVA);
 	}
 
 	loadOptionsGeneric(desc, entry, paletteCache);
@@ -430,7 +426,7 @@ void meshModeOption() {
 	static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
 		_("Cubes"), _("Marching cubes"), _("Binary"), _("Greedy texture")};
 	static_assert(4 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
-	ImGui::ComboVar(_("Mesh mode"), cfg::VoxformatMeshMode, meshModes);
+	ImGui::ComboVar(cfg::VoxformatMeshMode, meshModes);
 }
 
 } // namespace voxelui

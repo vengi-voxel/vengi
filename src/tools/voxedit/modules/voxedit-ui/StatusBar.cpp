@@ -23,13 +23,13 @@ void StatusBar::update(const char *id, float height, const core::String &lastExe
 	if (ImGui::Begin(id, nullptr, statusBarFlags)) {
 		ui::ScopedStyle scopedStyle;
 		scopedStyle.setItemSpacing(ImVec2(ImGui::Size(3.0f), 0));
-		ImGui::CheckboxVar(_("Grayscale"), cfg::VoxEditGrayInactive);
+		ImGui::CheckboxVar(cfg::VoxEditGrayInactive);
 		ImGui::SameLine();
-		ImGui::CheckboxVar(_("Only active"), cfg::VoxEditHideInactive);
+		ImGui::CheckboxVar(cfg::VoxEditHideInactive);
 		ImGui::SameLine();
 
 		ImGui::SetNextItemWidth(ImGui::Size(14.0f));
-		ImGui::InputVarInt(_("Grid size"), cfg::VoxEditGridsize);
+		ImGui::InputVarInt(cfg::VoxEditGridsize);
 		ImGui::SameLine();
 		if (lastExecutedCommand.empty()) {
 			ImGui::Text(_("Command: %s"), "-");

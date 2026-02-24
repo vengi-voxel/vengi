@@ -23,10 +23,10 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 		if (ImGui::BeginTabBar("##networktabbar")) {
 			if (ImGui::BeginTabItem(_("Client"))) {
 				if (!_sceneMgr->client().isConnected()) {
-					ImGui::InputVarString(_("User name"), cfg::AppUserName);
-					ImGui::InputVarString(_("Server password"), cfg::VoxEditNetPassword);
-					ImGui::InputVarString(_("Host name"), cfg::VoxEditNetHostname);
-					ImGui::InputVarInt(_("Port"), cfg::VoxEditNetPort);
+					ImGui::InputVarString(cfg::AppUserName);
+					ImGui::InputVarString(cfg::VoxEditNetPassword);
+					ImGui::InputVarString(cfg::VoxEditNetHostname);
+					ImGui::InputVarInt(cfg::VoxEditNetPort);
 					if (ImGui::Button(_("Connect to server"))) {
 						const int port = core::getVar(cfg::VoxEditNetPort)->intVal();
 						const core::String hostname = core::getVar(cfg::VoxEditNetHostname)->strVal();
@@ -34,7 +34,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					}
 				} else {
 					ImGui::TextUnformatted(_("Connected to server"));
-					ImGui::InputVarString(_("Remote console password"), cfg::VoxEditNetRconPassword);
+					ImGui::InputVarString(cfg::VoxEditNetRconPassword);
 					if (ImGui::Button(_("New Scene"))) {
 						_sceneMgr->client().executeCommand("newscene");
 					}
@@ -50,10 +50,10 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(_("Server"))) {
-				ImGui::InputVarString(_("User name"), cfg::AppUserName);
-				ImGui::InputVarString(_("Server password"), cfg::VoxEditNetPassword);
-				ImGui::InputVarString(_("Remote console password"), cfg::VoxEditNetRconPassword);
-				ImGui::InputVarInt(_("Max connections"), cfg::VoxEditNetServerMaxConnections);
+				ImGui::InputVarString(cfg::AppUserName);
+				ImGui::InputVarString(cfg::VoxEditNetPassword);
+				ImGui::InputVarString(cfg::VoxEditNetRconPassword);
+				ImGui::InputVarInt(cfg::VoxEditNetServerMaxConnections);
 				const core::VarPtr &portVar = core::getVar(cfg::VoxEditNetPort);
 				if (_sceneMgr->server().isRunning()) {
 					ImGui::Text(_("Server is running on port %i"), portVar->intVal());
@@ -80,7 +80,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 						}
 						ImGui::EndCombo();
 					}
-					ImGui::InputVarInt(_("Port"), portVar);
+					ImGui::InputVarInt(portVar);
 					if (ImGui::Button(_("Start Server"))) {
 						const int port = portVar->intVal();
 						_sceneMgr->startLocalServer(port, iface);

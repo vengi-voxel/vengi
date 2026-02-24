@@ -20,6 +20,7 @@ namespace core {
  * @{
  */
 
+const int32_t CV_NONE = -1;
 /** @brief Variable may only be modified at application start via command line */
 const uint32_t CV_READONLY = 1 << 0;
 /** @brief will not get saved to the file */
@@ -39,51 +40,55 @@ typedef core::SharedPtr<Var> VarPtr;
 
 typedef bool (*ValidatorFunc)(const core::String &value);
 
-namespace validator {
-static bool boolValidator(const core::String& value) {
-	return value == "1" || value == "true" || value == "false" || value == "0";
-}
-}
+enum class VarType : uint8_t {
+	String,
+	Int,
+	Float,
+	Bool,
+	Enum
+};
+
+union RangeValue {
+	float f;
+	int i;
+	RangeValue() : f(0.0f) {}
+	RangeValue(float v) : f(v) {}
+	RangeValue(int v) : i(v) {}
+};
 
 struct VarDef {
-	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags = -1,
-		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(defValue), flags(defFlags), help(defDescription), validatorFunc(defValidatorFunc) {
-	}
-	VarDef(const core::String &defName, const char *defValue, int32_t defFlags = -1,
-		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(defValue), flags(defFlags), help(defDescription), validatorFunc(defValidatorFunc) {
-	}
-	VarDef(const core::String &defName, bool defValue, int32_t defFlags = -1, const char *defDescription = nullptr)
-		: name(defName), value(defValue ? "true" : "false"), flags(defFlags), help(defDescription),
-		  validatorFunc(validator::boolValidator) {
-	}
-	VarDef(const core::String &defName, int defValue, int32_t defFlags = -1, const char *defDescription = nullptr,
-		   ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(core::String::format("%i", defValue)), flags(defFlags), help(defDescription),
-		  validatorFunc(defValidatorFunc) {
-	}
-#if 0
-	VarDef(const core::String &defName, int defValue, int32_t defFlags, const char *defDescription,
-			int defMinValue, int defMaxValue)
-		: name(defName), value(core::String::format("%i", defValue)), flags(defFlags), help(defDescription),
-		  validatorFunc(TODO) {
-	}
-#endif
-	VarDef(const core::String &defName, float defValue, int32_t defFlags = -1, const char *defDescription = nullptr,
-		   ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(core::String::format("%f", defValue)), flags(defFlags), help(defDescription),
-		  validatorFunc(defValidatorFunc) {
-	}
-	// TODO: a ctor for a enum cvar is needed - also with a validator for valid values
-	// TODO: add min/max ctor and validator for numeric cvars to avoid definining this in the VarDef ctor - should be
-	// done here
-	// TODO: each vardef needs a title that can be used for the ui, otherwise the name is used which is not always user
-	// friendly (untranslated N_() wrapped)
-	// TODO: rename help to description and make it available for the ui (untranslated N_() wrapped) - translate them
-	// with _() when they are used in the ui, but not when they are registered to allow for dynamic language changes in
-	// the ui
+	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags = CV_NONE,
+		   const char *defTitle = nullptr, const char *defDescription = nullptr,
+		   ValidatorFunc defValidatorFunc = nullptr);
+	VarDef(const core::String &defName, const char *defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
+		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr);
+	VarDef(const core::String &defName, int defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
+		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr);
+	VarDef(const core::String &defName, bool defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
+		   const char *defDescription = nullptr);
+	/**
+	 * @brief Construct an integer cvar with min/max range validation.
+	 * The range is checked automatically - no need to specify a validator.
+	 */
+	VarDef(const core::String &defName, int defValue, int defMin, int defMax, int32_t defFlags = CV_NONE,
+		   const char *defTitle = nullptr, const char *defDescription = nullptr);
+	VarDef(const core::String &defName, float defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
+		   const char *defDescription = nullptr);
+	/**
+	 * @brief Construct a float cvar with min/max range validation.
+	 * The range is checked automatically - no need to specify a validator.
+	 */
+	VarDef(const core::String &defName, float defValue, float defMin, float defMax, int32_t defFlags = CV_NONE,
+		   const char *defTitle = nullptr, const char *defDescription = nullptr);
+	/**
+	 * @brief Construct a string cvar that only accepts values from a predefined list.
+	 * The valid values are checked automatically - no need to specify a validator.
+	 */
+	VarDef(const core::String &defName, const core::String &defValue,
+		   const core::DynamicArray<core::String> &defValidValues, int32_t defFlags = CV_NONE,
+		   const char *defTitle = nullptr, const char *defDescription = nullptr);
 
+	VarType type;
 	// The name that this var is registered under (must be unique)
 	core::String name;
 	/**
@@ -91,14 +96,35 @@ struct VarDef {
 	 */
 	core::String value;
 	// A bitmask of var flags - e.g. @c CV_READONLY
-	int32_t flags = -1;
+	int32_t flags = CV_NONE;
 	/**
-	 * untranslated description text for this var, can be nullptr
+	 * untranslated title for this var that can be used as a label in the ui
+	 * use N_() to mark it for translation, but don't translate it immediately
+	 * when using it in the ui, use the _() macro to translate it
+	 * if empty, the name is used as a fallback
+	 */
+	core::String title;
+	/**
+	 * untranslated description text for this var, can be empty
 	 * when using it in the ui, use the _() macro to translate it
 	 * use N_() to mark it for translation, but don't translate it immediately
 	 */
-	const char *help = nullptr;
+	core::String description;
 	ValidatorFunc validatorFunc = nullptr;
+	/**
+	 * @brief Min/max range for numeric cvars.
+	 * If @c hasMinMax() returns true, the range is active and checked on every @c setVal call.
+	 * Use a @c RangeValue union to store int or float range values depending on @c VarType.
+	 */
+	RangeValue minValue;
+	RangeValue maxValue;
+	bool hasMinMax() const;
+	/**
+	 * @brief List of valid string values for enum-style cvars.
+	 * If not empty, only these values are accepted on @c setVal calls.
+	 */
+	core::DynamicArray<core::String> validValues;
+	bool hasValidValues() const;
 };
 
 /**
@@ -123,12 +149,8 @@ protected:
 	static VarMap _vars;
 	static Lock _lock;
 
-	const core::String _name;
-	const char* _help = nullptr;
-	uint32_t _flags;
 	static constexpr int NEEDS_SHADERUPDATE = 1 << 2;
 	static constexpr int NEEDS_SAVING = 1 << 3;
-	uint8_t _updateFlags = 0u;
 
 	static uint8_t _visitFlags;
 
@@ -138,15 +160,16 @@ protected:
 		core::String _value;
 	};
 
-	core::String _defaultValue;
+	VarDef _def;
+	uint32_t _flags;
+
 	core::DynamicArray<Value, 16u> _history;
-	uint32_t _currentHistoryPos = 0;
+	uint16_t _currentHistoryPos = 0;
 	bool _dirty = false;
-	ValidatorFunc _validator = nullptr;
+	uint8_t _updateFlags = 0u;
 
 	void addValueToHistory(const core::String& value);
 	static bool _ivec3ListValidator(const core::String& value, int nmin, int nmax);
-	static bool _minMaxValidator(const core::String& value, int nmin, int nmax);
 
 	/**
 	 * @brief Creates a new or gets an already existing var
@@ -154,22 +177,17 @@ protected:
 	static VarPtr createVar(const VarDef &def);
 
 	// invisible - use the static get method
-	Var(const core::String& name, const core::String& value, const core::String &defaultValue, uint32_t flags, const char *help, ValidatorFunc validatorFunc);
+	Var(VarDef def, const core::String &currentValue, uint32_t flags);
 public:
 	~Var();
 
 	void reset() {
-		setVal(_defaultValue);
+		setVal(_def.value);
 	}
 
 	static size_t size() {
 		ScopedLock scoped(_lock);
 		return _vars.size();
-	}
-
-	// TODO: use validator::boolValidator directly
-	static bool boolValidator(const core::String& value) {
-		return validator::boolValidator(value);
 	}
 
 	// TODO: move into validator namespace
@@ -181,42 +199,30 @@ public:
 		return _ivec3ListValidator(value, NMIN, NMAX);
 	}
 
-	template<size_t NMIN, size_t NMAX>
-	static bool minMaxValidator(const core::String& value) {
-		if (value.empty()) {
-			return true;
-		}
-		return _minMaxValidator(value, NMIN, NMAX);
-	}
-
+	/**
+	 * @brief Find a var by name.
+	 * @return An empty pointer if the var doesn't exist yet.
+	 * @sa getVar()
+	 */
 	static VarPtr findVar(const core::String& name);
 
-	static inline VarPtr registerVar(const VarDef &def) {
-		return createVar(def);
-	}
+	static VarPtr registerVar(const VarDef &def);
 
 	/**
 	 * @note variable must exists, otherwise @c core_assert triggers
+	 * @sa findVar()
 	 */
 	static VarPtr getVar(const core::String& name);
 
 	/**
-	 * @return empty string if var with given name wasn't found, otherwise the value of the var
+	 * @return Untranslated title
 	 */
-	static core::String str(const core::String& name);
+	const core::String &title() const;
 
 	/**
-	 * The memory is now owned. Make sure it is available for the whole lifetime of this instance.
+	 * @return Untranslated description
 	 */
-	void setHelp(const char *help);
-	void setValidator(ValidatorFunc func);
-
-	const char *help() const;
-
-	/**
-	 * @return @c false if var with given name wasn't found, otherwise the bool value of the var
-	 */
-	static bool boolean(const core::String& name);
+	const core::String &description() const;
 
 	static void shutdown();
 
@@ -253,6 +259,7 @@ public:
 	 * @note See the existing @c CV_ ints
 	 */
 	uint32_t getFlags() const;
+
 	/**
 	 * @return the value of the variable as @c int.
 	 *
@@ -277,13 +284,11 @@ public:
 	bool boolVal() const;
 	void toggleBool();
 	void vec3Val(float out[3]) const;
+	/**
+	 * @return @c true if the value was set, @c false otherwise
+	 */
 	bool setVal(const core::String& value);
-	inline bool setVal(const char* value) {
-		if (!SDL_strcmp(strVal().c_str(), value)) {
-			return true;
-		}
-		return setVal(core::String(value));
-	}
+	bool setVal(const char* value);
 	bool setVal(bool value);
 	bool setVal(int value);
 	bool setVal(float value);
@@ -291,6 +296,7 @@ public:
 	 * @return The string value of this var
 	 */
 	const core::String& strVal() const;
+
 	const core::String& name() const;
 	/**
 	 * @return @c true if some @c Var::setVal call changed the initial/default value that was specified on construction
@@ -298,12 +304,45 @@ public:
 	bool isDirty() const;
 	void markClean();
 
-	bool typeIsBool() const;
+	/**
+	 * @return the minimum value for numeric cvars as float
+	 * @note For int vars this converts from int to float
+	 */
+	float minValue() const;
+	/**
+	 * @return the maximum value for numeric cvars as float
+	 * @note For int vars this converts from int to float
+	 */
+	float maxValue() const;
+	/**
+	 * @return the minimum value for int cvars
+	 */
+	int intMinValue() const;
+	/**
+	 * @return the maximum value for int cvars
+	 */
+	int intMaxValue() const;
+	/**
+	 * @return the minimum value for float cvars
+	 */
+	float floatMinValue() const;
+	/**
+	 * @return the maximum value for float cvars
+	 */
+	float floatMaxValue() const;
+	/**
+	 * @return @c true if this var has a min/max range set
+	 */
+	bool hasMinMax() const;
+	/**
+	 * @return the @c VarType of this var
+	 */
+	VarType type() const;
+	/**
+	 * @return The list of valid values for enum-style cvars. Empty if any value is accepted.
+	 */
+	const core::DynamicArray<core::String> &validValues() const;
 };
-
-inline void Var::setValidator(ValidatorFunc func) {
-	_validator = func;
-}
 
 inline uint32_t Var::getHistorySize() const {
 	return (uint32_t)_history.size();
@@ -336,12 +375,8 @@ inline bool Var::boolVal() const {
 	return strVal() == "true" || strVal() == "1";
 }
 
-inline bool Var::typeIsBool() const {
-	return boolValidator(strVal());
-}
-
 inline const core::String& Var::name() const {
-	return _name;
+	return _def.name;
 }
 
 inline bool Var::isDirty() const {
@@ -360,12 +395,52 @@ inline unsigned int Var::uintVal() const {
 	return static_cast<unsigned int>(intVal());
 }
 
-inline void Var::setHelp(const char *help) {
-	_help = help;
+inline const core::String &Var::title() const {
+	return _def.title;
 }
 
-inline const char *Var::help() const {
-	return _help;
+inline const core::String &Var::description() const {
+	return _def.description;
+}
+
+inline float Var::minValue() const {
+	if (_def.type == VarType::Int)
+		return (float)_def.minValue.i;
+	return _def.minValue.f;
+}
+
+inline float Var::maxValue() const {
+	if (_def.type == VarType::Int)
+		return (float)_def.maxValue.i;
+	return _def.maxValue.f;
+}
+
+inline int Var::intMinValue() const {
+	return _def.minValue.i;
+}
+
+inline int Var::intMaxValue() const {
+	return _def.maxValue.i;
+}
+
+inline float Var::floatMinValue() const {
+	return _def.minValue.f;
+}
+
+inline float Var::floatMaxValue() const {
+	return _def.maxValue.f;
+}
+
+inline bool Var::hasMinMax() const {
+	return _def.hasMinMax();
+}
+
+inline VarType Var::type() const {
+	return _def.type;
+}
+
+inline const core::DynamicArray<core::String> &Var::validValues() const {
+	return _def.validValues;
 }
 
 static inline VarPtr findVar(const core::String& name) {

@@ -176,7 +176,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		const char *cursorDetailName = (cursorDetailValue >= 0 && cursorDetailValue < lengthof(cursorDetails))
 										   ? cursorDetails[cursorDetailValue]
 										   : _("Unknown");
-		ImGui::SliderVarInt(_("Cursor details"), _cursorDetails, 0, lengthof(cursorDetails) - 1, cursorDetailName);
+		ImGui::SliderVarInt(_cursorDetails, cursorDetailName);
 	}
 }
 
@@ -197,7 +197,7 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 
 		if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const core::VarPtr &gizmoVar = sceneMode ? _showGizmoScene : _showGizmoModel;
-			ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, _("Show gizmo"), gizmoVar);
+			ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, gizmoVar);
 
 			ImGui::Indent();
 			if (!gizmoVar->boolVal())
@@ -222,11 +222,11 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 				if (dirty) {
 					_gizmoOperations->setVal(operations);
 				}
-				ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, _("Pivot"), cfg::VoxEditGizmoPivot);
+				ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, cfg::VoxEditGizmoPivot);
 			}
-			ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
-			ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
-			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
+			ImGui::IconCheckboxVar(ICON_LC_MAGNET, cfg::VoxEditGizmoSnap);
+			ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, cfg::VoxEditGizmoAllowAxisFlip);
+			ImGui::CheckboxVar(_localSpace);
 
 			if (!gizmoVar->boolVal())
 				ImGui::EndDisabled();

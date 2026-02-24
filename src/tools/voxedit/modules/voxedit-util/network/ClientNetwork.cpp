@@ -30,7 +30,7 @@ ClientNetwork::~ClientNetwork() {
 }
 
 void ClientNetwork::construct() {
-	const core::VarDef voxEditNetHostname(cfg::VoxEditNetHostname, "localhost", -1, _("The voxedit server hostname to connect to"));
+	const core::VarDef voxEditNetHostname(cfg::VoxEditNetHostname, "localhost", -1, N_("Host name"), N_("The voxedit server hostname to connect to"));
 	core::Var::registerVar(voxEditNetHostname);
 }
 

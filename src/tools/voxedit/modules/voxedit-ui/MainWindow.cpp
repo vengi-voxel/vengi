@@ -537,7 +537,7 @@ void MainWindow::popupTipOfTheDay() {
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
 		}
-		ImGui::CheckboxVar(_("Show again"), _tipOfTheDay);
+		ImGui::CheckboxVar(_tipOfTheDay);
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Next"))) {
 			++_currentTip;
 			_currentTip %= (uint32_t)lengthof(tips);

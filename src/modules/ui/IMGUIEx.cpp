@@ -17,7 +17,6 @@
 #include "io/FormatDescription.h"
 #include "math/Axis.h"
 #include "video/FileDialogOptions.h"
-#include "video/TexturePool.h"
 #include "video/WindowedApp.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>
@@ -157,6 +156,32 @@ static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const c
 	}
 }
 
+static core::String varLabel(const core::VarPtr &var) {
+	if (var->title().empty()) {
+		return var->name();
+	}
+	return _(var->title().c_str());
+}
+
+static void varTooltip(const core::VarPtr &var) {
+	if (!var->description().empty()) {
+		TooltipTextUnformatted(_(var->description().c_str()));
+	}
+}
+
+static bool SliderVarInt(const char* label, const core::VarPtr& var, const char* format, ImGuiSliderFlags flags) {
+	const int v_min = var->intMinValue();
+	const int v_max = var->intMaxValue();
+	int val = var->intVal();
+	if (SliderInt(label, &val, v_min, v_max, format, flags)) {
+		var->setVal(val);
+		return true;
+	}
+	_priv::varTooltip(var);
+	return false;
+}
+
+
 } // namespace _priv
 
 bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
@@ -192,22 +217,21 @@ bool InputTextWithHint(const char *label, const char *hint, core::String *str, I
 	return InputTextWithHint(label, hint, str->c_str(), str->capacity(), flags, _priv::InputTextCallback, &cb_userData);
 }
 
-bool InputVarString(const char *label, const char *varName, ImGuiInputTextFlags flags) {
+bool InputVarString(const char *varName, ImGuiInputTextFlags flags) {
 	const core::VarPtr &var = core::getVar(varName);
-	return InputVarString(label, var, flags);
+	return InputVarString(var, flags);
 }
 
-bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags) {
+bool InputVarString(const core::VarPtr &var, ImGuiInputTextFlags flags) {
+	const core::String label = _priv::varLabel(var);
 	core::String buf = var->strVal();
 	flags &= ~ImGuiInputTextFlags_EnterReturnsTrue;
-	if (InputText(label, &buf, flags)) {
+	if (InputText(label.c_str(), &buf, flags)) {
 		if (var->setVal(buf)) {
 			return true;
 		}
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
+	_priv::varTooltip(var);
 	return false;
 }
 
@@ -246,22 +270,21 @@ void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags fl
 	EndGroup();
 }
 
-bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarFloat(const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
+	const core::String label = _priv::varLabel(var);
 	float v = var->floatVal();
-	if (InputFloat(label, &v, step, step_fast, "%.3f", extra_flags)) {
+	if (InputFloat(label.c_str(), &v, step, step_fast, "%.3f", extra_flags)) {
 		if (var->setVal(v)) {
 			return true;
 		}
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
+	_priv::varTooltip(var);
 	return false;
 }
 
-bool InputVarFloat(const char* label, const char *varName, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarFloat(const char *varName, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
 	core::VarPtr var = core::getVar(varName);
-	return InputVarFloat(label, var, step, step_fast, extra_flags);
+	return InputVarFloat(var, step, step_fast, extra_flags);
 }
 
 bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags) {
@@ -390,53 +413,54 @@ bool InputFloat(const char *label, float &v, const char *format, ImGuiInputTextF
 	return ImGui::InputFloat(label, &v, 0.0f, 0.0f, format, flags);
 }
 
-bool InputVarInt(const char *label, const core::VarPtr &var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarInt(const core::VarPtr &var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+	const core::String label = _priv::varLabel(var);
 	int v = var->intVal();
-	if (InputInt(label, &v, step, step_fast, extra_flags)) {
+	if (InputInt(label.c_str(), &v, step, step_fast, extra_flags)) {
 		if (var->setVal(v)) {
 			return true;
 		}
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
+	_priv::varTooltip(var);
 	return false;
 }
 
-bool InputVarInt(const char *label, const char *varName, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarInt(const char *varName, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	core::VarPtr var = core::getVar(varName);
-	return InputVarInt(label, var, step, step_fast, extra_flags);
+	return InputVarInt(var, step, step_fast, extra_flags);
 }
 
-bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return CheckboxVar(labelWithIcon.c_str(), var);
-}
-
-bool CheckboxVar(const char *label, const core::VarPtr &var) {
+bool IconCheckboxVar(const char *icon, const core::VarPtr &var) {
+	const core::String label = _priv::varLabel(var);
+	const core::String labelWithIcon(_priv::getId(icon, label.c_str()));
 	bool val = var->boolVal();
-	if (Checkbox(label, &val)) {
+	if (Checkbox(labelWithIcon.c_str(), &val)) {
 		if (var->setVal(val)) {
 			return true;
 		}
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
+	_priv::varTooltip(var);
 	return false;
 }
 
-bool IconCheckboxVar(const char *icon, const char *label, const char *varName) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return CheckboxVar(labelWithIcon.c_str(), varName);
+bool CheckboxVar(const core::VarPtr &var) {
+	const core::String label = _priv::varLabel(var);
+	bool val = var->boolVal();
+	if (Checkbox(label.c_str(), &val)) {
+		if (var->setVal(val)) {
+			return true;
+		}
+	}
+	_priv::varTooltip(var);
+	return false;
 }
 
-bool CheckboxVar(const char *label, const char *varName) {
-	core::VarPtr var = core::getVar(varName);
-	if (CheckboxVar(label, var)) {
-		return true;
-	}
-	return false;
+bool IconCheckboxVar(const char *icon, const char *varName) {
+	return IconCheckboxVar(icon, core::getVar(varName));
+}
+
+bool CheckboxVar(const char *varName) {
+	return CheckboxVar(core::getVar(varName));
 }
 
 bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value) {
@@ -449,77 +473,73 @@ bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlag
 	return CollapsingHeader(labelWithIcon.c_str(), flags);
 }
 
-bool IconSliderVarInt(const char *icon, const char *label, const core::VarPtr &var, int v_min, int v_max,
+bool IconSliderVarInt(const char *icon, const core::VarPtr &var,
 					  const char *format, ImGuiSliderFlags flags) {
-	const core::String labelWithIcon(_priv::getId(icon, label));
-	return SliderVarInt(labelWithIcon.c_str(), var, v_min, v_max, format, flags);
+	const core::String label = _priv::varLabel(var);
+	const core::String labelWithIcon(_priv::getId(icon, label.c_str()));
+	return _priv::SliderVarInt(labelWithIcon.c_str(), var, format, flags);
 }
 
-bool IconSliderVarInt(const char *icon, const char *label, const char* varName, int v_min, int v_max,
+bool IconSliderVarInt(const char *icon, const char* varName,
 					  const char *format, ImGuiSliderFlags flags) {
 	core::VarPtr var = core::getVar(varName);
-	return IconSliderVarInt(icon, label, var, v_min, v_max, format, flags);
+	return IconSliderVarInt(icon, var, format, flags);
 }
 
-bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
-	int val = var->intVal();
-	if (SliderInt(label, &val, v_min, v_max, format, flags)) {
-		var->setVal(val);
-		return true;
-	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
-	return false;
+bool SliderVarInt(const core::VarPtr& var, const char* format, ImGuiSliderFlags flags) {
+	const core::String label = _priv::varLabel(var);
+	return _priv::SliderVarInt(label.c_str(), var, format, flags);
 }
 
-bool SliderVarInt(const char* label, const char* varName, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
+bool SliderVarInt(const char* varName, const char* format, ImGuiSliderFlags flags) {
 	core::VarPtr var = core::getVar(varName);
-	return SliderVarInt(label, var, v_min, v_max, format, flags);
+	return SliderVarInt(var, format, flags);
 }
 
-bool SliderVarFloat(const char* label, const core::VarPtr& var, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool SliderVarFloat(const core::VarPtr& var, const char* format, ImGuiSliderFlags flags) {
+	const core::String label = _priv::varLabel(var);
+	const float v_min = var->floatMinValue();
+	const float v_max = var->floatMaxValue();
 	float val = var->floatVal();
-	if (SliderFloat(label, &val, v_min, v_max, format, flags)) {
+	if (SliderFloat(label.c_str(), &val, v_min, v_max, format, flags)) {
 		var->setVal(val);
 		return true;
 	}
+	_priv::varTooltip(var);
 	return false;
 }
 
-bool SliderVarFloat(const char *label, const char *varName, float v_min, float v_max, const char *format,
+bool SliderVarFloat(const char *varName, const char *format,
 					ImGuiSliderFlags flags) {
 	core::VarPtr var = core::getVar(varName);
-	return SliderVarFloat(label, var, v_min, v_max, format, flags);
+	return SliderVarFloat(var, format, flags);
 }
 
-bool InputVec3Var(const char *label, const char *varName) {
+bool InputVec3Var(const char *varName) {
 	glm::vec3 vec;
 	const core::VarPtr &var = core::getVar(varName);
+	const core::String label = _priv::varLabel(var);
 	var->vec3Val(&vec[0]);
-	if (InputVec3(label, vec, "%.3f", 0)) {
+	if (InputVec3(label.c_str(), vec, "%.3f", 0)) {
 		const core::String &v = core::String::format("%f %f %f", vec.x, vec.y, vec.z);
 		var->setVal(v);
 		return true;
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
+	_priv::varTooltip(var);
 	return false;
 }
 
-bool ColorEdit3Var(const char *label, const char *varName) {
+bool ColorEdit3Var(const char *varName) {
 	glm::vec3 col;
 	const core::VarPtr &var = core::getVar(varName);
+	const core::String label = _priv::varLabel(var);
 	var->vec3Val(&col[0]);
-	if (ImGui::ColorEdit3(label, glm::value_ptr(col))) {
+	if (ImGui::ColorEdit3(label.c_str(), glm::value_ptr(col))) {
 		const core::String &c = core::String::format("%f %f %f", col.x, col.y, col.z);
 		var->setVal(c);
 		return true;
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
-	}
+	_priv::varTooltip(var);
 	return false;
 }
 

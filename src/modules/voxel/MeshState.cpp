@@ -5,6 +5,7 @@
 #include "MeshState.h"
 #include "app/App.h"
 #include "app/Async.h"
+#include "app/I18N.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Concurrency.h"
@@ -29,11 +30,10 @@ void MeshState::construct() {
 	const core::VarDef voxelMeshSize(cfg::VoxelMeshSize, 62, core::CV_READONLY | core::CV_NOPERSIST);
 	_meshSize = core::Var::registerVar(voxelMeshSize);
 	// Editor/render mesh mode - excludes GreedyTexture as it's not supported by the renderer
-	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary),
+	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary,
+				   (int)voxel::SurfaceExtractionType::Cubic, (int)voxel::SurfaceExtractionType::Binary,
 				   core::CV_SHADER,
-				   "0 = cubes, 1 = marching cubes, 2 = binary mesher",
-				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
-											  (int)voxel::SurfaceExtractionType::Binary>);
+				   N_("Mesh mode"), "0 = cubes, 1 = marching cubes, 2 = binary mesher");
 	core::Var::registerVar(voxRenderMeshMode);
 }
 

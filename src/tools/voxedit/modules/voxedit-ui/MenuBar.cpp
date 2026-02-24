@@ -21,20 +21,20 @@
 namespace voxedit {
 
 void MenuBar::viewportOptions() {
-	ImGui::IconCheckboxVar(ICON_LC_GRID_3X3, _("Grid"), cfg::VoxEditShowgrid);
-	ImGui::IconCheckboxVar(ICON_LC_ROTATE_3D, _("Show gizmo"), cfg::VoxEditShowaxis);
-	ImGui::IconCheckboxVar(ICON_LC_LOCK, _("Show locked axis"), cfg::VoxEditShowlockedaxis);
-	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Bounding box"), cfg::VoxEditShowaabb);
-	ImGui::IconCheckboxVar(ICON_LC_BONE, _("Bones"), cfg::VoxEditShowBones);
-	ImGui::IconCheckboxVar(ICON_LC_FRAME, _("Plane"), cfg::VoxEditShowPlane);
-	ImGui::IconSliderVarInt(ICON_LC_GRIP, _("Plane size"), cfg::VoxEditPlaneSize, 0, 1000);
+	ImGui::IconCheckboxVar(ICON_LC_GRID_3X3, cfg::VoxEditShowgrid);
+	ImGui::IconCheckboxVar(ICON_LC_ROTATE_3D, cfg::VoxEditShowaxis);
+	ImGui::IconCheckboxVar(ICON_LC_LOCK, cfg::VoxEditShowlockedaxis);
+	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::VoxEditShowaabb);
+	ImGui::IconCheckboxVar(ICON_LC_BONE, cfg::VoxEditShowBones);
+	ImGui::IconCheckboxVar(ICON_LC_FRAME, cfg::VoxEditShowPlane);
+	ImGui::IconSliderVarInt(ICON_LC_GRIP, cfg::VoxEditPlaneSize);
 
 	ImGui::BeginDisabled(core::getVar(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
-	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
+	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
 	if (viewModeNormalPalette(core::getVar(cfg::VoxEditViewMode)->intVal())) {
-		ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
+		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderNormals);
 	}
-	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, _("Checkerboard"), cfg::RenderCheckerBoard);
+	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, cfg::RenderCheckerBoard);
 	ImGui::EndDisabled();
 	const char* shadingModeLabels[] = { _("Unlit"), _("Lit"), _("Shadows") };
 	int currentShadingMode = core::getVar(cfg::VoxEditShadingMode)->intVal();
@@ -53,8 +53,8 @@ void MenuBar::viewportOptions() {
 		}
 		ImGui::EndCombo();
 	}
-	ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
-	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, _("Tone mapping"), cfg::ToneMapping, 0, 3);
+	ImGui::IconCheckboxVar(ICON_LC_SUN, cfg::ClientBloom);
+	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, cfg::ToneMapping);
 }
 
 void MenuBar::init() {
@@ -72,7 +72,7 @@ void MenuBar::viewModeOption() {
 	};
 	static_assert(7 == (size_t)ViewMode::Max, "Unexpected viewmode array size");
 	const core::VarPtr &viewMode = core::getVar(cfg::VoxEditViewMode);
-	ImGui::ComboVar(_("View mode"), viewMode, viewModes);
+	ImGui::ComboVar(viewMode, viewModes);
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
@@ -148,10 +148,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Separator();
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				viewportOptions();
-				ImGui::IconCheckboxVar(ICON_LC_TV_MINIMAL, _("Allow multi monitor"), cfg::UIMultiMonitor);
-				ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
-				ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
-				ImGui::IconCheckboxVar(ICON_LC_LIGHTBULB, _("Tip of the day"), cfg::VoxEditTipOftheDay);
+				ImGui::IconCheckboxVar(ICON_LC_TV_MINIMAL, cfg::UIMultiMonitor);
+				ImGui::CheckboxVar(cfg::VoxEditShowColorPicker);
+				ImGui::CheckboxVar(cfg::VoxEditColorWheel);
+				ImGui::IconCheckboxVar(ICON_LC_LIGHTBULB, cfg::VoxEditTipOftheDay);
 
 				ui::metricOption();
 				viewModeOption();
@@ -161,14 +161,14 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				{
 					static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Binary + 1> meshModes = {
 						_("Cubes"), _("Marching cubes"), _("Binary")};
-					ImGui::ComboVar(_("Mesh mode"), cfg::VoxRenderMeshMode, meshModes);
+					ImGui::ComboVar(cfg::VoxRenderMeshMode, meshModes);
 				}
-				ImGui::InputVarInt(_("Model animation speed"), cfg::VoxEditAnimationSpeed);
-				ImGui::InputVarInt(_("Autosave delay in seconds"), cfg::VoxEditAutoSaveSeconds);
-				ImGui::InputVarInt(_("Viewports"), cfg::VoxEditViewports, 1, 1);
-				ImGui::SliderVarFloat(_("Zoom speed"), cfg::ClientCameraZoomSpeed, 0.1f, 200.0f);
-				ImGui::SliderVarInt(_("View distance"), cfg::VoxEditViewdistance, 10, 5000);
-				ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
+				ImGui::InputVarInt(cfg::VoxEditAnimationSpeed);
+				ImGui::InputVarInt(cfg::VoxEditAutoSaveSeconds);
+				ImGui::InputVarInt(cfg::VoxEditViewports, 1, 1);
+				ImGui::SliderVarFloat(cfg::ClientCameraZoomSpeed);
+				ImGui::SliderVarInt(cfg::VoxEditViewdistance);
+				ImGui::InputVarInt(cfg::UIFontSize, 1, 5);
 
 				const core::VarPtr &uiStyleVar = core::getVar(cfg::UIStyle);
 				int currentStyle = uiStyleVar->intVal();
@@ -186,7 +186,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				}
 				_app->colorReductionOptions();
 
-				ImGui::InputVarFloat(_("Notifications"), cfg::UINotifyDismissMillis);
+				ImGui::InputVarFloat(cfg::UINotifyDismissMillis);
 				if (ImGui::ButtonFullWidth(_("Reset layout"))) {
 					resetDockLayout = true;
 				}

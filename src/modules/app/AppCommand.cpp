@@ -186,9 +186,8 @@ void init(const core::TimeProviderPtr& timeProvider) {
 					flagsStr[4]  = 'D';
 				}
 				Log::info("* %s %-28s = (%s) (%u)", flagsStr.c_str(), var->name().c_str(), value, var->getHistorySize());
-				const char *help = var->help();
-				if (help != nullptr) {
-					Log::info("        %s", help);
+				if (!var->description().empty()) {
+					Log::info("        %s", var->description().c_str());
 				}
 			}, 0u);
 		}).setHelp(_("Show the list of known variables (wildcards supported)"));

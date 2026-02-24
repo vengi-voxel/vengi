@@ -544,7 +544,7 @@ void BindingsDialog::render(bool &show, util::KeyBindingHandler &keybindingHandl
 		}
 
 		if (!uiKeyMaps.empty()) {
-			ImGui::ComboVar(_("Keymap"), uiKeyMap->name().c_str(), uiKeyMaps);
+			ImGui::ComboVar(uiKeyMap, uiKeyMaps);
 		} else {
 			if (ImGui::Button(_("Reset to default"))) {
 				resetKeybindings = true;

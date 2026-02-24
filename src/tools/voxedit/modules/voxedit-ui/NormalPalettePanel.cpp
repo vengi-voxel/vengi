@@ -204,7 +204,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			const int sceneHoveredPaletteNormalIdx = currentSceneNormal();
 			ImGui::Text(_("Normal index: %i (scene normal index %i)"), _selectedIndex, sceneHoveredPaletteNormalIdx);
 
-			ImGui::CheckboxVar(_("Render normals"), _renderNormals);
+			ImGui::CheckboxVar(_renderNormals);
 
 			drawNormalVisualization(node.normalPalette());
 

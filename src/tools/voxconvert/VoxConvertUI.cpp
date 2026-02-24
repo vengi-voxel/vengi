@@ -98,8 +98,8 @@ void VoxConvertUI::onRenderUI() {
 				if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 					ui::metricOption();
 					languageOption();
-					ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);
-					ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
+					ImGui::CheckboxVar(cfg::UIMultiMonitor);
+					ImGui::InputVarInt(cfg::UIFontSize, 1, 5);
 					const core::VarPtr &uiStyleVar = core::getVar(cfg::UIStyle);
 					int currentStyle = uiStyleVar->intVal();
 					if (ImGui::BeginCombo(_("Color theme"), ImGui::GetStyleName(currentStyle))) {
@@ -114,7 +114,7 @@ void VoxConvertUI::onRenderUI() {
 						}
 						ImGui::EndCombo();
 					}
-					ImGui::InputVarFloat(_("Notifications"), cfg::UINotifyDismissMillis);
+					ImGui::InputVarFloat(cfg::UINotifyDismissMillis);
 					ImGui::Checkbox(_("Show console"), &_showConsole);
 					ImGui::EndMenu();
 				}

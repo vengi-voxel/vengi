@@ -132,4 +132,80 @@ TEST_F(VarTest, testHistoryCleanup) {
 	EXPECT_EQ("reasonable119", v->strVal());
 }
 
+TEST_F(VarTest, testIntMinMax) {
+	const VarPtr& v = Var::registerVar(VarDef("test", 5, 0, 10));
+	EXPECT_TRUE(v->hasMinMax());
+	EXPECT_FLOAT_EQ(0.0f, v->minValue());
+	EXPECT_FLOAT_EQ(10.0f, v->maxValue());
+	EXPECT_EQ(5, v->intVal());
+	EXPECT_TRUE(v->setVal(0));
+	EXPECT_EQ(0, v->intVal());
+	EXPECT_TRUE(v->setVal(10));
+	EXPECT_EQ(10, v->intVal());
+	EXPECT_FALSE(v->setVal(-1));
+	EXPECT_EQ(10, v->intVal());
+	EXPECT_FALSE(v->setVal(11));
+	EXPECT_EQ(10, v->intVal());
+}
+
+TEST_F(VarTest, testFloatMinMax) {
+	const VarPtr& v = Var::registerVar(VarDef("test", 5.0f, 0.0f, 10.0f));
+	EXPECT_TRUE(v->hasMinMax());
+	EXPECT_FLOAT_EQ(0.0f, v->minValue());
+	EXPECT_FLOAT_EQ(10.0f, v->maxValue());
+	EXPECT_FLOAT_EQ(5.0f, v->floatVal());
+	EXPECT_TRUE(v->setVal(0.0f));
+	EXPECT_FLOAT_EQ(0.0f, v->floatVal());
+	EXPECT_TRUE(v->setVal(10.0f));
+	EXPECT_FLOAT_EQ(10.0f, v->floatVal());
+	EXPECT_FALSE(v->setVal(-0.1f));
+	EXPECT_FLOAT_EQ(10.0f, v->floatVal());
+	EXPECT_FALSE(v->setVal(10.1f));
+	EXPECT_FLOAT_EQ(10.0f, v->floatVal());
+}
+
+TEST_F(VarTest, testNoMinMax) {
+	const VarPtr& v = Var::registerVar(VarDef("test", 5));
+	EXPECT_FALSE(v->hasMinMax());
+	EXPECT_TRUE(v->setVal(1000));
+	EXPECT_TRUE(v->setVal(-1000));
+}
+
+TEST_F(VarTest, testMinMaxReRegister) {
+	const VarPtr& v = Var::registerVar(VarDef("test", 5));
+	EXPECT_FALSE(v->hasMinMax());
+	Var::registerVar(VarDef("test", 5, 0, 10));
+	EXPECT_TRUE(v->hasMinMax());
+	EXPECT_FALSE(v->setVal(11));
+}
+
+TEST_F(VarTest, testEnumValidValues) {
+	const core::DynamicArray<core::String> validValues = {"low", "medium", "high"};
+	const VarPtr& v = Var::registerVar(VarDef("test", "medium", validValues));
+	EXPECT_EQ("medium", v->strVal());
+	EXPECT_EQ(3u, v->validValues().size());
+	EXPECT_TRUE(v->setVal("low"));
+	EXPECT_EQ("low", v->strVal());
+	EXPECT_TRUE(v->setVal("high"));
+	EXPECT_EQ("high", v->strVal());
+	EXPECT_FALSE(v->setVal("invalid"));
+	EXPECT_EQ("high", v->strVal());
+}
+
+TEST_F(VarTest, testEnumEmptyValueAllowed) {
+	const core::DynamicArray<core::String> validValues = {"a", "b"};
+	const VarPtr& v = Var::registerVar(VarDef("test", "a", validValues));
+	EXPECT_TRUE(v->setVal(""));
+}
+
+TEST_F(VarTest, testEnumReRegister) {
+	const VarPtr& v = Var::registerVar(VarDef("test", "a"));
+	EXPECT_TRUE(v->validValues().empty());
+	const core::DynamicArray<core::String> validValues = {"a", "b", "c"};
+	Var::registerVar(VarDef("test", "a", validValues));
+	EXPECT_EQ(3u, v->validValues().size());
+	EXPECT_FALSE(v->setVal("d"));
+	EXPECT_TRUE(v->setVal("c"));
+}
+
 }

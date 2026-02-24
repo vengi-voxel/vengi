@@ -48,12 +48,12 @@ void GameModePanel::update(const char *id, command::CommandExecutionListener &li
 		}
 
 		ImGui::BeginDisabled(_gameModeEnabled == false);
-		ImGui::InputVarFloat(_("Movement Speed"), _movementSpeed, 0.1f, 100.0f);
-		ImGui::InputVarFloat(_("Jump Velocity"), _jumpVelocity, 0.1f, 100.0f);
-		ImGui::InputVarFloat(_("Body Height"), _bodyHeight, 0.1f, 10.0f);
-		ImGui::InputVarFloat(_("Gravity"), _gravity, 0.01f, 100.0f);
-		ImGui::InputVarFloat(_("Friction"), _friction, 0.001f, 1.0f);
-		ImGui::InputVarFloat(_("Body Size"), _bodySize, 0.2f, 0.4998f);
+		ImGui::InputVarFloat(_movementSpeed, 0.1f, 100.0f);
+		ImGui::InputVarFloat(_jumpVelocity, 0.1f, 100.0f);
+		ImGui::InputVarFloat(_bodyHeight, 0.1f, 10.0f);
+		ImGui::InputVarFloat(_gravity, 0.01f, 100.0f);
+		ImGui::InputVarFloat(_friction, 0.001f, 1.0f);
+		ImGui::InputVarFloat(_bodySize, 0.2f, 0.4998f);
 
 		if (ImGui::Button(_("Minecraft"))) {
 			_bodyHeight->setVal(1.8f);

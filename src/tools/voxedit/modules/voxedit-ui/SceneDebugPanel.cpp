@@ -40,8 +40,8 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::Text(_("Pending extractions: %i"), stats.pendingExtractions);
 		ImGui::Text(_("Pending meshes: %i"), stats.pendingMeshes);
 		ImGui::Text(_("Culled volumes: %i"), stats.culledVolumes);
-		ImGui::CheckboxVar(_("Cull nodes"), cfg::RenderCullNodes);
-		ImGui::CheckboxVar(_("Cull buffers"), cfg::RenderCullBuffers);
+		ImGui::CheckboxVar(cfg::RenderCullNodes);
+		ImGui::CheckboxVar(cfg::RenderCullBuffers);
 		ImGui::Text(_("Draw calls: %i"), video::drawCalls());
 
 		scenegraph::KinematicBody &body = _sceneMgr->cameraMovement().body();

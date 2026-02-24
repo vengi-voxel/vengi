@@ -343,7 +343,7 @@ static int clua_varcreate(lua_State *s) {
 	if (secret) {
 		flags |= core::CV_SECRET;
 	}
-	core::VarDef varDef(var, val, flags, help);
+	core::VarDef varDef(var, val, flags, nullptr, help);
 	core::Var::registerVar(varDef);
 	return 0;
 }

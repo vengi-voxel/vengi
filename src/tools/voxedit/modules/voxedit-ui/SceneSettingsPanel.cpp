@@ -32,14 +32,14 @@ void SceneSettingsPanel::sceneColors(ShadingMode shadingMode) {
 		style.setAlpha(ImGui::GetStyle().Alpha * 0.5f);
 	}
 
-	ImGui::ColorEdit3Var(_("Ambient color"), cfg::VoxEditAmbientColor);
+	ImGui::ColorEdit3Var(cfg::VoxEditAmbientColor);
 	if (lightingEnabled) {
 		ImGui::SetItemTooltipUnformatted(_("Base lighting that affects all surfaces equally"));
 	} else {
 		ImGui::SetItemTooltipUnformatted(_("Ambient color is disabled in Unlit mode"));
 	}
 
-	ImGui::ColorEdit3Var(_("Diffuse color"), cfg::VoxEditDiffuseColor);
+	ImGui::ColorEdit3Var(cfg::VoxEditDiffuseColor);
 	if (lightingEnabled) {
 		ImGui::SetItemTooltipUnformatted(_("Directional lighting that varies based on surface angle"));
 	} else {

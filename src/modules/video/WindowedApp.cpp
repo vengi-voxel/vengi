@@ -547,60 +547,54 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(clientMultiSampleSamples);
 	const core::VarDef clientWindowHighDPI(cfg::ClientWindowHighDPI, true, core::CV_READONLY);
 	core::Var::registerVar(clientWindowHighDPI);
-	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, core::CV_SHADER, _("Activate shadow map"));
+	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, core::CV_SHADER, N_("Shadow map"), _("Activate shadow map"));
 	core::Var::registerVar(clientShadowMap);
-	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, core::CV_SHADER, _("Activate checkerboard rendering"));
+	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, core::CV_SHADER, N_("Checkerboard"), _("Activate checkerboard rendering"));
 	core::Var::registerVar(renderCheckerBoard);
-	const core::VarDef renderCullBuffers(cfg::RenderCullBuffers, false, -1, _("Activate culling for buffer parts"));
+	const core::VarDef renderCullBuffers(cfg::RenderCullBuffers, false, core::CV_NONE, N_("Cull buffers"), _("Activate culling for buffer parts"));
 	core::Var::registerVar(renderCullBuffers);
-	const core::VarDef renderCullNodes(cfg::RenderCullNodes, true, -1, _("Activate culling for scene nodes"));
+	const core::VarDef renderCullNodes(cfg::RenderCullNodes, true, core::CV_NONE, N_("Cull nodes"), _("Activate culling for scene nodes"));
 	core::Var::registerVar(renderCullNodes);
-	const core::VarDef clientBloom(cfg::ClientBloom, true, -1, _("Activate bloom post processing"));
+	const core::VarDef clientBloom(cfg::ClientBloom, true, core::CV_NONE, N_("Bloom"), _("Activate bloom post processing"));
 	core::Var::registerVar(clientBloom);
-	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, core::CV_SHADER, _("Activate shadow debug rendering"));
+	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, core::CV_SHADER, N_("Debug shadows"), _("Activate shadow debug rendering"));
 	core::Var::registerVar(clientDebugShadow);
 	const core::VarDef clientShadowMapSize(cfg::ClientShadowMapSize, 4096);
 	core::Var::registerVar(clientShadowMapSize);
-	const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, core::CV_SHADER, _("Activate cascade shadow map debug rendering"));
+	const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, core::CV_SHADER, N_("Debug cascades"), _("Activate cascade shadow map debug rendering"));
 	core::Var::registerVar(clientDebugShadowMapCascade);
-	const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, core::CV_SHADER, _("Gamma correction"));
+	const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, core::CV_SHADER, N_("Gamma"), _("Gamma correction"));
 	core::Var::registerVar(clientGamma);
-	const core::VarDef clientWindowDisplay(cfg::ClientWindowDisplay, 0);
+	const core::VarDef clientWindowDisplay(cfg::ClientWindowDisplay, 0, core::CV_NONE, N_("Window display"), _("The display index to create the window on"));
 	core::Var::registerVar(clientWindowDisplay);
-	const core::VarDef clientOpenGLVersion(cfg::ClientOpenGLVersion, 3.3f, core::CV_READONLY);
+	const core::VarDef clientOpenGLVersion(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
 	core::Var::registerVar(clientOpenGLVersion);
-	const core::VarDef renderOutline(cfg::RenderOutline, false, core::CV_SHADER, _("Render voxel outline"));
+	const core::VarDef renderOutline(cfg::RenderOutline, false, core::CV_SHADER, N_("Outlines"), _("Render voxel outline"));
 	core::Var::registerVar(renderOutline);
-	const core::VarDef renderNormals(cfg::RenderNormals, false, core::CV_SHADER, _("Render voxel normals"));
+	const core::VarDef renderNormals(cfg::RenderNormals, false, core::CV_SHADER, N_("Normals"), _("Render voxel normals"));
 	core::Var::registerVar(renderNormals);
-	const core::VarDef toneMapping(cfg::ToneMapping, 0, core::CV_SHADER, _("Activate tone mapping"), core::Var::minMaxValidator<0, 3>);
+	const core::VarDef toneMapping(cfg::ToneMapping, 0, 0, 3, core::CV_SHADER, N_("Tone mapping"), _("Activate tone mapping"));
 	core::Var::registerVar(toneMapping);
-	const core::VarDef clientVSync(cfg::ClientVSync, true, -1, _("Limit the framerate to the monitor refresh rate"));
+	const core::VarDef clientVSync(cfg::ClientVSync, true, -1, N_("VSync"), _("Limit the framerate to the monitor refresh rate"));
 	core::Var::registerVar(clientVSync);
-	const core::VarDef clientDebugSeverity(cfg::ClientDebugSeverity, 0, 0u, _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));
+	const core::VarDef clientDebugSeverity(cfg::ClientDebugSeverity, 0, 0u, N_("Debug severity"), _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));
 	core::Var::registerVar(clientDebugSeverity);
-	const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f);
+	const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, 0u, N_("Rotation speed"));
 	core::Var::registerVar(clientMouseRotationSpeed);
-	const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f);
+	const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, 0.1f, 200.0f, 0u, N_("Zoom speed"));
 	core::Var::registerVar(clientCameraZoomSpeed);
 
 	// Default anisotropy used for framebuffer-created textures. -1 means use device max.
-	const core::VarDef maxAnisotropy(cfg::MaxAnisotropy, -1, 0u, "", [](const core::String &val) {
+	const core::VarDef maxAnisotropy(cfg::MaxAnisotropy, -1, 0u, nullptr, nullptr, [](const core::String &val) {
 		const float fv = core::string::toFloat(val);
 		// allow -1 (use device max) or any value >= 0
 		return fv == -1.0f || fv >= 0.0f;
 	});
 	core::Var::registerVar(maxAnisotropy);
 
-	const core::VarDef clientCameraMaxZoom(cfg::ClientCameraMaxZoom, 1000.0f, 0u, "", [](const core::String &val) {
-		const float fv = core::string::toFloat(val);
-		return fv > 1.0f && fv <= 1000.0f;
-	});
+	const core::VarDef clientCameraMaxZoom(cfg::ClientCameraMaxZoom, 1000.0f, 1.0f, 1000.0f, 0u);
 	core::Var::registerVar(clientCameraMaxZoom);
-	const core::VarDef clientCameraMinZoom(cfg::ClientCameraMinZoom, 0.001f, 0u, "", [](const core::String &val) {
-		const float fv = core::string::toFloat(val);
-		return fv > 0.0001f && fv < 1000.0f;
-	});
+	const core::VarDef clientCameraMinZoom(cfg::ClientCameraMinZoom, 0.001f, 0.0001f, 1000.0f, 0u);
 	core::Var::registerVar(clientCameraMinZoom);
 
 	command::Command::registerCommand("minimize")

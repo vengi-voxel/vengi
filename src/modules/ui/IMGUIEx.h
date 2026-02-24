@@ -45,36 +45,36 @@ IMGUI_API bool InputXYZ(const char *label, glm::ivec3 &vec, const char *format =
 // extension for optional in-table input
 IMGUI_API bool InputFloat(const char *label, float &v, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool InputVarString(const char *label, const char *varName, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputVarFloat(const char *label, const core::VarPtr &var, float step = 0.0f, float step_fast = 0.0f,
+IMGUI_API bool InputVarString(const char *varName, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVarString(const core::VarPtr &var, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVarFloat(const core::VarPtr &var, float step = 0.0f, float step_fast = 0.0f,
 							 ImGuiInputTextFlags extra_flags = 0);
-IMGUI_API bool InputVarFloat(const char *label, const char *varName, float step = 0.0f, float step_fast = 0.0f,
+IMGUI_API bool InputVarFloat(const char *varName, float step = 0.0f, float step_fast = 0.0f,
 							 ImGuiInputTextFlags extra_flags = 0);
-IMGUI_API bool InputVarInt(const char *label, const core::VarPtr &var, int step = 1, int step_fast = 100,
+IMGUI_API bool InputVarInt(const core::VarPtr &var, int step = 1, int step_fast = 100,
 						   ImGuiInputTextFlags extra_flags = 0);
-IMGUI_API bool InputVarInt(const char *label, const char *varName, int step = 1, int step_fast = 100,
+IMGUI_API bool InputVarInt(const char *varName, int step = 1, int step_fast = 100,
 						   ImGuiInputTextFlags extra_flags = 0);
-IMGUI_API bool CheckboxVar(const char *label, const core::VarPtr &var);
-IMGUI_API bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var);
-IMGUI_API bool CheckboxVar(const char *label, const char *varName);
-IMGUI_API bool IconCheckboxVar(const char *icon, const char *label, const char *varName);
+IMGUI_API bool CheckboxVar(const core::VarPtr &var);
+IMGUI_API bool IconCheckboxVar(const char *icon, const core::VarPtr &var);
+IMGUI_API bool CheckboxVar(const char *varName);
+IMGUI_API bool IconCheckboxVar(const char *icon, const char *varName);
 IMGUI_API bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value);
 IMGUI_API bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags = 0);
-IMGUI_API bool IconSliderVarInt(const char *icon, const char *label, const core::VarPtr &var, int v_min, int v_max,
+IMGUI_API bool IconSliderVarInt(const char *icon, const core::VarPtr &var,
 								const char *format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool IconSliderVarInt(const char *icon, const char *label, const char *varName, int v_min, int v_max,
+IMGUI_API bool IconSliderVarInt(const char *icon, const char *varName,
 								const char *format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderVarInt(const char *label, const core::VarPtr &var, int v_min, int v_max, const char *format = "%d",
+IMGUI_API bool SliderVarInt(const core::VarPtr &var, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, int v_max, const char *format = "%d",
+IMGUI_API bool SliderVarInt(const char *varName, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderVarFloat(const char *label, const core::VarPtr &var, float v_min, float v_max,
+IMGUI_API bool SliderVarFloat(const core::VarPtr &var,
 							  const char *format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderVarFloat(const char *label, const char *varName, float v_min, float v_max,
+IMGUI_API bool SliderVarFloat(const char *varName,
 							  const char *format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool ColorEdit3Var(const char *label, const char *varName);
-IMGUI_API bool InputVec3Var(const char *label, const char *varName);
+IMGUI_API bool ColorEdit3Var(const char *varName);
+IMGUI_API bool InputVec3Var(const char *varName);
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 IMGUI_API void IconDialog(const char *icon, const char *text, bool wrap = false);
 IMGUI_API bool Fullscreen(const char *title = "##main", ImGuiWindowFlags additionalFlags = ImGuiWindowFlags_None);
@@ -137,23 +137,24 @@ IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_
 IMGUI_API bool TooltipTextUnformatted(const char *text);
 
 template<class Collection>
-bool ComboVar(const char *label, const core::VarPtr &var, const Collection &items) {
+bool ComboVar(const core::VarPtr &var, const Collection &items) {
+	const core::String label = var->title().empty() ? var->name() : _(var->title().c_str());
 	int currentItem = var->intVal();
-	const bool retVal = ComboItems(label, &currentItem, items);
+	const bool retVal = ComboItems(label.c_str(), &currentItem, items);
 	if (retVal) {
 		var->setVal(currentItem);
 		return true;
 	}
-	if (var->help()) {
-		TooltipTextUnformatted(var->help());
+	if (!var->description().empty()) {
+		TooltipTextUnformatted(_(var->description().c_str()));
 	}
 	return false;
 }
 
 template<class Collection>
-bool ComboVar(const char *label, const char *varName, const Collection &items) {
+bool ComboVar(const char *varName, const Collection &items) {
 	const core::VarPtr &var = core::getVar(varName);
-	return ComboVar(label, var, items);
+	return ComboVar(var, items);
 }
 
 IMGUI_API void TextCentered(const char *text, bool reset = false);

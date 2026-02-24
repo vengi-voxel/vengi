@@ -9,6 +9,7 @@
 #include "ScopedStyle.h"
 #include "Style.h"
 #include "app/App.h"
+#include "app/I18N.h"
 #include "app/i18n/Language.h"
 #include "color/Quantize.h"
 #include "core/ConfigVar.h"
@@ -220,22 +221,22 @@ app::AppState IMGUIApp::onConstruct() {
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
 	}
-	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue.c_str(), -1, _("Change the ui colors - [0-3]"), [](const core::String &val) {
+	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue.c_str(), -1, N_("UI style"), N_("Change the ui colors - [0-3]"), [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
 			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx < ImGui::MaxStyles;
 		});
 	_uistyle = core::Var::registerVar(uIStyle);
-	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, -1, _("Timeout for notifications in millis"));
+	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, -1, N_("Notification timeout"), N_("Timeout for notifications in millis"));
 	core::Var::registerVar(uINotifyDismissMillis);
-	const core::VarDef uIMultiMonitor(cfg::UIMultiMonitor, true, -1, _("Allow multi monitor setups - requires a restart"));
+	const core::VarDef uIMultiMonitor(cfg::UIMultiMonitor, true, -1, N_("Multi monitor"), N_("Allow multi monitor setups - requires a restart"));
 	core::Var::registerVar(uIMultiMonitor);
-	const core::VarDef clientRenderUI(cfg::ClientRenderUI, true, -1, _("Render the ui"));
+	const core::VarDef clientRenderUI(cfg::ClientRenderUI, true, -1, N_("Render UI"), N_("Render the ui"));
 	_renderUI = core::Var::registerVar(clientRenderUI);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	const core::VarDef uIShowMetrics(cfg::UIShowMetrics, true, core::CV_NOPERSIST, _("Show metric and debug window"));
+	const core::VarDef uIShowMetrics(cfg::UIShowMetrics, true, core::CV_NOPERSIST, N_("Show metrics"), N_("Show metric and debug window"));
 	_showMetrics = core::Var::registerVar(uIShowMetrics);
 
-	const core::VarDef uITestFilter(cfg::UITestFilter, "tests", core::CV_NOPERSIST, _("Only run tests that match the given filter"));
+	const core::VarDef uITestFilter(cfg::UITestFilter, "tests", core::CV_NOPERSIST, N_("Test filter"), N_("Only run tests that match the given filter"));
 	core::Var::registerVar(uITestFilter);
 
 	if (!_showWindow) {
@@ -251,16 +252,16 @@ app::AppState IMGUIApp::onConstruct() {
 		registerArg("--imgui_list_tests").setDescription("List all available tests and exit");
 	}
 #else
-	const core::VarDef uIShowMetrics2(cfg::UIShowMetrics, false, core::CV_NOPERSIST, _("Show metric and debug window"));
+	const core::VarDef uIShowMetrics2(cfg::UIShowMetrics, false, core::CV_NOPERSIST, N_("Show metrics"), N_("Show metric and debug window"));
 	_showMetrics = core::Var::registerVar(uIShowMetrics2);
 #endif
-	const core::VarDef uIFontSize(cfg::UIFontSize, 14, -1, _("Allow to change the ui font size"), [](const core::String &val) {
+	const core::VarDef uIFontSize(cfg::UIFontSize, 14, -1, N_("Font size"), N_("Allow to change the ui font size"), [](const core::String &val) {
 			const float size = core::string::toFloat(val);
 			return size >= 8.0f;
 		});
 	_uiFontSize = core::Var::registerVar(uIFontSize);
 
-	const core::VarDef uIKeyMap(cfg::UIKeyMap, 0, -1, _("Which keybinding to use"));
+	const core::VarDef uIKeyMap(cfg::UIKeyMap, 0, -1, N_("Keymap"), N_("Which keybinding to use"));
 	_uiKeyMap = core::Var::registerVar(uIKeyMap);
 	core_assert(!_uiKeyMap->isDirty());
 	const core::VarDef uIFileDialogLastFiles(cfg::UIFileDialogLastFiles, "");
@@ -601,7 +602,7 @@ void IMGUIApp::renderCvarDialog() {
 				for (core::Var *var : vars) {
 					const bool matchName = core::string::icontains(var->name(), _cvarFilter);
 					const bool matchValue = core::string::icontains(var->strVal(), _cvarFilter);
-					const bool matchHelp = var->help() ? core::string::icontains(var->help(), _cvarFilter) : false;
+					const bool matchHelp = !var->description().empty() ? core::string::icontains(var->description(), _cvarFilter) : false;
 					if (matchName || matchValue || matchHelp) {
 						filteredVars.push_back(var);
 					}
@@ -622,7 +623,7 @@ void IMGUIApp::renderCvarDialog() {
 					const bool readOnly = var->getFlags() & core::CV_READONLY;
 					ImGui::BeginDisabled(readOnly);
 					const core::String type = "##" + var->name();
-					if (var->typeIsBool()) {
+					if (var->type() == core::VarType::Bool) {
 						bool value = var->boolVal();
 						if (ImGui::Checkbox(type.c_str(), &value)) {
 							var->setVal(value);
@@ -648,7 +649,7 @@ void IMGUIApp::renderCvarDialog() {
 						ImGui::TooltipTextUnformatted(_("Reset to default value"));
 					}
 					ImGui::TableNextColumn();
-					ImGui::TextUnformatted(var->help() ? var->help() : "");
+					ImGui::TextUnformatted(var->description().c_str());
 				}
 			}
 			ImGui::EndTable();
@@ -1006,7 +1007,7 @@ bool IMGUIApp::keyMapOption() {
 	if (_uiKeyMaps.empty()) {
 		return false;
 	}
-	return ImGui::ComboVar(_("Keymap"), _uiKeyMap->name().c_str(), _uiKeyMaps);
+	return ImGui::ComboVar(_uiKeyMap, _uiKeyMaps);
 }
 
 void IMGUIApp::colorReductionOptions() {

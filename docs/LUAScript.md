@@ -155,6 +155,7 @@ The detailed documentation for each API is auto-generated and can be found in th
 | ---- | ----------- |
 | [Keyframe](lua/keyframe.md) | Animation keyframe data |
 | [Image](lua/image.md) | Image data |
+| [Normal Palette](lua/normalpalette.md) | Normal palette |
 | [Palette](lua/palette.md) | Color palette |
 | [Region](lua/region.md) | Bounding region for volumes |
 | [SceneGraphNode](lua/scenegraphnode.md) | A node in the scene graph (model, group, camera, etc.) |

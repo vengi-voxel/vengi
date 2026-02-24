@@ -596,7 +596,10 @@ AppState App::onConstruct() {
 		_systemLanguage = Language::fromSpec("en", "GB");
 	}
 
-	const core::VarDef coreLogLevel(cfg::CoreLogLevel, (int)_initialLogLevel);
+	const core::VarDef coreLogLevel(
+		cfg::CoreLogLevel, (int)_initialLogLevel, -1, N_("Log level"),
+		N_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
+
 	core::VarPtr logVar = core::Var::registerVar(coreLogLevel);
 
 	Log::debug("Initialize the cvars");
@@ -671,22 +674,20 @@ AppState App::onConstruct() {
 
 		flagsMask &= ~(core::CV_FROMCOMMANDLINE | core::CV_FROMENV);
 
-		core::Var::registerVar(core::VarDef(name, value, flagsMask));
+		core::VarDef varDef(name, value, flagsMask);
+		core::Var::registerVar(varDef);
 	}
 	Log::init();
 
-	const core::VarDef coreLanguage(cfg::CoreLanguage, _systemLanguage.str());
+	const core::VarDef coreLanguage(cfg::CoreLanguage, _systemLanguage.str(), -1, N_("Language"), N_("The language to use - empty means system default"));
 	core::VarPtr langVar = core::Var::registerVar(coreLanguage);
 	setLanguage(langVar->strVal());
 
-	langVar->setHelp(_("The language to use - empty means system default"));
-	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
-
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
-	const core::VarDef coreMaxFPS(cfg::CoreMaxFPS, 1000.0f);
+	const core::VarDef coreMaxFPS(cfg::CoreMaxFPS, 1000.0f, -1, N_("Max FPS"), N_("The maximum frames per second. Set to 0 to disable the cap."));
 	_framesPerSecondsCap = core::Var::registerVar(coreMaxFPS);
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
-	const core::VarDef appVersion(cfg::AppVersion, "");
+	const core::VarDef appVersion(cfg::AppVersion, "", -1, N_("App version"), N_("The application version"));
 	core::Var::registerVar(appVersion);
 	// username for network sessions
 	core::String defaultUsername = "Unknown";
@@ -708,7 +709,7 @@ AppState App::onConstruct() {
 		defaultUsername = username;
 	}
 
-	const core::VarDef appUserName(cfg::AppUserName, defaultUsername);
+	const core::VarDef appUserName(cfg::AppUserName, defaultUsername, -1, N_("Username"), N_("The username to use in network sessions"));
 	core::Var::registerVar(appUserName);
 
 	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
@@ -720,7 +721,11 @@ AppState App::onConstruct() {
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
-	const core::VarDef metricFlavor(cfg::MetricFlavor, "");
+
+	const core::VarDef metricFlavor(cfg::MetricFlavor, "", {"telegraf", "etsy", "datadog", "influx", "json"}, -1,
+									N_("Metric flavor"),
+									N_("The flavor of the metrics output. This can be used to integrate with different "
+									   "monitoring systems. If empty, metrics are disabled."));
 	core::Var::registerVar(metricFlavor);
 	Log::init();
 
@@ -1164,8 +1169,8 @@ void App::usage() const {
 				flagsStr[4] = 'D';
 			}
 			Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), value);
-			if (v->help() != nullptr) {
-				Log::info("   -- %s", v->help());
+			if (!v->description().empty()) {
+				Log::info("   -- %s", v->description().c_str());
 			}
 		},
 		0u);
@@ -1442,8 +1447,8 @@ void App::writeConfigJson(io::WriteStream &stream) {
 		stream.writeStringFormat(false, "\"%s\": {", var->name().c_str());
 		stream.writeStringFormat(false, "\"value\":\"%s\"", var->strVal().c_str());
 		stream.writeStringFormat(false, ",\"flags\": %u", var->getFlags());
-		if (var->help()) {
-			stream.writeStringFormat(false, ",\"help\":\"%s\"", var->help());
+		if (!var->description().empty()) {
+			stream.writeStringFormat(false, ",\"help\":\"%s\"", var->description().c_str());
 		}
 		stream.writeString("}", false);
 	});

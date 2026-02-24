@@ -28,7 +28,7 @@ static RenderState s;
 
 void construct() {
 	for (int i = 0; i < core::enumVal(Feature::Max); ++i) {
-		featureVars[i] = core::Var::registerVar(core::VarDef(featuresArray[i], false, -1, "Renderer feature cvar"));
+		featureVars[i] = core::Var::registerVar(core::VarDef(featuresArray[i], false, -1, nullptr, "Renderer feature cvar"));
 	}
 }
 

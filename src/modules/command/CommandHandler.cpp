@@ -87,8 +87,8 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 				} else {
 					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 				}
-				if (c->help() != nullptr) {
-					Log::info("- %s", c->help());
+				if (!c->description().empty()) {
+					Log::info("- %s", c->description().c_str());
 				}
 			} else {
 				const core::String& value = core::string::join(tokens.begin(), tokens.end(), " ");

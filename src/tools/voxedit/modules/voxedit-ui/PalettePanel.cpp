@@ -420,8 +420,8 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
-			ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
-			ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
+			ImGui::CheckboxVar(cfg::VoxEditShowColorPicker);
+			ImGui::CheckboxVar(cfg::VoxEditColorWheel);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

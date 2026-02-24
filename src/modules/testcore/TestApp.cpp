@@ -152,7 +152,7 @@ void TestApp::onRenderUI() {
 	if (ImGui::InputVec3("Camera position", cameraPos)) {
 		camera().setWorldPosition(cameraPos);
 	}
-	ImGui::InputVarFloat("Rotation speed", _rotationSpeed, 0.01f, 0.1f);
+	ImGui::InputVarFloat(_rotationSpeed, 0.01f, 0.1f);
 	ImGui::Separator();
 	if (ImGui::Button("Bindings")) {
 		showBindingsDialog();

@@ -240,9 +240,9 @@ void NodeInspectorPanel::sceneViewMenuBar(scenegraph::SceneGraphNode &node) {
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
-			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
-			ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
-			ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
+			ImGui::CheckboxVar(_localSpace);
+			ImGui::CheckboxVar(cfg::VoxEditTransformUpdateChildren);
+			ImGui::CheckboxVar(cfg::VoxEditAutoKeyFrame);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
