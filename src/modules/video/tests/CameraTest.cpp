@@ -38,9 +38,12 @@ protected:
 	}
 
 	void SetUp() override {
-		_zoomSpeed = core::Var::registerVar(core::VarDef(cfg::ClientCameraZoomSpeed, 0.1f));
-		_maxZoom = core::Var::registerVar(core::VarDef(cfg::ClientCameraMaxZoom, 1000.0f));
-		_minZoom = core::Var::registerVar(core::VarDef(cfg::ClientCameraMinZoom, 0.001f));
+		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f);
+		_zoomSpeed = core::Var::registerVar(clientCameraZoomSpeed);
+		const core::VarDef clientCameraMaxZoom(cfg::ClientCameraMaxZoom, 1000.0f);
+		_maxZoom = core::Var::registerVar(clientCameraMaxZoom);
+		const core::VarDef clientCameraMinZoom(cfg::ClientCameraMinZoom, 0.001f);
+		_minZoom = core::Var::registerVar(clientCameraMinZoom);
 	}
 };
 

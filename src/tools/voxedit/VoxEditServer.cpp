@@ -18,7 +18,8 @@ VoxEditServer::VoxEditServer(const io::FilesystemPtr &filesystem, const core::Ti
 
 app::AppState VoxEditServer::onConstruct() {
 	app::AppState appState = Super::onConstruct();
-	core::Var::registerVar(core::VarDef(cfg::UILastDirectory, filesystem()->homePath().c_str()));
+	const core::VarDef uILastDirectory(cfg::UILastDirectory, filesystem()->homePath().c_str());
+	core::Var::registerVar(uILastDirectory);
 	_sceneMgr->construct();
 	core::getVar(cfg::AppVersion)->setVal(PROJECT_VERSION);
 	return appState;

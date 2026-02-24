@@ -88,8 +88,8 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	if (_homePath.empty()) {
 		_homePath = "./";
 	}
-	const core::VarPtr &homePathVar =
-		core::Var::registerVar(core::VarDef(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST));
+	const core::VarDef appHomePath(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
+	const core::VarPtr &homePathVar = core::Var::registerVar(appHomePath);
 
 	_homePath = homePathVar->strVal();
 	normalizePath(_homePath);
@@ -122,8 +122,8 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 
 	// this cvar allows to change the application data directory at runtime - it has lower priority
 	// as the backed-in PKGDATADIR (if defined) - and also lower priority as the home directory.
-	const core::VarPtr &corePath =
-		core::Var::registerVar(core::VarDef(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /"));
+	const core::VarDef corePathDef(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
+	const core::VarPtr &corePath = core::Var::registerVar(corePathDef);
 	if (!corePath->strVal().empty()) {
 		if (exists(corePath->strVal())) {
 			core_assert_always(registerPath(corePath->strVal()));

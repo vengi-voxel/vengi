@@ -26,13 +26,15 @@ bool MeshState::init() {
 
 void MeshState::construct() {
 	// this must be 62 for the binary cubic mesher
-	_meshSize = core::Var::registerVar(core::VarDef(cfg::VoxelMeshSize, 62, core::CV_READONLY | core::CV_NOPERSIST));
+	const core::VarDef voxelMeshSize(cfg::VoxelMeshSize, 62, core::CV_READONLY | core::CV_NOPERSIST);
+	_meshSize = core::Var::registerVar(voxelMeshSize);
 	// Editor/render mesh mode - excludes GreedyTexture as it's not supported by the renderer
-	core::Var::registerVar(core::VarDef(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary),
+	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary),
 				   core::CV_SHADER,
 				   "0 = cubes, 1 = marching cubes, 2 = binary mesher",
 				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
-											  (int)voxel::SurfaceExtractionType::Binary>));
+											  (int)voxel::SurfaceExtractionType::Binary>);
+	core::Var::registerVar(voxRenderMeshMode);
 }
 
 glm::vec3 MeshState::VolumeData::centerPos(bool applyModel) const {

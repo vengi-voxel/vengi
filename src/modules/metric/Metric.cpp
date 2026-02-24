@@ -20,7 +20,8 @@ Metric::~Metric() {
 
 bool Metric::init(const char *prefix, const IMetricSenderPtr &messageSender) {
 	_prefix = prefix;
-	core::VarPtr uuid = core::Var::registerVar(core::VarDef(cfg::MetricUUID, ""));
+	const core::VarDef metricUUID(cfg::MetricUUID, "");
+	core::VarPtr uuid = core::Var::registerVar(metricUUID);
 	if (uuid->strVal().empty()) {
 		uuid->setVal(core::UUID::generate().str());
 	}

@@ -18,8 +18,10 @@ private:
 protected:
 	void SetUp() override {
 		Super::SetUp();
-		core::Var::registerVar(core::VarDef(cfg::VoxelMeshSize, 16, core::CV_READONLY));
-		core::Var::registerVar(core::VarDef(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary)));
+		const core::VarDef voxelMeshSize(cfg::VoxelMeshSize, 16, core::CV_READONLY);
+		core::Var::registerVar(voxelMeshSize);
+		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		core::Var::registerVar(voxRenderMeshMode);
 	}
 };
 

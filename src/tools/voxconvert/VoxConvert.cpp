@@ -123,7 +123,8 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::getVar(cfg::VoxformatQuads);
 	_withColor = core::getVar(cfg::VoxformatWithColor);
 	_withTexCoords = core::getVar(cfg::VoxformatWithtexcoords);
-	core::Var::registerVar(core::VarDef(cfg::VoxConvertDepthFactor2D, 0.0f));
+	const core::VarDef voxConvertDepthFactor2D(cfg::VoxConvertDepthFactor2D, 0.0f);
+	core::Var::registerVar(voxConvertDepthFactor2D);
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");

@@ -330,9 +330,12 @@ protected:
 public:
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		core::Var::registerVar(core::VarDef(cfg::VoxformatRGBFlattenFactor, 0));
-		core::Var::registerVar(core::VarDef(cfg::VoxformatEmptyPaletteIndex, -1));
-		core::Var::registerVar(core::VarDef(cfg::VoxEditNetPassword, "test"));
+		const core::VarDef voxformatRGBFlattenFactor(cfg::VoxformatRGBFlattenFactor, 0);
+		core::Var::registerVar(voxformatRGBFlattenFactor);
+		const core::VarDef voxformatEmptyPaletteIndex(cfg::VoxformatEmptyPaletteIndex, -1);
+		core::Var::registerVar(voxformatEmptyPaletteIndex);
+		const core::VarDef voxEditNetPassword(cfg::VoxEditNetPassword, "test");
+		core::Var::registerVar(voxEditNetPassword);
 	}
 };
 

@@ -28,8 +28,10 @@ bool Request::supported() {
 Request::Request(const core::String &url, RequestType type) {
 	_ctx._type = type;
 	_ctx._url = url;
-	_ctx._timeoutSecond = core::Var::registerVar(core::VarDef(cfg::HttpTimeout, 5))->intVal();
-	_ctx._connectTimeoutSecond = core::Var::registerVar(core::VarDef(cfg::HttpConnectTimeout, 1))->intVal();
+	const core::VarDef httpTimeout(cfg::HttpTimeout, 5);
+	_ctx._timeoutSecond = core::Var::registerVar(httpTimeout)->intVal();
+	const core::VarDef httpConnectTimeout(cfg::HttpConnectTimeout, 1);
+	_ctx._connectTimeoutSecond = core::Var::registerVar(httpConnectTimeout)->intVal();
 	_ctx._userAgent = "vengi/" PROJECT_VERSION;
 }
 

@@ -47,7 +47,8 @@ bool CollectionManager::init() {
 		documents = _filesystem->homePath();
 	}
 	core_assert(!documents.empty());
-	const core::VarPtr &var = core::Var::registerVar(core::VarDef(cfg::AssetPanelLocalDirectory, documents));
+	const core::VarDef assetPanelLocalDirectory(cfg::AssetPanelLocalDirectory, documents);
+	const core::VarPtr &var = core::Var::registerVar(assetPanelLocalDirectory);
 	_localDir = var->strVal();
 	if (_localDir.empty()) {
 		var->setVal(documents);

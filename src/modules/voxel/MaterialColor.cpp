@@ -26,7 +26,8 @@ palette::NormalPalette &getNormalPalette() {
 	core::ScopedLock lock(_priv::_lock);
 	if (!hasNormalPalette()) {
 		palette::NormalPalette normalPalette;
-		const core::VarPtr &var = core::Var::registerVar(core::VarDef(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName()));
+		const core::VarDef normalPaletteDef(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName());
+		const core::VarPtr &var = core::Var::registerVar(normalPaletteDef);
 		const core::String &defaultNormalPalette = var->strVal();
 		if (!normalPalette.load(defaultNormalPalette.c_str())) {
 			normalPalette.redAlert2();
@@ -45,7 +46,8 @@ palette::Palette &getPalette() {
 	core::ScopedLock lock(_priv::_lock);
 	if (!hasPalette()) {
 		palette::Palette palette;
-		const core::VarPtr &var = core::Var::registerVar(core::VarDef(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName()));
+		const core::VarDef voxelPaletteDef(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName());
+		const core::VarPtr &var = core::Var::registerVar(voxelPaletteDef);
 		const core::String &defaultPalette = var->strVal();
 		if (!palette.load(defaultPalette.c_str())) {
 			palette.nippon();

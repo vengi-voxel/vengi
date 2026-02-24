@@ -32,7 +32,8 @@ protected:
 	void SetUp() override {
 		sender = core::make_shared<BufferSender>();
 		ASSERT_TRUE(sender->init());
-		core::Var::registerVar(core::VarDef(cfg::MetricUUID, "fake"));
+		const core::VarDef metricUUID(cfg::MetricUUID, "fake");
+		core::Var::registerVar(metricUUID);
 	}
 
 	void TearDown() override {
@@ -65,15 +66,20 @@ protected:
 
 	inline void setFlavor(Flavor flavor) const {
 		if (flavor == Flavor::Telegraf) {
-			core::Var::registerVar(core::VarDef("metric_flavor", ""))->setVal("telegraf");
+			const core::VarDef metricFlavor("metric_flavor", "");
+			core::Var::registerVar(metricFlavor)->setVal("telegraf");
 		} else if (flavor == Flavor::Etsy) {
-			core::Var::registerVar(core::VarDef("metric_flavor", ""))->setVal("etsy");
+			const core::VarDef metricFlavor2("metric_flavor", "");
+			core::Var::registerVar(metricFlavor2)->setVal("etsy");
 		} else if (flavor == Flavor::Datadog) {
-			core::Var::registerVar(core::VarDef("metric_flavor", ""))->setVal("datadog");
+			const core::VarDef metricFlavor3("metric_flavor", "");
+			core::Var::registerVar(metricFlavor3)->setVal("datadog");
 		} else if (flavor == Flavor::Influx) {
-			core::Var::registerVar(core::VarDef("metric_flavor", ""))->setVal("influx");
+			const core::VarDef metricFlavor4("metric_flavor", "");
+			core::Var::registerVar(metricFlavor4)->setVal("influx");
 		} else if (flavor == Flavor::JSON) {
-			core::Var::registerVar(core::VarDef("metric_flavor", ""))->setVal("json");
+			const core::VarDef metricFlavor5("metric_flavor", "");
+			core::Var::registerVar(metricFlavor5)->setVal("json");
 		}
 	}
 };

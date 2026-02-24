@@ -220,18 +220,23 @@ app::AppState IMGUIApp::onConstruct() {
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
 	}
-	_uistyle =
-		core::Var::registerVar(core::VarDef(cfg::UIStyle, uiStyleDefaultValue.c_str(), -1, _("Change the ui colors - [0-3]"), [](const core::String &val) {
+	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue.c_str(), -1, _("Change the ui colors - [0-3]"), [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
 			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx < ImGui::MaxStyles;
-		}));
-	core::Var::registerVar(core::VarDef(cfg::UINotifyDismissMillis, 3000, -1, _("Timeout for notifications in millis")));
-	core::Var::registerVar(core::VarDef(cfg::UIMultiMonitor, true, -1, _("Allow multi monitor setups - requires a restart")));
-	_renderUI = core::Var::registerVar(core::VarDef(cfg::ClientRenderUI, true, -1, _("Render the ui")));
+		});
+	_uistyle = core::Var::registerVar(uIStyle);
+	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, -1, _("Timeout for notifications in millis"));
+	core::Var::registerVar(uINotifyDismissMillis);
+	const core::VarDef uIMultiMonitor(cfg::UIMultiMonitor, true, -1, _("Allow multi monitor setups - requires a restart"));
+	core::Var::registerVar(uIMultiMonitor);
+	const core::VarDef clientRenderUI(cfg::ClientRenderUI, true, -1, _("Render the ui"));
+	_renderUI = core::Var::registerVar(clientRenderUI);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	_showMetrics = core::Var::registerVar(core::VarDef(cfg::UIShowMetrics, true, core::CV_NOPERSIST, _("Show metric and debug window")));
+	const core::VarDef uIShowMetrics(cfg::UIShowMetrics, true, core::CV_NOPERSIST, _("Show metric and debug window"));
+	_showMetrics = core::Var::registerVar(uIShowMetrics);
 
-	core::Var::registerVar(core::VarDef(cfg::UITestFilter, "tests", core::CV_NOPERSIST, _("Only run tests that match the given filter")));
+	const core::VarDef uITestFilter(cfg::UITestFilter, "tests", core::CV_NOPERSIST, _("Only run tests that match the given filter"));
+	core::Var::registerVar(uITestFilter);
 
 	if (!_showWindow) {
 		registerArg("--imgui_test_filter")
@@ -246,19 +251,23 @@ app::AppState IMGUIApp::onConstruct() {
 		registerArg("--imgui_list_tests").setDescription("List all available tests and exit");
 	}
 #else
-	_showMetrics = core::Var::registerVar(core::VarDef(cfg::UIShowMetrics, false, core::CV_NOPERSIST, _("Show metric and debug window")));
+	const core::VarDef uIShowMetrics2(cfg::UIShowMetrics, false, core::CV_NOPERSIST, _("Show metric and debug window"));
+	_showMetrics = core::Var::registerVar(uIShowMetrics2);
 #endif
-	_uiFontSize =
-		core::Var::registerVar(core::VarDef(cfg::UIFontSize, 14, -1, _("Allow to change the ui font size"), [](const core::String &val) {
+	const core::VarDef uIFontSize(cfg::UIFontSize, 14, -1, _("Allow to change the ui font size"), [](const core::String &val) {
 			const float size = core::string::toFloat(val);
 			return size >= 8.0f;
-		}));
+		});
+	_uiFontSize = core::Var::registerVar(uIFontSize);
 
-	_uiKeyMap = core::Var::registerVar(core::VarDef(cfg::UIKeyMap, 0, -1, _("Which keybinding to use")));
+	const core::VarDef uIKeyMap(cfg::UIKeyMap, 0, -1, _("Which keybinding to use"));
+	_uiKeyMap = core::Var::registerVar(uIKeyMap);
 	core_assert(!_uiKeyMap->isDirty());
-	_lastOpenedFiles = core::Var::registerVar(core::VarDef(cfg::UIFileDialogLastFiles, ""));
+	const core::VarDef uIFileDialogLastFiles(cfg::UIFileDialogLastFiles, "");
+	_lastOpenedFiles = core::Var::registerVar(uIFileDialogLastFiles);
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
-	_lastOpenedFile = core::Var::registerVar(core::VarDef(cfg::UIFileDialogLastFile, ""));
+	const core::VarDef uIFileDialogLastFile(cfg::UIFileDialogLastFile, "");
+	_lastOpenedFile = core::Var::registerVar(uIFileDialogLastFile);
 
 	command::Command::registerCommand("ui_showtextures")
 		.setHandler([&](const command::CommandArgs &args) { _showTexturesDialog = true; });
