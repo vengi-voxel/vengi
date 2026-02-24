@@ -100,7 +100,7 @@ void VoxConvertUI::onRenderUI() {
 					languageOption();
 					ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);
 					ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
-					const core::VarPtr &uiStyleVar = core::Var::getSafe(cfg::UIStyle);
+					const core::VarPtr &uiStyleVar = core::Var::getVar(cfg::UIStyle);
 					int currentStyle = uiStyleVar->intVal();
 					if (ImGui::BeginCombo(_("Color theme"), ImGui::GetStyleName(currentStyle))) {
 						for (int i = 0; i < ImGui::MaxStyles; ++i) {

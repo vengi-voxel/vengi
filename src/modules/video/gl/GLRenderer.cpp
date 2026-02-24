@@ -2622,7 +2622,7 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #else
 	int contextFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-	const core::VarPtr &glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
+	const core::VarPtr &glVersion = core::Var::getVar(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (SDL_sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
 		const GLVersion &version = GL4_3;
@@ -2632,8 +2632,8 @@ void setup() {
 	GLVersion glv(glMajor, glMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
-	const core::VarPtr &multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
-	const core::VarPtr &multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffers = core::Var::getVar(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamples = core::Var::getVar(cfg::ClientMultiSampleSamples);
 	int samples = multisampleSamples->intVal();
 	int buffers = multisampleBuffers->intVal();
 	if (samples <= 0) {
@@ -2678,7 +2678,7 @@ static int getVSync() {
 }
 
 static void handleVSync() {
-	const bool vsync = core::Var::getSafe(cfg::ClientVSync)->boolVal();
+	const bool vsync = core::Var::getVar(cfg::ClientVSync)->boolVal();
 	if (vsync) {
 		if (!setVSync(-1)) {
 			if (!setVSync(1)) {
@@ -2744,7 +2744,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	int contextFlags = 0;
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
 	if (contextFlags & SDL_GL_CONTEXT_DEBUG_FLAG) {
-		const int severity = core::Var::getSafe(cfg::ClientDebugSeverity)->intVal();
+		const int severity = core::Var::getVar(cfg::ClientDebugSeverity)->intVal();
 		if (severity < (int)video::DebugSeverity::None || severity >= (int)video::DebugSeverity::Max) {
 			Log::warn("Invalid severity level given: %i [0-3] - 0 disabled, 1 highest and 3 lowest severity level",
 					  severity);
@@ -2753,8 +2753,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		}
 	}
 
-	const core::VarPtr &multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
-	const core::VarPtr &multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffers = core::Var::getVar(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamples = core::Var::getVar(cfg::ClientMultiSampleSamples);
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
 	if (multisampling) {
 		int buffers, samples;

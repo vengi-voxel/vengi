@@ -71,7 +71,7 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 		Log::debug("change local dir to %s", dir.c_str());
 		_localDir = dir;
 		_voxelFilesMap.remove(LOCAL_SOURCE);
-		core::Var::getSafe(cfg::AssetPanelLocalDirectory)->setVal(_localDir);
+		core::Var::getVar(cfg::AssetPanelLocalDirectory)->setVal(_localDir);
 		return true;
 	}
 	return false;

@@ -46,7 +46,7 @@ bool Server::initSession(const network::ClientId &clientId, uint32_t protocolVer
 		return false;
 	}
 
-	const core::VarPtr &expectedPassword = core::Var::getSafe(cfg::VoxEditNetPassword);
+	const core::VarPtr &expectedPassword = core::Var::getVar(cfg::VoxEditNetPassword);
 	if (expectedPassword->strVal() != password) {
 		Log::error("Client %u provided invalid password", clientId);
 		return false;

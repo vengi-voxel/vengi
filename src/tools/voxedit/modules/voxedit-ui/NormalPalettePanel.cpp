@@ -26,7 +26,7 @@ NormalPalettePanel::NormalPalettePanel(ui::IMGUIApp *app, const SceneManagerPtr 
 }
 
 void NormalPalettePanel::init() {
-	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
+	_renderNormals = core::Var::getVar(cfg::RenderNormals);
 }
 
 void NormalPalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float contentRegionRightEdge,
@@ -117,7 +117,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 			}
 			if (ImGui::BeginMenu(_("Auto normals"))) {
 				const char *normalModes[] = {_("Flat"), _("Smooth"), _("Smoother")};
-				const core::VarPtr &normalModeVar = core::Var::getSafe(cfg::VoxEditAutoNormalMode);
+				const core::VarPtr &normalModeVar = core::Var::getVar(cfg::VoxEditAutoNormalMode);
 				const int currentNormalMode = normalModeVar->intVal();
 
 				if (ImGui::BeginCombo(_("Normal mode"), normalModes[currentNormalMode])) {

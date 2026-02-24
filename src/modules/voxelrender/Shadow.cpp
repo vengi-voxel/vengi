@@ -35,7 +35,7 @@ bool Shadow::init(const ShadowParameters& parameters) {
 	const glm::vec3 sunPos(25.0f, 100.0f, 25.0f);
 	setPosition(sunPos, glm::vec3(0.0f), glm::up());
 
-	const glm::ivec2 smSize(core::Var::getSafe(cfg::ClientShadowMapSize)->intVal());
+	const glm::ivec2 smSize(core::Var::getVar(cfg::ClientShadowMapSize)->intVal());
 	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, _parameters.maxDepthBuffers);
 	if (!_depthBuffer.init(cfg)) {
 		Log::error("Failed to init the depthbuffer");

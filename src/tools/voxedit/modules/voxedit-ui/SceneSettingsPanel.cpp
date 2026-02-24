@@ -17,11 +17,11 @@ SceneSettingsPanel::SceneSettingsPanel(ui::IMGUIApp *app, const SceneManagerPtr 
 }
 
 void SceneSettingsPanel::init() {
-	_rendershadow = core::Var::getSafe(cfg::VoxEditRendershadow);
-	_ambientColor = core::Var::getSafe(cfg::VoxEditAmbientColor);
-	_diffuseColor = core::Var::getSafe(cfg::VoxEditDiffuseColor);
-	_sunAngle = core::Var::getSafe(cfg::VoxEditSunAngle);
-	_shadingMode = core::Var::getSafe(cfg::VoxEditShadingMode);
+	_rendershadow = core::Var::getVar(cfg::VoxEditRendershadow);
+	_ambientColor = core::Var::getVar(cfg::VoxEditAmbientColor);
+	_diffuseColor = core::Var::getVar(cfg::VoxEditDiffuseColor);
+	_sunAngle = core::Var::getVar(cfg::VoxEditSunAngle);
+	_shadingMode = core::Var::getVar(cfg::VoxEditShadingMode);
 }
 
 void SceneSettingsPanel::sceneColors(ShadingMode shadingMode) {

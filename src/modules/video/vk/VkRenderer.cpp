@@ -152,8 +152,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		Log::debug("No direct state access");
 	}
 
-	const core::VarPtr &multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
-	const core::VarPtr &multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffers = core::Var::getVar(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamples = core::Var::getVar(cfg::ClientMultiSampleSamples);
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
 
 	if (multisampling) {

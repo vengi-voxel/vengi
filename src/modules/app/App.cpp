@@ -107,7 +107,7 @@ static void app_timeout_handler(int signo) {
 #endif
 
 static void app_loop_debug_log(int signo) {
-	const core::VarPtr &log = core::Var::getSafe(cfg::CoreLogLevel);
+	const core::VarPtr &log = core::Var::getVar(cfg::CoreLogLevel);
 	int current = log->intVal();
 	current--;
 	if (current < SDL_LOG_PRIORITY_VERBOSE)
@@ -796,7 +796,7 @@ AppState App::onInit() {
 
 	Log::debug("Initialize the log system");
 	Log::init();
-	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
+	_logLevelVar = core::Var::getVar(cfg::CoreLogLevel);
 
 	core::Var::needsSaving();
 	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
@@ -1081,7 +1081,7 @@ void App::usageFooter() const {
 	Log::info(" * Mastodon: https://mastodon.social/@mgerhardy");
 	Log::info(" * Discord: https://vengi-voxel.de/discord");
 
-	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
+	if (core::Var::getVar(cfg::MetricFlavor)->strVal().empty()) {
 		Log::info(
 			"Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());

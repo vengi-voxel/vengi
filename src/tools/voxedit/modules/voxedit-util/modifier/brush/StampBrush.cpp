@@ -92,7 +92,7 @@ void StampBrush::construct() {
 			}
 		}).setHelp(_("Paste the current clipboard content as stamp"));
 
-	_maxVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSizePreview);
+	_maxVolumeSize = core::Var::getVar(cfg::VoxEditMaxSuggestedVolumeSizePreview);
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &ctx) const {

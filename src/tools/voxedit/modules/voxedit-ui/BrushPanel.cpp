@@ -45,8 +45,8 @@ static constexpr const char *BrushTypeIcons[] = {
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::init() {
-	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
-	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
+	_renderNormals = core::Var::getVar(cfg::RenderNormals);
+	_viewMode = core::Var::getVar(cfg::VoxEditViewMode);
 }
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {

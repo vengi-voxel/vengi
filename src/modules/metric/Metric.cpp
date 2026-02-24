@@ -27,7 +27,7 @@ bool Metric::init(const char *prefix, const IMetricSenderPtr &messageSender) {
 	_uuid = uuid->strVal();
 	Log::debug("Use uuid for metrics: %s", _uuid.c_str());
 
-	const core::String &flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
+	const core::String &flavor = core::Var::getVar(cfg::MetricFlavor)->strVal();
 	if (flavor == "telegraf") {
 		_flavor = Flavor::Telegraf;
 		Log::debug("Using metric flavor 'telegraf'");

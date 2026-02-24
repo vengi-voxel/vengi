@@ -166,7 +166,7 @@ void FormatPrinter::printManPageVars() {
 	Log::printf("\n");
 	for (const core::String &var : formatVars) {
 		Log::printf(".PP\n");
-		Log::printf("\\fB%s\\fP: %s\n", var.c_str(), core::Var::getSafe(var)->help());
+		Log::printf("\\fB%s\\fP: %s\n", var.c_str(), core::Var::getVar(var)->help());
 	}
 	Log::printf("\n");
 }

@@ -57,7 +57,7 @@ bool Var::setVal(float value) {
 	return setVal(core::String::format("%f", value));
 }
 
-VarPtr Var::getSafe(const core::String &name) {
+VarPtr Var::getVar(const core::String &name) {
 	const VarPtr &var = findVar(name);
 	core_assert_msg(var, "var %s doesn't exist yet", name.c_str());
 	return var;

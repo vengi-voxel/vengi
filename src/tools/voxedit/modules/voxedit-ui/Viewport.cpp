@@ -71,22 +71,22 @@ Viewport::~Viewport() {
 }
 
 bool Viewport::init() {
-	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
-	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
-	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
-	_gizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGizmoAllowAxisFlip);
-	_gizmoSnap = core::Var::getSafe(cfg::VoxEditGizmoSnap);
-	_modelGizmo = core::Var::getSafe(cfg::VoxEditModelGizmo);
-	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
-	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
-	_pivotMode = core::Var::getSafe(cfg::VoxEditGizmoPivot);
-	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
-	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
-	_autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame);
-	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
-	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
-	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
-	_clipping = core::Var::getSafe(cfg::GameModeClipping);
+	_cursorDetails = core::Var::getVar(cfg::VoxEditCursorDetails);
+	_showAxisVar = core::Var::getVar(cfg::VoxEditShowaxis);
+	_gizmoOperations = core::Var::getVar(cfg::VoxEditGizmoOperations);
+	_gizmoAllowAxisFlip = core::Var::getVar(cfg::VoxEditGizmoAllowAxisFlip);
+	_gizmoSnap = core::Var::getVar(cfg::VoxEditGizmoSnap);
+	_modelGizmo = core::Var::getVar(cfg::VoxEditModelGizmo);
+	_viewDistance = core::Var::getVar(cfg::VoxEditViewdistance);
+	_viewMode = core::Var::getVar(cfg::VoxEditViewMode);
+	_pivotMode = core::Var::getVar(cfg::VoxEditGizmoPivot);
+	_hideInactive = core::Var::getVar(cfg::VoxEditHideInactive);
+	_gridSize = core::Var::getVar(cfg::VoxEditGridsize);
+	_autoKeyFrame = core::Var::getVar(cfg::VoxEditAutoKeyFrame);
+	_localSpace = core::Var::getVar(cfg::VoxEditLocalSpace);
+	_renderNormals = core::Var::getVar(cfg::RenderNormals);
+	_animationPlaying = core::Var::getVar(cfg::VoxEditAnimationPlaying);
+	_clipping = core::Var::getVar(cfg::GameModeClipping);
 	// Use the actual framebuffer pixel dimensions (not logical window size) to ensure
 	// crisp rendering on HiDPI displays
 	if (!_renderContext.init(_app->frameBufferDimension())) {

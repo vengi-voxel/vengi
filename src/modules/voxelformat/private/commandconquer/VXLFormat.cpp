@@ -686,7 +686,7 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	const core::String &basename = core::string::stripExtension(filename);
 
-	const bool loadHVA = core::Var::getSafe(cfg::VoxformatVXLLoadHVA)->boolVal();
+	const bool loadHVA = core::Var::getVar(cfg::VoxformatVXLLoadHVA)->boolVal();
 	if (loadHVA && archive->exists(basename + ".hva")) {
 		HVAFormat hva;
 		wrapBool(hva.loadHVA(basename + ".hva", archive, mdl, sceneGraph))

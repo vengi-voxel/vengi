@@ -143,7 +143,7 @@ public:
 	/**
 	 * @note variable must exists, otherwise @c core_assert triggers
 	 */
-	static VarPtr getSafe(const core::String& name);
+	static VarPtr getVar(const core::String& name);
 
 	/**
 	 * @return empty string if var with given name wasn't found, otherwise the value of the var

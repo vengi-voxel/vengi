@@ -33,8 +33,8 @@ bool RenderContext::init(const glm::ivec2 &size) {
 	cfg.dimension(size);
 
 	// Configure multisampling based on configuration variables
-	const core::VarPtr &multisampleSamplesVar = core::Var::getSafe(cfg::ClientMultiSampleSamples);
-	const core::VarPtr &multisampleBuffersVar = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamplesVar = core::Var::getVar(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffersVar = core::Var::getVar(cfg::ClientMultiSampleBuffers);
 	enableMultisampling = multisampleSamplesVar->intVal() > 0 && multisampleBuffersVar->intVal() > 0;
 	multisampleSamples = multisampleSamplesVar->intVal();
 
@@ -202,8 +202,8 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 }
 
 bool RenderContext::updateMultisampling() {
-	const core::VarPtr &multisampleSamplesVar = core::Var::getSafe(cfg::ClientMultiSampleSamples);
-	const core::VarPtr &multisampleBuffersVar = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamplesVar = core::Var::getVar(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffersVar = core::Var::getVar(cfg::ClientMultiSampleBuffers);
 	bool newEnableMultisampling = multisampleSamplesVar->intVal() > 0 && multisampleBuffersVar->intVal() > 0;
 	int newMultisampleSamples = multisampleSamplesVar->intVal();
 

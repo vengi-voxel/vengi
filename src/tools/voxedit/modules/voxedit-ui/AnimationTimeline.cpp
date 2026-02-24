@@ -113,7 +113,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 bool AnimationTimeline::init() {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	_lastActivedNodeId = sceneGraph.activeNode();
-	_animationPlaying = core::Var::getSafe(cfg::VoxEditAnimationPlaying);
+	_animationPlaying = core::Var::getVar(cfg::VoxEditAnimationPlaying);
 	return true;
 }
 

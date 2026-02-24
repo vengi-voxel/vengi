@@ -301,7 +301,7 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 }
 
 void FileDialog::removeBookmark(const core::String &bookmark) {
-	core::VarPtr bookmarks = core::Var::getSafe(cfg::UIBookmarks);
+	core::VarPtr bookmarks = core::Var::getVar(cfg::UIBookmarks);
 
 	core::DynamicArray<core::String> bm;
 	core::string::splitString(bookmarks->strVal(), bm, ";");
@@ -419,7 +419,7 @@ bool FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 void FileDialog::setCurrentPath(video::OpenFileMode type, const core::String& path) {
 	resetState();
 	_currentPath = path;
-	core::Var::getSafe(cfg::UILastDirectory)->setVal(_currentPath);
+	core::Var::getVar(cfg::UILastDirectory)->setVal(_currentPath);
 	readDir(type);
 }
 

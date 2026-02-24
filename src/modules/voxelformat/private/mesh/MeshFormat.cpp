@@ -44,7 +44,7 @@
 namespace voxelformat {
 
 MeshFormat::MeshFormat() {
-	_weightedAverage = core::Var::getSafe(cfg::VoxformatRGBWeightedAverage)->boolVal();
+	_weightedAverage = core::Var::getVar(cfg::VoxformatRGBWeightedAverage)->boolVal();
 }
 
 MeshFormat::ChunkMeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sceneGraph, MeshFormat::ChunkMeshes &meshes,
@@ -62,11 +62,11 @@ MeshFormat::ChunkMeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sc
 }
 
 glm::vec3 MeshFormat::getInputScale() {
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
+	const float scale = core::Var::getVar(cfg::VoxformatScale)->floatVal();
 
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
+	float scaleX = core::Var::getVar(cfg::VoxformatScaleX)->floatVal();
+	float scaleY = core::Var::getVar(cfg::VoxformatScaleY)->floatVal();
+	float scaleZ = core::Var::getVar(cfg::VoxformatScaleZ)->floatVal();
 
 	scaleX = glm::epsilonNotEqual(scaleX, 1.0f, glm::epsilon<float>()) ? scaleX : scale;
 	scaleY = glm::epsilonNotEqual(scaleY, 1.0f, glm::epsilon<float>()) ? scaleY : scale;
@@ -300,7 +300,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 		return InvalidNodeId;
 	}
 
-	const int voxelizeMode = core::Var::getSafe(cfg::VoxformatVoxelizeMode)->intVal();
+	const int voxelizeMode = core::Var::getVar(cfg::VoxformatVoxelizeMode)->intVal();
 	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
 	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
@@ -318,7 +318,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
 	node.setName(name);
 	palette::NormalPalette normalPalette;
-	const core::VarPtr &normalPaletteVar = core::Var::getSafe(cfg::NormalPalette);
+	const core::VarPtr &normalPaletteVar = core::Var::getVar(cfg::NormalPalette);
 	if (!normalPalette.load(normalPaletteVar->strVal().c_str())) {
 		Log::debug("Failed to load normal palette %s - use redalert2 as default", normalPaletteVar->strVal().c_str());
 		normalPalette.redAlert2();
@@ -328,7 +328,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	// TODO: VOXELFORMAT: auto generate the normal palette from the input tris?
 	node.setNormalPalette(normalPalette);
 
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	const bool fillHollow = core::Var::getVar(cfg::VoxformatFillHollow)->boolVal();
 	const int maxVoxels = vdim.x * vdim.y * vdim.z;
 	if (axisAligned) {
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
@@ -340,7 +340,7 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 	} else if (voxelizeMode == VoxelizeMode::Fast) {
 		palette::Palette palette;
 
-		const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+		const bool shouldCreatePalette = core::Var::getVar(cfg::VoxelCreatePalette)->boolVal();
 		if (shouldCreatePalette) {
 			palette::RGBAMaterialMap colorMaterials;
 			Log::debug("create palette");
@@ -484,7 +484,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		return;
 	}
 	palette::Palette palette;
-	const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+	const bool shouldCreatePalette = core::Var::getVar(cfg::VoxelCreatePalette)->boolVal();
 	if (shouldCreatePalette) {
 		palette::RGBAMaterialMap colorMaterials;
 		Log::debug("create palette");
@@ -698,7 +698,7 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 		mins = glm::min(mins, v.position);
 		maxs = glm::max(maxs, v.position);
 	}
-	const int pointSize = core_max(1, core::Var::getSafe(cfg::VoxformatPointCloudSize)->intVal());
+	const int pointSize = core_max(1, core::Var::getVar(cfg::VoxformatPointCloudSize)->intVal());
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
 	if (!checkValidRegion(region)) {
 		Log::error("Invalid region: %s", region.toString().c_str());
@@ -748,7 +748,7 @@ int MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sce
 }
 
 size_t MeshFormat::simplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) const {
-	if (!core::Var::getSafe(cfg::VoxformatMeshSimplify)->boolVal()) {
+	if (!core::Var::getVar(cfg::VoxformatMeshSimplify)->boolVal()) {
 		return indices.size();
 	}
 	voxel::IndexArray simplifiedIndices;
@@ -767,7 +767,7 @@ size_t MeshFormat::simplify(voxel::IndexArray &indices, const core::DynamicArray
 }
 
 void MeshFormat::simplifyPointCloud(PointCloud &vertices) const {
-	if (!core::Var::getSafe(cfg::VoxformatMeshSimplify)->boolVal()) {
+	if (!core::Var::getVar(cfg::VoxformatMeshSimplify)->boolVal()) {
 		return;
 	}
 	if (vertices.empty()) {
@@ -786,23 +786,23 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							const io::ArchivePtr &archive, const SaveContext &saveCtx) {
-	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
-	const bool withColor = core::Var::getSafe(cfg::VoxformatWithColor)->boolVal();
-	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
+	const bool quads = core::Var::getVar(cfg::VoxformatQuads)->boolVal();
+	const bool withColor = core::Var::getVar(cfg::VoxformatWithColor)->boolVal();
+	const bool withTexCoords = core::Var::getVar(cfg::VoxformatWithtexcoords)->boolVal();
 	const voxel::SurfaceExtractionType type =
-		(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxformatMeshMode)->intVal();
+		(voxel::SurfaceExtractionType)core::Var::getVar(cfg::VoxformatMeshMode)->intVal();
 
 	ChunkMeshes meshes;
 	meshes.resize(sceneGraph.nodes().size());
 	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference
 	// nodes)
 	app::for_parallel(0, sceneGraph.nodes().size(), [&sceneGraph, type, &meshes] (int start, int end) {
-		const bool withNormals = core::Var::getSafe(cfg::VoxformatWithNormals)->boolVal();
-		const bool optimizeMesh = core::Var::getSafe(cfg::VoxformatOptimize)->boolVal();
-		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
-		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
-		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
-		const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
+		const bool withNormals = core::Var::getVar(cfg::VoxformatWithNormals)->boolVal();
+		const bool optimizeMesh = core::Var::getVar(cfg::VoxformatOptimize)->boolVal();
+		const bool mergeQuads = core::Var::getVar(cfg::VoxformatMergequads)->boolVal();
+		const bool reuseVertices = core::Var::getVar(cfg::VoxformatReusevertices)->boolVal();
+		const bool ambientOcclusion = core::Var::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
+		const bool applyTransform = core::Var::getVar(cfg::VoxformatTransform)->boolVal();
 		for (int i = start; i < end; ++i) {
 			const scenegraph::SceneGraphNode &node = sceneGraph.node(i);
 			if (!node.isAnyModelNode()) {

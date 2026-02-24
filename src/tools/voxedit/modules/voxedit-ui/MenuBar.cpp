@@ -31,7 +31,7 @@ void MenuBar::viewportOptions() {
 
 	ImGui::BeginDisabled(core::Var::get(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
-	if (viewModeNormalPalette(core::Var::getSafe(cfg::VoxEditViewMode)->intVal())) {
+	if (viewModeNormalPalette(core::Var::getVar(cfg::VoxEditViewMode)->intVal())) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
 	}
 	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, _("Checkerboard"), cfg::RenderCheckerBoard);
@@ -71,7 +71,7 @@ void MenuBar::viewModeOption() {
 		getViewModeString(ViewMode::AceOfSpades)		// AceOfSpades
 	};
 	static_assert(7 == (size_t)ViewMode::Max, "Unexpected viewmode array size");
-	const core::VarPtr &viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
+	const core::VarPtr &viewMode = core::Var::getVar(cfg::VoxEditViewMode);
 	ImGui::ComboVar(_("View mode"), viewMode, viewModes);
 }
 
@@ -170,7 +170,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::SliderVarInt(_("View distance"), cfg::VoxEditViewdistance, 10, 5000);
 				ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
 
-				const core::VarPtr &uiStyleVar = core::Var::getSafe(cfg::UIStyle);
+				const core::VarPtr &uiStyleVar = core::Var::getVar(cfg::UIStyle);
 				int currentStyle = uiStyleVar->intVal();
 				if (ImGui::BeginCombo(_("Color theme"), ImGui::GetStyleName(currentStyle))) {
 					for (int i = 0; i < ImGui::MaxStyles; ++i) {
@@ -214,7 +214,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 					app->showTexturesDialog();
 				}
 				if (ImGui::Button(_("UI"))) {
-					core::Var::getSafe(cfg::UIShowMetrics)->setVal(true);
+					core::Var::getVar(cfg::UIShowMetrics)->setVal(true);
 				}
 				ImGui::EndMenu();
 			}
@@ -229,18 +229,18 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				app->showFPSDialog();
 			}
 			if (ImGui::IconMenuItem(ICON_LC_LIGHTBULB, _("Tip of the day"))) {
-				core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
+				core::Var::getVar(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
 			}
 			if (ImGui::MenuItem(_("Welcome screen"))) {
-				core::Var::getSafe(cfg::VoxEditPopupWelcome)->setVal(true);
+				core::Var::getVar(cfg::VoxEditPopupWelcome)->setVal(true);
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(_("Minecraft mapping"))) {
-				core::Var::getSafe(cfg::VoxEditPopupMinecraftMapping)->setVal(true);
+				core::Var::getVar(cfg::VoxEditPopupMinecraftMapping)->setVal(true);
 			}
 			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
-				core::Var::getSafe(cfg::VoxEditPopupAbout)->setVal(true);
+				core::Var::getVar(cfg::VoxEditPopupAbout)->setVal(true);
 			}
 			ImGui::EndMenu();
 		}

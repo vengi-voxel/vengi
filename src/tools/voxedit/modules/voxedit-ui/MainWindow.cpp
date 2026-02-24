@@ -185,14 +185,14 @@ bool MainWindow::initViewports() {
 }
 
 bool MainWindow::init() {
-	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
-	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
-	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
-	_popupTipOfTheDay = core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay);
-	_popupWelcome = core::Var::getSafe(cfg::VoxEditPopupWelcome);
-	_popupMinecraftMapping = core::Var::getSafe(cfg::VoxEditPopupMinecraftMapping);
-	_popupAbout = core::Var::getSafe(cfg::VoxEditPopupAbout);
-	_popupRenameNode = core::Var::getSafe(cfg::VoxEditPopupRenameNode);
+	_viewMode = core::Var::getVar(cfg::VoxEditViewMode);
+	_numViewports = core::Var::getVar(cfg::VoxEditViewports);
+	_tipOfTheDay = core::Var::getVar(cfg::VoxEditTipOftheDay);
+	_popupTipOfTheDay = core::Var::getVar(cfg::VoxEditPopupTipOfTheDay);
+	_popupWelcome = core::Var::getVar(cfg::VoxEditPopupWelcome);
+	_popupMinecraftMapping = core::Var::getVar(cfg::VoxEditPopupMinecraftMapping);
+	_popupAbout = core::Var::getVar(cfg::VoxEditPopupAbout);
+	_popupRenameNode = core::Var::getVar(cfg::VoxEditPopupRenameNode);
 
 	_isNewVersionAvailable = util::isNewVersionAvailable();
 	if (!initViewports()) {
@@ -201,7 +201,7 @@ bool MainWindow::init() {
 
 	_popupTipOfTheDay->setVal(_tipOfTheDay->boolVal());
 
-	const core::VarPtr &appVersion = core::Var::getSafe(cfg::AppVersion);
+	const core::VarPtr &appVersion = core::Var::getVar(cfg::AppVersion);
 	if (appVersion->strVal().empty() || util::isNewerVersion(PROJECT_VERSION, appVersion->strVal())) {
 		appVersion->setVal(PROJECT_VERSION);
 		_popupWelcome->setVal("true");
@@ -971,22 +971,22 @@ QuitDisallowReason MainWindow::allowToQuit() {
 
 void MainWindow::updateViewMode() {
 	if (viewModePaletteFormat6Bit(_viewMode->intVal())) {
-		core::Var::getSafe(cfg::PalformatRGB6Bit)->setVal(true);
+		core::Var::getVar(cfg::PalformatRGB6Bit)->setVal(true);
 	} else {
-		core::Var::getSafe(cfg::RenderNormals)->setVal(false);
+		core::Var::getVar(cfg::RenderNormals)->setVal(false);
 	}
 
 	const ViewMode vMode = (ViewMode)_viewMode->intVal();
 	if (ViewMode::AceOfSpades == vMode) {
-		core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(512);
+		core::Var::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(512);
 	} else {
-		core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(128);
+		core::Var::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(128);
 	}
 
 	if (ViewMode::RedAlert2 == vMode) {
-		core::Var::getSafe(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[0]);
+		core::Var::getVar(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[0]);
 	} else if (ViewMode::TiberianSun == vMode) {
-		core::Var::getSafe(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[1]);
+		core::Var::getVar(cfg::NormalPalette)->setVal(palette::NormalPalette::builtIn[1]);
 	}
 }
 

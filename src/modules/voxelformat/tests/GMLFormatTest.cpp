@@ -712,9 +712,9 @@ TEST_F(GMLFormatTest, testRegionFilterApplied) {
 	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
 
 	// Set scale high enough to exceed 1024 threshold (505 * 3 = 1515 > 1024)
-	core::Var::getSafe(cfg::VoxformatScale)->setVal("3.0");
+	core::Var::getVar(cfg::VoxformatScale)->setVal("3.0");
 	// Region filter that includes only Building A (GML world coords 0,0,0 to 10,10,10)
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
 
 	GMLFormat f;
 	scenegraph::SceneGraph sceneGraph;
@@ -738,8 +738,8 @@ TEST_F(GMLFormatTest, testRegionFilterApplied) {
 	EXPECT_FALSE(foundHouseB);
 
 	// Reset cvars
-	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+	core::Var::getVar(cfg::VoxformatScale)->setVal("1.0");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("");
 }
 
 // Test: region filter is always applied when set
@@ -747,9 +747,9 @@ TEST_F(GMLFormatTest, testRegionFilterAlwaysApplied) {
 	io::MemoryArchivePtr archive = io::openMemoryArchive();
 	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
 
-	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
+	core::Var::getVar(cfg::VoxformatScale)->setVal("1.0");
 	// Region filter that includes only Building A (GML world coords 0,0,0 to 10,10,10)
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("0 0 0 10 10 10");
 
 	GMLFormat f;
 	scenegraph::SceneGraph sceneGraph;
@@ -763,7 +763,7 @@ TEST_F(GMLFormatTest, testRegionFilterAlwaysApplied) {
 	EXPECT_EQ(1, modelCount);
 
 	// Reset cvars
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("");
 }
 
 // Test: warning without filter - all objects still imported
@@ -772,9 +772,9 @@ TEST_F(GMLFormatTest, testLargeDatasetNoFilterImportsAll) {
 	archive->add("test.gml", (const uint8_t *)twoSpreadBuildingsGML, SDL_strlen(twoSpreadBuildingsGML));
 
 	// Set scale high enough to exceed threshold
-	core::Var::getSafe(cfg::VoxformatScale)->setVal("3.0");
+	core::Var::getVar(cfg::VoxformatScale)->setVal("3.0");
 	// No region filter set (empty string = default)
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("");
 
 	GMLFormat f;
 	scenegraph::SceneGraph sceneGraph;
@@ -788,7 +788,7 @@ TEST_F(GMLFormatTest, testLargeDatasetNoFilterImportsAll) {
 	EXPECT_EQ(2, modelCount);
 
 	// Reset cvars
-	core::Var::getSafe(cfg::VoxformatScale)->setVal("1.0");
+	core::Var::getVar(cfg::VoxformatScale)->setVal("1.0");
 }
 
 // Test: region filter works correctly with non-zero envelope offset (real-world coordinates)
@@ -875,7 +875,7 @@ TEST_F(GMLFormatTest, testRegionFilterWithOffset) {
 	archive->add("test.gml", (const uint8_t *)gmlData, SDL_strlen(gmlData));
 
 	// Region filter in GML world coordinates that includes only Building A
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("999 1999 -1 1010 2010 10");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("999 1999 -1 1010 2010 10");
 
 	GMLFormat f;
 	scenegraph::SceneGraph sceneGraph;
@@ -898,7 +898,7 @@ TEST_F(GMLFormatTest, testRegionFilterWithOffset) {
 	EXPECT_FALSE(foundHouseB);
 
 	// Reset cvars
-	core::Var::getSafe(cfg::VoxformatGMLRegion)->setVal("");
+	core::Var::getVar(cfg::VoxformatGMLRegion)->setVal("");
 }
 
 // Test: multi-file with different offsets produces objects that don't all overlap

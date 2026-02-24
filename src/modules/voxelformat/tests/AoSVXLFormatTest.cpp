@@ -31,7 +31,7 @@ protected:
 			return false;
 		}
 		// just to speed up the test runs...
-		// core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->setVal("8");
+		// core::Var::getVar(cfg::VoxformatRGBFlattenFactor)->setVal("8");
 		return true;
 	}
 };

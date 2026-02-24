@@ -43,12 +43,12 @@ struct ReferenceNodeCommandInterceptor : public command::CommandExecutionListene
 };
 
 bool ToolsPanel::init() {
-	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
-	_showGizmoScene = core::Var::getSafe(cfg::VoxEditShowaxis);
-	_showGizmoModel = core::Var::getSafe(cfg::VoxEditModelGizmo);
-	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
-	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
-	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
+	_gizmoOperations = core::Var::getVar(cfg::VoxEditGizmoOperations);
+	_showGizmoScene = core::Var::getVar(cfg::VoxEditShowaxis);
+	_showGizmoModel = core::Var::getVar(cfg::VoxEditModelGizmo);
+	_localSpace = core::Var::getVar(cfg::VoxEditLocalSpace);
+	_cursorDetails = core::Var::getVar(cfg::VoxEditCursorDetails);
+	_gridSize = core::Var::getVar(cfg::VoxEditGridsize);
 	return true;
 }
 
@@ -145,7 +145,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		}
 		ImGui::TooltipCommand("lockx");
 		ImGui::SameLine();
-		const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
+		const int step = core::Var::getVar(cfg::VoxEditGridsize)->intVal();
 		if (ImGui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
 			const core::String commandLine = core::String::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
 			command::executeCommands(commandLine, &listener);

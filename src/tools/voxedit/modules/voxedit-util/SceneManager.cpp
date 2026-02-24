@@ -120,7 +120,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 	if (!setActivePalette(palette, searchBestColors)) {
 		return false;
 	}
-	core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+	core::Var::getVar(cfg::VoxEditLastPalette)->setVal(paletteName);
 
 	if (save && !isNodePalette && !palette.isBuiltIn()) {
 		const core::String filename = core::string::extractFilename(palette.name());
@@ -143,7 +143,7 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 	const core::String &paletteFilename = core::String::format("palette-%s.png", paletteName.c_str());
 	const core::String &pngFile = _filesystem->homeWritePath(paletteFilename);
 	if (palette.save(pngFile.c_str())) {
-		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+		core::Var::getVar(cfg::VoxEditLastPalette)->setVal(paletteName);
 	}
 
 	if (!setActive) {
@@ -1209,7 +1209,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		Log::debug("Failed to paste");
 		return false;
 	}
-	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
+	const int64_t dismissMillis = core::Var::getVar(cfg::VoxEditModificationDismissMillis)->intVal();
 	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
 	return true;
 }
@@ -1234,7 +1234,7 @@ bool SceneManager::cut(int nodeId) {
 		_copy = {};
 		return false;
 	}
-	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
+	const int64_t dismissMillis = core::Var::getVar(cfg::VoxEditModificationDismissMillis)->intVal();
 	modified(nodeId, modifiedRegion, SceneModifiedFlags::All, dismissMillis);
 	return true;
 }
@@ -1556,7 +1556,7 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 	_sceneGraph = core::move(sceneGraph);
 	_sceneRenderer->clear();
 	// stop any running animation
-	core::Var::getSafe(cfg::VoxEditAnimationPlaying)->setVal(false);
+	core::Var::getVar(cfg::VoxEditAnimationPlaying)->setVal(false);
 	command::executeCommands("animate 0");
 
 	const size_t nodesAdded = _sceneGraph.size();
@@ -1694,7 +1694,7 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 		newNode.setName(name);
 	}
 	palette::Palette palette;
-	const core::String &paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal();
+	const core::String &paletteName = core::Var::getVar(cfg::VoxEditLastPalette)->strVal();
 	if (!palette.load(paletteName.c_str())) {
 		palette = voxel::getPalette();
 	}
@@ -1920,8 +1920,8 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxEditAnimationPlaying, "false", core::CV_NOPERSIST, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"), core::Var::boolValidator);
-	_maxSuggestedVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize);
-	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
+	_maxSuggestedVolumeSize = core::Var::getVar(cfg::VoxEditMaxSuggestedVolumeSize);
+	_lastDirectory = core::Var::getVar(cfg::UILastDirectory);
 
 	voxelformat::FormatConfig::init();
 
@@ -2907,7 +2907,7 @@ bool SceneManager::init() {
 		return false;
 	}
 
-	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
+	_gridSize = core::Var::getVar(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();
 	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;

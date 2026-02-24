@@ -351,11 +351,11 @@ void Camera::zoom(float value) {
 		_dirty |= DIRTY_TARGET;
 	}
 
-	const float speed = core::Var::getSafe(cfg::ClientCameraZoomSpeed)->floatVal();
+	const float speed = core::Var::getVar(cfg::ClientCameraZoomSpeed)->floatVal();
 	*target *= glm::exp(speed * value);
 
-	const float maxZoom = core::Var::getSafe(cfg::ClientCameraMaxZoom)->floatVal();
-	const float minZoom = core::Var::getSafe(cfg::ClientCameraMinZoom)->floatVal();
+	const float maxZoom = core::Var::getVar(cfg::ClientCameraMaxZoom)->floatVal();
+	const float minZoom = core::Var::getVar(cfg::ClientCameraMinZoom)->floatVal();
 	*target = glm::clamp(*target, minZoom, maxZoom);
 }
 

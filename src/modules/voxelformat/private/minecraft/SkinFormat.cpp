@@ -327,9 +327,9 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		return false;
 	}
 
-	const bool applyTransform = core::Var::getSafe(cfg::VoxformatSkinApplyTransform)->boolVal();
-	const bool addGroup = core::Var::getSafe(cfg::VoxformatSkinAddGroups)->boolVal();
-	const bool mergeFaces = core::Var::getSafe(cfg::VoxformatSkinMergeFaces)->boolVal();
+	const bool applyTransform = core::Var::getVar(cfg::VoxformatSkinApplyTransform)->boolVal();
+	const bool addGroup = core::Var::getVar(cfg::VoxformatSkinAddGroups)->boolVal();
+	const bool mergeFaces = core::Var::getVar(cfg::VoxformatSkinMergeFaces)->boolVal();
 
 	const SkinBox *boxes = skinBoxes;
 	int nBoxes = lengthof(skinBoxes);

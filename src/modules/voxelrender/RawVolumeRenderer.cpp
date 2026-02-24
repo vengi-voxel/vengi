@@ -124,10 +124,10 @@ bool RawVolumeRenderer::initStateBuffers(bool normals) {
 }
 
 bool RawVolumeRenderer::init(bool normals) {
-	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	_bloom = core::Var::getSafe(cfg::ClientBloom);
-	_cullBuffers = core::Var::getSafe(cfg::RenderCullBuffers);
-	_cullNodes = core::Var::getSafe(cfg::RenderCullNodes);
+	_shadowMap = core::Var::getVar(cfg::ClientShadowMap);
+	_bloom = core::Var::getVar(cfg::ClientBloom);
+	_cullBuffers = core::Var::getVar(cfg::RenderCullBuffers);
+	_cullNodes = core::Var::getVar(cfg::RenderCullNodes);
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
@@ -233,7 +233,7 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 	const int bufferIndex = meshState->resolveIdx(idx);
 	RenderState &state = _state[bufferIndex];
 	const voxel::MeshState::MeshesMap & meshesMap = meshState->meshes(type);
-	core::VarPtr meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
+	core::VarPtr meshSize = core::Var::getVar(cfg::VoxelMeshSize);
 	int culled = 0;
 	for (const auto &i : meshesMap) {
 		const voxel::MeshState::Meshes &meshes = i->second;

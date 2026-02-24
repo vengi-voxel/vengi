@@ -150,7 +150,7 @@ void Log::setLevel(Level level) {
 }
 
 void Log::init(const char *logfile) {
-	int rawLogLevel = core::Var::getSafe(cfg::CoreLogLevel)->intVal();
+	int rawLogLevel = core::Var::getVar(cfg::CoreLogLevel)->intVal();
 	if (rawLogLevel < 0 || rawLogLevel > (int)Log::Level::Error) {
 		rawLogLevel = (int)Log::Level::Error;
 	}

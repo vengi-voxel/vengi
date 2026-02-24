@@ -116,7 +116,7 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	palette::Palette minecraftPalette;
 	minecraftPalette.minecraft();
 
-	const core::VarPtr &schematicType = core::Var::getSafe(cfg::VoxformatSchematicType);
+	const core::VarPtr &schematicType = core::Var::getVar(cfg::VoxformatSchematicType);
 	core::StringMap<int8_t> paletteMap(getPaletteArray().size());
 	int paletteIndex = 1;
 	{

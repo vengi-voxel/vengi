@@ -168,7 +168,7 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 	voxel::RawVolumeWrapper wrapper(volume);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	const uint8_t minHeight = core::Var::getSafe(cfg::VoxformatImageHeightmapMinHeight)->intVal();
+	const uint8_t minHeight = core::Var::getVar(cfg::VoxformatImageHeightmapMinHeight)->intVal();
 	if (coloredHeightmap) {
 		voxelutil::importColoredHeightmap(wrapper, palette, image, dirtVoxel, minHeight, false);
 	} else {
@@ -184,8 +184,8 @@ bool PNGFormat::importAsHeightmap(scenegraph::SceneGraph &sceneGraph, const pale
 bool PNGFormat::importAsVolume(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const core::String &filename, const io::ArchivePtr &archive) const {
 	const image::ImagePtr &image = image::loadImage(filename);
-	const int maxDepth = core::Var::getSafe(cfg::VoxformatImageVolumeMaxDepth)->intVal();
-	const bool bothSides = core::Var::getSafe(cfg::VoxformatImageVolumeBothSides)->boolVal();
+	const int maxDepth = core::Var::getVar(cfg::VoxformatImageVolumeMaxDepth)->intVal();
+	const bool bothSides = core::Var::getVar(cfg::VoxformatImageVolumeBothSides)->boolVal();
 	const core::String &depthMapFilename = voxelutil::getDefaultDepthMapFile(filename);
 	core::ScopedPtr<io::SeekableReadStream> depthMapStream(archive->readStream(depthMapFilename));
 	const image::ImagePtr &depthMapImage = image::loadImage(depthMapFilename, *depthMapStream, depthMapStream->size());
@@ -226,7 +226,7 @@ bool PNGFormat::importAsPlane(scenegraph::SceneGraph &sceneGraph, const palette:
 bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
-	const int type = core::Var::getSafe(cfg::VoxformatImageImportType)->intVal();
+	const int type = core::Var::getVar(cfg::VoxformatImageImportType)->intVal();
 	if (type == ImageType::Heightmap) {
 		return importAsHeightmap(sceneGraph, palette, filename, archive);
 	}
@@ -259,7 +259,7 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	const image::ImagePtr &image = image::loadImage(filename);
-	const int type = core::Var::getSafe(cfg::VoxformatImageImportType)->intVal();
+	const int type = core::Var::getVar(cfg::VoxformatImageImportType)->intVal();
 	if (type == ImageType::Heightmap) {
 		image->makeOpaque();
 	}
@@ -300,7 +300,7 @@ bool PNGFormat::saveThumbnail(const scenegraph::SceneGraph &sceneGraph, const co
 
 bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
-	const int type = core::Var::getSafe(cfg::VoxformatImageSaveType)->intVal();
+	const int type = core::Var::getVar(cfg::VoxformatImageSaveType)->intVal();
 	if (type == ImageType::Heightmap) {
 		return saveHeightmaps(sceneGraph, filename, archive);
 	}

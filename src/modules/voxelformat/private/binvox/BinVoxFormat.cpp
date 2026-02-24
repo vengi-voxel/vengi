@@ -195,7 +195,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	const glm::ivec3 &offset = -mins;
 	const float scale = 1.0f;
 
-	const int binvoxVersion = core::Var::getSafe(cfg::VoxformatBinvoxVersion)->intVal();
+	const int binvoxVersion = core::Var::getVar(cfg::VoxformatBinvoxVersion)->intVal();
 
 	stream->writeStringFormat(false, "#binvox %i\n", binvoxVersion);
 	stream->writeStringFormat(false, "dim %u %u %u\n", width, depth, height);

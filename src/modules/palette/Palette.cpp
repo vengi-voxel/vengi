@@ -142,7 +142,7 @@ glm::vec4 Palette::color4(uint8_t i) const {
 
 void Palette::reduce(uint8_t targetColors) {
 	color::ColorReductionType reductionType =
-		color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+		color::toColorReductionType(core::Var::getVar(cfg::CoreColorReduction)->strVal().c_str());
 	color::RGBA oldcolors[PaletteMaxColors];
 	core_memcpy(oldcolors, _colors, sizeof(oldcolors));
 	_colorCount = color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
@@ -152,7 +152,7 @@ void Palette::reduce(uint8_t targetColors) {
 void Palette::quantize(const color::RGBA *inputColors, const size_t inputColorCount, int targetColors) {
 	Log::debug("quantize %i colors", (int)inputColorCount);
 	color::ColorReductionType reductionType =
-		color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+		color::toColorReductionType(core::Var::getVar(cfg::CoreColorReduction)->strVal().c_str());
 	const size_t maxColors = targetColors > 0 ? (size_t)targetColors : lengthof(_colors);
 	_colorCount = color::quantize(_colors, maxColors, inputColors, inputColorCount, reductionType);
 	markDirty();
@@ -1088,7 +1088,7 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 	if (imageHeight >= image->height()) {
 		imageHeight = image->height();
 	}
-	const int maxSize = core::Var::getSafe(cfg::PalformatMaxSize)->intVal();
+	const int maxSize = core::Var::getVar(cfg::PalformatMaxSize)->intVal();
 	if (imageWidth * imageHeight > maxSize * maxSize) {
 		Log::error(
 			"Failed to convert image to palette - scale it down to max %i:%i or change the cvar %s to a higher value",

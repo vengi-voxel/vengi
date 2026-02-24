@@ -78,7 +78,7 @@ core::String OSMDataLoader::download(const io::ArchivePtr &archive, const Option
 		*cacheFilePath = cacheFilename;
 	}
 
-	const core::VarPtr &urlVar = core::Var::getSafe(cfg::VoxformatOSMURL);
+	const core::VarPtr &urlVar = core::Var::getVar(cfg::VoxformatOSMURL);
 	const core::String &url = urlVar->strVal();
 
 	const core::String &postBody = core::String::format("data=%s", query.c_str());

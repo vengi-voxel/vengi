@@ -19,7 +19,7 @@ MeshState::MeshState() {
 }
 
 bool MeshState::init() {
-	_meshMode = core::Var::getSafe(cfg::VoxRenderMeshMode);
+	_meshMode = core::Var::getVar(cfg::VoxRenderMeshMode);
 	_meshMode->markClean();
 	return true;
 }

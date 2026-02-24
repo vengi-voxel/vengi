@@ -112,7 +112,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	_height = height;
 	video::bindTexture(TextureUnit::Upload, type(), _handle);
 	if (_config.maxAnisotropy() < 1.0f) {
-		const float maxAnisotropy = core::Var::getSafe(cfg::MaxAnisotropy)->floatVal();
+		const float maxAnisotropy = core::Var::getVar(cfg::MaxAnisotropy)->floatVal();
 		_config.maxAnisotropy(maxAnisotropy);
 	}
 	video::setupTexture(_handle, _config);

@@ -28,8 +28,8 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					ImGui::InputVarString(_("Host name"), cfg::VoxEditNetHostname);
 					ImGui::InputVarInt(_("Port"), cfg::VoxEditNetPort);
 					if (ImGui::Button(_("Connect to server"))) {
-						const int port = core::Var::getSafe(cfg::VoxEditNetPort)->intVal();
-						const core::String hostname = core::Var::getSafe(cfg::VoxEditNetHostname)->strVal();
+						const int port = core::Var::getVar(cfg::VoxEditNetPort)->intVal();
+						const core::String hostname = core::Var::getVar(cfg::VoxEditNetHostname)->strVal();
 						_sceneMgr->connectToServer(hostname, port);
 					}
 				} else {
@@ -54,7 +54,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 				ImGui::InputVarString(_("Server password"), cfg::VoxEditNetPassword);
 				ImGui::InputVarString(_("Remote console password"), cfg::VoxEditNetRconPassword);
 				ImGui::InputVarInt(_("Max connections"), cfg::VoxEditNetServerMaxConnections);
-				const core::VarPtr &portVar = core::Var::getSafe(cfg::VoxEditNetPort);
+				const core::VarPtr &portVar = core::Var::getVar(cfg::VoxEditNetPort);
 				if (_sceneMgr->server().isRunning()) {
 					ImGui::Text(_("Server is running on port %i"), portVar->intVal());
 					if (ImGui::Button(_("Stop server"))) {
@@ -66,7 +66,7 @@ void NetworkPanel::update(const char *id, command::CommandExecutionListener &lis
 					}
 				} else {
 					static const core::DynamicArray<core::String> &adapters = network::getNetworkAdapters();
-					const core::VarPtr &ifaceVar = core::Var::getSafe(cfg::VoxEditNetServerInterface);
+					const core::VarPtr &ifaceVar = core::Var::getVar(cfg::VoxEditNetServerInterface);
 					const core::String &iface = ifaceVar->strVal();
 					if (ImGui::BeginCombo(_("Interface"), iface.c_str())) {
 						for (const core::String &ip : adapters) {

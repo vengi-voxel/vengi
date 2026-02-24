@@ -157,7 +157,7 @@ glm::ivec3 Format::maxSize() const {
 }
 
 bool Format::singleVolume() const {
-	return core::Var::getSafe(cfg::VoxformatMerge)->boolVal();
+	return core::Var::getVar(cfg::VoxformatMerge)->boolVal();
 }
 
 bool Format::supportsReferences() const {
@@ -188,7 +188,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		return false;
 	}
 
-	const bool saveVisibleOnly = core::Var::getSafe(cfg::VoxformatSaveVisibleOnly)->boolVal();
+	const bool saveVisibleOnly = core::Var::getVar(cfg::VoxformatSaveVisibleOnly)->boolVal();
 	if (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1) {
 		Log::debug("Merge volumes before saving as the target format only supports one volume");
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge(saveVisibleOnly);
@@ -261,7 +261,7 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
-	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+	const bool createPalette = core::Var::getVar(cfg::VoxelCreatePalette)->boolVal();
 	if (!createPalette) {
 		const palette::Palette &defaultPalette = voxel::getPalette();
 		Log::info("Remap the palette to %s", defaultPalette.name().c_str());
@@ -280,7 +280,7 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 int PaletteFormat::emptyPaletteIndex() const {
 	// this is only taken into account if the format doesn't force a
 	// particular empty index by overriding this method.
-	return core::Var::getSafe(cfg::VoxformatEmptyPaletteIndex)->intVal();
+	return core::Var::getVar(cfg::VoxformatEmptyPaletteIndex)->intVal();
 }
 
 static void mergePalettesAndRemap(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraph &newSceneGraph,
@@ -358,7 +358,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 }
 
 Format::Format() {
-	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
+	_flattenFactor = core::Var::getVar(cfg::VoxformatRGBFlattenFactor)->intVal();
 }
 
 color::RGBA Format::flattenRGB(color::RGBA rgba) const {
@@ -371,7 +371,7 @@ color::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const
 
 int Format::createPalette(const palette::RGBABuffer &colors, palette::Palette &palette) const {
 	const size_t colorCount = (int)colors.size();
-	const int targetColors = core::Var::getSafe(cfg::VoxformatTargetColors)->intVal();
+	const int targetColors = core::Var::getVar(cfg::VoxformatTargetColors)->intVal();
 	core::Buffer<color::RGBA> colorBuffer;
 	colorBuffer.reserve(colorCount);
 	for (const auto &e : colors) {
@@ -392,7 +392,7 @@ int Format::createPalette(const palette::RGBAMaterialMap &colors, palette::Palet
 		return 0;
 	}
 	const size_t colorCount = (int)colors.size();
-	const int targetColors = core::Var::getSafe(cfg::VoxformatTargetColors)->intVal();
+	const int targetColors = core::Var::getVar(cfg::VoxformatTargetColors)->intVal();
 	if (targetColors > 0) {
 		Log::debug("Quantizing to %i target colors", targetColors);
 		core::Buffer<color::RGBA> colorBuffer;
@@ -428,7 +428,7 @@ int Format::createPalette(const palette::RGBAMaterialMap &colors, palette::Palet
 bool RGBAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	palette::Palette palette;
-	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+	const bool createPalette = core::Var::getVar(cfg::VoxelCreatePalette)->boolVal();
 	if (createPalette) {
 		if (loadPalette(filename, archive, palette, ctx) <= 0) {
 			palette = voxel::getPalette();
@@ -446,7 +446,7 @@ bool RGBAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 int RGBASinglePaletteFormat::emptyPaletteIndex() const {
 	// this is only taken into account if the format doesn't force a
 	// particular empty index by overriding this method.
-	return core::Var::getSafe(cfg::VoxformatEmptyPaletteIndex)->intVal();
+	return core::Var::getVar(cfg::VoxformatEmptyPaletteIndex)->intVal();
 }
 
 bool RGBASinglePaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

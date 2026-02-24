@@ -174,11 +174,11 @@ bool McpServer::connectToVoxEdit() {
 	}
 	Log::debug("Connecting to VoxEdit server...");
 
-	const core::String host = core::Var::getSafe(cfg::VoxEditNetHostname)->strVal();
-	const int port = core::Var::getSafe(cfg::VoxEditNetPort)->intVal();
+	const core::String host = core::Var::getVar(cfg::VoxEditNetHostname)->strVal();
+	const int port = core::Var::getVar(cfg::VoxEditNetPort)->intVal();
 
-	core::Var::getSafe(cfg::AppUserName)->setVal("mcp-client");
-	core::Var::getSafe(cfg::AppVersion)->setVal(PROJECT_VERSION);
+	core::Var::getVar(cfg::AppUserName)->setVal("mcp-client");
+	core::Var::getVar(cfg::AppVersion)->setVal(PROJECT_VERSION);
 
 	if (!_sceneMgr->connectToServer(host, port)) {
 		Log::error("Failed to connect to %s:%i", host.c_str(), port);
@@ -286,8 +286,8 @@ void McpServer::handleRequest(const nlohmann::json &request) {
 	} else if (method == "tools/list") {
 		if (!connectToVoxEdit()) {
 			Log::error("Failed to connect to VoxEdit server at %s:%d",
-					   core::Var::getSafe(cfg::VoxEditNetHostname)->strVal().c_str(),
-					   core::Var::getSafe(cfg::VoxEditNetPort)->intVal());
+					   core::Var::getVar(cfg::VoxEditNetHostname)->strVal().c_str(),
+					   core::Var::getVar(cfg::VoxEditNetPort)->intVal());
 			sendError(id, INIT_FAILED, "Failed to connect to VoxEdit server");
 			return;
 		}

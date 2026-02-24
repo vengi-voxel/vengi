@@ -30,17 +30,17 @@ private:
 
 public:
 	ScopedVarChange(const core::String &name, const core::String &value) {
-		_var = core::Var::getSafe(name);
+		_var = core::Var::getVar(name);
 		_oldValue = _var->strVal();
 		_var->setVal(value);
 	}
 	ScopedVarChange(const core::String &name, int value) {
-		_var = core::Var::getSafe(name);
+		_var = core::Var::getVar(name);
 		_oldValue = _var->strVal();
 		_var->setVal(value);
 	}
 	ScopedVarChange(const core::String &name, float value) {
-		_var = core::Var::getSafe(name);
+		_var = core::Var::getVar(name);
 		_oldValue = _var->strVal();
 		_var->setVal(value);
 	}

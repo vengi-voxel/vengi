@@ -97,7 +97,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	wrapBool(stream.writeInt32(region.getUpperX()))
 	wrapBool(stream.writeInt32(region.getUpperY()))
 	wrapBool(stream.writeInt32(region.getUpperZ()))
-	const int replaceIndex = core::Var::getSafe(cfg::VoxformatEmptyPaletteIndex)->intVal();
+	const int replaceIndex = core::Var::getVar(cfg::VoxformatEmptyPaletteIndex)->intVal();
 	int replacement = -1;
 	if (replaceIndex != -1) {
 		replacement = node.palette().findReplacement(replaceIndex);
