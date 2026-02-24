@@ -240,7 +240,7 @@ app::AppState VoxEdit::onConstruct() {
 			importPalette(file);
 		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
 
-	static const io::FormatDescription vrecFormat = {"VoxEdit Recording", "", {"vrec"}, {}};
+	static const io::FormatDescription vrecFormats[] = {{"VoxEdit Recording", "", {"vrec"}, {}}, io::FormatDescription::END};
 
 	command::Command::registerCommand("record_start")
 		.addArg({"file", command::ArgType::String, true, "", "Recording output file"})
@@ -249,7 +249,7 @@ app::AppState VoxEdit::onConstruct() {
 			if (file.empty()) {
 				saveDialog([this](const core::String &f, const io::FormatDescription *desc) {
 					_sceneMgr->startRecording(f);
-				}, {}, &vrecFormat, "session.vrec");
+				}, {}, vrecFormats, "session.vrec");
 				return;
 			}
 			_sceneMgr->startRecording(file);
@@ -267,7 +267,7 @@ app::AppState VoxEdit::onConstruct() {
 			if (file.empty()) {
 				openDialog([this](const core::String &f, const io::FormatDescription *desc) {
 					_sceneMgr->startPlayback(f);
-				}, {}, &vrecFormat);
+				}, {}, vrecFormats);
 				return;
 			}
 			_sceneMgr->startPlayback(file);
