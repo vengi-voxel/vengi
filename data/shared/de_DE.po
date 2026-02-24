@@ -1282,7 +1282,7 @@ msgid "Delete %i keyframes"
 msgstr "%i Keyframes löschen"
 
 msgid "Assets"
-msgstr "Ressourcen"
+msgstr "Assets"
 
 msgid "Models"
 msgstr "Modelle"
