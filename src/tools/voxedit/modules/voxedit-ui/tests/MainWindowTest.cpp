@@ -29,6 +29,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_nodeInspectorPanel.registerUITests(engine, TITLE_NODE_INSPECTOR);
 	_nodePropertiesPanel.registerUITests(engine, TITLE_NODE_PROPERTIES);
 	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
+	_optionsPanel.registerUITests(engine, TITLE_OPTIONS);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
 #if ENABLE_RENDER_PANEL
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
@@ -143,12 +144,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(model2 != nullptr);
 		IM_CHECK(model2->volume()->voxel(glm::ivec3(1, 1, 1)).getColor() == 1);
 		IM_CHECK(model2->volume()->voxel(glm::ivec3(2, 2, 2)).getColor() == 2);
-	};
-
-	IM_REGISTER_TEST(engine, testCategory(), "edit options")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, id));
-		ctx->MenuClick("Edit/Options");
-		ctx->Yield();
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select menu")->TestFunc = [=](ImGuiTestContext *ctx) {

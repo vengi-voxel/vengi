@@ -3,6 +3,7 @@
  */
 
 #include "MenuBar.h"
+#include "OptionsPanel.h"
 #include "ViewMode.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
@@ -146,51 +147,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as stamp"), "stampbrushpaste",
 									   _sceneMgr->clipboardData(), &listener);
 			ImGui::Separator();
-			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
-				viewportOptions();
-				ImGui::IconCheckboxVar(ICON_LC_TV_MINIMAL, cfg::UIMultiMonitor);
-				ImGui::CheckboxVar(cfg::VoxEditShowColorPicker);
-				ImGui::CheckboxVar(cfg::VoxEditColorWheel);
-				ImGui::IconCheckboxVar(ICON_LC_LIGHTBULB, cfg::VoxEditTipOftheDay);
-
-				ui::metricOption();
-				viewModeOption();
-				_app->languageOption();
-
-				// Editor mesh mode - excludes GreedyTexture as it's not supported by the renderer
-				{
-					static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Binary + 1> meshModes = {
-						_("Cubes"), _("Marching cubes"), _("Binary")};
-					ImGui::ComboVar(cfg::VoxRenderMeshMode, meshModes);
+			if (ImGui::IconMenuItem(ICON_LC_SETTINGS, _("Options"))) {
+				if (_optionsPanel) {
+					_optionsPanel->toggleVisible();
 				}
-				ImGui::InputVarInt(cfg::VoxEditAnimationSpeed);
-				ImGui::InputVarInt(cfg::VoxEditAutoSaveSeconds);
-				ImGui::InputVarInt(cfg::VoxEditViewports, 1, 1);
-				ImGui::SliderVarFloat(cfg::ClientCameraZoomSpeed);
-				ImGui::SliderVarInt(cfg::VoxEditViewdistance);
-				ImGui::InputVarInt(cfg::UIFontSize, 1, 5);
-
-				const core::VarPtr &uiStyleVar = core::getVar(cfg::UIStyle);
-				int currentStyle = uiStyleVar->intVal();
-				if (ImGui::BeginCombo(_("Color theme"), ImGui::GetStyleName(currentStyle))) {
-					for (int i = 0; i < ImGui::MaxStyles; ++i) {
-						const bool isSelected = (currentStyle == i);
-						if (ImGui::Selectable(ImGui::GetStyleName(i), isSelected)) {
-							uiStyleVar->setVal(i);
-						}
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-				_app->colorReductionOptions();
-
-				ImGui::InputVarFloat(cfg::UINotifyDismissMillis);
-				if (ImGui::ButtonFullWidth(_("Reset layout"))) {
-					resetDockLayout = true;
-				}
-				ImGui::EndMenu();
 			}
 			ImGui::Separator();
 			if (ImGui::ButtonFullWidth(_("Bindings"))) {
@@ -222,9 +182,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			if (ImGui::IconMenuItem(ICON_LC_TERMINAL, _("Show all commands"))) {
 				app->showCommandDialog();
 			}
-			if (ImGui::IconMenuItem(ICON_LC_SETTINGS, _("Show all cvars"))) {
-				app->showCvarDialog();
-			}
 			if (ImGui::IconMenuItem(ICON_LC_TIMER, _("Show FPS stats"))) {
 				app->showFPSDialog();
 			}
@@ -246,6 +203,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		}
 
 		ImGui::EndMenuBar();
+	}
+	if (_optionsPanel && _optionsPanel->shouldResetDockLayout()) {
+		resetDockLayout = true;
 	}
 	return resetDockLayout;
 }

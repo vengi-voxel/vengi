@@ -119,6 +119,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
 	  _nodeInspectorPanel(app, _sceneMgr), _nodePropertiesPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr),
+	  _optionsPanel(app),
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
 	  _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
 	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr),
@@ -220,6 +221,7 @@ bool MainWindow::init() {
 	_animationTimeline.init();
 	_animationPanel.init();
 	_menuBar.init();
+	_menuBar.setOptionsPanel(&_optionsPanel);
 	_networkPanel.init();
 	_gameModePanel.init();
 	_normalPalettePanel.init();
@@ -383,6 +385,7 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 	for (int i = 0; i < cfg::MaxViewports; ++i) {
 		ImGui::DockBuilderDockWindow(Viewport::viewportId(i).c_str(), dockId);
 	}
+	ImGui::DockBuilderDockWindow(TITLE_OPTIONS, dockId);
 }
 
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
@@ -408,6 +411,7 @@ void MainWindow::mainWidget(double nowSeconds) {
 		_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
 	}
 #endif
+	_optionsPanel.update(TITLE_OPTIONS);
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);

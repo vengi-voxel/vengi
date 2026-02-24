@@ -221,7 +221,7 @@ app::AppState IMGUIApp::onConstruct() {
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = ImGui::StyleLight;
 	}
-	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue, (int)ImGui::StyleCorporateGrey, (int)ImGui::MaxStyles - 1, N_("UI style"), N_("Change the ui colors - [0-3]"));
+	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue, 0, (int)ImGui::MaxStyles - 1, N_("UI style"), N_("Change the ui colors - [0-3]"));
 	_uistyle = core::Var::registerVar(uIStyle);
 	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, N_("Notification timeout"), N_("Timeout for notifications in millis"));
 	core::Var::registerVar(uINotifyDismissMillis);

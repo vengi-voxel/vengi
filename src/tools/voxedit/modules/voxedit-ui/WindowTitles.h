@@ -28,6 +28,7 @@
 #define TITLE_SCRIPT_EDITOR "###scripteditor"
 #define TITLE_SCENE_SETTINGS "###scenesettings"
 #define TITLE_HELP "###help"
+#define TITLE_OPTIONS "###optionspanel"
 
 #define POPUP_TITLE_SCENEGRAPHDRAGANDDROP "##scenegraphdraganddroppopup"
 #define POPUP_TITLE_UNSAVED "###unsavedpopup"
