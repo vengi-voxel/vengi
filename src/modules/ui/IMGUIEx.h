@@ -153,8 +153,17 @@ bool ComboVar(const core::VarPtr &var, const Collection &items) {
 
 template<class Collection>
 bool ComboVar(const char *varName, const Collection &items) {
-	const core::VarPtr &var = core::getVar(varName);
-	return ComboVar(var, items);
+	return ComboVar(core::getVar(varName), items);
+}
+
+/**
+ * @brief Render a combobox for enum-style cvars that have validValues set.
+ * The valid values are displayed translated via _().
+ */
+IMGUI_API bool ComboVar(const core::VarPtr &var);
+
+inline bool ComboVar(const char *varName) {
+	return ComboVar(core::getVar(varName));
 }
 
 IMGUI_API void TextCentered(const char *text, bool reset = false);

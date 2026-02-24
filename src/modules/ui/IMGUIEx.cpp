@@ -184,6 +184,34 @@ static bool SliderVarInt(const char* label, const core::VarPtr& var, const char*
 
 } // namespace _priv
 
+bool ComboVar(const core::VarPtr &var) {
+	const core::DynamicArray<core::String> &values = var->validValues();
+	if (values.empty()) {
+		return false;
+	}
+	const core::String label = _priv::varLabel(var);
+	const core::String &currentVal = var->strVal();
+	const char *preview = _(currentVal.c_str());
+	bool changed = false;
+	if (ImGui::BeginCombo(label.c_str(), preview, ImGuiComboFlags_None)) {
+		for (size_t i = 0; i < values.size(); ++i) {
+			const bool selected = (values[i] == currentVal);
+			ImGui::PushID((int)i);
+			if (ImGui::Selectable(_(values[i].c_str()), selected)) {
+				var->setVal(values[i]);
+				changed = true;
+			}
+			ImGui::PopID();
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	_priv::varTooltip(var);
+	return changed;
+}
+
 bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
 	core_assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 	flags |= ImGuiInputTextFlags_CallbackResize;

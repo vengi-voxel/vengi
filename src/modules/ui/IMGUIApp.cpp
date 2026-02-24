@@ -622,6 +622,24 @@ void IMGUIApp::renderCvarDialog() {
 						if (ImGui::Checkbox(type.c_str(), &value)) {
 							var->setVal(value);
 						}
+					} else if (var->type() == core::VarType::Enum && !var->validValues().empty()) {
+						const core::String &currentVal = var->strVal();
+						const char *preview = _(currentVal.c_str());
+						if (ImGui::BeginCombo(type.c_str(), preview, ImGuiComboFlags_None)) {
+							for (size_t vi = 0; vi < var->validValues().size(); ++vi) {
+								const core::String &val = var->validValues()[vi];
+								const bool selected = (val == currentVal);
+								ImGui::PushID((int)vi);
+								if (ImGui::Selectable(_(val.c_str()), selected)) {
+									var->setVal(val);
+								}
+								ImGui::PopID();
+								if (selected) {
+									ImGui::SetItemDefaultFocus();
+								}
+							}
+							ImGui::EndCombo();
+						}
 					} else {
 						int flags = 0;
 						const bool secret = var->getFlags() & core::CV_SECRET;

@@ -220,21 +220,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	if (*desc == voxelformat::SchematicFormat::format()) {
-		static const char *schematicTypes[] = {"mcedit2", "worldedit", "schematica"};
-		const core::VarPtr &schematicType = core::getVar(cfg::VoxformatSchematicType);
-		if (ImGui::BeginCombo(_("Schematic type"), schematicType->strVal().c_str())) {
-			for (int i = 0; i < lengthof(schematicTypes); ++i) {
-				const char *importType = schematicTypes[i];
-				const bool selected = schematicType->strVal() == importType;
-				if (ImGui::Selectable(importType, selected)) {
-					schematicType->setVal(importType);
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
+		ImGui::ComboVar(cfg::VoxformatSchematicType);
 	}
 
 	ImGui::CheckboxVar(cfg::VoxformatMerge);
@@ -268,19 +254,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 static void loadOptionsAseprite(const io::FilesystemEntry &entry) {
 	ImGui::InputVarInt(cfg::VoxformatImageSliceOffset);
-	const core::VarPtr &sliceOffsetAxis = core::getVar(cfg::VoxformatImageSliceOffsetAxis);
-	if (ImGui::BeginCombo(_("Slice offset axis"), sliceOffsetAxis->strVal().c_str())) {
-		const math::Axis array  [] {
-			math::Axis::X, math::Axis::Y, math::Axis::Z
-		};
-		const math::Axis currentAxis = math::toAxis(sliceOffsetAxis->strVal());
-		for (const math::Axis axis : array) {
-			if (ImGui::Selectable(math::getCharForAxis(axis), axis == currentAxis)) {
-				sliceOffsetAxis->setVal(math::getCharForAxis(axis));
-			}
-		}
-		ImGui::EndCombo();
-	}
+	ImGui::ComboVar(cfg::VoxformatImageSliceOffsetAxis);
 }
 
 static void loadOptionsPng(const io::FilesystemEntry &entry) {

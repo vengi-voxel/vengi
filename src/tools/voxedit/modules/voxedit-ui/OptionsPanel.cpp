@@ -15,7 +15,6 @@
 #include "imgui.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IMGUIStyle.h"
 #include "ui/IconsLucide.h"
 #include "ui/PopupAbout.h"
 #include "voxedit-util/Config.h"
