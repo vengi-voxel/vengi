@@ -29,7 +29,7 @@ void MenuBar::viewportOptions() {
 	ImGui::IconCheckboxVar(ICON_LC_FRAME, _("Plane"), cfg::VoxEditShowPlane);
 	ImGui::IconSliderVarInt(ICON_LC_GRIP, _("Plane size"), cfg::VoxEditPlaneSize, 0, 1000);
 
-	ImGui::BeginDisabled(core::Var::get(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
+	ImGui::BeginDisabled(core::getVar(cfg::VoxRenderMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
 	if (viewModeNormalPalette(core::getVar(cfg::VoxEditViewMode)->intVal())) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
@@ -37,7 +37,7 @@ void MenuBar::viewportOptions() {
 	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, _("Checkerboard"), cfg::RenderCheckerBoard);
 	ImGui::EndDisabled();
 	const char* shadingModeLabels[] = { _("Unlit"), _("Lit"), _("Shadows") };
-	int currentShadingMode = core::Var::get(cfg::VoxEditShadingMode)->intVal();
+	int currentShadingMode = core::getVar(cfg::VoxEditShadingMode)->intVal();
 	const char* currentLabel = (currentShadingMode >= 0 && currentShadingMode < (int)lengthof(shadingModeLabels)) ?
 		shadingModeLabels[currentShadingMode] : _("Unknown");
 
@@ -45,7 +45,7 @@ void MenuBar::viewportOptions() {
 		for (int i = 0; i < (int)lengthof(shadingModeLabels); ++i) {
 			const bool isSelected = (currentShadingMode == i);
 			if (ImGui::Selectable(shadingModeLabels[i], isSelected)) {
-				core::Var::get(cfg::VoxEditShadingMode)->setVal(i);
+				core::getVar(cfg::VoxEditShadingMode)->setVal(i);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();

@@ -86,7 +86,6 @@ protected:
 	struct Value {
 		float _floatValue = 0.0f;
 		int _intValue = 0;
-		long _longValue = 0l;
 		core::String _value;
 	};
 
@@ -235,13 +234,6 @@ public:
 	 */
 	unsigned int uintVal() const;
 	/**
-	 * @return the value of the variable as @c long.
-	 *
-	 * @note There is no conversion happening here - this is done in @c Var::setVal
-	 */
-	long longVal() const;
-	unsigned long ulongVal() const;
-	/**
 	 * @return the value of the variable as @c float.
 	 *
 	 * @note There is no conversion happening here - this is done in @c Var::setVal
@@ -255,7 +247,7 @@ public:
 	void vec3Val(float out[3]) const;
 	bool setVal(const core::String& value);
 	inline bool setVal(const char* value) {
-		if (!SDL_strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {
+		if (!SDL_strcmp(strVal().c_str(), value)) {
 			return true;
 		}
 		return setVal(core::String(value));
@@ -304,24 +296,16 @@ inline int Var::intVal() const {
 	return _history[_currentHistoryPos]._intValue;
 }
 
-inline long Var::longVal() const {
-	return _history[_currentHistoryPos]._longValue;
-}
-
-inline unsigned long Var::ulongVal() const {
-	return static_cast<unsigned long>(_history[_currentHistoryPos]._longValue);
+inline const core::String& Var::strVal() const {
+	return _history[_currentHistoryPos]._value;
 }
 
 inline bool Var::boolVal() const {
-	return _history[_currentHistoryPos]._value == "true" || _history[_currentHistoryPos]._value == "1";
+	return strVal() == "true" || strVal() == "1";
 }
 
 inline bool Var::typeIsBool() const {
-	return _history[_currentHistoryPos]._value == "true" || _history[_currentHistoryPos]._value == "1" || _history[_currentHistoryPos]._value == "false" || _history[_currentHistoryPos]._value == "0";
-}
-
-inline const core::String& Var::strVal() const {
-	return _history[_currentHistoryPos]._value;
+	return strVal() == "true" || strVal() == "1" || strVal() == "false" || strVal() == "0";
 }
 
 inline const core::String& Var::name() const {
@@ -341,7 +325,7 @@ inline uint32_t Var::getFlags() const {
 }
 
 inline unsigned int Var::uintVal() const {
-	return static_cast<unsigned int>(_history[_currentHistoryPos]._intValue);
+	return static_cast<unsigned int>(intVal());
 }
 
 inline void Var::setHelp(const char *help) {

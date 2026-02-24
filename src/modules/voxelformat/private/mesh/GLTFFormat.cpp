@@ -1089,7 +1089,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	tinygltf::Model gltfModel;
 	tinygltf::Scene gltfScene;
 
-	const bool colorAsFloat = core::Var::get(cfg::VoxformatColorAsFloat)->boolVal();
+	const bool colorAsFloat = core::getVar(cfg::VoxformatColorAsFloat)->boolVal();
 	if (colorAsFloat) {
 		Log::debug("Export colors as float");
 	} else {

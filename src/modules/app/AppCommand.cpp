@@ -22,7 +22,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
 		.setHandler([] (const command::CommandArgs& args) {
 			const core::String &name = args.str("cvar");
-			const core::VarPtr& st = core::Var::get(name);
+			const core::VarPtr& st = core::findVar(name);
 			if (st) {
 				st->clearHistory();
 			}
@@ -66,7 +66,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
 		.setHandler([] (const command::CommandArgs& args) {
 			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& var = core::Var::get(cvar);
+			const core::VarPtr& var = core::findVar(cvar);
 			if (!var) {
 				Log::error("given var doesn't exist: %s", cvar.c_str());
 				return;
@@ -79,7 +79,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		.addArg({"delta", command::ArgType::Float, true, "1.0", "Amount to increase"})
 		.setHandler([] (const command::CommandArgs& args) {
 			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& var = core::Var::get(cvar);
+			const core::VarPtr& var = core::findVar(cvar);
 			if (!var) {
 				Log::error("given var doesn't exist: %s", cvar.c_str());
 				return;
@@ -94,7 +94,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		.addArg({"delta", command::ArgType::Float, true, "1.0", "Amount to decrease"})
 		.setHandler([] (const command::CommandArgs& args) {
 			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& var = core::Var::get(cvar);
+			const core::VarPtr& var = core::findVar(cvar);
 			if (!var) {
 				Log::error("given var doesn't exist: %s", cvar.c_str());
 				return;
@@ -108,7 +108,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
 		.setHandler([] (const command::CommandArgs& args) {
 			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& st = core::Var::get(cvar);
+			const core::VarPtr& st = core::findVar(cvar);
 			if (st) {
 				Log::info(" -> %s ", st->strVal().c_str());
 			} else {

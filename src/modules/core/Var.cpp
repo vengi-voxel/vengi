@@ -229,7 +229,6 @@ void Var::addValueToHistory(const core::String &value) {
 	v._value = value;
 	const bool isTrue = v._value == "true";
 	v._intValue = isTrue ? 1 : string::toInt(v._value);
-	v._longValue = isTrue ? 1l : (long)string::toLong(v._value);
 	v._floatValue = isTrue ? 1.0f : string::toFloat(v._value);
 	_history.push_back(v);
 	Log::debug("new value for %s is %s", _name.c_str(), value.c_str());

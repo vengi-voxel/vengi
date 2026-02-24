@@ -183,7 +183,7 @@ static void saveOptionsMesh(const io::FormatDescription *desc) {
 	ImGui::CheckboxVar(_("Exports quads"), cfg::VoxformatQuads);
 	ImGui::CheckboxVar(_("Vertex colors"), cfg::VoxformatWithColor);
 	ImGui::CheckboxVar(_("Normals"), cfg::VoxformatWithNormals);
-	ImGui::BeginDisabled(!core::Var::get(cfg::VoxformatWithColor)->boolVal());
+	ImGui::BeginDisabled(!core::getVar(cfg::VoxformatWithColor)->boolVal());
 	ImGui::CheckboxVar(_("Vertex colors as float"), cfg::VoxformatColorAsFloat);
 	ImGui::EndDisabled();
 	ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
