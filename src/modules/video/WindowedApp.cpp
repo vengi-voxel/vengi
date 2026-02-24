@@ -218,7 +218,8 @@ void WindowedApp::onWindowClose(void *windowHandle) {
 // https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
 bool WindowedApp::isDarkMode() const {
 #if SDL_VERSION_ATLEAST(3, 2, 0)
-	return SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK;
+	const SDL_SystemTheme theme = SDL_GetSystemTheme();
+	return theme == SDL_SYSTEM_THEME_DARK || theme == SDL_SYSTEM_THEME_UNKNOWN;
 #else
 #ifdef __APPLE__
 	return isOSXDarkMode();
