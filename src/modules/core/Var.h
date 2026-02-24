@@ -47,31 +47,42 @@ static bool boolValidator(const core::String& value) {
 
 struct VarDef {
 	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags = -1,
-		   const char *defHelp = nullptr, ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(defValue), flags(defFlags), help(defHelp), validatorFunc(defValidatorFunc) {
+		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(defValue), flags(defFlags), help(defDescription), validatorFunc(defValidatorFunc) {
 	}
 	VarDef(const core::String &defName, const char *defValue, int32_t defFlags = -1,
-		   const char *defHelp = nullptr, ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(defValue), flags(defFlags), help(defHelp), validatorFunc(defValidatorFunc) {
+		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(defValue), flags(defFlags), help(defDescription), validatorFunc(defValidatorFunc) {
 	}
-	VarDef(const core::String &defName, int defValue, int32_t defFlags = -1, const char *defHelp = nullptr,
-		   ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(core::String::format("%i", defValue)), flags(defFlags), help(defHelp),
-		  validatorFunc(defValidatorFunc) {
-	}
-	VarDef(const core::String &defName, bool defValue, int32_t defFlags = -1, const char *defHelp = nullptr)
-		: name(defName), value(defValue ? "true" : "false"), flags(defFlags), help(defHelp),
+	VarDef(const core::String &defName, bool defValue, int32_t defFlags = -1, const char *defDescription = nullptr)
+		: name(defName), value(defValue ? "true" : "false"), flags(defFlags), help(defDescription),
 		  validatorFunc(validator::boolValidator) {
 	}
-	VarDef(const core::String &defName, float defValue, int32_t defFlags = -1, const char *defHelp = nullptr,
+	VarDef(const core::String &defName, int defValue, int32_t defFlags = -1, const char *defDescription = nullptr,
 		   ValidatorFunc defValidatorFunc = nullptr)
-		: name(defName), value(core::String::format("%f", defValue)), flags(defFlags), help(defHelp),
+		: name(defName), value(core::String::format("%i", defValue)), flags(defFlags), help(defDescription),
+		  validatorFunc(defValidatorFunc) {
+	}
+#if 0
+	VarDef(const core::String &defName, int defValue, int32_t defFlags, const char *defDescription,
+			int defMinValue, int defMaxValue)
+		: name(defName), value(core::String::format("%i", defValue)), flags(defFlags), help(defDescription),
+		  validatorFunc(TODO) {
+	}
+#endif
+	VarDef(const core::String &defName, float defValue, int32_t defFlags = -1, const char *defDescription = nullptr,
+		   ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(core::String::format("%f", defValue)), flags(defFlags), help(defDescription),
 		  validatorFunc(defValidatorFunc) {
 	}
 	// TODO: a ctor for a enum cvar is needed - also with a validator for valid values
-	// TODO: each vardef needs a title that can be used for the ui, otherwise the name is used which is not always user friendly
-	// TODO: rename help to description and make it available for the ui - also add a title for the ui (translate it in the ui)
-	// TODO: add min/max ctor and validator for numeric cvars
+	// TODO: add min/max ctor and validator for numeric cvars to avoid definining this in the VarDef ctor - should be
+	// done here
+	// TODO: each vardef needs a title that can be used for the ui, otherwise the name is used which is not always user
+	// friendly (untranslated N_() wrapped)
+	// TODO: rename help to description and make it available for the ui (untranslated N_() wrapped) - translate them
+	// with _() when they are used in the ui, but not when they are registered to allow for dynamic language changes in
+	// the ui
 
 	// The name that this var is registered under (must be unique)
 	core::String name;
@@ -82,7 +93,7 @@ struct VarDef {
 	// A bitmask of var flags - e.g. @c CV_READONLY
 	int32_t flags = -1;
 	/**
-	 * untranslated help text for this var, can be nullptr
+	 * untranslated description text for this var, can be nullptr
 	 * when using it in the ui, use the _() macro to translate it
 	 * use N_() to mark it for translation, but don't translate it immediately
 	 */
