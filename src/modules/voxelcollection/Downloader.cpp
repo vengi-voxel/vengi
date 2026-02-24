@@ -52,8 +52,8 @@ VoxelSources Downloader::sources() {
 	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
 	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 	request.setUserAgent(userAgent);
-	request.setConnectTimeoutSecond(core::Var::registerVar(cfg::HttpConnectTimeoutAssets, 10));
-	request.setTimeoutSecond(core::Var::registerVar(cfg::HttpTimeoutAssets, 10));
+	request.setConnectTimeoutSecond(core::Var::registerVar(core::VarDef(cfg::HttpConnectTimeoutAssets, 10)));
+	request.setTimeoutSecond(core::Var::registerVar(core::VarDef(cfg::HttpTimeoutAssets, 10)));
 	core::String json;
 	{
 		io::BufferedReadWriteStream outStream;

@@ -38,16 +38,15 @@ app::AppState ShaderTool::onConstruct() {
 	registerArg("-I").setDescription("Add additional include dir");
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
-	core::Var::registerVar(cfg::ClientGamma, "1.0", core::CV_SHADER);
-	core::Var::registerVar(cfg::ClientShadowMap, "true", core::CV_SHADER);
-	core::Var::registerVar(cfg::RenderCheckerBoard, "false", core::CV_SHADER);
-	core::Var::registerVar(cfg::RenderOutline, "false", core::CV_SHADER);
-	core::Var::registerVar(cfg::RenderNormals, "false", core::CV_SHADER);
-	core::Var::registerVar(cfg::ToneMapping, "1", core::CV_SHADER);
-	core::Var::registerVar(cfg::ClientDebugShadow, "false", core::CV_SHADER);
-	core::Var::registerVar(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-	core::Var::registerVar(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::MarchingCubes),
-				   core::CV_SHADER);
+	core::Var::registerVar(core::VarDef(cfg::ClientGamma, 1.0f, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::ClientShadowMap, true, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::RenderCheckerBoard, false, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::RenderOutline, false, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::RenderNormals, false, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::ToneMapping, 1, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::ClientDebugShadow, false, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::ClientDebugShadowMapCascade, false, core::CV_SHADER));
+	core::Var::registerVar(core::VarDef(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes, core::CV_SHADER));
 	return Super::onConstruct();
 }
 

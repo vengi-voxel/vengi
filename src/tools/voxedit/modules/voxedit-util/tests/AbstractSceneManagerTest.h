@@ -98,9 +98,9 @@ protected:
 		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
 		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
 													  modifierRenderer);
-		core::Var::registerVar(cfg::UILastDirectory, "", core::CV_NOPERSIST);
-		core::Var::registerVar(cfg::ClientMouseRotationSpeed, "0.01");
-		core::Var::registerVar(cfg::ClientCameraZoomSpeed, "0.1");
+		core::Var::registerVar(core::VarDef(cfg::UILastDirectory, "", core::CV_NOPERSIST));
+		core::Var::registerVar(core::VarDef(cfg::ClientMouseRotationSpeed, 0.01f));
+		core::Var::registerVar(core::VarDef(cfg::ClientCameraZoomSpeed, 0.1f));
 		_sceneMgr->construct();
 		ASSERT_TRUE(_sceneMgr->init());
 

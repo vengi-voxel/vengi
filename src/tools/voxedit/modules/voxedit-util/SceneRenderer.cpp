@@ -36,13 +36,13 @@ bool SceneRenderer::init() {
 	_showAABB = core::getVar(cfg::VoxEditShowaabb);
 	_showBones = core::getVar(cfg::VoxEditShowBones);
 	_renderShadow = core::getVar(cfg::VoxEditRendershadow);
-	_shadingMode = core::Var::registerVar(cfg::VoxEditShadingMode, "1", _("Shading mode: 0=Unlit, 1=Lit, 2=Shadows"));
+	_shadingMode = core::Var::registerVar(core::VarDef(cfg::VoxEditShadingMode, 1, -1, _("Shading mode: 0=Unlit, 1=Lit, 2=Shadows")));
 	_gridSize = core::getVar(cfg::VoxEditGridsize);
 	_grayInactive = core::getVar(cfg::VoxEditGrayInactive);
 	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
-	_ambientColor = core::Var::registerVar(cfg::VoxEditAmbientColor, "0.3 0.3 0.3");
-	_diffuseColor = core::Var::registerVar(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7");
-	_sunAngle = core::Var::registerVar(cfg::VoxEditSunAngle, "35.0 135.0 0.0", _("pitch, yaw and ignored roll in degrees"));
+	_ambientColor = core::Var::registerVar(core::VarDef(cfg::VoxEditAmbientColor, "0.3 0.3 0.3"));
+	_diffuseColor = core::Var::registerVar(core::VarDef(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7"));
+	_sunAngle = core::Var::registerVar(core::VarDef(cfg::VoxEditSunAngle, "35.0 135.0 0.0", -1, _("pitch, yaw and ignored roll in degrees")));
 	_planeSize = core::getVar(cfg::VoxEditPlaneSize);
 	_showPlane = core::getVar(cfg::VoxEditShowPlane);
 

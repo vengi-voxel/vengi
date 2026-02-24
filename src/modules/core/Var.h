@@ -37,18 +37,55 @@ const uint32_t CV_FROMENV = 1 << 8;
 class Var;
 typedef core::SharedPtr<Var> VarPtr;
 
-typedef bool (*ValidatorFunc)(const core::String& value);
+typedef bool (*ValidatorFunc)(const core::String &value);
+
+namespace validator {
+static bool boolValidator(const core::String& value) {
+	return value == "1" || value == "true" || value == "false" || value == "0";
+}
+}
 
 struct VarDef {
 	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags = -1,
 		   const char *defHelp = nullptr, ValidatorFunc defValidatorFunc = nullptr)
 		: name(defName), value(defValue), flags(defFlags), help(defHelp), validatorFunc(defValidatorFunc) {
 	}
-	core::String name; // The name that this var is registered under (must be unique)
-	core::String value; /** The initial value of the var. If this is @c nullptr a new cvar
-	 * is not created by this call. */
-	core::String defaultValue;
-	int32_t flags = -1; // A bitmask of var flags - e.g. @c CV_READONLY
+	VarDef(const core::String &defName, const char *defValue, int32_t defFlags = -1,
+		   const char *defHelp = nullptr, ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(defValue), flags(defFlags), help(defHelp), validatorFunc(defValidatorFunc) {
+	}
+	VarDef(const core::String &defName, int defValue, int32_t defFlags = -1, const char *defHelp = nullptr,
+		   ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(core::String::format("%i", defValue)), flags(defFlags), help(defHelp),
+		  validatorFunc(defValidatorFunc) {
+	}
+	VarDef(const core::String &defName, bool defValue, int32_t defFlags = -1, const char *defHelp = nullptr)
+		: name(defName), value(defValue ? "true" : "false"), flags(defFlags), help(defHelp),
+		  validatorFunc(validator::boolValidator) {
+	}
+	VarDef(const core::String &defName, float defValue, int32_t defFlags = -1, const char *defHelp = nullptr,
+		   ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(core::String::format("%f", defValue)), flags(defFlags), help(defHelp),
+		  validatorFunc(defValidatorFunc) {
+	}
+	// TODO: a ctor for a enum cvar is needed - also with a validator for valid values
+	// TODO: each vardef needs a title that can be used for the ui, otherwise the name is used which is not always user friendly
+	// TODO: rename help to description and make it available for the ui - also add a title for the ui (translate it in the ui)
+	// TODO: add min/max ctor and validator for numeric cvars
+
+	// The name that this var is registered under (must be unique)
+	core::String name;
+	/**
+	 * The initial value of the var.
+	 */
+	core::String value;
+	// A bitmask of var flags - e.g. @c CV_READONLY
+	int32_t flags = -1;
+	/**
+	 * untranslated help text for this var, can be nullptr
+	 * when using it in the ui, use the _() macro to translate it
+	 * use N_() to mark it for translation, but don't translate it immediately
+	 */
 	const char *help = nullptr;
 	ValidatorFunc validatorFunc = nullptr;
 };
@@ -119,10 +156,12 @@ public:
 		return _vars.size();
 	}
 
+	// TODO: use validator::boolValidator directly
 	static bool boolValidator(const core::String& value) {
-		return value == "1" || value == "true" || value == "false" || value == "0";
+		return validator::boolValidator(value);
 	}
 
+	// TODO: move into validator namespace
 	template<size_t NMIN, size_t NMAX>
 	static bool ivec3ListValidator(const core::String& value) {
 		if (value.empty()) {
@@ -142,24 +181,6 @@ public:
 	static VarPtr findVar(const core::String& name);
 
 	static inline VarPtr registerVar(const VarDef &def) {
-		return createVar(def);
-	}
-
-	// TODO: deprecated - use registerVar with VarDef
-	static inline VarPtr registerVar(const core::String& name, const char* value, const char *help, ValidatorFunc validatorFunc = nullptr) {
-		VarDef def(name, value, -1, help, validatorFunc);
-		return createVar(def);
-	}
-
-	// TODO: deprecated - use registerVar with VarDef
-	static VarPtr registerVar(const core::String& name, int value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = {}) {
-		VarDef def(name, core::String::format("%i", value), flags, help, validatorFunc);
-		return createVar(def);
-	}
-
-	// TODO: deprecated - use registerVar with VarDef
-	static inline VarPtr registerVar(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr) {
-		VarDef def(name, value, flags, help, validatorFunc);
 		return createVar(def);
 	}
 
@@ -305,7 +326,7 @@ inline bool Var::boolVal() const {
 }
 
 inline bool Var::typeIsBool() const {
-	return strVal() == "true" || strVal() == "1" || strVal() == "false" || strVal() == "0";
+	return boolValidator(strVal());
 }
 
 inline const core::String& Var::name() const {

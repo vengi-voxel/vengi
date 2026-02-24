@@ -596,7 +596,7 @@ AppState App::onConstruct() {
 		_systemLanguage = Language::fromSpec("en", "GB");
 	}
 
-	core::VarPtr logVar = core::Var::registerVar(cfg::CoreLogLevel, (int)_initialLogLevel);
+	core::VarPtr logVar = core::Var::registerVar(core::VarDef(cfg::CoreLogLevel, (int)_initialLogLevel));
 
 	Log::debug("Initialize the cvars");
 	for (int i = 0; i < _argc; ++i) {
@@ -612,7 +612,7 @@ AppState App::onConstruct() {
 			core::String var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
-			core::Var::registerVar(var, value, core::CV_FROMCOMMANDLINE);
+			core::Var::registerVar(core::VarDef(var, value, core::CV_FROMCOMMANDLINE));
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
 	}
@@ -670,20 +670,20 @@ AppState App::onConstruct() {
 
 		flagsMask &= ~(core::CV_FROMCOMMANDLINE | core::CV_FROMENV);
 
-		core::Var::registerVar(name, value, flagsMask);
+		core::Var::registerVar(core::VarDef(name, value, flagsMask));
 	}
 	Log::init();
 
-	core::VarPtr langVar = core::Var::registerVar(cfg::CoreLanguage, _systemLanguage.str());
+	core::VarPtr langVar = core::Var::registerVar(core::VarDef(cfg::CoreLanguage, _systemLanguage.str()));
 	setLanguage(langVar->strVal());
 
 	langVar->setHelp(_("The language to use - empty means system default"));
 	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
-	_framesPerSecondsCap = core::Var::registerVar(cfg::CoreMaxFPS, "1000.0");
+	_framesPerSecondsCap = core::Var::registerVar(core::VarDef(cfg::CoreMaxFPS, "1000.0"));
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
-	core::Var::registerVar(cfg::AppVersion, "");
+	core::Var::registerVar(core::VarDef(cfg::AppVersion, ""));
 	// username for network sessions
 	core::String defaultUsername = "Unknown";
 	_pipe.construct();
@@ -704,7 +704,7 @@ AppState App::onConstruct() {
 		defaultUsername = username;
 	}
 
-	core::Var::registerVar(cfg::AppUserName, defaultUsername);
+	core::Var::registerVar(core::VarDef(cfg::AppUserName, defaultUsername));
 
 	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
 	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
@@ -715,7 +715,7 @@ AppState App::onConstruct() {
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
-	core::Var::registerVar(cfg::MetricFlavor, "");
+	core::Var::registerVar(core::VarDef(cfg::MetricFlavor, ""));
 	Log::init();
 
 	command::Command::registerCommand("i18nlist")
@@ -1099,7 +1099,7 @@ void App::usageFooter() const {
 }
 
 void App::usage() const {
-	const core::VarPtr &logLevel = core::Var::registerVar(cfg::CoreLogLevel, "");
+	const core::VarPtr &logLevel = core::Var::registerVar(core::VarDef(cfg::CoreLogLevel, ""));
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
 

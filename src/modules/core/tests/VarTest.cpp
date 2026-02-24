@@ -21,7 +21,7 @@ public:
 };
 
 TEST_F(VarTest, testChange) {
-	const VarPtr& v = Var::registerVar("test", "nonsense");
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
 	EXPECT_EQ("nonsense", v->strVal());
 	v->setVal("1");
 	EXPECT_EQ("1", v->strVal());
@@ -29,18 +29,18 @@ TEST_F(VarTest, testChange) {
 }
 
 TEST_F(VarTest, testFlags) {
-	const VarPtr& v = Var::registerVar("test", "nonsense", CV_READONLY);
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", CV_READONLY));
 	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
 TEST_F(VarTest, testFlagsOverride) {
-	const VarPtr& v = Var::registerVar("test", "nonsense");
-	Var::registerVar("test", "nonsense", CV_READONLY);
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
+	Var::registerVar(VarDef("test", "nonsense", CV_READONLY));
 	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
 TEST_F(VarTest, testDirty) {
-	const VarPtr& v = Var::registerVar("test", "nonsense");
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
 	v->setVal("reasonable");
 	EXPECT_TRUE(v->isDirty());
 	v->markClean();
@@ -49,40 +49,40 @@ TEST_F(VarTest, testDirty) {
 
 TEST_F(VarTest, testPriorityWithoutEnvironmentVariable) {
 	// onConstruct
-	Var::registerVar("test", "initialvalue");
+	Var::registerVar(VarDef("test", "initialvalue"));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "initialvalue");
 
 	// onConstruct argument parsing
-	Var::registerVar("test", "commandline", CV_FROMCOMMANDLINE);
+	Var::registerVar(VarDef("test", "commandline", CV_FROMCOMMANDLINE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Commandline should have the highest priority";
 
 	// load appname.vars
-	Var::registerVar("test", "file", CV_FROMFILE);
+	Var::registerVar(VarDef("test", "file", CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar("test", "no", CV_FROMFILE);
+	Var::registerVar(VarDef("test", "no", CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar("test", "no", CV_FROMENV);
+	Var::registerVar(VarDef("test", "no", CV_FROMENV));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar("test", "no");
+	Var::registerVar(VarDef("test", "no"));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar("test", "");
+	Var::registerVar(VarDef("test", ""));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar("test", "")->setVal("custom");
+	Var::registerVar(VarDef("test", ""))->setVal("custom");
 	EXPECT_EQ(Var::findVar("test")->strVal(), "custom") << "Expected to get the value from the manual set call";
 }
 
 TEST_F(VarTest, testPriorityFromFile) {
 	// onConstruct
-	Var::registerVar("test", "initialvalue");
+	Var::registerVar(VarDef("test", "initialvalue"));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "initialvalue");
 
 	// load appname.vars
-	Var::registerVar("test", "file", CV_FROMFILE);
+	Var::registerVar(VarDef("test", "file", CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "file") << "Expected to get the value from the file";
 }
 
@@ -90,11 +90,11 @@ TEST_F(VarTest, testPriorityFromEnv) {
 	SDL_setenv("test", "env", 1);
 
 	// onConstruct
-	Var::registerVar("test", "initialvalue");
+	Var::registerVar(VarDef("test", "initialvalue"));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "env") << "Expected to get the value from the env";
 
 	// load appname.vars
-	Var::registerVar("test", "file", CV_FROMFILE);
+	Var::registerVar(VarDef("test", "file", CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "env") << "Expected to still have the value from env";
 	SDL_setenv("test", "", 1);
 }
@@ -103,17 +103,17 @@ TEST_F(VarTest, testPriorityEnvOverrideFromCmd) {
 	SDL_setenv("test", "env", 1);
 
 	// onConstruct
-	Var::registerVar("test", "initialvalue");
+	Var::registerVar(VarDef("test", "initialvalue"));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "env") << "Expected to get the value from the env";
 
 	// onConstruct argument parsing
-	Var::registerVar("test", "commandline", CV_FROMCOMMANDLINE);
+	Var::registerVar(VarDef("test", "commandline", CV_FROMCOMMANDLINE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Commandline should have the highest priority";
 	SDL_setenv("test", "", 1);
 }
 
 TEST_F(VarTest, testHistory) {
-	const VarPtr& v = Var::registerVar("test", "nonsense");
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
 	EXPECT_EQ("nonsense", v->strVal());
 	v->setVal("reasonable");
 	EXPECT_EQ(2u, v->getHistorySize());
@@ -125,7 +125,7 @@ TEST_F(VarTest, testHistory) {
 }
 
 TEST_F(VarTest, testHistoryCleanup) {
-	const VarPtr& v = Var::registerVar("test", "nonsense");
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
 	for (int i = 0; i < 120; ++i) {
 		v->setVal(core::String::format("reasonable%i", i));
 	}

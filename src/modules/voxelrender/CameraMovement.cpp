@@ -11,16 +11,14 @@
 namespace voxelrender {
 
 void CameraMovement::construct() {
-	_movementSpeed = core::Var::registerVar(cfg::GameModeMovementSpeed, "60.0", _("Movement speed in game mode"));
-	_jumpVelocity = core::Var::registerVar(cfg::GameModeJumpVelocity, "7.0", _("Jump velocity in game mode"));
-	_bodyHeight = core::Var::registerVar(cfg::GameModeBodyHeight, "2.0", _("Height of the body in game mode"));
-	_gravity = core::Var::registerVar(cfg::GameModeGravity, "9.81", _("Gravity in game mode"));
-	_friction = core::Var::registerVar(cfg::GameModeFriction, "0.01", _("Friction in game mode"));
-	_bodySize = core::Var::registerVar(cfg::GameModeBodySize, "0.2", _("Body size in game mode"));
-	_clipping = core::Var::registerVar(cfg::GameModeClipping, "false", core::CV_NOPERSIST, _("Enable camera clipping"),
-							   core::Var::boolValidator);
-	_applyGravity = core::Var::registerVar(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
-								   core::Var::boolValidator);
+	_movementSpeed = core::Var::registerVar(core::VarDef(cfg::GameModeMovementSpeed, 60.0f, -1, _("Movement speed in game mode")));
+	_jumpVelocity = core::Var::registerVar(core::VarDef(cfg::GameModeJumpVelocity, 7.0f, -1, _("Jump velocity in game mode")));
+	_bodyHeight = core::Var::registerVar(core::VarDef(cfg::GameModeBodyHeight, 2.0f, -1, _("Height of the body in game mode")));
+	_gravity = core::Var::registerVar(core::VarDef(cfg::GameModeGravity, 9.81f, -1, _("Gravity in game mode")));
+	_friction = core::Var::registerVar(core::VarDef(cfg::GameModeFriction, 0.01f, -1, _("Friction in game mode")));
+	_bodySize = core::Var::registerVar(core::VarDef(cfg::GameModeBodySize, 0.2f, -1, _("Body size in game mode")));
+	_clipping = core::Var::registerVar(core::VarDef(cfg::GameModeClipping, false, core::CV_NOPERSIST, _("Enable camera clipping")));
+	_applyGravity = core::Var::registerVar(core::VarDef(cfg::GameModeApplyGravity, false, core::CV_NOPERSIST, _("Enable gravity")));
 	_rotationSpeed = core::getVar(cfg::ClientMouseRotationSpeed);
 	_zoomSpeed = core::getVar(cfg::ClientCameraZoomSpeed);
 	_movement.construct();

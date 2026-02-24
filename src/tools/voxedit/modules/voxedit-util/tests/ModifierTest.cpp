@@ -42,9 +42,9 @@ protected:
 
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		core::Var::registerVar(cfg::UILastDirectory, "", core::CV_NOPERSIST);
-		core::Var::registerVar(cfg::ClientMouseRotationSpeed, "0.01");
-		core::Var::registerVar(cfg::ClientCameraZoomSpeed, "0.1");
+		core::Var::registerVar(core::VarDef(cfg::UILastDirectory, "", core::CV_NOPERSIST));
+		core::Var::registerVar(core::VarDef(cfg::ClientMouseRotationSpeed, 0.01f));
+		core::Var::registerVar(core::VarDef(cfg::ClientCameraZoomSpeed, 0.1f));
 	}
 
 	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType,

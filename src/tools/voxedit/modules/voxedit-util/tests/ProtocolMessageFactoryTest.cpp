@@ -330,9 +330,9 @@ protected:
 public:
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		core::Var::registerVar(cfg::VoxformatRGBFlattenFactor, "0");
-		core::Var::registerVar(cfg::VoxformatEmptyPaletteIndex, "-1");
-		core::Var::registerVar(cfg::VoxEditNetPassword, "test");
+		core::Var::registerVar(core::VarDef(cfg::VoxformatRGBFlattenFactor, 0));
+		core::Var::registerVar(core::VarDef(cfg::VoxformatEmptyPaletteIndex, -1));
+		core::Var::registerVar(core::VarDef(cfg::VoxEditNetPassword, "test"));
 	}
 };
 

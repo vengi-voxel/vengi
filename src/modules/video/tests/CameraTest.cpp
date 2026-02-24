@@ -38,9 +38,9 @@ protected:
 	}
 
 	void SetUp() override {
-		_zoomSpeed = core::Var::registerVar(cfg::ClientCameraZoomSpeed, "0.1");
-		_maxZoom = core::Var::registerVar(cfg::ClientCameraMaxZoom, "1000.0");
-		_minZoom = core::Var::registerVar(cfg::ClientCameraMinZoom, "0.001");
+		_zoomSpeed = core::Var::registerVar(core::VarDef(cfg::ClientCameraZoomSpeed, 0.1f));
+		_maxZoom = core::Var::registerVar(core::VarDef(cfg::ClientCameraMaxZoom, 1000.0f));
+		_minZoom = core::Var::registerVar(core::VarDef(cfg::ClientCameraMinZoom, 0.001f));
 	}
 };
 
