@@ -3,6 +3,7 @@
  */
 
 #include "OptionsPanel.h"
+#include "IMGUIStyle.h"
 #include "voxedit-util/SceneManager.h"
 #include "MenuBar.h"
 #include "ViewMode.h"
@@ -365,20 +366,20 @@ void OptionsPanel::renderAllVariables() {
 				ImGui::BeginDisabled(readOnly);
 				const core::String type = "##" + var->name();
 				if (var->type() == core::VarType::Bool) {
-					bool value = var->boolVal();
-					if (ImGui::Checkbox(type.c_str(), &value)) {
-						var->setVal(value);
-					}
+					ImGui::CheckboxVar(var->name().c_str());
+				} else if (var->type() == core::VarType::Enum && !var->validValues().empty()) {
+					ImGui::ComboVar(var->name().c_str());
+				} else if (var->type() == core::VarType::Int) {
+					ImGui::InputVarInt(var->name().c_str());
+				} else if (var->type() == core::VarType::Float) {
+					ImGui::InputVarFloat(var->name().c_str());
 				} else {
 					int flags = 0;
 					const bool secret = (var->getFlags() & core::CV_SECRET) != 0;
 					if (secret) {
 						flags |= ImGuiInputTextFlags_Password;
 					}
-					core::String value = var->strVal();
-					if (ImGui::InputText(type.c_str(), &value, flags)) {
-						var->setVal(value);
-					}
+					ImGui::InputVarString(var->name().c_str(), flags);
 				}
 				ImGui::EndDisabled();
 				ImGui::TableNextColumn();

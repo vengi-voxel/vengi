@@ -4,7 +4,6 @@
 
 #include "FormatConfig.h"
 #include "app/I18N.h"
-#include "color/Color.h"
 #include "color/Quantize.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
@@ -12,10 +11,6 @@
 #include "palette/Palette.h"
 
 namespace palette {
-
-static bool colorReductionValidator(const core::String &value) {
-	return color::toColorReductionType(value.c_str()) != color::ColorReductionType::Max;
-}
 
 bool FormatConfig::init() {
 	const core::VarDef coreColorReduction(

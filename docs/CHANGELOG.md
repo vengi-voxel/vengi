@@ -22,6 +22,7 @@ General:
    - Improved pivot rounding errors when merging nodes
    - Extended `animate.lua` to work with more different character scenes
    - Fixed rotation import for `gltf` files
+   - Improved [cvar](Configuration.md) handling
 
 VoxEdit:
 

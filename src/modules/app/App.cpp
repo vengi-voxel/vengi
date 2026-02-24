@@ -597,7 +597,7 @@ AppState App::onConstruct() {
 	}
 
 	const core::VarDef coreLogLevel(
-		cfg::CoreLogLevel, (int)_initialLogLevel, N_("Log level"),
+		cfg::CoreLogLevel, (int)_initialLogLevel, (int)Log::Level::Trace, (int)Log::Level::Error, N_("Log level"),
 		N_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 
 	core::VarPtr logVar = core::Var::registerVar(coreLogLevel);
@@ -616,7 +616,7 @@ AppState App::onConstruct() {
 			core::String var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
-			core::VarDef varDef(var, value, "", "", core::CV_FROMCOMMANDLINE);
+			core::VarDef varDef(var, value, core::CV_FROMCOMMANDLINE);
 			core::Var::registerVar(varDef);
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
@@ -675,7 +675,7 @@ AppState App::onConstruct() {
 
 		flagsMask &= ~(core::CV_FROMCOMMANDLINE | core::CV_FROMENV);
 
-		core::VarDef varDef(name, value, "", "", flagsMask);
+		core::VarDef varDef(name, value, flagsMask);
 		core::Var::registerVar(varDef);
 	}
 	Log::init();
@@ -1172,8 +1172,17 @@ void App::usage() const {
 				flagsStr[4] = 'D';
 			}
 			Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), value);
-			if (!v->description().empty()) {
-				Log::info("   -- %s", v->description().c_str());
+			if (!v->title().empty()) {
+				Log::info("   -- %s: %s", v->title().c_str(), v->description().c_str());
+			}
+			if (v->type() == core::VarType::Int) {
+				Log::info("   -- min: %i, max: %i", v->intMinValue(), v->intMaxValue());
+			} else if (v->type() == core::VarType::Float) {
+				Log::info("   -- min: %f, max: %f", v->floatMinValue(), v->floatMaxValue());
+			} else if (v->type() == core::VarType::Enum) {
+				Log::info("   -- valid values: %s", core::string::join(v->validValues(), ", ").c_str());
+			} else if (v->type() == core::VarType::Bool) {
+				Log::info("   -- valid values: true, false");
 			}
 		},
 		0u);

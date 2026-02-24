@@ -45,7 +45,9 @@ enum class VarType : uint8_t {
 	Int,
 	Float,
 	Bool,
-	Enum
+	Enum,
+
+	Unknown
 };
 
 union RangeValue {
@@ -57,6 +59,7 @@ union RangeValue {
 };
 
 struct VarDef {
+	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags);
 	VarDef(const core::String &defName, const core::String &defValue, const char *defTitle, const char *defDescription,
 		   int32_t defFlags = CV_NONE);
 	VarDef(const core::String &defName, const char *defValue, const char *defTitle, const char *defDescription,

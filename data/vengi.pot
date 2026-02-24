@@ -1,9 +1,33 @@
-msgid "The language to use - empty means system default"
+msgid "Log level"
 msgstr ""
 
 msgid ""
 "The lower the value, the more you see. 1 is the highest log level, 5 is just "
 "fatal errors."
+msgstr ""
+
+msgid "Language"
+msgstr ""
+
+msgid "The language to use - empty means system default"
+msgstr ""
+
+msgid "Max FPS"
+msgstr ""
+
+msgid "The maximum frames per second. Set to 0 to disable the cap."
+msgstr ""
+
+msgid "App version"
+msgstr ""
+
+msgid "The application version"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "The username to use in network sessions"
 msgstr ""
 
 msgid "Print the cvars in json format"
@@ -19,6 +43,14 @@ msgid "Generate completion for bash and zsh"
 msgstr ""
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
+msgstr ""
+
+msgid "Metric flavor"
+msgstr ""
+
+msgid ""
+"The flavor of the metrics output. This can be used to integrate with "
+"different monitoring systems. If empty, metrics are disabled."
 msgstr ""
 
 msgid "List all available translated strings"
@@ -87,23 +119,86 @@ msgstr ""
 msgid "Enable named pipe for input commands"
 msgstr ""
 
+msgid "Named pipe"
+msgstr ""
+
+msgid "HTTP timeout"
+msgstr ""
+
+msgid "The timeout for HTTP requests in seconds"
+msgstr ""
+
+msgid "HTTP connect timeout"
+msgstr ""
+
+msgid "The timeout for HTTP connection in seconds"
+msgstr ""
+
+msgid "Home Path"
+msgstr ""
+
+msgid "The home directory path for the application"
+msgstr ""
+
+msgid "Metric UUID"
+msgstr ""
+
+msgid "The UUID to use for metrics - if empty, a random one will be generated"
+msgstr ""
+
+msgid "Metric JSON URL"
+msgstr ""
+
+msgid "The URL to send JSON metrics to"
+msgstr ""
+
+msgid "Metric Host"
+msgstr ""
+
+msgid "The host to send metrics to"
+msgstr ""
+
+msgid "Metric Port"
+msgstr ""
+
+msgid "The port to send metrics to"
+msgstr ""
+
+msgid "Color reduction"
+msgstr ""
+
 msgid "Controls the algorithm that is used to perform the color reduction"
+msgstr ""
+
+msgid "6 bit colors"
 msgstr ""
 
 msgid ""
 "Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
 msgstr ""
 
+msgid "Max image size"
+msgstr ""
+
 msgid ""
 "The maximum size of an image in x and y direction to quantize to a palette"
+msgstr ""
+
+msgid "GIMP RGBA"
 msgstr ""
 
 msgid "Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"
 msgstr ""
 
+msgid "Palette"
+msgstr ""
+
 msgid ""
 "This is the NAME part of palette-<NAME>.png or absolute png file to use "
 "(1x256)"
+msgstr ""
+
+msgid "Normal palette"
 msgstr ""
 
 msgctxt "A palette of normal vectors converted to RGBA values"
@@ -160,9 +255,6 @@ msgid "Failed to get command for %s"
 msgstr ""
 
 msgid "Delete binding"
-msgstr ""
-
-msgid "Keymap"
 msgstr ""
 
 msgid "Reset to default"
@@ -228,10 +320,28 @@ msgstr ""
 msgid "Add a bookmark for the current active folder"
 msgstr ""
 
+msgid "Semicolon separated list of bookmarked directories"
+msgstr ""
+
+msgid "Show hidden"
+msgstr ""
+
 msgid "Show hidden file system entities"
 msgstr ""
 
+msgid "Last directory"
+msgstr ""
+
+msgid "The last opened directory in the file dialog"
+msgstr ""
+
+msgid "Last filter (save)"
+msgstr ""
+
 msgid "The last selected file type filter in the file dialog"
+msgstr ""
+
+msgid "Last filter (open)"
 msgstr ""
 
 msgid "Not writeable"
@@ -282,9 +392,6 @@ msgstr ""
 msgid "Filename"
 msgstr ""
 
-msgid "Show hidden"
-msgstr ""
-
 msgid "Choose"
 msgstr ""
 
@@ -306,10 +413,22 @@ msgstr ""
 msgid "Change the ui colors - [0-3]"
 msgstr ""
 
+msgid "UI style"
+msgstr ""
+
+msgid "Notification timeout"
+msgstr ""
+
 msgid "Timeout for notifications in millis"
 msgstr ""
 
 msgid "Allow multi monitor setups - requires a restart"
+msgstr ""
+
+msgid "Multi monitor"
+msgstr ""
+
+msgid "Render UI"
 msgstr ""
 
 msgid "Render the ui"
@@ -318,13 +437,37 @@ msgstr ""
 msgid "Show metric and debug window"
 msgstr ""
 
+msgid "Show metrics"
+msgstr ""
+
 msgid "Only run tests that match the given filter"
+msgstr ""
+
+msgid "Test filter"
 msgstr ""
 
 msgid "Allow to change the ui font size"
 msgstr ""
 
+msgid "Font size"
+msgstr ""
+
+msgid "Keymap"
+msgstr ""
+
 msgid "Which keybinding to use"
+msgstr ""
+
+msgid "Last opened files"
+msgstr ""
+
+msgid "The last opened files in the file dialog, separated by ';'"
+msgstr ""
+
+msgid "Last opened file"
+msgstr ""
+
+msgid "The last opened file in the file dialog"
 msgstr ""
 
 msgid "FPS"
@@ -397,13 +540,7 @@ msgstr ""
 msgid "Click and drag to move or undock whole node."
 msgstr ""
 
-msgid "Language"
-msgstr ""
-
 msgid "To change the language everywhere restart the application"
-msgstr ""
-
-msgid "Color reduction"
 msgstr ""
 
 msgid ""
@@ -519,34 +656,107 @@ msgstr ""
 msgid "Unbind a key"
 msgstr ""
 
+msgid ""
+msgstr ""
+
+msgid "Renderer feature cvar"
+msgstr ""
+
 msgid "Show all images in the texture pool"
+msgstr ""
+
+msgid "Multisample buffers"
+msgstr ""
+
+msgid "The number of multisample buffers to use for the default framebuffer"
+msgstr ""
+
+msgid "Multisample samples"
+msgstr ""
+
+msgid ""
+"The number of samples to use for multisampling in the default framebuffer"
+msgstr ""
+
+msgid "Enable high DPI mode"
+msgstr ""
+
+msgid "High DPI"
 msgstr ""
 
 msgid "Activate shadow map"
 msgstr ""
 
+msgid "Shadow map"
+msgstr ""
+
 msgid "Activate checkerboard rendering"
+msgstr ""
+
+msgid "Checkerboard"
 msgstr ""
 
 msgid "Activate culling for buffer parts"
 msgstr ""
 
+msgid "Cull buffers"
+msgstr ""
+
 msgid "Activate culling for scene nodes"
+msgstr ""
+
+msgid "Cull nodes"
 msgstr ""
 
 msgid "Activate bloom post processing"
 msgstr ""
 
+msgid "Bloom"
+msgstr ""
+
 msgid "Activate shadow debug rendering"
+msgstr ""
+
+msgid "Debug shadows"
+msgstr ""
+
+msgid "Shadow map size"
+msgstr ""
+
+msgid "The size of the shadow map"
 msgstr ""
 
 msgid "Activate cascade shadow map debug rendering"
 msgstr ""
 
+msgid "Debug cascades"
+msgstr ""
+
+msgid "Gamma"
+msgstr ""
+
 msgid "Gamma correction"
 msgstr ""
 
+msgid "The display index to create the window on"
+msgstr ""
+
+msgid "Window display"
+msgstr ""
+
+msgid "OpenGL Version"
+msgstr ""
+
+msgid "The OpenGL version to use"
+msgstr ""
+
+msgid "Outlines"
+msgstr ""
+
 msgid "Render voxel outline"
+msgstr ""
+
+msgid "Normals"
 msgstr ""
 
 msgid "Render voxel normals"
@@ -555,13 +765,94 @@ msgstr ""
 msgid "Activate tone mapping"
 msgstr ""
 
+msgid "Tone mapping"
+msgstr ""
+
 msgid "Limit the framerate to the monitor refresh rate"
+msgstr ""
+
+msgid "VSync"
 msgstr ""
 
 msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
 msgstr ""
 
+msgid "Debug severity"
+msgstr ""
+
+msgid "Rotation speed"
+msgstr ""
+
+msgid "The rotation speed when using the mouse to rotate the camera"
+msgstr ""
+
+msgid "The zoom speed when using the mouse to zoom the camera"
+msgstr ""
+
+msgid "Zoom speed"
+msgstr ""
+
+msgid "Max anisotropy"
+msgstr ""
+
+msgid "The maximum anisotropy level for textures - -1 means use device max"
+msgstr ""
+
+msgid "Max zoom"
+msgstr ""
+
+msgid "The maximum zoom level for the camera"
+msgstr ""
+
+msgid "Min zoom"
+msgstr ""
+
+msgid "The minimum zoom level for the camera"
+msgstr ""
+
 msgid "Minimize the window"
+msgstr ""
+
+msgid "A palette of normal vectors converted to RGBA values"
+msgstr ""
+
+msgid "A palette of voxel colors"
+msgstr ""
+
+msgid "Voxel palette"
+msgstr ""
+
+msgid "The size of the voxel mesh"
+msgstr ""
+
+msgid "Voxel Mesh Size"
+msgstr ""
+
+msgid "Mesh mode"
+msgstr ""
+
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
+msgstr ""
+
+msgid "Local directory"
+msgstr ""
+
+msgid "The local directory to load voxel files from"
+msgstr ""
+
+msgid "HTTP connect timeout for assets"
+msgstr ""
+
+msgid "The timeout for HTTP connection in seconds for assets"
+msgstr ""
+
+msgid "HTTP timeout for assets"
+msgstr ""
+
+msgid "The timeout for HTTP request in seconds for assets"
+msgstr ""
+
+msgid "Merge quads"
 msgstr ""
 
 msgid "Merge similar quads to optimize the mesh"
@@ -571,7 +862,13 @@ msgctxt "Voxel mesh mode description"
 msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
 msgstr ""
 
+msgid "Reuse vertices"
+msgstr ""
+
 msgid "Reuse vertices or always create new ones"
+msgstr ""
+
+msgid "RGB weighted average"
 msgstr ""
 
 msgid ""
@@ -580,10 +877,19 @@ msgid ""
 "triangle counts"
 msgstr ""
 
+msgid "Ambient occlusion"
+msgstr ""
+
 msgid "Extra vertices for ambient occlusion"
 msgstr ""
 
+msgid "RGB flatten factor"
+msgstr ""
+
 msgid "The RGB color flatten factor for importing color and mesh formats"
+msgstr ""
+
+msgid "Target colors (0=no limit)"
 msgstr ""
 
 msgid ""
@@ -591,22 +897,43 @@ msgid ""
 "to this amount)"
 msgstr ""
 
+msgid "Save visible only"
+msgstr ""
+
 msgid "Save only visible nodes"
+msgstr ""
+
+msgid "Uniform scale"
 msgstr ""
 
 msgid "Scale the vertices for voxelization on all axis by the given factor"
 msgstr ""
 
+msgid "X axis scale"
+msgstr ""
+
 msgid "Scale the vertices for voxelization X axis by the given factor"
+msgstr ""
+
+msgid "Y axis scale"
 msgstr ""
 
 msgid "Scale the vertices for voxelization Y axis by the given factor"
 msgstr ""
 
+msgid "Z axis scale"
+msgstr ""
+
 msgid "Scale the vertices for voxelization Z axis by the given factor"
 msgstr ""
 
+msgid "Exports quads"
+msgstr ""
+
 msgid "Export as quads. If this false, triangles will be used."
+msgstr ""
+
+msgid "Vertex colors"
 msgstr ""
 
 msgid "Export with vertex colors"
@@ -615,17 +942,32 @@ msgstr ""
 msgid "Export smoothed normals for cubic meshes"
 msgstr ""
 
+msgid "Vertex colors as float"
+msgstr ""
+
 msgid ""
 "Export with vertex colors as float values (if vertex colors are exported)"
+msgstr ""
+
+msgid "Texture coordinates"
 msgstr ""
 
 msgid "Export with uv coordinates of the palette image"
 msgstr ""
 
+msgid "Apply transformations"
+msgstr ""
+
 msgid "Apply the scene graph transform to mesh exports"
 msgstr ""
 
+msgid "Apply optimizations"
+msgstr ""
+
 msgid "Apply mesh optimization steps to meshes"
+msgstr ""
+
+msgid "Fill hollow"
 msgstr ""
 
 msgid "Fill the hollows when voxelizing a mesh format"
@@ -634,7 +976,16 @@ msgstr ""
 msgid "0 = high quality, 1 = faster and less memory"
 msgstr ""
 
+msgid "Voxelize mode"
+msgstr ""
+
+msgid "Palette mode"
+msgstr ""
+
 msgid "Use palette mode in qubicle qbt export"
+msgstr ""
+
+msgid "Merge compounds"
 msgstr ""
 
 msgctxt "Merge compounds when loading Qubicle QBT files"
@@ -644,25 +995,49 @@ msgstr ""
 msgid "Merge all objects into one"
 msgstr ""
 
+msgid "Single object"
+msgstr ""
+
+msgid "Empty palette index"
+msgstr ""
+
 msgid "The index of the empty color in the palette"
 msgstr ""
 
+msgid "Load HVA"
+msgstr ""
+
 msgid "Load the hva for animations"
+msgstr ""
+
+msgid "Create groups"
 msgstr ""
 
 msgctxt "Create groups when saving MagicaVoxel vox files"
 msgid "Create groups for vox file"
 msgstr ""
 
+msgid "Create layers"
+msgstr ""
+
 msgctxt "Create layers when saving MagicaVoxel vox files"
 msgid "Create layers for vox file"
+msgstr ""
+
+msgid "Left handed"
 msgstr ""
 
 msgid "Toggle between left and right handed"
 msgstr ""
 
+msgid "Compressed"
+msgstr ""
+
 msgctxt "Save qubicle voxel files with RLE compression enabled"
 msgid "Save RLE compressed"
+msgstr ""
+
+msgid "Create palette"
 msgstr ""
 
 msgid ""
@@ -670,27 +1045,51 @@ msgid ""
 "colors to a new palette"
 msgstr ""
 
+msgid "Point cloud size"
+msgstr ""
+
 msgid "Specify the side length for the voxels when loading a point cloud"
+msgstr ""
+
+msgid "KHR_materials_pbrSpecularGlossiness"
 msgstr ""
 
 msgid ""
 "Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format"
 msgstr ""
 
+msgid "KHR_materials_specular"
+msgstr ""
+
 msgid "Apply KHR_materials_specular when saving into the glTF format"
+msgstr ""
+
+msgid "Export materials"
 msgstr ""
 
 msgid "Try to export material properties if the formats support it"
 msgstr ""
 
+msgid "Max depth"
+msgstr ""
+
 msgid "The maximum depth of the volume when importing an image as volume"
+msgstr ""
+
+msgid "Min height"
 msgstr ""
 
 msgid ""
 "The minimum height of the heightmap when importing an image as heightmap"
 msgstr ""
 
+msgid "Both sides"
+msgstr ""
+
 msgid "Import the image as volume for both sides"
+msgstr ""
+
+msgid "Texture search path"
 msgstr ""
 
 msgid "Register an additional search path for texture lookups"
@@ -699,18 +1098,36 @@ msgstr ""
 msgid "0 = plane, 1 = heightmap, 2 = volume"
 msgstr ""
 
+msgid "Image import type"
+msgstr ""
+
+msgid "Image save type"
+msgstr ""
+
 msgctxt "Image save type"
 msgid "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"
+msgstr ""
+
+msgid "Slice offset axis"
 msgstr ""
 
 msgid ""
 "The axis to offset the slices when importing images as volumes or heightmaps"
 msgstr ""
 
+msgid "Slice offset"
+msgstr ""
+
 msgid "The offset of the slices when importing images as volumes or heightmaps"
 msgstr ""
 
+msgid "Schematic type"
+msgstr ""
+
 msgid "The type of schematic format to use when saving schematics"
+msgstr ""
+
+msgid "Binvox version"
 msgstr ""
 
 msgctxt "Binvox format version"
@@ -720,13 +1137,25 @@ msgstr ""
 msgid "Apply transforms to Minecraft skins"
 msgstr ""
 
+msgid "Add groups"
+msgstr ""
+
 msgid "Add groups for body parts of Minecraft skins"
+msgstr ""
+
+msgid "Merge faces"
 msgstr ""
 
 msgid "Merge face parts into single volume for Minecraft skins"
 msgstr ""
 
+msgid "Simplify"
+msgstr ""
+
 msgid "Simplify the mesh when voxelizing a mesh format"
+msgstr ""
+
+msgid "Region filter"
 msgstr ""
 
 msgid ""
@@ -736,12 +1165,21 @@ msgid ""
 "region are imported, others are skipped."
 msgstr ""
 
+msgid "Filename filter"
+msgstr ""
+
 msgid ""
 "Filename filter for GML/CityGML import. Only import files that contain this "
 "string in their filename. Wildcards are supported."
 msgstr ""
 
+msgid "Overpass API URL"
+msgstr ""
+
 msgid "The URL of the Overpass API endpoint"
+msgstr ""
+
+msgid "Meters per voxel"
 msgstr ""
 
 msgid "The number of real-world meters each voxel represents in OSM imports"
@@ -783,10 +1221,19 @@ msgstr ""
 msgid "Pop"
 msgstr ""
 
+msgid "Movement speed"
+msgstr ""
+
 msgid "Movement speed in game mode"
 msgstr ""
 
+msgid "Jump velocity"
+msgstr ""
+
 msgid "Jump velocity in game mode"
+msgstr ""
+
+msgid "Body height"
 msgstr ""
 
 msgid "Height of the body in game mode"
@@ -795,10 +1242,22 @@ msgstr ""
 msgid "Gravity in game mode"
 msgstr ""
 
+msgid "Gravity strength"
+msgstr ""
+
+msgid "Friction"
+msgstr ""
+
 msgid "Friction in game mode"
 msgstr ""
 
+msgid "Body size"
+msgstr ""
+
 msgid "Body size in game mode"
+msgstr ""
+
+msgid "Camera clipping"
 msgstr ""
 
 msgid "Enable camera clipping"
@@ -807,10 +1266,7 @@ msgstr ""
 msgid "Enable gravity"
 msgstr ""
 
-msgid "Outline color for all voxels (use -1 for auto darken/brighten)"
-msgstr ""
-
-msgid "Outline color for selected voxels"
+msgid "Gravity"
 msgstr ""
 
 msgid "Bottom"
@@ -832,27 +1288,6 @@ msgid "Front"
 msgstr ""
 
 msgid "Right"
-msgstr ""
-
-msgid "6 bit colors"
-msgstr ""
-
-msgctxt ""
-"Aseprite extended the gpl palette format for the graphic program Gimp by an "
-"alpha channel for the colors"
-msgid "Gimp Aseprite Alpha extension"
-msgstr ""
-
-msgid "Uniform scale"
-msgstr ""
-
-msgid "X axis scale"
-msgstr ""
-
-msgid "Y axis scale"
-msgstr ""
-
-msgid "Z axis scale"
 msgstr ""
 
 msgid "Heightmap"
@@ -880,39 +1315,6 @@ msgid ""
 "and the z layer index."
 msgstr ""
 
-msgid "Merge quads"
-msgstr ""
-
-msgid "Reuse vertices"
-msgstr ""
-
-msgid "Ambient occlusion"
-msgstr ""
-
-msgid "Apply transformations"
-msgstr ""
-
-msgid "Apply optimizations"
-msgstr ""
-
-msgid "Exports quads"
-msgstr ""
-
-msgid "Vertex colors"
-msgstr ""
-
-msgid "Normals"
-msgstr ""
-
-msgid "Vertex colors as float"
-msgstr ""
-
-msgid "Texture coordinates"
-msgstr ""
-
-msgid "Export materials"
-msgstr ""
-
 msgid "Binvox 1 (white)"
 msgstr ""
 
@@ -920,51 +1322,6 @@ msgid "Binvox 2 (multi colors)"
 msgstr ""
 
 msgid "Binvox 3 (unofficial)"
-msgstr ""
-
-msgid "Binvox version"
-msgstr ""
-
-msgid "Schematic type"
-msgstr ""
-
-msgid "Single object"
-msgstr ""
-
-msgid "Save visible only"
-msgstr ""
-
-msgid "Palette mode"
-msgstr ""
-
-msgid "Merge compounds"
-msgstr ""
-
-msgid "Create groups"
-msgstr ""
-
-msgid "Create layers"
-msgstr ""
-
-msgid "Left handed"
-msgstr ""
-
-msgid "Compressed"
-msgstr ""
-
-msgid "Empty palette index"
-msgstr ""
-
-msgid "Slice offset"
-msgstr ""
-
-msgid "Slice offset axis"
-msgstr ""
-
-msgid "Max depth"
-msgstr ""
-
-msgid "Both sides"
 msgstr ""
 
 #, c-format
@@ -975,35 +1332,11 @@ msgstr ""
 msgid "Depth map not found: %s"
 msgstr ""
 
-msgid "Min height"
-msgstr ""
-
-msgid "Texture search path"
-msgstr ""
-
-msgid "Fill hollow"
-msgstr ""
-
-msgid "Point cloud size"
-msgstr ""
-
-msgid "Simplify"
-msgstr ""
-
-msgid "Normal palette"
-msgstr ""
-
-msgid "Region filter (minX minY minZ maxX maxY maxZ)"
-msgstr ""
-
 msgid ""
 "Only load objects that intersect with the given region. The coordinates are "
 "in the order of minX minY minZ maxX maxY maxZ. They are in world coordinates "
 "of the given GML file, so you might need to check the envelope of the file "
 "first to determine the correct region."
-msgstr ""
-
-msgid "Filename filter (wildcard)"
 msgstr ""
 
 msgid "faster and less memory"
@@ -1015,31 +1348,7 @@ msgstr ""
 msgid "Voxelization mode"
 msgstr ""
 
-msgid "RGB weighted average"
-msgstr ""
-
-msgid "RGB flatten factor"
-msgstr ""
-
-msgid "Target colors (0=no limit)"
-msgstr ""
-
-msgid "Create palette"
-msgstr ""
-
 msgid "Map colors to palette"
-msgstr ""
-
-msgid "Max image size"
-msgstr ""
-
-msgid "Add groups"
-msgstr ""
-
-msgid "Merge faces"
-msgstr ""
-
-msgid "Load HVA"
 msgstr ""
 
 msgid "Binary"
@@ -1054,9 +1363,6 @@ msgstr ""
 msgid "Marching cubes"
 msgstr ""
 
-msgid "Mesh mode"
-msgstr ""
-
 msgid "Script parameters"
 msgstr ""
 
@@ -1069,22 +1375,75 @@ msgstr ""
 msgid "Execute the selected script for the currently loaded voxel volumes"
 msgstr ""
 
+msgid "Client Gamma"
+msgstr ""
+
+msgid "The gamma value for the client"
+msgstr ""
+
+msgid "Client Shadow Map"
+msgstr ""
+
+msgid "Enable or disable the client shadow map"
+msgstr ""
+
+msgid "Render Checker Board"
+msgstr ""
+
+msgid "Enable or disable rendering of the checker board"
+msgstr ""
+
+msgid "Render Outline"
+msgstr ""
+
+msgid "Enable or disable rendering of the outline"
+msgstr ""
+
+msgid "Render Normals"
+msgstr ""
+
+msgid "Enable or disable rendering of the normals"
+msgstr ""
+
+msgid "Enable or disable tone mapping"
+msgstr ""
+
+msgid "Tone Mapping"
+msgstr ""
+
+msgid "Client Debug Shadow"
+msgstr ""
+
+msgid "Enable or disable client debug shadow"
+msgstr ""
+
+msgid "Client Debug Shadow Map Cascade"
+msgstr ""
+
+msgid "Enable or disable client debug shadow map cascade"
+msgstr ""
+
+msgid "The mesh mode for voxel rendering"
+msgstr ""
+
+msgid "Voxel Render Mesh Mode"
+msgstr ""
+
+msgid "2D depth factor"
+msgstr ""
+
+msgid ""
+"When creating a volume from an image, this is the factor that is used for "
+"the depth value"
+msgstr ""
+
 msgid "Quit"
 msgstr ""
 
 msgid "Edit"
 msgstr ""
 
-msgid "Allow multi monitor"
-msgstr ""
-
-msgid "Font size"
-msgstr ""
-
 msgid "Color theme"
-msgstr ""
-
-msgid "Notifications"
 msgstr ""
 
 msgid "Show console"
@@ -1124,6 +1483,24 @@ msgstr ""
 msgid "Open output file"
 msgstr ""
 
+msgid "Last Directory"
+msgstr ""
+
+msgid "The last directory used for opening/saving files"
+msgstr ""
+
+msgid "Client Mouse Rotation Speed"
+msgstr ""
+
+msgid "The speed of mouse rotation for the client"
+msgstr ""
+
+msgid "Client Camera Zoom Speed"
+msgstr ""
+
+msgid "The speed of camera zoom for the client"
+msgstr ""
+
 msgid "Save the current viewport as screenshot"
 msgstr ""
 
@@ -1148,10 +1525,31 @@ msgstr ""
 msgid "Import an image as a palette"
 msgstr ""
 
+msgid "Start recording the editing session"
+msgstr ""
+
+msgid "Stop recording the editing session"
+msgstr ""
+
+msgid "Play back a recorded editing session"
+msgstr ""
+
+msgid "Stop playback of a recorded editing session"
+msgstr ""
+
+msgid "Pause playback of a recorded editing session"
+msgstr ""
+
+msgid "Resume playback of a recorded editing session"
+msgstr ""
+
 msgid "Create a new scene with ui interaction"
 msgstr ""
 
 msgid "Reset cameras in viewports"
+msgstr ""
+
+msgid "The last directory used in the UI"
 msgstr ""
 
 msgid "Create animation"
@@ -1423,12 +1821,6 @@ msgstr ""
 msgid "Camera movement"
 msgstr ""
 
-msgid "Clipping"
-msgstr ""
-
-msgid "Gravity"
-msgstr ""
-
 msgid "Orthogonal"
 msgstr ""
 
@@ -1463,9 +1855,6 @@ msgid "License"
 msgstr ""
 
 msgid "Format"
-msgstr ""
-
-msgid "Local directory"
 msgstr ""
 
 msgid "Loading..."
@@ -1515,21 +1904,6 @@ msgid ""
 msgstr ""
 
 msgid "Enable"
-msgstr ""
-
-msgid "Movement Speed"
-msgstr ""
-
-msgid "Jump Velocity"
-msgstr ""
-
-msgid "Body Height"
-msgstr ""
-
-msgid "Friction"
-msgstr ""
-
-msgid "Body Size"
 msgstr ""
 
 msgid "Minecraft"
@@ -1624,9 +1998,6 @@ msgid "Progress: %.1f%%"
 msgstr ""
 
 msgid "Tip of the day"
-msgstr ""
-
-msgid "Show again"
 msgstr ""
 
 msgid "Next"
@@ -1741,30 +2112,6 @@ msgstr ""
 msgid "Current state: %i / %i"
 msgstr ""
 
-msgid "Grid"
-msgstr ""
-
-msgid "Show gizmo"
-msgstr ""
-
-msgid "Show locked axis"
-msgstr ""
-
-msgid "Bounding box"
-msgstr ""
-
-msgid "Bones"
-msgstr ""
-
-msgid "Plane size"
-msgstr ""
-
-msgid "Outlines"
-msgstr ""
-
-msgid "Checkerboard"
-msgstr ""
-
 msgid "Lit"
 msgstr ""
 
@@ -1775,15 +2122,6 @@ msgid "Unlit"
 msgstr ""
 
 msgid "Shading"
-msgstr ""
-
-msgid "Bloom"
-msgstr ""
-
-msgid "Tone mapping"
-msgstr ""
-
-msgid "View mode"
 msgstr ""
 
 msgid "New"
@@ -1802,6 +2140,27 @@ msgid "Add file to scene"
 msgstr ""
 
 msgid "Add directory to scene"
+msgstr ""
+
+msgid "Record"
+msgstr ""
+
+msgid "Start recording"
+msgstr ""
+
+msgid "Stop recording"
+msgstr ""
+
+msgid "Playback"
+msgstr ""
+
+msgid "Stop playback"
+msgstr ""
+
+msgid "Resume"
+msgstr ""
+
+msgid "Speed (s)"
 msgstr ""
 
 msgid "Undo"
@@ -1825,31 +2184,10 @@ msgstr ""
 msgid "Paste as stamp"
 msgstr ""
 
-msgid "Color picker"
-msgstr ""
-
-msgid "Color wheel"
-msgstr ""
-
-msgid "Model animation speed"
-msgstr ""
-
-msgid "Autosave delay in seconds"
-msgstr ""
-
-msgid "Viewports"
-msgstr ""
-
-msgid "Zoom speed"
-msgstr ""
-
-msgid "View distance"
-msgstr ""
-
-msgid "Reset layout"
-msgstr ""
-
 msgid "Select"
+msgstr ""
+
+msgid "Color picker"
 msgstr ""
 
 msgid "Invert"
@@ -1873,34 +2211,16 @@ msgstr ""
 msgid "Client"
 msgstr ""
 
-msgid "User name"
-msgstr ""
-
-msgid "Server password"
-msgstr ""
-
-msgid "Host name"
-msgstr ""
-
-msgid "Port"
-msgstr ""
-
 msgid "Connect to server"
 msgstr ""
 
 msgid "Connected to server"
 msgstr ""
 
-msgid "Remote console password"
-msgstr ""
-
 msgid "Disconnect"
 msgstr ""
 
 msgid "Server"
-msgstr ""
-
-msgid "Max connections"
 msgstr ""
 
 #, c-format
@@ -1963,15 +2283,6 @@ msgid "Mirror XYZ"
 msgstr ""
 
 msgid "XYZ"
-msgstr ""
-
-msgid "Local transforms"
-msgstr ""
-
-msgid "Update children"
-msgstr ""
-
-msgid "Auto Keyframe"
 msgstr ""
 
 msgid "Update all locked nodes with this value"
@@ -2109,9 +2420,6 @@ msgstr ""
 msgid "Normal index: %i (scene normal index %i)"
 msgstr ""
 
-msgid "Render normals"
-msgstr ""
-
 msgid "Normal"
 msgstr ""
 
@@ -2125,6 +2433,51 @@ msgid "Flip"
 msgstr ""
 
 msgid "Rotate 90 deg"
+msgstr ""
+
+msgid "Reset layout"
+msgstr ""
+
+msgid "General"
+msgstr ""
+
+msgid "User Interface"
+msgstr ""
+
+msgid "Editor"
+msgstr ""
+
+msgid "Metrics"
+msgstr ""
+
+msgid "Layout"
+msgstr ""
+
+msgid "Viewport"
+msgstr ""
+
+msgid "Display"
+msgstr ""
+
+msgid "Rendering"
+msgstr ""
+
+msgid "Renderer"
+msgstr ""
+
+msgid "Mesh Export"
+msgstr ""
+
+msgid "Voxel Import/Export"
+msgstr ""
+
+msgid "Advanced"
+msgstr ""
+
+msgid "All Variables"
+msgstr ""
+
+msgid "Search"
 msgstr ""
 
 msgid "Remove alpha"
@@ -2245,9 +2598,6 @@ msgstr ""
 msgid "Select a color to find the closest match in the current loaded palette"
 msgstr ""
 
-msgid "Palette"
-msgstr ""
-
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr ""
@@ -2351,12 +2701,6 @@ msgstr ""
 
 #, c-format
 msgid "Culled volumes: %i"
-msgstr ""
-
-msgid "Cull nodes"
-msgstr ""
-
-msgid "Cull buffers"
 msgstr ""
 
 #, c-format
@@ -2509,16 +2853,10 @@ msgctxt "Scene graph panel node move"
 msgid "Move below but keep position"
 msgstr ""
 
-msgid "Ambient color"
-msgstr ""
-
 msgid "Base lighting that affects all surfaces equally"
 msgstr ""
 
 msgid "Ambient color is disabled in Unlit mode"
-msgstr ""
-
-msgid "Diffuse color"
 msgstr ""
 
 msgid "Directional lighting that varies based on surface angle"
@@ -2595,15 +2933,6 @@ msgid "Overwrite scripts/%s"
 msgstr ""
 
 msgid "Select all"
-msgstr ""
-
-msgid "Grayscale"
-msgstr ""
-
-msgid "Only active"
-msgstr ""
-
-msgid "Grid size"
 msgstr ""
 
 #, c-format
@@ -2693,7 +3022,7 @@ msgid ""
 "Vengi own style. Check the bindings window in the options menu."
 msgstr ""
 
-msgid "You can save your viewport as AVI video or as screenshot."
+msgid "You can save your viewport as video or as screenshot."
 msgstr ""
 
 msgid "Press <cmd:pickcolor> to pick a color from the scene."
@@ -2774,9 +3103,6 @@ msgstr ""
 msgid "Distance"
 msgstr ""
 
-msgid "Cursor details"
-msgstr ""
-
 msgid "Gizmo settings"
 msgstr ""
 
@@ -2790,12 +3116,6 @@ msgid "Translate"
 msgstr ""
 
 msgid "Activate the translate operation"
-msgstr ""
-
-msgid "Snap to grid"
-msgstr ""
-
-msgid "Flip axis"
 msgstr ""
 
 msgid "Simple"
@@ -2846,7 +3166,7 @@ msgstr ""
 msgid "Video"
 msgstr ""
 
-msgid "Stop recording"
+msgid "Finishing..."
 msgstr ""
 
 #, c-format
@@ -2855,7 +3175,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"You can control the fps of the video with the cvar %s\n"
+"Recording at %i fps\n"
 "Pending frames: %u"
 msgstr ""
 
@@ -2883,6 +3203,9 @@ msgstr ""
 msgid "Create a reference node"
 msgstr ""
 
+msgid "Color wheel"
+msgstr ""
+
 msgid "Use the color wheel in the palette color editing"
 msgstr ""
 
@@ -2892,25 +3215,49 @@ msgstr ""
 msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
 
+msgid "Modification highlight"
+msgstr ""
+
 msgid "Show fixed region sizes in the volume inspector"
+msgstr ""
+
+msgid "Local transforms"
 msgstr ""
 
 msgid "Use local space for transforms"
 msgstr ""
 
+msgid "Grid"
+msgstr ""
+
 msgid "Show the grid"
+msgstr ""
+
+msgid "Show locked axis"
 msgstr ""
 
 msgid "Show the currently locked axis"
 msgstr ""
 
+msgid "Bounding box"
+msgstr ""
+
 msgid "Show the axis aligned bounding box"
+msgstr ""
+
+msgid "Bones"
 msgstr ""
 
 msgid "Show the bones in scene mode"
 msgstr ""
 
+msgid "Render shadows"
+msgstr ""
+
 msgid "Render with shadows - make sure to set the scene lighting up properly"
+msgstr ""
+
+msgid "Shading mode"
 msgstr ""
 
 msgid "Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"
@@ -2921,7 +3268,19 @@ msgid ""
 "panel play button to animate the models in the scene"
 msgstr ""
 
+msgid "Model animation speed"
+msgstr ""
+
+msgid "Auto normal mode"
+msgstr ""
+
+msgid "Grid size"
+msgstr ""
+
 msgid "The size of the voxel grid"
+msgstr ""
+
+msgid "Plane size"
 msgstr ""
 
 msgid "The size of the plane"
@@ -2930,21 +3289,39 @@ msgstr ""
 msgid "Show the plane"
 msgstr ""
 
+msgid "Grayscale"
+msgstr ""
+
 msgid "Render the inactive nodes in gray scale mode"
 msgstr ""
 
 msgid "Hide the inactive nodes"
 msgstr ""
 
+msgid "Only active"
+msgstr ""
+
 msgid "Far plane for the camera"
+msgstr ""
+
+msgid "View distance"
+msgstr ""
+
+msgid "Show gizmo"
 msgstr ""
 
 msgid "Show the axis"
 msgstr ""
 
+msgid "Cursor details"
+msgstr ""
+
 msgid ""
 "Print cursor details in edit mode - measure distance to reference position "
 "in mode 3"
+msgstr ""
+
+msgid "Auto Keyframe"
 msgstr ""
 
 msgid "Automatically create keyframes when changing transforms"
@@ -2953,19 +3330,43 @@ msgstr ""
 msgid "Bitmask of gizmo operations in scene mode"
 msgstr ""
 
+msgid "Gizmo operations"
+msgstr ""
+
 msgid "Activate the pivot mode for the gizmo in scene mode"
+msgstr ""
+
+msgid "Flip axis"
 msgstr ""
 
 msgid "Flip axis or stay along the positive world/local axis"
 msgstr ""
 
+msgid "Snap to grid"
+msgstr ""
+
 msgid "Use the grid size for snap"
+msgstr ""
+
+msgid "Model gizmo"
 msgstr ""
 
 msgid "Show the gizmo to also translate the region"
 msgstr ""
 
+msgid "Last palette"
+msgstr ""
+
+msgid "The last used palette"
+msgstr ""
+
 msgid "The amount of viewports (not in simple ui mode)"
+msgstr ""
+
+msgid "Viewports"
+msgstr ""
+
+msgid "Max volume size"
 msgstr ""
 
 msgid ""
@@ -2973,22 +3374,52 @@ msgid ""
 "autosave)"
 msgstr ""
 
-msgid "The maximum size of the preview volume"
+msgid "Configure the editor view mode"
 msgstr ""
 
-msgid "Configure the editor view mode"
+msgid "View mode"
 msgstr ""
 
 msgid "Show the tip of the day on startup"
 msgstr ""
 
+msgid "Tip of the day popup"
+msgstr ""
+
+msgid "Trigger opening of opup"
+msgstr ""
+
 msgid "Trigger opening of popup"
+msgstr ""
+
+msgid "Welcome popup"
+msgstr ""
+
+msgid "Minecraft mapping popup"
+msgstr ""
+
+msgid "About popup"
+msgstr ""
+
+msgid "Rename node popup"
+msgstr ""
+
+msgid "Create animation popup"
+msgstr ""
+
+msgid "Animation playing"
 msgstr ""
 
 msgid "Update the children of a node when the transform of the node changes"
 msgstr ""
 
+msgid "Autosave delay in seconds"
+msgstr ""
+
 msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr ""
+
+msgid "Update children"
 msgstr ""
 
 msgid "Resize the volume to the current selection"
@@ -3250,6 +3681,18 @@ msgstr ""
 msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
 msgstr ""
 
+msgid "Ambient color"
+msgstr ""
+
+msgid "Ambient color for lit rendering in r g b format"
+msgstr ""
+
+msgid "Diffuse color"
+msgstr ""
+
+msgid "Diffuse color for lit rendering in r g b format"
+msgstr ""
+
 msgid "pitch, yaw and ignored roll in degrees"
 msgstr ""
 
@@ -3282,6 +3725,12 @@ msgid "Toggle locked mode for the y axis at the current cursor position"
 msgstr ""
 
 msgid "Toggle locked mode for the z axis at the current cursor position"
+msgstr ""
+
+msgid "Max preview size"
+msgstr ""
+
+msgid "The maximum size of the preview volume"
 msgstr ""
 
 msgid "Set center plane building"
@@ -3377,19 +3826,37 @@ msgstr ""
 msgid "Create a texture from the active model's face colors"
 msgstr ""
 
+msgid "Host name"
+msgstr ""
+
 msgid "The voxedit server hostname to connect to"
+msgstr ""
+
+msgid "Port"
 msgstr ""
 
 msgid "The port to run the voxedit server on"
 msgstr ""
 
+msgid "Server password"
+msgstr ""
+
 msgid "The password required to connect to the voxedit server"
+msgstr ""
+
+msgid "Remote console password"
 msgstr ""
 
 msgid "The rcon password required to send commands to the voxedit server"
 msgstr ""
 
+msgid "Server interface"
+msgstr ""
+
 msgid "The interface to run the voxedit server on"
+msgstr ""
+
+msgid "Max connections"
 msgstr ""
 
 msgid "The maximum number of clients that can connect to the server"

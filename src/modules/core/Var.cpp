@@ -15,6 +15,11 @@
 
 namespace core {
 
+VarDef::VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags):
+	type(VarType::Unknown), name(defName), value(defValue), flags(defFlags), title(""), description("") {
+	core_assert(!defName.empty());
+}
+
 VarDef::VarDef(const core::String &defName, const core::String &defValue, const char *defTitle,
 			   const char *defDescription, int32_t defFlags)
 	: type(VarType::String), name(defName), value(defValue), flags(defFlags), title(defTitle ? defTitle : ""),
@@ -235,7 +240,9 @@ VarPtr Var::createVar(const VarDef &def) {
 		v->_def.minValue = def.minValue;
 		v->_def.maxValue = def.maxValue;
 	}
-	v->_def.type = def.type;
+	if (v->_def.type == VarType::Unknown) {
+		v->_def.type = def.type;
+	}
 	if (v->_def.validValues.empty() && def.hasValidValues()) {
 		v->_def.validValues = def.validValues;
 	}

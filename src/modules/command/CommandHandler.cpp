@@ -87,8 +87,17 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 				} else {
 					Log::info("%s: %s", cmd.c_str(), c->strVal().c_str());
 				}
-				if (!c->description().empty()) {
-					Log::info("- %s", c->description().c_str());
+				if (!c->title().empty()) {
+					Log::info("- %s: %s", c->title().c_str(), c->description().c_str());
+				}
+				if (c->type() == core::VarType::Int) {
+					Log::info("- min: %i, max: %i", c->intMinValue(), c->intMaxValue());
+				} else if (c->type() == core::VarType::Float) {
+					Log::info("- min: %f, max: %f", c->floatMinValue(), c->floatMaxValue());
+				} else if (c->type() == core::VarType::Enum) {
+					Log::info("- valid values: %s", core::string::join(c->validValues(), ", ").c_str());
+				} else if (c->type() == core::VarType::Bool) {
+					Log::info("- valid values: true, false");
 				}
 			} else {
 				const core::String& value = core::string::join(tokens.begin(), tokens.end(), " ");

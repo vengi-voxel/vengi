@@ -162,7 +162,7 @@ bool ComboVar(const char *varName, const Collection &items) {
  */
 IMGUI_API bool ComboVar(const core::VarPtr &var);
 
-inline bool ComboVar(const char *varName) {
+IMGUI_API inline bool ComboVar(const char *varName) {
 	return ComboVar(core::getVar(varName));
 }
 

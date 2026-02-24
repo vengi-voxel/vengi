@@ -282,6 +282,11 @@ core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUN
 	return ss;
 }
 
+template<typename COLLECTION>
+core::String join(const COLLECTION &c, const char *delimiter) {
+	return join(c.begin(), c.end(), delimiter);
+}
+
 /**
  * @brief Performs a pattern/wildcard based string match
  * @param[in] pattern The pattern can deal with wildcards like * and ?

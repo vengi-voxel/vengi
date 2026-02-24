@@ -618,38 +618,20 @@ void IMGUIApp::renderCvarDialog() {
 					ImGui::BeginDisabled(readOnly);
 					const core::String type = "##" + var->name();
 					if (var->type() == core::VarType::Bool) {
-						bool value = var->boolVal();
-						if (ImGui::Checkbox(type.c_str(), &value)) {
-							var->setVal(value);
-						}
+						ImGui::CheckboxVar(var->name().c_str());
 					} else if (var->type() == core::VarType::Enum && !var->validValues().empty()) {
-						const core::String &currentVal = var->strVal();
-						const char *preview = _(currentVal.c_str());
-						if (ImGui::BeginCombo(type.c_str(), preview, ImGuiComboFlags_None)) {
-							for (size_t vi = 0; vi < var->validValues().size(); ++vi) {
-								const core::String &val = var->validValues()[vi];
-								const bool selected = (val == currentVal);
-								ImGui::PushID((int)vi);
-								if (ImGui::Selectable(_(val.c_str()), selected)) {
-									var->setVal(val);
-								}
-								ImGui::PopID();
-								if (selected) {
-									ImGui::SetItemDefaultFocus();
-								}
-							}
-							ImGui::EndCombo();
-						}
+						ImGui::ComboVar(var->name().c_str());
+					} else if (var->type() == core::VarType::Int) {
+						ImGui::InputVarInt(var->name().c_str());
+					} else if (var->type() == core::VarType::Float) {
+						ImGui::InputVarFloat(var->name().c_str());
 					} else {
 						int flags = 0;
-						const bool secret = var->getFlags() & core::CV_SECRET;
+						const bool secret = (var->getFlags() & core::CV_SECRET) != 0;
 						if (secret) {
 							flags |= ImGuiInputTextFlags_Password;
 						}
-						core::String value = var->strVal();
-						if (ImGui::InputText(type.c_str(), &value, flags)) {
-							var->setVal(value);
-						}
+						ImGui::InputVarString(var->name().c_str(), flags);
 					}
 					ImGui::EndDisabled();
 					ImGui::TableNextColumn();
