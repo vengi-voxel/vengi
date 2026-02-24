@@ -31,10 +31,10 @@
 namespace voxedit {
 
 bool NodeInspectorPanel::init() {
-	_regionSizes = core::Var::getVar(cfg::VoxEditRegionSizes);
-	_localSpace = core::Var::getVar(cfg::VoxEditLocalSpace);
-	_gridSize = core::Var::getVar(cfg::VoxEditGridsize);
-	_viewMode = core::Var::getVar(cfg::VoxEditViewMode);
+	_regionSizes = core::getVar(cfg::VoxEditRegionSizes);
+	_localSpace = core::getVar(cfg::VoxEditLocalSpace);
+	_gridSize = core::getVar(cfg::VoxEditGridsize);
+	_viewMode = core::getVar(cfg::VoxEditViewMode);
 	return true;
 }
 
@@ -376,7 +376,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 	}
 
 	if (change) {
-		const bool autoKeyFrame = core::Var::getVar(cfg::VoxEditAutoKeyFrame)->boolVal();
+		const bool autoKeyFrame = core::getVar(cfg::VoxEditAutoKeyFrame)->boolVal();
 		// check if a new keyframe should get generated automatically
 		if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
 			if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {

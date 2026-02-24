@@ -138,7 +138,7 @@ void Client::executeCommand(const core::String &command) {
 	if (!isConnected()) {
 		return;
 	}
-	const core::String rconPassword = core::Var::getVar(cfg::VoxEditNetRconPassword)->strVal();
+	const core::String rconPassword = core::getVar(cfg::VoxEditNetRconPassword)->strVal();
 	CommandMessage msg(command, rconPassword);
 	Log::info("Send command to server: %s", command.c_str());
 	_network.sendMessage(msg);

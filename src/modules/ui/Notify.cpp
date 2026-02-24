@@ -131,7 +131,7 @@ int RenderNotifications(ImGuiToasts &notifications) {
 	float height = 0.0f;
 	int n = 0;
 
-	const double dismissMillis = core::Var::getVar(cfg::UINotifyDismissMillis)->intVal();
+	const double dismissMillis = core::getVar(cfg::UINotifyDismissMillis)->intVal();
 
 	for (size_t i = 0; i < notifications.size();) {
 		ImGuiToast *currentToast = &notifications[i];

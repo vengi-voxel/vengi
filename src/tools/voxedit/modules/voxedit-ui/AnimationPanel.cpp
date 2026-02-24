@@ -14,7 +14,7 @@
 namespace voxedit {
 
 bool AnimationPanel::init() {
-	_popupCreateAnimation = core::Var::getVar(cfg::VoxEditPopupCreateAnimation);
+	_popupCreateAnimation = core::getVar(cfg::VoxEditPopupCreateAnimation);
 	return true;
 }
 

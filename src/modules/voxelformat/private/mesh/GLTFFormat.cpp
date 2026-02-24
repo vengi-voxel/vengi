@@ -1013,8 +1013,8 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 		const int textureIndex = withTexCoords ? saveTexture(gltfModel, palette) : -1;
 		const int emissiveTextureIndex = withTexCoords ? saveEmissiveTexture(gltfModel, palette) : -1;
 		const bool KHR_materials_pbrSpecularGlossiness =
-			core::Var::getVar(cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
-		const bool withMaterials = core::Var::getVar(cfg::VoxformatWithMaterials)->boolVal();
+			core::getVar(cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
+		const bool withMaterials = core::getVar(cfg::VoxformatWithMaterials)->boolVal();
 
 		core::Array<int, palette::PaletteMaxColors> materialIds;
 		materialIds.fill(-1);
@@ -1057,7 +1057,7 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 					pbrSpecularGlossiness = save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
 				}
 				if (!pbrSpecularGlossiness) {
-					if (core::Var::getVar(cfg::VoxformatGLTF_KHR_materials_specular)->boolVal()) {
+					if (core::getVar(cfg::VoxformatGLTF_KHR_materials_specular)->boolVal()) {
 						save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
 					}
 					save_KHR_materials_ior(material, gltfMaterial, gltfModel);

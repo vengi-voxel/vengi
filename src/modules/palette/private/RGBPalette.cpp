@@ -36,7 +36,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	}
 	const bool is6Bit = maxColor <= 63;
 	if (is6Bit) {
-		if (core::Var::getVar(cfg::PalformatRGB6Bit)->boolVal()) {
+		if (core::getVar(cfg::PalformatRGB6Bit)->boolVal()) {
 			const float scale = (255.0f / 63.0f);
 			for (int i = 0; i < palette.colorCount(); ++i) {
 				color::RGBA rgba = palette.color(i);
@@ -55,7 +55,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 }
 
 bool RGBPalette::save(const palette::ColorPalette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
-	const bool to6Bit = core::Var::getVar(cfg::PalformatRGB6Bit)->boolVal();
+	const bool to6Bit = core::getVar(cfg::PalformatRGB6Bit)->boolVal();
 	const float scale = (255.0f / 63.0f);
 	for (size_t i = 0; i < palette.size(); ++i) {
 		color::RGBA color = palette.color(i);

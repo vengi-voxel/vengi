@@ -113,16 +113,16 @@ app::AppState VoxConvert::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
-	_mergeQuads = core::Var::getVar(cfg::VoxformatMergequads);
-	_reuseVertices = core::Var::getVar(cfg::VoxformatReusevertices);
-	_ambientOcclusion = core::Var::getVar(cfg::VoxformatAmbientocclusion);
-	_scale = core::Var::getVar(cfg::VoxformatScale);
-	_scaleX = core::Var::getVar(cfg::VoxformatScaleX);
-	_scaleY = core::Var::getVar(cfg::VoxformatScaleY);
-	_scaleZ = core::Var::getVar(cfg::VoxformatScaleZ);
-	_quads = core::Var::getVar(cfg::VoxformatQuads);
-	_withColor = core::Var::getVar(cfg::VoxformatWithColor);
-	_withTexCoords = core::Var::getVar(cfg::VoxformatWithtexcoords);
+	_mergeQuads = core::getVar(cfg::VoxformatMergequads);
+	_reuseVertices = core::getVar(cfg::VoxformatReusevertices);
+	_ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion);
+	_scale = core::getVar(cfg::VoxformatScale);
+	_scaleX = core::getVar(cfg::VoxformatScaleX);
+	_scaleY = core::getVar(cfg::VoxformatScaleY);
+	_scaleZ = core::getVar(cfg::VoxformatScaleZ);
+	_quads = core::getVar(cfg::VoxformatQuads);
+	_withColor = core::getVar(cfg::VoxformatWithColor);
+	_withTexCoords = core::getVar(cfg::VoxformatWithtexcoords);
 	core::Var::get(cfg::VoxConvertDepthFactor2D, 0.0f);
 
 	if (!filesystem()->registerPath("scripts/")) {
@@ -320,7 +320,7 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* withColor:         - %s", _withColor->strVal().c_str());
 		Log::info("* withTexCoords:     - %s", _withTexCoords->strVal().c_str());
 	}
-	const core::VarPtr &paletteVar = core::Var::getVar(cfg::VoxelPalette);
+	const core::VarPtr &paletteVar = core::getVar(cfg::VoxelPalette);
 	if (!paletteVar->strVal().empty()) {
 		Log::info("* palette:           - %s", paletteVar->strVal().c_str());
 	}
@@ -357,7 +357,7 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* export models:     - %s", (_exportModels ? "true" : "false"));
 	Log::info("* resize models:     - %s", (_resizeModels ? "true" : "false"));
 
-	if (core::Var::getVar(cfg::MetricFlavor)->strVal().empty()) {
+	if (core::getVar(cfg::MetricFlavor)->strVal().empty()) {
 		Log::info(
 			"Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
@@ -613,7 +613,7 @@ app::AppState VoxConvert::onInit() {
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
 		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
-		const float depthFactor2D = core::Var::getVar(cfg::VoxConvertDepthFactor2D)->floatVal();
+		const float depthFactor2D = core::getVar(cfg::VoxConvertDepthFactor2D)->floatVal();
 		const image::ImagePtr &image =
 			hasArg("--isometric")
 				? voxelutil::renderIsometricImage(v, merged.palette, frontFace, bgColor, width, height)

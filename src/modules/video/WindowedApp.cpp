@@ -411,7 +411,7 @@ app::AppState WindowedApp::onInit() {
 #endif
 	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
-	const int displayIndex = glm::clamp(core::Var::getVar(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
+	const int displayIndex = glm::clamp(core::getVar(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
 	Log::debug("Try to use display %i", displayIndex);
 	Log::debug("found %i displays (use %i)", numDisplays, displayIndex);
 #endif
@@ -463,7 +463,7 @@ app::AppState WindowedApp::onInit() {
 			displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
 		}
 	}
-	const core::VarPtr &highDPI = core::Var::getVar(cfg::ClientWindowHighDPI);
+	const core::VarPtr &highDPI = core::getVar(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 		Log::debug("Enable high dpi support");

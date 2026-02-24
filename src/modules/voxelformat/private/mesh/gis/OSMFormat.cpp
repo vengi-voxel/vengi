@@ -1231,7 +1231,7 @@ bool OSMFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	CoordSystem cs;
 	cs.centerLat = (minLat + maxLat) * 0.5;
 	cs.centerLon = (minLon + maxLon) * 0.5;
-	cs.metersPerVoxel = core::Var::getVar(cfg::VoxformatOSMMetersPerVoxel)->floatVal();
+	cs.metersPerVoxel = core::getVar(cfg::VoxformatOSMMetersPerVoxel)->floatVal();
 	if (cs.metersPerVoxel <= 0.0) {
 		cs.metersPerVoxel = 1.0;
 	}

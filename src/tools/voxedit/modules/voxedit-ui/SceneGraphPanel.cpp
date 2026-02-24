@@ -280,8 +280,8 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 }
 
 bool SceneGraphPanel::init() {
-	_animationSpeedVar = core::Var::getVar(cfg::VoxEditAnimationSpeed);
-	_hideInactive = core::Var::getVar(cfg::VoxEditHideInactive);
+	_animationSpeedVar = core::getVar(cfg::VoxEditAnimationSpeed);
+	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	_lastActivedNodeId = sceneGraph.activeNode();
 	return true;

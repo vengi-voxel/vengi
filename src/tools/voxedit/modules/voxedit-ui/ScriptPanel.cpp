@@ -103,7 +103,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 					ImGui::TooltipText(_("Overwrite scripts/%s"), _activeScriptFilename.c_str());
 				}
 				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save as"))) {
-					core::Var::getVar(cfg::UILastDirectory)->setVal("scripts/");
+					core::getVar(cfg::UILastDirectory)->setVal("scripts/");
 					const core::String savePath = _app->filesystem()->homeWritePath("scripts");
 					_app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {

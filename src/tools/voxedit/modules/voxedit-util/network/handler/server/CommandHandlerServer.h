@@ -21,7 +21,7 @@ class CommandHandlerServer : public network::ProtocolTypeHandler<CommandMessage>
 public:
 	void execute(const network::ClientId &clientId, CommandMessage *msg) override {
 		Log::info("Received command message: %s", msg->command().c_str());
-		const core::VarPtr &password = core::Var::getVar(cfg::VoxEditNetRconPassword);
+		const core::VarPtr &password = core::getVar(cfg::VoxEditNetRconPassword);
 		if (password->strVal() != msg->rconPassword()) {
 			Log::warn("Received command message with invalid rcon password from client id %d", clientId);
 			return;

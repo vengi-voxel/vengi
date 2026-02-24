@@ -31,20 +31,20 @@ void SceneRenderer::construct() {
 }
 
 bool SceneRenderer::init() {
-	_showGrid = core::Var::getVar(cfg::VoxEditShowgrid);
-	_showLockedAxis = core::Var::getVar(cfg::VoxEditShowlockedaxis);
-	_showAABB = core::Var::getVar(cfg::VoxEditShowaabb);
-	_showBones = core::Var::getVar(cfg::VoxEditShowBones);
-	_renderShadow = core::Var::getVar(cfg::VoxEditRendershadow);
+	_showGrid = core::getVar(cfg::VoxEditShowgrid);
+	_showLockedAxis = core::getVar(cfg::VoxEditShowlockedaxis);
+	_showAABB = core::getVar(cfg::VoxEditShowaabb);
+	_showBones = core::getVar(cfg::VoxEditShowBones);
+	_renderShadow = core::getVar(cfg::VoxEditRendershadow);
 	_shadingMode = core::Var::get(cfg::VoxEditShadingMode, "1", _("Shading mode: 0=Unlit, 1=Lit, 2=Shadows"));
-	_gridSize = core::Var::getVar(cfg::VoxEditGridsize);
-	_grayInactive = core::Var::getVar(cfg::VoxEditGrayInactive);
-	_hideInactive = core::Var::getVar(cfg::VoxEditHideInactive);
+	_gridSize = core::getVar(cfg::VoxEditGridsize);
+	_grayInactive = core::getVar(cfg::VoxEditGrayInactive);
+	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.3 0.3 0.3");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "0.7 0.7 0.7");
 	_sunAngle = core::Var::get(cfg::VoxEditSunAngle, "35.0 135.0 0.0", _("pitch, yaw and ignored roll in degrees"));
-	_planeSize = core::Var::getVar(cfg::VoxEditPlaneSize);
-	_showPlane = core::Var::getVar(cfg::VoxEditShowPlane);
+	_planeSize = core::getVar(cfg::VoxEditPlaneSize);
+	_showPlane = core::getVar(cfg::VoxEditShowPlane);
 
 	if (!_meshState->init()) {
 		Log::error("Failed to initialize the mesh state");

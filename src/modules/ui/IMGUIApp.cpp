@@ -214,8 +214,8 @@ app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
 	_fileDialog.construct();
-	_lastDirectory = core::Var::getVar(cfg::UILastDirectory);
-	_languageVar = core::Var::getVar(cfg::CoreLanguage);
+	_lastDirectory = core::getVar(cfg::UILastDirectory);
+	_languageVar = core::getVar(cfg::CoreLanguage);
 	core::String uiStyleDefaultValue = core::string::toString(ImGui::StyleCorporateGrey);
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
@@ -379,7 +379,7 @@ app::AppState IMGUIApp::onInit() {
 	io.ConfigDpiScaleFonts = true;
 	io.ConfigDpiScaleViewports = true;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	if (!isSingleWindowMode() && core::Var::getVar(cfg::UIMultiMonitor)->boolVal()) {
+	if (!isSingleWindowMode() && core::getVar(cfg::UIMultiMonitor)->boolVal()) {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
@@ -942,7 +942,7 @@ app::AppState IMGUIApp::onRunning() {
 			}
 			core::String filter = getArgVal("--imgui_test_filter");
 			if (filter.empty()) {
-				filter = core::Var::getVar(cfg::UITestFilter)->strVal();
+				filter = core::getVar(cfg::UITestFilter)->strVal();
 			}
 			ImGuiTestEngine_QueueTests(_imguiTestEngine, ImGuiTestGroup_Tests, filter.c_str(), ImGuiTestRunFlags_RunFromCommandLine);
 			_startedFromCommandlineFrameDelay--;
@@ -1004,7 +1004,7 @@ bool IMGUIApp::keyMapOption() {
 }
 
 void IMGUIApp::colorReductionOptions() {
-	const core::VarPtr &colorReduction = core::Var::getVar(cfg::CoreColorReduction);
+	const core::VarPtr &colorReduction = core::getVar(cfg::CoreColorReduction);
 	if (ImGui::BeginCombo(_("Color reduction"), colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
 		color::ColorReductionType type = color::toColorReductionType(colorReduction->strVal().c_str());
 		for (int i = 0; i < (int)color::ColorReductionType::Max; ++i) {

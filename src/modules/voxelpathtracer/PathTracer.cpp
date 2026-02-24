@@ -289,7 +289,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	_state->scene = {};
 	_state->lights = {};
 
-	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getVar(cfg::VoxformatMeshMode)->intVal();
+	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
 	voxel::ChunkMesh mesh(65536, 65536, true);
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->value;

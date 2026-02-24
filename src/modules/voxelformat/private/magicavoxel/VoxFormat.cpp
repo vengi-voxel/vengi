@@ -334,7 +334,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		} else {
 			Log::debug("Add group node");
 		}
-		const bool addLayers = core::Var::getVar(cfg::VoxformatVOXCreateLayers)->boolVal();
+		const bool addLayers = core::getVar(cfg::VoxformatVOXCreateLayers)->boolVal();
 		if (node.isRootNode() || addLayers) {
 			// TODO: VOXELFORMAT: only add the layer if there are models in this group?
 			// https://github.com/vengi-voxel/vengi/issues/186
@@ -350,7 +350,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ctx.layers.push_back(ogt_layer);
 		}
 		const uint32_t ownLayerId = (int)ctx.layers.size() - 1;
-		const bool addGroups = core::Var::getVar(cfg::VoxformatVOXCreateGroups)->boolVal();
+		const bool addGroups = core::getVar(cfg::VoxformatVOXCreateGroups)->boolVal();
 		if (node.isRootNode() || addGroups) {
 			ogt_vox_group ogt_group;
 			core_memset(&ogt_group, 0, sizeof(ogt_group));

@@ -28,7 +28,7 @@ struct MetricState {
 };
 
 bool MetricState::init(const core::String &appname) {
-	const core::VarPtr &flavor = core::Var::getVar(cfg::MetricFlavor);
+	const core::VarPtr &flavor = core::getVar(cfg::MetricFlavor);
 	if (flavor->strVal().empty()) {
 		Log::debug("No metrics activated - skip init");
 		return false;

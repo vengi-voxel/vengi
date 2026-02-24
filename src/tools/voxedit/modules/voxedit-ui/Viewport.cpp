@@ -71,22 +71,22 @@ Viewport::~Viewport() {
 }
 
 bool Viewport::init() {
-	_cursorDetails = core::Var::getVar(cfg::VoxEditCursorDetails);
-	_showAxisVar = core::Var::getVar(cfg::VoxEditShowaxis);
-	_gizmoOperations = core::Var::getVar(cfg::VoxEditGizmoOperations);
-	_gizmoAllowAxisFlip = core::Var::getVar(cfg::VoxEditGizmoAllowAxisFlip);
-	_gizmoSnap = core::Var::getVar(cfg::VoxEditGizmoSnap);
-	_modelGizmo = core::Var::getVar(cfg::VoxEditModelGizmo);
-	_viewDistance = core::Var::getVar(cfg::VoxEditViewdistance);
-	_viewMode = core::Var::getVar(cfg::VoxEditViewMode);
-	_pivotMode = core::Var::getVar(cfg::VoxEditGizmoPivot);
-	_hideInactive = core::Var::getVar(cfg::VoxEditHideInactive);
-	_gridSize = core::Var::getVar(cfg::VoxEditGridsize);
-	_autoKeyFrame = core::Var::getVar(cfg::VoxEditAutoKeyFrame);
-	_localSpace = core::Var::getVar(cfg::VoxEditLocalSpace);
-	_renderNormals = core::Var::getVar(cfg::RenderNormals);
-	_animationPlaying = core::Var::getVar(cfg::VoxEditAnimationPlaying);
-	_clipping = core::Var::getVar(cfg::GameModeClipping);
+	_cursorDetails = core::getVar(cfg::VoxEditCursorDetails);
+	_showAxisVar = core::getVar(cfg::VoxEditShowaxis);
+	_gizmoOperations = core::getVar(cfg::VoxEditGizmoOperations);
+	_gizmoAllowAxisFlip = core::getVar(cfg::VoxEditGizmoAllowAxisFlip);
+	_gizmoSnap = core::getVar(cfg::VoxEditGizmoSnap);
+	_modelGizmo = core::getVar(cfg::VoxEditModelGizmo);
+	_viewDistance = core::getVar(cfg::VoxEditViewdistance);
+	_viewMode = core::getVar(cfg::VoxEditViewMode);
+	_pivotMode = core::getVar(cfg::VoxEditGizmoPivot);
+	_hideInactive = core::getVar(cfg::VoxEditHideInactive);
+	_gridSize = core::getVar(cfg::VoxEditGridsize);
+	_autoKeyFrame = core::getVar(cfg::VoxEditAutoKeyFrame);
+	_localSpace = core::getVar(cfg::VoxEditLocalSpace);
+	_renderNormals = core::getVar(cfg::RenderNormals);
+	_animationPlaying = core::getVar(cfg::VoxEditAnimationPlaying);
+	_clipping = core::getVar(cfg::GameModeClipping);
 	// Use the actual framebuffer pixel dimensions (not logical window size) to ensure
 	// crisp rendering on HiDPI displays
 	if (!_renderContext.init(_app->frameBufferDimension())) {

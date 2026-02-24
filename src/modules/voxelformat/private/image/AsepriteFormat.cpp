@@ -109,8 +109,8 @@ bool AsepriteFormat::loadGroupsRGBA(const core::String &filename, const io::Arch
 		return false;
 	}
 	const core::String filenameNoPath = core::string::extractFilename(filename);
-	const int offset = core::Var::getVar(cfg::VoxformatImageSliceOffset)->intVal();
-	const math::Axis axis = math::toAxis(core::Var::getVar(cfg::VoxformatImageSliceOffsetAxis)->strVal());
+	const int offset = core::getVar(cfg::VoxformatImageSliceOffset)->intVal();
+	const math::Axis axis = math::toAxis(core::getVar(cfg::VoxformatImageSliceOffsetAxis)->strVal());
 	for (int i = 0; i < ase->frame_count; ++i) {
 		if (!addFrame(sceneGraph, filenameNoPath, palette, ctx, ase, i, axis, offset)) {
 			Log::error("Failed to add frame %d from Aseprite file '%s'", i, filename.c_str());

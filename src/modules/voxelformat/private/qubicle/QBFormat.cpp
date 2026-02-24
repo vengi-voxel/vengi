@@ -200,9 +200,9 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 	}
 	wrapSave(stream->writeUInt32(257)) // version
 	wrapSave(stream->writeUInt32((uint32_t)ColorFormat::RGBA))
-	const bool leftHanded = core::Var::getVar(cfg::VoxformatQBSaveLeftHanded)->boolVal();
+	const bool leftHanded = core::getVar(cfg::VoxformatQBSaveLeftHanded)->boolVal();
 	const ZAxisOrientation orientation = leftHanded ? ZAxisOrientation::LeftHanded : ZAxisOrientation::RightHanded;
-	const bool rleCompressed = core::Var::getVar(cfg::VoxformatQBSaveCompressed)->boolVal();
+	const bool rleCompressed = core::getVar(cfg::VoxformatQBSaveCompressed)->boolVal();
 	wrapSave(stream->writeUInt32((uint32_t)orientation))
 	wrapSave(stream->writeUInt32(rleCompressed ? (uint32_t)Compression::RLE : (uint32_t)Compression::None))
 	wrapSave(stream->writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))

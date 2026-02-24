@@ -55,7 +55,7 @@ nlohmann::json Tool::propTypeDescription(const core::String &type, const core::S
 }
 
 const core::String &Tool::rconPassword() const {
-	return core::Var::getVar(cfg::VoxEditNetRconPassword)->strVal();
+	return core::getVar(cfg::VoxEditNetRconPassword)->strVal();
 }
 
 core::UUID Tool::argsUUID(const nlohmann::json &args) const {

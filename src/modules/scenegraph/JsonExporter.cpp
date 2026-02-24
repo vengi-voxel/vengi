@@ -203,11 +203,11 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 		stream.writeStringFormat(false, "]"); // animations
 
 		if ((flags & JSONEXPORTER_MESHDETAILS) && node.isModelNode()) {
-			const bool mergeQuads = core::Var::getVar(cfg::VoxformatMergequads)->boolVal();
-			const bool reuseVertices = core::Var::getVar(cfg::VoxformatReusevertices)->boolVal();
-			const bool ambientOcclusion = core::Var::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
+			const bool mergeQuads = core::getVar(cfg::VoxformatMergequads)->boolVal();
+			const bool reuseVertices = core::getVar(cfg::VoxformatReusevertices)->boolVal();
+			const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
 			const voxel::SurfaceExtractionType meshType =
-				(voxel::SurfaceExtractionType)core::Var::getVar(cfg::VoxformatMeshMode)->intVal();
+				(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
 			voxel::ChunkMesh mesh;
 			voxel::SurfaceExtractionContext ctx =
 				voxel::createContext(meshType, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0},

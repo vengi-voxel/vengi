@@ -13,14 +13,14 @@
 namespace voxedit {
 
 void GameModePanel::init() {
-	_clipping = core::Var::getVar(cfg::GameModeClipping);
-	_applyGravity = core::Var::getVar(cfg::GameModeApplyGravity);
-	_movementSpeed = core::Var::getVar(cfg::GameModeMovementSpeed);
-	_jumpVelocity = core::Var::getVar(cfg::GameModeJumpVelocity);
-	_bodyHeight = core::Var::getVar(cfg::GameModeBodyHeight);
-	_gravity = core::Var::getVar(cfg::GameModeGravity);
-	_friction = core::Var::getVar(cfg::GameModeFriction);
-	_bodySize = core::Var::getVar(cfg::GameModeBodySize);
+	_clipping = core::getVar(cfg::GameModeClipping);
+	_applyGravity = core::getVar(cfg::GameModeApplyGravity);
+	_movementSpeed = core::getVar(cfg::GameModeMovementSpeed);
+	_jumpVelocity = core::getVar(cfg::GameModeJumpVelocity);
+	_bodyHeight = core::getVar(cfg::GameModeBodyHeight);
+	_gravity = core::getVar(cfg::GameModeGravity);
+	_friction = core::getVar(cfg::GameModeFriction);
+	_bodySize = core::getVar(cfg::GameModeBodySize);
 }
 
 void GameModePanel::update(const char *id, command::CommandExecutionListener &listener) {

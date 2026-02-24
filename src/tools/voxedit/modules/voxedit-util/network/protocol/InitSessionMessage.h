@@ -27,9 +27,9 @@ private:
 public:
 	InitSessionMessage(bool localServer) : ProtocolMessage(PROTO_INIT_SESSION) {
 		_protocolVersion = PROTOCOL_VERSION;
-		_applicationVersion = core::Var::getVar(cfg::AppVersion)->strVal();
-		_password = core::Var::getVar(cfg::VoxEditNetPassword)->strVal();
-		_username = core::Var::getVar(cfg::AppUserName)->strVal();
+		_applicationVersion = core::getVar(cfg::AppVersion)->strVal();
+		_password = core::getVar(cfg::VoxEditNetPassword)->strVal();
+		_username = core::getVar(cfg::AppUserName)->strVal();
 
 		if (!writeUInt32(_protocolVersion)) {
 			Log::error("Failed to write protocol version in InitSessionMessage ctor");

@@ -162,7 +162,7 @@ static int genericPngOptions(bool load, const core::VarPtr &imageTypeVar) {
 }
 
 static void saveOptionsPng(const io::FilesystemEntry &entry) {
-	const core::VarPtr &imageTypeVar = core::Var::getVar(cfg::VoxformatImageSaveType);
+	const core::VarPtr &imageTypeVar = core::getVar(cfg::VoxformatImageSaveType);
 	const int currentImageType = genericPngOptions(false, imageTypeVar);
 
 	if (currentImageType == voxelformat::PNGFormat::ImageType::Plane) {
@@ -208,7 +208,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::BinVoxFormat::format()) {
 		const char *binvoxVersions[] = {_("Binvox 1 (white)"), _("Binvox 2 (multi colors)"), _("Binvox 3 (unofficial)")};
-		const core::VarPtr &binvoxVersion = core::Var::getVar(cfg::VoxformatBinvoxVersion);
+		const core::VarPtr &binvoxVersion = core::getVar(cfg::VoxformatBinvoxVersion);
 		if (ImGui::BeginCombo(_("Binvox version"), binvoxVersion->strVal().c_str())) {
 			for (int i = 0; i < lengthof(binvoxVersions); ++i) {
 				const bool selected = binvoxVersion->intVal() == i + 1;
@@ -225,7 +225,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 	if (*desc == voxelformat::SchematicFormat::format()) {
 		static const char *schematicTypes[] = {"mcedit2", "worldedit", "schematica"};
-		const core::VarPtr &schematicType = core::Var::getVar(cfg::VoxformatSchematicType);
+		const core::VarPtr &schematicType = core::getVar(cfg::VoxformatSchematicType);
 		if (ImGui::BeginCombo(_("Schematic type"), schematicType->strVal().c_str())) {
 			for (int i = 0; i < lengthof(schematicTypes); ++i) {
 				const char *importType = schematicTypes[i];
@@ -272,7 +272,7 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 static void loadOptionsAseprite(const io::FilesystemEntry &entry) {
 	ImGui::InputVarInt(_("Slice offset"), cfg::VoxformatImageSliceOffset);
-	const core::VarPtr &sliceOffsetAxis = core::Var::getVar(cfg::VoxformatImageSliceOffsetAxis);
+	const core::VarPtr &sliceOffsetAxis = core::getVar(cfg::VoxformatImageSliceOffsetAxis);
 	if (ImGui::BeginCombo(_("Slice offset axis"), sliceOffsetAxis->strVal().c_str())) {
 		const math::Axis array  [] {
 			math::Axis::X, math::Axis::Y, math::Axis::Z
@@ -288,7 +288,7 @@ static void loadOptionsAseprite(const io::FilesystemEntry &entry) {
 }
 
 static void loadOptionsPng(const io::FilesystemEntry &entry) {
-	const core::VarPtr &imageTypeVar = core::Var::getVar(cfg::VoxformatImageImportType);
+	const core::VarPtr &imageTypeVar = core::getVar(cfg::VoxformatImageImportType);
 	const int currentImageType = genericPngOptions(true, imageTypeVar);
 
 	if (currentImageType == voxelformat::PNGFormat::ImageType::Volume) {
@@ -315,7 +315,7 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
 	ImGui::CheckboxVar(_("Simplify"), cfg::VoxformatMeshSimplify);
 
-	const core::VarPtr &normalPaletteVar = core::Var::getVar(cfg::NormalPalette);
+	const core::VarPtr &normalPaletteVar = core::getVar(cfg::NormalPalette);
 	if (ImGui::BeginCombo(_("Normal palette"), normalPaletteVar->strVal().c_str(), 0)) {
 		for (const char *palette : palette::NormalPalette::builtIn) {
 			if (ImGui::Selectable(palette, palette == normalPaletteVar->strVal())) {
@@ -328,19 +328,19 @@ static void loadOptionsMesh(const io::FormatDescription *desc) {
 
 
 	if (*desc == voxelformat::GMLFormat::format()) {
-		const core::VarPtr &regionVar = core::Var::getVar(cfg::VoxformatGMLRegion);
+		const core::VarPtr &regionVar = core::getVar(cfg::VoxformatGMLRegion);
 		ImGui::InputVarString(_("Region filter (minX minY minZ maxX maxY maxZ)"), regionVar);
 		ImGui::TooltipTextUnformatted(
 			_("Only load objects that intersect with the given region. The coordinates are in the order of minX minY "
 			  "minZ maxX maxY maxZ. They are in world coordinates of the given GML file, so you might need to check "
 			  "the envelope of the file first to determine the correct region."));
-		ImGui::InputVarString(_("Filename filter (wildcard)"), core::Var::getVar(cfg::VoxformatGMLFilenameFilter));
+		ImGui::InputVarString(_("Filename filter (wildcard)"), core::getVar(cfg::VoxformatGMLFilenameFilter));
 	}
 
 	const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};
 	static_assert(voxelformat::MeshFormat::VoxelizeMode::HighQuality == 0, "HighQuality must be at index 0");
 	static_assert(voxelformat::MeshFormat::VoxelizeMode::Fast == 1, "Fast must be at index 1");
-	const core::VarPtr &voxelizationVar = core::Var::getVar(cfg::VoxformatVoxelizeMode);
+	const core::VarPtr &voxelizationVar = core::getVar(cfg::VoxformatVoxelizeMode);
 	const int currentVoxelizationMode = voxelizationVar->intVal();
 
 	if (ImGui::BeginCombo(_("Voxelization mode"), voxelizationModes[currentVoxelizationMode])) {
@@ -370,10 +370,10 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
 		ImGui::InputVarInt(_("Target colors (0=no limit)"), cfg::VoxformatTargetColors);
 	}
-	const core::VarPtr &createPalette = core::Var::getVar(cfg::VoxelCreatePalette);
+	const core::VarPtr &createPalette = core::getVar(cfg::VoxelCreatePalette);
 	ImGui::CheckboxVar(_("Create palette"), createPalette);
 	if (!createPalette->boolVal()) {
-		core::VarPtr paletteVar = core::Var::getVar(cfg::VoxelPalette);
+		core::VarPtr paletteVar = core::getVar(cfg::VoxelPalette);
 		if (ImGui::BeginCombo(_("Map colors to palette"), paletteVar->strVal().c_str(), 0)) {
 			for (const core::String &palette : paletteCache.availablePalettes()) {
 				if (ImGui::Selectable(palette.c_str(), palette == paletteVar->strVal())) {

@@ -103,9 +103,9 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
-				bool debug = (Log::Level)core::Var::getVar(cfg::CoreLogLevel)->intVal() <= Log::Level::Debug;
+				bool debug = (Log::Level)core::getVar(cfg::CoreLogLevel)->intVal() <= Log::Level::Debug;
 				if (ImGui::Checkbox(_("Debug"), &debug)) {
-					core::Var::getVar(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
+					core::getVar(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
 				}
 				ImGui::TooltipTextUnformatted(_("Enable debug logging for the console"));
 				ImGui::IconCheckbox(ICON_LC_LOCK, _("Auto scrolling"), &_autoScrollEnabled);

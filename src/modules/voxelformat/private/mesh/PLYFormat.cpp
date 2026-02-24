@@ -665,7 +665,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		return false;
 	}
 	// if no transform are applied, and no scale is wanted, we can just export integers
-	const bool applyTransform = core::Var::getVar(cfg::VoxformatTransform)->boolVal();
+	const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
 	const bool exportIntegers = glm::all(glm::equal(scale, glm::vec3(1.0f))) && !applyTransform;
 	int elementsCnt = 0;
 	int indicesCnt = 0;

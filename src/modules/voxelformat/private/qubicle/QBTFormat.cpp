@@ -290,7 +290,7 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapSave(stream->writeFloat(1.0f)); // globalscale
 	wrapSave(stream->writeFloat(1.0f)); // globalscale
 	wrapSave(stream->writeFloat(1.0f)); // globalscale
-	const bool colorMap = core::Var::getVar(cfg::VoxformatQBTPaletteMode)->boolVal();
+	const bool colorMap = core::getVar(cfg::VoxformatQBTPaletteMode)->boolVal();
 	if (colorMap) {
 		const palette::Palette &palette = sceneGraph.firstPalette();
 		if (!saveColorMap(*stream, palette)) {
@@ -338,7 +338,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGr
 	if (!loadMatrix(stream, sceneGraph, nodeId, palette, state)) {
 		return false;
 	}
-	const bool mergeCompounds = core::Var::getVar(cfg::VoxformatQBTMergeCompounds)->boolVal();
+	const bool mergeCompounds = core::getVar(cfg::VoxformatQBTMergeCompounds)->boolVal();
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	Log::debug("Load %u children", childCount);

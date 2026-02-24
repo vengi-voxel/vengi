@@ -496,7 +496,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 		}
 	}
 
-	if (core::Var::getVar(cfg::VoxEditShowColorPicker)->boolVal()) {
+	if (core::getVar(cfg::VoxEditShowColorPicker)->boolVal()) {
 		if (showColorPicker(selectedPaletteColorIdx, node, listener)) {
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
@@ -522,7 +522,7 @@ bool PalettePanel::showColorPicker(uint8_t paletteColorIdx, scenegraph::SceneGra
 	ImGuiColorEditFlags flags =
 		ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
 	flags |= ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar;
-	if (core::Var::getVar(cfg::VoxEditColorWheel)->boolVal()) {
+	if (core::getVar(cfg::VoxEditColorWheel)->boolVal()) {
 		flags |= ImGuiColorEditFlags_PickerHueWheel;
 	} else {
 		flags |= ImGuiColorEditFlags_PickerHueBar;

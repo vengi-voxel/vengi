@@ -21,8 +21,8 @@ void CameraMovement::construct() {
 							   core::Var::boolValidator);
 	_applyGravity = core::Var::get(cfg::GameModeApplyGravity, "false", core::CV_NOPERSIST, _("Enable gravity"),
 								   core::Var::boolValidator);
-	_rotationSpeed = core::Var::getVar(cfg::ClientMouseRotationSpeed);
-	_zoomSpeed = core::Var::getVar(cfg::ClientCameraZoomSpeed);
+	_rotationSpeed = core::getVar(cfg::ClientMouseRotationSpeed);
+	_zoomSpeed = core::getVar(cfg::ClientCameraZoomSpeed);
 	_movement.construct();
 }
 

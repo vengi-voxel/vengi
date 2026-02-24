@@ -13,7 +13,7 @@ LuaScriptCreateHandler::LuaScriptCreateHandler(voxelgenerator::LUAApi *luaApi)
 }
 
 void LuaScriptCreateHandler::execute(const network::ClientId &clientId, LuaScriptCreateMessage *msg) {
-	const core::VarPtr &password = core::Var::getVar(cfg::VoxEditNetRconPassword);
+	const core::VarPtr &password = core::getVar(cfg::VoxEditNetRconPassword);
 	if (password->strVal() != msg->rconPassword()) {
 		Log::warn("Received lua script create message with invalid rcon password from client id %d", clientId);
 		return;

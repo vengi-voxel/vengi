@@ -36,7 +36,7 @@ void TestApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeig
 app::AppState TestApp::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
-	_rotationSpeed = core::Var::getVar(cfg::ClientMouseRotationSpeed);
+	_rotationSpeed = core::getVar(cfg::ClientMouseRotationSpeed);
 
 	_movement.construct();
 

@@ -1007,7 +1007,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 		const tinyxml2::XMLElement *envelope = findChildElement(boundedBy, "Envelope");
 		glm::dvec3 offsetMaxs(0.0);
 		if (parseEnvelope(envelope, offsetMins, offsetMaxs)) {
-			const core::String &regionStr = core::Var::getVar(cfg::VoxformatGMLRegion)->strVal();
+			const core::String &regionStr = core::getVar(cfg::VoxformatGMLRegion)->strVal();
 			glm::dvec3 gmlFilterMins(0.0);
 			glm::dvec3 gmlFilterMaxs(0.0);
 			if (parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs)) {
@@ -1154,7 +1154,7 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::info("Found %d XML/GML files in archive", (int)xmlFiles.size());
 		core::AtomicInt filesProcessed = 0;
 		core::DynamicArray<core::String> xmlData;
-		const core::String &gmlFilenameFilter = core::Var::getVar(cfg::VoxformatGMLFilenameFilter)->strVal();
+		const core::String &gmlFilenameFilter = core::getVar(cfg::VoxformatGMLFilenameFilter)->strVal();
 		for (const io::FilesystemEntry &entry : xmlFiles) {
 			Log::debug("Processing XML file: %s", entry.fullPath.c_str());
 			if (!gmlFilenameFilter.empty() && !core::string::matches(entry.name, gmlFilenameFilter, true)) {
@@ -1229,7 +1229,7 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	// Parse the region filter (in GML world coordinates) for per-object filtering
 	glm::dvec3 gmlFilterMins(0.0);
 	glm::dvec3 gmlFilterMaxs(0.0);
-	const core::String &regionStr = core::Var::getVar(cfg::VoxformatGMLRegion)->strVal();
+	const core::String &regionStr = core::getVar(cfg::VoxformatGMLRegion)->strVal();
 	const bool hasRegionFilter = parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs);
 
 	int nodesCreated = 0;

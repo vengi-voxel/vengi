@@ -152,7 +152,7 @@ bool ComboVar(const char *label, const core::VarPtr &var, const Collection &item
 
 template<class Collection>
 bool ComboVar(const char *label, const char *varName, const Collection &items) {
-	const core::VarPtr &var = core::Var::getVar(varName);
+	const core::VarPtr &var = core::getVar(varName);
 	return ComboVar(label, var, items);
 }
 

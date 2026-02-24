@@ -13,7 +13,7 @@
 namespace ui {
 
 void metricOption() {
-	const core::VarPtr &metricFlavor = core::Var::getVar(cfg::MetricFlavor);
+	const core::VarPtr &metricFlavor = core::getVar(cfg::MetricFlavor);
 	bool metrics = !metricFlavor->strVal().empty();
 	if (ImGui::IconCheckbox(ICON_LC_CHART_AREA, _("Enable sending anonymous metrics"), &metrics)) {
 		if (metrics) {

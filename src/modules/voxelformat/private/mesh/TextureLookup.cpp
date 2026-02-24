@@ -74,7 +74,7 @@ core::Path lookupTexture(const core::Path &referenceFile, const core::Path &file
 			return foundFile;
 		}
 	}
-	const core::Path additionalSearchPath(core::Var::getVar(cfg::VoxformatTexturePath)->strVal());
+	const core::Path additionalSearchPath(core::getVar(cfg::VoxformatTexturePath)->strVal());
 	if (additionalSearchPath.valid()) {
 		foundFile = searchInPath(additionalSearchPath, file, archive);
 		if (foundFile.valid()) {

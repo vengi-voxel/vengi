@@ -20,7 +20,7 @@ app::AppState VoxEditServer::onConstruct() {
 	app::AppState appState = Super::onConstruct();
 	core::Var::get(cfg::UILastDirectory, filesystem()->homePath().c_str());
 	_sceneMgr->construct();
-	core::Var::getVar(cfg::AppVersion)->setVal(PROJECT_VERSION);
+	core::getVar(cfg::AppVersion)->setVal(PROJECT_VERSION);
 	return appState;
 }
 
@@ -33,8 +33,8 @@ app::AppState VoxEditServer::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	int port = core::Var::getVar(cfg::VoxEditNetPort)->intVal();
-	const core::String &iface = core::Var::getVar(cfg::VoxEditNetServerInterface)->strVal();
+	int port = core::getVar(cfg::VoxEditNetPort)->intVal();
+	const core::String &iface = core::getVar(cfg::VoxEditNetServerInterface)->strVal();
 	_sceneMgr->startLocalServer(port, iface);
 	if (!_sceneMgr->server().isRunning()) {
 		Log::error("Failed to start the voxedit server on %s:%i", iface.c_str(), port);

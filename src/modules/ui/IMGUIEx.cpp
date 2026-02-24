@@ -193,7 +193,7 @@ bool InputTextWithHint(const char *label, const char *hint, core::String *str, I
 }
 
 bool InputVarString(const char *label, const char *varName, ImGuiInputTextFlags flags) {
-	const core::VarPtr &var = core::Var::getVar(varName);
+	const core::VarPtr &var = core::getVar(varName);
 	return InputVarString(label, var, flags);
 }
 
@@ -260,7 +260,7 @@ bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float
 }
 
 bool InputVarFloat(const char* label, const char *varName, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
-	core::VarPtr var = core::Var::getVar(varName);
+	core::VarPtr var = core::getVar(varName);
 	return InputVarFloat(label, var, step, step_fast, extra_flags);
 }
 
@@ -404,7 +404,7 @@ bool InputVarInt(const char *label, const core::VarPtr &var, int step, int step_
 }
 
 bool InputVarInt(const char *label, const char *varName, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
-	core::VarPtr var = core::Var::getVar(varName);
+	core::VarPtr var = core::getVar(varName);
 	return InputVarInt(label, var, step, step_fast, extra_flags);
 }
 
@@ -432,7 +432,7 @@ bool IconCheckboxVar(const char *icon, const char *label, const char *varName) {
 }
 
 bool CheckboxVar(const char *label, const char *varName) {
-	core::VarPtr var = core::Var::getVar(varName);
+	core::VarPtr var = core::getVar(varName);
 	if (CheckboxVar(label, var)) {
 		return true;
 	}
@@ -457,7 +457,7 @@ bool IconSliderVarInt(const char *icon, const char *label, const core::VarPtr &v
 
 bool IconSliderVarInt(const char *icon, const char *label, const char* varName, int v_min, int v_max,
 					  const char *format, ImGuiSliderFlags flags) {
-	core::VarPtr var = core::Var::getVar(varName);
+	core::VarPtr var = core::getVar(varName);
 	return IconSliderVarInt(icon, label, var, v_min, v_max, format, flags);
 }
 
@@ -474,7 +474,7 @@ bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_m
 }
 
 bool SliderVarInt(const char* label, const char* varName, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
-	core::VarPtr var = core::Var::getVar(varName);
+	core::VarPtr var = core::getVar(varName);
 	return SliderVarInt(label, var, v_min, v_max, format, flags);
 }
 
@@ -489,13 +489,13 @@ bool SliderVarFloat(const char* label, const core::VarPtr& var, float v_min, flo
 
 bool SliderVarFloat(const char *label, const char *varName, float v_min, float v_max, const char *format,
 					ImGuiSliderFlags flags) {
-	core::VarPtr var = core::Var::getVar(varName);
+	core::VarPtr var = core::getVar(varName);
 	return SliderVarFloat(label, var, v_min, v_max, format, flags);
 }
 
 bool InputVec3Var(const char *label, const char *varName) {
 	glm::vec3 vec;
-	const core::VarPtr &var = core::Var::getVar(varName);
+	const core::VarPtr &var = core::getVar(varName);
 	var->vec3Val(&vec[0]);
 	if (InputVec3(label, vec, "%.3f", 0)) {
 		const core::String &v = core::String::format("%f %f %f", vec.x, vec.y, vec.z);
@@ -510,7 +510,7 @@ bool InputVec3Var(const char *label, const char *varName) {
 
 bool ColorEdit3Var(const char *label, const char *varName) {
 	glm::vec3 col;
-	const core::VarPtr &var = core::Var::getVar(varName);
+	const core::VarPtr &var = core::getVar(varName);
 	var->vec3Val(&col[0]);
 	if (ImGui::ColorEdit3(label, glm::value_ptr(col))) {
 		const core::String &c = core::String::format("%f %f %f", col.x, col.y, col.z);

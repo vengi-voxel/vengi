@@ -53,7 +53,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 									   cfg::RenderOutline, cfg::RenderCheckerBoard, cfg::ClientBloom};
 
 		for (int i = 0; i < (int)lengthof(checkboxItems); ++i) {
-			const core::VarPtr &var = core::Var::getVar(checkboxCvars[i]);
+			const core::VarPtr &var = core::getVar(checkboxCvars[i]);
 			const bool initialVal = var->boolVal();
 
 			// toggle on
@@ -81,14 +81,14 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		const core::String vid = Viewport::viewportId(viewportId);
 
 		// enable grid + bounding box + bones together
-		const core::VarPtr &gridVar = core::Var::getVar(cfg::VoxEditShowgrid);
-		const core::VarPtr &aabbVar = core::Var::getVar(cfg::VoxEditShowaabb);
-		const core::VarPtr &bonesVar = core::Var::getVar(cfg::VoxEditShowBones);
-		const core::VarPtr &bloomVar = core::Var::getVar(cfg::ClientBloom);
-		const core::VarPtr &outlineVar = core::Var::getVar(cfg::RenderOutline);
-		const core::VarPtr &checkerVar = core::Var::getVar(cfg::RenderCheckerBoard);
-		const core::VarPtr &planeVar = core::Var::getVar(cfg::VoxEditShowPlane);
-		const core::VarPtr &gizmoVar = core::Var::getVar(cfg::VoxEditShowaxis);
+		const core::VarPtr &gridVar = core::getVar(cfg::VoxEditShowgrid);
+		const core::VarPtr &aabbVar = core::getVar(cfg::VoxEditShowaabb);
+		const core::VarPtr &bonesVar = core::getVar(cfg::VoxEditShowBones);
+		const core::VarPtr &bloomVar = core::getVar(cfg::ClientBloom);
+		const core::VarPtr &outlineVar = core::getVar(cfg::RenderOutline);
+		const core::VarPtr &checkerVar = core::getVar(cfg::RenderCheckerBoard);
+		const core::VarPtr &planeVar = core::getVar(cfg::VoxEditShowPlane);
+		const core::VarPtr &gizmoVar = core::getVar(cfg::VoxEditShowaxis);
 
 		// save initial states to restore later
 		const bool gridInit = gridVar->boolVal();

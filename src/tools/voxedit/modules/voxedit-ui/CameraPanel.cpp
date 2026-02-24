@@ -53,7 +53,7 @@ void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, vid
 	}
 	// gamemode
 	ImGui::BeginDisabled(camera.rotationType() != video::CameraRotationType::Eye);
-	const core::VarPtr &clipping = core::Var::getVar(cfg::GameModeClipping);
+	const core::VarPtr &clipping = core::getVar(cfg::GameModeClipping);
 	ImGui::CheckboxVar(_("Clipping"), clipping);
 	ImGui::BeginDisabled(!clipping->boolVal());
 	ImGui::CheckboxVar(_("Gravity"), cfg::GameModeApplyGravity);
