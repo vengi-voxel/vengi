@@ -330,6 +330,14 @@ inline const char *Var::help() const {
 	return _help;
 }
 
+static inline VarPtr findVar(const core::String& name) {
+	return Var::findVar(name);
+}
+
+static inline VarPtr getVar(const core::String& name) {
+	return Var::getVar(name);
+}
+
 /**
  * @}
  */
