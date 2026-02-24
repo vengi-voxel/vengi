@@ -234,8 +234,8 @@ VarPtr Var::createVar(const VarDef &def) {
 	if (def.hasMinMax()) {
 		v->_def.minValue = def.minValue;
 		v->_def.maxValue = def.maxValue;
-		v->_def.type = def.type;
 	}
+	v->_def.type = def.type;
 	if (v->_def.validValues.empty() && def.hasValidValues()) {
 		v->_def.validValues = def.validValues;
 	}
