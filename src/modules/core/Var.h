@@ -37,22 +37,37 @@ const uint32_t CV_FROMENV = 1 << 8;
 class Var;
 typedef core::SharedPtr<Var> VarPtr;
 
+typedef bool (*ValidatorFunc)(const core::String& value);
+
+struct VarDef {
+	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags = -1,
+		   const char *defHelp = nullptr, ValidatorFunc defValidatorFunc = nullptr)
+		: name(defName), value(defValue), flags(defFlags), help(defHelp), validatorFunc(defValidatorFunc) {
+	}
+	core::String name;
+	core::String value;
+	core::String defaultValue;
+	int32_t flags = -1;
+	const char *help = nullptr;
+	ValidatorFunc validatorFunc = nullptr;
+};
+
 /**
  * @brief A var can be changed and queried at runtime
  *
  * Create a new variable with all parameters
  * @code
- * core::VarPtr var = core::Var::get("prefix_name", "defaultvalue", 0);
+ * core::VarDef varDef("prefix_name", "value");
+ * core::VarPtr var = core::Var::registerVar(varDef);
  * @endcode
  *
  * If you just want to get an existing variable use:
  * @code
- * core::Var::get("prefix_name");
+ * core::getVar("prefix_name");
  * @endcode
  */
 class Var {
 public:
-	typedef bool (*ValidatorFunc)(const core::String& value);
 protected:
 	friend class SharedPtr<Var>;
 	typedef StringMap<VarPtr, 64> VarMap;
@@ -129,13 +144,20 @@ public:
 	 *
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
+	// TODO: make this private - if value is nullptr or not given, then findVar could be used.
 	static VarPtr get(const core::String& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
 	static VarPtr findVar(const core::String& name);
 
+	static inline VarPtr registerVar(const VarDef &def) {
+		return get(def.name, def.value, def.flags, def.help, def.validatorFunc);
+	}
+
+	// TODO: deprecated - use registerVar
 	static inline VarPtr get(const core::String& name, const char* value, const char *help, ValidatorFunc validatorFunc = nullptr) {
 		return get(name, value, -1, help, validatorFunc);
 	}
 
+	// TODO: deprecated - use registerVar
 	static inline VarPtr get(const core::String& name, const String& value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr) {
 		return get(name, value.c_str(), flags, help, validatorFunc);
 	}
@@ -255,7 +277,7 @@ public:
 	bool typeIsBool() const;
 };
 
-inline void Var::setValidator(Var::ValidatorFunc func) {
+inline void Var::setValidator(ValidatorFunc func) {
 	_validator = func;
 }
 
@@ -336,6 +358,10 @@ static inline VarPtr findVar(const core::String& name) {
 
 static inline VarPtr getVar(const core::String& name) {
 	return Var::getVar(name);
+}
+
+static inline VarPtr registerVar(const VarDef &def) {
+	return Var::registerVar(def);
 }
 
 /**
