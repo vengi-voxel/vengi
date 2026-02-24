@@ -617,15 +617,15 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 }
 
 void FileDialog::construct() {
-	const core::VarDef uIBookmarks(cfg::UIBookmarks, "");
+	const core::VarDef uIBookmarks(cfg::UIBookmarks, "", N_("Bookmarks"), N_("Semicolon separated list of bookmarked directories"));
 	_bookmarks = core::Var::registerVar(uIBookmarks);
-	const core::VarDef uIFileDialogShowHidden(cfg::UIFileDialogShowHidden, false, -1, N_("Show hidden"), N_("Show hidden file system entities"));
+	const core::VarDef uIFileDialogShowHidden(cfg::UIFileDialogShowHidden, false, N_("Show hidden"), N_("Show hidden file system entities"));
 	_showHidden = core::Var::registerVar(uIFileDialogShowHidden);
-	const core::VarDef uILastDirectory(cfg::UILastDirectory, _app->filesystem()->homePath().c_str());
+	const core::VarDef uILastDirectory(cfg::UILastDirectory, _app->filesystem()->homePath().c_str(), N_("Last directory"), N_("The last opened directory in the file dialog"));
 	_lastDirVar = core::Var::registerVar(uILastDirectory);
-	const core::VarDef uILastFilterSave(cfg::UILastFilterSave, 0, -1, N_("Last filter (save)"), N_("The last selected file type filter in the file dialog"));
+	const core::VarDef uILastFilterSave(cfg::UILastFilterSave, 0, N_("Last filter (save)"), N_("The last selected file type filter in the file dialog"));
 	_lastFilterSave = core::Var::registerVar(uILastFilterSave);
-	const core::VarDef uILastFilterOpen(cfg::UILastFilterOpen, 0, -1, N_("Last filter (open)"), N_("The last selected file type filter in the file dialog"));
+	const core::VarDef uILastFilterOpen(cfg::UILastFilterOpen, 0, N_("Last filter (open)"), N_("The last selected file type filter in the file dialog"));
 	_lastFilterOpen = core::Var::registerVar(uILastFilterOpen);
 }
 

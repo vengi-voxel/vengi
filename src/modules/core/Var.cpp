@@ -15,76 +15,63 @@
 
 namespace core {
 
-namespace validator {
-static bool boolValidator(const core::String& value) {
-	return value == "1" || value == "true" || value == "false" || value == "0";
-}
-}
-
-VarDef::VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags,
-		   const char *defTitle, const char *defDescription,
-		   ValidatorFunc defValidatorFunc)
-	: type(VarType::String), name(defName), value(defValue), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  validatorFunc(defValidatorFunc) {
+VarDef::VarDef(const core::String &defName, const core::String &defValue, const char *defTitle,
+			   const char *defDescription, int32_t defFlags)
+	: type(VarType::String), name(defName), value(defValue), flags(defFlags), title(defTitle ? defTitle : ""),
+	  description(defDescription ? defDescription : "") {
 	core_assert(!defName.empty());
 }
 
-VarDef::VarDef(const core::String &defName, const char *defValue, int32_t defFlags,
-		   const char *defTitle, const char *defDescription,
-		   ValidatorFunc defValidatorFunc)
-	: type(VarType::String), name(defName), value(defValue), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  validatorFunc(defValidatorFunc) {
+VarDef::VarDef(const core::String &defName, const char *defValue, const char *defTitle, const char *defDescription,
+			   int32_t defFlags)
+	: type(VarType::String), name(defName), value(defValue), flags(defFlags), title(defTitle ? defTitle : ""),
+	  description(defDescription ? defDescription : "") {
 	core_assert(!defName.empty());
 }
 
-VarDef::VarDef(const core::String &defName, bool defValue, int32_t defFlags, const char *defTitle,
-		   const char *defDescription)
+VarDef::VarDef(const core::String &defName, bool defValue, const char *defTitle, const char *defDescription,
+			   int32_t defFlags)
 	: type(VarType::Bool), name(defName), value(defValue ? "true" : "false"), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  validatorFunc(validator::boolValidator) {
+	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : "") {
 	core_assert(!defName.empty());
 }
 
-VarDef::VarDef(const core::String &defName, int defValue, int32_t defFlags, const char *defTitle,
-		   const char *defDescription, ValidatorFunc defValidatorFunc)
+VarDef::VarDef(const core::String &defName, int defValue, const char *defTitle, const char *defDescription,
+			   int32_t defFlags)
 	: type(VarType::Int), name(defName), value(core::String::format("%i", defValue)), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  validatorFunc(defValidatorFunc), minValue(0), maxValue(-1) {
+	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""), minValue(0), maxValue(-1) {
 	core_assert(!defName.empty());
 }
 
-VarDef::VarDef(const core::String &defName, int defValue, int defMin, int defMax, int32_t defFlags,
-		   const char *defTitle, const char *defDescription)
+VarDef::VarDef(const core::String &defName, int defValue, int defMin, int defMax, const char *defTitle,
+			   const char *defDescription, int32_t defFlags)
 	: type(VarType::Int), name(defName), value(core::String::format("%i", defValue)), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  minValue(defMin), maxValue(defMax) {
+	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""), minValue(defMin),
+	  maxValue(defMax) {
 	core_assert(!defName.empty());
 }
 
-VarDef::VarDef(const core::String &defName, float defValue, int32_t defFlags, const char *defTitle,
-		   const char *defDescription)
+VarDef::VarDef(const core::String &defName, float defValue, const char *defTitle, const char *defDescription,
+			   int32_t defFlags)
 	: type(VarType::Float), name(defName), value(core::String::format("%f", defValue)), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  minValue(0.0f), maxValue(-1.0f) {
+	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""), minValue(0.0f),
+	  maxValue(-1.0f) {
 	core_assert(!defName.empty());
 }
 
-VarDef::VarDef(const core::String &defName, float defValue, float defMin, float defMax, int32_t defFlags,
-		   const char *defTitle, const char *defDescription)
+VarDef::VarDef(const core::String &defName, float defValue, float defMin, float defMax, const char *defTitle,
+			   const char *defDescription, int32_t defFlags)
 	: type(VarType::Float), name(defName), value(core::String::format("%f", defValue)), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  minValue(defMin), maxValue(defMax) {
+	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""), minValue(defMin),
+	  maxValue(defMax) {
 	core_assert(!defName.empty());
 }
 
 VarDef::VarDef(const core::String &defName, const core::String &defValue,
-		   const core::DynamicArray<core::String> &defValidValues, int32_t defFlags,
-		   const char *defTitle, const char *defDescription)
-	: type(VarType::Enum), name(defName), value(defValue), flags(defFlags),
-	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : ""),
-	  validValues(defValidValues) {
+			   const core::DynamicArray<core::String> &defValidValues, const char *defTitle, const char *defDescription,
+			   int32_t defFlags)
+	: type(VarType::Enum), name(defName), value(defValue), flags(defFlags), title(defTitle ? defTitle : ""),
+	  description(defDescription ? defDescription : ""), validValues(defValidValues) {
 	core_assert(!defName.empty());
 }
 
@@ -150,21 +137,6 @@ VarPtr Var::getVar(const core::String &name) {
 	return var;
 }
 
-bool Var::_ivec3ListValidator(const core::String &value, int nmin, int nmax) {
-	core::DynamicArray<core::String> regionSizes;
-	core::string::splitString(value, regionSizes, ",");
-	for (const core::String &s : regionSizes) {
-		glm::ivec3 maxs;
-		core::string::parseIVec3(s, &maxs[0]);
-		for (int i = 0; i < 3; ++i) {
-			if (maxs[i] < nmin || maxs[i] > nmax) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
 void Var::vec3Val(float out[3]) const {
 	float x, y, z;
 #ifdef _MSC_VER
@@ -213,9 +185,7 @@ VarPtr Var::createVar(const VarDef &def) {
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
-				if (!def.validatorFunc || def.validatorFunc(envValue)) {
-					value = envValue;
-				}
+				value = envValue;
 				flagsMask |= CV_FROMENV;
 				flagsMask &= ~CV_FROMFILE;
 			}
@@ -241,9 +211,7 @@ VarPtr Var::createVar(const VarDef &def) {
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
-				if (!def.validatorFunc || def.validatorFunc(envValue)) {
-					value = envValue;
-				}
+				value = envValue;
 			}
 			v->setVal(value);
 		} else if ((flagsMask & CV_FROMCOMMANDLINE) == CV_FROMCOMMANDLINE) {
@@ -262,9 +230,6 @@ VarPtr Var::createVar(const VarDef &def) {
 		// some flags should not get removed
 		const uint32_t preserve = v->_flags & CV_PRESERVE;
 		v->_flags = flagsMask | preserve;
-	}
-	if (def.validatorFunc != nullptr) {
-		v->_def.validatorFunc = def.validatorFunc;
 	}
 	if (def.hasMinMax()) {
 		v->_def.minValue = def.minValue;
@@ -337,8 +302,31 @@ bool Var::setVal(const core::String &value) {
 		Log::error("%s is write protected", _def.name.c_str());
 		return false;
 	}
-	if (_def.validatorFunc != nullptr) {
-		if (!_def.validatorFunc(value)) {
+	if (!validate(value)) {
+		Log::error("Validation failed for %s with value %s", _def.name.c_str(), value.c_str());
+		return false;
+	}
+	_dirty = _history[_currentHistoryPos]._value != value;
+	if (_dirty) {
+		addValueToHistory(value);
+		++_currentHistoryPos;
+		if ((_flags & CV_SHADER) != 0u) {
+			_visitFlags |= NEEDS_SHADERUPDATE;
+		}
+		if ((_flags & (CV_NOPERSIST | CV_READONLY)) == 0u) {
+			_visitFlags |= NEEDS_SAVING;
+		}
+		if (_history.size() >= _history.increase()) {
+			_history.erase(0, _history.increase() / 2);
+			_currentHistoryPos = (uint32_t)_history.size() - 1;
+		}
+	}
+	return true;
+}
+
+bool Var::validate(const core::String &value) const {
+	if (_def.type == VarType::Bool) {
+		if (value != "1" && value != "true" && value != "false" && value != "0") {
 			Log::debug("Validator doesn't allow to set '%s' for '%s'", value.c_str(), _def.name.c_str());
 			return false;
 		}
@@ -369,21 +357,6 @@ bool Var::setVal(const core::String &value) {
 		if (!found) {
 			Log::debug("Value '%s' is not a valid value for '%s'", value.c_str(), _def.name.c_str());
 			return false;
-		}
-	}
-	_dirty = _history[_currentHistoryPos]._value != value;
-	if (_dirty) {
-		addValueToHistory(value);
-		++_currentHistoryPos;
-		if ((_flags & CV_SHADER) != 0u) {
-			_visitFlags |= NEEDS_SHADERUPDATE;
-		}
-		if ((_flags & (CV_NOPERSIST | CV_READONLY)) == 0u) {
-			_visitFlags |= NEEDS_SAVING;
-		}
-		if (_history.size() >= _history.increase()) {
-			_history.erase(0, _history.increase() / 2);
-			_currentHistoryPos = (uint32_t)_history.size() - 1;
 		}
 	}
 	return true;

@@ -3,6 +3,7 @@
  */
 
 #include "Metric.h"
+#include "app/I18N.h"
 #include "core/Hash.h"
 #include "core/UUID.h"
 #include "core/ConfigVar.h"
@@ -20,7 +21,7 @@ Metric::~Metric() {
 
 bool Metric::init(const char *prefix, const IMetricSenderPtr &messageSender) {
 	_prefix = prefix;
-	const core::VarDef metricUUID(cfg::MetricUUID, "");
+	const core::VarDef metricUUID(cfg::MetricUUID, "", N_("Metric UUID"), N_("The UUID to use for metrics - if empty, a random one will be generated"));
 	core::VarPtr uuid = core::Var::registerVar(metricUUID);
 	if (uuid->strVal().empty()) {
 		uuid->setVal(core::UUID::generate().str());

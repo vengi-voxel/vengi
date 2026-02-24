@@ -24,7 +24,7 @@ public:
 	bool onInitApp() override {
 		Super::onInitApp();
 		_archive = io::openFilesystemArchive(io::filesystem());
-		const core::VarDef voxformatTexturePath(cfg::VoxformatTexturePath, "");
+		const core::VarDef voxformatTexturePath(cfg::VoxformatTexturePath, "", "", "");
 		core::Var::registerVar(voxformatTexturePath);
 		return true;
 	}

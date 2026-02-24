@@ -2,9 +2,9 @@
  * @file
  */
 
+#include "app/I18N.h"
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/ConfigVar.h"
-#include "core/StringUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
@@ -25,7 +25,9 @@ public:
 		if (!app::AbstractBenchmark::onInitApp()) {
 			return false;
 		}
-		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary));
+		const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary,
+											 (int)voxel::SurfaceExtractionType::Cubic,
+											 (int)voxel::SurfaceExtractionType::Max - 1, "", "");
 		core::Var::registerVar(voxRenderMeshMode);
 		meshState.construct();
 		if (!meshState.init()) {

@@ -6,13 +6,13 @@
 #include "GithubAPI.h"
 #include "GitlabAPI.h"
 #include "app/App.h"
+#include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
-#include "core/concurrent/Atomic.h"
 #include "engine-config.h"
 #include "http/HttpCacheStream.h"
 #include "http/Request.h"
@@ -52,9 +52,12 @@ VoxelSources Downloader::sources() {
 	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
 	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 	request.setUserAgent(userAgent);
-	const core::VarDef httpConnectTimeoutAssets(cfg::HttpConnectTimeoutAssets, 10);
+	const core::VarDef httpConnectTimeoutAssets(cfg::HttpConnectTimeoutAssets, 10,
+												N_("HTTP connect timeout for assets"),
+												N_("The timeout for HTTP connection in seconds for assets"));
 	request.setConnectTimeoutSecond(core::Var::registerVar(httpConnectTimeoutAssets));
-	const core::VarDef httpTimeoutAssets(cfg::HttpTimeoutAssets, 10);
+	const core::VarDef httpTimeoutAssets(cfg::HttpTimeoutAssets, 10, N_("HTTP timeout for assets"),
+										 N_("The timeout for HTTP request in seconds for assets"));
 	request.setTimeoutSecond(core::Var::registerVar(httpTimeoutAssets));
 	core::String json;
 	{

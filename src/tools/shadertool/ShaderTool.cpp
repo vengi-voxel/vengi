@@ -5,6 +5,7 @@
 #include "ShaderTool.h"
 #include "Generator.h"
 #include "Parser.h"
+#include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Process.h"
@@ -38,23 +39,34 @@ app::AppState ShaderTool::onConstruct() {
 	registerArg("-I").setDescription("Add additional include dir");
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
-	const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, core::CV_SHADER);
+	const core::VarDef clientGamma(cfg::ClientGamma, 1.0f, N_("Client Gamma"), N_("The gamma value for the client"),
+								   core::CV_SHADER);
 	core::Var::registerVar(clientGamma);
-	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, core::CV_SHADER);
+	const core::VarDef clientShadowMap(cfg::ClientShadowMap, true, N_("Client Shadow Map"),
+									   N_("Enable or disable the client shadow map"), core::CV_SHADER);
 	core::Var::registerVar(clientShadowMap);
-	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, core::CV_SHADER);
+	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, N_("Render Checker Board"),
+										  N_("Enable or disable rendering of the checker board"), core::CV_SHADER);
 	core::Var::registerVar(renderCheckerBoard);
-	const core::VarDef renderOutline(cfg::RenderOutline, false, core::CV_SHADER);
+	const core::VarDef renderOutline(cfg::RenderOutline, false, N_("Render Outline"),
+									 N_("Enable or disable rendering of the outline"), core::CV_SHADER);
 	core::Var::registerVar(renderOutline);
-	const core::VarDef renderNormals(cfg::RenderNormals, false, core::CV_SHADER);
+	const core::VarDef renderNormals(cfg::RenderNormals, false, N_("Render Normals"),
+									 N_("Enable or disable rendering of the normals"), core::CV_SHADER);
 	core::Var::registerVar(renderNormals);
-	const core::VarDef toneMapping(cfg::ToneMapping, 1, core::CV_SHADER);
+	const core::VarDef toneMapping(cfg::ToneMapping, 1, N_("Tone Mapping"), N_("Enable or disable tone mapping"),
+								   core::CV_SHADER);
 	core::Var::registerVar(toneMapping);
-	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, core::CV_SHADER);
+	const core::VarDef clientDebugShadow(cfg::ClientDebugShadow, false, N_("Client Debug Shadow"),
+										 N_("Enable or disable client debug shadow"), core::CV_SHADER);
 	core::Var::registerVar(clientDebugShadow);
-	const core::VarDef clientDebugShadowMapCascade(cfg::ClientDebugShadowMapCascade, false, core::CV_SHADER);
+	const core::VarDef clientDebugShadowMapCascade(
+		cfg::ClientDebugShadowMapCascade, false, N_("Client Debug Shadow Map Cascade"),
+		N_("Enable or disable client debug shadow map cascade"), core::CV_SHADER);
 	core::Var::registerVar(clientDebugShadowMapCascade);
-	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes, core::CV_SHADER);
+	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::MarchingCubes,
+										 N_("Voxel Render Mesh Mode"), N_("The mesh mode for voxel rendering"),
+										 core::CV_SHADER);
 	core::Var::registerVar(voxRenderMeshMode);
 	return Super::onConstruct();
 }

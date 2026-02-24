@@ -11,21 +11,21 @@
 namespace voxelrender {
 
 void CameraMovement::construct() {
-	const core::VarDef gameModeMovementSpeed(cfg::GameModeMovementSpeed, 60.0f, -1, _("Movement speed in game mode"));
+	const core::VarDef gameModeMovementSpeed(cfg::GameModeMovementSpeed, 60.0f, N_("Movement speed"), N_("Movement speed in game mode"));
 	_movementSpeed = core::Var::registerVar(gameModeMovementSpeed);
-	const core::VarDef gameModeJumpVelocity(cfg::GameModeJumpVelocity, 7.0f, -1, _("Jump velocity in game mode"));
+	const core::VarDef gameModeJumpVelocity(cfg::GameModeJumpVelocity, 7.0f, N_("Jump velocity"), N_("Jump velocity in game mode"));
 	_jumpVelocity = core::Var::registerVar(gameModeJumpVelocity);
-	const core::VarDef gameModeBodyHeight(cfg::GameModeBodyHeight, 2.0f, -1, _("Height of the body in game mode"));
+	const core::VarDef gameModeBodyHeight(cfg::GameModeBodyHeight, 2.0f, N_("Body height"), N_("Height of the body in game mode"));
 	_bodyHeight = core::Var::registerVar(gameModeBodyHeight);
-	const core::VarDef gameModeGravity(cfg::GameModeGravity, 9.81f, -1, _("Gravity in game mode"));
+	const core::VarDef gameModeGravity(cfg::GameModeGravity, 9.81f, N_("Gravity strength"), N_("Gravity in game mode"));
 	_gravity = core::Var::registerVar(gameModeGravity);
-	const core::VarDef gameModeFriction(cfg::GameModeFriction, 0.01f, -1, _("Friction in game mode"));
+	const core::VarDef gameModeFriction(cfg::GameModeFriction, 0.01f, N_("Friction"), N_("Friction in game mode"));
 	_friction = core::Var::registerVar(gameModeFriction);
-	const core::VarDef gameModeBodySize(cfg::GameModeBodySize, 0.2f, -1, _("Body size in game mode"));
+	const core::VarDef gameModeBodySize(cfg::GameModeBodySize, 0.2f, N_("Body size"), N_("Body size in game mode"));
 	_bodySize = core::Var::registerVar(gameModeBodySize);
-	const core::VarDef gameModeClipping(cfg::GameModeClipping, false, core::CV_NOPERSIST, _("Enable camera clipping"));
+	const core::VarDef gameModeClipping(cfg::GameModeClipping, false, N_("Camera clipping"), N_("Enable camera clipping"), core::CV_NOPERSIST);
 	_clipping = core::Var::registerVar(gameModeClipping);
-	const core::VarDef gameModeApplyGravity(cfg::GameModeApplyGravity, false, core::CV_NOPERSIST, _("Enable gravity"));
+	const core::VarDef gameModeApplyGravity(cfg::GameModeApplyGravity, false, N_("Gravity"), N_("Enable gravity"), core::CV_NOPERSIST);
 	_applyGravity = core::Var::registerVar(gameModeApplyGravity);
 	_rotationSpeed = core::getVar(cfg::ClientMouseRotationSpeed);
 	_zoomSpeed = core::getVar(cfg::ClientCameraZoomSpeed);

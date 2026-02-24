@@ -3,6 +3,7 @@
  */
 
 #include "Filesystem.h"
+#include "app/I18N.h"
 #include "core/Assert.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
@@ -88,7 +89,9 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	if (_homePath.empty()) {
 		_homePath = "./";
 	}
-	const core::VarDef appHomePath(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
+	const core::VarDef appHomePath(cfg::AppHomePath, _homePath, N_("Home Path"),
+								   N_("The home directory path for the application"),
+								   core::CV_READONLY | core::CV_NOPERSIST);
 	const core::VarPtr &homePathVar = core::Var::registerVar(appHomePath);
 
 	_homePath = homePathVar->strVal();
@@ -122,7 +125,7 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 
 	// this cvar allows to change the application data directory at runtime - it has lower priority
 	// as the backed-in PKGDATADIR (if defined) - and also lower priority as the home directory.
-	const core::VarDef corePathDef(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
+	const core::VarDef corePathDef(cfg::CorePath, "", "Specifies an additional filesystem search path - must end on /", 0);
 	const core::VarPtr &corePath = core::Var::registerVar(corePathDef);
 	if (!corePath->strVal().empty()) {
 		if (exists(corePath->strVal())) {

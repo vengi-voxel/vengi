@@ -3,6 +3,7 @@
  */
 
 #include "Renderer.h"
+#include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/Enum.h"
 #include "core/Log.h"
@@ -12,14 +13,25 @@
 
 namespace video {
 
-static const char *featuresArray[] = {
-	"r_texturecompressiondxt",	"r_texturecompressionpvrtc",
-	"r_texturecompressionetc2", "r_texturecompressionatc",
-	"r_texturefloat",			"r_texturehalffloat",
-	"r_instancedarrays",		"r_debugoutput",
-	"r_directstateaccess",		"r_bufferstorage",
-	"r_multidrawindirect",		"r_computeshaders",
-	"r_transformfeedback",		"r_shaderstoragebufferobject"
+static struct RenderFeature {
+	const char *var;
+	const char *description;
+} featuresArray[] = {
+	// TODO: add descriptions here
+	{"r_texturecompressiondxt", N_("")},
+	{"r_texturecompressionpvrtc", N_("")},
+	{"r_texturecompressionetc2", N_("")},
+	{"r_texturecompressionatc", N_("")},
+	{"r_texturefloat", N_("")},
+	{"r_texturehalffloat", N_("")},
+	{"r_instancedarrays", N_("")},
+	{"r_debugoutput", N_("")},
+	{"r_directstateaccess", N_("")},
+	{"r_bufferstorage", N_("")},
+	{"r_multidrawindirect", N_("")},
+	{"r_computeshaders", N_("")},
+	{"r_transformfeedback", N_("")},
+	{"r_shaderstoragebufferobject", N_("")}
 };
 static_assert(core::enumVal(Feature::Max) == (int)lengthof(featuresArray), "Array sizes don't match with Feature enum");
 static core::VarPtr featureVars[core::enumVal(Feature::Max)];
@@ -28,7 +40,8 @@ static RenderState s;
 
 void construct() {
 	for (int i = 0; i < core::enumVal(Feature::Max); ++i) {
-		featureVars[i] = core::Var::registerVar(core::VarDef(featuresArray[i], false, -1, nullptr, "Renderer feature cvar"));
+		core::VarDef varDef(featuresArray[i].var, false, featuresArray[i].description, N_("Renderer feature cvar"));
+		featureVars[i] = core::Var::registerVar(varDef);
 	}
 }
 

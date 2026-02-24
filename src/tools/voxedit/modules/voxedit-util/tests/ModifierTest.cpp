@@ -42,11 +42,11 @@ protected:
 
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		const core::VarDef uILastDirectory(cfg::UILastDirectory, "", core::CV_NOPERSIST);
+		const core::VarDef uILastDirectory(cfg::UILastDirectory, "", "", "", core::CV_NOPERSIST);
 		core::Var::registerVar(uILastDirectory);
-		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f);
+		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, "", "", core::CV_NONE);
 		core::Var::registerVar(clientMouseRotationSpeed);
-		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f);
+		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, "", "", core::CV_NONE);
 		core::Var::registerVar(clientCameraZoomSpeed);
 	}
 

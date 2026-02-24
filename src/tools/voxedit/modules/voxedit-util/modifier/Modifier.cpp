@@ -115,7 +115,7 @@ void Modifier::construct() {
 			setLockedAxis(axis, unlock);
 		}).setHelp(_("Toggle locked mode for the z axis at the current cursor position"));
 
-	const core::VarDef voxEditMaxSuggestedVolumeSizePreview(cfg::VoxEditMaxSuggestedVolumeSizePreview, 32, 16, (int)voxedit::MaxVolumeSize, -1, N_("Max preview size"), N_("The maximum size of the preview volume"));
+	const core::VarDef voxEditMaxSuggestedVolumeSizePreview(cfg::VoxEditMaxSuggestedVolumeSizePreview, 32, 16, (int)voxedit::MaxVolumeSize, N_("Max preview size"), N_("The maximum size of the preview volume"), -1);
 	_maxSuggestedVolumeSizePreview = core::Var::registerVar(voxEditMaxSuggestedVolumeSizePreview);
 
 	for (Brush *b : _brushes) {

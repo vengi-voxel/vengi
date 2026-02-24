@@ -597,7 +597,7 @@ AppState App::onConstruct() {
 	}
 
 	const core::VarDef coreLogLevel(
-		cfg::CoreLogLevel, (int)_initialLogLevel, -1, N_("Log level"),
+		cfg::CoreLogLevel, (int)_initialLogLevel, N_("Log level"),
 		N_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 
 	core::VarPtr logVar = core::Var::registerVar(coreLogLevel);
@@ -616,7 +616,8 @@ AppState App::onConstruct() {
 			core::String var = _argv[i + 1];
 			const char *value = _argv[i + 2];
 			i += 2;
-			core::Var::registerVar(core::VarDef(var, value, core::CV_FROMCOMMANDLINE));
+			core::VarDef varDef(var, value, "", "", core::CV_FROMCOMMANDLINE);
+			core::Var::registerVar(varDef);
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
 	}
@@ -674,20 +675,21 @@ AppState App::onConstruct() {
 
 		flagsMask &= ~(core::CV_FROMCOMMANDLINE | core::CV_FROMENV);
 
-		core::VarDef varDef(name, value, flagsMask);
+		core::VarDef varDef(name, value, "", "", flagsMask);
 		core::Var::registerVar(varDef);
 	}
 	Log::init();
 
-	const core::VarDef coreLanguage(cfg::CoreLanguage, _systemLanguage.str(), -1, N_("Language"), N_("The language to use - empty means system default"));
+	const core::VarDef coreLanguage(cfg::CoreLanguage, _systemLanguage.str(), N_("Language"),
+									N_("The language to use - empty means system default"));
 	core::VarPtr langVar = core::Var::registerVar(coreLanguage);
 	setLanguage(langVar->strVal());
 
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
-	const core::VarDef coreMaxFPS(cfg::CoreMaxFPS, 1000.0f, -1, N_("Max FPS"), N_("The maximum frames per second. Set to 0 to disable the cap."));
+	const core::VarDef coreMaxFPS(cfg::CoreMaxFPS, 1000.0f, N_("Max FPS"), N_("The maximum frames per second. Set to 0 to disable the cap."));
 	_framesPerSecondsCap = core::Var::registerVar(coreMaxFPS);
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
-	const core::VarDef appVersion(cfg::AppVersion, "", -1, N_("App version"), N_("The application version"));
+	const core::VarDef appVersion(cfg::AppVersion, "", N_("App version"), N_("The application version"));
 	core::Var::registerVar(appVersion);
 	// username for network sessions
 	core::String defaultUsername = "Unknown";
@@ -709,7 +711,8 @@ AppState App::onConstruct() {
 		defaultUsername = username;
 	}
 
-	const core::VarDef appUserName(cfg::AppUserName, defaultUsername, -1, N_("Username"), N_("The username to use in network sessions"));
+	const core::VarDef appUserName(cfg::AppUserName, defaultUsername, N_("Username"),
+								   N_("The username to use in network sessions"));
 	core::Var::registerVar(appUserName);
 
 	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
@@ -722,7 +725,7 @@ AppState App::onConstruct() {
 		logVar->setVal(logLevelVal);
 	}
 
-	const core::VarDef metricFlavor(cfg::MetricFlavor, "", {"telegraf", "etsy", "datadog", "influx", "json"}, -1,
+	const core::VarDef metricFlavor(cfg::MetricFlavor, "", {"telegraf", "etsy", "datadog", "influx", "json"},
 									N_("Metric flavor"),
 									N_("The flavor of the metrics output. This can be used to integrate with different "
 									   "monitoring systems. If empty, metrics are disabled."));
@@ -1110,8 +1113,8 @@ void App::usageFooter() const {
 }
 
 void App::usage() const {
-	const core::VarDef coreLogLevel2(cfg::CoreLogLevel, "");
-	const core::VarPtr &logLevel = core::Var::registerVar(coreLogLevel2);
+	const core::VarDef logLevelDef(cfg::CoreLogLevel, (int)Log::Level::Info, (int)Log::Level::Trace, (int)Log::Level::Error, N_("Log level"), N_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
+	const core::VarPtr &logLevel = core::Var::registerVar(logLevelDef);
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
 

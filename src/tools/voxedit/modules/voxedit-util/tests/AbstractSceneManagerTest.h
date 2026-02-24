@@ -96,13 +96,17 @@ protected:
 		const auto timeProvider = core::make_shared<core::TimeProvider>();
 		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
 		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
-		_sceneMgr = core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer,
-													  modifierRenderer);
-		const core::VarDef uILastDirectory(cfg::UILastDirectory, "", core::CV_NOPERSIST);
+		_sceneMgr =
+			core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer, modifierRenderer);
+		const core::VarDef uILastDirectory(cfg::UILastDirectory, "", "Last Directory",
+										   "The last directory used in the UI", core::CV_NOPERSIST);
 		core::Var::registerVar(uILastDirectory);
-		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f);
+		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, "Mouse Rotation Speed",
+													"The speed at which the camera rotates with the mouse",
+													core::CV_NONE);
 		core::Var::registerVar(clientMouseRotationSpeed);
-		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f);
+		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, "Camera Zoom Speed",
+												 "The speed at which the camera zooms", core::CV_NONE);
 		core::Var::registerVar(clientCameraZoomSpeed);
 		_sceneMgr->construct();
 		ASSERT_TRUE(_sceneMgr->init());

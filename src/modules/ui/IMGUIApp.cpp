@@ -217,26 +217,23 @@ app::AppState IMGUIApp::onConstruct() {
 	_fileDialog.construct();
 	_lastDirectory = core::getVar(cfg::UILastDirectory);
 	_languageVar = core::getVar(cfg::CoreLanguage);
-	core::String uiStyleDefaultValue = core::string::toString(ImGui::StyleCorporateGrey);
+	int uiStyleDefaultValue = ImGui::StyleCorporateGrey;
 	if (!isDarkMode()) {
-		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
+		uiStyleDefaultValue = ImGui::StyleLight;
 	}
-	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue.c_str(), -1, N_("UI style"), N_("Change the ui colors - [0-3]"), [](const core::String &val) {
-			const int themeIdx = core::string::toInt(val);
-			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx < ImGui::MaxStyles;
-		});
+	const core::VarDef uIStyle(cfg::UIStyle, uiStyleDefaultValue, (int)ImGui::StyleCorporateGrey, (int)ImGui::MaxStyles - 1, N_("UI style"), N_("Change the ui colors - [0-3]"));
 	_uistyle = core::Var::registerVar(uIStyle);
-	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, -1, N_("Notification timeout"), N_("Timeout for notifications in millis"));
+	const core::VarDef uINotifyDismissMillis(cfg::UINotifyDismissMillis, 3000, N_("Notification timeout"), N_("Timeout for notifications in millis"));
 	core::Var::registerVar(uINotifyDismissMillis);
-	const core::VarDef uIMultiMonitor(cfg::UIMultiMonitor, true, -1, N_("Multi monitor"), N_("Allow multi monitor setups - requires a restart"));
+	const core::VarDef uIMultiMonitor(cfg::UIMultiMonitor, true, N_("Multi monitor"), N_("Allow multi monitor setups - requires a restart"));
 	core::Var::registerVar(uIMultiMonitor);
-	const core::VarDef clientRenderUI(cfg::ClientRenderUI, true, -1, N_("Render UI"), N_("Render the ui"));
+	const core::VarDef clientRenderUI(cfg::ClientRenderUI, true, N_("Render UI"), N_("Render the ui"));
 	_renderUI = core::Var::registerVar(clientRenderUI);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	const core::VarDef uIShowMetrics(cfg::UIShowMetrics, true, core::CV_NOPERSIST, N_("Show metrics"), N_("Show metric and debug window"));
+	const core::VarDef uIShowMetrics(cfg::UIShowMetrics, true, N_("Show metrics"), N_("Show metric and debug window"), core::CV_NOPERSIST);
 	_showMetrics = core::Var::registerVar(uIShowMetrics);
 
-	const core::VarDef uITestFilter(cfg::UITestFilter, "tests", core::CV_NOPERSIST, N_("Test filter"), N_("Only run tests that match the given filter"));
+	const core::VarDef uITestFilter(cfg::UITestFilter, "tests", N_("Test filter"), N_("Only run tests that match the given filter"), core::CV_NOPERSIST);
 	core::Var::registerVar(uITestFilter);
 
 	if (!_showWindow) {
@@ -252,22 +249,19 @@ app::AppState IMGUIApp::onConstruct() {
 		registerArg("--imgui_list_tests").setDescription("List all available tests and exit");
 	}
 #else
-	const core::VarDef uIShowMetrics2(cfg::UIShowMetrics, false, core::CV_NOPERSIST, N_("Show metrics"), N_("Show metric and debug window"));
+	const core::VarDef uIShowMetrics2(cfg::UIShowMetrics, false, N_("Show metrics"), N_("Show metric and debug window"), core::CV_NOPERSIST);
 	_showMetrics = core::Var::registerVar(uIShowMetrics2);
 #endif
-	const core::VarDef uIFontSize(cfg::UIFontSize, 14, -1, N_("Font size"), N_("Allow to change the ui font size"), [](const core::String &val) {
-			const float size = core::string::toFloat(val);
-			return size >= 8.0f;
-		});
+	const core::VarDef uIFontSize(cfg::UIFontSize, 14.0f, 8.0f, 100.0f, N_("Font size"), N_("Allow to change the ui font size"));
 	_uiFontSize = core::Var::registerVar(uIFontSize);
 
-	const core::VarDef uIKeyMap(cfg::UIKeyMap, 0, -1, N_("Keymap"), N_("Which keybinding to use"));
+	const core::VarDef uIKeyMap(cfg::UIKeyMap, 0, N_("Keymap"), N_("Which keybinding to use"));
 	_uiKeyMap = core::Var::registerVar(uIKeyMap);
 	core_assert(!_uiKeyMap->isDirty());
-	const core::VarDef uIFileDialogLastFiles(cfg::UIFileDialogLastFiles, "");
+	const core::VarDef uIFileDialogLastFiles(cfg::UIFileDialogLastFiles, "", N_("Last opened files"), N_("The last opened files in the file dialog, separated by ';'"));
 	_lastOpenedFiles = core::Var::registerVar(uIFileDialogLastFiles);
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
-	const core::VarDef uIFileDialogLastFile(cfg::UIFileDialogLastFile, "");
+	const core::VarDef uIFileDialogLastFile(cfg::UIFileDialogLastFile, "", N_("Last opened file"), N_("The last opened file in the file dialog"));
 	_lastOpenedFile = core::Var::registerVar(uIFileDialogLastFile);
 
 	command::Command::registerCommand("ui_showtextures")

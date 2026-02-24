@@ -27,7 +27,7 @@ TEST_F(ShaderTest, testInclude) {
 }
 
 TEST_F(ShaderTest, testCvar) {
-	const core::VarDef awesomeName("awesome_name", true, core::CV_SHADER);
+	const core::VarDef awesomeName("awesome_name", true, "", "", core::CV_SHADER);
 	const core::VarPtr& v = core::Var::registerVar(awesomeName);
 	ASSERT_EQ(core::CV_SHADER, v->getFlags() & core::CV_SHADER);
 	ASSERT_EQ("true", v->strVal());

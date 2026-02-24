@@ -4,6 +4,7 @@
 
 #include "Request.h"
 #include "app/App.h"
+#include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
@@ -28,9 +29,9 @@ bool Request::supported() {
 Request::Request(const core::String &url, RequestType type) {
 	_ctx._type = type;
 	_ctx._url = url;
-	const core::VarDef httpTimeout(cfg::HttpTimeout, 5);
+	const core::VarDef httpTimeout(cfg::HttpTimeout, 5, N_("HTTP timeout"), N_("The timeout for HTTP requests in seconds"));
 	_ctx._timeoutSecond = core::Var::registerVar(httpTimeout)->intVal();
-	const core::VarDef httpConnectTimeout(cfg::HttpConnectTimeout, 1);
+	const core::VarDef httpConnectTimeout(cfg::HttpConnectTimeout, 1, N_("HTTP connect timeout"), N_("The timeout for HTTP connection in seconds"));
 	_ctx._connectTimeoutSecond = core::Var::registerVar(httpConnectTimeout)->intVal();
 	_ctx._userAgent = "vengi/" PROJECT_VERSION;
 }

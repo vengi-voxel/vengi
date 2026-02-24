@@ -27,13 +27,14 @@ bool MeshState::init() {
 
 void MeshState::construct() {
 	// this must be 62 for the binary cubic mesher
-	const core::VarDef voxelMeshSize(cfg::VoxelMeshSize, 62, core::CV_READONLY | core::CV_NOPERSIST);
+	const core::VarDef voxelMeshSize(cfg::VoxelMeshSize, 62, N_("Voxel Mesh Size"), N_("The size of the voxel mesh"),
+									 core::CV_READONLY | core::CV_NOPERSIST);
 	_meshSize = core::Var::registerVar(voxelMeshSize);
 	// Editor/render mesh mode - excludes GreedyTexture as it's not supported by the renderer
 	const core::VarDef voxRenderMeshMode(cfg::VoxRenderMeshMode, (int)voxel::SurfaceExtractionType::Binary,
-				   (int)voxel::SurfaceExtractionType::Cubic, (int)voxel::SurfaceExtractionType::Binary,
-				   core::CV_SHADER,
-				   N_("Mesh mode"), "0 = cubes, 1 = marching cubes, 2 = binary mesher");
+										 (int)voxel::SurfaceExtractionType::Cubic,
+										 (int)voxel::SurfaceExtractionType::Binary, N_("Mesh mode"),
+										 N_("0 = cubes, 1 = marching cubes, 2 = binary mesher"), core::CV_SHADER);
 	core::Var::registerVar(voxRenderMeshMode);
 }
 

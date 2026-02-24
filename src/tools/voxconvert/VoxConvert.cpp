@@ -3,8 +3,8 @@
  */
 
 #include "VoxConvert.h"
+#include "app/I18N.h"
 #include "core/ConfigVar.h"
-#include "core/Enum.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -50,7 +50,6 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
-#include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
@@ -123,7 +122,9 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::getVar(cfg::VoxformatQuads);
 	_withColor = core::getVar(cfg::VoxformatWithColor);
 	_withTexCoords = core::getVar(cfg::VoxformatWithtexcoords);
-	const core::VarDef voxConvertDepthFactor2D(cfg::VoxConvertDepthFactor2D, 0.0f);
+	const core::VarDef voxConvertDepthFactor2D(
+		cfg::VoxConvertDepthFactor2D, 0.0f, N_("2D depth factor"),
+		N_("When creating a volume from an image, this is the factor that is used for the depth value"));
 	core::Var::registerVar(voxConvertDepthFactor2D);
 
 	if (!filesystem()->registerPath("scripts/")) {

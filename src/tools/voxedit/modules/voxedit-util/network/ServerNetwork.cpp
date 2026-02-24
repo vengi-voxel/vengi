@@ -153,15 +153,15 @@ bool ServerNetwork::isRunning() const {
 }
 
 void ServerNetwork::construct() {
-	const core::VarDef voxEditNetPort(cfg::VoxEditNetPort, 10001, -1, N_("Port"), N_("The port to run the voxedit server on"));
+	const core::VarDef voxEditNetPort(cfg::VoxEditNetPort, 10001, N_("Port"), N_("The port to run the voxedit server on"));
 	core::Var::registerVar(voxEditNetPort);
-	const core::VarDef voxEditNetPassword(cfg::VoxEditNetPassword, "", core::CV_SECRET, N_("Server password"), N_("The password required to connect to the voxedit server"));
+	const core::VarDef voxEditNetPassword(cfg::VoxEditNetPassword, "", N_("Server password"), N_("The password required to connect to the voxedit server"), core::CV_SECRET);
 	core::Var::registerVar(voxEditNetPassword);
-	const core::VarDef voxEditNetRconPassword(cfg::VoxEditNetRconPassword, "changeme", core::CV_SECRET, N_("Remote console password"), N_("The rcon password required to send commands to the voxedit server"));
+	const core::VarDef voxEditNetRconPassword(cfg::VoxEditNetRconPassword, "changeme", N_("Remote console password"), N_("The rcon password required to send commands to the voxedit server"), core::CV_SECRET);
 	core::Var::registerVar(voxEditNetRconPassword);
-	const core::VarDef voxEditNetServerInterface(cfg::VoxEditNetServerInterface, "0.0.0.0", -1, N_("Server interface"), N_("The interface to run the voxedit server on"));
+	const core::VarDef voxEditNetServerInterface(cfg::VoxEditNetServerInterface, "0.0.0.0", N_("Server interface"), N_("The interface to run the voxedit server on"));
 	core::Var::registerVar(voxEditNetServerInterface);
-	const core::VarDef voxEditNetServerMaxConnections(cfg::VoxEditNetServerMaxConnections, 10, -1,
+	const core::VarDef voxEditNetServerMaxConnections(cfg::VoxEditNetServerMaxConnections, 10, 0, 1024,
 								 N_("Max connections"), N_("The maximum number of clients that can connect to the server"));
 	_maxClients = core::Var::registerVar(voxEditNetServerMaxConnections);
 }

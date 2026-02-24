@@ -57,36 +57,35 @@ union RangeValue {
 };
 
 struct VarDef {
-	VarDef(const core::String &defName, const core::String &defValue, int32_t defFlags = CV_NONE,
-		   const char *defTitle = nullptr, const char *defDescription = nullptr,
-		   ValidatorFunc defValidatorFunc = nullptr);
-	VarDef(const core::String &defName, const char *defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
-		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr);
-	VarDef(const core::String &defName, int defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
-		   const char *defDescription = nullptr, ValidatorFunc defValidatorFunc = nullptr);
-	VarDef(const core::String &defName, bool defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
-		   const char *defDescription = nullptr);
+	VarDef(const core::String &defName, const core::String &defValue, const char *defTitle, const char *defDescription,
+		   int32_t defFlags = CV_NONE);
+	VarDef(const core::String &defName, const char *defValue, const char *defTitle, const char *defDescription,
+		   int32_t defFlags = CV_NONE);
+	VarDef(const core::String &defName, bool defValue, const char *defTitle, const char *defDescription,
+		   int32_t defFlags = CV_NONE);
 	/**
 	 * @brief Construct an integer cvar with min/max range validation.
 	 * The range is checked automatically - no need to specify a validator.
 	 */
-	VarDef(const core::String &defName, int defValue, int defMin, int defMax, int32_t defFlags = CV_NONE,
-		   const char *defTitle = nullptr, const char *defDescription = nullptr);
-	VarDef(const core::String &defName, float defValue, int32_t defFlags = CV_NONE, const char *defTitle = nullptr,
-		   const char *defDescription = nullptr);
+	VarDef(const core::String &defName, int defValue, int defMin, int defMax, const char *defTitle,
+		   const char *defDescription, int32_t defFlags = CV_NONE);
+	VarDef(const core::String &defName, int defValue, const char *defTitle,
+		   const char *defDescription, int32_t defFlags = CV_NONE);
+	VarDef(const core::String &defName, float defValue, const char *defTitle, const char *defDescription,
+		   int32_t defFlags = CV_NONE);
 	/**
 	 * @brief Construct a float cvar with min/max range validation.
 	 * The range is checked automatically - no need to specify a validator.
 	 */
-	VarDef(const core::String &defName, float defValue, float defMin, float defMax, int32_t defFlags = CV_NONE,
-		   const char *defTitle = nullptr, const char *defDescription = nullptr);
+	VarDef(const core::String &defName, float defValue, float defMin, float defMax, const char *defTitle,
+		   const char *defDescription, int32_t defFlags = CV_NONE);
 	/**
 	 * @brief Construct a string cvar that only accepts values from a predefined list.
 	 * The valid values are checked automatically - no need to specify a validator.
 	 */
 	VarDef(const core::String &defName, const core::String &defValue,
-		   const core::DynamicArray<core::String> &defValidValues, int32_t defFlags = CV_NONE,
-		   const char *defTitle = nullptr, const char *defDescription = nullptr);
+		   const core::DynamicArray<core::String> &defValidValues, const char *defTitle, const char *defDescription,
+		   int32_t defFlags = CV_NONE);
 
 	VarType type;
 	// The name that this var is registered under (must be unique)
@@ -110,7 +109,6 @@ struct VarDef {
 	 * use N_() to mark it for translation, but don't translate it immediately
 	 */
 	core::String description;
-	ValidatorFunc validatorFunc = nullptr;
 	/**
 	 * @brief Min/max range for numeric cvars.
 	 * If @c hasMinMax() returns true, the range is active and checked on every @c setVal call.
@@ -169,8 +167,7 @@ protected:
 	uint8_t _updateFlags = 0u;
 
 	void addValueToHistory(const core::String& value);
-	static bool _ivec3ListValidator(const core::String& value, int nmin, int nmax);
-
+	bool validate(const core::String &value) const;
 	/**
 	 * @brief Creates a new or gets an already existing var
 	 */
@@ -188,15 +185,6 @@ public:
 	static size_t size() {
 		ScopedLock scoped(_lock);
 		return _vars.size();
-	}
-
-	// TODO: move into validator namespace
-	template<size_t NMIN, size_t NMAX>
-	static bool ivec3ListValidator(const core::String& value) {
-		if (value.empty()) {
-			return true;
-		}
-		return _ivec3ListValidator(value, NMIN, NMAX);
 	}
 
 	/**

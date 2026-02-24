@@ -330,11 +330,11 @@ protected:
 public:
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		const core::VarDef voxformatRGBFlattenFactor(cfg::VoxformatRGBFlattenFactor, 0);
+		const core::VarDef voxformatRGBFlattenFactor(cfg::VoxformatRGBFlattenFactor, 0, "", "");
 		core::Var::registerVar(voxformatRGBFlattenFactor);
-		const core::VarDef voxformatEmptyPaletteIndex(cfg::VoxformatEmptyPaletteIndex, -1);
+		const core::VarDef voxformatEmptyPaletteIndex(cfg::VoxformatEmptyPaletteIndex, -1, "", "");
 		core::Var::registerVar(voxformatEmptyPaletteIndex);
-		const core::VarDef voxEditNetPassword(cfg::VoxEditNetPassword, "test");
+		const core::VarDef voxEditNetPassword(cfg::VoxEditNetPassword, "test", "", "");
 		core::Var::registerVar(voxEditNetPassword);
 	}
 };

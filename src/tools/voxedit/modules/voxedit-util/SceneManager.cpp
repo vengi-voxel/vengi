@@ -1526,34 +1526,6 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 		disconnectFromServer();
 	}
 
-	const core::VarDef veDiff("ve_diff", false);
-	bool createDiff = core::Var::registerVar(veDiff)->boolVal();
-	if (createDiff) {
-		for (const auto &entry : sceneGraph.nodes()) {
-			const scenegraph::SceneGraphNode &node = entry->second;
-			if (!node.isModelNode()) {
-				continue;
-			}
-
-			scenegraph::SceneGraphNode *existingNode = _sceneGraph.findNodeByName(node.name());
-			if (existingNode == nullptr) {
-				const int activeNode = _sceneGraph.activeNode();
-				existingNode = &_sceneGraph.node(activeNode);
-			}
-
-			voxel::RawVolume *v = voxelutil::diffVolumes(existingNode->volume(), node.volume());
-			if (v == nullptr) {
-				Log::info("No diff between volumes of node %s", node.name().c_str());
-				continue;
-			}
-			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-			newNode.setVolume(v, true);
-			newNode.setName("Diff " + node.name());
-			_sceneGraph.emplace(core::move(newNode), existingNode->id());
-		}
-		return true;
-	}
-
 	_sceneGraph = core::move(sceneGraph);
 	_sceneRenderer->clear();
 	// stop any running animation
@@ -1879,88 +1851,88 @@ int SceneManager::toNodeId(const command::CommandArgs& args, int defaultVal, con
 }
 
 void SceneManager::construct() {
-	const core::VarDef voxEditColorWheel(cfg::VoxEditColorWheel, false, -1, N_("Color wheel"), N_("Use the color wheel in the palette color editing"));
+	const core::VarDef voxEditColorWheel(cfg::VoxEditColorWheel, false, N_("Color wheel"), N_("Use the color wheel in the palette color editing"));
 	core::Var::registerVar(voxEditColorWheel);
-	const core::VarDef voxEditShowColorPicker(cfg::VoxEditShowColorPicker, false, -1, N_("Color picker"), N_("Always show the color picker below the palette"));
+	const core::VarDef voxEditShowColorPicker(cfg::VoxEditShowColorPicker, false, N_("Color picker"), N_("Always show the color picker below the palette"));
 	core::Var::registerVar(voxEditShowColorPicker);
-	const core::VarDef voxEditModificationDismissMillis(cfg::VoxEditModificationDismissMillis, 1500, -1, N_("Modification highlight"), N_("Milliseconds that a region should get highlighted in a few situations"));
+	const core::VarDef voxEditModificationDismissMillis(cfg::VoxEditModificationDismissMillis, 1500, N_("Modification highlight"), N_("Milliseconds that a region should get highlighted in a few situations"));
 	core::Var::registerVar(voxEditModificationDismissMillis);
-	const core::VarDef voxEditRegionSizes(cfg::VoxEditRegionSizes, "", -1, N_("Region sizes"), N_("Show fixed region sizes in the volume inspector"), core::Var::ivec3ListValidator<1, 256>);
+	const core::VarDef voxEditRegionSizes(cfg::VoxEditRegionSizes, "", N_("Region sizes"), N_("Show fixed region sizes in the volume inspector"));
 	core::Var::registerVar(voxEditRegionSizes);
-	const core::VarDef voxEditLocalSpace(cfg::VoxEditLocalSpace, true, -1, N_("Local transforms"), N_("Use local space for transforms"));
+	const core::VarDef voxEditLocalSpace(cfg::VoxEditLocalSpace, true, N_("Local transforms"), N_("Use local space for transforms"));
 	core::Var::registerVar(voxEditLocalSpace);
-	const core::VarDef voxEditShowgrid(cfg::VoxEditShowgrid, true, -1, N_("Grid"), N_("Show the grid"));
+	const core::VarDef voxEditShowgrid(cfg::VoxEditShowgrid, true, N_("Grid"), N_("Show the grid"));
 	core::Var::registerVar(voxEditShowgrid);
-	const core::VarDef voxEditShowlockedaxis(cfg::VoxEditShowlockedaxis, true, -1, N_("Show locked axis"), N_("Show the currently locked axis"));
+	const core::VarDef voxEditShowlockedaxis(cfg::VoxEditShowlockedaxis, true, N_("Show locked axis"), N_("Show the currently locked axis"));
 	core::Var::registerVar(voxEditShowlockedaxis);
-	const core::VarDef voxEditShowaabb(cfg::VoxEditShowaabb, true, -1, N_("Bounding box"), N_("Show the axis aligned bounding box"));
+	const core::VarDef voxEditShowaabb(cfg::VoxEditShowaabb, true, N_("Bounding box"), N_("Show the axis aligned bounding box"));
 	core::Var::registerVar(voxEditShowaabb);
-	const core::VarDef voxEditShowBones(cfg::VoxEditShowBones, false, -1, N_("Bones"), N_("Show the bones in scene mode"));
+	const core::VarDef voxEditShowBones(cfg::VoxEditShowBones, false, N_("Bones"), N_("Show the bones in scene mode"));
 	core::Var::registerVar(voxEditShowBones);
-	const core::VarDef voxEditRendershadow(cfg::VoxEditRendershadow, false, -1, N_("Render shadows"), N_("Render with shadows - make sure to set the scene lighting up properly"));
+	const core::VarDef voxEditRendershadow(cfg::VoxEditRendershadow, false, N_("Render shadows"), N_("Render with shadows - make sure to set the scene lighting up properly"));
 	core::Var::registerVar(voxEditRendershadow);
-	const core::VarDef voxEditShadingMode(cfg::VoxEditShadingMode, 1, 0, 2, -1, N_("Shading mode"), N_("Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"));
+	const core::VarDef voxEditShadingMode(cfg::VoxEditShadingMode, 1, 0, 2, N_("Shading mode"), N_("Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"));
 	core::Var::registerVar(voxEditShadingMode);
-	const core::VarDef voxEditAnimationSpeed(cfg::VoxEditAnimationSpeed, 100, -1, N_("Model animation speed"), N_("Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene"));
+	const core::VarDef voxEditAnimationSpeed(cfg::VoxEditAnimationSpeed, 100, N_("Model animation speed"), N_("Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene"));
 	core::Var::registerVar(voxEditAnimationSpeed);
-	const core::VarDef voxEditAutoNormalMode(cfg::VoxEditAutoNormalMode, 0, 0, 2, core::CV_NOPERSIST, N_("Auto normal mode"), "Flat, Smooth, Smoother");
+	const core::VarDef voxEditAutoNormalMode(cfg::VoxEditAutoNormalMode, 0, 0, 2, N_("Auto normal mode"), "Flat, Smooth, Smoother", core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditAutoNormalMode);
-	const core::VarDef voxEditGridsize(cfg::VoxEditGridsize, 1, 1, 64, -1, N_("Grid size"), N_("The size of the voxel grid"));
+	const core::VarDef voxEditGridsize(cfg::VoxEditGridsize, 1, 1, 64, N_("Grid size"), N_("The size of the voxel grid"));
 	core::Var::registerVar(voxEditGridsize);
-	const core::VarDef voxEditPlaneSize(cfg::VoxEditPlaneSize, 100, 1, 1000, -1, N_("Plane size"), N_("The size of the plane"));
+	const core::VarDef voxEditPlaneSize(cfg::VoxEditPlaneSize, 100, 1, 1000, N_("Plane size"), N_("The size of the plane"));
 	core::Var::registerVar(voxEditPlaneSize);
-	const core::VarDef voxEditShowPlane(cfg::VoxEditShowPlane, true, -1, N_("Plane"), N_("Show the plane"));
+	const core::VarDef voxEditShowPlane(cfg::VoxEditShowPlane, true, N_("Plane"), N_("Show the plane"));
 	core::Var::registerVar(voxEditShowPlane);
-	const core::VarDef voxEditGrayInactive(cfg::VoxEditGrayInactive, false, -1, N_("Grayscale"), N_("Render the inactive nodes in gray scale mode"));
+	const core::VarDef voxEditGrayInactive(cfg::VoxEditGrayInactive, false, N_("Grayscale"), N_("Render the inactive nodes in gray scale mode"));
 	core::Var::registerVar(voxEditGrayInactive);
-	const core::VarDef voxEditHideInactive(cfg::VoxEditHideInactive, false, -1, N_("Only active"), N_("Hide the inactive nodes"));
+	const core::VarDef voxEditHideInactive(cfg::VoxEditHideInactive, false, N_("Only active"), N_("Hide the inactive nodes"));
 	core::Var::registerVar(voxEditHideInactive);
-	const core::VarDef voxEditViewdistance(cfg::VoxEditViewdistance, 5000, 10, 5000, -1, N_("View distance"), N_("Far plane for the camera"));
+	const core::VarDef voxEditViewdistance(cfg::VoxEditViewdistance, 5000, 10, 5000, N_("View distance"), N_("Far plane for the camera"));
 	core::Var::registerVar(voxEditViewdistance);
-	const core::VarDef voxEditShowaxis(cfg::VoxEditShowaxis, true, -1, N_("Show gizmo"), N_("Show the axis"));
+	const core::VarDef voxEditShowaxis(cfg::VoxEditShowaxis, true, N_("Show gizmo"), N_("Show the axis"));
 	core::Var::registerVar(voxEditShowaxis);
-	const core::VarDef voxEditCursorDetails(cfg::VoxEditCursorDetails, 1, 0, 3, -1, N_("Cursor details"), N_("Print cursor details in edit mode - measure distance to reference position in mode 3"));
+	const core::VarDef voxEditCursorDetails(cfg::VoxEditCursorDetails, 1, 0, 3, N_("Cursor details"), N_("Print cursor details in edit mode - measure distance to reference position in mode 3"));
 	core::Var::registerVar(voxEditCursorDetails);
-	const core::VarDef voxEditAutoKeyFrame(cfg::VoxEditAutoKeyFrame, true, -1, N_("Auto Keyframe"), N_("Automatically create keyframes when changing transforms"));
+	const core::VarDef voxEditAutoKeyFrame(cfg::VoxEditAutoKeyFrame, true, N_("Auto Keyframe"), N_("Automatically create keyframes when changing transforms"));
 	core::Var::registerVar(voxEditAutoKeyFrame);
-	const core::VarDef voxEditGizmoOperations(cfg::VoxEditGizmoOperations, 3, -1, N_("Gizmo operations"), N_("Bitmask of gizmo operations in scene mode"));
+	const core::VarDef voxEditGizmoOperations(cfg::VoxEditGizmoOperations, 3, N_("Gizmo operations"), N_("Bitmask of gizmo operations in scene mode"));
 	core::Var::registerVar(voxEditGizmoOperations);
-	const core::VarDef voxEditGizmoPivot(cfg::VoxEditGizmoPivot, false, core::CV_NOPERSIST, N_("Pivot"), N_("Activate the pivot mode for the gizmo in scene mode"));
+	const core::VarDef voxEditGizmoPivot(cfg::VoxEditGizmoPivot, false, N_("Pivot"), N_("Activate the pivot mode for the gizmo in scene mode"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditGizmoPivot);
-	const core::VarDef voxEditGizmoAllowAxisFlip(cfg::VoxEditGizmoAllowAxisFlip, true, -1, N_("Flip axis"), N_("Flip axis or stay along the positive world/local axis"));
+	const core::VarDef voxEditGizmoAllowAxisFlip(cfg::VoxEditGizmoAllowAxisFlip, true, N_("Flip axis"), N_("Flip axis or stay along the positive world/local axis"));
 	core::Var::registerVar(voxEditGizmoAllowAxisFlip);
-	const core::VarDef voxEditGizmoSnap(cfg::VoxEditGizmoSnap, true, -1, N_("Snap to grid"), N_("Use the grid size for snap"));
+	const core::VarDef voxEditGizmoSnap(cfg::VoxEditGizmoSnap, true, N_("Snap to grid"), N_("Use the grid size for snap"));
 	core::Var::registerVar(voxEditGizmoSnap);
-	const core::VarDef voxEditModelGizmo(cfg::VoxEditModelGizmo, false, -1, N_("Model gizmo"), N_("Show the gizmo to also translate the region"));
+	const core::VarDef voxEditModelGizmo(cfg::VoxEditModelGizmo, false, N_("Model gizmo"), N_("Show the gizmo to also translate the region"));
 	core::Var::registerVar(voxEditModelGizmo);
-	const core::VarDef voxEditLastPalette(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
+	const core::VarDef voxEditLastPalette(cfg::VoxEditLastPalette, palette::Palette::builtIn[0], N_("Last palette"), N_("The last used palette"));
 	core::Var::registerVar(voxEditLastPalette);
-	const core::VarDef voxEditViewports(cfg::VoxEditViewports, 2, 2, cfg::MaxViewports, -1, N_("Viewports"), N_("The amount of viewports (not in simple ui mode)"));
+	const core::VarDef voxEditViewports(cfg::VoxEditViewports, 2, 1, cfg::MaxViewports, N_("Viewports"), N_("The amount of viewports (not in simple ui mode)"));
 	core::Var::registerVar(voxEditViewports);
-	const core::VarDef voxEditMaxSuggestedVolumeSize(cfg::VoxEditMaxSuggestedVolumeSize, 128, 32, voxedit::MaxVolumeSize, -1, N_("Max volume size"), N_("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"));
+	const core::VarDef voxEditMaxSuggestedVolumeSize(cfg::VoxEditMaxSuggestedVolumeSize, 128, 32, voxedit::MaxVolumeSize, N_("Max volume size"), N_("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"));
 	core::Var::registerVar(voxEditMaxSuggestedVolumeSize);
-	const core::VarDef voxEditViewMode(cfg::VoxEditViewMode, "default", -1, N_("View mode"), N_("Configure the editor view mode"));
+	const core::VarDef voxEditViewMode(cfg::VoxEditViewMode, "default", N_("View mode"), N_("Configure the editor view mode"));
 	core::Var::registerVar(voxEditViewMode);
-	const core::VarDef voxEditTipOftheDay(cfg::VoxEditTipOftheDay, true, -1, N_("Tip of the day"), N_("Show the tip of the day on startup"));
+	const core::VarDef voxEditTipOftheDay(cfg::VoxEditTipOftheDay, true, N_("Tip of the day"), N_("Show the tip of the day on startup"));
 	core::Var::registerVar(voxEditTipOftheDay);
-	const core::VarDef voxEditPopupTipOfTheDay(cfg::VoxEditPopupTipOfTheDay, false, core::CV_NOPERSIST, N_("Tip of the day popup"), N_("Trigger opening of popup"));
+	const core::VarDef voxEditPopupTipOfTheDay(cfg::VoxEditPopupTipOfTheDay, false, N_("Tip of the day popup"), N_("Trigger opening of opup"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditPopupTipOfTheDay);
-	const core::VarDef voxEditPopupWelcome(cfg::VoxEditPopupWelcome, false, core::CV_NOPERSIST, N_("Welcome popup"), N_("Trigger opening of popup"));
+	const core::VarDef voxEditPopupWelcome(cfg::VoxEditPopupWelcome, false, N_("Welcome popup"), N_("Trigger opening of popup"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditPopupWelcome);
-	const core::VarDef voxEditPopupMinecraftMapping(cfg::VoxEditPopupMinecraftMapping, false, core::CV_NOPERSIST, N_("Minecraft mapping popup"), N_("Trigger opening of popup"));
+	const core::VarDef voxEditPopupMinecraftMapping(cfg::VoxEditPopupMinecraftMapping, false, N_("Minecraft mapping popup"), N_("Trigger opening of popup"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditPopupMinecraftMapping);
-	const core::VarDef voxEditPopupAbout(cfg::VoxEditPopupAbout, false, core::CV_NOPERSIST, N_("About popup"), N_("Trigger opening of popup"));
+	const core::VarDef voxEditPopupAbout(cfg::VoxEditPopupAbout, false, N_("About popup"), N_("Trigger opening of popup"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditPopupAbout);
-	const core::VarDef voxEditPopupRenameNode(cfg::VoxEditPopupRenameNode, false, core::CV_NOPERSIST, N_("Rename node popup"), N_("Trigger opening of popup"));
+	const core::VarDef voxEditPopupRenameNode(cfg::VoxEditPopupRenameNode, false, N_("Rename node popup"), N_("Trigger opening of popup"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditPopupRenameNode);
-	const core::VarDef voxEditPopupCreateAnimation(cfg::VoxEditPopupCreateAnimation, false, core::CV_NOPERSIST, N_("Create animation popup"), N_("Trigger opening of popup"));
+	const core::VarDef voxEditPopupCreateAnimation(cfg::VoxEditPopupCreateAnimation, false, N_("Create animation popup"), N_("Trigger opening of popup"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditPopupCreateAnimation);
 
-	const core::VarDef voxEditAnimationPlaying(cfg::VoxEditAnimationPlaying, false, core::CV_NOPERSIST, N_("Animation playing"), N_("Update the children of a node when the transform of the node changes"));
+	const core::VarDef voxEditAnimationPlaying(cfg::VoxEditAnimationPlaying, false, N_("Animation playing"), N_("Update the children of a node when the transform of the node changes"), core::CV_NOPERSIST);
 	core::Var::registerVar(voxEditAnimationPlaying);
-	const core::VarDef voxEditAutoSaveSeconds(cfg::VoxEditAutoSaveSeconds, 180, -1, N_("Autosave delay in seconds"), N_("Delay in second between autosaves - 0 disables autosaves"));
+	const core::VarDef voxEditAutoSaveSeconds(cfg::VoxEditAutoSaveSeconds, 180, N_("Autosave delay in seconds"), N_("Delay in second between autosaves - 0 disables autosaves"));
 	_autoSaveSecondsDelay = core::Var::registerVar(voxEditAutoSaveSeconds);
-	const core::VarDef voxEditTransformUpdateChildren(cfg::VoxEditTransformUpdateChildren, true, -1, N_("Update children"), N_("Update the children of a node when the transform of the node changes"));
+	const core::VarDef voxEditTransformUpdateChildren(cfg::VoxEditTransformUpdateChildren, true, N_("Update children"), N_("Update the children of a node when the transform of the node changes"));
 	_transformUpdateChildren = core::Var::registerVar(voxEditTransformUpdateChildren);
 	_maxSuggestedVolumeSize = core::getVar(cfg::VoxEditMaxSuggestedVolumeSize);
 	_lastDirectory = core::getVar(cfg::UILastDirectory);

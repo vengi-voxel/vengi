@@ -84,11 +84,14 @@ void McpServer::usage() const {
 
 app::AppState McpServer::onConstruct() {
 	const app::AppState state = Super::onConstruct();
-	const core::VarDef uILastDirectory(cfg::UILastDirectory, filesystem()->homePath().c_str());
+	const core::VarDef uILastDirectory(cfg::UILastDirectory, filesystem()->homePath(), N_("Last Directory"),
+									   N_("The last directory used for opening/saving files"));
 	core::Var::registerVar(uILastDirectory);
-	const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f);
+	const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, N_("Client Mouse Rotation Speed"),
+												N_("The speed of mouse rotation for the client"));
 	core::Var::registerVar(clientMouseRotationSpeed);
-	const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f);
+	const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, N_("Client Camera Zoom Speed"),
+											 N_("The speed of camera zoom for the client"));
 	core::Var::registerVar(clientCameraZoomSpeed);
 	_sceneMgr->construct();
 

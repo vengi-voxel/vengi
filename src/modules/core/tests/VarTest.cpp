@@ -21,7 +21,7 @@ public:
 };
 
 TEST_F(VarTest, testChange) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr));
 	EXPECT_EQ("nonsense", v->strVal());
 	v->setVal("1");
 	EXPECT_EQ("1", v->strVal());
@@ -29,18 +29,18 @@ TEST_F(VarTest, testChange) {
 }
 
 TEST_F(VarTest, testFlags) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", CV_READONLY));
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr, CV_READONLY));
 	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
 TEST_F(VarTest, testFlagsOverride) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
-	Var::registerVar(VarDef("test", "nonsense", CV_READONLY));
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr));
+	Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr, CV_READONLY));
 	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
 TEST_F(VarTest, testDirty) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr));
 	v->setVal("reasonable");
 	EXPECT_TRUE(v->isDirty());
 	v->markClean();
@@ -49,40 +49,40 @@ TEST_F(VarTest, testDirty) {
 
 TEST_F(VarTest, testPriorityWithoutEnvironmentVariable) {
 	// onConstruct
-	Var::registerVar(VarDef("test", "initialvalue"));
+	Var::registerVar(VarDef("test", "initialvalue", nullptr, nullptr));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "initialvalue");
 
 	// onConstruct argument parsing
-	Var::registerVar(VarDef("test", "commandline", CV_FROMCOMMANDLINE));
+	Var::registerVar(VarDef("test", "commandline", nullptr, nullptr, CV_FROMCOMMANDLINE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Commandline should have the highest priority";
 
 	// load appname.vars
-	Var::registerVar(VarDef("test", "file", CV_FROMFILE));
+	Var::registerVar(VarDef("test", "file", nullptr, nullptr, CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar(VarDef("test", "no", CV_FROMFILE));
+	Var::registerVar(VarDef("test", "no", nullptr, nullptr, CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar(VarDef("test", "no", CV_FROMENV));
+	Var::registerVar(VarDef("test", "no", nullptr, nullptr, CV_FROMENV));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar(VarDef("test", "no"));
+	Var::registerVar(VarDef("test", "no", nullptr, nullptr));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar(VarDef("test", ""));
+	Var::registerVar(VarDef("test", "", nullptr, nullptr));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Expected to get the value from the commandline";
 
-	Var::registerVar(VarDef("test", ""))->setVal("custom");
+	Var::registerVar(VarDef("test", "", nullptr, nullptr))->setVal("custom");
 	EXPECT_EQ(Var::findVar("test")->strVal(), "custom") << "Expected to get the value from the manual set call";
 }
 
 TEST_F(VarTest, testPriorityFromFile) {
 	// onConstruct
-	Var::registerVar(VarDef("test", "initialvalue"));
+	Var::registerVar(VarDef("test", "initialvalue", nullptr, nullptr));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "initialvalue");
 
 	// load appname.vars
-	Var::registerVar(VarDef("test", "file", CV_FROMFILE));
+	Var::registerVar(VarDef("test", "file", nullptr, nullptr, CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "file") << "Expected to get the value from the file";
 }
 
@@ -90,11 +90,11 @@ TEST_F(VarTest, testPriorityFromEnv) {
 	SDL_setenv("test", "env", 1);
 
 	// onConstruct
-	Var::registerVar(VarDef("test", "initialvalue"));
+	Var::registerVar(VarDef("test", "initialvalue", nullptr, nullptr));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "env") << "Expected to get the value from the env";
 
 	// load appname.vars
-	Var::registerVar(VarDef("test", "file", CV_FROMFILE));
+	Var::registerVar(VarDef("test", "file", nullptr, nullptr, CV_FROMFILE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "env") << "Expected to still have the value from env";
 	SDL_setenv("test", "", 1);
 }
@@ -103,17 +103,17 @@ TEST_F(VarTest, testPriorityEnvOverrideFromCmd) {
 	SDL_setenv("test", "env", 1);
 
 	// onConstruct
-	Var::registerVar(VarDef("test", "initialvalue"));
+	Var::registerVar(VarDef("test", "initialvalue", nullptr, nullptr));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "env") << "Expected to get the value from the env";
 
 	// onConstruct argument parsing
-	Var::registerVar(VarDef("test", "commandline", CV_FROMCOMMANDLINE));
+	Var::registerVar(VarDef("test", "commandline", nullptr, nullptr, CV_FROMCOMMANDLINE));
 	EXPECT_EQ(Var::findVar("test")->strVal(), "commandline") << "Commandline should have the highest priority";
 	SDL_setenv("test", "", 1);
 }
 
 TEST_F(VarTest, testHistory) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr));
 	EXPECT_EQ("nonsense", v->strVal());
 	v->setVal("reasonable");
 	EXPECT_EQ(2u, v->getHistorySize());
@@ -125,7 +125,7 @@ TEST_F(VarTest, testHistory) {
 }
 
 TEST_F(VarTest, testHistoryCleanup) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense"));
+	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr));
 	for (int i = 0; i < 120; ++i) {
 		v->setVal(core::String::format("reasonable%i", i));
 	}
@@ -133,7 +133,7 @@ TEST_F(VarTest, testHistoryCleanup) {
 }
 
 TEST_F(VarTest, testIntMinMax) {
-	const VarPtr& v = Var::registerVar(VarDef("test", 5, 0, 10));
+	const VarPtr& v = Var::registerVar(VarDef("test", 5, 0, 10, nullptr, nullptr));
 	EXPECT_TRUE(v->hasMinMax());
 	EXPECT_FLOAT_EQ(0.0f, v->minValue());
 	EXPECT_FLOAT_EQ(10.0f, v->maxValue());
@@ -149,7 +149,7 @@ TEST_F(VarTest, testIntMinMax) {
 }
 
 TEST_F(VarTest, testFloatMinMax) {
-	const VarPtr& v = Var::registerVar(VarDef("test", 5.0f, 0.0f, 10.0f));
+	const VarPtr& v = Var::registerVar(VarDef("test", 5.0f, 0.0f, 10.0f, nullptr, nullptr));
 	EXPECT_TRUE(v->hasMinMax());
 	EXPECT_FLOAT_EQ(0.0f, v->minValue());
 	EXPECT_FLOAT_EQ(10.0f, v->maxValue());
@@ -165,23 +165,23 @@ TEST_F(VarTest, testFloatMinMax) {
 }
 
 TEST_F(VarTest, testNoMinMax) {
-	const VarPtr& v = Var::registerVar(VarDef("test", 5));
+	const VarPtr& v = Var::registerVar(VarDef("test", 5, nullptr, nullptr));
 	EXPECT_FALSE(v->hasMinMax());
 	EXPECT_TRUE(v->setVal(1000));
 	EXPECT_TRUE(v->setVal(-1000));
 }
 
 TEST_F(VarTest, testMinMaxReRegister) {
-	const VarPtr& v = Var::registerVar(VarDef("test", 5));
+	const VarPtr& v = Var::registerVar(VarDef("test", 5, nullptr, nullptr));
 	EXPECT_FALSE(v->hasMinMax());
-	Var::registerVar(VarDef("test", 5, 0, 10));
+	Var::registerVar(VarDef("test", 5, 0, 10, nullptr, nullptr));
 	EXPECT_TRUE(v->hasMinMax());
 	EXPECT_FALSE(v->setVal(11));
 }
 
 TEST_F(VarTest, testEnumValidValues) {
 	const core::DynamicArray<core::String> validValues = {"low", "medium", "high"};
-	const VarPtr& v = Var::registerVar(VarDef("test", "medium", validValues));
+	const VarPtr& v = Var::registerVar(VarDef("test", "medium", validValues, nullptr, nullptr));
 	EXPECT_EQ("medium", v->strVal());
 	EXPECT_EQ(3u, v->validValues().size());
 	EXPECT_TRUE(v->setVal("low"));
@@ -194,15 +194,15 @@ TEST_F(VarTest, testEnumValidValues) {
 
 TEST_F(VarTest, testEnumEmptyValueAllowed) {
 	const core::DynamicArray<core::String> validValues = {"a", "b"};
-	const VarPtr& v = Var::registerVar(VarDef("test", "a", validValues));
+	const VarPtr& v = Var::registerVar(VarDef("test", "a", validValues, nullptr, nullptr));
 	EXPECT_TRUE(v->setVal(""));
 }
 
 TEST_F(VarTest, testEnumReRegister) {
-	const VarPtr& v = Var::registerVar(VarDef("test", "a"));
+	const VarPtr& v = Var::registerVar(VarDef("test", "a", nullptr, nullptr));
 	EXPECT_TRUE(v->validValues().empty());
 	const core::DynamicArray<core::String> validValues = {"a", "b", "c"};
-	Var::registerVar(VarDef("test", "a", validValues));
+	Var::registerVar(VarDef("test", "a", validValues, nullptr, nullptr));
 	EXPECT_EQ(3u, v->validValues().size());
 	EXPECT_FALSE(v->setVal("d"));
 	EXPECT_TRUE(v->setVal("c"));

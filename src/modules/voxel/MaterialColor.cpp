@@ -3,6 +3,7 @@
  */
 
 #include "MaterialColor.h"
+#include "app/I18N.h"
 #include "core/Optional.h"
 #include "core/Trace.h"
 #include "core/Var.h"
@@ -26,7 +27,9 @@ palette::NormalPalette &getNormalPalette() {
 	core::ScopedLock lock(_priv::_lock);
 	if (!hasNormalPalette()) {
 		palette::NormalPalette normalPalette;
-		const core::VarDef normalPaletteDef(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName());
+		const core::VarDef normalPaletteDef(cfg::NormalPalette, palette::NormalPalette::getDefaultPaletteName(),
+											N_("Normal palette"),
+											N_("A palette of normal vectors converted to RGBA values"));
 		const core::VarPtr &var = core::Var::registerVar(normalPaletteDef);
 		const core::String &defaultNormalPalette = var->strVal();
 		if (!normalPalette.load(defaultNormalPalette.c_str())) {
@@ -46,7 +49,8 @@ palette::Palette &getPalette() {
 	core::ScopedLock lock(_priv::_lock);
 	if (!hasPalette()) {
 		palette::Palette palette;
-		const core::VarDef voxelPaletteDef(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName());
+		const core::VarDef voxelPaletteDef(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName(),
+										   N_("Voxel palette"), N_("A palette of voxel colors"));
 		const core::VarPtr &var = core::Var::registerVar(voxelPaletteDef);
 		const core::String &defaultPalette = var->strVal();
 		if (!palette.load(defaultPalette.c_str())) {

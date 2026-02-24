@@ -32,9 +32,9 @@ protected:
 
 	void SetUp() override {
 		app::AbstractTest::SetUp();
-		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f);
+		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, "", "");
 		core::Var::registerVar(clientMouseRotationSpeed);
-		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f);
+		const core::VarDef clientCameraZoomSpeed(cfg::ClientCameraZoomSpeed, 0.1f, "", "");
 		core::Var::registerVar(clientCameraZoomSpeed);
 	}
 

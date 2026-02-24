@@ -3,6 +3,7 @@
  */
 
 #include "MetricFacade.h"
+#include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
@@ -35,14 +36,14 @@ bool MetricState::init(const core::String &appname) {
 	}
 
 	if (flavor->strVal() == "json") {
-		const core::VarDef metricJsonUrl(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric");
+		const core::VarDef metricJsonUrl(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric", N_("Metric JSON URL"), N_("The URL to send JSON metrics to"));
 		const core::String &url = core::Var::registerVar(metricJsonUrl)->strVal();
 		const core::String userAgent = appname + "/" PROJECT_VERSION;
 		_sender = core::make_shared<metric::HTTPMetricSender>(url, userAgent);
 	} else {
-		const core::VarDef metricHost(cfg::MetricHost, "127.0.0.1");
+		const core::VarDef metricHost(cfg::MetricHost, "127.0.0.1", N_("Metric Host"), N_("The host to send metrics to"));
 		const core::String &host = core::Var::registerVar(metricHost)->strVal();
-		const core::VarDef metricPort(cfg::MetricPort, 8125);
+		const core::VarDef metricPort(cfg::MetricPort, 8125, N_("Metric Port"), N_("The port to send metrics to"));
 		const int port = core::Var::registerVar(metricPort)->intVal();
 		_sender = core::make_shared<metric::UDPMetricSender>(host, port);
 	}

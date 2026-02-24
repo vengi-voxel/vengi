@@ -4,6 +4,7 @@
 
 #include "CollectionManager.h"
 #include "app/Async.h"
+#include "app/I18N.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/SharedPtr.h"
@@ -47,7 +48,7 @@ bool CollectionManager::init() {
 		documents = _filesystem->homePath();
 	}
 	core_assert(!documents.empty());
-	const core::VarDef assetPanelLocalDirectory(cfg::AssetPanelLocalDirectory, documents);
+	const core::VarDef assetPanelLocalDirectory(cfg::AssetPanelLocalDirectory, documents, N_("Local directory"), N_("The local directory to load voxel files from"));
 	const core::VarPtr &var = core::Var::registerVar(assetPanelLocalDirectory);
 	_localDir = var->strVal();
 	if (_localDir.empty()) {
