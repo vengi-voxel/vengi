@@ -58,7 +58,7 @@ bool Var::setVal(float value) {
 }
 
 VarPtr Var::getSafe(const core::String &name) {
-	const VarPtr &var = get(name);
+	const VarPtr &var = findVar(name);
 	core_assert_msg(var, "var %s doesn't exist yet", name.c_str());
 	return var;
 }
@@ -87,7 +87,7 @@ bool Var::_minMaxValidator(const core::String &value, int nmin, int nmax) {
 }
 
 core::String Var::str(const core::String &name) {
-	const VarPtr &var = get(name);
+	const VarPtr &var = findVar(name);
 	if (!var) {
 		return core::String::Empty;
 	}
@@ -95,7 +95,7 @@ core::String Var::str(const core::String &name) {
 }
 
 bool Var::boolean(const core::String &name) {
-	const VarPtr &var = get(name);
+	const VarPtr &var = findVar(name);
 	if (!var) {
 		return false;
 	}
@@ -118,6 +118,15 @@ void Var::vec3Val(float out[3]) const {
 	out[0] = x;
 	out[1] = y;
 	out[2] = z;
+}
+
+VarPtr Var::findVar(const core::String& name) {
+	ScopedLock lock(_lock);
+	VarMap::iterator i = _vars.find(name);
+	if (i == _vars.end()) {
+		return VarPtr();
+	}
+	return i->second;
 }
 
 VarPtr Var::get(const core::String &name, const char *value, int32_t flags, const char *help,

@@ -130,6 +130,7 @@ public:
 	 * @note This is using a read/write lock to allow access from different threads.
 	 */
 	static VarPtr get(const core::String& name, const char* value = nullptr, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
+	static VarPtr findVar(const core::String& name);
 
 	static inline VarPtr get(const core::String& name, const char* value, const char *help, ValidatorFunc validatorFunc = nullptr) {
 		return get(name, value, -1, help, validatorFunc);
@@ -140,7 +141,7 @@ public:
 	}
 
 	/**
-	 * @note Same as get(), but uses @c core_assert if no var could be found with the given name.
+	 * @note variable must exists, otherwise @c core_assert triggers
 	 */
 	static VarPtr getSafe(const core::String& name);
 
