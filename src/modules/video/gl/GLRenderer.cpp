@@ -101,6 +101,7 @@ static const GLenum MemoryBarrierTypes[] {
 };
 static_assert(core::enumVal(MemoryBarrierType::Max) == lengthof(MemoryBarrierTypes), "Array sizes don't match Max");
 
+#if 0
 static const GLenum StencilOps[] {
 	GL_KEEP,
 	GL_ZERO,
@@ -112,6 +113,7 @@ static const GLenum StencilOps[] {
 	GL_INVERT
 };
 static_assert(core::enumVal(StencilOp::Max) == lengthof(StencilOps), "Array sizes don't match Max");
+#endif
 
 static const GLenum FrameBufferAttachments[] {
 	GL_DEPTH_STENCIL_ATTACHMENT,
@@ -320,6 +322,7 @@ static const GLenum DataTypes[] {
 };
 static_assert(core::enumVal(DataType::Max) == lengthof(DataTypes), "Array sizes don't match Max");
 
+#if 0
 static const GLenum ObjectNameTypes[] = {
 	GL_BUFFER,
 	GL_SHADER,
@@ -334,6 +337,7 @@ static const GLenum ObjectNameTypes[] = {
 	GL_FRAMEBUFFER
 };
 static_assert(core::enumVal(ObjectNameType::Max) == lengthof(ObjectNameTypes), "Array sizes don't match Max");
+#endif
 
 static const GLenum ImageFormatTypes[] = {
 	GL_RGBA32F,

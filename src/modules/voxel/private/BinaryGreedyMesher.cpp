@@ -71,7 +71,7 @@ static constexpr int CS_P = CS + 2;
 static constexpr int CS_P2 = CS_P * CS_P;
 
 /// Padded chunk volume (CS_P cubed) - total voxels including border padding
-static constexpr int CS_P3 = CS_P * CS_P * CS_P;
+// static constexpr int CS_P3 = CS_P * CS_P * CS_P;
 
 /** @} */
 
