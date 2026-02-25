@@ -36,7 +36,7 @@ VarDef::VarDef(const core::String &defName, const char *defValue, const char *de
 
 VarDef::VarDef(const core::String &defName, bool defValue, const char *defTitle, const char *defDescription,
 			   int32_t defFlags)
-	: type(VarType::Bool), name(defName), value(defValue ? "true" : "false"), flags(defFlags),
+	: type(VarType::Boolean), name(defName), value(defValue ? "true" : "false"), flags(defFlags),
 	  title(defTitle ? defTitle : ""), description(defDescription ? defDescription : "") {
 	core_assert(!defName.empty());
 }
@@ -111,14 +111,14 @@ void Var::shutdown() {
 }
 
 void Var::toggleBool() {
-	if (type() != VarType::Bool) {
+	if (type() != VarType::Boolean) {
 		return;
 	}
 	setVal(boolVal() ? false : true);
 }
 
 bool Var::setVal(bool value) {
-	if (type() != VarType::Bool) {
+	if (type() != VarType::Boolean) {
 		return false;
 	}
 	return setVal(value ? "true" : "false");
@@ -338,7 +338,7 @@ bool Var::setVal(const core::String &value) {
 }
 
 bool Var::validate(const core::String &value) const {
-	if (_def.type == VarType::Bool) {
+	if (_def.type == VarType::Boolean) {
 		if (value != "1" && value != "true" && value != "false" && value != "0") {
 			Log::debug("Validator doesn't allow to set '%s' for '%s'", value.c_str(), _def.name.c_str());
 			return false;

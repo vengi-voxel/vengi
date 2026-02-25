@@ -96,7 +96,7 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 					Log::info("- min: %f, max: %f", c->floatMinValue(), c->floatMaxValue());
 				} else if (c->type() == core::VarType::Enum) {
 					Log::info("- valid values: %s", core::string::join(c->validValues(), ", ").c_str());
-				} else if (c->type() == core::VarType::Bool) {
+				} else if (c->type() == core::VarType::Boolean) {
 					Log::info("- valid values: true, false");
 				}
 			} else {

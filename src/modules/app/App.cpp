@@ -1181,7 +1181,7 @@ void App::usage() const {
 				Log::info("   -- min: %f, max: %f", v->floatMinValue(), v->floatMaxValue());
 			} else if (v->type() == core::VarType::Enum) {
 				Log::info("   -- valid values: %s", core::string::join(v->validValues(), ", ").c_str());
-			} else if (v->type() == core::VarType::Bool) {
+			} else if (v->type() == core::VarType::Boolean) {
 				Log::info("   -- valid values: true, false");
 			}
 		},

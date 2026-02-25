@@ -45,7 +45,7 @@ enum class VarType : uint8_t {
 	String,
 	Int,
 	Float,
-	Bool,
+	Boolean,
 	Enum,
 	Path,
 

@@ -617,7 +617,7 @@ void IMGUIApp::renderCvarDialog() {
 					const bool readOnly = var->getFlags() & core::CV_READONLY;
 					ImGui::BeginDisabled(readOnly);
 					const core::String type = "##" + var->name();
-					if (var->type() == core::VarType::Bool) {
+					if (var->type() == core::VarType::Boolean) {
 						ImGui::CheckboxVar(var->name().c_str());
 					} else if (var->type() == core::VarType::Enum && !var->validValues().empty()) {
 						ImGui::ComboVar(var->name().c_str());

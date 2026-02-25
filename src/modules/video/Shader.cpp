@@ -352,7 +352,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		src.append(validName);
 		src.append(" ");
 		core::String val;
-		if (var->type() == core::VarType::Bool) {
+		if (var->type() == core::VarType::Boolean) {
 			val = var->boolVal() ? "1" : "0";
 		} else {
 			val = var->strVal();
