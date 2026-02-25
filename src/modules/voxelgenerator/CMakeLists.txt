@@ -52,6 +52,7 @@ set(LUA_SRCS
 	scripts/splitcolor.lua
 	scripts/splitobjects.lua
 	scripts/thicken.lua
+	scripts/tree_bonsai.lua
 	scripts/tree_branchellipsis.lua
 	scripts/tree_cone.lua
 	scripts/tree_cube.lua

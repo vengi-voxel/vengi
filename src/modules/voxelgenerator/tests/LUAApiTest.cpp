@@ -710,6 +710,11 @@ TEST_F(LUAApiTest, testTreeFir) {
 	runFile(sceneGraph, "tree_fir.lua", {"10", "2", "5", "5", "2", "5.0", "1", "2", "0.5", "1", "2"});
 }
 
+TEST_F(LUAApiTest, testTreeBonsai) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_bonsai.lua");
+}
+
 TEST_F(LUAApiTest, testTreePine) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "tree_pine.lua", {"10", "2", "10", "10", "10", "2", "1", "2", "2", "1", "2"});
