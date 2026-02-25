@@ -261,7 +261,7 @@ app::AppState IMGUIApp::onConstruct() {
 	const core::VarDef uIFileDialogLastFiles(cfg::UIFileDialogLastFiles, "", N_("Last opened files"), N_("The last opened files in the file dialog, separated by ';'"));
 	_lastOpenedFiles = core::Var::registerVar(uIFileDialogLastFiles);
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
-	const core::VarDef uIFileDialogLastFile(cfg::UIFileDialogLastFile, "", N_("Last opened file"), N_("The last opened file in the file dialog"));
+	const core::VarDef uIFileDialogLastFile(cfg::UIFileDialogLastFile, core::Path(), N_("Last opened file"), N_("The last opened file in the file dialog"));
 	_lastOpenedFile = core::Var::registerVar(uIFileDialogLastFile);
 
 	command::Command::registerCommand("ui_showtextures")
@@ -625,6 +625,8 @@ void IMGUIApp::renderCvarDialog() {
 						ImGui::InputVarInt(var->name().c_str());
 					} else if (var->type() == core::VarType::Float) {
 						ImGui::InputVarFloat(var->name().c_str());
+					} else if (var->type() == core::VarType::Path) {
+						ImGui::InputFileVar(var->name().c_str(), nullptr);
 					} else {
 						int flags = 0;
 						const bool secret = (var->getFlags() & core::CV_SECRET) != 0;

@@ -41,6 +41,12 @@ VarDef::VarDef(const core::String &defName, bool defValue, const char *defTitle,
 	core_assert(!defName.empty());
 }
 
+VarDef::VarDef(const core::String &defName, const core::Path &path, const char *defTitle, const char *defDescription,
+			   int32_t defFlags)
+	: type(VarType::Path), name(defName), value(path.toString()), flags(defFlags), title(defTitle ? defTitle : ""),
+	  description(defDescription ? defDescription : "") {
+}
+
 VarDef::VarDef(const core::String &defName, int defValue, const char *defTitle, const char *defDescription,
 			   int32_t defFlags)
 	: type(VarType::Int), name(defName), value(core::String::format("%i", defValue)), flags(defFlags),

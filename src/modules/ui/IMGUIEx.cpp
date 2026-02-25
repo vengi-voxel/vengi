@@ -315,6 +315,31 @@ bool InputVarFloat(const char *varName, float step, float step_fast, ImGuiInputT
 	return InputVarFloat(var, step, step_fast, extra_flags);
 }
 
+bool InputFileVar(const core::VarPtr &var, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags, const video::FileDialogOptions &options) {
+	const core::String label = _priv::varLabel(var);
+	core::String buf = var->strVal();
+	BeginGroup();
+	InputText(label.c_str(), &buf, flags);
+	SameLine();
+	core::String id(ICON_LC_FILE "##");
+	id += label;
+	if (Button(id.c_str())) {
+		imguiApp()->openDialog([var] (const core::String &filename, const io::FormatDescription *desc) {
+			var->setVal(filename);
+		}, options, descriptions);
+	}
+	_priv::varTooltip(var);
+	EndGroup();
+	if (var->setVal(buf)) {
+		return true;
+	}
+	return false;
+}
+
+bool InputFileVar(const char *varName, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags, const video::FileDialogOptions &options) {
+	return InputFileVar(core::getVar(varName), descriptions, flags, options);
+}
+
 bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags) {
 	return InputInt2(label, glm::value_ptr(vec), flags);
 }

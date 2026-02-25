@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/ConfigVar.h"
+#include "core/Path.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -46,6 +47,7 @@ enum class VarType : uint8_t {
 	Float,
 	Bool,
 	Enum,
+	Path,
 
 	Unknown
 };
@@ -65,6 +67,8 @@ struct VarDef {
 	VarDef(const core::String &defName, const char *defValue, const char *defTitle, const char *defDescription,
 		   int32_t defFlags = CV_NONE);
 	VarDef(const core::String &defName, bool defValue, const char *defTitle, const char *defDescription,
+		   int32_t defFlags = CV_NONE);
+	VarDef(const core::String &defName, const core::Path &path, const char *defTitle, const char *defDescription,
 		   int32_t defFlags = CV_NONE);
 	/**
 	 * @brief Construct an integer cvar with min/max range validation.
