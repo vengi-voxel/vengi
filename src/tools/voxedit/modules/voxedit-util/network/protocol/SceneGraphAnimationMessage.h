@@ -91,6 +91,7 @@ public:
 				return;
 			}
 		}
+		writeSize();
 	}
 
 	const core::DynamicArray<core::String> &animations() const {

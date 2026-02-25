@@ -56,6 +56,7 @@ public:
 			Log::error("Failed to serialize normal palette in NodeNormalPaletteChangedMessage::writeBack");
 			return;
 		}
+		writeSize();
 	}
 
 	const core::UUID &nodeUUID() const {
