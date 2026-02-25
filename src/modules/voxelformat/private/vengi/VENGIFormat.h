@@ -19,7 +19,7 @@ namespace voxelformat {
  */
 class VENGIFormat : public Format {
 private:
-	using NodeMapping = core::Map<int, int>;
+	using NodeMapping = core::DynamicMap<int, int>;
 
 	bool saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							io::WriteStream &stream);
