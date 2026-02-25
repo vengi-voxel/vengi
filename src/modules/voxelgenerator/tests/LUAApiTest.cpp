@@ -627,19 +627,19 @@ TEST_F(LUAApiTest, testScriptPaletteBrighten) {
 // long runtime - thus disabled
 TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesRainbowTowers) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "aos_rainbow_towers.lua");
+	runFile(sceneGraph, "aos_rainbow-towers.lua");
 }
 
 // long runtime - thus disabled
 TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesForestRiver) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "aos_forest_river.lua");
+	runFile(sceneGraph, "aos_forest-river.lua");
 }
 
 // long runtime - thus disabled
 TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesIncompleteFortress) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "aos_incomplete_fortress.lua");
+	runFile(sceneGraph, "aos_incomplete-fortress.lua");
 }
 
 // long runtime - thus disabled
