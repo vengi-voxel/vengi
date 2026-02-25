@@ -4,6 +4,7 @@
 
 #include "OptionsPanel.h"
 #include "IMGUIStyle.h"
+#include "core/Common.h"
 #include "voxedit-util/SceneManager.h"
 #include "MenuBar.h"
 #include "ViewMode.h"
@@ -328,7 +329,7 @@ void OptionsPanel::renderAllVariables() {
 	if (ImGui::BeginTable("##cvars", 4, TableFlags, outerSize)) {
 		ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
 		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("##reset", ImGuiTableFlags_SizingFixedFit);
+		ImGui::TableSetupColumn("##reset", ImGuiTableColumnFlags_WidthFixed);
 		ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableSetupScrollFreeze(0, 1);
 		ImGui::TableHeadersRow();
@@ -353,6 +354,10 @@ void OptionsPanel::renderAllVariables() {
 		} else {
 			filteredVars = vars;
 		}
+
+		filteredVars.sort([](const core::Var *a, const core::Var *b) {
+			return a->name() > b->name();
+		});
 
 		ImGuiListClipper clipper;
 		clipper.Begin((int)filteredVars.size());
@@ -387,13 +392,13 @@ void OptionsPanel::renderAllVariables() {
 				ImGui::TableNextColumn();
 				if (!readOnly) {
 					ui::ScopedID id(var->name());
-					if (ImGui::Button(_("Reset"))) {
+					if (ImGui::Button(ICON_LC_DELETE)) {
 						var->reset();
 					}
 					ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				}
 				ImGui::TableNextColumn();
-				ImGui::TextUnformatted(var->description().c_str());
+				ImGui::TextWrappedUnformatted(var->description().c_str());
 			}
 		}
 		ImGui::EndTable();

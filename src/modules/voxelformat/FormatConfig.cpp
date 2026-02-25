@@ -43,7 +43,7 @@ bool FormatConfig::init() {
 		N_("The RGB color flatten factor for importing color and mesh formats"), core::CV_NOPERSIST);
 	core::registerVar(voxformatRGBFlattenFactor);
 	const core::VarDef voxformatTargetColors(
-		cfg::VoxformatTargetColors, 0, 0, 256, N_("Target colors (0=no limit)"),
+		cfg::VoxformatTargetColors, 0, 0, 256, N_("Target"),
 		N_("Target number of colors after voxelization (0 = no limit, otherwise quantize to this amount)"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatTargetColors);
