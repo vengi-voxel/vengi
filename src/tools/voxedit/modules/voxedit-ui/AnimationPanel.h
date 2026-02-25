@@ -30,14 +30,13 @@ private:
 	core::VarPtr _popupCreateAnimation;
 	core::String _newAnimation;
 	core::String _selectedAnimation;
-	AnimationTimeline *_animationTimeline;
 	bool _copyExistingAnimation = false;
 
 	void popupCreateAnimation();
 
 public:
-	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, AnimationTimeline *animationTimeline)
-		: Super(app, "animationpanel"), _sceneMgr(sceneMgr), _animationTimeline(animationTimeline) {
+	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)
+		: Super(app, "animationpanel"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *id, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
 	void registerPopups();

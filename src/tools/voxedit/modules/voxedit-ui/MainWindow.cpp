@@ -71,7 +71,6 @@
 #include "twinsen_png.h"
 #include "undead.h"
 #include "undead_png.h"
-#include "voxelrender/CameraMovement.h"
 
 namespace voxedit {
 
@@ -122,7 +121,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _optionsPanel(app),
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
 	  _scriptPanel(app, _sceneMgr), _animationTimeline(app, _sceneMgr),
-	  _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr),
+	  _animationPanel(app, _sceneMgr), _cameraPanel(app, _sceneMgr),
 	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr), _helpPanel(this, app) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));

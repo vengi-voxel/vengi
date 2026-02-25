@@ -40,7 +40,6 @@ SOFTWARE.
 #include "BinaryGreedyMesher.h"
 #include "core/Trace.h"
 #include "core/collection/Array.h"
-#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
