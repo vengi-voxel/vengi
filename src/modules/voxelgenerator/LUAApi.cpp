@@ -5817,6 +5817,10 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 }
 
 static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo) {
+	if (!lua_checkstack(s, (int)argsInfo.size())) {
+		Log::error("Failed to grow lua stack for %i arguments", (int)argsInfo.size());
+		return false;
+	}
 	for (size_t i = 0u; i < argsInfo.size(); ++i) {
 		const LUAParameterDescription &d = argsInfo[i];
 		const core::String &arg = args.size() > i ? args[i] : d.defaultValue;
