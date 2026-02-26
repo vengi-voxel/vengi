@@ -305,9 +305,6 @@ function main(node, region, color, width, depth, stories, storyHeight, roofStyle
 	if width < 5 then width = 5 end
 	if depth < 5 then depth = 5 end
 
-	-- total wall height for all stories (including floors between)
-	local totalWallH = stories * storyHeight + (stories) * floorThickness
-
 	-- build each story
 	for s = 0, stories - 1 do
 		local sy = by + s * (storyHeight + floorThickness)
