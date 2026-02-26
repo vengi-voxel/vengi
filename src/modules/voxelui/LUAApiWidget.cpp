@@ -119,16 +119,22 @@ bool LUAApiWidget::updateScriptParameters(voxelgenerator::LUAScript &script, con
 			}
 			case voxelgenerator::LUAParameterType::HexColor: {
 				core::String &str = script.parameters[i];
-				uint8_t r, g, b, a;
-				if (core::string::parseHex(str.c_str(), r, g, b, a) >= 0) {
-					const float size = ImGui::Height(1);
-					const ImVec2 v1 = ImGui::GetCursorScreenPos();
-					const ImVec2 v2(v1.x + size, v1.y + size);
-					ImDrawList *drawList = ImGui::GetWindowDrawList();
-					drawList->AddRectFilled(v1, v2, IM_COL32(r, g, b, a));
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
+				uint8_t r = 255, g = 0, b = 255, a = 255;
+				core::string::parseHex(str.c_str(), r, g, b, a);
+				ImVec4 col(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+				if (ImGui::ColorEdit4(p.name.c_str(), &col.x,
+									  ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayHex |
+										  ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_AlphaBar)) {
+					r = (uint8_t)(col.x * 255.0f + 0.5f);
+					g = (uint8_t)(col.y * 255.0f + 0.5f);
+					b = (uint8_t)(col.z * 255.0f + 0.5f);
+					a = (uint8_t)(col.w * 255.0f + 0.5f);
+					if (a == 255) {
+						str = core::String::format("#%02X%02X%02X", r, g, b);
+					} else {
+						str = core::String::format("#%02X%02X%02X%02X", r, g, b, a);
+					}
 				}
-				ImGui::InputText(p.name.c_str(), &str);
 				break;
 			}
 			case voxelgenerator::LUAParameterType::Max:
