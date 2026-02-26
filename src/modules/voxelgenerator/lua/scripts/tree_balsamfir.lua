@@ -17,9 +17,9 @@ function arguments()
 		{ name = 'branchDroop', desc = 'Downward droop at branch tips', type = 'int', default = '1', min = '0', max = '4' },
 		{ name = 'tipHeight', desc = 'Height of the pointed leader tip', type = 'int', default = '3', min = '1', max = '6' },
 		{ name = 'density', desc = 'Foliage density (fills between branches)', type = 'bool', default = 'true' },
-		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Primary needle color (dark green)', type = 'colorindex', default = '2' },
-		{ name = 'leavesColor2', desc = 'Secondary needle color (lighter green)', type = 'colorindex', default = '3' },
+		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'hexcolor', default = '#8B4513' },
+		{ name = 'leavesColor', desc = 'Primary needle color (dark green)', type = 'hexcolor', default = '#1B4D1B' },
+		{ name = 'leavesColor2', desc = 'Secondary needle color (lighter green)', type = 'hexcolor', default = '#2E6B14' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

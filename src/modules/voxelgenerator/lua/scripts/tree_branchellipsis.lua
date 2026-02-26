@@ -9,8 +9,8 @@ function arguments()
 		{ name = 'leavesDepth', desc = 'Depth of the leaves', type = 'int', default = '10' },
 		{ name = 'branchHeight', desc = 'Height of branches', type = 'int', default = '5' },
 		{ name = 'branchLength', desc = 'Length of branches', type = 'int', default = '5' },
-		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' },
+		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'hexcolor', default = '#8B4513' },
+		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'hexcolor', default = '#2E6B14' },
 		{ name = 'seed', desc = 'Random seed', type = 'int', default = '0' }
 	}
 end

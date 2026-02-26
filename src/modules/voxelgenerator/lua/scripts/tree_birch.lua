@@ -18,9 +18,9 @@ function arguments()
 		{ name = 'foliageSize', desc = 'Base size of foliage clusters', type = 'int', default = '4', min = '2', max = '8' },
 		{ name = 'crownWidth', desc = 'Width of the overall crown', type = 'int', default = '14', min = '6', max = '30' },
 		{ name = 'crownHeight', desc = 'Height of the overall crown', type = 'int', default = '12', min = '4', max = '24' },
-		{ name = 'trunkColor', desc = 'Color of the trunk (white bark)', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Primary foliage color', type = 'colorindex', default = '2' },
-		{ name = 'leavesColor2', desc = 'Secondary foliage color (lighter)', type = 'colorindex', default = '3' },
+		{ name = 'trunkColor', desc = 'Color of the trunk (white bark)', type = 'hexcolor', default = '#D2C5A0' },
+		{ name = 'leavesColor', desc = 'Primary foliage color', type = 'hexcolor', default = '#2E6B14' },
+		{ name = 'leavesColor2', desc = 'Secondary foliage color (lighter)', type = 'hexcolor', default = '#4A8F32' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

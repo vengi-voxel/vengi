@@ -20,11 +20,11 @@ function arguments()
 		{ name = 'frondWidth', desc = 'Width (thickness) of frond leaves', type = 'int', default = '1', min = '1', max = '3' },
 		{ name = 'fruits', desc = 'Show fruit cluster at crown', type = 'bool', default = 'true' },
 		{ name = 'barkRings', desc = 'Show bark ring texture on trunk', type = 'bool', default = 'true' },
-		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'barkColor', desc = 'Color of bark rings', type = 'colorindex', default = '4' },
-		{ name = 'leavesColor', desc = 'Primary frond color', type = 'colorindex', default = '2' },
-		{ name = 'leavesColor2', desc = 'Secondary frond color (tips)', type = 'colorindex', default = '3' },
-		{ name = 'fruitColor', desc = 'Color of fruits', type = 'colorindex', default = '5' },
+		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'hexcolor', default = '#8B7355' },
+		{ name = 'barkColor', desc = 'Color of bark rings', type = 'hexcolor', default = '#6B4226' },
+		{ name = 'leavesColor', desc = 'Primary frond color', type = 'hexcolor', default = '#2E6B14' },
+		{ name = 'leavesColor2', desc = 'Secondary frond color (tips)', type = 'hexcolor', default = '#5C8A2F' },
+		{ name = 'fruitColor', desc = 'Color of fruits', type = 'hexcolor', default = '#8B6914' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

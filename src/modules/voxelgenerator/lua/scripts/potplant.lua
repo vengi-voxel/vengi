@@ -17,10 +17,10 @@ function arguments()
 		{ name = 'potHeight', desc = 'Height of the pot', type = 'int', default = '4', min = '2', max = '10' },
 		{ name = 'potRadius', desc = 'Radius of the pot', type = 'int', default = '6', min = '3', max = '15' },
 		{ name = 'flowers', desc = 'Number of flowers (for flower type) or buds', type = 'int', default = '5', min = '0', max = '20' },
-		{ name = 'leafColor', desc = 'Color of the leaves/plant body', type = 'colorindex', default = '2' },
-		{ name = 'flowerColor', desc = 'Color of flowers or accents', type = 'colorindex', default = '4' },
-		{ name = 'potColor', desc = 'Color of the pot', type = 'colorindex', default = '3' },
-		{ name = 'soilColor', desc = 'Color of the soil', type = 'colorindex', default = '1' },
+		{ name = 'leafColor', desc = 'Color of the leaves/plant body', type = 'hexcolor', default = '#2E6B14' },
+		{ name = 'flowerColor', desc = 'Color of flowers or accents', type = 'hexcolor', default = '#E91E63' },
+		{ name = 'potColor', desc = 'Color of the pot', type = 'hexcolor', default = '#A0522D' },
+		{ name = 'soilColor', desc = 'Color of the soil', type = 'hexcolor', default = '#5C4033' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

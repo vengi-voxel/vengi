@@ -20,9 +20,9 @@ function arguments()
 		{ name = 'pot', desc = 'Draw a pot at the base', type = 'bool', default = 'true' },
 		{ name = 'potHeight', desc = 'Height of the pot', type = 'int', default = '3', min = '2', max = '6' },
 		{ name = 'potRadius', desc = 'Radius of the pot', type = 'int', default = '8', min = '4', max = '15' },
-		{ name = 'trunkColor', desc = 'Color of the trunk and branches', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the foliage', type = 'colorindex', default = '2' },
-		{ name = 'potColor', desc = 'Color of the pot', type = 'colorindex', default = '3' },
+		{ name = 'trunkColor', desc = 'Color of the trunk and branches', type = 'hexcolor', default = '#6B4226' },
+		{ name = 'leavesColor', desc = 'Color of the foliage', type = 'hexcolor', default = '#2E6B14' },
+		{ name = 'potColor', desc = 'Color of the pot', type = 'hexcolor', default = '#A0522D' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

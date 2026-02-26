@@ -9,7 +9,7 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
-		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'colorindex' },
+		{ name = 'grasscolor', desc = 'the color to use as grass', type = 'hexcolor', default = '#00FF00' },
 		{ name = 'height', desc = 'the height of the grass to add', type = 'int', default = '4' },
 		{ name = 'density', desc = 'the density of the grass', type = 'int', default = '2', min = '1', max = '100' },
 		{ name = 'similarcolors', desc = 'the amount of similar colors', type = 'int', default = '4' },
@@ -22,9 +22,6 @@ function description()
 end
 
 function main(node, region, color, grasscolor, height, density, similarcolors, upwards)
-	if grasscolor == -1 then
-		grasscolor = node:palette():match(0, 255, 0)
-	end
 	local newindices = node:palette():similar(grasscolor, similarcolors)
 
 	local visitor = function (volume, x, y, z)

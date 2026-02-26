@@ -19,9 +19,9 @@ function arguments()
 		{ name = 'foliageSize', desc = 'Base size of foliage clusters', type = 'int', default = '5', min = '2', max = '10' },
 		{ name = 'roots', desc = 'Number of visible surface roots', type = 'int', default = '4', min = '0', max = '8' },
 		{ name = 'rootLength', desc = 'Length of surface roots', type = 'int', default = '4', min = '2', max = '10' },
-		{ name = 'trunkColor', desc = 'Color of the trunk and branches', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Primary foliage color (red)', type = 'colorindex', default = '2' },
-		{ name = 'leavesColor2', desc = 'Secondary foliage color (darker red)', type = 'colorindex', default = '3' },
+		{ name = 'trunkColor', desc = 'Color of the trunk and branches', type = 'hexcolor', default = '#6B4226' },
+		{ name = 'leavesColor', desc = 'Primary foliage color (red)', type = 'hexcolor', default = '#C62828' },
+		{ name = 'leavesColor2', desc = 'Secondary foliage color (darker red)', type = 'hexcolor', default = '#8B1A1A' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

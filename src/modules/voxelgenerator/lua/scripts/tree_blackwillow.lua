@@ -18,8 +18,8 @@ function arguments()
 		{ name = 'vineMinLength', desc = 'Min length of hanging foliage', type = 'int', default = '4', min = '2', max = '10' },
 		{ name = 'vineMaxLength', desc = 'Max length of hanging foliage', type = 'int', default = '12', min = '4', max = '25' },
 		{ name = 'forkChance', desc = 'Chance (%) that main trunk forks', type = 'int', default = '40', min = '0', max = '100' },
-		{ name = 'trunkColor', desc = 'Color of the trunk and branches', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the foliage', type = 'colorindex', default = '2' },
+		{ name = 'trunkColor', desc = 'Color of the trunk and branches', type = 'hexcolor', default = '#5C4033' },
+		{ name = 'leavesColor', desc = 'Color of the foliage', type = 'hexcolor', default = '#6B8E23' },
 		{ name = 'seed', desc = 'Random seed (0 = random)', type = 'int', default = '0' }
 	}
 end

@@ -621,7 +621,7 @@ TEST_F(LUAApiTest, testScriptClouds) {
 
 TEST_F(LUAApiTest, testScriptHouse) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "house.lua", {"6", "6", "1", "3", "gable", "0", "1", "1", "2", "1", "2", "false", "1", "1", "2", "3", "4", "5", "6", "7", "42"});
+	runFile(sceneGraph, "house.lua", {"6", "6", "1", "3", "gable", "0", "1", "1", "2", "1", "2", "false", "1", "#C8B496", "#8B2500", "#8B7355", "#6B4226", "#87CEEB", "#8B8682", "#DEB887", "42"});
 }
 
 TEST_F(LUAApiTest, testScriptPaletteBrighten) {
@@ -672,37 +672,37 @@ TEST_F(LUAApiTest, testScriptImageAsVolume) {
 
 TEST_F(LUAApiTest, testTreeCube) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_cube.lua", {"10", "2", "10", "10", "10", "1", "2"});
+	runFile(sceneGraph, "tree_cube.lua", {"10", "2", "10", "10", "10", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreeCubeSideCubes) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_cubesidecubes.lua", {"10", "2", "10", "10", "10", "1", "2"});
+	runFile(sceneGraph, "tree_cubesidecubes.lua", {"10", "2", "10", "10", "10", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreeDome) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_dome.lua", {"10", "2", "10", "10", "10", "1", "2"});
+	runFile(sceneGraph, "tree_dome.lua", {"10", "2", "10", "10", "10", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreeDomeHanging) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_domehanging.lua", {"10", "2", "10", "10", "10", "10", "5", "10", "1", "1", "2"});
+	runFile(sceneGraph, "tree_domehanging.lua", {"10", "2", "10", "10", "10", "10", "5", "10", "1", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreeCone) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_cone.lua", {"10", "2", "10", "10", "10", "1", "2"});
+	runFile(sceneGraph, "tree_cone.lua", {"10", "2", "10", "10", "10", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreeEllipsis) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_ellipsis.lua", {"10", "2", "10", "10", "10", "1", "2"});
+	runFile(sceneGraph, "tree_ellipsis.lua", {"10", "2", "10", "10", "10", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreeBranchEllipsis) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_branchellipsis.lua", {"10", "2", "10", "10", "10", "5", "5", "1", "2"});
+	runFile(sceneGraph, "tree_branchellipsis.lua", {"10", "2", "10", "10", "10", "5", "5", "#8B4513", "#2E6B14"});
 }
 
 TEST_F(LUAApiTest, testTreePalm) {
@@ -727,7 +727,7 @@ TEST_F(LUAApiTest, testTreePalmDate) {
 
 TEST_F(LUAApiTest, testTreeFir) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_fir.lua", {"10", "2", "5", "5", "2", "5.0", "1", "2", "0.5", "1", "2"});
+	runFile(sceneGraph, "tree_fir.lua", {"10", "2", "5", "5", "2", "5.0", "1", "2", "0.5", "#8B4513", "#1B4D1B"});
 }
 
 TEST_F(LUAApiTest, testTreeBonsai) {
@@ -742,27 +742,27 @@ TEST_F(LUAApiTest, testPotPlant) {
 
 TEST_F(LUAApiTest, testPotPlantFern) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "potplant.lua", {"fern", "12", "10", "3", "round", "4", "6", "5", "2", "4", "3", "1", "42"});
+	runFile(sceneGraph, "potplant.lua", {"fern", "12", "10", "3", "round", "4", "6", "5", "#2E6B14", "#E91E63", "#A0522D", "#5C4033", "42"});
 }
 
 TEST_F(LUAApiTest, testPotPlantCactus) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "potplant.lua", {"cactus", "15", "8", "4", "square", "4", "6", "3", "2", "4", "3", "1", "42"});
+	runFile(sceneGraph, "potplant.lua", {"cactus", "15", "8", "4", "square", "4", "6", "3", "#2E6B14", "#E91E63", "#A0522D", "#5C4033", "42"});
 }
 
 TEST_F(LUAApiTest, testPotPlantFlower) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "potplant.lua", {"flower", "10", "8", "3", "tall", "4", "6", "7", "2", "4", "3", "1", "42"});
+	runFile(sceneGraph, "potplant.lua", {"flower", "10", "8", "3", "tall", "4", "6", "7", "#2E6B14", "#E91E63", "#A0522D", "#5C4033", "42"});
 }
 
 TEST_F(LUAApiTest, testPotPlantBush) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "potplant.lua", {"bush", "10", "10", "4", "bowl", "4", "6", "5", "2", "4", "3", "1", "42"});
+	runFile(sceneGraph, "potplant.lua", {"bush", "10", "10", "4", "bowl", "4", "6", "5", "#2E6B14", "#E91E63", "#A0522D", "#5C4033", "42"});
 }
 
 TEST_F(LUAApiTest, testTreePine) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_pine.lua", {"10", "2", "10", "10", "10", "2", "1", "2", "2", "1", "2"});
+	runFile(sceneGraph, "tree_pine.lua", {"10", "2", "10", "10", "10", "2", "1", "2", "2", "#8B4513", "#1B4D1B"});
 }
 
 TEST_F(LUAApiTest, testTreeBlackWillow) {

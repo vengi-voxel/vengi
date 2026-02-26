@@ -18,13 +18,13 @@ function arguments()
 		{ name = 'doorHeight',      desc = 'Door height',                                type = 'int',        default = '3',    min = '2',   max = '5' },
 		{ name = 'hasChimney',      desc = 'Generate a chimney',                         type = 'bool',       default = 'true' },
 		{ name = 'floorThickness',  desc = 'Floor / ceiling thickness',                  type = 'int',        default = '1',    min = '1',   max = '2' },
-		{ name = 'wallColor',       desc = 'Wall color index',                           type = 'colorindex', default = '1' },
-		{ name = 'roofColor',       desc = 'Roof color index',                           type = 'colorindex', default = '2' },
-		{ name = 'floorColor',      desc = 'Floor color index',                          type = 'colorindex', default = '3' },
-		{ name = 'doorColor',       desc = 'Door color index',                           type = 'colorindex', default = '4' },
-		{ name = 'windowColor',     desc = 'Window frame color index',                   type = 'colorindex', default = '5' },
-		{ name = 'chimneyColor',    desc = 'Chimney color index',                        type = 'colorindex', default = '6' },
-		{ name = 'interiorColor',   desc = 'Interior furniture color index',             type = 'colorindex', default = '7' },
+		{ name = 'wallColor',       desc = 'Wall color',                                 type = 'hexcolor',   default = '#C8B496' },
+		{ name = 'roofColor',       desc = 'Roof color',                                 type = 'hexcolor',   default = '#8B2500' },
+		{ name = 'floorColor',      desc = 'Floor color',                                type = 'hexcolor',   default = '#8B7355' },
+		{ name = 'doorColor',       desc = 'Door color',                                 type = 'hexcolor',   default = '#6B4226' },
+		{ name = 'windowColor',     desc = 'Window frame color',                         type = 'hexcolor',   default = '#87CEEB' },
+		{ name = 'chimneyColor',    desc = 'Chimney color',                              type = 'hexcolor',   default = '#8B8682' },
+		{ name = 'interiorColor',   desc = 'Interior furniture color',                   type = 'hexcolor',   default = '#DEB887' },
 		{ name = 'seed',            desc = 'Random seed (0 = random)',                   type = 'int',        default = '0' }
 	}
 end

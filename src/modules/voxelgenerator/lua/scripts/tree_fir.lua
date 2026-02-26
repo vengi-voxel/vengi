@@ -11,8 +11,8 @@ function arguments()
 		{ name = 'branchStrength', desc = 'Thickness of branches', type = 'int', default = '1' },
 		{ name = 'branchDownwardOffset', desc = 'Downward offset for branch tip', type = 'int', default = '2' },
 		{ name = 'branchPositionFactor', desc = 'Position factor for branch tip', type = 'float', default = '0.5' },
-		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' },
+		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'hexcolor', default = '#8B4513' },
+		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'hexcolor', default = '#1B4D1B' },
 		{ name = 'seed', desc = 'Random seed', type = 'int', default = '0' }
 	}
 end

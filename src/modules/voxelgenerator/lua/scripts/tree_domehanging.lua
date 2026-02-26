@@ -11,8 +11,8 @@ function arguments()
 		{ name = 'hangingLeavesLengthMin', desc = 'Min length of hanging leaves', type = 'int', default = '5' },
 		{ name = 'hangingLeavesLengthMax', desc = 'Max length of hanging leaves', type = 'int', default = '10' },
 		{ name = 'hangingLeavesThickness', desc = 'Thickness of hanging leaves', type = 'int', default = '1' },
-		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'colorindex', default = '1' },
-		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'colorindex', default = '2' },
+		{ name = 'trunkColor', desc = 'Color of the trunk', type = 'hexcolor', default = '#8B4513' },
+		{ name = 'leavesColor', desc = 'Color of the leaves', type = 'hexcolor', default = '#2E6B14' },
 		{ name = 'seed', desc = 'Random seed', type = 'int', default = '0' }
 	}
 end
