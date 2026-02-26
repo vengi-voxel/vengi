@@ -720,6 +720,31 @@ TEST_F(LUAApiTest, testTreeBonsai) {
 	runFile(sceneGraph, "tree_bonsai.lua");
 }
 
+TEST_F(LUAApiTest, testPotPlant) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "potplant.lua");
+}
+
+TEST_F(LUAApiTest, testPotPlantFern) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "potplant.lua", {"fern", "12", "10", "3", "round", "4", "6", "5", "2", "4", "3", "1", "42"});
+}
+
+TEST_F(LUAApiTest, testPotPlantCactus) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "potplant.lua", {"cactus", "15", "8", "4", "square", "4", "6", "3", "2", "4", "3", "1", "42"});
+}
+
+TEST_F(LUAApiTest, testPotPlantFlower) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "potplant.lua", {"flower", "10", "8", "3", "tall", "4", "6", "7", "2", "4", "3", "1", "42"});
+}
+
+TEST_F(LUAApiTest, testPotPlantBush) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "potplant.lua", {"bush", "10", "10", "4", "bowl", "4", "6", "5", "2", "4", "3", "1", "42"});
+}
+
 TEST_F(LUAApiTest, testTreePine) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "tree_pine.lua", {"10", "2", "10", "10", "10", "2", "1", "2", "2", "1", "2"});

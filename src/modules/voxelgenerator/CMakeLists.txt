@@ -41,6 +41,7 @@ set(LUA_SRCS
 	scripts/noise-builtin.lua
 	scripts/palette-brighten.lua
 	scripts/planet.lua
+	scripts/potplant.lua
 	scripts/pyramid.lua
 	scripts/remapcolors.lua
 	scripts/replacecolor.lua
