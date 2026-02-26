@@ -707,7 +707,22 @@ TEST_F(LUAApiTest, testTreeBranchEllipsis) {
 
 TEST_F(LUAApiTest, testTreePalm) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "tree_palm.lua", {"10", "2", "0", "0", "5", "0.9", "10", "10", "5", "1.0", "5", "0.9", "2", "1", "2"});
+	runFile(sceneGraph, "tree_palm.lua");
+}
+
+TEST_F(LUAApiTest, testTreePalmRoyal) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_palm.lua", {"royal"});
+}
+
+TEST_F(LUAApiTest, testTreePalmFan) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_palm.lua", {"fan"});
+}
+
+TEST_F(LUAApiTest, testTreePalmDate) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_palm.lua", {"date"});
 }
 
 TEST_F(LUAApiTest, testTreeFir) {

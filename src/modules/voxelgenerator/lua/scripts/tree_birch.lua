@@ -171,7 +171,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, secon
 	local pos = tree_utils.getCenterBottom(region)
 
 	-- Main trunk
-	local trunkTop, topThickness = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkColor)
+	local trunkTop, _ = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkColor)
 
 	-- Collect all trunk tops for branch placement
 	local trunkTops = { trunkTop }
