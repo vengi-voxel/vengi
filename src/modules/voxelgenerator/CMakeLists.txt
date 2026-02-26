@@ -55,6 +55,7 @@ set(LUA_SRCS
 	scripts/splitobjects.lua
 	scripts/thicken.lua
 	scripts/tree_balsamfir.lua
+	scripts/tree_birch.lua
 	scripts/tree_bonsai.lua
 	scripts/tree_blackwillow.lua
 	scripts/tree_branchellipsis.lua
