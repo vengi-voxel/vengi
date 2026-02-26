@@ -39,6 +39,7 @@ public:
 
 private:
 	int _currentScript = -1;
+	core::String _scriptSearchFilter;
 	bool updateScriptParameters(voxelgenerator::LUAScript &script, const palette::Palette &palette);
 	void reloadScriptParameters(voxelgenerator::LUAApi &luaApi, voxelgenerator::LUAScript &script);
 

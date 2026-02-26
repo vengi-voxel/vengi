@@ -147,7 +147,7 @@ bool LUAApiWidget::updateScriptExecutionPanel(voxelgenerator::LUAApi &luaApi, co
 		return true;
 	}
 
-	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
+	if (ImGui::SearchableComboItems("##script", &_currentScript, _scripts, _scriptSearchFilter)) {
 		loadCurrentScript(luaApi);
 	}
 	ImGui::TooltipTextUnformatted(_("LUA scripts for manipulating the voxel volumes"));
