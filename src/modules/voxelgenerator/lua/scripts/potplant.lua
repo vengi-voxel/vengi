@@ -29,13 +29,6 @@ function description()
 	return 'Generates a randomized plant in a decorative pot. Supports succulent, fern, flower, cactus, and bush types.'
 end
 
--- Utility: clamp
-local function clamp(v, lo, hi)
-	if v < lo then return lo end
-	if v > hi then return hi end
-	return v
-end
-
 -- Utility: lerp
 local function lerp(a, b, t)
 	return a + (b - a) * t
@@ -223,7 +216,7 @@ local function generateSucculent(volume, region, cx, baseY, cz, plantHeight, pla
 	drawSphere(volume, region, cx, baseY + math.floor(plantHeight * 0.6) + 1, cz, math.max(1, math.floor(density * 0.6) + 1), leafColor)
 
 	-- Flowers (small dots on top)
-	for i = 1, numFlowers do
+	for _ = 1, numFlowers do
 		local angle = math.random() * 2 * math.pi
 		local dist = math.random(1, math.max(1, math.floor(plantWidth * 0.3)))
 		local fx = math.floor(cx + math.cos(angle) * dist)
@@ -410,7 +403,7 @@ local function generateCactus(volume, region, cx, baseY, cz, plantHeight, plantW
 	end
 
 	-- Small flowers/buds on top
-	for i = 1, numFlowers do
+	for _ = 1, numFlowers do
 		local angle = math.random() * 2 * math.pi
 		local fx = math.floor(cx + math.cos(angle) * math.random(0, mainRadius))
 		local fz = math.floor(cz + math.sin(angle) * math.random(0, mainRadius))
@@ -450,7 +443,7 @@ local function generateBush(volume, region, cx, baseY, cz, plantHeight, plantWid
 
 	-- Multiple overlapping domes/ellipses for bushy foliage
 	local numClusters = density + 2
-	for i = 1, numClusters do
+	for _ = 1, numClusters do
 		local angle = math.random() * 2 * math.pi
 		local dist = math.random(0, math.max(1, math.floor(plantWidth * 0.2)))
 		local clX = math.floor(cx + math.cos(angle) * dist)
@@ -470,7 +463,7 @@ local function generateBush(volume, region, cx, baseY, cz, plantHeight, plantWid
 	end
 
 	-- Scatter small flowers/berries
-	for i = 1, numFlowers do
+	for _ = 1, numFlowers do
 		local angle = math.random() * 2 * math.pi
 		local dist = math.random(0, math.max(1, math.floor(plantWidth * 0.35)))
 		local fx = math.floor(cx + math.cos(angle) * dist)
