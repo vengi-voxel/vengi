@@ -18,6 +18,7 @@ enum class LuaParameterType : uint8_t {
 	ColorIndex,
 	Enum,
 	File,
+	HexColor,
 	Max
 };
 

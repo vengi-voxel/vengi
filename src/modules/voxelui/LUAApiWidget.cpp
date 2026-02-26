@@ -117,6 +117,20 @@ bool LUAApiWidget::updateScriptParameters(voxelgenerator::LUAScript &script, con
 				}
 				break;
 			}
+			case voxelgenerator::LUAParameterType::HexColor: {
+				core::String &str = script.parameters[i];
+				uint8_t r, g, b, a;
+				if (core::string::parseHex(str.c_str(), r, g, b, a) >= 0) {
+					const float size = ImGui::Height(1);
+					const ImVec2 v1 = ImGui::GetCursorScreenPos();
+					const ImVec2 v2(v1.x + size, v1.y + size);
+					ImDrawList *drawList = ImGui::GetWindowDrawList();
+					drawList->AddRectFilled(v1, v2, IM_COL32(r, g, b, a));
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
+				}
+				ImGui::InputText(p.name.c_str(), &str);
+				break;
+			}
 			case voxelgenerator::LUAParameterType::Max:
 				return script.valid;
 			}

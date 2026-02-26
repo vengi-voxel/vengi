@@ -5764,6 +5764,11 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 					if (!defaultSet) {
 						defaultValue = "1";
 					}
+				} else if (value == "hexcolor") {
+					type = LUAParameterType::HexColor;
+					if (!defaultSet) {
+						defaultValue = "#FF00FF";
+					}
 				} else if (core::string::startsWith(value, "str")) {
 					type = LUAParameterType::String;
 				} else if (value == "file") {
@@ -5794,7 +5799,7 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 		}
 
 		if (type == LUAParameterType::Max) {
-			const core::String &errorMsg = core::String::format("No type = 'int', 'float', 'str', 'bool', 'enum' or 'colorindex' key given for '%s'", name.c_str());
+			const core::String &errorMsg = core::String::format("No type = 'int', 'float', 'str', 'bool', 'enum', 'colorindex' or 'hexcolor' key given for '%s'", name.c_str());
 			Log::error("%s", errorMsg.c_str());
 			lua.setError(errorMsg);
 			lua_settop(lua, preTop);
@@ -5816,7 +5821,7 @@ bool LUAApi::argumentInfo(lua::LUA &lua, core::DynamicArray<LUAParameterDescript
 	return true;
 }
 
-static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo) {
+static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& args, const core::DynamicArray<LUAParameterDescription>& argsInfo, const palette::Palette &palette) {
 	if (!lua_checkstack(s, (int)argsInfo.size())) {
 		Log::error("Failed to grow lua stack for %i arguments", (int)argsInfo.size());
 		return false;
@@ -5842,6 +5847,17 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 		case LUAParameterType::Float:
 			lua_pushnumber(s, glm::clamp(core::string::toFloat(arg), (float)d.minValue, (float)d.maxValue));
 			break;
+		case LUAParameterType::HexColor: {
+			uint8_t r, g, b, a;
+			if (core::string::parseHex(arg.c_str(), r, g, b, a) < 0) {
+				Log::error("Invalid hex color value: %s", arg.c_str());
+				return false;
+			}
+			const color::RGBA rgba(r, g, b, a);
+			const int idx = palette.getClosestMatch(rgba);
+			lua_pushinteger(s, idx < 0 ? 0 : idx);
+			break;
+		}
 		case LUAParameterType::Max:
 			Log::error("Invalid argument type");
 			return false;
@@ -6002,7 +6018,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 #endif
 
-	if (!luaVoxel_pushargs(s, args, _argsInfo)) {
+	if (!luaVoxel_pushargs(s, args, _argsInfo, node.palette())) {
 		Log::error("Failed to execute main() function with the given number of arguments. Try calling with 'help' as parameter");
 		lua_pop(s, 4); // pop the main function, node, region, and color
 		return false;

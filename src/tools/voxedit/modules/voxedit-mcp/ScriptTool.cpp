@@ -36,6 +36,10 @@ ScriptTool::ScriptTool(const voxedit::LuaScriptInfo &info) : Tool(toolName(info)
 				propSchema["maximum"] = (int)param.maxValue;
 			}
 			break;
+		case voxedit::LuaParameterType::HexColor:
+			propSchema["type"] = "string";
+			propSchema["pattern"] = "^#?[0-9a-fA-F]{6,8}$";
+			break;
 		case voxedit::LuaParameterType::Float:
 			propSchema["type"] = "number";
 			if (param.minValue <= param.maxValue) {

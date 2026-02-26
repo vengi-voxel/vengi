@@ -34,6 +34,7 @@ enum class LUAParameterType {
 	ColorIndex,
 	Enum,
 	File,
+	HexColor,
 
 	Max
 };

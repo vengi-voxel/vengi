@@ -114,6 +114,8 @@ Supported `type`s are:
 
 * `colorindex`: a color index from current palette (clamped)
 
+* `hexcolor`: a hex RGBA color string (e.g. `#8B4513` or `#8B4513FF`) that is automatically matched to the closest color in the node's palette
+
 * `bool`:
 
 The `desc`ription field is just for the user interface of the script parameter list.
