@@ -329,7 +329,7 @@ function main(node, region, color, variety, trunkHeight, trunkStrength, trunkCur
 	end
 
 	-- Create trunk
-	local topPos, leanDir = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkLean, trunkColor, barkColor, barkRings, variety)
+	local topPos, _ = createTrunk(volume, pos, trunkHeight, trunkStrength, trunkCurve, trunkLean, trunkColor, barkColor, barkRings, variety)
 
 	-- Crown bulge
 	createCrownBulge(volume, topPos, trunkStrength, leavesColor, variety)
