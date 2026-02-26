@@ -2271,11 +2271,18 @@ static int luaVoxel_keyframe_localscale(lua_State *s) {
 	return 1;
 }
 
+static void luaVoxel_keyframe_updatetransform(lua_State *s, LuaKeyFrame *keyFrame) {
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().update(*sceneGraph, *keyFrame->node, kf.frameIdx, true);
+}
+
 static int luaVoxel_keyframe_setlocalscale(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setLocalScale(val);
+	luaVoxel_keyframe_updatetransform(s, keyFrame);
 	return 0;
 }
 
@@ -2300,6 +2307,7 @@ static int luaVoxel_keyframe_setlocalorientation(lua_State *s) {
 	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setLocalOrientation(val);
+	luaVoxel_keyframe_updatetransform(s, keyFrame);
 	return 0;
 }
 
@@ -2315,6 +2323,7 @@ static int luaVoxel_keyframe_setlocaltranslation(lua_State *s) {
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setLocalTranslation(val);
+	luaVoxel_keyframe_updatetransform(s, keyFrame);
 	return 0;
 }
 
@@ -2330,6 +2339,7 @@ static int luaVoxel_keyframe_setworldscale(lua_State *s) {
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setWorldScale(val);
+	luaVoxel_keyframe_updatetransform(s, keyFrame);
 	return 0;
 }
 
@@ -2354,6 +2364,7 @@ static int luaVoxel_keyframe_setworldorientation(lua_State *s) {
 	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setWorldOrientation(val);
+	luaVoxel_keyframe_updatetransform(s, keyFrame);
 	return 0;
 }
 
@@ -2369,6 +2380,7 @@ static int luaVoxel_keyframe_setworldtranslation(lua_State *s) {
 	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setWorldTranslation(val);
+	luaVoxel_keyframe_updatetransform(s, keyFrame);
 	return 0;
 }
 
