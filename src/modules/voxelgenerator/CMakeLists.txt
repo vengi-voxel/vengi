@@ -66,6 +66,7 @@ set(LUA_SRCS
 	scripts/tree_fir.lua
 	scripts/tree_palm.lua
 	scripts/tree_pine.lua
+	scripts/tree_redmaple.lua
 )
 engine_add_module(TARGET ${LIB}-lua LUA_SRCS ${LUA_SRCS})
 

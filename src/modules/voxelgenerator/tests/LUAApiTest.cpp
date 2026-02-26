@@ -755,6 +755,11 @@ TEST_F(LUAApiTest, testTreeBlackWillow) {
 	runFile(sceneGraph, "tree_blackwillow.lua");
 }
 
+TEST_F(LUAApiTest, testTreeRedMaple) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_redmaple.lua");
+}
+
 TEST_F(LUAApiTest, testPaletteExtendedBindings) {
 	const core::String script = R"(
 		function main(node, region, color)
