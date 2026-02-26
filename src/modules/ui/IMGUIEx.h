@@ -6,9 +6,11 @@
 #pragma once
 
 #include "ScopedStyle.h"
+#include "ui/IconsLucide.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "core/Common.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "dearimgui/imgui.h"
 #include "math/Axis.h"
@@ -182,6 +184,56 @@ IMGUI_API bool InputTextMultiline(const char *label, core::String *str, const Im
 								  void *userData = nullptr);
 IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::String *str, ImGuiInputTextFlags flags = 0,
 								 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
+
+/**
+ * @brief A combobox with a built-in search/filter bar at the top.
+ * @param label The combobox label (use ## prefix to hide).
+ * @param currentItem Pointer to the selected index.
+ * @param items Collection of items with c_str() on each element.
+ * @param searchFilter Reference to a core::String that persists the filter text between frames.
+ * @return @c true if the selection changed.
+ */
+template<class Collection>
+bool SearchableComboItems(const char *label, int *currentItem, const Collection &items, core::String &searchFilter) {
+	const char *previewValue = nullptr;
+	const int itemCount = (int)items.size();
+	if (*currentItem >= 0 && *currentItem < itemCount) {
+		previewValue = items[*currentItem].c_str();
+	} else {
+		previewValue = _("Unknown");
+	}
+
+	bool changed = false;
+	if (ImGui::BeginCombo(label, previewValue, ImGuiComboFlags_None)) {
+		if (ImGui::IsWindowAppearing()) {
+			searchFilter.clear();
+			ImGui::SetKeyboardFocusHere();
+		}
+		ImGui::SetNextItemWidth(-FLT_MIN);
+		ImGui::InputTextWithHint("##combofilter", ICON_LC_SEARCH, &searchFilter);
+		ImGui::Separator();
+
+		for (int i = 0; i < itemCount; ++i) {
+			const char *text = items[i].c_str();
+			if (!searchFilter.empty() && !core::string::icontains(core::String(text), searchFilter)) {
+				continue;
+			}
+			const bool selected = i == *currentItem;
+			ImGui::PushID(i);
+			if (ImGui::Selectable(text, selected)) {
+				*currentItem = i;
+				changed = true;
+			}
+			ImGui::PopID();
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	return changed;
+}
+
 IMGUI_API bool CommandButton(const char *title, const char *command, const char *tooltip = nullptr,
 							 const ImVec2 &size = ImVec2(0.0f, 0.0f),
 							 command::CommandExecutionListener *listener = nullptr);
