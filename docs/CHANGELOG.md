@@ -23,6 +23,8 @@ General:
    - Extended `animate.lua` to work with more different character scenes
    - Fixed rotation import for `gltf` files
    - Improved [cvar](Configuration.md) handling
+   - Added a few new [lua](LUAScript.md) scripts
+   - Fixed crash when loading large `vengi` scenes
 
 VoxEdit:
 
@@ -38,6 +40,7 @@ VoxEdit:
    - Fixed invalid memento state handling with undoing mirrored actions
    - Allow to record a session and play back later or share with others
    - Fixed a few missing network messages on undo/redo
+   - Converted options menu to options dialog
 
 VoxConvert:
 
