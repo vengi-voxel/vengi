@@ -68,6 +68,7 @@ set(LUA_SRCS
 	scripts/tree_domehanging.lua
 	scripts/tree_ellipsis.lua
 	scripts/tree_fir.lua
+	scripts/tree_hawthorn.lua
 	scripts/tree_palm.lua
 	scripts/tree_pine.lua
 	scripts/tree_redmaple.lua
