@@ -45,5 +45,7 @@ const network::ProtocolId PROTO_LUA_SCRIPTS_LIST = 16;
 const network::ProtocolId PROTO_LUA_SCRIPT_CREATE = 17;
 // node IK constraint was changed
 const network::ProtocolId PROTO_NODE_IK_CONSTRAINT = 18;
+// log message from the server to the client
+const network::ProtocolId PROTO_LOG = 19;
 
 } // namespace voxedit

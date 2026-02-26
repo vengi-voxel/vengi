@@ -16,8 +16,31 @@
 #include "network/SocketId.h"
 #include "protocol/PingMessage.h"
 #include "voxedit-util/Config.h"
+#include "voxedit-util/network/Server.h"
+#include "voxedit-util/network/protocol/LogMessage.h"
 
 namespace voxedit {
+
+class ScopedConsoleListenerActivator : public Log::ILogListener {
+private:
+	ServerNetwork *_network;
+	network::ClientId _clientId;
+
+public:
+	ScopedConsoleListenerActivator(ServerNetwork *network, network::ClientId clientId)
+		: _network(network), _clientId(clientId) {
+		Log::registerLogListener(this);
+	}
+
+	~ScopedConsoleListenerActivator() {
+		Log::unregisterLogListener(this);
+	}
+
+	void onLog(Log::Level priority, const char *message) {
+		LogMessage msg(priority, message);
+		_network->sendToClient(_clientId, msg);
+	}
+};
 
 RemoteClient::RemoteClient(RemoteClient &&other) noexcept
 	: socket(other.socket), bytesIn(other.bytesIn), bytesOut(other.bytesOut), lastPingTime(other.lastPingTime),
@@ -197,6 +220,7 @@ bool ServerNetwork::init() {
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_broadcastHandler);
 	r.registerHandler(PROTO_LUA_SCRIPTS_REQUEST, &_luaScriptsRequestHandler);
 	r.registerHandler(PROTO_LUA_SCRIPT_CREATE, &_luaScriptCreateHandler);
+	r.registerHandler(PROTO_LOG, &_nopHandler);
 	return true;
 }
 
@@ -390,6 +414,7 @@ void ServerNetwork::update(double nowSeconds) {
 			// Update activity timestamp when we receive a valid message
 			client.lastActivity = nowSeconds;
 			if (network::ProtocolHandler *handler = _protocolRegistry.getHandler(*msg)) {
+				ScopedConsoleListenerActivator activator(this, clientId);
 				handler->execute(clientId, *msg);
 			} else {
 				Log::warn("No server handler for message type %d", msg->getId());

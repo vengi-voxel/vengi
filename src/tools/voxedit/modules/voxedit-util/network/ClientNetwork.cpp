@@ -132,6 +132,7 @@ bool ClientNetwork::init() {
 	r.registerHandler(PROTO_NODE_IK_CONSTRAINT, &_nodeIKConstraintHandler);
 	r.registerHandler(PROTO_NODE_KEYFRAMES, &_nodeKeyFramesHandle);
 	r.registerHandler(PROTO_SCENE_GRAPH_ANIMATION, &_sceneGraphAnimationHandler);
+	r.registerHandler(PROTO_LOG, &_logMessageHandler);
 
 	return true;
 }

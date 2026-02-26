@@ -36,6 +36,8 @@ static SDL_LogOutputFunction _logCallback = nullptr;
 static void *_logCallbackUserData = nullptr;
 static bool _logConsoleColors = true;
 
+static Log::ILogListener *_logListener = nullptr;
+
 static void logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	if (_logCallback == nullptr) {
 		return;
@@ -141,6 +143,19 @@ const char* Log::toLogLevel(Log::Level level) {
 	return "none";
 }
 
+void Log::registerLogListener(ILogListener *listener) {
+	if (listener == nullptr) {
+		return;
+	}
+	priv::_logListener = listener;
+}
+
+void Log::unregisterLogListener(ILogListener *listener) {
+	if (priv::_logListener == listener) {
+		priv::_logListener = nullptr;
+	}
+}
+
 void Log::setConsoleColors(bool enabled) {
 	priv::_logConsoleColors = enabled;
 }
@@ -188,7 +203,14 @@ void Log::shutdown() {
 		fclose(priv::_logfile);
 		priv::_logfile = nullptr;
 	}
+	priv::_logListener = nullptr;
 	priv::_logLevel = Log::Level::Info;
+}
+
+static void notifyLogListeners(Log::Level level, const char *buf) {
+	if (priv::_logListener) {
+		priv::_logListener->onLog(level, buf);
+	}
 }
 
 static void traceVA(const char *msg, va_list args) {
@@ -198,6 +220,7 @@ static void traceVA(const char *msg, va_list args) {
 	if (priv::_logfile) {
 		fprintf(priv::_logfile, "[TRACE] %s\n", buf);
 	}
+	notifyLogListeners(Log::Level::Trace, buf);
 	SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 }
 
@@ -208,6 +231,7 @@ static void debugVA(const char *msg, va_list args) {
 	if (priv::_logfile) {
 		fprintf(priv::_logfile, "[DEBUG] %s\n", buf);
 	}
+	notifyLogListeners(Log::Level::Debug, buf);
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 }
 
@@ -218,6 +242,7 @@ static void infoVA(const char *msg, va_list args) {
 	if (priv::_logfile) {
 		fprintf(priv::_logfile, "[INFO] %s\n", buf);
 	}
+	notifyLogListeners(Log::Level::Info, buf);
 	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 }
 
@@ -228,6 +253,7 @@ static void warnVA(const char *msg, va_list args) {
 	if (priv::_logfile) {
 		fprintf(priv::_logfile, "[WARN] %s\n", buf);
 	}
+	notifyLogListeners(Log::Level::Warn, buf);
 	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 }
 
@@ -238,6 +264,7 @@ static void errorVA(const char *msg, va_list args) {
 	if (priv::_logfile) {
 		fprintf(priv::_logfile, "[ERROR] %s\n", buf);
 	}
+	notifyLogListeners(Log::Level::Error, buf);
 	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", buf);
 }
 

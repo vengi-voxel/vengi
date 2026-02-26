@@ -23,6 +23,7 @@
 #include "protocol/VoxelModificationMessage.h"
 #include "voxedit-util/network/ProtocolIds.h"
 #include "voxedit-util/network/protocol/CommandMessage.h"
+#include "voxedit-util/network/protocol/LogMessage.h"
 
 namespace voxedit {
 
@@ -117,6 +118,9 @@ network::ProtocolMessage *ProtocolMessageFactory::create(network::MessageStream 
 		break;
 	case PROTO_LUA_SCRIPT_CREATE:
 		msg = new LuaScriptCreateMessage(in);
+		break;
+	case PROTO_LOG:
+		msg = new LogMessage(in);
 		break;
 	default:
 		Log::error("Unknown protocol message type: %u with size %u", type, size);

@@ -9,8 +9,16 @@
 #include <stdio.h>
 
 class Log {
-public:
+	public:
 	enum class Level { None, Trace, Debug, Info, Warn, Error };
+
+	struct ILogListener {
+		virtual ~ILogListener() = default;
+		virtual void onLog(Log::Level priority, const char *message) = 0;
+	};
+
+	static void registerLogListener(ILogListener *listener);
+	static void unregisterLogListener(ILogListener *listener);
 
 	static Level toLogLevel(const char* level);
 	static const char* toLogLevel(Level level);

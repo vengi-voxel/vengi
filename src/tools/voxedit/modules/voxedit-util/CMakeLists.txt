@@ -49,6 +49,7 @@ set(SRCS
 	network/protocol/LuaScriptsRequestMessage.h
 	network/protocol/LuaScriptsListMessage.h
 	network/protocol/LuaScriptCreateMessage.h
+	network/protocol/LogMessage.h
 
 	network/handler/client/VoxelModificationHandler.h network/handler/client/VoxelModificationHandler.cpp
 	network/handler/client/NodeAddedHandler.h network/handler/client/NodeAddedHandler.cpp
@@ -63,6 +64,7 @@ set(SRCS
 	network/handler/client/SceneStateRequestHandler.h network/handler/client/SceneStateRequestHandler.cpp
 	network/handler/client/SceneStateHandlerClient.h network/handler/client/SceneStateHandlerClient.cpp
 	network/handler/client/SceneGraphAnimationHandler.h network/handler/client/SceneGraphAnimationHandler.cpp
+	network/handler/client/LogMessageHandler.h network/handler/client/LogMessageHandler.cpp
 
 	network/handler/server/CommandHandlerServer.h
 	network/handler/server/InitSessionHandler.h network/handler/server/InitSessionHandler.cpp

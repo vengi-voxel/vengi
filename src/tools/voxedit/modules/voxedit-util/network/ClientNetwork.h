@@ -19,6 +19,7 @@
 #include "voxedit-util/network/handler/client/SceneStateHandlerClient.h"
 #include "voxedit-util/network/handler/client/SceneStateRequestHandler.h"
 #include "voxedit-util/network/handler/client/VoxelModificationHandler.h"
+#include "voxedit-util/network/handler/client/LogMessageHandler.h"
 #include "voxedit-util/network/handler/client/SceneGraphAnimationHandler.h"
 #include <stdint.h>
 
@@ -46,6 +47,7 @@ protected:
 	SceneStateRequestHandler _sceneStateRequestHandler;
 	SceneStateHandlerClient _sceneStateHandler;
 	SceneGraphAnimationHandler _sceneGraphAnimationHandler;
+	LogMessageHandler _logMessageHandler;
 	network::MessageStream in;
 
 public:
