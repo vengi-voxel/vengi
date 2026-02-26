@@ -619,6 +619,11 @@ TEST_F(LUAApiTest, testScriptClouds) {
 	runFile(sceneGraph, "clouds.lua");
 }
 
+TEST_F(LUAApiTest, testScriptHouse) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "house.lua", {"6", "6", "1", "3", "gable", "0", "1", "1", "2", "1", "2", "false", "1", "1", "2", "3", "4", "5", "6", "7", "42"});
+}
+
 TEST_F(LUAApiTest, testScriptPaletteBrighten) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "palette-brighten.lua");

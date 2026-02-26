@@ -30,6 +30,7 @@ set(LUA_SRCS
 	scripts/gradient.lua
 	scripts/grass.lua
 	scripts/grid.lua
+	scripts/house.lua
 	scripts/imageasvolume.lua
 	scripts/mandelbulb.lua
 	scripts/maze.lua
