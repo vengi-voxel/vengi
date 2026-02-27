@@ -740,6 +740,31 @@ TEST_F(LUAApiTest, testTreeBonsai) {
 	runFile(sceneGraph, "tree_bonsai.lua");
 }
 
+TEST_F(LUAApiTest, testMushroom) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "mushroom.lua");
+}
+
+TEST_F(LUAApiTest, testMushroomShelf) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "mushroom.lua", {"shelf"});
+}
+
+TEST_F(LUAApiTest, testMushroomTall) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "mushroom.lua", {"tall"});
+}
+
+TEST_F(LUAApiTest, testMushroomPuffball) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "mushroom.lua", {"puffball"});
+}
+
+TEST_F(LUAApiTest, testMushroomMorel) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "mushroom.lua", {"morel"});
+}
+
 TEST_F(LUAApiTest, testPotPlant) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "potplant.lua");

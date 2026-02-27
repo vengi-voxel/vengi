@@ -36,6 +36,7 @@ set(LUA_SRCS
 	scripts/maze.lua
 	scripts/meshy.lua
 	scripts/move.lua
+	scripts/mushroom.lua
 	scripts/newelstair.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua
