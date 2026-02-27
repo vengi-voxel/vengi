@@ -130,7 +130,7 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 
 		ImGui::EndChild();
 		if (ImGui::InputText(_("Command"), &_commandLine,
-							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
+		ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
 								 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
 							 _priv::ConsoleInputTextCallback, this)) {
 			executeCommandLine(&imguiApp()->commandListener());

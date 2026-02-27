@@ -17,6 +17,7 @@
 #include "core/Common.h"
 #include "core/Tokenizer.h"
 #include "command/CommandHandler.h"
+#include "command/CommandCompleter.h"
 #include "VarUtil.h"
 #include <SDL_log.h>
 #include <SDL_thread.h>
@@ -162,17 +163,20 @@ void Console::autoComplete() {
 		const command::Command* cmd = command::Command::getCommand(strings.front());
 		if (cmd != nullptr) {
 			// Calculate the argument index (0-based, excluding the command name)
+			// Note: when the command line ends with a space, the Tokenizer already
+			// appends an empty token, so strings.size() already accounts for it.
 			int argIndex = (int)strings.size() - 2; // -1 for command name, -1 for 0-based index
-			if (_commandLine.last() == ' ') {
-				argIndex++; // We're starting a new argument
-			}
-			const core::String& currentArg = (_commandLine.last() == ' ' || strings.size() <= 1) ? "" : strings.back();
+			const core::String& currentArg = strings.size() <= 1 ? "" : strings.back();
 			// Try argument-specific completion first
-			int found = cmd->completeArg(argIndex, currentArg, matches);
+			int found = cmd->completeArg(argIndex, currentArg, strings, matches);
 			// Fall back to legacy command-level completer if no matches
 			if (found == 0) {
 				cmd->complete(currentArg, matches);
 			}
+		} else {
+			// check if the first token is a cvar - complete its valid values
+			const core::String &currentArg = strings.size() <= 1 ? "" : strings.back();
+			command::completeCvarValue(strings.front(), currentArg, matches);
 		}
 	} else {
 		// try to complete the already existing command
@@ -254,7 +258,7 @@ void Console::replaceLastParameter(const core::String& param) {
 		return;
 	}
 
-	_commandLine.erase(iter + 1);
+	_commandLine.erase(iter + 1, _commandLine.size() - iter - 1);
 	_commandLine.append(param.c_str());
 }
 

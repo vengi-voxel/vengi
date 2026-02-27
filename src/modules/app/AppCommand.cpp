@@ -18,10 +18,13 @@ namespace app {
 namespace AppCommand {
 
 void init(const core::TimeProviderPtr& timeProvider) {
+	command::CommandArg cvarArg("name", command::ArgType::String, false, "", "Variable name");
+	cvarArg.completer = command::cvarCompleter();
+
 	command::Command::registerCommand("varclearhistory")
-		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
-		.setHandler([] (const command::CommandArgs& args) {
-			const core::String &name = args.str("cvar");
+		.addArg(cvarArg)
+		.setHandler([&] (const command::CommandArgs& args) {
+			const core::String &name = args.str(cvarArg.name);
 			const core::VarPtr& st = core::findVar(name);
 			if (st) {
 				st->clearHistory();
@@ -63,9 +66,9 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}).setHelp(_("Execute a file with script commands")).setArgumentCompleter(command::fileCompleter(io::filesystem(), "", "*.cfg"));
 
 	command::Command::registerCommand("toggle")
-		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
+		.addArg(cvarArg)
 		.setHandler([] (const command::CommandArgs& args) {
-			const core::String &cvar = args.str("cvar");
+			const core::String &cvar = args.str("name");
 			const core::VarPtr& var = core::findVar(cvar);
 			if (!var) {
 				Log::error("given var doesn't exist: %s", cvar.c_str());
@@ -75,13 +78,13 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}).setHelp(_("Toggle between true/false for a variable"));
 
 	command::Command::registerCommand("inc")
-		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
+		.addArg(cvarArg)
 		.addArg({"delta", command::ArgType::Float, true, "1.0", "Amount to increase"})
 		.setHandler([] (const command::CommandArgs& args) {
-			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& var = core::findVar(cvar);
+			const core::String &name = args.str("name");
+			const core::VarPtr& var = core::findVar(name);
 			if (!var) {
-				Log::error("given var doesn't exist: %s", cvar.c_str());
+				Log::error("given var doesn't exist: %s", name.c_str());
 				return;
 			}
 			const float delta = args.floatVal("delta", 1.0f);
@@ -90,13 +93,13 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}).setHelp(_("Increase a cvar value by the given value (default: 1)"));
 
 	command::Command::registerCommand("dec")
-		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
+		.addArg(cvarArg)
 		.addArg({"delta", command::ArgType::Float, true, "1.0", "Amount to decrease"})
 		.setHandler([] (const command::CommandArgs& args) {
-			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& var = core::findVar(cvar);
+			const core::String &name = args.str("name");
+			const core::VarPtr& var = core::findVar(name);
 			if (!var) {
-				Log::error("given var doesn't exist: %s", cvar.c_str());
+				Log::error("given var doesn't exist: %s", name.c_str());
 				return;
 			}
 			const float delta = args.floatVal("delta", 1.0f);
@@ -105,14 +108,14 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}).setHelp(_("Decrease a cvar value by the given value (default: 1)"));
 
 	command::Command::registerCommand("show")
-		.addArg({"cvar", command::ArgType::String, false, "", "Variable name"})
+		.addArg(cvarArg)
 		.setHandler([] (const command::CommandArgs& args) {
-			const core::String &cvar = args.str("cvar");
-			const core::VarPtr& st = core::findVar(cvar);
+			const core::String &name = args.str("name");
+			const core::VarPtr& st = core::findVar(name);
 			if (st) {
 				Log::info(" -> %s ", st->strVal().c_str());
 			} else {
-				Log::info("Variable %s not found", cvar.c_str());
+				Log::info("Variable %s not found", name.c_str());
 			}
 		}).setHelp(_("Show the value of a variable"));
 

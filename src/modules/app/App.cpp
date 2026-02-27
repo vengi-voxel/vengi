@@ -5,6 +5,7 @@
 #include "App.h"
 #include "app/AppCommand.h"
 #include "command/Command.h"
+#include "command/CommandCompleter.h"
 #include "command/CommandHandler.h"
 #include "core/Assert.h"
 #include "core/Common.h"
@@ -741,9 +742,15 @@ AppState App::onConstruct() {
 			});
 		}).setHelp(_("List all available translated strings"));
 
+	command::CommandArg cvarArg("name", command::ArgType::String, false, "", "Variable name");
+	cvarArg.completer = command::cvarCompleter();
+
+	command::CommandArg cvarValue("value", command::ArgType::String, false, "", "Variable value");
+	cvarValue.completer = command::cvarValueCompleter();
+
 	command::Command::registerCommand("set")
-		.addArg({"name", command::ArgType::String, false, "", "Variable name"})
-		.addArg({"value", command::ArgType::String, false, "", "Variable value"})
+		.addArg(cvarArg)
+		.addArg(cvarValue)
 		.setHandler([](const command::CommandArgs &args) {
 			const core::String &name = args.str("name");
 			const core::String &value = args.str("value");
@@ -756,7 +763,7 @@ AppState App::onConstruct() {
 		}).setHelp(_("Set a variable value"));
 
 	command::Command::registerCommand("clear")
-		.addArg({"name", command::ArgType::String, false, "", "Variable name"})
+		.addArg(cvarArg)
 		.setHandler([](const command::CommandArgs &args) {
 			const core::String &name = args.str("name");
 			core::VarPtr var = core::findVar(name);

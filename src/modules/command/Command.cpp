@@ -129,13 +129,13 @@ int Command::complete(const core::String& str, core::DynamicArray<core::String>&
 	return _completer(str, matches);
 }
 
-int Command::completeArg(int argIndex, const core::String& str, core::DynamicArray<core::String>& matches) const {
+int Command::completeArg(int argIndex, const core::String& str, const core::Tokens &tokens, core::DynamicArray<core::String>& matches) const {
 	if (argIndex < 0 || argIndex >= (int)_args.size()) {
 		return 0;
 	}
 	const CommandArg &arg = _args[argIndex];
 	if (arg.completer) {
-		return arg.completer(str, matches);
+		return arg.completer(str, tokens, matches);
 	}
 	// Fall back to the command-level completer for the first argument
 	if (argIndex == 0 && _completer) {

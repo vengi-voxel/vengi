@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Common.h"
+#include "core/Tokenizer.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
@@ -32,8 +33,11 @@ class Command;
 
 /**
  * @brief Completion function type for individual arguments
+ * @param str The current partial input for this argument
+ * @param tokens All tokens parsed so far (index 0 = command name, 1 = first arg, etc.)
+ * @param matches Output array for completion matches
  */
-typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
+typedef std::function<int(const core::String&, const core::Tokens &tokens, core::DynamicArray<core::String>& matches)> ArgCompleterFunc;
 
 /**
  * @brief Definition of a single command argument
@@ -263,10 +267,11 @@ public:
 	 * @brief Complete specific argument by index
 	 * @param argIndex The index of the argument to complete (0-based)
 	 * @param str The current input string for the argument
+	 * @param tokens All tokens parsed so far (index 0 = command name, 1 = first arg, etc.)
 	 * @param matches Output array for completion matches
 	 * @return Number of matches found
 	 */
-	int completeArg(int argIndex, const core::String& str, core::DynamicArray<core::String>& matches) const;
+	int completeArg(int argIndex, const core::String& str, const core::Tokens &tokens, core::DynamicArray<core::String>& matches) const;
 
 	/**
 	 * @param func A functor or lambda that accepts the following parameters: @code const core::String& str, core::DynamicArray<core::String>& matches @endcode
