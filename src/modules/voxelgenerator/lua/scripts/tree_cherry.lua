@@ -224,7 +224,7 @@ function main(node, region, color, trunkHeight, trunkStrength, trunkCurve, canop
 		(trunkStrength + 2) * 2, math.max(1, trunkStrength - 1), (trunkStrength + 2) * 2, trunkColor)
 
 	-- Exposed root bumps
-	for r = 1, math.random(2, 4) do
+	for _ = 1, math.random(2, 4) do
 		local rootAngle = math.random() * 2 * math.pi
 		local rootLen = math.random(2, trunkStrength + 2)
 		local rootEnd = g_ivec3.new(
