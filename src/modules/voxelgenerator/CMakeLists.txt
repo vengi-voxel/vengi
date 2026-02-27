@@ -27,6 +27,7 @@ set(LUA_SRCS
 	scripts/flatten.lua
 	scripts/gameoflife.lua
 	scripts/genland.lua
+	scripts/desertrocks.lua
 	scripts/gradient.lua
 	scripts/grass.lua
 	scripts/grid.lua
@@ -59,6 +60,7 @@ set(LUA_SRCS
 	scripts/tree_americanelm.lua
 	scripts/tree_araucaria.lua
 	scripts/tree_balsamfir.lua
+	scripts/tree_baobab.lua
 	scripts/tree_birch.lua
 	scripts/tree_bonsai.lua
 	scripts/tree_blackwillow.lua
