@@ -790,6 +790,16 @@ TEST_F(LUAApiTest, testTreeBalsamFir) {
 	runFile(sceneGraph, "tree_balsamfir.lua");
 }
 
+TEST_F(LUAApiTest, testTreeAmericanElm) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_americanelm.lua");
+}
+
+TEST_F(LUAApiTest, testTreeAmericanBeech) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "tree_americanbeech.lua");
+}
+
 TEST_F(LUAApiTest, testTreeCherry) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "tree_cherry.lua");
