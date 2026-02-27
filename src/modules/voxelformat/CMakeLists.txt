@@ -121,6 +121,7 @@ set(SRCS
 	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
 	private/starmade/SMTPLFormat.h           private/starmade/SMTPLFormat.cpp
 	private/starmade/SMPalette.h
+	private/teardown/TeardownFormat.cpp      private/teardown/TeardownFormat.h
 	private/veloren/VelorenTerrainFormat.h   private/veloren/VelorenTerrainFormat.cpp
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
