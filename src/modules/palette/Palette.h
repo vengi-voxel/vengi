@@ -22,6 +22,8 @@ namespace palette {
 
 static const int PaletteColorNotFound = -1;
 
+#define NODE_PALETTE_PREFIX "node:"
+
 /**
  * @brief A 256 color palette
  */

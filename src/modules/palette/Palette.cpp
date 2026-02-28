@@ -777,7 +777,7 @@ bool Palette::load(const char *paletteName) {
 	}
 
 	// this is handled in the scene manager it is just ignored here
-	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
+	if (SDL_strncmp(paletteName, NODE_PALETTE_PREFIX, 5) == 0) {
 		if (_colorCount == 0) {
 			nippon();
 		}

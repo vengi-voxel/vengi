@@ -26,9 +26,9 @@ public:
 			const scenegraph::SceneGraphNode &node = *iter;
 			core::String id;
 			if (node.name().empty()) {
-				id = core::String::format("node:%i##%i", node.id(), node.id());
+				id = core::String::format(NODE_PALETTE_PREFIX "%i##%i", node.id(), node.id());
 			} else {
-				id = core::String::format("node:%s##%i", node.name().c_str(), node.id());
+				id = core::String::format(NODE_PALETTE_PREFIX "%s##%i", node.name().c_str(), node.id());
 			}
 			add(id);
 		}

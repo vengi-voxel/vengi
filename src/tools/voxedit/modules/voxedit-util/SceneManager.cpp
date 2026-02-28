@@ -101,7 +101,7 @@ SceneManager::~SceneManager() {
 bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestColors, bool save) {
 	palette::Palette palette;
 
-	const bool isNodePalette = core::string::startsWith(paletteName, "node:");
+	const bool isNodePalette = core::string::startsWith(paletteName, NODE_PALETTE_PREFIX);
 	if (isNodePalette) {
 		const size_t nodeDetails = paletteName.rfind("##");
 		if (nodeDetails != core::String::npos) {
