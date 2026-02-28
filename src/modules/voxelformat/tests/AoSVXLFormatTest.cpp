@@ -110,7 +110,7 @@ TEST_F(AoSVXLFormatTest, testLoadSaveAndLoadSceneGraph) {
 
 TEST_F(AoSVXLFormatTest, testSave) {
 	AoSVXLFormat f;
-	voxel::Region region(glm::ivec3(0), glm::ivec3(255, 63, 255));
+	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(256, 64, 256));
 	voxel::RawVolume model1(region);
 	const char *filename = "tests-aos.vxl";
 	for (int x = 0; x < region.getWidthInVoxels(); ++x) {

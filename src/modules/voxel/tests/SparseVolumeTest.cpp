@@ -70,7 +70,7 @@ TEST_F(SparseVolumeTest, testSetVoxels) {
 }
 
 TEST_F(SparseVolumeTest, testFullSamplerLoop) {
-	const voxel::Region region{glm::ivec3(0), glm::ivec3(63)};
+	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(64));
 	SparseVolume v(region);
 	v.setVoxel(1, 2, 1, voxel::createVoxel(VoxelType::Generic, 0));
 

@@ -11,7 +11,7 @@ namespace voxel {
 class BitVolumeTest : public app::AbstractTest {};
 
 TEST_F(BitVolumeTest, testBasic) {
-	const voxel::Region region{glm::ivec3(0), glm::ivec3(63)};
+	const voxel::Region &region = voxel::Region::fromSize(64);
 	BitVolume v(region);
 	v.setVoxel(1, 2, 1, voxel::createVoxel(VoxelType::Generic, 0));
 
@@ -22,7 +22,7 @@ TEST_F(BitVolumeTest, testBasic) {
 }
 
 TEST_F(BitVolumeTest, testFillAndClear) {
-	const voxel::Region region{glm::ivec3(0), glm::ivec3(3)};
+	const voxel::Region &region = voxel::Region::fromSize(4);
 	BitVolume v(region);
 
 	// Initially all should be false
@@ -41,7 +41,7 @@ TEST_F(BitVolumeTest, testFillAndClear) {
 }
 
 TEST_F(BitVolumeTest, testInvert) {
-	const voxel::Region region{glm::ivec3(0), glm::ivec3(3)};
+	const voxel::Region &region = voxel::Region::fromSize(4);
 	BitVolume v(region);
 
 	// Set one voxel
@@ -56,14 +56,14 @@ TEST_F(BitVolumeTest, testInvert) {
 }
 
 TEST_F(BitVolumeTest, testResize) {
-	const voxel::Region region1{glm::ivec3(0), glm::ivec3(3)};
+	const voxel::Region &region1 = voxel::Region::fromSize(4);
 	BitVolume v(region1);
 
 	v.setVoxel(1, 1, 1, true);
 	EXPECT_TRUE(v.hasValue(1, 1, 1));
 
 	// Resize to a larger region
-	const voxel::Region region2{glm::ivec3(0), glm::ivec3(7)};
+	const voxel::Region &region2 = voxel::Region::fromSize(8);
 	v.resize(region2);
 
 	// After resize, all bits should be cleared
@@ -72,7 +72,7 @@ TEST_F(BitVolumeTest, testResize) {
 }
 
 TEST_F(BitVolumeTest, testCopyConstructor) {
-	const voxel::Region region{glm::ivec3(0), glm::ivec3(3)};
+	const voxel::Region &region = voxel::Region::fromSize(4);
 	BitVolume v1(region);
 	v1.setVoxel(1, 1, 1, true);
 

@@ -156,7 +156,7 @@ TEST_F(VoxFormatTest, testSaveMultipleModels) {
 
 TEST_F(VoxFormatTest, testSaveBigVolume) {
 	VoxFormat f;
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(1023, 0, 0));
+	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(1024, 1, 1));
 	voxel::RawVolume bigVolume(region);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	bigVolume.setVoxel(0, 0, 0, voxel);

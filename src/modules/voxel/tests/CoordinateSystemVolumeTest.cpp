@@ -13,7 +13,7 @@ namespace voxel {
 class CoordinateSystemVolumeTest : public app::AbstractTest {};
 
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelMagicaVoxel) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(9));
+	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);
 	const math::CoordinateSystem srcSystem = math::CoordinateSystem::MagicaVoxel;
 	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);
@@ -25,7 +25,7 @@ TEST_F(CoordinateSystemVolumeTest, testSetVoxelMagicaVoxel) {
 }
 
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelDirectX) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(9));
+	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);
 	const math::CoordinateSystem srcSystem = math::CoordinateSystem::DirectX;
 	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);
@@ -37,7 +37,7 @@ TEST_F(CoordinateSystemVolumeTest, testSetVoxelDirectX) {
 }
 
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelOpenGL) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(9));
+	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);
 	const math::CoordinateSystem srcSystem = math::CoordinateSystem::OpenGL;
 	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);
@@ -49,7 +49,7 @@ TEST_F(CoordinateSystemVolumeTest, testSetVoxelOpenGL) {
 }
 
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelOutOfBounds) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(9));
+	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);
 	const math::CoordinateSystem srcSystem = math::CoordinateSystem::MagicaVoxel;
 	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);
@@ -60,7 +60,7 @@ TEST_F(CoordinateSystemVolumeTest, testSetVoxelOutOfBounds) {
 }
 
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelOnLowerBounds) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(9));
+	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);
 	const math::CoordinateSystem srcSystem = math::CoordinateSystem::MagicaVoxel;
 	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);
@@ -71,7 +71,7 @@ TEST_F(CoordinateSystemVolumeTest, testSetVoxelOnLowerBounds) {
 }
 
 TEST_F(CoordinateSystemVolumeTest, testSetVoxelOnUpperBounds) {
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(9));
+	const voxel::Region &region = voxel::Region::fromSize(10);
 	voxel::RawVolume volume(region);
 	const math::CoordinateSystem srcSystem = math::CoordinateSystem::MagicaVoxel;
 	CoordinateSystemVolume<voxel::RawVolume> csVolume(srcSystem, volume);

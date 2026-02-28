@@ -52,7 +52,7 @@ protected:
 	scenegraph::SceneGraph _sceneGraph;
 
 	core::SharedPtr<voxel::RawVolume> create(int size) const {
-		const voxel::Region region(glm::ivec3(0), glm::ivec3(size - 1));
+		const voxel::Region &region = voxel::Region::fromSize(size);
 		EXPECT_EQ(size, region.getWidthInVoxels());
 		return core::make_shared<voxel::RawVolume>(region);
 	}

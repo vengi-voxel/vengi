@@ -1531,7 +1531,7 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 		const int modelSize = 128;
 		if (_sceneGraph.empty(scenegraph::SceneGraphNodeType::Point)) {
 			Log::warn("Failed to load any model volumes");
-			const voxel::Region region(glm::ivec3(0), glm::ivec3(modelSize - 1));
+			const voxel::Region &region = voxel::Region::fromSize(modelSize);
 			newScene(true, "", region);
 			return false;
 		} else {
@@ -4093,7 +4093,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	}
 	_sceneRenderer->removeNode(nodeId);
 	if (_sceneGraph.empty()) {
-		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
+		const voxel::Region &region = voxel::Region::fromSize(32);
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setVolume(new voxel::RawVolume(region), true);
 		if (name.empty()) {

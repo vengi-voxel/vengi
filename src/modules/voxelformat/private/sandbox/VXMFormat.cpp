@@ -505,7 +505,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.setSize(materialAmount);
 
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
+	const voxel::Region &region = voxel::Region::fromSize(size);
 
 	uint8_t maxModels = 1;
 	if (version >= 12) {

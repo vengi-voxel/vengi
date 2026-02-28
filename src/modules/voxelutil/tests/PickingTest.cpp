@@ -59,7 +59,7 @@ protected:
 };
 
 TEST_F(PickingTest, testPicking) {
-	voxel::RawVolume v(voxel::Region(glm::ivec3(0), glm::ivec3(10)));
+	voxel::RawVolume v(voxel::Region::fromSize(11));
 	ASSERT_TRUE(v.setVoxel(glm::ivec3(0), voxel::createVoxel(voxel::VoxelType::Generic, 0)));
 	const glm::vec3 start(0.0f, 3.0f, 0.0f);
 	const glm::vec3 direction = glm::down() * 100.0f;

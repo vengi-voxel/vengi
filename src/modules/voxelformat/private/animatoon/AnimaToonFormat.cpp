@@ -240,7 +240,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		io::MemoryReadStream inputStream(modelBase64.c_str(), modelBase64.size());
 		io::Base64ReadStream base64Stream(inputStream);
 		io::ZipReadStream readStream(base64Stream, -1, io::CompressionType::Gzip);
-		const voxel::Region region(glm::ivec3(0), glm::ivec3(regionSize) - 1);
+		const voxel::Region &region = voxel::Region::fromSize(regionSize);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		node.setVolume(volume, true);
 		voxel::RawVolume::Sampler sampler(volume);

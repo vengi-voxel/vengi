@@ -73,7 +73,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
+	const voxel::Region &region = voxel::Region::fromSize(size);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;

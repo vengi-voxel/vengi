@@ -404,7 +404,7 @@ TEST_F(RaycastTest, testRaycastVoxelTraversal) {
 }
 
 TEST_F(RaycastTest, testRaycastOutOfBounds) {
-	voxel::RawVolume volume(voxel::Region(glm::ivec3(0), glm::ivec3(5)));
+	voxel::RawVolume volume(voxel::Region::fromSize(6));
 
 	const glm::vec3 start(2.5f, 2.5f, 2.5f);
 	const glm::vec3 end(10.5f, 10.5f, 10.5f); // Goes outside 5x5x5 volume

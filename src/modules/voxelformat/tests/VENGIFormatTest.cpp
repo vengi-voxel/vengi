@@ -29,7 +29,7 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 	VENGIFormat f;
 	palette::Palette pal;
 	pal.magicaVoxel();
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(1));
+	const voxel::Region &region = voxel::Region::fromSize(2);
 	voxel::RawVolume original(region);
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, 1)));
 

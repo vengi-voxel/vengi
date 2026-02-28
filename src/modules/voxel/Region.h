@@ -116,6 +116,14 @@ public:
 	/** Sets the position of the upper corner. */
 	void setUpperCorner(const glm::ivec3& maxs);
 
+	static voxel::Region fromSize(int size) {
+		return voxel::Region(glm::ivec3(0), glm::ivec3(size - 1));
+	}
+
+	static voxel::Region fromSize(const glm::ivec3 &size) {
+		return voxel::Region(glm::ivec3(0), size - 1);
+	}
+
 	static core::Buffer<voxel::Region> subtract(const voxel::Region& a, const core::Buffer<voxel::Region>& b);
 	static core::Buffer<voxel::Region> subtract(const voxel::Region& a, const voxel::Region& b) {
 		core::Buffer<voxel::Region> result;

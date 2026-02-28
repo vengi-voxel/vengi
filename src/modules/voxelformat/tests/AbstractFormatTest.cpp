@@ -61,7 +61,7 @@ image::ImagePtr AbstractFormatTest::helper_testThumbnailCreator(const scenegraph
 void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format,
 													  voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());
-	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
+	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(2));
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
 	EXPECT_TRUE(volume.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255)));
@@ -132,7 +132,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 																Format &destFormat, const core::String &destFilename,
 																voxel::ValidateFlags flags) {
 	SCOPED_TRACE(destFilename.c_str());
-	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
+	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(2));
 	voxel::RawVolume original(region);
 	const palette::Palette pal1 = voxel::getPalette();
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0u)));
@@ -383,7 +383,7 @@ void AbstractFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFi
 
 void AbstractFormatTest::testSaveSingleVoxel(const core::String &filename, Format *format, voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());
-	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
+	const voxel::Region &region = voxel::Region::fromSize(1);
 	voxel::RawVolume original(region);
 	original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	scenegraph::SceneGraph sceneGraphsave;
@@ -408,7 +408,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	SCOPED_TRACE(filename.c_str());
 	palette::Palette pal;
 	pal.magicaVoxel();
-	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
+	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(1, 2, 2));
 	voxel::RawVolume original(region);
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(pal, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(pal, 201)));
@@ -444,7 +444,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 void AbstractFormatTest::testSaveMultipleModels(const core::String &filename, Format *format,
 												voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());
-	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
+	const voxel::Region &region = voxel::Region::fromSize(1);
 	palette::Palette pal;
 	pal.tryAdd(color::RGBA(127, 127, 255, 255));
 	voxel::RawVolume model1(region);
@@ -485,7 +485,7 @@ void AbstractFormatTest::testSaveMultipleModels(const core::String &filename, Fo
 void AbstractFormatTest::testSave(const core::String &filename, Format *format, const palette::Palette &palette,
 								  voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());
-	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
+	const voxel::Region &region = voxel::Region::fromSize(1);
 	voxel::RawVolume model1(region);
 	EXPECT_TRUE(model1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	scenegraph::SceneGraph sceneGraph;

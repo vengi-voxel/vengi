@@ -193,7 +193,7 @@ void StampBrush::setVoxel(const voxel::Voxel &voxel, const palette::Palette &pal
 		auto func = [&](int x, int y, int z, const voxel::Voxel &v) { _volume->setVoxel(x, y, z, voxel); };
 		voxelutil::visitVolumeParallel(*_volume, func);
 	} else {
-		_volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(0)));
+		_volume = new voxel::RawVolume(voxel::Region::fromSize(1));
 		_volume->setVoxel(0, 0, 0, voxel);
 		_palette = palette;
 	}

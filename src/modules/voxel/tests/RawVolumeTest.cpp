@@ -142,7 +142,7 @@ TEST_F(RawVolumeTest, testSamplerPeekWithTipOfTheGeom) {
 }
 
 TEST_F(RawVolumeTest, testMove) {
-	RawVolume v({glm::ivec3(0), glm::ivec3(1)});
+	RawVolume v(voxel::Region::fromSize(2));
 	v.setVoxel(0, 0, 0, voxel::createVoxel(VoxelType::Generic, 1));
 	v.move({1, 0, 0});
 	EXPECT_EQ((int)v.voxel(0, 0, 0).getColor(), 0);
@@ -152,7 +152,7 @@ TEST_F(RawVolumeTest, testMove) {
 }
 
 TEST_F(RawVolumeTest, testSetFlags) {
-	RawVolume v({glm::ivec3(0), glm::ivec3(3)});
+	RawVolume v(voxel::Region::fromSize(4));
 	// Set some voxels
 	for (int z = 0; z <= 3; ++z) {
 		for (int y = 0; y <= 3; ++y) {
@@ -175,7 +175,7 @@ TEST_F(RawVolumeTest, testSetFlags) {
 }
 
 TEST_F(RawVolumeTest, testRemoveFlags) {
-	RawVolume v({glm::ivec3(0), glm::ivec3(3)});
+	RawVolume v(voxel::Region::fromSize(4));
 	// Set all voxels with flag 1
 	for (int z = 0; z <= 3; ++z) {
 		for (int y = 0; y <= 3; ++y) {
@@ -203,7 +203,7 @@ TEST_F(RawVolumeTest, testRemoveFlags) {
 
 TEST_F(RawVolumeTest, testSetFlagsOddWidth) {
 	// Test with odd line length to cover the remaining voxel handling
-	RawVolume v({glm::ivec3(0), glm::ivec3(4, 2, 2)});
+	RawVolume v(voxel::Region::fromSize(glm::ivec3(5, 3, 3)));
 	for (int z = 0; z <= 2; ++z) {
 		for (int y = 0; y <= 2; ++y) {
 			for (int x = 0; x <= 4; ++x) {
@@ -213,7 +213,7 @@ TEST_F(RawVolumeTest, testSetFlagsOddWidth) {
 	}
 
 	// Set flags on a region with odd width (5 voxels wide)
-	v.setFlags(Region(0, 0, 0, 4, 2, 2), 1);
+	v.setFlags(voxel::Region::fromSize(glm::ivec3(5, 3, 3)), 1);
 
 	// Verify all voxels in the region have flags set
 	for (int z = 0; z <= 2; ++z) {
@@ -226,7 +226,7 @@ TEST_F(RawVolumeTest, testSetFlagsOddWidth) {
 }
 
 TEST_F(RawVolumeTest, testHasFlags) {
-	RawVolume v({glm::ivec3(0), glm::ivec3(3)});
+	RawVolume v(voxel::Region::fromSize(4));
 	// Set voxels without flags
 	for (int z = 0; z <= 3; ++z) {
 		for (int y = 0; y <= 3; ++y) {
@@ -255,7 +255,7 @@ TEST_F(RawVolumeTest, testHasFlags) {
 // Test alignment issues with odd starting coordinates
 TEST_F(RawVolumeTest, testFlagsAlignment) {
 	// Create a volume where odd x-coordinates will cause misaligned 64-bit accesses
-	RawVolume v({glm::ivec3(0), glm::ivec3(9, 3, 3)});
+	RawVolume v(voxel::Region::fromSize(glm::ivec3(10, 4, 4)));
 	for (int z = 0; z <= 3; ++z) {
 		for (int y = 0; y <= 3; ++y) {
 			for (int x = 0; x <= 9; ++x) {
