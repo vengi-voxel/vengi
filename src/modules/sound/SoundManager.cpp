@@ -50,11 +50,41 @@ bool SoundManager::ensureDevice() {
 		return false;
 	}
 	_initialized = true;
+
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	// Recreate audio streams for any previously loaded sounds
+	for (SoundData *data : _sounds) {
+		if (data->stream == nullptr && data->buffer != nullptr) {
+			data->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &data->spec, nullptr, nullptr);
+			if (data->stream == nullptr) {
+				Log::warn("Failed to recreate audio stream: %s", SDL_GetError());
+			}
+		}
+	}
+#else
+	// Reopen the audio device if we have loaded sounds
+	if (_device == 0 && !_sounds.empty()) {
+		SoundData *first = _sounds[0];
+		_device = SDL_OpenAudioDevice(nullptr, 0, &first->spec, &_deviceSpec, 0);
+		if (_device == 0) {
+			Log::warn("Failed to reopen audio device: %s", SDL_GetError());
+		}
+	}
+#endif
+
 	return true;
 }
 
 void SoundManager::closeDevice() {
-#if !SDL_VERSION_ATLEAST(3, 2, 0)
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+	// Destroy all audio streams before tearing down the subsystem
+	for (SoundData *data : _sounds) {
+		if (data->stream != nullptr) {
+			SDL_DestroyAudioStream(data->stream);
+			data->stream = nullptr;
+		}
+	}
+#else
 	if (_device != 0) {
 		SDL_CloseAudioDevice(_device);
 		_device = 0;
@@ -93,6 +123,23 @@ void SoundManager::update(double /*nowSeconds*/) {
 }
 
 void SoundManager::shutdown() {
+	// Free all tracked sounds before closing the device
+	for (SoundData *data : _sounds) {
+#if SDL_VERSION_ATLEAST(3, 2, 0)
+		if (data->stream != nullptr) {
+			SDL_DestroyAudioStream(data->stream);
+		}
+		if (data->buffer != nullptr) {
+			SDL_free(data->buffer);
+		}
+#else
+		if (data->buffer != nullptr) {
+			SDL_FreeWAV(data->buffer);
+		}
+#endif
+		delete data;
+	}
+	_sounds.clear();
 	closeDevice();
 }
 
@@ -138,6 +185,7 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 	}
 #endif
 
+	_sounds.push_back(data);
 	Log::info("Loaded sound: %s (%u bytes)", path.c_str(), data->length);
 	return (SoundHandle)data;
 }
@@ -147,6 +195,15 @@ void SoundManager::freeSound(SoundHandle handle) {
 		return;
 	}
 	SoundData *data = (SoundData *)handle;
+
+	// Remove from tracking list
+	for (size_t i = 0; i < _sounds.size(); ++i) {
+		if (_sounds[i] == data) {
+			_sounds.erase(i);
+			break;
+		}
+	}
+
 #if SDL_VERSION_ATLEAST(3, 2, 0)
 	if (data->stream != nullptr) {
 		SDL_DestroyAudioStream(data->stream);
@@ -177,6 +234,9 @@ void SoundManager::playSound(SoundHandle handle) {
 	const int volume = _volume ? _volume->intVal() : 100;
 
 #if SDL_VERSION_ATLEAST(3, 2, 0)
+	if (data->stream == nullptr) {
+		return;
+	}
 	SDL_ClearAudioStream(data->stream);
 	if (!SDL_PutAudioStreamData(data->stream, data->buffer, (int)data->length)) {
 		Log::warn("Failed to put audio stream data: %s", SDL_GetError());
@@ -187,6 +247,9 @@ void SoundManager::playSound(SoundHandle handle) {
 	}
 	SDL_ResumeAudioStreamDevice(data->stream);
 #else
+	if (_device == 0) {
+		return;
+	}
 	SDL_ClearQueuedAudio(_device);
 	if (SDL_QueueAudio(_device, data->buffer, data->length) < 0) {
 		Log::warn("Failed to queue audio: %s", SDL_GetError());
