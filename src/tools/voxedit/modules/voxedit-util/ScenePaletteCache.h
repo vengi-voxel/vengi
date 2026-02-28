@@ -4,18 +4,19 @@
 
 #include "palette/PaletteCache.h"
 #include "voxedit-util/SceneManager.h"
+
 namespace voxedit {
 
-class PaletteCacheEx : public palette::PaletteCache {
+class ScenePaletteCache : public palette::PaletteCache {
 private:
 	using Super = palette::PaletteCache;
 	SceneManagerPtr _sceneMgr;
 
 public:
-	PaletteCacheEx(const SceneManagerPtr &sceneMgr, const io::FilesystemPtr &filesystem)
+	ScenePaletteCache(const SceneManagerPtr &sceneMgr, const io::FilesystemPtr &filesystem)
 		: PaletteCache(filesystem), _sceneMgr(sceneMgr) {
 	}
-	virtual ~PaletteCacheEx() {
+	virtual ~ScenePaletteCache() {
 	}
 
 	void detectPalettes(bool includeBuiltIn = true) override {

@@ -9,7 +9,7 @@
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
 #include "voxedit-util/ISceneRenderer.h"
-#include "voxedit-util/PaletteCacheEx.h"
+#include "voxedit-util/ScenePaletteCache.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelcollection/CollectionManager.h"
 
@@ -35,7 +35,7 @@ protected:
 	voxedit::SceneRendererPtr _sceneRenderer;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
-	voxedit::PaletteCacheEx _paletteCache;
+	voxedit::ScenePaletteCache _paletteCache;
 
 	// 0 is the default binding
 	enum KeyBindings {
