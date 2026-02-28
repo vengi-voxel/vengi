@@ -130,7 +130,6 @@ protected:
 	scenegraph::FrameIndex _currentFrameIdx = 0;
 
 	int _initialized = 0;
-	int _size = 128;
 	glm::ivec2 _mouseCursor{0};
 	glm::ivec2 _mouseCursorDelta{0};
 
@@ -195,8 +194,6 @@ protected:
 	void nodeScaleDown(int nodeId);
 	void nodeScaleUp(int nodeId);
 	bool nodeSave(int nodeId, const core::String &file);
-
-	int size() const;
 
 	bool doUndo();
 	bool doRedo();
@@ -668,10 +665,6 @@ inline bool SceneManager::dirty() const {
 
 inline void SceneManager::clearDirty() {
 	_dirty = false;
-}
-
-inline int SceneManager::size() const {
-	return _size;
 }
 
 inline const voxel::Voxel &SceneManager::hitCursorVoxel() const {
