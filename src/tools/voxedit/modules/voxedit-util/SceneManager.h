@@ -171,7 +171,6 @@ protected:
 	void stepLSystem();
 	int toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name = "nodeid") const;
 
-protected:
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);
 	int activeNode() const;
 
@@ -180,10 +179,14 @@ protected:
 	 * @brief Move the cursor relative by the given steps in each direction
 	 */
 	void moveCursor(int x, int y, int z);
+
 	void nodeGroupFillHollow();
 	void nodeGroupHollow();
 	void nodeGroupFill();
 	void nodeGroupClear();
+	void nodeGroupRotate(math::Axis axis);
+	void nodeGroupFlip(math::Axis axis);
+	void nodeGroupResize(const glm::ivec3 &size);
 
 	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor);
 	int nodeColorToNewNode(const voxel::Voxel voxelColor);
@@ -191,23 +194,14 @@ protected:
 	void nodeSplitObjects(int nodeId);
 	void nodeScaleDown(int nodeId);
 	void nodeScaleUp(int nodeId);
-	void nodeGroupResize(const glm::ivec3 &size);
+	bool nodeSave(int nodeId, const core::String &file);
+
 	int size() const;
 
 	bool doUndo();
 	bool doRedo();
 
-	/**
-	 * @param[in] angleX in degree
-	 * @param[in] angleY in degree
-	 * @param[in] angleZ in degree
-	 */
-	void nodeGroupRotate(math::Axis axis);
-
 	bool saveModels(const core::String &dir);
-	bool nodeSave(int nodeId, const core::String &file);
-
-	void nodeGroupFlip(math::Axis axis);
 
 	/**
 	 * we assume that this is going hand in hand with transform states
@@ -233,6 +227,58 @@ protected:
 	 */
 	void setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force = false);
 
+	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
+	/**
+	 * @brief When updating the pivot of a node, we want to keep it in its current position - but only modify the pivot
+	 * to achieve this, we componsate the pivot change by updating the local translation
+	 */
+	void nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
+
+	void onNewNodeAdded(int newNodeId, bool isChildren = false);
+	bool nodeRemoveChildrenByType(scenegraph::SceneGraphNode &node, scenegraph::SceneGraphNodeType type);
+	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
+	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
+							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &angles, const glm::vec3 &scale,
+							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeResetTransform(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
+	bool nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
+										 scenegraph::InterpolationType interpolation);
+	bool nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
+	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
+	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
+	void nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId = nullptr);
+	int nodeReference(const scenegraph::SceneGraphNode &node);
+	bool nodeUnreference(scenegraph::SceneGraphNode &node);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeDuplicateColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	bool nodeReduceColors(scenegraph::SceneGraphNode &node, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material,
+						 float value);
+	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
+	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
+	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
+
 public:
 	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 				 const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
@@ -252,11 +298,6 @@ public:
 	void setMousePos(int x, int y);
 
 	/**
-	 * @return @c true if the current node supports switching to edit mode
-	 */
-	bool supportsEditMode() const;
-
-	/**
 	 * @brief world matrix for the current active node
 	 */
 	glm::mat4 worldMatrix(scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
@@ -267,15 +308,7 @@ public:
 
 	bool exceedsMaxSuggestedVolumeSize() const;
 
-	bool cameraRotate() const;
-
 	scenegraph::SceneGraphNodeCamera *activeCameraNode();
-
-	bool clipping() const;
-	void setClipping(bool enabled);
-
-	bool gravity() const;
-	void setGravity(bool enabled);
 
 	scenegraph::FrameIndex currentFrame() const;
 	void setCurrentFrame(scenegraph::FrameIndex frameIdx);
@@ -323,10 +356,6 @@ public:
 	 */
 	bool loadPalette(const core::String &paletteName, bool searchBestColors, bool save);
 
-	void nodeGroupCalulateNormals(voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow);
-	bool nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
-						  bool fillAndHollow = false);
-
 	/**
 	 * @brief Add a new model node as children to the current active node
 	 */
@@ -347,8 +376,6 @@ public:
 
 	bool copy(int nodeId);
 	bool paste(const glm::ivec3 &pos);
-	bool nodePasteAsNewNode(int nodeId);
-	bool nodeCut(int nodeId);
 
 	void selectionInvert(int nodeId);
 	void selectionUnselect(int nodeId);
@@ -382,15 +409,6 @@ public:
 
 	bool undo(int n = 1);
 	bool redo(int n = 1);
-
-	/**
-	 * @brief Shift the whole volume by the given voxel amount
-	 */
-	void nodeGroupShift(int x, int y, int z);
-	/**
-	 * @brief Move the voxels inside the volume regions
-	 */
-	void nodeGroupMoveVoxels(int x, int y, int z);
 
 	/**
 	 * @brief Import an existing model
@@ -465,9 +483,6 @@ public:
 	float playbackSpeed() const;
 	void setPlaybackSpeed(float speed);
 
-	SessionRecorder &recorder();
-	SessionPlayer &player();
-
 	bool setGridResolution(int resolution);
 
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
@@ -487,80 +502,47 @@ public:
 	voxelgenerator::LUAApi &luaApi();
 	Server &server();
 	Client &client();
+	SessionRecorder &recorder();
+	SessionPlayer &player();
+	const voxelrender::CameraMovement &cameraMovement() const;
+	voxelrender::CameraMovement &cameraMovement();
 
-private:
-	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
+	void nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeGroupUpdatePivot(const glm::vec3 &pivot);
+	void nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx);
+	void nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx);
+	bool nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+								  scenegraph::FrameIndex frameIdx, bool local);
 	/**
-	 * @brief When updating the pivot of a node, we want to keep it in its current position - but only modify the pivot
-	 * to achieve this, we componsate the pivot change by updating the local translation
+	 * @brief Shift the whole volume by the given voxel amount
 	 */
-	void nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
+	void nodeGroupShift(int x, int y, int z);
+	/**
+	 * @brief Move the voxels inside the volume regions
+	 */
+	void nodeGroupMoveVoxels(int x, int y, int z);
 
-	void onNewNodeAdded(int newNodeId, bool isChildren = false);
-	bool nodeRemoveChildrenByType(scenegraph::SceneGraphNode &node, scenegraph::SceneGraphNodeType type);
-	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
-	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
-							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &angles, const glm::vec3 &scale,
-							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeResetTransform(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
-	bool nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
-	bool nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
-										 scenegraph::InterpolationType interpolation);
-	bool nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
-	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
-	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
-	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
-	void nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId = nullptr);
-	int nodeReference(const scenegraph::SceneGraphNode &node);
-	bool nodeUnreference(scenegraph::SceneGraphNode &node);
-	/**
-	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
-	 * representation of the palette)
-	 */
-	bool nodeDuplicateColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
-	/**
-	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
-	 * representation of the palette)
-	 */
-	bool nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
-	bool nodeReduceColors(scenegraph::SceneGraphNode &node, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
-	/**
-	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
-	 * representation of the palette)
-	 */
-	bool nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx);
-	/**
-	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
-	 * representation of the palette)
-	 */
-	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material,
-						 float value);
-	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
-	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
-	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
-public:
+	void nodeGroupCalulateNormals(voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow);
+	bool nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
+						  bool fillAndHollow = false);
+
+	bool nodePasteAsNewNode(int nodeId);
+	bool nodeCut(int nodeId);
+
 	void nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume);
 	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
-								  scenegraph::FrameIndex frameIdx, bool local);
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
-	void nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
-	bool nodeGroupUpdatePivot(const glm::vec3 &pivot);
 	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
 	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
-	void nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
-	void nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId, scenegraph::NodeMoveFlag flags);
@@ -630,9 +612,6 @@ public:
 	 * @note This is not related to the group node type
 	 */
 	void nodeForeachGroup(const std::function<void(int)> &f);
-
-	const voxelrender::CameraMovement &cameraMovement() const;
-	voxelrender::CameraMovement &cameraMovement();
 };
 
 inline const voxelrender::CameraMovement &SceneManager::cameraMovement() const {

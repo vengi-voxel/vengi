@@ -535,12 +535,6 @@ glm::mat4 SceneManager::worldMatrix(scenegraph::FrameIndex frameIdx, bool applyT
 	return _sceneGraph.worldMatrix(node, frameIdx, applyTransforms);
 }
 
-bool SceneManager::supportsEditMode() const {
-	const int nodeId = _sceneGraph.activeNode();
-	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	return node.isModelNode();
-}
-
 void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, SceneModifiedFlags flags, uint64_t renderRegionMillis) {
 	const bool markUndo = (flags & SceneModifiedFlags::MarkUndo) == SceneModifiedFlags::MarkUndo;
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
@@ -4381,10 +4375,6 @@ bool SceneManager::nodeActivate(int nodeId) {
 
 bool SceneManager::empty() const {
 	return _sceneGraph.empty();
-}
-
-bool SceneManager::cameraRotate() const {
-	return _rotate.pressed();
 }
 
 void SceneManager::setActiveCamera(video::Camera *camera, bool fixedCamera) {
