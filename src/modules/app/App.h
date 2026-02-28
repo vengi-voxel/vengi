@@ -136,6 +136,7 @@ protected:
 
 	void bashCompletion() const;
 	void zshCompletion() const;
+	void powershellCompletion() const;
 	bool handleCompletion(const core::String &type) const;
 
 	virtual void usage() const;

@@ -6,11 +6,11 @@ Print a detailed description of the program parameters for your particular versi
 vengi-voxconvert --help
 ```
 
-> You can use the bash completion or zsh completion
+> You can use the bash, zsh or powershell completion
 >
-> Put this in your `.bashrc` or `.zshrc`
+> Put this in your `.bashrc`, `.zshrc` or PowerShell `$PROFILE`
 >
-> `source <(vengi-voxconvert --completion bash)` (or replace `bash` by `zsh`)
+> `source <(vengi-voxconvert --completion bash)` (or replace `bash` by `zsh` or `powershell`)
 
 * `--crop`: reduces the volume sizes to their voxel boundaries.
 * `--export-models`: export all the models of a scene into single files. It is suggested to name the models properly to get reasonable file names.
@@ -51,12 +51,30 @@ color from the source file palette to the specified palette.
 
 If something isn't working as you expected it to work, it might be an option to activate the debug logging. But the output can be a bit overwhelming. See the [configuration](../Configuration.md) logging section about more details.
 
-## bash completion
+## Shell completion
 
-You can also use the bash completion script by adding this to your `.bashrc`
+### bash
+
+Add this to your `.bashrc`:
 
 ```sh
 source <(vengi-voxconvert --completion bash)
+```
+
+### zsh
+
+Add this to your `.zshrc`:
+
+```sh
+source <(vengi-voxconvert --completion zsh)
+```
+
+### PowerShell
+
+Add this to your PowerShell profile (`$PROFILE`):
+
+```powershell
+vengi-voxconvert --completion powershell | Invoke-Expression
 ```
 
 ## The order of execution is:

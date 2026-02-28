@@ -719,7 +719,7 @@ AppState App::onConstruct() {
 	registerArg("--jsonconfig").setDescription(_("Print the cvars in json format"));
 	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
 	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
-	registerArg("--completion").setDescription(_("Generate completion for bash and zsh"));
+	registerArg("--completion").setDescription(_("Generate completion for bash, zsh and powershell")).addValidValue("bash").addValidValue("zsh").addValidValue("powershell");
 	registerArg("--loglevel").setShort("-l").setDescription(_("Change log level from 1 (trace) to 6 (only critical)"));
 	const core::String &logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {
@@ -1201,6 +1201,179 @@ void App::bashCompletion() const {
 	Log::printf("complete -o nosort -F _%s_completion -o bashdefault -- %s\n", appname().c_str(), binary.c_str());
 }
 
+void App::powershellCompletion() const {
+	core::String binary = core::string::extractFilenameWithExtension(_argv[0]);
+	if (binary.empty()) {
+		binary = fullAppname();
+	}
+
+	Log::printf("Register-ArgumentCompleter -Native -CommandName '%s' -ScriptBlock {\n", binary.c_str());
+	Log::printf("\tparam($wordToComplete, $commandAst, $cursorPosition)\n");
+	Log::printf("\t$tokens = $commandAst.ToString().Split()\n");
+	Log::printf("\t$prevToken = if ($tokens.Count -ge 2) { $tokens[$tokens.Count - 2] } else { '' }\n");
+	Log::printf("\t$prevPrevToken = if ($tokens.Count -ge 3) { $tokens[$tokens.Count - 3] } else { '' }\n");
+
+	// cvar value completion when prev_prev is -set
+	Log::printf("\tif ($prevPrevToken -eq '-set') {\n");
+	Log::printf("\t\tswitch ($prevToken) {\n");
+	{
+		bool firstBool = true;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (var->type() == core::VarType::Boolean) {
+				if (firstBool) {
+					Log::printf("\t\t\t{ $_ -in @(");
+					firstBool = false;
+				} else {
+					Log::printf(", ");
+				}
+				Log::printf("'%s'", var->name().c_str());
+			}
+		});
+		if (!firstBool) {
+			Log::printf(") } {\n");
+			Log::printf("\t\t\t\t@('true', 'false') | Where-Object { $_ -like \"$wordToComplete*\" } | ForEach-Object {\n");
+			Log::printf("\t\t\t\t\t[System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)\n");
+			Log::printf("\t\t\t\t}\n");
+			Log::printf("\t\t\t}\n");
+		}
+
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (!var->validValues().empty()) {
+				Log::printf("\t\t\t'%s' {\n", var->name().c_str());
+				Log::printf("\t\t\t\t@(");
+				for (size_t n = 0; n < var->validValues().size(); ++n) {
+					if (n > 0) {
+						Log::printf(", ");
+					}
+					Log::printf("'%s'", var->validValues()[n].c_str());
+				}
+				Log::printf(") | Where-Object { $_ -like \"$wordToComplete*\" } | ForEach-Object {\n");
+				Log::printf("\t\t\t\t\t[System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)\n");
+				Log::printf("\t\t\t\t}\n");
+				Log::printf("\t\t\t}\n");
+			}
+		});
+
+		bool firstPath = true;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (var->type() == core::VarType::Path) {
+				if (firstPath) {
+					Log::printf("\t\t\t{ $_ -in @(");
+					firstPath = false;
+				} else {
+					Log::printf(", ");
+				}
+				Log::printf("'%s'", var->name().c_str());
+			}
+		});
+		if (!firstPath) {
+			Log::printf(") } {\n");
+			Log::printf("\t\t\t\tGet-ChildItem -Path \"$wordToComplete*\" -ErrorAction SilentlyContinue | ForEach-Object {\n");
+			Log::printf("\t\t\t\t\t[System.Management.Automation.CompletionResult]::new($_.FullName, $_.Name, 'ProviderItem', $_.FullName)\n");
+			Log::printf("\t\t\t\t}\n");
+			Log::printf("\t\t\t}\n");
+		}
+	}
+	Log::printf("\t\t}\n");
+	Log::printf("\t\treturn\n");
+	Log::printf("\t}\n");
+
+	// cvar name completion when prev is -set
+	Log::printf("\tif ($prevToken -eq '-set') {\n");
+	Log::printf("\t\t@(");
+	{
+		bool firstVar = true;
+		core::Var::visit([&](const core::VarPtr &var) {
+			if (!firstVar) {
+				Log::printf(", ");
+			}
+			Log::printf("'%s'", var->name().c_str());
+			firstVar = false;
+		});
+	}
+	Log::printf(") | Where-Object { $_ -like \"$wordToComplete*\" } | ForEach-Object {\n");
+	Log::printf("\t\t\t[System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)\n");
+	Log::printf("\t\t}\n");
+	Log::printf("\t\treturn\n");
+	Log::printf("\t}\n");
+
+	// argument value completion
+	Log::printf("\tswitch ($prevToken) {\n");
+	for (const Argument &arg : arguments()) {
+		if (arg.needsFile()) {
+			Log::printf("\t\t{ $_ -in @('%s'", arg.longArg().c_str());
+			if (!arg.shortArg().empty()) {
+				Log::printf(", '%s'", arg.shortArg().c_str());
+			}
+			Log::printf(") } {\n");
+			Log::printf("\t\t\tGet-ChildItem -Path \"$wordToComplete*\" -File -ErrorAction SilentlyContinue | ForEach-Object {\n");
+			Log::printf("\t\t\t\t[System.Management.Automation.CompletionResult]::new($_.FullName, $_.Name, 'ProviderItem', $_.FullName)\n");
+			Log::printf("\t\t\t}\n");
+			Log::printf("\t\t}\n");
+		} else if (arg.needsDirectory()) {
+			Log::printf("\t\t{ $_ -in @('%s'", arg.longArg().c_str());
+			if (!arg.shortArg().empty()) {
+				Log::printf(", '%s'", arg.shortArg().c_str());
+			}
+			Log::printf(") } {\n");
+			Log::printf("\t\t\tGet-ChildItem -Path \"$wordToComplete*\" -Directory -ErrorAction SilentlyContinue | ForEach-Object {\n");
+			Log::printf("\t\t\t\t[System.Management.Automation.CompletionResult]::new($_.FullName, $_.Name, 'ProviderItem', $_.FullName)\n");
+			Log::printf("\t\t\t}\n");
+			Log::printf("\t\t}\n");
+		} else if (!arg.validValues().empty()) {
+			Log::printf("\t\t{ $_ -in @('%s'", arg.longArg().c_str());
+			if (!arg.shortArg().empty()) {
+				Log::printf(", '%s'", arg.shortArg().c_str());
+			}
+			Log::printf(") } {\n");
+			Log::printf("\t\t\t@(");
+			for (size_t n = 0; n < arg.validValues().size(); ++n) {
+				if (n > 0) {
+					Log::printf(", ");
+				}
+				Log::printf("'%s'", arg.validValues()[n].c_str());
+			}
+			Log::printf(") | Where-Object { $_ -like \"$wordToComplete*\" } | ForEach-Object {\n");
+			Log::printf("\t\t\t\t[System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)\n");
+			Log::printf("\t\t\t}\n");
+			Log::printf("\t\t}\n");
+		}
+	}
+	Log::printf("\t}\n");
+
+	// default: complete options and commands
+	Log::printf("\t@(\n");
+	Log::printf("\t\t'-set'\n");
+	for (const Argument &arg : arguments()) {
+		Log::printf("\t\t'%s'\n", arg.longArg().c_str());
+		if (!arg.shortArg().empty()) {
+			Log::printf("\t\t'%s'\n", arg.shortArg().c_str());
+		}
+	}
+	command::Command::visitSorted([=](const command::Command &c) {
+		Log::printf("\t\t'-%s'\n", c.name().c_str());
+	});
+	Log::printf("\t) | Where-Object { $_ -like \"$wordToComplete*\" } | ForEach-Object {\n");
+	Log::printf("\t\t$tooltip = switch ($_) {\n");
+	Log::printf("\t\t\t'-set' { 'Set cvar value' }\n");
+	for (const Argument &arg : arguments()) {
+		core::String desc = core::string::replaceAll(arg.description(), "'", "''");
+		Log::printf("\t\t\t'%s' { '%s' }\n", arg.longArg().c_str(), desc.c_str());
+		if (!arg.shortArg().empty()) {
+			Log::printf("\t\t\t'%s' { '%s' }\n", arg.shortArg().c_str(), desc.c_str());
+		}
+	}
+	command::Command::visitSorted([=](const command::Command &c) {
+		core::String help = core::string::replaceAll(c.help(), "'", "''");
+		Log::printf("\t\t\t'-%s' { '%s' }\n", c.name().c_str(), help.c_str());
+	});
+	Log::printf("\t\t\tdefault { $_ }\n");
+	Log::printf("\t\t}\n");
+	Log::printf("\t\t[System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $tooltip)\n");
+	Log::printf("\t}\n");
+	Log::printf("}\n");
+}
+
 bool App::handleCompletion(const core::String &type) const {
 	if (type == "bash") {
 		bashCompletion();
@@ -1208,8 +1381,11 @@ bool App::handleCompletion(const core::String &type) const {
 	} else if (type == "zsh") {
 		zshCompletion();
 		return true;
+	} else if (type == "powershell") {
+		powershellCompletion();
+		return true;
 	}
-	Log::warn("Unknown completion type '%s' (only 'bash' is supported)", type.c_str());
+	Log::warn("Unknown completion type '%s' (supported: 'bash', 'zsh', 'powershell')", type.c_str());
 	return false;
 }
 

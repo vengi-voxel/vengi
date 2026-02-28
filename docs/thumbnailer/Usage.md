@@ -6,11 +6,11 @@ Print a detailed description of the program parameters for your particular versi
 vengi-thumbnailer --help
 ```
 
-> You can use the bash completion or zsh completion
+> You can use the bash, zsh or powershell completion
 >
-> Put this in your `.bashrc` or `.zshrc`
+> Put this in your `.bashrc`, `.zshrc` or PowerShell `$PROFILE`
 >
-> `source <(vengi-thumbnailer --completion bash)` (or replace `bash` by `zsh`)
+> `source <(vengi-thumbnailer --completion bash)` (or replace `bash` by `zsh` or `powershell`)
 
 * `--angles <pitch:yaw:roll>`: Set the camera angles (pitch:yaw:roll) in degrees (default: 0:0:0)
 * `--camera-mode <mode>`: Allow to change the camera positioning for rendering (default: Free)
@@ -27,10 +27,28 @@ vengi-thumbnailer --help
 * `--turntable`: Render in different angles (16 by default)
 * `--use-scene-camera`: Use the first scene camera for rendering the thumbnail
 
-## bash completion
+## Shell completion
 
-You can also use the bash completion script by adding this to your `.bashrc`
+### bash
+
+Add this to your `.bashrc`:
 
 ```sh
 source <(vengi-thumbnailer --completion bash)
+```
+
+### zsh
+
+Add this to your `.zshrc`:
+
+```sh
+source <(vengi-thumbnailer --completion zsh)
+```
+
+### PowerShell
+
+Add this to your PowerShell profile (`$PROFILE`):
+
+```powershell
+vengi-thumbnailer --completion powershell | Invoke-Expression
 ```
